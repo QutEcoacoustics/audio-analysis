@@ -14,7 +14,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
     {
         public AmplitudeSonogram(SonogramConfig config, WavReader wav)
             : base(config, wav, false)
-        { }
+        {
+        }
 
         /// <summary>
         /// This method does nothing because do not want to change the amplitude sonogram in any way.

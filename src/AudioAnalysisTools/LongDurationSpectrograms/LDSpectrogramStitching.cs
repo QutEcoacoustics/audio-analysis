@@ -127,7 +127,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var matchFiles = new List<FileInfo>();
             foreach (var key in keys)
             {
-                if ((dto.Year == key.Year) && (dto.DayOfYear == key.DayOfYear))
+                if (dto.Year == key.Year && dto.DayOfYear == key.DayOfYear)
                 {
                     matchFiles.Add(dict[key]);
                 }
@@ -143,7 +143,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var matchFiles = new List<DirectoryInfo>();
             foreach (var key in keys)
             {
-                if ((dto.Year == key.Year) && (dto.DayOfYear == key.DayOfYear))
+                if (dto.Year == key.Year && dto.DayOfYear == key.DayOfYear)
                 {
                     matchFiles.Add(dict[key]);
                 }

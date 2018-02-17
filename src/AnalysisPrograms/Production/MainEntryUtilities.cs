@@ -11,7 +11,7 @@ namespace AnalysisPrograms
 {
     using Acoustics.Shared.Contracts;
 
-    #if DEBUG
+        #if DEBUG
 #endif
     using System;
     using System.Collections.Generic;
@@ -34,9 +34,9 @@ namespace AnalysisPrograms
 #if DEBUG
     using Acoustics.Shared.Debugging;
 #endif
-    using Production;
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
+    using Production;
     using Production.Arguments;
 
     public static partial class MainEntry
@@ -224,7 +224,6 @@ namespace AnalysisPrograms
             {
                 throw new InvalidOperationException();
             }
-
         }
 
         public static readonly Dictionary<string, string> EnvironmentOptions =
@@ -319,6 +318,7 @@ namespace AnalysisPrograms
         private static void PrintAggregateException(Exception ex, ref StringBuilder innerExceptions, int depth = 0)
         {
             var depthString = "==".PadLeft(depth * 2, '=');
+
             //innerExceptions = innerExceptions ?? new StringBuilder();
 
             if (ex is AggregateException)
@@ -332,7 +332,8 @@ namespace AnalysisPrograms
                     //innerExceptions.AppendLine();
                     Log.Fatal("\n\n" + depthString + "> Inner exception:", exception);
 
-                    if (exception is AggregateException) {
+                    if (exception is AggregateException)
+                    {
                         PrintAggregateException(exception, ref innerExceptions, depth++);
                     }
                 }

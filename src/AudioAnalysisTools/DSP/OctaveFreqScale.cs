@@ -2,12 +2,11 @@
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
-using MathNet.Numerics;
-
 namespace AudioAnalysisTools.DSP
 {
     using System;
     using System.Collections.Generic;
+    using MathNet.Numerics;
     using StandardSpectrograms;
     using TowseyLibrary;
     using WavTools;
@@ -203,7 +202,7 @@ namespace AudioAnalysisTools.DSP
         /// (1) It removes the DC row or bin 0 iff there is odd number of spectrogram bins. ASSUMPTION: Bin count should be power of 2 from FFT.
         /// (1) It converts spectral amplitudes to power, normalising for window power and sample rate.
         ///     The window contributes power to the signal which must subsequently be removed from the spectral power. Calculate power per sample.
-        ///     See notes in the MFCCStuff.DecibelSpectra for further exp[lanaitons. These normalisations were adapted from MatLab MFCC code. 
+        ///     See notes in the MFCCStuff.DecibelSpectra for further exp[lanaitons. These normalisations were adapted from MatLab MFCC code.
         /// (2) Then reduce the linear scale toan octave scale depending on the sr and required number of bins or filters.
         /// </summary>
         /// <param name="amplitudeM"> the amplitude spectra </param>
@@ -415,7 +414,7 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// Returns the index bounds for a full octave scale - from lowest freq set by user to top freq. 
+        /// Returns the index bounds for a full octave scale - from lowest freq set by user to top freq.
         /// </summary>
         public static int[,] LinearToFullOctaveScale(int sr, int frameSize, int finalBinCount, int lowerFreqBound, int upperFreqBound, int octaveDivisions)
         {
@@ -602,7 +601,7 @@ namespace AudioAnalysisTools.DSP
             int sr = 22050;
             int frameSize = 8192; // default for sr = 22050
 
-            if ((fst == FreqScaleType.Octaves24Nyquist32000) || (fst == FreqScaleType.Linear125Octaves7Tones28Nyquist32000))
+            if (fst == FreqScaleType.Octaves24Nyquist32000 || fst == FreqScaleType.Linear125Octaves7Tones28Nyquist32000)
             {
                 sr = 64000;
                 frameSize = 16384; // default for sr = 64000

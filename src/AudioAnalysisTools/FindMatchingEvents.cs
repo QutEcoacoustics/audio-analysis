@@ -7,12 +7,12 @@ namespace AudioAnalysisTools
     using System;
     using System.Collections.Generic;
     using System.Drawing;
+    using System.IO;
     using System.Linq;
     using System.Text;
     using AudioAnalysisTools;
     using DSP;
     using StandardSpectrograms;
-    using System.IO;
     using TowseyLibrary;
 
     public class FindMatchingEvents
@@ -21,7 +21,7 @@ namespace AudioAnalysisTools
         {
             Bitmap bitmap = ImageTools.ReadImage2Bitmap(fileName);
             int height = bitmap.Height;  //height
-            int width  = bitmap.Width;    //width
+            int width = bitmap.Width;    //width
             var matrix = new double[height, width];
 
             for (int r = 0; r < height; r++)
@@ -29,8 +29,14 @@ namespace AudioAnalysisTools
                 for (int c = 0; c < width; c++)
                 {
                     Color color = bitmap.GetPixel(c, r);
-                    if ((color.R < 255) && (color.G < 255) && (color.B < 255)) matrix[r, c] = 1; // init an ON CELL = +1
-                    else matrix[r, c] = -1; // init OFF CELL = -1
+                    if (color.R < 255 && color.G < 255 && color.B < 255)
+                    {
+                        matrix[r, c] = 1; // init an ON CELL = +1
+                    }
+                    else
+                    {
+                        matrix[r, c] = -1; // init OFF CELL = -1
+                    }
                 }
             }
 
@@ -41,7 +47,7 @@ namespace AudioAnalysisTools
         {
             Bitmap bitmap = ImageTools.ReadImage2Bitmap(fileName);
             int height = bitmap.Height;  //height
-            int width  = bitmap.Width;    //width
+            int width = bitmap.Width;    //width
             var matrix = new double[height, width];
 
             for (int r = 0; r < height; r++)
@@ -49,15 +55,23 @@ namespace AudioAnalysisTools
                 for (int c = 0; c < width; c++)
                 {
                     Color color = bitmap.GetPixel(c, r);
-                    if ((color.R < 255) && (color.G < 255) && (color.B < 255)) matrix[r, c] = 1;
-                    else if ((color.G < 255) && (color.B < 255)) matrix[r, c] = 0;
-                    else matrix[r, c] = -1;
+                    if (color.R < 255 && color.G < 255 && color.B < 255)
+                    {
+                        matrix[r, c] = 1;
+                    }
+                    else if (color.G < 255 && color.B < 255)
+                    {
+                        matrix[r, c] = 0;
+                    }
+                    else
+                    {
+                        matrix[r, c] = -1;
+                    }
                 }
             }
 
             return matrix;
         }
-
 
         public static char[,] ReadTextFile2CharMatrix(string fileName)
         {
@@ -69,15 +83,12 @@ namespace AudioAnalysisTools
             {
                 for (int c = 0; c < cols; c++)
                 {
-                    matrix[r, c] = (lines[r].ToCharArray())[c];
+                    matrix[r, c] = lines[r].ToCharArray()[c];
                 }
             }
 
             return matrix;
         }
-
-
-
 
         /// <summary>
         /// Use this method to find match in sonogram to a symbolic definition of a bird call.
@@ -95,12 +106,17 @@ namespace AudioAnalysisTools
                                                                          List<AcousticEvent> segments, int minHz, int maxHz, double dBThreshold)
         {
             Log.WriteLine("SEARCHING FOR EVENTS LIKE TARGET.");
-            if (segments == null) return null;
+            if (segments == null)
+            {
+                return null;
+            }
+
             int minBin = (int)(minHz / sonogram.FBinWidth);
             int maxBin = (int)(maxHz / sonogram.FBinWidth);
             int templateHeight = template.GetLength(0);
-            int templateWidth  = template.GetLength(1);
-            int cellCount      = templateHeight * templateWidth;
+            int templateWidth = template.GetLength(1);
+            int cellCount = templateHeight * templateWidth;
+
             //var image = BaseSonogram.Data2ImageData(target);
             //ImageTools.DrawMatrix(image, 1, 1, @"C:\SensorNetworks\Output\FELT_Currawong\target.png");
 
@@ -117,26 +133,38 @@ namespace AudioAnalysisTools
 
             double[] scores = new double[sonogram.FrameCount];
 
-
             foreach (AcousticEvent av in segments)
             {
                 Log.WriteLine("SEARCHING SEGMENT.");
                 int startRow = (int)Math.Floor(av.TimeStart * sonogram.FramesPerSecond);
-                int endRow   = (int)Math.Floor(av.TimeEnd   * sonogram.FramesPerSecond);
-                if (endRow >= sonogram.FrameCount) endRow = sonogram.FrameCount;
-                int stopRow = endRow - templateWidth -1;
-                if (stopRow <= startRow) stopRow = startRow +1;  //want minimum of one row
+                int endRow = (int)Math.Floor(av.TimeEnd * sonogram.FramesPerSecond);
+                if (endRow >= sonogram.FrameCount)
+                {
+                    endRow = sonogram.FrameCount;
+                }
+
+                int stopRow = endRow - templateWidth - 1;
+                if (stopRow <= startRow)
+                {
+                    stopRow = startRow + 1;  //want minimum of one row
+                }
 
                 for (int r = startRow; r < stopRow; r++)
                 {
                     double max = -double.MaxValue;
+
                     //int maxOnCount= 0; //used to display % ON-count and maybe to modify the score.
                     int binBuffer = 10;
                     for (int bin = -binBuffer; bin < +binBuffer; bin++)
                     {
                         int c = minBin + bin;
-                        if(c < 0) c = 0;
+                        if (c < 0)
+                        {
+                            c = 0;
+                        }
+
                         double crossCor = 0.0;
+
                         //int onCount = 0;
 
                         for (int j = 0; j < templateWidth; j++)
@@ -144,38 +172,47 @@ namespace AudioAnalysisTools
                             int c0 = c + templateHeight - 1;
                             for (int i = 0; i < templateHeight; i++)
                             {
-                                crossCor += sonogram.Data[r + j, c0 - i] *   template[i, j];
+                                crossCor += sonogram.Data[r + j, c0 - i] * template[i, j];
+
                                 //if ((sonogram.Data[r + j, c0 - i] > 0.0) && (template[i, j] > 0)) onCount++;
                             }
                         }
+
                         //var image = BaseSonogram.Data2ImageData(matrix);
                         //ImageTools.DrawMatrix(image, 1, 1, @"C:\SensorNetworks\Output\FELT_CURLEW\compare.png");
 
                         if (crossCor > max)
                         {
                             max = crossCor;
+
                             //maxOnCount = onCount;
                         }
                     } // end freq bins
 
                     //following line yields score = av of PosCells - av of NegCells.
-                    scores[r] = max / (double)positiveCount;
+                    scores[r] = max / positiveCount;
 
                     // display percent onCount
                     //int pcOnCount = maxOnCount * 100 / positiveCount;
                     //if (r % 100 == 0) { LoggedConsole.WriteLine("{0} - {1:f3}", r, scores[r]); }
                     //if (scores[r] >= dBThreshold) { LoggedConsole.WriteLine("r={0} score={1}  %on={2}.", r, scores[r], pcOnCount); }
-                    if (r % 100 == 0) { LoggedConsole.Write("."); }
-                    if (scores[r] < dBThreshold) r += 3; //skip where score is low
+                    if (r % 100 == 0)
+                    {
+                        LoggedConsole.Write(".");
+                    }
 
+                    if (scores[r] < dBThreshold)
+                    {
+                        r += 3; //skip where score is low
+                    }
                 } // end of rows in segment
+
                 LoggedConsole.WriteLine("\nFINISHED SEARCHING SEGMENT FOR ACOUSTIC EVENT.");
             } // foreach (AcousticEvent av in segments)
 
             var tuple = Tuple.Create(scores);
             return tuple;
         }//Execute
-
 
         /// <summary>
         /// Use this method to find match in sonogram to a symbolic definition of a bird call.
@@ -193,20 +230,25 @@ namespace AudioAnalysisTools
                                                                List<AcousticEvent> segments, int minHz, int maxHz, double dBThreshold)
         {
             int lineLength = 10;
+
             //dBThreshold = 9;
 
             Log.WriteLine("SEARCHING FOR EVENTS LIKE TARGET (SPR).");
-            if (segments == null) return null;
+            if (segments == null)
+            {
+                return null;
+            }
+
             int minBin = (int)(minHz / sonogram.FBinWidth);
             int maxBin = (int)(maxHz / sonogram.FBinWidth);
-            int templateFrames   = template.GetLength(0);  // time axis - SPR template is same orientation as the sonogram data matrix
+            int templateFrames = template.GetLength(0);  // time axis - SPR template is same orientation as the sonogram data matrix
             int templateFreqBins = template.GetLength(1);  // freq axis
             int cellCount = templateFrames * templateFreqBins;
-
 
             int positiveCount = SprTools.CountTemplateChars(template);
             int negativeCount = cellCount - positiveCount;
             Log.WriteLine("TEMPLATE: Number of POS cells/total cells = {0}/{1}", positiveCount, cellCount);
+
             // Log.WriteLine("TEMPLATE: Number of NEG cells/total cells = {0}/{1}", negativeCount, cellCount);
             char[,] charogram = SprTools.Target2SymbolicTracks(sonogram.Data, dBThreshold, lineLength);
 
@@ -215,25 +257,36 @@ namespace AudioAnalysisTools
 
             double[] scores = new double[sonogram.FrameCount];
 
-
             foreach (AcousticEvent av in segments)
             {
                 Log.WriteLine("SEARCHING SEGMENT.");
                 int startRow = (int)Math.Floor(av.TimeStart * sonogram.FramesPerSecond);
-                int endRow   = (int)Math.Floor(av.TimeEnd * sonogram.FramesPerSecond);
-                if (endRow >= sonogram.FrameCount) endRow = sonogram.FrameCount;
+                int endRow = (int)Math.Floor(av.TimeEnd * sonogram.FramesPerSecond);
+                if (endRow >= sonogram.FrameCount)
+                {
+                    endRow = sonogram.FrameCount;
+                }
+
                 int stopRow = endRow - templateFrames - 1;
-                if (stopRow <= startRow) stopRow = startRow + 1;  //want minimum of one row
+                if (stopRow <= startRow)
+                {
+                    stopRow = startRow + 1;  //want minimum of one row
+                }
 
                 for (int r = startRow; r < stopRow; r++)
                 {
                     double maxSimilarity = -double.MaxValue;
                     int binBuffer = 10;
+
                     // calculate similarity at one frame position
                     for (int bin = -binBuffer; bin < +binBuffer; bin++)
                     {
                         int c = minBin + bin;
-                        if (c < 0) c = 0;
+                        if (c < 0)
+                        {
+                            c = 0;
+                        }
+
                         double onSum = 0.0;
                         double offSum = 0.0;
 
@@ -242,21 +295,31 @@ namespace AudioAnalysisTools
                         {
                             for (int i = 0; i < templateFrames; i++)
                             {
-                                if (charogram[r + i, c + j] == '-') continue;
+                                if (charogram[r + i, c + j] == '-')
+                                {
+                                    continue;
+                                }
                                 else
-                                    if (template[i, j] == '-') offSum += sonogram.Data[r + i, c + j];
-                                    else
+                                    if (template[i, j] == '-')
+                                {
+                                    offSum += sonogram.Data[r + i, c + j];
+                                }
+                                else
                                     {
                                         //char ColumnLeft = charogram[r + i, c + j];
                                         //char ColumnRight = template[i, j];
                                         //int difference = (int)ColumnLeft - (int)ColumnRight;
                                         int diff = SprTools.SymbolDifference(charogram[r + i, c + j], template[i, j]);
-                                        onSum += ((90 - diff) / (double)90 * sonogram.Data[r + i, c + j]);
+                                        onSum += (90 - diff) / (double)90 * sonogram.Data[r + i, c + j];
                                     }
                             }
                         } // calculate similarity
-                        double similarity = (onSum / (double)positiveCount) - (offSum / (double)negativeCount);
-                        if (similarity > maxSimilarity) maxSimilarity = similarity;
+
+                        double similarity = (onSum / positiveCount) - (offSum / negativeCount);
+                        if (similarity > maxSimilarity)
+                        {
+                            maxSimilarity = similarity;
+                        }
                     } // end freq bins
 
                     //following line yields score = av of PosCells - av of NegCells.
@@ -264,17 +327,23 @@ namespace AudioAnalysisTools
 
                     //if (r % 100 == 0) { LoggedConsole.WriteLine("{0} - {1:f3}", r, scores[r]); }
                     //if (scores[r] >= dBThreshold) { LoggedConsole.WriteLine("r={0} score={1}.", r, scores[r]); }
-                    if (r % 100 == 0) { LoggedConsole.Write("."); }
-                    if (scores[r] < dBThreshold) r += 3; //skip where score is low
+                    if (r % 100 == 0)
+                    {
+                        LoggedConsole.Write(".");
+                    }
 
+                    if (scores[r] < dBThreshold)
+                    {
+                        r += 3; //skip where score is low
+                    }
                 } // end of rows in segment
+
                 LoggedConsole.WriteLine("\nFINISHED SEARCHING SEGMENT FOR ACOUSTIC EVENT.");
             } // foreach (AcousticEvent av in segments)
 
             var tuple = Tuple.Create(scores);
             return tuple;
         } //Execute_Spr_Match()
-
 
         public static Tuple<double> Execute_One_Spr_Match(char[,] template, double[,] dataMatrix, double dBThreshold)
         {
@@ -284,7 +353,6 @@ namespace AudioAnalysisTools
             int templateFreqBins = template.GetLength(1);  // freq axis
             int cellCount = templateFrames * templateFreqBins;
 
-
             int positiveCount = SprTools.CountTemplateChars(template);
             int negativeCount = cellCount - positiveCount;
             Log.WriteLine("TEMPLATE: Number of POS cells/total = {0}/{1}", positiveCount, cellCount);
@@ -292,7 +360,7 @@ namespace AudioAnalysisTools
 
             FileTools.WriteMatrix2File(charogram, "C:\\SensorNetworks\\Output\\FELT_LewinsRail1\\charogram.txt"); //view the char-ogram
 
-            double onSum  = 0.0;
+            double onSum = 0.0;
             double offSum = 0.0;
 
             // calculate onSum and offSum
@@ -300,29 +368,34 @@ namespace AudioAnalysisTools
             {
                 for (int i = 0; i < templateFrames; i++)
                 {
-                    if (charogram[i, j] == '-') continue;
+                    if (charogram[i, j] == '-')
+                    {
+                        continue;
+                    }
                     else
-                        if (template[i, j] == '-') offSum += dataMatrix[i, j];
-                        else
+                        if (template[i, j] == '-')
+                    {
+                        offSum += dataMatrix[i, j];
+                    }
+                    else
                         {
                             //char ColumnLeft = charogram[i, j];
                             //char ColumnRight = template[i, j];
                             //int difference = (int)ColumnLeft - (int)ColumnRight;
                             int diff = SprTools.SymbolDifference(charogram[i, j], template[i, j]);
+
                             //LoggedConsole.WriteLine("{0},{1}  diff={2}", i,j, diff);
-                            onSum += ((90 - diff) / (double)90 * dataMatrix[i, j]);
+                            onSum += (90 - diff) / (double)90 * dataMatrix[i, j];
                         }
                 }
             } // calculate similarity
+
             //following line yields score = av of PosCells - av of NegCells.
-            double similarity = (onSum / (double)positiveCount) - (offSum / (double)negativeCount);
+            double similarity = (onSum / positiveCount) - (offSum / negativeCount);
 
             var tuple = Tuple.Create(similarity);
             return tuple;
         } //Execute_One_Spr_Match()
-
-
-
 
         public static int CountPositives(double[,] m)
         {
@@ -332,8 +405,14 @@ namespace AudioAnalysisTools
             for (int r = 0; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
-                    if (m[r, c] == 1.0) count++;
+                {
+                    if (m[r, c] == 1.0)
+                    {
+                        count++;
+                    }
+                }
             }
+
             return count;
         }
 
@@ -355,23 +434,36 @@ namespace AudioAnalysisTools
             {
                 for (int c = 0; c < cols; c++)
                 {
-                    if (target[r, c] > 0) posCount++;
+                    if (target[r, c] > 0)
+                    {
+                        posCount++;
+                    }
                     else
-                    if (target[r, c] < 0) negCount++;
+                    if (target[r, c] < 0)
+                    {
+                        negCount++;
+                    }
                 }
             }
+
             double ratio = posCount / (double)negCount;
             for (int r = 0; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
                 {
-                    if (target[r, c] < 0) m[r, c] = -ratio;
-                    else                  m[r, c] = target[r, c];
+                    if (target[r, c] < 0)
+                    {
+                        m[r, c] = -ratio;
+                    }
+                    else
+                    {
+                        m[r, c] = target[r, c];
+                    }
                 }
             }
+
             return Tuple.Create(m, posCount, negCount);
         }
-
 
         /// <summary>
         /// Use this method when want to match defined shape in target using cross-correlation.
@@ -391,7 +483,11 @@ namespace AudioAnalysisTools
                                     List<AcousticEvent> segments, int minHz, int maxHz, double minDuration)
         {
             Log.WriteLine("SEARCHING FOR EVENTS LIKE TARGET.");
-            if (segments == null) return null;
+            if (segments == null)
+            {
+                return null;
+            }
+
             int minBin = (int)(minHz / sonogram.FBinWidth);
             int maxBin = (int)(maxHz / sonogram.FBinWidth);
             int targetLength = target.GetLength(0);
@@ -400,6 +496,7 @@ namespace AudioAnalysisTools
             target = SNR.SetDynamicRange(target, 0.0, dynamicRange); //set event's dynamic range
             double[] v1 = DataTools.Matrix2Array(target);
             v1 = DataTools.normalise2UnitLength(v1);
+
             //var image = BaseSonogram.Data2ImageData(target);
             //ImageTools.DrawMatrix(image, 1, 1, @"C:\SensorNetworks\Output\FELT_Currawong\target.png");
 
@@ -409,15 +506,24 @@ namespace AudioAnalysisTools
                 Log.WriteLine("SEARCHING SEGMENT.");
                 int startRow = (int)Math.Round(av.TimeStart * sonogram.FramesPerSecond);
                 int endRow = (int)Math.Round(av.TimeEnd * sonogram.FramesPerSecond);
-                if (endRow >= sonogram.FrameCount) endRow = sonogram.FrameCount;
+                if (endRow >= sonogram.FrameCount)
+                {
+                    endRow = sonogram.FrameCount;
+                }
+
                 int stopRow = endRow - targetLength;
-                if (stopRow <= startRow) stopRow = startRow + 1;  //want minimum of one row
+                if (stopRow <= startRow)
+                {
+                    stopRow = startRow + 1;  //want minimum of one row
+                }
+
                 int offset = targetLength / 2;
 
                 for (int r = startRow; r < stopRow; r++)
                 {
                     double[,] matrix = DataTools.Submatrix(sonogram.Data, r, minBin, r + targetLength - 1, maxBin);
                     matrix = SNR.SetDynamicRange(matrix, 0.0, dynamicRange); //set event's dynamic range
+
                     //var image = BaseSonogram.Data2ImageData(matrix);
                     //ImageTools.DrawMatrix(image, 1, 1, @"C:\SensorNetworks\Output\FELT_CURLEW\compare.png");
 
@@ -431,13 +537,15 @@ namespace AudioAnalysisTools
             return tuple;
         }//Execute
 
-
-
         public static Tuple<double[]> Execute_SobelEdges(double[,] target, double dynamicRange, SpectrogramStandard sonogram,
                                     List<AcousticEvent> segments, int minHz, int maxHz, double minDuration)
         {
             Log.WriteLine("SEARCHING FOR EVENTS LIKE TARGET.");
-            if (segments == null) return null;
+            if (segments == null)
+            {
+                return null;
+            }
+
             int minBin = (int)(minHz / sonogram.FBinWidth);
             int maxBin = (int)(maxHz / sonogram.FBinWidth);
             int targetLength = target.GetLength(0);
@@ -458,9 +566,16 @@ namespace AudioAnalysisTools
                 Log.WriteLine("SEARCHING SEGMENT.");
                 int startRow = (int)Math.Round(av.TimeStart * sonogram.FramesPerSecond);
                 int endRow = (int)Math.Round(av.TimeEnd * sonogram.FramesPerSecond);
-                if (endRow >= sonogram.FrameCount) endRow = sonogram.FrameCount;
+                if (endRow >= sonogram.FrameCount)
+                {
+                    endRow = sonogram.FrameCount;
+                }
+
                 int stopRow = endRow - targetLength;
-                if (stopRow <= startRow) stopRow = startRow + 1;  //want minimum of one row
+                if (stopRow <= startRow)
+                {
+                    stopRow = startRow + 1;  //want minimum of one row
+                }
 
                 for (int r = startRow; r < stopRow; r++)
                 {
@@ -476,22 +591,29 @@ namespace AudioAnalysisTools
                     v2 = DataTools.normalise2UnitLength(v2);
                     double crossCor = DataTools.DotProduct(v1, v2);
                     scores[r] = crossCor;
+
                     //Log.WriteLine("row={0}\t{1:f10}", r, crossCor);
                 } //end of rows in segment
-                for (int r = stopRow; r < endRow; r++) scores[r] = scores[stopRow - 1]; //fill in end of segment
+
+                for (int r = stopRow; r < endRow; r++)
+                {
+                    scores[r] = scores[stopRow - 1]; //fill in end of segment
+                }
             } //foreach (AcousticEvent av in segments)
 
             var tuple = Tuple.Create(scores);
             return tuple;
         }//Execute
 
-
-
         public static Tuple<double[]> Execute_MFCC_XCOR(double[,] target, double dynamicRange, SpectrogramStandard sonogram,
                                     List<AcousticEvent> segments, int minHz, int maxHz, double minDuration)
         {
             Log.WriteLine("SEARCHING FOR EVENTS LIKE TARGET.");
-            if (segments == null) return null;
+            if (segments == null)
+            {
+                return null;
+            }
+
             int minBin = (int)(minHz / sonogram.FBinWidth);
             int maxBin = (int)(maxHz / sonogram.FBinWidth);
             int targetLength = target.GetLength(0);
@@ -507,11 +629,10 @@ namespace AudioAnalysisTools
             double[] v1 = DataTools.Matrix2Array(target);
             v1 = DataTools.normalise2UnitLength(v1);
 
-            string imagePath2 =  @"C:\SensorNetworks\Output\FELT_Currawong\target.png";
+            string imagePath2 = @"C:\SensorNetworks\Output\FELT_Currawong\target.png";
             var result1 = BaseSonogram.Data2ImageData(target);
-            var image   = result1.Item1;
+            var image = result1.Item1;
             ImageTools.DrawMatrix(image, 1, 1, imagePath2);
-
 
             double[] scores = new double[sonogram.FrameCount];
             foreach (AcousticEvent av in segments)
@@ -519,9 +640,16 @@ namespace AudioAnalysisTools
                 Log.WriteLine("SEARCHING SEGMENT.");
                 int startRow = (int)Math.Round(av.TimeStart * sonogram.FramesPerSecond);
                 int endRow = (int)Math.Round(av.TimeEnd * sonogram.FramesPerSecond);
-                if (endRow >= sonogram.FrameCount) endRow = sonogram.FrameCount - 1;
+                if (endRow >= sonogram.FrameCount)
+                {
+                    endRow = sonogram.FrameCount - 1;
+                }
+
                 endRow -= targetLength;
-                if (endRow <= startRow) endRow = startRow + 1;  //want minimum of one row
+                if (endRow <= startRow)
+                {
+                    endRow = startRow + 1;  //want minimum of one row
+                }
 
                 for (int r = startRow; r < endRow; r++)
                 {
@@ -554,16 +682,22 @@ namespace AudioAnalysisTools
                 var sb = new StringBuilder();
                 for (int c = 0; c < cols; c++)
                 {
-                    if (template[r, c] > 0)  sb.Append('#');
-                    else if (template[r, c] == 0) sb.Append('.');
-                    else sb.Append('-');
+                    if (template[r, c] > 0)
+                    {
+                        sb.Append('#');
+                    }
+                    else if (template[r, c] == 0)
+                    {
+                        sb.Append('.');
+                    }
+                    else
+                    {
+                        sb.Append('-');
+                    }
                 }
+
                 LoggedConsole.WriteLine(sb.ToString());
             }
-
         } // WriteTemplate2Console()
-
-
-
     } //end class FindEvents
 }

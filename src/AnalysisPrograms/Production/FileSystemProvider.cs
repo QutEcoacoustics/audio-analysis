@@ -122,5 +122,4 @@ namespace AnalysisPrograms.Production
             return Path.Combine(directory, FilenameHelpers.AnalysisResultName(baseName, tag, format));
         }
     }
-
 }

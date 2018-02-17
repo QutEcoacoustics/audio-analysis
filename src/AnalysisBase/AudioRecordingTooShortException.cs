@@ -7,8 +7,6 @@
 
     public class AudioRecordingTooShortException : Exception
     {
-        #region Constructors and Destructors
-
         public AudioRecordingTooShortException()
         {
         }
@@ -17,7 +15,5 @@
             : base(message)
         {
         }
-
-        #endregion
     }
 }

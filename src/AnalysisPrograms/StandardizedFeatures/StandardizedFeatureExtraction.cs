@@ -30,7 +30,6 @@ namespace AnalysisPrograms.StandardizedFeatures
 
         public override void BeforeAnalyze(AnalysisSettings analysisSettings)
         {
- 
             base.BeforeAnalyze(analysisSettings);
         }
 
@@ -102,7 +101,7 @@ namespace AnalysisPrograms.StandardizedFeatures
 
                 // get a fresh copy of the ICC config
                 var config = (IndexCalculateConfig)((ICloneable)configuration).Clone();
-                
+
                 // Add values specific for band from custom configuration file to config
                 config.MinBandWidth = band.Bandwidth.Min;
                 config.MaxBandWidth = band.Bandwidth.Max;
@@ -118,7 +117,7 @@ namespace AnalysisPrograms.StandardizedFeatures
                 }
 
                 // Calculate indices for each subsegment and for each band
-                IndexCalculateResult[] subsegmentResults = Acoustic.CalculateIndicesInSubsegments(
+                IndexCalculateResult[] subsegmentResults = AcousticIndices.CalculateIndicesInSubsegments(
                     recording,
                     segmentSettings.SegmentStartOffset,
                     segmentSettings.AnalysisIdealSegmentDuration,
@@ -137,8 +136,8 @@ namespace AnalysisPrograms.StandardizedFeatures
                     indexCalculateResult.SummaryIndexValues.FileName = segmentSettings.Segment.SourceMetadata.Identifier;
                     indexCalculateResult.SpectralIndexValues.FileName = segmentSettings.Segment.SourceMetadata.Identifier;
 
-                    analysisResults.SummaryIndices[bandCount + i * bandsList.Count] = indexCalculateResult.SummaryIndexValues;
-                    analysisResults.SpectralIndices[bandCount + i * bandsList.Count] = indexCalculateResult.SpectralIndexValues;
+                    analysisResults.SummaryIndices[bandCount + (i * bandsList.Count)] = indexCalculateResult.SummaryIndexValues;
+                    analysisResults.SpectralIndices[bandCount + (i * bandsList.Count)] = indexCalculateResult.SpectralIndexValues;
 
                     trackScores.AddRange(indexCalculateResult.TrackScores);
                     if (indexCalculateResult.Tracks != null)
@@ -154,7 +153,6 @@ namespace AnalysisPrograms.StandardizedFeatures
                             amplitudeSpectrogramSegment,
                             amplitudeSpectrogramSubsegment);
                     }
-
                 }
 
                 if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave())

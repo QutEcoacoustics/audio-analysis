@@ -1,4 +1,8 @@
-﻿namespace AnalysisPrograms
+﻿// <copyright file="SnrAnalysis.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
@@ -11,12 +15,12 @@
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Extensions;
     using Acoustics.Tools;
-    using Production;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using McMaster.Extensions.CommandLineUtils;
+    using Production;
     using Production.Arguments;
     using TowseyLibrary;
 
@@ -92,7 +96,7 @@
             //ii: SET SONOGRAM CONFIGURATION
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
             sonoConfig.SourceFName = input.FullName;
-            sonoConfig.WindowSize = configuration.GetIntOrNull(AnalysisKeys.KeyFrameSize) ?? 512; //
+            sonoConfig.WindowSize = configuration.GetIntOrNull(AnalysisKeys.KeyFrameSize) ?? 512;
             sonoConfig.WindowOverlap = configuration.GetDoubleOrNull(AnalysisKeys.FrameOverlap) ?? 0.5;
             sonoConfig.WindowFunction = configuration[AnalysisKeys.KeyWindowFunction];
             sonoConfig.NPointSmoothFFT = configuration.GetIntOrNull(AnalysisKeys.KeyNPointSmoothFft) ?? 256;
@@ -105,6 +109,7 @@
             double latency = configuration.GetDoubleOrNull("K1_K2_LATENCY") ?? 0;
             double vocalGap = configuration.GetDoubleOrNull("VOCAL_GAP") ?? 0;
             double minVocalLength = configuration.GetDoubleOrNull("MIN_VOCAL_DURATION") ?? 0;
+
             //bool DRAW_SONOGRAMS = (bool?)configuration.DrawSonograms ?? true;    //options to draw sonogram
 
             //double intensityThreshold = QutSensors.AudioAnalysis.AED.Default.intensityThreshold;
@@ -145,6 +150,7 @@
                 recording,
                 sonoConfig.WindowSize,
                 sonoConfig.WindowOverlap);
+
             //double[] avAbsolute = dspOutput.Average; //average absolute value over the minute recording
 
             // (C) ################################## GET SIGNAL WAVEFORM ##################################
@@ -177,10 +183,10 @@
             sb.AppendLine("Window Size    =" + sonoConfig.WindowSize);
             sb.AppendLine("Frame Count    =" + frameCount);
             sb.AppendLine("Envelope length=" + signalEnvelope.Length);
-            sb.AppendLine("Frame Duration =" + (frameDuration.TotalMilliseconds).ToString("F3") + " ms");
+            sb.AppendLine("Frame Duration =" + frameDuration.TotalMilliseconds.ToString("F3") + " ms");
             sb.AppendLine("Frame overlap  =" + sonoConfig.WindowOverlap);
             sb.AppendLine("Step Size      =" + stepSize);
-            sb.AppendLine("Step duration  =" + (stepDuration.TotalMilliseconds).ToString("F3") + " ms");
+            sb.AppendLine("Step duration  =" + stepDuration.TotalMilliseconds.ToString("F3") + " ms");
             sb.AppendLine("Frames Per Sec =" + framesPerSecond.ToString("F1"));
 
             sb.AppendLine("\nFREQUENCY PARAMETERS");
@@ -197,6 +203,7 @@
 
             sb.AppendLine("\ndB NOISE SUBTRACTION");
             double noiseRange = 2.0;
+
             //sb.AppendLine("Noise (estimate of mode) =" + sonogram.SnrData.NoiseSubtracted.ToString("F3") + " dB   (See Note 5)");
             //double noiseSpan = sonogram.SnrData.NoiseRange;
             //sb.AppendLine("Noise range              =" + noiseSpan.ToString("F2") + " to +" + (noiseSpan * -1).ToString("F2") + " dB   (See Note 6)");
@@ -212,6 +219,7 @@
             // (F) ################################## DRAW IMAGE 1: original spectorgram
             Log.WriteLine("# Start drawing noise reduced sonograms.");
             TimeSpan X_AxisInterval = TimeSpan.FromSeconds(1);
+
             //int Y_AxisInterval = (int)Math.Round(1000 / dspOutput.FreqBinWidth);
             int nyquist = recording.SampleRate / 2;
             int hzInterval = 1000;
@@ -229,8 +237,10 @@
 
             // (H) ################################## Calculate BRIGGS noise removal from amplitude spectrum
             int percentileBound = 20; // low energy percentile for noise removal
+
             //double binaryThreshold   = 0.6;   //works for higher SNR recordings
             double binaryThreshold = 0.4; //works for lower SNR recordings
+
             //double binaryThreshold = 0.3;   //works for lower SNR recordings
             double[,] m = NoiseRemoval_Briggs.BriggsNoiseFilterAndGetMask(
                 amplitudeSpectrogram,
@@ -245,6 +255,7 @@
                 stepDuration,
                 nyquist, hzInterval,
                 title);
+
             //Image image2 = NoiseRemoval_Briggs.BriggsNoiseFilterAndGetSonograms(amplitudeSpectrogram, upperPercentileBound, binaryThreshold,
             //                                                                          wavDuration, X_AxisInterval, stepDuration, Y_AxisInterval);
 
@@ -327,11 +338,13 @@
             int imageWidth = 284;
             int imageHeight = 60;
             var image2 = new Image_MultiTrack(recording.GetWaveForm(imageWidth, imageHeight));
+
             //path = outputFolder + wavFileName + "_waveform.png";
             image2.Save(path);
 
             double dBMin = -25.0; //-25 dB appear to be good value
             var image6 = new Image_MultiTrack(recording.GetWaveFormInDecibels(imageWidth, imageHeight, dBMin));
+
             //path = outputFolder + wavFileName + "_waveformDB.png"
             image6.Save(path);
         }
@@ -376,6 +389,5 @@
             sb.AppendLine("\n");
             return sb;
         }
-
     } //end class
 }

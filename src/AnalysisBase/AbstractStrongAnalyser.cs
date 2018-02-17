@@ -79,7 +79,7 @@ namespace AnalysisBase
             int unitCount = (int)(units / 1);
 
             // add fractional minute
-            if ((units % 1) > 0.0)
+            if (units % 1 > 0.0)
             {
                 unitCount += 1;
             }

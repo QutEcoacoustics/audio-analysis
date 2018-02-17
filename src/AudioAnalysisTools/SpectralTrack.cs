@@ -17,48 +17,75 @@ namespace AudioAnalysisTools
     public class SpectralTrack
     {
         private int startFrame;
-        public int StartFrame { get {return this.startFrame;} }
+
+        public int StartFrame
+        {
+            get { return this.startFrame; }
+        }
+
         private int endFrame;
-        public int EndFrame { get { return this.endFrame; } }
-        public int Length { get { return (this.endFrame - this.startFrame + 1); } }
-        int bottomBin;
-        int topBin;
+
+        public int EndFrame
+        {
+            get { return this.endFrame; }
+        }
+
+        public int Length
+        {
+            get { return this.endFrame - this.startFrame + 1; }
+        }
+
+        private int bottomBin;
+        private int topBin;
         private double avBin;
-        public double AverageBin { get { return this.avBin; } }
-        List<int> track;
-        int status = 0;  // 0=closed;   1= open and active;
+
+        public double AverageBin
+        {
+            get { return this.avBin; }
+        }
+
+        private List<int> track;
+        private int status = 0;  // 0=closed;   1= open and active;
 
         //public double[] amplitude;
         public double[] periodicity;
         public double[] periodicityScore;
-        public double avPeriodicity { get { // calculate periodicity form midpoint of the array
-            int midPoint = this.periodicity.Length /2;
-            double average = (this.periodicity[midPoint - 2] + this.periodicity[midPoint] + this.periodicity[midPoint+ 2]) / 3;
+
+        public double avPeriodicity
+        {
+            get
+        { // calculate periodicity form midpoint of the array
+            int midPoint = this.periodicity.Length / 2;
+            double average = (this.periodicity[midPoint - 2] + this.periodicity[midPoint] + this.periodicity[midPoint + 2]) / 3;
             return average;
-        } }
-        public double avPeriodicityScore { get { return this.periodicityScore.Average(); } }
+        }
+        }
+
+        public double avPeriodicityScore
+        {
+            get { return this.periodicityScore.Average(); }
+        }
 
         // scale
         public double framesPerSecond;
         public TimeSpan timeOffset; // time from beginning of the current recording where track starts
         public double herzPerBin;
-        public int    herzOffset; // the bottom of the spectrogram may not be 0 Herz. required for accurate determination of track frequency
+        public int herzOffset; // the bottom of the spectrogram may not be 0 Herz. required for accurate determination of track frequency
 
         // PARAMETERS
         public static int herzTolerance = 110; // do not continue an existing track if the next freq peak is > this freq distance from existing track freq
-        public  const int    MAX_FREQ_BOUND        = 6000;  // herz
-        private const double MIN_TRACK_DENSITY     = 0.3;
+        public const int MAX_FREQ_BOUND = 6000;  // herz
+        private const double MIN_TRACK_DENSITY = 0.3;
         public static TimeSpan MIN_TRACK_DURATION = TimeSpan.FromMilliseconds(20);     // milliseconds - this is defulat value - can be over-ridden
         public static TimeSpan MAX_INTRASYLLABLE_GAP = TimeSpan.FromMilliseconds(30);  // milliseconds
-
 
         public SpectralTrack(int _start, int _bin, double _framesPerSecond, double _herzPerBin, int _herzOffset)
         {
             this.startFrame = _start;
-            this.endFrame   = _start;
-            this.bottomBin  = _bin;
-            this.topBin     = _bin;
-            this.avBin      = _bin;
+            this.endFrame = _start;
+            this.bottomBin = _bin;
+            this.topBin = _bin;
+            this.avBin = _bin;
             this.status = 1;
             this.track = new List<int>();
             this.track.Add(_bin);
@@ -69,26 +96,30 @@ namespace AudioAnalysisTools
         public void SetTimeAndFreqScales(double _framesPerSecond, TimeSpan t, double _herzPerBin, int _herzOffset)
         {
             this.framesPerSecond = _framesPerSecond;
-            this.timeOffset      = t;
-            this.herzPerBin      = _herzPerBin;
-            this.herzOffset      = _herzOffset;
+            this.timeOffset = t;
+            this.herzPerBin = _herzPerBin;
+            this.herzOffset = _herzOffset;
         }
 
-        int FrameCountEquivalent(TimeSpan duration)
+        private int FrameCountEquivalent(TimeSpan duration)
         {
             return FrameCountEquivalent(duration, this.framesPerSecond);
         }
 
-        int BinCount(int herz)
+        private int BinCount(int herz)
         {
-            return (int)Math.Round(herz / (double)this.herzPerBin);
+            return (int)Math.Round(herz / this.herzPerBin);
         }
 
         public bool TrackTerminated(int currentFrame, TimeSpan maxGap)
         {
             bool trackTerminated = true;
             int permittedFrameGap = this.FrameCountEquivalent(maxGap);
-            if ((this.endFrame + permittedFrameGap) > currentFrame) trackTerminated = false;
+            if (this.endFrame + permittedFrameGap > currentFrame)
+            {
+                trackTerminated = false;
+            }
+
             return trackTerminated;
         }
 
@@ -104,19 +135,25 @@ namespace AudioAnalysisTools
             return TimeSpan.FromSeconds(seconds);
         }
 
-
         public bool ExtendTrack(int currentFrame, int currentValue, double binTolerance)
         {
-            if ((currentValue > (this.avBin + binTolerance)) || (currentValue < (this.avBin - binTolerance)))  //current position NOT within range of this track
+            if (currentValue > this.avBin + binTolerance || currentValue < this.avBin - binTolerance) //current position NOT within range of this track
             {
                 return false;
             }
 
             //can extend this track
             this.endFrame = currentFrame;
-            if (this.bottomBin > currentValue) this.bottomBin = currentValue;
+            if (this.bottomBin > currentValue)
+            {
+                this.bottomBin = currentValue;
+            }
             else
-            if (this.topBin < currentValue) this.topBin = currentValue;
+            if (this.topBin < currentValue)
+            {
+                this.topBin = currentValue;
+            }
+
             this.track.Add(currentValue);
             double av, sd;
             NormalDist.AverageAndSD(this.track.ToArray(), out av, out sd);
@@ -127,7 +164,7 @@ namespace AudioAnalysisTools
         public void CropTrack(List<double[]> listOfFrequencyBins, double severity)
         {
             int length = listOfFrequencyBins[0].Length; // assume all bins of same length
-            int binID  = (int)this.AverageBin;
+            int binID = (int)this.AverageBin;
 
             double[] subArray = DataTools.Subarray(listOfFrequencyBins[binID], this.StartFrame, this.Length);
             subArray = DataTools.filterMovingAverage(subArray, 3); // smooth to remove aberrant peaks
@@ -166,21 +203,22 @@ namespace AudioAnalysisTools
             {
                 double endSec = startSec + (i * secondsPerTrackFrame);
                 int frame2 = (int)Math.Round(endSec * sonogramFramesPerSecond);
+
                 //int freqBin = (int)Math.Round(this.MinFreq / freqBinWidth);
                 int f1 = this.GetFrequency(i);
                 int f1Bin = (int)Math.Round(f1 / sonogramFreqBinWidth);
                 int y1 = sonogramHeight - f1Bin - 1;
-                int f2 = this.GetFrequency(i+1);
+                int f2 = this.GetFrequency(i + 1);
                 int f2Bin = (int)Math.Round(f2 / sonogramFreqBinWidth);
                 int y2 = sonogramHeight - f2Bin - 1;
                 g.DrawLine(p1, frame1, y1, frame2, y2);
+
                 //startSec = endSec;
                 frame1 = frame2;
             }
+
             //g.DrawString(this.Name, new Font("Tahoma", 8), Brushes.Black, new PointF(t1, y - 1));
         }
-
-
 
         //public void DrawEvent(Graphics g, double framesPerSecond, double freqBinWidth, int sonogramHeight)
         //{
@@ -221,11 +259,9 @@ namespace AudioAnalysisTools
         //    g.DrawString(this.Name, new Font("Tahoma", 8), Brushes.Black, new PointF(t1, y - 1));
         //}
 
-
         //#########################################################################################################################################################
         //######## STATIC METHODS ########################################################################################################################################
         //#########################################################################################################################################################
-
 
         public static int FrameCountEquivalent(TimeSpan duration, double framesPerSecond)
         {
@@ -244,20 +280,24 @@ namespace AudioAnalysisTools
             int rowCount = spectrogram.GetLength(0);
             int colCount = spectrogram.GetLength(1);
             var maxFreqArray = new int[rowCount]; //array (one element per frame) indicating which freq bin has max amplitude.
+
             //var hitsMatrix = new double[rowCount, colCount];
 
             for (int r = 0; r < rowCount; r++)
             {
                 double[] spectrum = DataTools.GetRow(spectrogram, r);
                 spectrum = DataTools.filterMovingAverage(spectrum, 3); // smoothing to remove noise
+
                 //find local freq maxima and store in freqArray & hits matrix.
                 int maxFreqbin = DataTools.GetMaxIndex(spectrum);
                 if (spectrum[maxFreqbin] > threshold) //only record spectral peak if it is above threshold.
                 {
                     maxFreqArray[r] = maxFreqbin;
+
                     //hitsMatrix[r + nh, maxFreqbin] = 1.0;
                 }
             }
+
             return maxFreqArray;
         } // GetSpectralMaxima()
 
@@ -279,10 +319,14 @@ namespace AudioAnalysisTools
             var peaks = DataTools.GetPeakValues(decibelsPerFrame);
 
             var maxFreqArray = new int[rowCount]; //array (one element per frame) indicating which freq bin has max amplitude.
-            var hitsMatrix   = new double[rowCount, colCount];
+            var hitsMatrix = new double[rowCount, colCount];
             for (int r = nhLimit; r < rowCount - nhLimit; r++)
             {
-                if (peaks[r] < threshold) continue;
+                if (peaks[r] < threshold)
+                {
+                    continue;
+                }
+
                 //find local freq maxima and store in freqArray & hits matrix.
                 for (int nh = -nhLimit; nh < nhLimit; nh++)
                 {
@@ -292,14 +336,15 @@ namespace AudioAnalysisTools
                     if (spectrum[maxFreqbin] > threshold) //only record spectral peak if it is above threshold.
                     {
                         maxFreqArray[r + nh] = maxFreqbin;
+
                         //if ((spectrum[maxFreqbin] > dBThreshold) && (sonogram.Data[r, maxFreqbin] >= sonogram.Data[r - 1, maxFreqbin]) && (sonogram.Data[r, maxFreqbin] >= sonogram.Data[r + 1, maxFreqbin]))
                         hitsMatrix[r + nh, maxFreqbin] = 1.0;
                     }
                 }
             }
+
             return Tuple.Create(maxFreqArray, hitsMatrix);
         } // GetSpectralMaxima()
-
 
         /// <summary>
         /// This method is invoked from the class AcousticIndicesCalculate.cs.
@@ -317,6 +362,7 @@ namespace AudioAnalysisTools
         {
             int[] spectralPeakArray = GetSpectralMaxima(spectrogram, threshold);
             var tracks = GetSpectralTracks(spectralPeakArray, framesPerSecond, herzPerBin, herzOffset, minDuration, permittedGap, maxFreq);
+
             // WriteHistogramOftrackLengths(tracks);
             return tracks;
         }
@@ -334,11 +380,18 @@ namespace AudioAnalysisTools
             var tracks = new List<SpectralTrack>();
             for (int r = 0; r < spectralPeakArray.Length - 1; r++)
             {
-                if (spectralPeakArray[r] == 0) continue;  //skip frames with zero value i.e. did not have peak > threshold.
+                if (spectralPeakArray[r] == 0)
+                {
+                    continue;  //skip frames with zero value i.e. did not have peak > threshold.
+                }
+
                 PruneTracks(tracks, r, minDuration, permittedGap, maxFreq);
                 if (!ExtendTrack(tracks, r, spectralPeakArray[r], binTolerance))
+                {
                     tracks.Add(new SpectralTrack(r, spectralPeakArray[r], _framesPerSecond, _herzPerBin, _herzOffset)); // init with frame and bin numbers.
+                }
             }
+
             return tracks;
         }
 
@@ -354,24 +407,32 @@ namespace AudioAnalysisTools
         /// <param name="currentFrame"></param>
         public static void PruneTracks(List<SpectralTrack> tracks, int currentFrame, TimeSpan minDuration, TimeSpan permittedGap, int maxFreq)
         {
-            if ((tracks == null) || (tracks.Count == 0)) return;
+            if (tracks == null || tracks.Count == 0)
+            {
+                return;
+            }
 
             int maxFreqBin = (int)Math.Round(maxFreq / tracks[0].herzPerBin);
 
             for (int i = tracks.Count - 1; i >= 0; i--)
             {
-                if (tracks[i].status == 0) continue;
+                if (tracks[i].status == 0)
+                {
+                    continue;
+                }
 
-                if (tracks[i].TrackTerminated(currentFrame, permittedGap))  //this track has terminated
+                if (tracks[i].TrackTerminated(currentFrame, permittedGap)) //this track has terminated
                 {
                     tracks[i].status = 0; //set track status to closed
+
                     //int minFrameLength = tracks[i].FrameCountEquivalent(minimumDuration);
-                    if ((tracks[i].Duration() < minDuration) || (tracks[i].avBin > maxFreqBin) || (tracks[i].Density() < MIN_TRACK_DENSITY))
+                    if (tracks[i].Duration() < minDuration || tracks[i].avBin > maxFreqBin || tracks[i].Density() < MIN_TRACK_DENSITY)
+                    {
                         tracks.RemoveAt(i);
+                    }
                 }
             }
         } //PruneTracks()
-
 
         /// <summary>
         ///
@@ -382,25 +443,35 @@ namespace AudioAnalysisTools
         /// <returns></returns>
         public static bool ExtendTrack(List<SpectralTrack> tracks, int currentFrame, int currentValue, double binTolerance)
         {
-            if ((tracks == null) || (tracks.Count == 0)) return false;
+            if (tracks == null || tracks.Count == 0)
+            {
+                return false;
+            }
 
             for (int i = tracks.Count - 1; i >= 0; i--)
             {
-                if (tracks[i].status == 0) continue; //already closed
+                if (tracks[i].status == 0)
+                {
+                    continue; //already closed
+                }
+
                 if (tracks[i].ExtendTrack(currentFrame, currentValue, binTolerance)) //extend track if possible and return true when a track has been extended
+                {
                     return true;
+                }
             }
+
             return false; //no track was able to be extended.
         } //ExtendTrack()
-
 
         public static void WriteHistogramOftrackLengths(List<SpectralTrack> tracks)
         {
             var lengths = new int[tracks.Count];
-            for(int i = 0; i < tracks.Count; i++)
+            for (int i = 0; i < tracks.Count; i++)
             {
                 lengths[i] = tracks[i].Length;
             }
+
             Histogram.writeConciseHistogram(lengths);
             int[] histo = Histogram.Histo_FixedWidth(lengths, 1, 0, 20);
             DataTools.writeBarGraph(histo);
@@ -413,9 +484,11 @@ namespace AudioAnalysisTools
             int upperBin = lowerBin + 1;
             upperBin = upperBin >= listOfSpectralBins.Count ? listOfSpectralBins.Count - 1 : upperBin;
             int length = track.Length;
+
             //only sample the middle third of track
             int start = length / 3;
             int end = start + start - 1;
+
             //init score track and periodicity track
             double[] score = new double[start];
             double[] period = new double[start];
@@ -423,43 +496,68 @@ namespace AudioAnalysisTools
             for (int r = start; r < end; r++) // for each position in centre third of track
             {
                 int sampleStart = track.StartFrame - halfSample + r;
-                if (sampleStart < 0) sampleStart = 0;
+                if (sampleStart < 0)
+                {
+                    sampleStart = 0;
+                }
+
                 double[] lowerSubarray = DataTools.Subarray(listOfSpectralBins[lowerBin], sampleStart, xCorrelationLength);
                 double[] upperSubarray = DataTools.Subarray(listOfSpectralBins[upperBin], sampleStart, xCorrelationLength);
 
-                if ((lowerSubarray == null) || (upperSubarray == null)) break; //reached end of array
-                if ((lowerSubarray.Length != xCorrelationLength) || (upperSubarray.Length != xCorrelationLength)) break; //reached end of array
+                if (lowerSubarray == null || upperSubarray == null)
+                {
+                    break; //reached end of array
+                }
+
+                if (lowerSubarray.Length != xCorrelationLength || upperSubarray.Length != xCorrelationLength)
+                {
+                    break; //reached end of array
+                }
+
                 lowerSubarray = DataTools.SubtractMean(lowerSubarray); // zero mean the arrays
                 upperSubarray = DataTools.SubtractMean(upperSubarray);
+
                 //upperSubarray = lowerSubarray;
 
                 var xCorSpectrum = AutoAndCrossCorrelation.CrossCorr(lowerSubarray, upperSubarray); //sub-arrays already normalised
+
                 //DataTools.writeBarGraph(xCorSpectrum);
 
                 //Set the minimum OscilFreq of interest = 8 per second. Therefore max period ~ 125ms;
                 //int 0.125sec = 2 * xCorrelationLength / minInterestingID / framesPerSecond; //
                 double maxPeriod = 0.05; //maximum period of interest
-                int minInterestingID = (int)Math.Round(2 * xCorrelationLength / maxPeriod / framesPerSecond); //
-                for (int s = 0; s <= minInterestingID; s++) xCorSpectrum[s] = 0.0;  //in real data these low freq/long period bins are dominant and hide other frequency content
+                int minInterestingID = (int)Math.Round(2 * xCorrelationLength / maxPeriod / framesPerSecond);
+                for (int s = 0; s <= minInterestingID; s++)
+                {
+                    xCorSpectrum[s] = 0.0;  //in real data these low freq/long period bins are dominant and hide other frequency content
+                }
+
                 int maxIdXcor = DataTools.GetMaxIndex(xCorSpectrum);
-                period[r-start] = 2 * xCorrelationLength / (double)maxIdXcor / framesPerSecond; //convert maxID to period in seconds
+                period[r - start] = 2 * xCorrelationLength / (double)maxIdXcor / framesPerSecond; //convert maxID to period in seconds
                 score[r - start] = xCorSpectrum[maxIdXcor];
             } // for loop
+
             track.periodicityScore = score;
-            track.periodicity      = period;
+            track.periodicity = period;
+
             //if (track.score.Average() < 0.3) track = null;
-
         }
-
 
         public static List<AcousticEvent> ConvertTracks2Events(
             List<SpectralTrack> tracks,
-            TimeSpan segmentStartOffset
-/*, double framesPerSecond, double herzPerBin*/)
+            TimeSpan segmentStartOffset)
+/*, double framesPerSecond, double herzPerBin*/
         {
-            if (tracks == null) return null;
+            if (tracks == null)
+            {
+                return null;
+            }
+
             var list = new List<AcousticEvent>();
-            if (tracks.Count == 0) return list;
+            if (tracks.Count == 0)
+            {
+                return list;
+            }
 
             foreach (SpectralTrack track in tracks)
             {
@@ -473,27 +571,26 @@ namespace AudioAnalysisTools
                 ae.Name = "";
                 ae.BorderColour = Color.Blue;
                 ae.DominantFreq = track.AverageBin * track.herzPerBin;
-                ae.Periodicity  = track.avPeriodicity;
-                ae.Score        = track.avPeriodicityScore;
+                ae.Periodicity = track.avPeriodicity;
+                ae.Score = track.avPeriodicityScore;
                 list.Add(ae);
             }
 
             return list;
         }
-
     } //class SpectralTrack
-
 
     public class TracksInOneFrequencyBin
     {
-        public  TimeSpan minimumTrackDuration = TimeSpan.FromMilliseconds(333); // milliseconds
+        public TimeSpan minimumTrackDuration = TimeSpan.FromMilliseconds(333); // milliseconds
         private TimeSpan binDuration; //duration of the freq bin in seconds
 
         private int binNumber;
+
         public int BinNumber
         {
-            set { this.binNumber = value; }
             get { return this.binNumber; }
+            set { this.binNumber = value; }
         }
 
         private int frameCount;
@@ -501,10 +598,11 @@ namespace AudioAnalysisTools
         private int framesPerHalfSecond;
         private int framesPerQuaterSecond;
         private int trackCount;
+
         public int TrackCount
         {
-            set { this.trackCount = value; }
             get { return this.trackCount; }
+            set { this.trackCount = value; }
         }
 
         public int TracksPerSec
@@ -514,22 +612,24 @@ namespace AudioAnalysisTools
         }
 
         private int totalFrameLength;
+
         public int TotalFrameLength
         {
-            set { this.totalFrameLength = value; }
             get { return this.totalFrameLength; }
+            set { this.totalFrameLength = value; }
         }
+
         public double FractionOfFramesContainingTracks
         {
             get { return this.totalFrameLength / this.frameCount; }
         }
 
         private int totalSecondsContainingTracks;
+
         public double FractionOfSecondsContainingTracks
         {
             get { return this.totalSecondsContainingTracks / this.binDuration.TotalSeconds; }
         }
-
 
         /// <summary>
         /// CONSTRUCTOR
@@ -560,12 +660,25 @@ namespace AudioAnalysisTools
             for (int hs = 0; hs < numberOfSeconds; hs++) // step through in seconds
             {
                 double[] segment = DataTools.Subarray(freqBin, start, framesPerSegment);
-                int peakCount = segment.Count(value => (value > 0.1)); //decibel threshold = 0.1
-                if (peakCount > this.framesPerQuaterSecond) count++;
-                if (peakCount > this.framesPerHalfSecond)   count++; // give extra weight to segments with longer tracks
-                if (peakCount >= framesPerSegment - 3)      count++; // give extra weight to segments with longer tracks
+                int peakCount = segment.Count(value => value > 0.1); //decibel threshold = 0.1
+                if (peakCount > this.framesPerQuaterSecond)
+                {
+                    count++;
+                }
+
+                if (peakCount > this.framesPerHalfSecond)
+                {
+                    count++; // give extra weight to segments with longer tracks
+                }
+
+                if (peakCount >= framesPerSegment - 3)
+                {
+                    count++; // give extra weight to segments with longer tracks
+                }
+
                 start += framesPerSegment;
             }
+
             this.totalSecondsContainingTracks = count;
         }
 
@@ -579,22 +692,26 @@ namespace AudioAnalysisTools
             double threshold = 0.0;
             for (int i = 0; i < freqBin.Length; i++)
             {
-                if ((!inTrack) && (freqBin[i] > threshold)) // start a track
+                if (!inTrack && freqBin[i] > threshold) // start a track
                 {
                     inTrack = true;
                     trackLength = 1;
                 }
                 else
-                    if (inTrack && (freqBin[i] > threshold)) // extend a track
+                    if (inTrack && freqBin[i] > threshold) // extend a track
                     {
                         inTrack = true;
                         trackLength++;
                     }
                     else
-                        if (inTrack && (freqBin[i] <= threshold)) // end a track
+                        if (inTrack && freqBin[i] <= threshold) // end a track
                         {
                             inTrack = false;
-                            if (trackLength > minimumFrameLength) trackLengths.Add(trackLength);
+                            if (trackLength > minimumFrameLength)
+                    {
+                        trackLengths.Add(trackLength);
+                    }
+
                             trackLength = 0;
                         }
             }
@@ -606,12 +723,12 @@ namespace AudioAnalysisTools
         public double CompositeTrackScore()
         {
             double score = this.FractionOfSecondsContainingTracks + this.FractionOfFramesContainingTracks;
-            if (score > 1.0) score = 1.0; // NormaliseMatrixValues
+            if (score > 1.0)
+            {
+                score = 1.0; // NormaliseMatrixValues
+            }
+
             return score;
         }
-
     } // TracksInOneFrequencyBin
-
-
-
 }

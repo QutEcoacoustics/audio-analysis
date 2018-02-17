@@ -204,6 +204,7 @@ namespace AnalysisPrograms
 
             //i: GET RECORDING
             AudioRecording recording = new AudioRecording(input.FullName);
+
             //if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz(); THIS METHOD CALL IS OBSOLETE
             int sr = recording.SampleRate;
 
@@ -229,6 +230,7 @@ namespace AnalysisPrograms
             // iii initialize the sonogram config class.
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
             sonoConfig.SourceFName = recording.BaseName;
+
             //sonoConfig.WindowSize = windowSize;
             sonoConfig.WindowOverlap = frameOverlap;
 
@@ -236,23 +238,28 @@ namespace AnalysisPrograms
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
 
             Log.WriteLine("Frames: Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f2}%, Offset={3:f1}ms, Frames/s={4:f1}",
-                                       sonogram.Configuration.WindowSize, sonogram.FrameCount, (sonogram.FrameDuration * 1000),
-                                      (sonogram.FrameStep * 1000), sonogram.FramesPerSecond, frameOverlap);
+                                       sonogram.Configuration.WindowSize, sonogram.FrameCount, sonogram.FrameDuration * 1000,
+                                       sonogram.FrameStep * 1000, sonogram.FramesPerSecond, frameOverlap);
             int binCount = (int)(maxHz / sonogram.FBinWidth) - (int)(minHz / sonogram.FBinWidth) + 1;
             Log.WriteIfVerbose("Freq band: {0} Hz - {1} Hz. (Freq bin count = {2})", minHz, maxHz, binCount);
 
             // v: extract the subband energy array
             Log.WriteLine("# Start extracting target event.");
             double[] dBArray = SNR.DecibelsInSubband(sonogram.Data, minHz, maxHz, sonogram.FBinWidth);
-            for (int i=0; i<sonogram.FrameCount; i++) dBArray[i] /= binCount; // get average dB energy
+            for (int i = 0; i < sonogram.FrameCount; i++)
+            {
+                dBArray[i] /= binCount; // get average dB energy
+            }
+
             double Q = 0.0;
             double SD = 0.0;
             throw new NotImplementedException("Mike changed the API here, I don't know how to fix it.");
-            dBArray = new []{0.0};// SNR.NoiseSubtractMode(dBArray, out Q, out SD);
+            dBArray = new[] { 0.0 }; // SNR.NoiseSubtractMode(dBArray, out Q, out SD);
             double maxDB = 6.0;
-            double dBThreshold = (2 * SD) / maxDB;  //set dB threshold to 2xSD above background noise
+            double dBThreshold = 2 * SD / maxDB;  //set dB threshold to 2xSD above background noise
             dBArray = SNR.NormaliseDecibelArray_ZeroOne(dBArray, maxDB);
             dBArray = DataTools.filterMovingAverage(dBArray, 7);
+
             //Log.WriteLine("Q ={0}", Q);
             //Log.WriteLine("SD={0}", SD);
             //Log.WriteLine("Th={0}", dBThreshold); //normalised threshhold
@@ -261,15 +268,18 @@ namespace AnalysisPrograms
             // vi: look for oscillation at required OR for ground parrots.
             double[] odScores = Oscillations2010.DetectOscillationsInScoreArray(dBArray, dctDuration, sonogram.FramesPerSecond, dctThreshold,
                                                     normaliseDCT, minOscilFreq, maxOscilFreq);
+
             //odScores = SNR.NoiseSubtractMode(odScores, out Q, out SD);
             double maxOD = 1.0;
             odScores = SNR.NormaliseDecibelArray_ZeroOne(odScores, maxOD);
             odScores = DataTools.filterMovingAverage(odScores, 5);
+
             //odScores = DataTools.NormaliseMatrixValues(odScores); //NormaliseMatrixValues 0 - 1
             //double odThreshold = (10 * SD) / maxOD;   //set od threshold to 2xSD above background noise
             //double odThreshold = dctThreshold;
             double odThreshold = 0.4;
             Log.WriteLine("Max={0}", odScores.Max());
+
             //Log.WriteLine("Q  ={0}", Q);
             //Log.WriteLine("SD ={0}", SD);
             Log.WriteLine("Th ={0}", dctThreshold); //normalised threshhold
@@ -298,12 +308,15 @@ namespace AnalysisPrograms
             int length = sonogram.FrameCount;
             double[] eprScores = new double[length];
             Oblong ob1 = template[0].Oblong; // the first chirp in template
-            Oblong obZ = template[template.Count-1].Oblong; // the last  chirp in template
+            Oblong obZ = template[template.Count - 1].Oblong; // the last  chirp in template
             int templateLength = obZ.RowBottom;
 
             for (int frame = 0; frame < length - templateLength; frame++)
             {
-                if (odScores[frame] < odThreshold) continue;
+                if (odScores[frame] < odThreshold)
+                {
+                    continue;
+                }
 
                 // get best freq band and max score for the first rectangle.
                 double maxScore = -double.MaxValue;
@@ -320,17 +333,21 @@ namespace AnalysisPrograms
                 }
 
                 //if location score exceeds threshold of 6 dB then get remaining scores.
-                if (maxScore < 6.0) continue;
+                if (maxScore < 6.0)
+                {
+                    continue;
+                }
 
-                foreach(AcousticEvent ae in template)
+                foreach (AcousticEvent ae in template)
                 {
                     Oblong ob = new Oblong(ae.Oblong.RowTop + frame, ae.Oblong.ColumnLeft + freqBinOffset, ae.Oblong.RowBottom + frame, ae.Oblong.ColumnRight + freqBinOffset);
                     double score = GetLocationScore(sonogram, ob);
                     eprScores[frame] += score;
                 }
-                eprScores[frame] /= template.Count;
 
+                eprScores[frame] /= template.Count;
             }
+
             return eprScores;
         }
 
@@ -347,19 +364,34 @@ namespace AnalysisPrograms
             {
                 for (int c = ob.ColumnLeft; c < ob.ColumnRight; c++)
                 {
-                    if (sonogram.Data[r, c] > max) max = sonogram.Data[r, c];
+                    if (sonogram.Data[r, c] > max)
+                    {
+                        max = sonogram.Data[r, c];
+                    }
                 }
             }
 
             //calculate average boundary value
             int boundaryLength = 2 * (ob.RowBottom - ob.RowTop + 1 + ob.ColumnRight - ob.ColumnLeft + 1);
             double boundaryValue = 0.0;
-            for (int r = ob.RowTop; r < ob.RowBottom; r++) boundaryValue += (sonogram.Data[r, ob.ColumnLeft] + sonogram.Data[r, ob.ColumnRight]);
-            for (int c = ob.ColumnLeft; c < ob.ColumnRight; c++) boundaryValue += (sonogram.Data[ob.RowTop, c] + sonogram.Data[ob.RowBottom, c]);
+            for (int r = ob.RowTop; r < ob.RowBottom; r++)
+            {
+                boundaryValue += sonogram.Data[r, ob.ColumnLeft] + sonogram.Data[r, ob.ColumnRight];
+            }
+
+            for (int c = ob.ColumnLeft; c < ob.ColumnRight; c++)
+            {
+                boundaryValue += sonogram.Data[ob.RowTop, c] + sonogram.Data[ob.RowBottom, c];
+            }
+
             boundaryValue /= boundaryLength;
 
             double score = max - boundaryValue;
-            if (score < 0.0) score = 0.0;
+            if (score < 0.0)
+            {
+                score = 0.0;
+            }
+
             return score;
         }
     } // end class

@@ -136,7 +136,6 @@ namespace AnalysisPrograms.Recognizers.Base
 
         public static RecognizerResults DoCallRecognition(string name, TimeSpan segmentStartOffset, AudioRecording recording, Lazy<IndexCalculateResult[]> indices, DirectoryInfo outputDirectory, int imageWidth)
         {
-
             Log.Debug("Looking for recognizer and config files for " + name);
 
             // find an appropriate event recognizer
@@ -185,7 +184,7 @@ namespace AnalysisPrograms.Recognizers.Base
             double[] scoreValues = new double[imageWidth];
             for (int i = 0; i < imageWidth; i++)
             {
-                var index = (int)Math.Round((scores.Length / (double)imageWidth) * i);
+                var index = (int)Math.Round(scores.Length / (double)imageWidth * i);
                 scoreValues[i] = scores[index];
             }
 

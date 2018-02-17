@@ -49,8 +49,7 @@ namespace Acoustics.Shared.Csv
                          .Where(
                              a =>
                                  {
-                                     var assemblyCompanyAttribute = (AssemblyCompanyAttribute)
-                                                                    a.GetCustomAttributes(typeof(AssemblyCompanyAttribute), false).FirstOrDefault();
+                                     var assemblyCompanyAttribute = (AssemblyCompanyAttribute)a.GetCustomAttributes(typeof(AssemblyCompanyAttribute), false).FirstOrDefault();
                                      return assemblyCompanyAttribute != null && assemblyCompanyAttribute.Company == "QUT";
                                  })
                          .SelectMany(s => s.GetTypes())
@@ -194,8 +193,6 @@ namespace Acoustics.Shared.Csv
                 throw;
             }
         }
-
-        #region matrix/readers writers
 
         private static void EncodeMatrixInner<T>(this CsvWriter writer, MatrixMapper<T> matrix, bool includeRowIndex)
         {
@@ -393,7 +390,5 @@ namespace Acoustics.Shared.Csv
                 EncodeMatrixInner(writer, transformedMatrix, true);
             }
         }
-
-        #endregion
     }
 }

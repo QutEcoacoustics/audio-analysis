@@ -100,10 +100,10 @@ namespace Acoustics.Test.Tools
         {
             const double Tau = 2 * Math.PI;
 
-            var a = new double[22050].Select((v, i) => Math.Sin((Tau * i * 500) / 22050)).ToArray();
-            var b = new double[22050].Select((v, i) => Math.Sin((Tau * i * 1500) / 22050)).ToArray();
-            var c = new double[22050].Select((v, i) => Math.Sin((Tau * i * 2500) / 22050)).ToArray();
-            var d = new double[22050].Select((v, i) => Math.Sin((Tau * i * 3500) / 22050)).ToArray();
+            var a = new double[22050].Select((v, i) => Math.Sin(Tau * i * 500 / 22050)).ToArray();
+            var b = new double[22050].Select((v, i) => Math.Sin(Tau * i * 1500 / 22050)).ToArray();
+            var c = new double[22050].Select((v, i) => Math.Sin(Tau * i * 2500 / 22050)).ToArray();
+            var d = new double[22050].Select((v, i) => Math.Sin(Tau * i * 3500 / 22050)).ToArray();
 
             var multiplexed = new double[22050 * 4].Select(
                 (v, i) =>
@@ -258,7 +258,7 @@ namespace Acoustics.Test.Tools
                 return Math.Max(Math.Min(value, 1.0), -1.0);
             }
 
-            var b = new double[testSampleCount].Select(v => Clamp((random.NextDouble() * 2.0) - 1.0)).ToArray();
+            var b = new double[testSampleCount].Select(v => Clamp(random.NextDouble() * 2.0 - 1.0)).ToArray();
 
             // now write the file
             var temp = PathHelper.GetTempFile("wav");
@@ -467,7 +467,7 @@ namespace Acoustics.Test.Tools
             Assert.AreEqual(5_837, reader.Time.TotalMilliseconds, 0);
             Assert.AreEqual(5.836984126984126984126984127M, reader.ExactDurationSeconds);
             Assert.AreEqual(
-                (int)((5_837.0 / 1000) * 44100),
+                (int)(5_837.0 / 1000 * 44100),
                 reader.BlockCount,
                 1);
         }
@@ -491,7 +491,7 @@ namespace Acoustics.Test.Tools
             Assert.AreEqual(10, reader.Time.TotalMilliseconds, 0);
             Assert.AreEqual(0.0104166666666666666666666667M, reader.ExactDurationSeconds);
             Assert.AreEqual(
-                (int)((10.416 / 1000) * 48000),
+                (int)(10.416 / 1000 * 48000),
                 reader.BlockCount,
                 1);
         }

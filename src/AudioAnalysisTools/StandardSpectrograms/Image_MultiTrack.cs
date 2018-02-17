@@ -17,9 +17,12 @@ namespace AudioAnalysisTools.StandardSpectrograms
     {
         public Image SonogramImage { get; private set; }
 
-        List<ImageTrack> tracks = new List<ImageTrack>();
+        private List<ImageTrack> tracks = new List<ImageTrack>();
 
-        public IEnumerable<ImageTrack> Tracks { get { return this.tracks; } }
+        public IEnumerable<ImageTrack> Tracks
+        {
+            get { return this.tracks; }
+        }
 
         public IEnumerable<AcousticEvent> eventList { get; set; }
 
@@ -259,11 +262,16 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             for (int x = 0; x < L; x++)
             {
-                if (this.FreqHits[x] <= 0) continue;
+                if (this.FreqHits[x] <= 0)
+                {
+                    continue;
+                }
+
                 int y = (int)(this.SonogramImage.Height * (1 - (this.FreqHits[x] / (double)this.nyquistFreq)));
 
                 //g.DrawRectangle(p1, x, y, x + 1, y + 1);
                 g.DrawLine(p1, x, y, x, y + 1);
+
                 // g.DrawString(e.Name, new Font("Tahoma", 6), Brushes.Black, new PointF(x, y - 1));
             }
         }
@@ -280,6 +288,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             int rows = this.SuperimposedMatrix.GetLength(0);
             int cols = this.SuperimposedMatrix.GetLength(1);
             int imageHt = this.SonogramImage.Height - 1; //subtract 1 because indices start at zero
+
             //ImageTools.DrawMatrix(DataTools.MatrixRotate90Anticlockwise(this.SuperimposedMatrix), @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev1\superimposed1.png", false);
 
             for (int c = 1; c < cols; c++) // traverse columns - skip DC column
@@ -291,7 +300,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
                         continue;
                     }
 
-                    double normScore = this.SuperimposedMatrix[r, c] / (double)this.superImposedMaxScore;
+                    double normScore = this.SuperimposedMatrix[r, c] / this.superImposedMaxScore;
+
                     //int penID = (int)(paletteSize * normScore);
                     //if (penID >= paletteSize) penID = paletteSize - 1;
                     var brush = new SolidBrush(Color.Red);
@@ -309,6 +319,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         public Bitmap OverlayMatrix(Bitmap bmp)
         {
             Bitmap newBmp = (Bitmap)bmp.Clone();
+
             //int paletteSize = 256;
             var pens = ImageTools.GetRedGradientPalette(); //size = 256
 
@@ -326,7 +337,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
                         continue;
                     }
 
-                    double normScore = this.SuperimposedMatrix[r, c] / (double)this.superImposedMaxScore;
+                    double normScore = this.SuperimposedMatrix[r, c] / this.superImposedMaxScore;
+
                     //int penID = (int)(paletteSize * normScore);
                     //if (penID >= paletteSize) penID = paletteSize - 1;
                     //g.DrawLine(pens[penID], r, imageHt - c, r + 1, imageHt - c);
@@ -388,9 +400,17 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 for (int c = 1; c < cols; c++)
                 {
                     double value = this.SuperimposedRainbowTransparency[r, c];
-                    if (value <= 0.0) continue; //nothing to show
+                    if (value <= 0.0)
+                    {
+                        continue; //nothing to show
+                    }
+
                     Color pixel = bmp.GetPixel(r, imageHt - c);
-                    if (pixel.R > 250) continue; //by-pass white
+                    if (pixel.R > 250)
+                    {
+                        continue; //by-pass white
+                    }
+
                     int index = (int)Math.Floor(value * 9); // get index into pallette
                     if (index > 9)
                     {
@@ -412,7 +432,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// superimposes a matrix of scores on top of a sonogram. USES RAINBOW PALLETTE
         /// ASSUME MATRIX consists of integers >=0;
         /// </summary>
-        void OverlayDiscreteColorMatrix(Graphics g, Bitmap bmp)
+        private void OverlayDiscreteColorMatrix(Graphics g, Bitmap bmp)
         {
             int rows = this.SuperimposedDiscreteColorMatrix.GetLength(0);
             int cols = this.SuperimposedDiscreteColorMatrix.GetLength(1);

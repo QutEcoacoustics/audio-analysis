@@ -446,8 +446,8 @@
         {
             return ts1 == ts2
                    ||
-                   ((ts1 <= ts2 + range)
-                    && (ts1 >= ts2 - range));
+                   ts1 <= ts2 + range
+                   && ts1 >= ts2 - range;
         }
 
         public static object GetValue<T>(T obj, string name)
@@ -629,7 +629,7 @@
                     bool anyMatch = false;
                     foreach (var highBin in highBins)
                     {
-                        if ((bin >= highBin - variance) && (bin <= highBin + variance))
+                        if (bin >= highBin - variance && bin <= highBin + variance)
                         {
                             anyMatch = true;
                             break;

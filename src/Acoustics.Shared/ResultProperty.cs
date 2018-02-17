@@ -28,6 +28,7 @@ namespace Acoustics.Shared
             {
                 return this.Info.ToUrlParameterString(true);
             }
+
             set
             {
                 this.Info = value.ParseUrlParameterString();

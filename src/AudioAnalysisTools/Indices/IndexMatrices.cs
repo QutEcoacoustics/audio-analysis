@@ -573,6 +573,7 @@ namespace AudioAnalysisTools.Indices
                 {
                     int freqBinCount;
                     matrix = ReadSpectrogram(file, out freqBinCount, TwoDimensionalArray.Rotate90AntiClockWise);
+
                     //matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
                 }
                 else
@@ -638,7 +639,7 @@ namespace AudioAnalysisTools.Indices
                 }
 
                 // the ENTROPY matrix requires separate calculation
-                if ((key == "ENT") && (scalingFactor > 1))
+                if (key == "ENT" && scalingFactor > 1)
                 {
                     matrix = spectra["SUM"];
                     for (int r = 0; r < rowCount; r++)
@@ -662,7 +663,7 @@ namespace AudioAnalysisTools.Indices
                         }
                     }
                 }
-                else if ((key == "ACI") && (scalingFactor > 1))
+                else if (key == "ACI" && scalingFactor > 1)
                 {
                     // THE ACI matrix requires separate calculation
 

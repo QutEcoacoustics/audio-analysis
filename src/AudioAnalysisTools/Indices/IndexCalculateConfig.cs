@@ -151,7 +151,7 @@ namespace AudioAnalysisTools.Indices
         public int MidFreqBound { get; set; }
 
         /// <summary>
-        /// Frequency scale is Linear or OCtave
+        /// Gets or sets frequency scale is Linear or OCtave
         /// </summary>
         public FreqScaleType FrequencyScale
         {
@@ -211,19 +211,21 @@ namespace AudioAnalysisTools.Indices
 
             var duration = configuration.GetDoubleOrNull(AnalysisKeys.IndexCalculationDuration);
             config.IndexCalculationDurationTimeSpan = (duration ?? DefaultIndexCalculationDurationInSeconds).Seconds();
-            duration = configuration.GetDoubleOrNull(AnalysisKeys.BgNoiseNeighbourhood) ;
+            duration = configuration.GetDoubleOrNull(AnalysisKeys.BgNoiseNeighbourhood);
             config.BgNoiseNeighborhood = duration ?? DefaultBgNoiseNeighborhood;
 
             if (!Enum.TryParse<FreqScaleType>(configuration["FrequencyScale"], true, out var scaleType))
             {
                 scaleType = DefaultFrequencyScaleType;
             }
+
             config.FrequencyScale = scaleType;
 
             if (writeParameters)
             {
                 // print out the sonogram parameters
                 LoggedConsole.WriteLine("\nPARAMETERS");
+
                 //foreach (KeyValuePair<string, string> kvp in configDict)
                 //{
                 //    LoggedConsole.WriteLine("{0}  =  {1}", kvp.Key, kvp.Value);

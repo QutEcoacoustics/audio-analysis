@@ -15,24 +15,23 @@ namespace AnalysisPrograms.Recognizers
     using System.IO;
     using System.Linq;
     using System.Reflection;
-
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-    using Base;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
+    using Base;
     using log4net;
     using TowseyLibrary;
 
     /// <summary>
     /// This is a Blue Catfish recognizer (Ictalurus furcatus)
     /// </summary>
-    class IctalurusFurcatus : RecognizerBase
+    internal class IctalurusFurcatus : RecognizerBase
     {
         public override string Author => "Towsey";
 
@@ -43,9 +42,13 @@ namespace AnalysisPrograms.Recognizers
         internal class CatFishCallData
         {
             public TimeSpan Timehms { get; set; } //(hh:mm:ss)
+
             public double TimeSeconds { get; set; }
+
             public int Sample { get; set; }
+
             public int Rating { get; set; }
+
             public int Waveform { get; set; }
         }
 
@@ -127,9 +130,9 @@ namespace AnalysisPrograms.Recognizers
                 string filterName = "Chebyshev_Lowpass_5000, scale*5";
                 DSP_IIRFilter filter = new DSP_IIRFilter(filterName);
                 int order = filter.order;
+
                 //System.LoggedConsole.WriteLine("\nTest " + filterName + ", order=" + order);
                 filter.ApplyIIRFilter(highPassFilteredSignal, out bandPassFilteredSignal);
-
             }
             else // do not filter because already filtered - using Chris's filtered recording
             {
@@ -174,10 +177,12 @@ namespace AnalysisPrograms.Recognizers
 
                 var filePath = new FileInfo(@"C:\SensorNetworks\WavFiles\Freshwater\GruntSummaryRevisedAndEditedByMichael.csv");
                 List<CatFishCallData> data = Csv.ReadFromCsv<CatFishCallData>(filePath, true).ToList();
+
                 //var catFishCallDatas = data as IList<CatFishCallData> ?? data.ToList();
                 int count = data.Count();
 
                 var subSamplesDirectory = outputDirectory.CreateSubdirectory("testSubsamples_5000LPFilter");
+
                 //for (int t = 0; t < times.Length; t++)
                 foreach (var fishCall in data)
                 {
@@ -209,11 +214,13 @@ namespace AnalysisPrograms.Recognizers
                     double[] scores1 = AnalyseWaveformAtLocation(subsample, amplitudeThreshold, scoreThreshold);
                     string title1 = $"scores={fishCall.Timehms}";
                     Image bmp1 = GraphsAndCharts.DrawGraph(title1, scores1, subsample.Length, 300, 1);
+
                     //bmp1.Save(path1.FullName);
 
                     string title2 = $"tStart={fishCall.Timehms}";
                     Image bmp2 = GraphsAndCharts.DrawWaveform(title2, subsample, 1);
                     var path1 = subSamplesDirectory.CombineFile($"scoresForTestSubsample_{fishCall.TimeSeconds}secs.png");
+
                     //var path2 = subSamplesDirectory.CombineFile($@"testSubsample_{times[t]}secs.wav.png");
                     Image[] imageList = { bmp2, bmp1 };
                     Image bmp3 = ImageTools.CombineImagesVertically(imageList);
@@ -225,10 +232,10 @@ namespace AnalysisPrograms.Recognizers
                     //double[] subsample2 = DataTools.Subarray(bandPassFilteredSignal, location - signalBuffer, 3 * signalBuffer);
                     //FileTools.WriteArray2File(subsample2, path3.FullName);
                 }
-
             }
 
             int signalLength = bandPassFilteredSignal.Length;
+
             // count number of 1000 sample segments
             int blockLength = 1000;
             int blockCount = signalLength / blockLength;
@@ -253,10 +260,10 @@ namespace AnalysisPrograms.Recognizers
 
             // transfer max values to a list
             var indexList = new List<int>();
-            for (int i = 1; i < blockCount-1; i++)
+            for (int i = 1; i < blockCount - 1; i++)
             {
                 // only find the blocks that contain a max value that is > neighbouring blocks
-                if ((maxInBlock[i] > maxInBlock[i - 1]) && (maxInBlock[i] > maxInBlock[i + 1]))
+                if (maxInBlock[i] > maxInBlock[i - 1] && maxInBlock[i] > maxInBlock[i + 1])
                 {
                     indexList.Add(indexOfMax[i]);
                 }
@@ -284,13 +291,21 @@ namespace AnalysisPrograms.Recognizers
                 //System.LoggedConsole.WriteLine("Location " + location + ", id=" + id);
 
                 int start = location - binCount;
-                if (start < 0) continue;
+                if (start < 0)
+                {
+                    continue;
+                }
+
                 int end = location + binCount;
-                if (end >= signalLength) continue;
+                if (end >= signalLength)
+                {
+                    continue;
+                }
 
                 double[] subsampleWav = DataTools.Subarray(bandPassFilteredSignal, start, windowWidth);
 
                 var spectrum = fft.Invoke(subsampleWav);
+
                 // convert to power
                 spectrum = DataTools.SquareValues(spectrum);
                 spectrum = DataTools.filterMovingAverageOdd(spectrum, 3);
@@ -310,14 +325,14 @@ namespace AnalysisPrograms.Recognizers
 
                 if (eventFound)
                 {
-                    for (int i = location-binCount; i < location + binCount; i++)
+                    for (int i = location - binCount; i < location + binCount; i++)
                     {
                         scores[location] = score;
                     }
 
                     var startTime = TimeSpan.FromSeconds((location - binCount) / (double)sr);
-                    string startLabel = startTime.Minutes + "." + startTime.Seconds+ "." + startTime.Milliseconds;
-                    Image image4 = GraphsAndCharts.DrawWaveAndFft(subsampleWav, sr, startTime, spectrum, maxHz*2, scoreArray);
+                    string startLabel = startTime.Minutes + "." + startTime.Seconds + "." + startTime.Milliseconds;
+                    Image image4 = GraphsAndCharts.DrawWaveAndFft(subsampleWav, sr, startTime, spectrum, maxHz * 2, scoreArray);
 
                     var path4 = outputDirectory.CreateSubdirectory("subsamples").CombineFile($@"subsample_{location}_{startLabel}.png");
                     image4.Save(path4.FullName);
@@ -328,11 +343,12 @@ namespace AnalysisPrograms.Recognizers
                     int maxFreq = 1000;
                     var anEvent = new AcousticEvent(segmentStartOffset, startTime.TotalSeconds, duration, minFreq, maxFreq);
                     anEvent.Name = "grunt";
+
                     //anEvent.Name = DataTools.WriteArrayAsCsvLine(subBandSpectrum, "f4");
                     anEvent.Score = score;
                     events.Add(anEvent);
-
                 }
+
                 id++;
             }
 
@@ -359,6 +375,7 @@ namespace AnalysisPrograms.Recognizers
             {
                 Events = events,
                 Hits = null,
+
                 //ScoreTrack = null,
                 Plots = plot.AsList(),
                 Sonogram = sonogram,
@@ -376,6 +393,7 @@ namespace AnalysisPrograms.Recognizers
                 LoggedConsole.WriteErrorLine("WARNING: Location is beyond end of signal.");
                 return null;
             }
+
             int nyquist = sr / 2;
             FFT.WindowFunc wf = FFT.Hamming;
             var fft = new FFT(windowWidth, wf);
@@ -385,6 +403,7 @@ namespace AnalysisPrograms.Recognizers
 
             double[] subsampleWav = DataTools.Subarray(signal, location, windowWidth);
             var spectrum = fft.Invoke(subsampleWav);
+
             // convert to power
             spectrum = DataTools.SquareValues(spectrum);
             spectrum = DataTools.filterMovingAverageOdd(spectrum, 3);
@@ -399,12 +418,14 @@ namespace AnalysisPrograms.Recognizers
 
         public static double[] AnalyseWaveformAtLocation(double[] signal, double amplitudeThreshold, double scoreThreshold)
         {
-            double[] waveTemplate = {-0.000600653,-0.000451427,-0.000193289,-1.91083E-05,0.000133366,0.000256465,0.000387591,0.000533758,0.000645976,0.000670944,
-                 0.000622045, 0.000569337, 0.000553455, 0.000535552,0.000448935,0.000286928,0.000120322,2.26704E-05,-1.67728E-05,-9.42369E-05,
-                -0.000289969,-0.000565902,-0.00079103, -0.000883849,-0.000898074,-0.000932191,-0.000985956,-0.00097387,-0.00093,-0.00088,
-                -0.00088,    -0.00087,   -0.000883903, -0.000831651,-0.000759236,-0.000668421,-0.00052348,-0.000361632,-0.00028245,-0.000292255,
-                -0.00025,    -8.71854E-05, 0.00011,     0.00014,     0.00010031,  0.00013,    0.00016,     0.000240405, 0.000332283,0.000357989,
-                 0.000312231, 0.000222307, 0.000138079, 9.49253E-05, 6.74344E-05, -7.81347E-07, -0.000103014, -0.00014973,
+            double[] waveTemplate =
+            {
+                -0.000600653, -0.000451427, -0.000193289, -1.91083E-05, 0.000133366, 0.000256465, 0.000387591, 0.000533758, 0.000645976, 0.000670944,
+                0.000622045, 0.000569337, 0.000553455, 0.000535552, 0.000448935, 0.000286928, 0.000120322, 2.26704E-05, -1.67728E-05, -9.42369E-05,
+                -0.000289969, -0.000565902, -0.00079103, -0.000883849, -0.000898074, -0.000932191, -0.000985956, -0.00097387, -0.00093, -0.00088,
+                -0.00088,    -0.00087,   -0.000883903, -0.000831651, -0.000759236, -0.000668421, -0.00052348, -0.000361632, -0.00028245, -0.000292255,
+                -0.00025,    -8.71854E-05, 0.00011,     0.00014,     0.00010031,  0.00013,    0.00016,     0.000240405, 0.000332283, 0.000357989,
+                0.000312231, 0.000222307, 0.000138079, 9.49253E-05, 6.74344E-05, -7.81347E-07, -0.000103014, -0.00014973,
             };
             int templateLength = waveTemplate.Length;
 
@@ -412,17 +433,21 @@ namespace AnalysisPrograms.Recognizers
 
             double[] scores = new double[signal.Length];
 
-            for (int i = 2; i < signal.Length- templateLength; i++)
+            for (int i = 2; i < signal.Length - templateLength; i++)
             {
                 // look for a local minimum
-                if ((signal[i] > signal[i - 1]) || (signal[i] > signal[i - 2]) || (signal[i] > signal[i + 1]) || (signal[i] > signal[i + 2]))
+                if (signal[i] > signal[i - 1] || signal[i] > signal[i - 2] || signal[i] > signal[i + 1] || signal[i] > signal[i + 2])
                 {
                     continue;
                 }
+
                 double[] subsampleWav = DataTools.Subarray(signal, i, templateLength);
                 double min, max;
                 DataTools.MinMax(subsampleWav, out min, out max);
-                if ((max - min) < amplitudeThreshold) continue;
+                if (max - min < amplitudeThreshold)
+                {
+                    continue;
+                }
 
                 double[] normalwav = DataTools.normalise2UnitLength(subsampleWav);
 
@@ -432,10 +457,14 @@ namespace AnalysisPrograms.Recognizers
                 {
                     for (int j = 0; j < templateLength; j++)
                     {
-                        if((score > scores[i + j])) scores[i + j] = score;
+                        if (score > scores[i + j])
+                        {
+                            scores[i + j] = score;
+                        }
                     }
                 }
             }
+
             //scores = DataTools.NormaliseMatrixValues(scores);
             //scores = DataTools.filterMovingAverageOdd(scores, 3);
             return scores;
@@ -508,7 +537,10 @@ namespace AnalysisPrograms.Recognizers
             double score1 = AutoAndCrossCorrelation.CorrelationCoefficient(zscores, truePositives1);
             double score2 = AutoAndCrossCorrelation.CorrelationCoefficient(zscores, truePositives2);
             correlationScore = score1;
-            if (score2 > correlationScore) correlationScore = score2;
+            if (score2 > correlationScore)
+            {
+                correlationScore = score2;
+            }
 
             // TEST THREE: sharpness and height of peaks
             // score the four heighest peaks
@@ -525,22 +557,39 @@ namespace AnalysisPrograms.Recognizers
             for (int p = 0; p < 4; p++)
             {
                 int peakLocation = DataTools.GetMaxIndex(spectrumCopy);
-                if (peakLocation < lowerBound) continue; // peak location cannot be too low
-                if (peakLocation > upperBound) continue; // peak location cannot be too high
+                if (peakLocation < lowerBound)
+                {
+                    continue; // peak location cannot be too low
+                }
+
+                if (peakLocation > upperBound)
+                {
+                    continue; // peak location cannot be too high
+                }
 
                 double peakHeight = spectrumCopy[peakLocation];
                 int nh = 3;
-                if (windowWidth == 2048) nh = 6;
-                double peakSides = (subBandSpectrum[peakLocation - nh] + subBandSpectrum[peakLocation + nh]) / (double)2;
-                peaksScore += (peakHeight - peakSides);
+                if (windowWidth == 2048)
+                {
+                    nh = 6;
+                }
+
+                double peakSides = (subBandSpectrum[peakLocation - nh] + subBandSpectrum[peakLocation + nh]) / 2;
+                peaksScore += peakHeight - peakSides;
+
                 //now zero peak and peak neighbourhood
-                if (windowWidth == 2048) nh = 9;
+                if (windowWidth == 2048)
+                {
+                    nh = 9;
+                }
+
                 for (int n = 0; n < nh; n++)
                 {
                     spectrumCopy[peakLocation + n] = 0;
                     spectrumCopy[peakLocation - n] = 0;
                 }
             } // for 4 peaks
+
             // take average of four peaks
             peaksScore /= 4;
 
@@ -554,6 +603,7 @@ namespace AnalysisPrograms.Recognizers
             {
                 nh2 = 3;
             }
+
             int[] actualPeakLocations = new int[6];
             double[] relativePeakHeights = new double[6];
             for (int p = 0; p < 6; p++)
@@ -562,18 +612,28 @@ namespace AnalysisPrograms.Recognizers
                 int maxId = peakLocationCentres[p];
                 for (int id = peakLocationCentres[p] - 4; id < peakLocationCentres[p] + 4; id++)
                 {
-                    if (id < 0) id = 0;
+                    if (id < 0)
+                    {
+                        id = 0;
+                    }
+
                     if (subBandSpectrum[id] > max)
                     {
                         max = subBandSpectrum[id];
                         maxId = id;
                     }
                 }
+
                 actualPeakLocations[p] = maxId;
                 int lowerPosition = maxId - nh2;
-                if (lowerPosition < 0) lowerPosition = 0;
-                relativePeakHeights[p] = subBandSpectrum[maxId] - subBandSpectrum[lowerPosition] - subBandSpectrum[maxId+nh2];
+                if (lowerPosition < 0)
+                {
+                    lowerPosition = 0;
+                }
+
+                relativePeakHeights[p] = subBandSpectrum[maxId] - subBandSpectrum[lowerPosition] - subBandSpectrum[maxId + nh2];
             }
+
             double[] targetHeights = { 0.1, 0.1, 0.5, 0.5, 1.0, 0.6 };
             var zscores1 = NormalDist.Convert2ZScores(relativePeakHeights);
             var zscores2 = NormalDist.Convert2ZScores(targetHeights);
@@ -590,6 +650,5 @@ namespace AnalysisPrograms.Recognizers
             scores[2] = peaksScore;
             return scores;
         }
-
     }
 }

@@ -12,7 +12,6 @@ namespace Acoustics.Shared
     using System.Reflection;
     using System.Text;
 
-
     public class Plugins
     {
         /// <summary>
@@ -33,7 +32,8 @@ namespace Acoustics.Shared
         /// <returns>
         /// Enumerable of plugins.
         /// </returns>
-        public static IEnumerable<T> GetPlugins<T>(string interfaceName, IEnumerable<DirectoryInfo> directories, params string[] searchPatterns) where T : class
+        public static IEnumerable<T> GetPlugins<T>(string interfaceName, IEnumerable<DirectoryInfo> directories, params string[] searchPatterns)
+            where T : class
         {
             var files = searchPatterns.SelectMany(s => directories.SelectMany(d => d.GetFiles(s)));
 
@@ -63,7 +63,8 @@ namespace Acoustics.Shared
         /// <returns>
         /// Enumerable of plugins.
         /// </returns>
-        public static IEnumerable<T> GetPlugins<T>(string interfaceName) where T : class
+        public static IEnumerable<T> GetPlugins<T>(string interfaceName)
+            where T : class
         {
             foreach (Type assemblyType in Assembly.GetExecutingAssembly().GetTypes())
             {

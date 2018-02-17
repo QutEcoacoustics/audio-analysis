@@ -16,7 +16,6 @@ namespace System
 
     public static class EnumerableExtensions
     {
-
         [ContractAnnotation("items:null => true; items:notnull => false")]
         public static bool IsNullOrEmpty<T>(this IEnumerable<T> items)
         {
@@ -136,7 +135,8 @@ namespace System
         public static TBase[] FromTwoDimensionalArray<TBase, T>(
             this Dictionary<string, T[,]> items,
             Dictionary<string, Action<TBase, T[]>> setters,
-            TwoDimensionalArray dimensionality = TwoDimensionalArray.None) where TBase : new()
+            TwoDimensionalArray dimensionality = TwoDimensionalArray.None)
+            where TBase : new()
         {
             // This code is covered by unit tests Acoustics.Test - change the unit tests before you change the class!
             Contract.Requires(items != null);
@@ -271,7 +271,7 @@ namespace System
 
                         for (var ii = 0; ii < windowSize; ii++)
                         {
-                            if (ii < (windowSize - w))
+                            if (ii < windowSize - w)
                             {
                                 lastOutput[ii] = array[(ii + windowSize + w + i) % windowSize];
                             }

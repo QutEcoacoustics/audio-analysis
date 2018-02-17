@@ -24,7 +24,7 @@ namespace AudioAnalysisTools
             int frameCount = spectrogram.GetLength(0);
             int freqBinCount = spectrogram.GetLength(1);
             double[] aciArray = new double[freqBinCount];      // array of acoustic complexity indices, one for each freq bin
-            for (int j = 0; j < freqBinCount; j++)             // for all frequency bins
+            for (int j = 0; j < freqBinCount; j++) // for all frequency bins
             {
                 var deltaI = 0.0;          //  to accumlate sum of differences
                 var sumI = 0.0;
@@ -33,13 +33,17 @@ namespace AudioAnalysisTools
                     sumI += spectrogram[r, j];
                     deltaI += Math.Abs(spectrogram[r, j] - spectrogram[r + 1, j]);
                 }
-                if (sumI > 0.0) aciArray[j] = deltaI / sumI;      //store normalised ACI value
+
+                if (sumI > 0.0)
+                {
+                    aciArray[j] = deltaI / sumI;      //store normalised ACI value
+                }
             }
+
             //DataTools.writeBarGraph(aciArray);
 
             return aciArray;
         } // AcousticComplexityIndex()
-
 
         /// <summary>
         /// Returns an array of DIFFERENCE values used in top line of calculation of ACOUSTIC COMPLEXITY INDICES
@@ -60,17 +64,18 @@ namespace AudioAnalysisTools
             int deltaCount = frameCount - 1;
             int freqBinCount = spectrogram.GetLength(1);
             double[] differenceArray = new double[freqBinCount];  // array of difference values, one for each freq bin
-            for (int j = 0; j < freqBinCount; j++)                // for all frequency bins
+            for (int j = 0; j < freqBinCount; j++) // for all frequency bins
             {
                 double deltaI = 0.0; // to accumlate sum of differences
                 for (int r = 0; r < frameCount - 1; r++)
                 {
                     deltaI += Math.Abs(spectrogram[r, j] - spectrogram[r + 1, j]);
                 }
-                differenceArray[j] = deltaI + (deltaI / (double)deltaCount); //store sum of differences
+
+                differenceArray[j] = deltaI + (deltaI / deltaCount); //store sum of differences
             }
+
             return differenceArray;
         } // SumDifferences()
-
     }
 }

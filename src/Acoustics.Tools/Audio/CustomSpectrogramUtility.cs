@@ -39,7 +39,7 @@ namespace Acoustics.Tools.Audio
 
                 ////return 0.53836 - 0.46164 * Math.Cos(x);
                 // MATLAB code uses these value and says it is better!
-                return 0.54 - (0.46 * Math.Cos(x));
+                return 0.54 - 0.46 * Math.Cos(x);
             };
 
         private readonly IAudioUtility audioUtility;
@@ -238,7 +238,7 @@ namespace Acoustics.Tools.Audio
 
             // get coefficient count
             // f[0]=DC;  f[256]=Nyquist
-            int coeffCount = (windowSize / 2) + 1;
+            int coeffCount = windowSize / 2 + 1;
 
             // get amplitude sonogram.
             double[,] amplitudeSonogram = CalculateAmplitudeSonogram(
@@ -295,7 +295,7 @@ namespace Acoustics.Tools.Audio
         /// </exception>
         private static double[] SubSample(double[] samples, int currentSampleRate, int targetSampleRate)
         {
-            double modifyInterval = (double)currentSampleRate / (double)targetSampleRate;
+            double modifyInterval = currentSampleRate / (double)targetSampleRate;
 
             if (modifyInterval < 1)
             {
@@ -352,7 +352,7 @@ namespace Acoustics.Tools.Audio
         /// </returns>
         private static int[,] FrameStartEnds(int dataLength, int windowSize, double windowOverlap)
         {
-            int step = (int)((double)windowSize * (1.0 - windowOverlap));
+            int step = (int)(windowSize * (1.0 - windowOverlap));
 
             if (step < 1)
             {
@@ -560,7 +560,7 @@ namespace Acoustics.Tools.Audio
             {
                 var real = complex[i].Real;
                 var imag = complex[i].Imaginary;
-                amplitude[i] = Math.Sqrt((real * real) + (imag * imag));
+                amplitude[i] = Math.Sqrt(real * real + imag * imag);
             }
 
             return amplitude;
@@ -678,7 +678,7 @@ namespace Acoustics.Tools.Audio
                 int maxindex; //mode
                 GetMaxIndex(smoothHisto, out maxindex); //this is mode of histogram
                 if (maxindex > binLimit) maxindex = binLimit;
-                modalNoise[col] = minIntensity + (maxindex * binWidth);
+                modalNoise[col] = minIntensity + maxindex * binWidth;
                 //LoggedConsole.WriteLine("  modal index=" + maxindex + "  modalIntensity=" + modalIntensity.ToString("F3"));
             }//end for all cols
             return modalNoise;
@@ -797,8 +797,8 @@ namespace Acoustics.Tools.Audio
             for (int i = 0; i < edge; i++)
             {
                 sum = 0.0;
-                for (int j = 0; j <= (i + edge); j++) { sum += signal[j]; }
-                fs[i] = sum / (double)(i + edge + 1);
+                for (int j = 0; j <= i + edge; j++) { sum += signal[j]; }
+                fs[i] = sum / (i + edge + 1);
             }
 
             for (int i = edge; i < length - edge; i++)
@@ -806,7 +806,7 @@ namespace Acoustics.Tools.Audio
                 sum = 0.0;
                 for (int j = 0; j < width; j++) { sum += signal[i - edge + j]; }
                 //sum = signal[i-1]+signal[i]+signal[i+1];
-                fs[i] = sum / (double)width;
+                fs[i] = sum / width;
             }
 
             // filter trailing edge
@@ -814,7 +814,7 @@ namespace Acoustics.Tools.Audio
             {
                 sum = 0.0;
                 for (int j = i; j < length; j++) { sum += signal[j]; }
-                fs[i] = sum / (double)(length - i);
+                fs[i] = sum / (length - i);
             }
             return fs;
         }
@@ -832,7 +832,7 @@ namespace Acoustics.Tools.Audio
             for (int i = 0; i < length; i++)
             {
                 // clone
-                dbSignal[i] = (double)signal[i];
+                dbSignal[i] = signal[i];
             }
 
             return FilterMovingAverage(dbSignal, width);

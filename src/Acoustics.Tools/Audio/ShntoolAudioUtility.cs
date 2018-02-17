@@ -52,8 +52,6 @@
             this.TemporaryFilesDirectory = temporaryFilesDirectory;
         }
 
-        #region Implementation of IAudioUtility
-
         /// <summary>
         /// Gets the valid source media types.
         /// </summary>
@@ -201,7 +199,7 @@
             var bitrate = result.SampleRate.Value * result.ChannelCount.Value * result.BitsPerSample.Value;
             var exactDuration = TimeSpan.FromSeconds((double)(wavDataSizeBytes * 8) / bitrate);
 
-            if ((exactDuration - result.Duration.Value) > TimeSpan.FromMilliseconds(100))
+            if (exactDuration - result.Duration.Value > TimeSpan.FromMilliseconds(100))
             {
                 this.Log.Warn("Shntool reported a bad duration because it parsed a file as CD quality. Actual duration has been returned");
                 result.Duration = exactDuration;
@@ -249,8 +247,6 @@
                 throw new ArgumentException("Shntool cannot modify the sample rate.", nameof(request));
             }
         }
-
-        #endregion
 
         private static string FormatTimeSpan(TimeSpan value)
         {

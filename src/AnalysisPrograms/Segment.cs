@@ -1,4 +1,8 @@
-﻿namespace AnalysisPrograms
+﻿// <copyright file="Segment.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
@@ -7,11 +11,11 @@
     using System.Text;
     using System.Threading.Tasks;
     using Acoustics.Shared.Extensions;
-    using Production;
     using AudioAnalysisTools;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using McMaster.Extensions.CommandLineUtils;
+    using Production;
     using Production.Arguments;
     using TowseyLibrary;
 
@@ -19,13 +23,13 @@
     {
         //Keys to recognise identifiers in PARAMETERS - INI file.
         //public static string key_FILE_EXT    = "FILE_EXT";
-        public static string key_MIN_HZ        = "MIN_HZ";
-        public static string key_MAX_HZ        = "MAX_HZ";
+        public static string key_MIN_HZ = "MIN_HZ";
+        public static string key_MAX_HZ = "MAX_HZ";
         public static string key_FRAME_OVERLAP = "FRAME_OVERLAP";
         public static string key_SMOOTH_WINDOW = "SMOOTH_WINDOW";
-        public static string key_MIN_DURATION  = "MIN_DURATION";
-        public static string key_MAX_DURATION  = "MAX_DURATION";
-        public static string key_THRESHOLD     = "THRESHOLD";
+        public static string key_MIN_DURATION = "MIN_DURATION";
+        public static string key_MAX_DURATION = "MAX_DURATION";
+        public static string key_THRESHOLD = "THRESHOLD";
         public static string key_DRAW_SONOGRAMS = "DRAW_SONOGRAMS";
 
         public static string eventsFile = "events.txt";
@@ -58,6 +62,7 @@
             //segment "C:\SensorNetworks\WavFiles\Koala_Male\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav"                 C:\SensorNetworks\Output\SEGMENT\SEGMENT_Params.txt events.txt
 
             throw new NotImplementedException();
+
             //return new Arguments();
         }
 
@@ -86,14 +91,14 @@
             Dictionary<string, string> dict = config.GetTable();
             Dictionary<string, string>.KeyCollection keys = dict.Keys;
 
-            int minHz           = int.Parse(dict[key_MIN_HZ]);
-            int maxHz           = int.Parse(dict[key_MAX_HZ]);
+            int minHz = int.Parse(dict[key_MIN_HZ]);
+            int maxHz = int.Parse(dict[key_MAX_HZ]);
             double frameOverlap = double.Parse(dict[key_FRAME_OVERLAP]);
             double smoothWindow = double.Parse(dict[key_SMOOTH_WINDOW]);   //smoothing window (seconds) before segmentation
-            double thresholdSD  = double.Parse(dict[key_THRESHOLD]);       //segmentation threshold in noise SD
-            double minDuration  = double.Parse(dict[key_MIN_DURATION]);    //min duration of segment & width of smoothing window in seconds
-            double maxDuration  = double.Parse(dict[key_MAX_DURATION]);    //max duration of segment in seconds
-            int DRAW_SONOGRAMS  = int.Parse(dict[key_DRAW_SONOGRAMS]);   //options to draw sonogram
+            double thresholdSD = double.Parse(dict[key_THRESHOLD]);       //segmentation threshold in noise SD
+            double minDuration = double.Parse(dict[key_MIN_DURATION]);    //min duration of segment & width of smoothing window in seconds
+            double maxDuration = double.Parse(dict[key_MAX_DURATION]);    //max duration of segment in seconds
+            int DRAW_SONOGRAMS = int.Parse(dict[key_DRAW_SONOGRAMS]);   //options to draw sonogram
 
             Log.WriteIfVerbose("# Freq band: {0} Hz - {1} Hz.)", minHz, maxHz);
             Log.WriteIfVerbose("# Smoothing Window: {0}s.", smoothWindow);
@@ -102,6 +107,7 @@
             //#############################################################################################################################################
             var results = Execute_Segmentation(recordingPath, minHz, maxHz, frameOverlap, smoothWindow, thresholdSD, minDuration, maxDuration);
             Log.WriteLine("# Finished detecting segments.");
+
             //#############################################################################################################################################
 
             var sonogram = results.Item1;
@@ -112,8 +118,8 @@
             var intensity = results.Item6;
             Log.WriteLine("# Signal:  Duration={0}, Sample Rate={1}", sonogram.Duration, sonogram.SampleRate);
             Log.WriteLine("# Frames:  Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f0}%, Offset={3:f1}ms, Frames/s={4:f1}",
-                                       sonogram.Configuration.WindowSize, sonogram.FrameCount, (sonogram.FrameDuration * 1000),
-                                      (sonogram.FrameStep * 1000), sonogram.FramesPerSecond, frameOverlap);
+                                       sonogram.Configuration.WindowSize, sonogram.FrameCount, sonogram.FrameDuration * 1000,
+                                       sonogram.FrameStep * 1000, sonogram.FramesPerSecond, frameOverlap);
             int binCount = (int)(maxHz / sonogram.FBinWidth) - (int)(minHz / sonogram.FBinWidth) + 1;
             Log.WriteLine("# FreqBand: {0} Hz - {1} Hz. (Freq bin count = {2})", minHz, maxHz, binCount);
             Log.WriteLine("# Intensity array - noise removal: Q={0:f1}dB. 1SD={1:f3}dB. Threshold={2:f3}dB.", Q, oneSD_dB, dBThreshold);
@@ -129,6 +135,7 @@
             double sigDuration = sonogram.Duration.TotalSeconds;
             string fname = recordingPath.Name;
             int count = predictedEvents.Count;
+
             //string str = String.Format("#RecordingName\tDuration(sec)\t#Ev\tCompT(ms)\t%hiFrames\n{0}\t{1}\t{2}\t{3}\t{4}\n", fname, sigDuration, count, analysisDuration.TotalMilliseconds, pcHIF);
             //StringBuilder sb = new StringBuilder(str);
             //StringBuilder sb = new StringBuilder();
@@ -147,7 +154,7 @@
                 DrawSonogram(sonogram, imagePath, predictedEvents, threshold_norm, intensity);
             }
             else
-            if ((DRAW_SONOGRAMS == 1) && (predictedEvents.Count > 0))
+            if (DRAW_SONOGRAMS == 1 && predictedEvents.Count > 0)
             {
                 DrawSonogram(sonogram, imagePath, predictedEvents, threshold_norm, intensity);
             }
@@ -181,7 +188,7 @@
 
             //iii: DETECT SEGMENTS
             Log.WriteLine("# Start event detection");
-            var tuple = AcousticEvent.GetSegmentationEvents((SpectrogramStandard)sonogram, TimeSpan.Zero , minHz, maxHz, smoothWindow,
+            var tuple = AcousticEvent.GetSegmentationEvents((SpectrogramStandard)sonogram, TimeSpan.Zero, minHz, maxHz, smoothWindow,
                                                                       thresholdSD, minDuration, maxDuration);
             var tuple2 = Tuple.Create(sonogram, tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5);
             return tuple2;
@@ -190,7 +197,9 @@
         public static void DrawSonogram(BaseSonogram sonogram, string path, List<AcousticEvent> predictedEvents, double eventThreshold, double[] segmentation)
         {
             Log.WriteLine("# Start sono image.");
-            bool doHighlightSubband = false; bool add1kHzLines = true;
+            bool doHighlightSubband = false;
+            bool add1kHzLines = true;
+
             //double maxScore = 50.0; //assumed max posisble oscillations per second
 
             using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))

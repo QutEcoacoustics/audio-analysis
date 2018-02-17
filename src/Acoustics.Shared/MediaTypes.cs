@@ -17,8 +17,6 @@ namespace Acoustics.Shared
     /// </summary>
     public class MediaTypeExtGroup
     {
-        #region Public Properties
-
         /// <summary>
         /// Gets or sets Extension.
         /// </summary>
@@ -33,8 +31,6 @@ namespace Acoustics.Shared
         /// Gets or sets MediaType.
         /// </summary>
         public string MediaType { get; set; }
-
-        #endregion
     }
 
     /// <summary>
@@ -70,7 +66,7 @@ namespace Acoustics.Shared
         /// <summary>
         /// Media type group is text.
         /// </summary>
-        Text = 5
+        Text = 5,
     }
 
     /// <summary>
@@ -84,7 +80,6 @@ namespace Acoustics.Shared
         ////public const string MediaTypeBasic = "audio/basic"; //: mulaw audio at 8 kHz, 1 channel; Defined in RFC 2046
 
         ////public const string MediaTypeL24 = "audio/L24"; //: 24bit Linear PCM audio at 8-48kHz, 1-N channels; Defined in RFC 3190
-        #region Constants and Fields
 
         public const string Ext3gp = "3gp";
         public const string Ext3gp1 = "3gpp";
@@ -429,12 +424,14 @@ namespace Acoustics.Shared
         /// The media type mpg.
         /// </summary>
         public const string MediaTypeMpg = "video/mpeg";
+
                             // : MPEG-1 video with multiplexed audio; Defined in RFC 2045 and RFC 2046
 
         /// <summary>
         /// The media type ogg audio.
         /// </summary>
         public const string MediaTypeOggAudio = "audio/ogg";
+
         // : Ogg Vorbis, Speex, Flac and other audio; Defined in RFC 5334
 
         /// <summary>
@@ -452,6 +449,7 @@ namespace Acoustics.Shared
         /// The media type ogg video.
         /// </summary>
         public const string MediaTypeOggVideo = "video/ogg";
+
                             // : Ogg Theora or other video (with audio); Defined in RFC 5334
 
         /// <summary>
@@ -468,12 +466,14 @@ namespace Acoustics.Shared
         /// The media type pjpeg.
         /// </summary>
         public const string MediaTypePjpeg = "image/pjpeg";
+
                             // : JPEG JFIF image; Associated with Internet Explorer; Listed in ms775147(v=vs.85) - Progressive JPEG, initiated before global browser support for progressive JPEGs (Microsoft and Firefox).
 
         /// <summary>
         /// The media type png.
         /// </summary>
         public const string MediaTypePng = "image/png";
+
                             // : Portable Network Graphics; Registered,[8] Defined in RFC 2083
 
         /// <summary>
@@ -485,12 +485,14 @@ namespace Acoustics.Shared
         /// The media type real.
         /// </summary>
         public const string MediaTypeReal = "audio/vnd.rn-realaudio";
+
                             // : RealAudio; Documented in RealPlayer Customer Support Answer 2559
 
         /// <summary>
         /// The media type svg.
         /// </summary>
         public const string MediaTypeSvg = "image/svg+xml";
+
                             // : SVG vector image; Defined in SVG Tiny 1.2 Specification Appendix M
 
         /// <summary>
@@ -502,6 +504,7 @@ namespace Acoustics.Shared
         /// The media type tiff.
         /// </summary>
         public const string MediaTypeTiff = "image/tiff";
+
                             // : Tag Image File Format (only for Baseline TIFF); Defined in RFC 3302
 
         /// <summary>
@@ -581,11 +584,14 @@ namespace Acoustics.Shared
         private static readonly List<MediaTypeExtGroup> Mapping = new List<MediaTypeExtGroup>
             {
                 new MediaTypeExtGroup { MediaType = MediaTypeMp4Audio, Extension = ExtMp4, Group = MediaTypeGroup.Audio },
+
                 // : MP4 audio
                 new MediaTypeExtGroup { MediaType = MediaTypeMp3, Extension = ExtMp3, Group = MediaTypeGroup.Audio },
+
                 // : MP3 or other MPEG audio; Defined in RFC 3003
                 new MediaTypeExtGroup { MediaType = MediaTypeMp31, Extension = ExtMp3, Group = MediaTypeGroup.Audio },
                 new MediaTypeExtGroup { MediaType = MediaTypeOggAudio, Extension = ExtOgg, Group = MediaTypeGroup.Audio },
+
                 // : Ogg Vorbis, Speex, Flac and other audio; Defined in RFC 5334
                 new MediaTypeExtGroup { MediaType = MediaTypeFlacAudio, Extension = ExtFlac, Group = MediaTypeGroup.Audio },
                 new MediaTypeExtGroup { MediaType = MediaTypeFlacAudio1, Extension = ExtFlac, Group = MediaTypeGroup.Audio },
@@ -594,84 +600,110 @@ namespace Acoustics.Shared
                        MediaType = MediaTypeOggAudio, Extension = ExtOggAudio, Group = MediaTypeGroup.Audio,
                     },
                 new MediaTypeExtGroup { MediaType = MediaTypeVorbis, Extension = ExtOgg, Group = MediaTypeGroup.Audio },
+
                 // : Vorbis encoded audio; Defined in RFC 5215
                 new MediaTypeExtGroup { MediaType = MediaTypeWma, Extension = ExtWma, Group = MediaTypeGroup.Audio },
+
                 // : Windows Media Audio; Documented in Microsoft KB 288102
                 new MediaTypeExtGroup { MediaType = MediaTypeReal, Extension = ExtRa, Group = MediaTypeGroup.Audio },
+
                 // : RealAudio; Documented in RealPlayer Customer Support Answer 2559
                 new MediaTypeExtGroup { MediaType = MediaTypeReal, Extension = ExtRm, Group = MediaTypeGroup.Audio },
+
                 // : RealAudio; Documented in RealPlayer Customer Support Answer 2559
                 new MediaTypeExtGroup { MediaType = MediaTypeWav, Extension = ExtWav, Group = MediaTypeGroup.Audio },
                 new MediaTypeExtGroup { MediaType = MediaTypeWav1, Extension = ExtWav, Group = MediaTypeGroup.Audio },
                 new MediaTypeExtGroup { MediaType = MediaTypeWav2, Extension = ExtWav, Group = MediaTypeGroup.Audio },
+
                 // : WAV audio; Defined in RFC 2361
                 new MediaTypeExtGroup
                     {
-                       MediaType = MediaTypeWebMAudio, Extension = ExtWebm, Group = MediaTypeGroup.Audio
+                       MediaType = MediaTypeWebMAudio, Extension = ExtWebm, Group = MediaTypeGroup.Audio,
                     },
+
                 // : WebM open media format
                 new MediaTypeExtGroup
                     {
-                       MediaType = MediaTypeWebMAudio, Extension = ExtWebmAudio, Group = MediaTypeGroup.Audio
+                       MediaType = MediaTypeWebMAudio, Extension = ExtWebmAudio, Group = MediaTypeGroup.Audio,
                     },
+
                 // : WebM open media format
                 new MediaTypeExtGroup { MediaType = MediaTypeAsf2, Extension = ExtAsf, Group = MediaTypeGroup.Audio },
                 new MediaTypeExtGroup
                     {
-                       MediaType = MediaTypeWavpack, Extension = ExtWavpack, Group = MediaTypeGroup.Audio
+                       MediaType = MediaTypeWavpack, Extension = ExtWavpack, Group = MediaTypeGroup.Audio,
                     },
                 new MediaTypeExtGroup { MediaType = MediaTypePcmRaw, Extension = ExtRaw, Group = MediaTypeGroup.Audio },
                 new MediaTypeExtGroup { MediaType = MediaTypeAsf, Extension = ExtAsf, Group = MediaTypeGroup.Video },
                 new MediaTypeExtGroup { MediaType = MediaTypeAsf1, Extension = ExtAsf, Group = MediaTypeGroup.Video },
                 new MediaTypeExtGroup { MediaType = MediaTypeMpg, Extension = ExtMpg, Group = MediaTypeGroup.Video },
+
                 // : MPEG-1 video with multiplexed audio; Defined in RFC 2045 and RFC 2046
                 new MediaTypeExtGroup { MediaType = MediaTypeMp4Video, Extension = ExtMp4, Group = MediaTypeGroup.Video },
+
                 // : MP4 video; Defined in RFC 4337
                 new MediaTypeExtGroup { MediaType = MediaTypeOggVideo, Extension = ExtOgg, Group = MediaTypeGroup.Video },
+
                 // : Ogg Theora or other video (with audio); Defined in RFC 5334
                 // new MediaTypeExtGroup{ MediaType = MediaTypeQt , Extension = "", Group = MediaTypeGroup.Video}, //: QuickTime video; Registered[10]
                 new MediaTypeExtGroup
                     {
-                       MediaType = MediaTypeWebMVideo, Extension = ExtWebm, Group = MediaTypeGroup.Video
+                       MediaType = MediaTypeWebMVideo, Extension = ExtWebm, Group = MediaTypeGroup.Video,
                     },
+
                 // : WebM open media format
                 new MediaTypeExtGroup { MediaType = MediaTypeWmv, Extension = ExtWmv, Group = MediaTypeGroup.Video },
+
                 // : Windows Media Video; Documented in Microsoft KB 288102
                 new MediaTypeExtGroup { MediaType = MediaTypeGif, Extension = ExtGif, Group = MediaTypeGroup.Image },
+
                 // : GIF image; Defined in RFC 2045 and RFC 2046
                 new MediaTypeExtGroup { MediaType = MediaTypeJpeg, Extension = ExtJpeg, Group = MediaTypeGroup.Image },
+
                 // : JPEG JFIF image; Defined in RFC 2045 and RFC 2046
                 new MediaTypeExtGroup { MediaType = MediaTypeJpeg1, Extension = ExtJpeg, Group = MediaTypeGroup.Image },
                 new MediaTypeExtGroup { MediaType = MediaTypeJpeg, Extension = ExtJpeg1, Group = MediaTypeGroup.Image },
                 new MediaTypeExtGroup { MediaType = MediaTypeJpeg1, Extension = ExtJpeg1, Group = MediaTypeGroup.Image },
                 new MediaTypeExtGroup { MediaType = MediaTypePjpeg, Extension = ExtPjpeg, Group = MediaTypeGroup.Image },
+
                 // : JPEG JFIF image; Associated with Internet Explorer; Listed in ms775147(v=vs.85) - Progressive JPEG, initiated before global browser support for progressive JPEGs (Microsoft and Firefox).
                 new MediaTypeExtGroup { MediaType = MediaTypePng, Extension = ExtPng, Group = MediaTypeGroup.Image },
+
                 // : Portable Network Graphics; Registered,[8] Defined in RFC 2083
                 new MediaTypeExtGroup { MediaType = MediaTypeSvg, Extension = ExtSvg, Group = MediaTypeGroup.Image },
+
                 // : SVG vector image; Defined in SVG Tiny 1.2 Specification Appendix M
                 new MediaTypeExtGroup { MediaType = MediaTypeTiff, Extension = ExtTiff, Group = MediaTypeGroup.Image },
+
                 // : Tag Image File Format (only for Baseline TIFF); Defined in RFC 3302
                 new MediaTypeExtGroup { MediaType = MediaTypeIco, Extension = ExtIco, Group = MediaTypeGroup.Image },
+
                 // : ICO image; Registered[9]
                 new MediaTypeExtGroup { MediaType = MediaTypeCmd, Extension = ExtCmd, Group = MediaTypeGroup.Text },
+
                 // : commands; subtype resident in Gecko browsers like Firefox 3.5
                 new MediaTypeExtGroup { MediaType = MediaTypeCmd, Extension = ExtCmd1, Group = MediaTypeGroup.Text },
                 new MediaTypeExtGroup { MediaType = MediaTypeCss, Extension = ExtCss, Group = MediaTypeGroup.Text },
+
                 // : Cascading Style Sheets; Defined in RFC 2318
                 new MediaTypeExtGroup { MediaType = MediaTypeCsv, Extension = ExtCsv, Group = MediaTypeGroup.Text },
+
                 // : Comma-separated values; Defined in RFC 4180
                 new MediaTypeExtGroup { MediaType = MediaTypeHtml, Extension = ExtHtml, Group = MediaTypeGroup.Text },
+
                 // : HTML; Defined in RFC 2854
                 new MediaTypeExtGroup { MediaType = MediaTypeHtml, Extension = ExtHtml1, Group = MediaTypeGroup.Text },
                 new MediaTypeExtGroup
                     {
-                       MediaType = MediaTypeTextPlain, Extension = ExtTextPlain, Group = MediaTypeGroup.Text
+                       MediaType = MediaTypeTextPlain, Extension = ExtTextPlain, Group = MediaTypeGroup.Text,
                     },
+
                 // : Textual data; Defined in RFC 2046 and RFC 3676
                 new MediaTypeExtGroup { MediaType = MediaTypeVcard, Extension = ExtVcard, Group = MediaTypeGroup.Text },
+
                 // : vCard (contact information); Defined in RFC 6350
                 new MediaTypeExtGroup { MediaType = MediaTypeXmlText, Extension = ExtXml, Group = MediaTypeGroup.Text },
+
                 // : Extensible Markup Language; Defined in RFC 3023
                 new MediaTypeExtGroup { MediaType = MediaTypeJson, Extension = ExtJson, Group = MediaTypeGroup.Text },
                 new MediaTypeExtGroup { MediaType = MediaTypeJson1, Extension = ExtJson, Group = MediaTypeGroup.Text },
@@ -679,10 +711,6 @@ namespace Acoustics.Shared
                 new MediaTypeExtGroup { MediaType = MediaTypeJson3, Extension = ExtJson, Group = MediaTypeGroup.Text },
                 new MediaTypeExtGroup { MediaType = MediaTypeJson4, Extension = ExtJson, Group = MediaTypeGroup.Text },
             };
-
-        #endregion
-
-        #region Public Methods and Operators
 
         /// <summary>
         /// Reduce extension string to the simplest and most significant form possible without loss of generality.
@@ -824,6 +852,7 @@ namespace Acoustics.Shared
                      case ExtBmp:
                      format = ImageFormat.Bmp;
                      break;
+
                     // case MediaTypes.ExtEmf:
                     // format = ImageFormat.Emf;
                     // break;
@@ -832,30 +861,30 @@ namespace Acoustics.Shared
                     // break;
                      case ExtGif:
                      format = ImageFormat.Gif;
-                    break;
-                case ExtIco:
-                    format = ImageFormat.Icon;
-                    break;
-                case ExtJpeg:
-                    format = ImageFormat.Jpeg;
-                    break;
+                     break;
+                     case ExtIco:
+                     format = ImageFormat.Icon;
+                     break;
+                     case ExtJpeg:
+                     format = ImageFormat.Jpeg;
+                     break;
 
                     // case MediaTypes.ExtBmp:
                     // format = ImageFormat.MemoryBmp;
                     // break;
-                case ExtPng:
-                    format = ImageFormat.Png;
-                    break;
-                case ExtTiff:
-                    format = ImageFormat.Tiff;
-                    break;
+                     case ExtPng:
+                     format = ImageFormat.Png;
+                     break;
+                     case ExtTiff:
+                     format = ImageFormat.Tiff;
+                     break;
 
                     // case MediaTypes.ExtWmf:
                     // format = ImageFormat.Wmf;
                     // break;
-                default:
-                    format = ImageFormat.Jpeg;
-                    break;
+                     default:
+                     format = ImageFormat.Jpeg;
+                     break;
             }
 
             return format;
@@ -976,8 +1005,6 @@ namespace Acoustics.Shared
             var ext = GetExtension(mediaType, mediaTypeGroup);
             return ext != ExtUnknown;
         }
-
-        #endregion
     }
 
     /// <summary>
@@ -985,8 +1012,6 @@ namespace Acoustics.Shared
     /// </summary>
     public static class FileTypeHelper
     {
-        #region Public Methods and Operators
-
         /// <summary>
         /// The get content type.
         /// </summary>
@@ -1321,7 +1346,5 @@ namespace Acoustics.Shared
                     return string.Format("application/{0}", extension);
             }
         }
-
-        #endregion
     }
 }

@@ -100,6 +100,7 @@ namespace AnalysisPrograms
             double frameDuration = windowSize / (double)sr; // Duration of full frame or window in seconds
             double frameOffset = frameDuration * (1 - windowOverlap); //seconds between starts of consecutive frames
             double framesPerSecond = 1 / frameOffset;
+
             //double framesPerSecond = sr / (double)windowSize;
             //int frameOffset = (int)(windowSize * (1 - overlap));
             //int frameCount = (length - windowSize + frameOffset) / frameOffset;
@@ -112,6 +113,7 @@ namespace AnalysisPrograms
                 windowSize,
                 windowOverlap);
             double[] avAbsolute = results2.Average; //average absolute value over the minute recording
+
             //double[] envelope = results2.Item2;
             double[,]
                 matrix = results2

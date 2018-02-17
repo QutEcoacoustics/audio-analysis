@@ -36,7 +36,7 @@ namespace TowseyLibrary
 
             int grid1 = imageWidth / 4;
             int grid2 = imageWidth / 2;
-            int grid3 = (imageWidth * 3) / 4;
+            int grid3 = imageWidth * 3 / 4;
 
             Bitmap bmp = new Bitmap(imageWidth, height, PixelFormat.Format24bppRgb);
             Graphics g = Graphics.FromImage(bmp);
@@ -61,11 +61,11 @@ namespace TowseyLibrary
                     string str;
                     if (statKeys[s] == "count")
                     {
-                        str = $"{statKeys[s]}={statistics[statKeys[s]] :f0}";
+                        str = $"{statKeys[s]}={statistics[statKeys[s]]:f0}";
                     }
                     else
                     {
-                        str = $"{statKeys[s]}={statistics[statKeys[s]] :f3}";
+                        str = $"{statKeys[s]}={statistics[statKeys[s]]:f3}";
                     }
 
                     g.DrawString(str, stringFont, Brushes.Wheat, new PointF(grid2, y));
@@ -133,7 +133,7 @@ namespace TowseyLibrary
             int yzero = height / 2;
             int grid1 = imageWidth / 4;
             int grid2 = imageWidth / 2;
-            int grid3 = (imageWidth * 3) / 4;
+            int grid3 = imageWidth * 3 / 4;
 
             Bitmap bmp1 = new Bitmap(imageWidth, height, PixelFormat.Format24bppRgb);
             Graphics g1 = Graphics.FromImage(bmp1);
@@ -314,7 +314,7 @@ namespace TowseyLibrary
             string title1 = $"Bandpass filtered: tStart={startTime.ToString()},  tEnd={endTime.ToString()}";
             var image4A = DrawWaveform(title1, signal, signal.Length, imageHeight, scalingFactor);
 
-            string title2 = $"FFT 1->{maxHz}Hz.,    hz/bin={hzPerBin:f1},    score={scores[0] :f3}={scores[1] :f3}+{scores[2] :f3}";
+            string title2 = $"FFT 1->{maxHz}Hz.,    hz/bin={hzPerBin:f1},    score={scores[0]:f3}={scores[1]:f3}+{scores[2]:f3}";
             var image4B = DrawGraph(title2, subBandSpectrum, signal.Length, imageHeight, 1);
 
             var imageList = new List<Image> { image4A, image4B };
@@ -328,7 +328,7 @@ namespace TowseyLibrary
             int barWidth = signal.Length / subBandSpectrum.Length;
             for (int i = 1; i < subBandSpectrum.Length - 1; i++)
             {
-                if ((subBandSpectrum[i] > subBandSpectrum[i - 1]) && (subBandSpectrum[i] > subBandSpectrum[i + 1]))
+                if (subBandSpectrum[i] > subBandSpectrum[i - 1] && subBandSpectrum[i] > subBandSpectrum[i + 1])
                 {
                     string label = $"{i + 1},";
                     g2.DrawString(label, stringFont, Brushes.Wheat, new PointF((i * barWidth) - 3, 3));

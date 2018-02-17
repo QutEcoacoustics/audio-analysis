@@ -15,7 +15,6 @@ namespace AnalysisPrograms.Recognizers
     using System.Reflection;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
-
     using AnalysisBase;
     using AnalysisBase.ResultBases;
     using AudioAnalysisTools;
@@ -23,8 +22,8 @@ namespace AnalysisPrograms.Recognizers
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-    using log4net;
     using Base;
+    using log4net;
     using TowseyLibrary;
 
     /// <summary>
@@ -39,7 +38,7 @@ namespace AnalysisPrograms.Recognizers
     /// To call this recognizer, the first command line argument must be "EventRecognizer".
     /// Alternatively, this recognizer can be called via the MultiRecognizer.
     /// </summary>
-    class LitoriaNasuta : RecognizerBase
+    internal class LitoriaNasuta : RecognizerBase
     {
         public override string Author => "Towsey";
 
@@ -93,6 +92,7 @@ namespace AnalysisPrograms.Recognizers
                 SourceFName = recording.BaseName,
                 WindowSize = frameSize,
                 WindowOverlap = windowOverlap,
+
                 // use the default HAMMING window
                 //WindowFunction = WindowFunctions.HANNING.ToString(),
                 //WindowFunction = WindowFunctions.NONE.ToString(),
@@ -121,7 +121,7 @@ namespace AnalysisPrograms.Recognizers
             int rowCount = sonogram.Data.GetLength(0);
 
             // get the freq band as set by min and max Herz
-            var frogBand = MatrixTools.Submatrix(sonogram.Data, 0, minBin, (rowCount - 1), maxBin);
+            var frogBand = MatrixTools.Submatrix(sonogram.Data, 0, minBin, rowCount - 1, maxBin);
 
             // Now look for spectral maxima. For L.caerulea, the max should lie around 1100Hz +/-150 Hz.
             // Skip over spectra where maximum is not in correct location.
@@ -144,16 +144,30 @@ namespace AnalysisPrograms.Recognizers
                 var spectrum = MatrixTools.GetRow(frogBand, x);
                 int maxIndex1 = DataTools.GetMaxIndex(spectrum);
                 double maxValueInTopSubband = spectrum[maxIndex1];
-                if (maxValueInTopSubband < decibelThreshold) continue;
+                if (maxValueInTopSubband < decibelThreshold)
+                {
+                    continue;
+                }
+
                 // if max value not in correct sub-band then go to next spectrum
-                if ((maxIndex1 > binAtTopOfTopBand) && (maxIndex1 < binAtBotOfTopBand)) continue;
+                if (maxIndex1 > binAtTopOfTopBand && maxIndex1 < binAtBotOfTopBand)
+                {
+                    continue;
+                }
 
                 // minimise values in top sub-band so can find maximum in bottom sub-band
-                for (int y = binAtBotOfTopBand; y < binAtTopOfTopBand; y++) spectrum[y] = 0.0;
+                for (int y = binAtBotOfTopBand; y < binAtTopOfTopBand; y++)
+                {
+                    spectrum[y] = 0.0;
+                }
+
                 int maxIndex2 = DataTools.GetMaxIndex(spectrum);
+
                 // if max value properly placed in top and bottom sub-bands then assign maxValue to croakScore array
-                if ((maxIndex2 < binAtTopOfBotBand) && (maxIndex2 > binAtBotOfTopBand))
+                if (maxIndex2 < binAtTopOfBotBand && maxIndex2 > binAtBotOfTopBand)
+                {
                     croakScoreArray[x] = maxValueInTopSubband;
+                }
             }
 
             // Perpare a normalised plot for later display with spectrogram
@@ -245,6 +259,7 @@ namespace AnalysisPrograms.Recognizers
                 var amplPlot = new Plot("Band amplitude", normalisedScores, normalisedThreshold);
 
                 var debugPlots = new List<Plot> { scoresPlot, /*croakPlot2,*/ croakPlot1, amplPlot };
+
                 // NOTE: This DrawDebugImage() method can be over-written in this class.
                 var debugImage = DrawDebugImage(sonogram, prunedEvents, debugPlots, hits);
                 var debugPath = FilenameHelpers.AnalysisResultPath(outputDirectory, recording.BaseName, this.SpeciesName, "png", "DebugSpectrogram");
@@ -257,6 +272,7 @@ namespace AnalysisPrograms.Recognizers
                 Hits = hits,
                 Plots = scoresPlot.AsList(),
                 Events = prunedEvents,
+
                 //Events = events
             };
         }
@@ -265,22 +281,35 @@ namespace AnalysisPrograms.Recognizers
     internal class LitoriaNasutaConfig
     {
         public string AnalysisName { get; set; }
+
         public string SpeciesName { get; set; }
+
         public string AbbreviatedSpeciesName { get; set; }
 
         public int DominantFreq { get; set; }
+
         public int SubdominantFreq { get; set; }
+
         public int MinHz { get; set; }
+
         public int MaxHz { get; set; }
+
         public double DctDuration { get; set; }
+
         public double DctThreshold { get; set; }
 
         public double MinCroakDuration { get; set; }
+
         public double MaxCroakDuration { get; set; }
+
         public double MinPeriod { get; set; }
+
         public double MaxPeriod { get; set; }
+
         public double MinDuration { get; set; }
+
         public double MaxDuration { get; set; }
+
         public double EventThreshold { get; set; }
 
         internal void ReadConfigFile(Config configuration)
@@ -289,6 +318,7 @@ namespace AnalysisPrograms.Recognizers
             this.AnalysisName = configuration[AnalysisKeys.AnalysisName] ?? "<no name>";
             this.SpeciesName = configuration[AnalysisKeys.SpeciesName] ?? "<no name>";
             this.AbbreviatedSpeciesName = configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+
             // frequency band of the call
             this.MinHz = configuration.GetInt(AnalysisKeys.MinHz);
             this.MaxHz = configuration.GetInt(AnalysisKeys.MaxHz);
@@ -297,6 +327,7 @@ namespace AnalysisPrograms.Recognizers
 
             // duration of DCT in seconds
             this.DctDuration = configuration.GetDouble(AnalysisKeys.DctDuration);
+
             // minimum acceptable value of a DCT coefficient
             this.DctThreshold = configuration.GetDouble(AnalysisKeys.DctThreshold);
 
@@ -306,6 +337,7 @@ namespace AnalysisPrograms.Recognizers
             // min and max duration of a sequence of croaks or a croak train
             this.MinDuration = configuration.GetDouble(AnalysisKeys.MinDuration);
             this.MaxDuration = configuration.GetDouble(AnalysisKeys.MaxDuration);
+
             // min and max duration of a single croak event in seconds
             this.MinCroakDuration = configuration.GetDouble("MinCroakDuration");
             this.MaxCroakDuration = configuration.GetDouble("MaxCroakDuration");
@@ -313,6 +345,5 @@ namespace AnalysisPrograms.Recognizers
             // min score for an acceptable event
             this.EventThreshold = configuration.GetDouble(AnalysisKeys.EventThreshold);
         }
-
     } // Config class
 }

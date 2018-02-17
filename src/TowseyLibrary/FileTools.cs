@@ -1,3 +1,7 @@
+// <copyright file="FileTools.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
 namespace TowseyLibrary
 {
     using System;
@@ -12,7 +16,7 @@ namespace TowseyLibrary
     {
         private static string testDir = @"D:\SensorNetworks\Software\TowseyLib\TestResources\";
 
-        static void Main()
+        private static void Main()
         {
             throw new NotSupportedException("THIS WILL FAIL IN PRODUCTION");
             Log.WriteLine("TESTING METHODS IN CLASS FileTools\n\n");
@@ -23,7 +27,9 @@ namespace TowseyLibrary
                 string fName = testDir + "testTextFile.txt";
                 var array = ReadTextFile(fName);
                 foreach (string line in array)
+                {
                     LoggedConsole.WriteLine(line);
+                }
             }//end test ReadTextFile(string fName)
 
             bool doit2 = false;
@@ -44,8 +50,9 @@ namespace TowseyLibrary
             {
                 string fName = testDir + "testOfReadingMatrixFile.txt";
                 double[,] matrix = ReadDoubles2Matrix(fName);
-                int rowCount = matrix.GetLength(0);//height
-                int colCount = matrix.GetLength(1);//width
+                int rowCount = matrix.GetLength(0); //height
+                int colCount = matrix.GetLength(1); //width
+
                 //LoggedConsole.WriteLine("rowCount=" + rowCount + "  colCount=" + colCount);
                 DataTools.writeMatrix(matrix);
             }//end test ReadDoubles2Matrix(string fName)
@@ -54,9 +61,17 @@ namespace TowseyLibrary
             if (doit4) //test Method(parameters)
             {
                 string fName = testDir + "testWriteOfMatrix2File.txt";
-                double[,] matrix = { {0.1,0.2,0.3,0.4,0.5,0.6},
-                    {0.5,0.6,0.7,0.8,0.9,1.0},
-                    {0.9,1.0,1.1,1.2,1.3,1.4},
+                double[,] matrix =
+                {
+                {
+                    0.1, 0.2, 0.3, 0.4, 0.5, 0.6,
+                },
+                {
+                        0.5, 0.6, 0.7, 0.8, 0.9, 1.0,
+                    },
+                {
+                        0.9, 1.0, 1.1, 1.2, 1.3, 1.4,
+                    },
                 };
                 WriteMatrix2File(matrix, fName);
                 LoggedConsole.WriteLine("Wrote following matrix to file " + fName);
@@ -73,14 +88,11 @@ namespace TowseyLibrary
             Log.WriteLine("CLOSE CONSOLE"); //end
         } //end MAIN
 
-
-
         public static string TimeStamp2FileName(DateTime datetime)
         {
             string name = string.Format("{0}{1:D2}{2:D2}_{3:D2}{4:D2}", datetime.Year, datetime.Month, datetime.Day, datetime.Hour, datetime.Minute);
             return name;
         }
-
 
         public static bool BackupFile(string path)
         {
@@ -94,7 +106,10 @@ namespace TowseyLibrary
                 Log.WriteLine("FILE COPIED TO:- " + newPath);
                 return true;
             }
-            catch { return false; }
+            catch
+            {
+                return false;
+            }
         }
 
         public static FileInfo[] GetFilesInDirectory(string dirPath)
@@ -122,6 +137,7 @@ namespace TowseyLibrary
             split[0] = dir + @"\";
             split[1] = stem.Substring(0, nameLength);
             split[2] = ext;
+
             //LoggedConsole.WriteLine("SPLIT FILE NAME = " + dir + "   " + split[1] + "    " + ext);
             return split;
         }
@@ -130,17 +146,16 @@ namespace TowseyLibrary
         {
             string[] split = SplitFileName(path);
             string newName = split[0] + split[1] + newExt;
+
             //LoggedConsole.WriteLine("NEW NAME = " + newName);
             return newName;
         }
 
-
-
         public static string AppendToFileName(string ipPath, string appendix)
         {
-            string dir   = Path.GetDirectoryName(ipPath);
-            string fn    = Path.GetFileNameWithoutExtension(ipPath);
-            string fext  = Path.GetExtension(ipPath);
+            string dir = Path.GetDirectoryName(ipPath);
+            string fn = Path.GetFileNameWithoutExtension(ipPath);
+            string fext = Path.GetExtension(ipPath);
             string opPath = dir + @"\" + fn + appendix + fext;
             return opPath;
         }
@@ -159,8 +174,6 @@ namespace TowseyLibrary
             return lineCount;
         }
 
-
-
         public static List<string> ReadTextFile(string fName)
         {
             var lines = new List<string>();
@@ -173,9 +186,9 @@ namespace TowseyLibrary
                     lines.Add(line);
                 }//end while
             }//end using
+
             return lines;
         }// end ReadtextFile()
-
 
         public static List<string> ReadSelectedLinesOfCsvFile(string fName, string key, int value)
         {
@@ -214,9 +227,9 @@ namespace TowseyLibrary
                     }
                 }//end while
             }//end using
+
             return lines;
         }// end ReadtextFile()
-
 
         public static byte[] ReadSerialisedObject(string path)
         {
@@ -225,7 +238,6 @@ namespace TowseyLibrary
             long numBytes = new FileInfo(path).Length;
             return br.ReadBytes((int)numBytes);
         }// end ReadSerialisedObject()
-
 
         public static void WriteSerialisedObject(string path, byte[] array)
         {
@@ -268,8 +280,6 @@ namespace TowseyLibrary
             File.WriteAllLines(path.FullName, array);
         }
 
-
-
         //public static void WriteTextFile(string path, string line)
         //{
         //    if (File.Exists(path)) File.Copy(path, path + "OLD.txt", true); //overwrite
@@ -279,10 +289,13 @@ namespace TowseyLibrary
         //    }//end using
         //}// end WriteTextFile()
 
-
         public static void WriteTextFile(string path, string text)
         {
-            if (File.Exists(path)) File.Copy(path, path + "OLD.txt", true); //overwrite
+            if (File.Exists(path))
+            {
+                File.Copy(path, path + "OLD.txt", true); //overwrite
+            }
+
             StreamWriter wltWriter = null;
             try
             {
@@ -292,7 +305,7 @@ namespace TowseyLibrary
             catch (Exception e)
             {
                 LoggedConsole.WriteLine(e);
-                throw (e);
+                throw e;
             }
             finally
             {
@@ -301,7 +314,6 @@ namespace TowseyLibrary
                     wltWriter.Flush();
                     wltWriter.Close();
                 }
-
             }// end finally
         }
 
@@ -325,7 +337,6 @@ namespace TowseyLibrary
             WriteTextFile(fPath, oldList);
         }// end Append2TextFile()
 
-
         /// <summary>
         /// THis method adds another column to an existing .csv file containing columns of data.
         /// It assumes that the number of elements in the list are same as rows in the existing file
@@ -344,6 +355,7 @@ namespace TowseyLibrary
                 {
                     newList.Add(string.Format("{0}", array[i]));
                 }
+
                 WriteTextFile(fPath, newList);
                 return;
             }
@@ -369,7 +381,8 @@ namespace TowseyLibrary
             double[] V = new double[count];
             for (int i = 0; i < count; i++)
             {
-                double value = double.Parse((string)lines[i]);
+                double value = double.Parse(lines[i]);
+
                 //LoggedConsole.WriteLine("i=" + i + lines[i] + " " + value);
                 V[i] = value;
             }
@@ -385,7 +398,7 @@ namespace TowseyLibrary
         public static double[,] ReadDoubles2Matrix(string fName)
         {
             var lines = ReadTextFile(fName);
-            string line = (string)lines[0];
+            string line = lines[0];
             string[] words = line.Split(',');
             int rowCount = lines.Count;
             int colCount = words.Length;
@@ -393,11 +406,12 @@ namespace TowseyLibrary
             double[,] matrix = new double[rowCount, colCount];
             for (int i = 0; i < rowCount; i++)
             {
-                line = (string)lines[i];
+                line = lines[i];
                 words = line.Split(',');
                 for (int j = 0; j < colCount; j++)
                 {
                     double value = double.Parse(words[j]);
+
                     //LoggedConsole.WriteLine("i,j=" + i + "," + j + " " + words[j] + " " + value);
                     matrix[i, j] = value;
                 }
@@ -406,14 +420,16 @@ namespace TowseyLibrary
             return matrix;
         }
 
-
         public static void WriteArray2File(double[] array, string fName)
         {
             var lines = new List<string>();
 
-            for (int i = 0; i < array.Length; i++) lines.Add(array[i].ToString());
-            WriteTextFile(fName, lines); //write to file
+            for (int i = 0; i < array.Length; i++)
+            {
+                lines.Add(array[i].ToString());
+            }
 
+            WriteTextFile(fName, lines); //write to file
         } //end of WriteArray2File
 
         public static void WriteArray2File(int[] array, bool addLineNumbers, string fName)
@@ -423,17 +439,21 @@ namespace TowseyLibrary
             for (int i = 0; i < array.Length; i++)
             {
                 string line = array[i].ToString();
-                if (addLineNumbers) line = (i+1) + "," + line;
+                if (addLineNumbers)
+                {
+                    line = i + 1 + "," + line;
+                }
+
                 lines.Add(line);
             }
-            WriteTextFile(fName, lines); //write to file
 
+            WriteTextFile(fName, lines); //write to file
         } //end of WriteArray2File
 
         public static void WriteMatrix2File(double[,] matrix, string fName)
         {
-            int rowCount = matrix.GetLength(0);//height
-            int colCount = matrix.GetLength(1);//width
+            int rowCount = matrix.GetLength(0); //height
+            int colCount = matrix.GetLength(1); //width
 
             var lines = new List<string>();
 
@@ -443,18 +463,22 @@ namespace TowseyLibrary
                 for (int j = 0; j < colCount; j++)
                 {
                     sb.Append(matrix[i, j]);
-                    if (j < colCount - 1) sb.Append(",");
+                    if (j < colCount - 1)
+                    {
+                        sb.Append(",");
+                    }
                 }
+
                 lines.Add(sb.ToString());
             }//end of all rows
-            WriteTextFile(fName, lines); //write matrix to file
 
+            WriteTextFile(fName, lines); //write matrix to file
         } //end of WriteMatrix2File\
 
         public static void WriteMatrix2File(int[,] matrix, string fName)
         {
-            int rowCount = matrix.GetLength(0);//height
-            int colCount = matrix.GetLength(1);//width
+            int rowCount = matrix.GetLength(0); //height
+            int colCount = matrix.GetLength(1); //width
 
             var lines = new List<string>();
 
@@ -464,20 +488,22 @@ namespace TowseyLibrary
                 for (int j = 0; j < colCount; j++)
                 {
                     sb.Append(matrix[i, j]);
-                    if (j < colCount - 1) sb.Append(",");
+                    if (j < colCount - 1)
+                    {
+                        sb.Append(",");
+                    }
                 }
+
                 lines.Add(sb.ToString());
             }//end of all rows
+
             WriteTextFile(fName, lines); //write matrix to file
-
         } //end of WriteMatrix2File\
-
-
 
         public static void WriteMatrix2File(char[,] matrix, string fName)
         {
-            int rowCount = matrix.GetLength(0);//height
-            int colCount = matrix.GetLength(1);//width
+            int rowCount = matrix.GetLength(0); //height
+            int colCount = matrix.GetLength(1); //width
 
             var lines = new List<string>();
 
@@ -488,18 +514,17 @@ namespace TowseyLibrary
                 {
                     sb.Append(matrix[i, j]);
                 }
+
                 lines.Add(sb.ToString());
             }//end of all rows
+
             WriteTextFile(fName, lines); //write matrix to file
-
         } //end of WriteMatrix2File\
-
-
 
         public static void WriteMatrix2File_Formatted(double[,] matrix, string fName, string formatString)
         {
-            int rowCount = matrix.GetLength(0);//height
-            int colCount = matrix.GetLength(1);//width
+            int rowCount = matrix.GetLength(0); //height
+            int colCount = matrix.GetLength(1); //width
 
             var lines = new List<string>();
 
@@ -509,12 +534,16 @@ namespace TowseyLibrary
                 for (int j = 0; j < colCount; j++)
                 {
                     sb.Append(matrix[i, j].ToString(formatString));
-                    if (j < colCount - 1) sb.Append(",");
+                    if (j < colCount - 1)
+                    {
+                        sb.Append(",");
+                    }
                 }
+
                 lines.Add(sb.ToString());
             }//end of all rows
-            WriteTextFile(fName, lines); //write matrix to file
 
+            WriteTextFile(fName, lines); //write matrix to file
         } //end of WriteMatrix2File
 
         public static void WriteArray2File_Formatted(double[] array, string path, string formatString)
@@ -527,8 +556,8 @@ namespace TowseyLibrary
                 string line = array[i].ToString(formatString);
                 lines.Add(line);
             }//end of all rows
-            WriteTextFile(path, lines); //write matrix to file
 
+            WriteTextFile(path, lines); //write matrix to file
         } //end of WriteArray2File_Formatted
 
         public static void WriteArray2File_Formatted(int[] array, string path, string formatString)
@@ -541,8 +570,8 @@ namespace TowseyLibrary
                 string line = array[i].ToString(formatString);
                 lines.Add(line);
             }//end of all rows
-            WriteTextFile(path, lines); //write matrix to file
 
+            WriteTextFile(path, lines); //write matrix to file
         } //end of WriteArray2File_Formatted
 
         public static string PathCombine(params string[] paths)
@@ -555,17 +584,24 @@ namespace TowseyLibrary
             return segments.Aggregate("", (a, b) =>
             {
                 if (string.IsNullOrEmpty(a))
+                {
                     return b;
+                }
                 else
                 {
                     if (a.EndsWith("\\") || a.EndsWith("/"))
+                    {
                         a = a.Substring(0, a.Length - 1);
+                    }
+
                     if (b.StartsWith("\\") || b.StartsWith("/"))
+                    {
                         b = b.Substring(1);
+                    }
+
                     return a + "/" + b;
                 }
             });
         } // end of UrlCombine(params string[] segments)
-
     }// end class
 }

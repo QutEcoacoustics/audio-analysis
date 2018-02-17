@@ -112,19 +112,17 @@ Output  to  directory: {1}
 
             // 2. initialize the analyzer
             // we're changing the way resolving config files works. Ideally, we'd like to use static type config files
-            // but we can't do that unless we know which type we have to load first! Currently analyzer to load is in 
+            // but we can't do that unless we know which type we have to load first! Currently analyzer to load is in
             // the config file so we can't know which analyzer we can use. Thus we will change to using the file name,
             //or an argument to resolve the analyzer to load.
             // Get analysis name:
-            Log.Warn("The way analysis names are determined has changed. Now either use the CLI option " 
+            Log.Warn("The way analysis names are determined has changed. Now either use the CLI option "
                 + "`AnalysisIdentifier` or name the config file to matach an analysis name");
 
             IAnalyser2 analyzer = FindAndCheckAnalyser<IAnalyser2>(arguments.AnalysisIdentifier, configFile.Name);
-            
-            
+
             // 2. get the analysis config
             AnalyzerConfig configuration = analyzer.ParseConfig(configFile);
-
 
             SaveBehavior saveIntermediateWavFiles = configuration.SaveIntermediateWavFiles;
             bool saveIntermediateDataFiles = configuration.SaveIntermediateCsvFiles;
@@ -144,12 +142,11 @@ Output  to  directory: {1}
                 Log.Warn("IndexProperties config can not be found! Loading a default");
                 indicesPropertiesConfig = ConfigFile.Default<Dictionary<string, IndexProperties>>();
             }
-            
+
             LoggedConsole.WriteLine("# IndexProperties Cfg: " + indicesPropertiesConfig.FullName);
 
             // min score for an acceptable event
             Log.Info("Minimum event threshold has been set to " + configuration.EventThreshold);
-            
 
             FileSegment.FileDateBehavior defaultBehavior = FileSegment.FileDateBehavior.Try;
             if (filenameDate)
@@ -157,7 +154,7 @@ Output  to  directory: {1}
                 if (!FileDateHelpers.FileNameContainsDateTime(sourceAudio.Name))
                 {
                     throw new InvalidFileDateException(
-                        "When RequireDateInFilename option is set, the filename of the source audio file must contain " 
+                        "When RequireDateInFilename option is set, the filename of the source audio file must contain "
                         + "a valid AND UNAMBIGUOUS date. Such a date was not able to be parsed.");
                 }
 
@@ -184,7 +181,7 @@ Output  to  directory: {1}
             {
                 Log.Debug("Neither start nor end segment offsets provided. Therefore both were ignored.");
             }
-            
+
             // 6. initialize the analysis settings object
             var analysisSettings = analyzer.DefaultSettings;
             analysisSettings.ConfigFile = configFile;
@@ -204,6 +201,7 @@ Output  to  directory: {1}
                     $"Can't read `{nameof(AnalyzerConfig.SegmentDuration)}` from config file. "
                     + $"Default value of {segmentDuration} used)");
             }
+
             analysisSettings.AnalysisMaxSegmentDuration = segmentDuration.Value;
 
             var segmentOverlap = configuration.SegmentOverlap?.Seconds();
@@ -214,8 +212,8 @@ Output  to  directory: {1}
                     $"Can't read `{nameof(AnalyzerConfig.SegmentOverlap)}` from config file. "
                     + $"Default value of {segmentOverlap} used)");
             }
-            analysisSettings.SegmentOverlapDuration = segmentOverlap.Value;
 
+            analysisSettings.SegmentOverlapDuration = segmentOverlap.Value;
 
             // set target sample rate
             var resampleRate = configuration.ResampleRate;
@@ -226,6 +224,7 @@ Output  to  directory: {1}
                     $"Can't read {nameof(configuration.ResampleRate)} from config file. "
                     + $"Default value of {resampleRate} used)");
             }
+
             analysisSettings.AnalysisTargetSampleRate = resampleRate;
 
             Log.Info(

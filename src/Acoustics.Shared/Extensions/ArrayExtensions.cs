@@ -48,7 +48,7 @@ namespace System
             int arrayToFillHalfLength = destinationArray.Length / 2;
             int copyLength;
 
-             for (copyLength = value.Length; copyLength < arrayToFillHalfLength; copyLength <<= 1)
+            for (copyLength = value.Length; copyLength < arrayToFillHalfLength; copyLength <<= 1)
              {
                  Array.Copy(destinationArray, 0, destinationArray, copyLength, copyLength);
             }
@@ -148,6 +148,5 @@ namespace System
 
             return true;
         }
-
     }
 }

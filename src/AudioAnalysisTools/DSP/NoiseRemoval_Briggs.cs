@@ -30,6 +30,7 @@ namespace AudioAnalysisTools.DSP
         {
             double[] profile = NoiseProfile.GetNoiseProfile_fromLowestPercentileFrames(matrix, percentileThreshold);
             profile = DataTools.filterMovingAverage(profile, 3);
+
             // to prevent division by zero.
             double epsilon = 0.0001;
 
@@ -40,15 +41,19 @@ namespace AudioAnalysisTools.DSP
             for (int col = 0; col < colCount; col++) //for all cols i.e. freq bins
             {
                 double denominator = profile[col];
-                if (denominator < epsilon) denominator = epsilon;
+                if (denominator < epsilon)
+                {
+                    denominator = epsilon;
+                }
+
                 for (int y = 0; y < rowCount; y++) //for all rows
                 {
                     outM[y, col] = matrix[y, col] / denominator;
                 } //end for all rows
             } //end for all cols
+
             return outM;
         }
-
 
         /// <summary>
         /// Assumes the passed matrix is a spectrogram. i.e. rows=frames, cols=freq bins.
@@ -65,6 +70,7 @@ namespace AudioAnalysisTools.DSP
         {
             double[] profile = NoiseProfile.GetNoiseProfile_fromLowestPercentileFrames(matrix, percentileThreshold);
             profile = DataTools.filterMovingAverage(profile, 3);
+
             // to prevent division by zero.
             double epsilon = 0.0001;
 
@@ -75,16 +81,19 @@ namespace AudioAnalysisTools.DSP
             for (int col = 0; col < colCount; col++) //for all cols i.e. freq bins
             {
                 double denominator = profile[col];
-                if (denominator < epsilon) denominator = epsilon;
+                if (denominator < epsilon)
+                {
+                    denominator = epsilon;
+                }
+
                 for (int y = 0; y < rowCount; y++) //for all rows
                 {
                     outM[y, col] = Math.Sqrt(matrix[y, col] / denominator);
                 } //end for all rows
             } //end for all cols
+
             return outM;
         }
-
-
 
         /// <summary>
         /// Assumes the passed matrix is a spectrogram. i.e. rows=frames, cols=freq bins.
@@ -112,10 +121,9 @@ namespace AudioAnalysisTools.DSP
                     outM[y, col] = matrix[y, col] - profile[col];
                 } //end for all rows
             } //end for all cols
+
             return outM;
         }
-
-
 
         /// <summary>
         /// Assumes the passed matrix is a spectrogram. i.e. rows=frames, cols=freq bins.
@@ -135,24 +143,29 @@ namespace AudioAnalysisTools.DSP
         {
             int rowCount = matrix.GetLength(0);
             int colCount = matrix.GetLength(1);
+
             //to contain noise reduced matrix
             double[,] outM = new double[rowCount, colCount];
+
             //for all cols i.e. freq bins
             for (int col = 0; col < colCount; col++)
             {
                 double[] column = MatrixTools.GetColumn(matrix, col);
                 double[] localVariance = NormalDist.CalculateLocalVariance(column, neighbourhood);
+
                 // NormaliseMatrixValues with local column variance
                 for (int y = 0; y < rowCount; y++) //for all rows
                 {
                     //outM[y, col] = matrix[y, col] / (contrastLevel + localVariance[y]);
                     outM[y, col] = matrix[y, col] / (contrastLevel + Math.Sqrt(localVariance[y]));
+
                     //outM[y, col] = Math.Sqrt(matrix[y, col]) / (contrastLevel + Math.Sqrt(localVariance[y]));
                     //outM[y, col] = Math.Sqrt(matrix[y, col] / (contrastLevel + Math.Sqrt(localVariance[y])));
                     //outM[y, col] = matrix[y, col] / (1 + (1.0 * Math.Sqrt(localVariance[y])));
                     //outM[y, col] = Math.Sqrt(matrix[y, col] / (1 + (0.10 * localVariance[y])));
                 } //end for all rows
             } //end for all cols
+
             return outM;
         }
 
@@ -177,13 +190,16 @@ namespace AudioAnalysisTools.DSP
             noiseProfile = DataTools.filterMovingAverage(noiseProfile, 5);
             int rowCount = matrix.GetLength(0);
             int colCount = matrix.GetLength(1);
+
             //to contain noise reduced matrix
             double[,] outM = new double[rowCount, colCount];
+
             //for all cols i.e. freq bins
             for (int col = 0; col < colCount; col++)
             {
                 double[] column = MatrixTools.GetColumn(matrix, col);
                 double[] localVariance = NormalDist.CalculateLocalVariance(column, neighbourhood);
+
                 // NormaliseMatrixValues with local column variance
                 for (int y = 0; y < rowCount; y++) //for all rows
                 {
@@ -191,9 +207,9 @@ namespace AudioAnalysisTools.DSP
                     outM[y, col] = (matrix[y, col] - noiseProfile[col]) / (contrastLevel + Math.Sqrt(localVariance[y]));
                 } //end for all rows
             } //end for all cols
+
             return outM;
         }
-
 
 // #########################################################################################################################################################
 
@@ -210,6 +226,7 @@ namespace AudioAnalysisTools.DSP
 
             //agaion smooth and truncate
             m = ImageTools.GaussianBlur_5cell(m);
+
             //m = ImageTools.GaussianBlur_5cell(m); //do a seoncd time
             //m = ImageTools.Blur(m, 10); // use a simple neighbourhood blurring function.
             double binaryThreshold2 = binaryThreshold * 0.8;
@@ -241,11 +258,13 @@ namespace AudioAnalysisTools.DSP
             //DataTools.WriteMinMaxOfArray(MatrixTools.Matrix2Array(m));
 
             m = MatrixTools.ThresholdMatrix2RealBinary(m, binaryThreshold);   //works for low SNR recordings
+
             //title = "TITLE THREE";
             //Image image3 = DrawSonogram(m, recordingDuration, X_AxisInterval, stepDuration, Y_AxisInterval, title);
             //images.Add(image3);
 
             m = ImageTools.GaussianBlur_5cell(m);
+
             //m = ImageTools.GaussianBlur_5cell(m);
             //m = ImageTools.Blur(m, 5); // use a simple neighbourhood blurring function.
 
@@ -278,8 +297,5 @@ namespace AudioAnalysisTools.DSP
 
             return image;
         }
-
-
-
     } // class NoiseRemoval_Briggs
 }

@@ -6,6 +6,7 @@
 
 // ReSharper disable CheckNamespace
 namespace System
+
 // ReSharper restore CheckNamespace
 {
     using Collections.Generic;
@@ -20,8 +21,6 @@ namespace System
     /// </summary>
     public static class ObjectExtensions
     {
-        #region Public Methods
-
         /// <summary>
         /// The name of.
         /// </summary>
@@ -121,7 +120,5 @@ namespace System
         {
             return new List<T> { item };
         }
-
-        #endregion
     }
 }

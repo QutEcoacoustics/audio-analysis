@@ -2,8 +2,6 @@
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
-
-
 namespace NeuralNets
 {
     using System;
@@ -13,71 +11,97 @@ namespace NeuralNets
     using System.Text;
     using TowseyLibrary;
 
-    enum ARTversion { ART1, ART2v1, ART2v2, ART2a, FuzzyART, ARTMAP2a, FuzzyARTMAP}
-    enum Tasks {TRAIN, TEST, TRAINTEST}
-    enum ARTparams {a, b, c, d/*F2 output*/, Rho/*vigilance param*/, Theta/*threshold for contrast enhancing*/, Add1, RhoStar}
-    enum ARTMAPparams {alpha, beta, Rhoa/*vigilance parameters*/,
-                        Rhoab, Rhob, RhoTst/*different value of rho used for testing fuzzy ART*/,
-                        Add1/*used to increment rhoA in Artmap*/, ETP/*error tolerance parameter*/, Add2}
+    internal enum ARTversion
+    {
+        ART1, ART2v1, ART2v2, ART2a, FuzzyART, ARTMAP2a, FuzzyARTMAP,
+    }
 
+    internal enum Tasks
+    {
+        TRAIN, TEST, TRAINTEST,
+    }
 
+    internal enum ARTparams
+    {
+        a, b, c, d/*F2 output*/, Rho/*vigilance param*/, Theta/*threshold for contrast enhancing*/, Add1, RhoStar,
+    }
 
-
+    internal enum ARTMAPparams
+    {
+        alpha, beta, Rhoa/*vigilance parameters*/,
+        Rhoab, Rhob, RhoTst/*different value of rho used for testing fuzzy ART*/,
+        Add1/*used to increment rhoA in Artmap*/, ETP/*error tolerance parameter*/, Add2,
+    }
 
     public sealed class ART
     {
         // {FILE NAMES INFORMATION}
-        const string ARTDir     = @"C:\SensorNetworks\ART\";
-        const string configFName= "ART.ini";
-        const string paramsFName= "ARTParameters.txt";
+        private const string ARTDir = @"C:\SensorNetworks\ART\";
+        private const string configFName = "ART.ini";
+        private const string paramsFName = "ARTParameters.txt";
 
-        public static string wtsFname = "artWts";  //
-        public static string wtsFExt  = ".txt";    //
+        public static string wtsFname = "artWts";
+        public static string wtsFExt = ".txt";
         public static string dataFname = "shapeData";
-        public static string dataFExt = ".txt";    //
+        public static string dataFExt = ".txt";
         public static bool DEBUG = true;
+
         //bool printTestResults;    // :boolean;
         //bool printDecisionMatrix; // :boolean;
 
-
         public static string configFpath = ARTDir + configFName;
         public static string paramsFpath = ARTDir + paramsFName;
-        public static string dataFpath   = ARTDir + dataFname + dataFExt;
+        public static string dataFpath = ARTDir + dataFname + dataFExt;
 
         //string PrevARTLessonFName         =  "PrevART.les";
         //ARCHITECTURE INFO
         public static int maxF1Size = 100;
+
         //public static int maxF2Size = 1000;
         //DATA INFORMATION}
-        public static bool randomiseTrnSetOrder =  true;
-        public static int maxIterations       = 1000;
-        public static int numberOfRepeats     = 1;
+        public static bool randomiseTrnSetOrder = true;
+        public static int maxIterations = 1000;
+        public static int numberOfRepeats = 1;
         public static int maxClassNo = 2;
 
-        const int noARTVersions = 7;
-        string[] versionNames = {"ART-1", "ART-2v1F&S", "ART-2v2", "ART-2a", "fuzzy-ART", "ARTMAP-2a", "fuzyARTMAP"};
-        string[] taskNames    = {"TRAIN net", "TEST net", "TRN&TEST"};
+        private const int noARTVersions = 7;
+        private string[] versionNames = { "ART-1", "ART-2v1F&S", "ART-2v2", "ART-2a", "fuzzy-ART", "ARTMAP-2a", "fuzyARTMAP" };
+        private string[] taskNames = { "TRAIN net", "TEST net", "TRN&TEST" };
+
         //string[] paramNames   = {"alpha", "beta", "c", "d"/*F2 output*/,
         //                            "Rho",    //vigilance param*/
         //                            "Theta",  //threshold for contrast enhancing
         //                            "Add1", "RhoStar"
         //                        };
-  string[,] paramNames =
-  {{   "A1",    "B1",    "C1",    "D1", " rho ",     "L", " add1", " add2"},
-   {    "a",     "b",     "c",     "d", " rho ", "theta", " ETP ", " add2"},
-   {    "a",     "b",     "c",     "d", " rho ", "theta", " ETP ", " add2"},
-   {"alpha", " beta", "  c  ", "  d  ", " rho ", "theta", " add1", " rho*"},
-   {"alpha", " beta",      "",      "", " rho ", "rhoTs",      "",      ""},
-   {"alpha", " beta", " rhoa", "rhoab", " rhob", "theta", " add1",      ""},
-   {"alpha", " beta", " rhoa", "rhoab", " rhob", "rhoTs", " add1",      ""},
+        private string[,] paramNames =
+  {
+    {
+        "A1",    "B1",    "C1",    "D1", " rho ",     "L", " add1", " add2",
+    },
+    {
+        "a",     "b",     "c",     "d", " rho ", "theta", " ETP ", " add2",
+    },
+    {
+        "a",     "b",     "c",     "d", " rho ", "theta", " ETP ", " add2",
+    },
+    {
+        "alpha", " beta", "  c  ", "  d  ", " rho ", "theta", " add1", " rho*",
+    },
+    {
+        "alpha", " beta",      "",      "", " rho ", "rhoTs",      "",      "",
+    },
+    {
+        "alpha", " beta", " rhoa", "rhoab", " rhob", "theta", " add1",      "",
+    },
+    {
+        "alpha", " beta", " rhoa", "rhoab", " rhob", "rhoTs", " add1",      "",
+    },
    };
-
 
         //char Esc      = 27; //#27;
         //char escape   = 27; //#27;
         //char FormFeed = 12; //#12; {Hex 0C}
         //char FF       = 12; //#12;
-
 
 //Type
     //PtrToArrayOfInt       = ^ArrayOfInt;
@@ -106,23 +130,19 @@ namespace NeuralNets
     //   inhibit           : PtrToArrayOfInt ;
     //end;
 
-
         //CONST
         //  These TWO constants are used only for graphical display of avSig and wts at the end.
         //  Sets the scale for the Y axis graphical display. Since wts are always in range 0-1 therefore set wtsRange = 1;
         //  If using EEG values for input sigs, set avSigRange = 100.
         //  If using normalised inputs, set avSigRange=1. ie depends on data type}
-        const int avSigRange = 1;
-        const int wtsRange   = 1;
-
+        private const int avSigRange = 1;
+        private const int wtsRange = 1;
 
         //the following two arrays are used only in GetOneSig but they must hold the random numbers and targets of the Training Set}
         //int[] randomArray = new int[maxTrnSetSize];    // : array[1..maxTrnSetSize] of word;
         //byte[] targetArray = new byte[maxTrnSetSize];   // : array[1..maxTrnSetSize] of byte;
 
-
-
-    public static void ReadConfigFile()
+        public static void ReadConfigFile()
     {
         //string line, subject, predicate;  // : string[80];
         //int code;  // : integer;
@@ -200,7 +220,6 @@ namespace NeuralNets
         //close (F);
     } //end ReadConfigFile()
 
-
     //public static void DisplayConfiguration()  //display on the screen}
 //{
 //  ClrScr;
@@ -260,7 +279,6 @@ namespace NeuralNets
 //  if (task == taskTEST)
 //    if (! fileExists (WtsFPath)     ) code = 5;
 
-
 //  if ((task = taskTRAIN) || (task = taskTRAINTEST))
 //    if (fileExists (WtsFPath) ) code = 6;
 //    else
@@ -300,8 +318,7 @@ namespace NeuralNets
 //        }  //}  //end;
 //    }  //}  //end;
 
-
-    public static double[,] ReadParameterValues(string paramFName)
+        public static double[,] ReadParameterValues(string paramFName)
     {
         //ArrayList lines = TowseyLib.DataTools.ReadFile(paramFName);        //prepare parameters file
         //readln (ParamsF, NoSimulationsInRun);
@@ -313,7 +330,7 @@ namespace NeuralNets
         //}  //end;
         //readln(F);
 
-        double[,] parameters = new double[1,8];
+        double[,] parameters = new double[1, 8];
         int row = 0;
 
         //alpha   beta   c     d     rho    theta  add1    rho* not entered in parameters - calculated separately
@@ -326,23 +343,22 @@ namespace NeuralNets
         parameters[row, (int)ARTparams.Theta] = 0.05;
         parameters[row, (int)ARTparams.Add1] = 0.0001;
 
-
-
-        double sigma = (parameters[row, (int)ARTparams.c] * parameters[row, (int)ARTparams.d]) / (1 - parameters[row, (int)ARTparams.d]);
+        double sigma = parameters[row, (int)ARTparams.c] * parameters[row, (int)ARTparams.d] / (1 - parameters[row, (int)ARTparams.d]);
         double rhoStar = 0.0;
         double sqr_sigma = sigma * sigma;
         double sqr_1plusSigma = (1 + sigma) * (1 + sigma);
         double sqr_rho = parameters[row, (int)ARTparams.Rho] * parameters[row, (int)ARTparams.Rho];
         if (parameters[row, (int)ARTparams.Rho] > 0.001)
-            rhoStar = (sqr_rho * sqr_1plusSigma - (1 + sqr_sigma)) / (2 * sigma);
-        // the original line of code: RhoStar = (Sqr(parameters[Rho]) * Sqr(1 + Sigma) - (1 + Sqr(Sigma))) / (2 * Sigma);
+            {
+                rhoStar = ((sqr_rho * sqr_1plusSigma) - (1 + sqr_sigma)) / (2 * sigma);
+            }
 
+            // the original line of code: RhoStar = (Sqr(parameters[Rho]) * Sqr(1 + Sigma) - (1 + Sqr(Sigma))) / (2 * Sigma);
 
         parameters[row, (int)ARTparams.RhoStar] = rhoStar;
 
         return parameters;
-    }  //end;
-
+    } //end;
 
     //public static bool ParamValuesOK(int versionID)
     //{
@@ -418,7 +434,6 @@ namespace NeuralNets
 
     //    }  //end; {for simul = 1 to noSimulationsInRun do}
 
-
     //    Close (ParamsF);
     //    if (AllOK )
     //    {
@@ -428,7 +443,6 @@ namespace NeuralNets
     //    }  //end;
     //    ParamvaluesOK = AllOK;
     //}  //end;
-
 
     //{This method finds the class which gained max Score for a given F2 unit
     //and assigns that class label to the unit. It also calculates a Class
@@ -467,7 +481,6 @@ namespace NeuralNets
 
 //}  //}  //end; ScoreTrainingResults
 
-
 //public static void ScoreTestResults
 //{
 
@@ -478,7 +491,6 @@ namespace NeuralNets
 //  sigNum, rep, cls :word; {counters}
 //  maxVote, maxValue{(! used}, correctClass :word;
 
-
 //for sigNum = 1 to tstSetSize do {find the winning vote for every signal}
 //  {
 //    for cls= 0 to noClasses do oneVote[cls] = 0;      {init OneVote}
@@ -487,7 +499,6 @@ namespace NeuralNets
 //    maxIndex (noClasses+1, oneVote, maxVote, count, maxValue);
 //    decisionMatrix^[sigNum, 0] = maxVote;  {store vote winner in zero index}
 //  }  //end; {of all signals}
-
 
 //  //{summarise results for classified signals and store the test results
 //   in test Score matrix}
@@ -508,7 +519,6 @@ namespace NeuralNets
 //      }  //end;
 //    }  //end;
 
-
 //  for cls = 0 to noClasses+1 do
 //  {
 //   {first transfer rep Scores from matrix to an array which can be passed
@@ -523,7 +533,6 @@ namespace NeuralNets
 //    tstResult^[noClasses+1].tot = tstSetSize;
 //  }  //end;
 //}  //}  //end; ScoreTestResults
-
 
 //public static void WriteDecisionMatrix (var F: text)
 //{
@@ -547,7 +556,6 @@ namespace NeuralNets
 //  LoggedConsole.WriteLine (F, formfeed);
 //} // }  //end; WriteDecisionMatrix
 
-
 //public static void writeTestResults (var F:text)
 //{
 ////var
@@ -556,7 +564,6 @@ namespace NeuralNets
 //  size : word;
 //  mean, sd : real;
 //  min, max : word;
-
 
 //  LoggedConsole.WriteLine (F, "TEST RESULTS/Score from file: ",ResultsFPath);
 //  printDateAndTime (F);
@@ -591,8 +598,6 @@ namespace NeuralNets
 //  for rep = 1 to norepeats do write(F, SkippedBecauseFull[rep]:6);
 //  LoggedConsole.WriteLine (F);
 //  LoggedConsole.WriteLine (F);
-
-
 
 //  size = tstResult^[noClasses+1].tot; {ie size of the test set or tstSetSize}
 //  LoggedConsole.WriteLine(F, "THE TEST Score MATRIX");
@@ -653,7 +658,6 @@ namespace NeuralNets
 
 //  write (F, formFeed);
 //}  //}  //end;  writeTestResults (var F:text)
-
 
     //public static void MAINMENU()
     //{
@@ -741,8 +745,6 @@ namespace NeuralNets
         //Until (choice = "O"{OK}) ;
     //}  //end;  MAINMENU
 
-
-
     //{***********************************************************************************************************************************}
     //{***********************************************************************************************************************************}
     //{***********************************************************************************************************************************}
@@ -750,16 +752,16 @@ namespace NeuralNets
     //{***********************************************************************************************************************************}
     //{***********************************************************************************************************************************}
     //{***********************************************************************************************************************************}
-
 
                        // {*** MAIN PROGRAM ***}
 
-    public static void Main()
+        public static void Main()
     {
         Tasks task = Tasks.TRAIN;
         string wtsFname = "output";
         double[,] trainingData = null;
         int trnSetSize = 0;
+
         //int tstSetSize = 0;
         int F1Size = 0;
         int F2Size = 0;
@@ -769,6 +771,7 @@ namespace NeuralNets
 
         //char key = '0';        //      : char;
         int code = 0;        //        : word; {used for getting error messages}
+
         //int Score = 0;       //        : word;
 
         //double[]  DataArray  = new double[maxDataDim];
@@ -779,8 +782,10 @@ namespace NeuralNets
         string wtsFpath = "";
         string resultsFPath = "";   //  : PathStr;
         string trnSetFpath = "";
+
         //string trnTarFpath = ""; //  : pathStr;
         string tstSetFpath = "";
+
         //string tstTarFpath = ""; //  : pathStr;
         //bool targetFileExists; // : boolean;
         //string ARTVersion;     //   : string[50];
@@ -788,7 +793,6 @@ namespace NeuralNets
         //int[] F2classLabel = new int[maxF2Size];       //: array [0..maxF2Size] of word;
         //double[] F2classProb = new double[maxF2Size];  // : array [0..maxF2Size] of real;
         //int KeepScore; //    : PKeepScore;
-
 
         //{************************** INITIALISE VALUES *************************}
 
@@ -804,26 +808,22 @@ namespace NeuralNets
         //CheckConfiguration (code);
         //if(code == 0) ParamValuesOK(versionID);
 
-
-        if ((task == Tasks.TRAIN) || (task == Tasks.TRAINTEST))
+        if (task == Tasks.TRAIN || task == Tasks.TRAINTEST)
         {
             trnSetFpath = dataFpath;
             trainingData = FileTools.ReadDoubles2Matrix(dataFpath);
-            trnSetSize   = trainingData.GetLength(0);
-            F1Size       = trainingData.GetLength(1);
-            F2Size       = trainingData.GetLength(0);
+            trnSetSize = trainingData.GetLength(0);
+            F1Size = trainingData.GetLength(1);
+            F2Size = trainingData.GetLength(0);
         }
-
 
         double[,] parameters = ReadParameterValues(paramsFpath);
         int simulationsCount = parameters.GetLength(0);
-        int paramCount       = parameters.GetLength(1);
+        int paramCount = parameters.GetLength(1);
 
         ART_2A art2a = new ART_2A(F1Size, F2Size);
 
-
-
-        if (task == Tasks.TEST)  // {load the test file weights}
+        if (task == Tasks.TEST) // {load the test file weights}
         {
             //Case versionID of
             //    verART2A      : ReadWtsART2a    (wtsFPath, F1SizeOfNeta, F2SizeOfNeta, F2classLabel, F2classProb, code);
@@ -843,10 +843,8 @@ namespace NeuralNets
         //    goto TheBeginning;
         //}
 
-
         //{Initialise screen for graphics display of F2 weight graphs}
         //InitialiseGraphicsMode;
-
 
         //{********** DO SIMULATIONS WITH DIFFERENT PARAMETER VALUES ***********}
         for (int simul = 0; simul < simulationsCount; simul++)
@@ -856,7 +854,7 @@ namespace NeuralNets
             art2a.SetParameterValues(parameters[simul, 0], parameters[simul, 1], parameters[simul, 2], parameters[simul, 3]);
 
             //set up file name for simulation test results}
-            resultsFPath = ARTDir+ wtsFname+ "s"+ simul.ToString("D2") +"_results.txt";
+            resultsFPath = ARTDir + wtsFname + "s" + simul.ToString("D2") + "_results.txt";
 
             //init array to count committed F2 nodes
             //int[] noOfCommittedF2 = new int[ART.numberOfRepeats];
@@ -864,11 +862,10 @@ namespace NeuralNets
             //initialise decision matrix for processing test data}
             //int[,] decisionMatrix = new int[tstSetSize,norepeats];  //{matrix: tst sig number x repeats }
 
-
             //{********** DO REPEATS ***********}
             for (int rep = 0; rep < numberOfRepeats; rep++)
             {
-                LoggedConsole.WriteLine ("RUN=",simul, " rep=",rep);
+                LoggedConsole.WriteLine ("RUN=", simul, " rep=", rep);
 
                 //{********* RUN NET for ONE SET OF PARAMETERS for ALL ITERATIONS *********}
                 if (task == Tasks.TRAIN)
@@ -877,16 +874,23 @@ namespace NeuralNets
                     code = 0;
                     art2a.TrainNet(trainingData, maxIterations, simul, rep, code);
 
-                    if (code != 0) break;
+                    if (code != 0)
+                        {
+                            break;
+                        }
+
                     noOfCommittedF2[rep] = art2a.CountCommittedF2Nodes();
+
                     //ScoreTrainingResults (noOfCommittedF2[rep], noClasses, F2classLabel, F2classProb);
 
-
                     wtsFpath = ARTDir + ART.wtsFname + "s" + simul + rep + wtsFExt;
-                    //art2a.WriteWts(wtsFpath, F2classLabel, F2classProb);
-                    if (DEBUG) LoggedConsole.WriteLine("wts= "+wtsFpath +"  train set= "+trnSetFpath);
-                }
 
+                    //art2a.WriteWts(wtsFpath, F2classLabel, F2classProb);
+                    if (DEBUG)
+                        {
+                            LoggedConsole.WriteLine("wts= " + wtsFpath + "  train set= " + trnSetFpath);
+                        }
+                    }
 
                 if (task == Tasks.TEST)
                 {
@@ -895,7 +899,6 @@ namespace NeuralNets
                     //if (code != 0) goto EndOfSimulations;
                     //if (DEBUG) LoggedConsole.WriteLine("wts= " + wtsFpath + "  test set= " + tstSetFpath);
                 }
-
 
                 if (task == Tasks.TRAINTEST)
                 {
@@ -908,8 +911,13 @@ namespace NeuralNets
                     art2a.InitialiseArrays();
                     art2a.TrainNet(trainingData, maxIterations, simul, rep, code);
 
-                    if (code != 0) break;
+                    if (code != 0)
+                        {
+                            break;
+                        }
+
                     noOfCommittedF2[rep] = art2a.CountCommittedF2Nodes();
+
                     //ScoreTrainingResults (noOfCommittedF2[rep], noClasses, F2classLabel, F2classProb);
 
                     wtsFpath = ARTDir + ART.wtsFname + "s" + simul + rep + wtsFExt;
@@ -923,9 +931,11 @@ namespace NeuralNets
 
                     //art2a.TestNet(testData, simul, rep, code);
                     //if (code != 0) goto EndOfSimulations;
-                    if (DEBUG) LoggedConsole.WriteLine("wts= "+wtsFpath+"  test set= " +tstSetFpath +"  Press any key");
-                }
-
+                    if (DEBUG)
+                        {
+                            LoggedConsole.WriteLine("wts= " + wtsFpath + "  test set= " + tstSetFpath + "  Press any key");
+                        }
+                    }
 
                     //{************** DISPLAY RECONSTRUCTED SIGNALS **************}
 
@@ -940,7 +950,6 @@ namespace NeuralNets
                     //    else avSig^[F2uNo]^[F1uNo] = avSig^[F2uNo]^[F1uNo] /Score;
                     //}  //end;
 
-
                     //{*********** FinalScreenDisplay ***********}
                     //if (DEBUG)FinalScreenDisplay(F1sizeOfNeta,F2SizeOfNeta,F2ScoreMatrix,avSig^,WtsNeta^);
                     //{
@@ -951,7 +960,6 @@ namespace NeuralNets
                     //                    avSig[F2uNo], wtsNetA[F2uNo], avSigRange, wtsRange);
                     //    }
                     //} //end; {if display on do final display}
-
               } //end; {for rep   = 1 to norepeats do}       {***** END OF REPEATS *****}
 
               //ScoreTestResults;
@@ -965,8 +973,7 @@ namespace NeuralNets
               //}  //end;
 
               //if (printDecisionMatrix) writeDecisionMatrix(lst);
-
-          }  //end; {for simul = 1 to noSimulationsInRun do}  {**** END OF SIMULATE *****}
+          } //end; {for simul = 1 to noSimulationsInRun do}  {**** END OF SIMULATE *****}
 
           //if (printerOn) PrintTextFile(ConfigFpath);
 
@@ -991,6 +998,5 @@ namespace NeuralNets
           //dispose (tstResult);       {array of record: class x tst Score results}
           //dispose (TstSetTargets);
         } //END of MAIN METHOD.
-
     }// end class
 }//end namespace

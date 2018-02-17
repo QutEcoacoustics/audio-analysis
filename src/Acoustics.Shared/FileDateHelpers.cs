@@ -23,12 +23,14 @@ namespace Acoustics.Shared
 
     public class FileDateHelpers
     {
-        private static readonly string[] AcceptedFormatsNoTimeZone = {
+        private static readonly string[] AcceptedFormatsNoTimeZone =
+        {
                 "yyyyMMdd[-|T|_]HHmmss (if timezone offset hint provided)",
                 "yyyyMMdd[-|T|_]HHmmssZ",
             };
 
-        private static readonly string[] AcceptedFormatsTimeZone = {
+        private static readonly string[] AcceptedFormatsTimeZone =
+        {
                 "yyyyMMdd[-|T|_]HHmmss[+|-]HH",
                 "yyyyMMdd[-|T|_]HHmmss[+|-]HHmm",
             };
@@ -40,7 +42,7 @@ namespace Acoustics.Shared
                 // valid: SERF_20130314_000021_000.wav, a_20130314_000021_a.a, a_99999999_999999_a.dnsb48364JSFDSD
                 new DateVariants(
                     @"^(.*)(?<date>(\d{4})(\d{2})(\d{2})(?<separator>T|-|_)(\d{2})(\d{2})(\d{2})(?![+-][\d:]{2,5}|Z)).*\.([a-zA-Z0-9]+)$",
-                     AppConfigHelper.StandardDateFormatNoTimeZone,
+                    AppConfigHelper.StandardDateFormatNoTimeZone,
                     false,
                     AcceptedFormatsNoTimeZone),
 
@@ -99,6 +101,7 @@ namespace Acoustics.Shared
                     datesAndDirs.Add(parsedDate, dir);
                 }
             }
+
             return datesAndDirs;
         }
 
@@ -227,10 +230,9 @@ namespace Acoustics.Shared
 
             public string ParseFormat { get; }
 
-            public bool ParseTimeZone{ get; }
+            public bool ParseTimeZone { get; }
 
             public string[] AcceptedFormats { get; }
-
         }
     }
 

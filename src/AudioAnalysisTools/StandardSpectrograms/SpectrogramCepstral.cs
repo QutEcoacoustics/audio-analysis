@@ -7,9 +7,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
     using System;
     using System.IO;
     using Acoustics.Tools.Wav;
-    using WavTools;
     using DSP;
     using TowseyLibrary;
+    using WavTools;
 
     public class SpectrogramCepstral : BaseSonogram
     {
@@ -52,6 +52,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             this.SampleRate = sg.SampleRate;
             this.SigState = sg.SigState;
             this.SnrData = sg.SnrData;
+
             // subband highlighting no longer available
             //this.subBandMinHz = minHz;
             //this.subBandMaxHz = maxHz;
@@ -60,6 +61,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             //                                                   sonogram.Configuration.FreqBinCount, sonogram.FBinWidth);
             this.Data = SpectrogramTools.ExtractFreqSubband(sg.Data, minHz, maxHz,
                              this.Configuration.DoMelScale, sg.Configuration.FreqBinCount, sg.FBinWidth);
+
             // NO LONGER DO THIS >>>>             CalculateSubbandSNR(this.Data);
             this.Make(this.Data);          //converts amplitude matrix to cepstral sonogram
         }
@@ -153,7 +155,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             m = MFCCStuff.Cepstra(m, ccCount);
             m = DataTools.normalise(m);
             ImageTools.DrawMatrix(m, @"C:\SensorNetworks\Output\MFCC_LewinsRail\tempImage3.jpg", false);
-            return Tuple.Create(m, (double[]) null);
+            return Tuple.Create(m, (double[])null);
         }
 
         public static Tuple<SpectrogramStandard, SpectrogramCepstral, double[], double[]> GetAllSonograms(string path, SonogramConfig sonoConfig, int minHz, int maxHz)
@@ -236,6 +238,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             Log.WriteIfVerbose(" MakeAcousticVectors(matrix, decibels, includeDelta=" + includeDelta + ", includeDoubleDelta=" + includeDoubleDelta + ", deltaT=" + deltaT + ")");
             var tuple = MakeCepstrogram(config, matrix, decibels, sampleRate);
             double[,] m = tuple.Item1;
+
             //this.SnrData.ModalNoiseProfile = tuple.Item2; //store the full bandwidth modal noise profile
 
             //initialise feature vector for template - will contain three acoustic vectors - for T-dT, T and T+dT
@@ -250,9 +253,20 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 double[] rowT = DataTools.GetRow(m, i);
                 double[] rowTp2 = DataTools.GetRow(m, i + deltaT);
 
-                for (int j = 0; j < cepstralL; j++) { acousticM[i, j] = rowTm2[j]; }
-                for (int j = 0; j < cepstralL; j++) { acousticM[i, cepstralL + j] = rowT[j]; }
-                for (int j = 0; j < cepstralL; j++) { acousticM[i, cepstralL + cepstralL + j] = rowTp2[j]; }
+                for (int j = 0; j < cepstralL; j++)
+                {
+                    acousticM[i, j] = rowTm2[j];
+                }
+
+                for (int j = 0; j < cepstralL; j++)
+                {
+                    acousticM[i, cepstralL + j] = rowT[j];
+                }
+
+                for (int j = 0; j < cepstralL; j++)
+                {
+                    acousticM[i, cepstralL + cepstralL + j] = rowTp2[j];
+                }
             }
 
             return acousticM;

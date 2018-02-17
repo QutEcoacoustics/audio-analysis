@@ -149,7 +149,7 @@ namespace AudioAnalysisTools.WavTools
         public WavReader WavReader => this.wavReader;
 
         /// <summary>
-        /// returns Time Span of the recording
+        /// Gets returns Time Span of the recording
         /// </summary>
         public TimeSpan Duration => this.WavReader.Time;
 
@@ -353,7 +353,7 @@ namespace AudioAnalysisTools.WavTools
             IAudioUtility audioUtility = new MasterAudioUtility();
             var info = audioUtility.Info(sourceFile); // Get duration of the source file
             int startMilliseconds = 0;
-            int endMilliseconds = (int) info.Duration.Value.TotalMilliseconds;
+            int endMilliseconds = (int)info.Duration.Value.TotalMilliseconds;
 
             MasterAudioUtility.SegmentToWav(
                 sourceFile,

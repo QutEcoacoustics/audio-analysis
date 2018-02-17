@@ -24,7 +24,6 @@ namespace Acoustics.Shared.ConfigFile
             : base(message)
         {
             this.File = file;
-
         }
 
         public ConfigFileException(string message, Exception innerException, string file)

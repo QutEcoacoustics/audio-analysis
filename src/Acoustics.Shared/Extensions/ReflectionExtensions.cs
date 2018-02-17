@@ -30,6 +30,7 @@ namespace System
                     matchedType = type;
                     return true;
                 }
+
                 type = type.BaseType;
             }
 
@@ -122,7 +123,6 @@ namespace System
                    && propertyInfoA.MetadataToken == propertyInfoB.MetadataToken;
         }
 
-
         public static Dictionary<string, Func<TBase, TType>> GetGetters<TBase, TType>()
         {
             Type thisType = typeof(TBase);
@@ -132,7 +132,6 @@ namespace System
 
             foreach (var propertyInfo in props)
             {
-
                 if (propertyInfo.PropertyType != typeof(TType))
                 {
                     continue;
@@ -149,6 +148,7 @@ namespace System
 
             return result;
         }
+
         public static string[] GetGetterNames<TBase>()
         {
             Type thisType = typeof(TBase);
@@ -156,8 +156,8 @@ namespace System
             var props = thisType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
             var result = new string[props.Length];
 
-            props.ForEach((p,i) => result[i] = p.Name);
-            
+            props.ForEach((p, i) => result[i] = p.Name);
+
             return result;
         }
 
@@ -170,7 +170,6 @@ namespace System
 
             foreach (var propertyInfo in props)
             {
-
                 if (propertyInfo.PropertyType != typeof(TType))
                 {
                     continue;

@@ -56,21 +56,21 @@ namespace TowseyLibrary
             // pass over all frames
             for (int i = 0; i < count; i++)
             {
-                if ((isHit == false) && scores[i] >= scoreThreshold)
+                if (isHit == false && scores[i] >= scoreThreshold)
                 {
                     //start of an event
                     isHit = true;
                     startId = i;
                 }
                 else // check for the end of an event
-                if ((isHit == true) && scores[i] < scoreThreshold)
+                if (isHit == true && scores[i] < scoreThreshold)
                 {
                     // this is end of an event, so initialise it
                     isHit = false;
                     int endId = i;
 
                     int duration = endId - startId;
-                    if ((duration < minDuration) || (duration > maxDuration))
+                    if (duration < minDuration || duration > maxDuration)
                     {
                         continue; //skip events with duration shorter than threshold
                     }
@@ -118,7 +118,7 @@ namespace TowseyLibrary
                     int endId = i - 1;
 
                     int duration = endId - startId + 1;
-                    if ((duration < minDuration) || (duration > maxDuration))
+                    if (duration < minDuration || duration > maxDuration)
                     {
                         continue; //skip events with duration shorter than threshold
                     }

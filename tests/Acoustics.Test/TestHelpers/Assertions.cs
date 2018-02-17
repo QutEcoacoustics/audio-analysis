@@ -48,7 +48,7 @@ namespace Acoustics.Test.TestHelpers
         {
             if (!ReferenceEquals(expected, actual))
             {
-                if ((expected == null) || (actual == null))
+                if (expected == null || actual == null)
                 {
                     Assert.Fail("Expected or actual is null");
                 }
@@ -88,7 +88,7 @@ namespace Acoustics.Test.TestHelpers
         {
             if (!ReferenceEquals(expected, actual))
             {
-                if ((expected == null) || (actual == null))
+                if (expected == null || actual == null)
                 {
                     Assert.Fail("Expected or actual is null");
                 }

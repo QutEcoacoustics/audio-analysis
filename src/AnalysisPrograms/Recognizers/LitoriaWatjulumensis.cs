@@ -13,28 +13,23 @@ namespace AnalysisPrograms.Recognizers
 {
     using System;
     using System.Collections.Generic;
-    using System.IO;
-    using System.Reflection;
-
-    using AnalysisBase;
-    using AnalysisBase.ResultBases;
-
-    using Base;
-
-    using AudioAnalysisTools;
-    using AudioAnalysisTools.DSP;
-    using AudioAnalysisTools.StandardSpectrograms;
-    using AudioAnalysisTools.WavTools;
-
-    using log4net;
-
-    using TowseyLibrary;
-    using AudioAnalysisTools.Indices;
+    using System.Diagnostics;
     //using Acoustics.Shared.Csv;
     using System.Drawing;
+    using System.IO;
+    using System.Reflection;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
-    using System.Diagnostics;
+    using AnalysisBase;
+    using AnalysisBase.ResultBases;
+    using AudioAnalysisTools;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.Indices;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
+    using Base;
+    using log4net;
+    using TowseyLibrary;
 
     /// <summary>
     /// To call this LitoriaWatjulumensis recognizer, the first command line argument must be "EventRecognizer".
@@ -89,17 +84,20 @@ namespace AnalysisPrograms.Recognizers
         {
             var recognizerConfig = new LitoriaWatjulumConfig();
             recognizerConfig.ReadConfigFile(configuration);
+
             //int maxOscilRate = (int)Math.Ceiling(1 / lwConfig.MinPeriod);
 
             if (recording.WavReader.SampleRate != 22050)
             {
                 throw new InvalidOperationException("Requires a 22050Hz file");
             }
+
             TimeSpan recordingDuration = recording.WavReader.Time;
 
             // this default framesize seems to work
             const int frameSize = 128;
             double windowOverlap = 0.0;
+
             // calculate the overlap instead
             //double windowOverlap = Oscillations2012.CalculateRequiredFrameOverlap(
             //    recording.SampleRate,
@@ -110,9 +108,11 @@ namespace AnalysisPrograms.Recognizers
             var sonoConfig = new SonogramConfig
             {
                 SourceFName = recording.BaseName,
+
                 //set default values - ignore those set by user
                 WindowSize = frameSize,
                 WindowOverlap = windowOverlap,
+
                 // the default window is HAMMING
                 //WindowFunction = WindowFunctions.HANNING.ToString(),
                 //WindowFunction = WindowFunctions.NONE.ToString(),
@@ -124,9 +124,14 @@ namespace AnalysisPrograms.Recognizers
             //#############################################################################################################################################
             //DO THE ANALYSIS
             var results = Analysis(recording, sonoConfig, recognizerConfig, MainEntry.InDEBUG, segmentStartOffset);
+
             //######################################################################
 
-            if (results == null) return null; //nothing to process
+            if (results == null)
+            {
+                return null; //nothing to process
+            }
+
             var sonogram = results.Item1;
             var hits = results.Item2;
             var scoreArray = results.Item3;
@@ -170,7 +175,7 @@ namespace AnalysisPrograms.Recognizers
 
         ///  <summary>
         ///  ################ THE KEY ANALYSIS METHOD for TRILLS
-        /// 
+        ///
         ///  See Anthony's ExempliGratia.Recognize() method in order to see how to use methods for config profiles.
         ///  </summary>
         /// <param name="recording"></param>
@@ -206,8 +211,10 @@ namespace AnalysisPrograms.Recognizers
 
             // duration of DCT in seconds - want it to be about 3X or 4X the expected maximum period
             double dctDuration = 4 * maxPeriod;
+
             // duration of DCT in frames
             int dctLength = (int)Math.Round(framesPerSecond * dctDuration);
+
             // set up the cosine coefficients
             double[,] cosines = MFCCStuff.Cosines(dctLength, dctLength);
 
@@ -218,10 +225,12 @@ namespace AnalysisPrograms.Recognizers
 
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
             int rowCount = sonogram.Data.GetLength(0);
+
             //int colCount = sonogram.Data.GetLength(1);
 
-            double[] lowerArray = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, lowerBandMinBin, (rowCount - 1), lowerBandMaxBin);
-            double[] upperArray = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, upperBandMinBin, (rowCount - 1), upperBandMaxBin);
+            double[] lowerArray = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, lowerBandMinBin, rowCount - 1, lowerBandMaxBin);
+            double[] upperArray = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, upperBandMinBin, rowCount - 1, upperBandMaxBin);
+
             //lowerArray = DataTools.filterMovingAverage(lowerArray, 3);
             //upperArray = DataTools.filterMovingAverage(upperArray, 3);
 
@@ -247,17 +256,21 @@ namespace AnalysisPrograms.Recognizers
             for (int i = 0; i < differenceScores.Length; i++)
             {
                 if (differenceScores[i] < 1.0)
+                {
                     differenceScores[i] = 0.0;
+                }
             }
 
             // LOOK FOR TRILL EVENTS
             // init the score array
             double[] scores = new double[rowCount];
+
             // var hits = new double[rowCount, colCount];
             double[,] hits = null;
 
             // init confirmed events
             var confirmedEvents = new List<AcousticEvent>();
+
             // add names into the returned events
             foreach (var ae in predictedTrillEvents)
             {
@@ -267,7 +280,7 @@ namespace AnalysisPrograms.Recognizers
                 double maximumIntensity = 0.0;
 
                 // scan the event to get oscillation period and intensity
-                for (int i = eventStart - (dctLength/2); i < eventStart + eventWidth - (dctLength/2); i += step)
+                for (int i = eventStart - (dctLength / 2); i < eventStart + eventWidth - (dctLength / 2); i += step)
                 {
                     // Look for oscillations in the difference array
                     double[] differenceArray = DataTools.Subarray(differenceScores, i, dctLength);
@@ -276,19 +289,27 @@ namespace AnalysisPrograms.Recognizers
                     double intensity;
                     Oscillations2014.GetOscillation(differenceArray, framesPerSecond, cosines, out oscilFreq, out period, out intensity);
 
-                    bool periodWithinBounds = (period > minPeriod) && (period < maxPeriod);
+                    bool periodWithinBounds = period > minPeriod && period < maxPeriod;
+
                     //Console.WriteLine($"step={i}    period={period:f4}");
 
-                    if (!periodWithinBounds) continue;
+                    if (!periodWithinBounds)
+                    {
+                        continue;
+                    }
 
                     for (int j = 0; j < dctLength; j++) //lay down score for sample length
                     {
                         if (scores[i + j] < intensity)
+                        {
                             scores[i + j] = intensity;
+                        }
                     }
 
-                    if (maximumIntensity < intensity) maximumIntensity = intensity;
-
+                    if (maximumIntensity < intensity)
+                    {
+                        maximumIntensity = intensity;
+                    }
                 }
 
                 // add abbreviatedSpeciesName into event
@@ -299,7 +320,6 @@ namespace AnalysisPrograms.Recognizers
                     ae.Profile = lwConfig.ProfileNames[0];
                     confirmedEvents.Add(ae);
                 }
-
             }
 
             //######################################################################
@@ -307,6 +327,7 @@ namespace AnalysisPrograms.Recognizers
             // CONVERT decibel sum-diff SCORES TO ACOUSTIC EVENTS
             double minDurationOfTink = lwConfig.MinDurationOfTink;  // seconds
             double maxDurationOfTink = lwConfig.MaxDurationOfTink;  // seconds
+
             // want stronger threshold for tink because brief.
             double tinkDecibelThreshold = lwConfig.DecibelThreshold + 3.0;
             var predictedTinkEvents = AcousticEvent.ConvertScoreArray2Events(
@@ -333,11 +354,12 @@ namespace AnalysisPrograms.Recognizers
                 //if (maximumIntensity >= intensityThreshold)
                 //{
                     ae2.Name = $"{lwConfig.AbbreviatedSpeciesName}.{lwConfig.ProfileNames[1]}";
+
                     //ae2.Score_MaxInEvent = maximumIntensity;
                     ae2.Profile = lwConfig.ProfileNames[1];
                     confirmedEvents.Add(ae2);
-                //}
 
+                //}
             }
 
             //######################################################################
@@ -365,6 +387,7 @@ namespace AnalysisPrograms.Recognizers
                 SourceFName = recording.BaseName,
                 WindowSize = 512,
                 WindowOverlap = 0,
+
                 // the default window is HAMMING
                 //WindowFunction = WindowFunctions.HANNING.ToString(),
                 //WindowFunction = WindowFunctions.NONE.ToString(),
@@ -375,7 +398,6 @@ namespace AnalysisPrograms.Recognizers
             BaseSonogram returnSonogram = new SpectrogramStandard(returnSonoConfig, recording.WavReader);
             return Tuple.Create(returnSonogram, hits, scores, confirmedEvents, debugImage);
         } //Analysis()
-
     } //end class LitoriaWatjulumensis.
 
     /// <summary>
@@ -384,21 +406,37 @@ namespace AnalysisPrograms.Recognizers
     internal class LitoriaWatjulumConfig
     {
         public string AnalysisName { get; set; }
+
         public string SpeciesName { get; set; }
+
         public string AbbreviatedSpeciesName { get; set; }
+
         public int UpperBandMinHz { get; set; }
+
         public int UpperBandMaxHz { get; set; }
+
         public int LowerBandMinHz { get; set; }
+
         public int LowerBandMaxHz { get; set; }
+
         public double MinPeriod { get; set; }
+
         public double MaxPeriod { get; set; }
+
         public double IntensityThreshold { get; set; }
+
         public double DecibelThreshold { get; set; }
+
         public double MinDurationOfTrill { get; set; }
+
         public double MaxDurationOfTrill { get; set; }
+
         public double EventThreshold { get; set; }
+
         public double MinDurationOfTink { get; set; }
+
         public double MaxDurationOfTink { get; set; }
+
         public string[] ProfileNames { get; set; }
 
         internal void ReadConfigFile(Config configuration)
@@ -419,6 +457,7 @@ namespace AnalysisPrograms.Recognizers
             {
                 throw new ConfigFileException($"The Config file for {this.SpeciesName} must contain at least one valid profile.");
             }
+
             this.ProfileNames = ConfigFile.GetProfileNames(configuration);
             foreach (var name in this.ProfileNames)
             {
@@ -441,6 +480,7 @@ namespace AnalysisPrograms.Recognizers
 
             // minimum duration in seconds of a trill event
             this.MinDurationOfTrill = trillProfile.GetDouble(AnalysisKeys.MinDuration); //:3
+
             // maximum duration in seconds of a trill event
             this.MaxDurationOfTrill = trillProfile.GetDouble(AnalysisKeys.MaxDuration); //: 15
             //// minimum acceptable value of a DCT coefficient
@@ -457,12 +497,12 @@ namespace AnalysisPrograms.Recognizers
             {
                 throw new ConfigFileException($"The Config file for {this.SpeciesName} must contain a \"Tink\" profile.");
             }
-            this.MinDurationOfTink = tinkProfile.GetDouble(AnalysisKeys.MinDuration); //
+
+            this.MinDurationOfTink = tinkProfile.GetDouble(AnalysisKeys.MinDuration);
+
             // maximum duration in seconds of a tink event
-            this.MaxDurationOfTink = tinkProfile.GetDouble(AnalysisKeys.MaxDuration); //
+            this.MaxDurationOfTink = tinkProfile.GetDouble(AnalysisKeys.MaxDuration);
             this.EventThreshold = trillProfile.GetDoubleOrNull(AnalysisKeys.EventThreshold) ?? 0.2;
         }
-
     } //class LitoriaWatjulumConfig
-
 }

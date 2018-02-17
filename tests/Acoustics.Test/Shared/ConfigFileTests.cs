@@ -176,7 +176,7 @@ namespace Acoustics.Test.Shared
             var file = ConfigFile.Resolve("Towsey.Acoustic.yml");
 
             // this mainly tests if the machinery works
-            var configuration = ConfigFile.Deserialize<Acoustic.AcousticIndicesConfig>(file);
+            var configuration = ConfigFile.Deserialize<AcousticIndices.AcousticIndicesConfig>(file);
 
             // we don't care so much about the value
             Assert.IsTrue(configuration.IndexCalculationDuration > 0);

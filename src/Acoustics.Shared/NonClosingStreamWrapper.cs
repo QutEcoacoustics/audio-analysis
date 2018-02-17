@@ -15,8 +15,6 @@ namespace Acoustics.Shared
     /// </summary>
     public sealed class NonClosingStreamWrapper : Stream
     {
-        #region Members specific to this wrapper class
-
         /// <summary>
         /// Creates a new instance of the class, wrapping the specified stream.
         /// </summary>
@@ -28,13 +26,14 @@ namespace Acoustics.Shared
             {
                 throw new ArgumentNullException("stream");
             }
+
             this.stream = stream;
         }
 
         private readonly Stream stream;
 
         /// <summary>
-        /// Stream wrapped by this wrapper
+        /// Gets stream wrapped by this wrapper
         /// </summary>
         public Stream BaseStream
         {
@@ -44,21 +43,19 @@ namespace Acoustics.Shared
         /// <summary>
         /// Whether this stream has been closed or not
         /// </summary>
-        bool closed = false;
+        private bool closed = false;
 
         /// <summary>
         /// Throws an InvalidOperationException if the wrapper is closed.
         /// </summary>
-        void CheckClosed()
+        private void CheckClosed()
         {
             if (this.closed)
             {
                 throw new InvalidOperationException("Wrapper has been closed or disposed");
             }
         }
-        #endregion
 
-        #region Overrides of Stream methods and properties
         /// <summary>
         /// Begins an asynchronous read operation.
         /// </summary>
@@ -110,7 +107,7 @@ namespace Acoustics.Shared
         }
 
         /// <summary>
-        /// Indicates whether or not the underlying stream can be read from.
+        /// Gets a value indicating whether indicates whether or not the underlying stream can be read from.
         /// </summary>
         public override bool CanRead
         {
@@ -118,7 +115,7 @@ namespace Acoustics.Shared
         }
 
         /// <summary>
-        /// Indicates whether or not the underlying stream supports seeking.
+        /// Gets a value indicating whether indicates whether or not the underlying stream supports seeking.
         /// </summary>
         public override bool CanSeek
         {
@@ -126,7 +123,7 @@ namespace Acoustics.Shared
         }
 
         /// <summary>
-        /// Indicates whether or not the underlying stream can be written to.
+        /// Gets a value indicating whether indicates whether or not the underlying stream can be written to.
         /// </summary>
         public override bool CanWrite
         {
@@ -144,6 +141,7 @@ namespace Acoustics.Shared
             {
                 this.stream.Flush();
             }
+
             this.closed = true;
         }
 
@@ -204,7 +202,7 @@ namespace Acoustics.Shared
         }
 
         /// <summary>
-        /// Returns the length of the underlying stream.
+        /// Gets returns the length of the underlying stream.
         /// </summary>
         public override long Length
         {
@@ -225,6 +223,7 @@ namespace Acoustics.Shared
                 this.CheckClosed();
                 return this.stream.Position;
             }
+
             set
             {
                 this.CheckClosed();
@@ -325,6 +324,5 @@ namespace Acoustics.Shared
             this.CheckClosed();
             this.stream.WriteByte(value);
         }
-        #endregion
     }
 }

@@ -131,18 +131,22 @@ namespace Acoustics.Shared
             {
                 sb.Append(" Image Width: " + this.WidthAtException.Value);
             }
+
             if (this.HeightAtException.HasValue)
             {
                 sb.Append(" Image Height: " + this.HeightAtException.Value);
             }
+
             if (this.AudioLengthAtException.HasValue)
             {
                 sb.Append(" Audio Length: " + this.AudioLengthAtException.Value + "ms");
             }
+
             if (!string.IsNullOrEmpty(this.Message))
             {
                 sb.Append(" " + this.Message + " ");
             }
+
             return sb + Environment.NewLine + base.ToString();
         }
 

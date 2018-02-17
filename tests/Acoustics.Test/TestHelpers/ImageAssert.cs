@@ -61,7 +61,7 @@ namespace Acoustics.Test.TestHelpers
 
                     var i = x - region.Left;
                     var j = y - region.Top;
-                    var index0 = (i * region.Height) + j;
+                    var index0 = i * region.Height + j;
                     if (indices.Contains(index0))
                     {
                         Debugger.Break();
@@ -155,7 +155,7 @@ namespace Acoustics.Test.TestHelpers
             var tiles = Enumerable.Range(1, repeats)
                 .Select(
                     i => actualImage.Clone(
-                        new Rectangle(region.X + (spacing * i), region.Y, region.Width, region.Height),
+                        new Rectangle(region.X + spacing * i, region.Y, region.Width, region.Height),
                         PixelFormat.DontCare));
 
             int index = 0;

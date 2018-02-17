@@ -74,7 +74,10 @@ namespace AudioAnalysisTools
                         var subM2 = MatrixTools.Submatrix(matrix, r - halfLength - 1, c - halfLength - 1, r + halfLength + 1, c + halfLength + 1); // extract NxN submatrix
                         NormalDist.AverageAndSD(subM2, out av, out sd);
                         double localThreshold = sd * 0.9;
-                        if ((subM[halfLength, halfLength] - av) < localThreshold) continue;
+                        if (subM[halfLength, halfLength] - av < localThreshold)
+                        {
+                            continue;
+                        }
 
                         // Ridge orientation Category only has four values, they are 0, 1, 2, 3.
                         //int orientationCategory = (int)Math.Round((direction * 8) / Math.PI);
@@ -180,40 +183,100 @@ namespace AudioAnalysisTools
                     if (ridgeMagnitudes[0] >= ridgeThreshold)
                     {
                         rhz[r, c] = ridgeMagnitudes[0];
-                        if (rhz[r, c + 1] < ridgeMagnitudes[0]) { rhz[r, c + 1] = ridgeMagnitudes[0]; }
-                        if (rhz[r, c - 1] < ridgeMagnitudes[0]) { rhz[r, c - 1] = ridgeMagnitudes[0]; }
-                        if (rhz[r, c + 2] < ridgeMagnitudes[0]) { rhz[r, c + 2] = ridgeMagnitudes[0]; }
-                        if (rhz[r, c - 2] < ridgeMagnitudes[0]) { rhz[r, c - 2] = ridgeMagnitudes[0]; }
+                        if (rhz[r, c + 1] < ridgeMagnitudes[0])
+                        {
+                            rhz[r, c + 1] = ridgeMagnitudes[0];
+                        }
+
+                        if (rhz[r, c - 1] < ridgeMagnitudes[0])
+                        {
+                            rhz[r, c - 1] = ridgeMagnitudes[0];
+                        }
+
+                        if (rhz[r, c + 2] < ridgeMagnitudes[0])
+                        {
+                            rhz[r, c + 2] = ridgeMagnitudes[0];
+                        }
+
+                        if (rhz[r, c - 2] < ridgeMagnitudes[0])
+                        {
+                            rhz[r, c - 2] = ridgeMagnitudes[0];
+                        }
                     }
 
                     // if (direction == 1, i.e. pos slope ridge) then add five magnitude values on a diagonal
                     if (ridgeMagnitudes[1] >= ridgeThreshold)
                     {
                         rps[r, c] = ridgeMagnitudes[1];
-                        if (rps[r - 1, c + 1] < ridgeMagnitudes[1]) { rps[r - 1, c + 1] = ridgeMagnitudes[1]; }
-                        if (rps[r + 1, c - 1] < ridgeMagnitudes[1]) { rps[r + 1, c - 1] = ridgeMagnitudes[1]; }
-                        if (rps[r - 2, c + 2] < ridgeMagnitudes[1]) { rps[r - 2, c + 2] = ridgeMagnitudes[1]; }
-                        if (rps[r + 2, c - 2] < ridgeMagnitudes[1]) { rps[r + 2, c - 2] = ridgeMagnitudes[1]; }
+                        if (rps[r - 1, c + 1] < ridgeMagnitudes[1])
+                        {
+                            rps[r - 1, c + 1] = ridgeMagnitudes[1];
+                        }
+
+                        if (rps[r + 1, c - 1] < ridgeMagnitudes[1])
+                        {
+                            rps[r + 1, c - 1] = ridgeMagnitudes[1];
+                        }
+
+                        if (rps[r - 2, c + 2] < ridgeMagnitudes[1])
+                        {
+                            rps[r - 2, c + 2] = ridgeMagnitudes[1];
+                        }
+
+                        if (rps[r + 2, c - 2] < ridgeMagnitudes[1])
+                        {
+                            rps[r + 2, c - 2] = ridgeMagnitudes[1];
+                        }
                     }
 
                     // if (direction == 2)
                     if (ridgeMagnitudes[2] >= ridgeThreshold)
                     {
                         rvt[r, c] = ridgeMagnitudes[2];
-                        if (rvt[r + 1, c] < ridgeMagnitudes[2]) { rvt[r + 1, c] = ridgeMagnitudes[2]; }
-                        if (rvt[r - 1, c] < ridgeMagnitudes[2]) { rvt[r - 1, c] = ridgeMagnitudes[2]; }
-                        if (rvt[r + 2, c] < ridgeMagnitudes[2]) { rvt[r + 2, c] = ridgeMagnitudes[2]; }
-                        if (rvt[r - 2, c] < ridgeMagnitudes[2]) { rvt[r - 2, c] = ridgeMagnitudes[2]; }
+                        if (rvt[r + 1, c] < ridgeMagnitudes[2])
+                        {
+                            rvt[r + 1, c] = ridgeMagnitudes[2];
+                        }
+
+                        if (rvt[r - 1, c] < ridgeMagnitudes[2])
+                        {
+                            rvt[r - 1, c] = ridgeMagnitudes[2];
+                        }
+
+                        if (rvt[r + 2, c] < ridgeMagnitudes[2])
+                        {
+                            rvt[r + 2, c] = ridgeMagnitudes[2];
+                        }
+
+                        if (rvt[r - 2, c] < ridgeMagnitudes[2])
+                        {
+                            rvt[r - 2, c] = ridgeMagnitudes[2];
+                        }
                     }
 
                     // if (direction == 3)
                     if (ridgeMagnitudes[3] >= ridgeThreshold)
                     {
                         rng[r, c] = ridgeMagnitudes[3];
-                        if (rng[r + 1, c + 1] < ridgeMagnitudes[3]) { rng[r + 1, c + 1] = ridgeMagnitudes[3]; }
-                        if (rng[r - 1, c - 1] < ridgeMagnitudes[3]) { rng[r - 1, c - 1] = ridgeMagnitudes[3]; }
-                        if (rng[r + 2, c + 2] < ridgeMagnitudes[3]) { rng[r + 2, c + 2] = ridgeMagnitudes[3]; }
-                        if (rng[r - 2, c - 2] < ridgeMagnitudes[3]) { rng[r - 2, c - 2] = ridgeMagnitudes[3]; }
+                        if (rng[r + 1, c + 1] < ridgeMagnitudes[3])
+                        {
+                            rng[r + 1, c + 1] = ridgeMagnitudes[3];
+                        }
+
+                        if (rng[r - 1, c - 1] < ridgeMagnitudes[3])
+                        {
+                            rng[r - 1, c - 1] = ridgeMagnitudes[3];
+                        }
+
+                        if (rng[r + 2, c + 2] < ridgeMagnitudes[3])
+                        {
+                            rng[r + 2, c + 2] = ridgeMagnitudes[3];
+                        }
+
+                        if (rng[r - 2, c - 2] < ridgeMagnitudes[3])
+                        {
+                            rng[r - 2, c - 2] = ridgeMagnitudes[3];
+                        }
                     }
                 }
             }
@@ -281,6 +344,7 @@ namespace AudioAnalysisTools
                     //if (hits[r, c] > 0) continue;
                     double magnitude = scores[r, c];
                     double direction = directions[r, c] - 1;
+
                     //if (magnitude > magnitudeThreshold)
                     if (magnitude > threshold)
                     {
@@ -289,7 +353,10 @@ namespace AudioAnalysisTools
                         var subM2 = MatrixTools.Submatrix(matrix, r - halfLength - 1, c - halfLength - 1, r + halfLength + 1, c + halfLength + 1); // extract NxN submatrix
                         NormalDist.AverageAndSD(subM2, out av, out sd);
                         double localThreshold = sd * 0.9;
-                        if ((subM2[halfLength + 1, halfLength + 1] - av) < localThreshold) continue;
+                        if (subM2[halfLength + 1, halfLength + 1] - av < localThreshold)
+                        {
+                            continue;
+                        }
 
                         // Ridge orientation Category only has four values, they are 0, 1, 2, 3.
                         //int orientationCategory = (int)Math.Round((direction * 8) / Math.PI);
@@ -349,6 +416,7 @@ namespace AudioAnalysisTools
             //double freqBinCount = spectrogram.Configuration.FreqBinCount; //256
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
+
             // will extract 7x7 image portions
             int halfLength = 3;
 
@@ -361,6 +429,7 @@ namespace AudioAnalysisTools
                 {
                     var subM = MatrixTools.Submatrix(matrix, r - halfLength, c - halfLength, r + halfLength, c + halfLength); // extract NxN submatrix
                     double magnitude;
+
                     // direction is multiple of pi/4, i.e. 0. pi/4, pi/2, 3pi/4.
                     double direction;
                     bool isRidge = false;
@@ -369,7 +438,7 @@ namespace AudioAnalysisTools
                     StructureTensor.RidgeTensorResult result = StructureTensor.RidgeDetection_VerticalDirection(subM);
 
                     //here are the rules for deciding whether have ridge or not.
-                    if ((result.AvMagnitude > magnitudeThreshold) && (result.AvDominance > dominanceThreshold))
+                    if (result.AvMagnitude > magnitudeThreshold && result.AvDominance > dominanceThreshold)
                     {
                             hits[r, c] = result.RidgeDirectionCategory;
                             hits[r - 1, c] = result.RidgeDirectionCategory;
@@ -398,12 +467,15 @@ namespace AudioAnalysisTools
         public static byte[,] IdentifySpectralRidges(double[,] matrix, double threshold)
         {
             var binary1 = IdentifyHorizontalRidges(matrix, threshold);
+
             //binary1 = JoinDisconnectedRidgesInBinaryMatrix(binary1, matrix, threshold);
 
             var m2 = DataTools.MatrixTranspose(matrix);
             var binary2 = IdentifyHorizontalRidges(m2, threshold);
+
             //binary2 = JoinDisconnectedRidgesInBinaryMatrix(binary2, m2, threshold);
             binary2 = DataTools.MatrixTranspose(binary2);
+
             //ImageTools.Sobel5X5RidgeDetection();
 
             //merge the two binary matrices
@@ -413,7 +485,10 @@ namespace AudioAnalysisTools
             {
                 for (int c = 0; c < cols; c++)
                 {
-                    if (binary2[r, c] == 1) binary1[r, c] = 1;
+                    if (binary2[r, c] == 1)
+                    {
+                        binary1[r, c] = 1;
+                    }
                 }
             }
 
@@ -439,8 +514,9 @@ namespace AudioAnalysisTools
                     double d4 = row[c] - row[c + 2];
                     double d5 = row[c] - row[c - 3];
                     double d6 = row[c] - row[c + 3];
+
                     //identify a peak
-                    if ((d1 > threshold) && (d2 > threshold) && (d3 > threshold) && (d4 > threshold) && (d5 > threshold) && (d6 > threshold))
+                    if (d1 > threshold && d2 > threshold && d3 > threshold && d4 > threshold && d5 > threshold && d6 > threshold)
                     {
                         binary[r, c] = 1;
                     }
@@ -467,13 +543,13 @@ namespace AudioAnalysisTools
                     double sumMid = matrix[r, c - 2] + matrix[r, c - 1] + matrix[r, c] + matrix[r, c + 1] + matrix[r, c + 2];
                     double sumBtm1 = matrix[r + 1, c - 2] + matrix[r + 1, c - 1] + matrix[r + 1, c] + matrix[r + 1, c + 1] + matrix[r + 1, c + 2];
                     double sumBtm2 = matrix[r + 2, c - 2] + matrix[r + 2, c - 1] + matrix[r + 2, c] + matrix[r + 2, c + 1] + matrix[r + 2, c + 2];
-                    double avTop = (sumTop2 + sumTop1) / (double)10;
-                    double avBtm = (sumBtm2 + sumBtm1) / (double)10;
-                    double avMdl = sumMid / (double)5;
+                    double avTop = (sumTop2 + sumTop1) / 10;
+                    double avBtm = (sumBtm2 + sumBtm1) / 10;
+                    double avMdl = sumMid / 5;
                     double dTop = avMdl - avTop;
                     double dBtm = avMdl - avBtm;
 
-                    if ((dTop > threshold) && (dBtm > threshold))
+                    if (dTop > threshold && dBtm > threshold)
                     {
                         binary[r, c - 2] = 1;
                         binary[r, c - 1] = 1;
@@ -481,7 +557,6 @@ namespace AudioAnalysisTools
                         binary[r, c + 1] = 1;
                         binary[r, c + 2] = 1;
                     }
-
                 } //end for every col
             } //end for every row
 
@@ -502,7 +577,11 @@ namespace AudioAnalysisTools
             {
                 for (int c = 3; c < cols - 3; c++)
                 {
-                    if (hits[r, c] == 0) continue; //no peak to join
+                    if (hits[r, c] == 0)
+                    {
+                        continue; //no peak to join
+                    }
+
                     //if (matrix[r, c] < threshold)
                     //{
                     //    hits[r, c] = 0;
@@ -513,49 +592,80 @@ namespace AudioAnalysisTools
 
                     //FIRST fill in pixels in the same column
                     // skip if adjacent pixels in next row also > zero
-                    if (hits[r + 1, c] > 0) continue;
-                    if (hits[r + 1, c - 1] > 0) newM[r, c - 1] = hits[r, c];
-                    if (hits[r + 1, c + 1] > 0) newM[r, c + 1] = hits[r, c];
+                    if (hits[r + 1, c] > 0)
+                    {
+                        continue;
+                    }
+
+                    if (hits[r + 1, c - 1] > 0)
+                    {
+                        newM[r, c - 1] = hits[r, c];
+                    }
+
+                    if (hits[r + 1, c + 1] > 0)
+                    {
+                        newM[r, c + 1] = hits[r, c];
+                    }
 
                     //if (hits[r + 1, c - 2] > 0) newM[r + 1, c - 1] = hits[r, c]; //fill gap
                     //if (hits[r + 1, c + 2] > 0) newM[r + 1, c + 1] = hits[r, c]; //fill gap
 
                     // fill in the same column
-                    if ((hits[r + 2, c] > 0) || (hits[r + 3, c] > 0))
+                    if (hits[r + 2, c] > 0 || hits[r + 3, c] > 0)
                     {
                         newM[r + 2, c] = hits[r, c]; //fill gap
                         newM[r + 3, c] = hits[r, c]; //fill gap
                     }
 
                     if (hits[r + 2, c - 1] > 0)
+                    {
                         newM[r + 1, c] = hits[r, c]; //fill gap
+                    }
+
                     if (hits[r + 2, c + 1] > 0)
+                    {
                         newM[r + 1, c] = hits[r, c]; //fill gap
+                    }
 
                     //if (hits[r + 2, c - 3] > 0) newM[r + 1, c - 2] = hits[r, c]; //fill gap
                     //if (hits[r + 2, c + 3] > 0) newM[r + 1, c + 2] = hits[r, c]; //fill gap
 
                     //SECOND fill in pixels in the same row
                     // skip if adjacent pixels in next column also > zero
-                    if (hits[r, c + 1] > 0) continue;
-                    if (hits[r - 1, c + 1] > 0) newM[r - 1, c] = hits[r, c];
-                    if (hits[r + 1, c + 1] > 0) newM[r + 1, c] = hits[r, c];
+                    if (hits[r, c + 1] > 0)
+                    {
+                        continue;
+                    }
+
+                    if (hits[r - 1, c + 1] > 0)
+                    {
+                        newM[r - 1, c] = hits[r, c];
+                    }
+
+                    if (hits[r + 1, c + 1] > 0)
+                    {
+                        newM[r + 1, c] = hits[r, c];
+                    }
 
                     //if (hits[r + 1, c - 2] > 0) newM[r + 1, c - 1] = hits[r, c]; //fill gap
                     //if (hits[r + 1, c + 2] > 0) newM[r + 1, c + 1] = hits[r, c]; //fill gap
 
                     // fill in the same row
-                    if ((hits[r, c + 2] > 0) || (hits[r, c + 3] > 0))
+                    if (hits[r, c + 2] > 0 || hits[r, c + 3] > 0)
                     {
                         newM[r, c + 2] = hits[r, c]; //fill gap
                         newM[r, c + 3] = hits[r, c]; //fill gap
                     }
 
                     if (hits[r - 1, c + 2] > 0)
+                    {
                         newM[r, c + 1] = hits[r, c]; //fill gap
-                    if (hits[r + 1, c + 2] > 0)
-                        newM[r, c + 1] = hits[r, c]; //fill gap
+                    }
 
+                    if (hits[r + 1, c + 2] > 0)
+                    {
+                        newM[r, c + 1] = hits[r, c]; //fill gap
+                    }
                 }
             }
 
@@ -582,10 +692,14 @@ namespace AudioAnalysisTools
             int rows = sonogram.GetLength(0);
             int cols = sonogram.GetLength(1);
             double[,] outM = new double[rows, cols];
+
             //initialise the output matrix/sonogram to the minimum acoustic intensity
             for (int r = 0; r < rows; r++) //init matrix to min
             {
-                for (int c = 0; c < cols; c++) outM[r, c] = minIntensity; //init output matrix to min value
+                for (int c = 0; c < cols; c++)
+                {
+                    outM[r, c] = minIntensity; //init output matrix to min value
+                }
             }
 
             double localdb;
@@ -593,16 +707,27 @@ namespace AudioAnalysisTools
             {
                 for (int c = cNH; c < cols - cNH; c++)
                 {
-                    if (binary[r, c] == 0.0) continue;
+                    if (binary[r, c] == 0.0)
+                    {
+                        continue;
+                    }
 
                     localdb = sonogram[r, c] - 3.0; //local lower bound = twice min perceptible difference
+
                     //scan neighbourhood
-                    for (int i = r - rNH; i <= (r + rNH); i++)
+                    for (int i = r - rNH; i <= r + rNH; i++)
                     {
-                        for (int j = c - cNH; j <= (c + cNH); j++)
+                        for (int j = c - cNH; j <= c + cNH; j++)
                         {
-                            if (sonogram[i, j] > localdb) outM[i, j] = sonogram[i, j];
-                            if (outM[i, j] < minIntensity) outM[i, j] = minIntensity;
+                            if (sonogram[i, j] > localdb)
+                            {
+                                outM[i, j] = sonogram[i, j];
+                            }
+
+                            if (outM[i, j] < minIntensity)
+                            {
+                                outM[i, j] = minIntensity;
+                            }
                         }
                     } //end local NH
                 }
@@ -624,14 +749,16 @@ namespace AudioAnalysisTools
                 for (int c = 2; c < cols - 2; c++)
                 {
                     //identify a peak
-                    if ((matrix[r, c] > matrix[r, c - 2] + buffer) && (matrix[r, c] > matrix[r, c + 2] + buffer)
+                    if (matrix[r, c] > matrix[r, c - 2] + buffer && matrix[r, c] > matrix[r, c + 2] + buffer
+
                         //same row
-                        && (matrix[r, c] > matrix[r - 2, c] + buffer) && (matrix[r, c] > matrix[r + 2, c] + buffer)
+                        && matrix[r, c] > matrix[r - 2, c] + buffer && matrix[r, c] > matrix[r + 2, c] + buffer
+
                         //same col
-                        && (matrix[r, c] > matrix[r - 1, c - 1] + buffer)
-                        && (matrix[r, c] > matrix[r + 1, c + 1] + buffer) //diagonal
-                        && (matrix[r, c] > matrix[r - 1, c + 1] + buffer)
-                        && (matrix[r, c] > matrix[r + 1, c - 1] + buffer)) //other diag
+                        && matrix[r, c] > matrix[r - 1, c - 1] + buffer
+                        && matrix[r, c] > matrix[r + 1, c + 1] + buffer //diagonal
+                        && matrix[r, c] > matrix[r - 1, c + 1] + buffer
+                        && matrix[r, c] > matrix[r + 1, c - 1] + buffer) //other diag
                     {
                         binary[r, c] = 1.0; // maxIntensity;
                         binary[r - 1, c - 1] = 1.0; // maxIntensity;
@@ -655,7 +782,5 @@ namespace AudioAnalysisTools
 
             return binary;
         }
-
     }
-
 }

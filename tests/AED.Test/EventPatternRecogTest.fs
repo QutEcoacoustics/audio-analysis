@@ -28,9 +28,9 @@ let fromCsv =
     let f = Path.Combine( (Common.basePath Common.matlabPath), md.Dir , "EPRCandidates.csv")
     let ls = System.IO.File.ReadAllLines f |> List.ofArray
     
-    let g x = split [|' '|] x |> Seq.map (fun s -> let n = System.Convert.ToInt32 s - 1 in Seq.nth n aes)    
-    let (mcs, scores) = List.map (fun l -> let es = split [|','|] l in (Seq.nth 5 es |> g, Seq.nth 6 es |> System.Convert.ToDouble)) ls |> List.unzip
-    let msaes = Seq.map (Seq.nth 0 << Seq.sort) mcs
+    let g x = split [|' '|] x |> Seq.map (fun s -> let n = System.Convert.ToInt32 s - 1 in Seq.item n aes)    
+    let (mcs, scores) = List.map (fun l -> let es = split [|','|] l in (Seq.item 5 es |> g, Seq.item 6 es |> System.Convert.ToDouble)) ls |> List.unzip
+    let msaes = Seq.map (Seq.item 0 << Seq.sort) mcs
     (aes, msaes, mcs, scores)
         
 [<Fact>]

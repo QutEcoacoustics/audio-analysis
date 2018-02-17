@@ -24,14 +24,10 @@ namespace Be.Timvw.Framework.Collections.Generic
             this.SetListSortDirection(direction);
         }
 
-        #region IComparer<T> Members
-
         public int Compare(T x, T y)
         {
             return this.reverse * this.comparer.Compare(this.propertyDescriptor.GetValue(x), this.propertyDescriptor.GetValue(y));
         }
-
-        #endregion
 
         private void SetPropertyDescriptor(PropertyDescriptor descriptor)
         {

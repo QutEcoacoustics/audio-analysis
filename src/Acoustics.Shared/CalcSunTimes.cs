@@ -17,8 +17,6 @@ namespace Acoustics.Shared
     /// </summary>
     public sealed class SunTimes
     {
-        #region Private Data Members
-
         private object mLock = new object();
 
         private const double mDR = Math.PI / 180;
@@ -37,20 +35,16 @@ namespace Acoustics.Shared
         private bool mIsSunrise = false;
         private bool mIsSunset = false;
 
-        #endregion
+        private static readonly SunTimes MInstance = new SunTimes();    // The singleton instance
 
-        #region Singleton
-
-        private static readonly SunTimes mInstance = new SunTimes();    // The singleton instance
-
-        private SunTimes() { }
+        private SunTimes()
+        {
+        }
 
         public static SunTimes Instance
         {
-            get { return mInstance; }
+            get { return MInstance; }
         }
-
-        #endregion
 
         public abstract class Coords
         {
@@ -71,8 +65,9 @@ namespace Acoustics.Shared
             public enum Direction
             {
                 North,
-                South
+                South,
             }
+
             protected internal Direction mDirection = Direction.North;
 
             public LatitudeCoords(int degrees, int minutes, int seconds, Direction direction)
@@ -85,7 +80,7 @@ namespace Acoustics.Shared
 
             protected internal override int Sign()
             {
-                return (this.mDirection == Direction.North ? 1 : -1);
+                return this.mDirection == Direction.North ? 1 : -1;
             }
         }
 
@@ -94,7 +89,7 @@ namespace Acoustics.Shared
             public enum Direction
             {
                 East,
-                West
+                West,
             }
 
             protected internal Direction mDirection = Direction.East;
@@ -109,7 +104,7 @@ namespace Acoustics.Shared
 
             protected internal override int Sign()
             {
-                return (this.mDirection == Direction.East ? 1 : -1);
+                return this.mDirection == Direction.East ? 1 : -1;
             }
         }
 
@@ -144,12 +139,12 @@ namespace Acoustics.Shared
                                                 ref DateTime riseTime, ref DateTime setTime,
                                                 ref bool isSunrise, ref bool isSunset)
         {
-            lock (this.mLock)    // lock for thread safety
+            lock (this.mLock) // lock for thread safety
             {
                 double zone = -(int)Math.Round(TimeZone.CurrentTimeZone.GetUtcOffset(date).TotalSeconds / 3600);
                 double jd = this.GetJulianDay(date) - 2451545;  // Julian day relative to Jan 1.5, 2000
 
-                if ((this.Sign(zone) == this.Sign(lon)) && (zone != 0))
+                if (this.Sign(zone) == this.Sign(lon) && zone != 0)
                 {
                     Debug.Print("WARNING: time zone and longitude are incompatible!");
                     return false;
@@ -157,7 +152,7 @@ namespace Acoustics.Shared
 
                 lon = lon / 360;
                 double tz = zone / 24;
-                double ct = jd / 36525 + 1;                                 // centuries since 1900.0
+                double ct = (jd / 36525) + 1;                                 // centuries since 1900.0
                 double t0 = this.LocalSiderealTimeForTimeZone(lon, jd, tz);      // local sidereal time
 
                 // get sun position at start of day
@@ -174,7 +169,9 @@ namespace Acoustics.Shared
 
                 // make continuous
                 if (ra1 < ra0)
+                {
                     ra1 += 2 * Math.PI;
+                }
 
                 // initialize
                 this.mIsSunrise = false;
@@ -186,8 +183,8 @@ namespace Acoustics.Shared
                 // check each hour of this day
                 for (int k = 0; k < 24; k++)
                 {
-                    this.mRightAscentionArr[2] = ra0 + (k + 1) * (ra1 - ra0) / 24;
-                    this.mDecensionArr[2] = dec0 + (k + 1) * (dec1 - dec0) / 24;
+                    this.mRightAscentionArr[2] = ra0 + ((k + 1) * (ra1 - ra0) / 24);
+                    this.mDecensionArr[2] = dec0 + ((k + 1) * (dec1 - dec0) / 24);
                     this.mVHzArr[2] = this.TestHour(k, zone, t0, lat);
 
                     // advance to next hour
@@ -203,37 +200,53 @@ namespace Acoustics.Shared
                 isSunrise = true;
 
                 // neither sunrise nor sunset
-                if ((!this.mIsSunrise) && (!this.mIsSunset))
+                if (!this.mIsSunrise && !this.mIsSunset)
                 {
                     if (this.mVHzArr[2] < 0)
+                    {
                         isSunrise = false; // Sun down all day
+                    }
                     else
+                    {
                         isSunset = false; // Sun up all day
+                    }
                 }
+
                 // sunrise or sunset
                 else
                 {
                     if (!this.mIsSunrise)
+                    {
                         // No sunrise this date
                         isSunrise = false;
+                    }
                     else if (!this.mIsSunset)
+                    {
                         // No sunset this date
                         isSunset = false;
+                    }
                 }
 
                 return true;
             }
         }
 
-        #region Private Methods
-
         private int Sign(double value)
         {
             int rv = 0;
 
-            if (value > 0.0) rv = 1;
-            else if (value < 0.0) rv = -1;
-            else rv = 0;
+            if (value > 0.0)
+            {
+                rv = 1;
+            }
+            else if (value < 0.0)
+            {
+                rv = -1;
+            }
+            else
+            {
+                rv = 0;
+            }
 
             return rv;
         }
@@ -241,7 +254,7 @@ namespace Acoustics.Shared
         // Local Sidereal Time for zone
         private double LocalSiderealTimeForTimeZone(double lon, double jd, double z)
         {
-            double s = 24110.5 + 8640184.812999999 * jd / 36525 + 86636.6 * z + 86400 * lon;
+            double s = 24110.5 + (8640184.812999999 * jd / 36525) + (86636.6 * z) + (86400 * lon);
             s = s / 86400;
             s = s - Math.Floor(s);
             return s * 360 * mDR;
@@ -255,9 +268,9 @@ namespace Acoustics.Shared
             int day = date.Day;
             int year = date.Year;
 
-            bool gregorian = (year < 1583) ? false : true;
+            bool gregorian = year < 1583 ? false : true;
 
-            if ((month == 1) || (month == 2))
+            if (month == 1 || month == 2)
             {
                 year = year - 1;
                 month = month + 12;
@@ -267,9 +280,13 @@ namespace Acoustics.Shared
             double b = 0;
 
             if (gregorian)
+            {
                 b = 2 - a + Math.Floor(a / 4);
+            }
             else
+            {
                 b = 0.0;
+            }
 
             double jd = Math.Floor(365.25 * (year + 4716))
                        + Math.Floor(30.6001 * (month + 1))
@@ -284,36 +301,36 @@ namespace Acoustics.Shared
         {
             double g, lo, s, u, v, w;
 
-            lo = 0.779072 + 0.00273790931 * jd;
+            lo = 0.779072 + (0.00273790931 * jd);
             lo = lo - Math.Floor(lo);
             lo = lo * 2 * Math.PI;
 
-            g = 0.993126 + 0.0027377785 * jd;
+            g = 0.993126 + (0.0027377785 * jd);
             g = g - Math.Floor(g);
             g = g * 2 * Math.PI;
 
             v = 0.39785 * Math.Sin(lo);
-            v = v - 0.01 * Math.Sin(lo - g);
-            v = v + 0.00333 * Math.Sin(lo + g);
-            v = v - 0.00021 * ct * Math.Sin(lo);
+            v = v - (0.01 * Math.Sin(lo - g));
+            v = v + (0.00333 * Math.Sin(lo + g));
+            v = v - (0.00021 * ct * Math.Sin(lo));
 
-            u = 1 - 0.03349 * Math.Cos(g);
-            u = u - 0.00014 * Math.Cos(2 * lo);
-            u = u + 0.00008 * Math.Cos(lo);
+            u = 1 - (0.03349 * Math.Cos(g));
+            u = u - (0.00014 * Math.Cos(2 * lo));
+            u = u + (0.00008 * Math.Cos(lo));
 
-            w = -0.0001 - 0.04129 * Math.Sin(2 * lo);
-            w = w + 0.03211 * Math.Sin(g);
-            w = w + 0.00104 * Math.Sin(2 * lo - g);
-            w = w - 0.00035 * Math.Sin(2 * lo + g);
-            w = w - 0.00008 * ct * Math.Sin(g);
+            w = -0.0001 - (0.04129 * Math.Sin(2 * lo));
+            w = w + (0.03211 * Math.Sin(g));
+            w = w + (0.00104 * Math.Sin((2 * lo) - g));
+            w = w - (0.00035 * Math.Sin((2 * lo) + g));
+            w = w - (0.00008 * ct * Math.Sin(g));
 
             // compute sun's right ascension
-            s = w / Math.Sqrt(u - v * v);
-            this.mSunPositionInSkyArr[0] = lo + Math.Atan(s / Math.Sqrt(1 - s * s));
+            s = w / Math.Sqrt(u - (v * v));
+            this.mSunPositionInSkyArr[0] = lo + Math.Atan(s / Math.Sqrt(1 - (s * s)));
 
             // ...and declination
             s = v / Math.Sqrt(u);
-            this.mSunPositionInSkyArr[1] = Math.Atan(s / Math.Sqrt(1 - s * s));
+            this.mSunPositionInSkyArr[1] = Math.Atan(s / Math.Sqrt(1 - (s * s)));
         }
 
         // test an hour for an event
@@ -325,8 +342,8 @@ namespace Acoustics.Shared
             int hr, min;
             double az, dz, hz, nz;
 
-            ha[0] = t0 - this.mRightAscentionArr[0] + k * mK1;
-            ha[2] = t0 - this.mRightAscentionArr[2] + k * mK1 + mK1;
+            ha[0] = t0 - this.mRightAscentionArr[0] + (k * mK1);
+            ha[2] = t0 - this.mRightAscentionArr[2] + (k * mK1) + mK1;
 
             ha[1] = (ha[2] + ha[0]) / 2;    // hour angle at half hour
             this.mDecensionArr[1] = (this.mDecensionArr[2] + this.mDecensionArr[0]) / 2;  // declination at half hour
@@ -336,40 +353,51 @@ namespace Acoustics.Shared
             z = Math.Cos(90.833 * mDR);    // refraction + sun semidiameter at horizon
 
             if (k <= 0)
-                this.mVHzArr[0] = s * Math.Sin(this.mDecensionArr[0]) + c * Math.Cos(this.mDecensionArr[0]) * Math.Cos(ha[0]) - z;
+            {
+                this.mVHzArr[0] = (s * Math.Sin(this.mDecensionArr[0])) + (c * Math.Cos(this.mDecensionArr[0]) * Math.Cos(ha[0])) - z;
+            }
 
-            this.mVHzArr[2] = s * Math.Sin(this.mDecensionArr[2]) + c * Math.Cos(this.mDecensionArr[2]) * Math.Cos(ha[2]) - z;
+            this.mVHzArr[2] = (s * Math.Sin(this.mDecensionArr[2])) + (c * Math.Cos(this.mDecensionArr[2]) * Math.Cos(ha[2])) - z;
 
             if (this.Sign(this.mVHzArr[0]) == this.Sign(this.mVHzArr[2]))
+            {
                 return this.mVHzArr[2];  // no event this hour
+            }
 
-            this.mVHzArr[1] = s * Math.Sin(this.mDecensionArr[1]) + c * Math.Cos(this.mDecensionArr[1]) * Math.Cos(ha[1]) - z;
+            this.mVHzArr[1] = (s * Math.Sin(this.mDecensionArr[1])) + (c * Math.Cos(this.mDecensionArr[1]) * Math.Cos(ha[1])) - z;
 
-            a = 2 * this.mVHzArr[0] - 4 * this.mVHzArr[1] + 2 * this.mVHzArr[2];
-            b = -3 * this.mVHzArr[0] + 4 * this.mVHzArr[1] - this.mVHzArr[2];
-            d = b * b - 4 * a * this.mVHzArr[0];
+            a = (2 * this.mVHzArr[0]) - (4 * this.mVHzArr[1]) + (2 * this.mVHzArr[2]);
+            b = (-3 * this.mVHzArr[0]) + (4 * this.mVHzArr[1]) - this.mVHzArr[2];
+            d = (b * b) - (4 * a * this.mVHzArr[0]);
 
             if (d < 0)
+            {
                 return this.mVHzArr[2];  // no event this hour
+            }
 
             d = Math.Sqrt(d);
             e = (-b + d) / (2 * a);
 
-            if ((e > 1) || (e < 0))
+            if (e > 1 || e < 0)
+            {
                 e = (-b - d) / (2 * a);
+            }
 
-            time = (double)k + e + (double)1 / (double)120; // time of an event
+            time = k + e + (1 / (double)120); // time of an event
 
             hr = (int)Math.Floor(time);
             min = (int)Math.Floor((time - hr) * 60);
 
-            hz = ha[0] + e * (ha[2] - ha[0]);                 // azimuth of the sun at the event
+            hz = ha[0] + (e * (ha[2] - ha[0]));                 // azimuth of the sun at the event
             nz = -Math.Cos(this.mDecensionArr[1]) * Math.Sin(hz);
-            dz = c * Math.Sin(this.mDecensionArr[1]) - s * Math.Cos(this.mDecensionArr[1]) * Math.Cos(hz);
+            dz = (c * Math.Sin(this.mDecensionArr[1])) - (s * Math.Cos(this.mDecensionArr[1]) * Math.Cos(hz));
             az = Math.Atan2(nz, dz) / mDR;
-            if (az < 0) az = az + 360;
+            if (az < 0)
+            {
+                az = az + 360;
+            }
 
-            if ((this.mVHzArr[0] < 0) && (this.mVHzArr[2] > 0))
+            if (this.mVHzArr[0] < 0 && this.mVHzArr[2] > 0)
             {
                 this.mRiseTimeArr[0] = hr;
                 this.mRiseTimeArr[1] = min;
@@ -377,7 +405,7 @@ namespace Acoustics.Shared
                 this.mIsSunrise = true;
             }
 
-            if ((this.mVHzArr[0] > 0) && (this.mVHzArr[2] < 0))
+            if (this.mVHzArr[0] > 0 && this.mVHzArr[2] < 0)
             {
                 this.mSetTimeArr[0] = hr;
                 this.mSetTimeArr[1] = min;
@@ -387,7 +415,5 @@ namespace Acoustics.Shared
 
             return this.mVHzArr[2];
         }
-
-        #endregion  // Private Methods
     }
 }

@@ -28,7 +28,7 @@ namespace Acoustics.Shared
         /// Descending sort order.
         /// </summary>
         [Description("DESC")]
-        Descending
+        Descending,
     }
 
     /// <summary>
@@ -228,5 +228,4 @@ namespace Acoustics.Shared
             string result = query.Expression.ToString();
         }
     }
-
 }

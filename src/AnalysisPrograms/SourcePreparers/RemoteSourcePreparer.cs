@@ -1,3 +1,7 @@
+// <copyright file="RemoteSourcePreparer.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
 namespace AnalysisPrograms.SourcePreparers
 {
     using System;
@@ -40,7 +44,7 @@ namespace AnalysisPrograms.SourcePreparers
         public long TotalBytesRecieved => this.recievedSizeTracker.Sum();
 
         /// <summary>
-        /// Prepare an audio file. This will be a single segment of a larger audio file, 
+        /// Prepare an audio file. This will be a single segment of a larger audio file,
         /// modified based on the provided settings.
         /// </summary>
         /// <param name="outputDirectory">
@@ -223,7 +227,7 @@ namespace AnalysisPrograms.SourcePreparers
             // 0 - mixdown all channels
             // n - select nth channel
             byte? channel = (mixDownToMono ?? false)
-                ? (byte)0
+                ? 0
                 : (channelSelection == null ? (byte?)null : (byte)channelSelection[0]);
 
             int attemptCount = 0;

@@ -152,7 +152,7 @@ namespace System.Drawing
 
             var returnImage = new Bitmap(
                 width.HasValue ? width.Value : sourceImage.Width,
-                height.HasValue ? height.Value : (sourceImage.Height - amountToRemove));
+                height.HasValue ? height.Value : sourceImage.Height - amountToRemove);
 
             var destRectangle = new Rectangle(0, 0, returnImage.Width, returnImage.Height);
 
@@ -161,6 +161,7 @@ namespace System.Drawing
                 using (var graphics = Graphics.FromImage(returnImage))
                 {
                     graphics.DrawImage(sourceImage, destRectangle, sourceRectangle, GraphicsUnit.Pixel);
+
                     //GraphicsSegmented.Draw(graphics, sourceImage, returnImage.Height, returnImage.Width);
                 }
             }
@@ -169,7 +170,7 @@ namespace System.Drawing
                 if (ex.Message.Contains("Parameter is not valid"))
                 {
                     throw new ImageTooLargeForGraphicsException(
-                        returnImage == null ? new int?() : returnImage.Width,
+                        returnImage == null ? default(int?) : returnImage.Width,
                         returnImage == null ? new int?() : returnImage.Height,
                         null,
                         "Graphics error drawing spectrogram.",

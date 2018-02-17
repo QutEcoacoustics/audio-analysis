@@ -183,6 +183,7 @@ namespace System
                 desc = desc.Trim(',', ' ');
                 return desc;
             }
+
             return string.Empty;
         }
 
@@ -201,19 +202,19 @@ namespace System
 
             if (byteCount >= 1099511627776)
             {
-                size = string.Format("{0:##.#}", (float)byteCount / (float)1099511627776) + " tb";
+                size = string.Format("{0:##.#}", byteCount / 1099511627776F) + " tb";
             }
             else if (byteCount >= 1073741824)
             {
-                size = string.Format("{0:##.#}", (float)byteCount / (float)1073741824) + " gb";
+                size = string.Format("{0:##.#}", byteCount / 1073741824F) + " gb";
             }
             else if (byteCount >= 1048576)
             {
-                size = string.Format("{0:##.#}", (float)byteCount / (float)1048576) + " mb";
+                size = string.Format("{0:##.#}", byteCount / 1048576F) + " mb";
             }
             else if (byteCount >= 1024)
             {
-                size = string.Format("{0:##.#}", (float)byteCount / (float)1024) + " kb";
+                size = string.Format("{0:##.#}", byteCount / 1024F) + " kb";
             }
             else if (byteCount >= 1)
             {
@@ -280,7 +281,7 @@ namespace System
             return values.Keys.Select(k => k.ToLowerInvariant() + "=" + values[k]).Aggregate((a, b) => a + "&" + b);
         }
 
-#if ! SILVERLIGHT
+#if !SILVERLIGHT
 
         /// <summary>
         /// Gets ExecutingDirectory.
@@ -336,7 +337,10 @@ namespace System
         {
             SortedDictionary<TKey, TValue> result = new SortedDictionary<TKey, TValue>();
             foreach (var e in l)
+            {
                 result[e.Key] = e.Value;
+            }
+
             return result;
         }
 
@@ -360,7 +364,7 @@ namespace System
 
         public static IEnumerable<T> Prepend<T>(this IEnumerable<T> items, T item)
         {
-            return (new []{item}).Concat(items);
+            return new[] { item }.Concat(items);
         }
 
         public static void AddRange<T>(this IList<T> list, IEnumerable<T> values)
@@ -368,7 +372,9 @@ namespace System
             if (values != null)
             {
                 foreach (var item in values)
+                {
                     list.Add(item);
+                }
             }
         }
 
@@ -409,26 +415,67 @@ namespace System
         public static IQueryable<T> PageByIndex<T>(this IQueryable<T> value, int? startIndex, int? length)
         {
             if (startIndex != null)
+            {
                 value = value.Skip(startIndex.Value);
+            }
+
             if (length != null)
+            {
                 value = value.Take(length.Value);
+            }
+
             return value;
         }
 
-        public static TSource MaxOrDefault<TSource>(this IEnumerable<TSource> source) { return source.MaxOrDefault<TSource, TSource>(s => s); }
-        public static TSource MaxOrDefault<TSource>(this IEnumerable<TSource> source, TSource defaultValue) { return source.MaxOrDefault<TSource, TSource>(s => s, defaultValue); }
-        public static TResult MaxOrDefault<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> selector) { return source.MaxOrDefault(selector, default(TResult)); }
-        public static TResult MaxOrDefault<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> selector, TResult defaultValue) { return source.Any() ? source.Max(selector) : defaultValue; }
+        public static TSource MaxOrDefault<TSource>(this IEnumerable<TSource> source)
+        {
+            return source.MaxOrDefault<TSource, TSource>(s => s);
+        }
 
-        public static TSource MinOrDefault<TSource>(this IEnumerable<TSource> source) { return source.MinOrDefault<TSource, TSource>(s => s); }
-        public static TSource MinOrDefault<TSource>(this IEnumerable<TSource> source, TSource defaultValue) { return source.MinOrDefault<TSource, TSource>(s => s, defaultValue); }
-        public static TResult MinOrDefault<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> selector) { return source.MinOrDefault(selector, default(TResult)); }
-        public static TResult MinOrDefault<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> selector, TResult defaultValue) { return source.Any() ? source.Min(selector) : defaultValue; }
+        public static TSource MaxOrDefault<TSource>(this IEnumerable<TSource> source, TSource defaultValue)
+        {
+            return source.MaxOrDefault<TSource, TSource>(s => s, defaultValue);
+        }
 
+        public static TResult MaxOrDefault<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> selector)
+        {
+            return source.MaxOrDefault(selector, default(TResult));
+        }
 
+        public static TResult MaxOrDefault<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> selector, TResult defaultValue)
+        {
+            return source.Any() ? source.Max(selector) : defaultValue;
+        }
 
-        public static Expression<Func<T, bool>> True<T>() { return f => true; }
-        public static Expression<Func<T, bool>> False<T>() { return f => false; }
+        public static TSource MinOrDefault<TSource>(this IEnumerable<TSource> source)
+        {
+            return source.MinOrDefault<TSource, TSource>(s => s);
+        }
+
+        public static TSource MinOrDefault<TSource>(this IEnumerable<TSource> source, TSource defaultValue)
+        {
+            return source.MinOrDefault<TSource, TSource>(s => s, defaultValue);
+        }
+
+        public static TResult MinOrDefault<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> selector)
+        {
+            return source.MinOrDefault(selector, default(TResult));
+        }
+
+        public static TResult MinOrDefault<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> selector, TResult defaultValue)
+        {
+            return source.Any() ? source.Min(selector) : defaultValue;
+        }
+
+        public static Expression<Func<T, bool>> True<T>()
+        {
+            return f => true;
+        }
+
+        public static Expression<Func<T, bool>> False<T>()
+        {
+            return f => false;
+        }
 
         public static Expression<Func<T, bool>> Or<T>(this Expression<Func<T, bool>> expr1,
                                                             Expression<Func<T, bool>> expr2)
@@ -447,7 +494,6 @@ namespace System
 
 #endif
     }
-
 
     public static class ProcessExtensions
     {
@@ -511,7 +557,10 @@ namespace System
                 ParentProcessUtilities pbi = new ParentProcessUtilities();
                 int returnLength;
                 int status = NtQueryInformationProcess(handle, 0, ref pbi, Marshal.SizeOf(pbi), out returnLength);
-                if (status != 0) throw new Win32Exception(status);
+                if (status != 0)
+                {
+                    throw new Win32Exception(status);
+                }
 
                 try
                 {
@@ -527,28 +576,3 @@ namespace System
 #endif
     }
 }
-
-#if ! SILVERLIGHT
-namespace PInvoke
-{
-    using System;
-    using System.Runtime.InteropServices;
-
-    /// <summary>PInvoke extras.
-    /// </summary>
-    public class ObjBase
-    {
-        /// <summary>
-        /// This function converts a string generated by the StringFromCLSID function back into the original class identifier.
-        /// </summary>
-        /// <param name="sz">String that represents the class identifier.</param>
-        /// <param name="clsid">On return will contain the class identifier.</param>
-        /// <returns>
-        /// Positive or zero if class identifier was obtained successfully.
-        /// Negative if the call failed.
-        /// </returns>
-        [DllImport("ole32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, PreserveSig = true)]
-        public static extern int CLSIDFromString(string sz, out Guid clsid);
-    }
-}
-#endif

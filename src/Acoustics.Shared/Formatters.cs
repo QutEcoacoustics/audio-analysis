@@ -82,7 +82,7 @@ namespace Acoustics.Shared
                 case "ffff":
                     return (timeSpan.Milliseconds * 10).ToString("0000");
                 case "fff":
-                    return (timeSpan.Milliseconds).ToString("000");
+                    return timeSpan.Milliseconds.ToString("000");
                 case "ff":
                     return (timeSpan.Milliseconds / 10).ToString("00");
                 case "f":

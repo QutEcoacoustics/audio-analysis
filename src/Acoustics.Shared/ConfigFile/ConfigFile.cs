@@ -256,6 +256,7 @@ namespace Acoustics.Shared.ConfigFile
                     return true;
                 }
             }
+
             return false;
         }
     }

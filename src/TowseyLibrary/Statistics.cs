@@ -1,4 +1,8 @@
-﻿namespace TowseyLibrary
+﻿// <copyright file="Statistics.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace TowseyLibrary
 {
     using System;
     using System.Collections.Generic;
@@ -10,16 +14,12 @@
     /// </summary>
     public class Statistics
     {
-
-
-
         public static double GetMedian(double[] v)
         {
             Tuple<int[], double[]> tuple = DataTools.SortArray(v);
             double median = tuple.Item2[v.Length / 2];
             return median;
         }
-
 
         /// <summary>
         /// Analyses an array of events or hits, represented by a binary of matrix.
@@ -38,14 +38,19 @@
             int frameCount = hits.Length;
             int hitCount = DataTools.CountPositives(hits);
 
-            expectedHits = (double)hitCount * window / (double)frameCount;
+            expectedHits = (double)hitCount * window / frameCount;
             sd = Math.Sqrt(expectedHits); //assume Poisson Distribution
 
             //LoggedConsole.WriteLine("hitCount="+hitCount+"  expectedHits = " + expectedHits + "+/-" + sd+"  thresholdSum="+thresholdSum);
             int offset = (int)(window * 0.5); //assign score to position in window
             int sum = 0;
-            for (int i = 0; i < window; i++) if (hits[i] > 0) sum++;  //set up the song window
-
+            for (int i = 0; i < window; i++)
+            {
+                if (hits[i] > 0)
+                {
+                    sum++;  //set up the song window
+                }
+            }
 
             //now calculate z-scores for the number of syllable hits in a window
             zScores = new double[frameCount];
@@ -59,10 +64,10 @@
                 {
                     zScores[i - offset] = (sum - expectedHits) / sd;
                 }
+
                 sum = sum - hits[i - window] + hits[i]; //move the songwindow
             }
         }
-
 
         public static string tStatisticAndSignificance(double m1, double sd1, int count1,
                                         double m2, double sd2, int count2)
@@ -72,14 +77,33 @@
             double p = tStatisticAlpha(Math.Abs(t), df);
             StringBuilder sb = new StringBuilder("t=" + t.ToString("F3"));
             sb.Append(" p=" + p.ToString("F4"));
-            if (p == 0.050) sb.Append("*");
-            if (p == 0.025) sb.Append("*");
-            if (p == 0.010) sb.Append("**");
-            if (p == 0.005) sb.Append("**");
-            if (p <= 0.001) sb.Append("***");
+            if (p == 0.050)
+            {
+                sb.Append("*");
+            }
+
+            if (p == 0.025)
+            {
+                sb.Append("*");
+            }
+
+            if (p == 0.010)
+            {
+                sb.Append("**");
+            }
+
+            if (p == 0.005)
+            {
+                sb.Append("**");
+            }
+
+            if (p <= 0.001)
+            {
+                sb.Append("***");
+            }
+
             return sb.ToString();
         }
-
 
         /**
          * Calculates the t-statistic.
@@ -102,7 +126,7 @@
             double v1 = sd1 * sd1;
             double v2 = sd2 * sd2;
             int df = count1 + count2 - 2;
-            double v = ((count1 - 1) * v1 + (count2 - 1) * v2) / df;
+            double v = (((count1 - 1) * v1) + ((count2 - 1) * v2)) / df;
             double SEsquared = v * (count1 + count2) / (count1 * count2);
             double t = (m1 - m2) / Math.Sqrt(SEsquared);
             return t;
@@ -114,43 +138,57 @@
             double[] table_df_15 = { 0.26, 0.53, 0.69, 0.87, 1.07, 1.341, 1.753, 2.13, 2.602, 2.947, 3.73, 4.073 };
             double[] alpha = { 0.40, 0.30, 0.25, 0.20, 0.15, 0.10, 0.05, 0.025, 0.01, 0.005, 0.001, 0.0005 };
             double[] tTable = table_df_inf;
-            if (df <= 15) tTable = table_df_15;
+            if (df <= 15)
+            {
+                tTable = table_df_15;
+            }
+
             double p = 0.5;
             int size = alpha.Length - 1;
             double t2 = 4.0;
             double p2 = 0.0001;
-            // first check if t exceeds the max in table
-            if (t > tTable[size]) return alpha[size];
 
+            // first check if t exceeds the max in table
+            if (t > tTable[size])
+            {
+                return alpha[size];
+            }
 
             for (int i = size; i >= 0; i--)
             {
                 if (t > tTable[i])
                 {
                     double t1 = tTable[i];
-                    if (i < size) t2 = tTable[i + 1];
+                    if (i < size)
+                    {
+                        t2 = tTable[i + 1];
+                    }
+
                     double p1 = alpha[i];
-                    if (i < size) p2 = alpha[i + 1];
+                    if (i < size)
+                    {
+                        p2 = alpha[i + 1];
+                    }
+
                     double slope = (p2 - p1) / (t2 - t1);
-                    p = slope * (t - t1) + p1;
+                    p = (slope * (t - t1)) + p1;
                     break;
                 }
             }
+
             return p;
         }
-
-
 
         public static double[] bayesBoundary(int countC1, double meanC1, double sdC1,
                                int countC2, double meanC2, double sdC2)
         {
-            double lnRatio = Math.Log(((double)countC1) / (double)countC2);
+            double lnRatio = Math.Log(countC1 / (double)countC2);
             double sqrMean1 = meanC1 * meanC1;
             double sqrMean2 = meanC2 * meanC2;
             double sqrSD1 = sdC1 * sdC1;
             double sqrSD2 = sdC2 * sdC2;
 
-            double A = ((1 / sqrSD2) - (1 / sqrSD1)) / (double)2;
+            double A = ((1 / sqrSD2) - (1 / sqrSD1)) / 2;
             double B = (meanC2 / sqrSD2) - (meanC1 / sqrSD1);
             B = -B;
             double C = Math.Log(sdC2 / sdC1) + lnRatio;
@@ -159,12 +197,13 @@
             return ob;
         }
 
-
-
         public static double[] quadraticRoots(double A, double B, double C)
         {
             int signB = 1;
-            if (B < 0.0) signB = -1;
+            if (B < 0.0)
+            {
+                signB = -1;
+            }
 
             double sqrt = Math.Sqrt((B * B) - (4 * A * C));
             double Q = -0.5 * (B + (signB * sqrt));
@@ -175,11 +214,14 @@
             return roots;
         }
 
-
         public static double[] CreateInverseProbabilityDistribution(int length)
         {
             double[] distribution = new double[length];
-            for (int i = 0; i < length; i++) distribution[i] = 1 / (double)(i + 1);
+            for (int i = 0; i < length; i++)
+            {
+                distribution[i] = 1 / (double)(i + 1);
+            }
+
             //for (int i = 0; i < length; i++) distribution[i] = 1 / (double)((i + 1) * (i + 1));
             //double sum = 0;
             //for (int i = 0; i < length; i++) sum += distribution[i];
@@ -187,10 +229,15 @@
             distribution = DataTools.Normalise2Probabilites(distribution);
             return distribution;
         }
+
         public static double[] CreateQuadraticProbabilityDistribution(int length)
         {
             double[] distribution = new double[length];
-            for (int i = 0; i < length; i++) distribution[i] = i * i;
+            for (int i = 0; i < length; i++)
+            {
+                distribution[i] = i * i;
+            }
+
             //double sum = 0;
             //for (int i = 0; i < length; i++) sum += distribution[i];
             //Console.WriteLine("pre-sum = {0:f3}", sum);
@@ -202,10 +249,12 @@
         public static Tuple<int[], int[]> RandomSamplingUsingProbabilityDistribution(int distributionlength, int sampleCount, int seed)
         {
             double[] distribution = CreateInverseProbabilityDistribution(distributionlength);
+
             //double[] distribution = Statistics.CreateQuadraticProbabilityDistribution(distributionlength);
             // double sum = distribution.Sum();
             // Console.WriteLine("post-sum = {0:f3}", sum);
             distribution = DataTools.ConvertProbabilityDistribution2CummulativeProbabilites(distribution);
+
             // sum = distribution.Sum();
             // Console.WriteLine("cumm-sum = {0:f3}", sum);
             // Console.WriteLine("cumm-sum = {0:f3}", distribution[length-1]);
@@ -217,6 +266,7 @@
             // Console.WriteLine("location = " + location);
 
             int[] samples = DataTools.SampleArrayRandomlyWithoutReplacementUsingProbabilityDistribution(distribution, sampleCount, seed);
+
             //for (int i = 0; i < sampleCount; i++) Console.WriteLine("s"+i+ "    " + samples[i]);
             Tuple<int[], int[]> tuple = DataTools.SortArray(samples);
             int[] sortedSamples = tuple.Item2;
@@ -225,7 +275,6 @@
 
         public static void main(string[] args)
         {
-
             /*
                 int   countC1  = 4000000;
                     double meanC1  = -8.7;
@@ -253,7 +302,6 @@
             LoggedConsole.WriteLine("t=" + t);
             int df = count1 + count2 - 2;
             LoggedConsole.WriteLine("alpha=" + tStatisticAlpha(Math.Abs(t), df));
-
 
             //calculate a lot of t-statistics taken from two files.
             /*    String dir = "D:\\Bioinformatics\\Data\\Chlamydia_trachomatis\\TSSpredictionsSarahEML2\\";
@@ -316,6 +364,5 @@
 
             LoggedConsole.WriteLine("FINISHED");
         }//end MAIN()
-
     }//end class
 }

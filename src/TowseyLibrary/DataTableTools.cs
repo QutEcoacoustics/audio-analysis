@@ -1,4 +1,8 @@
-﻿namespace TowseyLibrary
+﻿// <copyright file="DataTableTools.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace TowseyLibrary
 {
     using System;
     using System.Collections.Generic;
@@ -8,7 +12,6 @@
 
     public static class DataTableTools
     {
-
         //EXAMPLE
         //DataTable workTable = new DataTable("Customers");
         //DataColumn workCol = workTable.Columns.Add("CustID", typeof(Int32));
@@ -34,27 +37,43 @@
         //row["Name"] = "Jack";
         //dt.Rows.Add(row);
 
-
         public static DataTable CreateTable(string[] headers, Type[] types)
         {
-            if (headers.Length != types.Length) return null;
+            if (headers.Length != types.Length)
+            {
+                return null;
+            }
+
             DataTable table = new DataTable();
-            for (int i = 0; i < headers.Length; i++) table.Columns.Add(headers[i], types[i]);
+            for (int i = 0; i < headers.Length; i++)
+            {
+                table.Columns.Add(headers[i], types[i]);
+            }
+
             return table;
         }
 
-
         public static DataTable CreateTable(string[] headers, Type[] types, List<double[]> data)
         {
-            if (headers.Length != types.Length) return null;
+            if (headers.Length != types.Length)
+            {
+                return null;
+            }
+
             DataTable table = new DataTable();
-            for (int i = 0; i < headers.Length; i++) table.Columns.Add(headers[i], types[i]);
+            for (int i = 0; i < headers.Length; i++)
+            {
+                table.Columns.Add(headers[i], types[i]);
+            }
 
             //check all rows are of same length
             int rowCount = data[0].Length;
             for (int i = 1; i < data.Count; i++)
             {
-                if (data[i].Length != rowCount) data[i] = new double[rowCount];
+                if (data[i].Length != rowCount)
+                {
+                    data[i] = new double[rowCount];
+                }
             }
 
             for (int r = 0; r < rowCount; r++)
@@ -64,31 +83,46 @@
                 {
                     row[c] = data[c][r];
                 }
+
                 table.Rows.Add(row);
             }
+
             return table;
         }
-
-
 
         public static DataTable CreateTable(string[] headers, string[] types)
         {
             Type[] typeOfs = new Type[types.Length];
             for (int i = 0; i < headers.Length; i++)
             {
-                if (types[i].Equals("string")) typeOfs[i] = typeof(string);
+                if (types[i].Equals("string"))
+                {
+                    typeOfs[i] = typeof(string);
+                }
                 else
-                    if (types[i].Equals("int")) typeOfs[i] = typeof(int);
-                    else
-                        if (types[i].Equals("double")) typeOfs[i] = typeof(double);
-                        else
-                            if (types[i].Equals("bool")) typeOfs[i] = typeof(bool);
-                            else
-                                if (types[i].Equals("DateTime")) typeOfs[i] = typeof(DateTime);
+                    if (types[i].Equals("int"))
+                {
+                    typeOfs[i] = typeof(int);
+                }
+                else
+                        if (types[i].Equals("double"))
+                {
+                    typeOfs[i] = typeof(double);
+                }
+                else
+                            if (types[i].Equals("bool"))
+                {
+                    typeOfs[i] = typeof(bool);
+                }
+                else
+                                if (types[i].Equals("DateTime"))
+                {
+                    typeOfs[i] = typeof(DateTime);
+                }
             }
+
             return CreateTable(headers, typeOfs);
         }
-
 
         /// <summary>
         /// setup skeleton of new table with same headers and column types as passed table
@@ -100,17 +134,15 @@
             var headers = new List<string>();
             var typeOfs = new List<Type>();
 
-
             //DataColumn[] cols = dt.Columns;
             foreach (DataColumn col in dt.Columns)
             {
                 headers.Add(col.ColumnName);
                 typeOfs.Add(col.DataType);
             }
+
             return CreateTable(headers.ToArray(), typeOfs.ToArray());
         }
-
-
 
         //#######################################################################################
         /*    Program that uses DataTable with DataGridView [C#]
@@ -156,7 +188,6 @@
 
         */
 
-
         // #######################################################################################
         // SORTING A TABLE
 
@@ -188,9 +219,9 @@
             {
                 opDataTable.ImportRow(row);
             }
+
             return opDataTable;
         }
-
 
         /*          #######################################################################################
                     SORTING A TABLE
@@ -264,32 +295,48 @@
         {
             var rows = dt.Select(colName + " != " + value);
             foreach (var row in rows)
+            {
                 row.Delete();
+            }
         }
-
 
         public static void AddColumnOfDoubles2Table(DataTable dt, string columnName, double[] array)
         {
-            if (array == null) return;
-            if (array.Length == 0) return;
+            if (array == null)
+            {
+                return;
+            }
+
+            if (array.Length == 0)
+            {
+                return;
+            }
 
             int index = 0;
-            if (!dt.Columns.Contains(columnName)) dt.Columns.Add(columnName, typeof(double));
+            if (!dt.Columns.Contains(columnName))
+            {
+                dt.Columns.Add(columnName, typeof(double));
+            }
+
             foreach (DataRow row in dt.Rows)
             {
                 row[columnName] = array[index++];
             }
         }
 
-
         public static List<int> Column2ListOfInt(DataTable dt, string colName)
         {
-            if (dt == null) return null;
+            if (dt == null)
+            {
+                return null;
+            }
+
             var list = new List<int>();
             foreach (DataRow row in dt.Rows)
             {
                 list.Add((int)row[colName]);
             }
+
             return list;
         }
 
@@ -298,19 +345,34 @@
             var value = row[location];
             var isDouble = value is double;
 
-            if (isDouble) return (double)value;
+            if (isDouble)
+            {
+                return (double)value;
+            }
             else
             {
                 double result;
-                if (double.TryParse(value.ToString(), out result)) return result;
+                if (double.TryParse(value.ToString(), out result))
+                {
+                    return result;
+                }
             }
+
             return double.NaN;
         }
 
         public static double[] Column2ArrayOfDouble(DataTable dt, string colName)
         {
-            if (dt == null) return null;
-            if(! dt.Columns.Contains(colName)) return null;
+            if (dt == null)
+            {
+                return null;
+            }
+
+            if (!dt.Columns.Contains(colName))
+            {
+                return null;
+            }
+
             var list = new List<double>();
             var colType = dt.Columns[colName].DataType;
 
@@ -342,54 +404,87 @@
 
         public static List<double[]> ListOfColumnValues(DataTable dt)
         {
-            if (dt == null) return null;
+            if (dt == null)
+            {
+                return null;
+            }
+
             var list = new List<double[]>();
             foreach (DataColumn col in dt.Columns)
             {
                 string name = col.ColumnName;
                 list.Add(Column2ArrayOfDouble(dt, name));
             }
+
             return list;
         }
 
         public static string[] GetColumnNames(DataTable dt)
         {
-            if(dt == null) return null;
+            if (dt == null)
+            {
+                return null;
+            }
+
             var names = new List<string>();
-            foreach (DataColumn col in dt.Columns) names.Add(col.ColumnName);
+            foreach (DataColumn col in dt.Columns)
+            {
+                names.Add(col.ColumnName);
+            }
+
             return names.ToArray();
         }
 
-
         public static Type[] GetColumnTypes(DataTable dt)
         {
-            if (dt == null) return null;
+            if (dt == null)
+            {
+                return null;
+            }
+
             var types = new List<Type>();
-            foreach (DataColumn col in dt.Columns) types.Add(col.DataType);
+            foreach (DataColumn col in dt.Columns)
+            {
+                types.Add(col.DataType);
+            }
+
             return types.ToArray();
         }
 
-
         public static Type GetColumnType(DataTable dt, string columnName)
         {
-            if ((dt == null) || (columnName == null)) return null;
-            if (!dt.Columns.Contains(columnName)) return null;
+            if (dt == null || columnName == null)
+            {
+                return null;
+            }
+
+            if (!dt.Columns.Contains(columnName))
+            {
+                return null;
+            }
+
             return dt.Columns[columnName].DataType;
         }
 
-
-
         public static void ChangeColumnName(DataTable dt, string oldName, string newName)
         {
-            if (dt == null) return;
+            if (dt == null)
+            {
+                return;
+            }
+
             dt.Columns[oldName].ColumnName = newName;
         }
+
         public static void ChangeColumnType(DataTable dt, string colName, Type newType)
         {
-            if (dt == null) return;
+            if (dt == null)
+            {
+                return;
+            }
+
             dt.Columns[colName].DataType = newType;
         }
-
 
         /// <summary>
         /// normalises the column values in a data table to values in [0,1].
@@ -398,7 +493,11 @@
         /// <returns></returns>
         public static DataTable NormaliseColumnValues(DataTable dt)
         {
-            if (dt == null) return null;
+            if (dt == null)
+            {
+                return null;
+            }
+
             List<double[]> columns = ListOfColumnValues(dt);
             List<double[]> newColumns = new List<double[]>();
             for (int i = 0; i < columns.Count; i++)
@@ -406,17 +505,26 @@
                 double[] processedColumn = DataTools.normalise(columns[i]); //NormaliseMatrixValues all values in [0,1]
                 newColumns.Add(processedColumn);
             }
+
             string[] headers = GetColumnNames(dt);
             Type[] types = GetColumnTypes(dt);
             for (int i = 0; i < columns.Count; i++)
             {
-                if (types[i] == typeof(int))   types[i] = typeof(double);
+                if (types[i] == typeof(int))
+                {
+                    types[i] = typeof(double);
+                }
                 else
-                if (types[i] == typeof(int)) types[i] = typeof(double);
+                if (types[i] == typeof(int))
+                {
+                    types[i] = typeof(double);
+                }
             }
+
             var processedtable = CreateTable(headers, types, newColumns);
             return processedtable;
         }
+
         /// <summary>
         /// normalises the column values in a data table to values in [0,1].
         /// </summary>
@@ -424,12 +532,20 @@
         /// <returns></returns>
         public static DataTable NormaliseColumnValues(DataTable dt, double[] minValue, double[] maxValue)
         {
-            if (dt == null) return null;
+            if (dt == null)
+            {
+                return null;
+            }
+
             string[] headers = GetColumnNames(dt);
             List<double[]> columns = ListOfColumnValues(dt);
             List<double[]> newColumns = NormaliseColumnValues(columns, minValue, maxValue);
             Type[] types = GetColumnTypes(dt);
-            for (int i = 0; i < columns.Count; i++) types[i] = typeof(double);
+            for (int i = 0; i < columns.Count; i++)
+            {
+                types[i] = typeof(double);
+            }
+
             var processedtable = CreateTable(headers, types, newColumns);
             return processedtable;
         }
@@ -441,63 +557,86 @@
         /// <returns></returns>
         public static List<double[]> NormaliseColumnValues(List<double[]> columns, double[] minValue, double[] maxValue)
         {
-            if ((columns == null) || (columns.Count == 0)) return null;
+            if (columns == null || columns.Count == 0)
+            {
+                return null;
+            }
+
             List<double[]> newColumns = new List<double[]>();
             for (int i = 0; i < columns.Count; i++)
             {
                 double[] processedColumn = DataTools.NormaliseInZeroOne(columns[i], minValue[i], maxValue[i]); //NormaliseMatrixValues all values in [0,1]
                 newColumns.Add(processedColumn);
             }
+
             return newColumns;
         }
 
-
-
-
         public static void RemoveTableColumns(DataTable dt, bool[] retainColumn)
         {
-            if (dt == null) return;
+            if (dt == null)
+            {
+                return;
+            }
+
             int colCount = dt.Columns.Count;
             string[] names = GetColumnNames(dt);
             for (int i = 0; i < colCount; i++)
             {
-                if ((i >= retainColumn.Length) || (!retainColumn[i]))
+                if (i >= retainColumn.Length || !retainColumn[i])
                 {
                     dt.Columns.Remove(names[i]);
                 }
             }
         }
 
-
-       public static void WriteTable2Console(DataTable dt)
+        public static void WriteTable2Console(DataTable dt)
        {
-           if (dt == null) return;
-           string[] headers = GetColumnNames(dt);
-           foreach(string name in headers) LoggedConsole.Write(" {0,-10}", name);
-           LoggedConsole.WriteLine();
-            var rows = dt.Rows;
-            foreach(DataRow row in rows)
+           if (dt == null)
             {
-                for (int i = 0; i < headers.Length; i++) LoggedConsole.Write(" {0:f2}{1,-7}", row[headers[i]], " ");
+                return;
+            }
+
+           string[] headers = GetColumnNames(dt);
+           foreach (string name in headers)
+            {
+                LoggedConsole.Write(" {0,-10}", name);
+            }
+
+           LoggedConsole.WriteLine();
+           var rows = dt.Rows;
+           foreach (DataRow row in rows)
+            {
+                for (int i = 0; i < headers.Length; i++)
+                {
+                    LoggedConsole.Write(" {0:f2}{1,-7}", row[headers[i]], " ");
+                }
+
                 LoggedConsole.WriteLine();
             }
        }
 
-       public static void WriteTable2ConsoleInLongLayout(DataTable dt)
+        public static void WriteTable2ConsoleInLongLayout(DataTable dt)
        {
-           if (dt == null) return;
+           if (dt == null)
+            {
+                return;
+            }
+
            string[] headers = GetColumnNames(dt);
            Console.WriteLine("===========================================");
            foreach (DataRow row in dt.Rows)
            {
                //Object[] array = row.ItemArray;
-               foreach (string name in headers) Console.WriteLine("   {0} = {1}", name, row[name].ToString());
+               foreach (string name in headers)
+                {
+                    Console.WriteLine("   {0} = {1}", name, row[name].ToString());
+                }
+
                Console.WriteLine();
            }
+
            Console.WriteLine("===========================================");
        }
-
-
-
     } //class
 }

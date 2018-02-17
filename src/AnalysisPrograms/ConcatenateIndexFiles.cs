@@ -27,23 +27,22 @@ namespace AnalysisPrograms
     using System.Collections.Generic;
     using System.Drawing;
     using System.IO;
+    using System.IO.Compression;
     using System.Linq;
     using System.Reflection;
+    using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
     using AudioAnalysisTools.StandardSpectrograms;
-
     using log4net;
-    using Production;
-    using TowseyLibrary;
-    using System.IO.Compression;
-    using System.Threading.Tasks;
     using McMaster.Extensions.CommandLineUtils;
+    using Production;
     using Production.Arguments;
     using Production.Validation;
+    using TowseyLibrary;
     using Zio;
 
     /// <summary>
@@ -134,7 +133,7 @@ namespace AnalysisPrograms
                 ShortName = "")]
             public bool ConcatenateEverythingYouCanLayYourHandsOn { get; set; }
 
-            [Option(Description = "How to render gaps in a recording. Valid options: `" + nameof(ConcatMode.TimedGaps) + "` (default), `" + nameof(ConcatMode.NoGaps) + "`, `"+ nameof(ConcatMode.EchoGaps) + "`")]
+            [Option(Description = "How to render gaps in a recording. Valid options: `" + nameof(ConcatMode.TimedGaps) + "` (default), `" + nameof(ConcatMode.NoGaps) + "`, `" + nameof(ConcatMode.EchoGaps) + "`")]
             public ConcatMode GapRendering { get; set; }
 
             [Option(
@@ -240,7 +239,7 @@ namespace AnalysisPrograms
                 }
             }
 
-            var startDateTimeOffset = (DateTimeOffset)startDate;
+            var startDateTimeOffset = startDate;
 
             LoggedConsole.WriteLine("\n# Start date = " + startDate.ToString());
             LoggedConsole.WriteLine("# End   date = " + endDate.ToString());
@@ -308,7 +307,7 @@ namespace AnalysisPrograms
             DirectoryInfo resultsDir;
             if (arguments.ConcatenateEverythingYouCanLayYourHandsOn)
             {
-                var totalTimespan = (DateTimeOffset)endDate - (DateTimeOffset)startDate;
+                var totalTimespan = endDate - startDate;
                 LoggedConsole.WriteLine("# Total duration of available recording = " + totalTimespan.ToString());
 
                 if (totalTimespan > TimeSpan.FromDays(3))
@@ -328,7 +327,7 @@ namespace AnalysisPrograms
                 var summaryIndexFiles = sortedDictionaryOfDatesAndFiles.Values.ToArray<FileInfo>();
 
                 var concatenatedSummaryIndices = LdSpectrogramStitching.ConcatenateAllSummaryIndexFiles(summaryIndexFiles, resultsDir, indexGenerationData, outputFileStem);
-                WriteSummaryIndexFile(resultsDir, outputFileStem, Acoustic.TowseyAcoustic, concatenatedSummaryIndices);
+                WriteSummaryIndexFile(resultsDir, outputFileStem, AcousticIndices.TowseyAcoustic, concatenatedSummaryIndices);
 
                 var dictionaryOfSummaryIndices = LdSpectrogramStitching.ConvertToDictionaryOfSummaryIndices(concatenatedSummaryIndices);
 
@@ -371,7 +370,7 @@ namespace AnalysisPrograms
                             indexPropertiesConfig,
                             indexGenerationData,
                             outputFileStem,
-                            Acoustic.TowseyAcoustic,
+                            AcousticIndices.TowseyAcoustic,
                             dictionaryOfSpectralIndices1,
                             /*summaryIndices = */null,
                             indexDistributions,
@@ -381,7 +380,7 @@ namespace AnalysisPrograms
                             imageChrome: ImageChrome.With);
                 }
 
-                WriteSpectralIndexFiles(resultsDir, outputFileStem, Acoustic.TowseyAcoustic, dictionaryOfSpectralIndices1);
+                WriteSpectralIndexFiles(resultsDir, outputFileStem, AcousticIndices.TowseyAcoustic, dictionaryOfSpectralIndices1);
                 return;
             }
 
@@ -401,7 +400,7 @@ namespace AnalysisPrograms
             for (int d = 0; d < dayCount; d++)
             {
                 var thisday = startDateOffset.AddDays(d);
-                LoggedConsole.WriteLine($"\n\n\nCONCATENATING DAY { d + 1} of {dayCount}:   {thisday}");
+                LoggedConsole.WriteLine($"\n\n\nCONCATENATING DAY {d + 1} of {dayCount}:   {thisday}");
 
                 FileInfo[] indexFiles = LdSpectrogramStitching.GetFileArrayForOneDay(sortedDictionaryOfDatesAndFiles, thisday);
                 if (indexFiles.Length == 0)
@@ -430,7 +429,7 @@ namespace AnalysisPrograms
 
                 // CONCATENATE the SUMMARY INDEX FILES
                 var concatenatedSummaryIndices = LdSpectrogramStitching.ConcatenateAllSummaryIndexFiles(indexFiles, resultsDir, indexGenerationData, outputBaseName);
-                WriteSummaryIndexFile(resultsDir, outputBaseName, Acoustic.TowseyAcoustic, concatenatedSummaryIndices);
+                WriteSummaryIndexFile(resultsDir, outputBaseName, AcousticIndices.TowseyAcoustic, concatenatedSummaryIndices);
 
                 var summaryDict = LdSpectrogramStitching.ConvertToDictionaryOfSummaryIndices(concatenatedSummaryIndices);
 
@@ -494,7 +493,7 @@ namespace AnalysisPrograms
                         indexPropertiesConfig,
                         indexGenerationData,
                         outputBaseName,
-                        Acoustic.TowseyAcoustic,
+                        AcousticIndices.TowseyAcoustic,
                         dictionaryOfSpectralIndices2,
                         /*summaryIndices = */null,
                         indexDistributions,
@@ -538,7 +537,7 @@ namespace AnalysisPrograms
                     }
                 }
 
-                WriteSpectralIndexFiles(resultsDir, outputBaseName, Acoustic.TowseyAcoustic, dictionaryOfSpectralIndices2);
+                WriteSpectralIndexFiles(resultsDir, outputBaseName, AcousticIndices.TowseyAcoustic, dictionaryOfSpectralIndices2);
                 LoggedConsole.WriteLine("     Completed Spectral Indices");
             } // over days
         } // Execute()

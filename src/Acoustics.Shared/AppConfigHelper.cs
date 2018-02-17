@@ -286,7 +286,7 @@ namespace Acoustics.Shared
             {
                 var assemblyDirString = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
-                if (!String.IsNullOrEmpty(assemblyDirString))
+                if (!string.IsNullOrEmpty(assemblyDirString))
                 {
                     var assemblyDir = new DirectoryInfo(assemblyDirString);
 
@@ -327,7 +327,7 @@ namespace Acoustics.Shared
                     }
 
                     // app virtual path should not be null and current context usually not null
-                    if (!String.IsNullOrEmpty(appDomainPath) || currentContext != null)
+                    if (!string.IsNullOrEmpty(appDomainPath) || currentContext != null)
                     {
                         return true;
                     }
@@ -379,12 +379,12 @@ namespace Acoustics.Shared
             if (ConfigurationManager.AppSettings.AllKeys.All(k => k != key))
             {
                 //throw new ConfigurationErrorsException("Could not find key: " + key);
-                return String.Empty;
+                return string.Empty;
             }
 
             var value = ConfigurationManager.AppSettings[key];
 
-            if (String.IsNullOrEmpty(value))
+            if (string.IsNullOrEmpty(value))
             {
                 throw new ConfigurationErrorsException("Found key, but it did not have a value: " + key);
             }
@@ -404,9 +404,9 @@ namespace Acoustics.Shared
             var values = value
                 .Split(separators, StringSplitOptions.RemoveEmptyEntries)
                 .Select(s => s.Trim())
-                .Where(v => !String.IsNullOrEmpty(v));
+                .Where(v => !string.IsNullOrEmpty(v));
 
-            if (!values.Any() || values.All(s => String.IsNullOrEmpty(s)))
+            if (!values.Any() || values.All(s => string.IsNullOrEmpty(s)))
             {
                 throw new ConfigurationErrorsException("Key " + key + " exists but does not have a value");
             }
@@ -419,7 +419,7 @@ namespace Acoustics.Shared
             var value = GetString(key);
 
             bool valueParsed;
-            if (Boolean.TryParse(value, out valueParsed))
+            if (bool.TryParse(value, out valueParsed))
             {
                 return valueParsed;
             }
@@ -433,7 +433,7 @@ namespace Acoustics.Shared
             var value = GetString(key);
 
             int valueParsed;
-            if (Int32.TryParse(value, out valueParsed))
+            if (int.TryParse(value, out valueParsed))
             {
                 return valueParsed;
             }
@@ -447,7 +447,7 @@ namespace Acoustics.Shared
             var value = GetString(key);
 
             double valueParsed;
-            if (Double.TryParse(value, out valueParsed))
+            if (double.TryParse(value, out valueParsed))
             {
                 return valueParsed;
             }
@@ -462,7 +462,7 @@ namespace Acoustics.Shared
 
             if (checkExists && !Directory.Exists(value))
             {
-                throw new DirectoryNotFoundException(String.Format("Could not find directory: {0} = {1}", key, value));
+                throw new DirectoryNotFoundException(string.Format("Could not find directory: {0} = {1}", key, value));
             }
 
             return new DirectoryInfo(value);
@@ -474,7 +474,7 @@ namespace Acoustics.Shared
 
             if (checkExists && !File.Exists(value))
             {
-                throw new FileNotFoundException(String.Format("Could not find file: {0} = {1}", key, value));
+                throw new FileNotFoundException(string.Format("Could not find file: {0} = {1}", key, value));
             }
 
             return new FileInfo(value);
@@ -501,11 +501,11 @@ namespace Acoustics.Shared
             var value = GetString(key);
             var values = value.Split(separators, StringSplitOptions.RemoveEmptyEntries);
 
-            var files = values.Where(v => !String.IsNullOrEmpty(v)).Select(v => new FileInfo(v)).ToList();
+            var files = values.Where(v => !string.IsNullOrEmpty(v)).Select(v => new FileInfo(v)).ToList();
 
             if (checkAnyExist && files.All(f => !File.Exists(f.FullName)))
             {
-                throw new FileNotFoundException("None of the given files exist: " + String.Join(", ", files.Select(f => f.FullName)));
+                throw new FileNotFoundException("None of the given files exist: " + string.Join(", ", files.Select(f => f.FullName)));
             }
 
             return files;
@@ -516,7 +516,7 @@ namespace Acoustics.Shared
             var value = GetString(key);
 
             long valueParsed;
-            if (Int64.TryParse(value, out valueParsed))
+            if (long.TryParse(value, out valueParsed))
             {
                 return valueParsed;
             }
@@ -553,13 +553,13 @@ namespace Acoustics.Shared
             var values = value.Split(separators, StringSplitOptions.RemoveEmptyEntries);
 
             var dirs =
-                values.Where(v => !String.IsNullOrEmpty(v)).Select(
+                values.Where(v => !string.IsNullOrEmpty(v)).Select(
                     v => v.StartsWith("..") ? new DirectoryInfo(webConfigRealDirectory + v) : new DirectoryInfo(v))
                     .ToList();
 
             if (checkAnyExist && dirs.All(d => !Directory.Exists(d.FullName)))
             {
-                throw new DirectoryNotFoundException("None of the given directories exist: " + String.Join(", ", dirs.Select(a => a.FullName)));
+                throw new DirectoryNotFoundException("None of the given directories exist: " + string.Join(", ", dirs.Select(a => a.FullName)));
             }
 
             return dirs;
@@ -572,11 +572,11 @@ namespace Acoustics.Shared
             var values = value.Split(separators, StringSplitOptions.RemoveEmptyEntries);
 
             var dirs =
-                values.Where(v => !String.IsNullOrEmpty(v)).Select(v => new DirectoryInfo(v)).ToList();
+                values.Where(v => !string.IsNullOrEmpty(v)).Select(v => new DirectoryInfo(v)).ToList();
 
             if (checkAnyExist && dirs.All(d => !Directory.Exists(d.FullName)))
             {
-                throw new DirectoryNotFoundException("None of the given directories exist: " + String.Join(", ", dirs.Select(a => a.FullName)));
+                throw new DirectoryNotFoundException("None of the given directories exist: " + string.Join(", ", dirs.Select(a => a.FullName)));
             }
 
             return dirs;
@@ -593,7 +593,8 @@ namespace Acoustics.Shared
                 // assume windows
                 DirectoryInfo assemblyDir = IsAspNet ? new DirectoryInfo(WebsiteBasePath) : AssemblyDir;
 
-                return Path.Combine(assemblyDir.FullName, GetString(appConfigKey)); ;
+                return Path.Combine(assemblyDir.FullName, GetString(appConfigKey));
+                ;
             }
         }
     }

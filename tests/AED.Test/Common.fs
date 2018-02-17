@@ -80,8 +80,8 @@ let seqEqual eq toS xs' ys' =
             let f (i:int) = 
                 let i' = i + 1
                 sprintf "%i th difference at position %i :\r\n" i i +
-                    sprintf "\t Expected[%i]:\t%s\tFound[%i]:\t%s" i (Seq.nth i xs |> toS) i (Seq.nth i ys |> toS) +
-                    (if i' < Seq.length ys then sprintf "\tFound[%i]:\t%s" i' (Seq.nth i' ys |> toS) else "" )
+                    sprintf "\t Expected[%i]:\t%s\tFound[%i]:\t%s" i (Seq.item i xs |> toS) i (Seq.item i ys |> toS) +
+                    (if i' < Seq.length ys then sprintf "\tFound[%i]:\t%s" i' (Seq.item i' ys |> toS) else "" )
             [(Seq.map f is) |> String.concat "\r\n" |> Some ]       
     catOptions (l::c)
 

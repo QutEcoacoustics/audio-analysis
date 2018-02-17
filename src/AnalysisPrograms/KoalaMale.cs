@@ -19,11 +19,11 @@ namespace AnalysisPrograms
     using Acoustics.Tools;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-    using Production;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
+    using Production;
     using TowseyLibrary;
     using ProcessRunner = TowseyLibrary.ProcessRunner;
 
@@ -58,16 +58,9 @@ namespace AnalysisPrograms
     /// </summary>
     public class KoalaMale : AbstractStrongAnalyser
     {
-        #region Constants
-
         public const string AnalysisName = "KoalaMale";
 
-
         public const int ResampleRate = 17640;
-
-        #endregion
-
-        #region Public Properties
 
         public string DefaultConfiguration
         {
@@ -107,10 +100,6 @@ namespace AnalysisPrograms
                 return "Towsey." + AnalysisName;
             }
         }
-
-        #endregion
-
-        #region Public Methods and Operators
 
         [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
         /*
@@ -361,13 +350,13 @@ namespace AnalysisPrograms
 
                 // oscillation centres should lie between between 1.0 and 2.6 s separated.
                 // HOwever want to allow for a missed oscillation - therefore allow up to 4.0 seconds apart
-                bool leftGapCorrect = (leftGap > 1.0) && (leftGap < 4.0);
-                bool rghtGapCorrect = (rghtGap > 1.0) && (rghtGap < 4.0);
+                bool leftGapCorrect = leftGap > 1.0 && leftGap < 4.0;
+                bool rghtGapCorrect = rghtGap > 1.0 && rghtGap < 4.0;
 
                 if (leftGapCorrect && rghtGapCorrect)
                 {
                     partOfTriple[i - 1] = true;
-                    partOfTriple[i]     = true;
+                    partOfTriple[i] = true;
                     partOfTriple[i + 1] = true;
                 }
             }
@@ -464,10 +453,6 @@ namespace AnalysisPrograms
             Csv.WriteToCsv(destination, results);
         }
 
-        #endregion
-
-        #region Methods
-
         private static Image DrawSonogram(
             BaseSonogram sonogram,
             double[,] hits,
@@ -493,7 +478,7 @@ namespace AnalysisPrograms
                 image.OverlayRainbowTransparency(hits);
             }
 
-            if ((predictedEvents != null) && (predictedEvents.Count > 0))
+            if (predictedEvents != null && predictedEvents.Count > 0)
             {
                 image.AddEvents(
                     predictedEvents,
@@ -505,12 +490,8 @@ namespace AnalysisPrograms
             return image.GetImage();
         }
 
-        #endregion
-
         public class KoalaMaleResults
         {
-            #region Public Properties
-
             public List<AcousticEvent> Events { get; set; }
 
             public double[,] Hits { get; set; }
@@ -520,8 +501,6 @@ namespace AnalysisPrograms
             public TimeSpan RecordingtDuration { get; set; }
 
             public BaseSonogram Sonogram { get; set; }
-
-            #endregion
         }
     }
 }

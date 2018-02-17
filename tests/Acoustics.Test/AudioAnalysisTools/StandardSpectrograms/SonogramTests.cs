@@ -27,8 +27,6 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
     {
         private DirectoryInfo outputDirectory;
 
-        #region Additional test attributes
-
         /*
         // You can use the following additional attributes as you write your tests:
         //
@@ -60,8 +58,6 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
         {
             PathHelper.DeleteTempDir(this.outputDirectory);
         }
-
-        #endregion
 
         /// <summary>
         /// METHOD TO CHECK IF Standard AMPLITUDE Sonogram IS WORKING

@@ -61,13 +61,22 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         public int NyquistFreq { get; private set; }
 
-        public string WindowFunction { get { return this.windowFunction; } set { this.windowFunction = value; } }
+        public string WindowFunction
+        {
+            get { return this.windowFunction; } set { this.windowFunction = value; }
+        }
 
-        public int NPointSmoothFFT { get { return this.smoothingWindow; } set { this.smoothingWindow = value; } } // Number of points to smooth FFT spectra
+        public int NPointSmoothFFT
+        {
+            get { return this.smoothingWindow; } set { this.smoothingWindow = value; }
+        } // Number of points to smooth FFT spectra
 
         public double epsilon { get; set; } //small value to prevent log of zero value
 
-        public int FreqBinCount { get { return this.WindowSize / 2; } } // other half is phase info
+        public int FreqBinCount
+        {
+            get { return this.WindowSize / 2; }
+        } // other half is phase info
 
         public bool DoPreemphasis { get; set; }
 
@@ -94,13 +103,19 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         private bool saveSonogramImage = false;
 
-        public bool SaveSonogramImage { get { return this.saveSonogramImage; } set { this.saveSonogramImage = value; } }
+        public bool SaveSonogramImage
+        {
+            get { return this.saveSonogramImage; } set { this.saveSonogramImage = value; }
+        }
 
         private string imageDir = null;
         private SonogramConfig config;
         private Acoustics.Tools.Wav.WavReader wavReader;
 
-        public string ImageDir { get { return this.imageDir; } set { this.imageDir = value; } }
+        public string ImageDir
+        {
+            get { return this.imageDir; } set { this.imageDir = value; }
+        }
 
         public static SonogramConfig Load(string configFile)
         {
@@ -144,6 +159,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             config.SetPair(AnalysisKeys.NoiseReductionType, NoiseReductionType.None.ToString());
             config.SetPair(ConfigKeys.Mfcc.Key_WindowFunction, WindowFunctions.HAMMING.ToString());
+
             //config.SetPair(ConfigKeys.Mfcc.Key_WindowFunction, WindowFunctions.HANNING.ToString());
             config.SetPair(ConfigKeys.Mfcc.Key_NPointSmoothFFT, "3");
             config.SetPair(ConfigKeys.Mfcc.Key_DoMelScale, false.ToString());
@@ -273,7 +289,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 string noiseReductionType = configDict[AnalysisKeys.NoiseReductionType];
 
                 // this.NoiseReductionType = (NoiseReductionType)Enum.Parse(typeof(NoiseReductionType), noiseReductionType.ToUpperInvariant());
-                this.NoiseReductionType = (NoiseReductionType) Enum.Parse(typeof(NoiseReductionType), noiseReductionType);
+                this.NoiseReductionType = (NoiseReductionType)Enum.Parse(typeof(NoiseReductionType), noiseReductionType);
             }
 
             // FREQ BAND PARAMETERS

@@ -1,3 +1,7 @@
+// <copyright file="NormalDist.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
 namespace TowseyLibrary
 {
     using System;
@@ -6,14 +10,12 @@ namespace TowseyLibrary
 
     public class NormalDist
     {
-
-        double av;        //mean of the data
-        double sd;        //SD of the data
-        double[,] bins;   //histogram of distribution over 16 bins about the mean
-        int totalCount;   //number of samples
-        double min;       //min and max of data
-        double max;
-
+        private double av;        //mean of the data
+        private double sd;        //SD of the data
+        private double[,] bins;   //histogram of distribution over 16 bins about the mean
+        private int totalCount;   //number of samples
+        private double min;       //min and max of data
+        private double max;
 
         /// <summary>
         /// CONSTRUCTOR for integer data
@@ -27,9 +29,14 @@ namespace TowseyLibrary
             AverageAndSD(data, out average, out stdev);
             this.av = average;
             this.sd = stdev;
+
             //convert data to doubles
             double[] doubleData = new double[this.totalCount];
-            for (int i = 0; i < this.totalCount; i++) doubleData[i] = (double)data[i];
+            for (int i = 0; i < this.totalCount; i++)
+            {
+                doubleData[i] = data[i];
+            }
+
             this.bins = get16binDistribution(doubleData, this.av, this.sd);
 
             DataTools.MinMax(doubleData, out this.min, out this.max);
@@ -51,7 +58,6 @@ namespace TowseyLibrary
             DataTools.MinMax(data, out this.min, out this.max);
         }
 
-
         public NormalDist(double[] data, double AV, double SD)
         {
             this.totalCount = data.Length;
@@ -61,12 +67,7 @@ namespace TowseyLibrary
             DataTools.MinMax(data, out this.min, out this.max);
         }
 
-
-
-
         //=============================================================================
-
-
 
         /**
          * returns the histogram bins containing data distribution
@@ -90,6 +91,7 @@ namespace TowseyLibrary
             {
                 sum += data[i];
             }
+
             return sum;
         }
 
@@ -99,11 +101,12 @@ namespace TowseyLibrary
             double[] zs = new double[length];
             for (int i = 0; i < length; i++)
             {
-                zs[i] = (double)(scores[i] - av) / sd;
+                zs[i] = (scores[i] - av) / sd;
             }
 
             return zs;
         }
+
         public static double[] Convert2ZScores(double[] scores)
         {
             int length = scores.Length;
@@ -115,14 +118,11 @@ namespace TowseyLibrary
 
             for (int i = 0; i < length; i++)
             {
-                zs[i] = (double)(scores[i] - av) / sd;
+                zs[i] = (scores[i] - av) / sd;
             }
 
             return zs;
         }
-
-
-
 
         /**
          * returns the average and SD of a set of integer values
@@ -138,27 +138,43 @@ namespace TowseyLibrary
                 sum += data[i];
             }
 
-            if (N == 0) av = 0.0;
+            if (N == 0)
+            {
+                av = 0.0;
+            }
+
             //else if (N == 1) av = sum;
-            else av = sum / (double)N;
+            else
+            {
+                av = sum / (double)N;
+            }
 
             double var = 0.0;
             for (int i = 0; i < N; i++)
             {
-                double diff = (double)data[i] - av;
-                var += (diff * diff);
+                double diff = data[i] - av;
+                var += diff * diff;
             }
 
-            if (N > 30) var /= (double)N;
+            if (N > 30)
+            {
+                var /= N;
+            }
             else
-                if (N > 2) var /= (double)(N - 1);
-                else var = 0.0;
+                if (N > 2)
+            {
+                var /= N - 1;
+            }
+            else
+            {
+                var = 0.0;
+            }
 
             sd = Math.Sqrt(var);
+
             //LoggedConsole.WriteLine("av="+av+" SD="+SD);
             //LoggedConsole.WriteLine("VAR="+var+" SD="+SD+"  N="+N);
         }
-
 
         public static void AverageAndSD(List<int> data, out double av, out double sd)
         {
@@ -190,40 +206,50 @@ namespace TowseyLibrary
             {
                 sum += data[i];
             }
-            av = sum / (double)N;
+
+            av = sum / N;
 
             variance = 0.0;
             for (int i = 0; i < N; i++)
             {
-                variance += ((data[i] - av) * (data[i] - av));
+                variance += (data[i] - av) * (data[i] - av);
             }
 
-            if (N > 30) variance /= (double)N;
+            if (N > 30)
+            {
+                variance /= N;
+            }
             else
-                if (N > 2) variance /= (double)(N - 1);
-                else variance = 0.0;
+                if (N > 2)
+            {
+                variance /= N - 1;
+            }
+            else
+            {
+                variance = 0.0;
+            }
 
             //LoggedConsole.WriteLine("av="+av+" SD="+SD);
         }
-
 
         public static void AverageAndSD(List<double> data, out double av, out double sd)
         {
             AverageAndSD(data.ToArray(), out av, out sd);
         }
 
-
         public static void AverageAndSD(double[,] data, out double av, out double sd)
         {
             int rows = data.GetLength(0);
             int cols = data.GetLength(1);
 
-            double[] values = new double[rows*cols];
+            double[] values = new double[rows * cols];
             int id = 0;
             for (int i = 0; i < rows; i++)
             {
                 for (int j = 0; j < cols; j++)
-                    values[id++] = data[i,j];
+                {
+                    values[id++] = data[i, j];
+                }
             }
 
             AverageAndSD(values, out av, out sd);
@@ -244,21 +270,22 @@ namespace TowseyLibrary
             double[] variances = new double[L];
             double av, variance;
 
-            for (int i = 0; i <= (L - window); i++)
+            for (int i = 0; i <= L - window; i++)
             {
                 double[] subV = DataTools.Subarray(data, i, window);
                 AverageAndVariance(subV, out av, out variance);
                 variances[i + halfwindow] = variance;
             }
+
             // plug up the ends
             for (int i = 0; i < halfwindow; i++)
             {
                 variances[i] = variances[halfwindow];
                 variances[L - i - 1] = variances[L - halfwindow - 1];
             }
+
             return variances;
         }
-
 
         public static double[] Normalise(double[] data)
         {
@@ -270,6 +297,7 @@ namespace TowseyLibrary
             {
                 ndata[i] = (data[i] - av) / sd;
             }
+
             return ndata;
         }
 
@@ -285,16 +313,16 @@ namespace TowseyLibrary
          */
         public static double Variance(double SumSq, double Sum, int count)
         {
-            double var = count * SumSq - Sum * Sum;
-            var /= (count * (count - 1));
+            double var = (count * SumSq) - (Sum * Sum);
+            var /= count * (count - 1);
             return var;
         }
+
         public static double SD(double SumSq, double Sum, int count)
         {
             double var = Variance(SumSq, Sum, count);
             return Math.Sqrt(var);
         }
-
 
         public static double[] bias(double[] data, double bias)
         {
@@ -303,10 +331,9 @@ namespace TowseyLibrary
             {
                 ndata[i] = data[i] + bias;
             }
+
             return ndata;
         }
-
-
 
         public static double[] threshold(double[] data, double th)
         {
@@ -314,12 +341,14 @@ namespace TowseyLibrary
             for (int i = 0; i < data.Length; i++)
             {
                 ndata[i] = data[i] - th;
-                if (ndata[i] < 0.0) ndata[i] = 0.0000;
+                if (ndata[i] < 0.0)
+                {
+                    ndata[i] = 0.0000;
+                }
             }
+
             return ndata;
         }
-
-
 
         /// <summary>
         /// Converts an array of values (assumed to be a signal superimposed on Gaussian noise)
@@ -332,6 +361,7 @@ namespace TowseyLibrary
             //get mode and std dev of the background variation
             double sd = 0.0;
             double mode = 0.0;
+
             //NormalDist.AverageAndSD(tsdScore, out mode, out sdBG);
             DataTools.ModalValue(values, out mode, out sd);
 
@@ -343,41 +373,94 @@ namespace TowseyLibrary
             double threshold5 = mode - (1.00 * sd); //area = 16%
             double threshold6 = mode - (0.52 * sd); //area = 30%
             double threshold7 = mode - (0.25 * sd); //area = 40%
-            if (threshold1 < 0.0) threshold1 = 0.0;
-            if (threshold2 < 0.0) threshold2 = 0.0;
-            if (threshold3 < 0.0) threshold3 = 0.0;
-            if (threshold4 < 0.0) threshold4 = 0.0;
-            if (threshold5 < 0.0) threshold5 = 0.0;
-            if (threshold6 < 0.0) threshold6 = 0.0;
-            if (threshold7 < 0.0) threshold7 = 0.0;
+            if (threshold1 < 0.0)
+            {
+                threshold1 = 0.0;
+            }
+
+            if (threshold2 < 0.0)
+            {
+                threshold2 = 0.0;
+            }
+
+            if (threshold3 < 0.0)
+            {
+                threshold3 = 0.0;
+            }
+
+            if (threshold4 < 0.0)
+            {
+                threshold4 = 0.0;
+            }
+
+            if (threshold5 < 0.0)
+            {
+                threshold5 = 0.0;
+            }
+
+            if (threshold6 < 0.0)
+            {
+                threshold6 = 0.0;
+            }
+
+            if (threshold7 < 0.0)
+            {
+                threshold7 = 0.0;
+            }
+
             //double threshold7 = avBG - (0.50 * sdBG);
 
             int L = values.Length;
             var op = new double[L];
             for (int i = 0; i < L; i++)
             {
-                if (values[i] < threshold1) op[i] = 0.99;  // = (1.00-0.5)*2
+                if (values[i] < threshold1)
+                {
+                    op[i] = 0.99;  // = (1.00-0.5)*2
+                }
                 else
-                    if (values[i] < threshold2) op[i] = 0.90; // = (0.95-0.5)*2
-                    else
-                        if (values[i] < threshold3) op[i] = 0.86; // = (0.93-0.5)*2
-                        else
-                            if (values[i] < threshold4) op[i] = 0.80; // = (0.90-0.5)*2
-                            else
-                                if (values[i] < threshold5) op[i] = 0.68; // = (0.84-0.5)*2
-                                else
-                                    if (values[i] < threshold6) op[i] = 0.40; // = (0.70-0.5)*2
-                                    else
-                                        if (values[i] < threshold7) op[i] = 0.20; // = (0.60-0.5)*2
-                                        else
-                                            if (values[i] >= mode) op[i] = 0.00;  // = (0.50-0.5)*2
-                                            else op[i] = 0.0;
+                    if (values[i] < threshold2)
+                {
+                    op[i] = 0.90; // = (0.95-0.5)*2
+                }
+                else
+                        if (values[i] < threshold3)
+                {
+                    op[i] = 0.86; // = (0.93-0.5)*2
+                }
+                else
+                            if (values[i] < threshold4)
+                {
+                    op[i] = 0.80; // = (0.90-0.5)*2
+                }
+                else
+                                if (values[i] < threshold5)
+                {
+                    op[i] = 0.68; // = (0.84-0.5)*2
+                }
+                else
+                                    if (values[i] < threshold6)
+                {
+                    op[i] = 0.40; // = (0.70-0.5)*2
+                }
+                else
+                                        if (values[i] < threshold7)
+                {
+                    op[i] = 0.20; // = (0.60-0.5)*2
+                }
+                else
+                                            if (values[i] >= mode)
+                {
+                    op[i] = 0.00;  // = (0.50-0.5)*2
+                }
+                else
+                {
+                    op[i] = 0.0;
+                }
             }
+
             return op;
         }
-
-
-
 
         /**
          * returns the upper limit for each bin in a 16 bin histogram
@@ -424,7 +507,10 @@ namespace TowseyLibrary
         public static int[] get8binDistribution(double[] data, double av, double SD)
         {
             int[] dist = new int[8];
-            for (int i = 0; i < 8; i++) dist[i] = 0; // initialise array
+            for (int i = 0; i < 8; i++)
+            {
+                dist[i] = 0; // initialise array
+            }
 
             //set upper limits for 7 bins. bin8 holds highest values.
             double bin1 = av - (3 * SD);
@@ -439,25 +525,48 @@ namespace TowseyLibrary
             for (int i = 0; i < data.Length; i++)
             {
                 double dd = data[i];
-                if (dd < bin1) dist[0]++;
+                if (dd < bin1)
+                {
+                    dist[0]++;
+                }
                 else
-                    if (dd < bin2) dist[1]++;
-                    else
-                        if (dd < bin3) dist[2]++;
-                        else
-                            if (dd < bin4) dist[3]++;
-                            else
-                                if (dd < bin5) dist[4]++;
-                                else
-                                    if (dd < bin6) dist[5]++;
-                                    else
-                                        if (dd < bin7) dist[6]++;
-                                        else
-                                            dist[7]++;
+                    if (dd < bin2)
+                {
+                    dist[1]++;
+                }
+                else
+                        if (dd < bin3)
+                {
+                    dist[2]++;
+                }
+                else
+                            if (dd < bin4)
+                {
+                    dist[3]++;
+                }
+                else
+                                if (dd < bin5)
+                {
+                    dist[4]++;
+                }
+                else
+                                    if (dd < bin6)
+                {
+                    dist[5]++;
+                }
+                else
+                                        if (dd < bin7)
+                {
+                    dist[6]++;
+                }
+                else
+                {
+                    dist[7]++;
+                }
             }
+
             return dist;
         }
-
 
         /**
          * returns a 16 bin histogram from an array of data given
@@ -476,90 +585,148 @@ namespace TowseyLibrary
          */
         public static double[,] get16binDistribution(double[] data, double av, double SD)
   {
-  	//get the upper bounds on the 16 bins
-  	//highest bin has no upper bound - therefore bounds.mapLength=15
-  	double[] bounds = getBinLimits(av, SD);
+    //get the upper bounds on the 16 bins
+    //highest bin has no upper bound - therefore bounds.mapLength=15
+    double[] bounds = getBinLimits(av, SD);
 
-  	// init array to collect counts
-  	int[] counts = new int[16];
-    for(int c=0;c<16;c++) counts[c] = 0;
+    // init array to collect counts
+    int[] counts = new int[16];
+    for (int c = 0; c < 16; c++)
+            {
+                counts[c] = 0;
+            }
 
-    // loop through data and collect the counts for each bin.
-    for(int i=0;i<data.Length;i++)
-    { double dd = data[i];
-    	counts[getBin(dd, bounds)]++;
+            // loop through data and collect the counts for each bin.
+    for (int i = 0; i < data.Length; i++)
+    {
+        double dd = data[i];
+        counts[getBin(dd, bounds)]++;
     }
 
     int totalCounts = data.Length;
-    double delta = SD/4;  //delta for midpoint of each bin.
+    double delta = SD / 4;  //delta for midpoint of each bin.
+
     // init matrix to return
-    double[,] dist = new double[16,5];
-    for(int r=0;r<16;r++)
-    { dist[r,0] = bounds[r];
-      dist[r,1] = bounds[r]-delta; //there is error on last midpoint
-      dist[r,2] = (double)counts[r];
-      dist[r,3] = (double)counts[r]/(double)totalCounts;
+    double[,] dist = new double[16, 5];
+    for (int r = 0; r < 16; r++)
+    {
+        dist[r, 0] = bounds[r];
+        dist[r, 1] = bounds[r] - delta; //there is error on last midpoint
+        dist[r, 2] = counts[r];
+        dist[r, 3] = counts[r] / (double)totalCounts;
+
       // put ln(fraction) in fifth column
-      if(dist[r,3]== 0.0) dist[r,4] = - 1000.0;
-      else
-                           dist[r,4]=Math.Log(dist[r,3]);
-    }
+        if (dist[r, 3] == 0.0)
+                {
+                    dist[r, 4] = -1000.0;
+                }
+                else
+                {
+                    dist[r, 4] = Math.Log(dist[r, 3]);
+                }
+            }
+
     // correct error on last midpoint
-    dist[15,1] = bounds[14]+delta; //there is error on last midpoint
+    dist[15, 1] = bounds[14] + delta; //there is error on last midpoint
 
     return dist;
   }
-
-
 
         public static double[,] get16binDistribution(int[] data, double av, double SD)
         {
             int length = data.Length;
             double[] ddData = new double[length];
+
             // convert array of integers to array of doubles.
             for (int i = 0; i < data.Length; i++)
             {
-                ddData[i] = (double)data[i];
+                ddData[i] = data[i];
             }
+
             return get16binDistribution(ddData, av, SD);
         }
 
-
         private static int getBin(double dd, double[] bounds)
         {
-            if (dd < bounds[0]) return 0;
+            if (dd < bounds[0])
+            {
+                return 0;
+            }
             else
-                if (dd < bounds[1]) return 1;
-                else
-                    if (dd < bounds[2]) return 2;
-                    else
-                        if (dd < bounds[3]) return 3;
-                        else
-                            if (dd < bounds[4]) return 4;
-                            else
-                                if (dd < bounds[5]) return 5;
-                                else
-                                    if (dd < bounds[6]) return 6;
-                                    else
-                                        if (dd < bounds[7]) return 7;
-                                        else
-                                            if (dd < bounds[8]) return 8;
-                                            else
-                                                if (dd < bounds[9]) return 9;
-                                                else
-                                                    if (dd < bounds[10]) return 10;
-                                                    else
-                                                        if (dd < bounds[11]) return 11;
-                                                        else
-                                                            if (dd < bounds[12]) return 12;
-                                                            else
-                                                                if (dd < bounds[13]) return 13;
-                                                                else
-                                                                    if (dd < bounds[14]) return 14;
-                                                                    else
-                                                                        return 15;
+                if (dd < bounds[1])
+            {
+                return 1;
+            }
+            else
+                    if (dd < bounds[2])
+            {
+                return 2;
+            }
+            else
+                        if (dd < bounds[3])
+            {
+                return 3;
+            }
+            else
+                            if (dd < bounds[4])
+            {
+                return 4;
+            }
+            else
+                                if (dd < bounds[5])
+            {
+                return 5;
+            }
+            else
+                                    if (dd < bounds[6])
+            {
+                return 6;
+            }
+            else
+                                        if (dd < bounds[7])
+            {
+                return 7;
+            }
+            else
+                                            if (dd < bounds[8])
+            {
+                return 8;
+            }
+            else
+                                                if (dd < bounds[9])
+            {
+                return 9;
+            }
+            else
+                                                    if (dd < bounds[10])
+            {
+                return 10;
+            }
+            else
+                                                        if (dd < bounds[11])
+            {
+                return 11;
+            }
+            else
+                                                            if (dd < bounds[12])
+            {
+                return 12;
+            }
+            else
+                                                                if (dd < bounds[13])
+            {
+                return 13;
+            }
+            else
+                                                                    if (dd < bounds[14])
+            {
+                return 14;
+            }
+            else
+            {
+                return 15;
+            }
         }
-
 
         public string write16binDistribution()
         {
@@ -572,16 +739,29 @@ namespace TowseyLibrary
             sb.Append("bin\tup_bnd\tmidpt\tcount\t\tfraction\tln\n");
             for (int r = 0; r < 16; r++)
             {
-                if (r < 9) sb.Append(" ");
-                sb.Append((r + 1) + "\t");
-                if (bins[r,0] >= 0.0) sb.Append("+");
-                sb.Append(bins[r,0].ToString("F2.2") + "\t");
-                if (bins[r,1] >= 0.0) sb.Append("+");
-                sb.Append(bins[r,1].ToString("F2.2") + "\t");
-                sb.Append(bins[r,2].ToString("F0") + "\t\t");
-                sb.Append(bins[r,3].ToString("F3") + "\t\t");
-                sb.Append(bins[r,4].ToString("F3") + "\n");
+                if (r < 9)
+                {
+                    sb.Append(" ");
+                }
+
+                sb.Append(r + 1 + "\t");
+                if (bins[r, 0] >= 0.0)
+                {
+                    sb.Append("+");
+                }
+
+                sb.Append(bins[r, 0].ToString("F2.2") + "\t");
+                if (bins[r, 1] >= 0.0)
+                {
+                    sb.Append("+");
+                }
+
+                sb.Append(bins[r, 1].ToString("F2.2") + "\t");
+                sb.Append(bins[r, 2].ToString("F0") + "\t\t");
+                sb.Append(bins[r, 3].ToString("F3") + "\t\t");
+                sb.Append(bins[r, 4].ToString("F3") + "\n");
             }
+
             return sb.ToString();
         }
 
@@ -596,28 +776,29 @@ namespace TowseyLibrary
             return sb.ToString();
         }
 
-  public static void writeBinDistribution(int[] data, int binWidth)
+        public static void writeBinDistribution(int[] data, int binWidth)
   {
     int min;
     int max;
     DataTools.MinMax(data, out min, out max);
     int length = max / binWidth;
 
-    int[] counts = new int[length+1];
-    for(int i=0;i<data.Length;i++)
-    { counts[(data[i] / binWidth)]++;
+    int[] counts = new int[length + 1];
+    for (int i = 0; i < data.Length; i++)
+    {
+        counts[data[i] / binWidth]++;
     }
 
-        LoggedConsole.WriteLine("\n DISTRIBUTION");
-        LoggedConsole.WriteLine("bin width = "+binWidth);
-        LoggedConsole.WriteLine("geneStart \tend \tcount");
-        for(int i=0;i<counts.Length;i++)
+    LoggedConsole.WriteLine("\n DISTRIBUTION");
+    LoggedConsole.WriteLine("bin width = " + binWidth);
+    LoggedConsole.WriteLine("geneStart \tend \tcount");
+    for (int i = 0; i < counts.Length; i++)
         {
-        LoggedConsole.WriteLine((i*binWidth)+" \t"+((i+1)*binWidth)+" \t"+counts[i]);
+        LoggedConsole.WriteLine((i * binWidth) + " \t" + ((i + 1) * binWidth) + " \t" + counts[i]);
         }
     }
 
-    public static void writeScoreDistribution(double[] scores)
+        public static void writeScoreDistribution(double[] scores)
     {
         double min;
         double max;
@@ -626,15 +807,15 @@ namespace TowseyLibrary
         double sd;
         AverageAndSD(scores, out av, out sd);
 
-        double[,] histo = get16binDistribution(scores,av,sd);
+        double[,] histo = get16binDistribution(scores, av, sd);
         LoggedConsole.WriteLine(" ===== SCORE STATISTICS =====");
-        LoggedConsole.WriteLine("Average ="+av+"+/-"+sd);
-        LoggedConsole.WriteLine("Min score ="+min+"  Max="+max);
+        LoggedConsole.WriteLine("Average =" + av + "+/-" + sd);
+        LoggedConsole.WriteLine("Min score =" + min + "  Max=" + max);
         LoggedConsole.WriteLine(write16binDistribution(histo));
         LoggedConsole.WriteLine(" =============================");
     }
 
-    public static void writeScoreDistribution(int[] scores)
+        public static void writeScoreDistribution(int[] scores)
     {
         double av;
         double sd;
@@ -644,16 +825,13 @@ namespace TowseyLibrary
         DataTools.MinMax(scores, out min, out max);
         double[,] histo = get16binDistribution(scores, av, sd);
         LoggedConsole.WriteLine(" ===== SCORE STATISTICS =====");
-        LoggedConsole.WriteLine("Average ="+av+"+/-"+sd);
-        LoggedConsole.WriteLine("Min score ="+min+"  Max="+max);
+        LoggedConsole.WriteLine("Average =" + av + "+/-" + sd);
+        LoggedConsole.WriteLine("Min score =" + min + "  Max=" + max);
         LoggedConsole.WriteLine(write16binDistribution(histo));
         LoggedConsole.WriteLine(" =============================");
     }
 
-
-
-
-    public static void writeScoreStatistics(double[] scores)
+        public static void writeScoreStatistics(double[] scores)
     {
         double av;
         double sd;
@@ -661,17 +839,18 @@ namespace TowseyLibrary
         double min;
         double max;
         DataTools.MinMax(scores, out min, out max);
+
         //double[,] histo = NormalDist.get16binDistribution(scores, av, sd);
         LoggedConsole.WriteLine(" ===== SCORE STATISTICS =====");
-        LoggedConsole.WriteLine("Average ="+av+"+/-"+sd);
-        LoggedConsole.WriteLine("Min score ="+min+"  Max="+max);
+        LoggedConsole.WriteLine("Average =" + av + "+/-" + sd);
+        LoggedConsole.WriteLine("Min score =" + min + "  Max=" + max);
         LoggedConsole.WriteLine(" =============================");
     }
 
         public static string formatAvAndSD(double[] avsd, int places)
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append((avsd[0]).ToString("F4"));
+            sb.Append(avsd[0].ToString("F4"));
             sb.Append("+/-");
             sb.Append(avsd[1].ToString("F4"));
             return sb.ToString();
@@ -682,7 +861,10 @@ namespace TowseyLibrary
             int length = scores.Length;
             double[] zscores = new double[length];
             for (int i = 0; i < length; i++)
+            {
                 zscores[i] = (scores[i] - av) / sd;
+            }
+
             return zscores;
         }
 
@@ -703,10 +885,10 @@ namespace TowseyLibrary
         {
             //double[] table = { 1.2816, 1.6449, 1.9600, 2.3263, 2.5758, 3.0902, 3.7190, 4.26490 };
             //double[] alpha = { 0.1000, 0.0500, 0.0250, 0.0100, 0.0050, 0.0010, 0.0001, 0.00001 };
-            double[] zTable = { 0.0, 0.1,  0.2,    0.3,    0.4,    0.5,    0.6,    0.7,    0.8,    0.9,    1.0,    1.1,    1.2,    1.3,    1.4,    1.5,    1.6,    1.7,    1.8,    1.9,    2.0,    2.1,    2.2,    2.3,    2.4,    2.5,    2.6,    2.7,    2.8,    2.9,    3.0,    3.1};
-            double[] alpha  = { 0.5, 0.54, 0.5793, 0.6179, 0.6554, 0.6915, 0.7257, 0.7580, 0.7881, 0.8159, 0.8413, 0.8643, 0.8849, 0.9032, 0.9192, 0.9332, 0.9452, 0.9554, 0.9641, 0.9713, 0.9772, 0.9821, 0.9861, 0.9893, 0.9918, 0.9938, 0.9953, 0.9965, 0.9974, 0.9981, 0.9987, 0.9990};
+            double[] zTable = { 0.0, 0.1,  0.2,    0.3,    0.4,    0.5,    0.6,    0.7,    0.8,    0.9,    1.0,    1.1,    1.2,    1.3,    1.4,    1.5,    1.6,    1.7,    1.8,    1.9,    2.0,    2.1,    2.2,    2.3,    2.4,    2.5,    2.6,    2.7,    2.8,    2.9,    3.0,    3.1 };
+            double[] alpha = { 0.5, 0.54, 0.5793, 0.6179, 0.6554, 0.6915, 0.7257, 0.7580, 0.7881, 0.8159, 0.8413, 0.8643, 0.8849, 0.9032, 0.9192, 0.9332, 0.9452, 0.9554, 0.9641, 0.9713, 0.9772, 0.9821, 0.9861, 0.9893, 0.9918, 0.9938, 0.9953, 0.9965, 0.9974, 0.9981, 0.9987, 0.9990 };
             double p = 0.5;
-            for (int i = zTable.Length-1; i >= 0; i--)
+            for (int i = zTable.Length - 1; i >= 0; i--)
             {
                 if (z > zTable[i])
                 {
@@ -714,22 +896,16 @@ namespace TowseyLibrary
                     break;
                 }
             }
-            return 2 - (2*p); // convert alpha to probability event drawn from same population having given mean and SD.
+
+            return 2 - (2 * p); // convert alpha to probability event drawn from same population having given mean and SD.
         }
 
-
         public static void main(string[] args)
-	{
-
-
+    {
 /*
-  	double[] roots = NormalDist.quadraticRoots(6, -13, 6);
-		LoggedConsole.WriteLine("root1="+roots[0]+"  root2="+roots[1]);
+    double[] roots = NormalDist.quadraticRoots(6, -13, 6);
+        LoggedConsole.WriteLine("root1="+roots[0]+"  root2="+roots[1]);
 */
-
-
-
   }
-
     }
 }

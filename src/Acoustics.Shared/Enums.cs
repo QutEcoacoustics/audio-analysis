@@ -17,13 +17,13 @@ namespace Acoustics.Shared
         /// <summary>
         /// The spectrogram.
         /// </summary>
-        Spectrogram = 1
+        Spectrogram = 1,
     }
 
     public enum ImageChrome
     {
         Without = 0,
-        With = 1
+        With = 1,
     }
 
     public static class EnumExtenstions

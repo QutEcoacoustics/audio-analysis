@@ -6,6 +6,7 @@ namespace AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
+
     //using System.Linq;
     using System.Text;
     using TowseyLibrary;
@@ -16,9 +17,9 @@ namespace AudioAnalysisTools
         //90 degree angle = symbol 'i'   i.e. the vertical
         //int resolutionAngle = 10;
         public static char[] code = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l' };   //15 degree jumps
+
         //90 degree angle = symbol 'g' i.e. the vertical
         public const int resolutionAngle = 15;
-
 
         /// <summary>
         /// returns the angle difference between two angle symbols
@@ -28,9 +29,17 @@ namespace AudioAnalysisTools
         /// <returns></returns>
         public static int SymbolDifference(char c1, char c2)
         {
-            if (c1 == c2) return 0;
-            int angle = Math.Abs((int)c1 - (int)c2) * resolutionAngle;
-            if (angle > 90) angle = 180 - angle;
+            if (c1 == c2)
+            {
+                return 0;
+            }
+
+            int angle = Math.Abs(c1 - c2) * resolutionAngle;
+            if (angle > 90)
+            {
+                angle = 180 - angle;
+            }
+
             return angle;
         }
 
@@ -45,17 +54,16 @@ namespace AudioAnalysisTools
                 for (int j = 1; j < cols - 1; j++)
                 {
                     //if (matrix[i,j] < threshold) continue;
-                    if (((matrix[i, j] > matrix[i, j + 1]) && (matrix[i, j] > matrix[i, j - 1])) ||
-                        ((matrix[i, j] > matrix[i + 1, j]) && (matrix[i, j] > matrix[i - 1, j])))
+                    if ((matrix[i, j] > matrix[i, j + 1] && matrix[i, j] > matrix[i, j - 1]) ||
+                        (matrix[i, j] > matrix[i + 1, j] && matrix[i, j] > matrix[i - 1, j]))
+                    {
                         tracks[i, j] = matrix[i, j];
+                    }
                 }
             }
 
             return tracks;
         }
-
-
-
 
         public static char[,] Target2SymbolicTracks(double[,] matrix, double threshold, int lineLength)
         {
@@ -68,7 +76,10 @@ namespace AudioAnalysisTools
             char[,] symbolic = new char[rows, cols];
             for (int r = 0; r < rows; r++)
             {
-                for (int c = 0; c < cols; c++) symbolic[r, c] = '-';
+                for (int c = 0; c < cols; c++)
+                {
+                    symbolic[r, c] = '-';
+                }
             }
 
             double[,] intensityScores = new double[rows, cols];
@@ -85,20 +96,22 @@ namespace AudioAnalysisTools
                         int degrees = result.Item1;
                         double intensity = result.Item2;
 
-                        if ((intensity > sumThreshold) && (intensity > intensityScores[r, c]))
+                        if (intensity > sumThreshold && intensity > intensityScores[r, c])
                         {
                             //if (intensity > intensityScores[r, c]) intensityScores[r, c] = intensity; // store the intensity
                             double cosAngle = Math.Cos(Math.PI * degrees / 180);
                             double sinAngle = Math.Sin(Math.PI * degrees / 180);
+
                             //symbolic[r, c] = code[degrees / resolutionAngle];
                             for (int j = 0; j < lineLength; j++)
                             {
                                 int row = r + (int)(cosAngle * j);
                                 int col = c + (int)(sinAngle * j);
                                 if (intensity > intensityScores[row, col])
-                                symbolic[row, col] = code[degrees / resolutionAngle];
+                                {
+                                    symbolic[row, col] = code[degrees / resolutionAngle];
+                                }
                             } // line length
-
                         }
                     }
                 } // columns
@@ -109,7 +122,6 @@ namespace AudioAnalysisTools
             return symbolic;
         } // Target2SymbolicTracks()
 
-
         /// <summary>
         /// Cleans up a symbolic matrix.
         /// Removes a symbol if it is isolated.
@@ -119,15 +131,19 @@ namespace AudioAnalysisTools
         {
             int rows = inputM.GetLength(0);
             int cols = inputM.GetLength(1);
-            for (int r = 1; r < rows-1; r++)
+            for (int r = 1; r < rows - 1; r++)
             {
-                for (int c = 1; c < cols-1; c++)
+                for (int c = 1; c < cols - 1; c++)
                 {
-                    if (inputM[r,c] == '-') continue;
-
-                    if ((inputM[r, c - 1] == '-') && (inputM[r, c + 1] == '-') && (inputM[r-1, c] == '-') && (inputM[r+1, c] == '-'))
+                    if (inputM[r, c] == '-')
                     {
-                        inputM[r, c]   = '-';
+                        continue;
+                    }
+
+                    if (inputM[r, c - 1] == '-' && inputM[r, c + 1] == '-' && inputM[r - 1, c] == '-' && inputM[r + 1, c] == '-')
+                    {
+                        inputM[r, c] = '-';
+
                         //inputM[r, c+1] = '-';
                     }
                 } // cols
@@ -149,14 +165,14 @@ namespace AudioAnalysisTools
             {
                 for (int j = 1; j < cols - 1; j++)
                 {
-                    if (templateMatrix[i, j] != '-') count++;
+                    if (templateMatrix[i, j] != '-')
+                    {
+                        count++;
+                    }
                 }
             }
 
             return count;
         }
-
-
-
     }
 }

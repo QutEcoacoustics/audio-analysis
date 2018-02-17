@@ -305,7 +305,7 @@ namespace AudioAnalysisTools.DSP
                 double sum = 0.0;
                 for (int j = 0; j < filterLength; j++)
                 {
-                    if ((i - j) < 0)
+                    if (i - j < 0)
                     {
                         break;
                     }
@@ -356,7 +356,7 @@ namespace AudioAnalysisTools.DSP
                 double sum = 0.0;
                 for (int j = 0; j < filterLength; j++)
                 {
-                    if ((i - j) < 0)
+                    if (i - j < 0)
                     {
                         break;
                     }

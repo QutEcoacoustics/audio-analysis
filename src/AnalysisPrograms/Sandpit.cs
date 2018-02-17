@@ -79,6 +79,7 @@ namespace AnalysisPrograms
             //CubeHelixDrawTestImage();
             //DrawLongDurationSpectrogram();
             ExtractSpectralFeatures();
+
             //HerveGlotinMethods();
             //KarlHeinzFrommolt();
             //OTSU_TRHESHOLDING();
@@ -142,7 +143,7 @@ namespace AnalysisPrograms
             string directoryFilter = "Towsey.Acoustic"; // this is a directory filter to locate only the required files
             string opFileStem = "IvanCampos_INCIPO01_20161031";
             string opPath = $"{drive}:\\SensorNetworks\\Output\\IvanCampos";
-            var falseColourSpgConfig = 
+            var falseColourSpgConfig =
                 $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatSpectrogramFalseColourConfig.yml";
 
             // start and end dates INCLUSIVE
@@ -151,7 +152,7 @@ namespace AnalysisPrograms
 
             // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and EchoGaps.
             string gapRendering = "NoGaps";
-            var indexPropertiesConfig = 
+            var indexPropertiesConfig =
                 @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml";
 
             var concatArgs = new ConcatenateIndexFiles.Arguments
@@ -568,10 +569,10 @@ namespace AnalysisPrograms
 
             var args = new DrawLongDurationSpectrograms.Arguments
             {
-                InputDataDirectory = (ipdir),
-                OutputDirectory = (opdir),
-                IndexPropertiesConfig = (indexPropertiesFile),
-                SpectrogramConfigPath = (spectrogramConfigFile),
+                InputDataDirectory = ipdir,
+                OutputDirectory = opdir,
+                IndexPropertiesConfig = indexPropertiesFile,
+                SpectrogramConfigPath = spectrogramConfigFile,
             };
             DrawLongDurationSpectrograms.Execute(args);
         }
@@ -658,7 +659,7 @@ namespace AnalysisPrograms
             // top level directory AVAILAE JOB #181
             string[] dataDirs =
             {
-                ($"{drive}:\\SensorNetworks\\Output\\BradLaw\\PillagaData"),
+                $"{drive}:\\SensorNetworks\\Output\\BradLaw\\PillagaData",
             };
             string directoryFilter = "Pillaga*"; // this is a directory filter to locate only the required files
             string opFileStem = "PillagaForest20121125";
@@ -932,7 +933,6 @@ namespace AnalysisPrograms
             //string opFileStem = "Site1_20150709";
             // ########################## END of GRIFFITH - SIMON/TOBY FRESH-WATER RECORDINGS
 
-
             // DISCUSS THE FOLLOWING WITH ANTHONY
             // Anthony says we would need to serialise the class. Skip this for the moment.
             // The following location data is used only to draw the sunrise/sunset tracks on images.
@@ -971,7 +971,7 @@ namespace AnalysisPrograms
         /// <summary>
         /// read a set of Spectral index files and extract values from frequency band
         /// This work done for Liz Znidersic paper.
-        /// End of the method requires access to Liz tagging info. 
+        /// End of the method requires access to Liz tagging info.
         /// </summary>
         public static void ExtractSpectralFeatures()
         {
@@ -1056,10 +1056,25 @@ namespace AnalysisPrograms
             var pen = new Pen(Color.Red);
             for (int i = 0; i < framecount; i++)
             {
-                if (tags[i] == 0) continue;
-                if (tags[i] == 1) pen = new Pen(Color.Red);
-                if (tags[i] == 2) pen = new Pen(Color.Green);
-                if (tags[i] == 3) pen = new Pen(Color.Blue);
+                if (tags[i] == 0)
+                {
+                    continue;
+                }
+
+                if (tags[i] == 1)
+                {
+                    pen = new Pen(Color.Red);
+                }
+
+                if (tags[i] == 2)
+                {
+                    pen = new Pen(Color.Green);
+                }
+
+                if (tags[i] == 3)
+                {
+                    pen = new Pen(Color.Blue);
+                }
 
                 g.DrawLine(pen, i, 2, i, 5);
                 g.DrawLine(pen, i, 20, i, 25);
@@ -1115,8 +1130,15 @@ namespace AnalysisPrograms
 
                 // get the difficulty of the hit
                 int hitDifficulty = 1; //easy one
-                if (words[5].StartsWith("difficult")) hitDifficulty = 2;
-                if (words[5].StartsWith("very d")) hitDifficulty = 3;
+                if (words[5].StartsWith("difficult"))
+                {
+                    hitDifficulty = 2;
+                }
+
+                if (words[5].StartsWith("very d"))
+                {
+                    hitDifficulty = 3;
+                }
 
                 // add to the array
                 array[minuteCount] = hitDifficulty;
@@ -1187,11 +1209,10 @@ namespace AnalysisPrograms
             double duration = 420; // signal duration in seconds = 7 minutes
             int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
             var recording = DspFilters.GenerateTestRecording(sampleRate, duration, harmonics, WaveType.Consine);
-            var outputDirectory = (@"C:\SensorNetworks\SoftwareTests\TestLongDurationRecordings");
+            var outputDirectory = @"C:\SensorNetworks\SoftwareTests\TestLongDurationRecordings";
             var recordingPath = Path.Combine(outputDirectory, "TemporaryRecording.wav");
             WavWriter.WriteWavFileViaFfmpeg(recordingPath.ToFileInfo(), recording.WavReader);
-            var configPath = (
-                @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml");
+            var configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
 
             // draw the signal as spectrogram just for debugging purposes
             /*
@@ -1275,6 +1296,7 @@ namespace AnalysisPrograms
             var sonoConfig = new SonogramConfig
             {
                 SourceFName = recording.BaseName,
+
                 //set default values - ignore those set by user
                 WindowSize = frameSize,
                 WindowOverlap = windowOverlap,
@@ -1288,6 +1310,7 @@ namespace AnalysisPrograms
                 //AedHitColor = Color.FromArgb(128, AedEventColor),
                 // This stops AED Wiener filter and noise removal.
                 NoiseReductionType = noiseReductionType,
+
                 //BgNoiseThreshold   = 3.5
                 IntensityThreshold = 20.0,
                 SmallAreaThreshold = 100,
@@ -1370,6 +1393,7 @@ namespace AnalysisPrograms
                 string dir =
                     @"H:\Documents\SensorNetworks\MyPapers\2016_EcoAcousticCongress_Abstract\TransitionMatrices";
                 string filename = @"transition_matrix_BYR4_16Oct.csv";
+
                 //string filename = @"transition_matrix_SE_13Oct.csv";
                 //double[,] M = CsvTools.ReadCSVFile2Matrix(Path.Combine(dir, filename)); //DEPRACATED
                 //double[] v = DataTools.Matrix2Array(M);
@@ -1413,7 +1437,7 @@ namespace AnalysisPrograms
                     6, 3, 4, 4, 1, 4, 1, 1, 2, 6, 3, 3, 3, 1, 3, 7, 3, 3, 4, 2, 4, 3, 2, 3, 4, 4, 4, 5, 4, 4, 4, 5, 3,
                     3, 3, 4, 4, 3, 6, 4, 4, 4, 6, 4, 4, 6, 3, 2, 5, 1, 1, 1, 3, 0, 1, 3, 2, 5, 2, 3, 6, 4, 4, 4, 4, 3,
                     3, 4, 2, 2, 3, 4, 3, 3, 2, 4, 3, 2, 3, 3, 3, 3, 3, 1, 1, 2, 1, 2, 1, 2, 3, 1, 0, 1, 0, 0, 1, 1, 2,
-                    1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                    1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                 }; // NW 13thOct2010
                 double entropy = DataTools.EntropyNormalised(v);
             } // end if (true)
@@ -1431,7 +1455,6 @@ namespace AnalysisPrograms
 
             //HoughTransform.Test1HoughTransform();
             HoughTransform.Test2HoughTransform();
-
 
             // call SURF image Feature extraction
             // SURFFeatures.SURF_TEST();
@@ -1583,11 +1606,13 @@ namespace AnalysisPrograms
 
             var image1Path = new FileInfo(Path.Combine(imageDirectory.FullName, fileName1));
             var image2Path = new FileInfo(Path.Combine(imageDirectory.FullName, fileName2));
+
             //var image3Path = new FileInfo(Path.Combine(imageDirectory.FullName, fileName3));
 
             var imageList = new List<Image>();
             imageList.Add(Image.FromFile(image1Path.FullName));
             imageList.Add(Image.FromFile(image2Path.FullName));
+
             //imageList.Add(Image.FromFile(image3Path.FullName));
 
             Image combinedImage = ImageTools.CombineImagesVertically(imageList);
@@ -1639,9 +1664,11 @@ namespace AnalysisPrograms
                 string key = "RHZ"; //"RHZ";
                 int valueResolution = 6;
                 string miFileName = parentDir + @"\MutualInformation." + valueResolution + "catNoSkew." + key + ".txt";
+
                 //double[] bounds = { 0.0, 3.0, 6.0 };
                 //double[] bounds = { 0.0, 2.0, 4.0, 8.0 };
                 double[] bounds = { 0.0, 2.0, 4.0, 6.0, 8.0, 10.0 }; // noSkew
+
                 //double[] bounds = { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0 };
                 //double[] bounds = { 0.0, 1.0, 2.0, 4.0, 6.0, 10.0 }; // skew left
                 //double[] bounds = { 0.0, 2.0, 4.0, 5.0, 6.0, 8.0 }; // skew centre
@@ -1650,7 +1677,7 @@ namespace AnalysisPrograms
                 string inputDir = parentDir + @"\TrainingCSV";
                 int speciesNumber = 50;
 
-                string speciesCountFile = parentDir + @"\AmazonBird50_training_Counts.txt"; //
+                string speciesCountFile = parentDir + @"\AmazonBird50_training_Counts.txt";
                 var lines = FileTools.ReadTextFile(speciesCountFile);
                 int[] speciesCounts = new int[speciesNumber];
                 for (int i = 0; i < speciesNumber; i++)
@@ -1658,14 +1685,17 @@ namespace AnalysisPrograms
                     string[] words = lines[i].Split(',');
                     speciesCounts[i] = int.Parse(words[1]);
                 }
+
                 double Hspecies = DataTools.EntropyNormalised(speciesCounts);
                 Console.WriteLine("Species Entropy = " + Hspecies);
 
                 int freqBinCount = 256;
                 int reducedBinCount = freqBinCount;
+
                 //int reductionFactor = 1;
                 //reducedBinCount = freqBinCount / reductionFactor;
                 reducedBinCount = 100 + (156 / 2); // exotic style
+
                 // data structure to contain probability info
                 int[,,] probSgivenF = new int[reducedBinCount, speciesNumber, valueResolution];
 
@@ -1675,6 +1705,7 @@ namespace AnalysisPrograms
 
                 // read through all the files
                 int fileCount = filePaths.Length;
+
                 //fileCount = 3;
                 for (int i = 0; i < fileCount; i++)
                 {
@@ -1696,6 +1727,7 @@ namespace AnalysisPrograms
                         string opFileStem = "CornellMarine.BGN-POW-EVN.SpectralRibbon.2013MarchApril";
 
                         FileInfo tidalDataFile = new FileInfo(@"C:\SensorNetworks\OutputDataSets\GeorgiaTides2013.txt");
+
                         //SunAndMoon.SunMoonTides[] tidalInfo = null;
                         SunAndMoon.SunMoonTides[] tidalInfo = SunAndMoon.ReadGeorgiaTidalInformation(tidalDataFile);
 
@@ -1733,7 +1765,7 @@ namespace AnalysisPrograms
 //                    double[]  array = DataTools.Matrix2Array(m);
 //                    double entropy = DataTools.EntropyNormalised(array);
 //                    mi[i] = entropy;
-//                
+//
 //
 //            var image1Path = new FileInfo(Path.Combine(imageDirectory.FullName, fileName1));
 //            var image2Path = new FileInfo(Path.Combine(imageDirectory.FullName, fileName2));
@@ -1756,7 +1788,6 @@ namespace AnalysisPrograms
 
             HerveGlotinCollaboration.AnalyseBOMBYXRecordingsForSpermWhaleClicks();
         }
-
 
         /// <summary>
         /// Concatenate images for Karl-Heinz Frommolt
@@ -1783,7 +1814,6 @@ namespace AnalysisPrograms
         /// </summary>
         public static void AnalyseFrogDataSet()
         {
-
             //HighResolutionAcousticIndices.Execute(null);
         }
 
@@ -1809,6 +1839,7 @@ namespace AnalysisPrograms
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\BAC2_20071018-143516_speech.wav";
             string recordingPath =
                 @"C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav";
+
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\Planitz.wav";
             string configPath = @"C:\SensorNetworks\Output\Human\Human.cfg";
             string outputDir = @"C:\SensorNetworks\Output\Human\";
@@ -1816,7 +1847,6 @@ namespace AnalysisPrograms
 
         public static void ResourcesForRheobatrachusSilusRecogniser()
         {
-
             string AnalysisName = "RheobatrachusSilus";
 
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Rheobatrachus_silus_MONO.wav";  //POSITIVE
@@ -1868,6 +1898,7 @@ namespace AnalysisPrograms
                 string wavFilePath = @"C:\SensorNetworks\WavFiles\SunshineCoast\DM420036_min407.wav";
                 string outputDir = @"C:\SensorNetworks\Output\Test";
                 string imageFname = "test3.png";
+
                 //string imagePath = Path.Combine(outputDir, imageFname);
                 //string imageViewer = @"C:\Windows\system32\mspaint.exe";
 
@@ -1897,6 +1928,7 @@ namespace AnalysisPrograms
                 string wavFilePath = @"C:\SensorNetworks\WavFiles\SunshineCoast\DM420036_min407.wav";
                 string outputDir = @"C:\SensorNetworks\Output\Test";
                 string imageFname = "test3.png";
+
                 //string imagePath = Path.Combine(outputDir, imageFname);
                 //string imageViewer = @"C:\Windows\system32\mspaint.exe";
 

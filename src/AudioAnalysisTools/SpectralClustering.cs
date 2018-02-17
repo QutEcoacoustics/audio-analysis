@@ -160,7 +160,7 @@ namespace AudioAnalysisTools
                 // if the spectrum changes
                 if (clusterHits2[i] != clusterHits2[i - 1])
                 {
-                    if ((clusterHits2[i - 1] != 0) && (currentDuration > 1))
+                    if (clusterHits2[i - 1] != 0 && currentDuration > 1)
                     {
                         hitDurations.Add(currentDuration); // do not add if cluster = 0
                     }
@@ -554,7 +554,7 @@ namespace AudioAnalysisTools
                 image.AddTrack(ImageTrack.GetNamedScoreTrack(scores.data, 0.0, 1.0, scores.threshold, scores.title));
             }
 
-            if ((poi != null) && (poi.Count > 0))
+            if (poi != null && poi.Count > 0)
             {
                 image.AddEvents(poi, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
             }

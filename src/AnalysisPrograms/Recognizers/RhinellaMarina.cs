@@ -15,24 +15,18 @@ namespace AnalysisPrograms.Recognizers
     using System.Linq;
     using System.Reflection;
     using System.Text;
-
     using Acoustics.Shared.ConfigFile;
-
+    using Acoustics.Shared.Csv;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-
-    using Base;
-
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-
+    using Base;
     using log4net;
-
     using TowseyLibrary;
-    using Acoustics.Shared.Csv;
 
     /// <summary>
     /// AKA: The bloody canetoad
@@ -44,7 +38,7 @@ namespace AnalysisPrograms.Recognizers
     /// To call this recognizer, the first command line argument must be "EventRecognizer".
     /// Alternatively, this recognizer can be called via the MultiRecognizer.
     /// </summary>
-    class RhinellaMarina : RecognizerBase
+    internal class RhinellaMarina : RecognizerBase
     {
         public override string Author => "Towsey";
 
@@ -79,10 +73,9 @@ namespace AnalysisPrograms.Recognizers
         /// <returns></returns>
         public override RecognizerResults Recognize(AudioRecording recording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
-
             // common properties
-            var speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
-            var abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+            var speciesName = configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
+            var abbreviatedSpeciesName = configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
 
             int minHz = configuration.GetInt(AnalysisKeys.MinHz);
             int maxHz = configuration.GetInt(AnalysisKeys.MaxHz);
@@ -117,6 +110,7 @@ namespace AnalysisPrograms.Recognizers
                 recording.SampleRate,
                 frameSize,
                 maxOscilFreq);
+
             //windowOverlap = 0.75; // previous default
 
             // DEBUG: Following line used to search for where indeterminism creeps into the spectrogram values which vary from run to run.
@@ -128,6 +122,7 @@ namespace AnalysisPrograms.Recognizers
                 SourceFName = recording.BaseName,
                 WindowSize = frameSize,
                 WindowOverlap = windowOverlap,
+
                 // the default window is HAMMING
                 //WindowFunction = WindowFunctions.HANNING.ToString(),
                 //WindowFunction = WindowFunctions.NONE.ToString(),
@@ -137,6 +132,7 @@ namespace AnalysisPrograms.Recognizers
 
             // sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("STANDARD");
             TimeSpan recordingDuration = recording.Duration;
+
             //int sr = recording.SampleRate;
             //double freqBinWidth = sr / (double)sonoConfig.WindowSize;
 
@@ -150,6 +146,7 @@ namespace AnalysisPrograms.Recognizers
             // int minBin = (int)Math.Round(minHz / freqBinWidth) + 1;
             // int maxbin = minBin + numberOfBins - 1;
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
+
             //int rowCount = sonogram.Data.GetLength(0);
             //int colCount = sonogram.Data.GetLength(1);
 
@@ -160,6 +157,7 @@ namespace AnalysisPrograms.Recognizers
             // ######################################################################
             // ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
             double minDurationOfAdvertCall = minDuration; // this boundary duration should = 5.0 seconds as of 4 June 2015.
+
             //double minDurationOfReleaseCall = 1.0;
             double[] scores; // predefinition of score array
             List<AcousticEvent> events;
@@ -188,8 +186,15 @@ namespace AnalysisPrograms.Recognizers
             foreach (AcousticEvent ae in events)
             {
                 //if (ae.Duration < minDurationOfReleaseCall) { continue; }
-                if (ae.EventDurationSeconds < minDurationOfAdvertCall) { continue; }
-                if (ae.EventDurationSeconds > maxDuration)             { continue; }
+                if (ae.EventDurationSeconds < minDurationOfAdvertCall)
+                {
+                    continue;
+                }
+
+                if (ae.EventDurationSeconds > maxDuration)
+                {
+                    continue;
+                }
 
                 // add additional info
                 ae.SpeciesName = speciesName;
@@ -204,7 +209,7 @@ namespace AnalysisPrograms.Recognizers
                 //    prunedEvents.Add(ae);
                 //    continue;
                 //}
-            };
+            }
 
             // do a recognizer test.
             if (false)
@@ -223,9 +228,9 @@ namespace AnalysisPrograms.Recognizers
                 Hits = hits,
                 Plots = plot.AsList(),
                 Events = prunedEvents,
+
                 //Events = events
             };
-
         }
 
         /// <summary>
@@ -241,9 +246,9 @@ namespace AnalysisPrograms.Recognizers
             var dir = wavFile.DirectoryName;
             var fileName = wavFile.Name;
             fileName = fileName.Substring(0, fileName.Length - 4);
-            var scoreFilePath  = Path.Combine(dir + subDir, fileName + ".TestScores.csv");
-            var scoreFile  = new FileInfo(scoreFilePath);
-            if (! scoreFile.Exists)
+            var scoreFilePath = Path.Combine(dir + subDir, fileName + ".TestScores.csv");
+            var scoreFile = new FileInfo(scoreFilePath);
+            if (!scoreFile.Exists)
             {
                 Log.Warn("   Score Test file does not exist.    Writing output as future score-test file");
                 FileTools.WriteArray2File(scoreArray, scoreFilePath);
@@ -261,6 +266,7 @@ namespace AnalysisPrograms.Recognizers
                         allOK = false;
                     }
                 }
+
                 if (allOK)
                 {
                     Log.Info("   SUCCESS! Passed the SCORE ARRAY TEST.");
@@ -270,6 +276,7 @@ namespace AnalysisPrograms.Recognizers
                     Log.Warn("   FAILED THE SCORE ARRAY TEST");
                 }
             }
+
             Log.Info("Completed benchmark test for the Canetoad recognizer.");
         }
 
@@ -306,7 +313,6 @@ namespace AnalysisPrograms.Recognizers
             }
             else // else if the events file exists then do a compare.
             {
-
                 bool AOK = true;
                 var newEventsFilePath = Path.Combine(dir + subDir, fileName + ".NewEvents.txt");
                 var newEventsFile = new FileInfo(newEventsFilePath);
@@ -321,6 +327,7 @@ namespace AnalysisPrograms.Recognizers
                         AOK = false;
                     }
                 }
+
                 if (AOK)
                 {
                     Log.Info("   SUCCESS! Passed the EVENTS ARRAY TEST.");
@@ -330,8 +337,8 @@ namespace AnalysisPrograms.Recognizers
                     Log.Warn("   FAILED THE EVENTS ARRAY TEST");
                 }
             }
+
             Log.Info("Completed benchmark test for the Canetoad recognizer.");
         }
-
     }
 }

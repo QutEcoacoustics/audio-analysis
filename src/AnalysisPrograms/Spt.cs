@@ -36,7 +36,6 @@ namespace AnalysisPrograms
             Description = "[UNMAINTAINED] Spectral Peak Tracking.Probably not useful anymore.")]
         public class Arguments : SubCommandBase
         {
-
             [Option(Description = "The source audio file to operate on")]
             [ExistingFile]
             [Required]
@@ -46,7 +45,7 @@ namespace AnalysisPrograms
             [Option(Description = "A directory to write output to")]
             [DirectoryExistsOrCreate(createIfNotExists: true)]
             [LegalFilePath]
-            public string Output{get;set;}
+            public string Output{ get; set; }
 
             [Option(Description = "Intensity Threshold")]
             [Required]
@@ -107,7 +106,7 @@ namespace AnalysisPrograms
             string suffix = string.Empty;
             while (File.Exists(savePath + suffix + ".jpg"))
             {
-                suffix = (suffix == string.Empty) ? "1" : (int.Parse(suffix) + 1).ToString();
+                suffix = suffix == string.Empty ? "1" : (int.Parse(suffix) + 1).ToString();
             }
 
             Image im = sonogram.GetImage(false, false);
@@ -133,10 +132,12 @@ namespace AnalysisPrograms
 
             //Log.WriteLine("Wiener filter start");
             var w = Matlab.wiener2(7, m);
+
             //Log.WriteLine("Wiener filter end");
 
             //Log.WriteLine("Remove subband mode intensities start");
             var s = AcousticEventDetection.removeSubbandModeIntensities(w);
+
             //Log.WriteLine("Remove subband mode intensities end");
 
             Log.WriteLine("SPT start");

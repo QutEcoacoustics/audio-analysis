@@ -21,6 +21,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public static void DiscreteColourSpectrograms()
         {
             Console.WriteLine("Reading image");
+
             //string wavFilePath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
             //string inputPath = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.colSpectrum.png";
             //string outputPath = @"C:\SensorNetworks\Output\FalseColourSpectrograms\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.discreteColSpectrum.png";
@@ -32,6 +33,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             const int G = 1;
             const int B = 2;
             double[,] discreteIndices = new double[12, 3]; // Ht, ACI and Ampl values in 0,1
+#pragma warning disable SA1107 // Code should not contain multiple statements on one line
             discreteIndices[0, R] = 0.00; discreteIndices[0, G] = 0.00; discreteIndices[0, B] = 0.00; // white
             discreteIndices[1, R] = 0.20; discreteIndices[1, G] = 0.00; discreteIndices[1, B] = 0.00; // pale blue
             discreteIndices[2, R] = 0.60; discreteIndices[2, G] = 0.20; discreteIndices[2, B] = 0.10; // medium blue
@@ -46,6 +48,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             discreteIndices[9, R] = 0.50; discreteIndices[9, G] = 0.95; discreteIndices[9, B] = 0.50;    // medium magenta
             discreteIndices[10, R] = 0.70; discreteIndices[10, G] = 0.95; discreteIndices[10, B] = 0.70; // dark magenta
             discreteIndices[11, R] = 0.95; discreteIndices[11, G] = 0.95; discreteIndices[11, B] = 0.95; // black
+#pragma warning restore SA1107 // Code should not contain multiple statements on one line
 
             int N = 12; // number of discrete colours
             byte[,] discreteColourValues = new byte[N, 3]; // Ht, ACI and Ampl values in 0,255
@@ -75,6 +78,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     imageColorVector[0] = imageCol.R;
                     imageColorVector[1] = imageCol.G;
                     imageColorVector[2] = imageCol.B;
+
                     // get colour from palette closest to the existing colour
                     double[] distance = new double[N];
                     for (int c = 0; c < N; c++)
@@ -85,17 +89,17 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                         colourVector[2] = discreteColourValues[c, 2];
                         distance[c] = DataTools.EuclidianDistance(imageColorVector, colourVector);
                     }
+
                     int minindex, maxindex;
                     double min, max;
-                    DataTools.MinMax(distance, out minindex, out maxindex, out  min, out max);
+                    DataTools.MinMax(distance, out minindex, out maxindex, out min, out max);
 
                     //if ((col.R > 200) && (col.G > 200) && (col.B > 200))
                     image.SetPixel(x, y, colourPalette[minindex]);
                 }
             }
+
             ImageTools.WriteBitmap2File(image, outputPath);
-
-
         }
     }
 }

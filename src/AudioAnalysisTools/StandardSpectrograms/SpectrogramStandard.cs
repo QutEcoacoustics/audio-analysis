@@ -67,7 +67,10 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             ////energy and dB per frame
             this.DecibelsPerFrame = new double[frameCount];  // Normalised decibels per signal frame
-            for (int i = 0; i < frameCount; i++) this.DecibelsPerFrame[i] = sg.DecibelsPerFrame[startFrame + i];
+            for (int i = 0; i < frameCount; i++)
+            {
+                this.DecibelsPerFrame[i] = sg.DecibelsPerFrame[startFrame + i];
+            }
 
             /*
             // Subband functionality no longer available. Discontinued March 2017 because not being used
@@ -80,10 +83,16 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             this.DecibelReference = sg.DecibelReference; // Used to NormaliseMatrixValues the dB values for MFCCs
             this.DecibelsNormalised = new double[frameCount];
-            for (int i = 0; i < frameCount; i++) this.DecibelsNormalised[i] = sg.DecibelsNormalised[startFrame + i];
+            for (int i = 0; i < frameCount; i++)
+            {
+                this.DecibelsNormalised[i] = sg.DecibelsNormalised[startFrame + i];
+            }
 
             this.SigState = new int[frameCount];    //Integer coded signal state ie  0=non-vocalisation, 1=vocalisation, etc.
-            for (int i = 0; i < frameCount; i++) this.SigState[i] = sg.SigState[startFrame + i];
+            for (int i = 0; i < frameCount; i++)
+            {
+                this.SigState[i] = sg.SigState[startFrame + i];
+            }
 
             //the spectrogram data matrix
             int featureCount = sg.Data.GetLength(1);
@@ -102,7 +111,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             double[,] m = amplitudeM;
 
             // (i) IF REQUIRED CONVERT TO FULL BAND WIDTH MEL SCALE
-            if (this.Configuration.DoMelScale)// m = ApplyFilterBank(m); //following replaces next method
+            if (this.Configuration.DoMelScale) // m = ApplyFilterBank(m); //following replaces next method
             {
                 m = MFCCStuff.MelFilterBank(m, this.Configuration.FreqBinCount, this.NyquistFrequency, 0, this.NyquistFrequency); // using the Greg integral
             }
@@ -134,10 +143,10 @@ namespace AudioAnalysisTools.StandardSpectrograms
             double[,] newMatrix = new double[frameCount, featureCount];
 
             //each row of matrix is a frame
-            for (int i = 0; i < frameCount; i++) 
+            for (int i = 0; i < frameCount; i++)
             {
                 //each col of matrix is a feature
-                for (int j = 0; j < featureCount; j++) 
+                for (int j = 0; j < featureCount; j++)
                 {
                     newMatrix[i, j] = this.Data[i, j];
                 }
@@ -162,7 +171,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 epsilon = Math.Pow(0.5, bitsPerSample - 1),
                 WindowPower = windowPower,
                 SampleRate = sr,
-                Duration = duration
+                Duration = duration,
             }; //default values config
             var sonogram = new SpectrogramStandard(sonoConfig, amplitudeSpectrogram);
             sonogram.SetTimeScale(duration);

@@ -30,9 +30,8 @@ namespace AudioAnalysisTools
     /// </summary>
     public static class BirdClefExperiment1
     {
-        const string FEATURE_KEYS = "SPT,RHZ,RVT,RPS,RNG";
-        const string HEADERS = "index,Hz(top),SPT,RHZ,RVT,RPS,RNG";
-
+        private const string FEATURE_KEYS = "SPT,RHZ,RVT,RPS,RNG";
+        private const string HEADERS = "index,Hz(top),SPT,RHZ,RVT,RPS,RNG";
 
         /// <summary>
         /// This DEV method runs the EXECUTE method in this class. It sets up the input/output arguments that go into the Aruments class.
@@ -58,16 +57,14 @@ namespace AudioAnalysisTools
         {
             // INPUT and OUTPUT DIRECTORIES
 
-
-
             // set up IP and OP directories
             string inputDir = @"C:\SensorNetworks\Output\BIRD50\TrainingCSV";
+
             //string imageInputDir = @"C:\SensorNetworks\Output\BIRD50\TrainingRidgeImages";
             string OutputDir = @"C:\SensorNetworks\Output\BIRD50\SpeciesTEMPLATES_6dbThresholdVersion4";
+
             //string imagOutputDireOutputDir = @"C:\SensorNetworks\Output\BIRD50\TestingRidgeImages";
             string speciesLabelsFile = @"C:\SensorNetworks\Output\BIRD50\AmazonBird50_training_output.csv";
-
-
 
             DirectoryInfo ipDir = new DirectoryInfo(inputDir);
             DirectoryInfo opDir = new DirectoryInfo(OutputDir);
@@ -79,12 +76,14 @@ namespace AudioAnalysisTools
             {
                 InputDataDirectory = ipDir,
                 OutputDirectory = opDir,
+
                 // use the default set of index properties in the AnalysisConfig directory.
                 IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml".ToFileInfo(),
                 SpectrogramConfigPath = fiSpectrogramConfig,
                 SpeciesLabelsFile = speciesLabelsFile,
-                SpeciesCount  = 50,
+                SpeciesCount = 50,
                 InstanceCount = 924, //trainingCount
+
                 //int instanceCount = 375; //testCount
                 //instanceCount = 2;
 
@@ -93,7 +92,6 @@ namespace AudioAnalysisTools
         };
             throw new Exception();
         } //Dev()
-
 
         /// <summary>
         /// AT: NOTE: arguments classes should not exist outside of the AnalysisPrograms project. I had to remove PowerArgs attributes.
@@ -109,29 +107,37 @@ namespace AudioAnalysisTools
             public FileInfo SpectrogramConfigPath { get; set; }
 
             public int SpeciesCount { get; set; }
+
             public int InstanceCount { get; set; }
+
             public string SpeciesLabelsFile { get; set; }
+
             public double BgnThreshold { get; set; }
         }
-
-
 
         public class Output
         {
             // INIT array of instance IDs obtained from file names
             public string[] FileID = null;
+
             // INIT array of species ID for each instance
             public int[] SpeciesID = null;
+
             // INIT array of species counts
             public int[] InstanceNumbersPerSpecies = null;
+
             // INIT array of frame counts
-            public int[] FrameNumbersPerInstance   = null;
+            public int[] FrameNumbersPerInstance = null;
+
             // INIT array of frame counts
             public int[] FrameNumbersPerSpecies = null;
+
             // length of spectrum array have reduction by max pooling
             public int ReducedSpectralLength = 0;
+
             // matrix: each row= one instance;  each column = one feature
             public double[,] InstanceFeatureMatrix = null;
+
             // matrix: each row= one Species;  each column = one feature
             public double[,] SpeciesFeatureMatrix = null;
 
@@ -144,7 +150,6 @@ namespace AudioAnalysisTools
             public double[] Weights;
         }
 
-
         public static void Execute(Arguments arguments)
         {
             if (arguments == null)
@@ -156,12 +161,12 @@ namespace AudioAnalysisTools
                     string date = "# DATE AND TIME: " + DateTime.Now;
                     LoggedConsole.WriteLine("# ANALYSE THE BIRD-50 dataset from Herve Glotin");
                     LoggedConsole.WriteLine(date);
+
                     //LoggedConsole.WriteLine("# Spectrogram Config      file: " + arguments.SpectrogramConfigPath);
                     //LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
                     LoggedConsole.WriteLine();
                 } // if (verbose)
             } // if
-
 
             // This analysis consits of six steps.
 
@@ -196,8 +201,6 @@ namespace AudioAnalysisTools
             ConstructWekaDatasets(arguments, output);
         } //Execute()
 
-
-
         public static Output GetInstanceRepresentations(Arguments arguments)
         {
             LoggedConsole.WriteLine("1. Read in all Instances and do feature extraction");
@@ -205,18 +208,25 @@ namespace AudioAnalysisTools
             //################################### FEATURE WEIGHTS
             //TRY DIFFERENT WEIGHTINGS assuming following "SPT,RHZ,RVT,RPS,RNG";
             bool doDeltaFeatures = false;
-            double[] weights      = { 1.0, 1.0, 0.8, 0.7, 0.7 };
+            double[] weights = { 1.0, 1.0, 0.8, 0.7, 0.7 };
             double[] deltaWeights = { 1.0, 1.0, 0.8, 0.7, 0.7, 0.5, 0.4, 0.4, 0.2, 0.2 };
-            if (doDeltaFeatures) weights = deltaWeights;
+            if (doDeltaFeatures)
+            {
+                weights = deltaWeights;
+            }
 
-                //MAX-POOLING for SPECTRAL REDUCTION
-                // frequency bins used to reduce dimensionality of the 256 spectral values.
-                int startBin = 8;
+            //MAX-POOLING for SPECTRAL REDUCTION
+            // frequency bins used to reduce dimensionality of the 256 spectral values.
+            int startBin = 8;
             int maxOf2Bin = 117;
             int maxOf3Bin = 160;
             int endBin = 200;
             double[] testArray = new double[256];
-            for (int i = 0; i < testArray.Length; i++) testArray[i] = i;
+            for (int i = 0; i < testArray.Length; i++)
+            {
+                testArray[i] = i;
+            }
+
             double[] reducedArray = MaxPoolingLimited(testArray, startBin, maxOf2Bin, maxOf3Bin, endBin);
             int reducedSpectralLength = reducedArray.Length;
 
@@ -224,17 +234,16 @@ namespace AudioAnalysisTools
             int instanceCount = arguments.InstanceCount;
             int speciesCount = arguments.SpeciesCount;
 
-
             // READ IN THE SPECIES LABELS FILE AND SET UP THE DATA
             string[] fileID = new string[instanceCount];
             int[] speciesID = new int[speciesCount];
             ReadGlotinsSpeciesLabelFile(arguments.SpeciesLabelsFile, instanceCount, out fileID, out speciesID);
 
-
             // INIT array of species counts
             int[] instanceNumbersPerSpecies = new int[speciesCount];
+
             // INIT array of frame counts
-            int[] frameNumbersPerInstance   = new int[instanceCount];
+            int[] frameNumbersPerInstance = new int[instanceCount];
 
             // initialise species description matrix
             var keyArray = FEATURE_KEYS.Split(',');
@@ -245,23 +254,24 @@ namespace AudioAnalysisTools
             if (doDeltaFeatures)
             {
                     totalFeatureCount *= 2;
-                LoggedConsole.WriteLine("    Total Delta Feature Count = " + totalFeatureCount);
+                    LoggedConsole.WriteLine("    Total Delta Feature Count = " + totalFeatureCount);
             }
 
             // one matrix row per species
             double[,] instanceFeatureMatrix = new double[instanceCount, totalFeatureCount];
-
 
             // loop through all all instances
             for (int j = 0; j < instanceCount; j++)
             {
                 LoggedConsole.Write(".");
                 int frameCount = 0;
+
                 // get the spectral index files
                 int speciesLabel = speciesID[j];
 
                 // dictionary to store feature spectra for instance.
                 var aggreDictionary = new Dictionary<string, double[]>();
+
                 // dictionary to store delta spectra for instance.
                 var deltaDictionary = new Dictionary<string, double[]>();
 
@@ -277,7 +287,7 @@ namespace AudioAnalysisTools
 
                         // create or get the array of spectral values.
                         double[] aggregateArray = new double[reducedSpectralLength];
-                        double[] deltaArray     = new double[reducedSpectralLength];
+                        double[] deltaArray = new double[reducedSpectralLength];
 
                         double[] ipVector = MatrixTools.GetRow(matrix, 0);
                         ipVector = DataTools.SubtractValueAndTruncateToZero(ipVector, arguments.BgnThreshold);
@@ -286,6 +296,7 @@ namespace AudioAnalysisTools
 
                         // transfer spectral values to array.
                         int rowCount = matrix.GetLength(0);
+
                         //rowCount = (int)Math.Round(rowCount * 0.99); // ###################### USE ONLY 99% of instance
                         //if (rowCount > 1200) rowCount = 1200;
                         for (int r = 1; r < rowCount; r++)
@@ -300,17 +311,19 @@ namespace AudioAnalysisTools
 
                                 // Calculate the DELTA values TWO OPTIONS ##################################################
                                 double delta = Math.Abs(reducedArray[c] - previousArray[c]);
+
                                 //double delta = reducedArray[c] - previousArray[c];
                                 //if (delta < 0.0)  delta = 0.0;
                                 //double delta = previousArray[c]; //previous array - i.e. do not calculate delta
                                 deltaArray[c] += delta;
                             }
+
                             previousArray = reducedArray;
                         }
+
                         aggreDictionary[key] = aggregateArray;
                         deltaDictionary[key] = deltaArray;
                         frameCount = rowCount;
-
                     } //if (file.Exists)
                 } //foreach (string key in keyArray)
 
@@ -329,6 +342,7 @@ namespace AudioAnalysisTools
                         //instanceFeatureMatrix[j, featureOffset + c] = dictionary[key][c];
                         instanceFeatureMatrix[j, featureOffset + c] = aggreDictionary[key][c] / frameCount;
                     }
+
                     featureID++;
                 }
 
@@ -343,14 +357,13 @@ namespace AudioAnalysisTools
                             //instanceFeatureMatrix[j, featureOffset + c] = dictionary[key][c];
                             instanceFeatureMatrix[j, featureOffset + c] = deltaDictionary[key][c] / frameCount;
                         }
+
                         featureID++;
                     }
                 } // if doDeltaFeatures
-
             } // end for loop j over all instances
 
             LoggedConsole.WriteLine("Done!");
-
 
             LoggedConsole.WriteLine("\nSum of species number array = " + instanceNumbersPerSpecies.Sum());
             LoggedConsole.WriteLine("Sum of  frame  number array = " + frameNumbersPerInstance.Sum());
@@ -360,21 +373,21 @@ namespace AudioAnalysisTools
 
             // Initialise output data arrays
             Output output = new Output();
-            output.FileID    = fileID;
+            output.FileID = fileID;
             output.SpeciesID = speciesID;
             output.InstanceNumbersPerSpecies = instanceNumbersPerSpecies;
             output.ReducedSpectralLength = reducedSpectralLength;
+
             // INIT array of frame counts
             output.FrameNumbersPerInstance = frameNumbersPerInstance;
+
             // matrix: each row= one instance;  each column = one feature
             output.InstanceFeatureMatrix = instanceFeatureMatrix;
 
             output.Weights = weights;
 
-
             return output;
         } // GetInstanceRepresentations()
-
 
         public static void GetSpeciesRepresentations(Arguments arguments, Output output)
         {
@@ -390,7 +403,6 @@ namespace AudioAnalysisTools
             double[,] speciesFeatureMatrix = new double[speciesCount, featureCount];
             int[] frameNumbersPerSpecies = new int[speciesCount];
 
-
             // loop through all 50 species
             for (int i = 0; i < speciesCount; i++)
             {
@@ -400,7 +412,10 @@ namespace AudioAnalysisTools
                 // loop through all instances multiple times - once for each species
                 for (int j = 0; j < instanceCount; j++)
                 {
-                    if (output.SpeciesID[j] != speciesLabel) continue;
+                    if (output.SpeciesID[j] != speciesLabel)
+                    {
+                        continue;
+                    }
 
                     //aggregate the instance feature values
                     double[] ipVector = MatrixTools.GetRow(output.InstanceFeatureMatrix, j);
@@ -412,15 +427,13 @@ namespace AudioAnalysisTools
                     //output.InstanceNumbersPerSpecies[i]++;
                     frameNumbersPerSpecies[i] += output.FrameNumbersPerInstance[j];
                 } // end for loop j over all instances
-
             } // loop through all 50 species
+
             LoggedConsole.WriteLine(" Done");
 
-            output.SpeciesFeatureMatrix   = speciesFeatureMatrix;
+            output.SpeciesFeatureMatrix = speciesFeatureMatrix;
             output.FrameNumbersPerSpecies = frameNumbersPerSpecies;
-
         } // GetSpeciesRepresentations()
-
 
         public static void DrawSpeciesImages(Arguments arguments, Output output)
         {
@@ -449,19 +462,20 @@ namespace AudioAnalysisTools
                     {
                         vector[c] = ipVector[featureOffset + c];
                     }
+
                     featureID++;
 
                     vector = DataTools.Normalise2Probabilites(vector);
                     vector = DataTools.filterMovingAverage(vector, 3);
-                    string label = string.Format("{0} {1} ({2})", (r + 1), key, output.InstanceNumbersPerSpecies[r]);
+                    string label = string.Format("{0} {1} ({2})", r + 1, key, output.InstanceNumbersPerSpecies[r]);
                     Image image = GraphsAndCharts.DrawGraph(label, vector, output.ReducedSpectralLength, imageHeight, scalingFactor);
                     images.Add(image);
                 }
+
                 Image combinedImage = ImageTools.CombineImagesVertically(images);
-                string outputFileName = string.Format("Species{0}.SpectralFeatures.png", (r + 1));
+                string outputFileName = string.Format("Species{0}.SpectralFeatures.png", r + 1);
                 string path = Path.Combine(arguments.OutputDirectory.FullName, outputFileName);
                 combinedImage.Save(path);
-
             } // loop through 50 species
         }
 
@@ -499,7 +513,6 @@ namespace AudioAnalysisTools
                 {
                     output.InstanceFeatureMatrix[r, c] = normedVector[c];
                 }
-
             } // end for loop r over all instances
         }
 
@@ -528,6 +541,7 @@ namespace AudioAnalysisTools
                 // NOTE: HERE WE HAVE THREE OPTIONS  ###############################################
                 //subvector = DataTools.Normalise2Probabilites(subvector);
                 subvector = DataTools.normalise2UnitLength(subvector);
+
                 //subvector = DataTools.NormaliseMatrixValues(subvector);
 
                 for (int j = 0; j < partialLength; j++)
@@ -542,8 +556,6 @@ namespace AudioAnalysisTools
             normedVector = DataTools.normalise2UnitLength(normedVector);
             return normedVector;
         }
-
-
 
         /// <summary>
         /// This done using Cosine similarity. Could also use Euclidian distance.
@@ -565,12 +577,10 @@ namespace AudioAnalysisTools
                 {
                     double[] species = MatrixTools.GetRow(output.SpeciesFeatureMatrix, s);
                     double similarity = DataTools.DotProduct(instance, species);
-                    output.SimilarityScores[r,s] = similarity;
+                    output.SimilarityScores[r, s] = similarity;
                 }
-
             } // end for loop r over all instances
         }
-
 
         /// <summary>
         /// Produce a CONFUSION MATRIX and a RANK ORDER MATRIX.
@@ -591,13 +601,14 @@ namespace AudioAnalysisTools
                 int correctID = output.SpeciesID[r] - 1;
                 double[] instanceScores = MatrixTools.GetRow(output.SimilarityScores, r);
                 int maxID = DataTools.GetMaxIndex(instanceScores);
-                output.ConfusionMatrix[correctID, maxID] ++;
+                output.ConfusionMatrix[correctID, maxID]++;
 
                 // calculate rank order matrix.
                 if (maxID == correctID)
                 {
                     output.RankOrderMatrix[r, 0] = 1;
                 }
+
                 instanceScores[maxID] = 0.0;
                 for (int rank = 1; rank < maxRank; rank++)
                 {
@@ -607,20 +618,19 @@ namespace AudioAnalysisTools
                         output.RankOrderMatrix[r, rank] = 1;
                         break;
                     }
+
                     instanceScores[maxID] = 0.0;
                 }
-
             } // end for loop r over all instances
-
 
             int diagonalSum = 0;
             for (int r = 0; r < speciesCount; r++)
             {
                     diagonalSum += output.ConfusionMatrix[r, r];
             }
+
             LoggedConsole.WriteLine("Diagonal Sum = " + diagonalSum);
             LoggedConsole.WriteLine("% Accuracy = " + (100 * diagonalSum / instanceCount));
-
 
             LoggedConsole.WriteLine("% Rank");
             for (int rank = 0; rank < maxRank; rank++)
@@ -630,10 +640,7 @@ namespace AudioAnalysisTools
                 string str = string.Format("{0}   % Acc = {1:f2}", rank, acc);
                 LoggedConsole.WriteLine(str);
             }
-
-
         }
-
 
         /// <summary>
         /// Construct datasets for WEKA machine learning
@@ -654,6 +661,7 @@ namespace AudioAnalysisTools
             {
                 line.Append(s + ",");
             }
+
             line.Append("class");
 
             var lines = new List<string>();
@@ -666,18 +674,20 @@ namespace AudioAnalysisTools
                 {
                     line.Append(output.SimilarityScores[i, s] + ",");
                 }
+
                 line.Append("'" + output.SpeciesID[i] + "'");
                 lines.Add(line.ToString());
             }
+
             string outputFileName = string.Format("InstanceBySpecies.SimilarityScores1.csv");
             string path = Path.Combine(arguments.OutputDirectory.FullName, outputFileName);
             FileTools.WriteTextFile(path, lines.ToArray());
-
 
             // write the InstanceFeatureMatrix data set
             var keyArray = FEATURE_KEYS.Split(',');
             int spectralLength = output.ReducedSpectralLength;
             int featureCount = keyArray.Length * spectralLength;
+
             // write header to csv file
             line = new StringBuilder();
             for (int k = 0; k < keyArray.Length; k++)
@@ -687,6 +697,7 @@ namespace AudioAnalysisTools
                     line.Append(keyArray[k] + f + ",");
                 }
             }
+
             line.Append("class");
 
             lines = new List<string>();
@@ -699,28 +710,29 @@ namespace AudioAnalysisTools
                 {
                     line.Append(output.InstanceFeatureMatrix[i, f] + ",");
                 }
+
                 line.Append("'" + output.SpeciesID[i] + "'");
                 lines.Add(line.ToString());
             }
+
             outputFileName = string.Format("InstanceByFeaturesDataSet.csv");
             path = Path.Combine(arguments.OutputDirectory.FullName, outputFileName);
             FileTools.WriteTextFile(path, lines.ToArray());
-
-
-
         } // ConstructWekaDatasets()
-
 
         public static void ReadGlotinsSpeciesLabelFile(string speciesLabelsFile, int count, out string[] fileID, out int[] speciesID)
         {
             // READ IN THE SPECIES LABELS FILE AND SET UP THE DATA
             var lines = new List<string>();
-            if (speciesLabelsFile != null) lines = FileTools.ReadTextFile(speciesLabelsFile);
+            if (speciesLabelsFile != null)
+            {
+                lines = FileTools.ReadTextFile(speciesLabelsFile);
+            }
 
             speciesID = new int[lines.Count];
             fileID = new string[lines.Count];
 
-            if (((speciesLabelsFile != null)) && (lines.Count != count))
+            if (speciesLabelsFile != null && lines.Count != count)
             {
                 LoggedConsole.WriteLine("lineCount != count    {0}  !=  {1}", lines.Count, count);
                 return;
@@ -733,7 +745,6 @@ namespace AudioAnalysisTools
                 speciesID[i] = int.Parse(words[1]);
             }
         } // ReadGlotinsSpeciesLabelFile()
-
 
         public static void WriteDataTODOTODOTODOTODO()
         {
@@ -755,12 +766,7 @@ namespace AudioAnalysisTools
             //string outputFileName = String.Format("Species{0}.SpectralFeatures.csv", speciesLabel);
             //string path = Path.Combine(arguments.OutputDirectory.FullName, outputFileName);
             //FileTools.WriteTextFile(path, lines.ToArray());
-
-
         }
-
-
-
 
         public static double[,] ReduceMatrixColumns(double[,] matrix, int minBin, int maxBin)
         {
@@ -776,6 +782,7 @@ namespace AudioAnalysisTools
                     returnMatrix[r, c] = matrix[r, minBin + c];
                 }
             }
+
             return returnMatrix;
         }
 
@@ -789,6 +796,7 @@ namespace AudioAnalysisTools
             {
                 var rowVector = MatrixTools.GetRow(matrix, r);
                 int[] bounds = { 8, 23, 53, 113, 233 };
+
                 // ie reduce the 256 vector to 4 values
                 for (int c = 0; c < reducedColCount; c++)
                 {
@@ -801,6 +809,7 @@ namespace AudioAnalysisTools
 
             return returnMatrix;
         }
+
         public static double[,] ExoticMaxPoolingMatrixColumns(double[,] matrix, int reducedColCount)
         {
             int rows = matrix.GetLength(0);
@@ -810,6 +819,7 @@ namespace AudioAnalysisTools
             for (int r = 0; r < rows; r++)
             {
                 var rowVector = MatrixTools.GetRow(matrix, r);
+
                 // ie reduce the second half of vector by factor of two.
                 for (int c = 0; c < 100; c++)
                 {
@@ -827,7 +837,6 @@ namespace AudioAnalysisTools
             return returnMatrix;
         }
 
-
         public static double[,] MaxPoolingLimited(double[,] M, int startBin, int maxOf2Bin, int maxOf3Bin, int endBin, int reducedBinCount)
         {
             int rows = M.GetLength(0);
@@ -844,6 +853,7 @@ namespace AudioAnalysisTools
                     reducedM[r, c] = V[c];
                 }
             }
+
             return reducedM;
         }
 
@@ -865,25 +875,38 @@ namespace AudioAnalysisTools
             {
                 opVector.Add(vector[i]);
             }
+
             for (int i = maxOf2Bin; i < maxOf3Bin; i++)
             {
                 value = vector[i];
-                if (value < vector[i + 1]) value = vector[i + 1];
+                if (value < vector[i + 1])
+                {
+                    value = vector[i + 1];
+                }
+
                 opVector.Add(value);
                 i++;
             }
+
             for (int i = maxOf3Bin; i < endBin; i++)
             {
                 value = vector[i];
-                if (value < vector[i + 1]) value = vector[i + 1];
-                if (value < vector[i + 2]) value = vector[i + 2];
+                if (value < vector[i + 1])
+                {
+                    value = vector[i + 1];
+                }
+
+                if (value < vector[i + 2])
+                {
+                    value = vector[i + 2];
+                }
+
                 opVector.Add(value);
                 i += 2;
             }
 
             return opVector.ToArray();
         }
-
 
         public static double[,] MaxPoolMatrixColumnsByFactor(double[,] matrix, int factor)
         {
@@ -896,6 +919,7 @@ namespace AudioAnalysisTools
             {
                 var rowVector = MatrixTools.GetRow(matrix, r);
                 int lowerBound = 0;
+
                 // ie reduce the 256 vector to 4 values
                 for (int c = 0; c < reducedColCount; c++)
                 {
@@ -908,8 +932,5 @@ namespace AudioAnalysisTools
 
             return returnMatrix;
         }
-
-
-
     }
 }

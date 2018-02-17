@@ -91,6 +91,7 @@ namespace AcousticWorkbench
                 Host = uri.Host,
                 Protocol = uri.Scheme,
                 Version = version,
+
                 //Uri = uri
             };
 

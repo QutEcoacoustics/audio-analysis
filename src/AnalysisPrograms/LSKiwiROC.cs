@@ -4,7 +4,6 @@
 
 namespace AnalysisPrograms
 {
-
     using System;
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
@@ -14,9 +13,9 @@ namespace AnalysisPrograms
     using System.Text;
     using System.Threading.Tasks;
     using Acoustics.Shared;
-    using Production;
     using AudioAnalysisTools;
     using McMaster.Extensions.CommandLineUtils;
+    using Production;
     using Production.Arguments;
     using Production.Validation;
     using TowseyLibrary;
@@ -58,6 +57,7 @@ namespace AnalysisPrograms
         }
 
         public const string ANDREWS_SELECTION_PATH = @"C:\SensorNetworks\Output\LSKiwi3\TOWER_20100208_204500_ANDREWS_SELECTIONS.csv";
+
         //public const string ANDREWS_SELECTION_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TUITCE_20091215_220004\TUITCE_20091215_220004_ANDREWS_SELECTIONS.csv";
         //public const string ANDREWS_SELECTION_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\Results_KAPITI2_20100219_202900\KAPITI2_20100219_202900_ANDREWS_SELECTIONS.csv";
         //public const string ANDREWS_SELECTION_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TUITCE_20091215_210000\TUITCE_20091215_210000_ANDREWS_SELECTIONS.csv";
@@ -93,6 +93,7 @@ namespace AnalysisPrograms
             //InitOutputTableColumns();
             //############################################################################
             DataTable dt = CalculateRecallPrecision(fiKiwiCallPredictions, fiGroundTruth);
+
             //############################################################################
 
             string opFileStem = fiKiwiCallPredictions.BaseName();
@@ -124,22 +125,25 @@ namespace AnalysisPrograms
             string header_predictedSex = "preSex";
             string header_Harmonics = "Harmonics";
             string header_Quality = "Quality";
-            string[] ROC_HEADERS = { AnalysisKeys.EventStartAbs,     //typeof(double)
-                                       AnalysisKeys.EventStartMin,
-                                       AnalysisKeys.EventStartSec,
-                                       AnalysisKeys.EventIntensity,
-                                       LSKiwiHelper.key_GRID_SCORE,
-                                       LSKiwiHelper.key_DELTA_SCORE,
-                                       LSKiwiHelper.key_CHIRP_SCORE,
-                                       LSKiwiHelper.key_PEAKS_SNR_SCORE,
-                                       LSKiwiHelper.key_BANDWIDTH_SCORE,
-                                       AnalysisKeys.EventScore,
-                                       AnalysisKeys.EventNormscore,
-                                       header_predictedSex,
-                                       header_Harmonics,
-                                       header_trueSex,
-                                       header_Quality,
-                                       "TP", "FP", "FN", };
+            string[] ROC_HEADERS =
+            {
+                AnalysisKeys.EventStartAbs,     //typeof(double)
+                AnalysisKeys.EventStartMin,
+                AnalysisKeys.EventStartSec,
+                AnalysisKeys.EventIntensity,
+                LSKiwiHelper.key_GRID_SCORE,
+                LSKiwiHelper.key_DELTA_SCORE,
+                LSKiwiHelper.key_CHIRP_SCORE,
+                LSKiwiHelper.key_PEAKS_SNR_SCORE,
+                LSKiwiHelper.key_BANDWIDTH_SCORE,
+                AnalysisKeys.EventScore,
+                AnalysisKeys.EventNormscore,
+                header_predictedSex,
+                header_Harmonics,
+                header_trueSex,
+                header_Quality,
+                "TP", "FP", "FN",
+            };
 
             //string[] ROC_HEADERS = { "startSec",   "min",         "secOffset",  "intensity",     "gridScore",    "deltaScore",  "chirpScore",      "PeaksSnrScore"  "bwScore",      "comboScore",   "normScore",     "preSex",     "Harmonics",   "truSex",      "Quality",    "TP",       "FP",        "FN"};
             Type[] ROC_COL_TYPES = { typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(string), typeof(int), typeof(string), typeof(int), typeof(int), typeof(int), typeof(int) };
@@ -151,6 +155,7 @@ namespace AnalysisPrograms
             var dtGroundTruth = CsvTools.ReadCSVToTable(fiGroundTruth.FullName, isFirstRowHeader, ANDREWS_TYPES);
             var dtPredictions = CsvTools.ReadCSVToTable(fiPredictions.FullName, isFirstRowHeader);
             dtPredictions = LSKiwiHelper.MergeAdjacentPredictions(dtPredictions);
+
             //var weights = LSKiwiHelper.GetFeatureWeights(); //to try different weightings.
 
             //string colName  = "Species";
@@ -168,6 +173,7 @@ namespace AnalysisPrograms
                 double startSecOffset = (double)myRow[AnalysisKeys.EventStartSec];
                 double intensityScore = (double)myRow[AnalysisKeys.EventIntensity];
                 string name = (string)myRow[AnalysisKeys.EventName];
+
                 //double snrScore = (double)myRow[LSKiwiHelper.key_PEAKS_SNR_SCORE];
                 //double sdPeakScore = (double)myRow[LSKiwiHelper.key_PEAKS_STD_SCORE]; //standard deviation of peak snr's
                 //double periodicityScore = (double)myRow[LSKiwiHelper.key_DELTA_SCORE];
@@ -176,14 +182,24 @@ namespace AnalysisPrograms
                 double chrpScore = (double)myRow[LSKiwiHelper.key_CHIRP_SCORE];
                 double peakSnrScore = (double)myRow[LSKiwiHelper.key_PEAKS_SNR_SCORE]; //average peak
                 double bandWidthScore = (double)myRow[LSKiwiHelper.key_BANDWIDTH_SCORE];
+
                 //double comboScore   = (double)myRow[LSKiwiHelper.key_COMBO_SCORE];
                 double eventScore = (double)myRow[AnalysisKeys.EventScore];
                 double normScore = (double)myRow[AnalysisKeys.EventNormscore];
 
                 string predictedSex;
-                if (name.EndsWith("(m)")) predictedSex = "M";
-                else if (name.EndsWith("(f)")) predictedSex = "F";
-                else predictedSex = "???";
+                if (name.EndsWith("(m)"))
+                {
+                    predictedSex = "M";
+                }
+                else if (name.EndsWith("(f)"))
+                {
+                    predictedSex = "F";
+                }
+                else
+                {
+                    predictedSex = "???";
+                }
 
                 //List<string[]> excludeRules = LSKiwiHelper.GetExcludeRules();
                 //if (FilterEvent(myRow, excludeRules) == null) continue;
@@ -198,6 +214,7 @@ namespace AnalysisPrograms
                 opRow[LSKiwiHelper.key_CHIRP_SCORE] = chrpScore;
                 opRow[LSKiwiHelper.key_PEAKS_SNR_SCORE] = peakSnrScore;
                 opRow[LSKiwiHelper.key_BANDWIDTH_SCORE] = bandWidthScore;
+
                 //opRow[LSKiwiHelper.key_COMBO_SCORE]     = comboScore;
                 opRow[AnalysisKeys.EventScore] = eventScore;
                 opRow[AnalysisKeys.EventNormscore] = normScore;
@@ -213,7 +230,7 @@ namespace AnalysisPrograms
                 {
                     double trueStart = (double)trueEvent["Begin Time (s)"];
                     string trueSex = (string)trueEvent["Sex"];
-                    if ((trueStart >= (myStartSecAbs - 10)) && (trueStart <= (myStartSecAbs + 20)) && (predictedSex == trueSex)) //myStart is close to trueStart AND same sex THERFORE TRUE POSTIIVE
+                    if (trueStart >= myStartSecAbs - 10 && trueStart <= myStartSecAbs + 20 && predictedSex == trueSex) //myStart is close to trueStart AND same sex THERFORE TRUE POSTIIVE
                     {
                         isTP = true;
                         trueEvent["Begin Time (s)"] = double.NaN; //mark so that will not use again
@@ -223,6 +240,7 @@ namespace AnalysisPrograms
                         break;
                     }
                 } //foreach - AD loop
+
                 if (isTP)
                 {
                     opRow["TP"] = 1;
@@ -233,6 +251,7 @@ namespace AnalysisPrograms
                     opRow["FP"] = 1;
                     FP++;
                 }
+
                 dtOutput.Rows.Add(opRow);
             } //foreach - MY loop
 
@@ -245,7 +264,8 @@ namespace AnalysisPrograms
                     DataRow row = dtOutput.NewRow();
                     row[AnalysisKeys.EventStartAbs] = trueStart;
                     row[AnalysisKeys.EventStartMin] = (int)(trueStart / 60);
-                    row[AnalysisKeys.EventStartSec] = (double)(trueStart % 60);
+                    row[AnalysisKeys.EventStartSec] = trueStart % 60;
+
                     //row[Keys.EVENT_INTENSITY] = 0.0;
                     //row[LSKiwiHelper.key_PEAKS_SNR_SCORE] = 0.0;
                     //row[LSKiwiHelper.key_PEAKS_STD_SCORE] = 0.0;
@@ -286,14 +306,27 @@ namespace AnalysisPrograms
                 string feature = rule[0];
                 string op = rule[1];
                 double value = double.Parse(rule[2]);
-                if ((feature == LSKiwiHelper.key_BANDWIDTH_SCORE) && (op == "LT") && ((double)acousticEvent[LSKiwiHelper.key_BANDWIDTH_SCORE] < value)) return null;
+                if (feature == LSKiwiHelper.key_BANDWIDTH_SCORE && op == "LT" && (double)acousticEvent[LSKiwiHelper.key_BANDWIDTH_SCORE] < value)
+                {
+                    return null;
+                }
                 else
-                    if ((feature == LSKiwiHelper.key_INTENSITY_SCORE) && (op == "LT") && ((double)acousticEvent[LSKiwiHelper.key_INTENSITY_SCORE] > value)) return null;
-                    else
-                        if ((feature == LSKiwiHelper.key_SNR_SCORE) && (op == "LT") && ((double)acousticEvent[LSKiwiHelper.key_SNR_SCORE] < value)) return null;
-                        else
-                            if ((feature == LSKiwiHelper.key_DELTA_SCORE) && (op == "LT") && ((double)acousticEvent[LSKiwiHelper.key_DELTA_SCORE] > value)) return null;
+                    if (feature == LSKiwiHelper.key_INTENSITY_SCORE && op == "LT" && (double)acousticEvent[LSKiwiHelper.key_INTENSITY_SCORE] > value)
+                {
+                    return null;
+                }
+                else
+                        if (feature == LSKiwiHelper.key_SNR_SCORE && op == "LT" && (double)acousticEvent[LSKiwiHelper.key_SNR_SCORE] < value)
+                {
+                    return null;
+                }
+                else
+                            if (feature == LSKiwiHelper.key_DELTA_SCORE && op == "LT" && (double)acousticEvent[LSKiwiHelper.key_DELTA_SCORE] > value)
+                {
+                    return null;
+                }
             }
+
             return acousticEvent;
         }
 
@@ -329,13 +362,20 @@ namespace AnalysisPrograms
             foreach (DataRow row in dt.Rows)
             {
                 int value = (int)row["TP"];
-                if (value == 1) cumulativeTP++;
+                if (value == 1)
+                {
+                    cumulativeTP++;
+                }
                 else
-                    if ((int)row["FP"] == 1) cumulativeFP++;
+                    if ((int)row["FP"] == 1)
+                {
+                    cumulativeFP++;
+                }
+
                 double recall = cumulativeTP / (double)totalPositiveCount;  //the true positive rate
                 double specificity = cumulativeFP / (double)totalNegativeCount;
                 double precision = cumulativeTP / (double)(cumulativeTP + cumulativeFP);
-                double accuracy = (recall + precision) / (double)2;
+                double accuracy = (recall + precision) / 2;
                 if (accuracy > maxAccuracy)
                 {
                     optimumCount = count;
@@ -345,7 +385,9 @@ namespace AnalysisPrograms
                     specificityAtMax = specificity;
                     scoreAtMax = (double)row[AnalysisKeys.EventNormscore];
                 }
+
                 count++;
+
                 //if (count == 30)
                 //{
                 //    recallAt30 = recall;
@@ -355,10 +397,15 @@ namespace AnalysisPrograms
 
                 //double delta = precision * (recall - previousRecall);
                 double delta = specificity * (recall - previousRecall);
+
                 //double fpRate = 1 - specificity;
                 //double delta = fpRate * (recall - previousRecall);
                 area += delta;
-                if (delta > 0.0) ROC_Curve.Add(delta); //
+                if (delta > 0.0)
+                {
+                    ROC_Curve.Add(delta);
+                }
+
                 previousRecall = recall;
             } //foreach row in table
 
@@ -368,6 +415,7 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine("Area under ROC curve = {0:f4}", area);
                 LoggedConsole.WriteLine("Max accuracy={0:f3} for score threshold={1:f3}", maxAccuracy, scoreAtMax);
                 LoggedConsole.WriteLine("  where recall={0:f3}, precision={1:f3}, specifcity={2:f3}", recallAtMax, precisionAtMax, specificityAtMax);
+
                 //LoggedConsole.WriteLine("At 30 samples: recall={0:f3},  precision={1:f3},  at score={2:f3}", recallAt30, precisionAt30, scoreAt30);
             }
         }
@@ -386,6 +434,7 @@ namespace AnalysisPrograms
             var nameContent = new List<string>();
             nameContent.Add("|   THESE ARE THE CLASS NAMES FOR Little Spotted Kiwi Classification.");
             nameContent.Add(string.Format("{0},  {1}", class1Name, class2Name));
+
             //nameContent.Add(String.Format("{0},  {1},  {2}", class1Name, class2Name, class3Name));
             nameContent.Add("|   THESE ARE THE ATTRIBUTE NAMES FOR Little Spotted Kiwi Classification.");
             nameContent.Add(string.Format("{0}: ignore", AnalysisKeys.EventStartAbs));
@@ -418,6 +467,7 @@ namespace AnalysisPrograms
                     //intensityScore = 0.0;
                     continue;
                 }
+
                 //string quality        = ((int)row["Quality"]).ToString();
                 string quality = "--";
                 double gridScore = (double)row[LSKiwiHelper.key_GRID_SCORE];
@@ -429,13 +479,19 @@ namespace AnalysisPrograms
                 double normScore = (double)row[AnalysisKeys.EventNormscore];
 
                 string name = (string)row["truSex"];
-                if ((name.Equals("M")) || (name.Equals("F")))
+                if (name.Equals("M") || name.Equals("F"))
+                {
                     name = class1Name;
-                else name = class2Name;
+                }
+                else
+                {
+                    name = class2Name;
+                }
 
                 string line = string.Format("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}", startSecAbs, startMin, startSec, quality, intensityScore, gridScore, deltScore, chrpScore, peakSnrScore, bandWidthScore, comboScore, normScore, name);
                 dataContent.Add(line);
             }
+
             FileTools.WriteTextFile(dataFilePath, dataContent);
         }
     }

@@ -120,7 +120,10 @@ namespace NeuralNets
                     double winningOP = OP[index];
 
                     //create new category if similarity OP of best matching node is too low
-                    if (winningOP < this.VigilanceRho) this.ChangeWtsOfFirstUncommittedNode(trainingData[sigID]);
+                    if (winningOP < this.VigilanceRho)
+                    {
+                        this.ChangeWtsOfFirstUncommittedNode(trainingData[sigID]);
+                    }
 
                     inputCategory[sigID] = index; //winning F2 node for current input
                     opNodeWins[index]++;
@@ -134,7 +137,10 @@ namespace NeuralNets
                 } //end loop over all signal inputs
 
                 //set the previous categories
-                for (int x = 0; x < dataSetSize; x++) prevCategory[x] = inputCategory[x];
+                for (int x = 0; x < dataSetSize; x++)
+                {
+                    prevCategory[x] = inputCategory[x];
+                }
 
                 //remove committed F2 nodes that are not having wins
                 for (int j = 0; j < this.OPSize; j++)
@@ -146,10 +152,14 @@ namespace NeuralNets
                 }
 
                 if (Verbose)
-                { LoggedConsole.WriteLine(" iter={0:D2}  committed=" + this.CountCommittedF2Nodes() + "\t changedCategory=" + changedCategory, iterNum);
+                {
+                    LoggedConsole.WriteLine(" iter={0:D2}  committed=" + this.CountCommittedF2Nodes() + "\t changedCategory=" + changedCategory, iterNum);
                 }
 
-                if (trainSetLearned) break;
+                if (trainSetLearned)
+                {
+                    break;
+                }
             } //end of while (! trainSetLearned or (iterNum < maxIter) or terminate);
 
             return Tuple.Create(iterNum, this.CountCommittedF2Nodes(), inputCategory, this.wts);
@@ -238,6 +248,7 @@ namespace NeuralNets
                     }
                 }
                 else //(match >= rho)
+
                 // 4:  max node committed AND good match, therefore change the weights
                 {
                     this.ChangeWtsOfCommittedNode(IP, index);
@@ -258,11 +269,17 @@ namespace NeuralNets
             int length = this.committedNode.Length;
             int id = -1;
             for (int i = 0; i < length; i++)
-                if (!this.committedNode[i]) return i;
-                //{
-                //    id = i;
-                //    break;
-                //}
+            {
+                if (!this.committedNode[i])
+                {
+                    return i;
+                }
+            }
+
+            //{
+            //    id = i;
+            //    break;
+            //}
             return id;
         }
 
@@ -274,10 +291,20 @@ namespace NeuralNets
         public int ChangeWtsOfFirstUncommittedNode(double[] IP)
         {
             int index = this.GetIndexOfFirstUncommittedNode();
-            if(index == -1) return index; //all nodes committed
+            if (index == -1)
+            {
+                return index; //all nodes committed
+            }
 
-            if(index >= this.wts.Count) this.wts.Add(IP);
-            else this.wts[index] = IP;
+            if (index >= this.wts.Count)
+            {
+                this.wts.Add(IP);
+            }
+            else
+            {
+                this.wts[index] = IP;
+            }
+
             this.committedNode[index] = true;
             return index;
         }
@@ -294,7 +321,14 @@ namespace NeuralNets
         public int CountCommittedF2Nodes()
         {
             int count = 0;
-            for (int i = 0; i < this.OPSize; i++) if (this.committedNode[i]) count++;
+            for (int i = 0; i < this.OPSize; i++)
+            {
+                if (this.committedNode[i])
+                {
+                    count++;
+                }
+            }
+
             return count;
         }
 
@@ -314,7 +348,7 @@ namespace NeuralNets
             for (int i = 0; i < clusterWts.Count; i++)
             {
                 int wins = 0;
-                LoggedConsole.Write("wts{0:D3}   ", i+1); //write the cluster number
+                LoggedConsole.Write("wts{0:D3}   ", i + 1); //write the cluster number
                 if (clusterWts[i] == null)
                 {
                     for (int j = 0; j < 32; j++)
@@ -328,13 +362,22 @@ namespace NeuralNets
                 {
                     for (int j = 0; j < clusterWts[i].Length; j++)
                     {
-                        if (clusterWts[i][j] > 0.0) LoggedConsole.Write("1");
-                        else LoggedConsole.Write("0");
+                        if (clusterWts[i][j] > 0.0)
+                        {
+                            LoggedConsole.Write("1");
+                        }
+                        else
+                        {
+                            LoggedConsole.Write("0");
+                        }
                     }
 
                     for (int j = 0; j < clusterHits.Length; j++)
                     {
-                        if (clusterHits[j] == i) wins++;
+                        if (clusterHits[j] == i)
+                        {
+                            wins++;
+                        }
                     }
 
                     LoggedConsole.WriteLine("     {0}\t\t{1}", clusterWts[i].Sum(), wins);
@@ -366,9 +409,21 @@ namespace NeuralNets
 
             for (int i = 0; i < wtVectors.Count; i++)
             {
-                if (wtVectors[i] == null) continue;
-                if (wtVectors[i].Sum() < wtThreshold) continue;
-                if (clusterSizes[i] < hitThreshold) continue;
+                if (wtVectors[i] == null)
+                {
+                    continue;
+                }
+
+                if (wtVectors[i].Sum() < wtThreshold)
+                {
+                    continue;
+                }
+
+                if (clusterSizes[i] < hitThreshold)
+                {
+                    continue;
+                }
+
                 prunedClusterWeights.Add(wtVectors[i]);
                 clusterMapping_old2new[i] = prunedClusterWeights.Count - 1; // -1 because want index - not total count. index = count-1.
             }
@@ -410,7 +465,11 @@ namespace NeuralNets
             int clusterCountFinal = 0;
             for (int i = 0; i < wtVectors.Count; i++)
             {
-                if (wtVectors[i] == null) continue;
+                if (wtVectors[i] == null)
+                {
+                    continue;
+                }
+
                 if (wtVectors[i].Sum() <= wtThreshold)
                 {
                     wtVectors[i] = null; //set null

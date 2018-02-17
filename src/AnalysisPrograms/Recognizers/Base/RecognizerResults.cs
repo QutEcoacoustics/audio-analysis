@@ -24,8 +24,6 @@ namespace AnalysisPrograms.Recognizers.Base
     {
         private List<Plot> plots;
 
-        #region Public Properties
-
         public RecognizerResults()
         {
             this.Plots = new List<Plot>();
@@ -38,7 +36,7 @@ namespace AnalysisPrograms.Recognizers.Base
         public BaseSonogram Sonogram { get; set; }
 
         /// <summary>
-        /// Currently used to return a score track image that can be appended to a **high resolution indices image**.
+        /// Gets or sets currently used to return a score track image that can be appended to a **high resolution indices image**.
         /// </summary>
         public Image ScoreTrack { get; set; }
 
@@ -63,7 +61,5 @@ namespace AnalysisPrograms.Recognizers.Base
                 this.plots = value;
             }
         }
-
-        #endregion
     }
 }

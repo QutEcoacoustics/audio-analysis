@@ -1,13 +1,16 @@
+// <copyright file="CubeHelix.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
 namespace TowseyLibrary
 {
     using System;
     using System.Drawing;
     using ColorMine.ColorSpaces;
 
-public class CubeHelix
+    public class CubeHelix
         {
-
-            const double Radians = Math.PI / 180;
+            private const double Radians = Math.PI / 180;
 
             private readonly Hsl colorA;
             private readonly Hsl colorB;
@@ -23,7 +26,6 @@ public class CubeHelix
             public const int maxPalletteSize = 256;
             public int maxPalletteIndex = maxPalletteSize - 1;
 
-
             public CubeHelix(string mode)
             {
                 if (mode.Equals(ColorCubeHelix.Default))
@@ -32,6 +34,7 @@ public class CubeHelix
                     //Hsl colorBRgb = new Hsl(-240, 0.5, 1.0);
                     Hsl colorARgb;
                     Hsl colorBRgb;
+
                     //CubeHelix(colorARgb, colorBRgb);
                     //SetDefaultCubeHelix();
                     //string path = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\ZoomImages\testImage.png";
@@ -57,7 +60,6 @@ public class CubeHelix
                         LoggedConsole.WriteErrorLine("WARNING: {0} is UNKNOWN COLOUR PALLETTE!", mode);
                     }
             }
-
 
             public CubeHelix(Hsl colorARgb, Hsl colorBRgb, double gamma = 1.0)
             {
@@ -109,11 +111,9 @@ public class CubeHelix
                                G = (luminosity + (amplitude * ((-0.29227 * cosh) - (0.90649 * sinh)))) * 255,
                                B = (luminosity + (amplitude * (+1.97294 * cosh))) * 255,
                            };
-
             }
 
-
-        public void SetDefaultCubeHelix()
+            public void SetDefaultCubeHelix()
         {
             int maxPalletteIndex = maxPalletteSize - 1;
             var pallette = new Color[maxPalletteSize];
@@ -123,13 +123,14 @@ public class CubeHelix
                 Rgb rgbColour = this.GetColor(value);
                 pallette[c] = Color.FromArgb((int)rgbColour.R, (int)rgbColour.G, (int)rgbColour.B);
             }
+
             this.ColourPallette = pallette;
         }
 
         /// <summary>
         /// used for drawing the background noise in zooming spectrograms
         /// </summary>
-        public void SetRedScalePallette()
+            public void SetRedScalePallette()
         {
             int maxPalletteIndex = maxPalletteSize - 1;
             var pallette = new Color[maxPalletteSize];
@@ -137,33 +138,38 @@ public class CubeHelix
             {
                 double value = c / (double)maxPalletteIndex;
                 int R = (int)Math.Floor(255.0 * Math.Pow(value, 0.75));
+
                 //int G = 0;
                 int B = 0;
                 int G = (int)Math.Floor(255.0 * value * value * value) / 3;
+
                 //int B = R / 2;
                 pallette[c] = Color.FromArgb(R, G, B);
             }
+
             this.ColourPallette = pallette;
         }
-
 
         /// <summary>
         /// used for drawing the background noise in zooming spectrograms
         /// </summary>
-        public void SetCyanScalePallette()
+            public void SetCyanScalePallette()
         {
             int maxPalletteIndex = maxPalletteSize - 1;
             var pallette = new Color[maxPalletteSize];
             for (int c = 0; c < maxPalletteSize; c++)
             {
                 double value = c / (double)maxPalletteIndex;
+
                 //int R = 0;
                 int R = (int)Math.Floor(255.0 * value * value * value * value);
                 int G = (int)Math.Floor(255.0 * Math.Pow(value, 0.75));
+
                 //int G = 0;
                 int B = (int)Math.Floor(255.0 * value * value);
                 pallette[c] = Color.FromArgb(R, G, B);
             }
+
             this.ColourPallette = pallette;
         }
 
@@ -173,29 +179,45 @@ public class CubeHelix
         /// </summary>
         /// <param name="matrix">the data</param>
         /// <param name="pathName"></param>
-        public int GetColorID(double value)
+            public int GetColorID(double value)
         {
             int colourID = (int)Math.Floor(value * this.maxPalletteIndex);
 
-            if (colourID < 0) return 0;
-            if (colourID > this.maxPalletteIndex) return this.maxPalletteIndex;
+            if (colourID < 0)
+            {
+                return 0;
+            }
+
+            if (colourID > this.maxPalletteIndex)
+            {
+                return this.maxPalletteIndex;
+            }
+
             return colourID;
         }
 
-
         /// <summary>
         /// Draws matrix without normalising the values in the matrix.
         /// Assumes some form of normalisation already done.
         /// </summary>
         /// <param name="matrix">the data</param>
         /// <param name="pathName"></param>
-        public Color GetColorFromPallette(double value)
+            public Color GetColorFromPallette(double value)
         {
             int colourID = (int)Math.Floor(value * this.maxPalletteIndex);
 
-            if (colourID < 0) { colourID = 0; }
+            if (colourID < 0)
+            {
+                colourID = 0;
+            }
             else
-            { if (colourID > this.maxPalletteIndex) colourID = this.maxPalletteIndex; }
+            {
+                if (colourID > this.maxPalletteIndex)
+                {
+                    colourID = this.maxPalletteIndex;
+                }
+            }
+
             return this.ColourPallette[colourID];
         }
 
@@ -205,14 +227,12 @@ public class CubeHelix
         /// </summary>
         /// <param name="matrix">the data</param>
         /// <param name="pathName"></param>
-        public Color GetColorFromPallette(int colourID)
+            public Color GetColorFromPallette(int colourID)
         {
             return this.ColourPallette[colourID];
         }
 
-
-
-        public void TestImage(string path)
+            public void TestImage(string path)
         {
             int width = maxPalletteSize;
             int height = 100;
@@ -221,14 +241,12 @@ public class CubeHelix
             Pen pen = new Pen(Color.Purple);
             for (int c = 0; c < maxPalletteSize; c++)
             {
-                pen =  new Pen(this.ColourPallette[c]);
-                g.DrawLine(pen, c, 0, c, height-1);
+                pen = new Pen(this.ColourPallette[c]);
+                g.DrawLine(pen, c, 0, c, height - 1);
             }
+
             image.Save(path);
         }
-
-
-
 
         /// <summary>
         /// Draws matrix without normalising the values in the matrix.
@@ -236,7 +254,7 @@ public class CubeHelix
         /// </summary>
         /// <param name="matrix">the data</param>
         /// <param name="pathName"></param>
-        public Image DrawMatrixWithoutNormalisation(double[,] matrix)
+            public Image DrawMatrixWithoutNormalisation(double[,] matrix)
         {
             int rows = matrix.GetLength(0); //number of rows
             int cols = matrix.GetLength(1); //number
@@ -249,16 +267,24 @@ public class CubeHelix
                 {
                     int colourID = (int)Math.Floor(matrix[r, c] * this.maxPalletteIndex);
 
-                    if (colourID < 0) { colourID = 0; }
+                    if (colourID < 0)
+                    {
+                        colourID = 0;
+                    }
                     else
-                    { if (colourID > this.maxPalletteIndex) colourID = this.maxPalletteIndex; }
+                    {
+                        if (colourID > this.maxPalletteIndex)
+                        {
+                            colourID = this.maxPalletteIndex;
+                        }
+                    }
 
                     bmp.SetPixel(c, r, this.ColourPallette[colourID]);
                 }//end all columns
             }//end all rows
+
             return bmp;
         }
-
 
             /**
              * Obtained from following website.
@@ -314,8 +340,7 @@ public class CubeHelix
              *
              *
              * **/
-
-        public static void DrawTestImage()
+            public static void DrawTestImage()
         {
             //Hsl colorARgb = new Hsl(300, 0.5, 0.0);
             //Hsl colorBRgb = new Hsl(-240, 0.5, 1.0);
@@ -340,7 +365,7 @@ public class CubeHelix
         /// The purpose for chaning the default values was to increase the colour saturation.
         /// </summary>
         /// <returns></returns>
-        public static CubeHelix GetCubeHelix()
+            public static CubeHelix GetCubeHelix()
         {
             //Hsl colorARgb = new Hsl(300, 0.5, 0.0); // DEFAULT - used prior to 26 June 2015
             //Hsl colorBRgb = new Hsl(-240, 0.5, 1.0); // DEFAULT - used prior to 26 June 2015
@@ -349,6 +374,7 @@ public class CubeHelix
             colorARgb.S = 0.85;
             colorARgb.L = 0.1;
             Hsl colorBRgb = new Hsl();
+
             //colorBRgb.H = -240;
             colorBRgb.H = -240;
             colorBRgb.S = 0.5;
@@ -358,9 +384,5 @@ public class CubeHelix
             cch.SetDefaultCubeHelix();
             return cch;
         }
-
-
-
     }
-
         }

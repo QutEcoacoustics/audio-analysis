@@ -17,11 +17,9 @@ namespace AnalysisPrograms
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
-
-    using Production;
-
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
+    using Production;
     using Production.Arguments;
     using Production.Validation;
 
@@ -133,7 +131,7 @@ namespace AnalysisPrograms
                 Thread.SpinWait(100_000_000);
 
                 var now = DateTime.Now;
-                if ((now - lastLog) > LogEvery)
+                if (now - lastLog > LogEvery)
                 {
                     var percentage = (timeSpan - (completeBy - now)).Ticks / (double)timeSpan.Ticks;
                     Log.InfoFormat("Branch {0}, {1:##0.00%} completed", index, percentage);

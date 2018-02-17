@@ -1,4 +1,8 @@
-﻿namespace TowseyLibrary
+﻿// <copyright file="WaveletPacketDecomposition.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace TowseyLibrary
 {
     using System;
     using System.Collections.Generic;
@@ -16,7 +20,8 @@
     {
         public const double SQRT2 = 1.4142135623730950488016887242097;
 
-        public int NumberOfLevels { private set; get; }
+        public int NumberOfLevels { get; private set; }
+
         private List<BinVector> listOfBinVectors;
 
         /// <summary>
@@ -25,15 +30,15 @@
         /// <param name="signal"></param>
         public WaveletPacketDecomposition(double[] signal)
         {
-            if(! DataTools.IsPowerOfTwo((ulong)signal.Length))
+            if (!DataTools.IsPowerOfTwo((ulong)signal.Length))
             {
                 throw new Exception("Wavelets CONSTUCTOR FATAL ERROR: Length of signal is not power of 2.");
             }
+
             this.NumberOfLevels = DataTools.PowerOf2Exponent(signal.Length);
 
             this.listOfBinVectors = GetTreeOfBinVectors(signal);
         }
-
 
         /// <summary>
         /// assume tree is full decomposed WPD tree.
@@ -54,6 +59,7 @@
                 int bin = bv.binNumber;
                 int start = (bin - 1) * bv.binLength;
                 double[] signal = bv.signal;
+
                 // NormaliseMatrixValues each row
                 //signal = DataTools.NormaliseMatrixValues(signal);
                 for (int i = 0; i < signal.Length; i++)
@@ -61,6 +67,7 @@
                     wpdTree[level - 1, start + i] = bv.signal[i];
                 }
             }
+
             return wpdTree;
         }
 
@@ -79,6 +86,7 @@
             {
                 wpdEnergyVector[bv.sequenceNumber - 1] = bv.energy;
             }
+
             return wpdEnergyVector;
         }
 
@@ -87,11 +95,10 @@
             var wpdEnergyVector = this.GetWPDEnergyVector();
             int signalLength = (wpdEnergyVector.Length + 1) / 2;
             int startID = signalLength - 1 + 1; // to avoid DC
-            int vectorLength = (signalLength / 2); // half the signal length
+            int vectorLength = signalLength / 2; // half the signal length
             wpdEnergyVector = DataTools.Subarray(wpdEnergyVector, startID, vectorLength);
             return wpdEnergyVector;
         }
-
 
         /// <summary>
         /// Represents a single node in the WPD tree.
@@ -113,13 +120,20 @@
             public BinVector(int _levelNumber, int _binNumber, double[] _signal)
             {
                 this.levelNumber = _levelNumber;
-                this.binNumber   = _binNumber;
-                this.sequenceNumber = (int)Math.Pow(2, (_levelNumber - 1)) - 1 + _binNumber;
-                this.signal      = _signal;
+                this.binNumber = _binNumber;
+                this.sequenceNumber = (int)Math.Pow(2, _levelNumber - 1) - 1 + _binNumber;
+                this.signal = _signal;
                 this.binLength = 0;
-                if (_signal != null) this.binLength = _signal.Length;
+                if (_signal != null)
+                {
+                    this.binLength = _signal.Length;
+                }
+
                 this.energy = 0.0;
-                if (_signal != null) this.energy = this.CalculateEnergy();
+                if (_signal != null)
+                {
+                    this.energy = this.CalculateEnergy();
+                }
             }
 
             private double CalculateEnergy()
@@ -127,9 +141,10 @@
                 double E = 0.0;
                 for (int i = 0; i < this.signal.Length; i++)
                 {
-                    E += (this.signal[i] * this.signal[i]);
+                    E += this.signal[i] * this.signal[i];
                 }
-                return E / (double)this.signal.Length;
+
+                return E / this.signal.Length;
             }
 
             private int CalculateBinNumberOfApproxChild()
@@ -137,13 +152,13 @@
                 int number = (2 * this.sequenceNumber) - (int)Math.Pow(2.0, this.levelNumber) + 1;
                 return number;
             }
+
             private int CalculateBinNumberOfDetailChild()
             {
                 int number = (2 * this.sequenceNumber) - (int)Math.Pow(2.0, this.levelNumber) + 1;
                 return number + 1;
             }
         } // END of class BinVector each of which is a node in the WPD tree.
-
 
         // ############################### NEXT TWO METHODS CREATE THE TREE. SECOND METHOD IS RECURSIVE ###########################
 
@@ -160,11 +175,11 @@
             sigBin.childDetail = null;
 
             list.Add(sigBin);
+
             // call recursive method to construct tree
             GetTreeOfBinVectors(list, sigBin);
             return list;
         }
-
 
         /// <summary>
         /// NOTE: THIS METHOD IS RECURSIVE.
@@ -185,16 +200,16 @@
             double[] approxVector = LowPassAndDecimate(bv.signal);
             double[] detailVector = HiPassAndDecimate(bv.signal);
 
-            if ((approxVector == null) || (approxVector == null))
+            if (approxVector == null || approxVector == null)
             {
                 //list.Add(null);
                 return list;
             }
 
-            BinVector approxBin = new BinVector((level + 1), (2 * bin) - 1, approxVector);
+            BinVector approxBin = new BinVector(level + 1, (2 * bin) - 1, approxVector);
             approxBin.parent = bv;
             bv.childApprox = approxBin;
-            BinVector detailBin = new BinVector((level + 1), (2 * bin), detailVector);
+            BinVector detailBin = new BinVector(level + 1, 2 * bin, detailVector);
             detailBin.parent = bv;
             bv.childDetail = detailBin;
 
@@ -207,7 +222,6 @@
 
         // ####################### ABOVE TWO METHODS CREATE THE TREE.###########################################################################
 
-
         /// <summary>
         ///
         /// </summary>
@@ -219,15 +233,12 @@
         {
             // produce spectrogram
 
-
-
             int wpdWindowWidth = (int)Math.Pow(2, wpdLevelNumber);
             int sampleCount = signal.Length / wpdWindowWidth;
             double[,] wpdByTime = new double[wpdWindowWidth, sampleCount];
             double[,] freqByOscillationsMatrix = new double[fftWindowWidth, wpdWindowWidth];
 
             // do a WPD over each frequency bin
-
 
             // accumulate the WPD spectra into a frequency bin by oscillations per second matrix.
 
@@ -236,13 +247,8 @@
 
             double[] V = MatrixTools.GetRowAverages(matrix);
 
-
-
             return freqByOscillationsMatrix;
         }
-
-
-
 
         /// <summary>
         /// Returns a universal threshold which is used to zero small or insignificant wavelet coefficients.
@@ -263,7 +269,6 @@
             return factor * sd;
         }
 
-
         public static double CalculateUniversalThreshold(int n, double sdOfCoefficients)
         {
             double factor = Math.Sqrt(2 * Math.Log10(n));
@@ -282,6 +287,7 @@
             int windowWidth = (int)Math.Pow(2, levelNumber);
             int halfWindow = windowWidth / 2;
             int sampleCount = signal.Length / windowWidth;
+
             //int minLag,
             //int maxLag
             double[,] wpdByTime = new double[halfWindow, sampleCount];
@@ -317,8 +323,8 @@
 
             string path = @"C:\SensorNetworks\Output\Sonograms\testwavelet.png";
             ImageTools.DrawReversedMatrix(wpdByTime, path);
-            // MatrixTools.writeMatrix(wpdByTime);
 
+            // MatrixTools.writeMatrix(wpdByTime);
 
             return wpdByTime;
         }
@@ -334,7 +340,7 @@
         {
             int windowWidth = (int)Math.Pow(2, levelNumber);
             int sampleCount = signal.Length / windowWidth;
-            int lengthOfEnergyVector = (int)Math.Pow(2, levelNumber+1) - 1;
+            int lengthOfEnergyVector = (int)Math.Pow(2, levelNumber + 1) - 1;
             double[,] wpdByTime = new double[lengthOfEnergyVector, sampleCount];
 
             for (int s = 0; s < sampleCount; s++)
@@ -352,7 +358,6 @@
             return wpdByTime;
         }
 
-
         /// <summary>
         /// implements the Haar low pass filter
         /// </summary>
@@ -361,18 +366,22 @@
         public static double[] LowPassAndDecimate(double[] signal)
         {
             int sigLength = signal.Length;
-            if (sigLength <= 1) return null;
+            if (sigLength <= 1)
+            {
+                return null;
+            }
+
             int halfLength = sigLength / 2;
 
             double[] lowPass = new double[halfLength];
             for (int i = 0; i < halfLength; i++)
             {
                 int index = 2 * i;
-                lowPass[i] = (signal[index] + signal[index + 1]) / (double)SQRT2;
+                lowPass[i] = (signal[index] + signal[index + 1]) / SQRT2;
             }
+
             return lowPass;
         }
-
 
         /// <summary>
         /// implements the Haar high pass filter
@@ -382,15 +391,20 @@
         public static double[] HiPassAndDecimate(double[] signal)
         {
             int sigLength = signal.Length;
-            if (sigLength <= 1) return null;
+            if (sigLength <= 1)
+            {
+                return null;
+            }
+
             int halfLength = sigLength / 2;
 
             double[] hiPass = new double[halfLength];
             for (int i = 0; i < halfLength; i++)
             {
                 int index = 2 * i;
-                hiPass[i] = (signal[index] - signal[index + 1]) / (double)SQRT2;
+                hiPass[i] = (signal[index] - signal[index + 1]) / SQRT2;
             }
+
             return hiPass;
         }
 
@@ -399,16 +413,16 @@
         /// </summary>
         public static void ExampleOfWavelets_1()
         {
-
             //this signal contains one block impulse in centre
             //double[] signal = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
             //                    1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
             //double[] signal = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
             //                    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-            double[] signal = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, };
-
-
+            double[] signal =
+            {
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+            };
 
             //double[] signal = {1,0,0,0,0,0,0,0};
             //double[] signal = { 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0 };
@@ -464,14 +478,11 @@
 
             string path = @"C:\SensorNetworks\Output\Test\testwavelet.png";
             ImageTools.DrawReversedMatrix(M, path);
+
             //MatrixTools.writeMatrix(M);
             MatrixTools.WriteLocationOfMaximumValues(M);
 
             double[] energySpectrumWithoutDC = wpd.GetWPDEnergySpectrumWithoutDC();
-
         }
-
-
-
     }
 }

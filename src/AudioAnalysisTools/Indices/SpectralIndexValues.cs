@@ -42,7 +42,7 @@ namespace AudioAnalysisTools.Indices
 
                 CachedSettersInternal.Add(
                     keyValuePair.Key,
-                    (spectrumBase, value) => setter((SpectralIndexValues)spectrumBase, value));
+                    (spectrumBase, value) => setter(spectrumBase, value));
             }
         }
 
@@ -66,7 +66,7 @@ namespace AudioAnalysisTools.Indices
                     }
                 }
 
-                double[] initArray = (new double[spectrumLength]).FastFill(defaultValue);
+                double[] initArray = new double[spectrumLength].FastFill(defaultValue);
 
                 // WARNING: Potential throw site
                 // No need to give following warning because should call CheckExistenceOfSpectralIndexValues() method before entering loop.
@@ -214,14 +214,14 @@ namespace AudioAnalysisTools.Indices
         public double[] EVN { get; set; }
 
         /// <summary>
-        /// PMN = Power Minus Noise.
+        /// Gets or sets pMN = Power Minus Noise.
         /// PMN is measured in decibels but should replace POW as the average decibel spectrogram.
         /// PMN calculates the average decibel spectrogram correctly.
         /// </summary>
         public double[] PMN { get; set; }
 
         /// <summary>
-        /// The POW spectral index should eventually be depracated.
+        /// Gets or sets the POW spectral index should eventually be depracated.
         /// It is derived from an incorrect way of averaging decibel values
         /// </summary>
         public double[] POW { get; set; }

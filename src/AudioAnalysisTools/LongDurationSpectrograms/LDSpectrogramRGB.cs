@@ -627,7 +627,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
 
             // now add in image patches for possible erroneous index segments
-            bool errorsExist = (this.ErroneousSegments != null) && (this.ErroneousSegments.Count > 0);
+            bool errorsExist = this.ErroneousSegments != null && this.ErroneousSegments.Count > 0;
             if (errorsExist)
             {
                 bmp = GapsAndJoins.DrawErrorSegments(bmp, this.ErroneousSegments);
@@ -1202,7 +1202,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
                     // enhance blue colour - it is difficult to see on a black background
                     // This is a hack - there should be a principled way to do this.
-                    if ((d1 < 0.1) && (d2 < 0.1) && (d3 > 0.2))
+                    if (d1 < 0.1 && d2 < 0.1 && d3 > 0.2)
                     {
                         d2 += 0.7 * d3;
                         d3 += 0.2;

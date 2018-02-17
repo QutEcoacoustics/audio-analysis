@@ -33,22 +33,22 @@ namespace AudioAnalysisTools.Indices
         public LdSpectrogramConfig LongDurationSpectrogramConfig { get; set; }
 
         /// <summary>
-        /// The extension of the original audio file.
+        /// Gets or sets the extension of the original audio file.
         /// </summary>
         public string RecordingType { get; set; }
 
         /// <summary>
-        /// BackgroundFilterCoeff is used to adjust colour contrast of false-colour images. Default = 0.75.
+        /// Gets or sets backgroundFilterCoeff is used to adjust colour contrast of false-colour images. Default = 0.75.
         /// </summary>
         public double BackgroundFilterCoeff { get; set; }
 
         /// <summary>
-        ///  default value for frame width from which spectrogram was derived.
+        ///  Gets or sets default value for frame width from which spectrogram was derived.
         /// </summary>
         public int FrameLength { get; set; }
 
         /// <summary>
-        ///  default value for frame step from which spectrogram was derived. There may be overlap.
+        ///  Gets or sets default value for frame step from which spectrogram was derived. There may be overlap.
         /// </summary>
         public int FrameStep { get; set; }
 
@@ -69,14 +69,14 @@ namespace AudioAnalysisTools.Indices
         public int SampleRateResampled { get; set; }
 
         /// <summary>
-        /// The default is one minute spectra i.e. 60 per hour.  However, as of January 2015, this is not fixed.
+        /// Gets or sets the default is one minute spectra i.e. 60 per hour.  However, as of January 2015, this is not fixed.
         /// User must enter the time span over which indices are calculated.
         /// This TimeSpan is used to calculate a tic interval that is appropriate to the time scale of the spectrogram.
         /// </summary>
         public TimeSpan IndexCalculationDuration { get; set; }
 
         /// <summary>
-        /// The default is the entire segment i.e. typically of one minute duration.  However, as of January 2015, this is not fixed.
+        /// Gets or sets the default is the entire segment i.e. typically of one minute duration.  However, as of January 2015, this is not fixed.
         /// User must enter the time span over which indices are calculated.
         /// If IndexCalculationDuration is set to a brief duration such as 0.2 seconds, then
         /// the backgroundnoise will be calculated from N seconds before the current subsegment to N seconds after => N secs + subseg duration + N secs

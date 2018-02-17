@@ -1,4 +1,8 @@
-﻿namespace TowseyLibrary
+﻿// <copyright file="HoughTransform.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace TowseyLibrary
 {
     using System;
     using System.Collections.Generic;
@@ -32,6 +36,7 @@
         public static void Test2HoughTransform()
         {
             Bitmap bmp = CreateToyTestImageWithLines();
+
             //int numberOfDirections = (2 * rowCount) + (2 * colCount) - 4;
             int numberOfDirections = 32;
             bool saveTranformImage = true;
@@ -42,7 +47,6 @@
             var list = new List<HoughLine>();
             string path1 = @"C:\SensorNetworks\Output\Sonograms\opMatrix.png";
             opImage.Save(path1, ImageFormat.Png);
-
         }
 
         public static double[,] DoHoughTransform(Bitmap sourceImage, int directionsCount, bool saveTransformImage)
@@ -51,6 +55,7 @@
             int colCount = sourceImage.Width;
 
             HoughLineTransformation lineTransform = new HoughLineTransformation();
+
             //lineTransform.MinLineIntensity = (short)(colCount * 1.0); //min intensity in hough map to recognise a line
             //lineTransform.LocalPeakRadius = 4;
             //lineTransform.StepsPerDegree = 1; // this is default
@@ -66,9 +71,9 @@
                 houghLineImage.Save(path, ImageFormat.Png);
             }
 
-
             // get lines using relative intensity
             HoughLine[] lines = lineTransform.GetLinesByRelativeIntensity( 1.0);
+
             //HoughLine[] lines = lineTransform.GetMostIntensiveLines(2); //this number of highest intensity lines
             Console.WriteLine("Number of lines returned from Hough transform = {0}", lines.Length);
 
@@ -90,32 +95,40 @@
                     t += 180;
                     radius = -radius;
                 }
+
                 Console.WriteLine("Theta={1:f2}      Radius={0}", radius, t);
                 int angleCategory = (int)Math.Round(t / angleResolution);
-                if (angleCategory >= directionsCount) angleCategory = 0;
-                rtSpace[radius, angleCategory] += (line.Intensity / (double)rowCount);
+                if (angleCategory >= directionsCount)
+                {
+                    angleCategory = 0;
+                }
+
+                rtSpace[radius, angleCategory] += line.Intensity / (double)rowCount;
             }
+
             return rtSpace;
         }
 
         public static Bitmap ConvertRTmatrix2Image(double[,] rtSpace, double thresholdIntensity, int imageWidth)
         {
              int colCount = imageWidth;
-            // assume row count = col count
-            int rowCount = colCount;
-           Bitmap opImage = new Bitmap(colCount, rowCount);
-            Graphics g = Graphics.FromImage(opImage);
-            g.Clear(Color.White);
-            Bitmap opImage1 = AddRTmatrix2Image(rtSpace, thresholdIntensity, opImage);
 
-            return opImage1;
+            // assume row count = col count
+             int rowCount = colCount;
+             Bitmap opImage = new Bitmap(colCount, rowCount);
+             Graphics g = Graphics.FromImage(opImage);
+             g.Clear(Color.White);
+             Bitmap opImage1 = AddRTmatrix2Image(rtSpace, thresholdIntensity, opImage);
+
+             return opImage1;
         }
 
         public static Bitmap AddRTmatrix2Image(double[,] rtSpace, double thresholdIntensity, Bitmap inputImage)
         {
-            int maxRadius  = rtSpace.GetLength(0) - 1;
+            int maxRadius = rtSpace.GetLength(0) - 1;
             int angleCount = rtSpace.GetLength(1);
-            int colCount   = inputImage.Width;
+            int colCount = inputImage.Width;
+
             // assume row count = col count
             int rowCount = colCount;
             double angleResolution = 360 / (double)angleCount;
@@ -127,7 +140,11 @@
             {
                 for (int c = 0; c < angleCount; c++)
                 {
-                    if (rtSpace[r, c] < thresholdIntensity) continue;
+                    if (rtSpace[r, c] < thresholdIntensity)
+                    {
+                        continue;
+                    }
+
                     double angle = c * angleResolution;
 
                     Console.WriteLine("Theta={1:f2}   Radius={0}    Intensity={2:f2}", r, angle, rtSpace[r, c]);
@@ -149,7 +166,7 @@
                     //}
 
                     // convert degrees to radians
-                    double theta = (angle / 180) * Math.PI;
+                    double theta = angle / 180 * Math.PI;
 
                     // get image centers (all coordinate are measured relative
                     // to center)
@@ -184,8 +201,8 @@
                             x1 = w2;  // most right point
 
                             // calculate corresponding y values
-                            y0 = (-Math.Cos(theta) * x0 + r) / Math.Sin(theta);
-                            y1 = (-Math.Cos(theta) * x1 + r) / Math.Sin(theta);
+                            y0 = ((-Math.Cos(theta) * x0) + r) / Math.Sin(theta);
+                            y1 = ((-Math.Cos(theta) * x1) + r) / Math.Sin(theta);
                         }
 
                     // draw line on the image
@@ -197,6 +214,7 @@
                     g.DrawLine(pen, (int)x0 + w2, h2 - (int)y0, (int)x1 + w2, h2 - (int)y1);
                 }
             }
+
             return inputImage;
         }
 
@@ -205,10 +223,9 @@
             sourceImage = ImageTools.ApplyInvert(sourceImage);
             sourceImage.Save(@"C:\SensorNetworks\Output\Sonograms\TestSourceImage.png");
 
-
             int numberOfDirections = 16;
             bool saveTranformImage = true;
-            int tileWidth  = 33, tileHeight = 33;
+            int tileWidth = 33, tileHeight = 33;
             double thresholdIntensity = 2.0;
 
             //this filter converts standard pixel format to indexed as used by the hough transform
@@ -233,17 +250,19 @@
                     Bitmap tile = sourceImage.Clone(cropArea, sourceImage.PixelFormat);
                     tile.Save(@"C:\SensorNetworks\Output\Sonograms\TestTile.png");
                     ImageTools.ApplyInvert(tile);
+
                     // create and apply filter to convert to indexed color format.
                     double[,] rtMatrix = DoHoughTransform(filter.Apply(tile), numberOfDirections, saveTranformImage);
                     Bitmap tile2 = AddRTmatrix2Image(rtMatrix, thresholdIntensity, tile);
+
                     //Bitmap tile2 = HoughTransform.ConvertRTmatrix2Image(rtMatrix, thresholdIntensity, tileWidth);
                     g.DrawImage(tile2, x, y);
                     tile2.Save(@"C:\SensorNetworks\Output\Sonograms\TestTile2.png");
                 }
             }
-            return returnBmp;
-        }   // TileWiseHoughTransform(Bitmap sourceImage)
 
+            return returnBmp;
+        } // TileWiseHoughTransform(Bitmap sourceImage)
 
         public static Bitmap CreateToyTestImageWithLines()
         {
@@ -251,6 +270,7 @@
             Graphics g = Graphics.FromImage(image);
             g.Clear(Color.Black);
             Pen pen = new Pen(Color.White);
+
             //g.DrawLine(pen, 0, 7, 10, 7);
             //g.DrawLine(pen, 0, 5, 10, 5);
             g.DrawLine(pen, 0, 0, 8, 8);
@@ -272,6 +292,7 @@
             Graphics g = Graphics.FromImage(image);
             g.Clear(Color.Black);
             Pen pen = new Pen(Color.White);
+
             //g.DrawLine(pen, 0, 7, 10, 7);
             //g.DrawLine(pen, 0, 5, 10, 5);
             g.DrawLine(pen, 0, 0, dim - 12, dim - 12);
@@ -281,6 +302,5 @@
             image.Save(path, ImageFormat.Png);
             return image;
         }
-
     }
 }

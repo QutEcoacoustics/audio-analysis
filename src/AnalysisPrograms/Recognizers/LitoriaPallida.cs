@@ -20,24 +20,18 @@ namespace AnalysisPrograms.Recognizers
     using System.Linq;
     using System.Reflection;
     using System.Text;
-
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Tools.Wav;
-
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-
-    using Base;
-
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-
+    using Base;
     using log4net;
-
     using TowseyLibrary;
 
     /// <summary>
@@ -49,7 +43,7 @@ namespace AnalysisPrograms.Recognizers
     /// Alternatively, this recognizer can be called via the MultiRecognizer.
     ///
     /// </summary>
-    class LitoriaPallida : RecognizerBase
+    internal class LitoriaPallida : RecognizerBase
     {
         public override string Author => "Towsey";
 
@@ -84,8 +78,8 @@ namespace AnalysisPrograms.Recognizers
         /// <returns></returns>
         public override RecognizerResults Recognize(AudioRecording recording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
-            string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
-            string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+            string speciesName = configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
+            string abbreviatedSpeciesName = configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
 
             int minHz = configuration.GetInt(AnalysisKeys.MinHz);
             int maxHz = configuration.GetInt(AnalysisKeys.MaxHz);
@@ -128,6 +122,7 @@ namespace AnalysisPrograms.Recognizers
                 recording.SampleRate,
                 frameSize,
                 maxOscilFreq);
+
             //windowOverlap = 0.75; // previous default
 
             // i: MAKE SONOGRAM
@@ -136,6 +131,7 @@ namespace AnalysisPrograms.Recognizers
                 SourceFName = recording.BaseName,
                 WindowSize = frameSize,
                 WindowOverlap = windowOverlap,
+
                 //NoiseReductionType = NoiseReductionType.NONE,
                 NoiseReductionType = NoiseReductionType.Standard,
                 NoiseReductionParameter = 0.2,
@@ -203,21 +199,27 @@ namespace AnalysisPrograms.Recognizers
                 Plots = plots,
                 Events = acousticEvents,
             };
-
         }
 
         public static Image DisplayDebugImage(BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> scores, double[,] hits)
         {
-            bool doHighlightSubband = false; bool add1kHzLines = true;
+            bool doHighlightSubband = false;
+            bool add1kHzLines = true;
             Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
 
             image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             if (scores != null)
             {
                 foreach (Plot plot in scores)
+                {
                     image.AddTrack(ImageTrack.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title)); //assumes data normalised in 0,1
+                }
             }
-            if (hits != null) image.OverlayRainbowTransparency(hits);
+
+            if (hits != null)
+            {
+                image.OverlayRainbowTransparency(hits);
+            }
 
             if (events.Count > 0)
             {
@@ -226,10 +228,11 @@ namespace AnalysisPrograms.Recognizers
                     ev.BorderColour = AcousticEvent.DefaultBorderColor;
                     ev.ScoreColour = AcousticEvent.DefaultScoreColor;
                 }
+
                 image.AddEvents(events, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
             }
+
             return image.GetImage();
         }
-
     }
 }

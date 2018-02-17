@@ -16,29 +16,23 @@ namespace AnalysisPrograms.Recognizers
     using System.Linq;
     using System.Reflection;
     using System.Text;
-
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Tools.Wav;
-
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-
-    using Base;
-
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-
+    using Base;
     using log4net;
-
     using TowseyLibrary;
 
     /// <summary>
     /// This is a recognizer for the Litoria olong
     /// </summary>
-    class LitoriaOlong : RecognizerBase
+    internal class LitoriaOlong : RecognizerBase
     {
         public override string Author => "Stark";
 
@@ -73,11 +67,10 @@ namespace AnalysisPrograms.Recognizers
         /// <returns></returns>
         public override RecognizerResults Recognize(AudioRecording recording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
-
             // WARNING: TODO TODO TODO = this method simply duplicates the CANETOAD analyser!!!!!!!!!!!!!!!!!!!!! ###################
 
-            string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
-            string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+            string speciesName = configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
+            string abbreviatedSpeciesName = configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
 
             int minHz = configuration.GetInt(AnalysisKeys.MinHz);
             int maxHz = configuration.GetInt(AnalysisKeys.MaxHz);
@@ -120,6 +113,7 @@ namespace AnalysisPrograms.Recognizers
                 recording.SampleRate,
                 frameSize,
                 maxOscilFreq);
+
             //windowOverlap = 0.75; // previous default
 
             // i: MAKE SONOGRAM

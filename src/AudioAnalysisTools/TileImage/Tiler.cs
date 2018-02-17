@@ -169,7 +169,7 @@ namespace AudioAnalysisTools.TileImage
             var deltaTileEdgeSuperTileY = superTileOffsetInLayerY - startTileEdgeY;
             var superTileRectangle = new Rectangle(xOffset, yOffset, width, height);
 
-            if (previous == null && (startTileEdgeX % this.profile.TileWidth) != 0)
+            if (previous == null && startTileEdgeX % this.profile.TileWidth != 0)
             {
                 throw new InvalidOperationException("A non-aligned super tile, with no previous tile has been requested to be drawn, this means a fragment of the supertile will not been drawn.");
             }
@@ -487,7 +487,7 @@ namespace AudioAnalysisTools.TileImage
             }
             else
             {
-                return Math.Ceiling((lengthToSplit / 2.0) / tileLength) * 2.0;
+                return Math.Ceiling(lengthToSplit / 2.0 / tileLength) * 2.0;
             }
         }
 
@@ -537,9 +537,9 @@ namespace AudioAnalysisTools.TileImage
             }
 
             // bottom
-            if ((y + height) - ySplit2 > 0)
+            if (y + height - ySplit2 > 0)
             {
-                var bottom = new Rectangle(x, ySplit2, width, (y + height) - ySplit2);
+                var bottom = new Rectangle(x, ySplit2, width, y + height - ySplit2);
                 split.Add(new ImageComponent(bottom, xBias, TileBias.Positive));
             }
 
@@ -588,7 +588,7 @@ namespace AudioAnalysisTools.TileImage
             double overlap = tilesInLayer - Math.Floor(tilesInLayer);
 
             // padding is split either side
-            var overlapInPx = (int)Math.Round((overlap / 2.0) * layerTileLength, MidpointRounding.AwayFromZero);
+            var overlapInPx = (int)Math.Round(overlap / 2.0 * layerTileLength, MidpointRounding.AwayFromZero);
             padding = overlapInPx == 0 ? 0 : layerTileLength - overlapInPx;
 
             // convert superTileOddset to coordinates relative to layer

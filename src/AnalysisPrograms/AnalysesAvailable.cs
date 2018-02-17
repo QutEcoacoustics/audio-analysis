@@ -4,7 +4,6 @@
 
 namespace AnalysisPrograms
 {
-
     using System;
     using System.Collections.Generic;
     using System.IO;
@@ -68,7 +67,7 @@ namespace AnalysisPrograms
             string tableFormat = "{0, " + -indentifierWidth + "}{1, " + -typeLength + "}{2," + -descrptionLength + "}";
             string header = string.Format(tableFormat, identifier, "Type", "Description");
 
-            StringBuilder table = new StringBuilder((analysers.Length + 3)*consoleWidth);
+            StringBuilder table = new StringBuilder((analysers.Length + 3) * consoleWidth);
 
             table.AppendLine(header);
             table.AppendLine(string.Empty.PadRight(header.Length, '-'));
@@ -92,7 +91,5 @@ namespace AnalysisPrograms
 
             return table;
         }
-
-
     }
 }

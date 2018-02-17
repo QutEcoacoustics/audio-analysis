@@ -12,10 +12,14 @@ namespace NeuralNets
 
     public class Cluster
     {
-        public int Size { get { return this.Vectors.Count; } }
-        public List<double[]> Vectors { get; private set; }  //members  of the cluster
-        public double[] Centroid { get; private set; }       //centroid of the cluster
+        public int Size
+        {
+            get { return this.Vectors.Count; }
+        }
 
+        public List<double[]> Vectors { get; private set; } //members  of the cluster
+
+        public double[] Centroid { get; private set; } //centroid of the cluster
 
         /// <summary>
         /// CONSTRUCTOR
@@ -44,17 +48,26 @@ namespace NeuralNets
             if (vCount == 0)
             {
                 return null;
+
                 //throw new Exception("Cluster.Centroid(): count = " + vCount);
             }
+
             int featureCount = this.Vectors[0].Length;
 
             //accumulate the vectors into an averaged feature vector
             double[] avVector = new double[featureCount];
             for (int i = 0; i < vCount; i++)
             {
-                for (int j = 0; j < featureCount; j++) avVector[j] += this.Vectors[i][j]; //sum the Vectors
+                for (int j = 0; j < featureCount; j++)
+                {
+                    avVector[j] += this.Vectors[i][j]; //sum the Vectors
+                }
             }
-            for (int i = 0; i < featureCount; i++) avVector[i] = avVector[i] / (double)vCount; //average Vectors
+
+            for (int i = 0; i < featureCount; i++)
+            {
+                avVector[i] = avVector[i] / vCount; //average Vectors
+            }
 
             this.Centroid = avVector;
 
@@ -64,14 +77,16 @@ namespace NeuralNets
         public void SetCentroid(double[] vector)
         {
             this.Centroid = new double[vector.Length];
-            for(int i = 0; i < vector.Length; i++) this.Centroid[i] = vector[i];
+            for (int i = 0; i < vector.Length; i++)
+            {
+                this.Centroid[i] = vector[i];
+            }
         }
 
         public void ResetMembers()
         {
             this.Vectors = new List<double[]>();
         }
-
 
         /// <summary>
         /// calculate euclidian distance of vector from centroid
@@ -81,9 +96,12 @@ namespace NeuralNets
         public double DistanceFromCentroid( double[] vector)
         {
             double dist = 0.0;
-            for(int i = 0; i < vector.Length; i++) dist += Math.Pow((vector[i] - this.Centroid[i]), 2);
+            for (int i = 0; i < vector.Length; i++)
+            {
+                dist += Math.Pow(vector[i] - this.Centroid[i], 2);
+            }
+
             return Math.Sqrt(dist);
         }
-
     } //end class Cluster
 }

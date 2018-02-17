@@ -26,7 +26,7 @@ namespace AudioAnalysisTools
             Spectral,
             Cepsral,
             AcousticVectors,
-            SobelEdge
+            SobelEdge,
         }
 
         // ReSharper disable InconsistentNaming
@@ -35,7 +35,7 @@ namespace AudioAnalysisTools
             Undefined,
             MFCC,
             CC_AUTO,
-            DCT_2D
+            DCT_2D,
         }
 
         // ReSharper restore InconsistentNaming
@@ -43,61 +43,61 @@ namespace AudioAnalysisTools
         {
             public const string Key_RecordingCallName = "CALL_NAME";
             public const string Key_RecordingFileName = "WAV_FILE_NAME";
-            public const string Key_RecordingDirName  = "WAV_DIR_NAME";
-            public const string Key_TrainingDirName   = "TRAIN_DIR_NAME";
-            public const string Key_TestingDirName    = "TEST_DIR_NAME";
+            public const string Key_RecordingDirName = "WAV_DIR_NAME";
+            public const string Key_TrainingDirName = "TRAIN_DIR_NAME";
+            public const string Key_TestingDirName = "TEST_DIR_NAME";
         }
 
         public struct Windowing // or Framing
         {
-            public const string Key_SampleRate    = "SAMPLE_RATE";
-            public const string Key_SubSample     = "SUBSAMPLE";
-            public const string Key_WindowSize    = "FRAME_SIZE";
+            public const string Key_SampleRate = "SAMPLE_RATE";
+            public const string Key_SubSample = "SUBSAMPLE";
+            public const string Key_WindowSize = "FRAME_SIZE";
             public const string Key_WindowOverlap = "FRAME_OVERLAP";
         }
 
         public struct Mfcc
         {
-            public const string Key_WindowFunction   = "WINDOW_FUNCTION";
+            public const string Key_WindowFunction = "WINDOW_FUNCTION";
             public const string Key_NPointSmoothFFT = "N_POINT_SMOOTH_FFT";
             public const string Key_NyquistFrequency = "NYQUIST_FREQ";
-            public const string Key_StartTime        = "START_TIME";
-            public const string Key_EndTime          = "END_TIME";
-            public const string Key_DoMelScale       = "DO_MEL_CONVERSION";
-            public const string Key_MinFreq          = "MIN_FREQ";
-            public const string Key_MaxFreq          = "MAX_FREQ";
-            public const string Key_FilterbankCount  = "FILTERBANK_COUNT";
-            public const string Key_CcCount          = "CC_COUNT";
-            public const string Key_IncludeDelta     = "INCLUDE_DELTA";
+            public const string Key_StartTime = "START_TIME";
+            public const string Key_EndTime = "END_TIME";
+            public const string Key_DoMelScale = "DO_MEL_CONVERSION";
+            public const string Key_MinFreq = "MIN_FREQ";
+            public const string Key_MaxFreq = "MAX_FREQ";
+            public const string Key_FilterbankCount = "FILTERBANK_COUNT";
+            public const string Key_CcCount = "CC_COUNT";
+            public const string Key_IncludeDelta = "INCLUDE_DELTA";
             public const string Key_IncludeDoubleDelta = "INCLUDE_DOUBLEDELTA";
-            public const string Key_DeltaT           = "DELTA_T";
+            public const string Key_DeltaT = "DELTA_T";
         }
 
         public struct EndpointDetection
         {
             public const string Key_K1SegmentationThreshold = "SEGMENTATION_THRESHOLD_K1";
             public const string Key_K2SegmentationThreshold = "SEGMENTATION_THRESHOLD_K2";
-            public const string Key_K1K2Latency      = "K1_K2_LATENCY";
-            public const string Key_VocalGap         = "VOCAL_GAP";
+            public const string Key_K1K2Latency = "K1_K2_LATENCY";
+            public const string Key_VocalGap = "VOCAL_GAP";
             public const string Key_MinVocalDuration = "MIN_VOCAL_DURATION";
         }
 
         public struct Sonogram
         {
-            public const string Key_SonogramType    = "SONOGRAM_TYPE";
+            public const string Key_SonogramType = "SONOGRAM_TYPE";
         }
 
         public struct Template
         {
             public const string Key_ExtractInterval = "EXTRACTION_INTERVAL"; //determines complexity of language model
-            public const string Key_TemplateType    = "TEMPLATE_TYPE";
-            public const string Key_TemplateDir     = "TEMPLATE_DIR";
-            public const string Key_FVCount         = "FV_COUNT";         // number of feature vectors in acoustic model
-            public const string Key_FVType          = "FEATURE_TYPE";     // type of feature vector to be extracted
-            public const string Key_FVDefaultNoiseFile= "FV_DEFAULT_NOISE_FILE"; // location of the deafult noise FV
-            public const string Key_ModelType       = "MODEL_TYPE";       // language model
-            public const string Key_WordCount       = "NUMBER_OF_WORDS";  // in the language model
-            public const string Key_WordNames       = "WORD_NAMES";       // in the language model
+            public const string Key_TemplateType = "TEMPLATE_TYPE";
+            public const string Key_TemplateDir = "TEMPLATE_DIR";
+            public const string Key_FVCount = "FV_COUNT";         // number of feature vectors in acoustic model
+            public const string Key_FVType = "FEATURE_TYPE";     // type of feature vector to be extracted
+            public const string Key_FVDefaultNoiseFile = "FV_DEFAULT_NOISE_FILE"; // location of the deafult noise FV
+            public const string Key_ModelType = "MODEL_TYPE";       // language model
+            public const string Key_WordCount = "NUMBER_OF_WORDS";  // in the language model
+            public const string Key_WordNames = "WORD_NAMES";       // in the language model
         }
 
         public struct ImageSave
@@ -110,9 +110,13 @@ namespace AudioAnalysisTools
     public class MfccConfiguration
     {
         public int FilterbankCount { get; set; }
+
         public bool DoMelScale { get; set; }
-        public int CcCount { get; set; }     //number of cepstral coefficients
+
+        public int CcCount { get; set; } //number of cepstral coefficients
+
         public bool IncludeDelta { get; set; }
+
         public bool IncludeDoubleDelta { get; set; }
 
         public MfccConfiguration(ConfigDictionary config)
@@ -159,8 +163,10 @@ namespace AudioAnalysisTools
             writer.WriteLine("#**************** INFO ABOUT SEGMENTATION");
             writer.WriteConfigValue(ConfigKeys.EndpointDetection.Key_K1SegmentationThreshold, K1Threshold);
             writer.WriteConfigValue(ConfigKeys.EndpointDetection.Key_K2SegmentationThreshold, K2Threshold);
+
             //writer.WriteConfigValue("K1_K2_LATENCY", K1K2Latency);
             writer.WriteConfigValue(ConfigKeys.EndpointDetection.Key_VocalGap, VocalGap);
+
             //writer.WriteConfigValue("MIN_VOCAL_DURATION", MinPulseDuration);
             writer.WriteLine("#");
             writer.Flush();

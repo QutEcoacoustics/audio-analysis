@@ -87,8 +87,6 @@
             this.TemporaryFilesDirectory = temporaryFilesDirectory;
         }
 
-        #region Implementation of IAudioUtility
-
         /// <summary>
         /// Gets the valid source media types.
         /// </summary>
@@ -360,8 +358,6 @@
                 throw new ArgumentException("Wvunpack cannot modify the sample rate.", nameof(request));
             }
         }
-
-        #endregion
 
         private static string FormatTimeSpan(TimeSpan value)
         {

@@ -35,7 +35,6 @@ AlignToMinute Options:
             ExtendedHelpText = AdditionalNotes)]
         public class Arguments : SourceConfigOutputDirArguments
         {
-
             public Arguments()
             {
 #if DEBUG

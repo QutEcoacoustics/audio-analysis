@@ -42,6 +42,7 @@ namespace AudioAnalysisTools
         {
             this.Point = point;
         }
+
         public PointOfInterest(TimeSpan time, double herz)
         {
             this.TimeLocation = time;
@@ -118,9 +119,8 @@ namespace AudioAnalysisTools
         /// </summary>
         public int OrientationCategory { get; set; }
 
-
         /// <summary>
-        /// Gets or sets boolean - is POI a local maximum?
+        /// Gets or sets a value indicating whether gets or sets boolean - is POI a local maximum?
         /// </summary>
         public bool IsLocalMaximum { get; set; }
 
@@ -143,6 +143,7 @@ namespace AudioAnalysisTools
                 graphics.DrawEllipse(new Pen(poi.DrawColor), poi.Point.X - 2, height - poi.Point.Y - 3, 4, 4);
             }
         }
+
         /// <summary>
         /// Draw a point on the pointOfInterest
         /// </summary>
@@ -155,9 +156,11 @@ namespace AudioAnalysisTools
             {
                 var brush = new SolidBrush(Color.Crimson);
                 graphics.FillRectangle(brush, poi.Point.X, height - poi.Point.Y - 1, 1, 1);
+
                 //DrawRectangle(new Pen(poi.DrawColor), poi.Point.X, height - poi.Point.Y - 1, 1, 1)
             }
         }
+
         /// <summary>
         /// Draw a box from a point at top left with radius width and radius length
         /// </summary>
@@ -169,6 +172,7 @@ namespace AudioAnalysisTools
             foreach (PointOfInterest poi in pointsOfInterest)
             {
                 var pen = new Pen(Color.Crimson);
+
                 //graphics.DrawRectangle(pen, poi.Point.X, height - poi.Point.Y - 1, radius, radius);
                 graphics.DrawRectangle(pen, poi.Point.X, poi.Point.Y, radius, radius);
             }
@@ -182,6 +186,7 @@ namespace AudioAnalysisTools
                 int y = spectrogramHeight - (int)Math.Round(this.Herz / this.HerzScale) - 1;
                 Color color = this.DrawColor;
                 bmp.SetPixel(x, y, color);
+
                 //bmp.SetPixel(x, y-1, color);
                 //bmp.SetPixel(x, y+1, color);
                 //bmp.SetPixel(x-1, y, color);
@@ -189,21 +194,22 @@ namespace AudioAnalysisTools
             }
         }
 
-
-
-
         public void DrawPoint(Bitmap bmp, int spectrogramHeight, bool multiPixel)
         {
             //int x = this.Point.X;
             //int y = this.Point.Y;
             int x = (int)Math.Round(this.TimeLocation.TotalSeconds / this.TimeScale.TotalSeconds);
             int y = spectrogramHeight - (int)Math.Round(this.Herz / this.HerzScale) - 1;
-            int orientationCategory = (int)Math.Round((this.RidgeOrientation * 8) / Math.PI);
+            int orientationCategory = (int)Math.Round(this.RidgeOrientation * 8 / Math.PI);
+
             //orientation = indexMax * Math.PI / (double)8;
 
             Color color = this.DrawColor;
             bmp.SetPixel(x, y, color);
-            if (!multiPixel) return;
+            if (!multiPixel)
+            {
+                return;
+            }
 
             if (orientationCategory == 0)
             {
@@ -335,6 +341,7 @@ namespace AudioAnalysisTools
             // THis one for decibel ridges
             int x = this.Point.X;
             int y = this.Point.Y;
+
             // this one for amplitude ridges.
             //int x = this.Point.X;
             //int y = this.Point.Y + 36;
@@ -342,6 +349,7 @@ namespace AudioAnalysisTools
             //int y = spectrogramHeight - (int)Math.Round(this.Herz / this.HerzScale) - 1;
             //int orientationCategory = (int)Math.Round((this.RidgeOrientation * 8) / Math.PI);
             int orientationCategory = this.OrientationCategory;
+
             //orientation = indexMax * Math.PI / (double)8;
             Color color = this.DrawColor;
 
@@ -394,6 +402,7 @@ namespace AudioAnalysisTools
                     }
                 }
             } // if (orientationCategory == 0) else
+
             bmp.SetPixel(x, y, color);
         } // DrawOrientationPoint
 
@@ -403,13 +412,13 @@ namespace AudioAnalysisTools
             TowseyLibrary.MatrixTools.SetSingletonsToZero(m);
             RemovePOIsFromList(poiList, m);
         }
+
         public static void PruneDoublets(List<PointOfInterest> poiList, int rows, int cols)
         {
             double[,] m = TransferPOIsToDoublesMatrix(poiList, rows, cols);
             TowseyLibrary.MatrixTools.SetDoubletsToZero(m);
             RemovePOIsFromList(poiList, m);
         }
-
 
         public static List<PointOfInterest> PruneAdjacentTracks(List<PointOfInterest> poiList, int rows, int cols)
         {
@@ -418,31 +427,50 @@ namespace AudioAnalysisTools
             {
                 for (int c = 1; c < cols - 1; c++)
                 {
-                    if (M[r, c] == null) continue;
-                    if (M[r, c].OrientationCategory == 0)  // horizontal line
+                    if (M[r, c] == null)
                     {
-                        if ((M[r - 1, c] != null) && (M[r - 1, c].OrientationCategory == 0))
+                        continue;
+                    }
+
+                    if (M[r, c].OrientationCategory == 0) // horizontal line
+                    {
+                        if (M[r - 1, c] != null && M[r - 1, c].OrientationCategory == 0)
                         {
-                            if (M[r - 1, c].RidgeMagnitude < M[r, c].RidgeMagnitude) M[r - 1, c] = null;
+                            if (M[r - 1, c].RidgeMagnitude < M[r, c].RidgeMagnitude)
+                            {
+                                M[r - 1, c] = null;
+                            }
                         }
-                        if ((M[r + 1, c] != null) && (M[r + 1, c].OrientationCategory == 0))
+
+                        if (M[r + 1, c] != null && M[r + 1, c].OrientationCategory == 0)
                         {
-                            if (M[r + 1, c].RidgeMagnitude < M[r, c].RidgeMagnitude) M[r + 1, c] = null;
+                            if (M[r + 1, c].RidgeMagnitude < M[r, c].RidgeMagnitude)
+                            {
+                                M[r + 1, c] = null;
+                            }
                         }
                     }
                     else if (M[r, c].OrientationCategory == 4) // vertical line
                     {
-                        if ((M[r, c - 1] != null) && (M[r, c - 1].OrientationCategory == 4))
+                        if (M[r, c - 1] != null && M[r, c - 1].OrientationCategory == 4)
                         {
-                            if (M[r, c - 1].RidgeMagnitude < M[r, c].RidgeMagnitude) M[r, c - 1] = null;
+                            if (M[r, c - 1].RidgeMagnitude < M[r, c].RidgeMagnitude)
+                            {
+                                M[r, c - 1] = null;
+                            }
                         }
-                        if ((M[r, c + 1] != null) && (M[r, c + 1].OrientationCategory == 4))
+
+                        if (M[r, c + 1] != null && M[r, c + 1].OrientationCategory == 4)
                         {
-                            if (M[r, c + 1].RidgeMagnitude < M[r, c].RidgeMagnitude) M[r, c + 1] = null;
+                            if (M[r, c + 1].RidgeMagnitude < M[r, c].RidgeMagnitude)
+                            {
+                                M[r, c + 1] = null;
+                            }
                         }
                     } // if (OrientationCategory)
                 } // c
             } // for r loop
+
             return TransferPOIMatrix2List(M);
         } // PruneAdjacentTracks()
 
@@ -453,6 +481,7 @@ namespace AudioAnalysisTools
             {
                 m[poi.Point.Y, poi.Point.X] = poi;
             }
+
             return m;
         }
 
@@ -466,9 +495,13 @@ namespace AudioAnalysisTools
             {
                 for (int c = 0; c < cols; c++)
                 {
-                    if (m[r, c] != null) list.Add(m[r, c]);
+                    if (m[r, c] != null)
+                    {
+                        list.Add(m[r, c]);
+                    }
                 }
             }
+
             return list;
         }
 
@@ -479,6 +512,7 @@ namespace AudioAnalysisTools
             {
                 m[poi.Point.Y, poi.Point.X] = poi.RidgeMagnitude;
             }
+
             return m;
         }
 
@@ -495,6 +529,7 @@ namespace AudioAnalysisTools
                 {
                     m[r, c - 1] = orientation + 1;
                     m[r, c + 1] = orientation + 1;
+
                     //m[r, c + 2] = orientation + 1;
                 }
                 else
@@ -503,6 +538,7 @@ namespace AudioAnalysisTools
                     {
                         m[r, c - 1] = orientation + 1;
                         m[r, c + 1] = orientation + 1;
+
                         //m[r, c + 2] = orientation + 1;
                     }
                     else
@@ -511,6 +547,7 @@ namespace AudioAnalysisTools
                         {
                             m[r + 1, c - 1] = orientation + 1;
                             m[r - 1, c + 1] = orientation + 1;
+
                             //m[r - 2, c + 2] = orientation + 1;
                         }
                         else
@@ -518,6 +555,7 @@ namespace AudioAnalysisTools
                             {
                                 m[r - 1, c] = orientation + 1;
                                 m[r + 1, c] = orientation + 1;
+
                                 //m[x + 2, y] = orientation + 1;
                                 //m[x, y - 1] = orientation + 1;
                                 //m[x, y + 1] = orientation + 1;
@@ -528,12 +566,14 @@ namespace AudioAnalysisTools
                                 {
                                     m[r - 1, c] = orientation + 1;
                                     m[r + 1, c] = orientation + 1;
+
                                     //m[x + 2, y] = orientation + 1;
                                 }
                                 else if (orientation == 5)
                                 {
                                     m[r - 1, c] = orientation + 1;
                                     m[r + 1, c] = orientation + 1;
+
                                     //m[r + 2, c] = orientation + 1;
                                 }
                                 else if (orientation == 6)
@@ -546,6 +586,7 @@ namespace AudioAnalysisTools
                                 {
                                     m[r, c - 1] = orientation + 1;
                                     m[r, c + 1] = orientation + 1;
+
                                     //m[r, c + 2] = orientation + 1;
                                     //m[x + 2, y] = orientation + 1;
                                     //m[x + 1, y] = orientation + 1;
@@ -554,12 +595,13 @@ namespace AudioAnalysisTools
                     }
                 }
             } // foreach
+
             return m;
         } // TransferPOIsToOrientationMatrix()
 
         public static void RemovePOIsFromList(List<PointOfInterest> list, double[,] m)
         {
-            for (int i = list.Count - 1; i >= 0; i--)  //each (PointOfInterest poi in list)
+            for (int i = list.Count - 1; i >= 0; i--) //each (PointOfInterest poi in list)
             {
                 if (m[list[i].Point.Y, list[i].Point.X] == 0.0)
                 {
@@ -570,7 +612,7 @@ namespace AudioAnalysisTools
 
         public static void RemoveLowIntensityPOIs(List<PointOfInterest> list, double threshold)
         {
-            for (int i = list.Count - 1; i >= 0; i--)  //each (PointOfInterest poi in list)
+            for (int i = list.Count - 1; i >= 0; i--) //each (PointOfInterest poi in list)
             {
                 if (list[i].Intensity < threshold)
                 {
@@ -589,10 +631,15 @@ namespace AudioAnalysisTools
             {
                 for (int c = 0; c < cols; c++)
                 {
-                    if (m[r, c] > 0.5) poiCount++;
+                    if (m[r, c] > 0.5)
+                    {
+                        poiCount++;
+                    }
+
                     cellCount++;
                 }
             }
+
             fraction = poiCount / (double)cellCount;
         } // CountPOIsInMatrix()
     }

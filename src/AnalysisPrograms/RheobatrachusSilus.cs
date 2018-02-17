@@ -72,7 +72,7 @@ namespace AnalysisPrograms
             int midHz = 1500;
             int lowerBin = (int)(midHz / freqBinWidth) + 1;  //because bin[0] = DC
             int upperBin = lowerBin + 4;
-            int lowerHz = (int)Math.Floor((lowerBin-1) * freqBinWidth);
+            int lowerHz = (int)Math.Floor((lowerBin - 1) * freqBinWidth);
             int upperHz = (int)Math.Ceiling((upperBin - 1) * freqBinWidth);
 
             //ALTERNATIVE IS TO USE THE AMPLITUDE SPECTRUM
@@ -154,6 +154,7 @@ namespace AnalysisPrograms
             var hits = new double[rowCount, colCount];
 
             var plots = new List<Plot>();
+
             //plots.Add(new Plot("lowerArray", DataTools.Normalise(lowerArray, 0, 100), 10.0));
             //plots.Add(new Plot("lowerArray", DataTools.Normalise(lowerArray, 0, 100), 10.0));
             //plots.Add(new Plot("lowerArray", DataTools.NormaliseMatrixValues(lowerArray), 0.25));
@@ -173,7 +174,7 @@ namespace AnalysisPrograms
             {
                 int start = ev.Oblong.RowTop;
                 int end = ev.Oblong.RowBottom;
-                double[] subArray = DataTools.Subarray(intensity, start, end-start+1);
+                double[] subArray = DataTools.Subarray(intensity, start, end - start + 1);
                 int[] bounds = DataTools.Peaks_CropLowAmplitude(subArray, severity);
 
                 int newMinRow = start + bounds[0];

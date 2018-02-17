@@ -17,8 +17,6 @@ namespace TowseyLibrary
 
     public static class Log
     {
-
-
         ////private const string MesgFormat = "{0:yyyy-MM-dd HH:mm:ss.fff}  {1}";
 
         private static readonly ILog Log4Net = LogManager.GetLogger(typeof(Log));
@@ -30,7 +28,6 @@ namespace TowseyLibrary
         }
 
         public static int Verbosity { get; set; }
-
 
         public static void WriteLine(string format, params object[] args)
         {
@@ -45,7 +42,4 @@ namespace TowseyLibrary
             }
         }
     }
-
-
-
 }

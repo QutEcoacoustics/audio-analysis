@@ -31,7 +31,6 @@ namespace Acoustics.Test.Tools
          * To get test audio path:
          *
          */
-        #region Public Methods and Operators
 
         /// <summary>
         /// The converts mp 3 to mp 3 corectly.
@@ -366,10 +365,6 @@ namespace Acoustics.Test.Tools
             TestHelper.ExceptionMatches<ArgumentNullException>(() => new SoxAudioUtility(null), "Value cannot be null");
         }
 
-        #endregion
-
-        #region Methods
-
         private static FileInfo GetAudioUtilityExe(string name)
         {
             var baseResourceDir = PathHelper.GetResourcesBaseDir();
@@ -579,7 +574,5 @@ namespace Acoustics.Test.Tools
                 PathHelper.DeleteTempDir(dir);
             }
         }
-
-        #endregion
     }
 }

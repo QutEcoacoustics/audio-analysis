@@ -61,7 +61,6 @@ namespace AudioAnalysisTools.Indices
     /// </summary>
     public class IndexProperties
     {
-
         static IndexProperties()
         {
             ConfigFile.Defaults.Add(typeof(Dictionary<string, IndexProperties>), "IndexPropertiesConfig.yml");
@@ -111,6 +110,7 @@ namespace AudioAnalysisTools.Indices
         }
 
         [YamlIgnore]
+
         // TODO: this information should really be encoded rather than inferred
         public bool IsSpectralIndex => this.DataType == "double[]";
 
@@ -274,7 +274,7 @@ namespace AudioAnalysisTools.Indices
             g.DrawString(annotation, font, Brushes.White, new PointF(dataLength + 5, 2));
 
             // now add in image patches for possible erroneous index segments
-            if ((errors != null) && (errors.Count > 0))
+            if (errors != null && errors.Count > 0)
             {
                 bool verticalText = false;
                 foreach (GapsAndJoins errorSegment in errors)

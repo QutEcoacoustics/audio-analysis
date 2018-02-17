@@ -1,7 +1,12 @@
-﻿namespace TowseyLibrary
+﻿// <copyright file="Spectrum.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace TowseyLibrary
 {
     using System;
     using System.Collections.Generic;
+
     //using System.Data;
     using System.IO;
     using System.Linq;
@@ -18,9 +23,8 @@
         }
 
         public int Index { get; set; }
+
         public string Name { get; set; }
-
-
 
         private readonly double[] values;
 
@@ -41,6 +45,7 @@
             {
                 sb.Append("," + values[i]);
             }
+
             return sb.ToString();
         }
 
@@ -99,8 +104,6 @@
 //            //DateTime.Now.ToString("o")
 //            //StringBuilder sb = new StringBuilder(String.Format("{0}-{1}-{2}-{3}-{4}", year, month, day, hour, min));
 
-
-
 //            var lines = new List<string>();
 //            lines.Add(sb.ToString());
 //            foreach (Spectrum s in list)
@@ -109,6 +112,5 @@
 //            }
 //            FileTools.WriteTextFile(path, lines);
 //        }
-
     } // class Spectrum
 }

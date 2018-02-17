@@ -76,7 +76,7 @@ namespace AudioAnalysisTools.DSP
         public SNR(double[,] frames)
         {
             var logEnergy = CalculateLogEnergyOfsignalFrames(frames);
-            this.FrameDecibels = ConvertLogEnergy2Decibels(logEnergy); // convert logEnergy to decibels. 
+            this.FrameDecibels = ConvertLogEnergy2Decibels(logEnergy); // convert logEnergy to decibels.
             this.SubtractBackgroundNoise_dB();
             this.NoiseRange = this.MinDb - this.NoiseSubtracted;
 
@@ -367,7 +367,7 @@ namespace AudioAnalysisTools.DSP
         {
             int frameCount = inSpectro.GetLength(0);
             int n = inSpectro.GetLength(1);
-            double[,] outSpectro = new double[frameCount,subbandCount];
+            double[,] outSpectro = new double[frameCount, subbandCount];
             int binWidth = n / subbandCount;
             for (int i = 0; i < frameCount; i++) //foreach frame
             {
@@ -410,7 +410,7 @@ namespace AudioAnalysisTools.DSP
             //pass over all elements in array
             for (int i = 0; i < count; i++)
             {
-                if ((isHit == false) && (values[i] > threshold))
+                if (isHit == false && values[i] > threshold)
                 {
                     //start of an event
                     isHit = true;
@@ -459,7 +459,7 @@ namespace AudioAnalysisTools.DSP
 
             //B: SMOOTH THE INTENSITY ARRAY
             int smoothWindow = (int)Math.Round(framesPerSec * smoothDuration);
-            if ((smoothWindow != 0) && (smoothWindow % 2) == 0)
+            if (smoothWindow != 0 && smoothWindow % 2 == 0)
             {
                 smoothWindow += 1; //Convert to odd number for smoothing
             }
@@ -678,6 +678,7 @@ namespace AudioAnalysisTools.DSP
 
             // 2) get decibel spectrogram
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
+
             // remove the DC column
             sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.Data.GetLength(0) - 1, sonogram.Data.GetLength(1) - 1);
 
@@ -710,6 +711,7 @@ namespace AudioAnalysisTools.DSP
             {
                 FileStream aFile = new FileStream(csvFileInfo.FullName, FileMode.Open);
                 StreamReader sr = new StreamReader(aFile);
+
                 // read the header
                 var strLine = sr.ReadLine();
                 opText.Add(strLine + ",Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTHalfSNR");
@@ -1150,7 +1152,7 @@ namespace AudioAnalysisTools.DSP
         {
             int rowCount = matrix.GetLength(0);
             int colCount = matrix.GetLength(1);
-            double[,] outM = new double[rowCount,colCount]; //to contain noise reduced matrix
+            double[,] outM = new double[rowCount, colCount]; //to contain noise reduced matrix
 
             for (int col = 0; col < colCount; col++) //for all cols i.e. freq bins
             {
@@ -1183,7 +1185,7 @@ namespace AudioAnalysisTools.DSP
         {
             int rowCount = matrix.GetLength(0);
             int colCount = matrix.GetLength(1);
-            double[,] outM = new double[rowCount,colCount]; //to contain noise reduced matrix
+            double[,] outM = new double[rowCount, colCount]; //to contain noise reduced matrix
 
             for (int col = 0; col < colCount; col++)
             {
@@ -1236,7 +1238,7 @@ namespace AudioAnalysisTools.DSP
 
             int rowCount = m.GetLength(0);
             int colCount = m.GetLength(1);
-            double[,] normM = new double[rowCount,colCount];
+            double[,] normM = new double[rowCount, colCount];
             for (int col = 0; col < colCount; col++)
             {
                 for (int row = 0; row < rowCount; row++)
@@ -1271,7 +1273,7 @@ namespace AudioAnalysisTools.DSP
             {
                 for (int row = temporalNh; row < rowCount - temporalNh; row++) //for all rows i.e. frames
                 {
-                    var localMatrix = MatrixTools.Submatrix(m, row- temporalNh, col- freqBinNh, row+ temporalNh, col+ freqBinNh);
+                    var localMatrix = MatrixTools.Submatrix(m, row - temporalNh, col - freqBinNh, row + temporalNh, col + freqBinNh);
                     double minIntensity, maxIntensity, binWidth;
                     int[] histo = Histogram.Histo(localMatrix, binCount, out binWidth, out minIntensity, out maxIntensity);
                     int lowerBinBound = Histogram.GetPercentileBin(histo, minPercentileBound);
@@ -1306,21 +1308,23 @@ namespace AudioAnalysisTools.DSP
             double max;
             DataTools.MinMax(matrix, out min, out max);
             nhThreshold += min;
+
             //int[] h = DataTools.Histo(matrix, 50);
             //DataTools.writeBarGraph(h);
 
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
-            double[,] outM = new double[rows,cols];
+            double[,] outM = new double[rows, cols];
             for (int c = 0; c < cols; c++)
             {
                 for (int r = 0; r < rows; r++)
                 {
                     //if (matrix[r, c] <= 70.0) continue;
                     double x = 0.0;
+
                     //double Xe2 = 0.0;
                     int count = 0;
-                    for (int i = r - rNh; i <= (r + rNh); i++)
+                    for (int i = r - rNh; i <= r + rNh; i++)
                     {
                         if (i < 0)
                         {
@@ -1332,7 +1336,7 @@ namespace AudioAnalysisTools.DSP
                             continue;
                         }
 
-                        for (int j = c - cNh; j <= (c + cNh); j++)
+                        for (int j = c - cNh; j <= c + cNh; j++)
                         {
                             if (j < 0)
                             {

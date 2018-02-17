@@ -186,13 +186,13 @@ namespace AnalysisPrograms
                         common,
                         TimeSpan.FromMinutes(focalMinute),
                         imageWidth,
-                        Acoustic.TowseyAcoustic);
+                        AcousticIndices.TowseyAcoustic);
 
                     // DRAW THE VARIOUS IMAGES
                     string fileStem = fileName;
                     if (fileStemFormatString != null)
                     {
-                        fileStem = string.Format(fileStemFormatString, (i + 1)); // training images
+                        fileStem = string.Format(fileStemFormatString, i + 1); // training images
                     }
 
                     var ldfcSpectrogramArguments = new DrawLongDurationSpectrograms.Arguments
@@ -231,7 +231,6 @@ namespace AnalysisPrograms
                     LoggedConsole.WriteErrorLine(string.Format("ERROR!!!!! RECORDING {0}   FILE {1}", i, name));
                     LoggedConsole.WriteErrorLine(string.Format(e.ToString()));
                 }
-
             } // end loop through all wav files
         } // HiRes1()
 
@@ -275,7 +274,7 @@ namespace AnalysisPrograms
 
             for (int i = 0; i < count; i++)
             {
-                string fileStem = string.Format(fileStemFormatString, (i + 1));
+                string fileStem = string.Format(fileStemFormatString, i + 1);
                 string dataDir = directories[i].FullName + @"\Towsey.Acoustic\";
 
                 var ldfcSpectrogramArguments = new DrawLongDurationSpectrograms.Arguments
@@ -345,7 +344,7 @@ namespace AnalysisPrograms
 
             for (int i = 0; i < count; i++)
             {
-                string fileStem = string.Format(fileStemFormatString, (i + 1));
+                string fileStem = string.Format(fileStemFormatString, i + 1);
                 Console.WriteLine("\n\n");
                 Console.WriteLine($@">>>>{i}: File<{fileStem}>");
 
@@ -392,7 +391,7 @@ namespace AnalysisPrograms
             // set up IP and OP directories
             string inputDir = @"C:\SensorNetworks\Output\BIRD50\Testing";
             string imageInputDir = @"C:\SensorNetworks\Output\BIRD50\TrainingRidgeImages";
-            string imageOutputDir = @"C:\SensorNetworks\Output\BIRD50\TrainingSpeciesImages"; //
+            string imageOutputDir = @"C:\SensorNetworks\Output\BIRD50\TrainingSpeciesImages";
 
             //string imageOutputDir = @"C:\SensorNetworks\Output\BIRD50\TestingRidgeImages";
             string speciesLabelsFile = @"C:\SensorNetworks\Output\BIRD50\AmazonBird50_training_output.csv";
@@ -468,7 +467,7 @@ namespace AnalysisPrograms
             bool[] peaks = new bool[lines.Count];
             for (int i = 1; i < entropy.Length - 1; i++)
             {
-                if ((entropy[i] > 0.3) && (entropy[i] > entropy[i - 1]) && (entropy[i] > entropy[i + 1]))
+                if (entropy[i] > 0.3 && entropy[i] > entropy[i - 1] && entropy[i] > entropy[i + 1])
                 {
                     peaks[i] = true;
                 }

@@ -1,4 +1,8 @@
-﻿namespace TowseyLibrary
+﻿// <copyright file="ConfigDict.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace TowseyLibrary
 {
     using System;
     using System.Collections.Generic;
@@ -11,7 +15,6 @@
 
     public class ConfigDict : Dictionary<string, object>
     {
-
         public double GetDouble(string keyString)
         {
             if (string.IsNullOrEmpty(keyString))
@@ -20,8 +23,14 @@
             }
 
             object value;
-            if (this.TryGetValue(keyString, out value)) return (double)value;
-            else                                        return double.NaN;
+            if (this.TryGetValue(keyString, out value))
+            {
+                return (double)value;
+            }
+            else
+            {
+                return double.NaN;
+            }
         }
 
         public int GetInt(string keyString)
@@ -32,10 +41,15 @@
             }
 
             object value;
-            if (this.TryGetValue(keyString, out value)) return (int)value;
-            else return int.MaxValue;
+            if (this.TryGetValue(keyString, out value))
+            {
+                return (int)value;
+            }
+            else
+            {
+                return int.MaxValue;
+            }
         }
-
 
         public bool GetBool(string keyString)
         {
@@ -45,10 +59,15 @@
             }
 
             object value;
-            if (this.TryGetValue(keyString, out value)) return (bool)value;
-            else return false;
+            if (this.TryGetValue(keyString, out value))
+            {
+                return (bool)value;
+            }
+            else
+            {
+                return false;
+            }
         }
-
 
         public IEnumerable<double> GetDoubles(string keyString)
         {

@@ -5,18 +5,16 @@
 namespace System.Xml.Linq
 {
     using IO;
-    using System.Linq;
-    using Text;
     using Serialization;
     using System;
+    using System.Linq;
+    using Text;
 
     /// <summary>
     /// Xml Extension methods.
     /// </summary>
     public static class ExtensionsXml
     {
-        #region internal class XmlTranslator
-
         internal class XmlTranslator
         {
             private readonly StringBuilder _xmlTextBuilder;
@@ -68,8 +66,6 @@ namespace System.Xml.Linq
             }
         }
 
-        #endregion
-
         public static XmlElement ToXmlElement(this XElement xEl)
         {
             return new XmlTranslator(xEl).CreateXmlElement();
@@ -118,7 +114,7 @@ namespace System.Xml.Linq
                 string name = e.Name.LocalName;
 
                 // If the element is the root, no index is required
-                return (index == -1) ? "/" + name : string.Format("/{0}[{1}]", name, index.ToString());
+                return index == -1 ? "/" + name : string.Format("/{0}[{1}]", name, index.ToString());
             };
 
             var ancestors = from e in element.Ancestors()

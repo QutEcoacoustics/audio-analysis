@@ -7,7 +7,6 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-
 #if DEBUG
 
 namespace Acoustics.Shared.Debugging
@@ -25,8 +24,6 @@ namespace Acoustics.Shared.Debugging
     using DTEProcess = EnvDTE.Process;
     using Process = System.Diagnostics.Process;
 
-    #region Classes
-
     /// <summary>
     /// Example taken from <a href="https://gist.github.com/3813175">this gist</a>.
     /// </summary>
@@ -34,11 +31,8 @@ namespace Acoustics.Shared.Debugging
         Justification = "Reviewed. Suppression is OK here.", Scope = "class")]
     public static class VisualStudioAttacher
     {
-        #region Public Methods
-
         [DllImport("ole32.dll")]
         public static extern int CreateBindCtx(int reserved, out IBindCtx ppbc);
-
 
         [DllImport("ole32.dll")]
         public static extern int GetRunningObjectTable(int reserved, out IRunningObjectTable prot);
@@ -150,7 +144,6 @@ namespace Acoustics.Shared.Debugging
                 if (visualStudioForSolution != null)
                 {
                     return visualStudioForSolution;
-
                 }
             }
 
@@ -196,11 +189,6 @@ namespace Acoustics.Shared.Debugging
 
             return null;
         }
-
-        #endregion
-
-        #region Private Methods
-
 
         [DllImport("User32")]
         private static extern int ShowWindow(int hwnd, int nCmdShow);
@@ -248,11 +236,7 @@ namespace Acoustics.Shared.Debugging
             instance = null;
             return false;
         }
-
-        #endregion
     }
-
-    #endregion
 }
 
 #endif

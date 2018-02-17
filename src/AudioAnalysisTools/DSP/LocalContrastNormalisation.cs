@@ -51,10 +51,12 @@ namespace AudioAnalysisTools.DSP
 
             /// add frame around matrix to compensate for edge effects.
             double[,] framedM = MatrixTools.FrameMatrixWithZeros(inputM, frameWidth);
+
             // output matrix is same size as input.
             double[,] outputM = new double[rowCount, colCount];
             double[,] subMatrix;
             double NSquared = fieldSize * fieldSize;
+
             // alpha is a scaling factor. LeCun set it = 0.00001. Here set much higher to have a noticeable effect!
             double alpha = 1.0;
 
@@ -64,14 +66,15 @@ namespace AudioAnalysisTools.DSP
                 for (int c1 = 0; c1 < colCount; c1++)
                 {
                     // get field
-                    int r2 = r1 + fieldSize -1;
+                    int r2 = r1 + fieldSize - 1;
                     int c2 = c1 + fieldSize - 1;
                     subMatrix = MatrixTools.Submatrix(framedM, r1, c1, r2, c2);
                     double[] V = MatrixTools.Matrix2Array(subMatrix);
                     double av, variance;
                     NormalDist.AverageAndVariance(V, out av, out variance);
 
-                    double numerator = (inputM[r1, c1]);
+                    double numerator = inputM[r1, c1];
+
                     //double numerator = (inputM[r1, c1] - av);
                     double denominator = Math.Sqrt(1 + (alpha * variance));
                     outputM[r1, c1] = numerator / denominator;
@@ -89,8 +92,6 @@ namespace AudioAnalysisTools.DSP
 
             return outputM;
         }
-
-
     }
 
     /*
@@ -200,7 +201,4 @@ class LeCunLCN(preprocessing.ExamplewisePreprocessor):
      *
      * *****************************
      */
-
-
-
 }

@@ -580,14 +580,14 @@
 
                 // frames and sample count are the same thing?
                 // they should be equal
-                long calc1 = (long)chunkDataSizeData * (long)WavUtils.BitsPerByte;
-                long calc2 = (long)wavInfo.Channels * (long)wavInfo.BitsPerSample;
+                long calc1 = chunkDataSizeData * (long)WavUtils.BitsPerByte;
+                long calc2 = wavInfo.Channels * (long)wavInfo.BitsPerSample;
                 long calc3 = calc1 / calc2;
 
                 wavInfo.Frames = calc3;
 
-                double sampleCount = (double)chunkDataSizeData / (double)wavInfo.BytesPerSample;
-                wavInfo.Duration = TimeSpan.FromSeconds(sampleCount / (double)wavInfo.SampleRate);
+                double sampleCount = chunkDataSizeData / (double)wavInfo.BytesPerSample;
+                wavInfo.Duration = TimeSpan.FromSeconds(sampleCount / wavInfo.SampleRate);
 
                 // verify frame/sample count
                 if (wavInfo.Frames != sampleCount)

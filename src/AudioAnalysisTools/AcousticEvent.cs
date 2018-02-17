@@ -120,7 +120,7 @@ namespace AudioAnalysisTools
             }
         }
 
-        /// <summary>units = Hertz</summary>
+        /// <summary>Gets or sets units = Hertz</summary>
         public double HighFrequencyHertz { get; set; }
 
         public double Bandwidth
@@ -139,17 +139,17 @@ namespace AudioAnalysisTools
         public int FreqBinCount { get; set; }
 
         /// <summary>
-        /// required for freq-binID conversions
+        /// Gets required for freq-binID conversions
         /// </summary>
         public double FreqBinWidth { get; private set; }
 
-        /// <summary> Frame duration in seconds</summary>
+        /// <summary> Gets frame duration in seconds</summary>
         public double FrameDuration { get; private set; }
 
-        /// <summary> Time between frame starts in seconds. Inverse of FramesPerSecond</summary>
+        /// <summary> Gets or sets time between frame starts in seconds. Inverse of FramesPerSecond</summary>
         public double FrameOffset { get; set; }
 
-        /// <summary> Number of frame starts per second. Inverse of the frame offset</summary>
+        /// <summary> Gets or sets number of frame starts per second. Inverse of the frame offset</summary>
         public double FramesPerSecond { get; set; }
 
         //PROPERTIES OF THE EVENTS i.e. Name, SCORE ETC
@@ -159,13 +159,13 @@ namespace AudioAnalysisTools
 
         public string Name2 { get; set; }
 
-        /// <summary> Average score through the event.</summary>
+        /// <summary> Gets or sets average score through the event.</summary>
         public string ScoreComment { get; set; }
 
-        /// <summary> Score normalised in range [0,1]. NOTE: Max is set = to five times user supplied threshold</summary>
+        /// <summary> Gets or sets score normalised in range [0,1]. NOTE: Max is set = to five times user supplied threshold</summary>
         public double ScoreNormalised { get; set; }
 
-        /// <summary> Max Possible Score: set = to 5x user supplied threshold. An arbitrary value used for score normalisation.</summary>
+        /// <summary> Gets max Possible Score: set = to 5x user supplied threshold. An arbitrary value used for score normalisation.</summary>
         public double Score_MaxPossible { get; private set; }
 
         public double Score_MaxInEvent { get; set; }
@@ -174,7 +174,7 @@ namespace AudioAnalysisTools
 
         public string Score2Name { get; set; }
 
-        /// <summary> second score if required</summary>
+        /// <summary> Gets or sets second score if required</summary>
         public double Score2 { get; set; } // e.g. for Birgits recognisers
 
         /// <summary>
@@ -192,8 +192,8 @@ namespace AudioAnalysisTools
         // double I1Var;    //,
         // double I2MeandB; // mean intensity of pixels in the event after Wiener filter, prior to noise subtraction
         // double I2Var;    //,
-        double I3Mean;      // mean intensity of pixels in the event AFTER noise reduciton - USED FOR CLUSTERING
-        double I3Var;       // variance of intensity of pixels in the event.
+        private double I3Mean;      // mean intensity of pixels in the event AFTER noise reduciton - USED FOR CLUSTERING
+        private double I3Var;       // variance of intensity of pixels in the event.
 
         //KIWI SCORES
         public double kiwi_durationScore;
@@ -466,7 +466,7 @@ namespace AudioAnalysisTools
         {
             foreach (AcousticEvent ae in events)
             {
-                if ((this.FileName.Equals(ae.FileName)) && (this.Overlaps(ae)))
+                if (this.FileName.Equals(ae.FileName) && this.Overlaps(ae))
                 {
                     return ae;
                 }
@@ -483,12 +483,12 @@ namespace AudioAnalysisTools
         /// </summary>
         public bool Overlaps(AcousticEvent ae)
         {
-            if ((this.TimeStart < ae.TimeEnd) && (this.TimeEnd > ae.TimeStart))
+            if (this.TimeStart < ae.TimeEnd && this.TimeEnd > ae.TimeStart)
             {
                 return true;
             }
 
-            if ((ae.TimeStart < this.TimeEnd) && (ae.TimeEnd > this.TimeStart))
+            if (ae.TimeStart < this.TimeEnd && ae.TimeEnd > this.TimeStart)
             {
                 return true;
             }
@@ -574,8 +574,8 @@ namespace AudioAnalysisTools
             double maxMel = MFCCStuff.Mel(nyquistFrequency);
             int melRange = (int)(maxMel - 0 + 1);
             double binsPerMel = binCount / (double)melRange;
-            leftCol = (int)Math.Round((double)MFCCStuff.Mel(minFreq) * binsPerMel);
-            rightCol = (int)Math.Round((double)MFCCStuff.Mel(maxFreq) * binsPerMel);
+            leftCol = (int)Math.Round(MFCCStuff.Mel(minFreq) * binsPerMel);
+            rightCol = (int)Math.Round(MFCCStuff.Mel(maxFreq) * binsPerMel);
         }
 
         //#################################################################################################################
@@ -620,9 +620,9 @@ namespace AudioAnalysisTools
             if (eventList.Count == 0)
             {
                 string line =
-                    $"#     Event Name\t{"Start", 8:f3}\t{"End",6:f3}\t{"MinF"}\t{"MaxF"}\t{"Score1":f2}\t{"Score2":f1}\t{"SourceFile"}";
+                    $"#     Event Name\t{"Start",8:f3}\t{"End",6:f3}\t{"MinF"}\t{"MaxF"}\t{"Score1":f2}\t{"Score2":f1}\t{"SourceFile"}";
                 sb.AppendLine(line);
-                line = $"{"NoEvent"}\t{0.000, 8:f3}\t{0.000, 8:f3}\t{"N/A"}\t{"N/A"}\t{0.000:f2}\t{0.000:f1}\t{"N/A"}";
+                line = $"{"NoEvent"}\t{0.000,8:f3}\t{0.000,8:f3}\t{"N/A"}\t{"N/A"}\t{0.000:f2}\t{0.000:f1}\t{"N/A"}";
                 sb.AppendLine(line);
             }
             else
@@ -746,6 +746,7 @@ namespace AudioAnalysisTools
             foreach (AcousticEvent ev in segmentEvents)
             {
                 ev.FileName = sonogram.Configuration.SourceFName;
+
                 //ev.Name = callName;
             }
 
@@ -803,6 +804,7 @@ namespace AudioAnalysisTools
             //init  values
             tp = 0;
             fp = 0;
+
             //header
             string space = " ";
             int count = 0;
@@ -819,7 +821,7 @@ namespace AudioAnalysisTools
                 double end = ae.TimeStart + ae.EventDurationSeconds; //calculate end time of the result event
                 var labelledEvents = GetEventsInFile(labels, ae.FileName); //get all & only those labelled events in same file as result ae
                 resultsSourceFiles.Add(ae.FileName);   //keep list of source files that the detected events come from
-                AcousticEvent overlapLabelEvent = ae.OverlapsEventInList(labelledEvents);//get overlapped labelled event
+                AcousticEvent overlapLabelEvent = ae.OverlapsEventInList(labelledEvents); //get overlapped labelled event
                 if (overlapLabelEvent == null)
                 {
                     fp++;
@@ -843,7 +845,6 @@ namespace AudioAnalysisTools
                     LoggedConsole.WriteLine(line + "\t  ||   ||   ||   ||   ||   ||");
                     sb.Append(line + "\t  ||   ||   ||   ||   ||   ||\n");
                 }
-
             }//end of looking for true and false positives
 
             //Now calculate the FALSE NEGATIVES. These are the labelled events not tagged in previous search.
@@ -856,6 +857,7 @@ namespace AudioAnalysisTools
             {
                 count++;
                 string hitFile = "";
+
                 //check if this FN event is in a file that score tp of fp hit.
                 if (resultsSourceFiles.Contains(ae.FileName))
                 {
@@ -894,7 +896,7 @@ namespace AudioAnalysisTools
             LoggedConsole.WriteLine(line);
             sb.Append(line + "\n");
 
-            if (((tp + fp) == 0))
+            if (tp + fp == 0)
             {
                 precision = 0.0;
             }
@@ -903,7 +905,7 @@ namespace AudioAnalysisTools
                 precision = tp / (double)(tp + fp);
             }
 
-            if (((tp + fn) == 0))
+            if (tp + fn == 0)
             {
                 recall = 0.0;
             }
@@ -912,7 +914,7 @@ namespace AudioAnalysisTools
                 recall = tp / (double)(tp + fn);
             }
 
-            accuracy = (precision + recall) / (float)2;
+            accuracy = (precision + recall) / 2;
 
             resultsText = sb.ToString();
         } //end method
@@ -939,11 +941,13 @@ namespace AudioAnalysisTools
             tp = 0;
             fp = 0;
             fn = 0;
+
             //header
             string space = " ";
             int count = 0;
             List<string> resultsSourceFiles = new List<string>();
             string header = string.Format("PREDICTED EVENTS:  #{0,12}name{0,3}start{0,6}end{0,2}score1{0,2}score2{0,5}duration{0,6}source file", space);
+
             //LoggedConsole.WriteLine(header);
             string line = null;
             var sb = new StringBuilder(header + "\n");
@@ -954,7 +958,7 @@ namespace AudioAnalysisTools
                 double end = ae.TimeStart + ae.EventDurationSeconds; //calculate end time of the result event
                 var labelledEvents = GetEventsInFile(labels, ae.FileName); //get all & only those labelled events in same file as result ae
                 resultsSourceFiles.Add(ae.FileName);   //keep list of source files that the detected events come from
-                AcousticEvent overlapLabelEvent = ae.OverlapsEventInList(labelledEvents);//get overlapped labelled event
+                AcousticEvent overlapLabelEvent = ae.OverlapsEventInList(labelledEvents); //get overlapped labelled event
                 if (overlapLabelEvent == null)
                 {
                     fp++;
@@ -968,7 +972,6 @@ namespace AudioAnalysisTools
                 }
 
                 sb.Append(line + "\t" + ae.FileName + "\n");
-
             }//end of looking for true and false positives
 
             //Now calculate the FALSE NEGATIVES. These are the labelled events not tagged in previous search.
@@ -988,7 +991,7 @@ namespace AudioAnalysisTools
                 }
             }
 
-            if (((tp + fp) == 0))
+            if (tp + fp == 0)
             {
                 precision = 0.0;
             }
@@ -997,7 +1000,7 @@ namespace AudioAnalysisTools
                 precision = tp / (double)(tp + fp);
             }
 
-            if (((tp + fn) == 0))
+            if (tp + fn == 0)
             {
                 recall = 0.0;
             }
@@ -1006,7 +1009,7 @@ namespace AudioAnalysisTools
                 recall = tp / (double)(tp + fn);
             }
 
-            accuracy = (precision + recall) / (float)2;
+            accuracy = (precision + recall) / 2;
 
             resultsText = sb.ToString();
         } //end method
@@ -1058,22 +1061,23 @@ namespace AudioAnalysisTools
             double startTime = 0.0;
             int startFrame = 0;
 
-            for (int i = 0; i < count; i++)//pass over all frames
+            for (int i = 0; i < count; i++) //pass over all frames
             {
-                if ((isHit == false) && (values[i] > scoreThreshold))//start of an event
+                if (isHit == false && values[i] > scoreThreshold) //start of an event
                 {
                     isHit = true;
                     startTime = i * frameOffset;
                     startFrame = i;
                 }
                 else //check for the end of an event
-                    if ((isHit == true) && (values[i] <= scoreThreshold))//this is end of an event, so initialise it
+                    if (isHit == true && values[i] <= scoreThreshold) //this is end of an event, so initialise it
                     {
                         isHit = false;
                         double endTime = i * frameOffset;
                         double duration = endTime - startTime;
+
                         //if (duration < minDuration) continue; //skip events with duration shorter than threshold
-                        if ((duration < minDuration) || (duration > maxDuration))
+                        if (duration < minDuration || duration > maxDuration)
                         {
                             continue; //skip events with duration shorter than threshold
                         }
@@ -1090,7 +1094,7 @@ namespace AudioAnalysisTools
                         av += values[n];
                     }
 
-                        ev.Score = av / (double)(i - startFrame + 1);
+                        ev.Score = av / (i - startFrame + 1);
                         events.Add(ev);
                     }
             }
@@ -1139,20 +1143,21 @@ namespace AudioAnalysisTools
 
             for (int i = 0; i < count; i++) // pass over all frames
             {
-                if ((isHit == false) && (scores[i] >= scoreThreshold)) //start of an event
+                if (isHit == false && scores[i] >= scoreThreshold) //start of an event
                 {
                     isHit = true;
                     startTime = i * frameOffset;
                     startFrame = i;
                 }
                 else // check for the end of an event
-                if ((isHit == true) && (scores[i] <= scoreThreshold)) // this is end of an event, so initialise it
+                if (isHit == true && scores[i] <= scoreThreshold) // this is end of an event, so initialise it
                 {
                     isHit = false;
                     double endTime = i * frameOffset;
                     double duration = endTime - startTime;
+
                     // if (duration < minDuration) continue; //skip events with duration shorter than threshold
-                    if ((duration < minDuration) || (duration > maxDuration))
+                    if (duration < minDuration || duration > maxDuration)
                     {
                         continue; //skip events with duration shorter than threshold
                     }
@@ -1164,7 +1169,7 @@ namespace AudioAnalysisTools
                         av += scores[n];
                     }
 
-                    av /= (double)(i - startFrame + 1);
+                    av /= i - startFrame + 1;
                     if (av < scoreThreshold)
                     {
                         continue; //skip events whose score is < the threshold
@@ -1213,7 +1218,7 @@ namespace AudioAnalysisTools
         public static double[] ExtractScoreArrayFromEvents(List<AcousticEvent> events, int arraySize, string nameOfTargetEvent)
         {
             double[] scores = new double[arraySize];
-            if ((events == null) || (events.Count == 0))
+            if (events == null || events.Count == 0)
             {
                 return scores;
             }
@@ -1222,7 +1227,7 @@ namespace AudioAnalysisTools
             double frameRate = 1 / windowOffset; //frames per second
 
             int count = events.Count;
-            foreach( AcousticEvent ae in events)
+            foreach ( AcousticEvent ae in events)
             {
                 if (!ae.Name.Equals(nameOfTargetEvent))
                 {
@@ -1233,7 +1238,9 @@ namespace AudioAnalysisTools
                 int endFrame = (int)((ae.TimeStart + ae.EventDurationSeconds) * frameRate);
 
                 for (int s = startFrame; s <= endFrame; s++)
-                { scores[s] = ae.Score_MaxInEvent; }
+                {
+                    scores[s] = ae.Score_MaxInEvent;
+                }
             }
 
             return scores;
@@ -1281,7 +1288,7 @@ namespace AudioAnalysisTools
             LoggedConsole.WriteLine("# CLUSTERING EVENTS");
             var clusters = new List<List<AcousticEvent>>();
 
-            var firstCluster = new List<AcousticEvent> {events[0]};
+            var firstCluster = new List<AcousticEvent> { events[0] };
             clusters.Add(firstCluster);
 
             for (int e = 1; e < events.Length; e++)
@@ -1304,7 +1311,7 @@ namespace AudioAnalysisTools
                 else
                 {
                     // if get to here, we have no match and therefore create a new cluster.
-                    var newCluster = new List<AcousticEvent> {events[e]};
+                    var newCluster = new List<AcousticEvent> { events[e] };
                     clusters.Add(newCluster);
                 }
             }
@@ -1351,6 +1358,5 @@ namespace AudioAnalysisTools
                 }
             }
         } // AssignClusterIds
-
     }
 }

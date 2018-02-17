@@ -236,7 +236,7 @@ namespace Acoustics.Tools.Wav
                 Contract.Requires<IndexOutOfRangeException>(channel >= 0);
                 Contract.Requires<IndexOutOfRangeException>(channel < this.Channels);
 
-                int j = (index * this.Channels) + channel;
+                int j = index * this.Channels + channel;
                 return this.samples[j];
             }
 
@@ -245,7 +245,7 @@ namespace Acoustics.Tools.Wav
                 Contract.Requires<IndexOutOfRangeException>(channel >= 0);
                 Contract.Requires<IndexOutOfRangeException>(channel < this.Channels);
 
-                int j = (index * this.Channels) + channel;
+                int j = index * this.Channels + channel;
                 this.samples[j] = value;
             }
         }
@@ -331,7 +331,7 @@ namespace Acoustics.Tools.Wav
             int j, cc = this.Channels;
             for (int i = 0; i < channelSignal.Length; i++)
             {
-                j = (i * cc) + c;
+                j = i * cc + c;
                 channelSignal[i] = this.samples[j];
             }
 
@@ -430,7 +430,6 @@ namespace Acoustics.Tools.Wav
                 switch (chunkId)
                 {
                     case "fmt ":
-                        #region Format Chunk
                         {
                             // Length Of FORMAT Chunk (16, 18 or 40)
                             // Tag or start spot so we can reset offset at the end of the format chunk
@@ -538,11 +537,9 @@ namespace Acoustics.Tools.Wav
                             // skip the rest
                             offset = formatOffset + chunkSize;
                         }
-                        #endregion
                         break;
 
                     case "data":
-                        #region Data Chunk
                         {
                             int dataLength = chunkSize;
                             if (dataLength == 0 || dataLength > data.Length - offset)
@@ -614,7 +611,6 @@ namespace Acoustics.Tools.Wav
                                 offset++;
                             }
                         }
-                        #endregion
                         break;
 
                     default:

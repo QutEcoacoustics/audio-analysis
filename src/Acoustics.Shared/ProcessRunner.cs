@@ -6,12 +6,12 @@ namespace Acoustics.Shared
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel;
     using System.Diagnostics;
     using System.IO;
-    using System.Text;
     using System.Linq;
+    using System.Text;
     using System.Threading.Tasks;
-    using System.ComponentModel;
 
     /// <summary>
     /// Helper class for running processes.
@@ -33,22 +33,22 @@ namespace Acoustics.Shared
         public FileInfo ExecutableFile { get; private set; }
 
         /// <summary>
-        /// Wait for process to exit if true. Defaults to true.
+        /// Gets or sets a value indicating whether wait for process to exit if true. Defaults to true.
         /// </summary>
         public bool WaitForExit { get; set; }
 
         /// <summary>
-        /// Wait for the set number of milliseconds for the process to exit.
+        /// Gets or sets wait for the set number of milliseconds for the process to exit.
         /// </summary>
         public int WaitForExitMilliseconds { get; set; }
 
         /// <summary>
-        /// Kill the process if it run for longer than WaitForExitMilliseconds. Default is false.
+        /// Gets or sets a value indicating whether kill the process if it run for longer than WaitForExitMilliseconds. Default is false.
         /// </summary>
         public bool KillProcessOnWaitTimeout { get; set; }
 
         /// <summary>
-        /// Retry running process this many times if it is killed after running longer than WaitForExitMilliseconds.
+        /// Gets or sets retry running process this many times if it is killed after running longer than WaitForExitMilliseconds.
         /// Defaults to 0 (no retries).
         /// </summary>
         public int MaxRetries { get; set; }
@@ -295,8 +295,8 @@ namespace Acoustics.Shared
                 if (this.WaitForExitMilliseconds > 0)
                 {
                     Task<bool> processWaiter = Task.Factory.StartNew(() => this.process.WaitForExit(this.WaitForExitMilliseconds));
-                    Task<string> outputReader = Task.Factory.StartNew((Func<object, string>)ReadStream, this.process.StandardOutput);
-                    Task<string> errorReader = Task.Factory.StartNew((Func<object, string>)ReadStream, this.process.StandardError);
+                    Task<string> outputReader = Task.Factory.StartNew(ReadStream, this.process.StandardOutput);
+                    Task<string> errorReader = Task.Factory.StartNew(ReadStream, this.process.StandardError);
 
                     processWaiter.Wait();
 
@@ -309,6 +309,7 @@ namespace Acoustics.Shared
                     else
                     {
                         Task.WaitAll(outputReader, errorReader);
+
                         // if waitResult == true hope those already finished or will finish fast
                         // otherwise wait for taks to complete to be able to dispose them
 
@@ -317,7 +318,6 @@ namespace Acoustics.Shared
                         this.standardOutput.Append(outputReader.Result);
                         this.errorOutput.Append(errorReader.Result);
                     }
-
                 }
                 else
                 {
@@ -330,7 +330,6 @@ namespace Acoustics.Shared
                     this.ExitCode = this.process.ExitCode;
                     this.standardOutput.Append(outputReader.Result);
                     this.errorOutput.Append(errorReader.Result);
-
                 }
             }
         }
@@ -356,7 +355,6 @@ namespace Acoustics.Shared
             // (because ReadStream will not return while the process is running)
             this.standardOutput.Append(ReadStream(this.process.StandardOutput));
             this.errorOutput.Append(ReadStream(this.process.StandardError));
-
 
             this.failedRuns.Add(string.Format(
                 "[{0} UTC] {1} with args {2} running in {3}. Waited for {4}. Process had{5} already terminated after timeout.\n\nStdout: {6}\n\nStderr: {7}",
@@ -433,7 +431,6 @@ namespace Acoustics.Shared
             public ProcessMaximumRetriesException(string message)
                 : base(message)
             {
-
             }
         }
     }

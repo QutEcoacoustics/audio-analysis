@@ -104,7 +104,7 @@ namespace Acoustics.Shared
             }
 
             var fileNameWithoutExtension = GetStrongerRandomFileName(false);
-            return new FileInfo(Path.Combine(tempDir.FullName, fileNameWithoutExtension+extension));
+            return new FileInfo(Path.Combine(tempDir.FullName, fileNameWithoutExtension + extension));
         }
 
         /// <summary>
@@ -174,7 +174,7 @@ namespace Acoustics.Shared
         private static string ToBase32StringSuitableForDirName(byte[] buff)
         {
             // This routine is optimised to be used with buffs of length 20
-            Contract.Requires((buff.Length % 5) == 0, "Unexpected hash length");
+            Contract.Requires(buff.Length % 5 == 0, "Unexpected hash length");
 
             StringBuilder sb = new StringBuilder(buff.Length * 8 / 5);
             byte b0, b1, b2, b3, b4;
@@ -187,11 +187,11 @@ namespace Acoustics.Shared
             // Consume 3 MSB bits 5 bytes at a time.
             do
             {
-                b0 = (i < l) ? buff[i++] : (byte)0;
-                b1 = (i < l) ? buff[i++] : (byte)0;
-                b2 = (i < l) ? buff[i++] : (byte)0;
-                b3 = (i < l) ? buff[i++] : (byte)0;
-                b4 = (i < l) ? buff[i++] : (byte)0;
+                b0 = i < l ? buff[i++] : (byte)0;
+                b1 = i < l ? buff[i++] : (byte)0;
+                b2 = i < l ? buff[i++] : (byte)0;
+                b3 = i < l ? buff[i++] : (byte)0;
+                b4 = i < l ? buff[i++] : (byte)0;
 
                 // Consume the 5 Least significant bits of each byte
                 sb.Append(SBase32Char[b0 & 0x1F]);
@@ -201,9 +201,9 @@ namespace Acoustics.Shared
                 sb.Append(SBase32Char[b4 & 0x1F]);
 
                 // Consume 3 MSB of b0, b1, MSB bits 6, 7 of b3, b4
-                sb.Append(SBase32Char[(((b0 & 0xE0) >> 5) | ((b3 & 0x60) >> 2))]);
+                sb.Append(SBase32Char[((b0 & 0xE0) >> 5) | ((b3 & 0x60) >> 2)]);
 
-                sb.Append(SBase32Char[(((b1 & 0xE0) >> 5) | ((b4 & 0x60) >> 2))]);
+                sb.Append(SBase32Char[((b1 & 0xE0) >> 5) | ((b4 & 0x60) >> 2)]);
 
                 // Consume 3 MSB bits of b2, 1 MSB bit of b3, b4
                 b2 >>= 5;
@@ -214,6 +214,7 @@ namespace Acoustics.Shared
                 {
                     b2 |= 0x08;
                 }
+
                 if ((b4 & 0x80) != 0)
                 {
                     b2 |= 0x10;

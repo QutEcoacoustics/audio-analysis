@@ -82,7 +82,7 @@ namespace TowseyLibrary
             LoggedConsole.WriteLine("Completed benchmark test.");
         }
 
-        public static void CompareTwoArrays(double[]array1, double[] array2)
+        public static void CompareTwoArrays(double[] array1, double[] array2)
         {
             LoggedConsole.WriteLine("# TESTING: Compare two arrays of double");
             bool allOk = true;

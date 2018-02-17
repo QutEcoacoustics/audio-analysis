@@ -17,9 +17,9 @@ namespace AnalysisPrograms
     using Acoustics.Shared.Csv;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-    using Production;
     using AudioAnalysisTools;
     using AudioAnalysisTools.WavTools;
+    using Production;
 
     public class ChannelIntegrityAnalyzer : AbstractStrongAnalyser
     {
@@ -67,12 +67,12 @@ namespace AnalysisPrograms
                                               out lowDecibelBias, out midDecibelBias, out highDecibelBias);
 
             //double similarityIndex = ChannelIntegrity.SimilarityIndex(channelLeft, channelRight, epsilon, sampleRate.Value);
-            result.ChannelSimilarity   = similarityIndex;
+            result.ChannelSimilarity = similarityIndex;
             result.ChannelDiffDecibels = decibelIndex;
-            result.AverageDecibelBias  = avDecibelBias;
-            result.MedianDecibelBias   = medianDecibelBias;
-            result.LowFreqDecibelBias  = lowDecibelBias;
-            result.MidFreqDecibelBias  = midDecibelBias;
+            result.AverageDecibelBias = avDecibelBias;
+            result.MedianDecibelBias = medianDecibelBias;
+            result.LowFreqDecibelBias = lowDecibelBias;
+            result.MidFreqDecibelBias = midDecibelBias;
             result.HighFreqDecibelBias = highDecibelBias;
 
             double zeroCrossingFractionLeft;
@@ -128,7 +128,6 @@ namespace AnalysisPrograms
             SpectralIndexBase[] spectralIndices,
             AnalysisResult2[] results)
         {
-
         }
     }
 }

@@ -1,15 +1,15 @@
-﻿// <copyright file="RangeTests.cs" company="QutEcoacoustics">
+﻿// <copyright file="RangeExtensions.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 // ReSharper disable once CheckNamespace
 namespace Acoustics.Shared
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+
     public static class RangeExtensions
     {
         /// <summary>
@@ -35,7 +35,7 @@ namespace Acoustics.Shared
                 return limits;
             }
 
-            var halfGrow = (growAmount / 2.0);
+            var halfGrow = growAmount / 2.0;
 
             var newMin = range.Minimum - halfGrow;
 
@@ -132,7 +132,7 @@ namespace Acoustics.Shared
         public static Range<double> Divide(this Range<double> rangeA, Range<double> rangeB)
         {
             // https://en.wikipedia.org/wiki/Interval_arithmetic
-           
+
             return rangeA.Multiply(rangeB.Invert());
         }
 

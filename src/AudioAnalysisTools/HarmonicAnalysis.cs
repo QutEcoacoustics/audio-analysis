@@ -37,49 +37,74 @@ namespace AudioAnalysisTools
             //var results = DetectHarmonicsUsingFormantGap(sonogram.Data, minBin, maxBin, hzWidth, minHarmonicPeriod, maxHarmonicPeriod, amplitudeThreshold);
             var results = CountHarmonicTracks(sonogram.Data, minBin, maxBin, hzWidth, harmonicCount, amplitudeThreshold);
             double[] scores = results.Item1;
-            var hits        = results.Item2;
+            var hits = results.Item2;
             return Tuple.Create(scores, hits);
         }//end method
-
 
         public static Tuple<double[], double[,]> CountHarmonicTracks(double[,] matrix, int minBin, int maxBin, int hzWidth, int expectedHarmonicCount, double amplitudeThreshold)
         {
             int binWidth = maxBin - minBin + 1;
+
             // int expectedPeriod = binWidth / expectedHarmonicCount;
 
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
             double[,] hits = new double[rows, cols];
             double[] harmonicScore = new double[rows];
-            int[]    harmonicCount = new int[rows];
+            int[] harmonicCount = new int[rows];
 
             for (int r = 0; r < rows; r++)
             {
                 var array = new double[binWidth];
-                for (int c = 0; c < binWidth; c++) array[c] = matrix[r, minBin + c];
+                for (int c = 0; c < binWidth; c++)
+                {
+                    array[c] = matrix[r, minBin + c];
+                }
+
                 var results = CountHarmonicTracks(array, expectedHarmonicCount);
                 int peakCount = results.Item2; // number of harmonic tracks i.e. the peakCount.
-                if (peakCount == 0) continue;
+                if (peakCount == 0)
+                {
+                    continue;
+                }
 
                 bool[] peaks = results.Item3;
                 double delta = Math.Abs(peakCount - expectedHarmonicCount);  //Item2 = number of spectral tracks
+
                 // weight the score according to difference between expected and observed track count
                 double weight = 1.0;
-                if (delta > 4) weight = 4 / delta;
+                if (delta > 4)
+                {
+                    weight = 4 / delta;
+                }
+
                 double score = weight * results.Item1;
-                if (score < amplitudeThreshold) continue;
+                if (score < amplitudeThreshold)
+                {
+                    continue;
+                }
 
                 harmonicCount[r] = peakCount;
                 harmonicScore[r] = score; // amplitude score
-                //for (int c = 0; c < peaks.Length; c++) if(peaks[c]) { hits[r, minBin + c] = results.Item2; }  // for display purposes.
-                if (r % 2 == 0) continue; //draw hits for every second row - so can see underneath!
-                for (int c = 0; c < binWidth; c++) if (peaks[c]) { hits[r, minBin + c] = 20; c++; }  // for display purposes.
 
+                //for (int c = 0; c < peaks.Length; c++) if(peaks[c]) { hits[r, minBin + c] = results.Item2; }  // for display purposes.
+                if (r % 2 == 0)
+                {
+                    continue; //draw hits for every second row - so can see underneath!
+                }
+
+                for (int c = 0; c < binWidth; c++)
+                {
+                    if (peaks[c])
+                    {
+                        hits[r, minBin + c] = 20;
+                        c++;
+                    } // for display purposes.
+                }
             }// rows
 
             return Tuple.Create(harmonicScore, hits);
         }
-
 
         /// <summary>
         /// Counts the number of spectral tracks or harmonics in the passed ferquency band.
@@ -94,6 +119,7 @@ namespace AudioAnalysisTools
             int L = values.Length;
             int expectedPeriod = L / expectedHarmonicCount;
             int midPeriod = expectedPeriod / 2;
+
             //double[] smooth = DataTools.filterMovingAverage(values, 3);
             double[] smooth = values;
             bool[] peaks = DataTools.GetPeaks(smooth);
@@ -102,17 +128,25 @@ namespace AudioAnalysisTools
             //return if too far outside limits
             int lowerLimit = expectedHarmonicCount / 2;
             int upperLimit = expectedHarmonicCount * 2;
-            if (peakCount <= lowerLimit) return Tuple.Create(0.0, 0, peaks);
+            if (peakCount <= lowerLimit)
+            {
+                return Tuple.Create(0.0, 0, peaks);
+            }
             else
-                if (peakCount >= upperLimit) return Tuple.Create(0.0, peakCount, peaks);
+                if (peakCount >= upperLimit)
+            {
+                return Tuple.Create(0.0, peakCount, peaks);
+            }
 
             // Store peak locations.
             var peakLocations = new List<int>();
             for (int i = 0; i < values.Length; i++)
             {
-                if (peaks[i]) peakLocations.Add(i);
+                if (peaks[i])
+                {
+                    peakLocations.Add(i);
+                }
             }
-
 
             //// If have too many peaks (local maxima), remove the lowest of them
             //if (peakCount > (expectedHarmonicCount + 1))
@@ -147,16 +181,21 @@ namespace AudioAnalysisTools
             for (int i = 0; i < peakLocations.Count; i++)
             {
                 int troughIndex = peakLocations[i] + midPeriod;
-                if (troughIndex >= L) troughIndex = peakLocations[i] - midPeriod;
+                if (troughIndex >= L)
+                {
+                    troughIndex = peakLocations[i] - midPeriod;
+                }
+
                 double delta = smooth[peakLocations[i]] - smooth[troughIndex];
-                if (delta > 1.0) amplitude += delta; // dB threshold - required a minimum perceptible difference
+                if (delta > 1.0)
+                {
+                    amplitude += delta; // dB threshold - required a minimum perceptible difference
+                }
             }
-            double avAmplitude = amplitude / (double)peakCount;
+
+            double avAmplitude = amplitude / peakCount;
             return Tuple.Create(avAmplitude, peakCount, peaks);
         }
-
-
-
 
         /// <summary>
         /// This method did not work much better than the DCT method - see below.
@@ -179,6 +218,7 @@ namespace AudioAnalysisTools
 
             int minDeltaIndex = (int)(hzWidth / (double)maxPeriod * 2); // Times 0.5 because index = Pi and not 2Pi
             int maxDeltaIndex = (int)(hzWidth / (double)minPeriod * 2); // Times 0.5 because index = Pi and not 2Pi
+
             // double period = hzWidth / (double)indexOfMaxValue * 2;   // Times 2 because index = Pi and not 2Pi
             LoggedConsole.WriteLine("minPeriod={0}    maxPeriod={1}", minDeltaIndex, maxDeltaIndex);
 
@@ -188,17 +228,21 @@ namespace AudioAnalysisTools
             double[] periodScore = new double[rows];
             double[] periodicity = new double[rows];
 
-
             for (int r = 0; r < rows - 5; r++)
             {
                 var array = new double[binBand];
+
                 //SMOOTH the matrix in time direction - accumulate J rows of values
                 //for (int c = 0; c < binBand; c++)
                 //    for (int j = 0; j < 5; j++) array[c] += matrix[r + j, c + minBin];
                 //for (int c = 0; c < binBand; c++) array[c] /= 5.0; //average
 
                 //the following line assumes that matrix has already been smoothed in time direction
-                for (int c = 0; c < binBand; c++) array[c] = matrix[r, c + minBin];
+                for (int c = 0; c < binBand; c++)
+                {
+                    array[c] = matrix[r, c + minBin];
+                }
+
                 var results = DataTools.Periodicity(array, minDeltaIndex, maxDeltaIndex);
                 amplitudeThreshold = 5.0;
 
@@ -206,14 +250,18 @@ namespace AudioAnalysisTools
                 {
                     periodScore[r] = results.Item1; // maximum amplitude obtained over all periods and phases
                     periodicity[r] = results.Item2; // the period for which the maximum amplitude was obtained.
+
                     // phase[r] = results.Item3;    // the phase of period for which max amplitude was obtained.
-                    for (int c = minBin; c < maxBin; c++) { hits[r, c] = results.Item2; c++; }
+                    for (int c = minBin; c < maxBin; c++)
+                    {
+                        hits[r, c] = results.Item2;
+                        c++;
+                    }
                 }
             }// rows
 
             return Tuple.Create(periodScore, hits);
         }
-
 
         /// <summary>
         /// THIS METHOD NO LONGER IN USE.
@@ -236,8 +284,12 @@ namespace AudioAnalysisTools
 
             int minIndex = (int)(hzWidth / (double)maxPeriod * 2); //Times 0.5 because index = Pi and not 2Pi
             int maxIndex = (int)(hzWidth / (double)minPeriod * 2); //Times 0.5 because index = Pi and not 2Pi
+
             //double period = hzWidth / (double)indexOfMaxValue * 2; //Times 2 because index = Pi and not 2Pi
-            if (maxIndex > dctLength) maxIndex = dctLength; //safety check in case of future changes to code.
+            if (maxIndex > dctLength)
+            {
+                maxIndex = dctLength; //safety check in case of future changes to code.
+            }
 
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
@@ -250,36 +302,62 @@ namespace AudioAnalysisTools
                 //for (int c = minBin; c <= minBin; c++)//traverse columns - skip DC column
                 //{
                 var array = new double[dctLength];
+
                 //accumulate J rows of values
                 for (int i = 0; i < dctLength; i++)
-                    for (int j = 0; j < 5; j++) array[i] += matrix[r + j, minBin + i];
+                {
+                    for (int j = 0; j < 5; j++)
+                    {
+                        array[i] += matrix[r + j, minBin + i];
+                    }
+                }
 
                 array = DataTools.SubtractMean(array);
+
                 //     DataTools.writeBarGraph(array);
 
                 double[] dct = MFCCStuff.DCT(array, cosines);
-                for (int i = 0; i < dctLength; i++) dct[i] = Math.Abs(dct[i]); //convert to absolute values
-                for (int i = 0; i < 5; i++) dct[i] = 0.0;  //remove low freq values from consideration
-                if (normaliseDCT) dct = DataTools.normalise2UnitLength(dct);
+                for (int i = 0; i < dctLength; i++)
+                {
+                    dct[i] = Math.Abs(dct[i]); //convert to absolute values
+                }
+
+                for (int i = 0; i < 5; i++)
+                {
+                    dct[i] = 0.0;  //remove low freq values from consideration
+                }
+
+                if (normaliseDCT)
+                {
+                    dct = DataTools.normalise2UnitLength(dct);
+                }
+
                 int indexOfMaxValue = DataTools.GetMaxIndex(dct);
+
                 //DataTools.writeBarGraph(dct);
 
                 double period = hzWidth / (double)indexOfMaxValue * 2; //Times 2 because index = Pi and not 2Pi
 
                 //mark DCT location with harmonic freq, only if harmonic freq is in correct range and amplitude
-                if ((indexOfMaxValue >= minIndex) && (indexOfMaxValue <= maxIndex) && (dct[indexOfMaxValue] > dctThreshold))
+                if (indexOfMaxValue >= minIndex && indexOfMaxValue <= maxIndex && dct[indexOfMaxValue] > dctThreshold)
                 {
-                    for (int i = 0; i < dctLength; i++) hits[r, minBin + i] = period;
-                    for (int i = 0; i < dctLength; i++) hits[r + 1, minBin + i] = period; //alternate row
+                    for (int i = 0; i < dctLength; i++)
+                    {
+                        hits[r, minBin + i] = period;
+                    }
+
+                    for (int i = 0; i < dctLength; i++)
+                    {
+                        hits[r + 1, minBin + i] = period; //alternate row
+                    }
                 }
+
                 //c += 5; //skip columns
                 //}
                 r++; //do alternate row
             }
+
             return hits;
         }
-
-
-
     }//end class HarmonicAnalysis
 }

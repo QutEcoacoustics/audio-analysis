@@ -2,9 +2,6 @@
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
-using MathNet.Numerics;
-using MathNet.Numerics.LinearAlgebra;
-
 namespace AudioAnalysisTools
 {
     using System;
@@ -16,8 +13,9 @@ namespace AudioAnalysisTools
     using System.Linq;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
-
     using DSP;
+    using MathNet.Numerics;
+    using MathNet.Numerics.LinearAlgebra;
     using MathNet.Numerics.LinearAlgebra.Double;
     using StandardSpectrograms;
     using TowseyLibrary;
@@ -161,8 +159,8 @@ namespace AudioAnalysisTools
                 [AnalysisKeys.AddSegmentationTrack] = (configuration.GetBoolOrNull(AnalysisKeys.AddSegmentationTrack) ?? true).ToString(),
             };
 
-            configDict[AnalysisKeys.AddTimeScale] = (string)configuration[AnalysisKeys.AddTimeScale] ?? "true";
-            configDict[AnalysisKeys.AddAxes] = (string)configuration[AnalysisKeys.AddAxes] ?? "true";
+            configDict[AnalysisKeys.AddTimeScale] = configuration[AnalysisKeys.AddTimeScale] ?? "true";
+            configDict[AnalysisKeys.AddAxes] = configuration[AnalysisKeys.AddAxes] ?? "true";
 
             // SET THE 2 PARAMETERS HERE FOR DETECTION OF OSCILLATION
             // often need different frame size doing Oscil Detection
@@ -329,11 +327,11 @@ namespace AudioAnalysisTools
 
             // a tic every 5cpsec.
             double cycleInterval = 5.0;
-            double xTicInterval = (cycleInterval / oscillationBinWidth) * xscale;
+            double xTicInterval = cycleInterval / oscillationBinWidth * xscale;
 
             // a tic every 1000 Hz.
             int herzInterval = 1000;
-            double yTicInterval = (herzInterval / freqBinWidth) * yscale;
+            double yTicInterval = herzInterval / freqBinWidth * yscale;
             int xOffset = xscale / 2;
             int yOffset = yscale / 2;
             image = ImageTools.DrawXandYaxes(image, 18, cycleInterval, xTicInterval, xOffset, herzInterval, yTicInterval, yOffset);
@@ -469,6 +467,7 @@ namespace AudioAnalysisTools
         public static double[] GetOscillationArrayUsingSvdAndFft(double[,] xCorrByTimeMatrix, double sensitivity, int binNumber)
         {
             int xCorrLength = xCorrByTimeMatrix.GetLength(0);
+
             // int sampleCount = xCorrByTimeMatrix.GetLength(1);
 
             // do singular value decomp on the xcorrelation vectors.
@@ -551,6 +550,7 @@ namespace AudioAnalysisTools
 
                 // get relative power in the three bins around max.
                 double sumOfSquares = spectrum.Sum();
+
                 //double avPower = spectrum.Sum() / spectrum.Length;
                 int maxIndex = DataTools.GetMaxIndex(spectrum);
                 double powerAtMax = spectrum[maxIndex];
@@ -563,7 +563,7 @@ namespace AudioAnalysisTools
                     powerAtMax += spectrum[maxIndex - 1];
                 }
 
-                if (maxIndex >= spectrum.Length-1)
+                if (maxIndex >= spectrum.Length - 1)
                 {
                     powerAtMax += spectrum[maxIndex];
                 }
@@ -573,6 +573,7 @@ namespace AudioAnalysisTools
                 }
 
                 double relativePower1 = powerAtMax / sumOfSquares;
+
                 //double relativePower2 = powerAtMax / avPower;
 
                 //if (relativePower2 > 1.0)
@@ -583,6 +584,7 @@ namespace AudioAnalysisTools
                     {
                         // add in a new oscillation
                         oscillationsVector[maxIndex] += powerAtMax;
+
                         // oscillationsVector[maxIndex] += relativePower2;
                     }
                 }
@@ -617,6 +619,7 @@ namespace AudioAnalysisTools
             for (int e = 0; e < sampleCount; e++)
             {
                 double[] autocor = MatrixTools.GetColumn(xCorrByTimeMatrix, e);
+
                 //DataTools.writeBarGraph(autocor);
 
                 // ##########################################################\
@@ -658,9 +661,11 @@ namespace AudioAnalysisTools
                 }
 
                 double relativePower1 = powerAtMax / sumOfSquares;
+
                 //double relativePower2 = powerAtMax / avPower;
 
                 if (relativePower1 > sensitivity)
+
                 //if (relativePower2 > 10.0)
                 {
                     // check for boundary overrun
@@ -668,6 +673,7 @@ namespace AudioAnalysisTools
                     {
                         // add in a new oscillation
                         oscillationsVector[maxIndex] += powerAtMax;
+
                         //oscillationsVector[maxIndex] += relativePower;
                     }
                 }
@@ -712,8 +718,10 @@ namespace AudioAnalysisTools
                 spectrum[0] *= 0.66;
 
                 spectrum = DataTools.SquareValues(spectrum);
+
                 // get relative power in the three bins around max.
                 double sumOfSquares = spectrum.Sum();
+
                 //double avPower = spectrum.Sum() / spectrum.Length;
                 int maxIndex = DataTools.GetMaxIndex(spectrum);
                 double powerAtMax = spectrum[maxIndex];
@@ -736,9 +744,11 @@ namespace AudioAnalysisTools
                 }
 
                 double relativePower1 = powerAtMax / sumOfSquares;
+
                 //double relativePower2 = powerAtMax / avPower;
 
                 if (relativePower1 > sensitivity)
+
                 //if (relativePower2 > 10.0)
                 {
                     // check for boundary overrun
@@ -746,6 +756,7 @@ namespace AudioAnalysisTools
                     {
                         // add in a new oscillation
                         oscillationsVector[maxIndex] += powerAtMax;
+
                         //oscillationsVector[maxIndex] += relativePower;
                     }
                 }

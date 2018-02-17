@@ -136,7 +136,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
             var expectedImages =
                 expectedFiles
                     .OrderBy(x => x)
-                    .Select((x, i) => testBitmap.Crop(new Rectangle((i * TileWidth) - 100, 0, TileWidth, 256)))
+                    .Select((x, i) => testBitmap.Crop(new Rectangle(i * TileWidth - 100, 0, TileWidth, 256)))
                     .ToArray();
 
             for (var i = 0; i < expectedImages.Length; i++)
@@ -145,7 +145,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
 
                 var expectedImage = expectedImages[i];
                 var actualImage = Image.FromFile(actualFiles[i].FullName);
-                var areEqual = TilerTests.BitmapEquals((Bitmap)expectedImage, (Bitmap)actualImage);
+                var areEqual = TilerTests.BitmapEquals(expectedImage, (Bitmap)actualImage);
                 Assert.IsTrue(areEqual, "Bitmaps were not equal {0}, {1}", expectedFiles[i], actualFiles[i]);
             }
         }

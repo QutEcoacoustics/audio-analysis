@@ -86,7 +86,7 @@ namespace TowseyLibrary
 
         public static bool MatrixDimensionsAreEqual(double[,] m1, double[,] m2)
         {
-            if ((m1.GetLength(0) == m2.GetLength(0)) && (m1.GetLength(1) == m2.GetLength(1)))
+            if (m1.GetLength(0) == m2.GetLength(0) && m1.GetLength(1) == m2.GetLength(1))
             {
                 return true;
             }
@@ -120,7 +120,7 @@ namespace TowseyLibrary
 
             sum -= centreValue;
             double av = sum / (count - 1);
-            if ((centreValue - av) < threshold)
+            if (centreValue - av < threshold)
             {
                 return false;
             }
@@ -690,10 +690,10 @@ namespace TowseyLibrary
                     }
 
                     total++;
-                    if ((Math.Abs(m[r, c + 1]) < tolerance) && (Math.Abs(m[r - 1, c + 1]) < tolerance)
-                        && (Math.Abs(m[r - 1, c]) < tolerance) && (Math.Abs(m[r - 1, c - 1]) < tolerance)
-                        && (Math.Abs(m[r, c - 1]) < tolerance) && (Math.Abs(m[r + 1, c - 1]) < tolerance)
-                        && (Math.Abs(m[r + 1, c]) < tolerance) && (Math.Abs(m[r + 1, c + 1]) < tolerance))
+                    if (Math.Abs(m[r, c + 1]) < tolerance && Math.Abs(m[r - 1, c + 1]) < tolerance
+                        && Math.Abs(m[r - 1, c]) < tolerance && Math.Abs(m[r - 1, c - 1]) < tolerance
+                        && Math.Abs(m[r, c - 1]) < tolerance && Math.Abs(m[r + 1, c - 1]) < tolerance
+                        && Math.Abs(m[r + 1, c]) < tolerance && Math.Abs(m[r + 1, c + 1]) < tolerance)
                     {
                         m[r, c] = 0.0;
                         count++;
@@ -740,42 +740,42 @@ namespace TowseyLibrary
                     }
 
                     // now check the 8 directions. Assume adjacent because have already called PruneSingletons();
-                    if ((m[r, c + 1] > 0.0) && (m[r, c + 2] > 0.0))
+                    if (m[r, c + 1] > 0.0 && m[r, c + 2] > 0.0)
                     {
                         continue; // three in a row
                     }
 
-                    if ((m[r - 1, c + 1] > 0.0) && (m[r - 2, c + 2] > 0.0))
+                    if (m[r - 1, c + 1] > 0.0 && m[r - 2, c + 2] > 0.0)
                     {
                         continue; // three on a diagonal
                     }
 
-                    if ((m[r - 1, c] > 0.0) && (m[r - 2, c] > 0.0))
+                    if (m[r - 1, c] > 0.0 && m[r - 2, c] > 0.0)
                     {
                         continue; // three in a col
                     }
 
-                    if ((m[r - 1, c - 1] > 0.0) && (m[r - 2, c - 2] > 0.0))
+                    if (m[r - 1, c - 1] > 0.0 && m[r - 2, c - 2] > 0.0)
                     {
                         continue; // three on a diagonal
                     }
 
-                    if ((m[r, c - 1] > 0.0) && (m[r, c - 2] > 0.0))
+                    if (m[r, c - 1] > 0.0 && m[r, c - 2] > 0.0)
                     {
                         continue; // three in a row
                     }
 
-                    if ((m[r + 1, c - 1] > 0.0) && (m[r + 2, c - 2] > 0.0))
+                    if (m[r + 1, c - 1] > 0.0 && m[r + 2, c - 2] > 0.0)
                     {
                         continue; // three on a diagonal
                     }
 
-                    if ((m[r + 1, c] > 0.0) && (m[r + 2, c] > 0.0))
+                    if (m[r + 1, c] > 0.0 && m[r + 2, c] > 0.0)
                     {
                         continue; // three in a col
                     }
 
-                    if ((m[r + 1, c + 1] > 0.0) && (m[r + 2, c + 2] > 0.0))
+                    if (m[r + 1, c + 1] > 0.0 && m[r + 2, c + 2] > 0.0)
                     {
                         continue; // three on a diagonal
                     }
@@ -817,8 +817,15 @@ namespace TowseyLibrary
                 throw new ArgumentException("maxPercentile must be greater than or equal to minPercentile");
             }
 
-            if (minPercentile < 0.0) throw new ArgumentException("minPercentile must be at least 0.0");
-            if (maxPercentile > 1.0) throw new ArgumentException("maxPercentile must be at most 1.0");
+            if (minPercentile < 0.0)
+            {
+                throw new ArgumentException("minPercentile must be at least 0.0");
+            }
+
+            if (maxPercentile > 1.0)
+            {
+                throw new ArgumentException("maxPercentile must be at most 1.0");
+            }
 
             double min;
             double max;
@@ -831,7 +838,7 @@ namespace TowseyLibrary
             minCut = min;
             maxCut = max;
             const double tolerance = 0.0000001;
-            if ((Math.Abs(minPercentile) < tolerance) && (Math.Abs(maxPercentile - 1.0) < tolerance))
+            if (Math.Abs(minPercentile) < tolerance && Math.Abs(maxPercentile - 1.0) < tolerance)
             {
                 return;
             }
@@ -2206,9 +2213,9 @@ namespace TowseyLibrary
                     }
 
                     newM[r, c] = 1;
-                    if ((binary[r - 1, c] == 0) && (Math.Abs(binary[r + 1, c]) < tolerance) && (binary[r + 1, c + 1] == 0)
-                        && (Math.Abs(binary[r, c + 1]) < tolerance) && (Math.Abs(binary[r - 1, c + 1]) < tolerance) && (binary[r + 1, c - 1] == 0)
-                        && (Math.Abs(binary[r, c - 1]) < tolerance) && (Math.Abs(binary[r - 1, c - 1]) < tolerance))
+                    if (binary[r - 1, c] == 0 && Math.Abs(binary[r + 1, c]) < tolerance && binary[r + 1, c + 1] == 0
+                        && Math.Abs(binary[r, c + 1]) < tolerance && Math.Abs(binary[r - 1, c + 1]) < tolerance && binary[r + 1, c - 1] == 0
+                        && Math.Abs(binary[r, c - 1]) < tolerance && Math.Abs(binary[r - 1, c - 1]) < tolerance)
                     {
                         newM[r, c] = 0;
                     }

@@ -65,7 +65,7 @@ namespace AnalysisPrograms
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
             int rowCount = sonogram.Data.GetLength(0);
             int colCount = sonogram.Data.GetLength(1);
-            double[,] subMatrix = MatrixTools.Submatrix(sonogram.Data, 0, minBin, (rowCount - 1), maxbin);
+            double[,] subMatrix = MatrixTools.Submatrix(sonogram.Data, 0, minBin, rowCount - 1, maxbin);
 
             int callSpan = (int)Math.Round(callDuration * framesPerSecond);
 
@@ -85,9 +85,10 @@ namespace AnalysisPrograms
                 {
                     continue;
                 }
+
                 //ignore locations with incorrect formant gap
                 double herzPeriod = periodicity[r] * freqBinWidth;
-                if ((herzPeriod < minFormantgap) || (herzPeriod > maxFormantgap))
+                if (herzPeriod < minFormantgap || herzPeriod > maxFormantgap)
                 {
                     continue;
                 }
@@ -149,6 +150,7 @@ namespace AnalysisPrograms
                 ev.SetTimeAndFreqScales(framesPerSecond, freqBinWidth);
                 ev.Score = scoreArray[i];
                 ev.ScoreNormalised = ev.Score / maxPossibleScore; // normalised to the user supplied threshold
+
                 //ev.Score_MaxPossible = maxPossibleScore;
                 predictedEvents.Add(ev);
             } //for loop

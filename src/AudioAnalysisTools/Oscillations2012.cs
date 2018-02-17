@@ -53,10 +53,12 @@ namespace AudioAnalysisTools
                 events = null;
                 return;
             }
+
             hits = RemoveIsolatedOscillations(hits);
 
             //EXTRACT SCORES AND ACOUSTIC EVENTS
             scores = GetOscillationScores(hits, minHz, maxHz, sonogram.FBinWidth);
+
             // smooth the scores - window=11 has been the DEFAULT. Now letting user set this.
             scores = DataTools.filterMovingAverage(scores, smoothingWindow);
             double[] oscFreq = GetOscillationFrequency(hits, minHz, maxHz, sonogram.FBinWidth);
@@ -95,7 +97,7 @@ namespace AudioAnalysisTools
             Execute(sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq, dctThreshold, scoreThreshold,
                                                minDuration, maxDuration, scoreSmoothingWindow,
                                                out scores, out events, out hits,
-                segmentStartOffset);
+                                               segmentStartOffset);
         }
 
         /// <summary>
@@ -128,7 +130,10 @@ namespace AudioAnalysisTools
 
             int midOscilFreq = minOscilFreq + ((maxOscilFreq - minOscilFreq) / 2);
 
-            if (maxIndex > dctLength) return null;       //safety check
+            if (maxIndex > dctLength)
+            {
+                return null;       //safety check
+            }
 
             int rows = sonogram.Data.GetLength(0);
             int cols = sonogram.Data.GetLength(1);
@@ -136,6 +141,7 @@ namespace AudioAnalysisTools
             double[,] matrix = sonogram.Data;
 
             double[,] cosines = MFCCStuff.Cosines(dctLength, dctLength); //set up the cosine coefficients
+
             //following two lines write matrix of cos values for checking.
             //string txtPath = @"C:\SensorNetworks\Output\cosines.txt";
             //FileTools.WriteMatrix2File_Formatted(cosines, txtPath, "F3");
@@ -144,7 +150,7 @@ namespace AudioAnalysisTools
             //string bmpPath = @"C:\SensorNetworks\Output\cosines.png";
             //ImageTools.DrawMatrix(cosines, bmpPath, true);
 
-            for (int c = minBin; c <= maxBin; c++)//traverse columns - skip DC column
+            for (int c = minBin; c <= maxBin; c++) //traverse columns - skip DC column
             {
                 var dctArray = new double[dctLength];
 
@@ -152,22 +158,34 @@ namespace AudioAnalysisTools
                 {
                     // extract array and ready for DCT
                     for (int i = 0; i < dctLength; i++)
+                    {
                         dctArray[i] = matrix[r + i, c];
+                    }
+
                     dctArray = DataTools.SubtractMean(dctArray);
+
                     //dctArray = DataTools.Vector2Zscores(dctArray);
 
                     double[] dctCoeff = MFCCStuff.DCT(dctArray, cosines);
+
                     // convert to absolute values because not interested in negative values due to phase.
                     for (int i = 0; i < dctLength; i++)
+                    {
                         dctCoeff[i] = Math.Abs(dctCoeff[i]);
+                    }
+
                     // remove low freq oscillations from consideration
                     int thresholdIndex = minIndex / 4;
                     for (int i = 0; i < thresholdIndex; i++)
+                    {
                         dctCoeff[i] = 0.0;
+                    }
 
                     dctCoeff = DataTools.normalise2UnitLength(dctCoeff);
+
                     //dct = DataTools.NormaliseMatrixValues(dct); //another option to NormaliseMatrixValues
                     int indexOfMaxValue = DataTools.GetMaxIndex(dctCoeff);
+
                     //double oscilFreq = indexOfMaxValue / dctDuration * 0.5; //Times 0.5 because index = Pi and not 2Pi
 
                     // #### Tried this option for scoring oscillation hits but did not work well.
@@ -188,14 +206,20 @@ namespace AudioAnalysisTools
                      //DataTools.writeBarGraph(dctCoeff);
 
                     //mark DCT location with oscillation freq, only if oscillation freq is in correct range and amplitude
-                    if ((indexOfMaxValue >= minIndex) && (indexOfMaxValue <= maxIndex) && (dctCoeff[indexOfMaxValue] > dctThreshold))
+                    if (indexOfMaxValue >= minIndex && indexOfMaxValue <= maxIndex && dctCoeff[indexOfMaxValue] > dctThreshold)
                     {
-                        for (int i = 0; i < dctLength; i++) hits[r + i, c] = midOscilFreq;
+                        for (int i = 0; i < dctLength; i++)
+                        {
+                            hits[r + i, c] = midOscilFreq;
+                        }
                     }
+
                     r += 5; //skip rows
                 }
+
                 c++; //do alternate columns
             }
+
             return hits;
         }
 
@@ -207,21 +231,26 @@ namespace AudioAnalysisTools
 
             //double midOscilFreq = minOscilFreq + ((maxOscilFreq - minOscilFreq) / 2);
 
-            if (maxIndex > dctLength) return null;       //safety check
+            if (maxIndex > dctLength)
+            {
+                return null;       //safety check
+            }
 
             int length = ipArray.Length;
             var dctScores = new double[length];
+
             //var hits = new double[length];
 
             double[,] cosines = MFCCStuff.Cosines(dctLength, dctLength); //set up the cosine coefficients
+
             //following two lines write bmp image of cosine matrix values for checking.
             //string bmpPath = @"C:\SensorNetworks\Output\cosines.png";
             //ImageTools.DrawMatrix(cosines, bmpPath, true);
 
-            for (int r = 1; r < length - dctLength; r ++)
+            for (int r = 1; r < length - dctLength; r++)
             {
                 // only stop if current location is a peak
-                if ((ipArray[r] < ipArray[r - 1]) || (ipArray[r] < ipArray[r + 1]))
+                if (ipArray[r] < ipArray[r - 1] || ipArray[r] < ipArray[r + 1])
                 {
                     continue;
                 }
@@ -231,20 +260,29 @@ namespace AudioAnalysisTools
                 var dctArray = DataTools.Subarray(ipArray, r, dctLength);
 
                 dctArray = DataTools.SubtractMean(dctArray);
+
                 //dctArray = DataTools.Vector2Zscores(dctArray);
 
                 double[] dctCoeff = MFCCStuff.DCT(dctArray, cosines);
+
                 // convert to absolute values because not interested in negative values due to phase.
                 for (int i = 0; i < dctLength; i++)
+                {
                     dctCoeff[i] = Math.Abs(dctCoeff[i]);
+                }
+
                 // remove low freq oscillations from consideration
                 int thresholdIndex = minIndex / 4;
                 for (int i = 0; i < thresholdIndex; i++)
+                {
                     dctCoeff[i] = 0.0;
+                }
 
                 dctCoeff = DataTools.normalise2UnitLength(dctCoeff);
+
                 //dct = DataTools.NormaliseMatrixValues(dct); //another option to NormaliseMatrixValues
                 int indexOfMaxValue = DataTools.GetMaxIndex(dctCoeff);
+
                 //double oscilFreq = indexOfMaxValue / dctDuration * 0.5; //Times 0.5 because index = Pi and not 2Pi
 
                 // #### Tried this option for scoring oscillation hits but did not work well.
@@ -265,15 +303,19 @@ namespace AudioAnalysisTools
                 //DataTools.writeBarGraph(dctCoeff);
 
                 //mark DCT location with oscillation freq, only if oscillation freq is in correct range and amplitude
-                if ((indexOfMaxValue >= minIndex) && (indexOfMaxValue <= maxIndex) && (dctCoeff[indexOfMaxValue] > dctThreshold))
+                if (indexOfMaxValue >= minIndex && indexOfMaxValue <= maxIndex && dctCoeff[indexOfMaxValue] > dctThreshold)
                 {
                     //for (int i = 0; i < dctLength; i++) dctScores[r + i] = midOscilFreq;
                     for (int i = 0; i < dctLength; i++)
                     {
-                        if (dctScores[r + i] < dctCoeff[indexOfMaxValue]) dctScores[r + i] = dctCoeff[indexOfMaxValue];
+                        if (dctScores[r + i] < dctCoeff[indexOfMaxValue])
+                        {
+                            dctScores[r + i] = dctCoeff[indexOfMaxValue];
+                        }
                     }
                 }
             }
+
             //return hits; //dctArray
             return dctScores;
         }
@@ -289,15 +331,22 @@ namespace AudioAnalysisTools
             int cols = matrix.GetLength(1);
             double[,] cleanMatrix = matrix;
             const double tolerance = double.Epsilon;
-            for (int c = 3; c < cols - 3; c++)//traverse columns - skip DC column
+            for (int c = 3; c < cols - 3; c++) //traverse columns - skip DC column
             {
                 for (int r = 0; r < rows; r++)
                 {
-                    if (Math.Abs(cleanMatrix[r, c]) < tolerance) continue;
-                    if ((Math.Abs(matrix[r, c - 2]) < tolerance) && (Math.Abs(matrix[r, c + 2]) < tolerance))  //+2 because alternate columns
+                    if (Math.Abs(cleanMatrix[r, c]) < tolerance)
+                    {
+                        continue;
+                    }
+
+                    if (Math.Abs(matrix[r, c - 2]) < tolerance && Math.Abs(matrix[r, c + 2]) < tolerance) //+2 because alternate columns
+                    {
                         cleanMatrix[r, c] = 0.0;
+                    }
                 }
             }
+
             return cleanMatrix;
         } //end method RemoveIsolatedOscillations()
 
@@ -321,13 +370,21 @@ namespace AudioAnalysisTools
             for (int r = 0; r < rows; r++)
             {
                 int score = 0;
-                for (int c = minBin; c <= maxBin; c++)//traverse columns in required band
+                for (int c = minBin; c <= maxBin; c++) //traverse columns in required band
                 {
-                    if (hits[r, c] > 0) score++;
+                    if (hits[r, c] > 0)
+                    {
+                        score++;
+                    }
                 }
+
                 scores[r] = score / hitRange; //NormaliseMatrixValues the hit score in [0,1]
-                if (scores[r] > 1.0) scores[r] = 1.0;
+                if (scores[r] > 1.0)
+                {
+                    scores[r] = 1.0;
+                }
             }
+
             return scores;
         }//end method GetODScores()
 
@@ -336,6 +393,7 @@ namespace AudioAnalysisTools
             int rows = hits.GetLength(0);
             int minBin = (int)(minHz / freqBinWidth);
             int maxBin = (int)(maxHz / freqBinWidth);
+
             //int binCount = maxBin - minBin + 1;
 
             var oscFreq = new double[rows]; //to store the oscillation frequency
@@ -343,18 +401,27 @@ namespace AudioAnalysisTools
             {
                 double freq = 0;
                 int count = 0;
-                for (int c = minBin; c <= maxBin; c++)//traverse columns in required band
+                for (int c = minBin; c <= maxBin; c++) //traverse columns in required band
                 {
                     if (hits[r, c] > 0)
                     {
                         freq += hits[r, c];
-                        count ++;
+                        count++;
                     }
                 }
-                if (count == 0) oscFreq[r] = 0;
-                else            oscFreq[r] = freq / count; //return the average frequency
+
+                if (count == 0)
+                {
+                    oscFreq[r] = 0;
+                }
+                else
+                {
+                    oscFreq[r] = freq / count; //return the average frequency
+                }
+
                 //if (oscFreq[r] > 1.0) oscFreq[r] = 1.0;
             }
+
             return oscFreq;
         }//end method GetODFrequency()
 
@@ -390,6 +457,7 @@ namespace AudioAnalysisTools
             //double scoreThreshold = minThreshold; //set this to the minimum threshold to start with
             double scoreThreshold = maxScoreThreshold;   //set this to the maximum threshold to start with
             int count = scores.Length;
+
             //int minBin = (int)(minHz / freqBinWidth);
             //int maxBin = (int)(maxHz / freqBinWidth);
             //int binCount = maxBin - minBin + 1;
@@ -399,34 +467,54 @@ namespace AudioAnalysisTools
             double startTime = 0.0;
             int startFrame = 0;
 
-            for (int i = 0; i < count; i++)//pass over all frames
+            for (int i = 0; i < count; i++) //pass over all frames
             {
-                if ((isHit == false) && (scores[i] >= scoreThreshold))//start of an event
+                if (isHit == false && scores[i] >= scoreThreshold) //start of an event
                 {
                     isHit = true;
                     startTime = i * frameOffset;
                     startFrame = i;
                 }
-                else  //check for the end of an event
-                    if (isHit && ((scores[i] < scoreThreshold)||(i == count-1)))//this is end of an event, so initialise it
+                else //check for the end of an event
+                    if (isHit && (scores[i] < scoreThreshold || i == count - 1)) //this is end of an event, so initialise it
                     {
                         isHit = false;
+
                         //double endTime = i * frameOffset;
                         //double duration = endTime - startTime;
-                        double duration = (i - startFrame + 1)  * frameOffset;
-                        if (duration < minDurationThreshold) continue; //skip events with duration shorter than threshold
-                        if (duration > maxDurationThreshold) continue; //skip events with duration longer than threshold
+                        double duration = (i - startFrame + 1) * frameOffset;
+                        if (duration < minDurationThreshold)
+                    {
+                        continue; //skip events with duration shorter than threshold
+                    }
+
+                        if (duration > maxDurationThreshold)
+                    {
+                        continue; //skip events with duration longer than threshold
+                    }
+
                         var ev = new AcousticEvent(segmentStartOffset, startTime, duration, minHz, maxHz);
                         ev.Name = "Oscillation"; //default name
+
                         //ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
                         ev.FileName = fileName;
+
                         //obtain average score.
                         double av = 0.0;
-                        for (int n = startFrame; n <= i; n++) av += scores[n];
+                        for (int n = startFrame; n <= i; n++)
+                    {
+                        av += scores[n];
+                    }
+
                         ev.Score = av / (i - startFrame + 1);
+
                         //obtain oscillation freq.
                         av = 0.0;
-                        for (int n = startFrame; n <= i; n++) av += oscFreq[n];
+                        for (int n = startFrame; n <= i; n++)
+                    {
+                        av += oscFreq[n];
+                    }
+
                         ev.Score2 = av / (i - startFrame + 1);
                         ev.Intensity = (int)ev.Score2; // store this info for later inclusion in csv file as Event Intensity
                         events.Add(ev);
@@ -436,8 +524,8 @@ namespace AudioAnalysisTools
                 //if ((scores[i] >= maxThreshold) && (maxThreshold >= scoreThreshold)) scoreThreshold *= 1.01;
                 //else
                 //if ((scores[i] <= minThreshold) && (minThreshold <= scoreThreshold)) scoreThreshold *= 0.95;
-
             } //end of pass over all frames
+
             return events;
         }//end method ConvertODScores2Events()
 
@@ -455,11 +543,13 @@ namespace AudioAnalysisTools
             int frameOffset = (int)(sr / optimumFrameRate);
 
             // this line added 17 Aug 2016 to deal with high Oscillation rate frog ribits.
-            if (frameOffset > frameWidth) frameOffset = frameWidth;
+            if (frameOffset > frameWidth)
+            {
+                frameOffset = frameWidth;
+            }
 
             double overlap = (frameWidth - frameOffset) / (double)frameWidth;
             return overlap;
         }
-
     }//end class
 } //AudioAnalysisTools

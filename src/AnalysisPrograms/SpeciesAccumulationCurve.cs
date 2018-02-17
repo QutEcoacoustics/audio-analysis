@@ -27,10 +27,10 @@ namespace AnalysisPrograms
         public int S100 { get; set; }
 
         //these variables are for stats from a single run
-        public double percentRecognitionWith10Samples  = 0;
-        public double percentRecognitionWith30Samples  = 0;
-        public double percentRecognitionWith60Samples  = 0;
-        public double percentRecognitionWith90Samples  = 0;
+        public double percentRecognitionWith10Samples = 0;
+        public double percentRecognitionWith30Samples = 0;
+        public double percentRecognitionWith60Samples = 0;
+        public double percentRecognitionWith90Samples = 0;
         public double percentRecognitionWith120Samples = 0;
         public double percentRecognitionWith180Samples = 0;
         public double percentRecognitionWith240Samples = 0;
@@ -42,10 +42,41 @@ namespace AnalysisPrograms
             int s75threshold = (int)Math.Round(totalSpeciesCount * 0.75);
             int s100threshold = totalSpeciesCount;
 
-            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s25threshold) { this.S25 = i + 1; break; }
-            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s50threshold) { this.S50 = i + 1; break; }
-            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s75threshold) { this.S75 = i + 1; break; }
-            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s100threshold) { this.S100 = i + 1; break; }
+            for (int i = 0; i < accumulationCurve.Length; i++)
+            {
+                if (accumulationCurve[i] >= s25threshold)
+                {
+                    this.S25 = i + 1;
+                    break;
+                }
+            }
+
+            for (int i = 0; i < accumulationCurve.Length; i++)
+            {
+                if (accumulationCurve[i] >= s50threshold)
+                {
+                    this.S50 = i + 1;
+                    break;
+                }
+            }
+
+            for (int i = 0; i < accumulationCurve.Length; i++)
+            {
+                if (accumulationCurve[i] >= s75threshold)
+                {
+                    this.S75 = i + 1;
+                    break;
+                }
+            }
+
+            for (int i = 0; i < accumulationCurve.Length; i++)
+            {
+                if (accumulationCurve[i] >= s100threshold)
+                {
+                    this.S100 = i + 1;
+                    break;
+                }
+            }
 
             //% of total species identified with N samples
             this.percentRecognitionWith10Samples = (int)Math.Round(accumulationCurve[10 - 1] * 100 / (double)totalSpeciesCount);
@@ -119,6 +150,7 @@ namespace AnalysisPrograms
             {
                 array[i] = list[i].percentRecognitionWith180Samples;
             }
+
             double av180, sd180;
             NormalDist.AverageAndSD(array, out av180, out sd180);
 
@@ -176,6 +208,7 @@ namespace AnalysisPrograms
                 // this bracket tests sampling from an array using a probability distribution
                 int distributionlength = 1435;
                 int sampleCount = 600;
+
                 //int seed3 = 666;
                 int seed3 = DateTime.Now.Millisecond;
 
@@ -184,7 +217,10 @@ namespace AnalysisPrograms
                 int[] sortedSamples = tuple.Item2;
                 sortedSamples = DataTools.reverseArray(sortedSamples);
 
-                for (int i = 0; i < samples.Length; i++) Console.WriteLine(i + " \t" + samples[i] + " \t" + sortedSamples[i]);
+                for (int i = 0; i < samples.Length; i++)
+                {
+                    Console.WriteLine(i + " \t" + samples[i] + " \t" + sortedSamples[i]);
+                }
 
                 Log.WriteLine("# Finished everything!");
                 return;
@@ -195,6 +231,7 @@ namespace AnalysisPrograms
                 // this bracket tests sampling from an array using a probability distribution
                 int distributionlength = 1440;
                 int sampleCount = 60;
+
                 //int seed4 = 666;
                 int seed4 = DateTime.Now.Millisecond;
                 int trials = 10000;
@@ -203,9 +240,13 @@ namespace AnalysisPrograms
                 {
                     Tuple<int[], int[]> tuple = Statistics.RandomSamplingUsingProbabilityDistribution(distributionlength, sampleCount, seed4);
                     int[] samples = tuple.Item1;
+
                     //int[] sortedSamples = tuple.Item2;
                     //sortedSamples = DataTools.reverseArray(sortedSamples);
-                    for (int j = 0; j < samples.Length; j++) histogram[samples[j]]++;
+                    for (int j = 0; j < samples.Length; j++)
+                    {
+                        histogram[samples[j]]++;
+                    }
                 }
 
                 DataTools.writeBarGraph(histogram);
@@ -226,6 +267,7 @@ namespace AnalysisPrograms
             string inputDir = @"C:\SensorNetworks\Output\SERF\2013Analysis\13Oct2010";
             string indicesFilePath = Path.Combine(inputDir, "7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000_Towsey.Acoustic.IndicesAndBirdCounts.csv"); //used only for smart sampling
             string callsFileName = "SE_2010Oct13_Calls.csv";
+
             // 14th OCTOBER
             //string inputDir = @"C:\SensorNetworks\Output\SERF\2013Analysis\14Oct2010";
             //string indicesFilePath = Path.Combine(inputDir, "b562c8cd-86ba-479e-b499-423f5d68a847_101014-0000_Towsey.Acoustic.IndicesAndBirdCounts.csv"); //used only for smart sampling
@@ -274,13 +316,23 @@ namespace AnalysisPrograms
                     sampleNumber++;
 
                     int count = 0;
-                    for (int i = 0; i < row.Length; i++) count += row[i];
+                    for (int i = 0; i < row.Length; i++)
+                    {
+                        count += row[i];
+                    }
+
                     speciesCount += count;
                     string line = string.Format("sample {0}:\t min:{1:d3}\t count={2}\t total={3}", sampleNumber, maxRow, count, speciesCount);
                     text.Add(line);
                     LoggedConsole.WriteLine(line);
 
-                    for (int i = 0; i < row.Length; i++) if (row[i] == 1) DataTools.SetColumnZero(callMatrix, i);
+                    for (int i = 0; i < row.Length; i++)
+                    {
+                        if (row[i] == 1)
+                        {
+                            DataTools.SetColumnZero(callMatrix, i);
+                        }
+                    }
                 }
 
                 string outputfile = "SE_2010Oct13_Calls_GreedySampling.txt"; //used only for greedy sampling.
@@ -311,13 +363,14 @@ namespace AnalysisPrograms
                 int N = callMatrix.GetLength(0); //maximum Sample Number
 
                 //int C = occurenceMatrix.GetLength(1); //total species count
-                for (int i = 0; i < trialCount; i++)  //DO REPEATED TRIALS
+                for (int i = 0; i < trialCount; i++) //DO REPEATED TRIALS
                 {
                     int[] randomOrder = RandomNumber.RandomizeNumberOrder(N, seed1 + i);
                     int[] accumulationCurve = GetAccumulationCurve(callMatrix, randomOrder);
 
                     SpeciesAccumulationStats stats = new SpeciesAccumulationStats();
                     stats.StoreStatisticsForSingleAccumulationCurve(accumulationCurve, callingSpeciesList.Count);
+
                     //LoggedConsole.WriteLine("s25={0}\t s50={1}\t s75={2}", results.Item1, results.Item2, results.Item3);
                     s25array[i] = stats.S25;
                     s50array[i] = stats.S50;
@@ -331,7 +384,10 @@ namespace AnalysisPrograms
                     samples180[i] = stats.percentRecognitionWith180Samples;
                     samples240[i] = stats.percentRecognitionWith240Samples;
 
-                    if (i % 100 == 0) LoggedConsole.WriteLine("trial " + i);
+                    if (i % 100 == 0)
+                    {
+                        LoggedConsole.WriteLine("trial " + i);
+                    }
                 } //over all trials
 
                 double av25, sd25, av50, sd50, av75, sd75, av100, sd100;
@@ -362,9 +418,11 @@ namespace AnalysisPrograms
             {
                 //int startSample = 270;  // start of morning chorus
                 int startSample = 291;  // 4:51am = civil dawn
+
                 //int startSample = 315;  // 5:15am = sunrise
                 int trialCount = 5000;
                 int N = 180; //maximum Sample Number i.e. sampling duration in minutes = 3 hours
+
                 //int N = 240; //maximum Sample Number i.e. sampling duration in minutes = 4 hours
                 //int N = 360; //maximum Sample Number i.e. sampling duration in minutes = 6 hours
                 //int N = 480; //maximum Sample Number i.e. sampling duration in minutes = 8 hours
@@ -376,10 +434,14 @@ namespace AnalysisPrograms
                 int[] s100array = new int[trialCount];
                 double[] fixedsampleArray = new double[trialCount];
 
-                for (int i = 0; i < trialCount; i++)  //DO REPEATED TRIALS
+                for (int i = 0; i < trialCount; i++) //DO REPEATED TRIALS
                 {
                     int[] randomOrder = RandomNumber.RandomizeNumberOrder(N, seed1 + i);
-                    for (int r = 0; r < randomOrder.Length; r++) randomOrder[r] += startSample;
+                    for (int r = 0; r < randomOrder.Length; r++)
+                    {
+                        randomOrder[r] += startSample;
+                    }
+
                     int[] accumulationCurve = GetAccumulationCurve(callMatrix, randomOrder);
                     SpeciesAccumulationStats stats = new SpeciesAccumulationStats();
                     stats.StoreStatisticsForSingleAccumulationCurve(accumulationCurve, callingSpeciesList.Count);
@@ -390,8 +452,12 @@ namespace AnalysisPrograms
                     s75array[i] = stats.S75;
                     s100array[i] = stats.S100;
                     fixedsampleArray[i] = stats.percentRecognitionWith60Samples;
-                    if (i % 100 == 0) LoggedConsole.WriteLine("trial " + i);
+                    if (i % 100 == 0)
+                    {
+                        LoggedConsole.WriteLine("trial " + i);
+                    }
                 } //over all trials
+
                 double av25, sd25, av50, sd50, av75, sd75, av100, sd100, avFixedSample, sdFixedSample;
                 NormalDist.AverageAndSD(s25array, out av25, out sd25);
                 NormalDist.AverageAndSD(s50array, out av50, out sd50);
@@ -412,7 +478,11 @@ namespace AnalysisPrograms
                 // Write names of headers
                 int count = 0;
                 LoggedConsole.WriteLine("\nNAMES in header of indices.csv file:");
-                foreach (string name in headers) LoggedConsole.WriteLine(count + "\t" + headers[count++]);
+                foreach (string name in headers)
+                {
+                    LoggedConsole.WriteLine(count + "\t" + headers[count++]);
+                }
+
                 LoggedConsole.WriteLine();
                 var table = CsvTools.ReadCSVToTable(indicesFilePath, true); // read csv file to table.
 
@@ -442,7 +512,11 @@ namespace AnalysisPrograms
                 int reps = 5000;
                 for (int i = 0; i < reps; i++)
                 {
-                    if (i % 100 == 0) Console.WriteLine(i);
+                    if (i % 100 == 0)
+                    {
+                        Console.WriteLine(i);
+                    }
+
                     int seed2 = DateTime.Now.Millisecond + i; // add i in case speed of one iter < 1ms
                     int[] finalSamplingOrder = RandomSampleFromRankOrder(rankOrder, seed2);
                     int[] accumulationCurve = GetAccumulationCurve(callMatrix, finalSamplingOrder);
@@ -455,7 +529,6 @@ namespace AnalysisPrograms
 
                 // OPTION 6: SEARCH WEIGHT SPACE FOR OPTIMSED RANK ORDER USING WEIGHTED COMBINATIONS OF INDICES
                 //OptimsedRankOrder(table, callMatrix, callingSpeciesList.Count);
-
             } // ######################## END SMART SAMPLING #############################
 
             DateTime tEnd = DateTime.Now;
@@ -478,6 +551,7 @@ namespace AnalysisPrograms
             throw new NotImplementedException("AT: I don't even know how to begin to fix this file... warning it may have been left in a broken state");
 
             DateTime tStart = DateTime.Now;
+
             //SET VERBOSITY
             Log.Verbosity = 0;
             bool doStoreImages = false;
@@ -506,9 +580,16 @@ namespace AnalysisPrograms
             {
                 List<string> text = FileTools.ReadTextFile(opPath.FullName);  //read results file
                 string[] lastLine = text[text.Count - 1].Split(','); // read and split the last line
-                if (!lastLine[0].Equals("count")) int.TryParse(lastLine[0], out fileCount);
+                if (!lastLine[0].Equals("count"))
+                {
+                    int.TryParse(lastLine[0], out fileCount);
+                }
+
                 fileCount++;
-                if (!lastLine[1].Equals("minutes")) double.TryParse(lastLine[1], out elapsedTime);
+                if (!lastLine[1].Equals("minutes"))
+                {
+                    double.TryParse(lastLine[1], out elapsedTime);
+                }
             }
 
             //LoggedConsole.WriteLine("\n\n");
@@ -530,7 +611,7 @@ namespace AnalysisPrograms
         {
             string header1;
             double[] array = CsvTools.ReadColumnOfCSVFile(fileName, colNumber, out header1);
-            var results2   = DataTools.SortArray(array);
+            var results2 = DataTools.SortArray(array);
             return results2.Item1;
         }
 
@@ -538,11 +619,13 @@ namespace AnalysisPrograms
         {
             //int offset = 4;  //for 13th October 2010
             int offset = 7;  //for 14th October 2010
+
             //int offset = 6;    //for 15,16,17th October 2010
             string header1, header2, header3, header4, header5, header6;
 
-            int colNumber1 = offset+1;    //background noise
+            int colNumber1 = offset + 1;    //background noise
             double[] array1 = CsvTools.ReadColumnOfCSVFile(fileName, colNumber1, out header1);
+
             //array1 = DataTools.NormaliseArea(array1);
 
             int colNumber2 = offset + 3;  //SegmentCount
@@ -570,9 +653,18 @@ namespace AnalysisPrograms
             double[] chorusBias = new double[array1.Length];
             for (int i = 0; i < array1.Length; i++)
             {
-                if ((i > 290) && (i < 471)) chorusBias[i] = chorusBiasWeight; else chorusBias[i] = 1.0; //civil dawn plus 3 hours
+                if (i > 290 && i < 471)
+                {
+                    chorusBias[i] = chorusBiasWeight;
+                }
+                else
+                {
+                    chorusBias[i] = 1.0; //civil dawn plus 3 hours
+                }
+
                 //if ((i > 290) && (i < 532)) bias[i] = biasWeight; else bias[i] = 1.0;  //civil dawn plus 4 hours
             }
+
             //bias = DataTools.NormaliseArea(bias);
 
             //create sampling bias array - ie bias away from high background noise
@@ -581,17 +673,17 @@ namespace AnalysisPrograms
             double bgVarianceThreshold = 2.5; //dB
             double[] bgBias = CalculateBGNoiseSamplingBias(array1, bgThreshold, bgVarianceThreshold, noiseBias); //array1 contains BG noise values.
 
-            double wt1 = 0.0;//background noise //do not use here - use instead to bias sampling
-            double wt2 = 0.0;//SegmentCount
-            double wt3 = 0.4;//H[avSpectrum]
-            double wt4 = 0.1;//H[varSpectrum]
-            double wt5 = 0.4;//number of clusters
-            double wt6 = 0.1;//av cluster duration
+            double wt1 = 0.0; //background noise //do not use here - use instead to bias sampling
+            double wt2 = 0.0; //SegmentCount
+            double wt3 = 0.4; //H[avSpectrum]
+            double wt4 = 0.1; //H[varSpectrum]
+            double wt5 = 0.4; //number of clusters
+            double wt6 = 0.1; //av cluster duration
 
             LoggedConsole.WriteLine("Index weights:  {0}={1}; {2}={3}; {4}={5}; {6}={7}; {8}={9}; {10}={11}",
                                                header1, wt1, header2, wt2, header3, wt3, header4, wt4, header5, wt5, header6, wt6);
-            LoggedConsole.WriteLine("Chorus Bias wt  ="+ chorusBiasWeight);
-            LoggedConsole.WriteLine("BG threshold    =" + bgThreshold+" dB");
+            LoggedConsole.WriteLine("Chorus Bias wt  =" + chorusBiasWeight);
+            LoggedConsole.WriteLine("BG threshold    =" + bgThreshold + " dB");
             LoggedConsole.WriteLine("BG var threshold=" + bgVarianceThreshold + " dB");
             LoggedConsole.WriteLine("Noise bias  wt  =" + noiseBias);
 
@@ -662,18 +754,20 @@ namespace AnalysisPrograms
             // {1:count,2:avAmp,3:snr,4:actSnr,5:bg,6:act,7:seg#,8:segDur,9:hf,10:mf,11:lf,12:Ht,13:Hm,14:Hs,15:Hv,16:ACI,17:clust#,18:"avClustDur19:3g#,20:av3gRep,21:SpPkTr,22:SpPkTrDur,23:call#
             // FEATURE SET XX..... 1 feature ... equivalent to single unweighted feature
             //                   { 0.1,  0.2,  0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2 }; // 21 indices
-            double[] weights =   { 0.0,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.1, 0.0, 0.1, 0.1, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 }; // FS20 - 5 indices - wt16 is adjustment to max cluster count = 10
+            double[] weights = { 0.0,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.1, 0.0, 0.1, 0.1, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 }; // FS20 - 5 indices - wt16 is adjustment to max cluster count = 10
+
             //double[] weights = { 0.0,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3.89, 14.98, 0.0,-9.66, 25.64, 0.19, 0.0, 0.0, 0.0, 0.0, 0.0, -14.84 }; // FS27 - 5 regressed indices
             //double[] weights = { 0.0,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2, 0.2, 0.2, 0.0, 0.2, 0.2, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0 };     // FS20 - 5 indices - wt16 is adjustment to max cluster count = 10
 
             //                   {  1,    2,    3,   4,    5,  0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6,  1.7, 1.8, 0.0, 0.0, 0.0, 0.0 }; // 21 indices
-            double[] minValues = { 0.0,-50.0,  3.0, 0.0,-50.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.2,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+            double[] minValues = { 0.0, -50.0,  3.0, 0.0, -50.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.2,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
             double[] maxValues = { 1.0, -5.0, 30.0, 1.0, -5.0, 1.0, 200, 500, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.8, 20.0, 200.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 };
 
             int wtCount = weights.Length;
             var columns = DataTableTools.ListOfColumnValues(table); // extract columns from table as list
             columns = DataTableTools.NormaliseColumnValues(columns, minValues, maxValues); // NormaliseMatrixValues column value
             int rowCount = columns[0].Length;
+
             // reverse those column values as required - to do with entropy.
             //for (int r = 0; r < rowCount; r++)
             //{
@@ -684,13 +778,14 @@ namespace AnalysisPrograms
             double[] combined = new double[rowCount];
 
             int count = 0;
-            for (int r = 0; r<rowCount; r++)
+            for (int r = 0; r < rowCount; r++)
             {
                 double weightedSum = 0.0;
                 for (int c = 0; c < weights.Length; c++)
                 {
-                    weightedSum += (weights[c] * columns[c][r]);
+                    weightedSum += weights[c] * columns[c][r];
                 }
+
                 combined[count] = weightedSum; // +weights[wtCount - 1];
                 count++;
             }
@@ -708,12 +803,13 @@ namespace AnalysisPrograms
         public static void OptimsedRankOrder(DataTable table, byte[,] callMatrix, int speciesCount)
         {
             //                   {  1,    2,    3,   4,    5,  0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6,  1.7,   1.8, 0.0, 0.0, 0.0, 0.0 };
-            double[] minValues = { 0.0, -50.0, 3.0, 0.0,-50.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.2,  0.0,   0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+            double[] minValues = { 0.0, -50.0, 3.0, 0.0, -50.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.2,  0.0,   0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
             double[] maxValues = { 1.0, -5.0, 30.0, 1.0, -5.0, 1.0, 200, 500, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.8, 20.0, 200.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 };
 
             var columns = DataTableTools.ListOfColumnValues(table); // extract columns from table as list
             columns = DataTableTools.NormaliseColumnValues(columns, minValues, maxValues); // NormaliseMatrixValues column value
             int rowCount = columns[0].Length;
+
             // reverse those column values as required - to do with entropy.
             //for (int r = 0; r < rowCount; r++)
             //{
@@ -743,6 +839,7 @@ namespace AnalysisPrograms
                                 weights[15] = j / (double)range; //aci
                                 weights[14] = k / (double)range; //Hv
                                 weights[13] = m / (double)range; //Hs
+
               //                  weights[11]  = n / (double)range; //Ht
               //                  weights[7] = n / (double)range; //segDur
 
@@ -753,11 +850,13 @@ namespace AnalysisPrograms
                                     double weightedSum = 0.0;
                                     for (int c = 0; c < weights.Length; c++)
                                     {
-                                        weightedSum += (weights[c] * columns[c][r]);
+                                        weightedSum += weights[c] * columns[c][r];
                                     }
+
                                     combined[count] = weightedSum; // +weights[wtCount - 1]; //  *chorusBias[count] * bgBias[count]
                                     count++;
                                 }
+
                                 // CHORUS BIAS
                                 //double chorusBiasWeight = 1.1; // bias value ie bias towards the dawn chorus
                                 //combined = AdjustForChorusBias(combined, chorusBiasWeight);
@@ -769,7 +868,7 @@ namespace AnalysisPrograms
                                 SpeciesAccumulationStats stats = new SpeciesAccumulationStats();
                                 stats.StoreStatisticsForSingleAccumulationCurve(accumulationCurve, speciesCount);
                                 double score = stats.percentRecognitionWith60Samples; // weighted x2
-                                score += (/*stats.percentRecognitionWith30Samples*/ +stats.percentRecognitionWith60Samples + stats.percentRecognitionWith120Samples); // +stats.percentRecognitionWith120Samples;
+                                score += +stats.percentRecognitionWith60Samples + stats.percentRecognitionWith120Samples; // +stats.percentRecognitionWith120Samples;
                                 if (score >= maxScore)
                                 {
                                     Console.WriteLine("Score={0:f1}   60samples>{1}%   amp(wt1)={2}  act(wt5)={3}  seg#(wt6)={4}  Ht(wt11)={5}   Hs(wt13)={6}  Hv(wt14)={7}  ACI(wt15)={8}  SpD(wt16)={9}",
@@ -777,6 +876,7 @@ namespace AnalysisPrograms
 
                                     maxScore = score;
                                 } // if (score >= maxScore)
+
              //               } // n
                         } // m
                     } // k
@@ -790,11 +890,15 @@ namespace AnalysisPrograms
             int sampleCount = distributionlength;
             Tuple<int[], int[]> tuple = Statistics.RandomSamplingUsingProbabilityDistribution(distributionlength, sampleCount, seed);
             int[] sampleOrder = tuple.Item1;
+
             //int[] sort = tuple.Item2;
             //sort = DataTools.reverseArray(sort);
             int[] finalSamplingOrder = new int[distributionlength];
             for (int i = 0; i < distributionlength; i++)
-                    finalSamplingOrder[i] = rankOrder[sampleOrder[i]];
+            {
+                finalSamplingOrder[i] = rankOrder[sampleOrder[i]];
+            }
+
             return finalSamplingOrder;
         }
 
@@ -803,9 +907,14 @@ namespace AnalysisPrograms
             int length = values.Length;
             for (int i = 0; i < length; i++)
             {
-                if ((i > 290) && (i < 471)) values[i] *= chorusBiasWeight;    //civil dawn plus 3 hours
+                if (i > 290 && i < 471)
+                {
+                    values[i] *= chorusBiasWeight;    //civil dawn plus 3 hours
+                }
+
                 //if ((i > 290) && (i < 532)) values[i] *= chorusBiasWeight;  //civil dawn plus 4 hours
             }
+
             return values;
         }
 
@@ -818,12 +927,20 @@ namespace AnalysisPrograms
             for (int b = 0; b < resolution; b++) //over all onr hour blocks
             {
                 double[] oneHourArray = new double[oneHourCount];
-                for (int i = 0; i < oneHourCount; i++) oneHourArray[i] = bgArray[(b * oneHourCount)+i];
+                for (int i = 0; i < oneHourCount; i++)
+                {
+                    oneHourArray[i] = bgArray[(b * oneHourCount) + i];
+                }
+
                 double av, sd;
                 NormalDist.AverageAndSD(oneHourArray, out av, out sd);
                 LoggedConsole.WriteLine("Hour {0}:  av={1:f2}   sd={2:f2}", b, av, sd);
-                for (int i = 0; i < oneHourCount; i++) bgVariance[(b * oneHourCount)+i] = sd;
+                for (int i = 0; i < oneHourCount; i++)
+                {
+                    bgVariance[(b * oneHourCount) + i] = sd;
+                }
             }
+
             bgVariance = DataTools.filterMovingAverage(bgVariance, 5);
 
             double[] bgBias = new double[bgArray.Length];
@@ -834,10 +951,18 @@ namespace AnalysisPrograms
                 //if ((bgVariance[i] > bgVarianceThreshold) || (bgVariance[i] < 1.0)) bgBias[i] = noiseBias;
                 //else bgBias[i] = 1.0; //
 
-                if ((bgVariance[i] > bgVarianceThreshold) && (bgArray[i] > bgThreshold)) bgBias[i] = noiseBias; else bgBias[i] = 1.0; //
+                if (bgVariance[i] > bgVarianceThreshold && bgArray[i] > bgThreshold)
+                {
+                    bgBias[i] = noiseBias;
+                }
+                else
+                {
+                    bgBias[i] = 1.0;
+                }
 
                 //if (((bgVariance[i] > bgVarianceThreshold) || (bgVariance[i] < 1.0)) && (bgArray[i] > bgThreshold)) bgBias[i] = noiseBias; else bgBias[i] = 1.0; //
             }
+
             return bgBias;
         }
 
@@ -851,25 +976,53 @@ namespace AnalysisPrograms
             int sampleID = 0; // sample ID
             byte[] cumulativeSpeciesRichness = DataTools.GetRow(occurenceMatrix, sampleOrder[sampleID]);
             int speciesCount = 0;
-            for (int j = 0; j < C; j++) if (cumulativeSpeciesRichness[j] > 0) speciesCount++;
+            for (int j = 0; j < C; j++)
+            {
+                if (cumulativeSpeciesRichness[j] > 0)
+                {
+                    speciesCount++;
+                }
+            }
+
             accumlationCurve[0] = speciesCount;
+
             //LoggedConsole.WriteLine("sample {0}:\t min:{1:d3}\t {2}\t {3}", 1, randomOrder[0], speciesCount, speciesCount);
 
             int cummulativeCount = 0;
             sampleID = 1; // sample ID
-            while ((sampleID < N) && (cummulativeCount < C))
+            while (sampleID < N && cummulativeCount < C)
             {
-                if (sampleOrder[sampleID] < 0) continue; //i.e. no sample to take
+                if (sampleOrder[sampleID] < 0)
+                {
+                    continue; //i.e. no sample to take
+                }
+
                 byte[] sample = DataTools.GetRow(occurenceMatrix, sampleOrder[sampleID]);
                 speciesCount = 0;
-                for (int j = 0; j < C; j++) if (sample[j] > 0) speciesCount++;
+                for (int j = 0; j < C; j++)
+                {
+                    if (sample[j] > 0)
+                    {
+                        speciesCount++;
+                    }
+                }
+
                 cumulativeSpeciesRichness = DataTools.LogicalORofTwoVectors(sample, cumulativeSpeciesRichness);
                 cummulativeCount = 0;
-                for (int j = 0; j < C; j++) if (cumulativeSpeciesRichness[j] > 0) cummulativeCount++;
+                for (int j = 0; j < C; j++)
+                {
+                    if (cumulativeSpeciesRichness[j] > 0)
+                    {
+                        cummulativeCount++;
+                    }
+                }
+
                 accumlationCurve[sampleID] = cummulativeCount;
+
                 //LoggedConsole.WriteLine("sample {0}:\t min:{1:d3}\t {2}\t {3}", sampleID + 1, randomOrder[sampleID], speciesCount, cummulativeCount);
                 sampleID++;
             }
+
             return accumlationCurve;
         }
 
@@ -879,12 +1032,12 @@ namespace AnalysisPrograms
             int ignoreLastNColumns = 2;
             List<string> text = FileTools.ReadTextFile(occurenceFile);  // read occurence file
             string[] line = text[0].Split(',');                    // read and split the first line
-            int colTotal  = line.Length;
+            int colTotal = line.Length;
             int endColumn = colTotal - ignoreLastNColumns - 1;
 
             int columnNumber = endColumn - startColumn + 1;
             byte[,] callMatrix = new byte[text.Count - 1, columnNumber];
-            for (int i = 1; i < text.Count; i++)              //skip header
+            for (int i = 1; i < text.Count; i++) //skip header
             {
                 line = text[i].Split(',');                    // read and split the line
                 for (int j = startColumn; j <= endColumn; j++)
@@ -900,18 +1053,25 @@ namespace AnalysisPrograms
             List<string> totalSpeciesList = new List<string>();
             List<string> callingSpeciesList = new List<string>();   // not all species call in the 24 hour period
             string[] headerLine = text[0].Split(',');               // read and split the first line to get species names
-            int[] columnSums = DataTools.GetColumnSums(callMatrix); //
+            int[] columnSums = DataTools.GetColumnSums(callMatrix);
             for (int j = 0; j < columnSums.Length; j++)
             {
                 totalSpeciesList.Add(headerLine[startColumn + j]);
-                if (columnSums[j] > 0) callingSpeciesList.Add(headerLine[startColumn + j]);
+                if (columnSums[j] > 0)
+                {
+                    callingSpeciesList.Add(headerLine[startColumn + j]);
+                }
             }
+
             LoggedConsole.WriteLine("\nTotal species in csv file = " + totalSpeciesList.Count);
             LoggedConsole.WriteLine("Calling species           = " + callingSpeciesList.Count + "\n");
             LoggedConsole.WriteLine("ID ---  Species Name ----------- Total minutes in which at least one call identified. \n");
 
             int count = 0;
-            foreach (string name in totalSpeciesList) LoggedConsole.WriteLine(++count + "\t" + name + "\t" + columnSums[count - 1]);
+            foreach (string name in totalSpeciesList)
+            {
+                LoggedConsole.WriteLine(++count + "\t" + name + "\t" + columnSums[count - 1]);
+            }
 
             return Tuple.Create(totalSpeciesList, callingSpeciesList, callMatrix);
         }

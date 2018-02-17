@@ -31,8 +31,6 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
     {
         private DirectoryInfo outputDirectory;
 
-        #region Additional test attributes
-
         /*
         // You can use the following additional attributes as you write your tests:
         //
@@ -64,8 +62,6 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
         {
             PathHelper.DeleteTempDir(this.outputDirectory);
         }
-
-        #endregion
 
         /// <summary>
         /// METHOD TO CHECK IF Default linear FREQ SCALE IS WORKING

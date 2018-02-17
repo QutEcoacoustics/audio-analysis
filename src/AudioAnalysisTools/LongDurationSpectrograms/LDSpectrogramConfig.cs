@@ -132,7 +132,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public static string[] GetKeys(string colorMap1, string colorMap2)
         {
             var keys = new List<string>();
-            if ((colorMap1 != null) && (colorMap1.Length == 11))
+            if (colorMap1 != null && colorMap1.Length == 11)
             {
                 string[] codes = colorMap1.Split('-');
                 foreach (string str in codes)
@@ -156,7 +156,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public static string[] GetKeys(string colorMap)
         {
             string[] keys = null;
-            if ((colorMap != null) && (colorMap.Length == 11))
+            if (colorMap != null && colorMap.Length == 11)
             {
                 keys = colorMap.Split('-');
             }

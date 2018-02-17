@@ -17,22 +17,12 @@ namespace AnalysisPrograms.Production
 
     public static class ExceptionLookup
     {
-        #region Constants
-
         /// <summary>
         /// The default exit code to use for exceptions not recognised. Must not be greater than 255.
         /// </summary>
         public const int UnhandledExceptionErrorCode = 200;
 
-        #endregion
-
-        #region Static Fields
-
         internal static readonly Dictionary<Type, ExceptionStyle> ErrorLevels;
-
-        #endregion
-
-        #region Constructors and Destructors
 
         static ExceptionLookup()
         {
@@ -41,11 +31,11 @@ namespace AnalysisPrograms.Production
                               {
                                   {
                                       typeof(ValidationException),
-                                      new ExceptionStyle { ErrorCode = ValiationError, PrintUsage = false  }
+                                      new ExceptionStyle { ErrorCode = ValiationError, PrintUsage = false }
                                   },
                                   {
                                       typeof(CommandLineArgumentException),
-                                      new ExceptionStyle() { ErrorCode = 3}
+                                      new ExceptionStyle() { ErrorCode = 3 }
                                   },
                                   {
                                       typeof(DirectoryNotFoundException),
@@ -102,10 +92,6 @@ namespace AnalysisPrograms.Production
                               };
         }
 
-        #endregion
-
-        #region Public Properties
-
         public static int Ok => 0;
 
         public static int ValiationError => 2;
@@ -122,27 +108,15 @@ namespace AnalysisPrograms.Production
             }
         }
 
-        #endregion
-
         public class ExceptionStyle
         {
-            #region Fields
-
             private int errorCode = UnhandledExceptionErrorCode;
-
-            #endregion
-
-            #region Constructors and Destructors
 
             public ExceptionStyle()
             {
                 this.Handle = true;
                 this.PrintUsage = true;
             }
-
-            #endregion
-
-            #region Public Properties
 
             public int ErrorCode
             {
@@ -166,8 +140,6 @@ namespace AnalysisPrograms.Production
             public bool Handle { get; set; }
 
             public bool PrintUsage { get; set; }
-
-            #endregion
         }
     }
 
@@ -180,8 +152,6 @@ namespace AnalysisPrograms.Production
 
     public class InvalidDurationException : Exception
     {
-        #region Constructors and Destructors
-
         public InvalidDurationException()
         {
         }
@@ -190,32 +160,22 @@ namespace AnalysisPrograms.Production
             : base(message)
         {
         }
-
-        #endregion
     }
 
     public class InvalidStartOrEndException : Exception
     {
-        #region Constructors and Destructors
-
         public InvalidStartOrEndException(string message)
             : base(message)
         {
         }
-
-        #endregion
     }
 
     public class InvalidAudioChannelException : Exception
     {
-        #region Constructors and Destructors
-
         public InvalidAudioChannelException(string message)
             : base(message)
         {
         }
-
-        #endregion
     }
 
     public class AnalysisOptionDevilException : Exception
@@ -224,19 +184,11 @@ namespace AnalysisPrograms.Production
 
     public class NoDeveloperMethodException : Exception
     {
-        #region Constants
-
         private const string StandardMessage = "There is no Developer (Dev) method available for this analysis";
-
-        #endregion
-
-        #region Constructors and Destructors
 
         public NoDeveloperMethodException()
             : base(StandardMessage)
         {
         }
-
-        #endregion
     }
 }

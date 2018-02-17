@@ -15,7 +15,8 @@ namespace BTR.Core.Linq
     {
         public static Expression Visit<T>(
             this Expression exp,
-            Func<T, Expression> visitor) where T : Expression
+            Func<T, Expression> visitor)
+            where T : Expression
         {
             return ExpressionVisitor<T>.Visit(exp, visitor);
         }
@@ -31,14 +32,16 @@ namespace BTR.Core.Linq
 
         public static Expression<TDelegate> Visit<T, TDelegate>(
             this Expression<TDelegate> exp,
-            Func<T, Expression> visitor) where T : Expression
+            Func<T, Expression> visitor)
+            where T : Expression
         {
             return ExpressionVisitor<T>.Visit<TDelegate>(exp, visitor);
         }
 
         public static IQueryable<TSource> Visit<T, TSource>(
             this IQueryable<TSource> source,
-            Func<T, Expression> visitor) where T : Expression
+            Func<T, Expression> visitor)
+            where T : Expression
         {
             return source.Provider.CreateQuery<TSource>(ExpressionVisitor<T>.Visit(source.Expression, visitor));
         }
@@ -49,9 +52,10 @@ namespace BTR.Core.Linq
     /// to optionally replace the parameter.  This is useful where two expression trees need to
     /// be merged (and they don't share the same ParameterExpressions).
     /// </summary>
-    public class ExpressionVisitor<T> : ExpressionVisitor where T : Expression
+    public class ExpressionVisitor<T> : ExpressionVisitor
+        where T : Expression
     {
-        Func<T, Expression> visitor;
+        private Func<T, Expression> visitor;
 
         public ExpressionVisitor(Func<T, Expression> visitor)
         {
@@ -74,7 +78,10 @@ namespace BTR.Core.Linq
 
         protected override Expression Visit(Expression exp)
         {
-            if (exp is T && this.visitor != null) exp = this.visitor((T)exp);
+            if (exp is T && this.visitor != null)
+            {
+                exp = this.visitor((T)exp);
+            }
 
             return base.Visit(exp);
         }
@@ -93,7 +100,10 @@ namespace BTR.Core.Linq
         protected virtual Expression Visit(Expression exp)
         {
             if (exp == null)
+            {
                 return exp;
+            }
+
             switch (exp.NodeType)
             {
                 case ExpressionType.Negate:
@@ -181,6 +191,7 @@ namespace BTR.Core.Linq
             {
                 return Expression.ElementInit(initializer.AddMethod, arguments);
             }
+
             return initializer;
         }
 
@@ -191,6 +202,7 @@ namespace BTR.Core.Linq
             {
                 return Expression.MakeUnary(u.NodeType, operand, u.Type, u.Method);
             }
+
             return u;
         }
 
@@ -202,10 +214,15 @@ namespace BTR.Core.Linq
             if (left != b.Left || right != b.Right || conversion != b.Conversion)
             {
                 if (b.NodeType == ExpressionType.Coalesce && b.Conversion != null)
+                {
                     return Expression.Coalesce(left, right, conversion as LambdaExpression);
+                }
                 else
+                {
                     return Expression.MakeBinary(b.NodeType, left, right, b.IsLiftedToNull, b.Method);
+                }
             }
+
             return b;
         }
 
@@ -216,6 +233,7 @@ namespace BTR.Core.Linq
             {
                 return Expression.TypeIs(expr, b.TypeOperand);
             }
+
             return b;
         }
 
@@ -233,6 +251,7 @@ namespace BTR.Core.Linq
             {
                 return Expression.Condition(test, ifTrue, ifFalse);
             }
+
             return c;
         }
 
@@ -248,6 +267,7 @@ namespace BTR.Core.Linq
             {
                 return Expression.MakeMemberAccess(exp, m.Member);
             }
+
             return m;
         }
 
@@ -259,6 +279,7 @@ namespace BTR.Core.Linq
             {
                 return Expression.Call(obj, m.Method, args);
             }
+
             return m;
         }
 
@@ -279,13 +300,16 @@ namespace BTR.Core.Linq
                     {
                         list.Add(original[j]);
                     }
+
                     list.Add(p);
                 }
             }
+
             if (list != null)
             {
                 return list.AsReadOnly();
             }
+
             return original;
         }
 
@@ -296,6 +320,7 @@ namespace BTR.Core.Linq
             {
                 return Expression.Bind(assignment.Member, e);
             }
+
             return assignment;
         }
 
@@ -306,6 +331,7 @@ namespace BTR.Core.Linq
             {
                 return Expression.MemberBind(binding.Member, bindings);
             }
+
             return binding;
         }
 
@@ -316,6 +342,7 @@ namespace BTR.Core.Linq
             {
                 return Expression.ListBind(binding.Member, initializers);
             }
+
             return binding;
         }
 
@@ -336,11 +363,16 @@ namespace BTR.Core.Linq
                     {
                         list.Add(original[j]);
                     }
+
                     list.Add(b);
                 }
             }
+
             if (list != null)
+            {
                 return list;
+            }
+
             return original;
         }
 
@@ -361,11 +393,16 @@ namespace BTR.Core.Linq
                     {
                         list.Add(original[j]);
                     }
+
                     list.Add(init);
                 }
             }
+
             if (list != null)
+            {
                 return list;
+            }
+
             return original;
         }
 
@@ -376,6 +413,7 @@ namespace BTR.Core.Linq
             {
                 return Expression.Lambda(lambda.Type, body, lambda.Parameters);
             }
+
             return lambda;
         }
 
@@ -385,10 +423,15 @@ namespace BTR.Core.Linq
             if (args != nex.Arguments)
             {
                 if (nex.Members != null)
+                {
                     return Expression.New(nex.Constructor, args, nex.Members);
+                }
                 else
+                {
                     return Expression.New(nex.Constructor, args);
+                }
             }
+
             return nex;
         }
 
@@ -400,6 +443,7 @@ namespace BTR.Core.Linq
             {
                 return Expression.MemberInit(n, bindings);
             }
+
             return init;
         }
 
@@ -411,6 +455,7 @@ namespace BTR.Core.Linq
             {
                 return Expression.ListInit(n, initializers);
             }
+
             return init;
         }
 
@@ -428,6 +473,7 @@ namespace BTR.Core.Linq
                     return Expression.NewArrayBounds(na.Type.GetElementType(), exprs);
                 }
             }
+
             return na;
         }
 
@@ -439,6 +485,7 @@ namespace BTR.Core.Linq
             {
                 return Expression.Invoke(expr, args);
             }
+
             return iv;
         }
     }

@@ -22,8 +22,6 @@
             this.OutputFiles = new Dictionary<string, FileInfo>();
         }
 
-        #region string identifiers
-
         /// <summary>
         /// Gets AnalysisIdentifierString.
         /// </summary>
@@ -100,8 +98,6 @@
                 return "AnalysisResult.maxFrequencyHz";
             }
         }
-
-        #endregion
 
         /// <summary>
         /// Gets or sets Analysis Identifier.

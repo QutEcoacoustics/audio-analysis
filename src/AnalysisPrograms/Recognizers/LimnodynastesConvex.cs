@@ -129,7 +129,7 @@ namespace AnalysisPrograms.Recognizers
             double herzPerBin = sampleRate / 2.0 / colCount;
 
             //string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
-            string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+            string abbreviatedSpeciesName = configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
 
             // ## THREE THRESHOLDS ---- only one of these is given to user.
             // minimum dB to register a dominant freq peak. After noise removal
@@ -307,7 +307,7 @@ namespace AnalysisPrograms.Recognizers
             var plots = new List<Plot> { plot };
 
             // add names into the returned events
-            string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? this.SpeciesName;
+            string speciesName = configuration[AnalysisKeys.SpeciesName] ?? this.SpeciesName;
             foreach (var ae in potentialEvents)
             {
                 ae.Name = abbreviatedSpeciesName;
@@ -355,7 +355,7 @@ namespace AnalysisPrograms.Recognizers
             int colCount = spg.GetLength(1);
             double herzPerBin = sampleRate / 2.0 / colCount;
 
-            string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+            string abbreviatedSpeciesName = configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
 
             // ## TWO THRESHOLDS
             // The threshold dB amplitude in the dominant freq bin required to yield an event
@@ -372,7 +372,7 @@ namespace AnalysisPrograms.Recognizers
             // call has binWidth=25 but we want zero buffer of four bins either side.
             int callBinWidth = 25;
             int binSilenceBuffer = 4;
-            int topFrequency = (int)configuration.GetInt("TopFrequency");
+            int topFrequency = configuration.GetInt("TopFrequency");
 
             // # The Limnodynastes call has a duration of 3-5 frames given the above settings.
             // # But we will assume 5-7 because sometimes the three harmonics are not exactly alligned!!
@@ -510,7 +510,7 @@ namespace AnalysisPrograms.Recognizers
             var plots = new List<Plot> { plot };
 
             // add names into the returned events
-            string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? this.SpeciesName;
+            string speciesName = configuration[AnalysisKeys.SpeciesName] ?? this.SpeciesName;
             foreach (var ae in potentialEvents)
             {
                 ae.Name = abbreviatedSpeciesName;
@@ -586,6 +586,7 @@ namespace AnalysisPrograms.Recognizers
 
             return templates;
         }
+
         private static void ScanEventScores(double[] band, List<double[]> templates, out double maxScore, out int eventBottomBin, out int id)
         {
             // check that have not been passed a zero spectrum. If so return appropriate values

@@ -12,21 +12,16 @@ namespace AnalysisPrograms.Recognizers
     using System.Collections.Generic;
     using System.IO;
     using System.Reflection;
-
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
-
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-
-    using Base;
-
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-
+    using Base;
     using log4net;
     using TowseyLibrary;
 
@@ -88,6 +83,7 @@ namespace AnalysisPrograms.Recognizers
                 SourceFName = recording.BaseName,
                 WindowSize = frameSize,
                 WindowOverlap = windowOverlap,
+
                 // use the default HAMMING window
                 //WindowFunction = WindowFunctions.HANNING.ToString(),
                 //WindowFunction = WindowFunctions.NONE.ToString(),
@@ -110,7 +106,8 @@ namespace AnalysisPrograms.Recognizers
             // ######################################################################
             // ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
             int rowCount = sonogram.Data.GetLength(0);
-            double[] amplitudeArray = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, minBin, (rowCount - 1), maxBin);
+            double[] amplitudeArray = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, minBin, rowCount - 1, maxBin);
+
             //double[] topBand = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, maxBin + 3, (rowCount - 1), maxBin + 9);
             //double[] botBand = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, minBin - 3, (rowCount - 1), minBin - 9);
 
@@ -138,10 +135,12 @@ namespace AnalysisPrograms.Recognizers
             });
 
             var thresholdedPlot = new double[amplitudeArray.Length];
-            for(int x=0; x <amplitudeArray.Length; x++)
+            for (int x = 0; x < amplitudeArray.Length; x++)
             {
                 if (amplitudeArray[x] > decibelThreshold)
+                {
                     thresholdedPlot[x] = amplitudeArray[x];
+                }
             }
 
             var maxDb = amplitudeArray.MaxOrDefault();
@@ -159,6 +158,7 @@ namespace AnalysisPrograms.Recognizers
                 var amplPlot = new Plot("Band amplitude", normalisedScores, normalisedThreshold);
 
                 var debugPlots = new List<Plot> { plot, amplPlot };
+
                 // NOTE: This DrawDebugImage() method can be over-written in this class.
                 var debugImage = DrawDebugImage(sonogram, acousticEvents, debugPlots, hits);
                 var debugPath = FilenameHelpers.AnalysisResultPath(outputDirectory, recording.BaseName, this.SpeciesName, "png", "DebugSpectrogram");
@@ -178,28 +178,39 @@ namespace AnalysisPrograms.Recognizers
     internal class LitoriaNasutaOLDConfig
     {
         public string AnalysisName { get; set; }
+
         public string SpeciesName { get; set; }
+
         public string AbbreviatedSpeciesName { get; set; }
+
         public int MinHz { get; set; }
+
         public int MaxHz { get; set; }
+
         public double DctDuration { get; set; }
+
         public double DctThreshold { get; set; }
+
         public double MinDuration { get; set; }
+
         public double MaxDuration { get; set; }
+
         public double EventThreshold { get; set; }
 
         internal void ReadConfigFile(Config configuration)
         {
             // common properties
-            this.AnalysisName = (string)configuration[AnalysisKeys.AnalysisName] ?? "<no name>";
-            this.SpeciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no name>";
-            this.AbbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+            this.AnalysisName = configuration[AnalysisKeys.AnalysisName] ?? "<no name>";
+            this.SpeciesName = configuration[AnalysisKeys.SpeciesName] ?? "<no name>";
+            this.AbbreviatedSpeciesName = configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+
             // frequency band of the call
             this.MinHz = configuration.GetInt(AnalysisKeys.MinHz);
             this.MaxHz = configuration.GetInt(AnalysisKeys.MaxHz);
 
             // duration of DCT in seconds
             this.DctDuration = configuration.GetDouble(AnalysisKeys.DctDuration);
+
             // minimum acceptable value of a DCT coefficient
             this.DctThreshold = configuration.GetDouble(AnalysisKeys.DctThreshold);
 
@@ -210,7 +221,5 @@ namespace AnalysisPrograms.Recognizers
             // min score for an acceptable event
             this.EventThreshold = configuration.GetDouble(AnalysisKeys.EventThreshold);
         }
-
     } // Config class
-
 }

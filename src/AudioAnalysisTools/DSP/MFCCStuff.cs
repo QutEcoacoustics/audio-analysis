@@ -71,7 +71,6 @@ namespace AudioAnalysisTools.DSP
                 if (amplitudeM[i, binCount - 1] < epsilon)
                 {
                     spectra[i, binCount - 1] = minDb;
-
                 }
                 else
                 {
@@ -135,11 +134,11 @@ namespace AudioAnalysisTools.DSP
                     if (state[i] == 2)
                     {
                         //LoggedConsole.WriteLine("count["+i+"]="+count);
-                        if ((sig == false) && (count < syllableGap))
+                        if (sig == false && count < syllableGap)
                     {
                         for (int j = 1; j <= count; j++)
                         {
-                            state[i - j] = 1;//fill gap with state = 1;
+                            state[i - j] = 1; //fill gap with state = 1;
                         }
                     }
 
@@ -181,12 +180,12 @@ namespace AudioAnalysisTools.DSP
             //double p = 2595.0 / Math.Log(10.0);
             const double p = 1127.01048;
             const double q = 700.0;
-            double dF = f0 - f1;// if reverse this, image intensity is reversed
+            double dF = f0 - f1; // if reverse this, image intensity is reversed
             double x = dF / (q + f1);
             double x1 = Math.Log(x + 1.0);
             if (Math.Abs(x1 - x) > 1.0e-10)
             {
-                return p * ((y1 - y0) + (y0 - y1 * (x + 1.0)) * (x1 / x));
+                return p * (y1 - y0 + ((y0 - (y1 * (x + 1.0))) * (x1 / x)));
             }
             else
             {
@@ -198,7 +197,7 @@ namespace AudioAnalysisTools.DSP
         /// Returns a Mel value for the passed Herz value
         /// NOTE: According to Wikipedia there is no single objective mel(ody) scale conversion.
         /// Mel scale is based on just-noticeable difference in pitch by the ear with ascend pitch. I.E> THis is psycho-acoustic phenomenon.
-        /// 1000Hz is used as the common reference point i.e. 1000Hz = 1000Mel.  
+        /// 1000Hz is used as the common reference point i.e. 1000Hz = 1000Mel.
         /// In speech processing, typically use a linear conversion below 1000Hz.
         /// </summary>
         public static double Mel(double f)
@@ -285,7 +284,7 @@ namespace AudioAnalysisTools.DSP
 
                     for (int k = ipAint; k < ipBint; k++)
                     {
-                        if ((k + 1) >= N)
+                        if (k + 1 >= N)
                         {
                             break;  //to prevent out of range index
                         }
@@ -362,9 +361,9 @@ namespace AudioAnalysisTools.DSP
 
                         for (int k = ai; k < bi; k++)
                         {
-                            if ((k + 1) >= N)
+                            if (k + 1 >= N)
                             {
-                                break;//to prevent out of range index with Koala recording
+                                break; //to prevent out of range index with Koala recording
                             }
 
                             sum += MelIntegral(k * linBand, (k + 1) * linBand, matrix[i, k], matrix[i, k + 1]);
@@ -456,15 +455,15 @@ namespace AudioAnalysisTools.DSP
                         for (int k = ai; k < bi; k++)
                         {
                             //if ((k + 1) >= N) LoggedConsole.WriteLine("k=" + k + "  N=" + N);
-                            if ((k + 1) > N)
+                            if (k + 1 > N)
                             {
-                                break;//to prevent out of range index
+                                break; //to prevent out of range index
                             }
 
                             sum += MelIntegral(k * linBand, (k + 1) * linBand, matrix[i, k], matrix[i, k + 1]);
                         }
 
-                        if (bi < (N - 1))
+                        if (bi < N - 1)
                         {
                             double yb = LinearInterpolate(bi, bi + 1, matrix[i, bi], matrix[i, bi + 1], ipB);
                             sum += MelIntegral(bi * linBand, ipB * linBand, matrix[i, bi], yb);
@@ -590,7 +589,7 @@ namespace AudioAnalysisTools.DSP
                 // over all spectral bins
                 for (int m = 0; m < length; m++)
                 {
-                    sum += spectrum[m] * cosines[k,m];
+                    sum += spectrum[m] * cosines[k, m];
                 }
 
                 cepstrum[k] = factor * sum;
@@ -599,19 +598,44 @@ namespace AudioAnalysisTools.DSP
             return cepstrum;
         }
 
-        public static int[,] Zigzag12X12 = {
-        { 1,  2,  6,  7, 15, 16, 28, 29, 45, 46, 66, 67},
-        { 3,  5,  8, 14, 17, 27, 30, 44, 47, 65, 68, 89},
-        { 4,  9, 13, 18, 26, 31, 43, 48, 64, 69, 88, 90},
-        { 10, 12, 19, 25, 32, 42, 49, 63, 70, 87, 91,108},
-        { 11, 20, 24, 33, 41, 50, 62, 71, 86, 92,107,109},
-        { 21, 23, 34, 40, 51, 61, 72, 85, 93,106,110,123},
-        { 22, 35, 39, 52, 60, 73, 84, 94,105,111,122,124},
-        { 36, 38, 53, 59, 74, 83, 95,104,112,121,125,134},
-        { 37, 54, 58, 75, 82, 96,103,113,120,126,133,135},
-        { 55, 57, 76, 81, 97,102,114,119,127,132,136,141},
-        { 56, 77, 80, 98,101,115,118,128,131,137,140,142},
-        { 78, 79, 99,100,116,117,129,130,138,139,143,144},
+        public static int[,] Zigzag12X12 =
+        {
+        {
+            1,  2,  6,  7, 15, 16, 28, 29, 45, 46, 66, 67,
+        },
+        {
+            3,  5,  8, 14, 17, 27, 30, 44, 47, 65, 68, 89,
+        },
+        {
+            4,  9, 13, 18, 26, 31, 43, 48, 64, 69, 88, 90,
+        },
+        {
+            10, 12, 19, 25, 32, 42, 49, 63, 70, 87, 91, 108,
+        },
+        {
+            11, 20, 24, 33, 41, 50, 62, 71, 86, 92, 107, 109,
+        },
+        {
+            21, 23, 34, 40, 51, 61, 72, 85, 93, 106, 110, 123,
+        },
+        {
+            22, 35, 39, 52, 60, 73, 84, 94, 105, 111, 122, 124,
+        },
+        {
+            36, 38, 53, 59, 74, 83, 95, 104, 112, 121, 125, 134,
+        },
+        {
+            37, 54, 58, 75, 82, 96, 103, 113, 120, 126, 133, 135,
+        },
+        {
+            55, 57, 76, 81, 97, 102, 114, 119, 127, 132, 136, 141,
+        },
+        {
+            56, 77, 80, 98, 101, 115, 118, 128, 131, 137, 140, 142,
+        },
+        {
+            78, 79, 99, 100, 116, 117, 129, 130, 138, 139, 143, 144,
+        },
         };
 
         //********************************************************************************************************************
@@ -643,7 +667,7 @@ namespace AudioAnalysisTools.DSP
             double[,] acousticM = new double[frameCount, dim];
             for (int t = 0; t < frameCount; t++)
             {
-                double[] fv = GetFeatureVector(dBNormed, mfcc, t, includeDelta, includeDoubleDelta);//get feature vector for frame (t)
+                double[] fv = GetFeatureVector(dBNormed, mfcc, t, includeDelta, includeDoubleDelta); //get feature vector for frame (t)
                 for (int i = 0; i < dim; i++)
                 {
                     acousticM[t, i] = fv[i];  //transfer feature vector to acoustic matrix.
@@ -672,7 +696,7 @@ namespace AudioAnalysisTools.DSP
             //LoggedConsole.WriteLine(" mfccCount=" + mfccCount + " coeffcount=" + coeffcount + " dim=" + dim);
 
             double[] acousticV = new double[dim];
-            double[] fv = GetFeatureVector(dB, mfcc, index, includeDelta, includeDoubleDelta);//get feature vector for frame (t)
+            double[] fv = GetFeatureVector(dB, mfcc, index, includeDelta, includeDoubleDelta); //get feature vector for frame (t)
             for (int i = 0; i < dim; i++)
             {
                 acousticV[i] = fv[i];  //transfer feature vector to acoustic Vector.
@@ -753,7 +777,7 @@ namespace AudioAnalysisTools.DSP
             if (includeDelta)
             {
                 //deal with edge effects
-                if (((timeId + 1) >= frameCount) || ((timeId - 1) < 0))
+                if (timeId + 1 >= frameCount || timeId - 1 < 0)
                 {
                     for (int i = offset; i < dim; i++)
                     {
@@ -783,7 +807,7 @@ namespace AudioAnalysisTools.DSP
                 offset += coeffcount;
 
                 //deal with edge effects
-                if (((timeId + 2) >= frameCount) || ((timeId - 2) < 0))
+                if (timeId + 2 >= frameCount || timeId - 2 < 0)
                 {
                     for (int i = offset; i < dim; i++)
                     {
@@ -795,7 +819,7 @@ namespace AudioAnalysisTools.DSP
 
                 for (int i = 0; i < coeffcount; i++)
                 {
-                    fv[offset + i] = (matrix[timeId + 2, i] - matrix[timeId, i]) - (matrix[timeId, i] - matrix[timeId - 2, i]);
+                    fv[offset + i] = matrix[timeId + 2, i] - matrix[timeId, i] - (matrix[timeId, i] - matrix[timeId - 2, i]);
                 }
 
                 for (int i = offset; i < offset + coeffcount; i++)
@@ -817,7 +841,7 @@ namespace AudioAnalysisTools.DSP
             int frameCount = matrix.GetLength(0); //number of frames
             int mfccCount = matrix.GetLength(1);  //number of MFCCs
             int coeffcount = mfccCount + 1;  //number of MFCCs + 1 for energy
-            int dim = coeffcount; //
+            int dim = coeffcount;
             if (includeDelta)
             {
                 dim += coeffcount;
@@ -841,7 +865,7 @@ namespace AudioAnalysisTools.DSP
             int offset = coeffcount;
             if (includeDelta)
             {
-                if (((timeId + 1) >= frameCount) || ((timeId - 1) < 0)) //deal with edge effects
+                if (timeId + 1 >= frameCount || timeId - 1 < 0) //deal with edge effects
                 {
                     for (int i = offset; i < dim; i++)
                     {
@@ -868,7 +892,7 @@ namespace AudioAnalysisTools.DSP
             {
                 //deal with edge effects
                 offset += coeffcount;
-                if (((timeId + 2) >= frameCount) || ((timeId - 2) < 0))
+                if (timeId + 2 >= frameCount || timeId - 2 < 0)
                 {
                     for (int i = offset; i < dim; i++)
                     {
@@ -878,10 +902,10 @@ namespace AudioAnalysisTools.DSP
                     return fv;
                 }
 
-                fv[offset] = (dB[timeId + 2] - dB[timeId]) - (dB[timeId] - dB[timeId - 2]);
+                fv[offset] = dB[timeId + 2] - dB[timeId] - (dB[timeId] - dB[timeId - 2]);
                 for (int i = 0; i < mfccCount; i++)
                 {
-                    fv[1 + offset + i] = (matrix[timeId + 2, i] - matrix[timeId, i]) - (matrix[timeId, i] - matrix[timeId - 2, i]);
+                    fv[1 + offset + i] = matrix[timeId + 2, i] - matrix[timeId, i] - (matrix[timeId, i] - matrix[timeId - 2, i]);
                 }
 
                 for (int i = offset; i < offset + mfccCount + 1; i++)

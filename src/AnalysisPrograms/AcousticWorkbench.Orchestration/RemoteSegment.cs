@@ -109,7 +109,6 @@ namespace AnalysisPrograms.AcousticWorkbench.Orchestration
 
             return this.Equals(objSegment);
         }
-
     }
 
     public class RemoteSegmentWithData : RemoteSegment

@@ -1,3 +1,7 @@
+// <copyright file="OtsuThresholder.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
 namespace TowseyLibrary
 {
     using System;
@@ -13,24 +17,21 @@ namespace TowseyLibrary
     /// </summary>
     public class OtsuThresholder
     {
-
         [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
         public static Arguments Dev()
         {
             // INPUT and OUTPUT DIRECTORIES
 
-
-
             // set up IP and OP directories
             //string InputFile = @"C:\Work\GitHub\audio-analysis\Extra Assemblies\OtsuThreshold\harewood.jpg";
             //string InputFile = @"C:\SensorNetworks\Output\Sonograms\BAC2_20071008-085040.png";
             string InputFile = @"C:\SensorNetworks\Output\SERF\SERFIndices_2013June19\SERF_20130619_064615_000_0156h.png";
+
             //string imageInputDir = @"C:\SensorNetworks\Output\BIRD50\TrainingRidgeImages";
             string OutputDir = @"C:\SensorNetworks\Output\ThresholdingExperiments";
             string outputFilename = "binary3.png";
+
             //string imagOutputDireOutputDir = @"C:\SensorNetworks\Output\BIRD50\TestingRidgeImages";
-
-
 
             FileInfo ipImage = new FileInfo(InputFile);
             DirectoryInfo opDir = new DirectoryInfo(OutputDir);
@@ -44,13 +45,12 @@ namespace TowseyLibrary
                 OutputDirectory = opDir,
                 OutputFileName = new FileInfo(Path.Combine(opDir.FullName, outputFilename)),
                 SpectrogramConfigPath = fiSpectrogramConfig,
+
                 // background threshold value that is subtracted from all spectrograms.
                 BgnThreshold = 3.0,
             };
             throw new Exception();
         } //Dev()
-
-
 
         public class Arguments
         {
@@ -64,9 +64,6 @@ namespace TowseyLibrary
 
             public double BgnThreshold { get; set; }
         }
-
-
-
 
         /// <summary>
         ///
@@ -95,7 +92,6 @@ namespace TowseyLibrary
                 Console.Error.WriteLine(ioE);
                 Environment.Exit(1);
             }
-
 
             int width = srcImage.Width;
             int height = srcImage.Height;
@@ -135,15 +131,12 @@ namespace TowseyLibrary
 
             Image opImage = ConvertMatrixToGreyScaleImage(opByteMatrix);
 
-
             Image[] imageArray = { srcImage, opImage, histoImage };
 
             Image images = ImageTools.CombineImagesVertically(imageArray);
 
             images.Save(arguments.OutputFileName.FullName);
         }
-
-
 
         // =========================  OtsuTHRESHOLD class proper.
 
@@ -211,16 +204,16 @@ namespace TowseyLibrary
 
             for (int t = 0; t < 256; t++)
             {
-                wB += histData[t];					// Weight Background
+                wB += histData[t];                  // Weight Background
                 if (wB == 0) continue;
 
-                wF = total - wB;						// Weight Foreground
+                wF = total - wB;                        // Weight Foreground
                 if (wF == 0) break;
 
                 sumB += (float)(t * histData[t]);
 
-                float mB = sumB / wB;				// Mean Background
-                float mF = (sum - sumB) / wF;		// Mean Foreground
+                float mB = sumB / wB;               // Mean Background
+                float mF = (sum - sumB) / wF;       // Mean Foreground
 
                 // Calculate Between Class Variance
                 float varBetween = (float)wB * (float)wF * (mB - mF) * (mB - mF);
@@ -245,7 +238,7 @@ namespace TowseyLibrary
                 ptr = 0;
                 while (ptr < srcData.Length)
                 {
-                    monoData[ptr] = (byte)(((0xFF & srcData[ptr]) >= this.threshold) ? (byte)255 : 0);
+                    monoData[ptr] = (byte)((0xFF & srcData[ptr]) >= this.threshold ? (byte)255 : 0);
                     ptr++;
                 }
             }
@@ -260,7 +253,10 @@ namespace TowseyLibrary
             // Clear histogram data
             // Set all values to zero
             ptr = 0;
-            while (ptr < this.histData.Length) this.histData[ptr++] = 0;
+            while (ptr < this.histData.Length)
+            {
+                this.histData[ptr++] = 0;
+            }
 
             // Calculate histogram and find the level with the max value
             // Note: the max level value isn't required by the Otsu method
@@ -270,7 +266,11 @@ namespace TowseyLibrary
             {
                 int h = 0xFF & srcData[ptr];
                 this.histData[h]++;
-                if (this.histData[h] > this.maxLevelValue) this.maxLevelValue = this.histData[h];
+                if (this.histData[h] > this.maxLevelValue)
+                {
+                    this.maxLevelValue = this.histData[h];
+                }
+
                 ptr++;
             }
 
@@ -278,7 +278,10 @@ namespace TowseyLibrary
             int total = srcData.Length;
 
             float sum = 0;
-            for (int t = 0; t < 256; t++) sum += t * this.histData[t];
+            for (int t = 0; t < 256; t++)
+            {
+                sum += t * this.histData[t];
+            }
 
             float sumB = 0;
             int wB = 0;
@@ -289,19 +292,25 @@ namespace TowseyLibrary
 
             for (int t = 0; t < 256; t++)
             {
-                wB += this.histData[t];					// Weight Background
-                if (wB == 0) continue;
+                wB += this.histData[t];                 // Weight Background
+                if (wB == 0)
+                {
+                    continue;
+                }
 
-                wF = total - wB;						// Weight Foreground
-                if (wF == 0) break;
+                wF = total - wB;                        // Weight Foreground
+                if (wF == 0)
+                {
+                    break;
+                }
 
-                sumB += (float)(t * this.histData[t]);
+                sumB += t * this.histData[t];
 
-                float mB = sumB / wB;				// Mean Background
-                float mF = (sum - sumB) / wF;		// Mean Foreground
+                float mB = sumB / wB;               // Mean Background
+                float mF = (sum - sumB) / wF;       // Mean Foreground
 
                 // Calculate Between Class Variance
-                float varBetween = (float)wB * (float)wF * (mB - mF) * (mB - mF);
+                float varBetween = wB * (float)wF * (mB - mF) * (mB - mF);
 
                 // Check if new maximum found
                 if (varBetween > varMax)
@@ -310,14 +319,11 @@ namespace TowseyLibrary
                     this.threshold = t;
                 }
             }
+
             return this.threshold;
         } //doThreshold
 
-
         // ================================================= STATIC METHODS =====================================================
-
-
-
 
         public static byte[,] ConvertColourImageToGreyScaleMatrix(Bitmap image)
         {
@@ -333,13 +339,12 @@ namespace TowseyLibrary
                    // alpha = imData.data[i + 3];
                    // https://en.wikipedia.org/wiki/Grayscale
                    //       gray = red*0.2126  +  green*0.7152  +  blue*.0722;
-                   m[r, c] = (byte)Math.Round((color.R * 0.2126) + (color.G * 0.7152) + (color.B * 0.0722));
+                    m[r, c] = (byte)Math.Round((color.R * 0.2126) + (color.G * 0.7152) + (color.B * 0.0722));
                 }
-
             }
+
             return m;
         }
-
 
         public static Bitmap ConvertMatrixToGreyScaleImage(byte[,] M)
         {
@@ -354,9 +359,9 @@ namespace TowseyLibrary
                     image.SetPixel(c, r, color);
                 }
             }
+
             return image;
         }
-
 
         public static Bitmap ConvertMatrixToReversedGreyScaleImage(byte[,] M)
         {
@@ -368,13 +373,14 @@ namespace TowseyLibrary
                 for (int c = 0; c < width; c++)
                 {
                     int value = 255 - M[r, c];
+
                     //Color color = Color.FromArgb(value, value, value);
                     image.SetPixel(c, r, Color.FromArgb(value, value, value));
                 }
             }
+
             return image;
         }
-
 
         private static Image CreateHistogramFrame(OtsuThresholder thresholder, int width, int height)
     {
@@ -385,28 +391,36 @@ namespace TowseyLibrary
         int threshold = thresholder.getThreshold();
         var image = new Bitmap(width, height);
 
-
         for (int col = 0; col < width; col++)
         {
             //int ptr = (numPixels - width) + col;
-            int val = (height * histData[col]) / max;
+            int val = height * histData[col] / max;
 
             if (col == threshold)
             {
-                for (int i = 0; i < height; i++) image.SetPixel(col, i, Color.Red);
-            }
+                for (int i = 0; i < height; i++)
+                    {
+                        image.SetPixel(col, i, Color.Red);
+                    }
+                }
             else
             {
                 for (int i = 1; i <= val; i++)
+                    {
                         image.SetPixel(col, height - i, Color.Black);
-                    //histPlotData[ptr] = (byte)((val < i) ? (byte)255 : 0);
-            }
-            for (int i = 0; i < height; i++) image.SetPixel(0, i, Color.Gray);
+                    }
 
-        }
+                    //histPlotData[ptr] = (byte)((val < i) ? (byte)255 : 0);
+                }
+
+            for (int i = 0; i < height; i++)
+                {
+                    image.SetPixel(0, i, Color.Gray);
+                }
+            }
+
         return image;
     }
-
 
         public static void GetOtsuThreshold(byte[,] matrix, out byte[,] m2, out int threshold)
         {
@@ -437,11 +451,13 @@ namespace TowseyLibrary
             histogramImage = CreateHistogramFrame(thresholder, height, 256);
         }
 
-
         public static void GetGlobalOtsuThreshold(double[,] inputMatrix, out byte[,] opByteMatrix, out double opThreshold, out Image histogramImage)
         {
             if (inputMatrix == null)
+            {
                 throw new ArgumentNullException(nameof(inputMatrix));
+            }
+
             double min, max;
             var normMatrix = MatrixTools.NormaliseInZeroOne(inputMatrix, out min, out max);
             var byteMatrix = MatrixTools.ConvertMatrixOfDouble2Byte(normMatrix);
@@ -450,7 +466,6 @@ namespace TowseyLibrary
             opThreshold = threshold / (double)byte.MaxValue;
             opThreshold = min + (opThreshold * (max - min));
         }
-
 
         /// <summary>
         /// </summary>
@@ -463,10 +478,11 @@ namespace TowseyLibrary
             int minPercentileBound = 5;
             int maxPercentileBound = 95;
             int temporalNh = 15;
-            int freqBinNh  = 15;
+            int freqBinNh = 15;
 
             int rowCount = m.GetLength(0);
             int colCount = m.GetLength(1);
+
             //double[,] normM  = MatrixTools.NormaliseInZeroOne(m);
             var ipByteMatrix = MatrixTools.ConvertMatrixOfDouble2Byte(m);
             var bd1 = DataTools.GetByteDistribution(ipByteMatrix);
@@ -486,6 +502,7 @@ namespace TowseyLibrary
                     int lowerBinBound = Histogram.GetPercentileBin(histo, minPercentileBound);
                     int upperBinBound = Histogram.GetPercentileBin(histo, maxPercentileBound);
                     int range = upperBinBound - lowerBinBound;
+
                     //normM[row, col] = (upperBinBound - lowerBinBound);
                     if (range > byteThreshold)
                     {
@@ -497,7 +514,6 @@ namespace TowseyLibrary
                             opByteMatrix[row, col] = 255;
                         }
                     }
-
                 }
             }
 
@@ -681,7 +697,5 @@ namespace TowseyLibrary
         //    } // for
         //    return threshold;
         //} // OtsuThreshold()
-
-
     } // class OtsuThresholder
 }

@@ -24,8 +24,10 @@ namespace AudioAnalysisTools.Indices
             return new Arguments
             {
                 IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml".ToFileInfo(),
+
                 //InputDir = @"Y:\Results\2013Feb05-184941 - Indicies Analysis of all of availae\SERF\Veg".ToDirectoryInfo(),
                 InputDir = @"C:\SensorNetworks\OutputDataSets\SERF - November 2013 Download".ToDirectoryInfo(),
+
                 //InputDir = @"Y:\Results\2013Nov30-023140 - SERF - November 2013 Download\SERF\November 2013 Download\Veg Plot WAV".ToDirectoryInfo(),
                 //SonogramConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo(),
                 TableDir = (@"C:\SensorNetworks\OutputDataSets\Spectrograms3D\" + datestamp).ToDirectoryInfo(),
@@ -33,17 +35,20 @@ namespace AudioAnalysisTools.Indices
             };
         }
 
-
         // use the following paths for the command line.
         public class Arguments
         {
             //FileInfo indexPropertiesConfig, DirectoryInfo inputDirInfo, DirectoryInfo opDir
 
             public FileInfo IndexPropertiesConfig { get; set; }
-            public DirectoryInfo InputDir  { get; set; }
+
+            public DirectoryInfo InputDir { get; set; }
+
             //public FileInfo SonogramConfig { get; set; }
             public DirectoryInfo TableDir { get; set; }
+
             public DirectoryInfo OutputDir { get; set; }
+
             public static string Description()
             {
                 return "Reads Spectral Indices from multiple spectrogram.csv files and combines into a single table which is written to file.";
@@ -54,7 +59,6 @@ namespace AudioAnalysisTools.Indices
                 return "These methods were written to generate 3D spectrograms.";
             }
         }
-
 
         /// <summary>
         /// This method started 04-12-2014 to process consecutive days of acoustic indices data for 3-D spectrograms.
@@ -80,7 +84,6 @@ namespace AudioAnalysisTools.Indices
             LoggedConsole.WriteLine("# Intermediate dir: " + arguments.TableDir.Name);
             LoggedConsole.WriteLine("# Output directry:  " + arguments.OutputDir.Name);
 
-
             //bool verbose = arguments.Verbose;
 
             // 1. set up the necessary files
@@ -90,8 +93,6 @@ namespace AudioAnalysisTools.Indices
 
             ReadAllSpectralIndicesAndWriteToDataTable(indexPropertiesConfig, inputDirInfo, opDir);
         }
-
-
 
         /// <summary>
         /// Reads through multiple directories to read multiple files of spectral indices.
@@ -126,7 +127,6 @@ namespace AudioAnalysisTools.Indices
                 int second = int.Parse(time.Substring(4, 2));
                 DateTime thisDate = new DateTime(year, month, day, hour, minute, second);
 
-
                 // get target file name without extention
                 nameArray = targetFileName.Split('.');
                 targetFileName = nameArray[0];
@@ -136,8 +136,8 @@ namespace AudioAnalysisTools.Indices
                 // construct the output file name
                 string opFileName = stem + "_" + date + ".SpectralIndices.DataTable.csv";
                 string opFilePath = Path.Combine(opDir.FullName, opFileName);
-                //Logger.Info("Reading spectral-indices for file: " + targetFileName);
 
+                //Logger.Info("Reading spectral-indices for file: " + targetFileName);
 
                 ReadSpectralIndicesAndWriteToDataTable(spectrogramKeys, thisDate, targetDirInfo, targetFileName, opFilePath);
 
@@ -145,22 +145,24 @@ namespace AudioAnalysisTools.Indices
                 //count++;
                 //if (count >= 20) break;
             } // foreach (DirectoryInfo dir in dirList)
-
         }
 
         public static void ReadSpectralIndicesAndWriteToDataTable(string[] spectrogramKeys, DateTime thisDate, DirectoryInfo targetDirInfo, string targetFileName, string opFilePath)
         {
             TimeSpan roundingInterval = TimeSpan.FromMinutes(1);
+
             // thisDate.Round(roundingInterval); // could not get this to work
             int year = thisDate.Year;
             int thisDayOfYear = thisDate.DayOfYear;
             int thisStartMinute = (thisDate.Hour * 60) + thisDate.Minute;
-            if(thisDate.Second > 30) thisStartMinute ++;
+            if (thisDate.Second > 30)
+            {
+                thisStartMinute++;
+            }
 
             // reads all known files spectral indices
             int freqBinCount;
             Dictionary<string, double[,]> dict = IndexMatrices.ReadSpectrogramCSVFiles(targetDirInfo, targetFileName, spectrogramKeys, out freqBinCount);
-
 
             if (dict.Count() == 0)
             {
@@ -169,13 +171,14 @@ namespace AudioAnalysisTools.Indices
             }
 
             // set up the output file with headers if it does not exist
-            if (! File.Exists(opFilePath))
+            if (!File.Exists(opFilePath))
             {
                 string outputCSVHeader = "Year,DayOfYear,MinOfDay,FreqBin";
                 foreach (string key in dict.Keys)
                 {
                     outputCSVHeader = outputCSVHeader + "," + key;
                 }
+
                 FileTools.WriteTextFile(opFilePath, outputCSVHeader);
             }
 
@@ -198,6 +201,7 @@ namespace AudioAnalysisTools.Indices
                     foreach (string key in dict.Keys)
                     {
                         double[,] matrix = dict[key];
+
                         // do not need more than 6 decimal places for values which will ultimately transformed to colour bytes.
                         // cuts file size from 12.2 MB to 7.4 MB
                         string str = string.Format(",{0:F6}", matrix[bin, min]);
@@ -209,9 +213,7 @@ namespace AudioAnalysisTools.Indices
             }
 
             FileTools.Append2TextFile(opFilePath, lines);
-
         }
-
 
         /// <summary>
         /// reads a single csv file in form of table and returns a dictionary of spectral indices.
@@ -227,7 +229,6 @@ namespace AudioAnalysisTools.Indices
 
             // set up dictionary of matrices
             var dict = new Dictionary<string, double[,]>();
-
 
             double min, max;
             DataTools.MinMax(columns[2], out min, out max);
@@ -251,13 +252,12 @@ namespace AudioAnalysisTools.Indices
                     int row = maxFreqBin - (int)columns[3][ptRow];
                     matrix[row, col] = columns[i][ptRow];
                 }
+
                 string key = headers[i];
                 dict[key] = matrix;
             }
 
             return dict;
         }
-
-
     } // end class
 }

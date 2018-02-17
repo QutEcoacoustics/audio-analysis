@@ -22,23 +22,18 @@ namespace AnalysisPrograms
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
     using Acoustics.Shared.Extensions;
-
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-
-    using Production;
-
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
     using Microsoft.FSharp.Core;
+    using Production;
     using Production.Arguments;
     using QutSensors.AudioAnalysis.AED;
-
     using TowseyLibrary;
 
     /// <summary>
@@ -95,22 +90,12 @@ namespace AnalysisPrograms
             public bool IncludeHitElementsInOutput { get; set; } = false;
         }
 
-        #region Constants
-
         /// <summary>
         /// The ecosounds aed identifier.
         /// </summary>
         private const string EcosoundsAedIdentifier = "Ecosounds.AED";
 
-        #endregion
-
-        #region Static Fields
-
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
-        #endregion
-
-        #region Public Properties
 
         /// <summary>
         ///     Gets the initial (default) settings for the analysis.
@@ -150,10 +135,6 @@ namespace AnalysisPrograms
                 return EcosoundsAedIdentifier;
             }
         }
-
-        #endregion
-
-        #region Public Methods and Operators
 
         public static Tuple<AcousticEvent[], AudioRecording, BaseSonogram> Detect(
             FileInfo audioFile,
@@ -389,7 +370,5 @@ namespace AnalysisPrograms
         {
             Csv.WriteToCsv(destination, results);
         }
-
-        #endregion
     }
 }

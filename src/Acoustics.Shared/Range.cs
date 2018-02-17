@@ -82,8 +82,8 @@ namespace Acoustics.Shared
 
         public bool IntersectsWith(Range<T> range, Topology type = Topology.Default)
         {
-            return (ScalarEqualOrGreaterThanAnchor(range.Maximum, this.Minimum, type) &&
-                    ScalarEqualOrLessThanAnchor(range.Minimum, this.Maximum, type));
+            return ScalarEqualOrGreaterThanAnchor(range.Maximum, this.Minimum, type) &&
+                   ScalarEqualOrLessThanAnchor(range.Minimum, this.Maximum, type);
         }
 
         public bool TryGetUnion(Range<T> range, out Range<T> union)
@@ -188,11 +188,13 @@ namespace Acoustics.Shared
                         result = true;
                         break;
                     }
+
                 case 0:
                     {
                         result = (anchorTopology & Topology.LeftClosedRightOpen) == Topology.LeftClosedRightOpen;
                         break;
                     }
+
                 case 1:
                     {
                         result = false;
@@ -202,6 +204,7 @@ namespace Acoustics.Shared
 
             return result;
         }
+
         private static bool ScalarEqualOrLessThanAnchor(T scalar, T anchor, Topology anchorTopology)
         {
             int comparison = anchor.CompareTo(scalar);
@@ -213,11 +216,13 @@ namespace Acoustics.Shared
                     result = false;
                     break;
                 }
+
                 case 0:
                 {
                     result = (anchorTopology & Topology.LeftOpenRightClosed) == Topology.LeftOpenRightClosed;
                     break;
                 }
+
                 case 1:
                 {
                     result = true;
@@ -242,6 +247,6 @@ namespace Acoustics.Shared
         MinimumExclusiveMaximumInclusive = LeftOpenRightClosed,
         Inclusive = Closed,
 
-        Default = LeftClosedRightOpen
+        Default = LeftClosedRightOpen,
     }
 }

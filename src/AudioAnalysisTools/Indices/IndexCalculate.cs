@@ -198,7 +198,7 @@ namespace AudioAnalysisTools.Indices
 
             // NOW EXTRACT SIGNAL FOR BACKGROUND NOISE CALCULATION
             // If the index calculation duration >= 30 seconds, then calculate BGN from the existing segment of recording.
-            bool doSeparateBgnNoiseCalculation = (indexCalculationDuration.TotalSeconds + (2 * config.BgNoiseBuffer.TotalSeconds)) < (segmentDuration.TotalSeconds / 2);
+            bool doSeparateBgnNoiseCalculation = indexCalculationDuration.TotalSeconds + (2 * config.BgNoiseBuffer.TotalSeconds) < segmentDuration.TotalSeconds / 2;
             var dspOutput2 = dspOutput1;
 
             if (doSeparateBgnNoiseCalculation)

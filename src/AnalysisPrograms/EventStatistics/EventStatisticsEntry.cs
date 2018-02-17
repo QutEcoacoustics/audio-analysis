@@ -1,4 +1,4 @@
-﻿// <copyright file="EventStatisticsAnalysis.Entry.cs" company="QutEcoacoustics">
+﻿// <copyright file="EventStatisticsEntry.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -58,7 +58,7 @@ namespace AnalysisPrograms.EventStatistics
                 // we use  the original input string - Using FileInfo fullname always produces an
                 // absolute path wrt to pwd... we don't want to prematurely make assumptions:
                 // e.g. We require a missing absolute path to fail... that wouldn't work with .Name
-                // e.g. We require a relative path to try and resolve, using .FullName would fail the first absolute 
+                // e.g. We require a relative path to try and resolve, using .FullName would fail the first absolute
                 //    check inside ResolveConfigFile
                 config = ConfigFile.Resolve(arguments.Config, Directory.GetCurrentDirectory().ToDirectoryInfo());
             }

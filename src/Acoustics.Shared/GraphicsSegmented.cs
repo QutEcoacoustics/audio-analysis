@@ -119,7 +119,7 @@ namespace Acoustics.Shared
             var srcX = accumulatedSourceX;
             const int SrcY = 0;
 
-            var widthFactor = (float)destImageWidth / (float)sourceImage.Width;
+            var widthFactor = destImageWidth / (float)sourceImage.Width;
             if (destWidth > GdiDrawingLimit || srcWidth > GdiDrawingLimit)
             {
                 if (widthFactor > 1)

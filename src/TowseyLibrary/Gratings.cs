@@ -1,4 +1,8 @@
-﻿namespace TowseyLibrary
+﻿// <copyright file="Gratings.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace TowseyLibrary
 {
     using System;
     using System.Collections.Generic;
@@ -7,10 +11,10 @@
 
     public class Gratings
     {
-
         //these keys are used to define an event in a sonogram.
         public const string key_START_FRAME = "startFrame";
         public const string key_END_FRAME = "endFrame";
+
         //public const string key_FRAME_COUNT = "frameCount";
         //public const string key_START_SECOND = "startSecond";
         //public const string key_END_SECOND = "endSecond";
@@ -21,8 +25,7 @@
         public const string key_SCORE = "score";
         public const string key_PERIODICITY = "periodicity";
 
-
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             string title = "Home experiments";
             LoggedConsole.WriteLine(title);
@@ -38,7 +41,6 @@
             Console.Read();
         }
 
-
         /// <summary>
         /// Runs a simple test of the DetectPeriod2Grating() method
         /// First construct an appropriate vector with alternating high and low values.
@@ -49,12 +51,12 @@
             //double[] template = { 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0 };
             //double[] template = { 2.0, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0, 0.0 };
             double[] template = { 1.5, 0.2, 0.8, 0.1, 0.9, 0.0, 0.8, 0.0 };
+
             //double[] template = { 2.0, 0.0, 0.7, 0.0, 0.6, 0.0, 0.7, 0.0 };
             //double[] template = { 4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
             double score = DetectPeriod2Grating(template);
             LoggedConsole.WriteLine("score: {0:f4}", score);
         }
-
 
         /// <summary>
         /// Runs a test of the ScanArrayForGratingPattern() method.
@@ -82,32 +84,42 @@
             int locationOfSignalStart = 100;
             int searchStep = 1;
             int errorTolerance = cyclePeriod;
-            if (errorTolerance < searchStep) errorTolerance = searchStep + 1;
+            if (errorTolerance < searchStep)
+            {
+                errorTolerance = searchStep + 1;
+            }
 
             //run many repeats of the detection to determine its accuracy. Noise in signal means result varies from iteration to iteration.
             double scoreSum = 0.0;
             for (int iter = 0; iter < maxIterations; iter++)
             {
                 //construct background signal.
-                for (int i = 0; i < n; i++) v[i] = rn.GetDouble() * bgNoiseGain;
+                for (int i = 0; i < n; i++)
+                {
+                    v[i] = rn.GetDouble() * bgNoiseGain;
+                }
+
                 //add in the signal
-                for (int i = 0; i < signal.Length; i++) v[locationOfSignalStart + i] += (signal[i] * signalGain);
+                for (int i = 0; i < signal.Length; i++)
+                {
+                    v[locationOfSignalStart + i] += signal[i] * signalGain;
+                }
+
                 //DataTools.writeBarGraph(v);
 
                 //detect grating in signal
                 var output = ScanArrayForGratingPattern(v, searchStep, numberOfCycles, cyclePeriod);
                 int maxLocation = DataTools.GetMaxIndex(output);
                 scoreSum += output[maxLocation];
-                if ((maxLocation > (locationOfSignalStart - errorTolerance)) && (maxLocation < (locationOfSignalStart + errorTolerance)))
+                if (maxLocation > locationOfSignalStart - errorTolerance && maxLocation < locationOfSignalStart + errorTolerance)
                 {
                     //LoggedConsole.WriteLine("{0}\tscore: {1:f2}", iter, output[maxLocation]);
                     count++;
                 }
             }//end iterations
+
             LoggedConsole.WriteLine("% correct = {0:f1}   Avg score = {1:f4}", 100 * count / (double)maxIterations, scoreSum / (double)maxIterations);
         }//Test_ScanArrayForGridPattern1()
-
-
 
         public static double DetectPeriod2Grating(double[] v)
         {
@@ -117,9 +129,9 @@
 
             var sums = new double[n];
 
-            for (int i = 0; i < n; i++) //
+            for (int i = 0; i < n; i++)
             {
-                difference[i] = v[2*i] - v[(2*i)+1];
+                difference[i] = v[2 * i] - v[(2 * i) + 1];
             }
 
             double avDifference = Math.Abs(difference.Average());
@@ -129,10 +141,13 @@
 
             double vigilance = 0.5; //determines how strictly similar the peaks heights must be - regulates the effect of range
             double score = avDifference - (vigilance * diffOfDiff);  //adjusted score
-            if (score < 0.0) score = 0.0;
+            if (score < 0.0)
+            {
+                score = 0.0;
+            }
+
             return score;
         } //DetectBarsUsingGrid()
-
 
         /// <summary>
         /// Steps through the passed array and checks each segment for a grating pattern having period = 2 signal samples.
@@ -152,16 +167,20 @@
             {
                 int start = i;
                 double[] extract = DataTools.Subarray(array, start, segmentLength);
-                if (extract.Length != segmentLength) return output; // reached end of array
+                if (extract.Length != segmentLength)
+                {
+                    return output; // reached end of array
+                }
+
                 double score = DetectPeriod2Grating(extract);
 
                 output[i] = score;
 
-                i += (step - 1);
+                i += step - 1;
             }
+
             return output;
         } //ScanArrayForGridPattern()
-
 
         /// <summary>
         /// Steps through the passed array and and at each step cuts out a segment having length  = numberOfCycles * cyclePeriod.
@@ -189,7 +208,10 @@
             {
                 //if (noiseReducedArray[i] < threshold) continue;
                 double[] extract = DataTools.Subarray(array, i, segmentLength);
-                if (extract.Length != segmentLength) return gridScore; // reached end of array
+                if (extract.Length != segmentLength)
+                {
+                    return gridScore; // reached end of array
+                }
 
                 //now reduce the segment
                 double[] reducedSegment = ReduceArray(extract, cyclePeriod, numberOfCycles);
@@ -203,18 +225,27 @@
                 //}
 
                 //transfer score to output array
-                for (int x = 0; x < segmentLength; x++) if (gridScore[i+x] < score) gridScore[i+x] = score;
+                for (int x = 0; x < segmentLength; x++)
+                {
+                    if (gridScore[i + x] < score)
+                    {
+                        gridScore[i + x] = score;
+                    }
+                }
 
-                i += (step - 1);
+                i += step - 1;
             }
+
             return gridScore;
         } //ScanArrayForGridPattern()
-
 
         public static double[] ReduceArray(double[] array, int cyclePeriod, int numberOfCycles)
         {
             double[] reducedSegment = null;
-            if (cyclePeriod == 2) return array;
+            if (cyclePeriod == 2)
+            {
+                return array;
+            }
 
             int halfPeriod = cyclePeriod / 2;
             int reducedLength = numberOfCycles * 2;
@@ -224,8 +255,13 @@
                     //################# Two ways to reduce:
                     //################ (1) by average of the period or (2) by max of the period
                     double sum = 0;
-                    for (int c = 0; c < halfPeriod; c++) sum += array[(x * halfPeriod) + c];
-                    reducedSegment[x] = sum / (double)cyclePeriod;
+                    for (int c = 0; c < halfPeriod; c++)
+                {
+                    sum += array[(x * halfPeriod) + c];
+                }
+
+                    reducedSegment[x] = sum / cyclePeriod;
+
                     //################ (2)
                     //double max = -Double.MaxValue;
                     //for (int c = 0; c < halfPeriod; c++)
@@ -235,11 +271,9 @@
                     //}
                     //reducedSegment[x] = max;
             }
+
             return reducedSegment;
         }
-
-
-
 
         /// <summary>
         /// returns the period scores for a range of periods to be found in the passed array
@@ -253,22 +287,27 @@
         {
             int minHalfPeriod = minPeriod / 2;
             int maxHalfPeriod = maxPeriod / 2;
-            var periodScores = new double[maxPeriod+1][];
+            var periodScores = new double[maxPeriod + 1][];
 
-            for (int p = 0; p < minPeriod; p++) periodScores[p] = null;
+            for (int p = 0; p < minPeriod; p++)
+            {
+                periodScores[p] = null;
+            }
+
             for (int p = minPeriod; p <= maxPeriod; p++)
             {
-                if(p%2 ==1) //ignore odd periods
+                if (p % 2 == 1) //ignore odd periods
                 {
                     periodScores[p] = null;
                     continue;
                 }
+
                 double[] scores = ScanArrayForGratingPattern(array, step, numberOfCycles, p);
                 periodScores[p] = scores;
             } // for
+
             return periodScores;
         } //ScanArrayForGratingPattern()
-
 
         public static Tuple<double[], double[]> MergePeriodicScoreArrays(double[][] periodScores, int minPeriod, int maxPeriod)
         {
@@ -277,17 +316,26 @@
             int length = 0;
             for (int p = 0; p < maxPeriod; p++)
             {
-                if (periodScores[p] == null) continue;
+                if (periodScores[p] == null)
+                {
+                    continue;
+                }
+
                 length = periodScores[p].Length;
                 break;
             }
-            var intensity   = new double[length];
+
+            var intensity = new double[length];
             var periodicity = new double[length];
 
             //assume that the score arrays are arranged in order in the list and range from the passed min and max periods.
             for (int p = 0; p < maxPeriod; p++)
             {
-                if (periodScores[p] == null) continue;
+                if (periodScores[p] == null)
+                {
+                    continue;
+                }
+
                 for (int i = 0; i < length; i++)
                 {
                     if (periodScores[p][i] > intensity[i])
@@ -300,8 +348,6 @@
 
             return Tuple.Create(intensity, periodicity);
         } //MergePeriodicScoreArrays()
-
-
 
         public static List<Dictionary<string, double>> ExtractPeriodicEvents(double[] intensity, double[] periodicity, double intensityThreshold)
         {
@@ -317,21 +363,24 @@
                 ev[key_END_FRAME] = item[1];
                 ev[key_SCORE] = item[2];
                 double cyclePeriod = 0.0;
-                for (int n = (int)item[0]; n <= (int)item[1]; n++) cyclePeriod += periodicity[n];
+                for (int n = (int)item[0]; n <= (int)item[1]; n++)
+                {
+                    cyclePeriod += periodicity[n];
+                }
+
                 ev[key_PERIODICITY] = cyclePeriod / (item[1] - item[0] + 1);
                 list.Add(ev);
             } //foreach
+
             return list;
         } //ExtractPeriodicEvents()
-
-
-
 
         ///used for testing purposes
         public static double[] GetPeriodicSignal(int cyclePeriod, int numberOfCycles)
         {
             //double[] template = { 1.0, 0.0, 1.1, 0.1, 1.2, 0.2, 1.3, 0.3 };
             double[] template = { 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0 };
+
             //double[] template = { 2.0, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0, 0.0 };
             //double[] template = { 1.5, 0.2, 0.8, 0.1, 0.9, 0.0, 0.8, 0.0 };
             //double[] template = { 2.0, 0.0, 0.7, 0.0, 0.6, 0.0, 0.7, 0.0 };
@@ -348,17 +397,22 @@
                 signal = new double[buffer + signalLength + buffer];
                 for (int x = 0; x < template.Length; x++)
                 {
-                    for (int p = 0; p < halfPeriod; p++) signal[buffer + (x * halfPeriod) + p] = template[x]; //transfer signal
-                    if (cyclePeriod > 12) signal = DataTools.filterMovingAverage(signal, 3);
+                    for (int p = 0; p < halfPeriod; p++)
+                    {
+                        signal[buffer + (x * halfPeriod) + p] = template[x]; //transfer signal
+                    }
+
+                    if (cyclePeriod > 12)
+                    {
+                        signal = DataTools.filterMovingAverage(signal, 3);
+                    }
                 } //for
+
                 signal = DataTools.Subarray(signal, buffer, signalLength);
             } // if (cyclePeriod > 2)
 
             signal = DataTools.normalise(signal);
             return signal;
         }
-
-
-
     }//class Gratings
 }

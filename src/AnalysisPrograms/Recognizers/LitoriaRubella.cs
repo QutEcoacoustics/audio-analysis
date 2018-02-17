@@ -69,9 +69,8 @@ namespace AnalysisPrograms.Recognizers
         /// </summary>
         public override RecognizerResults Recognize(AudioRecording recording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
-            string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
-            string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
-
+            string speciesName = configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
+            string abbreviatedSpeciesName = configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
 
             int minHz = configuration.GetInt(AnalysisKeys.MinHz);
             int maxHz = configuration.GetInt(AnalysisKeys.MaxHz);
@@ -105,7 +104,6 @@ namespace AnalysisPrograms.Recognizers
             // frame size
             int frameSize = configuration.GetInt(AnalysisKeys.KeyFrameSize);
 
-
             if (recording.WavReader.SampleRate != 22050)
             {
                 throw new InvalidOperationException("Requires a 22050Hz file");
@@ -128,6 +126,7 @@ namespace AnalysisPrograms.Recognizers
             };
 
             TimeSpan recordingDuration = recording.Duration;
+
             //int sr = recording.SampleRate;
             //double freqBinWidth = sr / (double)sonoConfig.WindowSize;
 

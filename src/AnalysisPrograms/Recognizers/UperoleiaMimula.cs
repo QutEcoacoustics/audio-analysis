@@ -20,24 +20,18 @@ namespace AnalysisPrograms.Recognizers
     using System.Linq;
     using System.Reflection;
     using System.Text;
-
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Tools.Wav;
-
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-
-    using Base;
-
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-
+    using Base;
     using log4net;
-
     using TowseyLibrary;
 
     /// <summary>
@@ -49,7 +43,7 @@ namespace AnalysisPrograms.Recognizers
     /// Alternatively, this recognizer can be called via the MultiRecognizer.
     ///
     /// </summary>
-    class UperoleiaMimula : RecognizerBase
+    internal class UperoleiaMimula : RecognizerBase
     {
         public override string Author => "Towsey";
 
@@ -84,8 +78,8 @@ namespace AnalysisPrograms.Recognizers
         /// <returns></returns>
         public override RecognizerResults Recognize(AudioRecording recording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
-            string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
-            string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+            string speciesName = configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
+            string abbreviatedSpeciesName = configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
 
             int minHz = configuration.GetInt(AnalysisKeys.MinHz);
             int maxHz = configuration.GetInt(AnalysisKeys.MaxHz);
@@ -126,6 +120,7 @@ namespace AnalysisPrograms.Recognizers
                 recording.SampleRate,
                 FrameSize,
                 maxOscilFreq);
+
             //windowOverlap = 0.75; // previous default
 
             // i: MAKE SONOGRAM
@@ -134,6 +129,7 @@ namespace AnalysisPrograms.Recognizers
                 SourceFName = recording.BaseName,
                 WindowSize = FrameSize,
                 WindowOverlap = windowOverlap,
+
                 //NoiseReductionType = NoiseReductionType.NONE,
                 NoiseReductionType = NoiseReductionType.Standard,
                 NoiseReductionParameter = 0.1,
@@ -218,6 +214,7 @@ namespace AnalysisPrograms.Recognizers
                         SourceFName = recording.BaseName,
                         WindowSize = 1024,
                         WindowOverlap = 0,
+
                         //NoiseReductionType = NoiseReductionType.NONE,
                         NoiseReductionType = NoiseReductionType.Standard,
                         NoiseReductionParameter = 0.1,

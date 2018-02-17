@@ -19,7 +19,6 @@ namespace Acoustics.Test.Shared
     {
         public TestContext TestContext { get; set; }
 
-        #region Additional test attributes
         //
         // You can use the following additional attributes as you write your tests:
         //
@@ -39,7 +38,6 @@ namespace Acoustics.Test.Shared
         // [TestCleanup()]
         // public void MyTestCleanup() { }
         //
-        #endregion
 
         [TestMethod]
         public void IsInteractive()

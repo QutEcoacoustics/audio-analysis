@@ -16,7 +16,6 @@ namespace AnalysisPrograms.Recognizers.Base
     using System.IO;
     using System.Linq;
     using System.Threading;
-
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
@@ -24,13 +23,11 @@ namespace AnalysisPrograms.Recognizers.Base
     using AcousticWorkbench;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-    using Production;
-
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-
+    using Production;
     using TowseyLibrary;
 
     public abstract class RecognizerBase : AbstractStrongAnalyser, IEventRecognizer
@@ -42,14 +39,14 @@ namespace AnalysisPrograms.Recognizers.Base
                 this.Loaded += config =>
                     {
                         var file = ConfigFile.Resolve(this.HighResolutionIndicesConfig);
-                        var indicesConfig = ConfigFile.Deserialize<Acoustic.AcousticIndicesConfig>(file);
+                        var indicesConfig = ConfigFile.Deserialize<AcousticIndices.AcousticIndicesConfig>(file);
                         this.HighResolutionIndices = indicesConfig;
                     };
             }
 
             public string HighResolutionIndicesConfig { get; set; }
 
-            public Acoustic.AcousticIndicesConfig HighResolutionIndices { get; private set; }
+            public AcousticIndices.AcousticIndicesConfig HighResolutionIndices { get; private set; }
         }
 
         public abstract string Author { get; }
@@ -154,7 +151,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 const double EventThreshold = 0.1;
                 var plots = results.Plots ?? new List<Plot>();
 
-                Image image = this.DrawSonogram(sonogram, hits,plots, predictedEvents, EventThreshold);
+                Image image = this.DrawSonogram(sonogram, hits, plots, predictedEvents, EventThreshold);
                 image.Save(imagePath, ImageFormat.Png);
                 analysisResults.ImageFile = segmentSettings.SegmentImageFile;
 
@@ -179,7 +176,7 @@ namespace AnalysisPrograms.Recognizers.Base
             string fileStem,
             Image scoreTrack,
             IndexCalculateResult[] indexResults,
-            Acoustic.AcousticIndicesConfig acousticIndicesConfig)
+            AcousticIndices.AcousticIndicesConfig acousticIndicesConfig)
         {
             var dictionaryOfSpectra = indexResults.Select(icr => icr.SpectralIndexValues).ToArray().ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.Rotate90ClockWise);
 
@@ -209,7 +206,8 @@ namespace AnalysisPrograms.Recognizers.Base
                 // 1: DRAW the coloured ridge spectrograms
 
                 // passed null for first argument on purpose: we don't want to read files off disk
-                var ridgeSpectrogram = DrawLongDurationSpectrograms.DrawRidgeSpectrograms(null, ipConfig, fileStem, (double)hiResScale, dictionaryOfSpectra);
+                var ridgeSpectrogram = DrawLongDurationSpectrograms.DrawRidgeSpectrograms(null, ipConfig, fileStem, hiResScale, dictionaryOfSpectra);
+
                 //var opImages = new List<Image>();
                 //opImages.Add(ridgeSpectrogram);
                 //opImages.Add(scoreTrackImage);
@@ -217,6 +215,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 //Image opImage = ImageTools.CombineImagesVertically(opImages);
 
                 var fileName = FilenameHelpers.AnalysisResultPath(output, fileStem, "Ridges", ".png");
+
                 //opImage.Save(fileName);
                 ridgeSpectrogram.Save(fileName);
             } // if (saveRidgeSpectrograms)
@@ -236,7 +235,7 @@ namespace AnalysisPrograms.Recognizers.Base
             if (saveTwoMapsSpectrograms)
             {
                 opImage = DrawLongDurationSpectrograms.DrawFalseColourSpectrograms(ldfcSpectrogramArguments, fileStem, dictionaryOfSpectra);
-                var opImages = new List<Image> {opImage, scoreTrack};
+                var opImages = new List<Image> { opImage, scoreTrack };
                 opImage = ImageTools.CombineImagesVertically(opImages);
                 var fileName = FilenameHelpers.AnalysisResultPath(output, fileStem, "TwoMaps", ".png");
                 opImage.Save(fileName);
@@ -253,9 +252,8 @@ namespace AnalysisPrograms.Recognizers.Base
         private void SummarizeHighResolutionIndices(
             AnalysisResult2 analysisResults,
             IndexCalculateResult[] indexResults,
-            Acoustic.AcousticIndicesConfig highResolutionParsedConfiguration)
+            AcousticIndices.AcousticIndicesConfig highResolutionParsedConfiguration)
         {
-
             // NOW COMPRESS THE HI-RESOLUTION SPECTRAL INDICES TO LOW RES
             double lowResolution = highResolutionParsedConfiguration.GetDoubleOrNull("LowResolution") ?? 60.0;
             TimeSpan imageScale = TimeSpan.FromSeconds(lowResolution);
@@ -264,9 +262,10 @@ namespace AnalysisPrograms.Recognizers.Base
             var dictionaryOfSpectra = indexResults.Select(icr => icr.SpectralIndexValues).ToArray().ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.Rotate90ClockWise);
 
             var spectralSelection = IndexMatrices.CompressIndexSpectrograms(dictionaryOfSpectra, imageScale, dataScale);
+
             // check that have not compressed matrices to zero length
             double[,] matrix = spectralSelection.First().Value;
-            if ((matrix.GetLength(0) == 0) || (matrix.GetLength(1) == 0))
+            if (matrix.GetLength(0) == 0 || matrix.GetLength(1) == 0)
             {
                 LoggedConsole.WriteErrorLine("WARNING: SPECTRAL INDEX MATRICES compressed to zero length!!!!!!!!!!!!!!!!!!!!!!!!");
             }
@@ -364,7 +363,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 image.OverlayRedTransparency(hits);
             }
 
-            if ((predictedEvents != null) && (predictedEvents.Count > 0))
+            if (predictedEvents != null && predictedEvents.Count > 0)
             {
                 image.AddEvents(
                     predictedEvents,
@@ -373,7 +372,7 @@ namespace AnalysisPrograms.Recognizers.Base
                     sonogram.FramesPerSecond);
             }
 
-            var result =  image.GetImage();
+            var result = image.GetImage();
 
             return result;
         }
@@ -405,13 +404,13 @@ namespace AnalysisPrograms.Recognizers.Base
             AudioRecording recording,
             AnalysisSettings analysisSettings,
             SegmentSettings<T> segmentSettings,
-            Acoustic.AcousticIndicesConfig acousticConfiguration)
+            AcousticIndices.AcousticIndicesConfig acousticConfiguration)
         {
             // Convert the Config config to IndexCalculateConfig class and merge in the unnecesary parameters.
 
             IndexCalculateResult[] Callback()
             {
-                IndexCalculateResult[] subsegmentResults = Acoustic.CalculateIndicesInSubsegments(
+                IndexCalculateResult[] subsegmentResults = AcousticIndices.CalculateIndicesInSubsegments(
                     recording,
                     segmentSettings.SegmentStartOffset,
                     segmentSettings.AnalysisIdealSegmentDuration,
@@ -436,9 +435,15 @@ namespace AnalysisPrograms.Recognizers.Base
             if (scores != null)
             {
                 foreach (var plot in scores)
+                {
                     image.AddTrack(ImageTrack.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title)); //assumes data normalised in 0,1
+                }
             }
-            if (hits != null) image.OverlayRainbowTransparency(hits);
+
+            if (hits != null)
+            {
+                image.OverlayRainbowTransparency(hits);
+            }
 
             if (events.Count > 0)
             {
@@ -447,8 +452,10 @@ namespace AnalysisPrograms.Recognizers.Base
                     ev.BorderColour = AcousticEvent.DefaultBorderColor;
                     ev.ScoreColour = AcousticEvent.DefaultScoreColor;
                 }
+
                 image.AddEvents(events, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
             }
+
             return image.GetImage();
         }
     }

@@ -19,8 +19,6 @@ namespace Acoustics.Test.AudioAnalysisTools.Oscillations2014
     {
         private DirectoryInfo outputDirectory;
 
-        #region Additional test attributes
-
         /*
         // You can use the following additional attributes as you write your tests:
         //
@@ -52,8 +50,6 @@ namespace Acoustics.Test.AudioAnalysisTools.Oscillations2014
         {
             PathHelper.DeleteTempDir(this.outputDirectory);
         }
-
-        #endregion
 
         /// <summary>
         /// Test for drawing of two Oscillation Spectrograms using different algorithms

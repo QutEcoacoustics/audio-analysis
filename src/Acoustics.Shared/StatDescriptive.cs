@@ -166,8 +166,6 @@ namespace QutSensors.Shared
 
         private double[] sortedData;
 
-        #region Constructors
-
         /// <summary>
         /// Initializes a new instance of the <see cref="StatDescriptive"/> class.
         /// Descriptive analysis default constructor.
@@ -189,8 +187,6 @@ namespace QutSensors.Shared
         {
             this.data = dataVariable;
         }
-
-        #endregion //  Constructors
 
         /// <summary>
         /// Run the analysis to obtain descriptive information of the data.
@@ -296,8 +292,8 @@ namespace QutSensors.Shared
 
             // kurtosis: see http://en.wikipedia.org/wiki/Kurtosis (heading: Sample Kurtosis)
             double m2_2 = Math.Pow(sumOfESquare, 2);
-            this.Result.Kurtosis = ((n + 1) * n * (n - 1)) / ((n - 2) * (n - 3)) * (m4 / m2_2) -
-                                   3 * Math.Pow(n - 1, 2) / ((n - 2) * (n - 3)); // second last formula for G2
+            this.Result.Kurtosis = ((n + 1) * n * (n - 1) / ((n - 2) * (n - 3)) * (m4 / m2_2)) -
+                                   (3 * Math.Pow(n - 1, 2) / ((n - 2) * (n - 3))); // second last formula for G2
 
             // calculate quartiles
             this.sortedData = new double[this.data.Length];
@@ -336,7 +332,7 @@ namespace QutSensors.Shared
             double position = (sortedData.Length + 1) * p / 100.0;
             double leftNumber = 0.0d, rightNumber = 0.0d;
 
-            double n = p / 100.0d * (sortedData.Length - 1) + 1.0d;
+            double n = (p / 100.0d * (sortedData.Length - 1)) + 1.0d;
 
             if (position >= 1)
             {
@@ -356,7 +352,7 @@ namespace QutSensors.Shared
             else
             {
                 double part = n - Math.Floor(n);
-                return leftNumber + part * (rightNumber - leftNumber);
+                return leftNumber + (part * (rightNumber - leftNumber));
             }
         }
 
@@ -381,6 +377,7 @@ namespace QutSensors.Shared
                 b = a % b;
                 a = temp;
             }
+
             return a;
         }
 
@@ -403,13 +400,14 @@ namespace QutSensors.Shared
             {
                 if (b > a)
                 {
-                    ret = (b / temp) * a;
+                    ret = b / temp * a;
                 }
                 else
                 {
-                    ret = (a / temp) * b;
+                    ret = a / temp * b;
                 }
             }
+
             return ret;
         }
     }

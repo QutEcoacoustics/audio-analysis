@@ -38,7 +38,6 @@ namespace Acoustics.Shared
         /// </summary>
         public StringKeyValueStore()
         {
-
         }
 
         /// <summary>
@@ -115,7 +114,7 @@ namespace Acoustics.Shared
         {
             if (ReferenceEquals(value.GetType(), typeof(bool)))
             {
-                return ((bool)value) ? "true" : "false";
+                return (bool)value ? "true" : "false";
             }
 
             if (ReferenceEquals(value.GetType(), typeof(decimal)))
@@ -321,8 +320,6 @@ namespace Acoustics.Shared
             throw this.ConvertFailed(key, value, "decimal");
         }
 
-        #region Save and Load
-
         public static void SaveToCsv(FileInfo input, FileInfo output)
         {
             // read in entire file to get all property names
@@ -383,15 +380,15 @@ SELECT TOP 1000 [PageEventId]
 
 
 SELECT TOP 1000 b.boundid,b.audioreadingid,l.text,b.starttimeoffsetMs, b.endtimeoffsetms,lb.createddate,l.createddate,b.createddate,u.username,u.userid,
-	b.endtimeoffsetms - b.starttimeoffsetMs as tagdurationms,
-	cast(datepart(year, lb.createddate) as varchar(100))+'/'+
+    b.endtimeoffsetms - b.starttimeoffsetMs as tagdurationms,
+    cast(datepart(year, lb.createddate) as varchar(100))+'/'+
        cast(datepart(month, lb.createddate) as varchar(100))+'/'+
        cast(datepart(day, lb.createddate) as varchar(100)) as CreatedDate
        ,cast(datepart(hh,lb.createddate) as varchar(100))+':'+
        cast(datepart(minute, lb.createddate) as varchar(100))+':'+
        cast(datepart(second, lb.createddate) as varchar(100)) as CreatedTime
 
-	   ,cast(datepart(year,dateadd(millisecond, b.starttimeoffsetMs, ar.Time)) as varchar(100))+'/'+
+       ,cast(datepart(year,dateadd(millisecond, b.starttimeoffsetMs, ar.Time)) as varchar(100))+'/'+
        cast(datepart(month,dateadd(millisecond, b.starttimeoffsetMs, ar.Time)) as varchar(100))+'/'+
        cast(datepart(day,dateadd(millisecond, b.starttimeoffsetMs, ar.Time)) as varchar(100)) as StartDate
        ,cast(datepart(hh,dateadd(millisecond, b.starttimeoffsetMs, ar.Time)) as varchar(100))+':'+
@@ -415,7 +412,6 @@ SELECT TOP 1000 b.boundid,b.audioreadingid,l.text,b.starttimeoffsetMs, b.endtime
 
 
              */
-
         }
 
         public void LoadFromQueryString(string query)
@@ -618,7 +614,5 @@ SELECT TOP 1000 b.boundid,b.audioreadingid,l.text,b.starttimeoffsetMs, b.endtime
             return new InvalidOperationException(
                 string.Format("Found key '{0}' but could not convert its value '{1}' to a {2}.", key, value, type));
         }
-
-        #endregion
     }
 }

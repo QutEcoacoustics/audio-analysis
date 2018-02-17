@@ -5,11 +5,10 @@
 namespace Acoustics.Shared.Extensions
 {
     using System;
-    using System.Drawing;
     using System.Collections.Generic;
+    using System.Drawing;
     using System.Linq;
     using System.Text;
-
 
     public static class RandomExtensions
     {

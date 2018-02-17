@@ -28,6 +28,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
                     // search
                     var indicesPropertiesConfig = Indices.IndexProperties.Find(this, this.ConfigPath);
                     this.IndexPropertiesConfig = indicesPropertiesConfig.Path.ToOsPath();
+
                     // load
                     this.IndexProperties = Indices.IndexProperties.GetIndexProperties(indicesPropertiesConfig);
                 };
@@ -62,13 +63,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
         public string ScaleUnits { get; set; }
 
         /// <summary>
-        /// Get or sets the number of zoom levels to render for standard FFT spectrogram images.
+        /// Gets or sets get or sets the number of zoom levels to render for standard FFT spectrogram images.
         /// Should contain about 1-3 steps following an inverse base-2 power distribution
         /// </summary>
         public double[] SpectralFrameScale { get; set; } = { 0.7, 0.04, 0.02 };
 
         /// <summary>
-        /// Get or sets the number of zoom levels for index based images.
+        /// Gets or sets get or sets the number of zoom levels for index based images.
         /// Should contain about 11-12 steps following an inverse base-2 power distribution
         /// </summary>
         public double[] SpectralIndexScale { get; set; } = { 60, 24, 12, 6, 2, 1, 0.6, 0.2 };

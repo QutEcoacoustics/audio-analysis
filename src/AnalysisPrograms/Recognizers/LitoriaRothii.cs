@@ -159,7 +159,7 @@ namespace AnalysisPrograms.Recognizers
                 double period;
                 double intensity;
                 Oscillations2014.GetOscillation(subArray, framesPerSecond, cosines, out oscilFreq, out period, out intensity);
-                bool periodWithinBounds = (period > minPeriod) && (period < maxPeriod);
+                bool periodWithinBounds = period > minPeriod && period < maxPeriod;
 
                 if (!periodWithinBounds)
                 {

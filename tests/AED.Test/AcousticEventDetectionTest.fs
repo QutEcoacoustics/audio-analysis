@@ -235,21 +235,21 @@ module AcousticEventDetectionTestsForSeperateLargeEvents =
 
     [<Fact>]
     let ``seperate large events - hits returned for event 1`` () =
-        let result = testMatrix |> getAcousticEvents |> separateLargeEvents sleDefaults|> Seq.nth 0
+        let result = testMatrix |> getAcousticEvents |> separateLargeEvents sleDefaults|> Seq.item 0
         
         let absoluteHits = Set.map (fun (y,x) -> (y + 18, x + 4)) expectedEvent1
         Assert.Equal<Set<_>>(absoluteHits, result.Elements)
 
     [<Fact>]
     let ``seperate large events - hits returned for event 2`` () =
-        let result = testMatrix |> getAcousticEvents |> separateLargeEvents sleDefaults |> Seq.nth 1
+        let result = testMatrix |> getAcousticEvents |> separateLargeEvents sleDefaults |> Seq.item 1
         
         let absoluteHits = Set.map (fun (y, x) -> (y + 1, x + 4)) expectedEvent2
         Assert.Equal<Set<_>>(absoluteHits, result.Elements)
 
     [<Fact>]
     let ``seperate large events - hits returned for event 3`` () =
-        let result = testMatrix |> getAcousticEvents |> separateLargeEvents sleDefaults |> Seq.nth 2
+        let result = testMatrix |> getAcousticEvents |> separateLargeEvents sleDefaults |> Seq.item 2
         
         let absoluteHits = Set.map (fun (y,x) -> (y + 1, x + 43)) expectedEvent3
         Assert.Equal<Set<_>>(absoluteHits, result.Elements)
@@ -257,7 +257,7 @@ module AcousticEventDetectionTestsForSeperateLargeEvents =
     [<Fact>]
     let ``seperate large events - hits returned for event 3 when ExtrapolateBridgeEvents is diabled`` () =
         let sleParams = match sleDefaults with Horizontal p -> {p with ExtrapolateBridgeEvents = false} |> Horizontal
-        let result = testMatrix |> getAcousticEvents |> separateLargeEvents sleParams|> Seq.nth 2
+        let result = testMatrix |> getAcousticEvents |> separateLargeEvents sleParams|> Seq.item 2
         
         let absoluteHits = Set.map (fun (y, x) -> (y + 4, x + 43)) expectedEvent3Alternate
         Assert.Equal<Set<_>>(absoluteHits, result.Elements)
@@ -379,14 +379,14 @@ module AcousticEventDetectionTestsForVerticalSeperateLargeEvents =
 
     [<Fact>]
     let ``seperate large events - hits returned for event 1`` () =
-        let result = testMatrix |> getAcousticEvents |> separateLargeEvents sleParams |> Seq.nth 0
+        let result = testMatrix |> getAcousticEvents |> separateLargeEvents sleParams |> Seq.item 0
         
         let absoluteHits = Set.map (fun (y,x) -> (y + 1, x + 64)) expectedEvent1
         Assert.Equal<Set<_>>(absoluteHits, result.Elements)
 
     [<Fact>]
     let ``seperate large events - hits returned for event 2`` () =
-        let result = testMatrix |> getAcousticEvents |> separateLargeEvents sleParams |> Seq.nth 1
+        let result = testMatrix |> getAcousticEvents |> separateLargeEvents sleParams |> Seq.item 1
         
         let absoluteHits = Set.map (fun (y,x) -> (y + 1, x + 4)) expectedEvent2
         Assert.Equal<Set<_>>(absoluteHits, result.Elements)
@@ -394,7 +394,7 @@ module AcousticEventDetectionTestsForVerticalSeperateLargeEvents =
     [<Fact>]
     let ``seperate large events - hits returned for event 3`` () =
         
-        let result = testMatrix |> getAcousticEvents |> separateLargeEvents sleParams |> Seq.nth 2
+        let result = testMatrix |> getAcousticEvents |> separateLargeEvents sleParams |> Seq.item 2
         
         let absoluteHits = Set.map (fun (y, x) -> (y + 9, x + 4)) expectedEvent3
         Assert.Equal<Set<_>>(absoluteHits, result.Elements)
@@ -402,7 +402,7 @@ module AcousticEventDetectionTestsForVerticalSeperateLargeEvents =
     [<Fact>]
     let ``seperate large events - hits returned for event 3 when ExtrapolateBridgeEvents is diabled`` () =
         let sleParams = match sleParams with Vertical p -> {p with ExtrapolateBridgeEvents = false} |> Vertical
-        let result = testMatrix |> getAcousticEvents |> separateLargeEvents sleParams |> Seq.nth 2
+        let result = testMatrix |> getAcousticEvents |> separateLargeEvents sleParams |> Seq.item 2
         
         let absoluteHits = Set.map (fun (y, x) -> (y + 9, x + 43)) expectedEvent3Alternate
         Assert.Equal<Set<_>>(absoluteHits, result.Elements)
@@ -499,14 +499,14 @@ module AcousticEventDetectionTestsForDebugSeperateLargeEvents =
 
     [<Fact>]
     let ``seperate large events - hits returned for event 1`` () =
-        let result = testMatrix |> getAcousticEvents |> separateLargeEvents sleParams |> Seq.nth 0
+        let result = testMatrix |> getAcousticEvents |> separateLargeEvents sleParams |> Seq.item 0
         
         let absoluteHits = Set.map (fun (y,x) -> (y + 10, x + 2)) expectedEvent1
         Assert.Equal<Set<_>>(absoluteHits, result.Elements)
 
     [<Fact>]
     let ``seperate large events - hits returned for event 2`` () =
-        let result = testMatrix |> getAcousticEvents |> separateLargeEvents sleParams |> Seq.nth 1
+        let result = testMatrix |> getAcousticEvents |> separateLargeEvents sleParams |> Seq.item 1
         
         let absoluteHits = Set.map (fun (y,x) -> (y + 1, x + 64)) expectedEvent2
         Assert.Equal<Set<_>>(absoluteHits, result.Elements) 
@@ -514,7 +514,7 @@ module AcousticEventDetectionTestsForDebugSeperateLargeEvents =
     [<Fact>]
     let ``seperate large events - hits returned for event 3 when ExtrapolateBridgeEvents is diabled`` () =
         let sleParams = match sleParams with Horizontal p -> {p with ExtrapolateBridgeEvents = false} |> Horizontal
-        let result = testMatrix |> getAcousticEvents |> separateLargeEvents sleParams |> Seq.nth 1        
+        let result = testMatrix |> getAcousticEvents |> separateLargeEvents sleParams |> Seq.item 1        
         let absoluteHits = Set.map (fun (y,x) -> (y + 1, x + 64)) expectedEvent2Alternate
         Assert.Equal<Set<_>>(absoluteHits, result.Elements)
         Assert.Equal(expectedAlternateBounds, result.Bounds)

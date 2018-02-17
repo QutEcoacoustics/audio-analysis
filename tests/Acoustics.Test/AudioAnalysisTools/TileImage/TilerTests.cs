@@ -451,7 +451,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
             for (int i = 0; i < expectedImages.Length; i++)
             {
                 var producedImage = Image.FromFile(producedFiles[i].FullName);
-                var areEqual = BitmapEquals((Bitmap)expectedImages[i], (Bitmap)producedImage);
+                var areEqual = BitmapEquals(expectedImages[i], (Bitmap)producedImage);
                 Assert.IsTrue(areEqual, "Bitmaps were not equal {0}, {1}", expectedImages[i], producedFiles[i].Name);
             }
         }

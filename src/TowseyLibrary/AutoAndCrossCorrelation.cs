@@ -1,4 +1,8 @@
-﻿namespace TowseyLibrary
+﻿// <copyright file="AutoAndCrossCorrelation.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace TowseyLibrary
 {
     using System;
     using System.Collections.Generic;
@@ -8,17 +12,17 @@
 
     public static class AutoAndCrossCorrelation
     {
-
         public static void Main()
         {
-
             string[] s = File.ReadAllLines("t.txt");
             double[] x = new double[s.Length];
             for (int j = 0; j < s.Length; j++)
             {
                 x[j] = double.Parse(s[j]);
                 if (j % 1000 == 0)
+                {
                     Console.WriteLine(j);
+                }
             }
 
             Console.WriteLine("Computing Autocorrelation...");
@@ -29,10 +33,9 @@
                 Console.WriteLine(q[i]);
                 File.AppendAllText("result.txt", q[i].ToString() + "\r\n");
             }
+
             Console.WriteLine("DONE");
         }
-
-
 
         public static void TestCrossCorrelation()
         {
@@ -59,21 +62,25 @@
 
             var spectrum = CrossCorr(signal, pattern);
             int zeroCount = 3;
-            for (int s = 1; s < zeroCount; s++) spectrum[s] = 0.0;  //in real data these bins are dominant and hide other frequency content
+            for (int s = 1; s < zeroCount; s++)
+            {
+                spectrum[s] = 0.0;  //in real data these bins are dominant and hide other frequency content
+            }
+
             spectrum = DataTools.NormaliseArea(spectrum);
             int maxId = DataTools.GetMaxIndex(spectrum);
             double intensityValue = spectrum[maxId];
 
-            if (maxId == 0) LoggedConsole.WriteLine("max id = 0");
+            if (maxId == 0)
+            {
+                LoggedConsole.WriteLine("max id = 0");
+            }
             else
             {
                 double period = 2 * n / (double)maxId;
                 LoggedConsole.WriteLine("max id = {0};   period = {1:f2};    intensity = {2:f3}", maxId, period, intensityValue);
             }
         }//TestCrossCorrelation()
-
-
-
 
         /*************************************************************************
          * Need to install alglib dll to get this funcitonality
@@ -134,6 +141,7 @@ out double[] r)
             int n = v1.Length; //assume both vectors of same length
             double[] r;
             alglib.corrr1d(v1, n, v2, n, out r);
+
             //alglib.complex[] f;
             //alglib.fftr1d(newOp, out f);
             //System.LoggedConsole.WriteLine("{0}", alglib.ap.format(f, 3));
@@ -142,11 +150,18 @@ out double[] r)
             //rearrange corr output and NormaliseMatrixValues
             int xcorrLength = 2 * n;
             double[] xCorr = new double[xcorrLength];
+
             //for (int i = 0; i < n - 1; i++) newOp[i] = r[i + n];   //rearrange corr output
             //for (int i = n - 1; i < opLength-1; i++) newOp[i] = r[i - n + 1];
-            for (int i = 0; i < n - 1; i++) xCorr[i] = r[i + n] / (i + 1);  //rearrange and NormaliseMatrixValues
-            for (int i = n - 1; i < xcorrLength - 1; i++) xCorr[i] = r[i - n + 1] / (xcorrLength - i - 1);
+            for (int i = 0; i < n - 1; i++)
+            {
+                xCorr[i] = r[i + n] / (i + 1);  //rearrange and NormaliseMatrixValues
+            }
 
+            for (int i = n - 1; i < xcorrLength - 1; i++)
+            {
+                xCorr[i] = r[i - n + 1] / (xcorrLength - i - 1);
+            }
 
             //add extra value at end so have length = power of 2 for FFT
             //xCorr[xCorr.Length - 1] = xCorr[xCorr.Length - 2];
@@ -161,7 +176,6 @@ out double[] r)
             var spectrum = fft.Invoke(xCorr);
             return spectrum;
         }//CrossCorrelation()
-
 
         //=============================================================================
 
@@ -181,15 +195,15 @@ out double[] r)
             double covar = 0.0;
             for (int i = 0; i < seriesX.Length; i++)
             {
-                covar += ((seriesX[i] - meanX) * (seriesY[i] - meanY));
+                covar += (seriesX[i] - meanX) * (seriesY[i] - meanY);
             }
-            covar /= (sdX * sdY);
-            covar /= (seriesX.Length - 1);
+
+            covar /= sdX * sdY;
+            covar /= seriesX.Length - 1;
             return covar;
         }
+
         //=============================================================================
-
-
 
         public static Tuple<double, double> DetectPeriodicityInArray(double[] array, int zeroBinCount)
         {
@@ -201,18 +215,21 @@ out double[] r)
             double gradient = 10 / (double)zeroBinCount;
             for (int s = 0; s < zeroBinCount; s++)
             {
-                double divisor = (double)(10 - (gradient * s));
+                double divisor = 10 - (gradient * s);
                 spectrum[s] /= divisor;  //in real data these bins are dominant and hide other frequency content
             }
+
             int maxId = DataTools.GetMaxIndex(spectrum);
             double intensityValue = spectrum[maxId];
 
             double period = 0.0;
-            if (maxId != 0) period = 2 * array.Length / (double)maxId;
+            if (maxId != 0)
+            {
+                period = 2 * array.Length / (double)maxId;
+            }
+
             return Tuple.Create(intensityValue, period);
         }
-
-
 
         public static Tuple<double[], double[]> DetectPeriodicityInLongArray(double[] array, int step, int segmentLength, int zeroBinCount)
         {
@@ -220,7 +237,7 @@ out double[] r)
             int stepCount = n / step;
             var intensity = new double[stepCount];     //an array of period intensity
             var periodicity = new double[stepCount];     //an array of the periodicity values
-            for (int i = 0; i < stepCount; i++)          //step through the array
+            for (int i = 0; i < stepCount; i++) //step through the array
             {
                 int start = i * step;
                 double[] subarray = DataTools.Subarray(array, start, segmentLength);
@@ -230,21 +247,25 @@ out double[] r)
                 double gradient = 10 / (double)zeroBinCount;
                 for (int s = 0; s < zeroBinCount; s++)
                 {
-                    double divisor = (double)(10 - (gradient * s));
+                    double divisor = 10 - (gradient * s);
                     spectrum[s] /= divisor;  //in real data these bins are dominant and hide other frequency content
                 }
+
                 int maxId = DataTools.GetMaxIndex(spectrum);
                 double intensityValue = spectrum[maxId];
                 intensity[i] = intensityValue;
 
                 double period = 0.0;
-                if (maxId != 0) period = 2 * segmentLength / (double)maxId;
+                if (maxId != 0)
+                {
+                    period = 2 * segmentLength / (double)maxId;
+                }
+
                 periodicity[i] = period;
             }
+
             return Tuple.Create(intensity, periodicity);
         }
-
-
 
         public static Tuple<double[], double[]> DetectXcorrelationInTwoArrays(double[] array1, double[] array2, int step, int sampleLength, double minPeriod, double maxPeriod)
         {
@@ -258,14 +279,26 @@ out double[] r)
                 int start = step * i;
                 double[] lowerSubarray = DataTools.Subarray(array1, start, sampleLength);
                 double[] upperSubarray = DataTools.Subarray(array2, start, sampleLength);
-                if ((lowerSubarray.Length != sampleLength) || (upperSubarray.Length != sampleLength)) break;
+                if (lowerSubarray.Length != sampleLength || upperSubarray.Length != sampleLength)
+                {
+                    break;
+                }
+
                 var spectrum = CrossCorr(lowerSubarray, upperSubarray);
                 int zeroCount = 3;
-                for (int s = 0; s < zeroCount; s++) spectrum[s] = 0.0;  //in real data these bins are dominant and hide other frequency content
+                for (int s = 0; s < zeroCount; s++)
+                {
+                    spectrum[s] = 0.0;  //in real data these bins are dominant and hide other frequency content
+                }
+
                 spectrum = DataTools.NormaliseArea(spectrum);
                 int maxId = DataTools.GetMaxIndex(spectrum);
                 double period = 2 * sampleLength / (double)maxId; //convert maxID to period in frames
-                if ((period < minPeriod) || (period > maxPeriod)) continue;
+                if (period < minPeriod || period > maxPeriod)
+                {
+                    continue;
+                }
+
                 for (int j = 0; j < sampleLength; j++) //lay down score for sample length
                 {
                     if (intensity[start + j] < spectrum[maxId])
@@ -275,28 +308,29 @@ out double[] r)
                     }
                 }
             }
+
             return Tuple.Create(intensity, periodicity);
-        }  //DetectXcorrelationInTwoArrays()
-
-
-
+        } //DetectXcorrelationInTwoArrays()
 
         // ##########################################################################################################
         // THE BELOW FIVE METHODS WORK ATOGEHTER.
         // DO NOT KNOW HWERE I GOT THEM FROM!
-
 
         public static double GetAverage(double[] data)
         {
             int len = data.Length;
 
             if (len == 0)
+            {
                 throw new Exception("No data");
+            }
 
             double sum = 0;
 
             for (int i = 0; i < data.Length; i++)
+            {
                 sum += data[i];
+            }
 
             return sum / len;
         }
@@ -311,10 +345,13 @@ out double[] r)
             double sum = 0;
 
             for (int i = 0; i < data.Length; i++)
-                sum += Math.Pow((data[i] - avg), 2);
+            {
+                sum += Math.Pow(data[i] - avg, 2);
+            }
 
             return sum / len;
         }
+
         public static double GetStdev(double[] data)
         {
             return Math.Sqrt(GetVariance(data));
@@ -323,7 +360,10 @@ out double[] r)
         public static double GetCorrelation(double[] x, double[] y)
         {
             if (x.Length != y.Length)
+            {
                 throw new Exception("Length of sources is different");
+            }
+
             double avgX = GetAverage(x);
             double stdevX = GetStdev(x);
             double avgY = GetAverage(y);
@@ -332,7 +372,10 @@ out double[] r)
             double pearson = 0;
             int len = x.Length;
             for (int i = 0; i < len; i++)
+            {
                 covXY += (x[i] - avgX) * (y[i] - avgY);
+            }
+
             covXY /= len;
             pearson = covXY / (stdevX * stdevY);
             return pearson;
@@ -340,7 +383,7 @@ out double[] r)
 
         public static double[] GetAutoCorrelationOfSeries(double[] x)
         {
-            int half = (int)x.Length / 2;
+            int half = x.Length / 2;
             double[] autoCorrelation = new double[half];
             double[] a = new double[half];
             double[] b = new double[half];
@@ -350,15 +393,15 @@ out double[] r)
                 b[i] = x[i + i];
                 autoCorrelation[i] = GetCorrelation(a, b);
                 if (i % 1000 == 0)
+                {
                     Console.WriteLine(i);
+                }
             }
+
             return autoCorrelation;
         }
 
-
-
         // ##########################################################################################################################
-
 
         /// <summary>
         /// my own effort at Crosscorrelation.
@@ -382,26 +425,32 @@ out double[] r)
                 int count = 0;
                 for (int i = lag; i < length; i++)
                 {
-                    rigtShiftSum += (X1[i] * X2[i - lag]);
+                    rigtShiftSum += X1[i] * X2[i - lag];
                     count++;
                 }
+
                 // get average
-                AC[centralIndex + lag] = rigtShiftSum / (double)count;
+                AC[centralIndex + lag] = rigtShiftSum / count;
+
                 //Console.WriteLine(count);
             }
+
             for (int lag = 1; lag < length - 1; lag++) // -1 here because the output array is even length.
             {
                 double leftShiftSum = 0.0;
                 int count = 0;
                 for (int i = 0; i < length - lag; i++)
                 {
-                    leftShiftSum += (X1[i] * X2[i + lag]);
+                    leftShiftSum += X1[i] * X2[i + lag];
                     count++;
                 }
+
                 // get average
-                AC[centralIndex - lag] = leftShiftSum / (double)count;
+                AC[centralIndex - lag] = leftShiftSum / count;
+
                 //Console.WriteLine(count);
             }
+
             return AC;
         }
 
@@ -411,24 +460,22 @@ out double[] r)
         /// <param name="size"></param>
         public static double[] AutoCorrelationOldJavaVersion(double[] X)
         {
-
             int size = X.Length;
             double[] R = new double[size];
             double sum;
 
-            for (int i=0; i < size; i++)
+            for (int i = 0; i < size; i++)
             {
-                sum=0;
-                for (int j=0;j<size-i;j++)
+                sum = 0;
+                for (int j = 0; j < size - i; j++)
                 {
-                    sum += X[j] * X[j+i];
+                    sum += X[j] * X[j + i];
                 }
-                R[i] = sum / (double)(size - i);
+
+                R[i] = sum / (size - i);
             }
+
             return R;
         }
-
-
-
     }
 }

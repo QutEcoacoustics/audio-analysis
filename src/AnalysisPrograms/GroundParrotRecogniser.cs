@@ -20,21 +20,16 @@ namespace AnalysisPrograms
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
-
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-
-    using Production;
-
     using AudioAnalysisTools;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
+    using Production;
     using Production.Arguments;
     using QutSensors.AudioAnalysis.AED;
-
     using TowseyLibrary;
 
     /// <summary>
@@ -56,8 +51,6 @@ namespace AnalysisPrograms
             }
         }
 
-        #region Constants and Fields
-
         /// <summary>
         /// The Key Normalized Min Score.
         /// </summary>
@@ -74,26 +67,52 @@ namespace AnalysisPrograms
         /// </summary>
         private static readonly double[,] GroundParrotTemplate1 =
             {
-                { 13.374694, 13.548844, 3832.910156, 3617.578125 },
-                { 13.664943, 13.792653, 3919.042969, 3660.644531 },
-                { 13.920363, 14.117732, 3962.109375, 3703.710938 },
-                { 14.257052, 14.349932, 4005.175781, 3832.910156 },
-                { 14.512472, 14.640181, 4048.242188, 3919.042969 },
-                { 14.814331, 14.895601, 4220.507813, 4048.242188 },
-                { 15.046531, 15.232290, 4349.707031, 4048.242188 },
-                { 15.371610, 15.499320, 4435.839844, 4177.441406 },
-                { 15.615420, 15.812789, 4478.906250, 4220.507813 },
-                { 16.277188, 16.462948, 4608.105469, 4263.574219 },
-                { 16.590658, 16.695147, 4694.238281, 4392.773438 },
-                { 16.834467, 17.020227, 4694.238281, 4392.773438 },
-                { 17.147937, 17.264036, 4737.304688, 4478.906250 },
-                { 17.391746, 17.577506, 4823.437500, 4478.906250 },
-                { 17.705215, 17.821315, 4780.371094, 4521.972656 },
+                {
+                    13.374694, 13.548844, 3832.910156, 3617.578125,
+                },
+                {
+                    13.664943, 13.792653, 3919.042969, 3660.644531,
+                },
+                {
+                    13.920363, 14.117732, 3962.109375, 3703.710938,
+                },
+                {
+                    14.257052, 14.349932, 4005.175781, 3832.910156,
+                },
+                {
+                    14.512472, 14.640181, 4048.242188, 3919.042969,
+                },
+                {
+                    14.814331, 14.895601, 4220.507813, 4048.242188,
+                },
+                {
+                    15.046531, 15.232290, 4349.707031, 4048.242188,
+                },
+                {
+                    15.371610, 15.499320, 4435.839844, 4177.441406,
+                },
+                {
+                    15.615420, 15.812789, 4478.906250, 4220.507813,
+                },
+                {
+                    16.277188, 16.462948, 4608.105469, 4263.574219,
+                },
+                {
+                    16.590658, 16.695147, 4694.238281, 4392.773438,
+                },
+                {
+                    16.834467, 17.020227, 4694.238281, 4392.773438,
+                },
+                {
+                    17.147937, 17.264036, 4737.304688, 4478.906250,
+                },
+                {
+                    17.391746, 17.577506, 4823.437500, 4478.906250,
+                },
+                {
+                    17.705215, 17.821315, 4780.371094, 4521.972656,
+                },
             };
-
-        #endregion
-
-        #region Public Methods
 
         /// <summary>
         /// Detect using EPR.
@@ -149,7 +168,7 @@ namespace AnalysisPrograms
                     rectScore.Item1.Bottom,
                     rectScore.Item1.Top);
                 ae.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
-                ae.SetTimeAndFreqScales(sonogram.NyquistFrequency, sonogram.Configuration.WindowSize, 0 );
+                ae.SetTimeAndFreqScales(sonogram.NyquistFrequency, sonogram.Configuration.WindowSize, 0);
                 ae.SetScores(rectScore.Item2, 0, 1);
                 ae.BorderColour = aedConfiguration.AedEventColor;
                 ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
@@ -201,15 +220,11 @@ namespace AnalysisPrograms
             string imagePath = Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(wavFilePath) + ".png");
             var image = Aed.DrawSonogram(sonogram, eprEvents);
             image.Save(imagePath, ImageFormat.Png);
+
             //ProcessingTypes.SaveAeCsv(eprEvents, outputFolder, wavFilePath);
 
             Log.Info("Finished");
-
         }
-
-        #endregion
-
-        #region helper methods
 
         /// <summary>
         /// Get epr parameters from init file.
@@ -236,9 +251,10 @@ namespace AnalysisPrograms
             {
                 gpTemplate[r, 0] = (int)Math.Round((GroundParrotTemplate1[r, 0] - timeOffset) / timeScale);
                 gpTemplate[r, 1] = (int)Math.Round((GroundParrotTemplate1[r, 1] - timeOffset) / timeScale);
-                gpTemplate[r, 2] = (int)Math.Round((GroundParrotTemplate1[r, 2] / hzScale));
+                gpTemplate[r, 2] = (int)Math.Round(GroundParrotTemplate1[r, 2] / hzScale);
                 gpTemplate[r, 3] = (int)Math.Round((GroundParrotTemplate1[r, 3] - GroundParrotTemplate1[r, 2]) / hzScale);
             }
+
             return gpTemplate;
         }
 
@@ -271,8 +287,6 @@ namespace AnalysisPrograms
             return gpTemplate;
         }
 
-        #endregion
-
         private const string EcosoundsGroundParrotIdentifier = "Ecosounds.GroundParrot";
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -299,7 +313,7 @@ namespace AnalysisPrograms
             var eprNormalizedMinScore = GetEprParametersFromConfigFileOrDefaults(analysisSettings.Configuration);
 
             var aedConfigFile = ConfigFile.Resolve(
-                (string)analysisSettings.Configuration["AedConfig"],
+                analysisSettings.Configuration["AedConfig"],
                 analysisSettings.ConfigFile.Directory);
 
             var rawAedConfig = ConfigFile.Deserialize(aedConfigFile);

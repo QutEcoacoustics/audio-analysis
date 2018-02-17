@@ -14,7 +14,6 @@ namespace AnalysisPrograms.Recognizers
     using System.IO;
     using System.Linq;
     using System.Reflection;
-
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
     using AnalysisBase;
@@ -24,8 +23,8 @@ namespace AnalysisPrograms.Recognizers
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-    using log4net;
     using Base;
+    using log4net;
     using TowseyLibrary;
 
     /// <summary>
@@ -149,7 +148,7 @@ namespace AnalysisPrograms.Recognizers
                     continue;
                 }
 
-                if ((amplitudeArray[j] > amplitudeArray[j - 1]) && (amplitudeArray[j] > amplitudeArray[j + 1]))
+                if (amplitudeArray[j] > amplitudeArray[j - 1] && amplitudeArray[j] > amplitudeArray[j + 1])
                 {
                     peakArray[j] = true;
                 }
@@ -185,13 +184,14 @@ namespace AnalysisPrograms.Recognizers
                         start = 0;
                     }
 
-                    var endLocality = DataTools.Subarray(amplitudeArray, start, endTemplate.Length); 
+                    var endLocality = DataTools.Subarray(amplitudeArray, start, endTemplate.Length);
                     double endScore = DataTools.CosineSimilarity(endLocality, endTemplate);
-                    for (int to = -templateOffset; to < (endTemplate.Length - templateOffset); to++)
+                    for (int to = -templateOffset; to < endTemplate.Length - templateOffset; to++)
                     {
-                        if ((i + to >= 0) && (endScore > amplitudeScores[i + to]))
+                        if (i + to >= 0 && endScore > amplitudeScores[i + to])
                         {
                             amplitudeScores[i + to] = endScore;
+
                             // hits[i, minBin] = 10;
                         }
                     }
@@ -208,7 +208,7 @@ namespace AnalysisPrograms.Recognizers
                 var startTemplate = GetTemplateForAlgorithm2(distanceToNextPeak, templateEndPadding);
 
                 // now calculate similarity of locality with the startTemplate
-                var locality = DataTools.Subarray(amplitudeArray, i-2, startTemplate.Length); // i-2 because first two places should be zero.
+                var locality = DataTools.Subarray(amplitudeArray, i - 2, startTemplate.Length); // i-2 because first two places should be zero.
                 double score = DataTools.CosineSimilarity(locality, startTemplate);
                 for (int t = 0; t < startTemplate.Length; t++)
                 {

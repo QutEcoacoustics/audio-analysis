@@ -12,16 +12,24 @@ namespace Acoustics.Shared
 
     public sealed class Validation
     {
-        public static Validation Begin() { return null; }
+        public static Validation Begin()
+        {
+            return null;
+        }
 
         private List<Exception> exceptions;
 
-        public IEnumerable<Exception> Exceptions { get { return this.exceptions; } }
+        public IEnumerable<Exception> Exceptions
+        {
+            get { return this.exceptions; }
+        }
 
         public Validation AddException(Exception ex)
         {
             lock (this.exceptions)
+            {
                 this.exceptions.Add(ex);
+            }
 
             return this;
         }
@@ -86,7 +94,9 @@ namespace Acoustics.Shared
             : base(message, innerExceptions.FirstOrDefault())
         {
             if (innerExceptions.Any(o => o == null))
+            {
                 throw new ArgumentNullException();
+            }
 
             this.innerExceptions = innerExceptions.ToArray();
         }

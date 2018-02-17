@@ -363,11 +363,11 @@ namespace AnalysisPrograms
             {
                 [AnalysisKeys.AddAxes] = (configuration.GetBoolOrNull(AnalysisKeys.AddAxes) ?? true).ToString(),
                 [AnalysisKeys.AddSegmentationTrack] = (configuration.GetBoolOrNull(AnalysisKeys.AddSegmentationTrack) ?? true).ToString(),
-                [AnalysisKeys.AddTimeScale] = (string)configuration[AnalysisKeys.AddTimeScale] ?? "true",
+                [AnalysisKeys.AddTimeScale] = configuration[AnalysisKeys.AddTimeScale] ?? "true",
 
-                [AnalysisKeys.AddAxes] = (string)configuration[AnalysisKeys.AddAxes] ?? "true",
+                [AnalysisKeys.AddAxes] = configuration[AnalysisKeys.AddAxes] ?? "true",
 
-                [AnalysisKeys.AddSegmentationTrack] = (string)configuration[AnalysisKeys.AddSegmentationTrack] ?? "true",
+                [AnalysisKeys.AddSegmentationTrack] = configuration[AnalysisKeys.AddSegmentationTrack] ?? "true",
             };
             ////bool makeSoxSonogram = (bool?)configuration[AnalysisKeys.MakeSoxSonogram] ?? false;
             return configDict;
@@ -388,7 +388,7 @@ namespace AnalysisPrograms
             TimeSpan extractHalfDuration = TimeSpan.FromSeconds(extractFixedTimeDuration / 2);
             TimeSpan localEventStart = TimeSpan.Zero;
             TimeSpan localEventEnd = extractDuration;
-            if ((eventDuration != TimeSpan.Zero) && (eventDuration < extractDuration))
+            if (eventDuration != TimeSpan.Zero && eventDuration < extractDuration)
             {
                 localEventStart = extractHalfDuration - eventCentre;
                 localEventEnd = extractHalfDuration + eventCentre;

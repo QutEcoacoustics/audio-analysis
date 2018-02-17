@@ -39,9 +39,8 @@ namespace AnalysisPrograms
 
     using SpectrogramType = AudioAnalysisTools.LongDurationSpectrograms.SpectrogramType;
 
-    public class Acoustic : IAnalyser2
+    public class AcousticIndices : IAnalyser2
     {
-
         // OTHER CONSTANTS
         public const string AnalysisName = "Acoustic";
 
@@ -65,6 +64,7 @@ namespace AnalysisPrograms
             if (arguments == null)
             {
                 arguments = new object();
+
                 //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\Planitz.wav";
                 //string configPath = @"C:\SensorNetworks\Output\AcousticIndices\Indices.cfg";
                 //string outputDir = @"C:\SensorNetworks\Output\AcousticIndices\";
@@ -367,7 +367,7 @@ namespace AnalysisPrograms
                     SampleRateResampled = sampleRate,
                     FrameLength = frameWidth,
                     FrameStep = settings.Configuration.GetIntOrNull(AnalysisKeys.FrameStep) ?? frameWidth,
-                    IndexCalculationDuration = ((IndexCalculateConfig)acousticIndicesConfig).IndexCalculationDurationTimeSpan,
+                    IndexCalculationDuration = acousticIndicesConfig.IndexCalculationDurationTimeSpan,
                     BgNoiseNeighbourhood = acousticIndicesConfig.BgNoiseBuffer,
                     AnalysisStartOffset = inputFileSegment.SegmentStartOffset ?? TimeSpan.Zero,
                     MaximumSegmentDuration = settings.AnalysisMaxSegmentDuration,
@@ -391,7 +391,7 @@ namespace AnalysisPrograms
             var indexDistributions = IndexDistributions.WriteSpectralIndexDistributionStatistics(dictionaryOfSpectra, resultsDirectory, basename);
 
             // HACK: do not render false color spectrograms unless IndexCalculationDuration = 60.0 (the normal resolution)
-            if (((IndexCalculateConfig)acousticIndicesConfig).IndexCalculationDurationTimeSpan != 60.0.Seconds())
+            if (acousticIndicesConfig.IndexCalculationDurationTimeSpan != 60.0.Seconds())
             {
                 Log.Warn("False color spectrograms were not rendered");
             }
@@ -444,6 +444,7 @@ namespace AnalysisPrograms
             // if recording does not start on an absolutely aligned hour of the day
             // align it, then adjust where the tiling starts from, and calculate the offset for the super tile (the gap)
             var recordingStartDate = fileSegment.TargetFileStartDate.Value;
+
             // TODO: begin remove duplicate code
             var timeOfDay = recordingStartDate.TimeOfDay;
             var previousAbsoluteHour = TimeSpan.FromSeconds(Math.Floor(timeOfDay.TotalSeconds / (Scale * TileWidth)) * (Scale * TileWidth));
@@ -452,6 +453,7 @@ namespace AnalysisPrograms
             var tilingStartDate2 = ZoomTiledSpectrograms.GetPreviousTileBoundary(TileWidth, Scale, recordingStartDate);
             var padding = recordingStartDate - tilingStartDate2;
             Debug.Assert(tilingStartDate == tilingStartDate2, "tilingStartDate != tilingStartDate2: these methods should be equivalent");
+
             // TODO: end remove duplicate code
 
             var tilingProfile = new AbsoluteDateTilingProfile(fileStem, analysisTag, tilingStartDate, TileHeight, TileWidth);
@@ -569,5 +571,4 @@ namespace AnalysisPrograms
             SegmentOverlapDuration = TimeSpan.Zero,
         };
     }
-
 }

@@ -2,20 +2,17 @@
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
-using Acoustics.Unsafe;
-using MathNet.Numerics.IntegralTransforms;
-
 namespace AudioAnalysisTools
 {
     using System;
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.Linq;
-
     using Acoustics.Tools.Wav;
+    using Acoustics.Unsafe;
+    using MathNet.Numerics.IntegralTransforms;
     using StandardSpectrograms;
     using WavTools;
-
 
     /// <summary>
     /// Interface for converting signal represented by bytes into an image.
@@ -316,7 +313,7 @@ namespace AudioAnalysisTools
         /// </exception>
         private static double[] SubSample(double[] samples, int currentSampleRate, int targetSampleRate)
         {
-            double modifyInterval = (double)currentSampleRate / (double)targetSampleRate;
+            double modifyInterval = currentSampleRate / (double)targetSampleRate;
 
             if (modifyInterval < 1)
             {
@@ -373,7 +370,7 @@ namespace AudioAnalysisTools
         /// </returns>
         private static int[,] FrameStartEnds(int dataLength, int windowSize, double windowOverlap)
         {
-            int step = (int)((double)windowSize * (1.0 - windowOverlap));
+            int step = (int)(windowSize * (1.0 - windowOverlap));
 
             if (step < 1)
             {
@@ -610,41 +607,53 @@ namespace AudioAnalysisTools
             double[,] spectra = new double[frameCount, binCount];
 
             //calculate power of the DC value - first column of matrix
-            for (int i = 0; i < frameCount; i++)//foreach time step or frame
+            for (int i = 0; i < frameCount; i++) //foreach time step or frame
             {
                 if (amplitudeM[i, 0] < epsilon)
+                {
                     spectra[i, 0] = 10 * Math.Log10(epsilon * epsilon / windowPower / sampleRate);
+                }
                 else
+                {
                     spectra[i, 0] = 10 * Math.Log10(amplitudeM[i, 0] * amplitudeM[i, 0] / windowPower / sampleRate);
+                }
+
                 //spectra[i, 0] = amplitudeM[i, 0] * amplitudeM[i, 0] / windowPower; //calculates power
             }
-
 
             //calculate power in frequency bins - must multiply by 2 to accomodate two spectral components, ie positive and neg freq.
             for (int j = 1; j < binCount - 1; j++)
             {
-                for (int i = 0; i < frameCount; i++)//foreach time step or frame
+                for (int i = 0; i < frameCount; i++) //foreach time step or frame
                 {
                     if (amplitudeM[i, j] < epsilon)
+                    {
                         spectra[i, j] = 10 * Math.Log10(epsilon * epsilon * 2 / windowPower / sampleRate);
+                    }
                     else
+                    {
                         spectra[i, j] = 10 * Math.Log10(amplitudeM[i, j] * amplitudeM[i, j] * 2 / windowPower / sampleRate);
+                    }
+
                     //spectra[i, j] = amplitudeM[i, j] * amplitudeM[i, j] * 2 / windowPower; //calculates power
                 }//end of all frames
             } //end of all freq bins
 
-
             //calculate power of the Nyquist freq bin - last column of matrix
-            for (int i = 0; i < frameCount; i++)//foreach time step or frame
+            for (int i = 0; i < frameCount; i++) //foreach time step or frame
             {
                 //calculate power of the DC value
                 if (amplitudeM[i, binCount - 1] < epsilon)
+                {
                     spectra[i, binCount - 1] = 10 * Math.Log10(epsilon * epsilon / windowPower / sampleRate);
+                }
                 else
+                {
                     spectra[i, binCount - 1] = 10 * Math.Log10(amplitudeM[i, binCount - 1] * amplitudeM[i, binCount - 1] / windowPower / sampleRate);
+                }
+
                 //spectra[i, 0] = amplitudeM[i, 0] * amplitudeM[i, 0] / windowPower; //calculates power
             }
-
 
             return spectra;
         }
@@ -667,18 +676,23 @@ namespace AudioAnalysisTools
             int binCount = 64;  // number of pixel intensity bins
             double upperLimitForMode = 0.666; // sets upper limit to modal noise bin. Higher values = more severe noise removal.
             int binLimit = (int)(binCount * upperLimitForMode);
-            //*******************************************************************************************************************
 
+            //*******************************************************************************************************************
 
             double minIntensity; // min value in matrix
             double maxIntensity; // max value in matrix
             DoubleSquareArrayExtensions.MinMax(matrix, out minIntensity, out maxIntensity);
             double binWidth = (maxIntensity - minIntensity) / binCount;  // width of an intensity bin
+
             // LoggedConsole.WriteLine("minIntensity=" + minIntensity + "  maxIntensity=" + maxIntensity + "  binWidth=" + binWidth);
 
             int rowCount = matrix.GetLength(0);
             int colCount = matrix.GetLength(1);
-            if (bandWidth > colCount) bandWidth = colCount - 1;
+            if (bandWidth > colCount)
+            {
+                bandWidth = colCount - 1;
+            }
+
             int halfWidth = bandWidth / 2;
 
             // init matrix from which histogram derived
@@ -689,19 +703,34 @@ namespace AudioAnalysisTools
             {
                 // construct new submatrix to calculate modal noise
                 int start = col - halfWidth;   //extend range of submatrix below col for smoother changes
-                if (start < 0) start = 0;
+                if (start < 0)
+                {
+                    start = 0;
+                }
+
                 int stop = col + halfWidth;
-                if (stop >= colCount) stop = colCount - 1;
+                if (stop >= colCount)
+                {
+                    stop = colCount - 1;
+                }
+
                 submatrix = Submatrix(matrix, 0, start, rowCount - 1, stop);
                 int[] histo = Histo(submatrix, binCount, minIntensity, maxIntensity, binWidth);
+
                 //DataTools.writeBarGraph(histo);
                 double[] smoothHisto = FilterMovingAverage(histo, 7);
                 int maxindex; //mode
                 GetMaxIndex(smoothHisto, out maxindex); //this is mode of histogram
-                if (maxindex > binLimit) maxindex = binLimit;
+                if (maxindex > binLimit)
+                {
+                    maxindex = binLimit;
+                }
+
                 modalNoise[col] = minIntensity + (maxindex * binWidth);
+
                 //LoggedConsole.WriteLine("  modal index=" + maxindex + "  modalIntensity=" + modalIntensity.ToString("F3"));
             }//end for all cols
+
             return modalNoise;
         }
 
@@ -730,6 +759,7 @@ namespace AudioAnalysisTools
                     sm[i, j] = M[r1 + i, c1 + j];
                 }
             }
+
             return sm;
         }
 
@@ -753,8 +783,16 @@ namespace AudioAnalysisTools
                 for (int j = 0; j < cols; j++)
                 {
                     int bin = (int)((data[i, j] - min) / binWidth);
-                    if (bin >= binCount) bin = binCount - 1;
-                    if (bin < 0) bin = 0;
+                    if (bin >= binCount)
+                    {
+                        bin = binCount - 1;
+                    }
+
+                    if (bin < 0)
+                    {
+                        bin = 0;
+                    }
+
                     histo[bin]++;
                 }
             }
@@ -770,9 +808,16 @@ namespace AudioAnalysisTools
         /// <returns>Filtered moving average.</returns>
         private static double[] FilterMovingAverage(double[] signal, int width)
         {
-            if (width <= 1) return signal;    // no filter required
+            if (width <= 1)
+            {
+                return signal;    // no filter required
+            }
+
             int length = signal.Length;
-            if (length <= 3) return signal;   // not worth the effort!
+            if (length <= 3)
+            {
+                return signal;   // not worth the effort!
+            }
 
             var fs = new double[length]; // filtered signal
             int edge = width / 2;            // half window width.
@@ -783,25 +828,38 @@ namespace AudioAnalysisTools
             for (int i = 0; i < edge; i++)
             {
                 sum = 0.0;
-                for (int j = 0; j <= (i + edge); j++) { sum += signal[j]; }
-                fs[i] = sum / (double)(i + edge + 1);
+                for (int j = 0; j <= i + edge; j++)
+                {
+                    sum += signal[j];
+                }
+
+                fs[i] = sum / (i + edge + 1);
             }
 
             for (int i = edge; i < length - edge; i++)
             {
                 sum = 0.0;
-                for (int j = 0; j < width; j++) { sum += signal[i - edge + j]; }
+                for (int j = 0; j < width; j++)
+                {
+                    sum += signal[i - edge + j];
+                }
+
                 //sum = signal[i-1]+signal[i]+signal[i+1];
-                fs[i] = sum / (double)width;
+                fs[i] = sum / width;
             }
 
             // filter trailing edge
             for (int i = length - edge; i < length; i++)
             {
                 sum = 0.0;
-                for (int j = i; j < length; j++) { sum += signal[j]; }
-                fs[i] = sum / (double)(length - i);
+                for (int j = i; j < length; j++)
+                {
+                    sum += signal[j];
+                }
+
+                fs[i] = sum / (length - i);
             }
+
             return fs;
         }
 
@@ -818,7 +876,7 @@ namespace AudioAnalysisTools
             for (int i = 0; i < length; i++)
             {
                 // clone
-                dbSignal[i] = (double)signal[i];
+                dbSignal[i] = signal[i];
             }
 
             return FilterMovingAverage(dbSignal, width);

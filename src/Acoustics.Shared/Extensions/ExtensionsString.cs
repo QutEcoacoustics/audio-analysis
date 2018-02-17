@@ -10,9 +10,9 @@ namespace System
     using Diagnostics;
     using Drawing;
     using Globalization;
+    using Linq;
     using Text;
     using Text.RegularExpressions;
-    using Linq;
     using Web;
 
     public static class ExtensionsString
@@ -347,7 +347,9 @@ namespace System
             var retVal = new Dictionary<string, string>();
 
             if (string.IsNullOrEmpty(value))
+            {
                 return retVal;
+            }
 
             foreach (Match m in Regex.Matches(value, @"\??([^&=]*)=([^&=]*)"))
             {

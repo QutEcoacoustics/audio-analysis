@@ -1,6 +1,9 @@
-﻿namespace AnalysisPrograms
-{
+﻿// <copyright file="LSKiwiHelper.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
 
+namespace AnalysisPrograms
+{
     using System;
     using System.Collections.Generic;
     using System.Data;
@@ -11,10 +14,9 @@
 
     public static class LSKiwiHelper
     {
-
         //KEYS TO PARAMETERS IN CONFIG FILE
-        public static string key_MIN_HZ_MALE   = "MIN_HZ_MALE";
-        public static string key_MAX_HZ_MALE   = "MAX_HZ_MALE";
+        public static string key_MIN_HZ_MALE = "MIN_HZ_MALE";
+        public static string key_MAX_HZ_MALE = "MAX_HZ_MALE";
         public static string key_MIN_HZ_FEMALE = "MIN_HZ_FEMALE";
         public static string key_MAX_HZ_FEMALE = "MAX_HZ_FEMALE";
         public static string key_FILTER_EVENTS = "DO_FILTER_EVENTS";
@@ -25,13 +27,13 @@
         public static string key_EVENT_NORMSCORE = AnalysisKeys.EventNormscore;
         public static string key_SNR_SCORE = AnalysisKeys.KeySnrScore;
 
-        public static string key_CHIRP_SCORE     = "ChirpScore";
-        public static string key_DELTA_SCORE     = "DeltaPeriodScore";
-        public static string key_GRID_SCORE      = "GridScore";
+        public static string key_CHIRP_SCORE = "ChirpScore";
+        public static string key_DELTA_SCORE = "DeltaPeriodScore";
+        public static string key_GRID_SCORE = "GridScore";
         public static string key_PEAKS_SNR_SCORE = "PeaksSnrScore";
         public static string key_PEAKS_STD_SCORE = "PeaksStdScore";
         public static string key_BANDWIDTH_SCORE = "BandwidthScore";
-        public static string key_COMBO_SCORE     = "ComboScore";
+        public static string key_COMBO_SCORE = "ComboScore";
 
         //public static string[] DefaultRulesLSKiwi2 = {
         //                                   "EXCLUDE_IF_RULE="+LSKiwiHelper.key_BANDWIDTH_SCORE+"_LT_0.3",
@@ -59,27 +61,33 @@
         //    };
 
         public const int RESAMPLE_RATE = 17640;
+
         //public const int RESAMPLE_RATE = 22050;
         //public const string imageViewer = @"C:\Program Files\Windows Photo Viewer\ImagingDevices.exe";
         public const string imageViewer = @"C:\Windows\system32\mspaint.exe";
+
         //public const string XLSViewer   = @"C:\Program Files (x86)\Microsoft Office\Office12\EXCEL.EXE";
-        public const string XLSViewer   = @"C:\Program Files\Microsoft Office\Office14\EXCEL.EXE";
+        public const string XLSViewer = @"C:\Program Files\Microsoft Office\Office14\EXCEL.EXE";
 
         public static Dictionary<string, double> GetFeatureWeights(string configPath)
         {
-
             List<string> lines = FileTools.ReadTextFile(configPath);
             var weights = new Dictionary<string, double>();
             foreach (string rule in lines)
             {
                 string[] parts = rule.Split('_');
-                if (parts.Length != 2) continue;
+                if (parts.Length != 2)
+                {
+                    continue;
+                }
+
                 if (parts[0] == "WEIGHT")
                 {
                     string[] words = parts[1].Split('=');
                     weights.Add(words[0], double.Parse(words[1]));
                 }
             }
+
             return weights;
         } //GetFeatureWeights()
 
@@ -90,16 +98,23 @@
             foreach (string rule in lines)
             {
                 string[] parts = rule.Split('=');
-                if (parts.Length != 2) continue;
-                if (parts[0] == "EXCLUDE_IF_RULE") excludeRules.Add(parts[1].Split('_'));
+                if (parts.Length != 2)
+                {
+                    continue;
+                }
+
+                if (parts[0] == "EXCLUDE_IF_RULE")
+                {
+                    excludeRules.Add(parts[1].Split('_'));
+                }
             }
+
             return excludeRules;
         } //GetExcludeRules()
 
         //filter events using the exclude rules - just changes the event's normalised score
         public static AcousticEvent FilterEvent(AcousticEvent ae, List<string[]> rules)
         {
-
             //loop through exclusion rules - DO NOT DELETE events - set score to zero so can check later what is happening.
             foreach (string[] rule in rules)
             {
@@ -108,7 +123,7 @@
                 double value = double.Parse(rule[2]);
                 if (feature == key_BANDWIDTH_SCORE)
                 {
-                    if ((op == "LT") && (ae.kiwi_bandWidthScore < value) || ((op == "GT") && (ae.kiwi_bandWidthScore > value)))
+                    if ((op == "LT" && ae.kiwi_bandWidthScore < value) || (op == "GT" && ae.kiwi_bandWidthScore > value))
                     {
                         ae.kiwi_bandWidthScore = 0.0;
                         ae.ScoreNormalised = 0.0;
@@ -116,15 +131,16 @@
                     }
                 }
                 else // end if key_BANDWIDTH_SCORE
-                    if ((feature == key_INTENSITY_SCORE))
+                    if (feature == key_INTENSITY_SCORE)
                     {
-                        if ((op == "LT") && (ae.kiwi_intensityScore < value) || ((op == "GT") && (ae.kiwi_intensityScore > value)))
+                        if ((op == "LT" && ae.kiwi_intensityScore < value) || (op == "GT" && ae.kiwi_intensityScore > value))
                         {
                             ae.ScoreNormalised = 0.0;
                             return ae;
                         }
                     } // end if key_INTENSITY_SCORE
             }
+
             return ae;
         }
 
@@ -132,41 +148,71 @@
         {
             int start = ae.Oblong.RowTop;
             int end = ae.Oblong.RowBottom;
-            if (end > scoreArray.Length) end = scoreArray.Length - 1;
+            if (end > scoreArray.Length)
+            {
+                end = scoreArray.Length - 1;
+            }
+
             int length = end - start + 1;
             double sum = 0.0;
-            for (int i = start; i <= end; i++) sum += scoreArray[i];
-            return sum / (double)length;
+            for (int i = start; i <= end; i++)
+            {
+                sum += scoreArray[i];
+            }
+
+            return sum / length;
         }
 
-       public static DataTable MergeAdjacentPredictions(DataTable dt)
+        public static DataTable MergeAdjacentPredictions(DataTable dt)
        {
            //DataTable newTable = DataTableTools.CreateTable(dt);
            string sortString = AnalysisKeys.EventStartAbs + " ASC";
            dt = DataTableTools.SortTable(dt, sortString);
            int rowCount = dt.Rows.Count;
-           for (int i = rowCount-2; i >=0; i--) //work from end to beginning
+           for (int i = rowCount - 2; i >= 0; i--) //work from end to beginning
            {
                DataRow row1 = dt.Rows[i];
-               DataRow row2 = dt.Rows[i+1];
+               DataRow row2 = dt.Rows[i + 1];
                string name1 = (string)row1[AnalysisKeys.EventName];
                string name2 = (string)row2[AnalysisKeys.EventName];
                string predictedSex1;
-               if (name1.EndsWith("(m)"))      predictedSex1 = "M";
-               else if (name1.EndsWith("(f)")) predictedSex1 = "F";
-               else predictedSex1 = null;
+               if (name1.EndsWith("(m)"))
+                {
+                    predictedSex1 = "M";
+                }
+                else if (name1.EndsWith("(f)"))
+                {
+                    predictedSex1 = "F";
+                }
+                else
+                {
+                    predictedSex1 = null;
+                }
+
                string predictedSex2;
-               if (name2.EndsWith("(m)"))      predictedSex2 = "M";
-               else if (name2.EndsWith("(f)")) predictedSex2 = "F";
-               else predictedSex2 = null;
+               if (name2.EndsWith("(m)"))
+                {
+                    predictedSex2 = "M";
+                }
+                else if (name2.EndsWith("(f)"))
+                {
+                    predictedSex2 = "F";
+                }
+                else
+                {
+                    predictedSex2 = null;
+                }
+
                double start1 = (double)row1[AnalysisKeys.EventStartAbs];
                double start2 = (double)row2[AnalysisKeys.EventStartAbs];
 
-               if (((start2 - start1) < 15.0) && (predictedSex1 == predictedSex2)) dt.Rows.Remove(row2);
-           }
+               if (start2 - start1 < 15.0 && predictedSex1 == predictedSex2)
+                {
+                    dt.Rows.Remove(row2);
+                }
+            }
 
            return dt;
        }
-
     } // class LSKiwiHelper
 }

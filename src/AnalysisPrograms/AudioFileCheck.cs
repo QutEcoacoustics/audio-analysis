@@ -1,4 +1,8 @@
-﻿namespace AnalysisPrograms
+﻿// <copyright file="AudioFileCheck.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
@@ -11,9 +15,9 @@
     using System.Threading.Tasks;
     using Acoustics.Shared.Contracts;
     using Acoustics.Tools.Audio;
-    using Production;
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
+    using Production;
     using Production.Arguments;
 
     public class AudioFileCheck
@@ -121,8 +125,7 @@
                             CsvSafeString(info.MediaType),
                             CsvSafeString(info.SourceFile.Length.ToString()),
                             CsvSafeString(hash),
-                            GetIdentifierFromPath(info.SourceFile.FullName)
-                            );
+                            GetIdentifierFromPath(info.SourceFile.FullName));
 
                         sw.WriteLine(output);
 
@@ -138,7 +141,6 @@
                     }
                 }
             }
-
         }
 
         private static string CsvSafeString(string value)

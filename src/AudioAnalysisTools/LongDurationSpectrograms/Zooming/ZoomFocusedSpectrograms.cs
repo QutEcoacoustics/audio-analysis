@@ -100,7 +100,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 compressionFactor[compressionCount - 1] = 1;
                 double denom = imageScales[compressionCount - 1];
 
-                for (int i = 0; i < compressionCount-1; i++)
+                for (int i = 0; i < compressionCount - 1; i++)
                 {
                     compressionFactor[i] = (int)Math.Round(imageScales[i] / denom);
                 }
@@ -315,7 +315,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             TimeSpan frameScale,
             int imageWidth)
         {
-            if ((frameData == null) || (frameData.Count == 0))
+            if (frameData == null || frameData.Count == 0)
             {
                 LoggedConsole.WriteLine("WARNING: NO SPECTRAL SPECTROGRAM DATA SUPPLIED");
                 return null;
@@ -460,14 +460,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             Config configuration = ConfigFile.Deserialize(configFile);
 
-            var configDict = new Dictionary<string, string>(configuration.ToDictionary()) {
+            var configDict = new Dictionary<string, string>(configuration.ToDictionary())
+            {
                 [AnalysisKeys.AddAxes] = (configuration.GetBoolOrNull(AnalysisKeys.AddAxes) ?? true).ToString(),
                 [AnalysisKeys.AddSegmentationTrack] = (configuration.GetBoolOrNull(AnalysisKeys.AddSegmentationTrack) ?? true).ToString(),
-                [AnalysisKeys.AddTimeScale] = (string) configuration[AnalysisKeys.AddTimeScale] ?? "true",
+                [AnalysisKeys.AddTimeScale] = configuration[AnalysisKeys.AddTimeScale] ?? "true",
 
-                [AnalysisKeys.AddAxes] = (string)configuration[AnalysisKeys.AddAxes] ?? "true",
+                [AnalysisKeys.AddAxes] = configuration[AnalysisKeys.AddAxes] ?? "true",
 
-                [AnalysisKeys.AddSegmentationTrack] = (string)configuration[AnalysisKeys.AddSegmentationTrack] ?? "true",
+                [AnalysisKeys.AddSegmentationTrack] = configuration[AnalysisKeys.AddSegmentationTrack] ?? "true",
             };
             return configDict;
         }
@@ -573,7 +574,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             dto = dto + startOffset;
 
             Bitmap timeBmp = ImageTrack.DrawTimeTrack(fullDuration, dto, bmp1.Width, trackHeight);
-            int imageHt = bmp1.Height + titleBar.Height + trackHeight +1;
+            int imageHt = bmp1.Height + titleBar.Height + trackHeight + 1;
 
             Bitmap compositeBmp = new Bitmap(bmp1.Width, imageHt); //get canvas for entire image
             Graphics gr = Graphics.FromImage(compositeBmp);

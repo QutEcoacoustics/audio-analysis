@@ -47,7 +47,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// <summary>
         /// Sobel Edge Sonogram.
         /// </summary>
-        SobelEdge
+        SobelEdge,
     }
 
     /// <summary>
@@ -420,7 +420,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 if (drawGridLines)
                 {
                     var gridCol = Color.Black;
-                    if ((w % 2) == 0)
+                    if (w % 2 == 0)
                     {
                         gridCol = Color.Black;
                     }
@@ -553,7 +553,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     for (int x = 0; x < width; x++)
                     {
                         // NormaliseMatrixValues and bound the value - use min bound, max and 255 image intensity range
-                        double value = (data[x, y] - min) / (double)range;
+                        double value = (data[x, y] - min) / range;
                         int c = 255 - (int)Math.Floor(255.0 * value); //original version
                         if (c < 0)
                         {
@@ -565,8 +565,12 @@ namespace AudioAnalysisTools.StandardSpectrograms
                         }
 
                         int g = c + 40; // green tinge used in the template scan band
-                        if (g >= 256) {g = 255;}
-                        var col = (doHighlightSubband && IsInBand(y, minHighlightBin, maxHighlightBin)) ? Color.FromArgb(c, g, c) : grayScale[c];
+                        if (g >= 256)
+                        {
+                            g = 255;
+                        }
+
+                        var col = doHighlightSubband && IsInBand(y, minHighlightBin, maxHighlightBin) ? Color.FromArgb(c, g, c) : grayScale[c];
                         bmp.SetPixel(x, yOffset - 1, col);
                     }//for all pixels in line
 
@@ -574,7 +578,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 } //end repeats over one track
             }//end over all freq bins
 
-            return (Image)bmp;
+            return bmp;
         }
 
         /// <summary>
@@ -627,7 +631,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 } //end repeats over one track
             }
 
-            return (Image)bmp;
+            return bmp;
         }
 
         public static double[] GetAvSpectrum_LowestPercentile(double[,] matrix, int lowPercentile)
@@ -733,7 +737,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             g.DrawString(title, stringFont, Brushes.Wheat, new PointF(X, 3));
 
             var stringSize = g.MeasureString(title, stringFont);
-            X += (stringSize.ToSize().Width + 70);
+            X += stringSize.ToSize().Width + 70;
             string text = Meta.OrganizationTag;
             stringSize = g.MeasureString(text, stringFont);
             int x2 = width - stringSize.ToSize().Width - 2;

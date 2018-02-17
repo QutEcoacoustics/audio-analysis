@@ -91,7 +91,6 @@ namespace AudioAnalysisTools.WavTools
             //wavDirName = @"C:\SensorNetworks\Templates\Template_KOALAMALE1\data\train\KOALA1_E\";
             //wavFileName = "koalaE_006";
 
-
             //JENNIFER'S CD
             //string wavDirName = @"C:\SensorNetworks\WavFiles\JenniferCD\";
             //string wavFileName = "Track02";           //Lewin's rail kek keks.
@@ -114,7 +113,6 @@ namespace AudioAnalysisTools.WavTools
             //wavFileName = "20090508-071000.palm";
             //wavFileName = "20090508-071000.dopod";
 
-
             //GROUND PARROTS - SCOTT BURNETT
             //wavDirName = @"C:\SensorNetworks\Software\AudioAnalysis\Matlab\EPR\GroundParrot\";
             //wavFileName = "GParrots_JB2_20090607-173000.wav_minute_3";
@@ -124,10 +122,7 @@ namespace AudioAnalysisTools.WavTools
             //wavFileName = "BAC8_20080605-020000_selection"; //test file from BAC
             //wavDirName  = @"C:\SensorNetworks\WavFiles\temp1\";
             //wavFileName = "ZCopy of West Knoll - Bees_20091030-013000";
-
         } //end ChooseWavFile()
-
-
 
         public static void DownloadBytesFile(out string opDir, out string fileName, out AudioRecording recording)
         {
@@ -140,7 +135,6 @@ namespace AudioAnalysisTools.WavTools
             //string recordingName = "BAC10/20081206-072000.mp3";
             string recordingName = "BAC8/20080605-020000.mp3";
 
-
             //process the recording name
             recordingName = recordingName.Replace('/', '_');
             recordingName = recordingName.Replace("+", "");
@@ -149,12 +143,10 @@ namespace AudioAnalysisTools.WavTools
 
             //get bytes and write them to file and then read it.
             byte[] bytes = RecordingFetcher.GetRecordingByFileName(recordingName);
-            LoggedConsole.WriteLine("Recording size=" + bytes.Length+ " bytes");
+            LoggedConsole.WriteLine("Recording size=" + bytes.Length + " bytes");
             string opPath = opDir + recordingName;
             File.WriteAllBytes(opPath, bytes);
             recording = new AudioRecording(opPath);
         }
-
-
     }//end class
 }

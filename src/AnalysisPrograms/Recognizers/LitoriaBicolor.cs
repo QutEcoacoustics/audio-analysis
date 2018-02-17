@@ -11,26 +11,21 @@ namespace AnalysisPrograms.Recognizers
 {
     using System;
     using System.Collections.Generic;
+    using System.Drawing;
     using System.IO;
     using System.Reflection;
-
-    using AnalysisBase;
-    using AnalysisBase.ResultBases;
-
-    using Base;
-
-    using AudioAnalysisTools;
-    using AudioAnalysisTools.DSP;
-    using AudioAnalysisTools.StandardSpectrograms;
-    using AudioAnalysisTools.WavTools;
-
-    using log4net;
-
-    using TowseyLibrary;
-    using AudioAnalysisTools.Indices;
-    using System.Drawing;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
+    using AnalysisBase;
+    using AnalysisBase.ResultBases;
+    using AudioAnalysisTools;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.Indices;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
+    using Base;
+    using log4net;
+    using TowseyLibrary;
 
     /// <summary>
     /// To call this LitoriaBicolor recognizer, the first command line argument must be "EventRecognizer".
@@ -83,7 +78,6 @@ namespace AnalysisPrograms.Recognizers
         /// <returns></returns>
         public override RecognizerResults Recognize(AudioRecording recording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
-
             var recognizerConfig = new LitoriaBicolorConfig();
             recognizerConfig.ReadConfigFile(configuration);
 
@@ -91,6 +85,7 @@ namespace AnalysisPrograms.Recognizers
             {
                 throw new InvalidOperationException("Requires a 22050Hz file");
             }
+
             TimeSpan recordingDuration = recording.WavReader.Time;
 
             //// ignore oscillations below this threshold freq
@@ -109,9 +104,11 @@ namespace AnalysisPrograms.Recognizers
             var sonoConfig = new SonogramConfig
             {
                 SourceFName = recording.BaseName,
+
                 //set default values - ignore those set by user
                 WindowSize = frameSize,
                 WindowOverlap = windowOverlap,
+
                 // the default window is HAMMING
                 //WindowFunction = WindowFunctions.HANNING.ToString(),
                 //WindowFunction = WindowFunctions.NONE.ToString(),
@@ -123,9 +120,14 @@ namespace AnalysisPrograms.Recognizers
             //#############################################################################################################################################
             //DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
             var results = Analysis(recording, sonoConfig, recognizerConfig, MainEntry.InDEBUG, segmentStartOffset);
+
             //######################################################################
 
-            if (results == null) return null; //nothing to process
+            if (results == null)
+            {
+                return null; //nothing to process
+            }
+
             var sonogram = results.Item1;
             var hits = results.Item2;
             var scoreArray = results.Item3;
@@ -145,7 +147,7 @@ namespace AnalysisPrograms.Recognizers
                 ae.SpeciesName = recognizerConfig.SpeciesName;
                 ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
                 ae.SegmentDurationSeconds = recordingDuration.TotalSeconds;
-            };
+            }
 
             // do a RECOGNIZER TEST.
             if (false)
@@ -183,6 +185,7 @@ namespace AnalysisPrograms.Recognizers
         {
             double decibelThreshold = lbConfig.DecibelThreshold;   //dB
             double intensityThreshold = lbConfig.IntensityThreshold;
+
             //double eventThreshold = lbConfig.EventThreshold; //in 0-1
 
             if (recording == null)
@@ -199,8 +202,10 @@ namespace AnalysisPrograms.Recognizers
 
             // duration of DCT in seconds - want it to be about 3X or 4X the expected maximum period
             double dctDuration = 3 * lbConfig.MaxPeriod;
+
             // duration of DCT in frames
             int dctLength = (int)Math.Round(framesPerSecond * dctDuration);
+
             // set up the cosine coefficients
             double[,] cosines = MFCCStuff.Cosines(dctLength, dctLength);
 
@@ -213,8 +218,9 @@ namespace AnalysisPrograms.Recognizers
             int rowCount = sonogram.Data.GetLength(0);
             int colCount = sonogram.Data.GetLength(1);
 
-            double[] lowerArray = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, lowerBandMinBin, (rowCount - 1), lowerBandMaxBin);
-            double[] upperArray = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, upperBandMinBin, (rowCount - 1), upperBandMaxBin);
+            double[] lowerArray = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, lowerBandMinBin, rowCount - 1, lowerBandMaxBin);
+            double[] upperArray = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, upperBandMinBin, rowCount - 1, upperBandMaxBin);
+
             //lowerArray = DataTools.filterMovingAverage(lowerArray, 3);
             //upperArray = DataTools.filterMovingAverage(upperArray, 3);
 
@@ -240,17 +246,21 @@ namespace AnalysisPrograms.Recognizers
             for (int i = 0; i < differenceScores.Length; i++)
             {
                 if (differenceScores[i] < 1.0)
+                {
                     differenceScores[i] = 0.0;
+                }
             }
 
             // init the score array
             double[] scores = new double[rowCount];
+
             //iii: CONVERT SCORES TO ACOUSTIC EVENTS
             // var hits = new double[rowCount, colCount];
             double[,] hits = null;
 
             // init confirmed events
             var confirmedEvents = new List<AcousticEvent>();
+
             // add names into the returned events
             foreach (var ae in predictedEvents)
             {
@@ -261,7 +271,7 @@ namespace AnalysisPrograms.Recognizers
                 double maximumIntensity = 0.0;
 
                 // scan the event to get oscillation period and intensity
-                for (int i = eventStart - (dctLength/2); i < eventStart + eventWidth - (dctLength/2); i += step)
+                for (int i = eventStart - (dctLength / 2); i < eventStart + eventWidth - (dctLength / 2); i += step)
                 {
                     // Look for oscillations in the difference array
                     double[] differenceArray = DataTools.Subarray(differenceScores, i, dctLength);
@@ -270,19 +280,27 @@ namespace AnalysisPrograms.Recognizers
                     double intensity;
                     Oscillations2014.GetOscillation(differenceArray, framesPerSecond, cosines, out oscilFreq, out period, out intensity);
 
-                    bool periodWithinBounds = (period > lbConfig.MinPeriod) && (period < lbConfig.MaxPeriod);
+                    bool periodWithinBounds = period > lbConfig.MinPeriod && period < lbConfig.MaxPeriod;
+
                     //Console.WriteLine($"step={i}    period={period:f4}");
 
-                    if (!periodWithinBounds) continue;
+                    if (!periodWithinBounds)
+                    {
+                        continue;
+                    }
 
                     for (int j = 0; j < dctLength; j++) //lay down score for sample length
                     {
                         if (scores[i + j] < intensity)
+                        {
                             scores[i + j] = intensity;
+                        }
                     }
 
-                    if (maximumIntensity < intensity) maximumIntensity = intensity;
-
+                    if (maximumIntensity < intensity)
+                    {
+                        maximumIntensity = intensity;
+                    }
                 }
 
                 // add abbreviatedSpeciesName into event
@@ -292,7 +310,6 @@ namespace AnalysisPrograms.Recognizers
                     ae.Score_MaxInEvent = maximumIntensity;
                     confirmedEvents.Add(ae);
                 }
-
             }
 
             //######################################################################
@@ -307,6 +324,7 @@ namespace AnalysisPrograms.Recognizers
                 // display a variety of debug score arrays
                 double[] normalisedScores;
                 double normalisedThreshold;
+
                 //DataTools.Normalise(scores, eventDecibelThreshold, out normalisedScores, out normalisedThreshold);
                 //var debugPlot = new Plot("Score", normalisedScores, normalisedThreshold);
                 //DataTools.Normalise(upperArray, eventDecibelThreshold, out normalisedScores, out normalisedThreshold);
@@ -319,6 +337,7 @@ namespace AnalysisPrograms.Recognizers
                 var differencePlot = new Plot("Difference", normalisedScores, normalisedThreshold);
 
                 var debugPlots = new List<Plot> { scorePlot, sumDiffPlot, differencePlot };
+
                 // other debug plots
                 //var debugPlots = new List<Plot> { scorePlot, upperPlot, lowerPlot, sumDiffPlot, differencePlot };
                 debugImage = DisplayDebugImage(sonogram, confirmedEvents, debugPlots, hits);
@@ -330,6 +349,7 @@ namespace AnalysisPrograms.Recognizers
                 SourceFName = recording.BaseName,
                 WindowSize = 512,
                 WindowOverlap = 0,
+
                 // the default window is HAMMING
                 //WindowFunction = WindowFunctions.HANNING.ToString(),
                 //WindowFunction = WindowFunctions.NONE.ToString(),
@@ -351,9 +371,15 @@ namespace AnalysisPrograms.Recognizers
             if (scores != null)
             {
                 foreach (var plot in scores)
+                {
                     image.AddTrack(ImageTrack.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title)); //assumes data normalised in 0,1
+                }
             }
-            if (hits != null) image.OverlayRainbowTransparency(hits);
+
+            if (hits != null)
+            {
+                image.OverlayRainbowTransparency(hits);
+            }
 
             if (events.Count > 0)
             {
@@ -362,28 +388,42 @@ namespace AnalysisPrograms.Recognizers
                     ev.BorderColour = AcousticEvent.DefaultBorderColor;
                     ev.ScoreColour = AcousticEvent.DefaultScoreColor;
                 }
+
                 image.AddEvents(events, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
             }
+
             return image.GetImage();
         }
-
     } //end class LitoriaBicolor.cs
 
     public class LitoriaBicolorConfig
     {
         public string AnalysisName { get; set; }
+
         public string SpeciesName { get; set; }
+
         public string AbbreviatedSpeciesName { get; set; }
+
         public int UpperBandMinHz { get; set; }
+
         public int UpperBandMaxHz { get; set; }
+
         public int LowerBandMinHz { get; set; }
+
         public int LowerBandMaxHz { get; set; }
+
         public double MinPeriod { get; set; }
+
         public double MaxPeriod { get; set; }
+
         public double MinDuration { get; set; }
+
         public double MaxDuration { get; set; }
+
         public double IntensityThreshold { get; set; }
+
         public double DecibelThreshold { get; set; }
+
         public double EventThreshold { get; set; }
 
         internal void ReadConfigFile(Config configuration)
@@ -403,14 +443,14 @@ namespace AnalysisPrograms.Recognizers
 
             // minimum duration in seconds of an event
             this.MinDuration = configuration.GetDouble(AnalysisKeys.MinDuration); //:3
+
             // maximum duration in seconds of an event
             this.MaxDuration = configuration.GetDouble(AnalysisKeys.MaxDuration); //: 15
+
             // minimum acceptable value of a DCT coefficient
             this.IntensityThreshold = configuration.GetDoubleOrNull(AnalysisKeys.IntensityThreshold) ?? 0.4;
             this.DecibelThreshold = configuration.GetDoubleOrNull(AnalysisKeys.DecibelThreshold) ?? 3.0;
             this.EventThreshold = configuration.GetDoubleOrNull(AnalysisKeys.EventThreshold) ?? 0.2;
         } // ReadConfigFile()
-
     } // class LitoriaBicolorConfig
-
 }

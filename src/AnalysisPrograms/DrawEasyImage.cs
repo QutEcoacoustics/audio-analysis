@@ -153,6 +153,7 @@ namespace AnalysisPrograms
                 {
                     LoggedConsole.WriteLine("    {0}", dir.FullName);
                 }
+
                 LoggedConsole.WriteLine("# Output directory: " + output);
                 if (arguments.StartDate == null)
                 {
@@ -249,12 +250,15 @@ namespace AnalysisPrograms
             {
                 redID = 11;  // ACI
                 grnID = 12;  // Ht
+
                 //bluID = 13;  // HavgSp
                 //bluID = 14;  // Hvariance
                 //bluID = 15;  // Hpeaks
                 bluID = 16;  // Hcov
+
                 //bluID = 7;  // SPT
                 rep = @"aci-ht-hcov";
+
                 //rep = @"aci-ht-spt";
             }
 
@@ -281,7 +285,7 @@ namespace AnalysisPrograms
             int graphWidth = colCount;
             int trackHeight = 20;
             Font stringFont = new Font("Arial", 8);
-            string[] monthNames = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+            string[] monthNames = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
             // for drawing the y-axis scale
             int scaleWidth = trackHeight + 7;
@@ -309,13 +313,14 @@ namespace AnalysisPrograms
                         yAxisScale.SetPixel(c, nextRow + trackHeight, Color.Gray);
                     }
 
-                    string month = monthNames[thisday.Month-1];
+                    string month = monthNames[thisday.Month - 1];
                     if (thisday.Month == 1) // January
                     {
                         g.DrawString(thisday.Year.ToString(), stringFont, Brushes.White, new PointF(0, nextRow + trackHeight + 1)); //draw time
                         g.DrawString(month, stringFont, Brushes.White, new PointF(1, nextRow + trackHeight + 11)); //draw time
                     }
-                    else {
+                    else
+                    {
                         g.DrawString(month, stringFont, Brushes.White, new PointF(1, nextRow + trackHeight + 1)); //draw time
                     }
 

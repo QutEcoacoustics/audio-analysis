@@ -1,3 +1,7 @@
+// <copyright file="RandomVariable.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
 namespace TowseyLibrary
 {
     using System;
@@ -9,15 +13,11 @@ namespace TowseyLibrary
  *
  * generates numbers according to a gaussian distribution
  */
-
-
-
     public class RandomVariable
     {
         private double mean = 0.0;
         private double SD = 1.0;
         private RandomNumber R;
-
 
         /// <summary>
         /// CONSTRUCTOR
@@ -54,7 +54,6 @@ namespace TowseyLibrary
         //    else return mean - (n * SD);
         //}
 
-
         /**
          * @return Returns the mean.
          */
@@ -62,6 +61,7 @@ namespace TowseyLibrary
         {
             return this.mean;
         }
+
         /**
          * @param mean The mean to set.
          */
@@ -69,6 +69,7 @@ namespace TowseyLibrary
         {
             this.mean = mean;
         }
+
         /**
          * @return Returns the sD.
          */
@@ -76,6 +77,7 @@ namespace TowseyLibrary
         {
             return this.SD;
         }
+
         /**
          * @param sd The sD to set.
          */
@@ -84,5 +86,4 @@ namespace TowseyLibrary
             this.SD = sd;
         }
     }
-
 }

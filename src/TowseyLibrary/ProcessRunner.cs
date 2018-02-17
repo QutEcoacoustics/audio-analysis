@@ -1,4 +1,8 @@
-﻿namespace TowseyLibrary
+﻿// <copyright file="ProcessRunner.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace TowseyLibrary
 {
     using System.Diagnostics;
     using System.IO;
@@ -96,7 +100,6 @@
         {
             this.Run(arguments, workingDirectory, true);
         }
-
 
         public void Run(string arguments, string workingDirectory, bool waitForExit)
         {

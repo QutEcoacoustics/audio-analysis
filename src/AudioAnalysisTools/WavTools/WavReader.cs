@@ -17,19 +17,25 @@ namespace AudioAnalysisTools.WavTools
         public const string wavFExt = ".wav";
 
         //declare variables, getters and setters
-		public int Channels { get; private set; }
-		public int SampleRate { get; private set; }
-		public int SampleCount { get; private set; }
-		public int BitsPerSample { get; private set; }
-		public double[] Samples { get; private set; }
-		//public double Amplitude_AbsMax { get; private set; }
+        public int Channels { get; private set; }
 
-		public string WavFileDir { get; private set; }
-		public string WavFileName { get; private set; }
+        public int SampleRate { get; private set; }
+
+        public int SampleCount { get; private set; }
+
+        public int BitsPerSample { get; private set; }
+
+        public double[] Samples { get; private set; }
+
+        //public double Amplitude_AbsMax { get; private set; }
+
+        public string WavFileDir { get; private set; }
+
+        public string WavFileName { get; private set; }
 
         public TimeSpan Time
         {
-            get { return TimeSpan.FromSeconds(((double)this.Samples.Length) / this.SampleRate); }
+            get { return TimeSpan.FromSeconds((double)this.Samples.Length / this.SampleRate); }
         }
 
         /// <summary>
@@ -92,27 +98,40 @@ namespace AudioAnalysisTools.WavTools
             // http://technology.niagarac.on.ca/courses/ctec1631/WavFileFormat.html
 
             if (!BitConverter.IsLittleEndian)
+            {
                 throw new NotSupportedException("System.BitConverter does not read little endian.");
+            }
 
             // Chunk Id = 'RIFF'
             if (data[0] != 0x52 || data[1] != 0x49 || data[2] != 0x46 || data[3] != 0x46)
+            {
                 throw new InvalidOperationException("Cannot parse WAV header.");
+            }
 
             // Chunk Size = Total Length Of Package To Follow
             if (BitConverter.ToUInt32(data, 4) < 36u)
+            {
                 throw new InvalidOperationException("Cannot parse WAV header.");
+            }
 
             // Format = 'WAVE'
             if (data[8] != 0x57 || data[9] != 0x41 || data[10] != 0x56 || data[11] != 0x45)
+            {
                 throw new InvalidOperationException("Cannot parse WAV header.");
+            }
 
             // Subchunk Id = 'fmt'
             if (data[12] != 0x66 || data[13] != 0x6D || data[14] != 0x74 || data[15] != 0x20)
+            {
                 throw new InvalidOperationException("Cannot parse WAV header. WRONG SUBCHUNK ID:- \n\tSubchunk (data[12-15])=" + data[12] + "," + data[13] + "," + data[14] + "," + data[15] + "," + ". Should be 0x66,0x6D,0x74,0x20.");
+            }
 
             // Length Of FORMAT Subchunk
             int p = (int)BitConverter.ToUInt32(data, 16) - 16;
-            if (p < 0) throw new InvalidOperationException("Cannot parse WAV header.");
+            if (p < 0)
+            {
+                throw new InvalidOperationException("Cannot parse WAV header.");
+            }
 
             // AudioFormat must = 0x01 i.e. PCM. This software does not parse anything else.
             // Audio formats are defined in the header file Mmreg.h available at
@@ -131,13 +150,16 @@ namespace AudioAnalysisTools.WavTools
             //#define  WAVE_FORMAT_DTS        0x0008
 
             if (data[20] != 0x01 || data[21] != 0x00)
+            {
                 throw new InvalidOperationException("Cannot parse WAV header: WRONG AUDIO FORMAT:- \n\tAudioFormat (data[20-21])=" + data[20] + "," + data[21] + ". Should be 1,0.");
+            }
 
             // Number of Channels
             this.Channels = BitConverter.ToUInt16(data, 22);
 
             // Sample Rate
             this.SampleRate = (int)BitConverter.ToUInt32(data, 24);
+
             //Console.WriteLine("SampleRate=" + this.SampleRate);
 
             // Bytes Per Second
@@ -151,13 +173,17 @@ namespace AudioAnalysisTools.WavTools
 
             // "data"
             if (data[36 + p] != 0x64 || data[37 + p] != 0x61 || data[38 + p] != 0x74 || data[39 + p] != 0x61)
+            {
                 throw new InvalidOperationException("Cannot parse WAV header.");
+            }
 
             // Length Of Data To Follow
             int dataLength = (int)BitConverter.ToUInt32(data, 40 + p);
             int headerLength = 44 + p;
             if (dataLength == 0 || dataLength > data.Length - headerLength)
+            {
                 dataLength = data.Length - headerLength;
+            }
 
             this.SampleCount = dataLength / bytesPerSample;
             this.Samples = new double[this.SampleCount];
@@ -165,12 +191,18 @@ namespace AudioAnalysisTools.WavTools
             switch (this.BitsPerSample)
             {
                 case 8:
-					for (int i = 0, offset = headerLength; i < this.SampleCount; i++, offset += bytesPerSample)
-					    this.Samples[i] = data[offset] / 128.0;
+                    for (int i = 0, offset = headerLength; i < this.SampleCount; i++, offset += bytesPerSample)
+                    {
+                        this.Samples[i] = data[offset] / 128.0;
+                    }
+
                     break;
                 case 16:
-					for (int i = 0, offset = headerLength; i < this.SampleCount; i++, offset += bytesPerSample)
-					    this.Samples[i] = BitConverter.ToInt16(data, offset) / 32768.0;
+                    for (int i = 0, offset = headerLength; i < this.SampleCount; i++, offset += bytesPerSample)
+                    {
+                        this.Samples[i] = BitConverter.ToInt16(data, offset) / 32768.0;
+                    }
+
                     break;
                 default:
                     throw new NotSupportedException("Bits per sample other than 8 and 16.");
@@ -193,8 +225,11 @@ namespace AudioAnalysisTools.WavTools
             int n = (int)Math.Floor(length.TotalSeconds * sampleRate);
             double[] data = new double[n];
             for (int i = 0; i < n; i++)
-                data[i] = amp * Math.Sin(phase + 2.0 * Math.PI * freq * i / sampleRate);
-			return new TowseyWavReader(data, sampleRate, "noName");
+            {
+                data[i] = amp * Math.Sin(phase + (2.0 * Math.PI * freq * i / sampleRate));
+            }
+
+            return new TowseyWavReader(data, sampleRate, "noName");
         }
 
         public static double[] TrimSamples(double[] data)
@@ -203,9 +238,11 @@ namespace AudioAnalysisTools.WavTools
 
             int L = data.Length;
             double threshold = 16 / (double)65536;
+
             //Console.WriteLine("threshold = " + threshold);
             int startZeros = 0;
             double value = Math.Abs(data[0]);
+
             //Console.WriteLine("value = "+value);
             while (value < threshold)
             {
@@ -214,37 +251,48 @@ namespace AudioAnalysisTools.WavTools
             }
 
             int endZeros = 0;
-            value = Math.Abs(data[L-1]);
+            value = Math.Abs(data[L - 1]);
             while (value < threshold)
             {
                 endZeros++;
-                value = Math.Abs(data[L-1-startZeros]);
+                value = Math.Abs(data[L - 1 - startZeros]);
             }
+
             //Console.WriteLine("startZeros=" + startZeros + "   endZeros=" + endZeros);
             //Console.ReadLine();
 
-            if ((startZeros == 0) && (endZeros == 0)) return data; //nothing to trim
+            if (startZeros == 0 && endZeros == 0)
+            {
+                return data; //nothing to trim
+            }
 
             startZeros += 100; //skip some more just in case!
-            endZeros   += 100; //skip some more just in case!
+            endZeros += 100; //skip some more just in case!
             int newL = L - startZeros - endZeros;
 
             double[] newData = new double[newL];
-            for (int i = 0; i < newL; i++) newData[i] = data[startZeros+i];
+            for (int i = 0; i < newL; i++)
+            {
+                newData[i] = data[startZeros + i];
+            }
 
             //Console.WriteLine("start=" + newData[0] + "   end=" + newData[newL-1]);
             //for (int i = 0; i < 400; i++) Console.WriteLine(i + "  " + newData[i]);
             return newData;
         }
 
-        void CalculateMaxValue()
+        private void CalculateMaxValue()
         {
             //Amplitude_AbsMax = Samples[DataTools.GetMaxIndex(Samples)];
         }
 
         public void SubSample(int interval)
         {
-            if (interval <= 1) return; //do not change anything!
+            if (interval <= 1)
+            {
+                return; //do not change anything!
+            }
+
             Console.WriteLine("\tSUBSAMPLING the signal - interval = " + interval);
             int L = this.SampleCount;
             int newL = L / interval; // the new length
@@ -252,8 +300,9 @@ namespace AudioAnalysisTools.WavTools
             L = newL * interval; //want L to be exact mulitple of interval
             for (int i = 0; i < newL; i++)
             {
-                newSamples[i] = this.Samples[i*interval];
+                newSamples[i] = this.Samples[i * interval];
             }
+
             this.Samples = newSamples;
             this.SampleRate /= interval;
             this.SampleCount = newL;

@@ -117,8 +117,6 @@ namespace Acoustics.Tools.Audio
             this.TemporaryFilesDirectory = temporaryFilesDirectory;
         }
 
-        #region Implementation of IAudioUtility
-
         /// <summary>
         /// Gets the valid source media types.
         /// </summary>
@@ -422,8 +420,6 @@ namespace Acoustics.Tools.Audio
                 }
             }
         }
-
-        #endregion
 
         // Non functional / not used / not tested - jkust an idea
         private static string FormatChannelSelection(AudioUtilityRequest request)

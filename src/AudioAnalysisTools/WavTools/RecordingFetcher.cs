@@ -30,7 +30,6 @@ namespace AudioAnalysisTools.WavTools
             string uriString = string.Format("{0}/{1}/{2}.{3}", SERVER, sensorName, recordingName, extension);
 
             return new Uri(uriString);
-
         }
 
         private static void ParseFilename(string filename, out string sensorname, out string recordingname, out string extension)
@@ -45,8 +44,5 @@ namespace AudioAnalysisTools.WavTools
             recordingname = parts2[0];
             extension = parts2[1];
         }
-
-
-
     }//end class
 }//end nmaespace

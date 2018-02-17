@@ -1,3 +1,7 @@
+// <copyright file="RandomNumber.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
 namespace TowseyLibrary
 {
     using System;
@@ -5,96 +9,103 @@ namespace TowseyLibrary
     using System.Linq;
     using System.Text;
 
-	public class RandomNumber
-	{
-		Random random;
+    public class RandomNumber
+    {
+        private Random random;
 
-		public RandomNumber()
-		{
-		    this.random = new Random();
-		}
+        public RandomNumber()
+        {
+            this.random = new Random();
+        }
 
-		public RandomNumber(int seed)
-		{
-		    this.random = new Random(seed);
-		}
+        public RandomNumber(int seed)
+        {
+            this.random = new Random(seed);
+        }
 
-		/// <summary>
-		/// returns a random number between 0.0 and 1.0
-		/// </summary>
-		public double GetDouble()
-		{
-			return this.random.NextDouble();
-		}
+        /// <summary>
+        /// returns a random number between 0.0 and 1.0
+        /// </summary>
+        public double GetDouble()
+        {
+            return this.random.NextDouble();
+        }
 
-		public double GetDouble(int max)
-		{
-			return this.random.NextDouble() * max;
-		}
+        public double GetDouble(int max)
+        {
+            return this.random.NextDouble() * max;
+        }
 
-		/// <summary>
-		/// generates numbers 0 to max-1
-		/// </summary>
-		public int GetInt(int max)
-		{
-			return this.random.Next(max);
-		}
+        /// <summary>
+        /// generates numbers 0 to max-1
+        /// </summary>
+        public int GetInt(int max)
+        {
+            return this.random.Next(max);
+        }
 
-		/// <summary>
-		/// generates numbers 1 - 100
-		/// </summary>
-		public int GetRandomPercent()
-		{
-			return 1 + (int)(99.0 * this.random.NextDouble());
-		}
+        /// <summary>
+        /// generates numbers 1 - 100
+        /// </summary>
+        public int GetRandomPercent()
+        {
+            return 1 + (int)(99.0 * this.random.NextDouble());
+        }
 
-		/// <summary>
-		/// Returns integers up to N in random order.
-		/// Use of seed will always return the same order.
-		/// Pass a negative seed value to ignore it and to have a different random order every time method called.
+        /// <summary>
+        /// Returns integers up to N in random order.
+        /// Use of seed will always return the same order.
+        /// Pass a negative seed value to ignore it and to have a different random order every time method called.
         /// Use this method if you want random numbers up to N without replacement.
-		/// </summary>
-		public static int[] RandomizeNumberOrder(int N, int seed)
-		{
-			RandomNumber rn = new RandomNumber(seed);
-			if (seed < 0) rn = new RandomNumber();
-			int R;      //: word;       {a random number between 0 and k-1}
-			int valueAtIndexK;  // : word;      {holder for random number}
+        /// </summary>
+        public static int[] RandomizeNumberOrder(int N, int seed)
+        {
+            RandomNumber rn = new RandomNumber(seed);
+            if (seed < 0)
+            {
+                rn = new RandomNumber();
+            }
 
-			int[] randomArray = new int[N];
-			for (int i = 0; i < N; i++) randomArray[i] = i;   // integers in ascending order
+            int R;      //: word;       {a random number between 0 and k-1}
+            int valueAtIndexK;  // : word;      {holder for random number}
 
-			for (int k = N - 1; k >= 0; k--) // in decending order
-			{
-				R = rn.GetInt(k);                 // a random integer between 0 and k
-				valueAtIndexK  = randomArray[k];  // swap the numbers in position K and romdon  position R
-				randomArray[k] = randomArray[R];
-				randomArray[R] = valueAtIndexK;
-			}
-			return randomArray;
-		} //end of RandomizeNumberOrder()
+            int[] randomArray = new int[N];
+            for (int i = 0; i < N; i++)
+            {
+                randomArray[i] = i;   // integers in ascending order
+            }
 
+            for (int k = N - 1; k >= 0; k--) // in decending order
+            {
+                R = rn.GetInt(k);                 // a random integer between 0 and k
+                valueAtIndexK = randomArray[k];  // swap the numbers in position K and romdon  position R
+                randomArray[k] = randomArray[R];
+                randomArray[R] = valueAtIndexK;
+            }
 
-		/// <summary>
-		/// IMPORTANT - THIS METHOD NEEDS WORK!!
-		/// returns the passed array but with the elements in a random order
-		/// see method above which was originally written for FuzzyART in 1995
-		/// </summary>
-		public static int[] RandomizeArray(int[] array, int seed)
-		{
-			int N = array.Length;
-			int[] rArray = new int[N];
+            return randomArray;
+        } //end of RandomizeNumberOrder()
 
-			Random r = new Random(seed);
+        /// <summary>
+        /// IMPORTANT - THIS METHOD NEEDS WORK!!
+        /// returns the passed array but with the elements in a random order
+        /// see method above which was originally written for FuzzyART in 1995
+        /// </summary>
+        public static int[] RandomizeArray(int[] array, int seed)
+        {
+            int N = array.Length;
+            int[] rArray = new int[N];
 
-			//for (int i = 0; i < N; i++)  // select instances at random without replacement
-			//{
-			//    int rn = r.getInt(N - i); //random number
-			//    rArray[i] = array[rn];
-			//  //  DataTools.removeValue(rn);
-			//}
-			return rArray;
-		}
+            Random r = new Random(seed);
+
+            //for (int i = 0; i < N; i++)  // select instances at random without replacement
+            //{
+            //    int rn = r.getInt(N - i); //random number
+            //    rArray[i] = array[rn];
+            //  //  DataTools.removeValue(rn);
+            //}
+            return rArray;
+        }
 
         /// <summary>
         /// returns the passed array but with the elements in a random order
@@ -106,13 +117,13 @@ namespace TowseyLibrary
             double[] rArray = new double[L];
 
             int[] numberOrder = RandomizeNumberOrder(L, seed);
-            for (int i = 0; i < L; i++)  // select instances at random without replacement
+            for (int i = 0; i < L; i++) // select instances at random without replacement
             {
                 rArray[i] = array[numberOrder[i]];
             }
+
             return rArray;
         }
-
 
         /// <summary>
         /// Returns N random integers between 0 - K-1 without replacement.
@@ -121,12 +132,19 @@ namespace TowseyLibrary
         public static int[] RandomNumbersWithoutReplacement(int n, int seed)
         {
             RandomNumber rn = new RandomNumber(seed);
-            if (seed < 0) rn = new RandomNumber();
+            if (seed < 0)
+            {
+                rn = new RandomNumber();
+            }
+
             int r;      //: word;      {a random number between 0 and k-1}
             int dummy;  // : word;      {holder for random number}
 
             int[] randomArray = new int[n];
-            for (int i = 0; i < n; i++) randomArray[i] = i;   // integers in ascending order
+            for (int i = 0; i < n; i++)
+            {
+                randomArray[i] = i;   // integers in ascending order
+            }
 
             for (int k = n - 1; k >= 0; k--)
             {
@@ -135,10 +153,9 @@ namespace TowseyLibrary
                 randomArray[k] = randomArray[r];
                 randomArray[r] = dummy;
             }
+
             return randomArray;
         } //end of RandomizeNumberOrder()
-
-
 
         /// <summary>
         /// generates vectors of numbers numbers 0 - 1.0
@@ -160,6 +177,7 @@ namespace TowseyLibrary
             {
                 array[i] = rn.GetInt(maxValues[i]);
             }
+
             return array;
         }
 
@@ -179,12 +197,12 @@ namespace TowseyLibrary
                 double[] v2 = GetRandomVector(dimensions, rn);
                 distanceArray[i] = DataTools.EuclidianDistance(v1, v2);
             }
+
             double av, sd;
             NormalDist.AverageAndSD(distanceArray, out av, out sd);
-            double[] avAndsd = {av, sd };
+            double[] avAndsd = { av, sd };
             Console.WriteLine(NormalDist.formatAvAndSD(avAndsd, 5));
             Console.WriteLine("Min --> Max: {0:f3} --> {1:f3}", distanceArray.Min(), distanceArray.Max());
         } //GetRandomDistancesInEuclidianSpace()
-
     }
 }

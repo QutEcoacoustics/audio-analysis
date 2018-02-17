@@ -45,7 +45,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var opdir = configuration["OutputDirectory"].ToDirectoryInfo();
             var ipSdFileName1 = configuration.GetStringOrNull("StdDevFile1").ToFileInfo();
             var ipSdFileName2 = configuration.GetStringOrNull("StdDevFile2").ToFileInfo();
-            
 
             // These parameters manipulate the colour map and appearance of the false-colour spectrogram
             string map = configuration.GetStringOrNull("ColorMap");
@@ -150,7 +149,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             tStatIndexImage.Save(Path.Combine(opdir.FullName, opFileName3));
 
             tStatIndexImage = DrawTStatisticSpectrogramsOfMultipleIndices(cs1, cs2, tStatThreshold, ColourGain);
-            opFileName3 = ipFileName1+"-"+ipFileName2 + ".Difference.tTestThreshold.png";
+            opFileName3 = ipFileName1 + "-" + ipFileName2 + ".Difference.tTestThreshold.png";
             tStatIndexImage.Save(Path.Combine(opdir.FullName, opFileName3));
         }
 
@@ -219,7 +218,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var image1 = cs1.DrawGreyscaleSpectrogramOfIndex(key);
             var image2 = cs2.DrawGreyscaleSpectrogramOfIndex(key);
 
-            if ((image1 == null) || (image2 == null))
+            if (image1 == null || image2 == null)
             {
                 Console.WriteLine("WARNING: From method ColourSpectrogram.DrawTStatisticGreyscaleSpectrogramOfIndex()");
                 Console.WriteLine("         Null image returned with key: {0}", key);
@@ -304,10 +303,16 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
                     if (tStat >= 0)
                     {
-                        if (tStatAbsolute > maxTStat) { colour = colourChart["+99.9%"]; } //99.9% conf
+                        if (tStatAbsolute > maxTStat)
+                        {
+                            colour = colourChart["+99.9%"];
+                        } //99.9% conf
                         else
                         {
-                            if (tStatAbsolute > halfTStat) { colour = colourChart["+99.0%"]; } //99.0% conf
+                            if (tStatAbsolute > halfTStat)
+                            {
+                                colour = colourChart["+99.0%"];
+                            } //99.0% conf
                             else
                             {
                                 if (tStatAbsolute > qtrTStat)
@@ -320,6 +325,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                     //else
                                     //{
                                     colour = colourChart["NoValue"];
+
                                     //}
                                 }
                             }

@@ -85,14 +85,14 @@ namespace AnalysisPrograms.Draw.Zooming
                         common,
                         focalTime,
                         ImageWidth,
-                        Acoustic.TowseyAcoustic);
+                        AcousticIndices.TowseyAcoustic);
                     break;
                 case Arguments.ZoomActionType.Tile:
                     // Create the super tiles for a full set of recordings
                     ZoomTiledSpectrograms.DrawTiles(
                         io,
                         common,
-                        Acoustic.TowseyAcoustic);
+                        AcousticIndices.TowseyAcoustic);
 
                     break;
                 default:

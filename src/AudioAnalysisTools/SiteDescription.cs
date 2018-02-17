@@ -12,25 +12,23 @@ namespace AudioAnalysisTools
     public class SiteDescription
     {
         /// <summary>
-        /// Site name
+        /// Gets or sets site name
         /// </summary>
         public string SiteName { get; set; }
 
         /// <summary>
-        /// Site name
+        /// Gets or sets site name
         /// </summary>
         public string ProjectName { get; set; }
 
         /// <summary>
-        /// Latitude of the site
+        /// Gets or sets latitude of the site
         /// </summary>
         public double? Latitude { get; set; }
 
-
         /// <summary>
-        /// Longitude of the site
+        /// Gets or sets longitude of the site
         /// </summary>
         public double? Longitude { get; set; }
-
     }
 }

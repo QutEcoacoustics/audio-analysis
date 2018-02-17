@@ -139,14 +139,14 @@ namespace AudioAnalysisTools.DSP
 
         public static EnvelopeAndFft ExtractEnvelopeAndFfts(AudioRecording recording, int frameSize, int frameStep)
         {
-            string windowName = FFT.Key_HammingWindow;
+            string windowName = FFT.KeyHammingWindow;
             return ExtractEnvelopeAndAmplSpectrogram(recording.WavReader.Samples, recording.SampleRate, recording.Epsilon, frameSize, frameStep, windowName);
         }
 
         public static EnvelopeAndFft ExtractEnvelopeAndAmplSpectrogram(double[] signal, int sampleRate, double epsilon, int frameSize, double overlap)
         {
             int frameStep = (int)(frameSize * (1 - overlap));
-            string windowName = FFT.Key_HammingWindow;
+            string windowName = FFT.KeyHammingWindow;
             return ExtractEnvelopeAndAmplSpectrogram(signal, sampleRate, epsilon, frameSize, frameStep, windowName);
         }
 
@@ -193,7 +193,7 @@ namespace AudioAnalysisTools.DSP
             // set up the FFT parameters
             if (windowName == null)
             {
-                windowName = FFT.Key_HammingWindow;
+                windowName = FFT.KeyHammingWindow;
             }
 
             FFT.WindowFunc w = FFT.GetWindowFunction(windowName);

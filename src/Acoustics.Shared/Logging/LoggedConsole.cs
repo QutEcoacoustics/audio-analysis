@@ -20,7 +20,7 @@ namespace System
     /// The logging appenders filter out messages for this class and print them in a clean format.
     /// </summary>
     public static class LoggedConsole
-    {       
+    {
         public static string LogFolder { get; } = Path.Combine(AppConfigHelper.ExecutingAssemblyDirectory, "Logs");
 
         public static readonly ILog Log = LogManager.GetLogger("CleanLogger");

@@ -1,15 +1,13 @@
-﻿// <copyright file="GraphsAndCharts.cs" company="QutEcoacoustics">
+﻿// <copyright file="SvdAndPca.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
-using MathNet.Numerics.LinearAlgebra;
-using MathNet.Numerics.LinearAlgebra.Factorization;
-
 namespace TowseyLibrary
 {
-
     using System;
+    using MathNet.Numerics.LinearAlgebra;
     using MathNet.Numerics.LinearAlgebra.Double;
+    using MathNet.Numerics.LinearAlgebra.Factorization;
 
     /// <summary>
     /// contains methods and test example to do Singular Value decomposition and Principal Components Analysis
@@ -107,16 +105,18 @@ namespace TowseyLibrary
         //    }
         //}
 
-
         //=============================================================================
-
-
 
         public static void ExampleOfSVD_1()
         {
-            double[,] matrix1 = {
-                                        { 3.0, -1.0 },
-                                        { -1.0, 3.0 },
+            double[,] matrix1 =
+            {
+                                        {
+                                            3.0, -1.0,
+                                        },
+                                        {
+                                            -1.0, 3.0,
+                                        },
                                     };
             EigenVectors(matrix1);
 
@@ -125,17 +125,30 @@ namespace TowseyLibrary
             //                        {0, 0},
             //                        {Wavelets.SQRT2, -Wavelets.SQRT2}
             //                     };
-            double[,] matrix2 = {
-                                        {2, 4},
-                                        {1, 3},
-                                        {0, 0},
-                                        {0, 0},
+            double[,] matrix2 =
+            {
+                                        {
+                                            2, 4,
+                                        },
+                                        {
+                                            1, 3,
+                                        },
+                                        {
+                                            0, 0,
+                                        },
+                                        {
+                                            0, 0,
+                                        },
                                      };
             var tuple = SingularValueDecompositionOutput(matrix2);
             Vector<double> sdValues = tuple.Item1;
             Matrix<double> uMatrix = tuple.Item2;
 
-            foreach (double d in sdValues) Console.WriteLine("sdValue = {0}", d);
+            foreach (double d in sdValues)
+            {
+                Console.WriteLine("sdValue = {0}", d);
+            }
+
             double ratio = (sdValues[0] - sdValues[1]) / sdValues[0];
             Console.WriteLine("(e1-e2)/e1 = {0}", ratio);
 
@@ -160,12 +173,23 @@ namespace TowseyLibrary
 
             // this example given on page 21 of Singular Value Decomposition Tutorial" by Kirk Baker  March 29, 2005 (Revised January 14, 2013)
             // see that page for an interpretation of the U matrix.
-            double[,] matrix1 = {
-                                        { 2.0, 0.0, 8.0, 6.0, 0.0 },
-                                        { 1.0, 6.0, 0.0, 1.0, 7.0 },
-                                        { 5.0, 0.0, 7.0, 4.0, 0.0 },
-                                        { 7.0, 0.0, 8.0, 5.0, 0.0 },
-                                        { 0.0,10.0, 0.0, 0.0, 7.0 },
+            double[,] matrix1 =
+            {
+                                        {
+                                            2.0, 0.0, 8.0, 6.0, 0.0,
+                                        },
+                                        {
+                                            1.0, 6.0, 0.0, 1.0, 7.0,
+                                        },
+                                        {
+                                            5.0, 0.0, 7.0, 4.0, 0.0,
+                                        },
+                                        {
+                                            7.0, 0.0, 8.0, 5.0, 0.0,
+                                        },
+                                        {
+                                            0.0, 10.0, 0.0, 0.0, 7.0,
+                                        },
                                 };
 
             /*       WORDS   ||       DOCUMENTS
@@ -199,7 +223,9 @@ namespace TowseyLibrary
             // svd.S returns the singular values in a vector
             Vector<double> singularValues = svd.S;
             foreach (double d in singularValues)
+            {
                 Console.WriteLine("singular value = {0}", d);
+            }
 
             // svd.U returns the LEFT singular vectors in matrix
             Matrix<double> uMatrix = svd.U;
@@ -272,9 +298,14 @@ namespace TowseyLibrary
 
             // NOTE: When the matrix is square symmetric, the singular values equal the eigenvalues.
             // e1=4.0     e2=2.0 and the singular values are the same
-            double[,] m = {
-                                { 3.0, -1.0 },
-                                {-1.0,  20.0 },
+            double[,] m =
+            {
+                                {
+                                    3.0, -1.0,
+                                },
+                                {
+                                    -1.0,  20.0,
+                                },
                             };
 
             // e1=e2=0.333333

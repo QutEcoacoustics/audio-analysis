@@ -4,7 +4,6 @@
 
 namespace AnalysisPrograms
 {
-
     using System;
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
@@ -17,14 +16,13 @@ namespace AnalysisPrograms
     using Acoustics.Shared;
     using Acoustics.Shared.Extensions;
     using AnalysisBase;
-    using Production;
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
     using McMaster.Extensions.CommandLineUtils;
+    using Production;
     using Production.Arguments;
     using Production.Validation;
     using TowseyLibrary;
-
     using Zio;
 
     /// <summary>
@@ -135,7 +133,6 @@ namespace AnalysisPrograms
                     LoggedConsole.WriteLine("# Output image  file: " + arguments.Output);
                     LoggedConsole.WriteLine();
                 }
-
             }
 
             var input = arguments.InputCsv.ToFileInfo();
@@ -155,7 +152,6 @@ namespace AnalysisPrograms
                 igd.IndexCalculationDuration,
                 igd.RecordingStartDate);
             tracksImage.Save(output.FullName);
-
         }
     }
 }

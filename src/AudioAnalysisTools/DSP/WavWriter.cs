@@ -306,7 +306,7 @@ namespace AudioAnalysisTools.DSP
 
             for (int i = 0; i < n; i++)
             {
-                data[i] = amp * Math.Sin(phase + 2.0 * Math.PI * freq * i / sampleRate);
+                data[i] = amp * Math.Sin(phase + (2.0 * Math.PI * freq * i / sampleRate));
             }
 
             return new WavReader(data, 1, 16, sampleRate);
@@ -390,9 +390,9 @@ namespace AudioAnalysisTools.DSP
         {
             BinaryWriter writer = new BinaryWriter(stream);
 
-            // 
+            //
             // Chunk - RIFF
-            // 
+            //
 
             // RIFF
             int chunkIdRiff = 0x46464952;
@@ -456,9 +456,9 @@ namespace AudioAnalysisTools.DSP
             // is rounded up to the nearest byte size and the unused bytes are set to 0 and ignored.
             short bitsPerSample = wavInfo.BitsPerSample;
 
-            // 
+            //
             // Chunk - data
-            // 
+            //
             int chunkIdData = 0x61746164;
 
             // don't know this yet.
@@ -490,13 +490,13 @@ namespace AudioAnalysisTools.DSP
         {
             // need to write file size and data size.
 
-            // 
+            //
             // data chunk size == NumSamples * NumChannels * BitsPerSample/8
             // This is the number of bytes in the data.
             // You can also think of this as the size
             // of the read of the subchunk following this
             // number.
-            // 
+            //
 
             // size = sample rate * number of channels * (bits per sample /8) * time in seconds.
 
@@ -506,7 +506,7 @@ namespace AudioAnalysisTools.DSP
             writer.Seek(chunkDataSizeDataOffset, SeekOrigin.Begin);
             writer.Write(chunkDataSizeData);
 
-            // 
+            //
             // file size = 36 + SubChunk2Size, or more precisely:
             // 4 + (8 + SubChunk1Size) + (8 + SubChunk2Size)
             // This is the size of the rest of the chunk
@@ -514,7 +514,7 @@ namespace AudioAnalysisTools.DSP
             // entire file in bytes minus 8 bytes for the
             // two fields not included in this count:
             // ChunkID and ChunkSize.
-            // 
+            //
 
             int chunkDataSizeRiff = 4 + (8 + 16) + (8 + chunkDataSizeData);
 

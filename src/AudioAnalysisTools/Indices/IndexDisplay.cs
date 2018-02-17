@@ -135,6 +135,7 @@ namespace AudioAnalysisTools.Indices
                               "A index properties configuration could not be found for {0} (not even in the translation directory). Property is ignored and not rendered"
                                   .Format2(key));
                         }
+
                         continue;
                     }
                 }
@@ -158,7 +159,6 @@ namespace AudioAnalysisTools.Indices
                 .Select(tuple => tuple.Item2)
                 .Where(b => b != null).ToList();
 
-
             //set up the composite image parameters
             int X_offset = 2;
             int graphWidth = X_offset + scaleLength;
@@ -166,6 +166,7 @@ namespace AudioAnalysisTools.Indices
             TimeSpan scaleDuration = TimeSpan.FromMinutes(scaleLength);
             int imageHt = trackHeight * (listOfBitmaps.Count + 4); //+3 for title and top and bottom time tracks
             Bitmap titleBmp = ImageTrack.DrawTitleTrack(imageWidth, trackHeight, titleText);
+
             //Bitmap time1Bmp = ImageTrack.DrawTimeTrack(scaleDuration, TimeSpan.Zero, DrawSummaryIndices.TimeScale, graphWidth, TrackHeight, "Time (hours)");
             TimeSpan xAxisPixelDuration = indexCalculationDuration;
             TimeSpan fullDuration = TimeSpan.FromTicks(xAxisPixelDuration.Ticks * graphWidth);
@@ -188,13 +189,12 @@ namespace AudioAnalysisTools.Indices
             {
                 imageList.Add(listOfBitmaps[i]);
             }
+
             imageList.Add(timeBmp2);
             imageList.Add(suntrack);
             Bitmap compositeBmp = (Bitmap)ImageTools.CombineImagesVertically(imageList);
             return compositeBmp;
         }
-
-
 
         /// Reads csv file containing summary indices and converts them to a tracks image
         /// </summary>
@@ -214,7 +214,6 @@ namespace AudioAnalysisTools.Indices
             return DrawHighAmplitudeClippingTrack(array1, array2);
         }
 
-
         /// <summary>
         /// Reads csv file containing summary indices and converts them to a tracks image
         /// </summary>
@@ -231,6 +230,7 @@ namespace AudioAnalysisTools.Indices
 
             Bitmap bmp = new Bitmap(trackWidth, trackHeight);
             Graphics g = Graphics.FromImage(bmp);
+
             //g.Clear(grayScale[240]);
             g.Clear(Color.LightGray);
             g.DrawRectangle(new Pen(Color.White), 0, 0, trackWidth - 1, trackHeight - 1);
@@ -238,14 +238,25 @@ namespace AudioAnalysisTools.Indices
             // for pixels in the line
             for (int i = 0; i < dataLength; i++)
             {
-                if ((values1[i] <= 0.0) && (values2[i] <= 0.0)) continue;
+                if (values1[i] <= 0.0 && values2[i] <= 0.0)
+                {
+                    continue;
+                }
 
                 // take sqrt because it emphasizes low values.
                 double value1 = Math.Sqrt(values1[i]);
                 double value2 = Math.Sqrt(values2[i]);
+
                 // expect normalised data
-                if (value1 > 1.0) { value1 = 1.0; }
-                if (value2 > 1.0) { value2 = 1.0; }
+                if (value1 > 1.0)
+                {
+                    value1 = 1.0;
+                }
+
+                if (value2 > 1.0)
+                {
+                    value2 = 1.0;
+                }
 
                 // Draw the high amplitude index
                 int barHeight = (int)Math.Round(value1 * trackHeight);
@@ -253,6 +264,7 @@ namespace AudioAnalysisTools.Indices
                 {
                     bmp.SetPixel(i, trackHeight - y - 1, Color.DarkBlue);
                 }
+
                 // now draw the clipping index
                 barHeight = (int)Math.Round(value2 * trackHeight);
                 for (int y = 0; y < barHeight; y++)
@@ -282,8 +294,6 @@ namespace AudioAnalysisTools.Indices
             return DrawHighAmplitudeClippingTrack(highAmplitudeIndex, clippingIndex);
         }
 
-
-
         // ===========================================================================================================================================================
         // ==== ALL THE BELOW METHODS SHOULD EVENTUALLY BE REMOVED. THEY USE DATA TABLES WHICH ARE NOW NO lONGER NECESSARY ===========================================
         // As of December 2014, these methods are used only by the AUDIO BROWSER PROJECT and these methods were copied to that
@@ -312,8 +322,6 @@ namespace AudioAnalysisTools.Indices
         //    return tracksImage;
         //}
 
-
-
         ///// <summary>
         ///// </summary>
         ///// <param name="dt"></param>
@@ -326,7 +334,6 @@ namespace AudioAnalysisTools.Indices
         //public static Bitmap ConstructImageOfIndexTracks(List<string> headers, List<double[]> values, string title, double[] order)
         //{
         //    int trackHeight = DrawSummaryIndices.DefaultTrackHeight;
-
 
         //    // accumulate the individual tracks
         //    int duration = values[0].Length;    // time in minutes - 1 value = 1 pixel
@@ -377,7 +384,6 @@ namespace AudioAnalysisTools.Indices
         //    }
         //    return compositeBmp;
         //}
-
 
         //public static Tuple<DataTable, DataTable> ProcessCsvFile(FileInfo fiCsvFile, FileInfo fiConfigFile)
         //{

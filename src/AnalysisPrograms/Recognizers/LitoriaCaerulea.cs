@@ -15,7 +15,6 @@ namespace AnalysisPrograms.Recognizers
     using System.Reflection;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
-
     using AnalysisBase;
     using AnalysisBase.ResultBases;
     using AudioAnalysisTools;
@@ -23,8 +22,8 @@ namespace AnalysisPrograms.Recognizers
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-    using log4net;
     using Base;
+    using log4net;
     using TowseyLibrary;
 
     /// <summary>
@@ -90,6 +89,7 @@ namespace AnalysisPrograms.Recognizers
                 SourceFName = recording.BaseName,
                 WindowSize = frameSize,
                 WindowOverlap = windowOverlap,
+
                 // use the default HAMMING window
                 //WindowFunction = WindowFunctions.HANNING.ToString(),
                 //WindowFunction = WindowFunctions.NONE.ToString(),
@@ -104,6 +104,7 @@ namespace AnalysisPrograms.Recognizers
             int sr = recording.SampleRate;
             double freqBinWidth = sr / (double)sonoConfig.WindowSize;
             double framesPerSecond = sr / (sonoConfig.WindowSize * (1 - windowOverlap));
+
             //int dominantFreqBin = (int)Math.Round(recognizerConfig.DominantFreq / freqBinWidth) + 1;
             int minBin = (int)Math.Round(recognizerConfig.MinHz / freqBinWidth) + 1;
             int maxBin = (int)Math.Round(recognizerConfig.MaxHz / freqBinWidth) + 1;
@@ -116,7 +117,7 @@ namespace AnalysisPrograms.Recognizers
             int rowCount = sonogram.Data.GetLength(0);
 
             // get the freq band as set by min and max Herz
-            var frogBand = MatrixTools.Submatrix(sonogram.Data, 0, minBin, (rowCount - 1), maxBin);
+            var frogBand = MatrixTools.Submatrix(sonogram.Data, 0, minBin, rowCount - 1, maxBin);
 
             // Now look for spectral maxima. For L.caerulea, the max should lie around 1100Hz +/-150 Hz.
             // Skip over spectra where maximum is not in correct location.
@@ -133,10 +134,15 @@ namespace AnalysisPrograms.Recognizers
                 //extract spectrum
                 var spectrum = MatrixTools.GetRow(frogBand, x);
                 int maxIndex = DataTools.GetMaxIndex(spectrum);
-                if (spectrum[maxIndex] < decibelThreshold) continue;
+                if (spectrum[maxIndex] < decibelThreshold)
+                {
+                    continue;
+                }
 
-                if ((maxIndex < binAtTopOfTopBand) && (maxIndex > binAtBotOfTopBand))
+                if (maxIndex < binAtTopOfTopBand && maxIndex > binAtBotOfTopBand)
+                {
                     croakScoreArray[x] = spectrum[maxIndex];
+                }
             }
 
             // Perpare a normalised plot for later display with spectrogram
@@ -180,6 +186,7 @@ namespace AnalysisPrograms.Recognizers
             // duration of DCT in seconds
             //croakScoreArray = DataTools.filterMovingAverageOdd(croakScoreArray, 5);
             double dctDuration = recognizerConfig.DctDuration;
+
             // minimum acceptable value of a DCT coefficient
             double dctThreshold = recognizerConfig.DctThreshold;
             double minOscRate = 1 / recognizerConfig.MaxPeriod;
@@ -229,6 +236,7 @@ namespace AnalysisPrograms.Recognizers
                 var amplPlot = new Plot("Band amplitude", normalisedScores, normalisedThreshold);
 
                 var debugPlots = new List<Plot> { scoresPlot, croakPlot2, croakPlot1, amplPlot };
+
                 // NOTE: This DrawDebugImage() method can be over-written in this class.
                 var debugImage = DrawDebugImage(sonogram, prunedEvents, debugPlots, hits);
                 var debugPath = FilenameHelpers.AnalysisResultPath(outputDirectory, recording.BaseName, this.SpeciesName, "png", "DebugSpectrogram");
@@ -241,6 +249,7 @@ namespace AnalysisPrograms.Recognizers
                 Hits = hits,
                 Plots = scoresPlot.AsList(),
                 Events = prunedEvents,
+
                 //Events = events
             };
         }
@@ -249,20 +258,33 @@ namespace AnalysisPrograms.Recognizers
     internal class LitoriaCaeruleaConfig
     {
         public string AnalysisName { get; set; }
+
         public string SpeciesName { get; set; }
+
         public string AbbreviatedSpeciesName { get; set; }
+
         public int DominantFreq { get; set; }
+
         public int MinHz { get; set; }
+
         public int MaxHz { get; set; }
+
         public double DctDuration { get; set; }
+
         public double DctThreshold { get; set; }
 
         public double MinCroakDuration { get; set; }
+
         public double MaxCroakDuration { get; set; }
+
         public double MinPeriod { get; set; }
+
         public double MaxPeriod { get; set; }
+
         public double MinDuration { get; set; }
+
         public double MaxDuration { get; set; }
+
         public double EventThreshold { get; set; }
 
         internal void ReadConfigFile(Config configuration)
@@ -271,6 +293,7 @@ namespace AnalysisPrograms.Recognizers
             this.AnalysisName = configuration[AnalysisKeys.AnalysisName] ?? "<no name>";
             this.SpeciesName = configuration[AnalysisKeys.SpeciesName] ?? "<no name>";
             this.AbbreviatedSpeciesName = configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+
             // frequency band of the call
             this.MinHz = configuration.GetInt(AnalysisKeys.MinHz);
             this.MaxHz = configuration.GetInt(AnalysisKeys.MaxHz);
@@ -278,15 +301,17 @@ namespace AnalysisPrograms.Recognizers
 
             // duration of DCT in seconds
             this.DctDuration = configuration.GetDouble(AnalysisKeys.DctDuration);
+
             // minimum acceptable value of a DCT coefficient
             this.DctThreshold = configuration.GetDouble(AnalysisKeys.DctThreshold);
 
             // Periods and Oscillations
-            this.MinPeriod = configuration.GetDouble(AnalysisKeys.MinPeriodicity); 
+            this.MinPeriod = configuration.GetDouble(AnalysisKeys.MinPeriodicity);
             this.MaxPeriod = configuration.GetDouble(AnalysisKeys.MaxPeriodicity);
 
             // minimum duration in seconds of an event
             this.MinDuration = configuration.GetDouble(AnalysisKeys.MinDuration);
+
             // maximum duration in seconds of an event
             this.MaxDuration = configuration.GetDouble(AnalysisKeys.MaxDuration);
 
@@ -297,6 +322,5 @@ namespace AnalysisPrograms.Recognizers
             // min score for an acceptable event
             this.EventThreshold = configuration.GetDouble(AnalysisKeys.EventThreshold);
         }
-
     } // Config class
 }

@@ -16,20 +16,23 @@ namespace AudioAnalysisTools.StandardSpectrograms
     {
         public SpectrogramSobelEdge(string configFile, WavReader wav)
             : base(SonogramConfig.Load(configFile), wav)
-        { }
+        {
+        }
 
         public SpectrogramSobelEdge(SonogramConfig config, WavReader wav)
             : base(config, wav)
-        { }
+        {
+        }
 
         public override void Make(double[,] amplitudeM)
         {
             this.Data = this.SobelEdgegram(amplitudeM);
         }
 
-        double[,] SobelEdgegram(double[,] matrix)
+        private double[,] SobelEdgegram(double[,] matrix)
         {
             double[,] m = MFCCStuff.DecibelSpectra(matrix, this.Configuration.WindowPower, this.SampleRate, this.Configuration.epsilon); //from spectrogram
+
             //double[,] m = Speech.DecibelSpectra(matrix);
 
             //NOISE REDUCTION

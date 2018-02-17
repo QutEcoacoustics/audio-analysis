@@ -2,19 +2,19 @@
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
-/*
+namespace System
+{
+    /*
  * Copyright Vadim Orekhov 2017
  * Sourced from https://github.com/vad3x/case-extensions
  * License: MIT
  */
 
-using System;
-using System.Linq;
-using System.Text;
-using System.Diagnostics;
+    using System;
+    using System.Diagnostics;
+    using System.Linq;
+    using System.Text;
 
-namespace System
-{
     public static class StringExtensions
     {
         private static readonly char[] Delimeters = { ' ', '-', '_' };

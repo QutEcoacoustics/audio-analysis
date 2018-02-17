@@ -59,13 +59,13 @@ namespace AudioAnalysisTools
         public const string Threshold = "Threshold";
 
         // Keys to recognise identifiers in ANALYSIS CONFIG file.
-        public const string LowFreqBound  = "LowFreqBound";
-        public const string MidFreqBound  = "MidFreqBound";
+        public const string LowFreqBound = "LowFreqBound";
+        public const string MidFreqBound = "MidFreqBound";
         public const string HighFreqBound = "HighFreqBound";
 
         // KEYS to SONOGRAMS
-        public const string SaveSonogramData    = "SaveSonogramData";
-        public const string SaveSonogramImages  = "SaveSonogramImages";
+        public const string SaveSonogramData = "SaveSonogramData";
+        public const string SaveSonogramImages = "SaveSonogramImages";
         public const string TimeReductionFactor = "TimeReductionFactor";
         public const string FreqReductionFactor = "FreqReductionFactor";
         public const string AddAxes = "AddAxes";

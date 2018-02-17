@@ -40,9 +40,9 @@ namespace Acoustics.Shared
             while (num >= BaseCount)
             {
                 div = num / BaseCount;
-                mod = (int)(num - (BaseCount * (long)div));
+                mod = (int)(num - (BaseCount * div));
                 result = Alphabet[mod] + result;
-                num = (long)div;
+                num = div;
             }
 
             if (num > 0)

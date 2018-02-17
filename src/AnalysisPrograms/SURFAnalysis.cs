@@ -1,9 +1,9 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="Audio2InputForConvCNN.cs" company="QutEcoacoustics">
-//   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// <copyright file="SURFAnalysis.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
-//   Defines the Audio2InputForConvCNN 
+//   Defines the Audio2InputForConvCNN
 //   ACTIVITY CODE: audio2InputForConvCNN
 //[Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
 // </summary>
@@ -108,9 +108,9 @@ namespace AnalysisPrograms
             configDict[AnalysisKeys.AddSegmentationTrack] = configuration[AnalysisKeys.AddSegmentationTrack] ?? "true";
 
             //bool makeSoxSonogram = (bool?)configuration[AnalysisKeys.MakeSoxSonogram] ?? false;
-            configDict[AnalysisKeys.AddTimeScale] = (string)configuration[AnalysisKeys.AddTimeScale] ?? "true";
-            configDict[AnalysisKeys.AddAxes] = (string)configuration[AnalysisKeys.AddAxes] ?? "true";
-            configDict[AnalysisKeys.AddSegmentationTrack] = (string)configuration[AnalysisKeys.AddSegmentationTrack] ?? "true";
+            configDict[AnalysisKeys.AddTimeScale] = configuration[AnalysisKeys.AddTimeScale] ?? "true";
+            configDict[AnalysisKeys.AddAxes] = configuration[AnalysisKeys.AddAxes] ?? "true";
+            configDict[AnalysisKeys.AddSegmentationTrack] = configuration[AnalysisKeys.AddSegmentationTrack] ?? "true";
 
             // print out the parameters
             LoggedConsole.WriteLine("\nPARAMETERS");
@@ -248,7 +248,7 @@ namespace AnalysisPrograms
 
                 // split and parse elements of data line
                 var fields = record.Split(',');
-                for (int i= 0; i < fields.Length; i++)
+                for (int i = 0; i < fields.Length; i++)
                 {
                     string word = fields[i];
                     while ( word.StartsWith("\"") || word.StartsWith(" "))

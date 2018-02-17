@@ -1,4 +1,8 @@
-﻿namespace TowseyLibrary
+﻿// <copyright file="Matrix3D.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace TowseyLibrary
 {
     using System;
     using System.Collections.Generic;
@@ -7,12 +11,11 @@
 
     public class Matrix3D
     {
-        string[] dimNames = new string[3];
-        int Xdim = 0;
-        int Ydim = 0;
-        int Zdim = 0;
-        float[, ,] array3D;
-
+        private string[] dimNames = new string[3];
+        private int Xdim = 0;
+        private int Ydim = 0;
+        private int Zdim = 0;
+        private float[,,] array3D;
 
         public Matrix3D(int _Xdim, int _Ydim, int _Zdim)
         {
@@ -40,14 +43,17 @@
         {
             this.array3D[X, Y, Z] = value;
         }
+
         public void SetValue(int X, int Y, int Z, double value)
         {
             this.array3D[X, Y, Z] = (float)value;
         }
+
         public void SetValue(int X, int Y, int Z, int value)
         {
-            this.array3D[X, Y, Z] = (float)value;
+            this.array3D[X, Y, Z] = value;
         }
+
         public float GetValue(int X, int Y, int Z)
         {
             return this.array3D[X, Y, Z];
@@ -56,60 +62,92 @@
         // get and set arrays in the X dimension
         public float[] GetArray(char arrayID, int Y, int Z)
         {
-            if (arrayID != 'X') return null;
+            if (arrayID != 'X')
+            {
+                return null;
+            }
 
             float[] array = new float[this.Xdim];
             for (int X = 0; X < this.Xdim; X++)
+            {
                 array[X] = this.array3D[X, Y, Z];
+            }
+
             return array;
         }
+
         public void SetArray(float[] array, int Y, int Z)
         {
-            if (array.Length != this.Xdim) return;
+            if (array.Length != this.Xdim)
+            {
+                return;
+            }
 
             for (int X = 0; X < this.Xdim; X++)
+            {
                 this.array3D[X, Y, Z] = array[X];
+            }
         }
-
 
         // get and set arrays in the Y dimension
         public float[] GetArray(int X, char arrayID, int Z)
         {
-            if (arrayID != 'Y') return null;
+            if (arrayID != 'Y')
+            {
+                return null;
+            }
 
             float[] array = new float[this.Ydim];
             for (int Y = 0; Y < this.Ydim; Y++)
+            {
                 array[Y] = this.array3D[X, Y, Z];
+            }
+
             return array;
         }
+
         public void SetArray(int X, float[] array, int Z)
         {
-            if (array.Length != this.Ydim) return;
+            if (array.Length != this.Ydim)
+            {
+                return;
+            }
 
             for (int Y = 0; Y < this.Ydim; Y++)
+            {
                 this.array3D[X, Y, Z] = array[Y];
+            }
         }
-
 
         // get and set arrays in the Z dimension
         public float[] GetArray(int X, int Y, char arrayID)
         {
-            if (arrayID != 'Z') return null;
+            if (arrayID != 'Z')
+            {
+                return null;
+            }
 
             float[] array = new float[this.Zdim];
             for (int Z = 0; Z < this.Zdim; Z++)
+            {
                 array[Z] = this.array3D[X, Y, Z];
+            }
+
             return array;
         }
+
         public void SetArray(int X, int Y, float[] array)
         {
-            if (array.Length != this.Zdim) return;
+            if (array.Length != this.Zdim)
+            {
+                return;
+            }
 
             for (int Z = 0; Z < this.Zdim; Z++)
+            {
                 this.array3D[X, Y, Z] = array[Z];
+            }
         }
-
-
 
         // get and set matrix in the 3D array
         public float[,] GetMatrix(string dimName, int index)
@@ -125,6 +163,7 @@
                         matrix[Y, Z] = this.array3D[index, Y, Z];
                     }
                 }
+
                 return matrix;
             }
             else
@@ -138,6 +177,7 @@
                         matrix[X, Z] = this.array3D[X, index, Z];
                     }
                 }
+
                 return matrix;
             }
             else
@@ -151,10 +191,13 @@
                             matrix[X, Y] = this.array3D[X, Y, index];
                         }
                     }
+
                     return matrix;
                 }
+
             return null;
         }
+
         public void SetMatrix(string dimName, int index, float[,] matrix)
         {
             if (dimName == this.dimNames[0]) // X dimension
@@ -191,7 +234,6 @@
                     }
         }
 
-
         public static void Write3DMatrix(Matrix3D M)
         {
             for (int X = 0; X < M.Xdim; X++)
@@ -202,12 +244,13 @@
                     {
                         Console.Write("{0:f1} ", M.array3D[X, Y, Z]);
                     }
+
                     Console.Write("    ");
                 }
+
                 Console.WriteLine();
             }
         }
-
 
         //TestMatrix3D class
 
@@ -242,15 +285,14 @@
                     matrix[X, Y] = 4.0f;
                 }
             }
+
             M.SetMatrix("ZZ", 1, matrix);
 
             // set array
-            float[] array = {0.5f, 0.5f, 0.5f, 0.5f};
+            float[] array = { 0.5f, 0.5f, 0.5f, 0.5f };
             M.SetArray(array, 0, 2);
 
             Write3DMatrix(M);
         }
-
-
     }
 }

@@ -33,7 +33,7 @@ namespace AudioAnalysisTools.DSP
         public short BitsPerSample { get; set; }
 
         /// <summary>
-        /// Bytes Per Sample / Block Align.
+        /// Gets or sets bytes Per Sample / Block Align.
         /// </summary>
         public short BytesPerSample { get; set; }
 
@@ -63,7 +63,7 @@ namespace AudioAnalysisTools.DSP
         public TimeSpan Duration { get; set; }
 
         /// <summary>
-        /// Gets or sets
+        /// Gets
         /// </summary>
         public double Epsilon
         {
@@ -88,7 +88,7 @@ namespace AudioAnalysisTools.DSP
 
             for (int i = 0; i < length; i++)
             {
-                data[i] = amp * Math.Sin(phase + 2.0 * Math.PI * freq * i / sampleRate);
+                data[i] = amp * Math.Sin(phase + (2.0 * Math.PI * freq * i / sampleRate));
             }
 
             this.Channels = 1;
@@ -117,7 +117,7 @@ namespace AudioAnalysisTools.DSP
             {
                 for (int f = 0; f < count; f++)
                 {
-                    data[i] += (amp * Math.Sin(phase + 2.0 * Math.PI * freq[f] * i / (double)sampleRate));
+                    data[i] += amp * Math.Sin(phase + (2.0 * Math.PI * freq[f] * i / sampleRate));
                 }
             }
 
@@ -190,6 +190,7 @@ namespace AudioAnalysisTools.DSP
             {
                 return wavInfo.Samples.Max();
             }
+
             return 0;
         }
     }

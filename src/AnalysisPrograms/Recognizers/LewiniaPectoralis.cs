@@ -304,7 +304,7 @@ namespace AnalysisPrograms.Recognizers
                 int start = step * i;
                 double[] lowerSubarray = DataTools.Subarray(lowerArray, start, sampleLength);
                 double[] upperSubarray = DataTools.Subarray(upperArray, start, sampleLength);
-                if ((lowerSubarray.Length != sampleLength) || (upperSubarray.Length != sampleLength))
+                if (lowerSubarray.Length != sampleLength || upperSubarray.Length != sampleLength)
                 {
                     break;
                 }
@@ -319,7 +319,7 @@ namespace AnalysisPrograms.Recognizers
                 spectrum = DataTools.NormaliseArea(spectrum);
                 int maxId = DataTools.GetMaxIndex(spectrum);
                 double period = 2 * sampleLength / (double)maxId / framesPerSecond; //convert maxID to period in seconds
-                if ((period < minPeriod) || (period > maxPeriod))
+                if (period < minPeriod || period > maxPeriod)
                 {
                     continue;
                 }

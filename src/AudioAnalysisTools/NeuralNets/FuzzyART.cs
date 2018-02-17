@@ -13,65 +13,74 @@ namespace NeuralNets
     public sealed class FuzzyART
     {
         public int IPSize { get; set; }
+
         public int F1Size { get; set; }
+
         public int F2Size { get; set; }
+
         public double alpha { get; set; }
+
         public double beta { get; set; }
+
         public double rho { get; set; }
+
         public double theta { get; set; }
+
         public double rhoStar { get; set; }
 
-        double[,] wts;               //: the WEIGHTS of the F2 units
-        bool[] uncommittedJ;        //: PtrToArrayOfBool;
+        private double[,] wts;               //: the WEIGHTS of the F2 units
+        private bool[] uncommittedJ;        //: PtrToArrayOfBool;
 
         // for graphical display of average signal recognised by each F2 node
         //double[,] avSig;  //PtrToArrayOfPtrsToFloatArray Used to graph average of all signals in one class ie assigned to the same F2node
         //double amplitudeScalingFactor;  //: real; used only for graphical display
 
-
         //OUTPUT
         public int[] iterToConv = new int[ART.numberOfRepeats];
+
         public int[] inputCategory { get; set; } //stores the category (winning F2 node) for each input vector
+
         public int[] prevCategory { get; set; } //stores the category (winning F2 node) for each input vector
-        public int[] F2Wins { get; set; }    //stores the number of times each F2 node wins
+
+        public int[] F2Wins { get; set; } //stores the number of times each F2 node wins
+
         //public int[,] F2ScoreMatrix;         //keeps record of all F2 node classification results
-
-
 
     /// <summary>
     /// CONSTRUCTOR
     /// </summary>
     /// <param name="F1Size"></param>
     /// <param name="F2Size"></param>
-    public FuzzyART(int IPSize, int F2Size)
+        public FuzzyART(int IPSize, int F2Size)
     {
         this.IPSize = IPSize;
-        this.F1Size = 2*IPSize; //complement coding
+        this.F1Size = 2 * IPSize; //complement coding
         this.F2Size = F2Size;
         this.InitialiseArrays();
     }
 
-    public void InitialiseArrays()
+        public void InitialiseArrays()
     {
         this.wts = new double[this.F2Size, this.F1Size];
 
         //Initialise Uncommitted array := true
         this.uncommittedJ = new bool[this.F2Size];
-        for (int uNo = 0; uNo < this.F2Size; uNo++) this.uncommittedJ[uNo] = true;
-    }
+        for (int uNo = 0; uNo < this.F2Size; uNo++)
+            {
+                this.uncommittedJ[uNo] = true;
+            }
+        }
 
-
-    public void SetParameterValues(double alpha, double beta, double rho, double theta)
+        public void SetParameterValues(double alpha, double beta, double rho, double theta)
     {
-        this.alpha   = alpha; //choice parameter = wts of uncommitted nodes
-        this.beta    = beta;  //learning parameter
-        this.rho     = rho;   //vigilance parameter
-        this.theta   = theta; //threshold for contrast enhancing
+        this.alpha = alpha; //choice parameter = wts of uncommitted nodes
+        this.beta = beta;  //learning parameter
+        this.rho = rho;   //vigilance parameter
+        this.theta = theta; //threshold for contrast enhancing
         this.rhoStar = rho;  //possible to estimate principled value of rhoStar from rho
     }
 
-
-    public void WriteParameters()
+        public void WriteParameters()
     {
         LoggedConsole.WriteLine("\nFUZZY ART:- alpha=" + this.alpha + " beta=" + this.beta + " rho=" + this.rho + " theta=" + this.theta + " rhoStar=" + this.rhoStar);
     }
@@ -95,7 +104,6 @@ namespace NeuralNets
         //errorCode = 0;
 
         //ArrayList lines = FileTools.
-
 
         //F1size = Math.Round(dummy);
         //read   (F, dummy);
@@ -158,7 +166,7 @@ namespace NeuralNets
 //  close  (F);
 //end;
 
-    public void RepeatTrainNet(double[,] dataArray, int maxIter, int repNum, int seed, int code)
+        public void RepeatTrainNet(double[,] dataArray, int maxIter, int repNum, int seed, int code)
     {
         int dataSetSize = dataArray.GetLength(0);
         bool trainSetLearned = false;    //     : boolean;
@@ -166,19 +174,22 @@ namespace NeuralNets
         int[] SkippedBecauseFull = new int[ART.numberOfRepeats]; // : array[1..MaxRepeatNo] of word;{for training only}
         this.prevCategory = new int[dataSetSize]; //stores the winning F2 node for each input signal
 
-
         //{********* GO THROUGH THE TRAINING SET for 1 to MAX ITERATIONS *********}
 
-       LoggedConsole.WriteLine("\n BEGIN TRAINING");
-       LoggedConsole.WriteLine(" Maximum iterations = " + maxIter);
+        LoggedConsole.WriteLine("\n BEGIN TRAINING");
+        LoggedConsole.WriteLine(" Maximum iterations = " + maxIter);
 
         //repeat //{training set until max iter or trn set learned}
         int iterNum = 0;
-        while (!trainSetLearned && (iterNum < maxIter))
+        while (!trainSetLearned && iterNum < maxIter)
         {
             iterNum++;
-            if (ART.DEBUG) LoggedConsole.WriteLine(" rep=" + (repNum + 1) + " iter=" + iterNum);
-            SkippedBecauseFull[repNum-1] = 0;
+            if (ART.DEBUG)
+                {
+                    LoggedConsole.WriteLine(" rep=" + (repNum + 1) + " iter=" + iterNum);
+                }
+
+            SkippedBecauseFull[repNum - 1] = 0;
 
             //F2ScoreMatrix = new int[F2size, noClasses]; //keeps record of all F2 node classification results
             this.inputCategory = new int[dataSetSize]; //stores the winning F2 node for each input signal
@@ -189,19 +200,20 @@ namespace NeuralNets
             trainSetLearned = true;
             int changedCategory = 0;
 
-
             //{READ AND PROCESS signals until end of the data file}
             for (int sigNum = 0; sigNum < dataSetSize; sigNum++)
             {
                 //select an input signal. Later use sigID to enable test of convergence
                 int sigID = sigNum;                                         //do signals in order
-                if (ART.randomiseTrnSetOrder) sigID = randomArray[sigNum];  //pick at random
+                if (ART.randomiseTrnSetOrder)
+                    {
+                        sigID = randomArray[sigNum];  //pick at random
+                    }
 
-                // {*********** DISPLAY ITER, Epoch, Ch AND OTHER MESSAGE ************}
-                //if (ART.DEBUG) LoggedConsole.WriteLine(" rep=" + (repNum+1) + " iter=" + (iterNum+1) + " sigNum=" + sigNum + " sigID=" + sigID);
+                    // {*********** DISPLAY ITER, Epoch, Ch AND OTHER MESSAGE ************}
+                    //if (ART.DEBUG) LoggedConsole.WriteLine(" rep=" + (repNum+1) + " iter=" + (iterNum+1) + " sigNum=" + sigNum + " sigID=" + sigID);
 
-
-                //{*************** GET INPUT, PRE-PROCESS and TRANSFER TO F0 of ART net ********}
+                    //{*************** GET INPUT, PRE-PROCESS and TRANSFER TO F0 of ART net ********}
                 double[] rawIP = this.GetOneIPVector(sigID, dataArray);
                 double[] IP = this.ComplementCode(this.ContrastEnhance(rawIP));
 
@@ -212,7 +224,7 @@ namespace NeuralNets
                 int index = this.ChangeWts(IP, OP);
                 if (index == -1)
                 {
-                    SkippedBecauseFull[repNum-1]++;
+                    SkippedBecauseFull[repNum - 1]++;
                     LoggedConsole.WriteLine(" BREAK LEARNING BECAUSE ALL F2 NODES COMMITTED");
                     break;
                 }
@@ -220,12 +232,14 @@ namespace NeuralNets
                 {
                     this.inputCategory[sigID] = index; //winning F2 node for current input
                     this.F2Wins[index]++;
+
                     //{test if training set is learned ie each signal is classified to the same F2 node as previous iteration}
                     if (this.inputCategory[sigID] != this.prevCategory[sigID])
                     {
                         trainSetLearned = false;
                         changedCategory++;
                     }
+
                     //LoggedConsole.WriteLine("sigNum=" + sigNum + " Index Of Winning Node=" + keepScore[sigID]);
                 }
 
@@ -233,35 +247,45 @@ namespace NeuralNets
                 //F2ScoreMatrix[index, noClasses + 1]++;   //{total count going to F2node}
                 //F2ScoreMatrix[index, target]++;          //{# in class going to F2node}
 
-
-                this.iterToConv[repNum-1] = iterNum;
-
+                this.iterToConv[repNum - 1] = iterNum;
             } //end for loop (sigNum < DataSetSize)
 
-            for (int x = 0; x < dataSetSize; x++) this.prevCategory[x] = this.inputCategory[x];
-            //remove committed F2 nodes that are not having wins
-            for (int j = 0; j < this.F2Size; j++) if ((!this.uncommittedJ[j]) && (this.F2Wins[j] == 0)) this.uncommittedJ[j] = true;
-            if (ART.DEBUG) LoggedConsole.WriteLine(" rep" + (repNum + 1) + " iter=" + iterNum + " committed=" + this.CountCommittedF2Nodes() + " changedCategory=" + changedCategory);
-            //Console.ReadLine();
+            for (int x = 0; x < dataSetSize; x++)
+                {
+                    this.prevCategory[x] = this.inputCategory[x];
+                }
+
+                //remove committed F2 nodes that are not having wins
+            for (int j = 0; j < this.F2Size; j++)
+                {
+                    if (!this.uncommittedJ[j] && this.F2Wins[j] == 0)
+                    {
+                        this.uncommittedJ[j] = true;
+                    }
+                }
+
+            if (ART.DEBUG)
+                {
+                    LoggedConsole.WriteLine(" rep" + (repNum + 1) + " iter=" + iterNum + " committed=" + this.CountCommittedF2Nodes() + " changedCategory=" + changedCategory);
+                }
+
+                //Console.ReadLine();
 
             if (trainSetLearned)
             {
                 LoggedConsole.WriteLine("Training set learned after " + iterNum + " iterations");
                 break;
             }
-        }  //end of while (! trainSetLearned or (iterNum < maxIter) or terminate);
+        } //end of while (! trainSetLearned or (iterNum < maxIter) or terminate);
+    } //}  //end; TrainNet()
 
-    }  //}  //end; TrainNet()
-
-
-    public Tuple<int, int> TrainNet(double[,] dataArray, int maxIter, int seed)
+        public Tuple<int, int> TrainNet(double[,] dataArray, int maxIter, int seed)
     {
         int dataSetSize = dataArray.GetLength(0);
         int[] randomArray = RandomNumber.RandomizeNumberOrder(dataSetSize, seed); //randomize order of trn set
         bool trainSetLearned = false;    //     : boolean;
         bool skippedBecauseFull;
         this.prevCategory = new int[dataSetSize]; //stores the winning F2 node for each input signal
-
 
         //{********* GO THROUGH THE TRAINING SET for 1 to MAX ITERATIONS *********}
 
@@ -270,7 +294,7 @@ namespace NeuralNets
 
         //repeat //{training set until max iter or trn set learned}
         int iterNum = 0;
-        while (!trainSetLearned && (iterNum < maxIter))
+        while (!trainSetLearned && iterNum < maxIter)
         {
             iterNum++;
             skippedBecauseFull = false;
@@ -284,15 +308,17 @@ namespace NeuralNets
             trainSetLearned = true;
             int changedCategory = 0;
 
-
             //{READ AND PROCESS signals until end of the data file}
             for (int sigNum = 0; sigNum < dataSetSize; sigNum++)
             {
                 //select an input signal. Later use sigID to enable test of convergence
                 int sigID = sigNum;                                         //do signals in order
-                if (ART.randomiseTrnSetOrder) sigID = randomArray[sigNum];  //pick at random
+                if (ART.randomiseTrnSetOrder)
+                    {
+                        sigID = randomArray[sigNum];  //pick at random
+                    }
 
-                //{*************** GET INPUT, PRE-PROCESS and TRANSFER TO F0 of ART net ********}
+                    //{*************** GET INPUT, PRE-PROCESS and TRANSFER TO F0 of ART net ********}
                 double[] rawIP = this.GetOneIPVector(sigID, dataArray);
                 double[] IP = this.ComplementCode(this.ContrastEnhance(rawIP));
 
@@ -311,12 +337,14 @@ namespace NeuralNets
                 {
                     this.inputCategory[sigID] = index; //winning F2 node for current input
                     this.F2Wins[index]++;
+
                     //{test if training set is learned ie each signal is classified to the same F2 node as previous iteration}
                     if (this.inputCategory[sigID] != this.prevCategory[sigID])
                     {
                         trainSetLearned = false;
                         changedCategory++;
                     }
+
                     //LoggedConsole.WriteLine("sigNum=" + sigNum);
                 }
 
@@ -325,12 +353,26 @@ namespace NeuralNets
                 //F2ScoreMatrix[index, target]++;          //{# in class going to F2node}
             } //end loop - for (int sigNum = 0; sigNum < dataSetSize; sigNum++)
 
-            for (int x = 0; x < dataSetSize; x++) this.prevCategory[x] = this.inputCategory[x];
+            for (int x = 0; x < dataSetSize; x++)
+                {
+                    this.prevCategory[x] = this.inputCategory[x];
+                }
 
-            //remove committed F2 nodes that are not having wins
-            for (int j = 0; j < this.F2Size; j++) if ((!this.uncommittedJ[j]) && (this.F2Wins[j] == 0)) this.uncommittedJ[j] = true;
-            if (ART.DEBUG) LoggedConsole.WriteLine(" iter={0:D2}  committed=" + this.CountCommittedF2Nodes() + "\t changedCategory=" + changedCategory, iterNum);
-            //Console.ReadLine();
+                //remove committed F2 nodes that are not having wins
+            for (int j = 0; j < this.F2Size; j++)
+                {
+                    if (!this.uncommittedJ[j] && this.F2Wins[j] == 0)
+                    {
+                        this.uncommittedJ[j] = true;
+                    }
+                }
+
+            if (ART.DEBUG)
+                {
+                    LoggedConsole.WriteLine(" iter={0:D2}  committed=" + this.CountCommittedF2Nodes() + "\t changedCategory=" + changedCategory, iterNum);
+                }
+
+                //Console.ReadLine();
 
             if (trainSetLearned)
             {
@@ -338,23 +380,22 @@ namespace NeuralNets
                 //return System.Tuple.Create(iterNum, CountCommittedF2Nodes());
                 break;
             }
-        }  //end of while (! trainSetLearned or (iterNum < maxIter) or terminate);
+        } //end of while (! trainSetLearned or (iterNum < maxIter) or terminate);
+
         return Tuple.Create(iterNum, this.CountCommittedF2Nodes());
-    }  //}  //end; TrainNet()
-
-
-
+    } //}  //end; TrainNet()
 
     //PROCEDURE PREPROCESSFuzzyCC   (IPsize, OPsize :word; const IP :array of TFloat; var OP :array of TFloat; var scalingFactor :real);
     // assume that the input vector already has values normalised in [0,1]
-    public double[] ComplementCode(double[] IP)
+        public double[] ComplementCode(double[] IP)
     {
         double[] OP = new double[this.F1Size];
         for (int i = 0; i < this.IPSize; i++)
         {
             OP[i] = IP[i];
-            OP[this.F1Size-1-i] = 1 - OP[i];
+            OP[this.F1Size - 1 - i] = 1 - OP[i];
         }
+
         //LoggedConsole.WriteLine("INPUT:- length=" + this.IPSize);
         //for (int i = 0; i < IP.Length; i++) LoggedConsole.Write(IP[i].ToString("F4") + " ");
         //LoggedConsole.WriteLine("\nOUTPUT COMPLEMENT:- length=" + this.F1Size);
@@ -365,46 +406,50 @@ namespace NeuralNets
         return OP;
     }
 
-    public double[] GetOneIPVector(int sigID, double[,] data)
+        public double[] GetOneIPVector(int sigID, double[,] data)
     {
         int dim = data.GetLength(1); //length of single vector
         double[] vector = new double[dim];
-        for (int i = 0; i < dim; i++) vector[i] = data[sigID, i];  //  {transfer a signal}
+        for (int i = 0; i < dim; i++)
+            {
+                vector[i] = data[sigID, i];  //  {transfer a signal}
+            }
+
         return vector;
     }//end GetOneIPVector()
-
-
 
     /// <summary>
     /// Only calculate ouputs for committed nodes. THe uncommitted OPs remain = 0;
     /// </summary>
     /// <param name="IP"></param>
     /// <returns></returns>
-    public double[] PropagateIPToF2(double[] IP)
+        public double[] PropagateIPToF2(double[] IP)
     {
         double[] wtsj = new double[this.F1Size];
         double[] OP = new double[this.F2Size];
 
-        for (int F2uNo = 0; F2uNo < this.F2Size; F2uNo++)  //{for all F2 nodes}
+        for (int F2uNo = 0; F2uNo < this.F2Size; F2uNo++) //{for all F2 nodes}
         {
             if (!this.uncommittedJ[F2uNo]) //only calculate OPs of committed nodes
             {
                 //get wts of current F2 node
-                for (int F1uNo = 0; F1uNo < this.F1Size; F1uNo++) wtsj[F1uNo] = this.wts[F2uNo, F1uNo];
-                //OPj = |IP^wts|/|wts| which is measure of degree to which wts are a fuzzy subset of the input. }
+                for (int F1uNo = 0; F1uNo < this.F1Size; F1uNo++)
+                    {
+                        wtsj[F1uNo] = this.wts[F2uNo, F1uNo];
+                    }
+
+                    //OPj = |IP^wts|/|wts| which is measure of degree to which wts are a fuzzy subset of the input. }
                 double[] ANDvector = FuzzyAND(IP, wtsj);
                 double magAndVector = FuzzyNorm(ANDvector);
                 double magWtsVector = FuzzyNorm(wtsj);
                 OP[F2uNo] = magAndVector / (this.alpha + magWtsVector);
             }
-        }  //end for all the F2 nodes}
+        } //end for all the F2 nodes}
 
         return OP;
     } //end of method PropagateToF2()
 
-
-
-    public int IndexOfMaxF2Unit(double[] OP)
+        public int IndexOfMaxF2Unit(double[] OP)
     {
         //in original algorithm have a more complicatred algorithm.
         //If several equal max units then choose one at random.
@@ -419,7 +464,7 @@ namespace NeuralNets
     /// returns -1 if all F2 nodes committed
     /// </summary>
     /// <returns></returns>
-    public int IndexOfFirstUncommittedNode()
+        public int IndexOfFirstUncommittedNode()
     {
         int length = this.uncommittedJ.Length;
         int id = -1;
@@ -432,7 +477,7 @@ namespace NeuralNets
             }
             }
 
-            return id;
+        return id;
     }
 
     /// <summary>
@@ -440,7 +485,7 @@ namespace NeuralNets
     ///
     /// </summary>
     /// <param name="index"></param>
-    public int ChangeWts(double[] IP, double[] OP)
+        public int ChangeWts(double[] IP, double[] OP)
     {
         //double magnitudeOfIP = this.IPSize;   //{NOTE:- fuzzy mag of complement coded IP vector, |I| = F1size/2}
         int index = 0;
@@ -457,18 +502,22 @@ namespace NeuralNets
         double[] wtsJ = new double[this.F1Size];
         bool matchFound = false;
         int numberOfTestedNodes = 0;
-        while (!matchFound)  //repeat //{until a good match found}
+        while (!matchFound) //repeat //{until a good match found}
         {
             index = this.IndexOfMaxF2Unit(OP);  //get index of the winning F2 node i.e. the unit with maxOP.
-            //get wts of this F2 node
-            for (int F1uNo = 0; F1uNo < this.F1Size; F1uNo++) wtsJ[F1uNo] = this.wts[index, F1uNo];
 
-            //{calculate match between the weight and input vectors of the max unit.
-            // match = |IP^wts|/|IP|   which is measure of degree to which the input is a fuzzy subset of the wts. }
+            //get wts of this F2 node
+            for (int F1uNo = 0; F1uNo < this.F1Size; F1uNo++)
+                {
+                    wtsJ[F1uNo] = this.wts[index, F1uNo];
+                }
+
+                //{calculate match between the weight and input vectors of the max unit.
+                // match = |IP^wts|/|IP|   which is measure of degree to which the input is a fuzzy subset of the wts. }
             double match = this.FuzzyMatch(IP, wtsJ);
 
             numberOfTestedNodes++;   //{count number of nodes tested}
-            if (match < this.rho)  // ie vigilance indicates a BAD match}
+            if (match < this.rho) // ie vigilance indicates a BAD match}
             {
                 // 2:  none of the committed nodes offer a good match - therefore draft an uncommitted node
                 if (numberOfTestedNodes == noCommittedNodes)
@@ -476,32 +525,38 @@ namespace NeuralNets
                     index = this.ChangeWtsOfFirstUncommittedNode(IP);    //{all nodes committed and no good match}
                     return index;
                 }
-                else  // 3:  max node committed BUT poor match so RESET to another node
+                else // 3:  max node committed BUT poor match so RESET to another node
                 {
                     OP[index] = -1; //RESET OUTPUT to negative value
                     matchFound = false;
                 }
             }
-            else  //(match >= rho)
+            else //(match >= rho)
+
             // 4:  max node committed AND good match, therefore change the weights
             {
                 this.ChangeWtsOfCommittedNode(IP, index);
                 return index;
             }
-
         } //end UNTIL matchFound; //{max unit is good match OR no committed unit is good match}
-
 
         LoggedConsole.WriteLine("ChangeWts():- SOMETHING GONE SERIOUSLY WRONG IN CHANGE WTS()");
         return -1; //something is wrong!!!
     }
 
-    public int ChangeWtsOfFirstUncommittedNode(double[] IP)
+        public int ChangeWtsOfFirstUncommittedNode(double[] IP)
     {
         int index = this.IndexOfFirstUncommittedNode();
-        if(index == -1) return index; //all nodes committed
+        if (index == -1)
+            {
+                return index; //all nodes committed
+            }
 
-        for (int j = 0; j < this.F1Size; j++) this.wts[index, j] = IP[j];
+        for (int j = 0; j < this.F1Size; j++)
+            {
+                this.wts[index, j] = IP[j];
+            }
+
         this.uncommittedJ[index] = false;
         return index;
     }
@@ -512,51 +567,73 @@ namespace NeuralNets
     /// </summary>
     /// <param name="IP"></param>
     /// <param name="index"></param>
-    public void ChangeWtsOfCommittedNode(double[] IP, int index)
+        public void ChangeWtsOfCommittedNode(double[] IP, int index)
     {
         //get wts of current F2 node
         double[] wtsJ = new double[this.F1Size];
-        for (int i = 0; i < this.F1Size; i++) wtsJ[i] = this.wts[index, i];
+        for (int i = 0; i < this.F1Size; i++)
+            {
+                wtsJ[i] = this.wts[index, i];
+            }
 
         double[] ANDvector = FuzzyAND(IP, wtsJ);
         for (int i = 0; i < this.F1Size; i++)
-            this.wts[index, i] = (this.beta  * ANDvector[i]) + ((1-this.beta) * this.wts[index, i]);
+            {
+                this.wts[index, i] = (this.beta * ANDvector[i]) + ((1 - this.beta) * this.wts[index, i]);
+            }
+
         return;
     }
 
-
     // returns fuzzy norm/magnitude of a fuzzt vector
-    public static double FuzzyNorm(double[] data)
+        public static double FuzzyNorm(double[] data)
     {
         double X = 0.0;
-        for (int i = 0; i < data.Length; i++) X += data[i];
+        for (int i = 0; i < data.Length; i++)
+            {
+                X += data[i];
+            }
+
         return X;
     }
 
-    public static double[] NormaliseFuzzyVector(double[] data)
+        public static double[] NormaliseFuzzyVector(double[] data)
     {
         double X = 0.0;
-        for (int i = 0; i < data.Length; i++) X += data[i];
+        for (int i = 0; i < data.Length; i++)
+            {
+                X += data[i];
+            }
+
         double[] op = new double[data.Length];
-        for (int i = 0; i < data.Length; i++) op[i] = data[i] / X;
+        for (int i = 0; i < data.Length; i++)
+            {
+                op[i] = data[i] / X;
+            }
+
         return op;
     }
 
     //contrast enhances vector, using theta as cutoff
-    public double[] ContrastEnhance(double[] data)
+        public double[] ContrastEnhance(double[] data)
     {
         double[] op = new double[data.Length];
         for (int i = 0; i < data.Length; i++)
             {
-                if (data[i] < this.theta) op[i] = 0.0;
-            else op[i] = data[i];
+                if (data[i] < this.theta)
+                {
+                    op[i] = 0.0;
+                }
+                else
+                {
+                    op[i] = data[i];
+                }
             }
 
-            return op;
+        return op;
     }
 
-
-    public double FuzzyMatch(double[] IP, double[] wtsj)
+        public double FuzzyMatch(double[] IP, double[] wtsj)
     {
         // match = |IP^wts|/|IP|   which is measure of degree to which the input is a fuzzy subset of the wts. }
         double[] ANDvector = FuzzyAND(IP, wtsj);
@@ -566,17 +643,21 @@ namespace NeuralNets
         return match;
     }
 
-
     //method assumes that uncommitted node = true and committed node = false}
     //i.e. counts nodes that are NOT uncommitted!
-    public int CountCommittedF2Nodes()
+        public int CountCommittedF2Nodes()
     {
         int count = 0;
-        for (int i = 0; i < this.F2Size; i++) if (!this.uncommittedJ[i]) count++;
+        for (int i = 0; i < this.F2Size; i++)
+            {
+                if (!this.uncommittedJ[i])
+                {
+                    count++;
+                }
+            }
+
         return count;
     }
-
-
 
     //***************************************************************************************************************************************
     //***************************************************************************************************************************************
@@ -584,37 +665,46 @@ namespace NeuralNets
     //***************************************************************************************************************************************
     //***************************************************************************************************************************************
 
-
     // {fuzzyAND or fuzzy intersection is defined as   x^y = min(x, y)    }
-    public static double[] FuzzyAND(double[] vect1, double[] vect2)
+        public static double[] FuzzyAND(double[] vect1, double[] vect2)
     {
         int length1 = vect1.Length;
         int length2 = vect2.Length;
-        if(length1 != length2)
+        if (length1 != length2)
         {
             LoggedConsole.WriteLine("ERROR in method FuzzyAND(): vectors not of same length!!");
             return null;
         }
+
         double[] vect3 = new double[length1];
 
         for (int i = 0; i < length1; i++)
         {
-            if (vect1[i] < vect2[i]) vect3[i] = vect1[i];
-            else vect3[i] = vect2[i];
-        }
+            if (vect1[i] < vect2[i])
+                {
+                    vect3[i] = vect1[i];
+                }
+                else
+                {
+                    vect3[i] = vect2[i];
+                }
+            }
+
         return vect3;
     }
 
-    public static double FuzzyMagnitudeOf(int n, double[] vector)
+        public static double FuzzyMagnitudeOf(int n, double[] vector)
     {
         double X = 0.0;
-        for (int i= 0; i<n; i++) X += vector[i];
+        for (int i = 0; i < n; i++)
+            {
+                X += vector[i];
+            }
+
         return X;
     }
 
-
-
-    public static int[] ClusterWithFuzzyART(double[,] trainingData, out int noOfCommittedF2Nodes)
+        public static int[] ClusterWithFuzzyART(double[,] trainingData, out int noOfCommittedF2Nodes)
     {
         int trnSetSize = trainingData.GetLength(0);
         int IPSize = trainingData.GetLength(1);
@@ -624,10 +714,10 @@ namespace NeuralNets
 
         //************************** INITIALISE PARAMETER VALUES *************************
         double alpha = 0.57;   //increasing alpha proliferates categories - 0.57 is good value
-        double beta  = 0.8;   //Beta=1.0 for fast learning/no momentum. Beta=0.0 for no change in weights
-        double rho   = 0.9;   //vigilance parameter - increasing rho proliferates categories
+        double beta = 0.8;   //Beta=1.0 for fast learning/no momentum. Beta=0.0 for no change in weights
+        double rho = 0.9;   //vigilance parameter - increasing rho proliferates categories
         double theta = 0.1;   //threshold for contrast enhancing - values < threshold := 0.0
-        int seed     = 12345; //to seed random number generator
+        int seed = 12345; //to seed random number generator
 
         FuzzyART fuzzyART = new FuzzyART(IPSize, F2Size); //initialise FuzzyART class
 
@@ -645,11 +735,9 @@ namespace NeuralNets
         LoggedConsole.WriteLine("Training iterations=" + iterNum + ".   Categories=" + noOfCommittedF2Nodes);
 
         return fuzzyART.inputCategory;  //keepScore;
-
     } //END of ClusterShapesWithFuzzyART.
 
-
-    public static int[] RepeatClusterWithFuzzyART(double[,] trainingData, out int committedNodeCount)
+        public static int[] RepeatClusterWithFuzzyART(double[,] trainingData, out int committedNodeCount)
     {
         if (trainingData == null)
         {
@@ -665,10 +753,10 @@ namespace NeuralNets
         int maxIterations = 100;
         LoggedConsole.WriteLine("trnSetSize=" + trnSetSize + "  IPSize=" + IPSize + "  F2Size=" + F2Size);
         int[] noOfCommittedF2 = new int[numberOfRepeats];    // : array[1..MaxRepeatNo] of word;{# committed F2 units}
+
         //int[] iterToConv = new int[numberOfRepeats];    // : array[1..MaxRepeatNo] of word;{# training iterations}
 
         int code = 0;        //used for getting error messages
-
 
         //************************** INITIALISE PARAMETER VALUES *************************
         //double alpha = 0.2;  //increasing alpha proliferates categories - 0.57 is good value
@@ -699,8 +787,13 @@ namespace NeuralNets
             int seed = 12345 * (rep + 1);
             fuzzyART.TrainNet(trainingData, maxIterations, seed);
 
-            if (code != 0) break;
+            if (code != 0)
+                {
+                    break;
+                }
+
             noOfCommittedF2[rep] = fuzzyART.CountCommittedF2Nodes();
+
             //ScoreTrainingResults (noOfCommittedF2[rep], noClasses, F2classLabel, F2classProb);
             //wtsFpath = ART.ARTDir + ART.wtsFname + "s" + simul + rep + ART.wtsFExt;
             //art2a.WriteWts(wtsFpath, F2classLabel, F2classProb);
@@ -711,9 +804,6 @@ namespace NeuralNets
         committedNodeCount = noOfCommittedF2[0];
         int[] keepScore = fuzzyART.inputCategory;
         return keepScore;
-
     } //END of RepeatClusterWithFuzzyART.
-
-
     }//end class
 }

@@ -22,11 +22,9 @@ namespace AudioAnalysisTools.Indices
 
     public static class RainIndices
     {
-        public const string header_rain   = InitialiseIndexProperties.KeyRain;
+        public const string header_rain = InitialiseIndexProperties.KeyRain;
         public const string header_cicada = InitialiseIndexProperties.KeyCicada;
         public const string header_negative = "none";
-
-
 
         /// <summary>
         /// a set of indices derived from each recording.
@@ -55,11 +53,6 @@ namespace AudioAnalysisTools.Indices
             }
         } //struct Indices
 
-
-
-
-
-
         /// <summary>
         ///
         /// </summary>
@@ -76,7 +69,7 @@ namespace AudioAnalysisTools.Indices
             int chunkDuration = 10; //seconds - assume that signal is not less than one minute duration
 
             double framesPerSecond = 1 / frameStepDuration.TotalSeconds;
-            int chunkCount = (int)Math.Round(audioDuration.TotalSeconds / (double)chunkDuration);
+            int chunkCount = (int)Math.Round(audioDuration.TotalSeconds / chunkDuration);
             int framesPerChunk = (int)(chunkDuration * framesPerSecond);
             int nyquistBin = spectrogram.GetLength(1);
 
@@ -89,9 +82,17 @@ namespace AudioAnalysisTools.Indices
                 int startSecond = i * chunkDuration;
                 int start = (int)(startSecond * framesPerSecond);
                 int end = start + framesPerChunk;
-                if (end >= signalEnvelope.Length) end = signalEnvelope.Length - 1;
+                if (end >= signalEnvelope.Length)
+                {
+                    end = signalEnvelope.Length - 1;
+                }
+
                 double[] chunkSignal = DataTools.Subarray(signalEnvelope, start, framesPerChunk);
-                if (chunkSignal.Length < 50) continue;  //an arbitrary minimum length
+                if (chunkSignal.Length < 50)
+                {
+                    continue;  //an arbitrary minimum length
+                }
+
                 double[,] chunkSpectro = DataTools.Submatrix(spectrogram, start, 1, end, nyquistBin - 1);
 
                 RainStruct rainIndices = Get10SecondIndices(chunkSignal, chunkSpectro, lowFreqBound, midFreqBound, frameStepDuration, binWidth);
@@ -101,14 +102,18 @@ namespace AudioAnalysisTools.Indices
                 //write indices and classification info to console
                 string separator = ",";
                 string line = string.Format("{1:d2}{0} {2:d2}{0} {3:f1}{0} {4:f1}{0} {5:f1}{0} {6:f2}{0} {7:f3}{0} {8:f2}{0} {9:f2}{0} {10:f2}{0} {11:f2}{0} {12:f2}{0} {13:f2}{0} {14}", separator,
-                                      startSecond, (startSecond + chunkDuration),
+                                      startSecond, startSecond + chunkDuration,
                                       rainIndices.avSig_dB, rainIndices.bgNoise, rainIndices.snr,
                                       rainIndices.activity, rainIndices.spikes, rainIndices.ACI,
                                       rainIndices.lowFreqCover, rainIndices.midFreqCover, rainIndices.hiFreqCover,
                                       rainIndices.temporalEntropy, rainIndices.spectralEntropy, classification);
 
                 //if (verbose)
-                if (false) { LoggedConsole.WriteLine(line); }
+                if (false)
+                {
+                    LoggedConsole.WriteLine(line);
+                }
+
                 //FOR PREPARING SEE.5 DATA  -------  write indices and clsasification info to file
                 //sb.AppendLine(line);
             }
@@ -140,12 +145,20 @@ namespace AudioAnalysisTools.Indices
             var dBarray = SNR.TruncateNegativeValues2Zero(results3.NoiseReducedSignal);
 
             bool[] activeFrames = new bool[dBarray.Length]; //record frames with activity >= threshold dB above background and count
-            for (int i = 0; i < dBarray.Length; i++) if (dBarray[i] >= ActivityAndCover.DefaultActivityThresholdDb) activeFrames[i] = true;
+            for (int i = 0; i < dBarray.Length; i++)
+            {
+                if (dBarray[i] >= ActivityAndCover.DefaultActivityThresholdDb)
+                {
+                    activeFrames[i] = true;
+                }
+            }
+
             //int activeFrameCount = dBarray.Count((x) => (x >= AcousticIndices.DEFAULT_activityThreshold_dB));
             int activeFrameCount = DataTools.CountTrues(activeFrames);
 
             double spikeThreshold = 0.05;
             double spikeIndex = CalculateSpikeIndex(signal, spikeThreshold);
+
             //Console.WriteLine("spikeIndex=" + spikeIndex);
             //DataTools.writeBarGraph(signal);
 
@@ -164,7 +177,10 @@ namespace AudioAnalysisTools.Indices
             // iii: ENTROPY OF AVERAGE SPECTRUM and VARIANCE SPECTRUM - at this point the spectrogram is still an amplitude spectrogram
             var tuple = SpectrogramTools.CalculateAvgSpectrumAndVarianceSpectrumFromAmplitudeSpectrogram(midbandSpectrogram);
             rainIndices.spectralEntropy = DataTools.EntropyNormalised(tuple.Item1); //ENTROPY of spectral averages
-            if (double.IsNaN(rainIndices.spectralEntropy)) rainIndices.spectralEntropy = 1.0;
+            if (double.IsNaN(rainIndices.spectralEntropy))
+            {
+                rainIndices.spectralEntropy = 1.0;
+            }
 
             // iv: CALCULATE Acoustic Complexity Index on the AMPLITUDE SPECTRUM
             var aciArray = AcousticComplexityIndex.CalculateACI(midbandSpectrogram);
@@ -172,6 +188,7 @@ namespace AudioAnalysisTools.Indices
 
             //v: remove background noise from the spectrogram
             double spectralBgThreshold = 0.015;      // SPECTRAL AMPLITUDE THRESHOLD for smoothing background
+
             //double[] modalValues = SNR.CalculateModalValues(spectrogram); //calculate modal value for each freq bin.
             //modalValues = DataTools.filterMovingAverage(modalValues, 7);  //smooth the modal profile
             //spectrogram = SNR.SubtractBgNoiseFromSpectrogramAndTruncate(spectrogram, modalValues);
@@ -182,6 +199,7 @@ namespace AudioAnalysisTools.Indices
             rainIndices.lowFreqCover = sa.LowFreqBandCover;
             rainIndices.midFreqCover = sa.MidFreqBandCover;
             rainIndices.hiFreqCover = sa.HighFreqBandCover;
+
             //double[] coverSpectrum = sa.coverSpectrum;
             //double[] eventSpectrum = sa.eventSpectrum;
 
@@ -191,6 +209,7 @@ namespace AudioAnalysisTools.Indices
         public static double CalculateSpikeIndex(double[] envelope, double spikeThreshold)
         {
             int length = envelope.Length;
+
             // int isolatedSpikeCount = 0;
             double peakIntenisty = 0.0;
             double spikeIntensity = 0.0;
@@ -199,7 +218,11 @@ namespace AudioAnalysisTools.Indices
             int peakCount = 0;
             for (int i = 1; i < length - 1; i++)
             {
-                if (!peaks[i]) continue; //count spikes
+                if (!peaks[i])
+                {
+                    continue; //count spikes
+                }
+
                 peakCount++;
                 double diffMinus1 = Math.Abs(envelope[i] - envelope[i - 1]);
                 double diffPlus1 = Math.Abs(envelope[i] - envelope[i + 1]);
@@ -211,10 +234,14 @@ namespace AudioAnalysisTools.Indices
                     spikeIntensity += avDifference;
                 }
             }
-            if (peakCount == 0) return 0.0;
+
+            if (peakCount == 0)
+            {
+                return 0.0;
+            }
+
             return spikeIntensity / peakIntenisty;
         } //CalculateSpikeIndex()
-
 
         public static Dictionary<string, double> ConvertClassifcations2Dictionary(string[] classifications)
         {
@@ -236,7 +263,7 @@ namespace AudioAnalysisTools.Indices
                 }
             }
 
-            dict.Add(header_rain,   rainCount   / (double)length);
+            dict.Add(header_rain,   rainCount / (double)length);
             dict.Add(header_cicada, cicadaCount / (double)length);
             return dict;
         }
@@ -251,17 +278,24 @@ namespace AudioAnalysisTools.Indices
             string classification = header_negative;
             if (indices.spikes > 0.2)
             {
-                if (indices.hiFreqCover > 0.24) return header_rain;
-                else return header_negative;
+                if (indices.hiFreqCover > 0.24)
+                {
+                    return header_rain;
+                }
+                else
+                {
+                    return header_negative;
+                }
             }
             else
             {
-                if ((indices.spectralEntropy < 0.6) && (indices.bgNoise > -20))
+                if (indices.spectralEntropy < 0.6 && indices.bgNoise > -20)
+                {
                     return header_cicada;
+                }
             }
+
             return classification;
         }
-
-
     } // end Class
 }

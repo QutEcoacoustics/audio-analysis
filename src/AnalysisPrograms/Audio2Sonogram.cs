@@ -25,15 +25,14 @@ namespace AnalysisPrograms
     using Acoustics.Tools.Wav;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-    using Production;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-
     using log4net;
     using MathNet.Numerics;
     using McMaster.Extensions.CommandLineUtils;
+    using Production;
     using Production.Arguments;
     using Production.Validation;
     using TowseyLibrary;
@@ -55,7 +54,6 @@ namespace AnalysisPrograms
             Description = "Generates multiple standarf spectrogram images and oscilllations info")]
         public class Arguments : SourceConfigOutputDirArguments
         {
-
             [Option(Description = "The start offset to start analyzing from (in seconds)")]
             [InRange(min: 0)]
             public double? StartOffset { get; set; }
@@ -101,6 +99,7 @@ namespace AnalysisPrograms
                 //Source = @"C:\SensorNetworks\WavFiles\ConvDNNData\SE_399_188293_20101014_132950_4.0__.wav".ToFileInfo(),
 
                 Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml",
+
                 //Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Mangalam.Sonogram.yml".ToFileInfo(),
             };
 
@@ -146,8 +145,6 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine(date);
             LoggedConsole.WriteLine("# Input  audio file: " + sourceRecording.Name);
 
-
-
             // 2. get the config dictionary
             var configDict = GetConfigDictionary(configFile, false);
             configDict[ConfigKeys.Recording.Key_RecordingCallName] = sourceRecording.FullName;
@@ -185,7 +182,7 @@ namespace AnalysisPrograms
                 [AnalysisKeys.ResampleRate] = configuration[AnalysisKeys.ResampleRate] ?? "22050",
 
                 [AnalysisKeys.AddAxes] = (configuration.GetBoolOrNull(AnalysisKeys.AddAxes) ?? true).ToString(),
-                [AnalysisKeys.AddSegmentationTrack] = (configuration.GetBoolOrNull(AnalysisKeys.AddSegmentationTrack) ?? true).ToString()
+                [AnalysisKeys.AddSegmentationTrack] = (configuration.GetBoolOrNull(AnalysisKeys.AddSegmentationTrack) ?? true).ToString(),
             };
 
             // # REDUCTION FACTORS for freq and time dimensions
@@ -281,6 +278,7 @@ namespace AnalysisPrograms
                 const int lowPercentile = 20;
                 sonogram.Data = NoiseRemoval_Briggs.NoiseReduction_byLowestPercentileSubtraction(sonogram.Data, lowPercentile);
                 sonogram.Data = NoiseRemoval_Briggs.NoiseReduction_byLCNDivision(sonogram.Data, neighbourhoodFrames, lcnContrastLevel);
+
                 //sonogram.Data = NoiseRemoval_Briggs.NoiseReduction_byLowestPercentileSubtraction(sonogram.Data, lowPercentile);
 
                 var image = sonogram.GetImageFullyAnnotated("AMPLITUDE SPECTROGRAM + Bin LCN (Local Contrast Normalisation)");
@@ -404,6 +402,7 @@ namespace AnalysisPrograms
                 // First construct a test result file containing image info
                 var sb = new StringBuilder("Width,Height\n");
                 sb.AppendLine($"{result.CompositeImage.Width},{result.CompositeImage.Height}");
+
                 // Acoustics.Shared.Csv.Csv.WriteToCsv(csvFile1, sb);
                 FileTools.WriteTextFile(csvFile1.FullName, sb.ToString());
 
@@ -479,7 +478,6 @@ namespace AnalysisPrograms
             var outputDirectory = segmentSettings.SegmentOutputDirectory;
 
             var analysisResult = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration);
-
 
             bool saveCsv = analysisSettings.AnalysisDataSaveBehavior;
 

@@ -1,4 +1,8 @@
-﻿namespace TowseyLibrary
+﻿// <copyright file="Histogram.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace TowseyLibrary
 {
     using System;
     using System.Collections.Generic;
@@ -8,8 +12,6 @@
 
     public static class Histogram
     {
-
-
         public static int[] Histo(double[] data, int binCount)
         {
             double min;
@@ -18,23 +20,30 @@
             double range = max - min;
             int[] bins = new int[binCount];
 
-            if(range == 0.0)
+            if (range == 0.0)
             {
                 bins[0] = data.Length;
                 return bins;
             }
 
-            double binWidth = range / (double)binCount;
+            double binWidth = range / binCount;
+
             // init freq bin array
             for (int i = 0; i < data.Length; i++)
             {
                 int id = (int)((data[i] - min) / binWidth);
                 if (id >= binCount)
-                    id = binCount-1;
+                {
+                    id = binCount - 1;
+                }
                 else if (id < 0)
+                {
                     id = 0;
+                }
+
                 bins[id]++;
             }
+
             return bins;
         }
 
@@ -42,6 +51,7 @@
         {
             DataTools.MinMax(data, out min, out max);
             double range = max - min;
+
             // init freq bin array
             int[] bins = new int[binCount];
 
@@ -53,20 +63,25 @@
             }
 
             int NaN_COUNT = 0;
-            binWidth = range / (double)binCount;
+            binWidth = range / binCount;
             for (int i = 0; i < data.Length; i++)
             {
                 double value = data[i];
                 int id = 0;
                 if (double.IsNaN(value))
                 {
-                    NaN_COUNT ++;
+                    NaN_COUNT++;
                 }
                 else
                 {
                     id = (int)((value - min) / binWidth);
                 }
-                if (id >= binCount) id = binCount - 1;
+
+                if (id >= binCount)
+                {
+                    id = binCount - 1;
+                }
+
                 bins[id]++;
             }
 
@@ -75,10 +90,9 @@
                 string msg = string.Format("#### WARNING from Histogram.Histo():  {0}/{1} values were NaN", NaN_COUNT, data.Length);
                 LoggedConsole.WriteErrorLine(msg);
             }
+
             return bins;
         }
-
-
 
         public static int[] Histo(double[,] data, int binCount, out double binWidth, out double min, out double max)
         {
@@ -95,15 +109,22 @@
                 for (int j = 0; j < cols; j++)
                 {
                     int bin = (int)((data[i, j] - min) / binWidth);
-                    if (bin >= binCount) bin = binCount - 1;
-                    if (bin < 0) bin = 0;
+                    if (bin >= binCount)
+                    {
+                        bin = binCount - 1;
+                    }
+
+                    if (bin < 0)
+                    {
+                        bin = 0;
+                    }
+
                     histo[bin]++;
                 }
             }
 
             return histo;
         }
-
 
         public static int[] Histo(byte[,] data, out byte min, out byte max)
         {
@@ -119,10 +140,9 @@
                     histo[data[i, j]]++;
                 }
             }
+
             return histo;
         }
-
-
 
         /// <summary>
         /// HISTOGRAM from a matrix of double
@@ -136,6 +156,7 @@
             double max;
             DataTools.MinMax(data, out min, out max);
             double binWidth = (max - min) / binCount;
+
             //LoggedConsole.WriteLine("data min=" + min + "  data max=" + max + " binwidth=" + binWidth);
 
             return Histo(data, binCount, min, max, binWidth);
@@ -152,15 +173,22 @@
                 for (int j = 0; j < cols; j++)
                 {
                     int bin = (int)((data[i, j] - min) / binWidth);
-                    if (bin >= binCount) bin = binCount - 1;
-                    if (bin < 0) bin = 0;
+                    if (bin >= binCount)
+                    {
+                        bin = binCount - 1;
+                    }
+
+                    if (bin < 0)
+                    {
+                        bin = 0;
+                    }
+
                     histo[bin]++;
                 }
             }
 
             return histo;
         }
-
 
         /// <summary>
         /// returns a fixed width histogram.
@@ -175,18 +203,28 @@
         {
             int range = max - min + 1;
             int binCount = range / binWidth;
+
             // init freq bin array
             int[] bins = new int[binCount];
             for (int i = 0; i < data.Length; i++)
             {
-                int id = (int)((data[i] - min) / binWidth);
-                if (id >= binCount) id = binCount - 1;
+                int id = (data[i] - min) / binWidth;
+                if (id >= binCount)
+                {
+                    id = binCount - 1;
+                }
                 else
-                    if (id < 0) id = 0;
+                    if (id < 0)
+                {
+                    id = 0;
+                }
+
                 bins[id]++;
             }
+
             return bins;
         }
+
         /// <summary>
         /// returns a fixed width histogram.
         /// Width is determined by user supplied min and max.
@@ -200,16 +238,25 @@
         {
             double range = max - min + 1;
             int binCount = (int)(range / binWidth);
+
             // init freq bin array
             int[] bins = new int[binCount];
             for (int i = 0; i < data.Length; i++)
             {
                 int id = (int)((data[i] - min) / binWidth);
-                if (id >= binCount) id = binCount - 1;
+                if (id >= binCount)
+                {
+                    id = binCount - 1;
+                }
                 else
-                    if (id < 0) id = 0;
+                    if (id < 0)
+                {
+                    id = 0;
+                }
+
                 bins[id]++;
             }
+
             return bins;
         }
 
@@ -230,8 +277,7 @@
             int max = -int.MaxValue;
             DataTools.MinMax(data, out min, out max);
 
-            int[] histo = new int[max+1];
-
+            int[] histo = new int[max + 1];
 
             for (int i = 0; i < length; i++)
             {
@@ -261,8 +307,12 @@
 
             for (int i = 0; i < length; i++)
             {
-                int bin = (int)((double)(data[i] - min) / binWidth);
-                if (bin >= binCount) bin = binCount - 1;
+                int bin = (int)((data[i] - min) / binWidth);
+                if (bin >= binCount)
+                {
+                    bin = binCount - 1;
+                }
+
                 histo[bin]++;
             }
 
@@ -294,8 +344,6 @@
             return histo;
         }
 
-
-
         public static void GetHistogramOfWaveAmplitudes(double[] waveform, int window, out int[] histogramOfAmplitudes, out double minAmplitude, out double maxAmplitude, out double binWidth)
         {
             int binCount = 100;
@@ -310,6 +358,7 @@
                 DataTools.MinMax(subsample, out min, out max);
                 amplitudeArray[i] = max - min;
             }
+
             histogramOfAmplitudes = Histo(amplitudeArray, binCount, out binWidth, out minAmplitude, out maxAmplitude);
         }
 
@@ -321,18 +370,25 @@
         /// <returns></returns>
         public static int GetPercentileBin(int[] histogram, int percentile)
         {
-            if (percentile > 99) throw new Exception("percentile must be < 100");
-            double percentAsfraction = percentile/(double)100;
+            if (percentile > 99)
+            {
+                throw new Exception("percentile must be < 100");
+            }
+
+            double percentAsfraction = percentile / (double)100;
             int sum = histogram.Sum();
             int percentileSum = 0;
             for (int i = 0; i < histogram.Length; i++)
             {
                 percentileSum += histogram[i];
-                if ((percentileSum / (double)sum) > percentAsfraction) return i;
+                if (percentileSum / (double)sum > percentAsfraction)
+                {
+                    return i;
+                }
             }
+
             return histogram.Length - 1;
         }
-
 
         public static int[] Histo_addition(double[,] data, int[] histo, double min, double max, double binWidth)
         {
@@ -345,8 +401,16 @@
                 for (int j = 0; j < cols; j++)
                 {
                     int bin = (int)((data[i, j] - min) / binWidth);
-                    if (bin >= binCount) bin = binCount - 1;
-                    if (bin < 0) bin = 0;
+                    if (bin >= binCount)
+                    {
+                        bin = binCount - 1;
+                    }
+
+                    if (bin < 0)
+                    {
+                        bin = 0;
+                    }
+
                     histo[bin]++;
                 }
             }
@@ -364,8 +428,12 @@
             {
                 histo[data[i]]++;
             }
+
             for (int i = min; i <= max; i++)
+            {
                 LoggedConsole.WriteLine(" " + i + "|" + histo[i]);
+            }
+
             LoggedConsole.WriteLine();
         }
 
@@ -381,16 +449,18 @@
             {
                 for (int c = 0; c < max; c++)
                 {
-                    if (matrix[r, c] > 0) LoggedConsole.WriteLine(r + "|" + c + "|" + matrix[r, c] + "  ");
+                    if (matrix[r, c] > 0)
+                    {
+                        LoggedConsole.WriteLine(r + "|" + c + "|" + matrix[r, c] + "  ");
+                    }
                 }
+
                 LoggedConsole.WriteLine();
             }
         }
 
-
         public static void DrawDistributionsAndSaveImage(double[,] matrix, string imagePath)
         {
-
             // calculate statistics for values in matrix
             double[] values = DataTools.Matrix2Array(matrix);
             const bool DisplayHistogram = false;
@@ -416,7 +486,5 @@
 
             image.Save(imagePath);
         }
-
-
     } // class Histrogram
 }

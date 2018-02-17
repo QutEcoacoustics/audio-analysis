@@ -45,7 +45,6 @@ namespace Acoustics.Test
             }
         }
 
-        #region Additional test attributes
         //
         // You can use the following additional attributes as you write your tests:
         //
@@ -65,7 +64,6 @@ namespace Acoustics.Test
         // [TestCleanup()]
         // public void MyTestCleanup() { }
         //
-        #endregion
 
         private const int TestSize = 1000000;
 

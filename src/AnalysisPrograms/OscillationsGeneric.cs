@@ -14,30 +14,25 @@ namespace AnalysisPrograms
     using System.Collections.Generic;
     using System.Data;
     using System.Diagnostics;
-        using System.Drawing;
+    using System.Drawing;
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
-
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
-    //using Acoustics.Shared.Extensions;
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
-
     using AnalysisBase;
-    using Production;
-    //using AnalysisRunner;
-
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.LongDurationSpectrograms;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using McMaster.Extensions.CommandLineUtils;
+    using Production;
     using Production.Arguments;
     using Production.Validation;
     using TowseyLibrary;
@@ -54,6 +49,7 @@ namespace AnalysisPrograms
 
         // Sensitivity: 0=detects fewest oscillations; 1=detects most oscillations
         public static double Sensitivity = 0.2;
+
         // Window width when sampling along freq bins to find oscillations.
         // This is Not the wave form window.
         // 64 is better where many birds and fast changing acoustic activity
@@ -63,6 +59,7 @@ namespace AnalysisPrograms
 
         // use this if want only dominant oscillations
         public static string AlgorithmName = "Autocorr-SVD-FFT";
+
         // use this if want more detailed output
         //public static string algorithmName = "Autocorr-FFT";
         // tried but not working
@@ -97,7 +94,6 @@ namespace AnalysisPrograms
         [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
         private static Arguments Dev()
         {
-
             return new Arguments
             {
                 //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-062040.wav".ToFileInfo(),
@@ -119,7 +115,6 @@ namespace AnalysisPrograms
 
         public static void Main(Arguments arguments)
         {
-
             if (arguments == null)
             {
                 arguments = Dev();
@@ -145,16 +140,14 @@ namespace AnalysisPrograms
             if (offsetsProvided)
             {
                 startOffset = TimeSpan.FromSeconds(arguments.StartOffset.Value);
-                endOffset   = TimeSpan.FromSeconds(arguments.EndOffset.Value);
+                endOffset = TimeSpan.FromSeconds(arguments.EndOffset.Value);
             }
 
             const string Title = "# MAKE A SONOGRAM FROM AUDIO RECORDING and do OscillationsGeneric activity.";
-            string date  = "# DATE AND TIME: " + DateTime.Now;
+            string date = "# DATE AND TIME: " + DateTime.Now;
             LoggedConsole.WriteLine(Title);
             LoggedConsole.WriteLine(date);
             LoggedConsole.WriteLine("# Input  audio file: " + sourceRecording.Name);
-
-
 
             string sourceName = Path.GetFileNameWithoutExtension(sourceRecording.FullName);
 
@@ -167,12 +160,13 @@ namespace AnalysisPrograms
             // scoreThreshold = (double?)configuration[AnalysisKeys.EventThreshold] ?? scoreThreshold;
 
             // Resample rate must be 2 X the desired Nyquist. Default is that of recording.
-            var resampleRate = (int?)configuration.GetIntOrNull(AnalysisKeys.ResampleRate) ?? AppConfigHelper.DefaultTargetSampleRate;
+            var resampleRate = configuration.GetIntOrNull(AnalysisKeys.ResampleRate) ?? AppConfigHelper.DefaultTargetSampleRate;
 
             var configDict = new Dictionary<string, string>(configuration.ToDictionary());
+
             // #NOISE REDUCTION PARAMETERS
             //string noisereduce = configDict[ConfigKeys.Mfcc.Key_NoiseReductionType];
-            configDict[AnalysisKeys.NoiseDoReduction]   = "false";
+            configDict[AnalysisKeys.NoiseDoReduction] = "false";
             configDict[AnalysisKeys.NoiseReductionType] = "NONE";
 
             configDict[AnalysisKeys.AddAxes] = configuration[AnalysisKeys.AddAxes] ?? "true";
@@ -181,9 +175,9 @@ namespace AnalysisPrograms
             configDict[ConfigKeys.Recording.Key_RecordingCallName] = sourceRecording.FullName;
             configDict[ConfigKeys.Recording.Key_RecordingFileName] = sourceRecording.Name;
 
-            configDict[AnalysisKeys.AddTimeScale] = (string)configuration[AnalysisKeys.AddTimeScale] ?? "true";
-            configDict[AnalysisKeys.AddAxes] = (string)configuration[AnalysisKeys.AddAxes]           ?? "true";
-            configDict[AnalysisKeys.AddSegmentationTrack] = (string)configuration[AnalysisKeys.AddSegmentationTrack] ?? "true";
+            configDict[AnalysisKeys.AddTimeScale] = configuration[AnalysisKeys.AddTimeScale] ?? "true";
+            configDict[AnalysisKeys.AddAxes] = configuration[AnalysisKeys.AddAxes] ?? "true";
+            configDict[AnalysisKeys.AddSegmentationTrack] = configuration[AnalysisKeys.AddSegmentationTrack] ?? "true";
 
             // ####################################################################
 
@@ -193,15 +187,18 @@ namespace AnalysisPrograms
             {
                 LoggedConsole.WriteLine("{0}  =  {1}", kvp.Key, kvp.Value);
             }
+
             LoggedConsole.WriteLine("Sample Length for detecting oscillations = {0}", SampleLength);
 
             // 3: GET RECORDING
             FileInfo tempAudioSegment = new FileInfo(Path.Combine(opDir.FullName, "tempWavFile.wav"));
+
             // delete the temp audio file if it already exists.
             if (File.Exists(tempAudioSegment.FullName))
             {
                 File.Delete(tempAudioSegment.FullName);
             }
+
             // This line creates a temporary version of the source file downsampled as per entry in the config file
             MasterAudioUtility.SegmentToWav(sourceRecording, tempAudioSegment, new AudioUtilityRequest() { TargetSampleRate = resampleRate });
 
@@ -226,12 +223,17 @@ namespace AnalysisPrograms
             // ###############################################################
             // lowering the sensitivity threshold increases the number of hits.
             if (configDict.ContainsKey(AnalysisKeys.OscilDetection2014SensitivityThreshold))
+            {
                 Oscillations2014.DefaultSensitivityThreshold = double.Parse(configDict[AnalysisKeys.OscilDetection2014SensitivityThreshold]);
+            }
 
             if (configDict.ContainsKey(AnalysisKeys.OscilDetection2014SampleLength))
+            {
                 Oscillations2014.DefaultSampleLength = int.Parse(configDict[AnalysisKeys.OscilDetection2014SensitivityThreshold]);
+            }
 
             var list1 = new List<Image>();
+
             //var result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, 64, "Autocorr-FFT");
             //list1.Add(result.FreqOscillationImage);
             var result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, "Autocorr-FFT");
@@ -241,12 +243,14 @@ namespace AnalysisPrograms
             result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, "Autocorr-WPD");
             list1.Add(result.FreqOscillationImage);
             Image compositeOscImage1 = ImageTools.CombineImagesInLine(list1.ToArray());
+
             // ###############################################################
 
             // init the sonogram image stack
             var sonogramList = new List<Image>();
             var image = sonogram.GetImageFullyAnnotated("AMPLITUDE SPECTROGRAM");
             sonogramList.Add(image);
+
             //string testPath = @"C:\SensorNetworks\Output\Sonograms\amplitudeSonogram.png";
             //image.Save(testPath, ImageFormat.Png);
 
@@ -255,8 +259,10 @@ namespace AnalysisPrograms
 
             // 2) now draw the standard decibel spectrogram
             sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
+
             // ###############################################################
             list1 = new List<Image>();
+
             //result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, 64, "Autocorr-FFT");
             //list1.Add(result.FreqOscillationImage);
             result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, "Autocorr-FFT");
@@ -266,6 +272,7 @@ namespace AnalysisPrograms
             result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, "Autocorr-WPD");
             list1.Add(result.FreqOscillationImage);
             Image compositeOscImage2 = ImageTools.CombineImagesInLine(list1.ToArray());
+
             // ###############################################################
             //image = sonogram.GetImageFullyAnnotated("DECIBEL SPECTROGRAM");
             //list.Add(image);
@@ -287,22 +294,22 @@ namespace AnalysisPrograms
 
             // 3) now draw the noise reduced decibel spectrogram
             sonoConfig.NoiseReductionType = NoiseReductionType.Standard;
-            sonoConfig.NoiseReductionParameter = configuration.GetDoubleOrNull(AnalysisKeys.NoiseBgThreshold)?? 3.0;
+            sonoConfig.NoiseReductionParameter = configuration.GetDoubleOrNull(AnalysisKeys.NoiseBgThreshold) ?? 3.0;
 
             sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
             image = sonogram.GetImageFullyAnnotated("NOISE-REDUCED DECIBEL  SPECTROGRAM");
             sonogramList.Add(image);
+
             // ###############################################################
             // deriving osscilation graph from this noise reduced spectrogram did not work well
             //Oscillations2014.SaveFreqVsOscillationsDataAndImage(sonogram, sampleLength, algorithmName, opDir);
             // ###############################################################
 
             Image compositeSonogram = ImageTools.CombineImagesVertically(sonogramList);
-            string imagePath2 = Path.Combine(opDir.FullName, sourceName +".png");
+            string imagePath2 = Path.Combine(opDir.FullName, sourceName + ".png");
             compositeSonogram.Save(imagePath2, ImageFormat.Png);
 
             LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
-
         }
 
         /// <summary>

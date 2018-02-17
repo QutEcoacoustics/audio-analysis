@@ -15,29 +15,23 @@ namespace AnalysisPrograms.Recognizers
     using System.Linq;
     using System.Reflection;
     using System.Text;
-
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Tools.Wav;
-
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-
-    using Base;
-
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-
+    using Base;
     using log4net;
-
     using TowseyLibrary;
 
     /// <summary>
     /// This is a template recognizer
     /// </summary>
-    class ExempliGratia : RecognizerBase
+    internal class ExempliGratia : RecognizerBase
     {
         public override string Author => "Truskinger";
 
@@ -74,7 +68,6 @@ namespace AnalysisPrograms.Recognizers
         /// <returns></returns>
         public override RecognizerResults Recognize(AudioRecording audioRecording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
-
             // Get a value from the config file - with a backup default
             int minHz = configuration.GetIntOrNull(AnalysisKeys.MinHz) ?? 600;
 
@@ -85,8 +78,8 @@ namespace AnalysisPrograms.Recognizers
             double someExampleSettingA = configuration.GetDoubleOrNull("SomeExampleSettingA") ?? 0.0;
 
             // common properties
-            string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
-            string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+            string speciesName = configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
+            string abbreviatedSpeciesName = configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
 
             /*
              * Examples of using profiles
@@ -94,8 +87,10 @@ namespace AnalysisPrograms.Recognizers
 
             // Examples of the APIs available. You don't need all of these commands! Pick and choose.
             bool hasProfiles = ConfigFile.HasProfiles(configuration);
+
             //Config profile = ConfigFile.GetProfile<Config, Aed.AedConfiguration>(configuration, "Groote");
             Config profile2;
+
             //bool success = ConfigFile.TryGetProfile(configuration, "FemaleRelease", out profile2);
             //string[] profileNames = ConfigFile.GetProfileNames<Config>(configuration);
 //            IEnumerable<(string Name, object Profile)> allProfiles = ConfigFile.GetAllProfiles<IProfile<object>>(configuration);
@@ -178,7 +173,7 @@ namespace AnalysisPrograms.Recognizers
             */
 
         // get samples
-        var samples = audioRecording.WavReader.Samples;
+            var samples = audioRecording.WavReader.Samples;
 
             // make a spectrogram
             var config = new SonogramConfig
@@ -221,6 +216,7 @@ namespace AnalysisPrograms.Recognizers
                 Events = foundEvents,
                 Hits = null,
                 ScoreTrack = null,
+
                 //Plots = null,
                 Sonogram = sonogram,
             };

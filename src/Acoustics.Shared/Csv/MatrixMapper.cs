@@ -91,7 +91,6 @@ namespace Acoustics.Shared
 
         public override IEnumerator<int> GetEnumerator()
         {
-
                 int rowCounter = -1;
                 foreach (var currentItem in this.objectMatrix)
                 {
@@ -149,7 +148,6 @@ namespace Acoustics.Shared
                 this.Current = currentItem;
                 yield return rowCounter;
             }
-
         }
     }
 

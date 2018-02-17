@@ -1,13 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// <copyright file="UnsafeImage.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
 
 namespace Acoustics.Unsafe
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Drawing.Imaging;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
+
     public static class UnsafeImage
     {
         /// <summary>
@@ -42,7 +46,7 @@ namespace Acoustics.Unsafe
             audioData.MinMax(out min, out max);
             double range = max - min;
 
-            int offset = stride - (stopX - StartX + 1) * pixelSize;
+            int offset = stride - ((stopX - StartX + 1) * pixelSize);
 
             int heightOffset = imageHeight;
 
@@ -62,7 +66,7 @@ namespace Acoustics.Unsafe
 
                         // NormaliseMatrixValues and bound the value - use min bound, max and 255 image intensity range
                         // this is the amplitude
-                        double value = (audioData[x, spectrogramY] - min) / (double)range;
+                        double value = (audioData[x, spectrogramY] - min) / range;
                         double colour = 255.0 - Math.Floor(255.0 * value);
 
                         colour = Math.Min(colour, 255);

@@ -46,7 +46,7 @@ namespace AnalysisPrograms.Recognizers
     /// To call this recognizer, the first command line argument must be "EventRecognizer".
     /// Alternatively, this recognizer can be called via the MultiRecognizer.
     /// </summary>
-    class CriniaRemota : RecognizerBase
+    internal class CriniaRemota : RecognizerBase
     {
         public override string Author => "Towsey";
 
@@ -95,6 +95,7 @@ namespace AnalysisPrograms.Recognizers
                 SourceFName = recording.BaseName,
                 WindowSize = frameSize,
                 WindowOverlap = windowOverlap,
+
                 // use the default HAMMING window
                 //WindowFunction = WindowFunctions.HANNING.ToString(),
                 //WindowFunction = WindowFunctions.NONE.ToString(),
@@ -102,7 +103,7 @@ namespace AnalysisPrograms.Recognizers
                 // if do not use noise reduction can get a more sensitive recogniser.
                 //NoiseReductionType = NoiseReductionType.None
                 NoiseReductionType = NoiseReductionType.Standard,
-                NoiseReductionParameter = 0.0
+                NoiseReductionParameter = 0.0,
             };
 
             TimeSpan recordingDuration = recording.WavReader.Time;
@@ -117,20 +118,28 @@ namespace AnalysisPrograms.Recognizers
             // ######################################################################
             // ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
             int rowCount = sonogram.Data.GetLength(0);
-            double[] amplitudeArray = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, minBin, (rowCount - 1), maxBin);
-            double[] topBand = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, maxBin + 3, (rowCount - 1), maxBin + 9);
-            double[] botBand = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, minBin - 3, (rowCount - 1), minBin - 9);
+            double[] amplitudeArray = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, minBin, rowCount - 1, maxBin);
+            double[] topBand = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, maxBin + 3, rowCount - 1, maxBin + 9);
+            double[] botBand = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, minBin - 3, rowCount - 1, minBin - 9);
             double[] diffArray = new double[amplitudeArray.Length];
             for (int i = 0; i < amplitudeArray.Length; i++)
             {
                 diffArray[i] = amplitudeArray[i] - topBand[i] - botBand[i];
-                if (diffArray[i] < 1.0) diffArray[i] = 0.0;
+                if (diffArray[i] < 1.0)
+                {
+                    diffArray[i] = 0.0;
+                }
             }
+
             bool[] peakArray = new bool[amplitudeArray.Length];
-            for (int i = 1; i < diffArray.Length-1; i++)
+            for (int i = 1; i < diffArray.Length - 1; i++)
             {
-                if (diffArray[i] < decibelThreshold) continue;
-                if ((diffArray[i] > diffArray[i-1]) && (diffArray[i] > diffArray[i + 1]))
+                if (diffArray[i] < decibelThreshold)
+                {
+                    continue;
+                }
+
+                if (diffArray[i] > diffArray[i - 1] && diffArray[i] > diffArray[i + 1])
                 {
                     peakArray[i] = true;
                 }
@@ -138,10 +147,12 @@ namespace AnalysisPrograms.Recognizers
 
             // calculate score array based on density of peaks
             double frameDuration = (double)frameSize / sr;
+
             // use a stimulus-decay function
             double durationOfDecayTail = 0.35; // seconds
             int lengthOfDecayTail = (int)Math.Round(durationOfDecayTail / frameDuration);
             double decayrate = 0.95;
+
             //double decay = -0.05;
             //double fractionalDecay = Math.Exp(decay * lengthOfDecayTail);
             // the above setting gives decay of 0.22 over 0.35 seconds or 30 frames.
@@ -149,15 +160,17 @@ namespace AnalysisPrograms.Recognizers
             double score = 0.0;
             int locationOfLastPeak = 0;
             double[] peakScores = new double[amplitudeArray.Length];
-            for (int p = 0; p < peakScores.Length-1; p++)
+            for (int p = 0; p < peakScores.Length - 1; p++)
             {
                 if (!peakArray[p])
                 {
                     int distanceFromLastpeak = p - locationOfLastPeak;
+
                     // score decay
                     score *= decayrate;
+
                     // remove the decay tail
-                    if ((score < 0.5) && (distanceFromLastpeak > lengthOfDecayTail) && (p >= lengthOfDecayTail))
+                    if (score < 0.5 && distanceFromLastpeak > lengthOfDecayTail && p >= lengthOfDecayTail)
                     {
                         score = 0.0;
                         for (int j = 0; j < lengthOfDecayTail; j++)
@@ -191,7 +204,7 @@ namespace AnalysisPrograms.Recognizers
 
             foreach (var ae in events)
             {
-                if ((ae.EventDurationSeconds < recognizerConfig.MinDuration) || (ae.EventDurationSeconds > recognizerConfig.MaxDuration))
+                if (ae.EventDurationSeconds < recognizerConfig.MinDuration || ae.EventDurationSeconds > recognizerConfig.MaxDuration)
                 {
                     continue;
                 }
@@ -225,6 +238,7 @@ namespace AnalysisPrograms.Recognizers
                 var diffPlot = new Plot("Diff plot", normalisedScores, normalisedThreshold);
 
                 var debugPlots = new List<Plot> { plot, amplPlot, diffPlot };
+
                 // NOTE: This DrawDebugImage() method can be over-written in this class.
                 var debugImage = DrawDebugImage(sonogram, prunedEvents, debugPlots, hits);
                 var debugPath = FilenameHelpers.AnalysisResultPath(outputDirectory, recording.BaseName, this.SpeciesName, "png", "DebugSpectrogram");
@@ -236,25 +250,33 @@ namespace AnalysisPrograms.Recognizers
                 Sonogram = sonogram,
                 Hits = hits,
                 Plots = plot.AsList(),
-                Events = prunedEvents
+                Events = prunedEvents,
+
                 //Events = events
             };
-
         } // Recognize()
-
     }
 
     internal class CriniaRemotaConfig
     {
         public string AnalysisName { get; set; }
+
         public string SpeciesName { get; set; }
+
         public string AbbreviatedSpeciesName { get; set; }
+
         public int MinHz { get; set; }
+
         public int MaxHz { get; set; }
+
         public double DctDuration { get; set; }
+
         public double DctThreshold { get; set; }
+
         public double MinDuration { get; set; }
+
         public double MaxDuration { get; set; }
+
         public double EventThreshold { get; set; }
 
         internal void ReadConfigFile(Config configuration)
@@ -263,12 +285,14 @@ namespace AnalysisPrograms.Recognizers
             this.AnalysisName = configuration[AnalysisKeys.AnalysisName] ?? "<no name>";
             this.SpeciesName = configuration[AnalysisKeys.SpeciesName] ?? "<no name>";
             this.AbbreviatedSpeciesName = configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+
             // frequency band of the call
             this.MinHz = configuration.GetInt(AnalysisKeys.MinHz);
             this.MaxHz = configuration.GetInt(AnalysisKeys.MaxHz);
 
             // duration of DCT in seconds
             this.DctDuration = configuration.GetDouble(AnalysisKeys.DctDuration);
+
             // minimum acceptable value of a DCT coefficient
             this.DctThreshold = configuration.GetDouble(AnalysisKeys.DctThreshold);
 

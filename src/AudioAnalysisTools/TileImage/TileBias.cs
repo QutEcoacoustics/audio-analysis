@@ -13,6 +13,6 @@ namespace AudioAnalysisTools.TileImage
     {
         Negative = -1,
         Neutral = 0,
-        Positive = 1
+        Positive = 1,
     }
 }

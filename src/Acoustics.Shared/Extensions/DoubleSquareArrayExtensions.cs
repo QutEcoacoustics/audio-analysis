@@ -10,8 +10,8 @@
 // ReSharper disable once CheckNamespace
 namespace System
 {
-    using System;
     using Drawing;
+    using System;
     using Acoustics.Shared.Contracts;
 
     /// <summary>
@@ -19,8 +19,6 @@ namespace System
     /// </summary>
     public static class DoubleSquareArrayExtensions
     {
-        #region Public Methods and Operators
-
         /// <summary>
         /// The point intersect.
         /// </summary>
@@ -116,7 +114,7 @@ namespace System
             {
                 for (int j = 0; j < jUpper; j++)
                 {
-                    result[i, j] = f(array[i,j]);
+                    result[i, j] = f(array[i, j]);
                 }
             }
 
@@ -139,8 +137,6 @@ namespace System
 
             return seed;
         }
-
-        #endregion
 
         /// <summary>
         /// returns the min and max values in a matrix of doubles.

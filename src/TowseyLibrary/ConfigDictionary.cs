@@ -78,17 +78,23 @@ namespace TowseyLibrary
             }
         }
 
-
         public string ResolvePath(string path)
         {
             if (path == null)
+            {
                 return null;
+            }
+
             if (!Path.IsPathRooted(path))
             {
                 if (this.Source == null)
+                {
                     throw new InvalidOperationException("Configuration was not loaded from a file. Relative paths can not be resolved.");
+                }
+
                 return Path.Combine(Path.GetDirectoryName(this.Source), path);
             }
+
             return path;
         }
 
@@ -96,7 +102,6 @@ namespace TowseyLibrary
         {
             return this.dictionary;
         }
-
 
         /// <summary>
         /// adds key-value pairs to a properties table.
@@ -110,7 +115,11 @@ namespace TowseyLibrary
         /// </param>
         public void SetPair(string key, string value)
         {
-            if (this.dictionary.ContainsKey(key)) this.dictionary.Remove(key);
+            if (this.dictionary.ContainsKey(key))
+            {
+                this.dictionary.Remove(key);
+            }
+
             this.dictionary.Add(key, value);
         }
 
@@ -160,20 +169,16 @@ namespace TowseyLibrary
             return GetBoolean(key, this.dictionary);
         } //end getBoolean
 
-
-
-        public static void WriteConfgurationFile(Dictionary<string,string> dict, FileInfo path)
+        public static void WriteConfgurationFile(Dictionary<string, string> dict, FileInfo path)
         {
             var lines = new List<string>();
             foreach (KeyValuePair<string, string> kvp in dict)
             {
                 lines.Add(kvp.Key + "=" + kvp.Value);
             }
+
             FileTools.WriteTextFile(path.FullName, lines);
         } // end WriteConfgurationFile()
-
-
-
 
         //#####################################################################################################################################
         //STATIC methods for configuration using Dictionary class.
@@ -191,17 +196,24 @@ namespace TowseyLibrary
             return dict;
         } // end ReadKVPFile2Dictionary()
 
-
-
         public static bool GetBoolean(string key, Dictionary<string, string> dict)
         {
-            if (! dict.ContainsKey(key)) return false;
+            if (!dict.ContainsKey(key))
+            {
+                return false;
+            }
+
             string value = dict[key].ToString();
             try
             {
-                if (value == null) return false;
+                if (value == null)
+                {
+                    return false;
+                }
                 else
-                return bool.Parse(value);
+                {
+                    return bool.Parse(value);
+                }
             }
             catch (FormatException ex)
             {
@@ -214,22 +226,26 @@ namespace TowseyLibrary
 
         public static double GetDouble(string key, Dictionary<string, string> dict)
         {
-
             //if (Double.TryParse(str, out d))     dic.Add(key, str); // if done, then is a number
 
-            if (! dict.ContainsKey(key))
+            if (!dict.ContainsKey(key))
             {
                 Log.WriteLine("ERROR READING PROPERTIES FILE");
                 LoggedConsole.WriteLine("DICTIONARY DOES NOT CONTAIN KEY: {0}", key);
                 return -double.NaN;
             }
+
             string value = dict[key].ToString();
-            if (value == null) return -double.NaN;
+            if (value == null)
+            {
+                return -double.NaN;
+            }
+
             try
             {
                 double d;
                 double.TryParse(value, out d);
-                return  d;
+                return d;
             }
             catch
             {
@@ -241,9 +257,17 @@ namespace TowseyLibrary
 
         public static double? GetDoubleNullable(string key, Dictionary<string, string> dict)
         {
-            if (!dict.ContainsKey(key)) return null;
+            if (!dict.ContainsKey(key))
+            {
+                return null;
+            }
+
             string value = dict[key].ToString();
-            if (value == null) return null;
+            if (value == null)
+            {
+                return null;
+            }
+
             try
             {
                 double d;
@@ -265,12 +289,18 @@ namespace TowseyLibrary
             //if (!table.ContainsKey(key)) return -Int32.MaxValue;
 
             //string value = this.table[key].ToString();
-            if (value == null) return -int.MaxValue;
+            if (value == null)
+            {
+                return -int.MaxValue;
+            }
 
             try
             {
                 int int32;
-                if (int.TryParse(value, out int32)) return int32;
+                if (int.TryParse(value, out int32))
+                {
+                    return int32;
+                }
             }
             catch
             {
@@ -278,20 +308,30 @@ namespace TowseyLibrary
                 LoggedConsole.WriteLine("INVALID KVP: key={0}, value={1}", key, value);
                 return int.MaxValue;
             }
+
             return int.MaxValue;
         }
 
         public static int? GetIntNullable(string key, Dictionary<string, string> dict)
         {
-            if (!dict.ContainsKey(key)) return null;
+            if (!dict.ContainsKey(key))
+            {
+                return null;
+            }
 
             string value = dict[key].ToString();
-            if (value == null) return null;
+            if (value == null)
+            {
+                return null;
+            }
 
             try
             {
                 int int32;
-                if (int.TryParse(value, out int32)) return int32;
+                if (int.TryParse(value, out int32))
+                {
+                    return int32;
+                }
             }
             catch
             {
@@ -299,9 +339,9 @@ namespace TowseyLibrary
                 LoggedConsole.WriteLine("INVALID KVP: key={0}, value={1}", key, value);
                 return null;
             }
+
             return null;
         }
-
 
         public static string ReadPropertyFromFile(string fName, string key)
         {
@@ -319,7 +359,10 @@ namespace TowseyLibrary
         public static Dictionary<string, string> ReadPropertiesFile(FileInfo fileName)
         {
             var fileInfo = fileName;
-            if (!fileInfo.Exists) return null;
+            if (!fileInfo.Exists)
+            {
+                return null;
+            }
 
             var table = new Dictionary<string, string>();
             using (TextReader reader = fileName.OpenText())
@@ -353,14 +396,10 @@ namespace TowseyLibrary
                     }
                 } // end while
             } // end using
+
             return table;
         } // end ReadPropertiesFile()
-
     }
-
-
-
-
 
     /// <summary>
     /// NOTE: This is an extension class
@@ -378,23 +417,30 @@ namespace TowseyLibrary
                 Log.WriteLine("WriteConfigValue() WARNING!!!! NULL VALUE for KEY=" + key);
                 return;
             }
+
             writer.WriteLine(key + "=" + value.ToString());
         }
 
         public static string RelativePathTo(string fromDirectory, string toPath)
         {
             if (fromDirectory == null)
+            {
                 throw new ArgumentNullException("fromDirectory");
+            }
 
             if (toPath == null)
+            {
                 throw new ArgumentNullException("toPath");
+            }
 
             bool isRooted = Path.IsPathRooted(fromDirectory) && Path.IsPathRooted(toPath);
             if (isRooted)
             {
                 bool isDifferentRoot = string.Compare(Path.GetPathRoot(fromDirectory), Path.GetPathRoot(toPath), true) != 0;
                 if (isDifferentRoot)
+                {
                     return toPath;
+                }
             }
 
             var relativePath = new List<string>();
@@ -408,23 +454,32 @@ namespace TowseyLibrary
             for (int x = 0; x < length; x++)
             {
                 if (string.Compare(fromDirectories[x], toDirectories[x], true) != 0)
+                {
                     break;
+                }
+
                 lastCommonRoot = x;
             }
 
             if (lastCommonRoot == -1)
+            {
                 return toPath;
+            }
 
             // add relative folders in from path
             for (int x = lastCommonRoot + 1; x < fromDirectories.Length; x++)
             {
                 if (fromDirectories[x].Length > 0)
+                {
                     relativePath.Add("..");
+                }
             }
 
             // add to folders to path
             for (int x = lastCommonRoot + 1; x < toDirectories.Length; x++)
+            {
                 relativePath.Add(toDirectories[x]);
+            }
 
             return string.Join(Path.DirectorySeparatorChar.ToString(), relativePath.ToArray());
         }

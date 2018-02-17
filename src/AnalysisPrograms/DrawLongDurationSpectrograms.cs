@@ -152,6 +152,7 @@ namespace AnalysisPrograms
             // CHECK FOR ERROR SEGMENTS - get zero signal array
             var input = arguments.InputDataDirectory.ToDirectoryInfo();
             var csvFile = new FileInfo(Path.Combine(input.FullName, originalBaseName + "__Towsey.Acoustic.Indices.csv"));
+
             //Dictionary<string, double[]> summaryIndices = CsvTools.ReadCSVFile2Dictionary(csvFile.FullName);
             //var summaryIndices = Csv.ReadFromCsv<Dictionary<string, double[]>>(csvFile);
             var summaryIndices = Csv.ReadFromCsv<SummaryIndexValues>(csvFile);
@@ -169,7 +170,7 @@ namespace AnalysisPrograms
                 indexPropertiesConfigPath: arguments.IndexPropertiesConfig.ToFileInfo(),
                 indexGenerationData: indexGenerationData,
                 basename: originalBaseName,
-                analysisType: Acoustic.TowseyAcoustic,
+                analysisType: AcousticIndices.TowseyAcoustic,
                 indexSpectrograms: null,
                 indexStatistics: indexDistributionsData,
                 segmentErrors: indexErrors,
@@ -206,7 +207,7 @@ namespace AnalysisPrograms
 
             //double backgroundFilter = 0.0; // 0.0 means small values are removed.
             double backgroundFilter = 0.75;  // 0.75 means small values are accentuated.
-            string analysisType = Acoustic.TowseyAcoustic;
+            string analysisType = AcousticIndices.TowseyAcoustic;
             string[] keys = LDSpectrogramRGB.GetArrayOfAvailableKeys();
 
             //LoggedConsole.WriteLine("# Spectrogram Config      file: " + arguments.SpectrogramConfigPath);
@@ -353,7 +354,7 @@ namespace AnalysisPrograms
 
         public static Image DrawRidgeSpectrograms(DirectoryInfo inputDirectory, FileInfo ipConfig, string fileStem, double scale, Dictionary<string, double[,]> spectra = null)
         {
-            string analysisType = Acoustic.TowseyAcoustic;
+            string analysisType = AcousticIndices.TowseyAcoustic;
 
             //double backgroundFilter = 0.0; // 0.0 means small values are removed.
             double backgroundFilter = 0.75;  // 0.75 means small values are accentuated.

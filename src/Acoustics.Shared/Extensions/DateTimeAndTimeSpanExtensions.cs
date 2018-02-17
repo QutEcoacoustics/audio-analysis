@@ -260,13 +260,6 @@ namespace System
             return readable;
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="time"></param>
-        /// <param name="roundingInterval"></param>
-        /// <param name="roundingType"></param>
-        /// <returns></returns>
         /// <remarks>From: http://stackoverflow.com/questions/766626/is-there-a-better-way-in-c-sharp-to-round-a-datetime-to-the-nearest-5-seconds (Stackoverflow).</remarks>
         public static TimeSpan Round(this TimeSpan time, TimeSpan roundingInterval, MidpointRounding roundingType)
         {
@@ -311,7 +304,7 @@ namespace System
         {
             return TimeSpan.FromTicks((long)(multiplicand.Ticks * multiplier));
         }
-        
+
         /// <summary>
         /// Divides a timespan by an scalar value
         /// </summary>
@@ -335,7 +328,7 @@ namespace System
         // https://github.com/exceptionless/Exceptionless.DateTimeExtensions/blob/master/src/Exceptionless.DateTimeExtensions/DateTimeOffsetExtensions.cs#L230
         public static DateTimeOffset Round(this DateTimeOffset date, TimeSpan roundingInterval)
         {
-            var halfIntervalTicks = ((roundingInterval.Ticks + 1) >> 1);
+            var halfIntervalTicks = (roundingInterval.Ticks + 1) >> 1;
             return date.AddTicks(halfIntervalTicks - ((date.Ticks + halfIntervalTicks) % roundingInterval.Ticks));
         }
 
@@ -353,6 +346,5 @@ namespace System
         {
             return t1 >= t2 ? t1 : t2;
         }
-
     }
 }

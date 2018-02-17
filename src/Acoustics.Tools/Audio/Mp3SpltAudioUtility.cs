@@ -50,10 +50,6 @@
             this.TemporaryFilesDirectory = temporaryFilesDirectory;
         }
 
-
-
-        #region Implementation of IAudioUtility
-
         /// <summary>
         /// Gets the valid source media types.
         /// </summary>
@@ -257,8 +253,6 @@
             }
         }
 
-        #endregion
-
         private static string FormatTimeSpan(TimeSpan value)
         {
             /*
@@ -271,8 +265,6 @@ Hundredths (optional): Must be between 0 and 99. Use them for higher precision.
             return Math.Floor(value.TotalMinutes).ToString("0000") + "." + value.Seconds.ToString("00") +
                    "." + (value.Milliseconds / 10).ToString("00");
         }
-
-        #region stand-alone spliting
 
         private const string FileNameTemplate = "splitoutput-@f-@mm@ss@hcs-@Mm@Ss@Hcs";
 
@@ -661,7 +653,5 @@ Hundredths (optional): Must be between 0 and 99. Use them for higher precision.
             public long? Start { get; set; }
 
         }
-
-        #endregion
     }
 }

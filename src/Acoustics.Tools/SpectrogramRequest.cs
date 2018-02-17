@@ -103,8 +103,8 @@ namespace Acoustics.Tools
             if (this.PixelsPerMillisecond.HasValue && this.Width.HasValue)
             {
                 var segmentDuration = (this.End - this.Start).TotalMilliseconds;
-                double calculatedPpms = (double)this.Width.Value / segmentDuration;
-                double calculatedWidth = (double)this.PixelsPerMillisecond.Value * segmentDuration;
+                double calculatedPpms = this.Width.Value / segmentDuration;
+                double calculatedWidth = this.PixelsPerMillisecond.Value * segmentDuration;
 
                 if (calculatedPpms != this.PixelsPerMillisecond.Value || calculatedWidth != this.Width.Value)
                 {

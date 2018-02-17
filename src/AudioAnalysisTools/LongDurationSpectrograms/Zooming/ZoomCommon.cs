@@ -71,13 +71,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
             // DEFINE the DEFAULT colour maps for the false-colour spectrograms
             // Then obtain values from spectrogramDrawingConfig. NOTE: WE REQUIRE LENGTH = 11 chars.
             string colorMap1 = "ACI-ENT-EVN";
-            if ((config.ColorMap1 != null) && (config.ColorMap1.Length == 11))
+            if (config.ColorMap1 != null && config.ColorMap1.Length == 11)
             {
                 colorMap1 = config.ColorMap1;
             }
 
             string colorMap2 = "BGN-PMN-EVN";
-            if ((config.ColorMap2 != null) && (config.ColorMap2.Length == 11))
+            if (config.ColorMap2 != null && config.ColorMap2.Length == 11)
             {
                 colorMap2 = config.ColorMap2;
             }

@@ -40,10 +40,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         public static void DrawDistanceSpectrogram(Config configuration)
         {
-            var inputDirectory = ((string)configuration["InputDirectory"]).ToDirectoryInfo();
-            var inputFileName1 = ((string)configuration["IndexFile1"]).ToFileInfo();
-            var inputFileName2 = ((string)configuration["IndexFile2"]).ToFileInfo();
-            var outputDirectory = ((string)configuration["OutputDirectory"]).ToDirectoryInfo();
+            var inputDirectory = configuration["InputDirectory"].ToDirectoryInfo();
+            var inputFileName1 = configuration["IndexFile1"].ToFileInfo();
+            var inputFileName2 = configuration["IndexFile2"].ToFileInfo();
+            var outputDirectory = configuration["OutputDirectory"].ToDirectoryInfo();
 
             // First, need to make an optional cast:
             // int? minuteOffset = confirguration.AnalysisStartOffset;
@@ -64,7 +64,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             colorMap = map ?? SpectrogramConstants.RGBMap_ACI_ENT_CVR;
 
             backgroundFilterCoeff = configuration.GetDoubleOrNull("BackgroundFilterCoeff") ?? backgroundFilterCoeff;
-
 
             // must be value <=1.0
 
@@ -303,6 +302,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     // }
                 }
             }
+
  // rows
 
             double[] array = DataTools.Matrix2Array(d12Matrix);
@@ -336,6 +336,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                         {
                             colour = colourChart["+99.9%"];
                         }
+
  // 99.9% conf
                         else
                         {
@@ -343,6 +344,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                             {
                                 colour = colourChart["+99.0%"];
                             }
+
  // 99.0% conf
                             else
                             {
@@ -350,6 +352,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                 {
                                     colour = colourChart["+95.0%"];
                                 }
+
  // 95% conf
                                 else
                                 {
@@ -366,6 +369,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                 }
                             }
                         }
+
  // if() else
                         bmp.SetPixel(col, row, colour);
                     }
@@ -375,6 +379,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                         {
                             colour = colourChart["-99.9%"];
                         }
+
  // 99.9% conf
                         else
                         {
@@ -382,6 +387,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                             {
                                 colour = colourChart["-99.0%"];
                             }
+
  // 99.0% conf
                             else
                             {
@@ -389,6 +395,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                 {
                                     colour = colourChart["-95.0%"];
                                 }
+
  // 95% conf
                                 else
                                 {
@@ -406,16 +413,20 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                 }
                             }
                         }
+
  // if() else
                         bmp.SetPixel(col, row, colour);
                     }
                 }
+
  // all rows
             }
+
  // all rows
 
             return bmp;
         }
+
  // DrawDistanceSpectrogram()
 
         public static Image DrawTitleBarOfEuclidianDistanceSpectrogram(

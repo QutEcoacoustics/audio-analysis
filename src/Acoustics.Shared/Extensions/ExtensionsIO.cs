@@ -55,7 +55,5 @@ namespace System.IO
                 destination.Write(buffer, 0, num);
             }
         }
-
-
     }
 }

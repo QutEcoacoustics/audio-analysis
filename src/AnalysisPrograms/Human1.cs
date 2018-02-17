@@ -94,7 +94,7 @@ namespace AnalysisPrograms
 
                 //ignore locations with incorrect formant gap
                 double herzPeriod = periodicity[r] * freqBinWidth;
-                if ((herzPeriod < minFormantgap) || (herzPeriod > maxFormantgap))
+                if (herzPeriod < minFormantgap || herzPeriod > maxFormantgap)
                 {
                     continue;
                 }

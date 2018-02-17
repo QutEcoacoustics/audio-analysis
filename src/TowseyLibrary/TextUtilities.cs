@@ -1,9 +1,6 @@
-﻿//import java.text.BreakIterator;
-//import java.util.HashMap;
-//import java.util.Iterator;
-//import java.util.Locale;
-//import java.util.Vector;
-
+﻿// <copyright file="TextUtilities.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
 //import javax.swing.JOptionPane;
 //import qut.tools.datatools.DataUtilities;
 //import qut.tools.datatools.EasyRegex;
@@ -24,15 +21,14 @@ namespace TowseyLibrary
  * @author Michael Towsey
  * @version 1.0
  */
-
     public class TextUtilities
     {
-
         //the following three constants are used by the SplitString() method;
         // they determine how the split will be performed
         public static readonly int SPLIT_ON_SPACE_ONLY = 1;   // words include all non-space chars
         public static readonly int SPLIT_ON_WORDS_NUMBERS = 2; // words include numbers. Can contain 0-9 .-'
         public static readonly int SPLIT_ON_WORDS_ONLY = 3;
+
         // SPLIT_ON_SPACE_ONLY: splits only on non-space chars.
         //                       Punctuation inside a word will not cause word to be split.
         // SPLIT_ON_WORDS_NUMBERS: accepts numbers as words. Words can also contain chars .-'
@@ -40,16 +36,12 @@ namespace TowseyLibrary
         // SPLIT_ON_WORDS_ONLY: Excludes numbers. But a word may also contain digits and chars .-'
         //                       And other punctuation inside a word will cause it to be split.
 
-
-
-
         /**
          * a do nothing constructor - all methods are static
          */
         public TextUtilities()
         {
         }
-
 
         public static Dictionary<string, int> ConvertIntegerArray2NgramCount(int[] integers, int ngramValue)
         {
@@ -66,16 +58,22 @@ namespace TowseyLibrary
                 StringBuilder sb = new StringBuilder();
                 for (int j = 0; j < ngramValue; j++)
                 {
-                    sb.Append(","+ array[i+j]);
+                    sb.Append("," + array[i + j]);
                 }
+
                 string key = sb.ToString();
-                if (D.ContainsKey(key)) D[key]++;
-                else D.Add(key, 1);
+                if (D.ContainsKey(key))
+                {
+                    D[key]++;
+                }
+                else
+                {
+                    D.Add(key, 1);
+                }
             }
 
             return D;
         }
-
 
         /// <summary>
         /// returns a dictionary of counts of character N-grams in a string.
@@ -87,23 +85,25 @@ namespace TowseyLibrary
         {
             int N = ngramValue - 1; // length of N-gram beyond current position
             Dictionary<string, int> D = new Dictionary<string, int>();
-            for (int c = 0; c <= (str.Length - N); c++)
+            for (int c = 0; c <= str.Length - N; c++)
             {
                 string ss = str.Substring(c, ngramValue);
-                if (D.ContainsKey(ss)) D[ss]++;
-                else                   D.Add(ss, 1);
+                if (D.ContainsKey(ss))
+                {
+                    D[ss]++;
+                }
+                else
+                {
+                    D.Add(ss, 1);
+                }
             }
+
             return D;
         }
 
-
-
         //=============================================================================
 
-
-
         //=============================================================================
-
 
         /**
          * convert a vector of strings to a concatenated string with spaces between
@@ -138,7 +138,6 @@ namespace TowseyLibrary
         //    //LoggedConsole.WriteLine("CONCATENATE="+str);
         //    return str.ToString();
         //}
-
 
         //=============================================================================
 
@@ -198,7 +197,6 @@ namespace TowseyLibrary
 
         //=============================================================================
 
-
         /**
          * returns an array of Int32s representing the position of all the line starts
          * in the passed text.
@@ -222,8 +220,6 @@ namespace TowseyLibrary
 
         //=============================================================================
 
-
-
         /**
          * Given the passed locale and LAnguage resources directory, construct a directory
          * path to resources for the language of the locale.
@@ -242,7 +238,6 @@ namespace TowseyLibrary
         //}
 
         //******************************************************************************
-
 
         /**
          * Returns a measure of the distance between two strings.
@@ -281,7 +276,6 @@ namespace TowseyLibrary
         //        return Math.Abs(1 - cosNgramSimilarity(s1, s2));
         //}
 
-
         //static public int stringMismatch(String s1, String s2)
         //{
 
@@ -298,7 +292,6 @@ namespace TowseyLibrary
         //    return mismatch;
         //}
 
-
         /**
          * Returns the minimum of three values.
          * @param a first value
@@ -311,11 +304,18 @@ namespace TowseyLibrary
             int min;
 
             min = a;
-            if (b < min) { min = b; }
-            if (c < min) { min = c; }
+            if (b < min)
+            {
+                min = b;
+            }
+
+            if (c < min)
+            {
+                min = c;
+            }
+
             return min;
         }
-
 
     //*****************************
     // Compute Levenshtein distance
@@ -328,7 +328,7 @@ namespace TowseyLibrary
      * @param t the target string
      * @return the Int32 edit distance
      */
-    public static int LD(string s, string t)
+        public static int LD(string s, string t)
     {
         int[,] d;     // matrix
         int n;         // mapLength of source string
@@ -342,32 +342,55 @@ namespace TowseyLibrary
         // Step 1
         n = s.Length;
         m = t.Length;
-        if (n == 0) { return m; }
-        if (m == 0) { return n; }
+        if (n == 0)
+        {
+            return m;
+        }
+
+        if (m == 0)
+        {
+            return n;
+        }
 
         // Step 2
-        d = new int[n+1,m+1];  // init the matrix
-        for (i = 0; i <= n; i++) { d[i,0] = i; }
-        for (j = 0; j <= m; j++) { d[0,j] = j; }
+        d = new int[n + 1, m + 1];  // init the matrix
+        for (i = 0; i <= n; i++)
+        {
+            d[i, 0] = i;
+        }
+
+        for (j = 0; j <= m; j++)
+        {
+            d[0, j] = j;
+        }
 
         // Step 3
         for (i = 1; i <= n; i++)
         {
             s_i = s[i - 1];
+
             // Step 4
             for (j = 1; j <= m; j++)
             {
                 t_j = t[j - 1];
+
                 // Step 5
-                if (s_i == t_j) { cost = 0; }
-                else            { cost = 1; }
+                if (s_i == t_j)
+                {
+                    cost = 0;
+                }
+                else
+                {
+                    cost = 1;
+                }
+
                 // Step 6
-                d[i,j] = Minimum (d[i-1,j]+1, d[i,j-1]+1, d[i-1,j-1] + cost);
+                d[i, j] = Minimum (d[i - 1, j] + 1, d[i, j - 1] + 1, d[i - 1, j - 1] + cost);
             }
         }//end step 3
 
         // Step 7
-        return d[n,m];
+        return d[n, m];
     }//end method LD()
 
         //=============================================================================
@@ -441,7 +464,6 @@ namespace TowseyLibrary
 
         //=============================================================================
 
-
         /**
          * This does the same as the method trimPunctuation() but instead of removing the
          * punctuation completely, it returns a three element array of strings. The first element
@@ -489,12 +511,20 @@ namespace TowseyLibrary
         public static ArrayList getWordsAfter(int N, int start, string text)
         {
             ArrayList v = new ArrayList();
+
             //int wordStart, wordEnd;
             //String word;
             int i = start;
             int L = text.Length;
-            if (start >= L) return null;  // out of range ERROR
-            if (start < 0) return null;  // out of range ERROR
+            if (start >= L)
+            {
+                return null;  // out of range ERROR
+            }
+
+            if (start < 0)
+            {
+                return null;  // out of range ERROR
+            }
 
             //if geneStart index is at beginning of document then take the first N words.
             //if geneStart index is at beginning of a word, then include it in neighbourhood
@@ -516,8 +546,14 @@ namespace TowseyLibrary
             //    if (i >= L) break;
             //} // geneEnd of N words
 
-            if (v.Count == 0) return null;
-            else return v;
+            if (v.Count == 0)
+            {
+                return null;
+            }
+            else
+            {
+                return v;
+            }
         }
 
         //=============================================================================
@@ -536,12 +572,20 @@ namespace TowseyLibrary
         public static ArrayList getWordsBefore(int N, int start, string text)
         {
             ArrayList v = new ArrayList();
+
             //int wordStart, wordEnd;
             //String word;
             int i = start;
             int L = text.Length;
-            if (start > L) return null;  // out of range ERROR
-            if (start < 0) return null;  // out of range ERROR
+            if (start > L)
+            {
+                return null;  // out of range ERROR
+            }
+
+            if (start < 0)
+            {
+                return null;  // out of range ERROR
+            }
 
             //if geneStart index is at very geneEnd of document then take the last N words.
             //if geneStart index is inside a word move to geneEnd of word and exclude that word from neighbourhood.
@@ -564,10 +608,15 @@ namespace TowseyLibrary
             //    if (i == 0) break;
             //} // geneEnd of N words
 
-            if (v.Count == 0) return null;
-            else return v;
+            if (v.Count == 0)
+            {
+                return null;
+            }
+            else
+            {
+                return v;
+            }
         }
-
 
         //=============================================================================
 
@@ -616,9 +665,7 @@ namespace TowseyLibrary
         //    return words;
         //}
 
-
         //=============================================================================
-
 
         /**
          * Finds sentence boundaries using the BreakIterator class.
@@ -657,13 +704,13 @@ namespace TowseyLibrary
         {
             str = str.Trim();
             int i = 0;
+
             //while (str.charAt(i) != ' ')
             //{
             //    i++;
             //}
             return str.Substring(i).Trim();
         }
-
 
         //=============================================================================
 
@@ -680,7 +727,6 @@ namespace TowseyLibrary
   //  BreakIterator wb = BreakIterator.getWordInstance(locale);
   //  wb.setText(text);
   //  int last = wb.following(0); // get location of next boundary
-
 
   //if (splitType == SPLIT_ON_WORDS_ONLY) //words will contain all non-space characters
   //{
@@ -762,7 +808,6 @@ namespace TowseyLibrary
 
   //} //geneEnd of for split type
 
-
   //  int[,] wordLoc = new int[v.size(),2];
   //  for (int i=0; i<v.size(); i++)
   //  { wordLoc[i] = (int[])v.get(i);
@@ -787,7 +832,6 @@ namespace TowseyLibrary
             return false;
         }
 
-
         //=============================================================================
 
         /**
@@ -799,9 +843,11 @@ namespace TowseyLibrary
          * @return a matrix of words, BEFORE words in row1, AFTER words in row2
          */
         public static string[,] getWordsInNeighbourhood(int N, int start, int end, string text)
-  { string[,] words = new string[2,N];
-    ArrayList vb = getWordsBefore(N, start, text);
-    ArrayList va = getWordsAfter(N, end, text);
+  {
+        string[,] words = new string[2, N];
+        ArrayList vb = getWordsBefore(N, start, text);
+        ArrayList va = getWordsAfter(N, end, text);
+
     //NOTE: it may happen that the size of the vectors vb and va is not equal
     //        because we are near the beginning or geneEnd of the text.
     //        In this case, we fill the matrix position with an empty string.
@@ -811,7 +857,7 @@ namespace TowseyLibrary
     //if (i < va.Count) words[1, i] = (String)va.get(i);
     //  else              words[1,i] = "";
     //}
-    return words;
+        return words;
   }
 
         //=============================================================================
@@ -828,8 +874,15 @@ namespace TowseyLibrary
         {
             int i = start;
             int L = text.Length;
-            if (start >= L) return -1;  // out of range ERROR
-            if (start < 0) return -1;  // out of range ERROR
+            if (start >= L)
+            {
+                return -1;  // out of range ERROR
+            }
+
+            if (start < 0)
+            {
+                return -1;  // out of range ERROR
+            }
 
             //in case geneStart index is inside a word move to geneStart of word.
             //while ((i >= 0) && (!Character.isSpaceChar(text.charAt(i)))) i--; // move to geneStart of word
@@ -840,12 +893,17 @@ namespace TowseyLibrary
             //    while ((i >= 0) && (!Character.isSpaceChar(text.charAt(i)))) i--; // move to geneStart of word
             //} // geneEnd of N words
             i += 1;  // have gone one further to left than required
-            if (i < 0) return 0; // this check not really necessary - but to be safe!
-            else return i;
+            if (i < 0)
+            {
+                return 0; // this check not really necessary - but to be safe!
+            }
+            else
+            {
+                return i;
+            }
         }
 
         //=============================================================================
-
 
         /**
          * NOTE: this method is similar to the getWordsAfter() method but it returns
@@ -859,8 +917,15 @@ namespace TowseyLibrary
         {
             int i = start;
             int L = text.Length;
-            if (start > L) return -1;  // out of range ERROR
-            if (start < 0) return -1;  // out of range ERROR
+            if (start > L)
+            {
+                return -1;  // out of range ERROR
+            }
+
+            if (start < 0)
+            {
+                return -1;  // out of range ERROR
+            }
 
             //in case geneStart index is inside a word move to geneEnd of word.
             //while ((i < L) && (!Character.isWhitespace(text.charAt(i)))) i++; // move to geneEnd of word
@@ -871,8 +936,14 @@ namespace TowseyLibrary
             //    while ((i < L) && (!Character.isWhitespace(text.charAt(i)))) i++; // move to geneEnd of word
             //} // geneEnd of N words
 
-            if (i > L) return L;
-            else return i;
+            if (i > L)
+            {
+                return L;
+            }
+            else
+            {
+                return i;
+            }
         }
 
         //=============================================================================
@@ -890,44 +961,70 @@ namespace TowseyLibrary
         {
             int numWords = wordLoc.Length;
             int lastIndex = numWords - 1;
-            int textLength = wordLoc[lastIndex,1];  // this entry should be close to geneEnd of text
-
+            int textLength = wordLoc[lastIndex, 1];  // this entry should be close to geneEnd of text
 
             // check if 'N' is in the first or last words
-            if (N < wordLoc[1,0]) return 0;           // N'th char located in first word
-            if (N >= wordLoc[lastIndex,0]) return lastIndex;   // N'th char located in last word
+            if (N < wordLoc[1, 0])
+            {
+                return 0;           // N'th char located in first word
+            }
+
+            if (N >= wordLoc[lastIndex, 0])
+            {
+                return lastIndex;   // N'th char located in last word
+            }
+
             // check second last word to prevent array out of bounds error below
-            if ((N >= wordLoc[lastIndex - 1,0]) && (N < wordLoc[lastIndex,0]))
+            if (N >= wordLoc[lastIndex - 1, 0] && N < wordLoc[lastIndex, 0])
+            {
                 return lastIndex - 1; // N'th char located in second last word
-
-
+            }
 
             int i = numWords * N / textLength; //get an approximate index into the wordLoc[] array.
+
             // constrain index 'i' to be within wordLoc[] array - just in case approximation did not work well.
-            if (i < 0) i = 0;
+            if (i < 0)
+            {
+                i = 0;
+            }
             else
-                if (i > lastIndex) i = lastIndex;
+                if (i > lastIndex)
+            {
+                i = lastIndex;
+            }
 
             // if 'i' is the correct index then return it
-            if ((N >= wordLoc[i,0]) && (N < wordLoc[i + 1,0]))
+            if (N >= wordLoc[i, 0] && N < wordLoc[i + 1, 0])
             { //LoggedConsole.WriteLine("initial word index ="+i);
                 return i;
             }
-            // NOTE: above line means that if N lies between two words, index of first word is returned
 
+            // NOTE: above line means that if N lies between two words, index of first word is returned
 
             // i is not correct so now get correct index into the wordLoc array.
             // if geneEnd of current word (and trailing spaces/punctuation) is before N then jump to next word
-            if (wordLoc[i + 1,0] - 1 < N) { while ((i < wordLoc.Length - 1) && (wordLoc[i + 1,0] - 1 < N)) i++; }
+            if (wordLoc[i + 1, 0] - 1 < N)
+            {
+                while (i < wordLoc.Length - 1 && wordLoc[i + 1, 0] - 1 < N)
+                {
+                    i++;
+                }
+            }
             else
+
                 // if geneStart of current word is after N then jump back a word
-                if (wordLoc[i,0] > N) { while ((i > 0) && (wordLoc[i,0] > N)) i--; }
+                if (wordLoc[i, 0] > N)
+                {
+                    while (i > 0 && wordLoc[i, 0] > N)
+                {
+                    i--;
+                }
+            }
+
             //LoggedConsole.WriteLine("shifted word index ="+i);
             // i is now index to word that contains the N'th character.
             return i;
         }
-
-
 
         //******************************************************************************
 
@@ -956,8 +1053,6 @@ namespace TowseyLibrary
         //    return wordFreq;
         //}
 
-
-
         //=============================================================================
         public static void main(string[] args)
   {
@@ -976,7 +1071,6 @@ namespace TowseyLibrary
 //    int[,] words = SplitString(text, locale, SPLIT_ON_WORDS_ONLY);
 //    for (int i=0; i<words.length; i++) LoggedConsole.WriteLine(" "+text.substring(words[i,0],words[i,1])+"_");
 
-
 //    LoggedConsole.WriteLine("\nTEST OF WORD NEIGHBOURHOODS");
 //    String txt = "\"This is a story\", said Bill A.B.C. Adam-Smith.\nAnd \"why? \"Because Adam's hat 01.01.03, that is the 1. January, is John's birthday. \n \nAnd that is why!\", says Mr. O'Neil's aunt.\n";
 //    words = SplitString(txt, locale, TextUtilities.SPLIT_ON_WORDS_NUMBERS);
@@ -985,11 +1079,8 @@ namespace TowseyLibrary
 //    int index = getWordIndex(N, words);
 //    LoggedConsole.WriteLine("word index for char "+N+" = "+ index+" word="+txt.substring(words[index,0],words[index,1]));
 
-
 //    LoggedConsole.WriteLine("FINISHED TEXT UTILITIES");
 //    System.exit(0);
   }//end main method
-
     } //end class
-
 } //end namespace

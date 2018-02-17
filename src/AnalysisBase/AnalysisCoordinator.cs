@@ -396,8 +396,8 @@ namespace AnalysisBase
                 "The duration analyzed (reported by the analysis result) should be withing a millisecond of the provided audio file");
 
             if (preAnalysisSettings.AnalysisImageSaveBehavior == SaveBehavior.Always
-                || (preAnalysisSettings.AnalysisImageSaveBehavior == SaveBehavior.WhenEventsDetected
-                    && result.Events.Length > 0))
+                || preAnalysisSettings.AnalysisImageSaveBehavior == SaveBehavior.WhenEventsDetected
+                && result.Events.Length > 0)
             {
                 Contract.Ensures(
                     segmentSettings.SegmentImageFile.RefreshInfo().Exists,

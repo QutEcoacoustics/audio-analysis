@@ -87,8 +87,6 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("# Input  audio file: " + fiSourceRecording.Name);
             LoggedConsole.WriteLine("# Output image file: " + fiImage);
 
-
-
             //2. get the config dictionary
             Config configuration = ConfigFile.Deserialize(fiConfig);
 
@@ -123,7 +121,7 @@ namespace AnalysisPrograms
             var endOffsetMins = TimeSpan.Zero;
 
             FileInfo fiOutputSegment = fiSourceRecording;
-            if (!((startOffsetMins == TimeSpan.Zero) && (endOffsetMins == TimeSpan.Zero)))
+            if (!(startOffsetMins == TimeSpan.Zero && endOffsetMins == TimeSpan.Zero))
             {
                 var buffer = new TimeSpan(0, 0, 0);
                 fiOutputSegment = new FileInfo(Path.Combine(fiImage.DirectoryName, "tempWavFile.wav"));
@@ -174,6 +172,7 @@ namespace AnalysisPrograms
 
             // iv: Prepare noise reduced spectrogram
             decibelSpectrogramdata = SNR.TruncateBgNoiseFromSpectrogram(decibelSpectrogramdata, decibelProfile.NoiseThresholds);
+
             //double dBThreshold = 1.0; // SPECTRAL dB THRESHOLD for smoothing background
             //decibelSpectrogramdata = SNR.RemoveNeighbourhoodBackgroundNoise(decibelSpectrogramdata, dBThreshold);
             var image3 = ImageTools.DrawReversedMatrix(MatrixTools.MatrixRotate90Anticlockwise(decibelSpectrogramdata));
@@ -222,6 +221,7 @@ namespace AnalysisPrograms
             list.Add(image2); // decibel spectrogram before noise removal
             list.Add(image3); // decibel spectrogram after noise removal
             list.Add(image4); // second version of noise reduced spectrogram
+
             //list.Add(image5); // ceptral sonogram
             list.Add(image6); // multitrack image
 
