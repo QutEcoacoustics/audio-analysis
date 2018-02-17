@@ -41,11 +41,11 @@ namespace AnalysisPrograms.Production
                               {
                                   {
                                       typeof(ValidationException),
-                                      new ExceptionStyle { ErrorCode = 2 }
+                                      new ExceptionStyle { ErrorCode = ValiationError, PrintUsage = false  }
                                   },
                                   {
                                       typeof(CommandLineArgumentException),
-                                      new ExceptionStyle() { ErrorCode = 3 }
+                                      new ExceptionStyle() { ErrorCode = 3}
                                   },
                                   {
                                       typeof(DirectoryNotFoundException),
@@ -65,19 +65,19 @@ namespace AnalysisPrograms.Production
                                   },
                                   {
                                       typeof(InvalidFileDateException),
-                                      new ExceptionStyle() { ErrorCode = 102, PrintUsage = false}
+                                      new ExceptionStyle() { ErrorCode = 102, PrintUsage = false }
                                   },
                                   {
                                       typeof(ConfigFileException),
-                                      new ExceptionStyle() {ErrorCode = 103, PrintUsage = false}
+                                      new ExceptionStyle() { ErrorCode = 103, PrintUsage = false }
                                   },
                                   {
                                       typeof(AudioRecordingTooShortException),
-                                      new ExceptionStyle() {ErrorCode = 104, PrintUsage = false }
+                                      new ExceptionStyle() { ErrorCode = 104, PrintUsage = false }
                                   },
                                   {
                                       typeof(InvalidAudioChannelException),
-                                      new ExceptionStyle() {ErrorCode = 105, PrintUsage = false }
+                                      new ExceptionStyle() { ErrorCode = 105, PrintUsage = false }
                                   },
                                   {
                                       typeof(AnalysisOptionDevilException),
@@ -106,21 +106,13 @@ namespace AnalysisPrograms.Production
 
         #region Public Properties
 
-        public static int Ok
-        {
-            get
-            {
-                return 0;
-            }
-        }
+        public static int Ok => 0;
 
-        public static int Fail
-        {
-            get
-            {
-                return 1;
-            }
-        }
+        public static int ValiationError => 2;
+
+        public static int ActionRequired => 2;
+
+        public static int NoData => 10;
 
         public static int SpecialExceptionErrorLevel
         {

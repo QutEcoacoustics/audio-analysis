@@ -27,20 +27,21 @@
             ExtendedHelpText = "Note: Specify a directory to process or an input file containing file paths, but not both.")]
         public class Arguments : SubCommandBase
         {
-            [Option("Csv file to write audio file information to.")]
+            [Option(Description = "Csv file to write audio file information to.")]
             [LegalFilePath]
-            public FileInfo OutputFile { get; set; }
+            public string OutputFile { get; set; }
 
-            [Option("Directory containing audio files.")]
+            [Option(Description = "Directory containing audio files.")]
             [DirectoryExists]
-            public DirectoryInfo InputDirectory { get; set; }
+            public string InputDirectory { get; set; }
 
-            [Option("true to recurse into subdirectories (if processing directories).")]
+            [Option(Description = "true to recurse into subdirectories (if processing directories).")]
             public bool Recurse { get; set; }
 
-            [Option("A text file containing one path per line.")]
+            [Option(Description = "A text file containing one path per line.", ShortName = "")]
             [FileExists]
-            public FileInfo InputFile { get; set; }
+            [LegalFilePath]
+            public string InputFile { get; set; }
 
             public override Task<int> Execute(CommandLineApplication app)
             {
@@ -61,12 +62,12 @@
             if (args.InputDirectory != null)
             {
                 var shouldRecurse = args.Recurse ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
-                files = args.InputDirectory.EnumerateFiles("*.*", shouldRecurse);
+                files = args.InputDirectory.ToDirectoryInfo().EnumerateFiles("*.*", shouldRecurse);
             }
             else
             {
                 // skip the output file
-                files = File.ReadLines(args.InputFile.FullName)
+                files = File.ReadLines(args.InputFile)
                     .Where(l => !string.IsNullOrWhiteSpace(l))
                     .Select(l => l.Trim(' ', '"'))
                     .Distinct()
@@ -89,7 +90,7 @@
                 "SHA256 Hash",
                 "Identifier") + "\"";
 
-            using (var fs = File.Open(args.OutputFile.FullName, FileMode.Create, FileAccess.Write, FileShare.Read))
+            using (var fs = File.Open(args.OutputFile, FileMode.Create, FileAccess.Write, FileShare.Read))
             using (var sw = new StreamWriter(fs))
             {
                 sw.WriteLine(headers);

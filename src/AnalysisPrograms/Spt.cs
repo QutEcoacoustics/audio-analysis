@@ -37,16 +37,18 @@ namespace AnalysisPrograms
         public class Arguments : SubCommandBase
         {
 
-            [Option("The source audio file to operate on")]
-            [ExistingFile()]
+            [Option(Description = "The source audio file to operate on")]
+            [ExistingFile]
             [Required]
-            public FileInfo Source{get;set;}
+            [LegalFilePath]
+            public string Source { get; set; }
 
-            [Option("A directory to write output to")]
+            [Option(Description = "A directory to write output to")]
             [DirectoryExistsOrCreate(createIfNotExists: true)]
-            public DirectoryInfo Output{get;set;}
+            [LegalFilePath]
+            public string Output{get;set;}
 
-            [Option("Intensity Threshold")]
+            [Option(Description = "Intensity Threshold")]
             [Required]
             public double IntensityThreshold { get; set; }
 
@@ -71,8 +73,8 @@ namespace AnalysisPrograms
 
             Log.Verbosity = 1;
 
-            FileInfo wavFilePath = arguments.Source;
-            DirectoryInfo opDir = arguments.Output;
+            FileInfo wavFilePath = arguments.Source.ToFileInfo();
+            DirectoryInfo opDir = arguments.Output.ToDirectoryInfo();
             double intensityThreshold = arguments.IntensityThreshold;
             Log.WriteLine("intensityThreshold = " + intensityThreshold);
             int smallLengthThreshold = 50;

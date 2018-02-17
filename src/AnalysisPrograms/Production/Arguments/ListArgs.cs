@@ -3,7 +3,9 @@
     using System.Threading.Tasks;
     using McMaster.Extensions.CommandLineUtils;
 
-    [Command]
+    [Command(
+        "list",
+        Description = "Lists known commands")]
     public class ListArgs
         : SubCommandBase
     {

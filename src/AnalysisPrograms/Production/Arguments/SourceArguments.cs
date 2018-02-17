@@ -11,12 +11,11 @@ namespace AnalysisPrograms.Production.Arguments
     public abstract class SourceArguments
         : SubCommandBase
     {
-        [Option(
-            "The source audio file to operate on",
-            ShortName = "s",
-            ValueName = "FILE")]
+        [Argument(
+            0,
+            Description = "The source audio file to operate on")]
         [Required]
         [FileExists]
-        public FileInfo Source { get; set; }
+        public virtual FileInfo Source { get; set; }
     }
 }

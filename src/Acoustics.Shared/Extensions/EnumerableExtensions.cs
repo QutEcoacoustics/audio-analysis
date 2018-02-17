@@ -7,16 +7,17 @@
 // ReSharper disable once CheckNamespace
 namespace System
 {
-    using System;
-    using Collections.Generic;
-    using Linq;
-    using Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.Contracts;
+    using Collections.Generic;
+    using JetBrains.Annotations;
+    using Linq;
+    using Threading.Tasks;
 
     public static class EnumerableExtensions
     {
 
+        [ContractAnnotation("items:null => true; items:notnull => false")]
         public static bool IsNullOrEmpty<T>(this IEnumerable<T> items)
         {
             return items == null || !items.Any();

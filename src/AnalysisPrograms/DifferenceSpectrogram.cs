@@ -27,45 +27,46 @@ namespace AnalysisPrograms
             Description = "[INOPERABLE] Produces a false-colour spectrogram that show only the differences between two spectrograms.")]
         public class Arguments : SubCommandBase
         {
-            [Option("Path to configuration file in YAML format")]
+            [Option(Description = "Path to configuration file in YAML format")]
             [ExistingFile]
             [Required]
-            public FileInfo Config { get; set; }
+            [LegalFilePath]
+            public string Config { get; set; }
 
             //[ArgDescription("The directory containing the input files.")]
             //[Production.ArgExistingDirectory]
             //[ArgPosition(1)]
             //[ArgRequired]
-            //public DirectoryInfo InputDirectory { get; set; }
+            //public string InputDirectory { get; set; }
 
             //[ArgDescription("The directory to place output files.")]
             //[ArgPosition(2)]
             //[ArgRequired]
-            //public DirectoryInfo OutputDirectory { get; set; }
+            //public string OutputDirectory { get; set; }
 
             //[ArgDescription("The first input csv file containing acosutic index data 1.")]
             //[Production.ArgExistingFile]
             //[ArgPosition(3)]
             //[ArgRequired]
-            //public FileInfo IndexFile1 { get; set; }
+            //public string IndexFile1 { get; set; }
 
             //[ArgDescription("The third input csv file containing standard deviations of index data 1.")]
             //[Production.ArgExistingFile]
             //[ArgPosition(4)]
             //[ArgRequired]
-            //public FileInfo StdDevFile1 { get; set; }
+            //public string StdDevFile1 { get; set; }
 
             //[ArgDescription("The fourth input csv file containing acosutic index data 2.")]
             //[Production.ArgExistingFile]
             //[ArgPosition(5)]
             //[ArgRequired]
-            //public FileInfo IndexFile2 { get; set; }
+            //public string IndexFile2 { get; set; }
 
             //[ArgDescription("The fifth input csv file containing standard deviations of index data 2.")]
             //[Production.ArgExistingFile]
             //[ArgPosition(6)]
             //[ArgRequired]
-            //public FileInfo StdDevFile2 { get; set; }
+            //public string StdDevFile2 { get; set; }
 
             public override Task<int> Execute(CommandLineApplication app)
             {
@@ -123,7 +124,7 @@ namespace AnalysisPrograms
             //SET UP THE ARGUMENTS CLASS containing path to the YAML config file
             var arguments = new Arguments
             {
-                Config = configPath.ToFileInfo(),
+                Config = configPath,
             };
             return arguments;
         }

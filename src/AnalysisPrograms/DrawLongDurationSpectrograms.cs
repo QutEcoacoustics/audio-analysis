@@ -71,21 +71,27 @@ namespace AnalysisPrograms
             Description = "Produces long - duration false - colour spectrograms from matrices of spectral indices.")]
         public class Arguments : SubCommandBase
         {
-            [Option("Directory where the input data is located.")]
+            [Option(Description = "Directory where the input data is located.")]
             [DirectoryExists]
-            public DirectoryInfo InputDataDirectory { get; set; }
+            [LegalFilePath]
+            public string InputDataDirectory { get; set; }
 
-            [Option("Directory where the output is to go.")]
+            [Option(Description = "Directory where the output is to go.")]
             [DirectoryExistsOrCreate(createIfNotExists: true)]
-            public DirectoryInfo OutputDirectory { get; set; }
+            [LegalFilePath]
+            public string OutputDirectory { get; set; }
 
-            [Option("User specified file containing a list of indices and their properties.")]
+            [Option(
+                Description = "User specified file containing a list of indices and their properties.",
+                ShortName = "ip")]
             [ExistingFile(Extension = ".yml")]
-            public FileInfo IndexPropertiesConfig { get; set; }
+            [LegalFilePath]
+            public string IndexPropertiesConfig { get; set; }
 
-            [Option("Config file specifying directory containing indices.csv files and other parameters.")]
+            [Option(Description = "Config file specifying directory containing indices.csv files and other parameters.")]
             [ExistingFile(Extension = ".yml")]
-            public FileInfo SpectrogramConfigPath { get; set; }
+            [LegalFilePath]
+            public string SpectrogramConfigPath { get; set; }
 
             public string ColourMap1 { get; set; }
 
@@ -135,7 +141,7 @@ namespace AnalysisPrograms
             else
             {
                 //config = Yaml.Deserialise<SpectrogramZoomingConfig>(arguments.SpectrogramConfigPath).LdSpectrogramConfig;
-                config = LdSpectrogramConfig.ReadYamlToConfig(arguments.SpectrogramConfigPath);
+                config = LdSpectrogramConfig.ReadYamlToConfig(arguments.SpectrogramConfigPath.ToFileInfo());
             }
 
             string originalBaseName;
@@ -144,7 +150,8 @@ namespace AnalysisPrograms
             FilenameHelpers.ParseAnalysisFileName(indexGenerationDataFile, out originalBaseName, out analysisTag, out otherSegments);
 
             // CHECK FOR ERROR SEGMENTS - get zero signal array
-            var csvFile = new FileInfo(Path.Combine(arguments.InputDataDirectory.FullName, originalBaseName + "__Towsey.Acoustic.Indices.csv"));
+            var input = arguments.InputDataDirectory.ToDirectoryInfo();
+            var csvFile = new FileInfo(Path.Combine(input.FullName, originalBaseName + "__Towsey.Acoustic.Indices.csv"));
             //Dictionary<string, double[]> summaryIndices = CsvTools.ReadCSVFile2Dictionary(csvFile.FullName);
             //var summaryIndices = Csv.ReadFromCsv<Dictionary<string, double[]>>(csvFile);
             var summaryIndices = Csv.ReadFromCsv<SummaryIndexValues>(csvFile);
@@ -156,10 +163,10 @@ namespace AnalysisPrograms
             //config.IndexCalculationDuration = TimeSpan.FromSeconds(60.0);
             //config.XAxisTicInterval = TimeSpan.FromSeconds(3600.0);
             LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
-                inputDirectory: arguments.InputDataDirectory,
-                outputDirectory: arguments.OutputDirectory,
+                inputDirectory: input,
+                outputDirectory: arguments.OutputDirectory.ToDirectoryInfo(),
                 ldSpectrogramConfig: config,
-                indexPropertiesConfigPath: arguments.IndexPropertiesConfig,
+                indexPropertiesConfigPath: arguments.IndexPropertiesConfig.ToFileInfo(),
                 indexGenerationData: indexGenerationData,
                 basename: originalBaseName,
                 analysisType: Acoustic.TowseyAcoustic,
@@ -179,14 +186,14 @@ namespace AnalysisPrograms
             int frameCount = spectra[keys[0]].GetLength(1);
             double spectrogramScale = 0.1;
             TimeSpan timeScale = TimeSpan.FromSeconds(spectrogramScale);
-            DirectoryInfo outputDirectory = arguments.OutputDirectory;
+            DirectoryInfo outputDirectory = arguments.OutputDirectory.ToDirectoryInfo();
 
             Image combinedImage = DrawGrayScaleSpectrograms(arguments, fileStem, timeScale, spectra);
             string fileName = Path.Combine(outputDirectory.FullName, fileStem + ".CombinedGreyScale.png");
             combinedImage.Save(fileName);
 
             // Draw False-colour Spectrograms
-            combinedImage = DrawFalseColourSpectrograms(fileStem, timeScale, arguments.IndexPropertiesConfig, spectra);
+            combinedImage = DrawFalseColourSpectrograms(fileStem, timeScale, arguments.IndexPropertiesConfig.ToFileInfo(), spectra);
             fileName = Path.Combine(outputDirectory.FullName, fileStem + ".TwoMaps.png");
             combinedImage.Save(fileName);
             return frameCount;
@@ -205,12 +212,12 @@ namespace AnalysisPrograms
             //LoggedConsole.WriteLine("# Spectrogram Config      file: " + arguments.SpectrogramConfigPath);
             //LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
             var inputDirectory = arguments.InputDataDirectory;
-            Dictionary<string, IndexProperties> indexProperties = IndexProperties.GetIndexProperties(arguments.IndexPropertiesConfig);
+            Dictionary<string, IndexProperties> indexProperties = IndexProperties.GetIndexProperties(arguments.IndexPropertiesConfig.ToFileInfo());
 
             if (spectra == null)
             {
                 //C:\SensorNetworks\Output\BIRD50\Training\ID0001\Towsey.Acoustic\ID0001__Towsey.Acoustic.ACI
-                spectra = IndexMatrices.ReadSpectralIndices(inputDirectory, fileStem, analysisType, keys);
+                spectra = IndexMatrices.ReadSpectralIndices(inputDirectory.ToDirectoryInfo(), fileStem, analysisType, keys);
             }
 
             // note: the spectra are oriented as per visual orientation, i.e. xAxis = time frames
@@ -258,7 +265,7 @@ namespace AnalysisPrograms
         public static Image DrawFalseColourSpectrograms(Arguments args, string fileStem, Dictionary<string, double[,]> spectra = null)
         {
             //DirectoryInfo inputDirectory = args.InputDataDirectory;
-            FileInfo indexPropertiesConfig = args.IndexPropertiesConfig;
+            FileInfo indexPropertiesConfig = args.IndexPropertiesConfig.ToFileInfo();
             Dictionary<string, IndexProperties> indexProperties = IndexProperties.GetIndexProperties(indexPropertiesConfig);
             return DrawFalseColourSpectrograms(args, fileStem, indexProperties, spectra);
         }
@@ -276,7 +283,7 @@ namespace AnalysisPrograms
             // args.InputDataDirectory = new DirectoryInfo(Path.Combine(outputDirectory.FullName, recording.BaseName + ".csv")),
             // args.OutputDirectory = new DirectoryInfo(outputDirectory.FullName + @"/SpectrogramImages");
             args.SpectrogramConfigPath = null;
-            args.IndexPropertiesConfig = indexPropertiesConfig;
+            args.IndexPropertiesConfig = indexPropertiesConfig.FullName;
             args.ColourMap1 = LDSpectrogramRGB.DefaultColorMap1;
             args.ColourMap2 = LDSpectrogramRGB.DefaultColorMap2;
             args.TemporalScale = dataScale;
@@ -336,10 +343,10 @@ namespace AnalysisPrograms
             // var dataScale = TimeSpan.FromSeconds(spectrogramScale);
 
             // draw the spectrogram images
-            var labelledImage = DrawRidgeSpectrograms(inputDirectory, indexPropertiesConfig, fileStem, spectrogramScale, spectra = null);
+            var labelledImage = DrawRidgeSpectrograms(inputDirectory.ToDirectoryInfo(), indexPropertiesConfig.ToFileInfo(), fileStem, spectrogramScale, spectra = null);
 
             // combine and save
-            string fileName = Path.Combine(outputDirectory.FullName, fileStem + ".Ridges.png");
+            string fileName = Path.Combine(outputDirectory.ToDirectoryInfo().FullName, fileStem + ".Ridges.png");
             labelledImage.Save(fileName);
             return (int)Math.Round(labelledImage.Width * spectrogramScale);
         } // method DrawRidgeSpectrograms()

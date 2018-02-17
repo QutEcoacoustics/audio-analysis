@@ -11,6 +11,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
     using System.Diagnostics;
     using System.Drawing;
     using System.IO;
@@ -61,7 +62,7 @@ Output  to  directory: {1}
 
             // 1. set up the necessary files
             var sourceAudio = arguments.Source;
-            var configFile = arguments.Config;
+            var configFile = arguments.Config.ToFileInfo();
             var outputDirectory = arguments.Output;
             var tempFilesDirectory = arguments.TempDir;
 
@@ -69,7 +70,7 @@ Output  to  directory: {1}
             if (tempFilesDirectory == null)
             {
                 Log.Warn("No temporary directory provided, using output directory");
-                tempFilesDirectory = arguments.Output;
+                tempFilesDirectory = outputDirectory;
             }
 
             // try an automatically find the config file
@@ -137,7 +138,7 @@ Output  to  directory: {1}
             }
 
             // AT 2018-02: changed logic so default index properties loaded if not provided
-            FileInfo indicesPropertiesConfig = IndexProperties.Find(configuration, arguments.Config);
+            FileInfo indicesPropertiesConfig = IndexProperties.Find(configuration, configFile);
             if (indicesPropertiesConfig == null || !indicesPropertiesConfig.Exists)
             {
                 Log.Warn("IndexProperties config can not be found! Loading a default");
@@ -391,17 +392,12 @@ Output  to  directory: {1}
             T analyser = analysers.FirstOrDefault(a => a.Identifier == searchName);
             if (analyser == null)
             {
-                var error = $@"###
-
-We can not determine what analysis you want to run. We tried to search for ""{searchName}""
-
-###
-";
+                var error = $"We can not determine what analysis you want to run. We tried to search for \"{searchName}\"";
                 LoggedConsole.WriteError(error);
-                var knownAnalyzers = analysers.Aggregate(string.Empty, (a, i) => a + $"\t {i.Identifier}\n");
+                var knownAnalyzers = analysers.Aggregate(string.Empty, (a, i) => a + $"  {i.Identifier}\n");
                 LoggedConsole.WriteLine("Available analysers are:\n" + knownAnalyzers);
 
-                throw new CommandLineArgumentException("Cannot find a valid IAnalyser2");
+                throw new ValidationException($"Cannot find an IAnalyser2 with the name `{searchName}`");
             }
 
             return analyser;
@@ -414,7 +410,7 @@ We can not determine what analysis you want to run. We tried to search for ""{se
         {
             if (args.WhenExitCopyConfig)
             {
-                configFile.CopyTo(Path.Combine(args.Output.FullName, args.Config.Name), true);
+                configFile.CopyTo(Path.Combine(args.Output.FullName, Path.GetFileName(args.Config)), true);
             }
 
             if (args.WhenExitCopyLog)

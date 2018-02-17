@@ -1,9 +1,10 @@
-﻿// <copyright file="AudioAnalysis.cs" company="QutEcoacoustics">
+// <copyright file="MainArgs.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
 namespace AnalysisPrograms.Production.Arguments
 {
+    using System;
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using AnalyseLongRecordings;
@@ -17,7 +18,7 @@ namespace AnalysisPrograms.Production.Arguments
         AllowArgumentSeparator = true,
         Description = Meta.Description,
         ThrowOnUnexpectedArgument = true)]
-    [HelpOption]
+    [HelpOption(Inherited = true, ShowInHelpText = true)]
     [Subcommand("help", typeof(HelpArgs))]
     [Subcommand("list", typeof(ListArgs))]
     [Subcommand("AnalysesAvailable", typeof(AnalysesAvailable))]
@@ -53,11 +54,13 @@ namespace AnalysisPrograms.Production.Arguments
     {
         private async Task<int> OnExecuteAsync(CommandLineApplication app)
         {
+            MainEntry.BeforeExecute(this, app);
 
-            return ExceptionLookup.Ok;
+            MainEntry.PrintUsage("A command must be provided, here are some suggestions:", MainEntry.Usages.All);
+            return ExceptionLookup.ActionRequired;
         }
 
-        private LogVerbosity logLevel;
+        private LogVerbosity logLevel = LogVerbosity.Info;
 
         public MainArgs()
         {
@@ -115,12 +118,10 @@ namespace AnalysisPrograms.Production.Arguments
             }
         }
 
-
         [Option(
             Description = "Set the log vebosity level. Valid values: None = 0, Error = 1, Warn = 2, Info = 3, Debug = 4, Trace = 5, Verbose = 6, All = 7",
             Inherited = true,
-            ShortName = null
-            )]
+            ShortName = null)]
         public LogVerbosity LogLevel
         {
             get
@@ -153,16 +154,28 @@ namespace AnalysisPrograms.Production.Arguments
             }
         }
 
-        [Option("-v", Description = "Set the logging to be verbose. Equivalent to LogLevel = Debug = 4")]
+        [Option(
+            "-v",
+            Inherited = true,
+            Description = "Set the logging to be verbose. Equivalent to LogLevel = Debug = 4")]
         public bool Verbose { get; set; }
 
-        [Option("-vv", Description = "Set the logging to very verbose. Equivalent to LogLevel = Trace = 4")]
+        [Option(
+            "-vv",
+            Inherited = true,
+            Description = "Set the logging to very verbose. Equivalent to LogLevel = Trace = 4")]
         public bool VVerbose { get; set; }
 
-        [Option("-vvv", Description = "Set the logging to very very verbose. Equivalent to LogLevel = ALL = 7")]
+        [Option(
+            "-vvv",
+            Inherited = true,
+            Description = "Set the logging to very very verbose. Equivalent to LogLevel = ALL = 7")]
         public bool VVVerbose { get; set; }
 
-        [Option("--quiet", Description = "Reduce console logging to WARN and ERROR. Full logs still logged in file.")]
+        [Option(
+            "--quiet",
+            Inherited = true,
+            Description = "Reduce console logging to WARN and ERROR. Full logs still logged in file.")]
         public bool QuietConsole { get; set; }
     }
 }

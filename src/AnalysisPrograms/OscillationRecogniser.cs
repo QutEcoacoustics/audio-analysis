@@ -93,8 +93,8 @@ namespace AnalysisPrograms
 
             Log.Verbosity = 1;
 
-            FileInfo recordingPath = arguments.Source;
-            FileInfo iniPath   = arguments.Config;
+            FileInfo recordingFile = arguments.Source;
+            FileInfo iniPath   = arguments.Config.ToFileInfo();
             DirectoryInfo outputDir = arguments.Output;
             string opFName   = "OcillationReconiserResults.cav";
             string opPath    = outputDir + opFName;
@@ -124,7 +124,7 @@ namespace AnalysisPrograms
             Log.WriteIfVerbose("Duration bounds: " + minDuration + " - " + maxDuration + " seconds");
 
 //#############################################################################################################################################
-            var results = Execute_ODDetect(recordingPath, doSegmentation, minHz, maxHz, frameOverlap, dctDuration, dctThreshold,
+            var results = Execute_ODDetect(recordingFile, doSegmentation, minHz, maxHz, frameOverlap, dctDuration, dctThreshold,
                                            minOscilFreq, maxOscilFreq, eventThreshold, minDuration,  maxDuration);
             Log.WriteLine("# Finished detecting oscillation events.");
 //#############################################################################################################################################
@@ -145,7 +145,7 @@ namespace AnalysisPrograms
 
             //write event count to results file.
             double sigDuration = sonogram.Duration.TotalSeconds;
-            string fname = arguments.Source.Name;
+            string fname = recordingFile.BaseName();
             int count = predictedEvents.Count;
             //string str = String.Format("#RecordingName\tDuration(sec)\t#Ev\tCompT(ms)\t%hiFrames\n{0}\t{1}\t{2}\t{3}\t{4}\n", fname, sigDuration, count, analysisDuration.TotalMilliseconds, pcHIF);
             string str = string.Format("{0}\t{1}\t{2}\t{3}\t{4}", fname, sigDuration, count, analysisDuration.TotalMilliseconds, pcHIF);
@@ -153,7 +153,7 @@ namespace AnalysisPrograms
             FileTools.WriteTextFile(opPath, sb.ToString());
 
             //draw images of sonograms
-            string imagePath = outputDir + Path.GetFileNameWithoutExtension(arguments.Source.Name) + ".png";
+            string imagePath = outputDir + fname + ".png";
             if (DRAW_SONOGRAMS == 2)
             {
                 DrawSonogram(sonogram, imagePath, hits, scores, predictedEvents, eventThreshold, intensity);
@@ -164,7 +164,7 @@ namespace AnalysisPrograms
                 DrawSonogram(sonogram, imagePath, hits, scores, predictedEvents, eventThreshold, intensity);
             }
 
-            Log.WriteLine("# Finished recording:- " + arguments.Source.Name);
+            Log.WriteLine("# Finished recording:- " + recordingFile.Name);
         }
 
         public static Tuple<BaseSonogram, double[,], double[], List<AcousticEvent>, double[], TimeSpan> Execute_ODDetect(FileInfo wavPath,

@@ -79,11 +79,11 @@ namespace AnalysisPrograms
             Description = "Does a generic search for oscillations in the passed audio file. Short recordings only.")]
         public class Arguments : SourceConfigOutputDirArguments
         {
-            [Option("The start offset (in seconds) of the source audio file to operate on")]
+            [Option(Description = "The start offset (in seconds) of the source audio file to operate on")]
             [InRange(0, double.MaxValue)]
             public double? StartOffset { get; set; }
 
-            [Option("The end offset (in minutes) of the source audio file to operate on")]
+            [Option(Description = "The end offset (in minutes) of the source audio file to operate on")]
             [InRange(0, double.MaxValue)]
             public double? EndOffset { get; set; }
 
@@ -102,7 +102,7 @@ namespace AnalysisPrograms
             {
                 //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-062040.wav".ToFileInfo(),
                 //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav".ToFileInfo(),
-                Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav".ToFileInfo(),
+                //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav".ToFileInfo(),
 
                 //Source = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100529_16bitPCM.wav".ToFileInfo(),
                 //Source = @"Y:\Jie Frogs\Recording_1.wav".ToFileInfo(),
@@ -110,8 +110,8 @@ namespace AnalysisPrograms
                 //Source = @"C:\SensorNetworks\WavFiles\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100530_1.wav".ToFileInfo(),
                 //Source = @"C:\SensorNetworks\WavFiles\Frogs\MiscillaneousDataSet\CaneToads_rural1_20_MONO.wav".ToFileInfo(),
 
-                Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.OscillationsGeneric.yml".ToFileInfo(),
-                Output = @"C:\SensorNetworks\Output\Sonograms".ToDirectoryInfo(),
+                //Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.OscillationsGeneric.yml".ToFileInfo(),
+                //Output = @"C:\SensorNetworks\Output\Sonograms".ToDirectoryInfo(),
             };
 
             throw new NoDeveloperMethodException();
@@ -125,7 +125,12 @@ namespace AnalysisPrograms
                 arguments = Dev();
             }
 
-            arguments.Output.Create();
+            // 1. set up the necessary files
+            FileInfo sourceRecording = arguments.Source;
+            FileInfo configFile = arguments.Config.ToFileInfo();
+            DirectoryInfo opDir = arguments.Output;
+
+            opDir.Create();
 
             if (arguments.StartOffset.HasValue ^ arguments.EndOffset.HasValue)
             {
@@ -147,12 +152,9 @@ namespace AnalysisPrograms
             string date  = "# DATE AND TIME: " + DateTime.Now;
             LoggedConsole.WriteLine(Title);
             LoggedConsole.WriteLine(date);
-            LoggedConsole.WriteLine("# Input  audio file: " + arguments.Source.Name);
+            LoggedConsole.WriteLine("# Input  audio file: " + sourceRecording.Name);
 
-            // 1. set up the necessary files
-            FileInfo sourceRecording = arguments.Source;
-            FileInfo configFile = arguments.Config;
-            DirectoryInfo opDir = arguments.Output;
+
 
             string sourceName = Path.GetFileNameWithoutExtension(sourceRecording.FullName);
 
@@ -176,8 +178,8 @@ namespace AnalysisPrograms
             configDict[AnalysisKeys.AddAxes] = configuration[AnalysisKeys.AddAxes] ?? "true";
             configDict[AnalysisKeys.AddSegmentationTrack] = configuration[AnalysisKeys.AddSegmentationTrack] ?? "true";
 
-            configDict[ConfigKeys.Recording.Key_RecordingCallName] = arguments.Source.FullName;
-            configDict[ConfigKeys.Recording.Key_RecordingFileName] = arguments.Source.Name;
+            configDict[ConfigKeys.Recording.Key_RecordingCallName] = sourceRecording.FullName;
+            configDict[ConfigKeys.Recording.Key_RecordingFileName] = sourceRecording.Name;
 
             configDict[AnalysisKeys.AddTimeScale] = (string)configuration[AnalysisKeys.AddTimeScale] ?? "true";
             configDict[AnalysisKeys.AddAxes] = (string)configuration[AnalysisKeys.AddAxes]           ?? "true";

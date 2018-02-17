@@ -17,12 +17,12 @@ namespace AnalysisPrograms.Production.Arguments
     public abstract class SourceConfigOutputDirArguments
         : SourceAndConfigArguments
     {
-        [Option(
-            "A directory to write output to",
-            ShortName = "o",
-            ValueName = "FILE")]
+        [Argument(
+            2,
+            Description = "A directory to write output to")]
         [Required]
         [DirectoryExistsOrCreate(createIfNotExists: true)]
+        [LegalFilePath]
         public virtual DirectoryInfo Output { get; set; }
 
         /// <summary>
@@ -47,13 +47,14 @@ namespace AnalysisPrograms.Production.Arguments
         {
             var analysisSettings = defaults ?? new AnalysisSettings();
 
-            analysisSettings.ConfigFile = this.Config;
+            analysisSettings.ConfigFile = this.Config.ToFileInfo();
 
-            var resultDirectory = resultSubDirectory.IsNullOrEmpty() ? this.Output : this.Output.Combine(resultSubDirectory);
+            var output = this.Output;
+            var resultDirectory = resultSubDirectory.IsNullOrEmpty() ? output : output.Combine(resultSubDirectory);
             resultDirectory.Create();
 
-            analysisSettings.AnalysisOutputDirectory = this.Output;
-            analysisSettings.AnalysisTempDirectory = this.Output;
+            analysisSettings.AnalysisOutputDirectory = output;
+            analysisSettings.AnalysisTempDirectory = output;
 
             if (outputIntermediate)
             {

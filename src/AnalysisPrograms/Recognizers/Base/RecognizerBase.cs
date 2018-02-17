@@ -190,23 +190,18 @@ namespace AnalysisPrograms.Recognizers.Base
             FileInfo spectrogramConfig = ConfigFile.Resolve(acousticIndicesConfig["SpectrogramConfig"]);
 
             // Assemble arguments for drawing the GRAY-SCALE and RIDGE SPECTROGRAMS
+            var output = outputDirectory.Combine("SpectrogramImages");
             var ldfcSpectrogramArguments = new DrawLongDurationSpectrograms.Arguments
             {
                 // passed null for first InputDataDirectory on purpose: we don't want to read files off disk
                 InputDataDirectory = null,
-                OutputDirectory = outputDirectory.Combine("SpectrogramImages"),
-                SpectrogramConfigPath = spectrogramConfig,
-                IndexPropertiesConfig = ipConfig,
+                OutputDirectory = output.FullName,
+                SpectrogramConfigPath = spectrogramConfig.FullName,
+                IndexPropertiesConfig = ipConfig.FullName,
                 ColourMap1 = "BGN-DMN-EVN",
                 ColourMap2 = "R3D-RVT-SPT", //R3D replaces PHN as new derived index
                 TemporalScale = hiResTimeScale,
             };
-
-            // Create output directory if it does not exist
-            if (!ldfcSpectrogramArguments.OutputDirectory.Exists)
-            {
-                ldfcSpectrogramArguments.OutputDirectory.Create();
-            }
 
             bool saveRidgeSpectrograms = acousticIndicesConfig.GetBoolOrNull("SaveRidgeSpectrograms") ?? false;
             if (saveRidgeSpectrograms)
@@ -221,7 +216,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 // combine and save
                 //Image opImage = ImageTools.CombineImagesVertically(opImages);
 
-                var fileName = FilenameHelpers.AnalysisResultPath(ldfcSpectrogramArguments.OutputDirectory, fileStem, "Ridges", ".png");
+                var fileName = FilenameHelpers.AnalysisResultPath(output, fileStem, "Ridges", ".png");
                 //opImage.Save(fileName);
                 ridgeSpectrogram.Save(fileName);
             } // if (saveRidgeSpectrograms)
@@ -232,7 +227,7 @@ namespace AnalysisPrograms.Recognizers.Base
             if (saveGrayScaleSpectrograms)
             {
                 opImage = DrawLongDurationSpectrograms.DrawGrayScaleSpectrograms(ldfcSpectrogramArguments, fileStem, hiResTimeScale, dictionaryOfSpectra);
-                var fileName = FilenameHelpers.AnalysisResultPath(ldfcSpectrogramArguments.OutputDirectory, fileStem, "CombinedGreyScale", ".png");
+                var fileName = FilenameHelpers.AnalysisResultPath(output, fileStem, "CombinedGreyScale", ".png");
                 opImage.Save(fileName);
             }
 
@@ -243,7 +238,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 opImage = DrawLongDurationSpectrograms.DrawFalseColourSpectrograms(ldfcSpectrogramArguments, fileStem, dictionaryOfSpectra);
                 var opImages = new List<Image> {opImage, scoreTrack};
                 opImage = ImageTools.CombineImagesVertically(opImages);
-                var fileName = FilenameHelpers.AnalysisResultPath(ldfcSpectrogramArguments.OutputDirectory, fileStem, "TwoMaps", ".png");
+                var fileName = FilenameHelpers.AnalysisResultPath(output, fileStem, "TwoMaps", ".png");
                 opImage.Save(fileName);
             }
         }

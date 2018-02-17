@@ -38,28 +38,29 @@ namespace AnalysisPrograms.EventStatistics
 
             // validate arguments
 
-            if (!arguments.Source.Exists)
+            var input = arguments.Source;
+            var config = arguments.Config.ToFileInfo();
+
+            if (!input.Exists)
             {
-                throw new FileNotFoundException("Cannot find source file", arguments.Source.FullName);
+                throw new FileNotFoundException("Cannot find source file", input.FullName);
             }
 
             // try an automatically find the config file
-            if (arguments.Config == null)
+            if (config == null)
             {
                 throw new FileNotFoundException("No config file argument provided");
             }
-            else if (!arguments.Config.Exists)
+            else if (!config.Exists)
             {
-                Log.Warn($"Config file {arguments.Config.FullName} not found... attempting to resolve config file");
+                Log.Warn($"Config file {config.FullName} not found... attempting to resolve config file");
 
-                // we use .ToString() here to get the original input string - Using fullname always produces an
+                // we use  the original input string - Using FileInfo fullname always produces an
                 // absolute path wrt to pwd... we don't want to prematurely make assumptions:
                 // e.g. We require a missing absolute path to fail... that wouldn't work with .Name
                 // e.g. We require a relative path to try and resolve, using .FullName would fail the first absolute 
                 //    check inside ResolveConfigFile
-                arguments.Config = ConfigFile.Resolve(
-                    arguments.Config.ToString(),
-                    Directory.GetCurrentDirectory().ToDirectoryInfo());
+                config = ConfigFile.Resolve(arguments.Config, Directory.GetCurrentDirectory().ToDirectoryInfo());
             }
 
             // if a temp dir is not given, use output dir as temp dir
@@ -72,8 +73,8 @@ namespace AnalysisPrograms.EventStatistics
             IApi api = arguments.WorkbenchApi.IsNullOrEmpty() ? Api.Default : Api.Parse(arguments.WorkbenchApi);
 
             // log some helpful messages
-            Log.Info("Events file:         " + arguments.Source);
-            Log.Info("Configuration file:  " + arguments.Config);
+            Log.Info("Events file:         " + input);
+            Log.Info("Configuration file:  " + config);
             Log.Info("Output folder:       " + arguments.Output);
             Log.Info("Temp File Directory: " + arguments.TempDir);
             Log.Info("Api:                 " + api);
@@ -107,7 +108,7 @@ namespace AnalysisPrograms.EventStatistics
             // Read events from provided CSV file.
             // Also tag them with an order index to allow sorting in the same order as they were provided to us.
             var events = Csv
-                .ReadFromCsv<ImportedEvent>(arguments.Source, throwOnMissingField: false)
+                .ReadFromCsv<ImportedEvent>(input, throwOnMissingField: false)
                 .Select(
                     (x, i) =>
                     {
@@ -119,7 +120,7 @@ namespace AnalysisPrograms.EventStatistics
             if (events.Length == 0)
             {
                 Log.Warn("No events imported - source file empty. Exiting");
-                return ExceptionLookup.Fail;
+                return ExceptionLookup.NoData;
             }
 
             Log.Info($"Events read, {events.Length} read.");
@@ -162,7 +163,7 @@ namespace AnalysisPrograms.EventStatistics
             EventStatisticsAnalysis analysis = new EventStatisticsAnalysis();
 
             // derserialize the config file
-            var configuration = analysis.ParseConfig(arguments.Config);
+            var configuration = analysis.ParseConfig(config);
 
             AnalysisSettings settings = analysis.DefaultSettings;
             settings.AnalysisOutputDirectory = arguments.Output;
@@ -194,7 +195,7 @@ namespace AnalysisPrograms.EventStatistics
 
             var resultName = FilenameHelpers.AnalysisResultPath(
                 instanceOutputDirectory,
-                arguments.Source,
+                input,
                 analysis.Identifier,
                 "csv");
 

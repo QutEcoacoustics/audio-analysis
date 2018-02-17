@@ -19,7 +19,9 @@ namespace AnalysisPrograms
     using Recognizers.Base;
     using TowseyLibrary;
 
-    [Command("List available IAnalyzers available for use with audio2csv or eventRecognizer")]
+    [Command(
+        "AnalysesAvailable",
+        Description = "List available IAnalyzers available for use with audio2csv or eventRecognizer")]
     public class AnalysesAvailable
         : SubCommandBase
     {

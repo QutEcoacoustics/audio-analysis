@@ -123,7 +123,7 @@ namespace AnalysisPrograms
                     var audio2csvArguments = new AnalyseLongRecordings.AnalyseLongRecording.Arguments
                     {
                         Source = recordingPath.ToFileInfo(),
-                        Config = audio2csvConfigPath.ToFileInfo(),
+                        Config = audio2csvConfigPath,
                         Output = outputDir.ToDirectoryInfo(),
                     };
 
@@ -132,7 +132,7 @@ namespace AnalysisPrograms
                         LoggedConsole.WriteWarnLine(" >>>>>>>>>>>> WARNING! The Source Recording file cannot be found! This will cause an exception.");
                     }
 
-                    if (!audio2csvArguments.Config.Exists)
+                    if (!File.Exists(audio2csvArguments.Config))
                     {
                         LoggedConsole.WriteWarnLine(" >>>>>>>>>>>> WARNING! The Configuration file cannot be found! This will cause an exception.");
                     }
@@ -143,7 +143,7 @@ namespace AnalysisPrograms
                     // Use the Zoomingspectrograms action.
 
                     // need to find out how long the recording is.
-                    string fileName = Path.GetFileNameWithoutExtension(audio2csvArguments.Source.FullName);
+                    string fileName = audio2csvArguments.Source.BaseName();
                     string testFileName = fileName + @"__Towsey.Acoustic.ACI.csv";
                     List<string> data = FileTools.ReadTextFile(Path.Combine(csvDir, testFileName));
                     int lineCount = data.Count - 1;  // -1 for header.
@@ -162,7 +162,7 @@ namespace AnalysisPrograms
                         // use the default set of index properties in the AnalysisConfig directory.
                         SourceDirectory = csvDir,
                         Output = zoomOutputDir,
-                        SpectrogramZoomingConfig = hiResZoomConfigPath.ToFileInfo(),
+                        SpectrogramZoomingConfig = hiResZoomConfigPath,
 
                         // draw a focused multi-resolution pyramid of images
                         ZoomAction = DrawZoomingSpectrograms.Arguments.ZoomActionType.Focused,
@@ -175,7 +175,7 @@ namespace AnalysisPrograms
                     var common = new ZoomParameters(zoomingArguments.SourceDirectory.ToDirectoryEntry(), zoomingArguments.SpectrogramZoomingConfig.ToFileEntry(), false);
 
                     // Create directory if not exists
-                    if (!zoomingArguments.Output.ToDirectoryInfo().Exists)
+                    if (!Directory.Exists(zoomingArguments.Output))
                     {
                         Directory.CreateDirectory(zoomingArguments.Output);
                     }
@@ -198,16 +198,10 @@ namespace AnalysisPrograms
                     var ldfcSpectrogramArguments = new DrawLongDurationSpectrograms.Arguments
                     {
                         // use the default set of index properties in the AnalysisConfig directory.
-                        InputDataDirectory = csvDir.ToDirectoryInfo(),
-                        OutputDirectory = imageOutputDir.ToDirectoryInfo(),
-                        IndexPropertiesConfig = indexPropertiesConfig.ToFileInfo(),
+                        InputDataDirectory = csvDir,
+                        OutputDirectory = imageOutputDir,
+                        IndexPropertiesConfig = indexPropertiesConfig,
                     };
-
-                    // Create directory if not exists
-                    if (!ldfcSpectrogramArguments.OutputDirectory.Exists)
-                    {
-                        ldfcSpectrogramArguments.OutputDirectory.Create();
-                    }
 
                     // there are two possible tasks
                     // 1: draw the aggregated grey scale spectrograms
@@ -287,9 +281,9 @@ namespace AnalysisPrograms
                 var ldfcSpectrogramArguments = new DrawLongDurationSpectrograms.Arguments
                 {
                     // use the default set of index properties in the AnalysisConfig directory.
-                    InputDataDirectory = dataDir.ToDirectoryInfo(),
-                    OutputDirectory = imageOutputDir.ToDirectoryInfo(),
-                    IndexPropertiesConfig = indexPropertiesConfig.ToFileInfo(),
+                    InputDataDirectory = dataDir,
+                    OutputDirectory = imageOutputDir,
+                    IndexPropertiesConfig = indexPropertiesConfig,
                 };
 
                 // there are two possible tasks
@@ -362,9 +356,9 @@ namespace AnalysisPrograms
                 var ldfcSpectrogramArguments = new DrawLongDurationSpectrograms.Arguments
                 {
                     // use the default set of index properties in the AnalysisConfig directory.
-                    InputDataDirectory = dataDir.ToDirectoryInfo(),
-                    OutputDirectory = imageOutputDir.ToDirectoryInfo(),
-                    IndexPropertiesConfig = indexPropertiesConfig.ToFileInfo(),
+                    InputDataDirectory = dataDir,
+                    OutputDirectory = imageOutputDir,
+                    IndexPropertiesConfig = indexPropertiesConfig,
                 };
 
                 // there are two possible tasks

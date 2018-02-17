@@ -28,42 +28,30 @@
             Description = "[UNMAINTAINED] Renames files based on modified and created date.")]
         public class Arguments : SubCommandBase
         {
-            [Option("The directory containing audio files.")]
+            [Option(
+                CommandOptionType.SingleValue,
+                Description = "The directory containing audio files.")]
             [DirectoryExists]
             [Required]
             public virtual DirectoryInfo InputDir { get; set; }
 
-            [Option("Specify the timezone (e.g. '+1000', '-0700').")]
+            [Option(
+                CommandOptionType.SingleValue,
+                Description = "Specify the timezone (e.g. '+1000', '-0700').",
+                ShortName = "z")]
             [Required]
-            public string Timezone { get; set; }
+            public TimeSpan Timezone { get; set; }
 
-            [Option("Whether to recurse into subfolders.")]
+            [Option(Description = "Whether to recurse into subfolders.")]
             public bool Recursive { get; set; }
 
-            [Option("Only print rename actions, don't actually rename files.")]
+            [Option(
+                Description = "Only print rename actions, don't actually rename files.",
+                ShortName = "n")]
             public bool DryRun { get; set; }
 
             public void Validate()
             {
-                if (this.Timezone.Length != 5)
-                {
-                    throw new ArgumentException("Timezone must be exactly 5 characters long.");
-                }
-
-                var validPlusMinus = new[] { '+', '-' };
-                if (!validPlusMinus.Contains(this.Timezone[0]))
-                {
-                    throw new ArgumentException("Timezone must start with '+' or '-'.");
-                }
-
-                var validChars = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
-                foreach (var item in this.Timezone.Substring(1))
-                {
-                    if (!validChars.Contains(item))
-                    {
-                        throw new ArgumentException("Timezone must contain only digits after initial '+' or '-'.");
-                    }
-                }
             }
 
             public override Task<int> Execute(CommandLineApplication app)

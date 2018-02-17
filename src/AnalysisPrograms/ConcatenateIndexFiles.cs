@@ -61,64 +61,88 @@ namespace AnalysisPrograms
             Description = "Concatenates multiple consecutive index.csv files.")]
         public class Arguments : SubCommandBase
         {
-            [Option(
-                CommandOptionType.MultipleValue,
+            [Argument(
+                0,
                 Description = "One or more directories where the original csv files are located.")]
             public DirectoryInfo[] InputDataDirectories { get; set; }
 
             [Obsolete("Originally hack to get around powerargs limitation, can probably be removed soon")]
             [Option(
-                "One directory where the original csv files are located. This option exists as an alternative to input data directories")]
+                Description = "One directory where the original csv files are located. This option exists as an alternative to input data directories")]
             public DirectoryInfo InputDataDirectory { get; set; }
 
-            [Option("Directory where the output is to go.")]
+            [Option(Description = "Directory where the output is to go.")]
             [DirectoryExistsOrCreate(createIfNotExists: true)]
+            [LegalFilePath]
             public DirectoryInfo OutputDirectory { get; set; }
 
-            [Option("Used to get the required data.csv files, which are assumed to be in a matching dir or subdirectory. E.g. use name of audio file suffix e.g.: *.wav")]
+            [Option(Description = "Used to get the required data.csv files, which are assumed to be in a matching dir or subdirectory. E.g. use name of audio file suffix e.g.: *.wav")]
             public string DirectoryFilter { get; set; }
 
-            [Option("File stem name for output files.")]
+            [Option(Description = "File stem name for output files.")]
             public string FileStemName { get; set; }
 
-            [Option("DateTimeOffset (inclusive) at which concatenation begins. If null, then start with earliest available file. Can parse an ISO8601 date.")]
+            [Option(
+                CommandOptionType.SingleValue,
+                Description = "DateTimeOffset (inclusive) at which concatenation begins. If null, then start with earliest available file. Can parse an ISO8601 date.")]
             public DateTimeOffset? StartDate { get; set; }
 
-            [Option("DateTimeOffset (exclusive) at which concatenation ends. If null, then will be set = today's date or last available file. Can parse an ISO8601 date.")]
+            [Option(
+                CommandOptionType.SingleValue,
+                Description = "DateTimeOffset (exclusive) at which concatenation ends. If null, then will be set = today's date or last available file. Can parse an ISO8601 date.")]
             public DateTimeOffset? EndDate { get; set; }
 
-            [Option("TimeSpan offset hint required if file names do not contain time zone info. NO DEFAULT IS SET")]
+            [Option(
+                CommandOptionType.SingleValue,
+                Description = "TimeSpan offset hint required if file names do not contain time zone info. NO DEFAULT IS SET",
+                ShortName = "z")]
             public TimeSpan? TimeSpanOffsetHint { get; set; }
 
             [Option(
                 CommandOptionType.SingleValue,
-                Description = "Draw false-colour spectrograms after concatenating index files")]
+                Description = "Draw false-colour spectrograms after concatenating index files",
+                ShortName = "")]
             public bool DrawImages { get; set; } = true;
 
-            [Option("The mapping of indices to colour channel in false-colour spectrogram 1")]
+            [Option(
+                Description = "The mapping of indices to colour channel in false-colour spectrogram 1",
+                ShortName = "")]
             public string ColorMap1 { get; set; }
 
-            [Option("The mapping of indices to colour channel in false-colour spectrogram 2")]
+            [Option(
+                Description = "The mapping of indices to colour channel in false-colour spectrogram 2",
+                ShortName = "")]
             public string ColorMap2 { get; set; }
 
-            [Option("User specified file containing a list of indices and their properties.")]
+            [Option(
+                Description = "User specified file containing a list of indices and their properties.",
+                ShortName = "ip")]
             [ExistingFile(Extension = ".yml")]
-            public FileInfo IndexPropertiesConfig { get; set; }
+            [LegalFilePath]
+            public string IndexPropertiesConfig { get; set; }
 
-            [Option("Config file for drawing the false colour spectrograms.")]
+            [Option(
+                Description = "Config file for drawing the false colour spectrograms.",
+                ShortName = "fcs")]
             [ExistingFile(Extension = ".yml")]
-            public FileInfo FalseColourSpectrogramConfig { get; set; }
+            [LegalFilePath]
+            public string FalseColourSpectrogramConfig { get; set; }
 
-            [Option("Set true only when concatenating more than 24-hours of data into one image")]
+            [Option(
+                Description = "Set true only when concatenating more than 24-hours of data into one image",
+                LongName = "concatenate-everything",
+                ShortName = "")]
             public bool ConcatenateEverythingYouCanLayYourHandsOn { get; set; }
 
-            [Option("How to render gaps in a recording. Valid options: `" + nameof(ConcatMode.TimedGaps) + "` (default), `" + nameof(ConcatMode.NoGaps) + "`, `"+ nameof(ConcatMode.EchoGaps) + "`")]
+            [Option(Description = "How to render gaps in a recording. Valid options: `" + nameof(ConcatMode.TimedGaps) + "` (default), `" + nameof(ConcatMode.NoGaps) + "`, `"+ nameof(ConcatMode.EchoGaps) + "`")]
             public ConcatMode GapRendering { get; set; }
 
-            [Option("One or more directories where the RECOGNIZER event scores are located in csv files. This is optional")]
-            public DirectoryInfo[] EventDataDirectories { get; set; }
+            [Option(
+                Description = "One or more directories where the RECOGNIZER event scores are located in csv files. This is optional",
+                ShortName = "")]
+            public string[] EventDataDirectories { get; set; }
 
-            [Option("Used only to get Event Recognizer files.")]
+            [Option(Description = "Used only to get Event Recognizer files.", ShortName = "")]
             public string EventFilePattern { get; set; }
 
             public override Task<int> Execute(CommandLineApplication app)
@@ -152,12 +176,14 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("#    IT IS ASSUMED THESE WERE OBTAINED FROM MULTIPLE SHORT AUDIO RECORDINGs");
             LoggedConsole.WriteLine(date);
             LoggedConsole.WriteLine("# Index.csv files are in directories:");
-            foreach (DirectoryInfo dir in arguments.InputDataDirectories)
+            var inputDirs = arguments.InputDataDirectories;
+            foreach (var dir in inputDirs)
             {
                 LoggedConsole.WriteLine("    {0}", dir.FullName);
             }
 
-            LoggedConsole.WriteLine("# Output directory: " + arguments.OutputDirectory.FullName);
+            var output = arguments.OutputDirectory;
+            LoggedConsole.WriteLine("# Output directory: " + output.FullName);
             LoggedConsole.WriteLine("# DIRECTORY FILTER = " + arguments.DirectoryFilter);
             LoggedConsole.WriteLine();
 
@@ -165,7 +191,7 @@ namespace AnalysisPrograms
 
             // 1. PATTERN SEARCH FOR CORRECT SUBDIRECTORIES
             // Assumes that the required subdirectories have the given FILTER/SiteName somewhere in their path.
-            var subDirectories = LdSpectrogramStitching.GetSubDirectoriesForSiteData(arguments.InputDataDirectories, arguments.DirectoryFilter);
+            var subDirectories = LdSpectrogramStitching.GetSubDirectoriesForSiteData(inputDirs, arguments.DirectoryFilter);
             if (subDirectories.Length == 0)
             {
                 LoggedConsole.WriteErrorLine("\n\n#WARNING from method ConcatenateIndexFiles.Execute():");
@@ -223,10 +249,10 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("# WARNING: A sunrise/sunset data file does not exist for time zone >> " + arguments.TimeSpanOffsetHint.ToString());
 
             // create top level output directory if it does not exist.
-            DirectoryInfo opDir = arguments.OutputDirectory;
+            DirectoryInfo opDir = output;
             if (!opDir.Exists)
             {
-                arguments.OutputDirectory.Create();
+                output.Create();
             }
 
             string outputFileStem = arguments.FileStemName;
@@ -256,13 +282,14 @@ namespace AnalysisPrograms
                     indexGenerationData.RecordingStartDate = startDate;
                 }
 
-                indexPropertiesConfig = arguments.IndexPropertiesConfig;
+                indexPropertiesConfig = arguments.IndexPropertiesConfig.ToFileInfo();
 
                 // prepare the false-colour spgm config file
                 // or set up a default config
                 // WARNING: This default config is used when testing. If you alter these defaults, Unit Test results may be affected.
-                ldSpectrogramConfig = (arguments?.FalseColourSpectrogramConfig?.Exists ?? false)
-                    ? LdSpectrogramConfig.ReadYamlToConfig(arguments.FalseColourSpectrogramConfig)
+                var colourSpectrogramConfig = arguments?.FalseColourSpectrogramConfig?.ToFileInfo();
+                ldSpectrogramConfig = (colourSpectrogramConfig?.Exists ?? false)
+                    ? LdSpectrogramConfig.ReadYamlToConfig(colourSpectrogramConfig)
                     : new LdSpectrogramConfig();
 
                 // the user should have provided ColorMap arguments which we insert here
@@ -478,23 +505,23 @@ namespace AnalysisPrograms
 
                     if (arguments.EventDataDirectories != null)
                     {
-                        var candidateFiles = IndexMatrices.GetFilesInDirectories(arguments.EventDataDirectories, arguments.EventFilePattern);
+                        var candidateFiles = IndexMatrices.GetFilesInDirectories(arguments.EventDataDirectories.Select(FileInfoExtensions.ToDirectoryInfo).ToArray(), arguments.EventFilePattern);
                         var sortedDictionaryOfEventFiles = FileDateHelpers.FilterFilesForDates(candidateFiles, arguments.TimeSpanOffsetHint);
                         var eventFiles = LdSpectrogramStitching.GetFileArrayForOneDay(sortedDictionaryOfEventFiles, thisday);
 
                         //int lineCount = 0;
-                        var output = new List<string>();
+                        var output2 = new List<string>();
                         foreach (var file in eventFiles)
                         {
                             var lines = FileTools.ReadTextFile(file.FullName);
                             lines.RemoveAt(0); // ignore header
-                            output.AddRange(lines);
+                            output2.AddRange(lines);
 
                             //lineCount += lines.Count;
                             //Console.WriteLine($"  # events = {lines.Count}");
                         }
 
-                        var indexArray = ConvertEventsToSummaryIndices(output);
+                        var indexArray = ConvertEventsToSummaryIndices(output2);
 
                         double[] normalisedScores;
                         double normalisedThreshold;
@@ -841,23 +868,16 @@ namespace AnalysisPrograms
             string drive = "G";
 
             // top level directory
-            DirectoryInfo[] dataDirs =
-            {
-                new DirectoryInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\Indonesia_2\\"),
-            };
+            var dataDirs = $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\Indonesia_2\\";
 
-            var outputDir = $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Test3_Output".ToDirectoryInfo();
-            if (!outputDir.Exists)
-            {
-                outputDir.Create();
-            }
+            var outputDir = $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Test3_Output";
 
-            var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_SpectrogramFalseColourConfig.yml");
+            var falseColourSpgConfig = $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_SpectrogramFalseColourConfig.yml";
 
             var arguments = new Arguments
             {
-                InputDataDirectories = dataDirs,
-                OutputDirectory = outputDir,
+                InputDataDirectory = dataDirs.ToDirectoryInfo(),
+                OutputDirectory = outputDir.ToDirectoryInfo(),
                 DirectoryFilter = "*.wav",
                 FileStemName = "Indonesia2016",
 
@@ -866,7 +886,7 @@ namespace AnalysisPrograms
                 StartDate = new DateTimeOffset(2016, 07, 27, 0, 0, 0, TimeSpan.Zero),
                 EndDate = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero),
 
-                IndexPropertiesConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_IndexPropertiesConfig.yml"),
+                IndexPropertiesConfig = $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_IndexPropertiesConfig.yml",
                 FalseColourSpectrogramConfig = falseColourSpgConfig,
                 ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
                 ColorMap2 = "BGN-POW-SPT", // This color map dates pre-May 2017.
@@ -897,26 +917,22 @@ namespace AnalysisPrograms
             string drive = "G";
 
             // top level directory
-            DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\Indonesia_2\\"), };
-            var outputDir = $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Test4_Output".ToDirectoryInfo();
-            if (!outputDir.Exists)
-            {
-                outputDir.Create();
-            }
+            var dataDirs = $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\Indonesia_2\\";
+            var outputDir = $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Test4_Output";
 
             // var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_SpectrogramFalseColourConfig.yml");
             // if set null will use the default for testing.
-            FileInfo falseColourSpgConfig = null;
+            string falseColourSpgConfig = null;
 
             var arguments = new Arguments
             {
-                InputDataDirectories = dataDirs,
-                OutputDirectory = outputDir,
+                InputDataDirectory = dataDirs.ToDirectoryInfo(),
+                OutputDirectory = outputDir.ToDirectoryInfo(),
                 DirectoryFilter = "*.wav",
                 FileStemName = "Indonesia2016",
                 StartDate = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero),
                 EndDate = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero),
-                IndexPropertiesConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_IndexPropertiesConfig.yml"),
+                IndexPropertiesConfig = $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_IndexPropertiesConfig.yml",
                 FalseColourSpectrogramConfig = falseColourSpgConfig,
                 ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
                 ColorMap2 = "BGN-POW-SPT", // This color map dates pre-May 2017.
@@ -949,19 +965,19 @@ namespace AnalysisPrograms
             string drive = "G";
 
             // top level directory
-            DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\Indonesia_2\\"), };
-            var outputDir = @"C:\SensorNetworks\SoftwareTests\TestConcatenation\Test5_Output".ToDirectoryInfo();
-            var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_SpectrogramFalseColourConfig.yml");
+            var dataDirs = $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\Indonesia_2\\";
+            var outputDir = @"C:\SensorNetworks\SoftwareTests\TestConcatenation\Test5_Output";
+            var falseColourSpgConfig = $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_SpectrogramFalseColourConfig.yml";
 
             var arguments = new Arguments
             {
-                InputDataDirectories = dataDirs,
-                OutputDirectory = outputDir,
+                InputDataDirectory = dataDirs.ToDirectoryInfo(),
+                OutputDirectory = outputDir.ToDirectoryInfo(),
                 DirectoryFilter = "*.wav",
                 FileStemName = "Indonesia2016",
                 StartDate = null,
                 EndDate = null,
-                IndexPropertiesConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_IndexPropertiesConfig.yml"),
+                IndexPropertiesConfig = $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_IndexPropertiesConfig.yml",
                 FalseColourSpectrogramConfig = falseColourSpgConfig,
                 ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
                 ColorMap2 = "BGN-POW-SPT", // This color map dates pre-May 2017.
@@ -995,21 +1011,21 @@ namespace AnalysisPrograms
             ZipFile.ExtractToDirectory(zipFile.FullName, dataDir.FullName);
 
             // top level directory
-            DirectoryInfo[] dataDirs =
+            var dataDirs = new[]
             {
-                new DirectoryInfo(dataDir.FullName + "\\Indonesia_2Reduced"),
+                dataDir.FullName + "\\Indonesia_2Reduced",
 
                 //new DirectoryInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\Indonesia_2Reduced"),
                 //new DirectoryInfo($"{drive}:\\Work\\GitHub\\audio-analysis\\Acoustics\\Acoustics.Test\\TestResources\\Concatenation\\Indonesia20160726"),
             };
 
-            var outputDir = $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Test7_Output".ToDirectoryInfo();
-            var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_SpectrogramFalseColourConfig.yml");
+            var outputDir = $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Test7_Output";
+            var falseColourSpgConfig = $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_SpectrogramFalseColourConfig.yml";
 
             var arguments = new Arguments
             {
-                InputDataDirectories = dataDirs,
-                OutputDirectory = outputDir,
+                InputDataDirectories = dataDirs.Select(FileInfoExtensions.ToDirectoryInfo).ToArray(),
+                OutputDirectory = outputDir.ToDirectoryInfo(),
                 DirectoryFilter = "*.wav",
                 FileStemName = "Indonesia2016",
 
@@ -1018,7 +1034,7 @@ namespace AnalysisPrograms
                 StartDate = new DateTimeOffset(2016, 07, 27, 0, 0, 0, TimeSpan.Zero),
                 EndDate = new DateTimeOffset(2016, 07, 22, 0, 0, 0, TimeSpan.Zero),
 
-                IndexPropertiesConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_IndexPropertiesConfig.yml"),
+                IndexPropertiesConfig = $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_IndexPropertiesConfig.yml",
                 FalseColourSpectrogramConfig = falseColourSpgConfig,
                 ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
                 ColorMap2 = "BGN-POW-SPT", // This color map dates pre-May 2017.

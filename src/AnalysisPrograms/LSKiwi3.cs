@@ -118,11 +118,11 @@
 
                 arguments = new Arguments
                 {
-                    Source = recordingPath.ToFileInfo(),
-                    Config = configPath.ToFileInfo(),
-                    Output = outputDir.ToDirectoryInfo(),
-                    Start = tsStart.TotalSeconds,
-                    Duration = tsDuration.TotalSeconds,
+//                    Source = recordingPath.ToFileInfo(),
+//                    Config = configPath.ToFileInfo(),
+//                    Output = outputDir.ToDirectoryInfo(),
+//                    Start = tsStart.TotalSeconds,
+//                    Duration = tsDuration.TotalSeconds,
                 };
             }
 

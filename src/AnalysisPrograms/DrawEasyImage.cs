@@ -13,6 +13,7 @@ namespace AnalysisPrograms
     using System.Collections.Generic;
     using System.Drawing;
     using System.IO;
+    using System.Linq;
     using System.Threading.Tasks;
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
@@ -37,32 +38,45 @@ namespace AnalysisPrograms
             [Option(
                 CommandOptionType.MultipleValue,
                 Description = "One or more directories where the original csv files are located.")]
-            public DirectoryInfo[] InputDataDirectories { get; set; }
+            public string[] InputDataDirectories { get; set; }
 
-            [Option("Directory where the output is to go.")]
-            public DirectoryInfo OutputDirectory { get; set; }
+            [Option(Description = "Directory where the output is to go.")]
+            [LegalFilePath]
+            public string OutputDirectory { get; set; }
 
-            [Option("Filter string used to search for the required csv files - assumed to be in directory path.")]
+            [Option(
+                Description = "Filter string used to search for the required csv files - assumed to be in directory path.",
+                ShortName = "")]
             public string FileFilter { get; set; }
 
-            [Option("File stem name for output files.")]
+            [Option(
+                Description = "File stem name for output files.",
+                ShortName = "")]
             public string FileStemName { get; set; }
 
-            [Option("The start DateTime.")]
+            [Option(
+                CommandOptionType.SingleValue,
+                Description = "The start DateTime.")]
             public DateTimeOffset? StartDate { get; set; }
 
-            [Option("The end DateTime at which concatenation ends. If missing|null, then will be set = today's date or last available file.")]
+            [Option(
+                CommandOptionType.SingleValue,
+                Description = "The end DateTime at which concatenation ends. If missing|null, then will be set = today's date or last available file.")]
             public DateTimeOffset? EndDate { get; set; }
 
-            [Option("TimeSpan offset hint required if file names do not contain time zone info. Set default to east coast Australia")]
+            [Option(
+                CommandOptionType.SingleValue,
+                Description = "TimeSpan offset hint required if file names do not contain time zone info. Set default to east coast Australia",
+                ShortName = "z")]
             public TimeSpan? TimeSpanOffsetHint { get; set; } = new TimeSpan(10, 0, 0);
 
             //[ArgDescription("User specified file containing a list of indices and their properties.")]
             //[Production.ArgExistingFile(Extension = ".yml")]
             //[ArgPosition(1)]
-            internal FileInfo IndexPropertiesConfig { get; set; }
+            internal string IndexPropertiesConfig { get; set; }
 
-            public FileInfo BrisbaneSunriseDatafile { get; set; }
+            public string BrisbaneSunriseDatafile { get; set; }
+
             public override Task<int> Execute(CommandLineApplication app)
             {
                 DrawEasyImage.Execute(this);
@@ -104,14 +118,14 @@ namespace AnalysisPrograms
 
             return new Arguments
             {
-                InputDataDirectories = dataDirs,
-                OutputDirectory = new DirectoryInfo(opPath),
-                FileFilter = fileFilter,
-                FileStemName = opFileStem,
-                StartDate = dtoStart,
-                EndDate = dtoEnd,
-                IndexPropertiesConfig = indexPropertiesConfig,
-                BrisbaneSunriseDatafile = sunrisesetData,
+//                InputDataDirectories = dataDirs,
+//                OutputDirectory = new DirectoryInfo(opPath),
+//                FileFilter = fileFilter,
+//                FileStemName = opFileStem,
+//                StartDate = dtoStart,
+//                EndDate = dtoEnd,
+//                IndexPropertiesConfig = indexPropertiesConfig,
+//                BrisbaneSunriseDatafile = sunrisesetData,
             };
             throw new NoDeveloperMethodException();
     }
@@ -126,6 +140,8 @@ namespace AnalysisPrograms
                 verbose = true; // assume verbose if in dev mode
             }
 
+            var inputDirs = arguments.InputDataDirectories.Select(FileInfoExtensions.ToDirectoryInfo);
+            var output = arguments.OutputDirectory.ToDirectoryInfo();
             if (verbose)
             {
                 string date = "# DATE AND TIME: " + DateTime.Now;
@@ -133,11 +149,11 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine("#    IT IS ASSUMED THAT THE CSV files are already concatenated into 24 hour files.");
                 LoggedConsole.WriteLine(date);
                 LoggedConsole.WriteLine("# Summary Index.csv files are in directories:");
-                foreach (DirectoryInfo dir in arguments.InputDataDirectories)
+                foreach (DirectoryInfo dir in inputDirs)
                 {
                     LoggedConsole.WriteLine("    {0}", dir.FullName);
                 }
-                LoggedConsole.WriteLine("# Output directory: " + arguments.OutputDirectory.FullName);
+                LoggedConsole.WriteLine("# Output directory: " + output);
                 if (arguments.StartDate == null)
                 {
                     LoggedConsole.WriteLine("# Start date = NULL (No argument provided). Will revise start date ....");
@@ -162,7 +178,7 @@ namespace AnalysisPrograms
 
             // PATTERN SEARCH FOR SUMMARY INDEX FILES.
             //string pattern = "*__Towsey.Acoustic.Indices.csv";
-            FileInfo[] csvFiles = IndexMatrices.GetFilesInDirectories(arguments.InputDataDirectories, arguments.FileFilter);
+            FileInfo[] csvFiles = IndexMatrices.GetFilesInDirectories(inputDirs.ToArray(), arguments.FileFilter);
             if (verbose)
             {
                 //LoggedConsole.WriteLine("# Subdirectories Count = " + subDirectories.Length);
@@ -197,10 +213,10 @@ namespace AnalysisPrograms
             }
 
             // create top level output directory if it does not exist.
-            DirectoryInfo opDir = arguments.OutputDirectory;
+            DirectoryInfo opDir = output;
             if (!opDir.Exists)
             {
-                arguments.OutputDirectory.Create();
+                opDir.Create();
             }
 
             // SET UP DEFAULT SITE LOCATION INFO    --  DISCUSS IWTH ANTHONY
@@ -217,7 +233,7 @@ namespace AnalysisPrograms
 
             // require IndexGenerationData and indexPropertiesConfig for drawing
             //indexGenerationData = IndexGenerationData.GetIndexGenerationData(csvFiles[0].Directory);
-            indexPropertiesConfig = arguments.IndexPropertiesConfig;
+            indexPropertiesConfig = arguments.IndexPropertiesConfig.ToFileInfo();
             Dictionary<string, IndexProperties> listOfIndexProperties = IndexProperties.GetIndexProperties(indexPropertiesConfig);
             Tuple<List<string>, List<double[]>> tuple = CsvTools.ReadCSVFile(csvFiles[0].FullName);
             var names = tuple.Item1;
@@ -387,7 +403,7 @@ namespace AnalysisPrograms
             // draw on civil dawn and dusk lines
             int startdayOfYear = ((DateTimeOffset)startDate).DayOfYear;
             int endDayOfYear = ((DateTimeOffset)endDate).DayOfYear;
-            SunAndMoon.AddSunRiseSetLinesToImage(bitmap, arguments.BrisbaneSunriseDatafile, startdayOfYear, endDayOfYear, dayPixelHeight);
+            SunAndMoon.AddSunRiseSetLinesToImage(bitmap, arguments.BrisbaneSunriseDatafile.ToFileInfo(), startdayOfYear, endDayOfYear, dayPixelHeight);
 
             // add the time scales
             Bitmap timeBmp1 = ImageTrack.DrawTimeRelativeTrack(oneDay, graphWidth, trackHeight);

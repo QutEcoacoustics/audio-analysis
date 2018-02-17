@@ -43,7 +43,7 @@ namespace AnalysisPrograms.Recognizers.Base
             Description = Description)]
         public class Arguments : SourceConfigOutputDirArguments
         {
-            [Option("Sets the name of the analysis to run. If not set, analysis identifer is parsed from the config file name.")]
+            [Option(Description = "Sets the name of the analysis to run. If not set, analysis identifer is parsed from the config file name.")]
             public string AnalysisIdentifier { get; set; }
 
             public override Task<int> Execute(CommandLineApplication app)
@@ -236,9 +236,9 @@ namespace AnalysisPrograms.Recognizers.Base
 
             var arguments = new Arguments
             {
-                Source = recordingPath.ToFileInfo(),
-                Config = configPath.ToFileInfo(),
-                Output = outputPath.ToDirectoryInfo(),
+//                Source = recordingPath.ToFileInfo(),
+//                Config = configPath.ToFileInfo(),
+//                Output = outputPath.ToDirectoryInfo(),
             };
 
             // #########  NOTE: All other parameters are set in the .yml file assigned to configPath variable above.
@@ -258,7 +258,7 @@ namespace AnalysisPrograms.Recognizers.Base
             Log.Info("Running event recognizer");
 
             var sourceAudio = arguments.Source;
-            var configFile = arguments.Config;
+            var configFile = arguments.Config.ToFileInfo();
             var outputDirectory = arguments.Output;
 
             if (configFile == null)
@@ -268,14 +268,12 @@ namespace AnalysisPrograms.Recognizers.Base
             else if (!configFile.Exists)
             {
                 Log.Warn($"Config file {configFile.FullName} not found... attempting to resolve config file");
-                arguments.Config = configFile = ConfigFile.Resolve(configFile.Name, Directory.GetCurrentDirectory().ToDirectoryInfo());
+                configFile = ConfigFile.Resolve(configFile.Name, Directory.GetCurrentDirectory().ToDirectoryInfo());
             }
 
             LoggedConsole.WriteLine("# Recording file:      " + sourceAudio.FullName);
             LoggedConsole.WriteLine("# Configuration file:  " + configFile);
             LoggedConsole.WriteLine("# Output folder:       " + outputDirectory);
-
-
 
             // find an appropriate event IAnalyzer
             IAnalyser2 recognizer = AnalyseLongRecording.FindAndCheckAnalyser<IEventRecognizer>(
@@ -308,11 +306,11 @@ namespace AnalysisPrograms.Recognizers.Base
                 TargetSampleRate = analysisSettings.AnalysisTargetSampleRate,
             };
             var preparedFile = AudioFilePreparer.PrepareFile(
-                arguments.Output,
-                arguments.Source,
+                outputDirectory,
+                sourceAudio,
                 MediaTypes.MediaTypeWav,
                 audioUtilityRequest,
-                arguments.Output);
+                outputDirectory);
 
             var source = preparedFile.SourceInfo.ToSegment();
             var prepared = preparedFile.TargetInfo.ToSegment(FileSegment.FileDateBehavior.None);

@@ -37,10 +37,11 @@ namespace AnalysisPrograms
             Description = "Creates a set of four standard spectrograms derived using different algorithms. For short recordings only.")]
         public class Arguments : SourceAndConfigArguments
         {
-            [Option("A file path to write output to")]
+            [Option(Description = "A file path to write output to")]
             [NotExistingFile]
             [Required]
-            public FileInfo Output { get; set; }
+            [LegalFilePath]
+            public string Output { get; set; }
 
             public override Task<int> Execute(CommandLineApplication app)
             {
@@ -57,8 +58,8 @@ namespace AnalysisPrograms
                 //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav".ToFileInfo(),
                 //Output = @"C:\SensorNetworks\Output\Sonograms\BAC1_20071008-081607.png".ToFileInfo(),
                 Source = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC\BAC2_20071008-085040.wav".ToFileInfo(),
-                Output = @"C:\SensorNetworks\Output\Sonograms\BAC2Sonograms\BAC2_20071008-085040.png".ToFileInfo(),
-                Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo(),
+                Output = @"C:\SensorNetworks\Output\Sonograms\BAC2Sonograms\BAC2_20071008-085040.png",
+                Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml",
             };
 
             //throw new NoDeveloperMethodException();
@@ -71,20 +72,22 @@ namespace AnalysisPrograms
                 arguments = Dev();
             }
 
-            arguments.Output.CreateParentDirectories();
+            //1. set up the necessary files
+            //DirectoryInfo diSource = arguments.Source.Directory;
+            FileInfo fiSourceRecording = arguments.Source;
+            FileInfo fiConfig = arguments.Config.ToFileInfo();
+            FileInfo fiImage = arguments.Output.ToFileInfo();
+
+            fiImage.CreateParentDirectories();
 
             string title = "# CREATE FOUR (4) SONOGRAMS FROM AUDIO RECORDING";
             string date = "# DATE AND TIME: " + DateTime.Now;
             LoggedConsole.WriteLine(title);
             LoggedConsole.WriteLine(date);
-            LoggedConsole.WriteLine("# Input  audio file: " + arguments.Source.Name);
-            LoggedConsole.WriteLine("# Output image file: " + arguments.Output);
+            LoggedConsole.WriteLine("# Input  audio file: " + fiSourceRecording.Name);
+            LoggedConsole.WriteLine("# Output image file: " + fiImage);
 
-            //1. set up the necessary files
-            //DirectoryInfo diSource = arguments.Source.Directory;
-            FileInfo fiSourceRecording = arguments.Source;
-            FileInfo fiConfig = arguments.Config;
-            FileInfo fiImage = arguments.Output;
+
 
             //2. get the config dictionary
             Config configuration = ConfigFile.Deserialize(fiConfig);
@@ -123,7 +126,7 @@ namespace AnalysisPrograms
             if (!((startOffsetMins == TimeSpan.Zero) && (endOffsetMins == TimeSpan.Zero)))
             {
                 var buffer = new TimeSpan(0, 0, 0);
-                fiOutputSegment = new FileInfo(Path.Combine(arguments.Output.DirectoryName, "tempWavFile.wav"));
+                fiOutputSegment = new FileInfo(Path.Combine(fiImage.DirectoryName, "tempWavFile.wav"));
 
                 //This method extracts segment and saves to disk at the location fiOutputSegment.
                 var resampleRate = configuration.GetIntOrNull(AnalysisKeys.ResampleRate) ?? AppConfigHelper.DefaultTargetSampleRate;

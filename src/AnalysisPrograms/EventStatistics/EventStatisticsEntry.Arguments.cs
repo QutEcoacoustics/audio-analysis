@@ -39,16 +39,20 @@ For remote resources, the input file needs to have either one of these sets of f
         public class Arguments
             : SourceConfigOutputDirArguments
         {
-            [Option("The source event (annotations) file to operate on")]
+            [Argument(
+                0,
+                Description = "The source event (annotations) file to operate on")]
             [ExistingFile]
             [Required]
-            public new FileInfo Source { get; set; }
+            [LegalFilePath]
+            public override FileInfo Source { get; set; }
 
-            [Option("A TEMP directory where cut files will be stored. Use this option for efficiency (e.g. write to a RAM Disk).")]
+            [Option(Description = "A TEMP directory where cut files will be stored. Use this option for efficiency (e.g. write to a RAM Disk).")]
             [DirectoryExistsOrCreate(createIfNotExists: true)]
+            [LegalFilePath]
             public DirectoryInfo TempDir { get; set; }
 
-            [Option("An array of channels to select. Default is all channels.")]
+            [Option(Description = "An array of channels to select. Default is all channels.")]
             public int[] Channels { get; set; } = null;
 
             [Option(
@@ -56,18 +60,20 @@ For remote resources, the input file needs to have either one of these sets of f
                 Description = "Mix all selected input channels down into one mono channel. Default is to mixdown.")]
             public bool MixDownToMono { get; set; } = true;
 
-            [Option("The Acoustic Workbench website to download data from. Defaults to https://www.ecosounds.org")]
+            [Option(Description = "The Acoustic Workbench website to download data from. Defaults to https://www.ecosounds.org")]
             public string WorkbenchApi { get; set; }
 
-            [Option("The authentication token to use for the Acoustic Workbench website. If not specified you will prompted for log in credentials.")]
+            [Option(Description = "The authentication token to use for the Acoustic Workbench website. If not specified you will prompted for log in credentials.")]
             public string AuthenticationToken { get; set; }
 
-            [Option("Whether or not run this analysis in parallel - multiple segments can be analyzed at the same time")]
+            [Option(Description = "Whether or not run this analysis in parallel - multiple segments can be analyzed at the same time")]
             public bool Parallel { get; set; }
 
             /* Arguments for local event analysis:
 
-            [Option("TimeSpan offset hint required if file names do not contain time zone info. NO DEFAULT IS SET")]
+            [Option(
+                Description = "TimeSpan offset hint required if file names do not contain time zone info. NO DEFAULT IS SET",
+                ShortName = "z")]
             public TimeSpan? TimeSpanOffsetHint { get; set; }
             */
 

@@ -50,17 +50,17 @@ namespace AnalysisPrograms
             Description = "[UNMAINTAINED] Uses SURF points of interest to classify recording segments of bird calls.")]
         public class Arguments : SourceConfigOutputDirArguments
         {
-            [Option]
-            public FileInfo QueryWavFile { get; set; }
+            [Option(ShortName = "")]
+            public string QueryWavFile { get; set; }
 
-            [Option]
-            public FileInfo QueryCsvFile { get; set; }
+            [Option(ShortName = "")]
+            public string QueryCsvFile { get; set; }
 
-            [Option]
-            public FileInfo TargtWavFile { get; set; }
+            [Option(ShortName = "")]
+            public string TargtWavFile { get; set; }
 
-            [Option]
-            public FileInfo TargtCsvFile { get; set; }
+            [Option(ShortName = "")]
+            public string TargtCsvFile { get; set; }
 
             public override Task<int> Execute(CommandLineApplication app)
             {
@@ -71,27 +71,28 @@ namespace AnalysisPrograms
 
         public static void Main(Arguments arguments)
         {
-            if (!arguments.Output.Exists)
+            var output = arguments.Output;
+            if (!output.Exists)
             {
-                arguments.Output.Create();
+                output.Create();
             }
 
             const string title = "# PRE-PROCESS SHORT AUDIO RECORDINGS FOR Convolutional DNN";
             string date = "# DATE AND TIME: " + DateTime.Now;
             LoggedConsole.WriteLine(title);
             LoggedConsole.WriteLine(date);
-            LoggedConsole.WriteLine("# Input Query  file: " + arguments.QueryWavFile.Name);
-            LoggedConsole.WriteLine("# Input target file: " + arguments.TargtWavFile.Name);
-            LoggedConsole.WriteLine("# Configure    file: " + arguments.Config.Name);
-            LoggedConsole.WriteLine("# Output  directory: " + arguments.Output.Name);
+            LoggedConsole.WriteLine("# Input Query  file: " + arguments.QueryWavFile);
+            LoggedConsole.WriteLine("# Input target file: " + arguments.TargtWavFile);
+            LoggedConsole.WriteLine("# Configure    file: " + arguments.Config);
+            LoggedConsole.WriteLine("# Output  directory: " + output.Name);
 
             // 1. set up the necessary files
-            FileInfo queryWavfile = arguments.QueryWavFile;
-            FileInfo queryCsvfile = arguments.QueryCsvFile;
-            FileInfo targtWavfile = arguments.TargtWavFile;
-            FileInfo targtCsvfile = arguments.TargtCsvFile;
-            FileInfo configFile = arguments.Config;
-            DirectoryInfo opDir = arguments.Output;
+            FileInfo queryWavfile = arguments.QueryWavFile.ToFileInfo();
+            FileInfo queryCsvfile = arguments.QueryCsvFile.ToFileInfo();
+            FileInfo targtWavfile = arguments.TargtWavFile.ToFileInfo();
+            FileInfo targtCsvfile = arguments.TargtCsvFile.ToFileInfo();
+            FileInfo configFile = arguments.Config.ToFileInfo();
+            DirectoryInfo opDir = output;
 
             // 2. get the config dictionary
             Config configuration = ConfigFile.Deserialize(configFile);
@@ -135,7 +136,7 @@ namespace AnalysisPrograms
 
             if (!queryWavfile.Exists)
             {
-                string warning = string.Format("FILE DOES NOT EXIST >>>," + arguments.QueryWavFile.Name);
+                string warning = string.Format("FILE DOES NOT EXIST >>>," + arguments.QueryWavFile);
                 LoggedConsole.WriteWarnLine(warning);
                 return;
             }

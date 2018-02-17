@@ -148,14 +148,16 @@ namespace AnalysisPrograms
             Description = "[INOPERABLE]")]
         public class Arguments
         {
-            [Option("Path of the input  file to be processed.")]
-            [ExistingFile()]
+            [Option(Description = "Path of the input  file to be processed.")]
+            [ExistingFile]
             [Required]
-            public FileInfo Source { get; set; }
+            [LegalFilePath]
+            public string Source { get; set; }
 
-            [Option("Path of the output file to store results.")]
+            [Option(Description = "Path of the output file to store results.")]
             [Required]
-            public FileInfo Output { get; set; }
+            [LegalFilePath]
+            public string Output { get; set; }
         }
 
         /// <summary>
@@ -480,8 +482,8 @@ namespace AnalysisPrograms
             Log.Verbosity = 0;
             bool doStoreImages = false;
 
-            FileInfo recordingPath = arguments.Source;
-            FileInfo opPath = arguments.Output;
+            FileInfo recordingPath = arguments.Source.ToFileInfo();
+            FileInfo opPath = arguments.Output.ToFileInfo();
 
             opPath.CreateParentDirectories();
 

@@ -149,7 +149,7 @@ namespace System
         public static FileInfo Touch(this FileInfo info)
         {
             using (File.OpenWrite(info.FullName))
-            {    
+            {
             }
 
             info.Refresh();
@@ -162,6 +162,11 @@ namespace System
         {
             info.Refresh();
             return info;
+        }
+
+        public static string BaseName(this FileInfo file)
+        {
+            return Path.GetFileNameWithoutExtension(file.Name);
         }
     }
 

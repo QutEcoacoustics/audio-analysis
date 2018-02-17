@@ -44,44 +44,54 @@ AlignToMinute Options:
 #endif
             }
 
-            [Option("Sets the name of the analysis to run. If not set, analysis identifer is parsed from the config file name.")]
+            [Option(Description = "Sets the name of the analysis to run. If not set, analysis identifer is parsed from the config file name.")]
             public string AnalysisIdentifier { get; set; }
 
             [Option(
-                "A TEMP directory where cut files will be stored. Use this option for efficiency (e.g. write to a RAM Disk).",
-                ShortName = "t"
-                )]
+                Description = "A TEMP directory where cut files will be stored. Use this option for efficiency (e.g. write to a RAM Disk).",
+                ShortName = "t")]
             [DirectoryExistsOrCreate(createIfNotExists: true)]
+            [LegalFilePath]
             public DirectoryInfo TempDir { get; set; }
 
-            [Option("The start offset to start analyzing from (in seconds)")]
+            [Option(
+                CommandOptionType.SingleValue,
+                Description = "The start offset to start analyzing from (in seconds)")]
             [InRange(min: 0)]
             public double? StartOffset { get; set; }
 
-            [Option("The end offset to stop analyzing (in seconds)")]
+            [Option(
+                CommandOptionType.SingleValue,
+                Description = "The end offset to stop analyzing (in seconds)")]
             [InRange(min: 0)]
             public double? EndOffset { get; set; }
 
-            [Option("Allow advancing the start of the analysis to the nearest minute. A valid datetime must be available in the file name. Seed additional notes for options.")]
+            [Option(
+                Description = "Allow advancing the start of the analysis to the nearest minute. A valid datetime must be available in the file name. Seed additional notes for options.",
+                ShortName = "")]
             public TimeAlignment AlignToMinute { get; set; } = TimeAlignment.None;
 
-            [Option("An array of channels to select. Default is all channels.")]
+            [Option(Description = "An array of channels to select. Default is all channels.")]
             public int[] Channels { get; set; } = null;
 
             [Option(
-                "Mix all selected input channels down into one mono channel. Default is to mixdown.",
-                CommandOptionType.SingleValue)]
+                CommandOptionType.SingleValue,
+                Description = "Mix all selected input channels down into one mono channel. Default is to mixdown.")]
             public bool MixDownToMono { get; set; } = true;
 
-            [Option("Whether or not run this analysis in parallel - multiple segments can be analyzed at the same time")]
+            [Option(
+                Description = "Whether or not run this analysis in parallel - multiple segments can be analyzed at the same time",
+                ShortName = "p")]
             public bool Parallel { get; set; } = false;
 
             [Option(
-                "If true, attempts to copy the executable's log file to output directory. If it can't determine an output directory, it copies to the working directory.")]
+                Description = "If true, attempts to copy the executable's log file to output directory. If it can't determine an output directory, it copies to the working directory.",
+                ShortName = "")]
             public bool WhenExitCopyLog { get; set; }
 
             [Option(
-                "If true, attempts to copy the executable's config file to output directory. If it can't determine an output directory, it copies to the working directory. If it can't find a config file, nothing is copied")]
+                Description = "If true, attempts to copy the executable's config file to output directory. If it can't determine an output directory, it copies to the working directory. If it can't find a config file, nothing is copied",
+                ShortName = "")]
             public bool WhenExitCopyConfig { get; set; }
 
             public override Task<int> Execute(CommandLineApplication app)

@@ -11,12 +11,11 @@ namespace AnalysisPrograms.Production.Arguments
     public abstract class SourceAndConfigArguments
         : SourceArguments
     {
-        [Option(
-            "The path to the config file.If not found it will attempt to use the default config file of the same name.",
-            ShortName = "c",
-            ValueName = "FILE")]
+        [Argument(
+            1,
+            Description = "The path to the config file. If not found it will attempt to use the default config file of the same name.")]
         [Required]
         [LegalFilePath]
-        public FileInfo Config { get; set; }
+        public string Config { get; set; }
     }
 }

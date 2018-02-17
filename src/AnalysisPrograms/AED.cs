@@ -54,7 +54,7 @@ namespace AnalysisPrograms
         /// </summary>
         [Command(
             CommandName,
-            Description = "Acosutic event detection, for short files (~ 1min)")]
+            Description = "Acoustic event detection, for short files (~ 1min)")]
         public class Arguments : SourceConfigOutputDirArguments
         {
             public override Task<int> Execute(CommandLineApplication app)
@@ -270,7 +270,7 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine(date);
 
             FileInfo recodingFile = arguments.Source;
-            var recodingBaseName = Path.GetFileNameWithoutExtension(arguments.Source.Name);
+            var recodingBaseName = recodingFile.BaseName();
             DirectoryInfo outputDir = arguments.Output.Combine(EcosoundsAedIdentifier);
             outputDir.Create();
 

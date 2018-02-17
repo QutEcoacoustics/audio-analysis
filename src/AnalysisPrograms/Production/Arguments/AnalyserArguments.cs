@@ -4,6 +4,7 @@
 
 namespace AnalysisPrograms.Production.Arguments
 {
+    using System;
     using System.IO;
     using AnalysisBase;
     using McMaster.Extensions.CommandLineUtils;
@@ -12,11 +13,11 @@ namespace AnalysisPrograms.Production.Arguments
     public abstract class AnalyserArguments
         : SourceConfigOutputDirArguments
     {
-        [Option("The start offset to start analysing from (in seconds)")]
+        [Option(Description = "The start offset to start analysing from (in seconds)")]
         [InRange(min: 0)]
         public double? Start { get; set; }
 
-        [Option("The duration of each segment to analyse (seconds) - a maximum of 10 minutes")]
+        [Option(Description = "The duration of each segment to analyse (seconds) - a maximum of 10 minutes")]
         [InRange(0, 10 * 60)]
         public double? Duration { get; set; }
 

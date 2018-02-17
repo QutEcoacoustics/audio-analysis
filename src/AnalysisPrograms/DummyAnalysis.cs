@@ -37,18 +37,18 @@ namespace AnalysisPrograms
             Description = "An program desinged to simulate load - does nothing other than burn CPU;")]
         public class Arguments : SubCommandBase
         {
-            [Option("Burn load on multiple CPU threads?")]
+            [Option(Description = "Burn load on multiple CPU threads?")]
             public bool Parallel { get; set; }
 
-            [Option("How many seconds to run for (roughly)")]
+            [Option(Description = "How many seconds to run for (roughly)")]
             [InRange(0, 3600)]
             public double DurationSeconds { get; set; } = 30;
 
-            [Option("How much jitter should be applied to execution time of each thread. A random amount is chosen where 0 <= `Jitter` <= 1.")]
+            [Option(Description = "How much jitter should be applied to execution time of each thread. A random amount is chosen where 0 <= `Jitter` <= 1.")]
             [InRange(0.0, 1.0)]
             public double Jitter { get; set; } = 0.1;
 
-            [Option("Supply a seed to repeat the same randomnesss as a previous run")]
+            [Option(Description = "Supply a seed to repeat the same randomnesss as a previous run")]
             public int? Seed { get; set; }
 
             public override Task<int> Execute(CommandLineApplication app)

@@ -39,14 +39,16 @@ namespace AnalysisPrograms
             Description = "[DEPRACATED]. Only used in 2012 to analyse output from LSKiwi3.Dev().")]
         public class Arguments : SubCommandBase
         {
-            [Option("Full path of the csv file containing description of potential kiwi calls. File must be in correct csv format.")]
+            [Option(Description = "Full path of the csv file containing description of potential kiwi calls. File must be in correct csv format.")]
             [ExistingFile(Extension = ".csv")]
             [Required]
-            public FileInfo Events { get; set; }
+            [LegalFilePath]
+            public string Events { get; set; }
 
-            [Option("Full path of the csv file containing description of true kiwi calls. File must be in the correct format.")]
+            [Option(Description = "Full path of the csv file containing description of true kiwi calls. File must be in the correct format.")]
             [ExistingFile(Extension = ".csv")]
-            public FileInfo Selections { get; set; }
+            [LegalFilePath]
+            public string Selections { get; set; }
 
             public override Task<int> Execute(CommandLineApplication app)
             {
@@ -83,17 +85,17 @@ namespace AnalysisPrograms
                 LoggedConsole.WriteLine(date);
             }
 
-            string outputDir = arguments.Events.DirectoryName;
+            var fiKiwiCallPredictions = arguments.Events.ToFileInfo();
+            string outputDir = fiKiwiCallPredictions.DirectoryName;
 
-            var fiKiwiCallPredictions = arguments.Events;
-            var fiGroundTruth = arguments.Selections;
+            var fiGroundTruth = arguments.Selections.ToFileInfo();
 
             //InitOutputTableColumns();
             //############################################################################
             DataTable dt = CalculateRecallPrecision(fiKiwiCallPredictions, fiGroundTruth);
             //############################################################################
 
-            string opFileStem = Path.GetFileNameWithoutExtension(arguments.Events.Name);
+            string opFileStem = fiKiwiCallPredictions.BaseName();
             string fName = "LSKRoc_Report_" + opFileStem + ".csv";
             string reportROCPath = Path.Combine(outputDir, fName);
             CsvTools.DataTable2CSV(dt, reportROCPath);

@@ -130,7 +130,7 @@ namespace AnalysisPrograms
                     var devArguments = new AnalyseLongRecording.Arguments
                     {
                         Source = files[i].ToFileInfo(),
-                        Config = configPath.ToFileInfo(),
+                        Config = configPath,
                         Output = outputDirectory.ToDirectoryInfo(),
                         MixDownToMono = true,
                     };
@@ -139,15 +139,11 @@ namespace AnalysisPrograms
             }
 
             // (2) now do the CONCATENATION
-            DirectoryInfo[] dataDirs =
-            {
-                new DirectoryInfo(outputDir),
-            };
             string directoryFilter = "Towsey.Acoustic"; // this is a directory filter to locate only the required files
             string opFileStem = "IvanCampos_INCIPO01_20161031";
             string opPath = $"{drive}:\\SensorNetworks\\Output\\IvanCampos";
-            var falseColourSpgConfig = new FileInfo(
-                $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatSpectrogramFalseColourConfig.yml");
+            var falseColourSpgConfig = 
+                $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatSpectrogramFalseColourConfig.yml";
 
             // start and end dates INCLUSIVE
             var dtoStart = new DateTimeOffset(2016, 10, 31, 0, 0, 0, TimeSpan.Zero);
@@ -155,13 +151,13 @@ namespace AnalysisPrograms
 
             // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and EchoGaps.
             string gapRendering = "NoGaps";
-            var indexPropertiesConfig = new FileInfo(
-                @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml");
+            var indexPropertiesConfig = 
+                @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml";
 
             var concatArgs = new ConcatenateIndexFiles.Arguments
             {
-                InputDataDirectories = dataDirs,
-                OutputDirectory = new DirectoryInfo(opPath),
+                InputDataDirectories = outputDir.ToDirectoryInfo().AsArray(),
+                OutputDirectory = opPath.ToDirectoryInfo(),
                 DirectoryFilter = directoryFilter,
                 FileStemName = opFileStem,
                 StartDate = dtoStart,
@@ -443,23 +439,10 @@ namespace AnalysisPrograms
             var arguments = new AnalyseLongRecording.Arguments
             {
                 Source = recordingPath.ToFileInfo(),
-                Config = configPath.ToFileInfo(),
+                Config = configPath,
                 Output = outputPath.ToDirectoryInfo(),
                 MixDownToMono = true,
             };
-
-            // #########  NOTE: All other parameters are set in the <Ecosounds.MultiRecognizer.yml> file
-            if (!arguments.Source.Exists)
-            {
-                LoggedConsole.WriteWarnLine(
-                    " >>>>>>>>>>>> WARNING! The Source Recording file cannot be found! This will cause an exception.");
-            }
-
-            if (!arguments.Config.Exists)
-            {
-                LoggedConsole.WriteWarnLine(
-                    " >>>>>>>>>>>> WARNING! The Configuration file cannot be found! This will cause an exception.");
-            }
 
             AnalyseLongRecording.Execute(arguments);
         }
@@ -585,10 +568,10 @@ namespace AnalysisPrograms
 
             var args = new DrawLongDurationSpectrograms.Arguments
             {
-                InputDataDirectory = new DirectoryInfo(ipdir),
-                OutputDirectory = new DirectoryInfo(opdir),
-                IndexPropertiesConfig = new FileInfo(indexPropertiesFile),
-                SpectrogramConfigPath = new FileInfo(spectrogramConfigFile),
+                InputDataDirectory = (ipdir),
+                OutputDirectory = (opdir),
+                IndexPropertiesConfig = (indexPropertiesFile),
+                SpectrogramConfigPath = (spectrogramConfigFile),
             };
             DrawLongDurationSpectrograms.Execute(args);
         }
@@ -599,8 +582,8 @@ namespace AnalysisPrograms
         public static void ConcatenateIndexFilesAndSpectrograms()
         {
             // set the default values here
-            var indexPropertiesConfig = new FileInfo(
-                @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml");
+            var indexPropertiesConfig =
+                @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml";
             var timeSpanOffsetHint = TimeSpan.FromHours(10); // default = Brisbane time
             var drawImages = true;
 
@@ -610,7 +593,7 @@ namespace AnalysisPrograms
 
             // files containing output from event recognizers.
             // Used only to get Event Recognizer files - set eventDirs=null if not used
-            DirectoryInfo[] eventDirs = null;
+            string[] eventDirs = null;
             string eventFilePattern = string.Empty;
 
             // The drive: local = C; work = G; home = E
@@ -673,15 +656,15 @@ namespace AnalysisPrograms
             drive = "G";
 
             // top level directory AVAILAE JOB #181
-            DirectoryInfo[] dataDirs =
+            string[] dataDirs =
             {
-                new DirectoryInfo($"{drive}:\\SensorNetworks\\Output\\BradLaw\\PillagaData"),
+                ($"{drive}:\\SensorNetworks\\Output\\BradLaw\\PillagaData"),
             };
             string directoryFilter = "Pillaga*"; // this is a directory filter to locate only the required files
             string opFileStem = "PillagaForest20121125";
             string opPath = $"{drive}:\\SensorNetworks\\Output\\BradLaw";
-            var falseColourSpgConfig = new FileInfo(
-                $"{drive}:\\SensorNetworks\\Output\\Bats\\config\\SpectrogramFalseColourConfig.yml");
+            var falseColourSpgConfig =
+                $"{drive}:\\SensorNetworks\\Output\\Bats\\config\\SpectrogramFalseColourConfig.yml";
             FileInfo sunriseDatafile = null;
 
             concatenateEverythingYouCanLayYourHandsOn = true;
@@ -949,10 +932,6 @@ namespace AnalysisPrograms
             //string opFileStem = "Site1_20150709";
             // ########################## END of GRIFFITH - SIMON/TOBY FRESH-WATER RECORDINGS
 
-            if (!indexPropertiesConfig.Exists)
-            {
-                LoggedConsole.WriteErrorLine("# indexPropertiesConfig FILE DOES NOT EXIST.");
-            }
 
             // DISCUSS THE FOLLOWING WITH ANTHONY
             // Anthony says we would need to serialise the class. Skip this for the moment.
@@ -966,8 +945,8 @@ namespace AnalysisPrograms
 
             var args = new ConcatenateIndexFiles.Arguments
             {
-                InputDataDirectories = dataDirs,
-                OutputDirectory = new DirectoryInfo(opPath),
+                InputDataDirectories = dataDirs.Select(FileInfoExtensions.ToDirectoryInfo).ToArray(),
+                OutputDirectory = opPath.ToDirectoryInfo(),
                 DirectoryFilter = directoryFilter,
                 FileStemName = opFileStem,
                 StartDate = dtoStart,
@@ -1208,10 +1187,10 @@ namespace AnalysisPrograms
             double duration = 420; // signal duration in seconds = 7 minutes
             int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
             var recording = DspFilters.GenerateTestRecording(sampleRate, duration, harmonics, WaveType.Consine);
-            var outputDirectory = new DirectoryInfo(@"C:\SensorNetworks\SoftwareTests\TestLongDurationRecordings");
-            var recordingPath = outputDirectory.CombineFile("TemporaryRecording.wav");
-            WavWriter.WriteWavFileViaFfmpeg(recordingPath, recording.WavReader);
-            var configPath = new FileInfo(
+            var outputDirectory = (@"C:\SensorNetworks\SoftwareTests\TestLongDurationRecordings");
+            var recordingPath = Path.Combine(outputDirectory, "TemporaryRecording.wav");
+            WavWriter.WriteWavFileViaFfmpeg(recordingPath.ToFileInfo(), recording.WavReader);
+            var configPath = (
                 @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml");
 
             // draw the signal as spectrogram just for debugging purposes
@@ -1234,14 +1213,15 @@ namespace AnalysisPrograms
 
             var argumentsForAlr = new AnalyseLongRecording.Arguments
             {
-                Source = recordingPath,
+                Source = recordingPath.ToFileInfo(),
                 Config = configPath,
-                Output = outputDirectory,
+                Output = outputDirectory.ToDirectoryInfo(),
                 MixDownToMono = true,
             };
 
             AnalyseLongRecording.Execute(argumentsForAlr);
-            var resultsDirectory = outputDirectory.Combine("Towsey.Acoustic");
+            var outputDir = outputDirectory.ToDirectoryInfo();
+            var resultsDirectory = outputDir.Combine("Towsey.Acoustic");
             var listOfFiles = resultsDirectory.EnumerateFiles();
             int count = listOfFiles.Count();
             var csvCount = listOfFiles.Count(f => f.Name.EndsWith(".csv"));
@@ -1271,7 +1251,7 @@ namespace AnalysisPrograms
             // draw array just to check peaks are in correct places.
             var normalisedIndex = DataTools.normalise(array);
             var image2 = GraphsAndCharts.DrawGraph("LD BGN SPECTRUM", normalisedIndex, 100);
-            var ldsBgnSpectrumFile = outputDirectory.CombineFile("Spectrum2.png");
+            var ldsBgnSpectrumFile = outputDir.CombineFile("Spectrum2.png");
             image2.Save(ldsBgnSpectrumFile.FullName);
         }
 

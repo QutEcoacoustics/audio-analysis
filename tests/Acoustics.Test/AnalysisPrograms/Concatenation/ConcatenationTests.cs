@@ -76,8 +76,8 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                 FileStemName = "Test1_Indonesia",
                 StartDate = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero),
                 EndDate = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero),
-                IndexPropertiesConfig = indexPropertiesConfig,
-                FalseColourSpectrogramConfig = testConfig,
+                IndexPropertiesConfig = indexPropertiesConfig.FullName,
+                FalseColourSpectrogramConfig = testConfig.FullName,
                 ColorMap1 = LDSpectrogramRGB.DefaultColorMap1,
                 ColorMap2 = "BGN-POW-EVN", // POW was depracated post May 2017
                 ConcatenateEverythingYouCanLayYourHandsOn = true, // join everything found
@@ -131,8 +131,8 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                 FileStemName = "Test2_Indonesia",
                 StartDate = new DateTimeOffset(2016, 07, 26, 0, 0, 0, TimeSpan.Zero),
                 EndDate = new DateTimeOffset(2016, 07, 27, 0, 0, 0, TimeSpan.Zero),
-                IndexPropertiesConfig = indexPropertiesConfig,
-                FalseColourSpectrogramConfig = testConfig,
+                IndexPropertiesConfig = indexPropertiesConfig.FullName,
+                FalseColourSpectrogramConfig = testConfig.FullName,
                 ColorMap1 = LDSpectrogramRGB.DefaultColorMap1,
                 ColorMap2 = "BGN-POW-EVN", // POW was depracated post May 2017
                 ConcatenateEverythingYouCanLayYourHandsOn = false, // 24 hour blocks only
@@ -188,8 +188,8 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                 FileStemName = "Test3_Indonesia",
                 StartDate = null,
                 EndDate = null,
-                IndexPropertiesConfig = indexPropertiesConfig,
-                FalseColourSpectrogramConfig = testConfig,
+                IndexPropertiesConfig = indexPropertiesConfig.FullName,
+                FalseColourSpectrogramConfig = testConfig.FullName,
                 ColorMap1 = LDSpectrogramRGB.DefaultColorMap1,
                 ColorMap2 = "BGN-POW-EVN", // POW was depracated post May 2017
                 ConcatenateEverythingYouCanLayYourHandsOn = false, // 24 hour blocks only
@@ -266,8 +266,8 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                 FileStemName = "Test2_Indonesia",
                 StartDate = new DateTimeOffset(2016, 07, 26, 0, 0, 0, TimeSpan.Zero),
                 EndDate = new DateTimeOffset(2016, 07, 27, 0, 0, 0, TimeSpan.Zero),
-                IndexPropertiesConfig = indexPropertiesConfig,
-                FalseColourSpectrogramConfig = testConfig,
+                IndexPropertiesConfig = indexPropertiesConfig.FullName,
+                FalseColourSpectrogramConfig = testConfig.FullName,
                 ConcatenateEverythingYouCanLayYourHandsOn = false, // 24 hour blocks only
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
                 DrawImages = true,
@@ -313,8 +313,8 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                     FileStemName = Ark01,
                     StartDate = null,
                     EndDate = null,
-                    IndexPropertiesConfig = PathHelper.ResolveConfigFile("IndexPropertiesConfig.yml"),
-                    FalseColourSpectrogramConfig = PathHelper.ResolveConfigFile("SpectrogramFalseColourConfig.yml"),
+                    IndexPropertiesConfig = PathHelper.ResolveConfigFile("IndexPropertiesConfig.yml").FullName,
+                    FalseColourSpectrogramConfig = PathHelper.ResolveConfigFile("SpectrogramFalseColourConfig.yml").FullName,
                     ColorMap1 = null,
                     ColorMap2 = null,
                     ConcatenateEverythingYouCanLayYourHandsOn = false,

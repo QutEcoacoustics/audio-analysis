@@ -7,14 +7,16 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-using System.Threading.Tasks;
-
 namespace AnalysisPrograms
 {
     using System;
+    using System.IO;
     using System.Reflection;
+    using System.Threading.Tasks;
+    using AnalysisPrograms.Production.Parsers;
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
+    using McMaster.Extensions.CommandLineUtils.Abstractions;
     using Production;
     using Production.Arguments;
 
@@ -39,11 +41,18 @@ namespace AnalysisPrograms
 
             NoConsole.Log.Info("Executable called with these arguments: {1}{0}{1}".Format2(Environment.CommandLine, Environment.NewLine));
 
-            IConsole loggingConsole = new PhysicalConsoleLogger();
+            var console = PhysicalConsoleLogger.Default;
+            var helpText = CustomHelpTextGenerator.Singleton;
+            helpText.EnvironmentOptions = EnvironmentOptions;
+
+            ValueParserProvider.Default.AddParser(typeof(DateTimeOffset), new DateTimeOffsetParser());
+            ValueParserProvider.Default.AddParser(typeof(TimeSpan), new TimeSpanParser());
+            ValueParserProvider.Default.AddParser(typeof(DirectoryInfo), new DirectoryInfoParser());
+            ValueParserProvider.Default.AddParser(typeof(FileInfo), new FileInfoParser());
 
             // Note: See MainEntry.BeforeExecute for commands run before invocation.
             // note: Exception handling can be found in CurrentDomainOnUnhandledException
-            var result = await CommandLineApplication.ExecuteAsync<MainArgs>(loggingConsole, args);
+            var result = await CommandLineApplication.ExecuteAsync<MainArgs>(console, args);
 
             LogProgramStats();
 

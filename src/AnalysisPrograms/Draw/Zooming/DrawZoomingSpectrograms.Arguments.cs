@@ -29,30 +29,36 @@ namespace AnalysisPrograms.Draw.Zooming
                 Tile,
             }
 
-            [Option("When doing a `Focused` stack, which minute to center on. Accepts partial minutes.")]
-            [InRange(min: 0)]
-            public double? FocusMinute { get; set; }
-
-            [Option(FileSystemProvider.DestinationPath)]
-            [Required]
-            [LegalFilePath]
-            public string Output { get; set; }
-
-            [Option(FileSystemProvider.DestinationFormat)]
-            [OneOfThese("", FileSystemProvider.SqlitePattern)]
-            public string OutputFormat { get; set; } = string.Empty;
-
-            [Option("The source directory of files output from Towsey.Acoustic (the Index analysis) to operate on")]
+            [Argument(
+                0,
+                Description = "The source directory of files output from Towsey.Acoustic (the Index analysis) to operate on")]
             [Required]
             [DirectoryExists]
             public string SourceDirectory { get; set; }
 
-            [Option("User specified file defining valid spectrogram scales. Also should contain a reference to IndexProperties.yml and optionally a LDSpectrogramConfig object")]
+            [Argument(
+                1,
+                Description = "User specified file defining valid spectrogram scales. Also should contain a reference to IndexProperties.yml and optionally a LDSpectrogramConfig object")]
             [ExistingFile(Extension = ".yml")]
             [Required]
-            public FileInfo SpectrogramZoomingConfig { get; set; }
+            public string SpectrogramZoomingConfig { get; set; }
 
-            [Option("Choose which action to execute (Focused, or Tile)")]
+            [Argument(
+                2,
+                Description = FileSystemProvider.DestinationPath)]
+            [Required]
+            [LegalFilePath]
+            public string Output { get; set; }
+
+            [Option(Description = "When doing a `Focused` stack, which minute to center on. Accepts partial minutes.")]
+            [InRange(min: 0)]
+            public double? FocusMinute { get; set; }
+
+            [Option(Description = FileSystemProvider.DestinationFormat)]
+            [OneOfThese("", FileSystemProvider.SqlitePattern)]
+            public string OutputFormat { get; set; } = string.Empty;
+
+            [Option(Description = "Choose which action to execute (Focused, or Tile)")]
             [Required]
             public ZoomActionType ZoomAction { get; set; }
 

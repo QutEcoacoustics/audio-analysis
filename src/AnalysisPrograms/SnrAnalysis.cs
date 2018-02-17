@@ -47,16 +47,16 @@
                            //Source = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC1_20071008-081607.wav".ToFileInfo(),
                            //Source = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC2_20071008-045040_birds.wav".ToFileInfo(),
                            //Source = @"C:\SensorNetworks\WavFiles\TestRecordings\CaneToads_rural1_20.mp3".ToFileInfo(),
-                           Source =
-                               @"C:\SensorNetworks\WavFiles\TestRecordings\AdelotusBrevis_extract.mp3"
-                               .ToFileInfo(),
+//                           Source =
+//                               @"C:\SensorNetworks\WavFiles\TestRecordings\AdelotusBrevis_extract.mp3"
+//                               .ToFileInfo(),
                            //Source = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC2_20071008-143516_speech.wav".ToFileInfo(),
                            //Source = @"C:\SensorNetworks\WavFiles\TestRecordings\groundParrot_Perigian_TEST_1min.wav".ToFileInfo(),
                            //Source = @"C:\SensorNetworks\WavFiles\TestRecordings\TOWERB_20110302_202900_22.LSK.F.wav".ToFileInfo(),
 
-                           Config =
-                               @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SNRConfig.yml".ToFileInfo(),
-                           Output = @"C:\SensorNetworks\Output\SNR".ToDirectoryInfo(),
+//                           Config =
+//                               @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SNRConfig.yml".ToFileInfo(),
+//                           Output = @"C:\SensorNetworks\Output\SNR".ToDirectoryInfo(),
                        };
             throw new NotImplementedException();
         }
@@ -74,15 +74,16 @@
             Log.WriteLine(date);
             Log.Verbosity = 1;
 
-            var sourceFileName = arguments.Source.Name;
+            var input = arguments.Source;
+            var sourceFileName = input.Name;
             var outputDir = arguments.Output;
-            var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(arguments.Source.FullName);
+            var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(input.FullName);
             var outputTxtPath = Path.Combine(outputDir.FullName, fileNameWithoutExtension + ".txt").ToFileInfo();
 
-            Log.WriteIfVerbose("# Recording file: " + arguments.Source.FullName);
-            Log.WriteIfVerbose("# Config file:    " + arguments.Config.FullName);
+            Log.WriteIfVerbose("# Recording file: " + input.FullName);
+            Log.WriteIfVerbose("# Config file:    " + arguments.Config);
             Log.WriteIfVerbose("# Output folder =" + outputDir.FullName);
-            FileTools.WriteTextFile(outputTxtPath.FullName, date + "\n# Recording file: " + arguments.Source.FullName);
+            FileTools.WriteTextFile(outputTxtPath.FullName, date + "\n# Recording file: " + input.FullName);
 
             //READ PARAMETER VALUES FROM INI FILE
             // load YAML configuration
@@ -90,7 +91,7 @@
 
             //ii: SET SONOGRAM CONFIGURATION
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
-            sonoConfig.SourceFName = arguments.Source.FullName;
+            sonoConfig.SourceFName = input.FullName;
             sonoConfig.WindowSize = configuration.GetIntOrNull(AnalysisKeys.KeyFrameSize) ?? 512; //
             sonoConfig.WindowOverlap = configuration.GetDoubleOrNull(AnalysisKeys.FrameOverlap) ?? 0.5;
             sonoConfig.WindowFunction = configuration[AnalysisKeys.KeyWindowFunction];
@@ -121,7 +122,7 @@
             }
 
             var convertedFileInfo = AudioFilePreparer.PrepareFile(
-                arguments.Source,
+                input,
                 fileToAnalyse,
                 convertParameters,
                 outputDir);
@@ -271,7 +272,7 @@
 
             // (G) ################################## Calculate modal background noise spectrum in decibels
 
-            Log.WriteLine("# Finished recording:- " + arguments.Source.Name);
+            Log.WriteLine("# Finished recording:- " + input.Name);
         }
 
         private static Image DrawSonogram(

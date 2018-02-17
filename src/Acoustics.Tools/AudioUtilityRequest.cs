@@ -166,14 +166,21 @@ namespace Acoustics.Tools
                 return false;
             }
 
-            if (this.Channels.NotNull() && (this.Channels.Length == 0 || this.Channels.Any(c => c < 1)))
+            if (this.Channels.NotNull())
             {
-                if (throwExceptions)
+                if (this.Channels.Length == 0)
                 {
-                    throw new ChannelNotAvailableException("Channel number should be greater than 0.");
+                    this.Channels = null;
                 }
+                else if (this.Channels.Any(c => c < 1))
+                {
+                    if (throwExceptions)
+                    {
+                        throw new ChannelNotAvailableException("Channel number should be greater than 0.");
+                    }
 
-                return false;
+                    return false;
+                }
             }
 
             /*if (this.Channel.HasValue && this.MixDownToMono.HasValue && this.MixDownToMono.Value)

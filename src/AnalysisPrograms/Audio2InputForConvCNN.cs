@@ -81,7 +81,7 @@ namespace AnalysisPrograms
                 //Source = @"C:\SensorNetworks\WavFiles\ConvDNNData\ConvDNN_annotation_export_commonNameOnly_withPadding_20140829.processed.csv".ToFileInfo(),
                 Source = @"Y:\Results\2014Aug29-000000 - Mangalam Data Export\Output\ConvDNN_annotation_export_commonNameOnly_withPadding_20140829.processed.csv".ToFileInfo(),
 
-                Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Mangalam.Sonogram.yml".ToFileInfo(),
+                Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Mangalam.Sonogram.yml",
 
                 Output = (@"C:\SensorNetworks\Output\ConvDNN\" + datestamp).ToDirectoryInfo(),
             };
@@ -100,9 +100,9 @@ namespace AnalysisPrograms
             }
 
             LoggedConsole.WriteLine("Generate ConvDNN images for single recording");
-            LoggedConsole.WriteLine("# Input Audio file: " + arguments.Source.Name);
-            LoggedConsole.WriteLine("# Configuration  file: " + arguments.Config.Name);
-            LoggedConsole.WriteLine("# Output directry: " + arguments.Output.Name);
+            LoggedConsole.WriteLine("# Input Audio file: " + arguments.Source);
+            LoggedConsole.WriteLine("# Configuration  file: " + arguments.Config);
+            LoggedConsole.WriteLine("# Output directry: " + arguments.Output);
 
             // Verify target event information
             if (string.IsNullOrWhiteSpace(arguments.TargetEventBounds))
@@ -128,7 +128,7 @@ namespace AnalysisPrograms
             }
 
             // Grab configuration
-            var configDict = GetConfigurationForConvCnn(arguments.Config);
+            var configDict = GetConfigurationForConvCnn(arguments.Config.ToFileInfo());
 
             var result = AnalyseOneRecording(arguments.Source, configDict, localEventStart, localEventEnd, (int)minHz, (int)mazHz, arguments.Output);
             Log.InfoFormat("SpectrogramPath:" + result.SpectrogramFile);
@@ -149,21 +149,21 @@ namespace AnalysisPrograms
                 arguments = Dev();
             }
 
-            if (!arguments.Output.Exists)
+            var output = arguments.Output;
+            if (!output.Exists)
             {
-                arguments.Output.Create();
+                output.Create();
             }
 
             Log.InfoFormat("# PRE-PROCESS SHORT AUDIO RECORDINGS FOR Convolutional DNN");
             Log.InfoFormat("# DATE AND TIME: " + DateTime.Now);
-            Log.InfoFormat("# Input .csv file: " + arguments.Source.Name);
-            Log.InfoFormat("# Configure  file: " + arguments.Config.Name);
-            Log.InfoFormat("# Output directry: " + arguments.Output.Name);
+            Log.InfoFormat("# Input .csv file: " + arguments.Source);
+            Log.InfoFormat("# Configure  file: " + arguments.Config);
+            Log.InfoFormat("# Output directry: " + arguments.Output);
 
             // 1. set up the necessary files
             FileInfo csvFileInfo = arguments.Source;
-            FileInfo configFile = arguments.Config;
-            DirectoryInfo output = arguments.Output;
+            FileInfo configFile = arguments.Config.ToFileInfo();
 
             // 2. get the config dictionary
             var configDict = GetConfigurationForConvCnn(configFile);

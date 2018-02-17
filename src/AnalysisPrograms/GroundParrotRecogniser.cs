@@ -181,7 +181,8 @@ namespace AnalysisPrograms
             var config = ConfigFile.Deserialize(arguments.Config);
             var aedConfig = Aed.GetAedParametersFromConfigFileOrDefaults(config);
 
-            Tuple<BaseSonogram, List<AcousticEvent>> result = Detect(arguments.Source, aedConfig, Default.eprNormalisedMinScore, TimeSpan.Zero);
+            var input = arguments.Source;
+            Tuple<BaseSonogram, List<AcousticEvent>> result = Detect(input, aedConfig, Default.eprNormalisedMinScore, TimeSpan.Zero);
             List<AcousticEvent> eprEvents = result.Item2;
 
             eprEvents.Sort((ae1, ae2) => ae1.TimeStart.CompareTo(ae2.TimeStart));
@@ -194,8 +195,8 @@ namespace AnalysisPrograms
 
             LoggedConsole.WriteLine();
 
-            string outputFolder = arguments.Config.DirectoryName;
-            string wavFilePath = arguments.Source.FullName;
+            string outputFolder = arguments.Config.ToFileInfo().DirectoryName;
+            string wavFilePath = input.FullName;
             BaseSonogram sonogram = result.Item1;
             string imagePath = Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(wavFilePath) + ".png");
             var image = Aed.DrawSonogram(sonogram, eprEvents);

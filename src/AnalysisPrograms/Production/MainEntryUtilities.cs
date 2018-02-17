@@ -18,6 +18,7 @@ namespace AnalysisPrograms
     using System.ComponentModel;
     using System.Diagnostics;
     using System.Globalization;
+    using System.IO;
     using System.Linq;
     using System.Reflection;
     using System.Runtime.Serialization;
@@ -72,7 +73,7 @@ namespace AnalysisPrograms
             Assembly asm = Assembly.GetExecutingAssembly();
             FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(asm.Location);
 
-            LoggedConsole.WriteLine(Meta.Description + fvi.FileVersion + " (" + (InDEBUG ? "DEBUG" : "RELEASE")
+            LoggedConsole.WriteLine(Meta.Description + " - version " + fvi.FileVersion + " (" + (InDEBUG ? "DEBUG" : "RELEASE")
                 + " build, " + RetrieveLinkerTimestamp().ToString("g") + ") \n"
                 + "Git branch-version: " + fvi.ProductVersion + "\n"
                 + "Copyright QUT " + DateTime.Now.Year.ToString("0000"));
@@ -112,19 +113,18 @@ namespace AnalysisPrograms
             {
                 if (options == DebugOptions.Prompt)
                 {
-                    // then prompt manually
-                    LoggedConsole.WriteLine(
-                        "Do you wish to debug? Attach now or press [Y] to attach. Press any key other key to continue.");
-                    options = Console.ReadKey(true).KeyChar.ToString(CultureInfo.InvariantCulture).ToLower() == "y"
-                        ? DebugOptions.Yes
-                        : DebugOptions.No;
+                    var response = Prompt.GetYesNo(
+                        "Do you wish to debug? Attach now or press [Y] to attach. Press [N] or [ENTER] to continue.",
+                        defaultAnswer: false,
+                        promptColor: ConsoleColor.Cyan);
+                    options = response ? DebugOptions.Yes : DebugOptions.No;
                 }
 
                 if (options == DebugOptions.Yes)
                 {
                     var vsProcess =
                         VisualStudioAttacher.GetVisualStudioForSolutions(
-                            new List<string> { "AudioAnalysis2012.sln", "AudioAnalysis.sln" });
+                            new List<string> { "AudioAnalysis.sln" });
 
                     if (vsProcess != null)
                     {
@@ -141,9 +141,9 @@ namespace AnalysisPrograms
                     {
                         LoggedConsole.WriteLine("\t>>> Attach sucessful");
                     }
-
-                    LoggedConsole.WriteLine();
                 }
+
+                LoggedConsole.WriteLine();
             }
 #endif
         }
@@ -170,10 +170,16 @@ namespace AnalysisPrograms
         }
 
         private const string ApPlainLogging = "AP_PLAIN_LOGGING";
+        private const string ApMetrics = "AP_METRICS";
 
         internal static void PrintUsage(string message, Usages usageStyle, string commandName = null)
         {
-            //Contract.Requires(usageStyle != Usages.Single || commandName != null);
+            //Contract.Requires(usageStyle != Usages.Single || commandName != null);q
+            // HACK: override help text generator here because we can't change it in MainEntry -- yet
+            // https://github.com/natemcmaster/CommandLineUtils/issues/52
+            CommandLineApplication.HelpTextGenerator = CustomHelpTextGenerator.Singleton;
+
+            var root = CommandLineApplication.Root();
 
             if (!string.IsNullOrWhiteSpace(message))
             {
@@ -183,41 +189,36 @@ namespace AnalysisPrograms
             if (usageStyle == Usages.All)
             {
                 // print entire usage
-                CommandLineApplication.GetHelpText();
+                root.ShowHelp();
             }
             else if (usageStyle == Usages.Single)
             {
-                if (string.IsNullOrWhiteSpace(commandName))
+                var command = root.Commands.FirstOrDefault(x =>
+                    x.Name.Equals(commandName, StringComparison.InvariantCultureIgnoreCase));
+
+                if (command == null)
                 {
-                    Log.Error("************* Can't print usage due to empty action name **************");
+                    throw new CommandParsingException(
+                        CommandLineApplication,
+                        $"Could not find a command with name that matches `{commandName}`.");
                 }
-                else
-                {
-                    CommandLineApplication.ShowHelp(commandName);
-                }
+
+                command.ShowHelp();
             }
             else if (usageStyle == Usages.ListAvailable)
             {
-                var commands = CommandLineApplication.Commands;
+                var commands = root.Commands;
 
-                var sb = new StringBuilder();
-
-                sb.AppendLine("Available actions - ");
-
-                foreach (var command in commands)
+                using (var sb = new StringWriter())
                 {
-                    sb.AppendLine("\t" + command.Name + " - " + command.Description);
-                }
+                    CustomHelpTextGenerator.Singleton.FormatCommands(sb, commands);
 
-                LoggedConsole.WriteLine(sb.ToString());
+                    LoggedConsole.WriteLine(sb.ToString());
+                }
             }
             else if (usageStyle == Usages.NoAction)
             {
-                // this branch should no longer be needed because new command line utils handles this natively
-                throw new InvalidOperationException();
-                
-                //var usage = ArgUsage.GetStyledUsage<MainEntryArguments>(options: UsagePrintOptions, includedActions: new[] { "list", "help" });
-                //LoggedConsole.WriteLine(InsertEnvironmentVariablesIntoUsage(usage.ToString()));
+                CommandLineApplication.ShowHint();
             }
             else
             {
@@ -226,34 +227,43 @@ namespace AnalysisPrograms
 
         }
 
-        internal static string InsertEnvironmentVariablesIntoUsage(string usage)
-        {
-            return usage.Insert(
-                usage.IndexOf("Global options:", StringComparison.Ordinal),
-                "Environment variables:\n" +
-                "    " +
-                ApPlainLogging + 
-                "  [true|false]\t Enable simpler logging - the default value is `false`\n");
-        }
+        public static readonly Dictionary<string, string> EnvironmentOptions =
+            new Dictionary<string, string>
+                {
+                    {
+                        ApPlainLogging,
+                        "[true|false]\t Enable simpler logging - the default value is `false`"
+                    },
+                    {
+                        ApMetrics,
+                        "[true|false]\t (Not implemented) Enable or disable metrics - default value is `true`"
+                    },
+                };
 
         private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs unhandledExceptionEventArgs)
         {
             Contract.Requires(unhandledExceptionEventArgs != null);
             Contract.Requires(unhandledExceptionEventArgs.ExceptionObject != null);
 
-            const string fatalMessage = "FATAL ERROR:\n\t";
+            const string FatalMessage = "Fatal error:\n  ";
 
             var ex = (Exception)unhandledExceptionEventArgs.ExceptionObject;
 
             ExceptionLookup.ExceptionStyle style;
             bool found = false;
-            if (ex is AggregateException original)
+            Exception inner = ex;
+            switch (ex)
             {
-                found = ExceptionLookup.ErrorLevels.TryGetValue(original.InnerException.GetType(), out style);
-            }
-            else
-            {
-                found = ExceptionLookup.ErrorLevels.TryGetValue(ex.GetType(), out style);
+                case TargetInvocationException _:
+                case AggregateException _:
+                    // unwrap
+                    inner = ex.InnerException;
+                    Log.Debug($"Unwrapped {ex.GetType().Name} exception to show a  {inner.GetType().Name}");
+                    found = ExceptionLookup.ErrorLevels.TryGetValue(inner.GetType(), out style);
+                    break;
+                default:
+                    found = ExceptionLookup.ErrorLevels.TryGetValue(ex.GetType(), out style);
+                    break;
             }
 
             found = found && style.Handle;
@@ -261,57 +271,18 @@ namespace AnalysisPrograms
             // if found, print message only if usage printing disabled
             if (found && !style.PrintUsage)
             {
-                // this branch prints the message but suppresses the stack trace
-                LoggedConsole.WriteFatalLine(fatalMessage, ex);
+                // this branch prints the message but suppresses the stack trace in the console
+                NoConsole.Log.Fatal(FatalMessage, ex);
+                LoggedConsole.WriteFatalLine(FatalMessage + inner.Message);
             }
             else if (found && ex.GetType() != typeof(Exception))
             {
-                NoConsole.Log.Fatal("Fatal exception:", ex);
+                // this branch prints the message, and command usage, but suppressed the stack trace in the console
+                NoConsole.Log.Fatal(FatalMessage, ex);
 
-                var action = CommandLineApplication.Name;
-                // print usage, if exception is recognized
-                // --
-                // attempt to retrieve action
-//                string action = null;
-//                if (Arguments != null)
-//                {
-//                    action = ((MainEntryArguments)Arguments.Value).Action;
-//                }
-//                else if (ex is ArgException)
-//                {
-//                    action = (ex as ArgException).Action;
-//                }
-//                else if (ArgException.LastAction.IsNotWhitespace())
-//                {
-//                    action = ArgException.LastAction;
-//                }
-//
-//                if (ex is MissingArgException && ex.Message.Contains("action"))
-//                {
-//                    PrintUsage("An action is required to run the program, here are some suggestions:", Usages.NoAction);
-//                }
-//                else if (ex is UnknownActionArgException)
-//                {
-//                    PrintUsage(ex.Message, Usages.NoAction);
-//                }
-//                else if (ex is ValidationArgException)
-//                {
-//                    // for validation exceptions, use the inner exception
-//                    ExceptionLookup.ErrorLevels.TryGetValue(ex.InnerException.GetType(), out style);
-//                    PrintUsage(ex.Message, Usages.Single, action);
-//                }
-
-                if (ex.InnerException is TargetInvocationException)
-                {
-                    var message = fatalMessage;
-                    message += FormatTargetInvocationException(ex.InnerException);
-                    PrintUsage(message, Usages.Single, action ?? string.Empty);
-                }
-                else
-                {
-                    var message = fatalMessage + ex.Message;
-                    PrintUsage(message, Usages.Single, action ?? string.Empty);
-                }
+                var command = CommandLineApplication.Name;
+                var message = FatalMessage + inner.Message;
+                PrintUsage(message, Usages.Single, command ?? string.Empty);
             }
             else
             {
@@ -366,32 +337,6 @@ namespace AnalysisPrograms
                     }
                 }
             }
-
-        }
-
-        /// <summary>
-        ///  Return the message of the first inner exception that is not an Invocation exception.
-        /// </summary>
-        /// <param name="ex"></param>
-        /// <param name="depth"></param>
-        private static string FormatTargetInvocationException(Exception ex, int depth = 0)
-        {
-            var depthString = "==".PadLeft(depth * 2, '=');
-
-            var message = string.Empty;
-
-            if (ex is TargetInvocationException)
-            {
-                var tiex = (TargetInvocationException)ex;
-
-                message += FormatTargetInvocationException(tiex.InnerException, depth + 1);
-            }
-            else
-            {
-                message = depthString + "> Inner exception: " + ex.Message + Environment.NewLine;
-            }
-
-            return message;
         }
 
         /// <summary>
@@ -432,6 +377,15 @@ namespace AnalysisPrograms
             else
             {
                 root.RemoveAppender("SimpleConsoleAppender");
+            }
+
+            if (bool.TryParse(Environment.GetEnvironmentVariable(ApMetrics), out var parseMetrics))
+            {
+                Log.Trace("Metric reporting enabled but not implemented");
+            }
+            else
+            {
+                Log.Trace("Metric reporting disabled");
             }
         }
 

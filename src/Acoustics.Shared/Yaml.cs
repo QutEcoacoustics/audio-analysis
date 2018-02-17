@@ -54,9 +54,9 @@ namespace Acoustics.Shared
             }
         }
 
-        internal static (object, T) LoadAndDeserialize<T>(FileInfo file)
+        internal static (object, T) LoadAndDeserialize<T>(string path)
         {
-            using (var stream = file.OpenText())
+            using (var stream = File.OpenText(path))
             {
                 // allow merging in yaml back references
                 var parser = new MergingParser(new Parser(stream));

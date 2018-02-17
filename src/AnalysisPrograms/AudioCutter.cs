@@ -24,7 +24,7 @@
         [Command(
             CommandName,
             Description = "Cuts audio into segments of desired length and format")]
-        public class Arguments :SubCommandBase
+        public class Arguments : SubCommandBase
         {
             //[ArgDescription("The directory containing audio files.")]
             //[Production.ArgExistingDirectory(createIfNotExists: false)]
@@ -32,53 +32,69 @@
             //[ArgPosition(1)]
             //public virtual DirectoryInfo Input { get; set; }
 
-            [Option("The audio file to segment.")]
+            [Argument(
+                0,
+                Description = "The audio file to segment.")]
             [Required]
             [FileExists]
-            public FileInfo InputFile { get; set; }
+            [LegalFilePath]
+            public string InputFile { get; set; }
 
-            [Option("The directory to create segmented audio files.")]
+            [Argument(
+                1,
+                Description = "The directory to create segmented audio files.")]
             [DirectoryExistsOrCreate(createIfNotExists: true)]
             [Required]
-            public DirectoryInfo OutputDir { get; set; }
+            [LegalFilePath]
+            public string OutputDir { get; set; }
 
-            [Option("The directory for temporary files.")]
+            [Option(
+                Description = "The directory for temporary files.",
+                ShortName = "t")]
             [DirectoryExistsOrCreate(createIfNotExists: true)]
-            public DirectoryInfo TemporaryFilesDir { get; set; }
+            [LegalFilePath]
+            public string TemporaryFilesDir { get; set; }
 
             //[ArgDescription("Whether to recurse into subdirectories.")]
             //[DefaultValue(false)]
             //public bool Recurse { get; set; }
 
             [Option(
-                "The offset to start creating segmented audio files (in seconds, defaults to start of original file).")]
+                Description = "The offset to start creating segmented audio files (in seconds, defaults to start of original file).")]
             [InRange(min: 0)]
             public double StartOffset { get; set; } = 0;
 
-            [Option("The offset to stop creating segmented audio files (in seconds, defaults to end of original file).")]
+            [Option(Description = "The offset to stop creating segmented audio files (in seconds, defaults to end of original file).")]
             [InRange(min: 0)]
             public double? EndOffset { get; set; }
 
             [Option(
-                "The minimum duration of a segmented audio file (in seconds, defaults to 10; must be within [0,3600]).")]
+                Description = "The minimum duration of a segmented audio file (in seconds, defaults to 10; must be within [0,3600]).",
+                ShortName = "")]
             [InRange(1, 3600)]
             public double SegmentDurationMinimum { get; set; } = 10;
 
-            [Option("The duration of a segmented audio file (in seconds, defaults to 60; must be within [0,3600]).")]
+            [Option(
+                Description = "The duration of a segmented audio file (in seconds, defaults to 60; must be within [0,3600]).",
+                ShortName = "d")]
             [InRange(1, 3600)]
             public double SegmentDuration { get; set; } = 60;
 
-            [Option("The duration of overlap between segmented audio files (in seconds, defaults to 0).")]
+            [Option(
+                Description = "The duration of overlap between segmented audio files (in seconds, defaults to 0).",
+                ShortName = "")]
             [InRange(0, 3600)]
             public double SegmentOverlap { get; set; } = 0;
 
             [Option(
-                "The file type (file extension) of segmented audio files (defaults to wav; some possible values are wav, mp3, ogg, webm).")]
+                Description = "The file type (file extension) of segmented audio files (defaults to wav; some possible values are wav, mp3, ogg, webm).",
+                ShortName = "")]
             [OneOfThese("wav", "mp3", "ogg", "webm")]
             public string SegmentFileExtension { get; set; } = "wav";
 
             [Option(
-                "The sample rate for segmented audio files (in hertz, defaults to 22050; valid values are 17640, 22050, 44100).")]
+                Description = "The sample rate for segmented audio files (in hertz, defaults to 22050; valid values are 17640, 22050, 44100).",
+                ShortName = "r")]
             [InRange(8000, 96000)]
             public int SampleRate { get; set; } = 22050;
 
@@ -93,8 +109,9 @@
 
             [Option(
                 CommandOptionType.SingleValue,
-                Description = "Whether to create segments in parallel or sequentially (defaults to true - parallel).")]
-            public bool RunParallel { get; set; } = true;
+                Description = "Whether to create segments in parallel or sequentially (defaults to true - parallel).",
+                ShortName = "p")]
+            public bool Parallel { get; set; } = true;
 
             public override Task<int> Execute(CommandLineApplication app)
             {
@@ -124,11 +141,11 @@
                 AnalysisMinSegmentDuration = TimeSpan.FromSeconds(arguments.SegmentDurationMinimum),
                 SegmentOverlapDuration = TimeSpan.FromSeconds(arguments.SegmentOverlap),
                 AnalysisTargetSampleRate = arguments.SampleRate,
-                AnalysisTempDirectory = arguments.TemporaryFilesDir,
+                AnalysisTempDirectory = arguments.TemporaryFilesDir.ToDirectoryInfo(),
             };
 
             // create segments from file
-            var fileSegment = new FileSegment(arguments.InputFile, TimeAlignment.None)
+            var fileSegment = new FileSegment(arguments.InputFile.ToFileInfo(), TimeAlignment.None)
             {
                 SegmentStartOffset = TimeSpan.FromSeconds(arguments.StartOffset),
             };
@@ -143,10 +160,10 @@
             LoggedConsole.WriteLine(
                 "Started segmenting at {0} {1}: {2}.",
                 DateTime.Now,
-                arguments.RunParallel ? "in parallel" : "sequentially",
+                arguments.Parallel ? "in parallel" : "sequentially",
                 arguments.InputFile);
 
-            if (arguments.RunParallel)
+            if (arguments.Parallel)
             {
                 RunParallel(fileSegments, sourcePreparer, settings, arguments);
             }
@@ -193,7 +210,7 @@
             bool mixDownToMono)
         {
             var task = sourcePreparer.PrepareFile(
-                    arguments.OutputDir,
+                    arguments.OutputDir.ToDirectoryInfo(),
                     fileSegment,
                     settings.SegmentMediaType,
                     settings.AnalysisTargetSampleRate,

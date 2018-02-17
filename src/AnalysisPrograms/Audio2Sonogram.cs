@@ -56,11 +56,11 @@ namespace AnalysisPrograms
         public class Arguments : SourceConfigOutputDirArguments
         {
 
-            [Option("The start offset to start analyzing from (in seconds)")]
+            [Option(Description = "The start offset to start analyzing from (in seconds)")]
             [InRange(min: 0)]
             public double? StartOffset { get; set; }
 
-            [Option("The end offset to stop analyzing (in seconds)")]
+            [Option(Description = "The end offset to stop analyzing (in seconds)")]
             [InRange(min: 0)]
             public double? EndOffset { get; set; }
 
@@ -100,7 +100,7 @@ namespace AnalysisPrograms
                 //Source = @"C:\SensorNetworks\WavFiles\ConvDNNData\Melaleuca_Middle_183_192469_20101123_013009_4.0__.wav".ToFileInfo(),
                 //Source = @"C:\SensorNetworks\WavFiles\ConvDNNData\SE_399_188293_20101014_132950_4.0__.wav".ToFileInfo(),
 
-                Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo(),
+                Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml",
                 //Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Mangalam.Sonogram.yml".ToFileInfo(),
             };
 
@@ -114,9 +114,14 @@ namespace AnalysisPrograms
                 arguments = Dev();
             }
 
-            if (!arguments.Output.Exists)
+            // 1. set up the necessary files
+            FileInfo sourceRecording = arguments.Source;
+            FileInfo configFile = arguments.Config.ToFileInfo();
+            DirectoryInfo output = arguments.Output;
+
+            if (!output.Exists)
             {
-                arguments.Output.Create();
+                output.Create();
             }
 
             if (arguments.StartOffset.HasValue ^ arguments.EndOffset.HasValue)
@@ -139,17 +144,14 @@ namespace AnalysisPrograms
             string date = "# DATE AND TIME: " + DateTime.Now;
             LoggedConsole.WriteLine(title);
             LoggedConsole.WriteLine(date);
-            LoggedConsole.WriteLine("# Input  audio file: " + arguments.Source.Name);
+            LoggedConsole.WriteLine("# Input  audio file: " + sourceRecording.Name);
 
-            // 1. set up the necessary files
-            FileInfo sourceRecording = arguments.Source;
-            FileInfo configFile = arguments.Config;
-            DirectoryInfo output = arguments.Output;
+
 
             // 2. get the config dictionary
             var configDict = GetConfigDictionary(configFile, false);
-            configDict[ConfigKeys.Recording.Key_RecordingCallName] = arguments.Source.FullName;
-            configDict[ConfigKeys.Recording.Key_RecordingFileName] = arguments.Source.Name;
+            configDict[ConfigKeys.Recording.Key_RecordingCallName] = sourceRecording.FullName;
+            configDict[ConfigKeys.Recording.Key_RecordingFileName] = sourceRecording.Name;
 
             // 3: GET TEMPORARY RECORDING
             int resampleRate = Convert.ToInt32(configDict[AnalysisKeys.ResampleRate]);

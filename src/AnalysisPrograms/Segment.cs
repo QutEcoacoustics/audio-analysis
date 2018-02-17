@@ -75,7 +75,7 @@
             Log.Verbosity = 1;
 
             FileInfo recordingPath = arguments.Source;
-            FileInfo iniPath = arguments.Config;
+            FileInfo iniPath = arguments.Config.ToFileInfo();
             DirectoryInfo outputDir = arguments.Output;
             string opFName = "segment-output.txt";
             FileInfo opPath = outputDir.CombineFile(opFName);

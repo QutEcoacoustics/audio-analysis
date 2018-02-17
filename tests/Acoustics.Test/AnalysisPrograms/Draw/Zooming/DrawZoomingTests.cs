@@ -40,7 +40,7 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
             var arguments = new AnalyseLongRecording.Arguments
             {
                 Source = recordingPath,
-                Config = configPath,
+                Config = configPath.FullName,
                 Output = SharedDirectory,
                 TempDir = SharedDirectory.Combine("Temp"),
             };
@@ -87,7 +87,7 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
                         {
                             Output = this.outputDirectory.FullName,
                             SourceDirectory = ResultsDirectory.FullName,
-                            SpectrogramZoomingConfig = newConfigFile,
+                            SpectrogramZoomingConfig = newConfigFile.FullName,
                             ZoomAction = DrawZoomingSpectrograms.Arguments.ZoomActionType.Tile,
                         });
             }
@@ -112,7 +112,7 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
                 {
                     Output = zoomOutput.FullName,
                     SourceDirectory = ResultsDirectory.FullName,
-                    SpectrogramZoomingConfig = PathHelper.ResolveConfigFile("SpectrogramZoomingConfig.yml"),
+                    SpectrogramZoomingConfig = PathHelper.ResolveConfigFile("SpectrogramZoomingConfig.yml").FullName,
                     ZoomAction = DrawZoomingSpectrograms.Arguments.ZoomActionType.Tile,
                 });
 
@@ -149,7 +149,7 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
                     Output = zoomOutput.FullName,
                     OutputFormat = "sqlite3",
                     SourceDirectory = ResultsDirectory.FullName,
-                    SpectrogramZoomingConfig = PathHelper.ResolveConfigFile("SpectrogramZoomingConfig.yml"),
+                    SpectrogramZoomingConfig = PathHelper.ResolveConfigFile("SpectrogramZoomingConfig.yml").FullName,
                     ZoomAction = DrawZoomingSpectrograms.Arguments.ZoomActionType.Tile,
                 });
 

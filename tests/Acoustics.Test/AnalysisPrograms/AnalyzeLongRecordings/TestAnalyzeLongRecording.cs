@@ -86,7 +86,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             var arguments = new AnalyseLongRecording.Arguments
             {
                 Source = recordingPath,
-                Config = configPath,
+                Config = configPath.FullName,
                 Output = this.outputDirectory,
                 MixDownToMono = true,
             };
@@ -194,7 +194,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             var arguments = new AnalyseLongRecording.Arguments
             {
                 Source = recordingPath,
-                Config = newConfigPath,
+                Config = newConfigPath.FullName,
                 Output = this.outputDirectory,
                 MixDownToMono = true,
             };
@@ -297,7 +297,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             var arguments = new AnalyseLongRecording.Arguments
             {
                 Source = recordingPath,
-                Config = newConfigPath,
+                Config = newConfigPath.FullName,
                 Output = this.outputDirectory,
                 MixDownToMono = true,
             };
@@ -326,7 +326,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             var arguments = new AnalyseLongRecording.Arguments
             {
                 Source = recordingPath,
-                Config = newConfigPath,
+                Config = newConfigPath.FullName,
                 Output = this.outputDirectory,
                 MixDownToMono = true,
             };

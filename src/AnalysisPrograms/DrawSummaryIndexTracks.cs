@@ -41,18 +41,23 @@ namespace AnalysisPrograms
         public class Arguments
             : SubCommandBase
         {
-            [Option("The csv file containing rows of summary indices, one row per time segment - typical one minute segments.")]
+            [Option(Description = "The csv file containing rows of summary indices, one row per time segment - typical one minute segments.")]
             [ExistingFile(Extension = ".csv")]
-            public FileInfo InputCsv { get; set; }
+            [LegalFilePath]
+            public string InputCsv { get; set; }
 
-            [Option("Config file containing properties of summary indices.")]
+            [Option(
+                Description = "Config file containing properties of summary indices.",
+                ShortName = "ip")]
             [ExistingFile]
-            public FileInfo IndexPropertiesConfig { get; set; }
+            [LegalFilePath]
+            public string IndexPropertiesConfig { get; set; }
 
-            [Option("A file path to write output image")]
+            [Option(Description = "A file path to write output image")]
             [NotExistingFile(Extension = ".png")]
             [Required]
-            public FileInfo Output { get; set; }
+            [LegalFilePath]
+            public string Output { get; set; }
 
             public override Task<int> Execute(CommandLineApplication app)
             {
@@ -82,7 +87,7 @@ namespace AnalysisPrograms
 
             return new Arguments
             {
-                IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml".ToFileInfo(),
+                //IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml".ToFileInfo(),
                 //ImageConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg".ToFileInfo(),
 
                 //2010 Oct 13th
@@ -102,8 +107,8 @@ namespace AnalysisPrograms
                 //Output   = @"C:\SensorNetworks\Output\Test\Test_30April2014\SERF_SE_2010Oct16_SummaryIndices.png".ToFileInfo()
 
                 //2010 Oct 17th
-                InputCsv = @"C:\SensorNetworks\Output\SERF\2014Apr24-020709 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\0f2720f2-0caa-460a-8410-df24b9318814_101017-0000.mp3\Towsey.Acoustic\0f2720f2-0caa-460a-8410-df24b9318814_101017-0000_Towsey.Acoustic.Indices.csv".ToFileInfo(),
-                Output   = @"C:\SensorNetworks\Output\Test\Test_30April2014\SERF_SE_2010Oct17_SummaryIndices.png".ToFileInfo(),
+                //InputCsv = @"C:\SensorNetworks\Output\SERF\2014Apr24-020709 - Indices, OCT 2010, SERF\SERF\TaggedRecordings\SE\0f2720f2-0caa-460a-8410-df24b9318814_101017-0000.mp3\Towsey.Acoustic\0f2720f2-0caa-460a-8410-df24b9318814_101017-0000_Towsey.Acoustic.Indices.csv".ToFileInfo(),
+                //Output   = @"C:\SensorNetworks\Output\Test\Test_30April2014\SERF_SE_2010Oct17_SummaryIndices.png".ToFileInfo(),
             };
 
             throw new NoDeveloperMethodException();
@@ -133,21 +138,23 @@ namespace AnalysisPrograms
 
             }
 
-            arguments.Output.CreateParentDirectories();
+            var input = arguments.InputCsv.ToFileInfo();
+            var output = arguments.Output.ToFileInfo();
+            output.CreateParentDirectories();
 
             // Find required index generation data
-            var igd = IndexGenerationData.GetIndexGenerationData(arguments.InputCsv.Directory.ToDirectoryEntry());
+            var igd = IndexGenerationData.GetIndexGenerationData(input.Directory.ToDirectoryEntry());
 
             // Convert summary indices to image
-            string fileName = Path.GetFileNameWithoutExtension(arguments.InputCsv.Name);
+            string fileName = input.BaseName();
             string title = $"SOURCE:{fileName},   {Meta.OrganizationTag};  ";
             Bitmap tracksImage = IndexDisplay.DrawImageOfSummaryIndexTracks(
-                arguments.InputCsv,
-                arguments.IndexPropertiesConfig,
+                input,
+                arguments.IndexPropertiesConfig.ToFileInfo(),
                 title,
                 igd.IndexCalculationDuration,
                 igd.RecordingStartDate);
-            tracksImage.Save(arguments.Output.FullName);
+            tracksImage.Save(output.FullName);
 
         }
     }

@@ -166,7 +166,7 @@ namespace AnalysisPrograms
             Description = "[UNMAINTAINED] Event Pattern Recognition - used for ground-parrots (TOWSEY version). Revise code if intend to use.")]
         public class Arguments : SourceAndConfigArguments
         {
-            [Option("prefix of name of the created output files")]
+            [Option(Description = "prefix of name of the created output files")]
             [LegalFilePath]
             [Required]
             public string Target { get; set; }
@@ -189,9 +189,11 @@ namespace AnalysisPrograms
 
             string targetName = arguments.Target; // prefix of name of created files
 
-            string recordingFileName = arguments.Source.Name;
-            string recordingDirectory = arguments.Source.DirectoryName;
-            DirectoryInfo outputDir = arguments.Config.Directory;
+            var input = arguments.Source;
+
+            string recordingFileName = input.Name;
+            string recordingDirectory = input.DirectoryName;
+            DirectoryInfo outputDir = arguments.Config.ToFileInfo().Directory;
             FileInfo targetPath = outputDir.CombineFile(targetName + "_target.txt");
             FileInfo targetNoNoisePath = outputDir.CombineFile(targetName + "_targetNoNoise.txt");
             FileInfo noisePath = outputDir.CombineFile(targetName + "_noise.txt");
@@ -201,7 +203,7 @@ namespace AnalysisPrograms
             Log.WriteIfVerbose("# Output folder =" + outputDir);
 
             //i: GET RECORDING
-            AudioRecording recording = new AudioRecording(arguments.Source.FullName);
+            AudioRecording recording = new AudioRecording(input.FullName);
             //if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz(); THIS METHOD CALL IS OBSOLETE
             int sr = recording.SampleRate;
 

@@ -100,6 +100,11 @@ namespace System
             Log.Fatal(str, exception);
         }
 
+        public static void WriteFatalLine(string str)
+        {
+            Log.Fatal(str);
+        }
+
         public static void WriteWaitingLine<T>(Task<T> task, string message = null)
         {
             WriteLine(message ?? "Waiting...");
@@ -121,6 +126,7 @@ namespace System
                     {
                         return ReadHiddenLine();
                     }
+
                     var line = System.Console.ReadLine();
                     return line;
                 });
