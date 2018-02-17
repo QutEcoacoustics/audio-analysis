@@ -13,11 +13,6 @@ namespace TowseyLibrary
 
     public static class TernaryPlots
     {
-        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
-        public static void Dev()
-        {
-        }
-
         /// <summary>
         /// Draws a ternary plot from the passed data.
         /// Assumes that the passed matrix values are all normalised in [0,1].

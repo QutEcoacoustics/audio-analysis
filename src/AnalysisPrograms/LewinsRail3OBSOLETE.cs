@@ -79,52 +79,6 @@
             get { return "Towsey." + AnalysisName; }
         }
 
-        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
-        public static void Dev(Arguments arguments)
-        {
-            var executeDev = arguments == null;
-            if (executeDev)
-            {
-                //string recordingPath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav";
-                //string recordingPath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-084607.wav";
-                //string recordingPath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-062040.wav";
-                string recordingPath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-075040.wav";
-                //string recordingPath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
-                string configPath = @"C:\SensorNetworks\Output\LewinsRail\LewinsRail.cfg";
-                string outputDir = @"C:\SensorNetworks\Output\LewinsRail\";
-
-                string title = "# FOR DETECTION OF LEWIN'S RAIL using CROSS-CORRELATION & FFT";
-                string date = "# DATE AND TIME: " + DateTime.Now;
-                LoggedConsole.WriteLine(title);
-                LoggedConsole.WriteLine(date);
-                LoggedConsole.WriteLine("# Output folder:  " + outputDir);
-                LoggedConsole.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
-                var diOutputDir = new DirectoryInfo(outputDir);
-
-                Log.Verbosity = 1;
-                int startMinute = 0;
-                int durationSeconds = 60; //set zero to get entire recording
-                var tsStart = new TimeSpan(0, startMinute, 0); //hours, minutes, seconds
-                var tsDuration = new TimeSpan(0, 0, durationSeconds); //hours, minutes, seconds
-                var segmentFileStem = Path.GetFileNameWithoutExtension(recordingPath);
-                var segmentFName = string.Format("{0}_{1}min.wav", segmentFileStem, startMinute);
-                var sonogramFname = string.Format("{0}_{1}min.png", segmentFileStem, startMinute);
-                var eventsFname = string.Format("{0}_{1}min.{2}.Events.csv", segmentFileStem, startMinute, "Towsey." + AnalysisName);
-                var indicesFname = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, startMinute, "Towsey." + AnalysisName);
-
-                arguments = new Arguments
-                {
-                    Source = recordingPath.ToFileInfo(),
-                    Config = configPath.ToFileInfo(),
-                    Output = outputDir.ToDirectoryInfo(),
-                    Start = tsStart.TotalSeconds,
-                    Duration = tsDuration.TotalSeconds,
-                };
-            }
-
-            //Execute(arguments);
-        }
-
 /*
         /// <summary>
         /// A WRAPPER AROUND THE Analysis() METHOD

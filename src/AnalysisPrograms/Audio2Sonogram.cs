@@ -69,50 +69,8 @@ namespace AnalysisPrograms
             }
         }
 
-        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
-        private static Arguments Dev()
-        {
-            return new Arguments
-            {
-                //MARINE
-                //Source = @"C:\SensorNetworks\WavFiles\MarineRecordings\20130318_171500.wav".ToFileInfo(),
-                //Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.SonogramMarine.yml".ToFileInfo(),
-                //Output = @"C:\SensorNetworks\Output\MarineSonograms\".ToDirectoryInfo(),
-
-                // LEWINs RAIL
-                //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-062040.wav".ToFileInfo(),
-                //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav".ToFileInfo(),
-                //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav".ToFileInfo(),
-                //Output = @"C:\SensorNetworks\Output\LewinsRail".ToDirectoryInfo(),
-                Source = @"G:\SensorNetworks\WavFiles\LewinsRail\FromLizZnidersic\Lewinsrail_TasmanIs_Tractor_SM304253_0151119_0640_1min.wav".ToFileInfo(),
-                Output = @"C:\SensorNetworks\Output\LewinsRail\LewinsRail_ThreeCallTypes".ToDirectoryInfo(),
-
-                //CANETOAD
-                //Source = @"Y:\Canetoad\FromPaulRoe\canetoad_CubberlaCreek_100529_16bitPCM.wav".ToFileInfo(),
-
-                //Source = @"C:\SensorNetworks\WavFiles\Frogs\JCU\Litoria fellax1.mp3".ToFileInfo(),
-                //Source = @"C:\SensorNetworks\WavFiles\Frogs\MiscillaneousDataSet\CaneToads_rural1_20_MONO.wav".ToFileInfo(),
-                //Source = @"C:\SensorNetworks\WavFiles\TestRecordings\NW_NW273_20101013-051200-0514-1515-Brown Cuckoo-dove1.wav".ToFileInfo(),
-
-                //Source = @"C:\SensorNetworks\WavFiles\ConvDNNData\Kanowski_651_233394_20120831_072112_4.0__.wav".ToFileInfo(),
-                //Source = @"C:\SensorNetworks\WavFiles\ConvDNNData\Melaleuca_Middle_183_192469_20101123_013009_4.0__.wav".ToFileInfo(),
-                //Source = @"C:\SensorNetworks\WavFiles\ConvDNNData\SE_399_188293_20101014_132950_4.0__.wav".ToFileInfo(),
-
-                Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml",
-
-                //Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Mangalam.Sonogram.yml".ToFileInfo(),
-            };
-
-            throw new NoDeveloperMethodException();
-        }
-
         public static void Main(Arguments arguments)
         {
-            if (arguments == null)
-            {
-                arguments = Dev();
-            }
-
             // 1. set up the necessary files
             FileInfo sourceRecording = arguments.Source;
             FileInfo configFile = arguments.Config.ToFileInfo();

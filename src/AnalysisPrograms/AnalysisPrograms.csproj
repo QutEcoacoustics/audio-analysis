@@ -261,7 +261,6 @@
     <Compile Include="AudioCutter.cs" />
     <Compile Include="AudioFileCheck.cs" />
     <Compile Include="Draw\Zooming\DrawZoomingSpectrograms.Arguments.cs" />
-    <Compile Include="Draw\Zooming\DrawZoomingSpectrograms.Dev.cs" />
     <Compile Include="EventStatistics\EventStatisticsEntry.Arguments.cs" />
     <Compile Include="EventStatistics\EventStatisticsAnalysis.cs" />
     <Compile Include="EventStatistics\EventStatisticsEntry.cs" />

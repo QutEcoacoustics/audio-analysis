@@ -35,7 +35,7 @@ namespace AnalysisPrograms
 
         [Command(
             CommandName,
-            Description = "[DEPRACATED]. Only used in 2012 to analyse output from LSKiwi3.Dev().")]
+            Description = "[DEPRACATED]. Only used in 2012 to analyse output from LSKiwi3")]
         public class Arguments : SubCommandBase
         {
             [Option(Description = "Full path of the csv file containing description of potential kiwi calls. File must be in correct csv format.")]

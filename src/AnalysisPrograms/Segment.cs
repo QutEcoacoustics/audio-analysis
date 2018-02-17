@@ -48,31 +48,8 @@ namespace AnalysisPrograms
             }
         }
 
-        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
-        public static Arguments Dev()
-        {
-            //Following lines are used for the debug command line.
-            //CANETOAD
-            //segment  "C:\SensorNetworks\WavFiles\Canetoad\DM420010_128m_00s__130m_00s - Toads.mp3"                               C:\SensorNetworks\Output\SEGMENT\SEGMENT_Params.txt events.txt
-            //GECKO
-            //segment "C:\SensorNetworks\WavFiles\Gecko\Gecko05012010\DM420008_26m_00s__28m_00s - Gecko.mp3"                       C:\SensorNetworks\Output\SEGMENT\SEGMENT_Params.txt events.txt
-            //segment "C:\SensorNetworks\WavFiles\Gecko\Suburban_March2010\geckos_suburban_38.mp3"                                C:\SensorNetworks\Output\SEGMENT\SEGMENT_Params.txt events.txt
-            //KOALA MALE EXHALE
-            //segment "C:\SensorNetworks\WavFiles\Koala_Male\Recordings\KoalaMale\LargeTestSet\WestKnoll_Bees_20091103-190000.wav" C:\SensorNetworks\Output\SEGMENT\SEGMENT_Params.txt events.txt
-            //segment "C:\SensorNetworks\WavFiles\Koala_Male\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav"                 C:\SensorNetworks\Output\SEGMENT\SEGMENT_Params.txt events.txt
-
-            throw new NotImplementedException();
-
-            //return new Arguments();
-        }
-
         public static void Execute(Arguments arguments)
         {
-            if (arguments == null)
-            {
-                arguments = Dev();
-            }
-
             string date = "# DATE AND TIME: " + DateTime.Now;
             Log.WriteLine("# SEGMENTING A RECORDING");
             Log.WriteLine(date);

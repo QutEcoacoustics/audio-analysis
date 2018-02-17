@@ -34,66 +34,6 @@ namespace AudioAnalysisTools
         private const string HEADERS = "index,Hz(top),SPT,RHZ,RVT,RPS,RNG";
 
         /// <summary>
-        /// This DEV method runs the EXECUTE method in this class. It sets up the input/output arguments that go into the Aruments class.
-        /// Access to this DEV class is from the EXECUTE class.
-        /// Access to the EXECUTE class is currently from the Sandpit.cs class.
-        /// "sandpit" as the FIRST AND ONLY command line argument
-        /// Activity Codes for other tasks to do with spectrograms and audio files:
-        ///
-        /// audio2csv - Calls AnalyseLongRecording.Execute(): Outputs acoustic indices and LD false-colour spectrograms.
-        /// audio2sonogram - Calls AnalysisPrograms.Audio2Sonogram.Main(): Produces a sonogram from an audio file - EITHER custom OR via SOX.Generates multiple spectrogram images and oscilllations info
-        /// indicescsv2image - Calls DrawSummaryIndexTracks.Main(): Input csv file of summary indices. Outputs a tracks image.
-        /// colourspectrogram - Calls DrawLongDurationSpectrograms.Execute():  Produces LD spectrograms from matrices of indices.
-        /// zoomingspectrograms - Calls DrawZoomingSpectrograms.Execute():  Produces LD spectrograms on different time scales.
-        /// differencespectrogram - Calls DifferenceSpectrogram.Execute():  Produces Long duration difference spectrograms
-        ///
-        /// audiofilecheck - Writes information about audio files to a csv file.
-        /// snr - Calls SnrAnalysis.Execute():  Calculates signal to noise ratio.
-        /// audiocutter - Cuts audio into segments of desired length and format
-        /// createfoursonograms
-        /// </summary>
-        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
-        public static Arguments Dev()
-        {
-            // INPUT and OUTPUT DIRECTORIES
-
-            // set up IP and OP directories
-            string inputDir = @"C:\SensorNetworks\Output\BIRD50\TrainingCSV";
-
-            //string imageInputDir = @"C:\SensorNetworks\Output\BIRD50\TrainingRidgeImages";
-            string OutputDir = @"C:\SensorNetworks\Output\BIRD50\SpeciesTEMPLATES_6dbThresholdVersion4";
-
-            //string imagOutputDireOutputDir = @"C:\SensorNetworks\Output\BIRD50\TestingRidgeImages";
-            string speciesLabelsFile = @"C:\SensorNetworks\Output\BIRD50\AmazonBird50_training_output.csv";
-
-            DirectoryInfo ipDir = new DirectoryInfo(inputDir);
-            DirectoryInfo opDir = new DirectoryInfo(OutputDir);
-
-            //FileInfo fiSpectrogramConfig = null;
-            FileInfo fiSpectrogramConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramFalseColourConfig.yml");
-
-            return new Arguments
-            {
-                InputDataDirectory = ipDir,
-                OutputDirectory = opDir,
-
-                // use the default set of index properties in the AnalysisConfig directory.
-                IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml".ToFileInfo(),
-                SpectrogramConfigPath = fiSpectrogramConfig,
-                SpeciesLabelsFile = speciesLabelsFile,
-                SpeciesCount = 50,
-                InstanceCount = 924, //trainingCount
-
-                //int instanceCount = 375; //testCount
-                //instanceCount = 2;
-
-                // background threshold value that is subtracted from all spectrograms.
-                BgnThreshold = 3.0,
-        };
-            throw new Exception();
-        } //Dev()
-
-        /// <summary>
         /// AT: NOTE: arguments classes should not exist outside of the AnalysisPrograms project. I had to remove PowerArgs attributes.
         /// </summary>
         public class Arguments
@@ -152,21 +92,17 @@ namespace AudioAnalysisTools
 
         public static void Execute(Arguments arguments)
         {
-            if (arguments == null)
+            bool verbose = true; // assume verbose if in dev mode
+            if (verbose)
             {
-                arguments = Dev();
-                bool verbose = true; // assume verbose if in dev mode
-                if (verbose)
-                {
-                    string date = "# DATE AND TIME: " + DateTime.Now;
-                    LoggedConsole.WriteLine("# ANALYSE THE BIRD-50 dataset from Herve Glotin");
-                    LoggedConsole.WriteLine(date);
+                string date = "# DATE AND TIME: " + DateTime.Now;
+                LoggedConsole.WriteLine("# ANALYSE THE BIRD-50 dataset from Herve Glotin");
+                LoggedConsole.WriteLine(date);
 
-                    //LoggedConsole.WriteLine("# Spectrogram Config      file: " + arguments.SpectrogramConfigPath);
-                    //LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
-                    LoggedConsole.WriteLine();
-                } // if (verbose)
-            } // if
+                //LoggedConsole.WriteLine("# Spectrogram Config      file: " + arguments.SpectrogramConfigPath);
+                //LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
+                LoggedConsole.WriteLine();
+            } // if (verbose)
 
             // This analysis consits of six steps.
 

@@ -301,7 +301,7 @@ namespace AnalysisPrograms
             string sonogramImagePath = outputDir + Path.GetFileNameWithoutExtension(recordingFileName) + ".png";
 
             //DrawSonogram(sonogram, sonogramImagePath, dBArray, dBThreshold / maxDB, odScores, dctThreshold, gpScores, template);
-        } // Dev()
+        }
 
         public static double[] DetectEPR(List<AcousticEvent> template, BaseSonogram sonogram, double[] odScores, double odThreshold)
         {

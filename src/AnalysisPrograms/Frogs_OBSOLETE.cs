@@ -52,69 +52,6 @@
             get { return "Towsey." + AnalysisName; }
         }
 
-        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
-        public static void Dev(Arguments arguments)
-        {
-            Log.Verbosity = 1;
-            bool debug = MainEntry.InDEBUG;
-
-            bool executeDev = arguments == null;
-            if (executeDev)
-            {
-                arguments = new Arguments();
-                //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Rheobatrachus_silus_MONO.wav";  //POSITIVE
-                //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Adelotus_brevis_TuskedFrog_BridgeCreek.wav";   // NEGATIVE walking on dry leaves
-                //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min646.wav";   //NEGATIVE  rain
-                //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min599.wav";   //NEGATIVE  rain
-                //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min602.wav";   //NEGATIVE  rain
-                //string recordingPath = @"C:\SensorNetworks\WavFiles\Noise\BAC3_20070924-153657_noise.wav";               // NEGATIVE  noise
-                //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\FrogPond_Samford_SE_555_20101023-000000.mp3";  // FROGs AT SAMFORD
-                //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Crinia_signifera_july08.wav";                  // Crinia signifera
-                //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Frogs_BridgeCreek_Night_Extract1-31-00.mp3";   // FROGs at Bridgecreek
-
-                //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Compilation6_Mono.mp3";                          // FROG COMPILATION
-                string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Curramore\CurramoreSelection-mono16kHz.mp3";
-                    // Curramore COMPILATION
-
-                string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Frogs.cfg";
-
-                string outputDir = @"C:\SensorNetworks\Output\Frogs\";
-
-                // example
-                // "C:\SensorNetworks\WavFiles\Frogs\Rheobatrachus_silus_MONO.wav" C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.RheobatrachusSilus.cfg" "C:\SensorNetworks\Output\Frogs\"
-
-                const int StartMinute = 0;
-                //int startMinute = 1;
-                const int DurationSeconds = 60; //set zero to get entire recording
-                var tsStart = new TimeSpan(0, StartMinute, 0); //hours, minutes, seconds
-                var tsDuration = new TimeSpan(0, 0, DurationSeconds); //hours, minutes, seconds
-                var segmentFileStem = Path.GetFileNameWithoutExtension(arguments.Source.Name);
-                var segmentFName = string.Format("{0}_{1}min.wav", segmentFileStem, StartMinute);
-                var sonogramFname = string.Format("{0}_{1}min.png", segmentFileStem, StartMinute);
-                var eventsFname = string.Format("{0}_{1}min.{2}.Events.csv", segmentFileStem, StartMinute, "Towsey." + AnalysisName);
-                var indicesFname = string.Format("{0}_{1}min.{2}.Indices.csv", segmentFileStem, StartMinute, "Towsey." + AnalysisName);
-
-                arguments = new Arguments
-                {
-                    Source = recordingPath.ToFileInfo(),
-                    Config = configPath.ToFileInfo(),
-                    Output = outputDir.ToDirectoryInfo(),
-                    Start = tsStart.TotalSeconds,
-                    Duration = tsDuration.TotalSeconds,
-                };
-            }
-
-            string date = "# DATE AND TIME: " + DateTime.Now;
-            LoggedConsole.WriteLine("# FOR DETECTION OF 'FROG SPECIES' ");
-            LoggedConsole.WriteLine(date);
-            LoggedConsole.WriteLine("# Output folder:  " + arguments.Output);
-            LoggedConsole.WriteLine("# Recording file: " + arguments.Source.Name);
-            var diOutputDir = arguments.Output;
-
-            Execute(arguments);
-
-        }
-
         /// <summary>
         /// A WRAPPER AROUND THE Analysis() METHOD
         /// To be called as an executable with command line arguments.

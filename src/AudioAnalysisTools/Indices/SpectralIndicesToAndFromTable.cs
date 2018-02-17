@@ -17,24 +17,6 @@ namespace AudioAnalysisTools.Indices
     /// </summary>
     public static class SpectralIndicesToAndFromTable
     {
-        private static Arguments Dev()
-        {
-            DateTime time = DateTime.Now;
-            string datestamp = string.Format("{0}{1:d2}{2:d2}", time.Year, time.Month, time.Day);
-            return new Arguments
-            {
-                IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml".ToFileInfo(),
-
-                //InputDir = @"Y:\Results\2013Feb05-184941 - Indicies Analysis of all of availae\SERF\Veg".ToDirectoryInfo(),
-                InputDir = @"C:\SensorNetworks\OutputDataSets\SERF - November 2013 Download".ToDirectoryInfo(),
-
-                //InputDir = @"Y:\Results\2013Nov30-023140 - SERF - November 2013 Download\SERF\November 2013 Download\Veg Plot WAV".ToDirectoryInfo(),
-                //SonogramConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo(),
-                TableDir = (@"C:\SensorNetworks\OutputDataSets\Spectrograms3D\" + datestamp).ToDirectoryInfo(),
-                OutputDir = (@"C:\SensorNetworks\Output\FalseColourSpectrograms\Spectrograms3D\" + datestamp).ToDirectoryInfo(),
-            };
-        }
-
         // use the following paths for the command line.
         public class Arguments
         {
@@ -65,11 +47,6 @@ namespace AudioAnalysisTools.Indices
         /// </summary>
         public static void Main(Arguments arguments)
         {
-            if (arguments == null)
-            {
-                arguments = Dev();
-            }
-
             if (!arguments.OutputDir.Exists)
             {
                 arguments.OutputDir.Create();

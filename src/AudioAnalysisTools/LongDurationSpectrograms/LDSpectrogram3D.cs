@@ -52,25 +52,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public const int TotalMinutesInDay = 1440;
         public const int TotalDaysInYear = 365;
 
-        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
-        private static Arguments Dev()
-        {
-            DateTime time = DateTime.Now;
-            string datestamp = $"{time.Year}{time.Month:d2}{time.Day:d2}";
-            var dev = new Arguments();
-            dev.IndexPropertiesConfig = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml"
-                .ToFileInfo();
-            dev.BrisbaneSunriseDatafile = @"C:\SensorNetworks\OutputDataSets\SunRiseSet\SunriseSet2013Brisbane.csv".ToFileInfo();
-            dev.InputDir = @"C:\SensorNetworks\OutputDataSets\SERF - November 2013 Download".ToDirectoryInfo();
-            dev.TableDir = @"C:\SensorNetworks\OutputDataSets\Spectrograms3D\".ToDirectoryInfo();
-            dev.OutputDir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\Spectrograms3D\"
-                .ToDirectoryInfo();
-            dev.SampleRate = 17640;
-            dev.FrameSize = 512;
-            dev.Verbose = true;
-            return dev;
-        }
-
         // use the following paths for the command line for the <audio2sonogram> task.
         public class Arguments
         {
@@ -108,11 +89,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         public static void Main(Arguments arguments)
         {
-            if (arguments == null)
-            {
-                arguments = Dev();
-            }
-
             if (!arguments.OutputDir.Exists)
             {
                 arguments.OutputDir.Create();
@@ -651,11 +627,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         ///// </summary>
         //public static void Main_DISCONTINUED_ButMayStillContainUsefulCode(Arguments arguments)
         //{
-        //    if (arguments == null)
-        //    {
-        //        arguments = Dev();
-        //    }
-
         //    if (!arguments.Output.Exists)
         //    {
         //        arguments.Output.Create();

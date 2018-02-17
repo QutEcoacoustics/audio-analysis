@@ -69,23 +69,8 @@ namespace AnalysisPrograms
             }
         }
 
-        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
-        public static Arguments Dev()
-        {
-            throw new NotImplementedException();
-
-            // michael, initiate dev arguments here
-
-            //return new Arguments();
-        }
-
         public static void Execute(Arguments arguments)
         {
-            if (arguments == null)
-            {
-                arguments = Dev();
-            }
-
             string date = "# DATE AND TIME: " + DateTime.Now;
             Log.WriteLine("# DETECTING LOW FREQUENCY AMPLITUDE OSCILLATIONS");
             Log.WriteLine(date);

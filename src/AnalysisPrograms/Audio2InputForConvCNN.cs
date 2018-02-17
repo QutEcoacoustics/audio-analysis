@@ -62,33 +62,6 @@ namespace AnalysisPrograms
             }
         }
 
-        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
-        private static Arguments Dev()
-        {
-            DateTime time = DateTime.Now;
-            string datestamp = $"{time.Year}{time.Month:d2}{time.Day:d2}";
-            return new Arguments
-            {
-                // prior to processing
-                // Y:\Results\2014Aug29-000000 - ConvDNN Data Export\ConvDNN_annotation_export_commonNameOnly_withPadding_20140829.csv
-                // audio_event_id   audio_recording_id  audio_recording_uuid    event_created_at_utc    projects    site_id site_name   event_start_date_utc    event_start_seconds event_end_seconds   event_duration_seconds  low_frequency_hertz high_frequency_hertz    padding_start_time_seconds  padding_end_time_seconds    common_tags species_tags    other_tags  listen_url  library_url
-
-                // Y:\Results\2014Aug29-000000 - ConvDNN Data Export\Output\ConvDNN_annotation_export_commonNameOnly_withPadding_20140829.processed.csv
-                // audio_event_id   audio_recording_id  audio_recording_uuid    event_created_at_utc    projects    site_id site_name   event_start_date_utc    event_start_seconds event_end_seconds   event_duration_seconds  low_frequency_hertz high_frequency_hertz    padding_start_time_seconds  padding_end_time_seconds    common_tags species_tags    other_tags  listen_url  library_url path    download_success    skipped
-
-                // csv file containing recording info, call bounds etc
-                //Source = @"C:\SensorNetworks\Output\ConvDNN\ConvDNN_annotation_export_commonNameOnly_withPadding_20140829.processed.csv".ToFileInfo(),
-                //Source = @"C:\SensorNetworks\WavFiles\ConvDNNData\ConvDNN_annotation_export_commonNameOnly_withPadding_20140829.processed.csv".ToFileInfo(),
-                Source = @"Y:\Results\2014Aug29-000000 - Mangalam Data Export\Output\ConvDNN_annotation_export_commonNameOnly_withPadding_20140829.processed.csv".ToFileInfo(),
-
-                Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Mangalam.Sonogram.yml",
-
-                Output = (@"C:\SensorNetworks\Output\ConvDNN\" + datestamp).ToDirectoryInfo(),
-            };
-
-            //throw new NoDeveloperMethodException();
-        }
-
         /// <summary>
         /// This is the entrypoint for generating ConCNN spectrograms - one at a time
         /// </summary>
@@ -143,11 +116,6 @@ namespace AnalysisPrograms
         {
             // set preprocessing parameter
             bool doPreprocessing = true;
-
-            if (arguments == null)
-            {
-                arguments = Dev();
-            }
 
             var output = arguments.Output;
             if (!output.Exists)

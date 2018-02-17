@@ -40,38 +40,8 @@ namespace AnalysisPrograms
             }
         }
 
-        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
-        private static Arguments Dev()
-        {
-            // COMMAND LINES FOR SnrAnalysis.exe
-            // snr  C:\SensorNetworks\WavFiles\Koala_Male\Jackaroo_20080715-103940.wav                  C:\SensorNetworks\Output\SNR\SNR_Event_Params.txt  snrResults.txt
-            // snr "C:\SensorNetworks\WavFiles\Curlew\Curlew2\West_Knoll_-_St_Bees_20081003-233000.wav" C:\SensorNetworks\Output\SNR\SNR_Event_Params.txt  snrResults.txt
-            return new Arguments
-                       {
-                           //Source = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC1_20071008-081607.wav".ToFileInfo(),
-                           //Source = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC2_20071008-045040_birds.wav".ToFileInfo(),
-                           //Source = @"C:\SensorNetworks\WavFiles\TestRecordings\CaneToads_rural1_20.mp3".ToFileInfo(),
-//                           Source =
-//                               @"C:\SensorNetworks\WavFiles\TestRecordings\AdelotusBrevis_extract.mp3"
-//                               .ToFileInfo(),
-                           //Source = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC2_20071008-143516_speech.wav".ToFileInfo(),
-                           //Source = @"C:\SensorNetworks\WavFiles\TestRecordings\groundParrot_Perigian_TEST_1min.wav".ToFileInfo(),
-                           //Source = @"C:\SensorNetworks\WavFiles\TestRecordings\TOWERB_20110302_202900_22.LSK.F.wav".ToFileInfo(),
-
-//                           Config =
-//                               @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SNRConfig.yml".ToFileInfo(),
-//                           Output = @"C:\SensorNetworks\Output\SNR".ToDirectoryInfo(),
-                       };
-            throw new NotImplementedException();
-        }
-
         public static void Execute(Arguments arguments)
         {
-            if (arguments == null)
-            {
-                arguments = Dev();
-            }
-
             const string Title = "# DETERMINING SIGNAL TO NOISE RATIO IN RECORDING";
             string date = "# DATE AND TIME: " + DateTime.Now;
             Log.WriteLine(Title);

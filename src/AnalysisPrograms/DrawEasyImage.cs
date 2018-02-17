@@ -84,107 +84,49 @@ namespace AnalysisPrograms
             }
         }
 
-        /// <summary>
-        /// To get to this DEV method, the FIRST AND ONLY command line argument must be "drawEasyImage"
-        /// </summary>
-        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
-        public static Arguments Dev()
-        {
-            DateTimeOffset? dtoStart = null;
-            DateTimeOffset? dtoEnd = null;
-
-            FileInfo indexPropertiesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfigForEasyImages.yml");
-            FileInfo sunrisesetData = new FileInfo(@"C:\SensorNetworks\OutputDataSets\SunRiseSet\SunriseSet2013Brisbane.csv");
-
-            // ########################## CSV FILES CONTAINING SUMMARY INDICES IN 24 hour BLOCKS
-            // top level directory
-            string opFileStem = "GympieNP-2015";
-            DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults\GympieNP"), };
-
-            //string opFileStem = "Woondum3-2015";
-            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults\Woondum3"),   };
-
-            // The filter pattern finds summary index files
-            string fileFilter = "*SummaryIndices.csv";
-            string opPath = @"Y:\Results\YvonneResults\Cooloola_ConcatenatedResults";
-
-            dtoStart = new DateTimeOffset(2015, 06, 22, 0, 0, 0, TimeSpan.Zero);
-            dtoEnd = new DateTimeOffset(2015, 10, 11, 0, 0, 0, TimeSpan.Zero);
-
-            if (!indexPropertiesConfig.Exists)
-            {
-                LoggedConsole.WriteErrorLine("# indexPropertiesConfig FILE DOES NOT EXIST.");
-            }
-
-            return new Arguments
-            {
-//                InputDataDirectories = dataDirs,
-//                OutputDirectory = new DirectoryInfo(opPath),
-//                FileFilter = fileFilter,
-//                FileStemName = opFileStem,
-//                StartDate = dtoStart,
-//                EndDate = dtoEnd,
-//                IndexPropertiesConfig = indexPropertiesConfig,
-//                BrisbaneSunriseDatafile = sunrisesetData,
-            };
-            throw new NoDeveloperMethodException();
-    }
-
         public static void Execute(Arguments arguments)
         {
-            bool verbose = false; // default
-
-            if (arguments == null)
-            {
-                arguments = Dev();
-                verbose = true; // assume verbose if in dev mode
-            }
-
             var inputDirs = arguments.InputDataDirectories.Select(FileInfoExtensions.ToDirectoryInfo);
             var output = arguments.OutputDirectory.ToDirectoryInfo();
-            if (verbose)
+
+            string date = "# DATE AND TIME: " + DateTime.Now;
+            LoggedConsole.WriteLine("\n# DRAW an EASY IMAGE from consecutive days of SUMMARY INDICES in CSV files.");
+            LoggedConsole.WriteLine("#    IT IS ASSUMED THAT THE CSV files are already concatenated into 24 hour files.");
+            LoggedConsole.WriteLine(date);
+            LoggedConsole.WriteLine("# Summary Index.csv files are in directories:");
+            foreach (DirectoryInfo dir in inputDirs)
             {
-                string date = "# DATE AND TIME: " + DateTime.Now;
-                LoggedConsole.WriteLine("\n# DRAW an EASY IMAGE from consecutive days of SUMMARY INDICES in CSV files.");
-                LoggedConsole.WriteLine("#    IT IS ASSUMED THAT THE CSV files are already concatenated into 24 hour files.");
-                LoggedConsole.WriteLine(date);
-                LoggedConsole.WriteLine("# Summary Index.csv files are in directories:");
-                foreach (DirectoryInfo dir in inputDirs)
-                {
-                    LoggedConsole.WriteLine("    {0}", dir.FullName);
-                }
-
-                LoggedConsole.WriteLine("# Output directory: " + output);
-                if (arguments.StartDate == null)
-                {
-                    LoggedConsole.WriteLine("# Start date = NULL (No argument provided). Will revise start date ....");
-                }
-                else
-                {
-                    LoggedConsole.WriteLine("# Start date = " + arguments.StartDate.ToString());
-                }
-
-                if (arguments.EndDate == null)
-                {
-                    LoggedConsole.WriteLine("# End   date = NULL (No argument provided). Will revise end date ....");
-                }
-                else
-                {
-                    LoggedConsole.WriteLine("# End   date = " + arguments.EndDate.ToString());
-                }
-
-                LoggedConsole.WriteLine("# FILE FILTER = " + arguments.FileFilter);
-                LoggedConsole.WriteLine();
+                LoggedConsole.WriteLine("    {0}", dir.FullName);
             }
+
+            LoggedConsole.WriteLine("# Output directory: " + output);
+            if (arguments.StartDate == null)
+            {
+                LoggedConsole.WriteLine("# Start date = NULL (No argument provided). Will revise start date ....");
+            }
+            else
+            {
+                LoggedConsole.WriteLine("# Start date = " + arguments.StartDate.ToString());
+            }
+
+            if (arguments.EndDate == null)
+            {
+                LoggedConsole.WriteLine("# End   date = NULL (No argument provided). Will revise end date ....");
+            }
+            else
+            {
+                LoggedConsole.WriteLine("# End   date = " + arguments.EndDate.ToString());
+            }
+
+            LoggedConsole.WriteLine("# FILE FILTER = " + arguments.FileFilter);
+            LoggedConsole.WriteLine();
 
             // PATTERN SEARCH FOR SUMMARY INDEX FILES.
             //string pattern = "*__Towsey.Acoustic.Indices.csv";
             FileInfo[] csvFiles = IndexMatrices.GetFilesInDirectories(inputDirs.ToArray(), arguments.FileFilter);
-            if (verbose)
-            {
-                //LoggedConsole.WriteLine("# Subdirectories Count = " + subDirectories.Length);
-                LoggedConsole.WriteLine("# SummaryIndexFiles.csv Count = " + csvFiles.Length);
-            }
+
+            //LoggedConsole.WriteLine("# Subdirectories Count = " + subDirectories.Length);
+            LoggedConsole.WriteLine("# SummaryIndexFiles.csv Count = " + csvFiles.Length);
 
             if (csvFiles.Length == 0)
             {
@@ -204,14 +146,11 @@ namespace AnalysisPrograms
             TimeSpan totalTimespan = (DateTimeOffset)endDate - (DateTimeOffset)startDate;
             int dayCount = totalTimespan.Days + 1; // assume last day has full 24 hours of recording available.
 
-            if (verbose)
-            {
-                LoggedConsole.WriteLine("\n# Start date = " + startDate.ToString());
-                LoggedConsole.WriteLine("# End   date = " + endDate.ToString());
-                LoggedConsole.WriteLine(string.Format("# Elapsed time = {0:f1} hours", dayCount * 24));
-                LoggedConsole.WriteLine("# Day  count = " + dayCount + " (inclusive of start and end days)");
-                LoggedConsole.WriteLine("# Time Zone  = " + arguments.TimeSpanOffsetHint.ToString());
-            }
+            LoggedConsole.WriteLine("\n# Start date = " + startDate.ToString());
+            LoggedConsole.WriteLine("# End   date = " + endDate.ToString());
+            LoggedConsole.WriteLine(string.Format("# Elapsed time = {0:f1} hours", dayCount * 24));
+            LoggedConsole.WriteLine("# Day  count = " + dayCount + " (inclusive of start and end days)");
+            LoggedConsole.WriteLine("# Time Zone  = " + arguments.TimeSpanOffsetHint.ToString());
 
             // create top level output directory if it does not exist.
             DirectoryInfo opDir = output;

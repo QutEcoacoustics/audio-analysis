@@ -19,22 +19,6 @@
         {
         }
 
-        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
-        public static void Dev(Arguments arguments)
-        {
-            if (arguments == null)
-            {
-                arguments = new Arguments();
-                //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\DataSet\Rheobatrachus_silus_MONO.wav";
-                //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\DataSet\FrogPond_Samford_SE_555_SELECTION_2.03-2.43.wav";
-                //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\DataSet\DavidStewart-northernlaughingtreefrog.wav";
-                 string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\DataSet\CaneToads_rural1_20_MONO.wav";
-                arguments.Source = new FileInfo(recordingPath);
-            }
-
-            Execute(arguments);
-        }
-
         public static void Execute(Arguments arguments)
         {
             if (arguments == null)

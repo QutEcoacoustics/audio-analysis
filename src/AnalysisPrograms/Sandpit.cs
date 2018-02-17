@@ -56,129 +56,46 @@ namespace AnalysisPrograms
             public override Task<int> Execute(CommandLineApplication app)
             {
                 throw new NotImplementedException();
+
+                var tStart = DateTime.Now;
+                Log.Verbosity = 1;
+                Log.WriteLine("# Start Time = " + tStart.ToString(CultureInfo.InvariantCulture));
+
+                //AnalyseFrogDataSet();
+                //Audio2CsvOverOneFile();
+                //Audio2CsvOverMultipleFiles();
+                //ConcatenateIndexFilesAndSpectrograms();
+                //ConcatenateMarineImages();
+                //ConcatenateImages();
+                //ConcatenateTwelveImages();
+                //CubeHelixDrawTestImage();
+                //DrawLongDurationSpectrogram();
+                ExtractSpectralFeatures();
+
+                //HerveGlotinMethods();
+                //KarlHeinzFrommolt();
+                //OTSU_TRHESHOLDING();
+                //ResourcesForEventPatternRecognition();
+                //ResourcesForRheobatrachusSilusRecogniser();
+                //TestAnalyseLongRecordingUsingArtificialSignal();
+                //TestArbimonSegmentationAlgorithm();
+                //TestEigenValues();
+                //TestChannelIntegrity();
+                //TestDct();
+                //TEST_FilterMovingAverage();
+                //TestImageProcessing();
+                //TestMatrix3dClass();
+                //TestsOfFrequencyScales();
+                //TestReadingFileOfSummaryIndices();
+                //TestStructureTensor();
+                //TestWavelets();
+                //TestFft2D();
+                //TestTernaryPlots();
+                //TestDirectorySearchAndFileSearch();
+                //TestNoiseReduction();
+
+                Console.WriteLine("# Finished Sandpit Task!");
             }
-        }
-
-        /// <summary>
-        /// Uncomment the lines in this method for the required analysis.
-        /// </summary>
-        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
-        public static void Dev(Arguments arguments)
-        {
-            var tStart = DateTime.Now;
-            Log.Verbosity = 1;
-            Log.WriteLine("# Start Time = " + tStart.ToString(CultureInfo.InvariantCulture));
-
-            //AnalyseFrogDataSet();
-            //Audio2CsvOverOneFile();
-            //Audio2CsvOverMultipleFiles();
-            //ConcatenateIndexFilesAndSpectrograms();
-            //ConcatenateMarineImages();
-            //ConcatenateImages();
-            //ConcatenateTwelveImages();
-            //CubeHelixDrawTestImage();
-            //DrawLongDurationSpectrogram();
-            ExtractSpectralFeatures();
-
-            //HerveGlotinMethods();
-            //KarlHeinzFrommolt();
-            //OTSU_TRHESHOLDING();
-            //ResourcesForEventPatternRecognition();
-            //ResourcesForRheobatrachusSilusRecogniser();
-            //TestAnalyseLongRecordingUsingArtificialSignal();
-            //TestArbimonSegmentationAlgorithm();
-            //TestEigenValues();
-            //TestChannelIntegrity();
-            //TestDct();
-            //TEST_FilterMovingAverage();
-            //TestImageProcessing();
-            //TestMatrix3dClass();
-            //TestsOfFrequencyScales();
-            //TestReadingFileOfSummaryIndices();
-            //TestStructureTensor();
-            //TestWavelets();
-            //TestFft2D();
-            //TestTernaryPlots();
-            //TestDirectorySearchAndFileSearch();
-            //TestNoiseReduction();
-
-            Console.WriteLine("# Finished Sandpit Task!");
-        }
-
-        /// <summary>
-        /// Call this method to analyse multiple files using audio2csv
-        /// </summary>
-        public static void Audio2CsvOverMultipleFiles()
-        {
-            string drive = "G";
-            string outputDir = $"{drive}:\\SensorNetworks\\Output\\IvanCampos\\Indexdata";
-
-            // (1) calculate the indices looping over mulitple files.
-            if (false)
-            {
-                string recordingDir = $"{drive}:\\SensorNetworks\\WavFiles\\IvanCampos";
-                string configPath =
-                    @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
-                string searchPattern = "*.wav";
-
-                //FileInfo[] csvFiles = IndexMatrices.GetFilesInDirectories(subDirectories, pattern);
-                string[] files = Directory.GetFiles(recordingDir, searchPattern);
-                LoggedConsole.WriteLine("File Count = " + files.Length);
-
-                for (int i = 0; i < files.Length; i++)
-                {
-                    string outputDirectory = $"{outputDir}\\{i:d3}";
-                    var devArguments = new AnalyseLongRecording.Arguments
-                    {
-                        Source = files[i].ToFileInfo(),
-                        Config = configPath,
-                        Output = outputDirectory.ToDirectoryInfo(),
-                        MixDownToMono = true,
-                    };
-                    AnalyseLongRecording.Execute(devArguments);
-                }
-            }
-
-            // (2) now do the CONCATENATION
-            string directoryFilter = "Towsey.Acoustic"; // this is a directory filter to locate only the required files
-            string opFileStem = "IvanCampos_INCIPO01_20161031";
-            string opPath = $"{drive}:\\SensorNetworks\\Output\\IvanCampos";
-            var falseColourSpgConfig =
-                $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatSpectrogramFalseColourConfig.yml";
-
-            // start and end dates INCLUSIVE
-            var dtoStart = new DateTimeOffset(2016, 10, 31, 0, 0, 0, TimeSpan.Zero);
-            var dtoEnd = new DateTimeOffset(2016, 10, 31, 0, 0, 0, TimeSpan.Zero);
-
-            // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and EchoGaps.
-            string gapRendering = "NoGaps";
-            var indexPropertiesConfig =
-                @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml";
-
-            var concatArgs = new ConcatenateIndexFiles.Arguments
-            {
-                InputDataDirectories = outputDir.ToDirectoryInfo().AsArray(),
-                OutputDirectory = opPath.ToDirectoryInfo(),
-                DirectoryFilter = directoryFilter,
-                FileStemName = opFileStem,
-                StartDate = dtoStart,
-                EndDate = dtoEnd,
-                IndexPropertiesConfig = indexPropertiesConfig,
-                FalseColourSpectrogramConfig = falseColourSpgConfig,
-                ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
-                ColorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_SPT,
-                ConcatenateEverythingYouCanLayYourHandsOn = false,
-                GapRendering = (ConcatMode)Enum.Parse(typeof(ConcatMode), gapRendering),
-                TimeSpanOffsetHint = TimeSpan.FromHours(-5), // default = Brisbane time,
-                DrawImages = true,
-
-                // following used to add in a recognizer score track
-                // Used only to get Event Recognizer files - set eventDirs=null if not used
-                EventDataDirectories = null,
-                EventFilePattern = string.Empty,
-            };
-
-            ConcatenateIndexFiles.Execute(concatArgs);
         }
 
         /// <summary>

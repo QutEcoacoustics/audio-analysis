@@ -50,27 +50,8 @@ namespace AnalysisPrograms
             }
         }
 
-        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
-        private static Arguments Dev()
-        {
-            return new Arguments
-            {
-                //Source = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav".ToFileInfo(),
-                //Output = @"C:\SensorNetworks\Output\Sonograms\BAC1_20071008-081607.png".ToFileInfo(),
-                Source = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC\BAC2_20071008-085040.wav".ToFileInfo(),
-                Output = @"C:\SensorNetworks\Output\Sonograms\BAC2Sonograms\BAC2_20071008-085040.png",
-                Config = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml",
-            };
-
-            //throw new NoDeveloperMethodException();
-        }
-
         public static void Main(Arguments arguments)
         {
-            if (arguments == null)
-            {
-                arguments = Dev();
-            }
 
             //1. set up the necessary files
             //DirectoryInfo diSource = arguments.Source.Directory;

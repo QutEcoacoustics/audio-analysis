@@ -29,11 +29,6 @@ namespace AnalysisPrograms.EventStatistics
 
         public static async Task<int> ExecuteAsync(Arguments arguments)
         {
-            if (arguments == null)
-            {
-                throw new ArgumentNullException(nameof(arguments), "Dev() is not supported for this analysis");
-            }
-
             Log.Info("Event statistics analysis begin");
 
             // validate arguments

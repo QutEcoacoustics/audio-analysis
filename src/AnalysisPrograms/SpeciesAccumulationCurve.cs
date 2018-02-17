@@ -10,6 +10,10 @@ namespace AnalysisPrograms
     using System.Data;
     using System.IO;
     using System.Linq;
+    using System.Threading.Tasks;
+
+    using AnalysisPrograms.Production.Arguments;
+
     using McMaster.Extensions.CommandLineUtils;
     using Production;
     using Production.Validation;
@@ -179,6 +183,7 @@ namespace AnalysisPrograms
             CommandName,
             Description = "[INOPERABLE]")]
         public class Arguments
+            : SubCommandBase
         {
             [Option(Description = "Path of the input  file to be processed.")]
             [ExistingFile]
@@ -190,13 +195,16 @@ namespace AnalysisPrograms
             [Required]
             [LegalFilePath]
             public string Output { get; set; }
+
+            public override Task<int> Execute(CommandLineApplication app)
+            {
+                SpeciesAccumulationCurve.Execute(this);
+
+                return this.Ok();
+            }
         }
 
-        /// <summary>
-        /// Note to michael, consider returning true false to indicate program exit - never use Environment.Exit
-        /// </summary>
-        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
-        public static void Dev()
+        public static void Execute()
         {
             //SET VERBOSITY
             DateTime tStart = DateTime.Now;

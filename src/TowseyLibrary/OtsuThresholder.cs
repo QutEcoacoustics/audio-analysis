@@ -17,41 +17,6 @@ namespace TowseyLibrary
     /// </summary>
     public class OtsuThresholder
     {
-        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
-        public static Arguments Dev()
-        {
-            // INPUT and OUTPUT DIRECTORIES
-
-            // set up IP and OP directories
-            //string InputFile = @"C:\Work\GitHub\audio-analysis\Extra Assemblies\OtsuThreshold\harewood.jpg";
-            //string InputFile = @"C:\SensorNetworks\Output\Sonograms\BAC2_20071008-085040.png";
-            string InputFile = @"C:\SensorNetworks\Output\SERF\SERFIndices_2013June19\SERF_20130619_064615_000_0156h.png";
-
-            //string imageInputDir = @"C:\SensorNetworks\Output\BIRD50\TrainingRidgeImages";
-            string OutputDir = @"C:\SensorNetworks\Output\ThresholdingExperiments";
-            string outputFilename = "binary3.png";
-
-            //string imagOutputDireOutputDir = @"C:\SensorNetworks\Output\BIRD50\TestingRidgeImages";
-
-            FileInfo ipImage = new FileInfo(InputFile);
-            DirectoryInfo opDir = new DirectoryInfo(OutputDir);
-
-            //FileInfo fiSpectrogramConfig = null;
-            FileInfo fiSpectrogramConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramFalseColourConfig.yml");
-
-            return new Arguments
-            {
-                InputImageFile = ipImage,
-                OutputDirectory = opDir,
-                OutputFileName = new FileInfo(Path.Combine(opDir.FullName, outputFilename)),
-                SpectrogramConfigPath = fiSpectrogramConfig,
-
-                // background threshold value that is subtracted from all spectrograms.
-                BgnThreshold = 3.0,
-            };
-            throw new Exception();
-        } //Dev()
-
         public class Arguments
         {
             public FileInfo InputImageFile { get; set; }
@@ -71,14 +36,10 @@ namespace TowseyLibrary
         /// <param name="arguments"></param>
         public static void Execute(Arguments arguments)
         {
-            if (arguments == null)
-            {
-                arguments = Dev();
-                string date = "# DATE AND TIME: " + DateTime.Now;
-                LoggedConsole.WriteLine("Test of OtsuThresholder class");
-                LoggedConsole.WriteLine(date);
-                LoggedConsole.WriteLine();
-            } // if
+            string date = "# DATE AND TIME: " + DateTime.Now;
+            LoggedConsole.WriteLine("Test of OtsuThresholder class");
+            LoggedConsole.WriteLine(date);
+            LoggedConsole.WriteLine();
 
             // Load Source image
             Image srcImage = null;

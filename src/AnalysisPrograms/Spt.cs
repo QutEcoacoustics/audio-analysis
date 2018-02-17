@@ -58,18 +58,8 @@ namespace AnalysisPrograms
             }
         }
 
-        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
-        public static Arguments Dev()
-        {
-            //spt C:\SensorNetworks\WavFiles\BridgeCreek\cabin_GoldenWhistler_file0127_extract1.mp3 C:\SensorNetworks\Output\SPT\ 2.0
-            throw new NotImplementedException();
-            return new Arguments();
-        }
-
         public static void Execute(Arguments arguments)
         {
-            //spt C:\SensorNetworks\WavFiles\BridgeCreek\cabin_GoldenWhistler_file0127_extract1.mp3 C:\SensorNetworks\Output\SPT\ 2.0
-
             Log.Verbosity = 1;
 
             FileInfo wavFilePath = arguments.Source.ToFileInfo();

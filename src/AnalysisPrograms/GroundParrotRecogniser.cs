@@ -46,7 +46,7 @@ namespace AnalysisPrograms
         {
             public override Task<int> Execute(CommandLineApplication app)
             {
-                GroundParrotRecogniser.Dev(this);
+                GroundParrotRecogniser.Execute(this);
                 return this.Ok();
             }
         }
@@ -180,21 +180,12 @@ namespace AnalysisPrograms
             return Tuple.Create(sonogram, eprEvents);
         }
 
-        /// <summary>
-        /// The standard dev method.
-        /// </summary>
-        /// <param name="args">
-        /// The args passed into executable.
-        /// </param>
-        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
-        public static void Dev(Arguments arguments)
+        public static void Execute(Arguments arguments)
         {
             if (arguments == null)
             {
                 throw new NoDeveloperMethodException();
             }
-
-            // "Example: \"trunk\\AudioAnalysis\\Matlab\\EPR\\Ground Parrot\\GParrots_JB2_20090607-173000.wav_minute_3.wav\""
 
             // READ PARAMETER VALUES FROM INI FILE
             var config = ConfigFile.Deserialize(arguments.Config);

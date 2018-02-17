@@ -117,7 +117,7 @@ namespace AnalysisPrograms
 
 
 
-        public static void Dev(string[] args)
+        public static void Execute(string[] args)
         {
             string title = "# SOFTWARE TO DETECT CALLS OF THE LITTLE SPOTTED KIWI (Apteryx owenii)";
             string date  = "# DATE AND TIME: " + DateTime.Now;

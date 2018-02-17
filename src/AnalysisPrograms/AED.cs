@@ -215,12 +215,6 @@ namespace AnalysisPrograms
             return events;
         }
 
-        [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
-        public static Arguments Dev(object obj)
-        {
-            throw new NotImplementedException();
-        }
-
         public static Image DrawSonogram(BaseSonogram sonogram, IEnumerable<AcousticEvent> events)
         {
             var image = new Image_MultiTrack(sonogram.GetImage(false, true));
@@ -240,11 +234,6 @@ namespace AnalysisPrograms
 
         public static void Execute(Arguments arguments)
         {
-            if (arguments == null)
-            {
-                arguments = Dev(arguments);
-            }
-
             TowseyLibrary.Log.Verbosity = 1;
             string date = "# DATE AND TIME: " + DateTime.Now;
             LoggedConsole.WriteLine("# Running acoustic event detection.");
