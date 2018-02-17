@@ -38,14 +38,15 @@ namespace Acoustics.Shared.ConfigFile
 
         internal Config(TextReader streamReader, string configPath)
         {
-            this.GenericConfig = Yaml.Deserialize<object>(streamReader);
-            this.ConfigPath = configPath;
+            this.Initialize(streamReader, configPath);
         }
 
-        internal Config(object document, string configPath)
+        internal Config(string configPath)
         {
-            this.GenericConfig = document;
-            this.ConfigPath = configPath;
+            using (var fileStream = File.OpenText(configPath))
+            {
+                this.Initialize(fileStream, configPath);
+            }
         }
 
         private delegate bool Convert<T>(string value, out T convertedValue);
@@ -142,6 +143,12 @@ namespace Acoustics.Shared.ConfigFile
             where T : struct
         {
             return (string value, out T convertedValue) => Enum.TryParse(value, true, out convertedValue);
+        }
+
+        private void Initialize(TextReader streamReader, string configPath)
+        {
+            this.GenericConfig = Yaml.Deserialize<object>(streamReader);
+            this.ConfigPath = configPath;
         }
 
         // Recursive!

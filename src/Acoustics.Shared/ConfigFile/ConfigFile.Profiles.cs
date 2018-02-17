@@ -46,7 +46,7 @@
                 return false;
             }
 
-            profile = new Config(mapping, configuration.ConfigPath);
+            profile = new Config() { GenericConfig = mapping, ConfigPath = configuration.ConfigPath };
             return true;
         }
 

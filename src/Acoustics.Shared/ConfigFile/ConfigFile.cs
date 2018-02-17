@@ -11,18 +11,13 @@ namespace Acoustics.Shared.ConfigFile
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.IO;
     using System.Linq;
-    using System.Reflection;
     using System.Runtime.CompilerServices;
 
     using Contracts;
-    using Fasterflect;
 
     using log4net;
-
-    using YamlDotNet.RepresentationModel;
 
     using Zio;
 
@@ -53,7 +48,12 @@ namespace Acoustics.Shared.ConfigFile
 
         public static Config Deserialize(FileInfo file)
         {
-            var config = new Config(file, file.FullName);
+            return Deserialize(file.FullName);
+        }
+
+        public static Config Deserialize(string path)
+        {
+            var config = new Config(path);
             config.InvokeLoaded();
             return config;
         }
@@ -61,10 +61,18 @@ namespace Acoustics.Shared.ConfigFile
         public static T Deserialize<T>(FileInfo file)
             where T : Config
         {
-            (object generic, T config) = Yaml.LoadAndDeserialize<T>(file);
+            return Deserialize<T>(file.FullName);
+        }
+
+        public static T Deserialize<T>(string path)
+            where T : Config
+        {
+            path = Path.GetFullPath(path);
+
+            (object generic, T config) = Yaml.LoadAndDeserialize<T>(path);
 
             config.GenericConfig = generic;
-            config.ConfigPath = file.FullName;
+            config.ConfigPath = path;
             config.InvokeLoaded();
 
             return config;
