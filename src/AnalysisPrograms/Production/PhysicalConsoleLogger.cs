@@ -12,8 +12,8 @@ namespace AnalysisPrograms.Production
     public class PhysicalConsoleLogger
         : IConsole
     {
-        private readonly Log4NetTextWriter outWriter = new Log4NetTextWriter();
-        private readonly Log4NetTextWriter errorWriter = new Log4NetTextWriter(mode: Log4NetTextWriter.Mode.Error);
+        private readonly Log4NetTextWriter outWriter = new Log4NetTextWriter(Console.Out);
+        private readonly Log4NetTextWriter errorWriter = new Log4NetTextWriter(Console.Error, mode: Log4NetTextWriter.Mode.Error);
 
         public PhysicalConsoleLogger()
         {
@@ -27,6 +27,8 @@ namespace AnalysisPrograms.Production
             add => Console.CancelKeyPress += value;
             remove => Console.CancelKeyPress -= value;
         }
+
+        public static PhysicalConsoleLogger Default { get; } = new PhysicalConsoleLogger();
 
         public TextWriter Out => this.outWriter;
 

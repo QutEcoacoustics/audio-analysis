@@ -11,12 +11,14 @@ namespace Acoustics.Shared.Logging
 
     public class Log4NetTextWriter : TextWriter
     {
+        private readonly TextWriter baseStream;
         private readonly StringBuilder stringBuilder;
         private readonly Action<string> logCall;
 
-        public Log4NetTextWriter(ILog log = null, Mode mode = Mode.Out)
+        public Log4NetTextWriter(TextWriter baseStream, ILog log = null, Mode mode = Mode.Out)
         {
-            log = log ?? LoggedConsole.Log;
+            this.baseStream = baseStream;
+            log = log ?? NoConsole.Log;
             if (mode == Mode.Error)
             {
                 this.logCall = log.Error;
@@ -42,9 +44,25 @@ namespace Acoustics.Shared.Logging
         {
             switch (value)
             {
-                case '\n':
-                    return;
                 case '\r':
+                    break;
+                case '\n':
+                    this.logCall(this.stringBuilder.ToString());
+                    this.stringBuilder.Clear();
+                    break;
+                default:
+                    this.stringBuilder.Append(value);
+                    break;
+            }
+
+            this.baseStream.Write(value);
+        }
+
+        public override void Write(string value)
+        {
+            switch (value)
+            {
+                case string _ when value.EndsWith(Environment.NewLine):
                     this.logCall(this.stringBuilder.ToString());
                     this.stringBuilder.Clear();
                     return;
@@ -52,13 +70,8 @@ namespace Acoustics.Shared.Logging
                     this.stringBuilder.Append(value);
                     break;
             }
+
+            this.baseStream.Write(value);
         }
-
-        public override void Write(string value)
-        {
-            this.logCall(value);
-        }
-
-
     }
 }
