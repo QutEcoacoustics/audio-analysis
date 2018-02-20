@@ -47,6 +47,7 @@ AlignToMinute Options:
             public string AnalysisIdentifier { get; set; }
 
             [Option(
+                CommandOptionType.SingleValue,
                 Description = "A TEMP directory where cut files will be stored. Use this option for efficiency (e.g. write to a RAM Disk).",
                 ShortName = "t")]
             [DirectoryExistsOrCreate(createIfNotExists: true)]

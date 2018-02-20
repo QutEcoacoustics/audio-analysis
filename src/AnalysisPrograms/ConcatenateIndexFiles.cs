@@ -67,10 +67,13 @@ namespace AnalysisPrograms
 
             [Obsolete("Originally hack to get around powerargs limitation, can probably be removed soon")]
             [Option(
+                CommandOptionType.SingleValue,
                 Description = "One directory where the original csv files are located. This option exists as an alternative to input data directories")]
             public DirectoryInfo InputDataDirectory { get; set; }
 
-            [Option(Description = "Directory where the output is to go.")]
+            [Option(
+                CommandOptionType.SingleValue,
+                Description = "Directory where the output is to go.")]
             [DirectoryExistsOrCreate(createIfNotExists: true)]
             [LegalFilePath]
             public DirectoryInfo OutputDirectory { get; set; }

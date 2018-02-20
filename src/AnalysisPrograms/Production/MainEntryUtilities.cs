@@ -251,6 +251,8 @@ namespace AnalysisPrograms
             ExceptionLookup.ExceptionStyle style;
             bool found = false;
             Exception inner = ex;
+
+            // TODO: it looks like all exceptions will always be wrapped in a TargetInvocationException now so we always want to unwrap at least once
             switch (ex)
             {
                 case TargetInvocationException _:
@@ -270,13 +272,13 @@ namespace AnalysisPrograms
             // if found, print message only if usage printing disabled
             if (found && !style.PrintUsage)
             {
-                // this branch prints the message but suppresses the stack trace in the console
+                // this branch prints the message, but the stack trace is only output in the log
                 NoConsole.Log.Fatal(FatalMessage, ex);
                 LoggedConsole.WriteFatalLine(FatalMessage + inner.Message);
             }
             else if (found && ex.GetType() != typeof(Exception))
             {
-                // this branch prints the message, and command usage, but suppressed the stack trace in the console
+                // this branch prints the message, and command usage, but the stack trace is only output in the log
                 NoConsole.Log.Fatal(FatalMessage, ex);
 
                 var command = CommandLineApplication.Name;
@@ -286,15 +288,18 @@ namespace AnalysisPrograms
             else
             {
                 // otherwise its a unhandled exception, log and raise
-                Log.Fatal("Unhandled exception ->", ex);
+                // trying to print cleaner errors in console, so printing a full one to log, and the inner to the console
+                // this results in duplication in the log though
+                NoConsole.Log.Fatal("Unhandled exception ->\n", ex);
+                Log.Fatal("Unhandled exception ->\n", inner);
 
                 StringBuilder extraInformation = null;
                 PrintAggregateException(ex, ref extraInformation);
 
-                //if (extraInformation != null)
-                //{
-                //    Log.Error(extraInformation.ToString());
-                //}
+                if (extraInformation != null)
+                {
+                    Log.Error(extraInformation.ToString());
+                }
             }
 
             int returnCode = style?.ErrorCode ?? ExceptionLookup.SpecialExceptionErrorLevel;

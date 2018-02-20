@@ -399,6 +399,8 @@ Output  to  directory: {1}
                 throw new ValidationException($"Cannot find an IAnalyser2 with the name `{searchName}`");
             }
 
+            Log.Info($"Using analyzer {analyser.Identifier}");
+
             return analyser;
         }
 

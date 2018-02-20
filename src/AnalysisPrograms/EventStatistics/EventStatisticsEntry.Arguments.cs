@@ -47,7 +47,9 @@ For remote resources, the input file needs to have either one of these sets of f
             [LegalFilePath]
             public override FileInfo Source { get; set; }
 
-            [Option(Description = "A TEMP directory where cut files will be stored. Use this option for efficiency (e.g. write to a RAM Disk).")]
+            [Option(
+                CommandOptionType.SingleValue,
+                Description = "A TEMP directory where cut files will be stored. Use this option for efficiency (e.g. write to a RAM Disk).")]
             [DirectoryExistsOrCreate(createIfNotExists: true)]
             [LegalFilePath]
             public DirectoryInfo TempDir { get; set; }

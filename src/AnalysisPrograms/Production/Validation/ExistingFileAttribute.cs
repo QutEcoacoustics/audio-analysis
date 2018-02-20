@@ -36,7 +36,7 @@ namespace AnalysisPrograms.Production.Validation
                 return new ValidationResult(this.FormatErrorMessage(value as string));
             }
 
-            if (Directory.Exists(path))
+            if (File.Exists(path))
             {
                 if (!this.shouldExist)
                 {
