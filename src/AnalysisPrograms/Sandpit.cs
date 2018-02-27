@@ -7,6 +7,7 @@ namespace AnalysisPrograms
     using System;
     using System.Collections.Generic;
     using System.Drawing;
+    using System.Drawing.Imaging;
     using System.Globalization;
     using System.IO;
     using System.Linq;
@@ -55,8 +56,6 @@ namespace AnalysisPrograms
         {
             public override Task<int> Execute(CommandLineApplication app)
             {
-                throw new NotImplementedException();
-
                 var tStart = DateTime.Now;
                 Log.Verbosity = 1;
                 Log.WriteLine("# Start Time = " + tStart.ToString(CultureInfo.InvariantCulture));
@@ -70,8 +69,9 @@ namespace AnalysisPrograms
                 //ConcatenateTwelveImages();
                 //CubeHelixDrawTestImage();
                 //DrawLongDurationSpectrogram();
-                ExtractSpectralFeatures();
+                DrawClusterSequence();
 
+                //ExtractSpectralFeatures();
                 //HerveGlotinMethods();
                 //KarlHeinzFrommolt();
                 //OTSU_TRHESHOLDING();
@@ -94,14 +94,71 @@ namespace AnalysisPrograms
                 //TestDirectorySearchAndFileSearch();
                 //TestNoiseReduction();
 
-                Console.WriteLine("# Finished Sandpit Task!");
+                Console.WriteLine("# Finished Sandpit Task!    Press any key to exit.");
+                return this.Ok();
             }
         }
 
+        public static void DrawClusterSequence()
+        {
+            for (int i = 1; i <= 60; i++)
+            {
+                DrawClusterSequence1(i);
+            }
+        }
+
+        public static void DrawClusterSequence1(int clusterId)
+        {
+            // set up an image into which to draw presence/absence of each cluster.
+            int height = 400;
+            int width = 1440;
+            var image = new Bitmap(width, height, PixelFormat.Format24bppRgb);
+            var g = Graphics.FromImage(image);
+            g.Clear(Color.White);
+
+            DirectoryInfo dir = new DirectoryInfo(@"H:\Documents\SensorNetworks\Students\AniekRoelofs\Complete\Complete\SummaryIndices");
+            string fileName = "Cluster60Sequence_Gympie2015June22_SuI.csv";
+            string path = Path.Combine(dir.FullName, fileName);
+
+            using (TextReader reader = new StreamReader(path))
+            {
+                // read the header and ignore
+                string line = reader.ReadLine();
+                int counter = 0;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    //read one line at a time in string array
+                    string[] words = line.Split(',');
+
+                    if (line.StartsWith("NaN"))
+                    {
+                        int day = counter / width;
+                        int minuteId = counter % width;
+                        image.SetPixel(minuteId, day, Color.Red);
+                    }
+                    else
+                    if (clusterId == int.Parse(words[0]))
+                    {
+                        int day = counter / width;
+                        int minuteId = int.Parse(words[1]);
+                        image.SetPixel(minuteId, day, Color.Black);
+                    }
+
+                    counter++;
+                } // end while
+
+                Console.WriteLine("Counter=" + counter);
+            } //using
+
+            g.DrawString("Cluster" + clusterId, new Font("Tahoma", 20), Brushes.Black, new PointF(10, 10));
+
+            string imageName = $"cluster{clusterId}.png";
+            string savePath = Path.Combine(dir.FullName + "\\ClusterImages", imageName);
+            image.Save(savePath);
+            //Console.ReadLine();
+        }
+
         /// <summary>
-        /// TO GET TO HERE audio2csv MUST BE ONLY COMMAND LINE ARGUMENT
-        /// If you end up with indices and no images, then, to draw the false-colour spectrograms,
-        ///          you must use the activity code "colourspectrogram"
         /// This calls AnalysisPrograms.DrawLongDurationSpectrograms.Execute() to produce LD FC spectrograms from matrices of indices.
         /// See, for example, using the Pillaga Forest data.
         /// If your index calculation duration (ICD) is less than 60s a false-colour spectrogram will not be produced.
