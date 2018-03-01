@@ -55,15 +55,16 @@ This project is very old. We've released the full history for the sake of mainta
 Unfortunately this means all code before our open source release is not open sourced.
 
 In practice this should never be a problem. We never use our old code, except for historical purposes, and you never
-should need to either.
+should need to either. If you do need to use any of this code, just raise an issue and we'll make an exeption
+for your use case.
 
-## Newer code - All commits after [a275d0bc5744ba43096b43de2ef2aee32dc14c18](https://github.com/QutEcoacoustics/audio-analysis/commit/a275d0bc5744ba43096b43de2ef2aee32dc14c18)
+## Newer code - All commits after 2018-01-30
 
-All code after a275d0bc5744ba43096b43de2ef2aee32dc14c18 (<time>2018-01-30T06:38:46Z</time>) are licensed under the 
+All code after [a275d0bc5744ba43096b43de2ef2aee32dc14c18](https://github.com/QutEcoacoustics/audio-analysis/commit/a275d0bc5744ba43096b43de2ef2aee32dc14c18) (<time>2018-01-30T06:38:46Z</time>) are licensed under the 
 [Apache License 2.0](https://choosealicense.com/licenses/apache-2.0/)
 
-## Older code
+## Older code - All commits before 2018-01-30
 
-All commits before a275d0bc5744ba43096b43de2ef2aee32dc14c18 (<time>2018-01-30T06:38:46Z</time>) are not licensed under
-an open source license. All rights and copyright are retained, however, the public has permission to view, link to, cite
+All commits before [a275d0bc5744ba43096b43de2ef2aee32dc14c18](https://github.com/QutEcoacoustics/audio-analysis/commit/a275d0bc5744ba43096b43de2ef2aee32dc14c18) (<time>2018-01-30T06:38:46Z</time>) are not licensed under
+an open source license. All rights and copyright are retained, however, the public has permission to view, link to, and cite
 the code on GitHub.
