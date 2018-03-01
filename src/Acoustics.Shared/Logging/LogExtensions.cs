@@ -16,7 +16,26 @@ namespace log4net
     public static class LogExtensions
     {
         // equivalent to NOTICE
-        private static readonly log4net.Core.Level SuccessLevel = new log4net.Core.Level(50000, "SUCCESS");
+        public static readonly Core.Level SuccessLevel = new Core.Level(50000, "SUCCESS");
+
+        // Higher than all other levels, but lower than OFF.
+        // In interactive scenarios we need to be sure that the user sees the message.
+        public static readonly Core.Level PromptLevel = new Core.Level(150_000, "PROMPT");
+
+        /// <summary>
+        /// Log a message object with the <see cref="F:LogExtensions.PromptLevel"/> level.
+        /// Use this mehtod only for interactive prompts that the user must see.
+        /// </summary>
+        /// <param name="log">
+        /// The log.
+        /// </param>
+        /// <param name="message">
+        /// The message.
+        /// </param>
+        public static void Prompt(this ILog log, object message)
+        {
+            log.Logger.Log(null, PromptLevel, message, null);
+        }
 
         /// <summary>
         /// Log a message object with the <see cref="F:LogExtensions.SuccessLevel"/> level -

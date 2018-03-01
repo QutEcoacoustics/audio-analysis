@@ -107,7 +107,7 @@ namespace System
 
         public static void WriteWaitingLine<T>(Task<T> task, string message = null)
         {
-            WriteLine(message ?? "Waiting...");
+            Log.Prompt(message ?? "Waiting...");
             if (IsInteractive)
             {
                 var spinner = new DotSpinner(task);
@@ -119,7 +119,7 @@ namespace System
         {
             if (IsInteractive)
             {
-                WriteLine(prompt);
+                Log.Prompt(prompt);
                 var d = new Func<string>(() =>
                 {
                     if (forPassword)
@@ -127,7 +127,7 @@ namespace System
                         return ReadHiddenLine();
                     }
 
-                    var line = System.Console.ReadLine();
+                    var line = Console.ReadLine();
                     return line;
                 });
                 IAsyncResult result = d.BeginInvoke(null, null);

@@ -467,6 +467,16 @@
     <!--    <GitCommits>-->
     <!--      <Output TaskParameter="CommitsCount" PropertyName="GitCommitsCount" />-->
     <!--    </GitCommits>-->
+    <PropertyGroup>
+      <TagCommand>--tags --simplify-by-decoration --pretty="format:%ai %d" --after="$([System.DateTime]::Now.ToString("yyyy-MM-01T00:00Z"))"</TagCommand>
+    </PropertyGroup>
+    <GitClient
+      Command="log"
+      Arguments="$(TagCommand)">
+      <Output TaskParameter="ConsoleOutput" ItemName="GitTagCount" />
+    </GitClient>
+    <Message Text="Tags command: $(TagCommand)" Importance="High" />
+    <Message Text="Tags this month: @(GitTagCount)" Importance="High" />
     <GitPendingChanges>
       <Output TaskParameter="HasPendingChanges" PropertyName="GitHasPendingChanges" />
     </GitPendingChanges>
@@ -479,9 +489,9 @@
       <month>$([System.DateTime]::Now.ToString("MM"))</month>
       <APPVEYOR_BUILD_NUMBER Condition="''=='$(APPVEYOR_BUILD_NUMBER)'">000</APPVEYOR_BUILD_NUMBER>
       <GitBranch Condition="''=='$(GitBranch)'">$(APPVEYOR_REPO_BRANCH)</GitBranch>
-      <version>$(year).$(month).$(APPVEYOR_BUILD_NUMBER).$(GitDescribeCommitCount)</version>
+      <version>$(year).$(month).@(GitTagCount->Count()).$(GitDescribeCommitCount)</version>
       <isDirty Condition="$(GitHasPendingChanges)">-DIRTY</isDirty>
-      <gitVersion>$(GitBranch)-$(GitCommitHash)$(isDirty)</gitVersion>
+      <gitVersion>$(GitBranch)-$(GitCommitHash)$(isDirty)-CI:$(APPVEYOR_BUILD_NUMBER)</gitVersion>
     </PropertyGroup>
     <ItemGroup>
       <Tokens Include="Version">
@@ -489,6 +499,9 @@
       </Tokens>
       <Tokens Include="GitVersion">
         <ReplacementValue>$(gitVersion)</ReplacementValue>
+      </Tokens>
+      <Tokens Include="Year">
+        <ReplacementValue>20$(year)</ReplacementValue>
       </Tokens>
     </ItemGroup>
     <Message Text="Last Tag: $(GitDescribeTag)%0aHash: $(GitDescribeHash)%0aCommitCount:$(GitDescribeCommitCount)" Importance="High" />

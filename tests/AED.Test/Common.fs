@@ -25,8 +25,9 @@ let matlabPath = @"..\..\..\Fixtures\FSharp\"
 do
     let unzip file =
         let path = Path.Combine(matlabPath, file)
-        Directory.Delete(path, true)
-        ZipFile.ExtractToDirectory(path+ ".zip", matlabPath)
+        if Directory.Exists(path) then
+            Directory.Delete(path, true)
+        ZipFile.ExtractToDirectory(path + ".zip", matlabPath)
     unzip BAC2_20071015_045040.Dir
     unzip GParrots_JB2_20090607_173000_wav_minute_3.Dir
 
@@ -98,7 +99,8 @@ let createEvents (rs:seq<Rectangle<int, int>>) = Seq.map (fun r -> { Bounds = r;
 
 
 let parseStringAsMatrix (input:string) =
-    let split = input.Split([|Environment.NewLine|], StringSplitOptions.RemoveEmptyEntries)
+    let delimitters = [|for  c in Environment.NewLine -> c.ToString()|]
+    let split = input.Split(delimitters, StringSplitOptions.RemoveEmptyEntries)
 
     Matrix.init (split.Length) (split.[0].Length) (fun x y -> split.[x].[y] |> string |> Double.Parse)
 

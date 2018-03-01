@@ -16,7 +16,7 @@ namespace Acoustics.Test
     [TestClass]
     public class InfiniteTextStreamTests
     {
-        private readonly TimeSpan timeout = TimeSpan.FromMilliseconds(300);
+        private readonly TimeSpan timeout = TimeSpan.FromMilliseconds(600);
 
         [TestMethod]
         [Timeout(5_000)]
