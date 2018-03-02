@@ -344,16 +344,18 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
 
         public static DateTimeOffset GetPreviousTileBoundary(int tileWidth, double scale, DateTimeOffset recordingStartDate)
         {
-            // if recording does not start on an absolutely aligned hour of the day
-            // align it, then adjust where the tiling starts from, and calculate the offset for the super tile (the gap)
-            var timeOfDay = recordingStartDate.TimeOfDay;
-            var previousAbsoluteHour =
-                TimeSpan.FromSeconds(
-                    Math.Floor(timeOfDay.TotalSeconds / (scale * tileWidth))
-                    * (scale * tileWidth));
-            var gap = timeOfDay - previousAbsoluteHour;
-            var tilingStartDate = recordingStartDate - gap;
-            return tilingStartDate;
+            // if recording does not start on an absolutely aligned tile boundary, then we align it.
+            // "midnight" is 00:00 UTC - that way all recordings have a common tiling start point
+            var utcDate = recordingStartDate.UtcDateTime;
+            var utcMidnight = recordingStartDate.Date;
+            var delta = utcDate - utcMidnight;
+            var tileDuration = scale * tileWidth;
+            var numberOfTilesBeforeStartDate = Math.Floor(delta.TotalSeconds / tileDuration);
+
+            var paddingDuration = TimeSpan.FromSeconds(numberOfTilesBeforeStartDate * tileDuration);
+            var previous = new DateTimeOffset(utcMidnight + paddingDuration, TimeSpan.Zero);
+
+            return previous;
         }
 
         /// <summary>
