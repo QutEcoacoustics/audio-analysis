@@ -19,7 +19,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("QUT")]
 [assembly: AssemblyProduct("AnalysisPrograms")]
-[assembly: AssemblyCopyright("Copyright © QUT 2007-2015")]
+[assembly: AssemblyCopyright("Copyright © QUT 2007-${Year}")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

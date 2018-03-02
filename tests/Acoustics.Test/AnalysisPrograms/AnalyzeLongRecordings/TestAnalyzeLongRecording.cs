@@ -5,6 +5,7 @@
 namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
 {
     using System;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
@@ -89,6 +90,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
                 Config = configPath.FullName,
                 Output = this.outputDirectory,
                 MixDownToMono = true,
+                Parallel = !Debugger.IsAttached,
             };
 
             AnalyseLongRecording.Execute(arguments);
@@ -197,6 +199,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
                 Config = newConfigPath.FullName,
                 Output = this.outputDirectory,
                 MixDownToMono = true,
+                Parallel = !Debugger.IsAttached,
             };
 
             AnalyseLongRecording.Execute(arguments);

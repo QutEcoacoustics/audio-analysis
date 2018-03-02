@@ -8,17 +8,16 @@ skip_commits:
   message: '/\[chore\]|\[no_ci\]|\[ci_skip\]|\[skip_ci\]/'
   # Do not trigger a build for anything not .NET
   files:
-    - 'AudioAnalysis/Matlab/**/*'
-    - 'AudioAnalysis/RCode/**/*'
     - '**/*.md'
-    - 'doc/**/*'
+    - 'docs/**/*'
+    - 'scripts/**/*'
 
 # Do not run a build on new tags - we use tags to create releases, which can
-# only occur after sucessful build on another branch
+# only occur after successful build on another branch
 skip_tags: true
 
 cache:
-  - AudioAnalysis\packages -> **\packages.config
+  - packages
   # cache the lfs objects directory so that git-lfs does not always download a
   # full set of blobs (saves bandwidth)
   - '.git\lfs\objects'
@@ -29,9 +28,7 @@ matrix:
 platform:
   - Any CPU
 
-
 # Attempt to limit the number of commits to clone - our project has a LOT of history
-# TODO: drop this to about ~100 later on
 clone_depth: 200
 
 environment:
@@ -56,14 +53,13 @@ before_build:
   - ps: $env:RELEASE_COMMIT = $env:APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED -ilike "*\[release\]*"; $env:SHOULD_RELEASE = ($env:RELEASE_COMMIT -ieq "true") -or ($env:APPVEYOR_SCHEDULED_BUILD -and ($env:TAG_NOT_PREVIOUSLY_RELEASED -ieq "true"));
   - ps: ls env:* -Include SHOULD*,APPVEYOR_SCHEDULED_BUILD*,APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED*,RELEASE_COMMIT,TAG_NOT_PREVIOUSLY_RELEASED
   # Restore packages 
-  - cd AudioAnalysis
   - nuget restore
 
 build_script:
   - echo "Building Debug"
   - ps: >
       msbuild 
-      "C:\projects\audio-analysis\AudioAnalysis\AudioAnalysis2012.sln" /m /verbosity:minimal 
+      "C:\projects\audio-analysis\AudioAnalysis.sln" /m /verbosity:minimal 
       /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
       /p:WarningLevel=0 /p:RunCodeAnalysis=false
       /p:Configuration=Debug /property:Platform=$env:platform
@@ -71,7 +67,7 @@ build_script:
   - echo "Building Release"
   - ps: >
       msbuild 
-      "C:\projects\audio-analysis\AudioAnalysis\AudioAnalysis2012.sln" /m /verbosity:minimal 
+      "C:\projects\audio-analysis\AudioAnalysis.sln" /m /verbosity:minimal 
       /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
       /p:WarningLevel=0 /p:RunCodeAnalysis=false
       /p:Configuration=Release /property:Platform=$env:platform
@@ -80,15 +76,15 @@ after_build:
   # package up artifacts
   # defined env vars: $env:ApPackage{Configuration} , $env:ApVersion , $env:ApName{Configuration}
   - cd %APPVEYOR_BUILD_FOLDER%
-  - ps: . .\package.ps1 "Debug"
-  - ps: . .\package.ps1 "Release"
+  - ps: . .\build\package.ps1 "Debug"
+  - ps: . .\build\package.ps1 "Release"
   #- ps: 'ls env:'
 
 test:
   assemblies:
     only:
-      #- "Acoustics\Acoustics.Test\bin\Debug\Acoustics.Test.dll"
-      - '**\bin\Debug\Acoustics.Test.dll'
+      - 'tests\Acoustics.Test\bin\Debug\Acoustics.Test.dll'
+      - 'tests\AED.Test\bin\Debug\AED.Test.dll'
   
 # Upload previously generated artifacts
 artifacts:

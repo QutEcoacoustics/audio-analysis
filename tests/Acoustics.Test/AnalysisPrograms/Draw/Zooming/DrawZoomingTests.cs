@@ -46,9 +46,7 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
             };
 
             context.WriteLine($"{DateTime.Now} generating indices fixture data");
-            MainEntry.SetLogVerbosity(LogVerbosity.Warn, false);
             AnalyseLongRecording.Execute(arguments);
-            MainEntry.SetLogVerbosity(LogVerbosity.Debug, false);
             context.WriteLine($"{DateTime.Now} finished generting fixture");
 
             ResultsDirectory = SharedDirectory.Combine("Towsey.Acoustic");

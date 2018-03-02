@@ -406,7 +406,8 @@ namespace AnalysisPrograms
             switch (logVerbosity)
             {
                 case LogVerbosity.None:
-                    modifiedLevel = Level.Off;
+                    // we never turn the logger completely off - sometimes the logger just really needs to log something.
+                    modifiedLevel = LogExtensions.PromptLevel;
                     break;
                 case LogVerbosity.Error:
                     modifiedLevel = Level.Error;

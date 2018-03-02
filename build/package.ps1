@@ -38,9 +38,8 @@ if ($configuration -eq $null) {
 
 cd $PSScriptRoot
 try {
-Push-Location
 
-cd "AudioAnalysis/AnalysisPrograms/bin"
+cd "$PSScriptRoot/../src/AnalysisPrograms/bin"
 
 
 echo "Removing old zips (this should have no effect on CI server)"
@@ -60,9 +59,9 @@ exec { 7z a -tzip $ApName "./$configuration/*" -xr0!*log.txt* }
 
 echo "Packing complete"
 
-Set-Item "env:ApPackage$Configuration" (Join-Path "AudioAnalysis\AnalysisPrograms\bin" $ApName)
+Set-Item "env:ApPackage$Configuration" (Join-Path "src\AnalysisPrograms\bin" $ApName)
 
 }
 finally {
-Pop-Location
+cd "$PSScriptRoot/.."
 }

@@ -267,6 +267,7 @@
     <Compile Include="Shared\ConfigTests.cs" />
     <Compile Include="Shared\RangeTests.cs" />
     <Compile Include="TestHelpers\Factories\AudioRecordingFactory.cs" />
+    <Compile Include="TestHelpers\Setup.cs" />
     <Compile Include="Tools\AudioFilePreparerTests.cs" />
     <Compile Include="FileDateHelpersTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

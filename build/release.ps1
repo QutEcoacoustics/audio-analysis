@@ -49,7 +49,7 @@ if (!$ci) {
   # create and upload a github release
   echo "creating github release"
   
-  $artifacts = ((ls .\AudioAnalysis\AnalysisPrograms\bin\*.zip) | % { "-a " + $_ }) -join " "
+  $artifacts = ((ls .\src\AnalysisPrograms\bin\*.zip) | % { "-a " + $_ }) -join " "
   
   hub release create "$(if($pre_release){"-p"})" $artifacts -m $release_message $tag_name
   

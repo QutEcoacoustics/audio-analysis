@@ -1,5 +1,6 @@
 ﻿namespace Acoustics.Test.TestHelpers
 {
+    using System;
     using System.IO;
     using System.Security.Cryptography;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -11,6 +12,7 @@
         /// </summary>
         /// <param name="expected">The file that has the expected data</param>
         /// <param name="actual">The file that we are testing with actual data</param>
+        [Obsolete("Please don't use this - testing of values based on text is inherently error prone (e.g. encoding, line endings, ...)")]
         public static void TextFileEqual(FileInfo expected, FileInfo actual)
         {
             expected.Refresh();
@@ -22,12 +24,21 @@
             var expectedLines = File.ReadAllLines(expected.FullName);
             var actualLines = File.ReadAllLines(expected.FullName);
 
-            CollectionAssert.AreEqual(expectedLines, actualLines);
-
             Assert.AreEqual(
-                expected.Length,
-                actual.Length,
-                $"Expected file sizes to be the same. Expected {expected} was {expected.Length}. Actual {actual} was {actual.Length}");
+                expectedLines.Length, 
+                actualLines.Length,
+                $"Line length ({expectedLines.Length}) of expected ({expected}) did not match length of ({actualLines.Length}) actual ({actual})");
+
+            for (int i = 0; i < expectedLines.Length; i++)
+            {
+                // normalize line endings - on CI servers or Unix machines they may be inconsistent
+                var e = expectedLines[i].NormalizeToCrLf();
+                var a = actualLines[i].NormalizeToCrLf();
+
+                Assert.AreEqual(e, a, $"Text file not equal at line {i}. Expected: `{e}`, Actual: `{a}`");
+            }
+
+            // we used to check file size bytes here but for text especially this is an unreliable test
         }
 
         /// <summary>

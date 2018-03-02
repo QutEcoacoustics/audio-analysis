@@ -29,6 +29,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
     public class EnvelopeAndFftTests
     {
         private DirectoryInfo outputDirectory;
+        public const double Delta = 0.000_000_001;
 
         [TestInitialize]
         public void Setup()
@@ -117,8 +118,8 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             var expectedColSums = Binary.Deserialize<double[]>(sumFile);
             var totalDelta = expectedColSums.Zip(columnSums, ValueTuple.Create).Select(x => Math.Abs(x.Item1 - x.Item2)).Sum();
             var avgDelta = expectedColSums.Zip(columnSums, ValueTuple.Create).Select(x => Math.Abs(x.Item1 - x.Item2)).Average();
-            Assert.AreEqual(expectedColSums[0], columnSums[0], $"\nE: {expectedColSums[0]:R}\nA: {columnSums[0]:R}\nD: {expectedColSums[0] - columnSums[0]:R}\nT: {totalDelta:R}\nA: {avgDelta}\nn: {expectedColSums.Length}");
-            CollectionAssert.AreEqual(expectedColSums, columnSums);
+            Assert.AreEqual(expectedColSums[0], columnSums[0], Delta, $"\nE: {expectedColSums[0]:R}\nA: {columnSums[0]:R}\nD: {expectedColSums[0] - columnSums[0]:R}\nT: {totalDelta:R}\nA: {avgDelta}\nn: {expectedColSums.Length}");
+            CollectionAssert.That.AreEqual(expectedColSums, columnSums, Delta);
         }
 
         /// <summary>
@@ -212,7 +213,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             //Binary.Serialize(frameDecibelsFile, frameDecibels);
             
             var expectedFrameDecibels = Binary.Deserialize<double[]>(frameDecibelsFile);
-            CollectionAssert.AreEqual(expectedFrameDecibels, frameDecibels);
+            CollectionAssert.That.AreEqual(expectedFrameDecibels, frameDecibels, Delta);
 
             // freq info
             Assert.AreEqual(255, nyquistBin);

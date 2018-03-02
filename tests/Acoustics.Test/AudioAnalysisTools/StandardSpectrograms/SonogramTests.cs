@@ -6,6 +6,7 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
 {
     using System.IO;
     using Acoustics.Shared;
+    using DSP;
     using global::AudioAnalysisTools;
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.StandardSpectrograms;
@@ -92,7 +93,7 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
 
             var expected = Binary.Deserialize<double[,]>(expectedFile);
 
-            CollectionAssert.AreEqual(expected, sonogram.Data);
+            CollectionAssert.That.AreEqual(expected, sonogram.Data, EnvelopeAndFftTests.Delta);
         }
 
         [TestMethod]
@@ -129,7 +130,7 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
 
             var expected = Binary.Deserialize<double[,]>(expectedFile);
 
-            CollectionAssert.AreEqual(expected, decibelSonogram);
+            CollectionAssert.That.AreEqual(expected, decibelSonogram, EnvelopeAndFftTests.Delta);
         }
 
         [TestMethod]
@@ -156,7 +157,7 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
             // Method 2: make sure that the decibel spectrum is the same no matter which path we take to calculate it.
             var actualDecibelSpectrogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
 
-            CollectionAssert.AreEqual(expectedDecibelSonogram, actualDecibelSpectrogram.Data);
+            CollectionAssert.That.AreEqual(expectedDecibelSonogram, actualDecibelSpectrogram.Data, EnvelopeAndFftTests.Delta);
         }
     }
 }
