@@ -29,19 +29,18 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
     /// (4) for binary large objects(BLOBs) make sure git-lfs is tracking them
     /// </summary>
     [TestClass]
-    // [Ignore]
     public class ConcatenationTests : OutputDirectoryTest
     {
-        private static DirectoryInfo indonesiaIndicesDirectory;
-
-        private static DirectoryInfo newZealandArk01IndicesDirectory;
-
         private const string IndonesiaReduced = "Indonesia_2Reduced";
 
         private const string NewZealandArk01 = "NewZealandArk01";
 
-        /// Use ClassInitialize to run code before running the first test in the class
-        [ClassInitialize()]
+        private static DirectoryInfo indonesiaIndicesDirectory;
+
+        private static DirectoryInfo newZealandArk01IndicesDirectory;
+
+        // Use ClassInitialize to run code before running the first test in the class
+        [ClassInitialize]
         public static void MyClassInitialize(TestContext testContext)
         {
             var indonesiaIndices = PathHelper.ResolveAsset("Concatenation", IndonesiaReduced + ".zip");
@@ -157,8 +156,8 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             Assert.That.FileExists(outputDataDir.CombineFile(prefix + "Towsey.Acoustic.Indices.csv"));
             Assert.That.FileNotExists(outputDataDir.CombineFile(prefix + "SummaryIndex.csv"));
 
-
             var actualImage = ImageTools.ReadImage2Bitmap(imageFileInfo.FullName);
+
             // we expect only the second half (past midnight) of the image to be rendered
             Assert.That.ImageIsSize(512, 632, actualImage);
             Assert.That.PixelIsColor(new Point(100, 100), Color.FromArgb(32, 25, 36), actualImage);
@@ -222,7 +221,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             // IMAGE 2: Compare image files - check that image exists and dimensions are correct
             var dateString2 = "20160726";
-            var outputDataDir2= this.outputDirectory.Combine(arguments.FileStemName, dateString2);
+            var outputDataDir2 = this.outputDirectory.Combine(arguments.FileStemName, dateString2);
             var prefix2 = arguments.FileStemName + "_" + dateString2 + "__";
 
             var image2FileInfo = outputDataDir2.CombineFile(prefix2 + "2Maps.png");
@@ -298,7 +297,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
         /// Thus there's a column of data for every 20 pixels.
         /// </summary>
         [DataTestMethod]
-        [DataRow(ConcatMode.TimedGaps, new [] {1440, 1420, 1440})]
+        [DataRow(ConcatMode.TimedGaps, new[] { 1440, 1420, 1440 })]
         [DataRow(ConcatMode.NoGaps, new[] { 73, 72, 73 })]
         [DataRow(ConcatMode.EchoGaps, new[] { 1440, 1420, 1440 })]
         public void SampledDataConcatModeTests(ConcatMode gapRendering, int[] expectedWidths)
@@ -325,7 +324,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             ConcatenateIndexFiles.Execute(arguments);
 
-            var dateStrings = new[] {"20161209", "20161210", "20161211"}.Zip(expectedWidths, ValueTuple.Create);
+            var dateStrings = new[] { "20161209", "20161210", "20161211" }.Zip(expectedWidths, ValueTuple.Create);
             foreach (var (dateString, expectedWidth) in dateStrings)
             {
                 var prefix = Path.Combine(this.outputDirectory.FullName, Ark01, dateString, Ark01 + "_" + dateString + "__");
@@ -379,10 +378,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                     default:
                         throw new ArgumentOutOfRangeException(nameof(gapRendering), gapRendering, null);
                 }
-
             }
         }
-
-
     }
 }

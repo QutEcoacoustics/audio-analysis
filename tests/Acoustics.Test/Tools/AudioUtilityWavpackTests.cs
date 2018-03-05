@@ -31,6 +31,7 @@
                 MixDownToMono = false,
                 OffsetStart = TimeSpan.FromSeconds(20),
                 OffsetEnd = TimeSpan.FromSeconds(50),
+
                 //SampleRate = 11025
             };
 
@@ -94,6 +95,7 @@
                 MixDownToMono = false,
                 OffsetStart = TimeSpan.FromSeconds(0),
                 OffsetEnd = TimeSpan.FromSeconds(55),
+
                 //SampleRate = 11025
             };
 
@@ -157,9 +159,9 @@
             {
                 MixDownToMono = false,
                 OffsetStart = TimeSpan.FromSeconds(27),
+
                 //SampleRate = 44100
             };
-
 
             var source = TestHelper.GetAudioFile("f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv");
             var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
@@ -188,8 +190,11 @@
             var request = new AudioUtilityRequest
             {
                 MixDownToMono = false,
+
                 //Channel = 2,
+
                 OffsetStart = TimeSpan.FromMinutes(5) + TimeSpan.FromSeconds(27),
+
                 //SampleRate = 11025,
             };
 

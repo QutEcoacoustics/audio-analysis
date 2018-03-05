@@ -25,7 +25,7 @@ namespace Acoustics.Test.AnalysisBase
     [TestClass]
     public class AnalysisCoordinatorTests
     {
-        protected DirectoryInfo outputDirectory;
+        private DirectoryInfo outputDirectory;
 
         [TestInitialize]
         public void Setup()
@@ -188,7 +188,6 @@ namespace Acoustics.Test.AnalysisBase
                 {
                     SegmentStartOffset = 0.Seconds(),
                     SegmentEndOffset = 60.0.Seconds(),
-
                 },
             };
 

@@ -16,11 +16,11 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
     [TestClass]
     public class AbsoluteDateTimeTilerTests
     {
+        private readonly DateTimeOffset dateTimeOffset = new DateTimeOffset(2015, 04, 10, 3, 30, 15, 123, TimeSpan.FromHours(10));
         private AbsoluteDateTilingProfile tilingProfile;
         private Tiler tiler;
         private DirectoryInfo outputDirectory;
         private AbsoluteDateTilingProfile tilingProfileNotRoundStart;
-        private readonly DateTimeOffset dateTimeOffset = new DateTimeOffset(2015, 04, 10, 3, 30, 15, 123, TimeSpan.FromHours(10));
 
         [TestInitialize]
         public void Setup()
@@ -64,7 +64,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
 
             Assert.AreEqual("Basename__Tag_20150409T173015.123Z_60", profile.GetFileBaseName(this.tiler.CalculatedLayers, this.tiler.CalculatedLayers.First(), new Point(0, 0)));
 
-            var profile2 = new AbsoluteDateTilingProfile("", "Tag", this.dateTimeOffset, 256, 300);
+            var profile2 = new AbsoluteDateTilingProfile(string.Empty, "Tag", this.dateTimeOffset, 256, 300);
 
             Assert.AreEqual("Tag_20150409T173015.123Z_60", profile2.GetFileBaseName(this.tiler.CalculatedLayers, this.tiler.CalculatedLayers.First(), new Point(0, 0)));
         }
@@ -73,7 +73,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
         public void TestLeftPaddingInLowerLayers()
         {
             const int TileWidth = 180;
-            var startDate = new DateTimeOffset(2014, 05, 29, 08,13, 58, TimeSpan.FromHours(10));
+            var startDate = new DateTimeOffset(2014, 05, 29, 08, 13, 58, TimeSpan.FromHours(10));
             var boundary = ZoomTiledSpectrograms.GetPreviousTileBoundary(TileWidth, 0.1, startDate);
             var padding = startDate - boundary;
 
@@ -136,7 +136,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
             var expectedImages =
                 expectedFiles
                     .OrderBy(x => x)
-                    .Select((x, i) => testBitmap.Crop(new Rectangle(i * TileWidth - 100, 0, TileWidth, 256)))
+                    .Select((x, i) => testBitmap.Crop(new Rectangle((i * TileWidth) - 100, 0, TileWidth, 256)))
                     .ToArray();
 
             for (var i = 0; i < expectedImages.Length; i++)

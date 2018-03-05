@@ -79,6 +79,7 @@ namespace Acoustics.Test.TestHelpers
                 actualEnum.Dispose();
             }
         }
+
         public static void AreEqual(
             this CollectionAssert collectionAssert,
             double[,] expected,
@@ -112,7 +113,6 @@ namespace Acoustics.Test.TestHelpers
                                 $"At index [{i},{j}], expected item `{expectedItem}` does not match `{actualItem}`. "
                                 + $"Actual delta is `{actualDelta}`");
                         }
-
                     }
                 }
             }
@@ -226,8 +226,7 @@ namespace Acoustics.Test.TestHelpers
                         i < expectedValue.Length ? ((int)expectedValue[i]).ToString() : string.Empty, // character decimal value
                         i < expectedValue.Length ? expectedValue[i].ToSafeString() : string.Empty, // character safe string
                         i < actualValue.Length ? ((int)actualValue[i]).ToString() : string.Empty, // character decimal value
-                        i < actualValue.Length ? actualValue[i].ToSafeString() : string.Empty // character safe string
-                    );
+                        i < actualValue.Length ? actualValue[i].ToSafeString() : string.Empty); // character safe string
                 }
             }
 

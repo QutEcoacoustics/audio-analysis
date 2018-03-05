@@ -136,7 +136,6 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
         /// Tests the rendering of zooming spectrograms for a minute of audio indices
         /// </summary>
         [TestMethod]
-        //[Timeout(45_000)]
         public void TestGenerateTilesSqlite()
         {
             // generate the zooming spectrograms

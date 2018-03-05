@@ -150,6 +150,7 @@ namespace Acoustics.Test.Tools
                 //BitDepth = 16,
                 TargetSampleRate = 22050,
                 Channels = new[] { 1, 2, 3, 4 },
+
                 //BandPass
             };
 
@@ -176,6 +177,7 @@ namespace Acoustics.Test.Tools
                 BitDepth = 64,
                 TargetSampleRate = 22050,
                 Channels = new[] { 1, 2, 3, 4 },
+
                 //BandPass
             };
 
@@ -200,8 +202,11 @@ namespace Acoustics.Test.Tools
             var request = new AudioUtilityRequest
             {
                 BitDepth = 16,
+
                 //TargetSampleRate = 22050,
+
                 Channels = new[] { 1, 2, 3, 4 },
+
                 //BandPass
             };
 
@@ -217,6 +222,7 @@ namespace Acoustics.Test.Tools
             {
                 BitDepth = 16,
                 TargetSampleRate = 22050,
+
                 //Channels = new[] { 1, 2, 3, 4 },
                 //BandPass
             };
@@ -234,6 +240,7 @@ namespace Acoustics.Test.Tools
                 BitDepth = 16,
                 TargetSampleRate = 22050,
                 Channels = new[] { 5, 2, 3, 4 },
+
                 //BandPass
             };
 

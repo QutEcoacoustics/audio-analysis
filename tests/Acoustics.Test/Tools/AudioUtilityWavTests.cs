@@ -227,8 +227,10 @@
             var request = new AudioUtilityRequest
             {
                 //MixDownToMono = true,
+
                 OffsetStart = TimeSpan.FromSeconds(20),
                 OffsetEnd = TimeSpan.FromSeconds(50),
+
                 //TargetSampleRate = 17460
             };
 
@@ -262,7 +264,9 @@
             var request = new AudioUtilityRequest
             {
                 //MixDownToMono = true,
+
                 OffsetEnd = TimeSpan.FromSeconds(35),
+
                 //TargetSampleRate = 17460
             };
 
@@ -364,8 +368,10 @@
             var request = new AudioUtilityRequest
             {
                 //MixDownToMono = true,
+
                 OffsetStart = TimeSpan.FromSeconds(27),
                 OffsetEnd = TimeSpan.FromSeconds(117),
+
                 //TargetSampleRate = 17460
             };
 
@@ -400,7 +406,9 @@
             {
                 //MixDownToMono = false,
                 //Channel = 2,
+
                 OffsetStart = TimeSpan.FromSeconds(27),
+
                 //TargetSampleRate = 17460,
             };
 

@@ -28,7 +28,6 @@ namespace Acoustics.Test.AnalysisBase
             this.original.AnalysisOutputDirectory = new DirectoryInfo("/");
 
             this.cloned = (AnalysisSettings)this.original.Clone();
-
         }
 
         [TestMethod]

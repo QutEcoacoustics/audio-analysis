@@ -83,6 +83,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
 
             // test what used to be the CLS spectral index. Sum of the rows of the weight vectors.
             var expectedSpectrumFile = new FileInfo(outputDir + "\\clusterSpectrum.bin");
+            
             // Binary.Serialize(expectedSpectrumFile, clusterSpectrum);
             var expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.AreEqual(expectedVector, clusterSpectrum);

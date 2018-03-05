@@ -174,7 +174,7 @@ namespace Acoustics.Test.Tools.AudioUtilityChannelSelection
                     new[] { 1000 },
                 };
 
-            ChannelTest(FourChannelFile, new[] {1, 2, 3, 4 }, false, expectedFrequencies);
+            ChannelTest(FourChannelFile, new[] { 1, 2, 3, 4 }, false, expectedFrequencies);
         }
 
         [TestMethod]
@@ -183,7 +183,7 @@ namespace Acoustics.Test.Tools.AudioUtilityChannelSelection
             // array of channels of frequencies (expected in each channel)
             var expectedFrequencies = new[]
                 {
-                    new[] { 4000, 3000},
+                    new[] { 4000, 3000 },
                 };
 
             ChannelTest(FourChannelFile, new[] { 1, 2 }, true, expectedFrequencies);
@@ -210,7 +210,7 @@ namespace Acoustics.Test.Tools.AudioUtilityChannelSelection
                     new[] { 4000, 3000, 2000, 1000 },
                 };
 
-            ChannelTest(FourChannelFile, new[] {1, 2, 3, 4 }, true, expectedFrequencies);
+            ChannelTest(FourChannelFile, new[] { 1, 2, 3, 4 }, true, expectedFrequencies);
         }
 
         [TestMethod]
