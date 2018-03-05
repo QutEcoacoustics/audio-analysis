@@ -99,16 +99,76 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
         [TestMethod]
         public void CompressIndexSpectrogramsTest()
         {
-            var spectra = new Dictionary<string, double[,]>()
-                {
-                    { "Test", new double[,] { { 1, 2, 3, 5 } } },
-                };
+            var spectra = new Dictionary<string, double[,]> { { "Test", new double[,] { { 1, 2, 3, 4 } } }, };
 
             Assert.ThrowsException<ArgumentException>(
                 () => IndexMatrices.CompressIndexSpectrograms(
                     spectra,
                     TimeSpan.FromSeconds(60),
                     TimeSpan.FromSeconds(80)));
+        }
+
+        [TestMethod]
+        public void CompressIndexSpectrogramsAcceptsRoundingFuncTest()
+        {
+            var spectra = new Dictionary<string, double[,]> { { "Test", new double[,] { { 1, 2, 3, 4, 5 } } }, };
+
+            // the default rounding func (when param omitted) is floor
+            var result = IndexMatrices.CompressIndexSpectrograms(
+                spectra,
+                TimeSpan.FromSeconds(60),
+                TimeSpan.FromSeconds(30));
+
+            Assert.AreEqual(2, result.First().Value.Length);
+
+            result = IndexMatrices.CompressIndexSpectrograms(
+                spectra,
+                TimeSpan.FromSeconds(60),
+                TimeSpan.FromSeconds(30),
+                Math.Ceiling);
+
+            Assert.AreEqual(3, result.First().Value.Length);
+
+            result = IndexMatrices.CompressIndexSpectrograms(
+                spectra,
+                TimeSpan.FromSeconds(60),
+                TimeSpan.FromSeconds(30),
+                d => Math.Round(d, MidpointRounding.AwayFromZero));
+
+            Assert.AreEqual(3, result.First().Value.Length);
+        }
+
+        public static IEnumerable<object[]> ScaleCombinations
+        {
+            get
+            {
+                var scales = new[] { 60.0, 30, 15, 10, 7.5, 3.2, 1.6, 0.8, 0.4, 0.2, 0.1 };
+                var dataSizes = new[] { 60, 359900 };
+
+                return from s in scales from d in dataSizes select new object[] { s, d };
+            }
+        }
+
+        [DataTestMethod]
+        [DynamicData(nameof(ScaleCombinations))]
+        public void CompressIndexSpectrogramsFillsAllValuesTest(double renderScale, int dataSize)
+        {
+            var bgnSpectra = new double[256, dataSize].Fill(-100);
+            var spectra = new Dictionary<string, double[,]> { { "BGN", bgnSpectra }, };
+            var compressed = IndexMatrices.CompressIndexSpectrograms(
+                spectra,
+                renderScale.Seconds(),
+                0.1.Seconds(),
+                d => Math.Round(d, MidpointRounding.AwayFromZero));
+
+            var bgn = compressed["BGN"];
+            var average = bgn.Average();
+
+            // this test is specifically testing whether the last column has the correct value
+            var lastColumn = MatrixTools.GetColumn(bgn, bgn.LastColumnIndex());
+            Assert.AreEqual(-100, lastColumn.Average());
+
+            Assert.AreEqual(-100, average);
         }
     }
 }

@@ -78,10 +78,10 @@ namespace Acoustics.Test.TestHelpers
             var averageGreen = green.Average();
 
             Assert.IsTrue(
-                Math.Abs(averageRed - expectedColor.R) < tolerance &&
-                Math.Abs(averageGreen - expectedColor.G) < tolerance &&
-                Math.Abs(averageBlue - expectedColor.B) < tolerance,
-                $"Region {region} is not expected color {expectedColor} - actual averages: R={averageRed}, G={averageGreen}, B={averageBlue}");
+                Math.Abs(averageRed - expectedColor.R) <= tolerance &&
+                Math.Abs(averageGreen - expectedColor.G) <= tolerance &&
+                Math.Abs(averageBlue - expectedColor.B) <= tolerance,
+                $"Region {region} is not expected color {expectedColor} - actual averages: R={averageRed:F20}, G={averageGreen:F20}, B={averageBlue:F20}");
         }
 
         /// <summary>

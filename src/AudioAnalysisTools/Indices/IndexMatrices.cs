@@ -595,11 +595,22 @@ namespace AudioAnalysisTools.Indices
         /// The method got more complicated in June 2016 when refactored it to cope with recording blocks less than
         /// one minute long.
         /// </summary>
+        /// <param name="spectra">The spectra to compress</param>
+        /// <param name="imageScale">The scale to compress to</param>
+        /// <param name="dataScale">The scale of the <see cref="spectra"/></param>
+        /// <param name="roundingFunc">
+        /// How fractional spectra should be delt with.
+        /// Should be one of or similar to <see cref="Math.Round(double)"/>,
+        /// <see cref="Math.Floor(double)"/>, or <see cref="Math.Ceiling(double)"/>.
+        /// </param>
         public static Dictionary<string, double[,]> CompressIndexSpectrograms(
             Dictionary<string, double[,]> spectra,
             TimeSpan imageScale,
-            TimeSpan dataScale)
+            TimeSpan dataScale,
+            Func<double, double> roundingFunc = null)
         {
+            roundingFunc = roundingFunc ?? Math.Floor;
+
             var rawScalingFactor = imageScale.Ticks / (double)dataScale.Ticks;
             int scalingFactor = (int)Math.Round(rawScalingFactor);
 
@@ -608,7 +619,7 @@ namespace AudioAnalysisTools.Indices
                 "CompressIndexSpectrograms only supports rescaling between factors that produce integer ratios");
 
             var compressedSpectra = new Dictionary<string, double[,]>();
-            int step = scalingFactor - 1;
+            int step = scalingFactor;
 
             // if there's no need to compress, simply return
             if (step == 0)
@@ -623,24 +634,21 @@ namespace AudioAnalysisTools.Indices
                 int colCount = matrix.GetLength(1);
 
                 int compressionWindow = scalingFactor;
-                int compressedLength = colCount / scalingFactor;
+                int compressedLength = (int)roundingFunc((double)colCount / scalingFactor);
                 if (compressedLength < 1)
                 {
                     compressedLength = 1;
                 }
 
                 var newMatrix = new double[rowCount, compressedLength];
-                double[] tempArray = new double[scalingFactor];
-                int maxColCount = colCount - scalingFactor;
-                if (maxColCount < 0)
-                {
-                    maxColCount = matrix.GetLength(1);
-                    compressionWindow = maxColCount;
-                }
+
+                // using this form to ensure we can reach the end of array
+                int maxColCount = (compressedLength - 1) * scalingFactor;
 
                 // the ENTROPY matrix requires separate calculation
                 if (key == "ENT" && scalingFactor > 1)
                 {
+                    double[] tempArray = new double[scalingFactor];
                     matrix = spectra["SUM"];
                     for (int r = 0; r < rowCount; r++)
                     {
@@ -649,6 +657,12 @@ namespace AudioAnalysisTools.Indices
                             var colIndex = c / scalingFactor;
                             for (int i = 0; i < compressionWindow; i++)
                             {
+                                // partial compression windows at the end of the array
+                                if (c + i >= colCount)
+                                {
+                                    continue;
+                                }
+
                                 // square the amplitude to give energy
                                 tempArray[i] = matrix[r, c + i] * matrix[r, c + i];
                             }
@@ -666,40 +680,55 @@ namespace AudioAnalysisTools.Indices
                 else if (key == "ACI" && scalingFactor > 1)
                 {
                     // THE ACI matrix requires separate calculation
-
-                    double[] DIFArray = new double[scalingFactor];
-                    double[] SUMArray = new double[scalingFactor];
                     for (int r = 0; r < rowCount; r++)
                     {
                         for (int c = 0; c <= maxColCount; c += step)
                         {
                             var colIndex = c / scalingFactor;
+                            var difSum = 0.0;
+                            var sumSum = 0.0;
                             for (int i = 0; i < compressionWindow; i++)
                             {
-                                DIFArray[i] = spectra["DIF"][r, c + i];
-                                SUMArray[i] = spectra["SUM"][r, c + i];
+                                // partial compression windows at the end of the array
+                                if (c + i >= colCount)
+                                {
+                                    continue;
+                                }
+
+                                difSum += spectra["DIF"][r, c + i];
+                                sumSum += spectra["SUM"][r, c + i];
                             }
 
-                            newMatrix[r, colIndex] = DIFArray.Sum() / SUMArray.Sum();
+                            newMatrix[r, colIndex] = difSum / sumSum;
                         }
                     }
                 }
+
+                // TODO: @towsey, PMN should probably have a separate calculation as well?
                 else
                 {
                     // average all other spectral indices
-
                     matrix = spectra[key];
                     for (int r = 0; r < rowCount; r++)
                     {
                         for (int c = 0; c <= maxColCount; c += step)
                         {
                             var colIndex = c / scalingFactor;
+                            var sum = 0.0;
+                            int count = 0;
                             for (int i = 0; i < compressionWindow; i++)
                             {
-                                tempArray[i] = matrix[r, c + i];
+                                // partial compression windows at the end of the array
+                                if (c + i >= colCount)
+                                {
+                                    continue;
+                                }
+
+                                count++;
+                                sum += matrix[r, c + i];
                             }
 
-                            newMatrix[r, colIndex] = tempArray.Average();
+                            newMatrix[r, colIndex] = sum / count;
                         }
                     }
                 }

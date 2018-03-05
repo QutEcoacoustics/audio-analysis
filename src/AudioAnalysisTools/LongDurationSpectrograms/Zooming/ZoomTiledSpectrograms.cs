@@ -85,7 +85,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
                 yUnitScale: 1.0,
                 unitHeight: namingPattern.TileHeight);
 
-            // TODO: does this load all spectra? even ones we don't need...
+            // TODO: this loads all spectra, even ones we don't need...
             var (spectra, filteredIndexProperties) = LoadSpectra(io, analysisTag, fileStem, indexProperties);
 
             // false color index tiles
@@ -244,7 +244,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
                 }
 
                 // TODO: eventual optimisation, remove concept of super tiles
-                // TODO: optimisation, cache aggregation layers (currently every layer is raggregated from base level)
+                // TODO: optimisation, cache aggregation layers (currently every layer is reaggregated from base level)
                 TimeSpan imageScale = TimeSpan.FromSeconds(scale);
                 var superTiles = DrawSuperTilesAtScaleFromIndexSpectrograms(
                     ldsConfig,

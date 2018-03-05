@@ -7,6 +7,8 @@ namespace AudioAnalysisTools.Indices
     using System;
     using System.Collections.Generic;
     using System.Drawing;
+    using System.Linq;
+
     using Acoustics.Shared;
     using AnalysisBase.ResultBases;
     using Fasterflect;
@@ -129,6 +131,11 @@ namespace AudioAnalysisTools.Indices
             {
                 return CachedSettersInternal;
             }
+        }
+
+        public static string[] GetKeys()
+        {
+            return CachedSelectorsInternal.Keys.ToArray();
         }
 
         public static Image CreateImageOfSpectralIndices(SpectralIndexValues spectralIndices)

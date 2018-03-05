@@ -19,6 +19,22 @@ namespace System
     /// </summary>
     public static class DoubleSquareArrayExtensions
     {
+        public static double Average(this double[,] matrix)
+        {
+            var total = 0.0;
+            var count = RowLength(matrix) * ColumnLength(matrix);
+
+            for (int i = 0; i < RowLength(matrix); i++)
+            {
+                for (int j = 0; j < ColumnLength(matrix); j++)
+                {
+                    total += matrix[i, j];
+                }
+            }
+
+            return total / count;
+        }
+
         /// <summary>
         /// The point intersect.
         /// </summary>
@@ -74,6 +90,16 @@ namespace System
         public static int ColumnLength<T>(this T[,] matrix)
         {
             return matrix.GetLength(1);
+        }
+
+        public static int LastRowIndex<T>(this T[,] matrix)
+        {
+            return RowLength(matrix) - 1;
+        }
+
+        public static int LastColumnIndex<T>(this T[,] matrix)
+        {
+            return ColumnLength(matrix) - 1;
         }
 
         /// <summary>

@@ -54,7 +54,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
             // compress spectrograms to correct scale
             if (scalingFactor > 1)
             {
-                spectralSelection = IndexMatrices.CompressIndexSpectrograms(spectralSelection, imageScale, dataScale);
+                // we add rounding to the compression so that fractional pixels get rendered
+                spectralSelection = IndexMatrices.CompressIndexSpectrograms(
+                    spectralSelection,
+                    imageScale,
+                    dataScale,
+                    d => Math.Round(d, MidpointRounding.AwayFromZero));
             }
             else
             {
