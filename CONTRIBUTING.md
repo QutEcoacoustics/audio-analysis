@@ -30,9 +30,8 @@ We use [git-lfs](https://git-lfs.github.com/) to store BLOBs for testing audio
 file converters. If you want to run the unit tests you need to have git-lfs 
 installed.
 
-Not all BLOBs are stored in git-lfs. So far only the audio files in 
-`tests\Fixtures` have been added.
-
+Not all BLOBs are stored in git-lfs. See the `.gitattributes` file to list
+what files are included.
 
 Third party contributions
 -------------------------
@@ -46,7 +45,7 @@ Third party contributions should be made by:
 Help wanted
 ------------
 
-We mark the most straightforward issues as "help wanted". This set of issues is the place to start if you are interested
+We mark the most straightforward issues as "up for grabs". This set of issues is the place to start if you are interested
 in contributing but new to the codebase.
 
 - [QutEcoacoustics/audio-analysis - "up for grabs"](https://github.com/QutEcoacoustics/audio-analysis/labels/up%20for%20grabs)
@@ -59,7 +58,7 @@ Project maintainers will merge changes that improve the product significantly an
 
 Contributions must also satisfy the other published guidelines defined in this document.
 
-We will gladly accept any documentation enhancements.
+We will gladly accept any documentation or script enhancements.
 
 DOs and DON'Ts
 --------------
