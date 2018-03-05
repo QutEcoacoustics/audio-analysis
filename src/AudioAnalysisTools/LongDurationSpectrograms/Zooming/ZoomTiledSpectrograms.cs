@@ -56,7 +56,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
             ValidateScales(indexScales, indexGenerationData.IndexCalculationDuration.TotalSeconds);
 
             var shouldRenderStandardScale = !standardScales.IsNullOrEmpty();
-            if (shouldRenderStandardScale)
+            if (!shouldRenderStandardScale)
             {
                 Log.Warn("Standard spectrograms will not be rendered");
             }
@@ -66,7 +66,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
             Log.Info("Tiling at scales: " + allImageScales.ToCommaSeparatedList());
 
             // determine what naming format to use for tiles
-            var (namingPattern, alignmentPadding) = GetTilingProfile(common, zoomConfig, indexGenerationData);
+            var (namingPattern, alignmentPadding) = GetTilingProfile(
+                common,
+                zoomConfig,
+                indexGenerationData,
+                indexScales.Max());
 
             // pad out image so it produces a whole number of tiles
             // this solves the asymmetric right padding of short audio files
@@ -267,7 +271,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
         private static (TilingProfile Profile, TimeSpan padding) GetTilingProfile(
             ZoomParameters common,
             SpectrogramZoomingConfig zoomConfig,
-            IndexGenerationData indexGeneration)
+            IndexGenerationData indexGeneration,
+            double maxScale)
         {
             TilingProfile namingPattern;
             TimeSpan padding;
@@ -292,7 +297,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
                         var recordingStartDate = (DateTimeOffset)indexGeneration.RecordingStartDate;
                         var tilingStartDate = GetPreviousTileBoundary(
                             zoomConfig.TileWidth,
-                            XNominalUnitScale,
+                            maxScale,
                             recordingStartDate);
                         padding = recordingStartDate - tilingStartDate;
 

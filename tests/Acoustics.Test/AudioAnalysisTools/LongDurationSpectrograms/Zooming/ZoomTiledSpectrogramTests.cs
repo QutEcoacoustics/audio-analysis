@@ -45,7 +45,6 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms.Zooming
         [DataRow("2012-10-19T13:57:36.000+10:00", 180, 1.6,  "2012-10-19T13:55:12.000+10:00")]
         [DataRow("2012-10-19T13:59:59.000+10:00", 180, 1.6,  "2012-10-19T13:55:12.000+10:00")]
 
-
         [DataRow("2014-05-27T02:13:58.000+10:00", 180, 3.2, "2014-05-26T16:09:36.000+00:00")]
         [DataRow("2014-05-27T02:09:58.000+10:00", 180, 3.2, "2014-05-26T16:09:36.000+00:00")]
         [DataRow("2014-05-27T02:30:00.000+10:00", 180, 3.2, "2014-05-26T16:28:48.000+00:00")]
@@ -65,6 +64,9 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms.Zooming
         [DataRow("2012-10-19T17:01:00.000+10:00", 180, 120, "2012-10-19T06:00:00.000+00:00")]
         [DataRow("2012-10-19T03:59:59.999+10:00", 180, 120, "2012-10-18T12:00:00.000+00:00")]
         [DataRow("2012-10-19T07:00:00.000+10:00", 180, 120, "2012-10-18T18:00:00.000+00:00")]
+
+        // special test cases
+        [DataRow("2014-05-29T08:13:58.000+10:00", 180, 120, "2014-05-28T18:00:00.000+00:00")]
         public void TestGetPreviousTileBoundary(string startDate, int tileWidth, double scale, string expectedDate)
         {
             var start = DateTimeOffset.Parse(startDate);
