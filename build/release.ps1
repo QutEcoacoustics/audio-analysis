@@ -1,4 +1,4 @@
-# Create release .tar.gz files for AnalysisPrograms.exe
+# Create a release message (and optionally create a GitHub release)
 #
 # depends on hub being on path (`choco install hub`)
 # 

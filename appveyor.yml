@@ -104,9 +104,9 @@ before_deploy:
   - cd %APPVEYOR_BUILD_FOLDER%
   # Buggy authentication with git-lfs
   - git config lfs.https://github.com/QutBioacoustics/audio-analysis.git/info/lfs.locksverify false
-  - ps: . .\tag.ps1 $env:ApVersion
+  - ps: . .\build\tag.ps1 $env:ApVersion
   # prepare release strings: $env:ApReleaseMessage, $env:ApReleaseTitle
-  - ps: . .\release.ps1 $env:ApTagName $true
+  - ps: . .\build\release.ps1 $env:ApTagName $true
   #- ps: 'ls env:'
   
 deploy:
