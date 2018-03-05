@@ -36,10 +36,10 @@ $old_tag_name =  exec { git describe --abbrev=0 --always "$tag_name^" }
 
 $compare_message = "[Compare $old_tag_name...$tag_name](https://github.com/QutBioacoustics/audio-analysis/compare/$old_tag_name...$tag_name)"
 $commit_summary = exec { git log --no-merges --pretty=format:"%h %an - %s" "$old_tag_name...$tag_name" -- . ':(exclude,icase)*.r' }
-$commit_summary = $commit_summary -join "`n"
+$commit_summary = ($commit_summary | % { "- " + $_  }) -join "`n"
 $release_message = "Version $tag_name`n`n$compare_message`n`n$commit_summary"
 $env:ApReleaseMessage = $release_message
-$release_title = "Version $tag_name - Release and Debug builds"
+$release_title = "Ecoacoustics Audio Analysis Software $tag_name"
 $env:ApReleaseTitle = $release_title
 
 echo "Release strings:`n$release_title`n$release_message"

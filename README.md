@@ -30,10 +30,11 @@ All the analyses are performed by a single executable file, _AnalysisPrograms.ex
 
 ## Citation
 
+[![DOI](https://zenodo.org/badge/18597929.svg)](https://zenodo.org/badge/latestdoi/18597929)
+
 Use this citation in all publications that use data or concepts from this code base is required:
 
-> Towsey, M., Truskinger, A., & Roe, P. (2017) Audio Analysis Software (Version 17.04.3813.0) \[Computer software\].
-> Brisbane: QUT Ecoacoustics Research Group, https://github.com/QutEcoacoustics/audio-analysis
+> Michael Towsey, Anthony Truskinger, Mark Cottman-Fields, & Paul Roe. (2018, March 5). Ecoacoustics Audio Analysis Software v18.03.0.41 (Version v18.03.0.41). Zenodo. http://doi.org/10.5281/zenodo.1188744
 
 Additionally, depending on the analysis that was run, extra work may be required to be cited. Any such additional
 citations will printed in the console and in the log file.
