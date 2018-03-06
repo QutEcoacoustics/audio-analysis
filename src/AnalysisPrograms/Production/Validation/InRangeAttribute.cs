@@ -6,6 +6,7 @@ namespace AnalysisPrograms.Production.Validation
 {
     using System;
     using System.ComponentModel.DataAnnotations;
+    using System.Globalization;
 
     [AttributeUsage(AttributeTargets.Property)]
     public class InRangeAttribute : ValidationAttribute
@@ -30,9 +31,21 @@ namespace AnalysisPrograms.Production.Validation
                 return ValidationResult.Success;
             }
 
-            if (!(value is double number))
+            double number;
+            if (value is string str)
             {
-                return new ValidationResult(this.FormatErrorMessage(value.ToString()));
+                if (!double.TryParse(str, out number))
+                {
+                    return new ValidationResult($"The number {number} for argument {validationContext.DisplayName} can not be parsed as a number.");
+                }
+            }
+            else if (value is double)
+            {
+                number = (double)value;
+            }
+            else
+            {
+                return new ValidationResult($"The value {value} for argument {validationContext.DisplayName} can not be parsed as a number.");
             }
 
             if (double.IsNaN(number))

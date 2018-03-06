@@ -12,6 +12,7 @@ namespace AnalysisPrograms
     using System;
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
+    using System.Diagnostics;
     using System.Linq;
     using System.Reflection;
     using System.Text;
@@ -38,7 +39,7 @@ namespace AnalysisPrograms
             [Option(Description = "Burn load on multiple CPU threads?")]
             public bool Parallel { get; set; }
 
-            [Option(Description = "How many seconds to run for (roughly)")]
+            [Option(ShortName = "t", Description = "How many seconds to run for (roughly)")]
             [InRange(0, 3600)]
             public double DurationSeconds { get; set; } = 30;
 
@@ -51,15 +52,14 @@ namespace AnalysisPrograms
 
             public override Task<int> Execute(CommandLineApplication app)
             {
-                DummyAnalysis.Execute(this);
-                return this.Ok();
+                return DummyAnalysis.ExecuteAync(this);
             }
         }
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         private static readonly TimeSpan LogEvery = TimeSpan.FromSeconds(10);
 
-        public static void Execute(Arguments arguments)
+        public static async Task<int> ExecuteAync(Arguments arguments)
         {
             if (arguments == null)
             {
@@ -101,45 +101,47 @@ namespace AnalysisPrograms
             }
 
             Log.InfoFormat("Starting {0} threads", tasks);
-            var task = TaskEx.WhenAll(durations.Select((d, i) => ConcurrentTask(d, i)));
-            LoggedConsole.WriteWaitingLine(task);
+            var task = Task.WhenAll(durations.Select((d, i) => ConcurrentTask(d, i)));
 
+            var result = await LoggedConsole.WriteWaitingLineAndWait(task);
             //Parallel.ForEach(durations, ParallelTask);
 
-            Log.Info("Completed all work");
+            Log.Info("Completed all work: " + result.Aggregate(string.Empty, (s, l) => s + ", " + l));
+
+            return ExceptionLookup.Ok;
         }
 
         private static Task<long> ConcurrentTask(TimeSpan timeSpan, long index)
         {
-            return TaskEx.Run(() =>
-            {
-                ParallelTask(timeSpan, null, index);
-                return timeSpan.Ticks;
-            });
+            return Task.Run(() => ParallelTask(timeSpan, null, index));
         }
 
-        private static void ParallelTask(TimeSpan timeSpan, ParallelLoopState parallelLoopState, long index)
+        private static long ParallelTask(TimeSpan timeSpan, ParallelLoopState parallelLoopState, long index)
         {
             Log.InfoFormat("Starting parallel branch {0} for {1}", index, timeSpan);
-            DateTime completeBy = DateTime.Now + timeSpan;
+            var stopWatch = Stopwatch.StartNew();
 
-            var lastLog = DateTime.Now;
-            while (completeBy >= DateTime.Now)
+            long lastLog = 0;
+
+            long nowTicks;
+            while ((nowTicks = stopWatch.ElapsedTicks) < timeSpan.Ticks)
             {
                 // Like Thread.Sleep but does not give thread control to others
                 // approx 0.54 seconds at ~2.7Ghz
                 Thread.SpinWait(100_000_000);
 
-                var now = DateTime.Now;
-                if (now - lastLog > LogEvery)
+                if (nowTicks - lastLog > LogEvery.Ticks)
                 {
-                    var percentage = (timeSpan - (completeBy - now)).Ticks / (double)timeSpan.Ticks;
+                    var percentage = nowTicks / (double)timeSpan.Ticks;
                     Log.InfoFormat("Branch {0}, {1:##0.00%} completed", index, percentage);
-                    lastLog = now;
+                    lastLog = nowTicks;
                 }
             }
 
+            stopWatch.Stop();
+
             Log.Info("Completed branch " + index);
+            return stopWatch.ElapsedTicks;
         }
     }
 }

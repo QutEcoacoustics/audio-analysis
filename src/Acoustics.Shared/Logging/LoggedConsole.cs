@@ -115,6 +115,18 @@ namespace System
             }
         }
 
+        public static async Task<T> WriteWaitingLineAndWait<T>(Task<T> task, string message = null)
+        {
+            Log.Prompt(message ?? "Waiting...");
+            if (IsInteractive)
+            {
+                var spinner = new DotSpinner(task);
+                spinner.Start();
+            }
+
+            return await task;
+        }
+
         public static string Prompt(string prompt, bool forPassword = false, TimeSpan? timeout = null)
         {
             if (IsInteractive)
