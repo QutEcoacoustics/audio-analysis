@@ -39,7 +39,7 @@ namespace AnalysisPrograms
             [Option(Description = "Burn load on multiple CPU threads?")]
             public bool Parallel { get; set; }
 
-            [Option(ShortName = "t", Description = "How many seconds to run for (roughly)")]
+            [Option(ShortName = "d", Description = "How many seconds to run for (roughly)")]
             [InRange(0, 3600)]
             public double DurationSeconds { get; set; } = 30;
 

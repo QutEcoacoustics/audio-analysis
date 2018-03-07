@@ -71,7 +71,7 @@ namespace AnalysisPrograms.Production.Arguments
             Description =
                 "Do not show the debug prompt AND automatically attach a debugger. Has no effect in RELEASE builds",
             Inherited = true,
-            ShortName = "d")]
+            ShortName = "D")]
         public bool Debug { get; set; }
 
         [Option(
