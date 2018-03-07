@@ -505,7 +505,7 @@ namespace AnalysisPrograms
                         segmentErrors: indexErrors,
                         imageChrome: ImageChrome.With);
 
-                    if (arguments.EventDataDirectories != null)
+                    if (!arguments.EventDataDirectories.IsNullOrEmpty())
                     {
                         var candidateFiles = IndexMatrices.GetFilesInDirectories(arguments.EventDataDirectories.Select(FileInfoExtensions.ToDirectoryInfo).ToArray(), arguments.EventFilePattern);
                         var sortedDictionaryOfEventFiles = FileDateHelpers.FilterFilesForDates(candidateFiles, arguments.TimeSpanOffsetHint);
