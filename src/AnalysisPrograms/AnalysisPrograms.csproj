@@ -480,7 +480,7 @@
     <!--      <Output TaskParameter="CommitsCount" PropertyName="GitCommitsCount" />-->
     <!--    </GitCommits>-->
     <PropertyGroup>
-      <TagCommand>--tags --simplify-by-decoration --pretty="format:%ai %d" --after="$([System.DateTime]::Now.ToString("yyyy-MM-01T00:00Z"))"</TagCommand>
+      <TagCommand>--tags --simplify-by-decoration --first-parent --pretty="format:%ai %d" --after="$([System.DateTime]::Now.ToString("yyyy-MM-01T00:00Z"))"</TagCommand>
     </PropertyGroup>
     <GitClient Command="log" Arguments="$(TagCommand)">
       <Output TaskParameter="ConsoleOutput" ItemName="GitTagCount" />
