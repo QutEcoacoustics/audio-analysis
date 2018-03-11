@@ -270,7 +270,7 @@ namespace AnalysisPrograms.SourcePreparers
             }
 
             // finally inspect the bit of audio we downloaded, extract the metadata, and return a file segment
-            var preparedFile = new FileSegment(destination, TimeAlignment.None);
+            var preparedFile = new FileSegment(destination, segment.Source.RecordedDate.AddSeconds(segment.StartOffsetSeconds));
 
             // do some sanity checks
             var expectedDuration = segment.Offsets.Size().Seconds();

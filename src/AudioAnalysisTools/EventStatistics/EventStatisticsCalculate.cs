@@ -80,8 +80,8 @@ namespace AudioAnalysisTools.EventStatistics
 
             if (!recording
                 .Duration
-                .AsRangeFromZero()
-                .IntersectsWith(localTemporalTarget, Topology.MinimumInclusiveMaximumExclusive))
+                .AsRangeFromZero(Topology.Inclusive)
+                .Contains(localTemporalTarget))
             {
                 stats.Error = true;
                 stats.ErrorMessage =

@@ -35,6 +35,7 @@ namespace AnalysisBase
     public class FileSegment : ICloneable, ISegment<FileInfo>
     {
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly MasterAudioUtility DefaultMasterAudioUtility = new MasterAudioUtility();
 
         private readonly FileDateBehavior dateBehavior;
 
@@ -94,10 +95,32 @@ namespace AnalysisBase
             this.Source = source;
             this.Alignment = alignment;
 
-            var basename = Path.GetFileNameWithoutExtension(this.Source.Name);
             var fileDate = this.ParseDate(null);
 
-            var info = (utility ?? new MasterAudioUtility()).Info(source);
+            var info = (utility ?? DefaultMasterAudioUtility).Info(source);
+
+            var basename = Path.GetFileNameWithoutExtension(this.Source.Name);
+            this.SourceMetadata = new SourceMetadata(info.Duration.Value, info.SampleRate.Value, basename, fileDate);
+
+            Contract.Ensures(this.Validate(), "FileSegment did not validate");
+        }
+
+        public FileSegment(
+            FileInfo source,
+            DateTimeOffset startDate,
+            IAudioUtility utility = null)
+        {
+            Contract.Requires(source != null);
+            
+            this.dateBehavior = FileDateBehavior.Required;
+            this.Source = source;
+            this.Alignment = TimeAlignment.None;
+
+            var fileDate = this.ParseDate(startDate);
+
+            var info = (utility ?? DefaultMasterAudioUtility).Info(source);
+            var basename = Path.GetFileNameWithoutExtension(this.Source.Name);
+
             this.SourceMetadata = new SourceMetadata(info.Duration.Value, info.SampleRate.Value, basename, fileDate);
 
             Contract.Ensures(this.Validate(), "FileSegment did not validate");

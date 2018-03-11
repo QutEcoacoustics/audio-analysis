@@ -30,7 +30,8 @@ namespace Acoustics.Shared
         {
             var limitMagnitude = limits.Size();
 
-            if (growAmount + range.Size() > limitMagnitude)
+            var newMagnitude = growAmount + range.Size();
+            if (newMagnitude > limitMagnitude)
             {
                 return limits;
             }
@@ -38,6 +39,18 @@ namespace Acoustics.Shared
             var halfGrow = growAmount / 2.0;
 
             var newMin = range.Minimum - halfGrow;
+            var newMax = range.Maximum + halfGrow;
+
+            if (newMin < limits.Minimum)
+            {
+                newMax = limits.Minimum + newMagnitude;
+                newMin = limits.Minimum;
+            }
+            else if (newMax > limits.Maximum)
+            {
+                newMin = limits.Maximum - newMagnitude;
+                newMax = limits.Maximum;
+            }
 
             // round the lower bound
             if (roundDigits.HasValue)
@@ -45,26 +58,13 @@ namespace Acoustics.Shared
                 newMin = Math.Round(newMin, roundDigits.Value, MidpointRounding.AwayFromZero);
             }
 
-            var newMax = range.Maximum + halfGrow;
-
             // round the upper bound
             if (roundDigits.HasValue)
             {
                 newMax = Math.Round(newMax, roundDigits.Value, MidpointRounding.AwayFromZero);
             }
 
-            if (newMin < limits.Minimum)
-            {
-                newMax += limits.Minimum - newMin;
-                newMin = limits.Minimum;
-            }
-            else if (newMax > limits.Maximum)
-            {
-                newMin -= newMax - limits.Maximum;
-                newMax = limits.Maximum;
-            }
-
-            return new Range<double>(newMin, newMax);
+            return new Range<double>(newMin, newMax, range.Topology);
         }
 
         public static double Center(this Range<double> range)
@@ -89,12 +89,18 @@ namespace Acoustics.Shared
 
         public static Range<double> Shift(this Range<double> range, double shift)
         {
-            return new Range<double>(range.Minimum + shift, range.Maximum + shift);
+            return new Range<double>(
+                range.Minimum + shift,
+                range.Maximum + shift,
+                range.Topology);
         }
 
         public static Range<TimeSpan> Shift(this Range<TimeSpan> range, TimeSpan shift)
         {
-            return new Range<TimeSpan>(range.Minimum.Add(shift), range.Maximum.Add(shift));
+            return new Range<TimeSpan>(
+                range.Minimum.Add(shift),
+                range.Maximum.Add(shift),
+                range.Topology);
         }
 
         public static Range<double> Add(this Range<double> rangeA, Range<double> rangeB)
@@ -103,7 +109,8 @@ namespace Acoustics.Shared
 
             return new Range<double>(
                 rangeA.Minimum + rangeB.Minimum,
-                rangeA.Maximum + rangeB.Maximum);
+                rangeA.Maximum + rangeB.Maximum,
+                rangeA.CombineTopology(rangeB));
         }
 
         public static Range<double> Subtract(this Range<double> rangeA, Range<double> rangeB)
@@ -112,7 +119,8 @@ namespace Acoustics.Shared
 
             return new Range<double>(
                 rangeA.Minimum - rangeB.Maximum,
-                rangeA.Maximum - rangeB.Minimum);
+                rangeA.Maximum - rangeB.Minimum,
+                rangeA.CombineTopology(rangeB));
         }
 
         public static Range<double> Multiply(this Range<double> rangeA, Range<double> rangeB)
@@ -126,7 +134,8 @@ namespace Acoustics.Shared
 
             return new Range<double>(
                 Maths.Min(a1b1, a1b2, a2b1, a2b2),
-                Maths.Max(a1b1, a1b2, a2b1, a2b2));
+                Maths.Max(a1b1, a1b2, a2b1, a2b2),
+                rangeA.CombineTopology(rangeB));
         }
 
         public static Range<double> Divide(this Range<double> rangeA, Range<double> rangeB)
@@ -149,25 +158,25 @@ namespace Acoustics.Shared
                 return new Range<double>(1 / range.Maximum, double.PositiveInfinity);
             }
 
-            return new Range<double>(1 / range.Maximum, 1 / range.Minimum);
+            return new Range<double>(1 / range.Maximum, 1 / range.Minimum, range.Topology);
         }
 
-        public static Range<T> AsRange<T>(this (T Minimum, T Maximum) pair)
+        public static Range<T> AsRange<T>(this (T Minimum, T Maximum) pair, Topology topology = Topology.Default)
             where T : struct, IComparable<T>
         {
-            return new Range<T>(pair.Minimum, pair.Maximum);
+            return new Range<T>(pair.Minimum, pair.Maximum, topology);
         }
 
-        public static Range<T> To<T>(this T Minimum, T Maximum)
+        public static Range<T> To<T>(this T minimum, T maximum, Topology topology = Topology.Default)
             where T : struct, IComparable<T>
         {
-            return new Range<T>(Minimum, Maximum);
+            return new Range<T>(minimum, maximum, topology);
         }
 
-        public static Range<T> AsRangeFromZero<T>(this T maximum)
+        public static Range<T> AsRangeFromZero<T>(this T maximum, Topology topology = Topology.Default)
             where T : struct, IComparable<T>
         {
-            return new Range<T>(default(T), maximum);
+            return new Range<T>(default(T), maximum, topology);
         }
     }
 }

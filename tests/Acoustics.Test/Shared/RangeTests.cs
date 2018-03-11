@@ -77,10 +77,14 @@ namespace Acoustics.Test.Shared
         public void ToStringWorks()
         {
             var a = new Range<double>(5, 10);
-            var c = new Range<double>(5, 10.004);
+            var b = new Range<double>(5, 10, Topology.Open);
+            var c = new Range<double>(5, 10.004, Topology.Closed);
+            var d = new Range<double>(5, 10.004, Topology.LeftOpenRightClosed);
 
-            Assert.AreEqual("Range: [5, 10]", a.ToString());
+            Assert.AreEqual("Range: [5, 10)", a.ToString());
+            Assert.AreEqual("Range: (5, 10)", b.ToString());
             Assert.AreEqual("Range: [5, 10.004]", c.ToString());
+            Assert.AreEqual("Range: (5, 10.004]", d.ToString());
         }
 
         [DataTestMethod]
@@ -218,6 +222,11 @@ namespace Acoustics.Test.Shared
         [DataRow(60.0, 540,  00, 600, null, 30, 570)]
         [DataRow(37.123, 39.999, 0, 120, 0, 7, 70)]
         [DataRow(37.123, 39.999, 0, 120, 1, 7.1, 70)]
+
+        // expected magnitude is size (1.232) plus growth, subtracted from end limit.
+#pragma warning disable SA1139 // Use literal suffix notation instead of casting
+        [DataRow(3593.853, 3595.085, 0.0, 3595, 0,  3535 - (int)1.232, 3595)]
+#pragma warning restore SA1139 // Use literal suffix notation instead of casting
         public void DoubleGrowWorks(double a1, double a2, double b1, double b2, int? roundDigits, double c1, double c2)
         {
             var target = a1.To(a2);
@@ -244,7 +253,7 @@ namespace Acoustics.Test.Shared
         [DataRow(100, 300, 300, Topology.LeftOpenRightClosed, true)]
         public void DoubleContainsWorks(double a1, double a2, double scalar, Topology? type, bool result)
         {
-            var range = a1.To(a2);
+            var range = a1.To(a2, type ?? Topology.Default);
 
             var actual = type.HasValue ? range.Contains(scalar, type.Value) : range.Contains(scalar);
 
@@ -253,7 +262,7 @@ namespace Acoustics.Test.Shared
 
         [DataTestMethod]
         [DataRow(100, 300, 150, 400, null, true)]
-        [DataRow(100, 300, 300, 400, null, false)]
+        [DataRow(100, 300, 300, 400, null, true)]
         [DataRow(100, 300, 400, 500, null, false)]
         [DataRow(100, 300, -600, 50, null, false)]
         [DataRow(300, 400, double.NegativeInfinity, double.PositiveInfinity, null, true)]
@@ -264,25 +273,57 @@ namespace Acoustics.Test.Shared
         [DataRow(100, 300, 200, 400, Topology.Open, true)]
         [DataRow(400, 700, 300, 400, Topology.Open, false)]
         [DataRow(100, 300, -50, 100, Topology.LeftClosedRightOpen, true)]
-        [DataRow(100, 300, 300, 400, Topology.LeftClosedRightOpen, false)]
+        [DataRow(100, 300, 300, 400, Topology.LeftClosedRightOpen, true)]
         [DataRow(100, 300, -50, 100, Topology.LeftOpenRightClosed, false)]
         [DataRow(100, 300, 300, 400, Topology.LeftOpenRightClosed, true)]
         public void DoubleIntersectsWithWorks(double a1, double a2, double b1, double b2, Topology? type, bool result)
         {
-            var a = a1.To(a2);
+            var a = a1.To(a2, type ?? Topology.Default);
             var b = b1.To(b2);
 
-            var actual = type.HasValue ? a.IntersectsWith(b, type.Value) : a.IntersectsWith(b);
+            var actual = a.IntersectsWith(b);
 
             Assert.AreEqual(result, actual);
 
             // intersect is commutative - double check here
             if (type == Topology.Closed)
             {
-                var actualCommutative = type.HasValue ? b.IntersectsWith(a, type.Value) : b.IntersectsWith(a);
+                var actualCommutative = b.IntersectsWith(a);
 
                 Assert.AreEqual(result, actualCommutative);
             }
+        }
+
+        [DataTestMethod]
+        [DataRow(100, 300, 150, 400, null, false, false)]
+        [DataRow(100, 300, 300, 400, null, false, false)]
+        [DataRow(100, 300, 400, 500, null, false, false)]
+        [DataRow(100, 300, -600, 50, null, false, false)]
+        [DataRow(100, 300, 100, 300, null, true, true)]
+        [DataRow(100, 300, 100, 299, null, true, false)]
+        [DataRow(300, 400, double.NegativeInfinity, double.PositiveInfinity, null, false, true)]
+        [DataRow(100, 300, 300, 400, Topology.Closed, false, false)]
+        [DataRow(100, 200, 100, 200, Topology.Closed, true, false)]
+        [DataRow(200, 400, 300, 350, Topology.Closed, true, false)]
+        [DataRow(100 - double.Epsilon, 500 + double.Epsilon, 100, 500, Topology.Closed, true, false)]
+        [DataRow(200, 400, 200, 400, Topology.Open, false, true)]
+        [DataRow(199, 401, 200, 400, Topology.Open, true, false)]
+        [DataRow(100, 300, 100, 299, Topology.LeftClosedRightOpen, true, false)]
+        [DataRow(100, 300, 100, 300, Topology.LeftClosedRightOpen, true, true)]
+        [DataRow(100, 300, 100, 300, Topology.LeftOpenRightClosed, false, false)]
+        [DataRow(100, 300, 101, 300, Topology.LeftOpenRightClosed, true, false)]
+        public void DoubleContainsIntervalWorks(double a1, double a2, double b1, double b2, Topology? type, bool result, bool reverseResult)
+        {
+            var a = a1.To(a2, type ?? Topology.Default);
+            var b = b1.To(b2);
+
+            var actual = a.Contains(b);
+
+            Assert.AreEqual(result, actual);
+
+            // contains should not be communitive unless closed
+            bool actualReverseResult = b.Contains(a);
+            Assert.AreEqual(reverseResult, actualReverseResult);
         }
 
         [DataTestMethod]
@@ -337,6 +378,18 @@ namespace Acoustics.Test.Shared
             var actual = a.IsDefault;
 
             Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void DefaultTopologyWorks()
+        {
+            var actual = default(Range<double>);
+            Assert.AreEqual(0, actual.Minimum);
+            Assert.AreEqual(0, actual.Maximum);
+            Assert.AreEqual(Topology.Default, actual.Topology);
+            Assert.IsTrue(actual.IsEmpty);
+            Assert.IsTrue(actual.IsMinimumInclusive);
+            Assert.IsFalse(actual.IsMaximumInclusive);
         }
     }
 }

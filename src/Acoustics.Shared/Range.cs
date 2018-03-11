@@ -10,8 +10,30 @@
 namespace Acoustics.Shared
 {
     using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
+
+    public enum Topology : byte
+    {
+        /*
+         * Our flags are defined like this to ensure the default value is [a,b).
+         * The meaning of bit 1 is: Is the left exclusive? (1 yes, 0 no)
+         * The meaning of bit 2 is: Is the right inclusive? (1 yes, 0 no)
+         *
+         * Note bit 1 is on the right.
+         */
+#pragma warning disable SA1025 // Code should not contain multiple whitespace in a row
+        Open                = 0b0_1,
+        LeftClosedRightOpen = 0b0_0,
+        LeftOpenRightClosed = 0b1_1,
+        Closed              = 0b1_0,
+#pragma warning restore SA1025 // Code should not contain multiple whitespace in a row
+
+        Exclusive = Open,
+        MinimumInclusiveMaximumExclusive = LeftClosedRightOpen,
+        MinimumExclusiveMaximumInclusive = LeftOpenRightClosed,
+        Inclusive = Closed,
+
+        Default = LeftClosedRightOpen,
+    }
 
     /// <summary>
     /// Represents a range between two points on the same dimenson.
@@ -21,7 +43,7 @@ namespace Acoustics.Shared
     /// <typeparam name="T">
     /// The type used to represent the points in this range.
     /// </typeparam>
-    public struct Range<T> : IEquatable<Range<T>>, IComparable<Range<T>>
+    public readonly struct Range<T> : IEquatable<Range<T>>, IComparable<Range<T>>
         where T : struct, IComparable<T>
     {
         public Range(T minimum, T maximum)
@@ -35,6 +57,21 @@ namespace Acoustics.Shared
 
             this.Minimum = minimum;
             this.Maximum = maximum;
+            this.Topology = Topology.Default;
+        }
+
+        public Range(T minimum, T maximum, Topology topology)
+        {
+            if (minimum.CompareTo(maximum) == 1)
+            {
+                throw new ArgumentException(
+                    $"Range's minimum ({minimum}) must be less than the maximum ({maximum})",
+                    nameof(minimum));
+            }
+
+            this.Minimum = minimum;
+            this.Maximum = maximum;
+            this.Topology = topology;
         }
 
         /// <summary>
@@ -46,6 +83,19 @@ namespace Acoustics.Shared
         /// Gets the Maximum.
         /// </summary>
         public T Maximum { get; }
+
+        /// <summary>
+        /// Gets the type of topology this interval has.
+        /// </summary>
+        public Topology Topology { get; }
+
+        public bool IsEmpty => this.Minimum.Equals(this.Maximum);
+
+        public bool IsDefault => this.Equals(default(Range<T>));
+
+        public bool IsMinimumInclusive => this.Topology == Topology.LeftClosedRightOpen || this.Topology == Topology.Closed;
+
+        public bool IsMaximumInclusive => this.Topology == Topology.LeftOpenRightClosed || this.Topology == Topology.Closed;
 
         /// <summary>
         /// Equals operator.
@@ -77,33 +127,48 @@ namespace Acoustics.Shared
 
         public bool Contains(T scalar, Topology type = Topology.Default)
         {
-            return ScalarEqualOrGreaterThanAnchor(scalar, this.Minimum, type) && ScalarEqualOrLessThanAnchor(scalar, this.Maximum, type);
+            return ScalarEqualOrGreaterThanAnchor(scalar, this.Minimum, this.IsMinimumInclusive) &&
+                   ScalarEqualOrLessThanAnchor(scalar, this.Maximum, this.IsMaximumInclusive);
         }
 
-        public bool IntersectsWith(Range<T> range, Topology type = Topology.Default)
+        public bool Contains(Range<T> range)
         {
-            return ScalarEqualOrGreaterThanAnchor(range.Maximum, this.Minimum, type) &&
-                   ScalarEqualOrLessThanAnchor(range.Minimum, this.Maximum, type);
+            return ScalarEqualOrGreaterThanAnchor(
+                       range.Minimum,
+                       this.Minimum,
+                       this.IsMinimumInclusive || (!this.IsMinimumInclusive && !range.IsMinimumInclusive))
+                   && ScalarEqualOrLessThanAnchor(
+                       range.Maximum,
+                       this.Maximum,
+                       this.IsMaximumInclusive || (!this.IsMaximumInclusive && !range.IsMaximumInclusive));
+        }
+
+        public bool IntersectsWith(Range<T> range)
+        {
+            return ScalarEqualOrGreaterThanAnchor(
+                       range.Maximum,
+                       this.Minimum,
+                       range.IsMaximumInclusive || this.IsMinimumInclusive) &&
+                   ScalarEqualOrLessThanAnchor(
+                       range.Minimum,
+                       this.Maximum,
+                       range.IsMinimumInclusive || this.IsMaximumInclusive);
         }
 
         public bool TryGetUnion(Range<T> range, out Range<T> union)
         {
-            if (this.IntersectsWith(range, Topology.Closed))
+            if (this.IntersectsWith(range))
             {
                 T newMin = this.Minimum.CompareTo(range.Minimum) < 0 ? this.Minimum : range.Minimum;
                 T newMax = this.Maximum.CompareTo(range.Maximum) > 0 ? this.Maximum : range.Maximum;
 
-                union = new Range<T>(newMin, newMax);
+                union = new Range<T>(newMin, newMax, this.CombineTopology(range));
                 return true;
             }
 
             union = default(Range<T>);
             return false;
         }
-
-        public bool IsEmpty => this.Minimum.Equals(this.Maximum);
-
-        public bool IsDefault => this.Equals(default(Range<T>));
 
         /// <summary>
         /// Indicates whether the current object is equal to another object of the same type.
@@ -116,7 +181,7 @@ namespace Acoustics.Shared
         /// </param>
         public bool Equals(Range<T> other)
         {
-            return this.Minimum.Equals(other.Minimum) && this.Maximum.Equals(other.Maximum);
+            return this.Minimum.Equals(other.Minimum) && this.Maximum.Equals(other.Maximum) && this.Topology == other.Topology;
         }
 
         /// <summary>
@@ -135,7 +200,7 @@ namespace Acoustics.Shared
                 return false;
             }
 
-            return obj is Range<T> && this.Equals((Range<T>)obj);
+            return obj is Range<T> range && this.Equals(range);
         }
 
         /// <summary>
@@ -148,7 +213,10 @@ namespace Acoustics.Shared
         {
             unchecked
             {
-                return (this.Minimum.GetHashCode() * 397) ^ this.Maximum.GetHashCode();
+                var hashCode = this.Minimum.GetHashCode();
+                hashCode = (hashCode * 397) ^ this.Maximum.GetHashCode();
+                hashCode = (hashCode * 397) ^ (int)this.Topology;
+                return hashCode;
             }
         }
 
@@ -162,7 +230,9 @@ namespace Acoustics.Shared
         /// </returns>
         public override string ToString()
         {
-            return $"Range: [{this.Minimum}, {this.Maximum}]";
+            var left = this.IsMinimumInclusive ? "[" : "(";
+            var right = this.IsMaximumInclusive ? "]" : ")";
+            return $"Range: {left}{this.Minimum}, {this.Maximum}{right}";
         }
 
         public int CompareTo(Range<T> other)
@@ -177,7 +247,33 @@ namespace Acoustics.Shared
             return this.Maximum.CompareTo(other.Maximum);
         }
 
-        private static bool ScalarEqualOrGreaterThanAnchor(T scalar, T anchor, Topology anchorTopology)
+        public Topology CombineTopology(Range<T> second)
+        {
+            if (this.Topology == second.Topology)
+            {
+                return this.Topology;
+            }
+
+            bool min = this.IsBothMinimumInclusive(second);
+            bool max = this.IsBothMaximumInclusive(second);
+
+            if (min && max)
+            {
+                return Topology.Inclusive;
+            }
+            else if (min)
+            {
+                return Topology.MinimumInclusiveMaximumExclusive;
+            }
+            else if (max)
+            {
+                return Topology.MinimumExclusiveMaximumInclusive;
+            }
+
+            return Topology.Exclusive;
+        }
+
+        private static bool ScalarEqualOrGreaterThanAnchor(T scalar, T anchor, bool isMinimumInclusive)
         {
             int comparison = anchor.CompareTo(scalar);
             bool result = false;
@@ -191,13 +287,12 @@ namespace Acoustics.Shared
 
                 case 0:
                     {
-                        result = (anchorTopology & Topology.LeftClosedRightOpen) == Topology.LeftClosedRightOpen;
+                        result = isMinimumInclusive;
                         break;
                     }
 
                 case 1:
                     {
-                        result = false;
                         break;
                     }
             }
@@ -205,7 +300,7 @@ namespace Acoustics.Shared
             return result;
         }
 
-        private static bool ScalarEqualOrLessThanAnchor(T scalar, T anchor, Topology anchorTopology)
+        private static bool ScalarEqualOrLessThanAnchor(T scalar, T anchor, bool isMaximumInclusive)
         {
             int comparison = anchor.CompareTo(scalar);
             bool result = false;
@@ -213,13 +308,12 @@ namespace Acoustics.Shared
             {
                 case -1:
                 {
-                    result = false;
                     break;
                 }
 
                 case 0:
                 {
-                    result = (anchorTopology & Topology.LeftOpenRightClosed) == Topology.LeftOpenRightClosed;
+                    result = isMaximumInclusive;
                     break;
                 }
 
@@ -232,21 +326,10 @@ namespace Acoustics.Shared
 
             return result;
         }
-    }
 
-    [Flags]
-    public enum Topology
-    {
-        Open = 0x0,
-        LeftClosedRightOpen = 0x01,
-        LeftOpenRightClosed = 0x02,
-        Closed = 0x3,
+        private bool IsBothMinimumInclusive(Range<T> other) => this.IsMinimumInclusive && other.IsMinimumInclusive;
 
-        Exclusive = Open,
-        MinimumInclusiveMaximumExclusive = LeftClosedRightOpen,
-        MinimumExclusiveMaximumInclusive = LeftOpenRightClosed,
-        Inclusive = Closed,
+        private bool IsBothMaximumInclusive(Range<T> other) => this.IsMaximumInclusive && other.IsMaximumInclusive;
 
-        Default = LeftClosedRightOpen,
     }
 }

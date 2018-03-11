@@ -30,7 +30,7 @@ namespace AcousticWorkbench
 
         public static Uri GetSessionValidateUri(this IApi api)
         {
-            return api.Base("security/new");
+            return api.Base("security/user");
         }
 
         public static Uri GetListenUri(this IApi api, long audioRecordingId, double startOffsetSeconds, double? endOffsetSeconds = null)

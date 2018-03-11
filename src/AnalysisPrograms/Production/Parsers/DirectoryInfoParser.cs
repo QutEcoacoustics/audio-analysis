@@ -17,7 +17,15 @@ namespace AnalysisPrograms.Production.Parsers
     {
         public object Parse(string argName, string value)
         {
-            return value.IsNotWhitespace() ? new DirectoryInfo(value) : null;
+            try
+            {
+                return value.IsNotWhitespace() ? new DirectoryInfo(value) : null;
+            }
+            catch (ArgumentException aex)
+            {
+                var message = $"Argument `{argName}`  with value `{value}` could not be converted to a directory. Reason: {aex.Message}";
+                throw new ArgumentException(message, aex);
+            }
         }
     }
 }
