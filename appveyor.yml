@@ -54,6 +54,8 @@ before_build:
   - ps: ls env:* -Include SHOULD*,APPVEYOR_SCHEDULED_BUILD*,APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED*,RELEASE_COMMIT,TAG_NOT_PREVIOUSLY_RELEASED
   # Restore packages 
   - nuget restore
+  # Debugging a dirty flag in build version
+  - git status
 
 build_script:
   - echo "Building Debug"
