@@ -252,38 +252,6 @@ namespace System
         }
 
         /// <summary>
-        /// Get querystring representation of dictionary.
-        /// Keys will be lower case.
-        /// </summary>
-        /// <param name="values">
-        /// The values.
-        /// </param>
-        /// <param name="performUrlEncoding">
-        /// The perform url encoding.
-        /// </param>
-        /// <returns>
-        /// Query string.
-        /// </returns>
-        public static string ToUrlParameterString(this Dictionary<string, string> values, bool performUrlEncoding)
-        {
-            if (values == null || values.Count == 0)
-            {
-                return string.Empty;
-            }
-
-            if (performUrlEncoding)
-            {
-                return values.Keys
-                    .Select(k => HttpUtility.UrlEncode(k.ToLowerInvariant()) + "=" + HttpUtility.UrlEncode(values[k]))
-                    .Aggregate((a, b) => a + "&" + b);
-            }
-
-            return values.Keys.Select(k => k.ToLowerInvariant() + "=" + values[k]).Aggregate((a, b) => a + "&" + b);
-        }
-
-#if !SILVERLIGHT
-
-        /// <summary>
         /// Gets ExecutingDirectory.
         /// </summary>
         public static string ExecutingDirectory
@@ -491,8 +459,6 @@ namespace System
             var invokedExpr = Expression.Invoke(expr2, expr1.Parameters.Cast<Expression>());
             return Expression.Lambda<Func<T, bool>>(Expression.AndAlso(expr1.Body, invokedExpr), expr1.Parameters);
         }
-
-#endif
     }
 
     public static class ProcessExtensions
