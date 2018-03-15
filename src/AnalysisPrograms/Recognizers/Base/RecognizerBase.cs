@@ -193,7 +193,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 // passed null for first InputDataDirectory on purpose: we don't want to read files off disk
                 InputDataDirectory = null,
                 OutputDirectory = output.FullName,
-                SpectrogramConfigPath = spectrogramConfig.FullName,
+                FalseColourSpectrogramConfig = spectrogramConfig.FullName,
                 IndexPropertiesConfig = ipConfig.FullName,
                 ColourMap1 = "BGN-DMN-EVN",
                 ColourMap2 = "R3D-RVT-SPT", //R3D replaces PHN as new derived index
