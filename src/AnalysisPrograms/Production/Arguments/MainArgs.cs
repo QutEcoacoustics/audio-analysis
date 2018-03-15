@@ -22,6 +22,7 @@ namespace AnalysisPrograms.Production.Arguments
     [Subcommand("help", typeof(HelpArgs))]
     [Subcommand("list", typeof(ListArgs))]
     [Subcommand("AnalysesAvailable", typeof(AnalysesAvailable))]
+    [Subcommand(CheckEnvironment.CommandName, typeof(CheckEnvironment.Arguments))]
     [Subcommand(AnalyseLongRecording.CommandName, typeof(AnalyseLongRecording.Arguments))]
     [Subcommand(Audio2Sonogram.CommandName, typeof(Audio2Sonogram.Arguments))]
     [Subcommand(Create4Sonograms.CommandName, typeof(Create4Sonograms.Arguments))]

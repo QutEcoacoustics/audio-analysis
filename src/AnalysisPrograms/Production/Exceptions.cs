@@ -39,11 +39,15 @@ namespace AnalysisPrograms.Production
                                   },
                                   {
                                       typeof(DirectoryNotFoundException),
-                                      new ExceptionStyle { ErrorCode = 51 }
+
+                                      // disabled print usage because these exceptions happen at all levels of the stack
+                                      new ExceptionStyle { ErrorCode = 51, PrintUsage = false }
                                   },
                                   {
                                       typeof(FileNotFoundException),
-                                      new ExceptionStyle { ErrorCode = 52 }
+
+                                      // disabled print usage because these exceptions happen at all levels of the stack
+                                      new ExceptionStyle { ErrorCode = 52, PrintUsage = false }
                                   },
                                   {
                                       typeof(InvalidDurationException),
