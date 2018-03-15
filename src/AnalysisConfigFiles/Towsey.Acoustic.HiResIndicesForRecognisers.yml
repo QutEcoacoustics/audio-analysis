@@ -55,7 +55,7 @@ LowResColourMap1: ACI-ENT-EVN
 LowResColourMap2: BGN-POW-EVN
 
 
-IndexPropertiesConfig: './IndexPropertiesConfigHiRes.yml'
+IndexPropertiesConfig: './IndexPropertiesConfig.HiRes.yml'
 SpectrogramConfig: './SpectrogramConfigHiRes.yml'
 ...
 

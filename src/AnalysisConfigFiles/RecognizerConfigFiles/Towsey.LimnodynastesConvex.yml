@@ -36,6 +36,5 @@ SaveSonogramImages: Never
 # DisplayCsvImage is obsolete - ensure it remains set to: false
 DisplayCsvImage: false
 
-IndexPropertiesConfig: ".\\IndexPropertiesConfigHiRes.yml"
-HighResolutionIndicesConfig: "./Towsey.AcousticHiResIndicesForRecognisers.yml"
+HighResolutionIndicesConfig: "../Towsey.Acoustic.HiResIndicesForRecognisers.yml"
 ...

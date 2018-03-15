@@ -52,6 +52,6 @@ DisplayCsvImage: false
 
 
 # Other config files to reference
-IndexPropertiesConfig: "./IndexPropertiesConfigHiRes.yml"
-HighResolutionIndicesConfig: "./Towsey.AcousticHiResIndicesForRecognisers.yml"
+
+HighResolutionIndicesConfig: "../Towsey.Acoustic.HiResIndicesForRecognisers.yml"
 ...

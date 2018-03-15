@@ -10,13 +10,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using System.Collections.Generic;
     using System.IO;
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
     using Newtonsoft.Json;
     using YamlDotNet.Serialization;
 
     /// <summary>
     /// CONFIG CLASS FOR the class LDSpectrogramRGB
     /// </summary>
-    public class LdSpectrogramConfig
+    public class LdSpectrogramConfig : Config
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="LdSpectrogramConfig"/> class.
@@ -105,7 +106,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </returns>
         public static LdSpectrogramConfig ReadYamlToConfig(FileInfo path)
         {
-            var config = Yaml.Deserialize<LdSpectrogramConfig>(path);
+            var config = ConfigFile.Deserialize<LdSpectrogramConfig>(path);
             return config;
         }
 

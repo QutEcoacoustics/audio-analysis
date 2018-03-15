@@ -299,7 +299,7 @@ namespace AnalysisPrograms.Recognizers.Base
 
         public override void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results)
         {
-            Csv.WriteToCsv(destination, results);
+            Csv.WriteToCsv(destination, results.Select(x => (AcousticEvent)x));
         }
 
         public override void WriteSummaryIndicesFile(FileInfo destination, IEnumerable<SummaryIndexBase> results)
