@@ -44,16 +44,34 @@ namespace AnalysisPrograms.Production
 
         public ConsoleColor ForegroundColor
         {
-            get => Console.ForegroundColor;
-            set => Console.ForegroundColor = value;
+            get => MainEntry.ApPlainLogging ? ConsoleColor.White : Console.ForegroundColor;
+            set
+            {
+                if (!MainEntry.ApPlainLogging)
+                {
+                    Console.ForegroundColor = value;
+                }
+            }
         }
 
         public ConsoleColor BackgroundColor
         {
-            get => Console.BackgroundColor;
-            set => Console.BackgroundColor = value;
+            get => MainEntry.ApPlainLogging ? ConsoleColor.Black : Console.BackgroundColor;
+            set
+            {
+                if (!MainEntry.ApPlainLogging)
+                {
+                    Console.BackgroundColor = value;
+                }
+            }
         }
 
-        public void ResetColor() => Console.ResetColor();
+        public void ResetColor()
+        {
+            if (!MainEntry.ApPlainLogging)
+            {
+                Console.ResetColor();
+            }
+        }
     }
 }

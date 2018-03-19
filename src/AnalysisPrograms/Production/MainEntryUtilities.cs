@@ -79,6 +79,10 @@ namespace AnalysisPrograms
                 + "Copyright QUT " + DateTime.Now.Year.ToString("0000"));
         }
 
+
+        private const string ApPlainLoggingKey = "AP_PLAIN_LOGGING";
+        private const string ApMetricsKey = "AP_METRICS";
+
         // ReSharper disable once InconsistentNaming
         public static bool InDEBUG
         {
@@ -94,6 +98,11 @@ namespace AnalysisPrograms
         }
 
         public static bool IsDebuggerAttached => Debugger.IsAttached;
+
+        /// <summary>
+        /// Gets a value indicating whether or not we should use simpler logging semantics. Usually means no color.
+        /// </summary>
+        public static bool ApPlainLogging { get; private set; }
 
         private static void AttachExceptionHandler()
         {
@@ -169,9 +178,6 @@ namespace AnalysisPrograms
             NoAction,
         }
 
-        private const string ApPlainLogging = "AP_PLAIN_LOGGING";
-        private const string ApMetrics = "AP_METRICS";
-
         internal static void PrintUsage(string message, Usages usageStyle, string commandName = null)
         {
             //Contract.Requires(usageStyle != Usages.Single || commandName != null);q
@@ -230,11 +236,11 @@ namespace AnalysisPrograms
             new Dictionary<string, string>
                 {
                     {
-                        ApPlainLogging,
+                        ApPlainLoggingKey,
                         "[true|false]\t Enable simpler logging - the default value is `false`"
                     },
                     {
-                        ApMetrics,
+                        ApMetricsKey,
                         "[true|false]\t (Not implemented) Enable or disable metrics - default value is `true`"
                     },
                 };
@@ -370,12 +376,12 @@ namespace AnalysisPrograms
 
         private static void ParseEnvirionemnt()
         {
-            var simpleLogging = bool.TryParse(Environment.GetEnvironmentVariable(ApPlainLogging), out var isTrue) && isTrue;
+            ApPlainLogging = bool.TryParse(Environment.GetEnvironmentVariable(ApPlainLoggingKey), out var isTrue) && isTrue;
             var repository = (Hierarchy)LogManager.GetRepository();
             var root = repository.Root;
             var cleanLogger = (Logger)repository.GetLogger("CleanLogger");
 
-            if (simpleLogging)
+            if (ApPlainLogging)
             {
                 root.RemoveAppender("ConsoleAppender");
                 cleanLogger.RemoveAppender("CleanConsoleAppender");
@@ -385,7 +391,7 @@ namespace AnalysisPrograms
                 root.RemoveAppender("SimpleConsoleAppender");
             }
 
-            if (bool.TryParse(Environment.GetEnvironmentVariable(ApMetrics), out var parseMetrics))
+            if (bool.TryParse(Environment.GetEnvironmentVariable(ApMetricsKey), out var parseMetrics))
             {
                 Log.Trace("Metric reporting enabled but not implemented");
             }
