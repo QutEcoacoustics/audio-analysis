@@ -1,16 +1,23 @@
 # Config Files
 
-Most actions require a configuration file which gives you access to various parameters whose values change the outcome of the analysis.
+Most commands require a configuration file which gives you access to various
+parameters whose values change the outcome of the analysis.
 
 ## Format
 
-The config file must be in strict YAML format and should have the file extension `.yml`. 
+The config file must be in strict YAML format and should have the file extension
+`.yml`. 
 
-Comments in the config file give further information. All comment lines must start with a hash symbol `#`. Be careful with the syntax. Incorrect syntax can lead to errors that are difficult to trace. Typically, you will only need to adjust a subset of the available parameters. They all have default values.
+Comments in the config file give further information. All comment lines must
+start with a hash symbol `#`. Be careful with the syntax. Incorrect syntax can
+lead to errors that are difficult to trace. Typically, you will only need to
+adjust a subset of the available parameters. They all have default values.
 
-You can find an introduction to YAML here: <https://support.ehelp.edu.au/support/solutions/articles/6000055385-introduction-to-yaml>
+You can find an introduction to YAML here:
+<https://support.ehelp.edu.au/support/solutions/articles/6000055385-introduction-to-yaml>
 
-You can validate YAML files (to check for syntax errors) here: <http://yaml-online-parser.appspot.com/>
+You can validate YAML files (to check for syntax errors) here:
+<http://yaml-online-parser.appspot.com/>
 
 ## Location
 

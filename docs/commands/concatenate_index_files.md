@@ -1,26 +1,42 @@
 # Concatenate Index Files
 
-Action      | concatenateIndexfiles
-Config file | SpectrogramFalseColourConfig.yml
-Config file2 | IndexPropertiesConfig.yml
+- **Command**: ConcatenateIndexFiles
+- **Config file**: SpectrogramFalseColourConfig.yml
+- **Config file2**: IndexPropertiesConfig.yml
 
-This action also produces false-colour spectrograms. However instead of taking the spectral indices from a single audio file, it takes the total output from multiple runs of the *audio2csv* action, and concatenates them to produce one or more concatenated false-colour index spectrograms.
+This command also produces false-colour spectrograms. However instead of taking 
+the spectral indices from a single audio file, it takes the total output from
+multiple runs of the *audio2csv* command, and concatenates them to produce one
+or more concatenated false-colour index spectrograms.
 
-Typically, this action is used to produce a sequence of one or more 24-hour false-colour spectrograms. 24-hour false-colour spectrograms are easier to interpret because sound-marks, such as the morning chorus, evening chorus, and insect tracks are easier to identify. Typically, environmental recordings are anything from 30 minutes to 24 hours in duration. False-colour index spectrograms shorter than about 3 hours are difficult to interpret due to the lack of soundscape context.
+Typically, this command is used to produce a sequence of one or more 24-hour
+false-colour spectrograms. 24-hour false-colour spectrograms are easier to
+interpret because sound-marks, such as the morning chorus, evening chorus, and
+insect tracks are easier to identify. Typically, environmental recordings are
+anything from 30 minutes to 24 hours in duration. False-colour index spectrograms
+shorter than about 3 hours are difficult to interpret due to the lack of
+soundscape context.
 
-There is also an option with this action to concatenate the false-colour spectrograms of every audio recording that can be found in a specified directory into one large dataset/image. Due to memory constraints however, one would not usually concatenate more than about 48 hours of recordings.
+There is also an option with this command to concatenate the false-colour
+spectrograms of every audio recording that can be found in a specified directory
+into one large dataset/image. Due to memory constraints however, one would not
+usually concatenate more than about 48 hours of recordings.
 
-It is **strongly** recommended you only run this action on files from a single
-acoustic sensor deployment - don't mix recordings from different sites or deployments!
+It is **strongly** recommended you only run this command on files from a single
+acoustic sensor deployment - don't mix recordings from different sites or
+deployments!
 
 ## Usage
 
-This section describes the command line arguments required to concatenate the output from multiple runs of the audio2csv action on shorter duration audio recordings, that is less than 24-hours. Typically, the output is a sequence of one or more 24-hour FC spectrograms.
+This section describes the command line arguments required to concatenate the
+output from multiple runs of the audio2csv command on shorter duration audio
+recordings, that is less than 24-hours. Typically, the output is a sequence of
+one or more 24-hour FC spectrograms.
 
-To run the action, type:
+To run the command, type:
 
 ```
-$ AnalysisPrograms.exe concatenateIndexfiles <options...>
+$ AnalysisPrograms.exe concatenateIndexfiles [options]
 ```
 
 ## Options
@@ -37,7 +53,7 @@ Some of the option are obligatory (the program will return fatal error if they a
 -   `-startdate`: A date at which concatenation is to begin. If null, then start with earliest available file. Can parse an ISO8601 date.
 -   `-enddate`: A date at which concatenation ends. If null, then will be set equal to today's date available file. Can parse an ISO8601 date.
 -   `-timeSpanOffsetHint`: A TimeSpan offset hint required if file names do not contain time zone offset info. NO DEFAULT IS SET.
--   `-indexpropertiesconfig`: User specified file as for the colourSpectrogram action.
+-   `-indexpropertiesconfig`: User specified file as for the colourSpectrogram command.
 -   `-falsecolourspectrogramconfig`: Config file for drawing the false colour spectrograms.
 -   `-concatenateeverythingyoucanlayyourhandson`: Set true only when concatenating more than 24-hours of data into one image
 

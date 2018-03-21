@@ -10,10 +10,13 @@ Typically, you would not use the software to analyse recordings shorter than one
 
 - calculation of summary and spectral acoustic indices at variable resolutions
 - produces long-duration, false-colour, multi-index spectrograms
-- can calculate critical statistics of annotations downloaded from an Acoustic Workbench
+- can calculate critical statistics of annotations downloaded from an Acoustic
+  Workbench
 - is capable of running various acoustic event recognizers
 
-All the analyses are performed by a single executable file, _AnalysisPrograms.exe_ (henceforth abbreviated to _AP.exe_), with command-line arguments determining what analyses are to be done and on which files.
+All the analyses are performed by a single executable file, `AnalysisPrograms.exe`
+(henceforth abbreviated to _AP.exe_), with command-line arguments determining
+what analyses are to be done and on which files.
 
 ## Table of contents
 
@@ -21,7 +24,7 @@ All the analyses are performed by a single executable file, _AnalysisPrograms.ex
 - [Supported Platforms](./supported_platforms.md)
 - [Downloading and Installing](./installing.md) AnalysisPrograms.exe
 - [Introduction to running commands](./cli.md)
-- [Actions](./actions.md)
+- [commands](./commands.md)
 - [Config Files](./config_files.md)
 - [Supported Audio Formats](./formats.md)
 - [List of Analyses](./analyses/)
@@ -31,5 +34,5 @@ All the analyses are performed by a single executable file, _AnalysisPrograms.ex
 Supplementary:
 
 - [Version Numbers](./versioning.md)
-- [TODO: Log Files]
+- [Log files](./logs.md)
 - [Code paths](./code_paths.md) that explain how code is executed

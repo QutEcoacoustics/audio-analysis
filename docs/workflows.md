@@ -2,4 +2,4 @@
 
 [INCOMPLETE]
 
-Performing more than one action in sequence.
+Performing more than one command in sequence.

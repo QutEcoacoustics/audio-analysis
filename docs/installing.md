@@ -15,8 +15,8 @@
         - Bleeding edge, very likely will break
 1. Download a package
     - Click on the appropriate link
-        - [Stable](https://github.com/QutBioacoustics/audio-analysis/releases/latest)
-        - [Weekly](https://github.com/QutBioacoustics/audio-analysis/releases)
+        - [Stable](https://github.com/QutEcoacoustics/audio-analysis/releases/latest)
+        - [Weekly](https://github.com/QutEcoacoustics/audio-analysis/releases)
         - [Continuous](https://ci.appveyor.com/project/QUTEcoacousticsResearchGroup/audio-analysis/build/artifacts)
     - Download the _Release_ version - it will be a ZIP file that starts with _Release_
 1. Extract the contents to a directory on your computer
@@ -25,7 +25,14 @@
 1. [Optionally] Add the directory to your system's `PATH` environment variable
     - This makes it easier to type _AP.exe_ commands
 
-## Unix
+When you've downloaded and extracted the program you can check the install by
+running:
+
+```
+AnalysisPrograms.exe CheckEnvironment
+```
+
+## Unix && MacOSX
 
 The following additional dependencies are required for Unix machines:
 
@@ -36,3 +43,9 @@ The following additional dependencies are required for Unix machines:
 - shntool
 - mp3splt
 - libav-tools
+
+
+## Coming soon: Docker
+
+We're working on a `Dockerfile` that will greatly simplify installation.
+Let us know if you're keen for it.
