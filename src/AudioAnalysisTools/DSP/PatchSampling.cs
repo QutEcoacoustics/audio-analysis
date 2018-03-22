@@ -108,9 +108,9 @@ namespace AudioAnalysisTools.DSP
         {
             double[,] m = new double[patchHeight, patchWidth];
 
-            for (int col = 0; col < vector.Length; col += patchWidth)
+            for (int col = 0; col < vector.Length; col += patchHeight)
             {
-                for (int row = 0; row < patchWidth; row++)
+                for (int row = 0; row < patchHeight; row++)
                 {
                     m[row, col / patchHeight] = vector[col + row];
                 }
@@ -206,7 +206,17 @@ namespace AudioAnalysisTools.DSP
                 colSize = colSize + submat[i].GetLength(1);
             }
 
-            double[,] matrix = new double[submat[1].GetLength(0), colSize];
+            //storing the number of rows of each submatrice in an array
+            int[] noRows = new int[submat.Length];
+            for (int i = 0; i < submat.Length; i++)
+            {
+                noRows[i] = submat[i].GetLength(0);
+            }
+
+            //find the max number of rows from noRows array
+            int maxRows = noRows.Max();
+
+            double[,] matrix = new double[maxRows, colSize];
 
             //might be better way to do this
             AddToArray(matrix, submat[0]);

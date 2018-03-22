@@ -44,7 +44,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
         public void TestPcaWhitening()
         {
             var outputDir = this.outputDirectory;
-            var resultDir = PathHelper.ResolveAssetPath("PcaWhitening");
+            var resultDir = PathHelper.ResolveAssetPath("C:\\Users\\kholghim\\Mahnoosh\\PcaWhitening");
             var outputLinScaImagePath = Path.Combine(resultDir, "LinearFreqScaleSpectrogram.png");
             var outputAmpSpecImagePath = Path.Combine(resultDir, "AmplitudeSpectrogram.png");
             var outputNormAmpImagePath = Path.Combine(resultDir, "NormAmplitudeSpectrogram.png");
@@ -56,7 +56,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             var outputWhitenedSpectrogramPath = Path.Combine(resultDir, "WhitenedSpectrogram.png");
             var outputReSpecImagePath = Path.Combine(resultDir, "ReconstrcutedSpectrogram.png");
             var projectionMatrixPath = Path.Combine(resultDir, "ProjectionMatrix");
-            var recordingPath = PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav"); //  resultDir, "20160705_064611_22069.wav"
+            var recordingPath = PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav"); //    "PcaWhitening", "20160705_064611_22069.wav"
             var recording = new AudioRecording(recordingPath);
 
             // GENERATE AMPLITUDE SPECTROGRAM
@@ -205,7 +205,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             //+++++++++++++++++++++++++++++++++++++++++++++++++Exp2
             */
 
-            //+++++++++++++++++++++++++++++++++++++++++++++++++Exp3: different freq bands, different source-target, same patch size 
+            //+++++++++++++++++++++++++++++++++++++++++++++++++Exp3: different freq bands, different source-target, same patch size
 
             //First: creating 3 matrices from 3 different freq bands of the source spectrogram
             List<double[,]> allSubmatrices = PatchSampling.GetFreqBandMatrices(sonogram.Data);
@@ -217,6 +217,50 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             List<double[,]> eigenVectors = new List<double[,]>();
             List<int> noOfComponents = new List<int>();
 
+            //+++++++++++++++++++++++++++++++++++++++++++++++++Exp4: different freq bands, different source-target, different patch size
+            int freqBandIndex = 0;
+            while (freqBandIndex < allSubmatrices.Count)
+            {
+                if (freqBandIndex == 0)  //lower band: patch size is 32-by-8
+                {
+                    int lowPatchWidth = 8;
+                    int lowPatchHeight = 32;
+                    var randomPatches = PatchSampling.GetPatches(matrices[freqBandIndex], lowPatchWidth, lowPatchHeight, noOfRandomPatches, "random").ToMatrix();
+                    var actual = PcaWhitening.Whitening(randomPatches);
+                    projectionMatrices.Add(actual.Item1);
+                    eigenVectors.Add(actual.Item3);
+                    noOfComponents.Add(actual.Item4);
+                    freqBandIndex++;
+                }
+                else
+                {
+                    if (freqBandIndex == 1)  //mid band: patch size is 16-by-16
+                    {
+                        var randomPatches = PatchSampling.GetPatches(matrices[freqBandIndex], patchWidth, patchHeight, noOfRandomPatches, "random").ToMatrix();
+                        var actual = PcaWhitening.Whitening(randomPatches);
+                        projectionMatrices.Add(actual.Item1);
+                        eigenVectors.Add(actual.Item3);
+                        noOfComponents.Add(actual.Item4);
+                        freqBandIndex++;
+                    }
+                    else
+                    {
+                        if (freqBandIndex == 2) //upper band: patch size is 8-by-32
+                        {
+                            int upPatchWidth = 32;
+                            int upPatchHeight = 8;
+                            var randomPatches = PatchSampling.GetPatches(matrices[freqBandIndex], upPatchWidth, upPatchHeight, noOfRandomPatches, "random").ToMatrix();
+                            var actual = PcaWhitening.Whitening(randomPatches);
+                            projectionMatrices.Add(actual.Item1);
+                            eigenVectors.Add(actual.Item3);
+                            noOfComponents.Add(actual.Item4);
+                            freqBandIndex++;
+                        }
+                    }
+                }
+            }
+            //+++++++++++++++++++++++++++++++++++++++++++++++++Exp4: different freq bands, different source-target, different patch size
+            /*
             for (int i = 0; i < allSubmatrices.Count; i++)
             {
                 var randomPatches = PatchSampling.GetPatches(matrices[i], patchWidth, patchHeight, noOfRandomPatches, "random").ToMatrix();
@@ -225,10 +269,11 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                 eigenVectors.Add(actual.Item3);
                 noOfComponents.Add(actual.Item4);
             }
+            */
 
             //Third: divide the target spectrogram into 3 submatrices with different freq bands.
             //divide each submatrix into sequential patches
-            var recording2Path = PathHelper.ResolveAsset(resultDir, "20160705_064611_22069.wav"); //   "Recordings", "BAC2_20071008-085040.wav"
+            var recording2Path = PathHelper.ResolveAsset("PcaWhitening", "20160705_064611_22069.wav"); //  "Recordings", "BAC2_20071008-085040.wav"  
             var recording2 = new AudioRecording(recording2Path);
             var fst2 = FreqScaleType.Linear;
             var freqScale2 = new FrequencyScale(fst2);
@@ -257,12 +302,53 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             //Forth: Reconstruct the source matrix with projection matrices
             List<double[,]> clearedSubmat = new List<double[,]>();
+
+            //+++++++++++++++++++++++++++++++++++++++++++++++++Exp4: different freq bands, different source-target, different patch size
+            freqBandIndex = 0;
+            while (freqBandIndex < allSubmatrices2.Count)
+            {
+                if (freqBandIndex == 0)  //lower band: patch size is 32-by-8
+                {
+                    int lowPatchWidth = 8;
+                    int lowPatchHeight = 32;
+                    var sequentialPatches = PatchSampling.GetPatches(allSubmatrices2.ToArray()[freqBandIndex], lowPatchWidth, lowPatchHeight, (rows2 / lowPatchHeight) * (allSubmatrices2.ToArray()[freqBandIndex].GetLength(1) / lowPatchWidth), "sequential");
+                    double[,] reconstructedSpec2 = PcaWhitening.ReconstructSpectrogram(projectionMatrices.ToArray()[freqBandIndex], sequentialPatches.ToMatrix(), eigenVectors.ToArray()[freqBandIndex], noOfComponents.ToArray()[freqBandIndex]);
+                    clearedSubmat.Add(PatchSampling.ConvertPatches(reconstructedSpec2, lowPatchWidth, lowPatchHeight, allSubmatrices2.ToArray()[freqBandIndex].GetLength(1)));
+                    freqBandIndex++;
+                }
+                else
+                {
+                    if (freqBandIndex == 1)  //mid band: patch size is 16-by-16
+                    {
+                        var sequentialPatches = PatchSampling.GetPatches(allSubmatrices2.ToArray()[freqBandIndex], patchWidth, patchHeight, (rows2 / patchHeight) * (allSubmatrices2.ToArray()[freqBandIndex].GetLength(1) / patchWidth), "sequential");
+                        double[,] reconstructedSpec2 = PcaWhitening.ReconstructSpectrogram(projectionMatrices.ToArray()[freqBandIndex], sequentialPatches.ToMatrix(), eigenVectors.ToArray()[freqBandIndex], noOfComponents.ToArray()[freqBandIndex]);
+                        clearedSubmat.Add(PatchSampling.ConvertPatches(reconstructedSpec2, patchWidth, patchHeight, allSubmatrices2.ToArray()[freqBandIndex].GetLength(1)));
+                        freqBandIndex++;
+                    }
+                    else
+                    {
+                        if (freqBandIndex == 2) //upper band: patch size is 8-by-32
+                        {
+                            int upPatchWidth = 32;
+                            int upPatchHeight = 8;
+                            var sequentialPatches = PatchSampling.GetPatches(allSubmatrices2.ToArray()[freqBandIndex], upPatchWidth, upPatchHeight, (rows2 / upPatchHeight) * (allSubmatrices2.ToArray()[freqBandIndex].GetLength(1) / upPatchWidth), "sequential");
+                            double[,] reconstructedSpec2 = PcaWhitening.ReconstructSpectrogram(projectionMatrices.ToArray()[freqBandIndex], sequentialPatches.ToMatrix(), eigenVectors.ToArray()[freqBandIndex], noOfComponents.ToArray()[freqBandIndex]);
+                            clearedSubmat.Add(PatchSampling.ConvertPatches(reconstructedSpec2, upPatchWidth, upPatchHeight, allSubmatrices2.ToArray()[freqBandIndex].GetLength(1)));
+                            freqBandIndex++;
+                        }
+                    }
+                }
+            }
+            //+++++++++++++++++++++++++++++++++++++++++++++++++Exp4: different freq bands, different source-target, different patch size
+
+            /*
             for (int i = 0; i < allSubmatrices2.Count; i++)
             {
                 var sequentialPatches = PatchSampling.GetPatches(allSubmatrices2.ToArray()[i], patchWidth, patchHeight, (rows2 / patchHeight) * (allSubmatrices2.ToArray()[i].GetLength(1) / patchWidth), "sequential");
                 double[,] reconstructedSpec2 = PcaWhitening.ReconstructSpectrogram(projectionMatrices.ToArray()[i], sequentialPatches.ToMatrix(), eigenVectors.ToArray()[i], noOfComponents.ToArray()[i]);
                 clearedSubmat.Add(PatchSampling.ConvertPatches(reconstructedSpec2, patchWidth, patchHeight, allSubmatrices2.ToArray()[i].GetLength(1)));
             }
+            */
 
             sonogram2.Data = PatchSampling.ConcatFreqBandMatrices(clearedSubmat);
             var respecImage2 = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "RECONSTRUCTEDSPECTROGRAM: " + fst2.ToString(), freqScale2.GridLineLocations);
