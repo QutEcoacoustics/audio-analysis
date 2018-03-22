@@ -16,8 +16,6 @@ namespace Acoustics.Shared
     using System.IO;
     using System.Linq;
     using System.Reflection;
-    using System.Web;
-    using System.Web.Hosting;
 
     public static class AppConfigHelper
     {
@@ -217,39 +215,6 @@ namespace Acoustics.Shared
         }
 
         /// <summary>
-        /// Gets OriginalAudioStorageDirs.
-        /// </summary>
-        public static IEnumerable<DirectoryInfo> OriginalAudioStorageDirs
-        {
-            get
-            {
-                return GetDirs(WebsiteBasePath, "OriginalAudioStorageDirs", true, ",");
-            }
-        }
-
-        /// <summary>
-        /// Gets SegmentedAudioStorageDirs.
-        /// </summary>
-        public static IEnumerable<DirectoryInfo> SegmentedAudioStorageDirs
-        {
-            get
-            {
-                return GetDirs(WebsiteBasePath, "SegmentedAudioStorageDirs", true, ",");
-            }
-        }
-
-        /// <summary>
-        /// Gets SpectrogramStorageDirs.
-        /// </summary>
-        public static IEnumerable<DirectoryInfo> SpectrogramStorageDirs
-        {
-            get
-            {
-                return GetDirs(WebsiteBasePath, "SpectrogramStorageDirs", true, ",");
-            }
-        }
-
-        /// <summary>
         /// Gets LogDir.
         /// </summary>
         public static DirectoryInfo LogDir
@@ -302,51 +267,6 @@ namespace Acoustics.Shared
             }
         }
 
-        /// <summary>
-        /// Gets a value indicating whether is asp net.
-        /// </summary>
-        public static bool IsAspNet
-        {
-            get
-            {
-                try
-                {
-                    var appDomainPath = HttpRuntime.AppDomainAppVirtualPath;
-                    var processName = Process.GetCurrentProcess().ProcessName;
-                    var interactive = Environment.UserInteractive;
-                    var entryAssembly = Assembly.GetEntryAssembly();
-                    var currentContext = HttpContext.Current;
-
-                    // process name might be one of these
-                    if (processName == "w3wp"
-                        || processName == "iisexpress"
-                        || processName == "aspnet_wp"
-                        || processName.StartsWith("WebDev.WebServer"))
-                    {
-                        return true;
-                    }
-
-                    // app virtual path should not be null and current context usually not null
-                    if (!string.IsNullOrEmpty(appDomainPath) || currentContext != null)
-                    {
-                        return true;
-                    }
-
-                    // might not be interactive, and have a null entry asebmly
-                    if (!interactive && entryAssembly == null)
-                    {
-                        return true;
-                    }
-                }
-                catch
-                {
-                    return false;
-                }
-
-                return false;
-            }
-        }
-
         public static bool IsMono
         {
             get
@@ -360,17 +280,6 @@ namespace Acoustics.Shared
             get
             {
                 return Environment.OSVersion.Platform == PlatformID.Unix;
-            }
-        }
-
-        public static string WebsiteBasePath
-        {
-            get
-            {
-                var appDomainPath = HttpRuntime.AppDomainAppPath;
-                var appBasePath = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
-                var hostingEnvironmentRoot = HostingEnvironment.MapPath("/");
-                return hostingEnvironmentRoot;
             }
         }
 
@@ -590,11 +499,7 @@ namespace Acoustics.Shared
             }
             else
             {
-                // assume windows
-                DirectoryInfo assemblyDir = IsAspNet ? new DirectoryInfo(WebsiteBasePath) : AssemblyDir;
-
-                return Path.Combine(assemblyDir.FullName, GetString(appConfigKey));
-                ;
+                return Path.Combine(AssemblyDir.FullName, GetString(appConfigKey));
             }
         }
     }

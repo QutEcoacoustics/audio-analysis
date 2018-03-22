@@ -8,12 +8,12 @@ The software version number can be obtained by simply typing:
 $ AnalysisPrograms.exe
 ```
 
-The version number is also embedded in the:
+The version number is also shown:
 
 - whenever the program runs
-- in the log file every time the program is run
+- in the [log file](./logs.md) every time the program is run
 - metadata of the file
-- the filename of the release
+- the filename of the release on GitHub
 - the tag of the release on GitHub
 
 ## Interpreting the version
@@ -21,16 +21,18 @@ The version number is also embedded in the:
 The output looks like:
 
 ```
- QUT Bioacoustic Analysis Program - version 16.10.123.456 (DEBUG build, 1/10/2016 11:07 AM)
-
- Git branch-version: master-e2a88694390d39216bfab3a88a77d21f96be2f4a
-
- Copyright QUT 2016
+QUT Ecoacoustics Analysis Programs - version 18.03.3.5 (DEBUG build, 2018-03-19 12:23)
+Git branch-version: master-517b65bca92f1ed6ce3ea207a5660ff473222424-DIRTY-CI:000
+Copyright QUT 2018
 ```
 
-Our program uses an automatic version numbering system. A version number such as 16.06.3430.0 can be deciphered as:
+Our program uses an automatic version numbering system.
+A version number such as `18.03.3.5` can be deciphered as:
 
-&lt;2-digit-year&gt;.&lt;2-digit-month&gt;.&lt;build-server-count&gt;.&lt;commits-since-last-release&gt;.
+&lt;2-digit-year&gt;.&lt;2-digit-month&gt;.&lt;number-of-releases-this-month&gt;.&lt;commits-since-last-release&gt;.
+
+Thus, version `18.03.3.5` was created in 2018, in March, and is the third release
+made that month, and there were five changes (commits) since the last release.
 
 The Git branch information can be deciphered as:
 

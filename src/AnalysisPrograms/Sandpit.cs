@@ -601,7 +601,7 @@ namespace AnalysisPrograms
                 InputDataDirectory = ipdir,
                 OutputDirectory = opdir,
                 IndexPropertiesConfig = indexPropertiesFile,
-                SpectrogramConfigPath = spectrogramConfigFile,
+                FalseColourSpectrogramConfig = spectrogramConfigFile,
             };
             DrawLongDurationSpectrograms.Execute(args);
         }

@@ -332,34 +332,7 @@ namespace System
             return source.IndexOf(toCheck, comp) >= 0;
         }
 
-        /// <summary>
-        /// Parses a query string into a dictionary.
-        /// Keys will be in lower case.
-        /// </summary>
-        /// <param name="value">
-        /// Query string to parse.
-        /// </param>
-        /// <returns>
-        /// Dictionary containing key=value pairs.
-        /// </returns>
-        public static Dictionary<string, string> ParseUrlParameterString(this string value)
-        {
-            var retVal = new Dictionary<string, string>();
-
-            if (string.IsNullOrEmpty(value))
-            {
-                return retVal;
-            }
-
-            foreach (Match m in Regex.Matches(value, @"\??([^&=]*)=([^&=]*)"))
-            {
-                retVal.Add(HttpUtility.UrlDecode(m.Groups[1].Value).ToLowerInvariant(), HttpUtility.UrlDecode(m.Groups[2].Value));
-            }
-
-            return retVal;
-        }
-
-        ///http://stackoverflow.com/questions/2109756/how-to-get-color-from-hexadecimal-color-code-using-net
+        // http://stackoverflow.com/questions/2109756/how-to-get-color-from-hexadecimal-color-code-using-net
         public static Color ParseAsColor(this string str)
         {
             var hex = str.Replace("#", string.Empty);

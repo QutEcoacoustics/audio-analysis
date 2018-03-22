@@ -33,11 +33,13 @@ namespace AnalysisPrograms
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
+    using AnalyseLongRecordings;
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
     using AudioAnalysisTools.LongDurationSpectrograms.Zooming;
     using AudioAnalysisTools.StandardSpectrograms;
+    using log4net;
     using McMaster.Extensions.CommandLineUtils;
     using Production;
     using Production.Arguments;
@@ -64,6 +66,8 @@ namespace AnalysisPrograms
     /// </summary>
     public static class DrawLongDurationSpectrograms
     {
+        private static readonly ILog Log = LogManager.GetLogger(nameof(DrawLongDurationSpectrograms));
+
         public const string CommandName = "DrawLongDurationSpectrograms";
 
         [Command(
@@ -88,10 +92,12 @@ namespace AnalysisPrograms
             [LegalFilePath]
             public string IndexPropertiesConfig { get; set; }
 
-            [Option(Description = "Config file specifying directory containing indices.csv files and other parameters.")]
+            [Option(
+                ShortName = "fcs",
+                Description = "Config file specifying directory containing indices.csv files and other parameters.")]
             [ExistingFile(Extension = ".yml")]
             [LegalFilePath]
-            public string SpectrogramConfigPath { get; set; }
+            public string FalseColourSpectrogramConfig { get; set; }
 
             public string ColourMap1 { get; set; }
 
@@ -116,7 +122,7 @@ namespace AnalysisPrograms
             string date = "# DATE AND TIME: " + DateTime.Now;
             LoggedConsole.WriteLine("# DRAW LONG DURATION SPECTROGRAMS DERIVED FROM CSV FILES OF SPECTRAL INDICES OBTAINED FROM AN AUDIO RECORDING");
             LoggedConsole.WriteLine(date);
-            LoggedConsole.WriteLine("# Spectrogram Config      file: " + arguments.SpectrogramConfigPath);
+            LoggedConsole.WriteLine("# Spectrogram Config      file: " + arguments.FalseColourSpectrogramConfig);
             LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
             LoggedConsole.WriteLine();
 
@@ -134,14 +140,13 @@ namespace AnalysisPrograms
 
             // this config can be found in IndexGenerationData. If config argument not specified, simply take it from icd file
             LdSpectrogramConfig config;
-            if (arguments.SpectrogramConfigPath == null)
+            if (arguments.FalseColourSpectrogramConfig == null)
             {
                 config = indexGenerationData.LongDurationSpectrogramConfig;
             }
             else
             {
-                //config = Yaml.Deserialise<SpectrogramZoomingConfig>(arguments.SpectrogramConfigPath).LdSpectrogramConfig;
-                config = LdSpectrogramConfig.ReadYamlToConfig(arguments.SpectrogramConfigPath.ToFileInfo());
+                config = LdSpectrogramConfig.ReadYamlToConfig(arguments.FalseColourSpectrogramConfig.ToFileInfo());
             }
 
             string originalBaseName;
@@ -175,7 +180,9 @@ namespace AnalysisPrograms
                 indexStatistics: indexDistributionsData,
                 segmentErrors: indexErrors,
                 imageChrome: false.ToImageChrome());
-        } // Execute()
+
+            Log.Success("Draw Long Duration Spectrograms complete!");
+        }
 
         /// <summary>
         /// The integer returned from this method is the count of time-frames in the spectrogram.
@@ -283,7 +290,7 @@ namespace AnalysisPrograms
 
             // args.InputDataDirectory = new DirectoryInfo(Path.Combine(outputDirectory.FullName, recording.BaseName + ".csv")),
             // args.OutputDirectory = new DirectoryInfo(outputDirectory.FullName + @"/SpectrogramImages");
-            args.SpectrogramConfigPath = null;
+            args.FalseColourSpectrogramConfig = null;
             args.IndexPropertiesConfig = indexPropertiesConfig.FullName;
             args.ColourMap1 = LDSpectrogramRGB.DefaultColorMap1;
             args.ColourMap2 = LDSpectrogramRGB.DefaultColorMap2;

@@ -33,16 +33,6 @@ namespace AnalysisPrograms.AnalyseLongRecordings
     {
         private const string ImagefileExt = "png";
 
-        private const string FinishedMessage = @"
-
-###################################################
-Finished processing audio file: {0}.
-Output  to  directory: {1}
-
-
-##### FINISHED FILE ###################################################
-";
-
         private static readonly ILog Log = LogManager.GetLogger(nameof(AnalyseLongRecording));
 
         /// <summary>
@@ -361,7 +351,7 @@ Output  to  directory: {1}
                 LoggedConsole.WriteLine("\tNumber of events = " + eventsCount);
             }
 
-            LoggedConsole.WriteLine(FinishedMessage, sourceAudio.Name, instanceOutputDirectory.FullName);
+            Log.Success($"Analysis Complete.\nSource={sourceAudio.Name}\nOutput={instanceOutputDirectory.FullName}");
         }
 
         public static T FindAndCheckAnalyser<T>(string analysisIdentifier, string partialIdentifier)

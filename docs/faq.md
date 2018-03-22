@@ -29,12 +29,13 @@ Some programming languages that need to be compiled include C++, C, Java, and C#
 This compilation step is discrete and happens before the code is run. Compiling is often referred to as _building_.
 
 The result of compilation is one or more _binary_ files. We call these files binaries because the code in them
-is no longer readable text - rather it is just blobs of binary data.
+is no longer readable text--rather it is just blobs of binary instructions that the computer will use.
 
 Binaries that can be run as programs are often called _executables_.
 
-## What is an _action_?
+## What is ~~an _action_~~ a _command_?
 
 Our program is a monolith--a very large structure. To support doing different
 things we have various sub-programs that can be run by themselves. We call each
-of these sub-programs an _action_.
+of these sub-programs a _command_. If you run _AP.exe_ with no arguments it will
+list the available command that you can run.

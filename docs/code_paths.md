@@ -2,7 +2,7 @@
 
 [INCOMPLETE]
 
-![Common Actions](./media/AnalysisFlow.svg)
+![Common commands](./media/AnalysisFlow.svg)
 
 **IAnalyzer\[2\]**
 
