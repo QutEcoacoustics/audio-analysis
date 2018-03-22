@@ -178,7 +178,7 @@
             }
             else
             {
-                args = $" -m -q -w \"{source.FullName}\" \"{output.FullName}\" ";
+                args = $" -m -q -w \"{source.FullName}\" -o \"{output.FullName}\" ";
             }
 
             return args;
