@@ -103,7 +103,7 @@ namespace AnalysisPrograms
         {
             for (int i = 1; i <= 60; i++)
             {
-                DrawClusterSequence1(i);
+                DrawClusterSequence2(i);
             }
         }
 
@@ -116,7 +116,7 @@ namespace AnalysisPrograms
             var g = Graphics.FromImage(image);
             g.Clear(Color.White);
 
-            DirectoryInfo dir = new DirectoryInfo(@"H:\Documents\SensorNetworks\Students\AniekRoelofs\Complete\Complete\SummaryIndices");
+            DirectoryInfo dir = new DirectoryInfo(@"H:\Documents\SensorNetworks\Students\AniekRoelofs\Results 22Feb2018\Complete\SummaryIndices");
             string fileName = "Cluster60Sequence_Gympie2015June22_SuI.csv";
             string path = Path.Combine(dir.FullName, fileName);
 
@@ -156,6 +156,61 @@ namespace AnalysisPrograms
             string savePath = Path.Combine(dir.FullName + "\\ClusterImages", imageName);
             image.Save(savePath);
             //Console.ReadLine();
+        }
+
+        public static void DrawClusterSequence2(int requiredCusterId)
+        {
+            // set up an image into which to draw presence/absence of each cluster.
+            int height = 400;
+            int width = 1440;
+
+            Color[] colorchart = { Color.Red, Color.Orange, Color.Green, Color.Aqua, Color.Blue, Color.BlueViolet, Color.Black, Color.DarkMagenta, Color.LawnGreen, Color.DarkRed};
+            var image = new Bitmap(width, height, PixelFormat.Format24bppRgb);
+            var g = Graphics.FromImage(image);
+            g.Clear(Color.White);
+
+            DirectoryInfo dir = new DirectoryInfo(@"H:\Documents\SensorNetworks\Students\AniekRoelofs\Results 14March2018");
+            string fileName = "Cluster60_Hidstate10_Gympie2015June22_SuI_bestof4.csv";
+            string path = Path.Combine(dir.FullName, fileName);
+            int clusterSize = 0;
+
+            using (TextReader reader = new StreamReader(path))
+            {
+                // read the header and ignore
+                string line = reader.ReadLine();
+                int minCounter = 0;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    //read one line at a time in string array
+                    string[] words = line.Split(',');
+                    int minuteOfday = int.Parse(words[0]);
+                    int day = minCounter / width;
+                    int hidStateId = int.Parse(words[2]);
+
+                    if (words[1].StartsWith("NaN"))
+                    {
+                        image.SetPixel(minuteOfday, day, Color.Gray);
+                    }
+                    else
+                    if (requiredCusterId == int.Parse(words[1]))
+                    {
+                        clusterSize++;
+                        image.SetPixel(minuteOfday, day, colorchart[hidStateId - 1]);
+                    }
+
+                    minCounter++;
+                } // end while
+
+                Console.WriteLine("Counter=" + minCounter);
+            } //using
+
+            g.DrawString("Cluster" + requiredCusterId + " Size=" + clusterSize, new Font("Tahoma", 20), Brushes.Black, new PointF(10, 10));
+
+            string imageName = $"cluster{requiredCusterId}.png";
+            string savePath = Path.Combine(dir.FullName + "\\ClusterImages", imageName);
+            image.Save(savePath);
+
+            // Console.ReadLine();
         }
 
         /// <summary>
