@@ -119,9 +119,12 @@ namespace System
         /// </returns>
         public static T[,] Fill<T>(this T[,] array, T value)
         {
-            for (int i = 0; i < array.GetLength(0); i++)
+            var width = array.GetLength(0);
+            var height = array.GetLength(1);
+
+            for (int i = 0; i < width; i++)
             {
-                for (int j = 0; j < array.GetLength(1); j++)
+                for (int j = 0; j < height; j++)
                 {
                     array[i, j] = value;
                 }
