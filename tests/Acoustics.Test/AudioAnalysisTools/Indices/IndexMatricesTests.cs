@@ -148,9 +148,10 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
                 var combinations = from s in scales from d in dataSizes select new object[] { s, d };
 
                 // these scales uses a lot of memory, our CI server can't handle it, so exclude them
-#if APPVEYOR
-                combinations = combinations.Where(x => !((double)x[0] < 0.4 && (int)x[1] > 100_000));
-#endif
+                if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("APPVEYOR")))
+                {
+                    combinations = combinations.Where(x => !((double)x[0] < 0.4 && (int)x[1] > 100_000));
+                }
 
                 return combinations;
             }
