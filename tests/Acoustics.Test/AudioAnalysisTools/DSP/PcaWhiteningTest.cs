@@ -15,6 +15,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
     using System.Threading.Tasks;
     using Accord.Statistics.Analysis;
     using Accord.Math;
+    using Accord.Statistics.Kernels;
     using global::AudioAnalysisTools.StandardSpectrograms;
     using global::AudioAnalysisTools.WavTools;
     using global::TowseyLibrary;
@@ -44,25 +45,28 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
         public void TestPcaWhitening()
         {
             var outputDir = this.outputDirectory;
+            var folderPath =
+                PathHelper.ResolveAssetPath("C:\\Users\\kholghim\\Mahnoosh\\PcaWhitening\\random_audio_segments\\1192");
             var resultDir = PathHelper.ResolveAssetPath("C:\\Users\\kholghim\\Mahnoosh\\PcaWhitening");
+            //var resultDir = PathHelper.ResolveAssetPath("PcaWhitening");
             var outputLinScaImagePath = Path.Combine(resultDir, "LinearFreqScaleSpectrogram.png");
             var outputAmpSpecImagePath = Path.Combine(resultDir, "AmplitudeSpectrogram.png");
             var outputNormAmpImagePath = Path.Combine(resultDir, "NormAmplitudeSpectrogram.png");
             var outputMelImagePath = Path.Combine(resultDir, "MelScaleSpectrogram.png");
             var outputNormMelImagePath = Path.Combine(resultDir, "NormalizedMelScaleSpectrogram.png");
-            var outputNoiseReducedImagePath = Path.Combine(
-                resultDir,
-                "NoiseReducedSpectrogram.png");
+            var outputNoiseReducedImagePath = Path.Combine(resultDir, "NoiseReducedSpectrogram.png");
             var outputWhitenedSpectrogramPath = Path.Combine(resultDir, "WhitenedSpectrogram.png");
             var outputReSpecImagePath = Path.Combine(resultDir, "ReconstrcutedSpectrogram.png");
+
+            /* Exp5
             var projectionMatrixPath = Path.Combine(resultDir, "ProjectionMatrix");
-            var recordingPath = PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav"); //    "PcaWhitening", "20160705_064611_22069.wav"
-            var recording = new AudioRecording(recordingPath);
+            var recordingPath = PathHelper.ResolveAsset("PcaWhitening", "gympie_np_1192_462494_20160911_054830_60.wav"); //   "Recordings", "BAC2_20071008-085040.wav" //   "PcaWhitening", "20160705_064611_22069.wav" //
+            var recording = new AudioRecording(recordingPath); 
 
             // GENERATE AMPLITUDE SPECTROGRAM
             var fst = FreqScaleType.Linear;
             var freqScale = new FrequencyScale(fst);
-
+            Exp5*/
             /*
             var sonoConfig = new SonogramConfig
             {
@@ -73,7 +77,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                 NoiseReductionParameter = 0.0,
             };
             */
-
+            /* Exp5
             var sonoConfig = new SonogramConfig
             {
                 WindowSize = freqScale.FinalBinCount * 2,
@@ -117,21 +121,29 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             //sonogram.Configuration.WindowSize = freqScale.WindowSize;
             var standImage = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
             standImage.Save(outputLinScaImagePath, ImageFormat.Png);
+            Exp5*/
 
-            /*
             // DO NOISE REDUCTION
+            /*
             var dataMatrix = SNR.NoiseReduce_Standard(sonogram.Data);
             sonogram.Data = dataMatrix;
             var noiseReducedImage = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "NOISEREDUCEDSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
             noiseReducedImage.Save(outputNoiseReducedImagePath, ImageFormat.Png);
             */
+            /* Exp5
+            var dataMatrix = PcaWhitening.NoiseReduction(sonogram.Data);
+            sonogram.Data = dataMatrix;
+            var noiseReducedImage = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "NOISEREDUCEDSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
+            noiseReducedImage.Save(outputNoiseReducedImagePath, ImageFormat.Png);
 
             // Do Patch Sampling
-            int patchWidth = 16; //32; //
-            int patchHeight = 16; //32; //
-            int noOfRandomPatches = 500; //1000; // 1500; //
+            int patchWidth = 32; //16; //32; //
+            int patchHeight = 8; //16; //32; //
+            int noOfRandomPatches = 2000; //1500; //280; //1000; //500; // 
             int rows = sonogram.Data.GetLength(0); //3247
             int cols = sonogram.Data.GetLength(1); //256
+            /* Exp5
+
             /*
             //int numberOfPatches = (rows / patchHeight) * (cols / patchWidth);
             //var sequentialPatches = PatchSampling.GetPatches(sonogram.Data, patchWidth, patchHeight, (rows / patchHeight) * (cols / patchWidth), "sequential");
@@ -206,17 +218,18 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             */
 
             //+++++++++++++++++++++++++++++++++++++++++++++++++Exp3: different freq bands, different source-target, same patch size
+            /* Exp5
+           //First: creating 3 matrices from 3 different freq bands of the source spectrogram
+           List<double[,]> allSubmatrices = PatchSampling.GetFreqBandMatrices(sonogram.Data);
+           double[][,] matrices = allSubmatrices.ToArray();
 
-            //First: creating 3 matrices from 3 different freq bands of the source spectrogram
-            List<double[,]> allSubmatrices = PatchSampling.GetFreqBandMatrices(sonogram.Data);
-            double[][,] matrices = allSubmatrices.ToArray();
-
-            //Second: creating 3 projection matrices from 3 different group of random patches
-            //obtained from 3 different freq bands of the source spectrogram
-            List<double[,]> projectionMatrices = new List<double[,]>();
-            List<double[,]> eigenVectors = new List<double[,]>();
-            List<int> noOfComponents = new List<int>();
-
+           //Second: creating 3 projection matrices from 3 different group of random patches
+           //obtained from 3 different freq bands of the source spectrogram
+           List<double[,]> projectionMatrices = new List<double[,]>();
+           List<double[,]> eigenVectors = new List<double[,]>();
+           List<int> noOfComponents = new List<int>();
+           Exp5 */
+            /*
             //+++++++++++++++++++++++++++++++++++++++++++++++++Exp4: different freq bands, different source-target, different patch size
             int freqBandIndex = 0;
             while (freqBandIndex < allSubmatrices.Count)
@@ -260,49 +273,57 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                 }
             }
             //+++++++++++++++++++++++++++++++++++++++++++++++++Exp4: different freq bands, different source-target, different patch size
-            /*
-            for (int i = 0; i < allSubmatrices.Count; i++)
-            {
-                var randomPatches = PatchSampling.GetPatches(matrices[i], patchWidth, patchHeight, noOfRandomPatches, "random").ToMatrix();
-                var actual = PcaWhitening.Whitening(randomPatches);
-                projectionMatrices.Add(actual.Item1);
-                eigenVectors.Add(actual.Item3);
-                noOfComponents.Add(actual.Item4);
-            }
             */
+            /* Exp5
+           for (int i = 0; i < allSubmatrices.Count; i++)
+           {
+               var randomPatches = PatchSampling.GetPatches(matrices[i], patchWidth, patchHeight, noOfRandomPatches, "random").ToMatrix();
+               var actual = PcaWhitening.Whitening(randomPatches);
+               projectionMatrices.Add(actual.Item1);
+               eigenVectors.Add(actual.Item3);
+               noOfComponents.Add(actual.Item4);
+           }
 
-            //Third: divide the target spectrogram into 3 submatrices with different freq bands.
-            //divide each submatrix into sequential patches
-            var recording2Path = PathHelper.ResolveAsset("PcaWhitening", "20160705_064611_22069.wav"); //  "Recordings", "BAC2_20071008-085040.wav"  
-            var recording2 = new AudioRecording(recording2Path);
-            var fst2 = FreqScaleType.Linear;
-            var freqScale2 = new FrequencyScale(fst2);
-            var sonoConfig2 = new SonogramConfig
-            {
-                WindowSize = freqScale2.FinalBinCount * 2,
-                WindowOverlap = 0.2,
-                SourceFName = recording2.BaseName,
-                NoiseReductionType = NoiseReductionType.None,
-                NoiseReductionParameter = 0.0,
-            };
-            var amplitudeSpectrogram2 = new AmplitudeSonogram(sonoConfig2, recording2.WavReader);
-            amplitudeSpectrogram2.Configuration.WindowSize = freqScale2.WindowSize;
-            //var image2 = amplitudeSpectrogram2.GetImageFullyAnnotated(amplitudeSpectrogram2.GetImage(), "SPECTROGRAM: " + fst2.ToString(), freqScale2.GridLineLocations);
-            //image2.Save(outputAmpSpecImagePath, ImageFormat.Png);
-            amplitudeSpectrogram2.Data = PcaWhitening.RmsNormalization(amplitudeSpectrogram2.Data);
-            var sonogram2 = new SpectrogramStandard(amplitudeSpectrogram2);
-            //var standImage2 = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "SPECTROGRAM: " + fst2.ToString(), freqScale2.GridLineLocations);
-            //standImage2.Save(outputLinScaImagePath, ImageFormat.Png);
-            //int patchWidth2 = 16; //32; //
-            //int patchHeight2 = 16; //32; //
-            int rows2 = sonogram2.Data.GetLength(0); //3247
-            //int cols2 = sonogram2.Data.GetLength(1); //256
-            List<double[,]> allSubmatrices2 = PatchSampling.GetFreqBandMatrices(sonogram2.Data);
-            //double[][,] matrices2 = allSubmatrices2.ToArray();
 
-            //Forth: Reconstruct the source matrix with projection matrices
-            List<double[,]> clearedSubmat = new List<double[,]>();
+           //Third: divide the target spectrogram into 3 submatrices with different freq bands.
+           //divide each submatrix into sequential patches
+           var recording2Path = PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav"); //    "PcaWhitening", "20160705_064611_22069.wav"
+           var recording2 = new AudioRecording(recording2Path);
+           var fst2 = FreqScaleType.Linear;
+           var freqScale2 = new FrequencyScale(fst2);
+           var sonoConfig2 = new SonogramConfig
+           {
+               WindowSize = freqScale2.FinalBinCount * 2,
+               WindowOverlap = 0.2,
+               SourceFName = recording2.BaseName,
+               NoiseReductionType = NoiseReductionType.None,
+               NoiseReductionParameter = 0.0,
+           };
+           var amplitudeSpectrogram2 = new AmplitudeSonogram(sonoConfig2, recording2.WavReader);
+           amplitudeSpectrogram2.Configuration.WindowSize = freqScale2.WindowSize;
+           //var image2 = amplitudeSpectrogram2.GetImageFullyAnnotated(amplitudeSpectrogram2.GetImage(), "SPECTROGRAM: " + fst2.ToString(), freqScale2.GridLineLocations);
+           //image2.Save(outputAmpSpecImagePath, ImageFormat.Png);
+           amplitudeSpectrogram2.Data = PcaWhitening.RmsNormalization(amplitudeSpectrogram2.Data);
+           var sonogram2 = new SpectrogramStandard(amplitudeSpectrogram2);
+           //var standImage2 = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "SPECTROGRAM: " + fst2.ToString(), freqScale2.GridLineLocations);
+           //standImage2.Save(outputLinScaImagePath, ImageFormat.Png);
+           // DO NOISE REDUCTION
+           var dataMatrix2 = PcaWhitening.NoiseReduction(sonogram2.Data);
+           //var dataMatrix2 = SNR.NoiseReduce_Standard(sonogram2.Data);
+           sonogram2.Data = dataMatrix2;
+           //var noiseReducedImage = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "NOISEREDUCEDSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
+           //noiseReducedImage.Save(outputNoiseReducedImagePath, ImageFormat.Png);
+           //int patchWidth2 = 16; //32; //
+           //int patchHeight2 = 16; //32; //
+           int rows2 = sonogram2.Data.GetLength(0); //3247
+           //int cols2 = sonogram2.Data.GetLength(1); //256
+           List<double[,]> allSubmatrices2 = PatchSampling.GetFreqBandMatrices(sonogram2.Data);
+           //double[][,] matrices2 = allSubmatrices2.ToArray();
 
+           //Forth: Reconstruct the source matrix with projection matrices
+           List<double[,]> clearedSubmat = new List<double[,]>();
+           Exp5 */
+            /*
             //+++++++++++++++++++++++++++++++++++++++++++++++++Exp4: different freq bands, different source-target, different patch size
             freqBandIndex = 0;
             while (freqBandIndex < allSubmatrices2.Count)
@@ -341,33 +362,140 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             }
             //+++++++++++++++++++++++++++++++++++++++++++++++++Exp4: different freq bands, different source-target, different patch size
 
-            /*
-            for (int i = 0; i < allSubmatrices2.Count; i++)
-            {
-                var sequentialPatches = PatchSampling.GetPatches(allSubmatrices2.ToArray()[i], patchWidth, patchHeight, (rows2 / patchHeight) * (allSubmatrices2.ToArray()[i].GetLength(1) / patchWidth), "sequential");
-                double[,] reconstructedSpec2 = PcaWhitening.ReconstructSpectrogram(projectionMatrices.ToArray()[i], sequentialPatches.ToMatrix(), eigenVectors.ToArray()[i], noOfComponents.ToArray()[i]);
-                clearedSubmat.Add(PatchSampling.ConvertPatches(reconstructedSpec2, patchWidth, patchHeight, allSubmatrices2.ToArray()[i].GetLength(1)));
-            }
             */
+            /* Exp5
+           for (int i = 0; i < allSubmatrices2.Count; i++)
+           {
+               var sequentialPatches = PatchSampling.GetPatches(allSubmatrices2.ToArray()[i], patchWidth, patchHeight, (rows2 / patchHeight) * (allSubmatrices2.ToArray()[i].GetLength(1) / patchWidth), "sequential");
+               double[,] reconstructedSpec2 = PcaWhitening.ReconstructSpectrogram(projectionMatrices.ToArray()[i], sequentialPatches.ToMatrix(), eigenVectors.ToArray()[i], noOfComponents.ToArray()[i]);
+               clearedSubmat.Add(PatchSampling.ConvertPatches(reconstructedSpec2, patchWidth, patchHeight, allSubmatrices2.ToArray()[i].GetLength(1)));
+           }
 
-            sonogram2.Data = PatchSampling.ConcatFreqBandMatrices(clearedSubmat);
+
+           sonogram2.Data = PatchSampling.ConcatFreqBandMatrices(clearedSubmat);
+           var respecImage2 = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "RECONSTRUCTEDSPECTROGRAM: " + fst2.ToString(), freqScale2.GridLineLocations);
+           respecImage2.Save(outputReSpecImagePath, ImageFormat.Png);
+           //+++++++++++++++++++++++++++++++++++++++++++++++++Exp3
+           Exp5 */ 
+           /*
+           //we need the width (#columns) of the original spectrogram to reconstruct the matrix from patches
+           //int cols = sonogram.Data.GetLength(1);
+           //sonogram.Data = actual;
+           sonogram.Data = PatchSampling.ConvertPatches(actual.Item2, patchWidth, patchHeight, cols);
+
+           //ImageTools.DrawMatrix(actual, outputWhitenedSpectrogramPath);
+
+           //var whitenedImage = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "WHITENEDSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
+           var whitenedImage = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "WHITENEDSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
+           whitenedImage.Save(outputWhitenedSpectrogramPath, ImageFormat.Png);
+           */
+            //+++++++++++++++++++++++++++++++++++++++++++++++++Exp5: patch sampling (full band patches) from 100 random 1-min recordings from Gympie
+            List<double[,]> randomPatches = new List<double[,]>();
+            int patchWidth = 256; //16; //full band patches
+            int patchHeight = 4; //16; // 3; //
+            int noOfRandomPatches = 20; //10; //100; //500; //
+            //int fileCount = Directory.GetFiles(folderPath, "*.wav").Length;
+            //double[][] randomPatches = new double[fileCount * noOfRandomPatches][];
+
+            foreach (string filePath in Directory.GetFiles(folderPath, "*.wav"))
+            {
+                Console.WriteLine(Path.GetFileName(filePath));
+                var recording = new AudioRecording(filePath);
+                var fst = FreqScaleType.Linear;
+                var freqScale = new FrequencyScale(fst);
+
+                var sonoConfig = new SonogramConfig
+                {
+                    WindowSize = freqScale.FinalBinCount * 2,
+                    WindowOverlap = 0.2,
+                    SourceFName = recording.BaseName,
+                    NoiseReductionType = NoiseReductionType.None,
+                    NoiseReductionParameter = 0.0,
+                };
+
+                //var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
+                var amplitudeSpectrogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
+
+                //sonogram.Configuration.WindowSize = freqScale.WindowSize;
+                //amplitudeSpectrogram.Configuration.WindowSize = freqScale.WindowSize;
+
+                //var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
+                //var image = amplitudeSpectrogram.GetImageFullyAnnotated(amplitudeSpectrogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
+                //image.Save(outputLinScaImagePath, ImageFormat.Png);
+                //image.Save(outputAmpSpecImagePath, ImageFormat.Png);
+
+                // DO RMS NORMALIZATION
+                amplitudeSpectrogram.Data = PcaWhitening.RmsNormalization(amplitudeSpectrogram.Data);
+                //var normImage = amplitudeSpectrogram.GetImageFullyAnnotated(amplitudeSpectrogram.GetImage(), "NORMAmplitudeSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
+                //normImage.Save(outputNormAmpImagePath, ImageFormat.Png);
+
+                // CONVERT NORMALIZED AMPLITUDE SPECTROGRAM TO dB SPECTROGRAM
+                var sonogram = new SpectrogramStandard(amplitudeSpectrogram);
+                //var standImage = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
+                //standImage.Save(outputLinScaImagePath, ImageFormat.Png);
+
+                // DO NOISE REDUCTION
+                /*
+                var dataMatrix = SNR.NoiseReduce_Standard(sonogram.Data);
+                sonogram.Data = dataMatrix;
+                var noiseReducedImage = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "NOISEREDUCEDSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
+                noiseReducedImage.Save(outputNoiseReducedImagePath, ImageFormat.Png);
+                */
+                var dataMatrix2 = PcaWhitening.NoiseReduction(sonogram.Data);
+                sonogram.Data = dataMatrix2;
+                //var noiseReducedImage = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "NOISEREDUCEDSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
+                //noiseReducedImage.Save(outputNoiseReducedImagePath, ImageFormat.Png);
+
+                // Do Patch Sampling
+                //int rows = sonogram.Data.GetLength(0); //3247
+                //int cols = sonogram.Data.GetLength(1); //256
+
+                randomPatches.Add(PatchSampling.GetPatches(sonogram.Data, patchWidth, patchHeight, noOfRandomPatches, "random").ToMatrix());
+            }
+
+            //convert list of random patches matrices to one matrix
+            double[,] allPatchM = PatchSampling.ListOf2DArrayToOne2DArray(randomPatches);
+
+            var actual = PcaWhitening.Whitening(allPatchM);
+
+            var recording2Path = PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav");
+            var recording2 = new AudioRecording(recording2Path);
+            var fst2 = FreqScaleType.Linear;
+            var freqScale2 = new FrequencyScale(fst2);
+            var sonoConfig2 = new SonogramConfig
+            {
+                WindowSize = freqScale2.FinalBinCount * 2,
+                WindowOverlap = 0.2,
+                SourceFName = recording2.BaseName,
+                NoiseReductionType = NoiseReductionType.None,
+                NoiseReductionParameter = 0.0,
+            };
+            var amplitudeSpectrogram2 = new AmplitudeSonogram(sonoConfig2, recording2.WavReader);
+            //amplitudeSpectrogram2.Configuration.WindowSize = freqScale2.WindowSize;
+            //var image2 = amplitudeSpectrogram2.GetImageFullyAnnotated(amplitudeSpectrogram2.GetImage(), "SPECTROGRAM: " + fst2.ToString(), freqScale2.GridLineLocations);
+            //image2.Save(outputAmpSpecImagePath, ImageFormat.Png);
+            amplitudeSpectrogram2.Data = PcaWhitening.RmsNormalization(amplitudeSpectrogram2.Data);
+            var sonogram2 = new SpectrogramStandard(amplitudeSpectrogram2);
+            //var standImage2 = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "SPECTROGRAM: " + fst2.ToString(), freqScale2.GridLineLocations);
+            //standImage2.Save(outputLinScaImagePath, ImageFormat.Png);
+            var dataMatrix = PcaWhitening.NoiseReduction(sonogram2.Data);
+            sonogram2.Data = dataMatrix;
+            //int patchWidth2 = 16; //32; //
+            //int patchHeight2 = 16; //32; //
+            int rows = sonogram2.Data.GetLength(0); //3247
+            int cols = sonogram2.Data.GetLength(1); //256
+            var sequentialPatches = PatchSampling.GetPatches(sonogram2.Data, patchWidth, patchHeight, (rows / patchHeight) * (cols / patchWidth), "sequential");
+            //var randomPatches = PatchSampling.GetPatches(sonogram.Data, patchWidth, patchHeight, 4000, "random");
+            double[,] sequentialPatchMatrix2 = sequentialPatches.ToMatrix();
+            //double[,] randomPatchMatrix = randomPatches.ToMatrix();
+            double[,] reconstructedSpec2 = PcaWhitening.ReconstructSpectrogram(actual.Item1, sequentialPatchMatrix2, actual.Item3, actual.Item4);
+            sonogram2.Data = PatchSampling.ConvertPatches(reconstructedSpec2, patchWidth, patchHeight, cols);
             var respecImage2 = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "RECONSTRUCTEDSPECTROGRAM: " + fst2.ToString(), freqScale2.GridLineLocations);
             respecImage2.Save(outputReSpecImagePath, ImageFormat.Png);
-            //+++++++++++++++++++++++++++++++++++++++++++++++++Exp3
-            /*
-            //we need the width (#columns) of the original spectrogram to reconstruct the matrix from patches
-            //int cols = sonogram.Data.GetLength(1);
-            //sonogram.Data = actual;
-            sonogram.Data = PatchSampling.ConvertPatches(actual.Item2, patchWidth, patchHeight, cols);
 
-            //ImageTools.DrawMatrix(actual, outputWhitenedSpectrogramPath);
-
-            //var whitenedImage = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "WHITENEDSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-            var whitenedImage = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "WHITENEDSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-            whitenedImage.Save(outputWhitenedSpectrogramPath, ImageFormat.Png);
+            //+++++++++++++++++++++++++++++++++++++++++++++++++Exp5: patch sampling from 100 random 1-min recordings from Gympie
 
             //Assert.AreEqual(expected, actual);
-            */
 
             /*
             double[][] data =

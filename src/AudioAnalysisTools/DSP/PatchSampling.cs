@@ -121,7 +121,7 @@ namespace AudioAnalysisTools.DSP
 
         /*
          * converts a list<double[,]> to a matrix.
-         * construct the original matrix from a set of patches
+         * construct the original matrix from a set of sequential patches
          */
         public static double[,] ConvertList2Matrix(List<double[,]> list, int colSize, int patchWidth, int patchHeight) //(List<double[,]> list, int noItemInRow, int colSize, int patchHeight)
         {
@@ -155,12 +155,12 @@ namespace AudioAnalysisTools.DSP
         public static List<double[,]> GetFreqBandMatrices(double[,] matrix)
         {
             List<double[,]> allSubmatrices = new List<double[,]>();
-            int cols = matrix.GetLength(1);
+            int cols = matrix.GetLength(1); //number of freq bins
             int rows = matrix.GetLength(0);
             int newCol = cols / 4;
 
             double[,] minFreqBandMatrix = new double[rows, newCol];
-            double[,] midFreqBandMatrix = new double[rows, newCol*2];
+            double[,] midFreqBandMatrix = new double[rows, newCol * 2];
             double[,] maxFreqBandMatrix = new double[rows, newCol];
 
             //Note that I am not aware of any faster way to copy a part of 2D-array
@@ -219,21 +219,52 @@ namespace AudioAnalysisTools.DSP
             double[,] matrix = new double[maxRows, colSize];
 
             //might be better way to do this
-            AddToArray(matrix, submat[0]);
-            AddToArray(matrix, submat[1], submat[0].GetLength(1));
-            AddToArray(matrix, submat[2], submat[0].GetLength(1) + submat[1].GetLength(1));
+            AddToArray(matrix, submat[0], "column");
+            AddToArray(matrix, submat[1], "column", submat[0].GetLength(1));
+            AddToArray(matrix, submat[2], "column", submat[0].GetLength(1) + submat[1].GetLength(1));
             return matrix;
         }
 
-        public static void AddToArray(double[,] result, double[,] array, int start = 0)
+        //adding a 2D-array to another 2D-array either by "column" or by "row"
+        public static void AddToArray(double[,] result, double[,] array, string mergingDirection, int start = 0)
         {
             for (int i = 0; i < array.GetLength(0); i++)
             {
                 for (int j = 0; j < array.GetLength(1); j++)
                 {
-                    result[i, j + start] = array[i, j];
+                    if (mergingDirection == "column")
+                    {
+                        result[i, j + start] = array[i, j];
+                    }
+                    else
+                    {
+                        if (mergingDirection == "row")
+                        {
+                            result[i + start, j] = array[i, j];
+                        }
+                    }
                 }
             }
+        }
+
+        //convert a list of patch matrices to one matrix
+        public static double[,] ListOf2DArrayToOne2DArray(List<double[,]> listOfPatchMatrices)
+        {
+            int noPat = listOfPatchMatrices[0].GetLength(0);
+            double[,] allPatchesMatrix = new double[listOfPatchMatrices.Count * noPat, listOfPatchMatrices[0].GetLength(1)];
+            for (int i = 0; i < listOfPatchMatrices.Count; i++)
+            {
+                var m = listOfPatchMatrices[i];
+                /*
+                if (m.GetLength(0) != noPat)
+                {
+                    throw new ArgumentException("All arrays must be the same length");
+                }
+                */
+                AddToArray(allPatchesMatrix, m, "row", i * m.GetLength(0));
+            }
+
+            return allPatchesMatrix;
         }
     }
 }

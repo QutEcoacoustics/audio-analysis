@@ -32,7 +32,7 @@ namespace AudioAnalysisTools.DSP
             {
                 //the "Center" method only subtracts the mean.
                 Method = PrincipalComponentMethod.Center,
-                Whiten = false,
+                Whiten = true,
             };
 
             pca.Learn(jaggedArr);
@@ -199,6 +199,23 @@ namespace AudioAnalysisTools.DSP
             double[,] cleanedPatches = patches.ToMatrix();
             double[,] reconsSpec = Revert(cleanedPatches, eigenVectors, numberOfComponents);
             return reconsSpec;
+        }
+
+        public static double[,] NoiseReduction(double[,] matrix)
+        {
+            double[,] nrm = matrix;
+
+            //calculate modal noise profile
+            NoiseProfile profile = NoiseProfile.CalculateModalNoiseProfile(matrix, sdCount: 0.0);
+
+            //smooth the noise profile
+            double[] smoothedProfile = DataTools.filterMovingAverage(profile.NoiseThresholds, width: 7);
+
+            nrm = SNR.TruncateBgNoiseFromSpectrogram(nrm, smoothedProfile);
+
+            //nrm = SNR.NoiseReduce_Standard(nrm, smoothedProfile, nhBackgroundThreshold: 2.0);
+
+            return nrm;
         }
     }
 }
