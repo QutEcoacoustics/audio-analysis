@@ -72,12 +72,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
         } // Number of points to smooth FFT spectra
 
         public double epsilon { get; set; } //small value to prevent log of zero value
-
-        public int FreqBinCount
-        {
-            get { return this.WindowSize / 2; }
-        } // other half is phase info
-
         public bool DoPreemphasis { get; set; }
 
         public int? MinFreqBand { get; set; }
@@ -97,7 +91,22 @@ namespace AudioAnalysisTools.StandardSpectrograms
         //public FftConfiguration fftConfig { get; set; }
         public MfccConfiguration mfccConfig { get; set; }
 
+        /// <summary>
+        /// For linear frequency scale assume that the freq bin count = half the frame size.
+        /// </summary>
+        public int FreqBinCount
+        {
+            get { return this.WindowSize / 2; }
+        } // other half is phase info
+
         public bool DoMelScale { get; set; }
+
+        /// <summary>
+        /// For linear frequency scale assume that the freq bin count = half the frame size.
+        /// But with Mel scale, the user can set arbitrary number of mel bins.
+        /// By default, MelBincount can be set = FreqBinCount.
+        /// </summary>
+        public int MelBinCount { get; set; }
 
         public int DeltaT { get; set; }
 

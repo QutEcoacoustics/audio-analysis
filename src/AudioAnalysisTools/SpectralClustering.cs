@@ -546,7 +546,7 @@ namespace AudioAnalysisTools
 
         public static Image DrawSonogram(BaseSonogram sonogram, Plot scores, List<AcousticEvent> poi, double eventThreshold, double[,] overlay)
         {
-            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband: false, add1KHzLines: false));
+            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband: false, add1KHzLines: false, doMelScale: false));
             image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image.AddTrack(ImageTrack.GetSegmentationTrack(sonogram));
             if (scores != null)
@@ -573,7 +573,7 @@ namespace AudioAnalysisTools
         /// </summary>
         public static Image DrawClusterSpectrogram(BaseSonogram sonogram, ClusterInfo clusterInfo, TrainingDataInfo data, int lowerBinBound)
         {
-            using (var img = sonogram.GetImage(doHighlightSubband: false, add1KHzLines: true))
+            using (var img = sonogram.GetImage(doHighlightSubband: false, add1KHzLines: true, doMelScale: false))
             using (var image = new Image_MultiTrack(img))
             {
                 //image.AddTrack(ImageTrack.GetScoreTrack(DataTools.Bool2Binary(clusterInfo.selectedFrames),0.0, 1.0, 0.0));

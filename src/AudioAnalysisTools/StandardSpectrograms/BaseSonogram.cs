@@ -308,10 +308,10 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         public Image GetImage()
         {
-            return this.GetImage(false, false);
+            return this.GetImage(false, false, false);
         }
 
-        public Image GetImage(bool doHighlightSubband, bool add1KHzLines)
+        public Image GetImage(bool doHighlightSubband, bool add1KHzLines, bool doMelScale)
         {
             // doHighlightSubband function still working but have removed min/max bounds from user control.
             // doHighlightSubband = true;
@@ -328,11 +328,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 //int bandCount = (int)Math.Floor(binCount / kHzBinWidth);
                 int[,] gridLineLocations;
 
-                //get melscale locations WARNING!!!! NEED TO DEBUG/REWORK THIS BUT NOW SELDOM USED
-                bool doMelScale = false;
                 if (doMelScale)
                 {
-                    gridLineLocations = FrequencyScale.CreateMelYaxis(kHzInterval, this.NyquistFrequency, image.Height);
+                    gridLineLocations = FrequencyScale.GetMelGridLineLocations(kHzInterval, this.NyquistFrequency, image.Height);
                 }
                 else
                 {

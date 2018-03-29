@@ -406,7 +406,7 @@ namespace AnalysisPrograms.Recognizers
         {
             const bool doHighlightSubband = false;
             const bool add1KHzLines = true;
-            var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1KHzLines));
+            var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1KHzLines, doMelScale: false));
 
             image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             if (scores != null)

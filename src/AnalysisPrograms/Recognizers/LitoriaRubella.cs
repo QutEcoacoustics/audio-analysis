@@ -194,7 +194,7 @@ namespace AnalysisPrograms.Recognizers
         {
             bool doHighlightSubband = false;
             bool add1kHzLines = true;
-            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
+            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines, doMelScale: false));
 
             image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             if (scores != null)
