@@ -217,7 +217,7 @@ namespace AnalysisPrograms
 
         public static Image DrawSonogram(BaseSonogram sonogram, IEnumerable<AcousticEvent> events)
         {
-            var image = new Image_MultiTrack(sonogram.GetImage(false, true));
+            var image = new Image_MultiTrack(sonogram.GetImage(false, true, doMelScale: false));
 
             image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
 

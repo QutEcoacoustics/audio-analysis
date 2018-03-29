@@ -237,7 +237,7 @@ namespace AnalysisPrograms.Recognizers
 
         public static Image DisplayDebugImage(BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> scores, double[,] hits)
         {
-            var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband: false, add1KHzLines: true));
+            var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband: false, add1KHzLines: true, doMelScale: false));
             image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             if (scores != null)
             {

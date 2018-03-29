@@ -240,9 +240,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 addScale = ConfigDictionary.GetBoolean(AnalysisKeys.AddAxes, configDict);
             }
 
-            bool add1kHzLines = addScale;
-
-            Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines);
+            Image img = sonogram.GetImage(doHighlightSubband, add1KHzLines: addScale, doMelScale: false);
             Image_MultiTrack mti = new Image_MultiTrack(img);
             if (addScale)
             {

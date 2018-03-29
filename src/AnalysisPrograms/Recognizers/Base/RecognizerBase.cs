@@ -341,7 +341,7 @@ namespace AnalysisPrograms.Recognizers.Base
         {
             const bool doHighlightSubband = false;
             const bool add1KHzLines = true;
-            var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1KHzLines));
+            var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1KHzLines, doMelScale: false));
 
             ////System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines);
             ////img.Save(@"C:\SensorNetworks\temp\testimage1.png", System.Drawing.Imaging.ImageFormat.Png);
@@ -429,7 +429,7 @@ namespace AnalysisPrograms.Recognizers.Base
         {
             const bool doHighlightSubband = false;
             const bool add1KHzLines = true;
-            var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1KHzLines));
+            var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1KHzLines, doMelScale: false));
 
             image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             if (scores != null)

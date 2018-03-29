@@ -99,7 +99,7 @@ namespace AnalysisPrograms
                 suffix = suffix == string.Empty ? "1" : (int.Parse(suffix) + 1).ToString();
             }
 
-            Image im = sonogram.GetImage(false, false);
+            Image im = sonogram.GetImage(false, false, doMelScale: false);
             string newPath = savePath + suffix + ".jpg";
             Log.WriteIfVerbose("imagePath = " + newPath);
             im.Save(newPath);

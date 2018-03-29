@@ -191,7 +191,7 @@ namespace AnalysisPrograms
             //Image image = SpectrogramTools.Audio2SonogramImage(FileInfo fiAudio, Dictionary<string, string> configDict);
 
             //prepare sonogram images
-            var protoImage6 = new Image_MultiTrack(standardSonogram.GetImage(doHighlightSubband: false, add1KHzLines: true));
+            var protoImage6 = new Image_MultiTrack(standardSonogram.GetImage(doHighlightSubband: false, add1KHzLines: true, doMelScale: false));
             protoImage6.AddTrack(ImageTrack.GetTimeTrack(standardSonogram.Duration, standardSonogram.FramesPerSecond));
             protoImage6.AddTrack(ImageTrack.GetWavEnvelopeTrack(recording, protoImage6.SonogramImage.Width));
             protoImage6.AddTrack(ImageTrack.GetSegmentationTrack(standardSonogram));
