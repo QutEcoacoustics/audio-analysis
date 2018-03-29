@@ -45,7 +45,7 @@
         private const string ArgsDefault = " -m -q -w ";
         private const string ArgsSkip = " --skip={0} ";
         private const string ArgsUtil = " --until={0}{1} ";
-        private const string ArgsFile = " \"{0}\" ";
+        private const string ArgsInputAndOutputFile = " \"{0}\" -o \"{1}\" ";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WavPackAudioUtility"/> class.
@@ -148,12 +148,12 @@
         /// </returns>
         protected override string ConstructModifyArgs(FileInfo source, FileInfo output, AudioUtilityRequest request)
         {
-            string args;
+            var sb = new StringBuilder(ArgsDefault);
 
             // only deals with start and end, does not do anything with sampling, channels or bit rate.
             if (request.OffsetStart.HasValue || request.OffsetEnd.HasValue)
             {
-                var sb = new StringBuilder(ArgsDefault);
+              
                 if (request.OffsetStart.HasValue && request.OffsetStart.Value > TimeSpan.Zero)
                 {
                     sb.AppendFormat(ArgsSkip, FormatTimeSpan(request.OffsetStart.Value));
@@ -163,25 +163,19 @@
                 {
                     if (request.OffsetStart.HasValue && request.OffsetStart.Value > TimeSpan.Zero)
                     {
-                        sb.AppendFormat(ArgsUtil, "+", FormatTimeSpan(request.OffsetEnd.Value - request.OffsetStart.Value));
+                        sb.AppendFormat(ArgsUtil, "+",
+                            FormatTimeSpan(request.OffsetEnd.Value - request.OffsetStart.Value));
                     }
                     else
                     {
                         sb.Append(string.Format(ArgsUtil, string.Empty, FormatTimeSpan(request.OffsetEnd.Value)));
                     }
                 }
-
-                sb.AppendFormat(ArgsFile, source.FullName);
-                sb.AppendFormat(ArgsFile, output.FullName);
-
-                args = sb.ToString();
-            }
-            else
-            {
-                args = $" -m -q -w \"{source.FullName}\" \"{output.FullName}\" ";
             }
 
-            return args;
+            sb.AppendFormat(ArgsInputAndOutputFile, source.FullName, output.FullName);
+
+            return sb.ToString();
         }
 
         /// <summary>

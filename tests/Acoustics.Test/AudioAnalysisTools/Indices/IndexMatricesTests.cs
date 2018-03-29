@@ -143,9 +143,17 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             get
             {
                 var scales = new[] { 60.0, 30, 15, 10, 7.5, 3.2, 1.6, 0.8, 0.4, 0.2, 0.1 };
-                var dataSizes = new[] { 60, 359900 };
+                var dataSizes = new[] { 60, 3599, 359900 };
 
-                return from s in scales from d in dataSizes select new object[] { s, d };
+                var combinations = from s in scales from d in dataSizes select new object[] { s, d };
+
+                // these scales uses a lot of memory, our CI server can't handle it, so exclude them
+                if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("APPVEYOR")))
+                {
+                    combinations = combinations.Where(x => !((double)x[0] < 0.4 && (int)x[1] > 100_000));
+                }
+
+                return combinations;
             }
         }
 
