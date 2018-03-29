@@ -69,7 +69,7 @@ namespace AnalysisPrograms
                 //ConcatenateTwelveImages();
                 //CubeHelixDrawTestImage();
                 //DrawLongDurationSpectrogram();
-                DrawClusterSequence();
+                //DrawClusterSequence();
 
                 //ExtractSpectralFeatures();
                 //HerveGlotinMethods();
@@ -85,7 +85,7 @@ namespace AnalysisPrograms
                 //TEST_FilterMovingAverage();
                 //TestImageProcessing();
                 //TestMatrix3dClass();
-                //TestsOfFrequencyScales();
+                TestsOfFrequencyScales();
                 //TestReadingFileOfSummaryIndices();
                 //TestStructureTensor();
                 //TestWavelets();
@@ -1209,6 +1209,7 @@ namespace AnalysisPrograms
         {
             // FrequencyScale.TESTMETHOD_LinearFrequencyScaleDefault();
             // FrequencyScale.TESTMETHOD_LinearFrequencyScale();
+            FrequencyScale.TESTMETHOD_MelFrequencyScale();
             // FrequencyScale.TESTMETHOD_OctaveFrequencyScale1();
             // FrequencyScale.TESTMETHOD_OctaveFrequencyScale2();
 

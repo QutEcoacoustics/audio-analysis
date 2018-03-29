@@ -12,7 +12,7 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// Converts spectral amplitudes directly to dB, normalising for window power and sample rate.
         /// NOTE 1: The window contributes power to the signal which must subsequently be removed from the spectral power.
-        /// NOTE 2: Spectral power must be normaliesd for sample rate. Effectively calculate freq power per sample.
+        /// NOTE 2: Spectral power must be normalised for sample rate. Effectively calculate freq power per sample.
         /// NOTE 3: The power in all freq bins except f=0 must be doubled because the power spectrum is an even function about f=0;
         ///         This is due to the fact that the spectrum actually consists of 512 + 1 values, the centre value being for f=0.
         /// NOTE 4: The decibels value is a ratio. Here the ratio is implied.
@@ -81,19 +81,19 @@ namespace AudioAnalysisTools.DSP
             return spectra;
         }
 
-        public static int[] VocalizationDetection(double[] decibels, double lowerDbThreshold, double upperDbThreshold, int k1_k2delay, int syllableGap, int minPulse, int[] zeroCrossings)
+        public static int[] VocalizationDetection(double[] decibels, double lowerDbThreshold, double upperDbThreshold, int k1k2delay, int syllableGap, int minPulse, int[] zeroCrossings)
         {
-            int L = decibels.Length;
-            int[] state = new int[L];
+            int length = decibels.Length;
+            int[] state = new int[length];
             int lowEnergyId = 0;
-            int hiEnergyId = -k1_k2delay; // to prevent setting early frames to state=2
-            for (int i = 0; i < L; i++)
+            int hiEnergyId = -k1k2delay; // to prevent setting early frames to state=2
+            for (int i = 0; i < length; i++)
             {
                 if (decibels[i] < lowerDbThreshold)
                 {
                     lowEnergyId = i;
                     int delay = i - hiEnergyId;
-                    if (delay < k1_k2delay)
+                    if (delay < k1k2delay)
                     {
                         for (int j = 1; j < delay; j++)
                         {
@@ -108,7 +108,7 @@ namespace AudioAnalysisTools.DSP
                 {
                     hiEnergyId = i;
                     int delay = i - lowEnergyId;
-                    if (delay < k1_k2delay)
+                    if (delay < k1k2delay)
                     {
                         for (int j = 1; j < delay; j++)
                         {
@@ -210,16 +210,29 @@ namespace AudioAnalysisTools.DSP
             return 2595.0 * Math.Log10(1.0 + (f / 700.0));
         }
 
-        public static double InverseMel(double m)
+        /// <summary>
+        /// Converts a Mel value to Herz
+        /// </summary>
+        /// <param name="m">the Mel value</param>
+        /// <returns>the Herz value</returns>
+        public static double InverseMel(double mel)
         {
-            if (m <= 1000)
+            if (mel <= 1000)
             {
-                return m; //linear below 1 kHz
+                return mel; //linear below 1 kHz
             }
 
-            return (Math.Pow(10.0, m / 2595.0) - 1.0) * 700.0;
+            return (Math.Pow(10.0, mel / 2595.0) - 1.0) * 700.0;
         }
 
+        /// <summary>
+        /// this method calculates a user customised version of the fixed mel frequency convernsion in
+        /// the method Mel(double f).
+        /// </summary>
+        /// <param name="f">this is the linear frequncy in Herz</param>
+        /// <param name="c">this value = 2595.0 in the standard Mel transform</param>
+        /// <param name="div">this value = 700 in the standard Mel transform</param>
+        /// <returns>Mel frequency</returns>
         public static double HerzTranform(double f, double c, double div)
         {
             return c * Math.Log10(1.0 + (f / div));
@@ -252,15 +265,14 @@ namespace AudioAnalysisTools.DSP
             double fraction = freqRange / nyquist;
             filterBankCount = (int)Math.Ceiling(filterBankCount * fraction);
 
-            int M = matrix.GetLength(0); //number of spectra or time steps
-            int N = matrix.GetLength(1); //number of bins in freq band
-            double[,] outData = new double[M, filterBankCount];
-            double ipBand = freqRange / (double)N;                //width of input freq band
+            int rowCount = matrix.GetLength(0); //number of spectra or time steps
+            int colCount = matrix.GetLength(1); //number of bins in freq band
+            double[,] outData = new double[rowCount, filterBankCount];
+            double ipBand = freqRange / (double)colCount;                //width of input freq band
             double opBand = freqRange / (double)filterBankCount;  //width of output freq band
 
-            //LoggedConsole.WriteLine(" NCount=" + N + " filterCount=" + filterBankCount + " freqRange=" + freqRange + " ipBand=" + ipBand.ToString("F1") + " opBand=" + opBand.ToString("F1"));
             //for all spectra or time steps
-            for (int i = 0; i < M; i++)
+            for (int i = 0; i < rowCount; i++)
             {
                 //for all output bands in the frequency range
                 for (int j = 0; j < filterBankCount; j++)
@@ -284,7 +296,7 @@ namespace AudioAnalysisTools.DSP
 
                     for (int k = ipAint; k < ipBint; k++)
                     {
-                        if (k + 1 >= N)
+                        if (k + 1 >= colCount)
                         {
                             break;  //to prevent out of range index
                         }
@@ -292,7 +304,7 @@ namespace AudioAnalysisTools.DSP
                         sum += LinearIntegral(k * ipBand, (k + 1) * ipBand, matrix[i, k], matrix[i, k + 1]);
                     }
 
-                    if (ipBint < N)
+                    if (ipBint < colCount)
                     {
                         double yb = LinearInterpolate(ipBint, ipBint + 1, matrix[i, ipBint], matrix[i, ipBint + 1], ipB);
                         sum += LinearIntegral(ipBint * ipBand, ipB * ipBand, matrix[i, ipBint], yb);
@@ -308,7 +320,6 @@ namespace AudioAnalysisTools.DSP
             }
 
             //implicit end of for all spectra or time steps
-
             return outData;
         }
 
@@ -322,65 +333,64 @@ namespace AudioAnalysisTools.DSP
         /// <param name="nyquist">max frequency in original spectra</param>
         public static double[,] MelFilterBank(double[,] matrix, int filterBankCount, double nyquist)
         {
-            int M = matrix.GetLength(0); //number of spectra or time steps
-            int N = matrix.GetLength(1); //number of Hz bands = 2^N +1
-            double[,] outData = new double[M, filterBankCount];
-            double linBand = nyquist / N;
-            double melBand = Mel(nyquist) / filterBankCount;  //width of mel band
+            int rowCount = matrix.GetLength(0); //number of spectra or time steps
+            int colCount = matrix.GetLength(1); //number of Hz bands = 2^N +1
 
-            //LoggedConsole.WriteLine(" linBand=" + linBand + " melBand=" + melBand);
-            //for all spectra or time steps
-            for (int i = 0; i < M; i++)
+            double[,] outData = new double[rowCount, filterBankCount];
+            double linBinWidth = nyquist / colCount;
+            double melBinWidth = Mel(nyquist) / filterBankCount;  //width of single mel bin
+
+            //for all spectra or frames
+            for (int i = 0; i < rowCount; i++)
             {
                 //for all mel bands
                 for (int j = 0; j < filterBankCount; j++)
                 {
-                    double a = InverseMel(j * melBand) / linBand;       //location of lower f in Hz bin units
-                    double b = InverseMel((j + 1) * melBand) / linBand; //location of upper f in Hz bin units
-                    int ai = (int)Math.Ceiling(a);
-                    int bi = (int)Math.Floor(b);
+                    double fa = InverseMel(j * melBinWidth) / linBinWidth;       //lower f in Hz units
+                    double fb = InverseMel((j + 1) * melBinWidth) / linBinWidth; //upper f in Hz units
+                    int ai = (int)Math.Ceiling(fa);
+                    int bi = (int)Math.Floor(fb);
 
                     double sum = 0.0;
 
                     if (bi < ai)
                     {
                         //a and b are in same Hz band
-                        ai = (int)Math.Floor(a);
-                        bi = (int)Math.Ceiling(b);
-                        double ya = LinearInterpolate(ai, bi, matrix[i, ai], matrix[i, bi], a);
-                        double yb = LinearInterpolate(ai, bi, matrix[i, ai], matrix[i, bi], b);
-                        sum = MelIntegral(a * linBand, b * linBand, ya, yb);
+                        ai = (int)Math.Floor(fa);
+                        bi = (int)Math.Ceiling(fb);
+                        double ya = LinearInterpolate(ai, bi, matrix[i, ai], matrix[i, bi], fa);
+                        double yb = LinearInterpolate(ai, bi, matrix[i, ai], matrix[i, bi], fb);
+                        sum = MelIntegral(fa * linBinWidth, fb * linBinWidth, ya, yb);
                     }
                     else
                     {
                         if (ai > 0)
                         {
-                            double ya = LinearInterpolate(ai - 1, ai, matrix[i, ai - 1], matrix[i, ai], a);
-                            sum += MelIntegral(a * linBand, ai * linBand, ya, matrix[i, ai]);
+                            double ya = LinearInterpolate(ai - 1, ai, matrix[i, ai - 1], matrix[i, ai], fa);
+                            sum += MelIntegral(fa * linBinWidth, ai * linBinWidth, ya, matrix[i, ai]);
                         }
 
                         for (int k = ai; k < bi; k++)
                         {
-                            if (k + 1 >= N)
+                            if (k + 1 >= colCount)
                             {
-                                break; //to prevent out of range index with Koala recording
+                                break; //to prevent out of range index
                             }
 
-                            sum += MelIntegral(k * linBand, (k + 1) * linBand, matrix[i, k], matrix[i, k + 1]);
+                            sum += MelIntegral(k * linBinWidth, (k + 1) * linBinWidth, matrix[i, k], matrix[i, k + 1]);
                         }
 
-                        if (bi < N)
+                        if (bi < colCount)
                         {
-                            double yb = LinearInterpolate(bi, bi + 1, matrix[i, bi], matrix[i, bi + 1], b);
-                            sum += MelIntegral(bi * linBand, b * linBand, matrix[i, bi], yb);
+                            double yb = LinearInterpolate(bi, bi + 1, matrix[i, bi], matrix[i, bi + 1], fb);
+                            sum += MelIntegral(bi * linBinWidth, fb * linBinWidth, matrix[i, bi], yb);
                         }
                     }
 
-                    outData[i, j] = sum / melBand; //to obtain power per mel
-                } //end of for all mel bands
+                    outData[i, j] = sum / melBinWidth; //to obtain power per mel
+                } //end of mel bins
             }
 
-            //implicit end of for all spectra or time steps
             return outData;
         }
 
@@ -410,16 +420,16 @@ namespace AudioAnalysisTools.DSP
             double fraction = melRange / melNyquist;
             filterBankCount = (int)Math.Ceiling(filterBankCount * fraction);
 
-            int M = matrix.GetLength(0); //number of spectra or time steps
-            int N = matrix.GetLength(1); //number of bins in freq band
-            double[,] outData = new double[M, filterBankCount];
-            double linBand = freqRange / (N - 1); //(N-1) because have additional DC band
+            int rowCount = matrix.GetLength(0); //number of spectra or time steps
+            int colCount = matrix.GetLength(1); //number of bins in freq band
+            double[,] outData = new double[rowCount, filterBankCount];
+            double linBand = freqRange / (colCount - 1); //(N-1) because have additional DC band
             double melBand = melRange / filterBankCount;  //width of mel band
 
             //LoggedConsole.WriteLine(" N     Count=" + N + " freqRange=" + freqRange.ToString("F1") + " linBand=" + linBand.ToString("F3"));
             //LoggedConsole.WriteLine(" filterCount=" + filterBankCount + " melRange=" + melRange.ToString("F1") + " melBand=" + melBand.ToString("F3"));
             //for all spectra or time steps
-            for (int i = 0; i < M; i++)
+            for (int i = 0; i < rowCount; i++)
             {
                 //for all mel bands in the frequency range
                 for (int j = 0; j < filterBankCount; j++)
@@ -455,7 +465,7 @@ namespace AudioAnalysisTools.DSP
                         for (int k = ai; k < bi; k++)
                         {
                             //if ((k + 1) >= N) LoggedConsole.WriteLine("k=" + k + "  N=" + N);
-                            if (k + 1 > N)
+                            if (k + 1 > colCount)
                             {
                                 break; //to prevent out of range index
                             }
@@ -463,7 +473,7 @@ namespace AudioAnalysisTools.DSP
                             sum += MelIntegral(k * linBand, (k + 1) * linBand, matrix[i, k], matrix[i, k + 1]);
                         }
 
-                        if (bi < N - 1)
+                        if (bi < colCount - 1)
                         {
                             double yb = LinearInterpolate(bi, bi + 1, matrix[i, bi], matrix[i, bi + 1], ipB);
                             sum += MelIntegral(bi * linBand, ipB * linBand, matrix[i, bi], yb);
