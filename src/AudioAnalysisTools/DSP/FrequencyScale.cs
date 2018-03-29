@@ -12,7 +12,7 @@ namespace AudioAnalysisTools.DSP
     using TowseyLibrary;
     using WavTools;
 
-    // IMPORTANT NOTE: If you are converting Herz scale from LINEAR to OCTAVE, this conversion MUST be done BEFORE noise reduction
+    // IMPORTANT NOTE: If you are converting Herz scale from LINEAR to MEL or OCTAVE, this conversion MUST be done BEFORE noise reduction
 
     /// <summary>
     /// All the below octave scale options are designed for a final freq scale having 256 bins.
@@ -38,16 +38,43 @@ namespace AudioAnalysisTools.DSP
         /// CONSTRUCTOR
         /// Calling this constructor assumes a full-scale linear freq scale is required
         /// </summary>
-        public FrequencyScale(int nyquist, int frameSize, int hertzLinearGridInterval)
+        public FrequencyScale(int nyquist, int frameSize, int hertzGridInterval)
         {
             this.ScaleType = FreqScaleType.Linear;
             this.Nyquist = nyquist;
             this.WindowSize = frameSize;
             this.FinalBinCount = frameSize / 2;
-            this.HertzLinearGridInterval = hertzLinearGridInterval;
+            this.HertzGridInterval = hertzGridInterval;
             this.LinearBound = nyquist;
             this.BinBounds = this.GetLinearBinBounds();
-            this.GridLineLocations = GetLinearGridLineLocations(nyquist, this.HertzLinearGridInterval, this.FinalBinCount);
+            this.GridLineLocations = GetLinearGridLineLocations(nyquist, this.HertzGridInterval, this.FinalBinCount);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FrequencyScale"/> class.
+        /// CONSTRUCTOR
+        /// Calling this constructor assumes either Linear or Mel is required but not Octave
+        /// </summary>
+        public FrequencyScale(FreqScaleType type, int nyquist, int frameSize, int finalBinCount, int hertzGridInterval)
+        {
+            this.ScaleType = type;
+            this.Nyquist = nyquist;
+            this.WindowSize = frameSize;
+            this.FinalBinCount = finalBinCount;
+            this.HertzGridInterval = hertzGridInterval;
+            if (type == FreqScaleType.Mel)
+            {
+                this.BinBounds = this.GetMelBinBounds();
+                this.GridLineLocations = GetMelGridLineLocations(this.HertzGridInterval, nyquist, this.FinalBinCount);
+                this.LinearBound = 1000;
+            }
+            else
+            {
+                // linear is the default
+                this.BinBounds = this.GetLinearBinBounds();
+                this.GridLineLocations = GetLinearGridLineLocations(nyquist, this.HertzGridInterval, this.FinalBinCount);
+                this.LinearBound = nyquist;
+            }
         }
 
         /// <summary>
@@ -64,23 +91,20 @@ namespace AudioAnalysisTools.DSP
                 this.Nyquist = 11025;
                 this.WindowSize = 512;
                 this.FinalBinCount = 256;
-                this.HertzLinearGridInterval = 1000;
+                this.HertzGridInterval = 1000;
                 this.LinearBound = this.Nyquist;
                 this.BinBounds = this.GetLinearBinBounds();
-                this.GridLineLocations = GetLinearGridLineLocations(this.Nyquist, this.HertzLinearGridInterval, 256);
+                this.GridLineLocations = GetLinearGridLineLocations(this.Nyquist, this.HertzGridInterval, 256);
             }
             else if (fst == FreqScaleType.Mel)
             {
-                // Do not have Mel scale working yet.
-                LoggedConsole.WriteErrorLine("WARNING: Mel Scale needs to be debugged.");
-                LoggedConsole.WriteErrorLine("         Assigning parameters for DEFAULT Linear FREQUENCY SCALE.");
-                LoggedConsole.WriteErrorLine("         Call other CONSTUCTOR to control linear scale.");
+                LoggedConsole.WriteErrorLine("WARNING: Assigning DEFAULT parameters for MEL FREQUENCY SCALE.");
                 this.Nyquist = 11025;
                 this.WindowSize = 512;
-                this.FinalBinCount = 256;
-                this.HertzLinearGridInterval = 1000;
+                this.FinalBinCount = 128;
+                this.HertzGridInterval = 1000;
                 this.LinearBound = this.Nyquist;
-                this.GridLineLocations = GetLinearGridLineLocations(this.Nyquist, this.HertzLinearGridInterval, 256);
+                this.GridLineLocations = GetMelGridLineLocations(this.HertzGridInterval, this.Nyquist, this.FinalBinCount);
             }
             else
             {
@@ -115,9 +139,9 @@ namespace AudioAnalysisTools.DSP
         public FreqScaleType ScaleType { get; set; }
 
         /// <summary>
-        /// Gets or sets herz interval between gridlines when using a linear scale
+        /// Gets or sets herz interval between gridlines when using a linear or mel scale
         /// </summary>
-        public int HertzLinearGridInterval { get; set; }
+        public int HertzGridInterval { get; set; }
 
         /// <summary>
         /// Gets or sets top end of the linear part of an Octave Scale spectrogram
@@ -205,6 +229,27 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
+        /// Returns an [N, 2] matrix with bin ID in column 1 and lower Herz bound in column 2 but on Mel scale
+        /// </summary>
+        public int[,] GetMelBinBounds()
+        {
+            double maxMel = (int)MFCCStuff.Mel(this.Nyquist);
+            int melBinCount = this.FinalBinCount;
+            double melPerBin = maxMel / melBinCount;
+
+            var binBounds = new int[this.FinalBinCount, 2];
+
+            for (int i = 0; i < melBinCount; i++)
+            {
+                binBounds[i, 0] = i;
+                double mel = i * melPerBin;
+                binBounds[i, 1] = (int)MFCCStuff.InverseMel(mel);
+            }
+
+            return binBounds;
+        }
+
+        /// <summary>
         /// T.
         /// </summary>
         public static int[,] GetLinearGridLineLocations(int nyquist, int herzInterval, int binCount)
@@ -260,42 +305,30 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// THIS METHOD NEEDS TO BE DEBUGGED.  HAS NOT BEEN USED IN YEARS!
         /// Use this method to generate grid lines for mel scale image
-        /// Currently this method is only called from FrequncyScale.Draw1kHzLines(Bitmap bmp, bool doMelScale, int nyquist, double freqBinWidth)
-        /// and when bool doMelScale = true;
+        /// Currently this method is only called from BaseSonogram.GetImage() when bool doMelScale = true;
+        /// Frequencyscale.Draw1kHzLines(Bitmap bmp, bool doMelScale, int nyquist, double freqBinWidth)
         /// </summary>
-        public static int[,] CreateMelYaxis(int herzInterval, int nyquistFreq, int imageHt)
+        public static int[,] GetMelGridLineLocations(int gridIntervalInHertz, int nyquistFreq, int melBinCount)
         {
-            int minFreq = 0;
-            int maxFreq = nyquistFreq;
-            double minMel = MFCCStuff.Mel(minFreq);
-            int melRange = (int)(MFCCStuff.Mel(maxFreq) - minMel + 1);
-            double pixelPerMel = imageHt / (double)melRange;
+            double maxMel = (int)MFCCStuff.Mel(nyquistFreq);
+            double melPerBin = maxMel / melBinCount;
+            int gridCount = nyquistFreq / gridIntervalInHertz;
 
-            // assume mel scale grid lines will only go up to 10 kHz.
-            var vScale = new int[10, 2];
+            var gridLines = new int[gridCount, 2];
 
-            //LoggedConsole.WriteLine("minMel=" + minMel.ToString("F1") + " melRange=" + melRange + " hertzLinearGridInterval=" + hertzLinearGridInterval + " imageHt=" + imageHt + " pixelPerMel=" + pixelPerMel);
-
-            for (int f = minFreq + 1; f < maxFreq; f++)
+            for (int f = 1; f <= gridCount; f++)
             {
-                // convert freq value to pixel id
-                if (f % 1000 == 0)
+                int herz = f * 1000;
+                int melValue = (int)MFCCStuff.Mel(herz);
+                int melBinId = (int)(melValue / melPerBin);
+                if (melBinId < melBinCount)
                 {
-                    //int hzOffset  = f - this.minFreq;
-                    int melOffset = (int)(MFCCStuff.Mel(f) - minMel);
-                    int pixelId = (int)(melOffset * pixelPerMel) + 1;
-                    if (pixelId >= imageHt)
-                    {
-                        pixelId = imageHt - 1;
-                    }
-
-                    //LoggedConsole.WriteLine("f=" + f + " melOffset=" + melOffset + " pixelID=" + pixelID);
-                    vScale[0, 0] = pixelId;
-                    vScale[0, 1] = f;
+                    gridLines[f - 1, 0] = melBinId;
+                    gridLines[f - 1, 1] = herz;
                 }
             }
 
-            return vScale;
+            return gridLines;
         }
 
         public static void DrawFrequencyLinesOnImage(Bitmap bmp, int[,] gridLineLocations)
@@ -479,6 +512,58 @@ namespace AudioAnalysisTools.DSP
             TestTools.FileEqualityTest(testName, resultFile, expectedTestFile);
 
             LoggedConsole.WriteLine("Completed Linear Frequency Scale test");
+            Console.WriteLine("\n\n");
+        }
+
+        /// <summary>
+        /// METHOD TO CHECK IF SPECIFIED MEL FREQ SCALE IS WORKING
+        /// Check it on standard one minute recording.
+        /// </summary>
+        public static void TESTMETHOD_MelFrequencyScale()
+        {
+            var recordingPath = @"C:\SensorNetworks\SoftwareTests\TestRecordings\BAC2_20071008-085040.wav";
+            var outputDir = @"C:\SensorNetworks\SoftwareTests\TestFrequencyScale".ToDirectoryInfo();
+            var expectedResultsDir = Path.Combine(outputDir.FullName, TestTools.ExpectedResultsDir).ToDirectoryInfo();
+            var outputImagePath = Path.Combine(outputDir.FullName, "melScaleSonogram.png");
+            var opFileStem = "BAC2_20071008";
+
+            var recording = new AudioRecording(recordingPath);
+
+            int nyquist = 11025;
+            int frameSize = 1024;
+            int finalBinCount = 256;
+            int hertzInterval = 1000;
+            FreqScaleType scaleType = FreqScaleType.Mel;
+            var freqScale = new FrequencyScale(scaleType, nyquist, frameSize, finalBinCount, hertzInterval);
+            var fst = freqScale.ScaleType;
+
+            var sonoConfig = new SonogramConfig
+            {
+                WindowSize = frameSize,
+                WindowOverlap = 0.2,
+                SourceFName = recording.BaseName,
+                DoMelScale = (scaleType == FreqScaleType.Mel) ? true : false,
+                MelBinCount = (scaleType == FreqScaleType.Mel) ? finalBinCount : frameSize / 2,
+
+                //NoiseReductionType = NoiseReductionType.Standard,
+                NoiseReductionType = NoiseReductionType.None,
+                NoiseReductionParameter = 0.0,
+            };
+
+            var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
+
+            // DO NOISE REDUCTION
+            var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
+            image.Save(outputImagePath, ImageFormat.Png);
+
+            // DO FILE EQUALITY TEST
+            string testName = "MelTest";
+            var expectedTestFile = new FileInfo(Path.Combine(expectedResultsDir.FullName, "MelFrequencyScaleTest.EXPECTED.json"));
+            var resultFile = new FileInfo(Path.Combine(outputDir.FullName, opFileStem + "MelFrequencyLinearScaleTestResults.json"));
+            Acoustics.Shared.Csv.Csv.WriteMatrixToCsv(resultFile, freqScale.GridLineLocations);
+            TestTools.FileEqualityTest(testName, resultFile, expectedTestFile);
+
+            LoggedConsole.WriteLine("Completed Mel Frequency Scale test");
             Console.WriteLine("\n\n");
         }
 
