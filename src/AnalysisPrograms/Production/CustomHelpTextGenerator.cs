@@ -20,12 +20,7 @@ namespace AnalysisPrograms.Production
     /// </summary>
     public class CustomHelpTextGenerator : IHelpTextGenerator
     {
-        /// <summary>
-        /// Gets a singleton instance of <see cref="CustomHelpTextGenerator" />.
-        /// </summary>
-        public static CustomHelpTextGenerator Singleton { get; } = new CustomHelpTextGenerator();
-
-        private CustomHelpTextGenerator()
+        public CustomHelpTextGenerator()
         {
         }
 

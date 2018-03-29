@@ -95,7 +95,7 @@
       <HintPath>..\..\packages\MathNet.Numerics.3.20.2\lib\net40\MathNet.Numerics.dll</HintPath>
     </Reference>
     <Reference Include="McMaster.Extensions.CommandLineUtils, Version=2.2.0.0, Culture=neutral, PublicKeyToken=6f71cb76b82f055d, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\McMaster.Extensions.CommandLineUtils.1.0.0-CI00005\lib\net45\McMaster.Extensions.CommandLineUtils.dll</HintPath>
+      <HintPath>..\..\packages\McMaster.Extensions.CommandLineUtils.2.2.0-rc\lib\net45\McMaster.Extensions.CommandLineUtils.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Data.Sqlite, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">

@@ -180,10 +180,7 @@ namespace AnalysisPrograms
 
         internal static void PrintUsage(string message, Usages usageStyle, string commandName = null)
         {
-            //Contract.Requires(usageStyle != Usages.Single || commandName != null);q
-            // HACK: override help text generator here because we can't change it in MainEntry -- yet
-            // https://github.com/natemcmaster/CommandLineUtils/issues/52
-            CommandLineApplication.HelpTextGenerator = CustomHelpTextGenerator.Singleton;
+            //Contract.Requires(usageStyle != Usages.Single || commandName != null);
 
             var root = CommandLineApplication.Root();
 
@@ -217,7 +214,7 @@ namespace AnalysisPrograms
 
                 using (var sb = new StringWriter())
                 {
-                    CustomHelpTextGenerator.Singleton.FormatCommands(sb, commands);
+                    ((CustomHelpTextGenerator)CommandLineApplication.HelpTextGenerator).FormatCommands(sb, commands);
 
                     LoggedConsole.WriteLine(sb.ToString());
                 }
