@@ -529,7 +529,7 @@ namespace AudioAnalysisTools.DSP
 
             var recording = new AudioRecording(recordingPath);
 
-            int nyquist = 11025;
+            int nyquist = recording.Nyquist;
             int frameSize = 1024;
             int finalBinCount = 256;
             int hertzInterval = 1000;
@@ -552,7 +552,7 @@ namespace AudioAnalysisTools.DSP
 
             var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
 
-            // DO NOISE REDUCTION
+            // DRAW SPECTROGRAM
             var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
             image.Save(outputImagePath, ImageFormat.Png);
 

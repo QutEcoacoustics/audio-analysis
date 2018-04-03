@@ -1032,11 +1032,11 @@ namespace AudioAnalysisTools.DSP
                     m = NoiseReduce_FlattenAndTrim(m, parameter);
                     break;
                 case NoiseReductionType.Mean:
-                    Log.WriteIfVerbose("\tNoise reduction: PEAK_TRACKING. Dynamic range= " + parameter);
+                    Log.WriteIfVerbose("\tNoise reduction: Mean Subtraction");
                     m = NoiseReduce_Mean(m, parameter);
                     break;
                 case NoiseReductionType.Median:
-                    Log.WriteIfVerbose("\tNoise reduction: PEAK_TRACKING. Dynamic range= " + parameter);
+                    Log.WriteIfVerbose("\tNoise reduction: Median Subtraction");
                     m = NoiseReduce_Median(m, parameter);
                     break;
                 default:
@@ -1107,39 +1107,30 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// The passed matrix is a sonogram with values in dB. wrt 0dB.
+        /// The passed matrix is a sonogram with values in dB
         /// </summary>
-        public static double[,] NoiseReduce_Mean(double[,] matrix, double dynamicRange)
+        public static double[,] NoiseReduce_Mean(double[,] matrix, double nhBgThreshold)
         {
             double[,] mnr = matrix;
-            int startFrameCount = 9;
-            int smoothingWindow = 7;
+            double[] meanNoise = NoiseProfile.CalculateMeanNoiseProfile(mnr).NoiseMean;
 
-            double[] modalNoise = NoiseProfile.CalculateModalNoiseUsingStartFrames(mnr, startFrameCount);
-            modalNoise = DataTools.filterMovingAverage(modalNoise, smoothingWindow); //smooth the noise profile
-            mnr = NoiseReduce_Standard(matrix, modalNoise, DefaultNhBgThreshold);
-            mnr = SetDynamicRange(mnr, 0.0, dynamicRange);
-
-            const double ridgeThreshold = 0.1;
-            byte[,] binary = RidgeDetection.IdentifySpectralRidges(mnr, ridgeThreshold);
-            double[,] op = RidgeDetection.SpectralRidges2Intensity(binary, mnr);
-            return op;
+            //smooth the noise profile
+            meanNoise = DataTools.filterMovingAverage(meanNoise, width: 3);
+            mnr = NoiseReduce_Standard(mnr, meanNoise, nhBgThreshold);
+            return mnr;
         }
 
-        public static double[,] NoiseReduce_Median(double[,] matrix, double dynamicRange)
+        public static double[,] NoiseReduce_Median(double[,] matrix, double nhBackgroundThreshold)
         {
             double[,] mnr = matrix;
-            int startFrameCount = 9;
+            var profile = NoiseProfile.CalculateMedianNoiseProfile(mnr);
+            double[] medianNoise = profile.NoiseMedian;
 
-            mnr = ImageTools.WienerFilter(mnr, 11);
-
-            double[] modalNoise = NoiseProfile.CalculateModalNoiseUsingStartFrames(mnr, startFrameCount);
-            modalNoise = DataTools.filterMovingAverage(modalNoise, 5); //smooth the noise profile
-            mnr = NoiseReduce_Standard(matrix, modalNoise, DefaultNhBgThreshold);
-            mnr = SetDynamicRange(mnr, 0.0, dynamicRange);
-
-            double[,] peaks = RidgeDetection.IdentifySpectralPeaks(mnr);
-            return peaks;
+            //smooth the noise profile
+            medianNoise = DataTools.filterMovingAverage(medianNoise, width: 3);
+            mnr = NoiseReduce_Standard(mnr, medianNoise, DefaultNhBgThreshold);
+            mnr = RemoveNeighbourhoodBackgroundNoise(mnr, nhBackgroundThreshold);
+            return mnr;
         }
 
         // #############################################################################################################################
