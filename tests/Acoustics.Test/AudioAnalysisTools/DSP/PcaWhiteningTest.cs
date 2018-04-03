@@ -54,11 +54,11 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             var outputNormAmpImagePath = Path.Combine(resultDir, "NormAmplitudeSpectrogram.png");
             var outputMelImagePath = Path.Combine(resultDir, "MelScaleSpectrogram.png");
             var outputNormMelImagePath = Path.Combine(resultDir, "NormalizedMelScaleSpectrogram.png");
-            var outputNoiseReducedImagePath = Path.Combine(resultDir, "NoiseReducedSpectrogram.png");
+            var outputNoiseReducedMelImagePath = Path.Combine(resultDir, "NoiseReducedMelSpectrogram.png");
             var outputWhitenedSpectrogramPath = Path.Combine(resultDir, "WhitenedSpectrogram.png");
             var outputReSpecImagePath = Path.Combine(resultDir, "ReconstrcutedSpectrogram.png");
 
-            var outputImagePath = Path.Combine(resultDir, "spec.png");
+            //var outputImagePath = Path.Combine(resultDir, "spec.png");
 
             /* Exp5
             var projectionMatrixPath = Path.Combine(resultDir, "ProjectionMatrix");
@@ -397,7 +397,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             //check whether there is any file in the folder/subfolders
             if (Directory.GetFiles(folderPath, "*", SearchOption.AllDirectories).Length == 0)
             {
-                throw new ArgumentException("The folder of recording is empty...");
+                throw new ArgumentException("The folder of recordings is empty...");
             }
 
             /*
@@ -414,10 +414,11 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             int nyquist = nq; //11025;
             int frameSize = 1024;
-            int finalBinCount = 128; // 256;
+            int finalBinCount = 256; //100; //40; //200; // 128; //
             int hertzInterval = 1000;
             FreqScaleType scaleType = FreqScaleType.Mel;
             var freqScale = new FrequencyScale(scaleType, nyquist, frameSize, finalBinCount, hertzInterval);
+            var fst = freqScale.ScaleType;
 
             var sonoConfig = new SonogramConfig
             {
@@ -428,13 +429,13 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                 MelBinCount = (scaleType == FreqScaleType.Mel) ? finalBinCount : frameSize / 2,
                 //NoiseReductionType = NoiseReductionType.Standard,
                 NoiseReductionType = NoiseReductionType.None,
-                NoiseReductionParameter = 0.0,
+                //NoiseReductionParameter = 2.0, //0.0,
             };
 
             List<double[,]> randomPatches = new List<double[,]>();
             int patchWidth = finalBinCount; //256; //16; //full band patches
-            int patchHeight = 4; //16; // 2; //
-            int noOfRandomPatches = 10; //10; //100; //500; //
+            int patchHeight = 4; //16; // 2; // 4; // 6; //
+            int noOfRandomPatches = 20; //10; //100; //500; //
             //int fileCount = Directory.GetFiles(folderPath, "*.wav").Length;
 
 
@@ -466,7 +467,9 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                 var noiseReducedImage = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "NOISEREDUCEDSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
                 noiseReducedImage.Save(outputNoiseReducedImagePath, ImageFormat.Png);
                 */
-                sonogram.Data = PcaWhitening.NoiseReduction(sonogram.Data);
+
+                //sonogram.Data = PcaWhitening.NoiseReduction(sonogram.Data); ****
+
                 //sonogram.Data = dataMatrix2;
                 //var noiseReducedImage = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "NOISEREDUCEDSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
                 //noiseReducedImage.Save(outputNoiseReducedImagePath, ImageFormat.Png);
@@ -475,7 +478,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                 //int rows = sonogram.Data.GetLength(0); //3247
                 //int cols = sonogram.Data.GetLength(1); //256
 
-                randomPatches.Add(PatchSampling.GetPatches(sonogram.Data, patchWidth, patchHeight, noOfRandomPatches, "random").ToMatrix());
+                randomPatches.Add(PatchSampling.GetPatches(sonogram.Data, patchWidth, patchHeight, noOfRandomPatches, "overlapped random").ToMatrix());
             }
 
             //convert list of random patches matrices to one matrix
@@ -483,6 +486,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             var actual = PcaWhitening.Whitening(allPatchM);
 
+            //Processing the target spectrogram
             var recording2Path = PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav");
             var recording2 = new AudioRecording(recording2Path);
             /*
@@ -504,11 +508,19 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             var sonogram2 = new SpectrogramStandard(sonoConfig, recording2.WavReader);
 
+            // DO DRAW SPECTROGRAM
+            var image = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "MELSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
+            image.Save(outputMelImagePath, ImageFormat.Png);
+
             sonogram2.Data = PcaWhitening.RmsNormalization(sonogram2.Data);
+            var image2 = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "NORMALISEDMELSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
+            image2.Save(outputNormMelImagePath, ImageFormat.Png);
             //var sonogram2 = new SpectrogramStandard(amplitudeSpectrogram2);
             //var standImage2 = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "SPECTROGRAM: " + fst2.ToString(), freqScale2.GridLineLocations);
             //standImage2.Save(outputLinScaImagePath, ImageFormat.Png);
             sonogram2.Data = PcaWhitening.NoiseReduction(sonogram2.Data);
+            var image3 = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "NOISEREDUCEDMELSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
+            image3.Save(outputNoiseReducedMelImagePath, ImageFormat.Png);
             //sonogram2.Data = dataMatrix;
             //int patchWidth2 = 16; //32; //
             //int patchHeight2 = 16; //32; //
@@ -524,8 +536,8 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             // DO DRAW SPECTROGRAM
             //var fst = freqScale.ScaleType;
-            var respecImage = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "SPECTROGRAM: " + freqScale.ScaleType.ToString(), freqScale.GridLineLocations);
-            respecImage.Save(outputImagePath, ImageFormat.Png);
+            var respecImage = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "RECONSTRUCTEDSPECTROGRAM: " + freqScale.ScaleType.ToString(), freqScale.GridLineLocations);
+            respecImage.Save(outputReSpecImagePath, ImageFormat.Png);
 
             //var respecImage2 = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "RECONSTRUCTEDSPECTROGRAM: " + fst2.ToString(), freqScale2.GridLineLocations);
             //respecImage2.Save(outputReSpecImagePath, ImageFormat.Png);

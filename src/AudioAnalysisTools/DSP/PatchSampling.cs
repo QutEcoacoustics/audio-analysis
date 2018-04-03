@@ -74,6 +74,43 @@ namespace AudioAnalysisTools.DSP
                         patches.Add(MatrixTools.Matrix2Array(submatrix));
                     }
                 }
+                else
+                {
+                    if (samplingMethod == "overlapped random")
+                    {
+                        int no = 0;
+                        while (no < numOfPatches)
+                        {
+                            //First select a random patch
+                            int rInt = rn.Next(0, rows - patchHeight); //selecting a random number from the height of the matrix
+                            int cInt = rn.Next(0, cols - patchWidth); //selecting a random number from the width of the matrix
+                            double[,] submatrix = MatrixTools.Submatrix(spectrogram, rInt, cInt,
+                                rInt + patchHeight - 1, cInt + patchWidth - 1);
+                            //convert a matrix to a vector by concatenating columns and
+                            //store it to the array of vectors
+                            patches.Add(MatrixTools.Matrix2Array(submatrix));
+                            no++;
+
+                            //shifting the row
+                            //note that we don't shift column as we select full band patches
+                            rInt = rInt + 1;
+                            //Second, slide the patch window (rInt+1) to select the next patch
+                            double[,] submatrix2 = MatrixTools.Submatrix(spectrogram, rInt, cInt,
+                                rInt + patchHeight - 1, cInt + patchWidth - 1);
+                            patches.Add(MatrixTools.Matrix2Array(submatrix2));
+                            no++;
+
+                            /*
+                            rInt = rInt + 2;
+                            //Second, slide the patch window (rInt+1) to select the next patch
+                            double[,] submatrix3 = MatrixTools.Submatrix(spectrogram, rInt, cInt,
+                                rInt + patchHeight - 1, cInt + patchWidth - 1);
+                            patches.Add(MatrixTools.Matrix2Array(submatrix3));
+                            no++;
+                            */
+                        }
+                    }
+                }
             }
 
             return patches.ToArray();
