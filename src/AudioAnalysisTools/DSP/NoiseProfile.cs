@@ -5,6 +5,8 @@
 namespace AudioAnalysisTools.DSP
 {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using TowseyLibrary;
 
     /// <summary>
@@ -15,6 +17,10 @@ namespace AudioAnalysisTools.DSP
         public double[] NoiseMode { get; set; }
 
         public double[] NoiseSd { get; set; }
+
+        public double[] NoiseMean { get; set; }
+
+        public double[] NoiseMedian { get; set; }
 
         public double[] NoiseThresholds { get; set; }
 
@@ -64,6 +70,62 @@ namespace AudioAnalysisTools.DSP
                 NoiseThresholds = noiseThreshold,
                 MinDb = minsOfBins,
                 MaxDb = maxsOfBins,
+            };
+            return profile;
+        }
+
+        /// <summary>
+        /// (1) MEAN SUBTRACTION
+        /// Assumes the passed matrix is a spectrogram. i.e. rows=frames, cols=freq bins.
+        /// Returns the noise profile over freq bins. i.e. one noise value per freq bin.
+        /// </summary>
+        /// <param name="matrix">the spectrogram with origin top-left</param>
+        public static NoiseProfile CalculateMeanNoiseProfile(double[,] matrix)
+        {
+            int colCount = matrix.GetLength(1);
+            double[] noiseMean = new double[colCount];
+            for (int col = 0; col < colCount; col++)
+            {
+                double[] freqBin = MatrixTools.GetColumn(matrix, col);
+                noiseMean[col] = freqBin.Average();
+            }
+
+            var profile = new NoiseProfile()
+            {
+                NoiseMean = noiseMean,
+                NoiseSd = null,
+                NoiseThresholds = null,
+                MinDb = null,
+                MaxDb = null,
+            };
+            return profile;
+        }
+
+        /// <summary>
+        /// (1) MEDIAN SUBTRACTION
+        /// Assumes the passed matrix is a spectrogram. i.e. rows=frames, cols=freq bins.
+        /// Returns the noise profile over freq bins. i.e. one noise value per freq bin.
+        /// </summary>
+        /// <param name="matrix">the spectrogram with origin top-left</param>
+        public static NoiseProfile CalculateMedianNoiseProfile(double[,] matrix)
+        {
+            int rowCount = matrix.GetLength(0);
+            int colCount = matrix.GetLength(1);
+            double[] noiseMedian = new double[colCount];
+            for (int col = 0; col < colCount; col++)
+            {
+                double[] freqBin = MatrixTools.GetColumn(matrix, col);
+                Array.Sort(freqBin);
+                noiseMedian[col] = freqBin[rowCount / 2];
+            }
+
+            var profile = new NoiseProfile()
+            {
+                NoiseMedian = noiseMedian,
+                NoiseSd = null,
+                NoiseThresholds = null,
+                MinDb = null,
+                MaxDb = null,
             };
             return profile;
         }

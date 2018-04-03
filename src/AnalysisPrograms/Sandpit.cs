@@ -85,14 +85,14 @@ namespace AnalysisPrograms
                 //TEST_FilterMovingAverage();
                 //TestImageProcessing();
                 //TestMatrix3dClass();
-                TestsOfFrequencyScales();
+                //TestsOfFrequencyScales();
                 //TestReadingFileOfSummaryIndices();
                 //TestStructureTensor();
                 //TestWavelets();
                 //TestFft2D();
                 //TestTernaryPlots();
                 //TestDirectorySearchAndFileSearch();
-                //TestNoiseReduction();
+                TestNoiseReduction();
 
                 Console.WriteLine("# Finished Sandpit Task!    Press any key to exit.");
                 return this.Ok();
@@ -116,7 +116,9 @@ namespace AnalysisPrograms
             var g = Graphics.FromImage(image);
             g.Clear(Color.White);
 
-            DirectoryInfo dir = new DirectoryInfo(@"H:\Documents\SensorNetworks\Students\AniekRoelofs\Results 22Feb2018\Complete\SummaryIndices");
+            DirectoryInfo dir =
+                new DirectoryInfo(
+                    @"H:\Documents\SensorNetworks\Students\AniekRoelofs\Results 22Feb2018\Complete\SummaryIndices");
             string fileName = "Cluster60Sequence_Gympie2015June22_SuI.csv";
             string path = Path.Combine(dir.FullName, fileName);
 
@@ -136,8 +138,7 @@ namespace AnalysisPrograms
                         int minuteId = counter % width;
                         image.SetPixel(minuteId, day, Color.Red);
                     }
-                    else
-                    if (clusterId == int.Parse(words[0]))
+                    else if (clusterId == int.Parse(words[0]))
                     {
                         int day = counter / width;
                         int minuteId = int.Parse(words[1]);
@@ -164,12 +165,17 @@ namespace AnalysisPrograms
             int height = 400;
             int width = 1440;
 
-            Color[] colorchart = { Color.Red, Color.Orange, Color.Green, Color.Aqua, Color.Blue, Color.BlueViolet, Color.Black, Color.DarkMagenta, Color.LawnGreen, Color.DarkRed};
+            Color[] colorchart =
+            {
+                Color.Red, Color.Orange, Color.Green, Color.Aqua, Color.Blue, Color.BlueViolet, Color.Black,
+                Color.DarkMagenta, Color.LawnGreen, Color.DarkRed
+            };
             var image = new Bitmap(width, height, PixelFormat.Format24bppRgb);
             var g = Graphics.FromImage(image);
             g.Clear(Color.White);
 
-            DirectoryInfo dir = new DirectoryInfo(@"H:\Documents\SensorNetworks\Students\AniekRoelofs\Results 14March2018");
+            DirectoryInfo dir =
+                new DirectoryInfo(@"H:\Documents\SensorNetworks\Students\AniekRoelofs\Results 14March2018");
             string fileName = "Cluster60_Hidstate10_Gympie2015June22_SuI_bestof4.csv";
             string path = Path.Combine(dir.FullName, fileName);
             int clusterSize = 0;
@@ -191,8 +197,7 @@ namespace AnalysisPrograms
                     {
                         image.SetPixel(minuteOfday, day, Color.Gray);
                     }
-                    else
-                    if (requiredCusterId == int.Parse(words[1]))
+                    else if (requiredCusterId == int.Parse(words[1]))
                     {
                         clusterSize++;
                         image.SetPixel(minuteOfday, day, colorchart[hidStateId - 1]);
@@ -204,7 +209,8 @@ namespace AnalysisPrograms
                 Console.WriteLine("Counter=" + minCounter);
             } //using
 
-            g.DrawString("Cluster" + requiredCusterId + " Size=" + clusterSize, new Font("Tahoma", 20), Brushes.Black, new PointF(10, 10));
+            g.DrawString("Cluster" + requiredCusterId + " Size=" + clusterSize, new Font("Tahoma", 20), Brushes.Black,
+                new PointF(10, 10));
 
             string imageName = $"cluster{requiredCusterId}.png";
             string savePath = Path.Combine(dir.FullName + "\\ClusterImages", imageName);
@@ -1008,7 +1014,7 @@ namespace AnalysisPrograms
             string dir =
                 @"H:\Documents\SensorNetworks\MyPapers\2017_DavidWatson\CaseStudy1 Liz\MachineLearningExercise";
             string fileName = "LizZnidersic_TasmanIsTractor_20151111__Towsey.Acoustic";
-            string[] indexNames = { "ACI", "ENT", "POW", "SPT", "RHZ" };
+            string[] indexNames = { "ACI", "ENT", "POW", "SPT", "RHZ"};
             var framecount =
                 1440; // could read this from first matrix but easier to declare it. Need it for reading in tagged data.
             int startOffsetMinute = 47; // 24 hours of recording starts at 12:47am. Need this as an offset.
@@ -1209,7 +1215,7 @@ namespace AnalysisPrograms
         {
             // FrequencyScale.TESTMETHOD_LinearFrequencyScaleDefault();
             // FrequencyScale.TESTMETHOD_LinearFrequencyScale();
-            FrequencyScale.TESTMETHOD_MelFrequencyScale();
+            // FrequencyScale.TESTMETHOD_MelFrequencyScale();
             // FrequencyScale.TESTMETHOD_OctaveFrequencyScale1();
             // FrequencyScale.TESTMETHOD_OctaveFrequencyScale2();
 
@@ -1237,7 +1243,7 @@ namespace AnalysisPrograms
         {
             int sampleRate = 22050;
             double duration = 420; // signal duration in seconds = 7 minutes
-            int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
+            int[] harmonics = { 500, 1000, 2000, 4000, 8000};
             var recording = DspFilters.GenerateTestRecording(sampleRate, duration, harmonics, WaveType.Consine);
             var outputDirectory = @"C:\SensorNetworks\SoftwareTests\TestLongDurationRecordings";
             var recordingPath = Path.Combine(outputDirectory, "TemporaryRecording.wav");
@@ -1346,7 +1352,7 @@ namespace AnalysisPrograms
                 SmallAreaThreshold = 100,
             };
 
-            double[] thresholdLevels = { 30.0, 25.0, 20.0, 15.0, 10.0, 5.0 };
+            double[] thresholdLevels = { 30.0, 25.0, 20.0, 15.0, 10.0, 5.0};
             var imageList = new List<Image>();
 
             foreach (double th in thresholdLevels)
@@ -1534,7 +1540,7 @@ namespace AnalysisPrograms
         public static void TestTernaryPlots()
         {
             //string[] keys = { "BGN", "POW", "EVN"};
-            string[] keys = { "ACI", "ENT", "EVN" };
+            string[] keys = { "ACI", "ENT", "EVN"};
 
             FileInfo[] indexFiles =
             {
@@ -1697,7 +1703,7 @@ namespace AnalysisPrograms
 
                 //double[] bounds = { 0.0, 3.0, 6.0 };
                 //double[] bounds = { 0.0, 2.0, 4.0, 8.0 };
-                double[] bounds = { 0.0, 2.0, 4.0, 6.0, 8.0, 10.0 }; // noSkew
+                double[] bounds = { 0.0, 2.0, 4.0, 6.0, 8.0, 10.0}; // noSkew
 
                 //double[] bounds = { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0 };
                 //double[] bounds = { 0.0, 1.0, 2.0, 4.0, 6.0, 10.0 }; // skew left
@@ -1740,7 +1746,7 @@ namespace AnalysisPrograms
                 for (int i = 0; i < fileCount; i++)
                 {
                     //ID0001_Species01.EVN.csv
-                    char[] delimiters = { '.', 's' };
+                    char[] delimiters = { '.', 's'};
                     string fileName = filePaths[i].Name;
                     string[] parts = fileName.Split(delimiters);
                     int speciesId = int.Parse(parts[1]);
@@ -1886,7 +1892,8 @@ namespace AnalysisPrograms
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Rain\DM420036_min602.wav";   //NEGATIVE  rain
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Noise\BAC3_20070924-153657_noise.wav";  //NEGATIVE  noise
             string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\Compilation6_Mono.mp3"; //FROG COMPILATION
-            string configPath = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.RheobatrachusSilus.cfg";
+            string configPath =
+                @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.RheobatrachusSilus.cfg";
             string outputDir = @"C:\SensorNetworks\Output\Frogs\";
         }
 
@@ -1908,94 +1915,105 @@ namespace AnalysisPrograms
         }
 
         /// <summary>
+        /// Experiments with noise reduction of spectrograms
         /// THIS METHOD IS JUST A CONTAINER FOR TESTING SNIPPETS OF CODE TO DO WITH NOISE REMOVAL FROM SPECTROGRAMS
-        /// the following libraries are required to run these tests. They are in the SANDPIT class
-        /// using System.Drawing;
-        /// using System.Drawing.Imaging;
-        /// using System.IO;
-        /// using AudioAnalysisTools;
+        /// THE FOLLOWING CODE tests the use of the Noise Reduction types listed in the enum SNR.NoiseReductionType
+        /// The enum types include NONE, STANDARD, MODAL, Binary, etc.
         /// </summary>
         public static void TestNoiseReduction()
         {
             //#######################################################################################################################################
-            // experiments with noise reduction of spectrograms
-            //THE FOLLOWING CODE tests the use of the Noise Reduction types listed in the enum SNR.NoiseReductionType
-            //The enum types include NONE, STANDARD, MODAL, Binary, etc.
-            //COPY THE FOLLOWING CODE INTO THE CLASS Sandpit.cs to do the testing.
-            if (true)
+            //string wavFilePath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
+            string wavFilePath = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC\BAC2_20071008-085040.wav";
+            string outputDir = @"C:\SensorNetworks\Output\Test\Test2018";
+            //string profileName = "Median";
+            //string profileName = "Mean";
+            string profileName = "Modal";
+            string imageFname = "test_" + profileName + "NoiseRemoval.png";
+
+            string imagePath = Path.Combine(outputDir, imageFname);
+            string imageViewer = @"C:\Windows\system32\mspaint.exe";
+
+            var recording = new AudioRecording(wavFilePath);
+
+            int nyquist = recording.Nyquist;
+            int frameSize = 1024;
+            int finalBinCount = 512;
+            int hertzInterval = 1000;
+            FreqScaleType scaleType = FreqScaleType.Linear;
+
+            //FreqScaleType scaleType = FreqScaleType.Mel;
+            var freqScale = new FrequencyScale(scaleType, nyquist, frameSize, finalBinCount, hertzInterval);
+
+            var fst = freqScale.ScaleType;
+            var config = new SonogramConfig
             {
-                //string wavFilePath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
-                string wavFilePath = @"C:\SensorNetworks\WavFiles\SunshineCoast\DM420036_min407.wav";
-                string outputDir = @"C:\SensorNetworks\Output\Test";
-                string imageFname = "test3.png";
+                NoiseReductionType = NoiseReductionType.Modal,
+                //NoiseReductionType = NoiseReductionType.Mean,
+                //NoiseReductionType = NoiseReductionType.Median,
+                WindowOverlap = 0.0,
+                WindowSize = frameSize,
+            };
+            config.NoiseReductionParameter = 0.0; // backgroundNeighbourhood noise reduction in dB
 
-                //string imagePath = Path.Combine(outputDir, imageFname);
-                //string imageViewer = @"C:\Windows\system32\mspaint.exe";
+            // DRAW SPECTROGRAM
+            var spectrogram = new SpectrogramStandard(config, recording.WavReader);
+            var image = spectrogram.GetImageFullyAnnotated(spectrogram.GetImage(), "SPECTROGRAM: " + fst + " " + profileName, freqScale.GridLineLocations);
+            image.Save(imagePath, ImageFormat.Png);
+            FileInfo fiImage = new FileInfo(imagePath);
 
-                //var recording = new AudioRecording(wavFilePath);
-                //var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.STANDARD, WindowOverlap = 0.0 };
-                //config.NoiseReductionParameter = 0.0; // backgroundNeighbourhood noise reduction in dB
-                //var spectrogram = new SpectralSonogram(config, recording.GetWavReader());
-                //Plot scores = null;
-                //double eventThreshold = 0.5; // dummy variable - not used
-                //Image image = DrawSonogram(spectrogram, scores, null, eventThreshold);
-                //image.Save(imagePath, ImageFormat.Png);
-                //FileInfo fiImage = new FileInfo(imagePath);
-                //if (fiImage.Exists) // Display the image using MsPaint.exe
-                //{
-                //    TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(imageViewer);
-                //    process.Run(imagePath, outputDir);
-                //}
-            } // if(true)
-
-            //#######################################################################################################################################
-            //THE FOLLOWING CODE tests the effect of changing the order of 1) CONVERT TO dB 2) NOISE REMOVAL
-            //                                                     versus  1) NOISE REMOVAL 2) CONVERT TO dB.
-            //THe results are very different. The former is GOOD. The latter is A MESS.
-            if (true)
+            // Display the image using MsPaint.exe if image file exists
+            if (fiImage.Exists)
             {
-                //string wavFilePath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
-                string wavFilePath = @"C:\SensorNetworks\WavFiles\SunshineCoast\DM420036_min407.wav";
-                string outputDir = @"C:\SensorNetworks\Output\Test";
-                string imageFname = "test3.png";
-
-                //string imagePath = Path.Combine(outputDir, imageFname);
-                //string imageViewer = @"C:\Windows\system32\mspaint.exe";
-
-                //var recording = new AudioRecording(wavFilePath);
-                //int frameSize = 512;
-                //double windowOverlap = 0.0;
-                //// i: EXTRACT ENVELOPE and FFTs
-                //var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, recording.SampleRate, frameSize, windowOverlap);
-
-                //// get amplitude spectrogram and remove the DC column ie column zero.
-                //double[,] spectrogramData = results2.Spectrogram;
-                //spectrogramData = MatrixTools.Submatrix(spectrogramData, 0, 1, spectrogramData.GetLength(0) - 1, spectrogramData.GetLength(1) - 1);
-                //double epsilon = Math.Pow(0.5, 16 - 1);
-                //double windowPower = frameSize * 0.66; //power of a rectangular window =frameSize. Hanning is less
-
-                //// convert spectrum to decibels BEFORE noise removal
-                ////spectrogramData = Speech.DecibelSpectra(spectrogramData, windowPower, recording.SampleRate, epsilon);
-
-                //// vi: remove background noise from the spectrogram
-                //double SD_COUNT = 0.1;
-                //double SpectralBgThreshold = 0.003; // SPECTRAL AMPLITUDE THRESHOLD for smoothing background
-                //SNR.NoiseProfile profile = SNR.CalculateNoiseProfile(spectrogramData, SD_COUNT); //calculate noise profile - assumes a dB spectrogram.
-                //double[] noiseValues = DataTools.filterMovingAverage(profile.noiseThreshold, 7);      // smooth the noise profile
-                //spectrogramData = SNR.NoiseReduce_Standard(spectrogramData, noiseValues, SpectralBgThreshold);
-
-                //// convert spectrum to decibels AFTER noise removal
-                ////spectrogramData = Speech.DecibelSpectra(spectrogramData, windowPower, recording.SampleRate, epsilon);
-
-                //spectrogramData = MatrixTools.MatrixRotate90Anticlockwise(spectrogramData);
-                //ImageTools.DrawMatrix(spectrogramData, imagePath);
-                //FileInfo fiImage = new FileInfo(imagePath);
-                //if (fiImage.Exists) // Display the image using MsPaint.exe
-                //{
-                //    TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(imageViewer);
-                //    process.Run(imagePath, outputDir);
-                //}
+                TowseyLibrary.ProcessRunner process = new TowseyLibrary.ProcessRunner(imageViewer);
+                process.Run(imagePath, outputDir);
             }
+
+            // #################################################################################################
+            // THE FOLLOWING CODE tests the effect of changing the order of 1) CONVERT TO dB 2) NOISE REMOVAL
+            //                                                     versus  1) NOISE REMOVAL 2) CONVERT TO dB.
+            // THe results are very different. The former is GOOD. The latter is A MESS.
+            //string wavFilePath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
+            //string wavFilePath = @"C:\SensorNetworks\WavFiles\SunshineCoast\DM420036_min407.wav";
+            //string outputDir = @"C:\SensorNetworks\Output\Test";
+            //string imageFname = "test3.png";
+
+            //string imagePath = Path.Combine(outputDir, imageFname);
+            //string imageViewer = @"C:\Windows\system32\mspaint.exe";
+
+            //var recording = new AudioRecording(wavFilePath);
+            //int frameSize = 512;
+            //double windowOverlap = 0.0;
+            //// i: EXTRACT ENVELOPE and FFTs
+            //var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, recording.SampleRate, frameSize, windowOverlap);
+
+            //// get amplitude spectrogram and remove the DC column ie column zero.
+            //double[,] spectrogramData = results2.Spectrogram;
+            //spectrogramData = MatrixTools.Submatrix(spectrogramData, 0, 1, spectrogramData.GetLength(0) - 1, spectrogramData.GetLength(1) - 1);
+            //double epsilon = Math.Pow(0.5, 16 - 1);
+            //double windowPower = frameSize * 0.66; //power of a rectangular window =frameSize. Hanning is less
+
+            //// convert spectrum to decibels BEFORE noise removal
+            ////spectrogramData = Speech.DecibelSpectra(spectrogramData, windowPower, recording.SampleRate, epsilon);
+
+            //// vi: remove background noise from the spectrogram
+            //double SD_COUNT = 0.1;
+            //double SpectralBgThreshold = 0.003; // SPECTRAL AMPLITUDE THRESHOLD for smoothing background
+            //SNR.NoiseProfile profile = SNR.CalculateNoiseProfile(spectrogramData, SD_COUNT); //calculate noise profile - assumes a dB spectrogram.
+            //double[] noiseValues = DataTools.filterMovingAverage(profile.noiseThreshold, 7);      // smooth the noise profile
+            //spectrogramData = SNR.NoiseReduce_Standard(spectrogramData, noiseValues, SpectralBgThreshold);
+
+            //// convert spectrum to decibels AFTER noise removal
+            ////spectrogramData = Speech.DecibelSpectra(spectrogramData, windowPower, recording.SampleRate, epsilon);
+
+            //spectrogramData = MatrixTools.MatrixRotate90Anticlockwise(spectrogramData);
+            //ImageTools.DrawMatrix(spectrogramData, imagePath);
+            //FileInfo fiImage = new FileInfo(imagePath);
+            //if (fiImage.Exists) // Display the image using MsPaint.exe
+            //{
+            //    TowseyLib.ProcessRunner process = new TowseyLib.ProcessRunner(imageViewer);
+            //    process.Run(imagePath, outputDir);
+            //}
         }
 
         public static void TestDct(string[] args)
