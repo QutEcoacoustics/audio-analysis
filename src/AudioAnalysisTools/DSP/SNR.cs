@@ -993,6 +993,12 @@ namespace AudioAnalysisTools.DSP
                     }
 
                     break;
+                case NoiseReductionType.Mean:
+                    m = NoiseReduce_Mean(m, parameter);
+                    break;
+                case NoiseReductionType.Median:
+                    m = NoiseReduce_Median(m, parameter);
+                    break;
                 case NoiseReductionType.LowestPercentile:
                     {
                         bgNoiseProfile = NoiseProfile.GetNoiseProfile_fromLowestPercentileFrames(m, (int)parameter);
@@ -1030,14 +1036,6 @@ namespace AudioAnalysisTools.DSP
                 case NoiseReductionType.FlattenAndTrim:
                     Log.WriteIfVerbose("\tNoise reduction: FLATTEN & TRIM: StdDev Count=" + parameter);
                     m = NoiseReduce_FlattenAndTrim(m, parameter);
-                    break;
-                case NoiseReductionType.Mean:
-                    Log.WriteIfVerbose("\tNoise reduction: Mean Subtraction");
-                    m = NoiseReduce_Mean(m, parameter);
-                    break;
-                case NoiseReductionType.Median:
-                    Log.WriteIfVerbose("\tNoise reduction: Median Subtraction");
-                    m = NoiseReduce_Median(m, parameter);
                     break;
                 default:
                     Log.WriteIfVerbose("No noise reduction applied");
@@ -1107,28 +1105,28 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// The passed matrix is a sonogram with values in dB
+        /// The passed matrix is the decibel spectrogram
         /// </summary>
-        public static double[,] NoiseReduce_Mean(double[,] matrix, double nhBgThreshold)
+        public static double[,] NoiseReduce_Mean(double[,] matrix, double nhBackgroundThreshold)
         {
             double[,] mnr = matrix;
-            double[] meanNoise = NoiseProfile.CalculateMeanNoiseProfile(mnr).NoiseMean;
-
-            //smooth the noise profile
-            meanNoise = DataTools.filterMovingAverage(meanNoise, width: 3);
-            mnr = NoiseReduce_Standard(mnr, meanNoise, nhBgThreshold);
+            double[] meanNoiseProfile = NoiseProfile.CalculateMeanNoiseProfile(mnr).NoiseMean;
+            meanNoiseProfile = DataTools.filterMovingAverage(meanNoiseProfile, width: 3);
+            mnr = TruncateBgNoiseFromSpectrogram(mnr, meanNoiseProfile);
+            mnr = RemoveNeighbourhoodBackgroundNoise(mnr, nhBackgroundThreshold);
             return mnr;
         }
 
+        /// <summary>
+        /// The passed matrix is the decibel spectrogram
+        /// </summary>
         public static double[,] NoiseReduce_Median(double[,] matrix, double nhBackgroundThreshold)
         {
             double[,] mnr = matrix;
             var profile = NoiseProfile.CalculateMedianNoiseProfile(mnr);
-            double[] medianNoise = profile.NoiseMedian;
-
-            //smooth the noise profile
-            medianNoise = DataTools.filterMovingAverage(medianNoise, width: 3);
-            mnr = NoiseReduce_Standard(mnr, medianNoise, DefaultNhBgThreshold);
+            double[] medianNoiseProfile = profile.NoiseMedian;
+            medianNoiseProfile = DataTools.filterMovingAverage(medianNoiseProfile, width: 3);
+            mnr = TruncateBgNoiseFromSpectrogram(mnr, medianNoiseProfile);
             mnr = RemoveNeighbourhoodBackgroundNoise(mnr, nhBackgroundThreshold);
             return mnr;
         }
@@ -1287,9 +1285,14 @@ namespace AudioAnalysisTools.DSP
         /// Typically would expect min value in sonogram = zero.
         /// </summary>
         /// <param name="matrix">the sonogram</param>
-        /// <param name="nhThreshold">user defined threshold in dB i.e. typically 3-4 dB</param>
+        /// <param name="nhThreshold">user defined threshold. Typically in range 2-4 dB</param>
         public static double[,] RemoveNeighbourhoodBackgroundNoise(double[,] matrix, double nhThreshold)
         {
+            if (nhThreshold < 0.000001)
+            {
+                return matrix;
+            }
+
             int M = 3; // each row is a frame or time instance
             int N = 9; // each column is a frequency bin
             int rNh = M / 2;

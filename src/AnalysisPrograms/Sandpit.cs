@@ -1926,9 +1926,9 @@ namespace AnalysisPrograms
             //string wavFilePath = @"C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav";
             string wavFilePath = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC\BAC2_20071008-085040.wav";
             string outputDir = @"C:\SensorNetworks\Output\Test\Test2018";
-            //string profileName = "Median";
+            string profileName = "Median";
             //string profileName = "Mean";
-            string profileName = "Modal";
+            //string profileName = "Mean";
             string imageFname = "test_" + profileName + "NoiseRemoval.png";
 
             string imagePath = Path.Combine(outputDir, imageFname);
@@ -1948,9 +1948,9 @@ namespace AnalysisPrograms
             var fst = freqScale.ScaleType;
             var config = new SonogramConfig
             {
-                NoiseReductionType = NoiseReductionType.Modal,
+                //NoiseReductionType = NoiseReductionType.Modal,
                 //NoiseReductionType = NoiseReductionType.Mean,
-                //NoiseReductionType = NoiseReductionType.Median,
+                NoiseReductionType = NoiseReductionType.Median,
                 WindowOverlap = 0.0,
                 WindowSize = frameSize,
             };
