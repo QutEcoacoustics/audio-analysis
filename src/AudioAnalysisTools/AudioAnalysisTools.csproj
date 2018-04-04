@@ -243,6 +243,7 @@
     <Compile Include="DSP\DSP_IIRFilter.cs" />
     <Compile Include="DSP\FFT2D.cs" />
     <Compile Include="DSP\FrequencyScale.cs" />
+    <Compile Include="DSP\KmeansClustering.cs" />
     <Compile Include="DSP\LocalContrastNormalisation.cs" />
     <Compile Include="DSP\NoiseProfile.cs" />
     <Compile Include="DSP\NoiseRemoval_Briggs.cs" />

@@ -91,7 +91,7 @@ namespace AudioAnalysisTools.DSP
                             patches.Add(MatrixTools.Matrix2Array(submatrix));
                             no++;
 
-                            //shifting the row
+                            //shifting the row by one
                             //note that we don't shift column as we select full band patches
                             rInt = rInt + 1;
                             //Second, slide the patch window (rInt+1) to select the next patch
@@ -101,6 +101,7 @@ namespace AudioAnalysisTools.DSP
                             no++;
 
                             /*
+                            //shifting the row by three
                             rInt = rInt + 2;
                             //Second, slide the patch window (rInt+1) to select the next patch
                             double[,] submatrix3 = MatrixTools.Submatrix(spectrogram, rInt, cInt,
@@ -108,6 +109,7 @@ namespace AudioAnalysisTools.DSP
                             patches.Add(MatrixTools.Matrix2Array(submatrix3));
                             no++;
                             */
+
                         }
                     }
                 }

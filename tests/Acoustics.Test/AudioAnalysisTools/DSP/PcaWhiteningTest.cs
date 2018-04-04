@@ -57,6 +57,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             var outputNoiseReducedMelImagePath = Path.Combine(resultDir, "NoiseReducedMelSpectrogram.png");
             var outputWhitenedSpectrogramPath = Path.Combine(resultDir, "WhitenedSpectrogram.png");
             var outputReSpecImagePath = Path.Combine(resultDir, "ReconstrcutedSpectrogram.png");
+            var outputClusterImagePath = Path.Combine(resultDir, "Clusters.bmp");
 
             //var outputImagePath = Path.Combine(resultDir, "spec.png");
 
@@ -468,7 +469,8 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                 noiseReducedImage.Save(outputNoiseReducedImagePath, ImageFormat.Png);
                 */
 
-                //sonogram.Data = PcaWhitening.NoiseReduction(sonogram.Data); ****
+                //sonogram.Data = SNR.NoiseReduce_Median(sonogram.Data, nhBackgroundThreshold: 2.0);
+                sonogram.Data = PcaWhitening.NoiseReduction(sonogram.Data); //****
 
                 //sonogram.Data = dataMatrix2;
                 //var noiseReducedImage = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "NOISEREDUCEDSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
@@ -483,6 +485,13 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             //convert list of random patches matrices to one matrix
             double[,] allPatchM = PatchSampling.ListOf2DArrayToOne2DArray(randomPatches);
+
+            //Do k-means clustering
+            double[,] centroidMatrix = KmeansClustering.Clustering(allPatchM);
+
+            //Draw clusters
+            var clusterImage = ImageTools.DrawNormalisedMatrix(centroidMatrix);
+            clusterImage.Save(outputClusterImagePath, ImageFormat.Bmp);
 
             var actual = PcaWhitening.Whitening(allPatchM);
 
@@ -518,9 +527,13 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             //var sonogram2 = new SpectrogramStandard(amplitudeSpectrogram2);
             //var standImage2 = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "SPECTROGRAM: " + fst2.ToString(), freqScale2.GridLineLocations);
             //standImage2.Save(outputLinScaImagePath, ImageFormat.Png);
+
+            //NOISE REDUCTION*******
+            //sonogram2.Data = SNR.NoiseReduce_Median(sonogram2.Data, nhBackgroundThreshold: 2.0);
             sonogram2.Data = PcaWhitening.NoiseReduction(sonogram2.Data);
             var image3 = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "NOISEREDUCEDMELSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
             image3.Save(outputNoiseReducedMelImagePath, ImageFormat.Png);
+
             //sonogram2.Data = dataMatrix;
             //int patchWidth2 = 16; //32; //
             //int patchHeight2 = 16; //32; //

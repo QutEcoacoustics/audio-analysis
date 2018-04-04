@@ -40,7 +40,7 @@ namespace AudioAnalysisTools.DSP
             double[][] output1 = pca.Transform(jaggedArr);
 
             //according to Dieleman's paper, exp var = 0.99 (Multiscale approaches to music audio feature learning)
-            pca.ExplainedVariance = 0.90;
+            pca.ExplainedVariance = 0.95;
 
             //double[,] projectionMatrix = pca.Transform(jaggedArr, );
             double[][] output2 = pca.Transform(jaggedArr);
@@ -207,6 +207,7 @@ namespace AudioAnalysisTools.DSP
 
             //calculate modal noise profile
             NoiseProfile profile = NoiseProfile.CalculateModalNoiseProfile(matrix, sdCount: 0.0);
+            //NoiseProfile profile = NoiseProfile.CalculateMedianNoiseProfile(matrix);
 
             //smooth the noise profile
             double[] smoothedProfile = DataTools.filterMovingAverage(profile.NoiseThresholds, width: 7);
