@@ -281,7 +281,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 throw new ArgumentNullException(nameof(image));
             }
 
-            FrequencyScale.DrawFrequencyLinesOnImage((Bitmap)image, gridLineLocations);
+            FrequencyScale.DrawFrequencyLinesOnImage((Bitmap)image, gridLineLocations, includeLabels: true);
 
             var titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
             var timeBmp = ImageTrack.DrawTimeTrack(this.Duration, image.Width);
@@ -337,7 +337,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     gridLineLocations = FrequencyScale.GetLinearGridLineLocations(this.NyquistFrequency, kHzInterval, image.Height);
                 }
 
-                FrequencyScale.DrawFrequencyLinesOnImage((Bitmap)image, gridLineLocations);
+                FrequencyScale.DrawFrequencyLinesOnImage((Bitmap)image, gridLineLocations, includeLabels: true);
             }
 
             return image;

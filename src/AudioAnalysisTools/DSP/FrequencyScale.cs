@@ -331,7 +331,7 @@ namespace AudioAnalysisTools.DSP
             return gridLines;
         }
 
-        public static void DrawFrequencyLinesOnImage(Bitmap bmp, int[,] gridLineLocations)
+        public static void DrawFrequencyLinesOnImage(Bitmap bmp, int[,] gridLineLocations, bool includeLabels)
         {
             int minimumSpectrogramWidth = 10;
             if (bmp.Width < minimumSpectrogramWidth)
@@ -386,7 +386,7 @@ namespace AudioAnalysisTools.DSP
                 }
             }
 
-            if (bmp.Width < 30)
+            if (!includeLabels || bmp.Width < 30)
             {
                 // there is no point placing Hertz label on a narrow image. It obscures too much spectrogram.
                 return;
@@ -403,9 +403,9 @@ namespace AudioAnalysisTools.DSP
             }
         } //end AddHzGridLines()
 
-        public static void DrawFrequencyLinesOnImage(Bitmap bmp, FrequencyScale freqScale)
+        public static void DrawFrequencyLinesOnImage(Bitmap bmp, FrequencyScale freqScale, bool includeLabels)
         {
-            DrawFrequencyLinesOnImage(bmp, freqScale.GridLineLocations);
+            DrawFrequencyLinesOnImage(bmp, freqScale.GridLineLocations, includeLabels);
         }
 
         // ****************************************************************************************************************************
@@ -670,6 +670,21 @@ namespace AudioAnalysisTools.DSP
 
             LoggedConsole.WriteLine("Completed Octave Frequency Scale " + testName);
             Console.WriteLine("\n\n");
+        }
+
+        public static void TESTMETHOD_DrawFrequencyLinesOnImage()
+        {
+            string filename = @"C:\SensorNetworks\SoftwareTests\TestFrequencyScale\Clusters50.bmp";
+            string outputFile = @"C:\SensorNetworks\SoftwareTests\TestFrequencyScale\Clusters50WithGrid.bmp";
+            Image bmp = ImageTools.ReadImage2Bitmap(filename);
+
+            int nyquist = 11025;
+            int frameSize = 1024;
+            int finalBinCount = 128;
+            int gridInterval = 1000;
+            var freqScale = new FrequencyScale(FreqScaleType.Mel, nyquist, frameSize, finalBinCount, gridInterval);
+            DrawFrequencyLinesOnImage((Bitmap)bmp, freqScale, includeLabels: false);
+            bmp.Save(outputFile);
         }
     }
 }

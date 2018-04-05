@@ -1092,7 +1092,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 cs.FreqScale = freqScale;
             }
 
-            FrequencyScale.DrawFrequencyLinesOnImage((Bitmap)bmp1, cs.FreqScale);
+            FrequencyScale.DrawFrequencyLinesOnImage((Bitmap)bmp1, cs.FreqScale, includeLabels: true);
 
             // draw the composite bitmap
             var imageList = new List<Image> { titleBar, timeBmp1, bmp1, timeBmp2 };

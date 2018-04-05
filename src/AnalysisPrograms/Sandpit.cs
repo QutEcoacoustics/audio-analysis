@@ -85,14 +85,14 @@ namespace AnalysisPrograms
                 //TEST_FilterMovingAverage();
                 //TestImageProcessing();
                 //TestMatrix3dClass();
-                //TestsOfFrequencyScales();
+                TestsOfFrequencyScales();
                 //TestReadingFileOfSummaryIndices();
                 //TestStructureTensor();
                 //TestWavelets();
                 //TestFft2D();
                 //TestTernaryPlots();
                 //TestDirectorySearchAndFileSearch();
-                TestNoiseReduction();
+                //TestNoiseReduction();
 
                 Console.WriteLine("# Finished Sandpit Task!    Press any key to exit.");
                 return this.Ok();
@@ -1234,6 +1234,8 @@ namespace AnalysisPrograms
             // DspFilters.TestMethod_GenerateSignal1();
             // DspFilters.TestMethod_GenerateSignal2();
             // EventStatisticsCalculate.TestCalculateEventStatistics();
+
+            FrequencyScale.TESTMETHOD_DrawFrequencyLinesOnImage();
         }
 
         /// <summary>
