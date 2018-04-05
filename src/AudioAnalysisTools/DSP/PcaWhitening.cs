@@ -206,8 +206,8 @@ namespace AudioAnalysisTools.DSP
             double[,] nrm = matrix;
 
             //calculate modal noise profile
-            NoiseProfile profile = NoiseProfile.CalculateModalNoiseProfile(matrix, sdCount: 0.0);
-            //NoiseProfile profile = NoiseProfile.CalculateMedianNoiseProfile(matrix);
+            //NoiseProfile profile = NoiseProfile.CalculateModalNoiseProfile(matrix, sdCount: 0.0);
+            NoiseProfile profile = NoiseProfile.CalculateMedianNoiseProfile(matrix);
 
             //smooth the noise profile
             double[] smoothedProfile = DataTools.filterMovingAverage(profile.NoiseThresholds, width: 7);

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 namespace AudioAnalysisTools.DSP
 {
     using System.CodeDom;
+    using System.Diagnostics;
     using Accord.Math;
     using TowseyLibrary;
 
@@ -130,7 +131,7 @@ namespace AudioAnalysisTools.DSP
 
             for (int row = 0; row < ht; row++)
             {
-                allPatches.Add(Array2Matrix(patches[row], patchWidth, patchHeight));
+                allPatches.Add(Array2Matrix(patches[row], patchWidth, patchHeight, "column"));
             }
 
             double[,] matrix = ConvertList2Matrix(allPatches, colSize, patchWidth, patchHeight);
@@ -139,19 +140,36 @@ namespace AudioAnalysisTools.DSP
         }
 
         /*
-         * converts a vector to a matrix.
-         * The vector is built using the "Matrix2Array" method in MatrixTools.cs
-         * The vector is built by concatenating columns
+         * converts a vector to a matrix either in the direction of "column" or "row".
+         * For example, the "Matrix2Array" method in MatrixTools.cs builds the vector
+         * by concatenating the columns
          */
-        public static double[,] Array2Matrix(double[] vector, int patchWidth, int patchHeight)
+        public static double[,] Array2Matrix(double[] vector, int patchWidth, int patchHeight, string concatenationDirection)
         {
             double[,] m = new double[patchHeight, patchWidth];
 
-            for (int col = 0; col < vector.Length; col += patchHeight)
+            if (concatenationDirection == "column")
             {
-                for (int row = 0; row < patchHeight; row++)
+                for (int col = 0; col < vector.Length; col += patchHeight)
                 {
-                    m[row, col / patchHeight] = vector[col + row];
+                    for (int row = 0; row < patchHeight; row++)
+                    {
+                        m[row, col / patchHeight] = vector[col + row];
+                    }
+                }
+
+            }
+            else
+            {
+                if (concatenationDirection == "row")
+                {
+                    for (int row = 0; row < vector.Length; row += patchWidth)
+                    {
+                        for (int col = 0;  col < patchWidth; col++)
+                        {
+                            m[row / patchWidth, col] = vector[col + row];
+                        }
+                    }
                 }
             }
 
@@ -304,6 +322,26 @@ namespace AudioAnalysisTools.DSP
             }
 
             return allPatchesMatrix;
+        }
+
+        // adding a row of zero to 2D array
+        // it should be a better way to so this!!!
+        public static double[][] AddRow(double[,] matrix)
+        {
+            double[] array = new double[matrix.GetLength(1)];
+            for (int j = 0; j < matrix.GetLength(1); j++)
+            {
+                array[j] = 1.0; //0.0; //
+            }
+
+            List<double[]> list = new List<double[]>();
+            for (int i = 0; i < matrix.GetLength(0); i++)
+            {
+                list.Add(matrix.ToJagged()[i]);
+            }
+
+            list.Add(array);
+            return list.ToArray();
         }
     }
 }

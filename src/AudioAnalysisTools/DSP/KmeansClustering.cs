@@ -11,17 +11,17 @@ namespace AudioAnalysisTools.DSP
     using Accord.Math.Distances;
     using Accord.Statistics.Filters;
 
-    class KmeansClustering
+    public static class KmeansClustering
     {
-        public static double[,] Clustering(double[,] patches)
+        public static double[][] Clustering(double[,] patches, int noOfClust)
         {
             Accord.Math.Random.Generator.Seed = 0;
 
-            KMeans kmeans = new KMeans(k: 10)
+            KMeans kmeans = new KMeans(k: noOfClust)
             {
 
                 UseSeeding = Seeding.KMeansPlusPlus,
-                Distance = new Cosine(),
+                Distance = default(Cosine),
 
             };
 
@@ -29,7 +29,7 @@ namespace AudioAnalysisTools.DSP
             var clusters = kmeans.Learn(patches.ToJagged());
             double[][] centroids = clusters.Centroids;
 
-            return centroids.ToMatrix();
+            return centroids;
         }
     }
 }

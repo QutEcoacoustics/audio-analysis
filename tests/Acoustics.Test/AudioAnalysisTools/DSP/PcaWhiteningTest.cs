@@ -415,7 +415,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             int nyquist = nq; //11025;
             int frameSize = 1024;
-            int finalBinCount = 256; //100; //40; //200; // 128; //
+            int finalBinCount = 128; // 256; //100; //40; //200; // 
             int hertzInterval = 1000;
             FreqScaleType scaleType = FreqScaleType.Mel;
             var freqScale = new FrequencyScale(scaleType, nyquist, frameSize, finalBinCount, hertzInterval);
@@ -436,7 +436,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             List<double[,]> randomPatches = new List<double[,]>();
             int patchWidth = finalBinCount; //256; //16; //full band patches
             int patchHeight = 4; //16; // 2; // 4; // 6; //
-            int noOfRandomPatches = 20; //10; //100; //500; //
+            int noOfRandomPatches = 50; //20; //10; //100; //500; //
             //int fileCount = Directory.GetFiles(folderPath, "*.wav").Length;
 
 
@@ -487,10 +487,34 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             double[,] allPatchM = PatchSampling.ListOf2DArrayToOne2DArray(randomPatches);
 
             //Do k-means clustering
-            double[,] centroidMatrix = KmeansClustering.Clustering(allPatchM);
+            int noOfClusters = 50;
+            double[][] centroidMatrix = KmeansClustering.Clustering(allPatchM, noOfClusters);
+
+            List<double[,]> allCentroids = new List<double[,]>();
+
+            for (int i = 0; i < centroidMatrix.Length; i++)
+            {
+                //convert each centroid to a matrix (4-by-128)
+                double[,] cent = PatchSampling.Array2Matrix(centroidMatrix[i], patchWidth, patchHeight, "column");
+
+                //normalize each centroid
+                double[,] normCent = DataTools.normalise(cent);
+
+                //add a row of zero to each centroid
+                double[,] cent2 = PatchSampling.AddRow(normCent).ToMatrix();
+
+                allCentroids.Add(cent2);
+            }
+
+            //concatenate all centroids 
+            double[,] mergedCentroidMatrix = PatchSampling.ListOf2DArrayToOne2DArray(allCentroids);
 
             //Draw clusters
-            var clusterImage = ImageTools.DrawNormalisedMatrix(centroidMatrix);
+            //var recording3 = new AudioRecording(Directory.GetFiles(folderPath, "*.wav")[0]);
+            //var sonogram3 = new SpectrogramStandard(sonoConfig, recording3.WavReader);
+            //sonogram3.Data = mergedCentroidMatrix;
+            //var clusterImage = sonogram3.GetImageFullyAnnotated(sonogram3.GetImage(), "ClusterCentroids: " + fst.ToString(), freqScale.GridLineLocations);
+            var clusterImage = ImageTools.DrawMatrixWithoutNormalisation(mergedCentroidMatrix);
             clusterImage.Save(outputClusterImagePath, ImageFormat.Bmp);
 
             var actual = PcaWhitening.Whitening(allPatchM);
