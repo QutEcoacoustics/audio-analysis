@@ -40,8 +40,8 @@ namespace AudioAnalysisTools.DSP
         public const double FractionalBoundForLowPercentile = 0.2; // used when removing lowest percentile noise from a signal waveform
 
         //reference dB levels for different signals
-        public const double MinimumDbBoundForZeroSignal = -80; // used as minimum bound when normalising dB values. Calculated from actual zero signal.
-        public const double MinimumDbBoundForEnvirNoise = -70; // might also be used as minimum bound. Calculated from actual silent environmental recording.
+        public const double MinimumDbBoundForZeroSignal = -90; // used as minimum bound when normalising dB values. Calculated from actual zero signal.
+        public const double MinimumDbBoundForEnvirNoise = -80; // might also be used as minimum bound. Calculated from actual silent environmental recording.
 
         //reference logEnergies for signal segmentation, energy normalisation etc
         public const double MinLogEnergyReference = -6.0;    // = -60dB. Typical noise value for BAC2 recordings = -4.5 = -45dB
