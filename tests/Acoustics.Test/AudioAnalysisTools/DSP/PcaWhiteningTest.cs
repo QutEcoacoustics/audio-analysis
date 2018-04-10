@@ -52,9 +52,9 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                 PathHelper.ResolveAssetPath(@"C:\Users\kholghim\Mahnoosh\PcaWhitening\random_audio_segments\1192_1000");
             var resultDir = PathHelper.ResolveAssetPath(@"C:\Users\kholghim\Mahnoosh\PcaWhitening");
             //var resultDir = PathHelper.ResolveAssetPath("PcaWhitening");
-            var outputLinScaImagePath = Path.Combine(resultDir, "LinearFreqScaleSpectrogram.png");
-            var outputAmpSpecImagePath = Path.Combine(resultDir, "AmplitudeSpectrogram.png");
-            var outputNormAmpImagePath = Path.Combine(resultDir, "NormAmplitudeSpectrogram.png");
+            //var outputLinScaImagePath = Path.Combine(resultDir, "LinearFreqScaleSpectrogram.png");
+            //var outputAmpSpecImagePath = Path.Combine(resultDir, "AmplitudeSpectrogram.png");
+           //var outputNormAmpImagePath = Path.Combine(resultDir, "NormAmplitudeSpectrogram.png");
             var outputMelImagePath = Path.Combine(resultDir, "MelScaleSpectrogram.png");
             var outputNormMelImagePath = Path.Combine(resultDir, "NormalizedMelScaleSpectrogram.png");
             var outputNoiseReducedMelImagePath = Path.Combine(resultDir, "NoiseReducedMelSpectrogram.png");
@@ -504,9 +504,13 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             //convert list of random patches matrices to one matrix
             double[,] allPatchM = PatchSampling.ListOf2DArrayToOne2DArray(randomPatches);
 
+            //Apply PCA Whitening
+            var actual = PcaWhitening.Whitening(allPatchM);
+
             //Do k-means clustering
-            int noOfClusters = 64; //10; // 50;
-            double[][] centroidMatrix = KmeansClustering.Clustering(allPatchM, noOfClusters);
+            int noOfClusters = 64; // 10; //50;
+            //double[][] centroidMatrix = KmeansClustering.Clustering(allPatchM, noOfClusters);
+            double[][] centroidMatrix = KmeansClustering.Clustering(actual.Item2, noOfClusters);
 
             List<double[,]> allCentroids = new List<double[,]>();
 
@@ -524,7 +528,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                 allCentroids.Add(cent2);
             }
 
-            //concatenate all centroids 
+            //concatenate all centroids
             double[,] mergedCentroidMatrix = PatchSampling.ListOf2DArrayToOne2DArray(allCentroids);
 
             //Draw clusters
@@ -541,8 +545,6 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             //Image bmp = ImageTools.ReadImage2Bitmap(filename);
             FrequencyScale.DrawFrequencyLinesOnImage((Bitmap)clusterImage, freqScale, includeLabels: false);
             clusterImage.Save(outputFile);
-
-            var actual = PcaWhitening.Whitening(allPatchM);
 
             //Processing the target spectrogram
             var recording2Path = PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav");

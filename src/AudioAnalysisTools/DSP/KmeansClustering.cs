@@ -7,11 +7,14 @@ using System.Threading.Tasks;
 namespace AudioAnalysisTools.DSP
 {
     using System.Diagnostics;
+    using System.Drawing;
     using System.IO;
     using Accord.MachineLearning;
+    using Accord.MachineLearning.Clustering;
     using Accord.Math;
     using Accord.Math.Distances;
     using Accord.Statistics.Filters;
+    using Acoustics.Shared.Csv;
 
     public static class KmeansClustering
     {
@@ -31,18 +34,34 @@ namespace AudioAnalysisTools.DSP
             var clusters = kmeans.Learn(patches.ToJagged());
             double[][] centroids = clusters.Centroids;
 
-            //get the cluster size 
-            Dictionary<int, double> clusterIdSize = new Dictionary<int, double>();
-            for (int i = 0; i < clusters.Clusters.Length; i++)
+            /*
+            //plot centroids using tsne
+            TSNE tsne = new TSNE()
             {
-                //Compute the proportion of samples in the cluster
-                clusterIdSize.Add(clusters.Clusters[i].Index, clusters.Clusters[i].Proportion);
+                NumberOfOutputs = centroids.Length,
+                Perplexity = 1.5,
+            };
+
+            // Transform to a reduced dimensionality space
+            double[][] output = tsne.Transform(centroids);
+
+            // Make it 1-dimensional
+            //double[] y = output.Reshape();
+            */
+
+            //get the cluster size
+            Dictionary<int, double> clusterIdSize = new Dictionary<int, double>();
+            Dictionary<int, double[]> clusterIdCent = new Dictionary<int, double[]>();
+            foreach (var clust in clusters.Clusters)
+            {
+                clusterIdSize.Add(clust.Index, clust.Proportion);
+                clusterIdCent.Add(clust.Index, clust.Centroid);
             }
 
             //sort clusters based on the number of samples
             var items = from pair in clusterIdSize orderby pair.Value ascending select pair;
 
-            //writing to a csv file
+            //writing cluster size to a file
             using (StreamWriter file = new StreamWriter(@"C:\Users\kholghim\Mahnoosh\PcaWhitening\ClusterSize64.txt"))
             {
                 foreach (var entry in items)
@@ -50,7 +69,24 @@ namespace AudioAnalysisTools.DSP
                     file.WriteLine("{0}\t{1}", entry.Key, entry.Value);
                 }
             }
-            //string pathToCsv = @"C:\Users\kholghim\Mahnoosh\PcaWhitening\ClusterSize.csv";
+
+            //writing cluster centroids to a csv file
+            using (StreamWriter file = new StreamWriter(@"C:\Users\kholghim\Mahnoosh\PcaWhitening\ClusterCentroids64.csv"))
+            {
+                foreach (var entry in clusterIdCent)
+                {
+                    file.Write(entry.Key + ",");
+                    foreach (var cent in entry.Value)
+                    {
+                        file.Write(cent + ",");
+                    }
+
+                    file.Write(Environment.NewLine);
+                }
+            }
+
+            //Csv.WriteToCsv(new FileInfo (@"C:\Users\kholghim\Mahnoosh\PcaWhitening\ClusterCentroids64.csv"), clusterIdCent);
+            //var pathToCsv = @"C:\Users\kholghim\Mahnoosh\PcaWhitening\ClusterSize.csv";
             //String csv = String.Join(Environment.NewLine, items.Select(d => d.Key + "\t" + d.Value + "\t"));
             //System.IO.File.WriteAllText(pathToCsv, csv);
 
