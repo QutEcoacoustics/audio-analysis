@@ -418,7 +418,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             int nyquist = nq; //11025;
             int frameSize = 1024;
-            int finalBinCount = 128; // 256; //100; //40; //200; // 
+            int finalBinCount = 128; // 256; //100; //40; //200; //
             int hertzInterval = 1000;
             FreqScaleType scaleType = FreqScaleType.Mel;
             var freqScale = new FrequencyScale(scaleType, nyquist, frameSize, finalBinCount, hertzInterval);
@@ -508,16 +508,31 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             var actual = PcaWhitening.Whitening(allPatchM);
 
             //Do k-means clustering
-            int noOfClusters = 64; // 10; //50;
-            //double[][] centroidMatrix = KmeansClustering.Clustering(allPatchM, noOfClusters);
-            double[][] centroidMatrix = KmeansClustering.Clustering(actual.Item2, noOfClusters);
+            int noOfClusters = 64; //10; //50;
+            var clusteringOutput = KmeansClustering.Clustering(actual.Item2, noOfClusters);
+            //var clusteringOutput = KmeansClustering.Clustering(allPatchM, noOfClusters);
+            int[] sortOrder = KmeansClustering.SortClustersBasedOnSize(clusteringOutput.Item2);
+
+            //Draw cluster image directly from centroid csv file: Michael's code
+            KmeansClustering.DrawClusterImage(patchWidth, patchHeight, sortOrder);
+
+            //Draw cluster image directly from clustering output
+            List<KeyValuePair<int, double[]>> list = clusteringOutput.Item1.ToList();
+            double[][] centroids = new double[list.Count][];
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                centroids[i] = list[i].Value;
+            }
 
             List<double[,]> allCentroids = new List<double[,]>();
 
-            for (int i = 0; i < centroidMatrix.Length; i++)
+            for (int i = 0; i < centroids.Length; i++)
             {
-                //convert each centroid to a matrix (4-by-128)
-                double[,] cent = PatchSampling.Array2Matrix(centroidMatrix[i], patchWidth, patchHeight, "column");
+                //convert each centroid to a matrix (4-by-128) in order of cluster ID
+                //double[,] cent = PatchSampling.Array2Matrix(centroids[i], patchWidth, patchHeight, "column");
+                //OR: in order of cluster size
+                double[,] cent = PatchSampling.Array2Matrix(centroids[sortOrder[i]], patchWidth, patchHeight, "column");
 
                 //normalize each centroid
                 double[,] normCent = DataTools.normalise(cent);
@@ -541,7 +556,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             clusterImage.Save(outputClusterImagePath, ImageFormat.Bmp);
 
             //string filename = @"C:\Users\kholghim\Mahnoosh\PcaWhitening\Clusters50.bmp";
-            string outputFile = @"C:\Users\kholghim\Mahnoosh\PcaWhitening\Clusters64WithGrid.bmp";
+            string outputFile = @"C:\Users\kholghim\Mahnoosh\PcaWhitening\ClustersWithGrid_M.bmp";
             //Image bmp = ImageTools.ReadImage2Bitmap(filename);
             FrequencyScale.DrawFrequencyLinesOnImage((Bitmap)clusterImage, freqScale, includeLabels: false);
             clusterImage.Save(outputFile);

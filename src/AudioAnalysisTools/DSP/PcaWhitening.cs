@@ -49,8 +49,8 @@ namespace AudioAnalysisTools.DSP
             int components = pca.Components.Count;
 
             //double[] eigneValues = pca.Eigenvalues; //sorted
-            //int rows = projectedData.GetLength(0);
-            //int columns = projectedData.GetLength(1); //this is actually the number of output vectors before reversion
+            int rows = projectedData.GetLength(0);
+            int columns = projectedData.GetLength(1); //this is actually the number of output vectors before reversion
 
             // Step 3: revert a set of projected data into its original space
             //the output of the "Revert(Double[][])" method in Accord did not make sense.

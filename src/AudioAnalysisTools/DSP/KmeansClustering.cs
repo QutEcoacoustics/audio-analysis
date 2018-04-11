@@ -15,10 +15,11 @@ namespace AudioAnalysisTools.DSP
     using Accord.Math.Distances;
     using Accord.Statistics.Filters;
     using Acoustics.Shared.Csv;
+    using TowseyLibrary;
 
     public static class KmeansClustering
     {
-        public static double[][] Clustering(double[,] patches, int noOfClust)
+        public static Tuple<Dictionary<int, double[]>, Dictionary<int, double>> Clustering(double[,] patches, int noOfClust)
         {
             Accord.Math.Random.Generator.Seed = 0;
 
@@ -32,22 +33,7 @@ namespace AudioAnalysisTools.DSP
 
             // Compute and retrieve the data centroids
             var clusters = kmeans.Learn(patches.ToJagged());
-            double[][] centroids = clusters.Centroids;
-
-            /*
-            //plot centroids using tsne
-            TSNE tsne = new TSNE()
-            {
-                NumberOfOutputs = centroids.Length,
-                Perplexity = 1.5,
-            };
-
-            // Transform to a reduced dimensionality space
-            double[][] output = tsne.Transform(centroids);
-
-            // Make it 1-dimensional
-            //double[] y = output.Reshape();
-            */
+            //double[][] centroids = clusters.Centroids;
 
             //get the cluster size
             Dictionary<int, double> clusterIdSize = new Dictionary<int, double>();
@@ -58,20 +44,24 @@ namespace AudioAnalysisTools.DSP
                 clusterIdCent.Add(clust.Index, clust.Centroid);
             }
 
+            WriteCentroidsToCSV(clusterIdCent);
+
+
+            /*
             //sort clusters based on the number of samples
             var items = from pair in clusterIdSize orderby pair.Value ascending select pair;
 
             //writing cluster size to a file
-            using (StreamWriter file = new StreamWriter(@"C:\Users\kholghim\Mahnoosh\PcaWhitening\ClusterSize64.txt"))
+            using (StreamWriter file = new StreamWriter(@"C:\Users\kholghim\Mahnoosh\PcaWhitening\ClusterSize10.csv"))
             {
                 foreach (var entry in items)
                 {
-                    file.WriteLine("{0}\t{1}", entry.Key, entry.Value);
+                    file.WriteLine("{0},{1}", entry.Key, entry.Value);
                 }
             }
 
             //writing cluster centroids to a csv file
-            using (StreamWriter file = new StreamWriter(@"C:\Users\kholghim\Mahnoosh\PcaWhitening\ClusterCentroids64.csv"))
+            using (StreamWriter file = new StreamWriter(@"C:\Users\kholghim\Mahnoosh\PcaWhitening\ClusterCentroids.csv"))
             {
                 foreach (var entry in clusterIdCent)
                 {
@@ -84,13 +74,116 @@ namespace AudioAnalysisTools.DSP
                     file.Write(Environment.NewLine);
                 }
             }
+            */
+            return new Tuple<Dictionary<int, double[]>, Dictionary<int, double>>(clusterIdCent, clusterIdSize);
+        }
 
-            //Csv.WriteToCsv(new FileInfo (@"C:\Users\kholghim\Mahnoosh\PcaWhitening\ClusterCentroids64.csv"), clusterIdCent);
-            //var pathToCsv = @"C:\Users\kholghim\Mahnoosh\PcaWhitening\ClusterSize.csv";
-            //String csv = String.Join(Environment.NewLine, items.Select(d => d.Key + "\t" + d.Value + "\t"));
-            //System.IO.File.WriteAllText(pathToCsv, csv);
+        //Draw cluster image directly from a csv file containing the clusters' centroids
+        public static void DrawClusterImage(int patchWidth, int patchHeight, int[] sortOrder)
+        {
+             string pathToClusterCsvFile = @"C:\Users\kholghim\Mahnoosh\PcaWhitening\ClusterCentroids.csv";
+             string pathToOutputImageFile = @"C:\Users\kholghim\Mahnoosh\PcaWhitening\ClustersWithGrid.bmp";
 
-            return centroids;
+             double[][] clusters = ReadClusterDataFromFile(pathToClusterCsvFile);
+             List<double[,]> clusterList = new List<double[,]>();
+             for (int i = 0; i < clusters.GetLength(0); i++)
+            {
+                double[,] cent = PatchSampling.Array2Matrix(clusters[i], patchWidth, patchHeight, "column");
+                double[,] normCent = DataTools.normalise(cent);
+                clusterList.Add(normCent);
+            }
+
+             var images = new List<Image>();
+             int spacerWidth = 2; //patchHeight; //
+             int binCount = patchWidth; //128;
+             Image spacer = new Bitmap(spacerWidth, binCount);
+             Graphics g = Graphics.FromImage(spacer);
+             g.Clear(Color.BlanchedAlmond);
+
+             for (int i = 0; i < sortOrder.Length; i++)
+            {
+                Image image = ImageTools.DrawMatrixWithoutNormalisation(clusterList[sortOrder[i]]);
+                // OR
+                // adapt the following method to draw matrix scaled up in size
+                //Image image = ImageTools.DrawMatrix(double[,] matrix, string pathName, bool doScale);
+
+                images.Add(image);
+                images.Add(spacer);
+            }
+
+             Bitmap combinedImage = (Bitmap)ImageTools.CombineImagesInLine(images);
+             // set up the mel frequency scale
+             int finalBinCount = 128;
+             var frequencyScale = new FrequencyScale(FreqScaleType.Mel, 11025, 1024, finalBinCount, hertzGridInterval: 1000);
+
+             FrequencyScale.DrawFrequencyLinesOnImage(combinedImage, frequencyScale.GridLineLocations, includeLabels: false);
+             combinedImage.Save(pathToOutputImageFile);
+        }
+
+        public static double[][] ReadClusterDataFromFile(string pathToClusterCsvFile)
+        {
+            StreamReader file = new StreamReader(pathToClusterCsvFile);
+            var clusterData = new List<double[]>();
+            while (!file.EndOfStream)
+            {
+                string[] line = file.ReadLine().Split(',');
+
+                //remove null or empty values from the array
+                line = line.Where(s => !string.IsNullOrEmpty(s)).ToArray();
+
+                //the first element of the "line" array is the cluster ID, and the rest centroid vector!
+                //copy the centroid vector line[1] to line[line.length-2] to a new array called "centroid"
+                string[] centroid = new string[line.Length - 1];
+                Array.Copy(line, 1, centroid, 0, line.Length - 1);
+                double[] doubleCentroid = Array.ConvertAll(centroid, double.Parse);
+
+                //double[] centroid = new double[doubleLine.Length-1];
+                //Array.Copy(doubleLine, 1, centroid, 0, doubleLine.Length - 1);
+                clusterData.Add(doubleCentroid);
+            }
+
+            return clusterData.ToArray();
+        }
+
+        //sort clusters based on their size and output the ordered cluster ID
+        public static int[] SortClustersBasedOnSize(Dictionary<int, double> clusterIdSize)
+        {
+            string pathToClusterSizeCsvFile = @"C:\Users\kholghim\Mahnoosh\PcaWhitening\ClusterSize.csv";
+            int[] sortedClusID = new int[clusterIdSize.Keys.Count];
+
+            //sort clusters based on the number of samples
+            var items = from pair in clusterIdSize orderby pair.Value ascending select pair;
+            using (StreamWriter file = new StreamWriter(pathToClusterSizeCsvFile))
+            {
+                int ind = 0;
+                foreach (var entry in items)
+                {
+                    file.WriteLine("{0},{1}", entry.Key, entry.Value);
+                    sortedClusID[ind] = entry.Key;
+                    ind++;
+                }
+            }
+
+            return sortedClusID;
+        }
+
+        //write centroids to a csv file
+        public static void WriteCentroidsToCSV(Dictionary<int, double[]> clusterIdCentroid)
+        {
+            string pathToClusterSizeCsvFil = @"C:\Users\kholghim\Mahnoosh\PcaWhitening\ClusterCentroids.csv";
+            using (StreamWriter file = new StreamWriter(pathToClusterSizeCsvFil))
+            {
+                foreach (var entry in clusterIdCentroid)
+                {
+                    file.Write(entry.Key + ",");
+                    foreach (var cent in entry.Value)
+                    {
+                        file.Write(cent + ",");
+                    }
+
+                    file.Write(Environment.NewLine);
+                }
+            }
         }
     }
 }
