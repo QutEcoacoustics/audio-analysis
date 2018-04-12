@@ -19,7 +19,7 @@ namespace AudioAnalysisTools.DSP
 
     public static class KmeansClustering
     {
-        public static Tuple<Dictionary<int, double[]>, Dictionary<int, double>> Clustering(double[,] patches, int noOfClust)
+        public static Tuple<Dictionary<int, double[]>, Dictionary<int, double>, KMeansClusterCollection> Clustering(double[,] patches, int noOfClust)
         {
             Accord.Math.Random.Generator.Seed = 0;
 
@@ -46,39 +46,11 @@ namespace AudioAnalysisTools.DSP
 
             WriteCentroidsToCSV(clusterIdCent);
 
-
-            /*
-            //sort clusters based on the number of samples
-            var items = from pair in clusterIdSize orderby pair.Value ascending select pair;
-
-            //writing cluster size to a file
-            using (StreamWriter file = new StreamWriter(@"C:\Users\kholghim\Mahnoosh\PcaWhitening\ClusterSize10.csv"))
-            {
-                foreach (var entry in items)
-                {
-                    file.WriteLine("{0},{1}", entry.Key, entry.Value);
-                }
-            }
-
-            //writing cluster centroids to a csv file
-            using (StreamWriter file = new StreamWriter(@"C:\Users\kholghim\Mahnoosh\PcaWhitening\ClusterCentroids.csv"))
-            {
-                foreach (var entry in clusterIdCent)
-                {
-                    file.Write(entry.Key + ",");
-                    foreach (var cent in entry.Value)
-                    {
-                        file.Write(cent + ",");
-                    }
-
-                    file.Write(Environment.NewLine);
-                }
-            }
-            */
-            return new Tuple<Dictionary<int, double[]>, Dictionary<int, double>>(clusterIdCent, clusterIdSize);
+            return new Tuple<Dictionary<int, double[]>, Dictionary<int, double>, KMeansClusterCollection>(clusterIdCent, clusterIdSize, clusters);
         }
 
-        //Draw cluster image directly from a csv file containing the clusters' centroids
+        //Draw cluster image directly from a csv file containing the clusters' centroids (Michael's code)
+        //The output image is not correct yet!
         public static void DrawClusterImage(int patchWidth, int patchHeight, int[] sortOrder)
         {
              string pathToClusterCsvFile = @"C:\Users\kholghim\Mahnoosh\PcaWhitening\ClusterCentroids.csv";
@@ -120,6 +92,7 @@ namespace AudioAnalysisTools.DSP
              combinedImage.Save(pathToOutputImageFile);
         }
 
+        //Reading the cluster centroids from a csv file into a double array
         public static double[][] ReadClusterDataFromFile(string pathToClusterCsvFile)
         {
             StreamReader file = new StreamReader(pathToClusterCsvFile);
@@ -184,6 +157,25 @@ namespace AudioAnalysisTools.DSP
                     file.Write(Environment.NewLine);
                 }
             }
+        }
+
+        //reconstruct the spectrogram using centroids
+        public static double[,] ReconstructSpectrogram(double[,] sequentialPatchMatrix, KMeansClusterCollection clusters)
+        {
+            double[][] patches = new double[sequentialPatchMatrix.GetLength(0)][];
+            for (int i = 0; i < sequentialPatchMatrix.GetLength(0); i++)
+            {
+                double[] patch = PcaWhitening.GetRow(sequentialPatchMatrix, i);
+
+                //find the nearest cnetroid to each patch
+                double [] scores = clusters.Scores(patch);
+                int ind = scores.IndexOf(clusters.Score(patch));
+                double[] nearestCentroid = clusters.Centroids[ind];
+
+                patches[i] = nearestCentroid;
+            }
+
+            return patches.ToMatrix();
         }
     }
 }

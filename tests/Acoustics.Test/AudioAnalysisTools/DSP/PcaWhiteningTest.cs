@@ -513,8 +513,8 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             //var clusteringOutput = KmeansClustering.Clustering(allPatchM, noOfClusters);
             int[] sortOrder = KmeansClustering.SortClustersBasedOnSize(clusteringOutput.Item2);
 
-            //Draw cluster image directly from centroid csv file: Michael's code
-            KmeansClustering.DrawClusterImage(patchWidth, patchHeight, sortOrder);
+            //Draw cluster image directly from centroid csv file: Michael's code (not working properly at the moment!)
+            //KmeansClustering.DrawClusterImage(patchWidth, patchHeight, sortOrder);
 
             //Draw cluster image directly from clustering output
             List<KeyValuePair<int, double[]>> list = clusteringOutput.Item1.ToList();
@@ -556,13 +556,15 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             clusterImage.Save(outputClusterImagePath, ImageFormat.Bmp);
 
             //string filename = @"C:\Users\kholghim\Mahnoosh\PcaWhitening\Clusters50.bmp";
-            string outputFile = @"C:\Users\kholghim\Mahnoosh\PcaWhitening\ClustersWithGrid_M.bmp";
+            string outputFile = @"C:\Users\kholghim\Mahnoosh\PcaWhitening\ClustersWithGrid.bmp";
             //Image bmp = ImageTools.ReadImage2Bitmap(filename);
             FrequencyScale.DrawFrequencyLinesOnImage((Bitmap)clusterImage, freqScale, includeLabels: false);
             clusterImage.Save(outputFile);
 
             //Processing the target spectrogram
-            var recording2Path = PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav");
+            //var recording2Path = PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav");
+            var recording2Path = PathHelper.ResolveAsset(folderPath, "gympie_np_1192_353972_20160303_055854_60_0.wav");    // folder with 1000 files
+            //var recording2Path = PathHelper.ResolveAsset(folderPath, "gympie_np_1192_354744_20151018_053923_60_0.wav");  // folder with 100 files
             var recording2 = new AudioRecording(recording2Path);
             /*
             var fst2 = FreqScaleType.Linear;
@@ -587,6 +589,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             var image = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "MELSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
             image.Save(outputMelImagePath, ImageFormat.Png);
 
+            //Do RMS normalisation
             sonogram2.Data = PcaWhitening.RmsNormalization(sonogram2.Data);
             var image2 = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "NORMALISEDMELSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
             image2.Save(outputNormMelImagePath, ImageFormat.Png);
@@ -600,18 +603,19 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             var image3 = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "NOISEREDUCEDMELSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
             image3.Save(outputNoiseReducedMelImagePath, ImageFormat.Png);
 
-            //sonogram2.Data = dataMatrix;
-            //int patchWidth2 = 16; //32; //
-            //int patchHeight2 = 16; //32; //
+            //extracting sequential patches from the target spectrogram
             int rows = sonogram2.Data.GetLength(0); //3247
             int cols = sonogram2.Data.GetLength(1); //256
             var sequentialPatches = PatchSampling.GetPatches(sonogram2.Data, patchWidth, patchHeight, (rows / patchHeight) * (cols / patchWidth), "sequential");
-            //var randomPatches = PatchSampling.GetPatches(sonogram.Data, patchWidth, patchHeight, 4000, "random");
             double[,] sequentialPatchMatrix2 = sequentialPatches.ToMatrix();
-            //double[,] randomPatchMatrix = randomPatches.ToMatrix();
-            double[,] reconstructedSpec2 = PcaWhitening.ReconstructSpectrogram(actual.Item1, sequentialPatchMatrix2, actual.Item3, actual.Item4);
-            sonogram2.Data = PatchSampling.ConvertPatches(reconstructedSpec2, patchWidth, patchHeight, cols);
 
+            //Apply PCA Whitening
+            var actual2 = PcaWhitening.Whitening(sequentialPatchMatrix2);
+
+            //double[,] reconstructedSpec2 = PcaWhitening.ReconstructSpectrogram(actual.Item1, sequentialPatchMatrix2, actual.Item3, actual.Item4);
+            //double[,] reconstructedSpec2 = KmeansClustering.ReconstructSpectrogram(sequentialPatchMatrix2, clusteringOutput.Item3);
+            double[,] reconstructedSpec2 = KmeansClustering.ReconstructSpectrogram(actual2.Item2, clusteringOutput.Item3);
+            sonogram2.Data = PatchSampling.ConvertPatches(reconstructedSpec2, patchWidth, patchHeight, cols);
 
             // DO DRAW SPECTROGRAM
             //var fst = freqScale.ScaleType;
