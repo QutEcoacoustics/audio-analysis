@@ -31,8 +31,8 @@ namespace AnalysisPrograms
         public static async Task<int> Main(string[] args)
         {
             // HACK: Disable the following two line when argument refactoring is done
-            var options = DebugOptions.Yes;
-            AttachDebugger(ref options);
+            //var options = DebugOptions.Yes;
+            //AttachDebugger(ref options);
 
             ParseEnvirionemnt();
 
@@ -45,14 +45,14 @@ namespace AnalysisPrograms
             // Note: See MainEntry.BeforeExecute for commands run before invocation.
             // note: Exception handling can be found in CurrentDomainOnUnhandledException
             var console = PhysicalConsoleLogger.Default;
-            var app = new CommandLineApplication<MainArgs>(console);
+            var app = CommandLineApplication = new CommandLineApplication<MainArgs>(console);
 
             app.HelpTextGenerator = new CustomHelpTextGenerator { EnvironmentOptions = EnvironmentOptions };
             app.ValueParsers.Add(new DateTimeOffsetParser());
             app.ValueParsers.Add(new TimeSpanParser());
             app.ValueParsers.Add(new FileInfoParser());
             app.ValueParsers.Add(new DirectoryInfoParser());
-            app.Conventions.UseAttributes();
+            app.Conventions.UseDefaultConventions();
 
             var result = await Task.FromResult(app.Execute(args));
 

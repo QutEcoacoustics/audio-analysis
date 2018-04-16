@@ -79,7 +79,6 @@ namespace AnalysisPrograms
                 + "Copyright QUT " + DateTime.Now.Year.ToString("0000"));
         }
 
-
         private const string ApPlainLoggingKey = "AP_PLAIN_LOGGING";
         private const string ApMetricsKey = "AP_METRICS";
 
@@ -103,6 +102,11 @@ namespace AnalysisPrograms
         /// Gets a value indicating whether or not we should use simpler logging semantics. Usually means no color.
         /// </summary>
         public static bool ApPlainLogging { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether we will submit metrics to the remote metric server.
+        /// </summary>
+        public static bool ApMetricRecording { get; private set; }
 
         private static void AttachExceptionHandler()
         {
@@ -159,11 +163,15 @@ namespace AnalysisPrograms
 
         public static void BeforeExecute(MainArgs main, CommandLineApplication application)
         {
+            // re-assign here... the application will be a sub-command here (which is tecnically a different CLA)
             CommandLineApplication = application;
+
             var debugOptions = main.DebugOption;
             AttachDebugger(ref debugOptions);
 
             ModifyVerbosity(main);
+
+            Log.Debug($"Metric reporting is {(ApMetricRecording ? "en" : "dis")}abled.");
 
             LoadNativeCode();
         }
@@ -196,14 +204,25 @@ namespace AnalysisPrograms
             }
             else if (usageStyle == Usages.Single)
             {
-                var command = root.Commands.FirstOrDefault(x =>
-                    x.Name.Equals(commandName, StringComparison.InvariantCultureIgnoreCase));
-
-                if (command == null)
+                CommandLineApplication command;
+                if (commandName == root.Name)
                 {
-                    throw new CommandParsingException(
-                        CommandLineApplication,
-                        $"Could not find a command with name that matches `{commandName}`.");
+                    command = root;
+                }
+                else
+                {
+                    command = root.Commands.FirstOrDefault(x =>
+                        x.Name.Equals(commandName, StringComparison.InvariantCultureIgnoreCase));
+
+                    // sometimes this is called from AppDomainUnhandledException, in which case throwing another exception
+                    // just gets squashed!
+                    if (command == null)
+                    {
+                        var commandNotFoundMessage = $"Could not find a command with name that matches `{commandName}`.";
+                        Log.Fatal(commandNotFoundMessage);
+
+                        throw new CommandParsingException(CommandLineApplication, commandNotFoundMessage);
+                    }
                 }
 
                 command.ShowHelp();
@@ -234,11 +253,11 @@ namespace AnalysisPrograms
                 {
                     {
                         ApPlainLoggingKey,
-                        "[true|false]\t Enable simpler logging - the default value is `false`"
+                        "<true|false>\t Enable simpler logging - the default value is `false`"
                     },
                     {
                         ApMetricsKey,
-                        "[true|false]\t (Not implemented) Enable or disable metrics - default value is `true`"
+                        "<true|false>\t (Not implemented) Enable or disable metrics - default value is `true`"
                     },
                 };
 
@@ -284,7 +303,7 @@ namespace AnalysisPrograms
                 // this branch prints the message, and command usage, but the stack trace is only output in the log
                 NoConsole.Log.Fatal(FatalMessage, ex);
 
-                var command = CommandLineApplication.Name;
+                var command = CommandLineApplication?.Name;
                 var message = FatalMessage + inner.Message;
                 PrintUsage(message, Usages.Single, command ?? string.Empty);
             }
@@ -390,11 +409,12 @@ namespace AnalysisPrograms
 
             if (bool.TryParse(Environment.GetEnvironmentVariable(ApMetricsKey), out var parseMetrics))
             {
-                Log.Trace("Metric reporting enabled but not implemented");
+                ApMetricRecording = parseMetrics;
             }
             else
             {
-                Log.Trace("Metric reporting disabled");
+                // if the env var is not set or not parseable, then set default value.
+                ApMetricRecording = true;
             }
         }
 
@@ -450,7 +470,7 @@ namespace AnalysisPrograms
                     if (appender is ConsoleAppender || appender is ManagedColoredConsoleAppender
                         || appender is ColoredConsoleAppender)
                     {
-                        ((AppenderSkeleton)appender).Threshold = Level.Notice;
+                        ((AppenderSkeleton)appender).Threshold = Level.Error;
                     }
                 }
             }

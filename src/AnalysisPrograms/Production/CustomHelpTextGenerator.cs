@@ -88,9 +88,15 @@ namespace AnalysisPrograms.Production
                 output.WriteLine("Arguments:");
                 var maxArgLen = arguments.Max(a => a.Name.Length);
                 var outputFormat = string.Format("  {{0, -{0}}}{{1}}", maxArgLen + 2);
+
+                var newLineWithMessagePadding = Environment.NewLine + new string(' ', maxArgLen + 4);
+
                 foreach (var arg in arguments)
                 {
-                    output.Write(outputFormat, arg.Name, arg.Description);
+                    var message = string.Format(outputFormat, arg.Name, arg.Description);
+                    message = message.Replace(Environment.NewLine, newLineWithMessagePadding);
+
+                    output.Write(message);
                     output.WriteLine();
                 }
             }
@@ -101,9 +107,15 @@ namespace AnalysisPrograms.Production
                 output.WriteLine("Options:");
                 var maxOptLen = options.Max(o => o.Template?.Length ?? 0);
                 var outputFormat = string.Format("  {{0, -{0}}}{{1}}", maxOptLen + 2);
+
+                var newLineWithMessagePadding = Environment.NewLine + new string(' ', maxOptLen + 4);
+
                 foreach (var opt in options)
                 {
-                    output.Write(outputFormat, opt.Template, opt.Description);
+                    var message = string.Format(outputFormat, opt.Template, opt.Description);
+                    message = message.Replace(Environment.NewLine, newLineWithMessagePadding);
+
+                    output.Write(message);
                     output.WriteLine();
                 }
             }
@@ -127,12 +139,19 @@ namespace AnalysisPrograms.Production
             output.WriteLine();
             output.WriteLine("Commands:");
             var maxCmdLen = commands.Max(c => c.Name?.Length ?? 0);
-            var outputFormat = $"  {{0, -{maxCmdLen + 2}}}{{1}}";
+            var outputFormat = string.Format("  {{0, -{0}}}{{1}}", maxCmdLen + 2);
+
+            var newLineWithMessagePadding = Environment.NewLine + new string(' ', maxCmdLen + 4);
+
             foreach (var cmd in commands.OrderBy(c => c.Name))
             {
-                output.Write(outputFormat, cmd.Name, cmd.Description);
+                var message = string.Format(outputFormat, cmd.Name, cmd.Description);
+                message = message.Replace(Environment.NewLine, newLineWithMessagePadding);
+
+                output.Write(message);
                 output.WriteLine();
             }
+
         }
 
         public string FormatEnvironmentVariables()

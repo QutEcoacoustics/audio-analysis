@@ -14,6 +14,7 @@ namespace AnalysisPrograms.Production
     using Acoustics.Shared.ConfigFile;
 
     using AnalysisBase;
+    using McMaster.Extensions.CommandLineUtils;
 
     public static class ExceptionLookup
     {
@@ -36,6 +37,10 @@ namespace AnalysisPrograms.Production
                                   {
                                       typeof(CommandLineArgumentException),
                                       new ExceptionStyle() { ErrorCode = 3 }
+                                  },
+                                  {
+                                      typeof(CommandParsingException),
+                                      new ExceptionStyle() { ErrorCode = 4 }
                                   },
                                   {
                                       typeof(DirectoryNotFoundException),
