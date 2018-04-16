@@ -16,7 +16,7 @@ namespace log4net
     public static class LogExtensions
     {
         // equivalent to NOTICE
-        public static readonly Core.Level SuccessLevel = new Core.Level(50000, "SUCCESS");
+        public static readonly Core.Level SuccessLevel = new Core.Level(50_000, "SUCCESS");
 
         // Higher than all other levels, but lower than OFF.
         // In interactive scenarios we need to be sure that the user sees the message.

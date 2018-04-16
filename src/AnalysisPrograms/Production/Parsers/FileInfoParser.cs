@@ -6,18 +6,27 @@ namespace AnalysisPrograms.Production.Parsers
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
 
     using McMaster.Extensions.CommandLineUtils;
+    using McMaster.Extensions.CommandLineUtils.Abstractions;
 
-    public class FileInfoParser : IValueParser
+    public class FileInfoParser : IValueParser<FileInfo>
     {
-        public object Parse(string argName, string value)
+        public Type TargetType { get; } = typeof(FileInfo);
+
+        public FileInfo Parse(string argName, string value, CultureInfo culture)
         {
-           return value.IsNotWhitespace() ? new FileInfo(value) : null;
+            return value.IsNotWhitespace() ? new FileInfo(value) : null;
+        }
+
+        object IValueParser.Parse(string argName, string value, CultureInfo culture)
+        {
+            return this.Parse(argName, value, culture);
         }
     }
 }

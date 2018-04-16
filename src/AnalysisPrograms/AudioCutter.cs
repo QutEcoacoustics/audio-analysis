@@ -16,6 +16,7 @@ namespace AnalysisPrograms
     using AnalysisBase;
     using AnalysisBase.Segment;
     using McMaster.Extensions.CommandLineUtils;
+    using McMaster.Extensions.CommandLineUtils.Abstractions;
     using Production;
     using Production.Arguments;
     using Production.Validation;
@@ -122,6 +123,47 @@ namespace AnalysisPrograms
                 AudioCutter.Execute(this);
                 return this.Ok();
             }
+
+            protected override ValidationResult OnValidate(ValidationContext context, CommandLineContext appContext)
+            {
+                //var recurse = this.Recurse ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+
+                // check that any files are in Input dir
+                //if (!Directory.EnumerateFiles(this.Input.FullName, "*.*", recurse).Any())
+                //{
+                //    throw new ArgumentException("Input directory contains no files.");
+                //}
+
+                // check that start offset (if specified) is less than end offset (if specified)
+                if (this.EndOffset.HasValue && this.StartOffset >= this.EndOffset.Value)
+                {
+                    return new ValidationResult(
+                        $"StartOffset {this.StartOffset} must be less than EndOffset {this.EndOffset.Value}.",
+                        new[] { nameof(this.StartOffset), nameof(this.EndOffset) });
+                }
+
+                // check that min duration is less than max duration
+                if (this.SegmentDurationMinimum >= this.SegmentDuration)
+                {
+                    return new ValidationResult(
+                        $"SegmentDurationMinimum {this.SegmentDurationMinimum} must be less than AnalysisIdealSegmentDuration {this.SegmentDuration}.",
+                        new[] { nameof(this.SegmentDurationMinimum), nameof(this.SegmentDuration) });
+                }
+
+                // check that mix down to mono and a a channel haven't both been specified
+                //if (this.Channel.HasValue && this.MixDownToMono)
+                //{
+                //    throw new ArgumentException("You cannot specify a channel and mix down to mono.");
+                //}
+
+                // check media type
+                if (!MediaTypes.IsFileExtRecognised(this.SegmentFileExtension))
+                {
+                    return new ValidationResult($"File extension {this.SegmentFileExtension} is not recognised.");
+                }
+
+                return base.OnValidate(context, appContext);
+            }
         }
 
         public static void Execute(Arguments arguments)
@@ -130,8 +172,6 @@ namespace AnalysisPrograms
             {
                 throw new NoDeveloperMethodException();
             }
-
-            Validate(arguments);
 
             var sw = new Stopwatch();
             sw.Start();
@@ -230,43 +270,6 @@ namespace AnalysisPrograms
                 itemNumber,
                 itemCount,
                 preparedFile.SourceMetadata.Identifier);
-        }
-
-        private static void Validate(Arguments arguments)
-        {
-            //var recurse = this.Recurse ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
-
-            // check that any files are in Input dir
-            //if (!Directory.EnumerateFiles(this.Input.FullName, "*.*", recurse).Any())
-            //{
-            //    throw new ArgumentException("Input directory contains no files.");
-            //}
-
-            // check that start offset (if specified) is less than end offset (if specified)
-            if (arguments.EndOffset.HasValue && arguments.StartOffset >= arguments.EndOffset.Value)
-            {
-                throw new InvalidStartOrEndException(
-                    $"StartOffset {arguments.StartOffset} must be less than EndOffset {arguments.EndOffset.Value}.");
-            }
-
-            // check that min duration is less than max duration
-            if (arguments.SegmentDurationMinimum >= arguments.SegmentDuration)
-            {
-                throw new InvalidDurationException(
-                    $"SegmentDurationMinimum {arguments.SegmentDurationMinimum} must be less than AnalysisIdealSegmentDuration {arguments.SegmentDuration}.");
-            }
-
-            // check that mix down to mono and a a channel haven't both been specified
-            //if (this.Channel.HasValue && this.MixDownToMono)
-            //{
-            //    throw new ArgumentException("You cannot specify a channel and mix down to mono.");
-            //}
-
-            // check media type
-            if (!MediaTypes.IsFileExtRecognised(arguments.SegmentFileExtension))
-            {
-                throw new ArgumentException($"File extension {arguments.SegmentFileExtension} is not recognised.");
-            }
         }
     }
 }
