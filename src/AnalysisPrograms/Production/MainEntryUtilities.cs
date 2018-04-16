@@ -461,17 +461,15 @@ namespace AnalysisPrograms
             repository.Root.Level = modifiedLevel;
             repository.Threshold = modifiedLevel;
 
-            if (quietConsole)
+            // the quiet option limits the amount output we send to the console
+            // but the full leg level is still sent to log files
+            var appenders = repository.GetAppenders();
+            foreach (var appender in appenders)
             {
-                var appenders = repository.GetAppenders();
-
-                foreach (var appender in appenders)
+                if (appender is ConsoleAppender || appender is ManagedColoredConsoleAppender
+                                                || appender is ColoredConsoleAppender)
                 {
-                    if (appender is ConsoleAppender || appender is ManagedColoredConsoleAppender
-                        || appender is ColoredConsoleAppender)
-                    {
-                        ((AppenderSkeleton)appender).Threshold = Level.Error;
-                    }
+                    ((AppenderSkeleton)appender).Threshold = quietConsole ? Level.Error : modifiedLevel;
                 }
             }
 

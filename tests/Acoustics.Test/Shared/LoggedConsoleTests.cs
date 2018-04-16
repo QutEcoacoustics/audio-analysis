@@ -11,6 +11,8 @@ namespace Acoustics.Test.Shared
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
+    using global::AnalysisPrograms;
+    using global::AnalysisPrograms.Production.Arguments;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
 
@@ -91,6 +93,7 @@ namespace Acoustics.Test.Shared
         [Timeout(5000)]
         public void PromptNonInteractive()
         {
+            MainEntry.SetLogVerbosity(LogVerbosity.Info, false);
             using (var stringWriter = new StringWriter())
             {
                 Console.SetOut(stringWriter);
@@ -104,6 +107,8 @@ namespace Acoustics.Test.Shared
 
                 Assert.AreEqual(null, result);
             }
+
+            MainEntry.SetLogVerbosity(LogVerbosity.Warn, true);
         }
 
         [TestMethod]
