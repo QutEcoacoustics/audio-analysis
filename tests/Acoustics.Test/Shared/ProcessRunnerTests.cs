@@ -58,7 +58,9 @@ namespace Acoustics.Test.Shared
                 }
                 finally
                 {
-                    Assert.AreEqual(1215, runner.StandardOutput.Length);
+                    Assert.IsTrue(
+                        runner.StandardOutput.Length > 1200,
+                        $"Expected stdout to at least include ffmpeg header but it was only {runner.StandardOutput.Length} chars. StdOut:\n{runner.StandardOutput}");
                     Assert.IsTrue(
                         runner.ErrorOutput.Length > 1500,
                         $"Expected stderr to at least include ffmpeg header but it was only {runner.ErrorOutput.Length} chars. StdErr:\n{runner.ErrorOutput}");
@@ -95,7 +97,7 @@ namespace Acoustics.Test.Shared
 
                 Assert.ThrowsException<ProcessRunner.ProcessMaximumRetriesException>(() =>
                 {
-                    runner.Run($@"-i ""{path}"" -ar 8000 ""{dest}""", @"D:\TEMP");
+                    runner.Run($@"-i ""{path}"" -ar 8000 ""{dest}""", this.outputDirectory.FullName);
                 });
 
                 Assert.AreEqual(0, runner.StandardOutput.Length);
