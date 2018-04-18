@@ -118,6 +118,16 @@ namespace log4net
         }
 
         /// <summary>
+        /// Gets a value indicating whether the Verbose logging level is enabled
+        /// </summary>
+        /// <param name="log">The logger to use</param>
+        /// <returns>True if the Verbose logging level is enabled</returns>
+        public static bool IsVerboseEnabled(this ILog log)
+        {
+            return log.Logger.IsEnabledFor(log4net.Core.Level.Verbose);
+        }
+
+        /// <summary>
         /// Log a message object with the <see cref="F:log4net.Core.Level.Trace"/> level including
         ///             the stack trace of the <see cref="T:System.Exception"/> passed
         ///             as a parameter.

@@ -1964,12 +1964,7 @@ namespace AnalysisPrograms
             image.Save(imagePath, ImageFormat.Png);
             FileInfo fiImage = new FileInfo(imagePath);
 
-            // Display the image using MsPaint.exe if image file exists
-            if (fiImage.Exists)
-            {
-                TowseyLibrary.ProcessRunner process = new TowseyLibrary.ProcessRunner(imageViewer);
-                process.Run(imagePath, outputDir);
-            }
+            // displaying images no longer supported, line removed
 
             // #################################################################################################
             // THE FOLLOWING CODE tests the effect of changing the order of 1) CONVERT TO dB 2) NOISE REMOVAL

@@ -8,6 +8,7 @@ namespace Acoustics.Test.TestHelpers
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
+    using System.Runtime.CompilerServices;
 
     public static class PathHelper
     {
@@ -61,7 +62,12 @@ namespace Acoustics.Test.TestHelpers
 
         public static FileInfo GetTempFile(string ext)
         {
-            return new FileInfo(Path.Combine(GetTempDir().FullName, Path.GetRandomFileName().Substring(0, 9) + ext));
+            return GetTempFile(GetTempDir(), ext);
+        }
+
+        public static FileInfo GetTempFile(DirectoryInfo parent, string ext)
+        {
+            return parent.CombineFile(Path.GetRandomFileName().Substring(0, 9) + ext);
         }
 
         public static DirectoryInfo GetTempDir()
@@ -82,7 +88,7 @@ namespace Acoustics.Test.TestHelpers
             {
                 Directory.Delete(dir.FullName, true);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Debug.WriteLine(e.Message);
             }

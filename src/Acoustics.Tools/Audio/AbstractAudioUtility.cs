@@ -84,11 +84,12 @@
 
             this.CheckRequestValidForMediaType(output, outputMediaType, request);
 
-            var process = new ProcessRunner(this.ExecutableModify.FullName);
+            using (var process = new ProcessRunner(this.ExecutableModify.FullName))
+            {
+                string args = this.ConstructModifyArgs(source, output, request);
 
-            string args = this.ConstructModifyArgs(source, output, request);
-
-            this.RunExe(process, args, output.DirectoryName);
+                this.RunExe(process, args, output.DirectoryName);
+            }
 
             if (this.Log.IsDebugEnabled)
             {
@@ -110,18 +111,21 @@
 
             this.CanProcess(source, this.ValidSourceMediaTypes, this.InvalidSourceMediaTypes);
 
-            var process = new ProcessRunner(this.ExecutableInfo.FullName);
-
-            string args = this.ConstructInfoArgs(source);
-
-            this.RunExe(process, args, source.DirectoryName);
-
-            if (this.Log.IsDebugEnabled)
+            AudioUtilityInfo result;
+            using (var process = new ProcessRunner(this.ExecutableInfo.FullName))
             {
-                this.Log.Trace("Source " + this.BuildFileDebuggingOutput(source));
+                string args = this.ConstructInfoArgs(source);
+
+                this.RunExe(process, args, source.DirectoryName);
+
+                if (this.Log.IsDebugEnabled)
+                {
+                    this.Log.Trace("Source " + this.BuildFileDebuggingOutput(source));
+                }
+
+                result = this.GetInfo(source, process);
             }
 
-            var result = this.GetInfo(source, process);
             return result;
         }
 
