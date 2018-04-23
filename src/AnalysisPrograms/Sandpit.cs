@@ -2059,5 +2059,47 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("FINISHED");
             Console.ReadLine();
         }
+
+        /*
+        /// <summary>
+        /// this code written for Manoosh to demonstrate drawing images of clusters
+        /// </summary>
+        public static void CodeToDrawClusterImage()
+        {
+            string pathToClusterCsvFile = "theFilePath";
+            string pathToOutputImageFile = "theImagePath";
+
+            List<double[,]> clusterList = new FileTools.ReadClusterDataFromFile(pathToClusterCsvFile);
+
+            var images = new List<Image>();
+
+            int spacerWidth = 2;
+            int binCount = 128;
+            Image spacer = new Bitmap(spacerWidth, binCount);
+            Graphics g = Graphics.FromImage(spacer);
+            g.Clear(Color.BlanchedAlmond);
+
+            int[] sortOrder = { 14, 45, 3, 19 }; //etc
+
+            for (int i = 0; i < sortOrder.Length; i++)
+            {
+                Image image = ImageTools.DrawNormalisedMatrix(clusterList[sortOrder[i]]);
+                // OR
+                // adapt the following method to draw matrix scaled up in size
+                //Image image = ImageTools.DrawMatrix(double[,] matrix, string pathName, bool doScale);
+
+                images.Add(image);
+                images.Add(spacer);
+            }
+
+            Bitmap combinedImage = (Bitmap)ImageTools.CombineImagesInLine(images);
+
+            // set up the mel frequency scale
+            int finalBinCount = 128;
+            var frequencyScale = new FrequencyScale(FreqScaleType.Mel, 11025, 512, finalBinCount, hertzGridInterval: 1000);
+
+            FrequencyScale.DrawFrequencyLinesOnImage(combinedImage, frequencyScale.GridLineLocations, includeLabels: false);
+            combinedImage.Save(pathToOutputImageFile);
+        } */
     }
 }
