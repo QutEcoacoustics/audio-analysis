@@ -108,8 +108,7 @@ namespace AnalysisPrograms
             var fiReport = new FileInfo(reportROCPath);
             if (fiReport.Exists)
             {
-                TowseyLibrary.ProcessRunner process = new TowseyLibrary.ProcessRunner(LSKiwiHelper.XLSViewer);
-                process.Run(reportROCPath, outputDir);
+                LoggedConsole.WriteLine("REPORT FILE WAS PRODUCED: <{0}>", fiReport.FullName);
             }
             else
             {

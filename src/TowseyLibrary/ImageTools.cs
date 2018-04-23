@@ -43,7 +43,6 @@ namespace TowseyLibrary
 
     public class ImageTools
     {
-        private const string PaintPath = @"C:\Windows\system32\mspaint.exe";
 
         // this is a list of predefined colors in the Color class.
         private static string[] ColorNames = new[]
@@ -442,25 +441,6 @@ namespace TowseyLibrary
         public static void WriteBitmap2File(Bitmap binaryBmp, string opPath)
         {
             binaryBmp.Save(opPath);
-        }
-
-        public static void DisplayImageWithPaint(string imagePath)
-        {
-            DisplayImageWithPaint(imagePath);
-        }
-
-        public static void DisplayImageWithPaint(FileInfo imagePath)
-        {
-            FileInfo exe = new FileInfo(PaintPath);
-            if (!exe.Exists)
-            {
-                LoggedConsole.WriteLine("CANNOT DISPLAY IMAGE. PAINT.EXE DOES NOT EXIST: <" + imagePath + ">");
-                return;
-            }
-
-            string outputDir = imagePath.DirectoryName;
-            var process = new ProcessRunner(PaintPath);
-            process.Run(imagePath.FullName, outputDir);
         }
 
         public static Bitmap ApplyInvert(Bitmap bitmapImage)

@@ -19,6 +19,7 @@ namespace AnalysisPrograms
     using McMaster.Extensions.CommandLineUtils.Abstractions;
     using Production;
     using Production.Arguments;
+    using static System.Environment;
 
     /// <summary>
     /// Main Entry for Analysis Programs.
@@ -39,20 +40,21 @@ namespace AnalysisPrograms
 
             AttachExceptionHandler();
 
-            NoConsole.Log.Info("Executable called with these arguments: {1}{0}{1}".Format2(Environment.CommandLine, Environment.NewLine));
-
-            var console = PhysicalConsoleLogger.Default;
-            var helpText = CustomHelpTextGenerator.Singleton;
-            helpText.EnvironmentOptions = EnvironmentOptions;
-
-            ValueParserProvider.Default.AddParser(typeof(DateTimeOffset), new DateTimeOffsetParser());
-            ValueParserProvider.Default.AddParser(typeof(TimeSpan), new TimeSpanParser());
-            ValueParserProvider.Default.AddParser(typeof(DirectoryInfo), new DirectoryInfoParser());
-            ValueParserProvider.Default.AddParser(typeof(FileInfo), new FileInfoParser());
+            NoConsole.Log.Info($"Executable called with these arguments: {NewLine}{CommandLine}{NewLine}");
 
             // Note: See MainEntry.BeforeExecute for commands run before invocation.
             // note: Exception handling can be found in CurrentDomainOnUnhandledException
-            var result = await CommandLineApplication.ExecuteAsync<MainArgs>(console, args);
+            var console = PhysicalConsoleLogger.Default;
+            var app = CommandLineApplication = new CommandLineApplication<MainArgs>(console);
+
+            app.HelpTextGenerator = new CustomHelpTextGenerator { EnvironmentOptions = EnvironmentOptions };
+            app.ValueParsers.Add(new DateTimeOffsetParser());
+            app.ValueParsers.Add(new TimeSpanParser());
+            app.ValueParsers.Add(new FileInfoParser());
+            app.ValueParsers.Add(new DirectoryInfoParser());
+            app.Conventions.UseDefaultConventions();
+
+            var result = await Task.FromResult(app.Execute(args));
 
             LogProgramStats();
 

@@ -620,8 +620,7 @@ namespace AudioAnalysisTools
             var fiImage = new FileInfo(imagePath);
             if (fiImage.Exists)
             {
-                var process = new ProcessRunner(imageViewer);
-                process.Run(imagePath, opDir);
+                LoggedConsole.WriteError("Showing image is no longer supported");
             }
         }
 

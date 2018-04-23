@@ -20,6 +20,7 @@ namespace AnalysisPrograms
     using AnalysisBase;
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
+    using McMaster.Extensions.CommandLineUtils.Abstractions;
     using Production;
     using Production.Arguments;
 
@@ -54,8 +55,9 @@ namespace AnalysisPrograms
                 ShortName = "n")]
             public bool DryRun { get; set; }
 
-            public void Validate()
+            protected override ValidationResult OnValidate(ValidationContext context, CommandLineContext appContext)
             {
+                return base.OnValidate(context, appContext);
             }
 
             public override Task<int> Execute(CommandLineApplication app)
@@ -73,8 +75,6 @@ namespace AnalysisPrograms
             {
                 throw new NoDeveloperMethodException();
             }
-
-            arguments.Validate();
 
             var validExtensions = new[] { ".wav", ".mp3", ".wv", ".ogg", ".wma" };
             var searchOption = arguments.Recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;

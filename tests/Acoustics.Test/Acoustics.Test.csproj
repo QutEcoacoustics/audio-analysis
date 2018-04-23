@@ -266,6 +266,7 @@
     <Compile Include="AudioAnalysisTools\LongDurationSpectrograms\Zooming\ZoomTiledSpectrogramTests.cs" />
     <Compile Include="DotNetVersionTests.cs" />
     <Compile Include="Shared\ConfigTests.cs" />
+    <Compile Include="Shared\ProcessRunnerTests.cs" />
     <Compile Include="Shared\RangeTests.cs" />
     <Compile Include="TestHelpers\Factories\AudioRecordingFactory.cs" />
     <Compile Include="TestHelpers\Setup.cs" />

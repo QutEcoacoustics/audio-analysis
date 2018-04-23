@@ -6,22 +6,31 @@ namespace AnalysisPrograms.Production.Parsers
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
 
     using McMaster.Extensions.CommandLineUtils;
+    using McMaster.Extensions.CommandLineUtils.Abstractions;
 
-    public class TimeSpanParser : IValueParser
+    public class TimeSpanParser : IValueParser<TimeSpan>
     {
-        public object Parse(string argName, string value)
+        public Type TargetType { get; } = typeof(TimeSpan);
+
+        public TimeSpan Parse(string argName, string value, CultureInfo culture)
         {
             if (!TimeSpan.TryParse(value, out var result))
             {
-                throw new CommandParsingException(null, $"Invalid value specified for {argName}. '{value} is not a valid date time (with offset)");
+                throw new FormatException($"Invalid value specified for {argName}. '{value} is not a valid date time (with offset)");
             }
 
             return result;
+        }
+
+        object IValueParser.Parse(string argName, string value, CultureInfo culture)
+        {
+            return this.Parse(argName, value, culture);
         }
     }
 }

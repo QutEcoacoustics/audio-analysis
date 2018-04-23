@@ -13,6 +13,7 @@ namespace TowseyLibrary
  *
  * generates numbers according to a gaussian distribution
  */
+    [Obsolete("This class has no references, marked for deletion")]
     public class RandomVariable
     {
         private double mean = 0.0;

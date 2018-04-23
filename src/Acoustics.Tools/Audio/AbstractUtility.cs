@@ -363,7 +363,6 @@
         protected void RunExe(ProcessRunner processRunner, string arguments, string workingDirectory)
         {
             // set ProcessRunner to have a timeout and retry
-            processRunner.KillProcessOnWaitTimeout = true;
             processRunner.WaitForExitMilliseconds = Convert.ToInt32(this.ProcessRunnerTimeout.TotalMilliseconds);
             processRunner.MaxRetries = this.ProcessRunnerMaxRetries;
             processRunner.WaitForExit = true;

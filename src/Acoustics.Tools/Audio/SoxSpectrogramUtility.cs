@@ -166,11 +166,12 @@
 
         private void Spectrogram(FileInfo sourceAudioFile, FileInfo outputImageFile)
         {
-            var process = new ProcessRunner(this.soxExe.FullName);
+            using (var process = new ProcessRunner(this.soxExe.FullName))
+            {
+                string args = this.ConstructArgs(sourceAudioFile, outputImageFile);
 
-            string args = this.ConstructArgs(sourceAudioFile, outputImageFile);
-
-            this.RunExe(process, args, outputImageFile.DirectoryName);
+                this.RunExe(process, args, outputImageFile.DirectoryName);
+            }
 
             if (this.Log.IsDebugEnabled)
             {

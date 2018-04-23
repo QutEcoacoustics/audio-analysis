@@ -25,7 +25,6 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.WavTools;
     using Production;
     using TowseyLibrary;
-    using ProcessRunner = TowseyLibrary.ProcessRunner;
 
     /// <summary>
     ///  NOTES:

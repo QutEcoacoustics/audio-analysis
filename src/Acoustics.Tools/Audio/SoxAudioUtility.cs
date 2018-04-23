@@ -549,18 +549,20 @@ a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
 
             this.CanProcess(source, null, null);
 
-            var process = new ProcessRunner(this.ExecutableInfo.FullName);
-
-            string args = "\"" + source.FullName + "\" -n stat stats";
-
-            this.RunExe(process, args, source.DirectoryName);
-
-            if (this.Log.IsDebugEnabled)
+            IEnumerable<string> lines;
+            using (var process = new ProcessRunner(this.ExecutableInfo.FullName))
             {
-                this.Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
-            }
+                string args = "\"" + source.FullName + "\" -n stat stats";
 
-            IEnumerable<string> lines = process.ErrorOutput.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+                this.RunExe(process, args, source.DirectoryName);
+
+                if (this.Log.IsDebugEnabled)
+                {
+                    this.Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
+                }
+
+                lines = process.ErrorOutput.Split(new[] {'\n', '\r'}, StringSplitOptions.RemoveEmptyEntries);
+            }
 
             // if no lines, or any line contains "no handler for file extension", return empty
             if (!lines.Any() || lines.Any(l => l.Contains("no handler for file extension")))
@@ -630,26 +632,28 @@ a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
 
         private TimeSpan? Duration(FileInfo source)
         {
-            var process = new ProcessRunner(this.ExecutableInfo.FullName);
-
-            string args = " --info -D \"" + source.FullName + "\"";
-
-            this.RunExe(process, args, source.DirectoryName);
-
-            if (this.Log.IsDebugEnabled)
+            IEnumerable<string> lines;
+            using (var process = new ProcessRunner(this.ExecutableInfo.FullName))
             {
-                this.Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
+                string args = " --info -D \"" + source.FullName + "\"";
+
+                this.RunExe(process, args, source.DirectoryName);
+
+                if (this.Log.IsDebugEnabled)
+                {
+                    this.Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
+                }
+
+                IEnumerable<string> errorlines = process.ErrorOutput.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+
+                // if no lines, or any line contains "no handler for file extension", return empty
+                if (errorlines.Any(l => l.Contains("no handler for file extension")))
+                {
+                    return null;
+                }
+
+                lines = process.StandardOutput.Split(new[] {'\n', '\r'}, StringSplitOptions.RemoveEmptyEntries);
             }
-
-            IEnumerable<string> errorlines = process.ErrorOutput.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
-
-            // if no lines, or any line contains "no handler for file extension", return empty
-            if (errorlines.Any(l => l.Contains("no handler for file extension")))
-            {
-                return null;
-            }
-
-            IEnumerable<string> lines = process.StandardOutput.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
 
             return TimeSpan.FromSeconds(double.Parse(lines.First()));
         }

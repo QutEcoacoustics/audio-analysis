@@ -6,22 +6,31 @@ namespace AnalysisPrograms.Production.Parsers
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
 
     using McMaster.Extensions.CommandLineUtils;
+    using McMaster.Extensions.CommandLineUtils.Abstractions;
 
-    public class DateTimeOffsetParser : IValueParser
+    public class DateTimeOffsetParser : IValueParser<DateTimeOffset>
     {
-        public object Parse(string argName, string value)
+        public Type TargetType => typeof(DateTimeOffset);
+
+        public DateTimeOffset Parse(string argName, string value, CultureInfo culture)
         {
             if (!DateTimeOffset.TryParse(value, out var result))
             {
-                throw new CommandParsingException(null, $"Invalid value specified for {argName}. '{value} is not a valid date time (with offset)");
+                throw new FormatException($"Invalid value specified for {argName}. '{value} is not a valid date time (with offset)");
             }
 
             return result;
+        }
+
+        object IValueParser.Parse(string argName, string value, CultureInfo culture)
+        {
+            return this.Parse(argName, value, culture);
         }
     }
 }

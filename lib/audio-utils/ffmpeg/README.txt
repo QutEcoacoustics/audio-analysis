@@ -1,108 +1,101 @@
-This is a FFmpeg win64 shared build by Kyle Schwarz.
+Zeranoe FFmpeg Builds <http://ffmpeg.zeranoe.com/builds/>
 
-Zeranoe's FFmpeg Builds Home Page: <http://ffmpeg.zeranoe.com/builds/>
+Build: ffmpeg-3.4.2-win64-shared
 
-FFmpeg version: 3.3.1
-
-This FFmpeg build was configured with:
+Configuration:
   --disable-static
   --enable-shared
   --enable-gpl
   --enable-version3
-  --enable-cuda
-  --enable-cuvid
-  --enable-d3d11va
-  --enable-dxva2
-  --enable-libmfx
-  --enable-nvenc
-  --enable-avisynth
+  --enable-sdl2
   --enable-bzlib
   --enable-fontconfig
-  --enable-frei0r
   --enable-gnutls
   --enable-iconv
   --enable-libass
   --enable-libbluray
-  --enable-libbs2b
-  --enable-libcaca
   --enable-libfreetype
-  --enable-libgme
-  --enable-libgsm
-  --enable-libilbc
-  --enable-libmodplug
   --enable-libmp3lame
   --enable-libopencore-amrnb
   --enable-libopencore-amrwb
-  --enable-libopenh264
   --enable-libopenjpeg
   --enable-libopus
-  --enable-librtmp
+  --enable-libshine
   --enable-libsnappy
   --enable-libsoxr
-  --enable-libspeex
   --enable-libtheora
   --enable-libtwolame
-  --enable-libvidstab
-  --enable-libvo-amrwbenc
-  --enable-libvorbis
   --enable-libvpx
   --enable-libwavpack
   --enable-libwebp
   --enable-libx264
   --enable-libx265
-  --enable-libxavs
-  --enable-libxvid
+  --enable-libxml2
   --enable-libzimg
   --enable-lzma
   --enable-zlib
+  --enable-gmp
+  --enable-libvidstab
+  --enable-libvorbis
+  --enable-libvo-amrwbenc
+  --enable-libmysofa
+  --enable-libspeex
+  --enable-libxvid
+  --enable-libmfx
+  --enable-cuda
+  --enable-cuvid
+  --enable-d3d11va
+  --enable-nvenc
+  --enable-dxva2
+  --enable-avisynth
 
-This build was compiled with the following external libraries:
-  libmfx 1.19 <https://ffmpeg.zeranoe.com>
-  bzip2 1.0.6 <http://bzip.org/>
-  Fontconfig 2.12.1 <http://freedesktop.org/wiki/Software/fontconfig>
-  Frei0r 20130909-git-10d8360 <http://frei0r.dyne.org/>
-  GnuTLS 3.5.12 <http://gnutls.org/>
-  libiconv 1.14 <http://gnu.org/software/libiconv/>
-  libass 0.13.6 <https://github.com/libass/libass>
-  libbluray 20170403-6dffb7e <http://videolan.org/developers/libbluray.html>
-  libbs2b 3.1.0 <http://bs2b.sourceforge.net/>
-  libcaca 0.99.beta19 <http://caca.zoy.org/wiki/libcaca>
-  FreeType 2.8 <http://freetype.sourceforge.net/>
-  Game Music Emu 0.6.1 <https://bitbucket.org/mpyne/game-music-emu/wiki/Home>
-  GSM 1.0.13-4 <http://packages.debian.org/source/squeeze/libgsm>
-  iLBC 20160404-746f8e2 <https://github.com/dekkers/libilbc/>
-  Modplug-XMMS 0.8.8.5 <http://modplug-xmms.sourceforge.net/>
-  LAME 3.99.5 <http://lame.sourceforge.net/>
-  OpenCORE AMR 0.1.3 <http://sourceforge.net/projects/opencore-amr/>
-  OpenH264 1.6.0 <https://github.com/cisco/openh264>
-  OpenJPEG 2.1.2 <https://github.com/uclouvain/openjpeg>
-  Opus 1.1.4 <http://opus-codec.org/>
-  RTMPDump 20151223-git-fa8646d <http://rtmpdump.mplayerhq.hu/>
-  Snappy 20170127-2d99bd1 <https://github.com/google/snappy>
-  libsoxr 0.1.2 <http://sourceforge.net/projects/soxr/>
-  Speex 1.2.0 <http://speex.org/>
-  Theora 1.1.1 <http://theora.org/>
-  TwoLAME 0.3.13 <http://twolame.org/>
-  vid.stab 0.98 <http://public.hronopik.de/vid.stab/>
-  VisualOn AMR-WB 0.1.2 <https://github.com/mstorsjo/vo-amrwbenc>
-  Vorbis 1.3.5 <http://vorbis.com/>
-  vpx 1.6.1 <http://webmproject.org/>
-  WavPack 5.1.0 <http://wavpack.com/>
-  WebP 0.6.0 <https://developers.google.com/speed/webp/>
-  x264 20170123-90a61ec <http://videolan.org/developers/x264.html>
-  x265 2.4 <https://bitbucket.org/multicoreware/x265/wiki/Home>
-  XAVS svn-r55 <http://xavs.sourceforge.net/>
-  Xvid 1.3.4 <http://xvid.org/>
-  z.lib 20170503-b5a1e50 <https://github.com/sekrit-twc/zimg>
-  XZ Utils 5.2.3 <http://tukaani.org/xz>
-  zlib 1.2.8 <http://zlib.net/>
+Libraries:
+  SDL              2.0.7             <https://libsdl.org>
+  bzip2            1.0.6             <http://bzip.org/>
+  Fontconfig       2.12.6            <http://freedesktop.org/wiki/Software/fontconfig>
+  GnuTLS           3.5.18            <http://gnutls.org>
+  libiconv         1.15              <http://gnu.org/software/libiconv>
+  libass           0.14.0            <https://github.com/libass/libass>
+  libbluray        20180123-6021ff9  <http://videolan.org/developers/libbluray.html>
+  FreeType         2.9               <http://freetype.sourceforge.net>
+  LAME             3.100             <http://lame.sourceforge.net>
+  OpenCORE AMR     20170731-07a5be4  <https://sourceforge.net/projects/opencore-amr>
+  OpenJPEG         2.3.0             <https://github.com/uclouvain/openjpeg>
+  Opus             1.2.1             <http://opus-codec.org>
+  shine            3.1.1             <https://github.com/savonet/shine>
+  Snappy           1.1.7             <https://github.com/google/snappy>
+  libsoxr          20160605-5fa7eeb  <http://sourceforge.net/projects/soxr>
+  Theora           1.1.1             <http://theora.org>
+  TwoLAME          0.3.13            <http://twolame.org>
+  vpx              1.7.0             <http://webmproject.org>
+  WavPack          5.1.0             <http://wavpack.com>
+  WebP             0.6.1             <https://developers.google.com/speed/webp>
+  x264             20180118-7d0ff22  <http://videolan.org/developers/x264.html>
+  x265             20180215-7219376  <https://bitbucket.org/multicoreware/x265/wiki/Home>
+  libxml2          2.9.7             <http://xmlsoft.org>
+  z.lib            20180119-5f24b48  <https://github.com/sekrit-twc/zimg>
+  XZ Utils         5.2.3             <http://tukaani.org/xz>
+  zlib             1.2.11            <http://zlib.net>
+  GMP              6.1.2             <https://gmplib.org>
+  vid.stab         20170830-afc8ea9  <http://public.hronopik.de/vid.stab>
+  Vorbis           1.3.5             <http://vorbis.com>
+  VisualOn AMR-WB  20141107-3b3fcd0  <https://sourceforge.net/projects/opencore-amr>
+  libmysofa        20171120-cec6eea  <https://github.com/hoene/libmysofa>
+  Speex            1.2.0             <http://speex.org>
+  Xvid             1.3.5             <https://labs.xvid.com>
+  libmfx           1.23              <https://software.intel.com/en-us/media-sdk>
 
-The source code for this FFmpeg build can be found at: <http://ffmpeg.zeranoe.com/builds/source/>
+Copyright (C) 2018 Kyle Schwarz
 
-This build was compiled on Ubuntu 16.04.2 LTS: <https://www.ubuntu.com/>
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-GCC 6.3.0 was used to compile this FFmpeg build: <http://gcc.gnu.org/>
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-This build was compiled using the MinGW-w64 toolchain: <http://mingw-w64.sourceforge.net/>
-
-Licenses for each library can be found in the 'licenses' folder.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.

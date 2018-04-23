@@ -16,7 +16,7 @@ namespace log4net
     public static class LogExtensions
     {
         // equivalent to NOTICE
-        public static readonly Core.Level SuccessLevel = new Core.Level(50000, "SUCCESS");
+        public static readonly Core.Level SuccessLevel = new Core.Level(50_000, "SUCCESS");
 
         // Higher than all other levels, but lower than OFF.
         // In interactive scenarios we need to be sure that the user sees the message.
@@ -115,6 +115,16 @@ namespace log4net
         public static void Verbose(this ILog log, object message, Exception exception)
         {
             log.Logger.Log(null, log4net.Core.Level.Verbose, message, exception);
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the Verbose logging level is enabled
+        /// </summary>
+        /// <param name="log">The logger to use</param>
+        /// <returns>True if the Verbose logging level is enabled</returns>
+        public static bool IsVerboseEnabled(this ILog log)
+        {
+            return log.Logger.IsEnabledFor(log4net.Core.Level.Verbose);
         }
 
         /// <summary>

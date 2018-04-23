@@ -582,8 +582,10 @@ namespace AudioAnalysisTools.StandardSpectrograms
             // −c text  Set (or clear) the image comment - text to display below and to the left of the spectrogram.
             // trim 20 30  displays spectrogram of 30 seconds duratoin starting at 20 seconds.
             var args = string.Format(SoxCommandLineArguments, fiAudio.FullName, title, comment, axes, coloured, quantisation, output.FullName);
-            var process = new TowseyLibrary.ProcessRunner(soxCmd);
-            process.Run(args, output.DirectoryName);
+            using (var process = new ProcessRunner(soxCmd))
+            {
+                process.Run(args, output.DirectoryName);
+            }
         }
 
         /// <summary>
