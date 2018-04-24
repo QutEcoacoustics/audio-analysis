@@ -44,14 +44,16 @@ namespace Acoustics.Shared.Csv
 
             // Find all of our custom class maps
             var type = typeof(CsvClassMap);
+
+            bool OurCodePredicate(Assembly a)
+            {
+                var assemblyCompanyAttribute = (AssemblyCompanyAttribute)a.GetCustomAttributes(typeof(AssemblyCompanyAttribute), false).FirstOrDefault();
+                return assemblyCompanyAttribute != null && assemblyCompanyAttribute.Company.Contains("QUT");
+            }
+
             var classMapTypes =
                 AppDomain.CurrentDomain.GetAssemblies()
-                         .Where(
-                             a =>
-                                 {
-                                     var assemblyCompanyAttribute = (AssemblyCompanyAttribute)a.GetCustomAttributes(typeof(AssemblyCompanyAttribute), false).FirstOrDefault();
-                                     return assemblyCompanyAttribute != null && assemblyCompanyAttribute.Company == "QUT";
-                                 })
+                         .Where(OurCodePredicate)
                          .SelectMany(s => s.GetTypes())
                          .Where(type.IsAssignableFrom);
 
