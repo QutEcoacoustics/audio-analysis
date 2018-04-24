@@ -19,6 +19,7 @@ namespace AnalysisPrograms.Production.Arguments
         Description = Meta.Description,
         ThrowOnUnexpectedArgument = true)]
     [HelpOption(Inherited = true, ShowInHelpText = true)]
+    [VersionOption(BuildMetadata.VersionString, Template = "--version")]
     [Subcommand("help", typeof(HelpArgs))]
     [Subcommand("list", typeof(ListArgs))]
     [Subcommand("AnalysesAvailable", typeof(AnalysesAvailable))]

@@ -10,15 +10,13 @@
 namespace AnalysisPrograms
 {
     using System;
-    using System.IO;
     using System.Reflection;
     using System.Threading.Tasks;
-    using AnalysisPrograms.Production.Parsers;
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
-    using McMaster.Extensions.CommandLineUtils.Abstractions;
     using Production;
     using Production.Arguments;
+    using Production.Parsers;
     using static System.Environment;
 
     /// <summary>
@@ -42,18 +40,10 @@ namespace AnalysisPrograms
 
             NoConsole.Log.Info($"Executable called with these arguments: {NewLine}{CommandLine}{NewLine}");
 
+            var app = CreateCommandLineApplication();
+
             // Note: See MainEntry.BeforeExecute for commands run before invocation.
             // note: Exception handling can be found in CurrentDomainOnUnhandledException
-            var console = PhysicalConsoleLogger.Default;
-            var app = CommandLineApplication = new CommandLineApplication<MainArgs>(console);
-
-            app.HelpTextGenerator = new CustomHelpTextGenerator { EnvironmentOptions = EnvironmentOptions };
-            app.ValueParsers.Add(new DateTimeOffsetParser());
-            app.ValueParsers.Add(new TimeSpanParser());
-            app.ValueParsers.Add(new FileInfoParser());
-            app.ValueParsers.Add(new DirectoryInfoParser());
-            app.Conventions.UseDefaultConventions();
-
             var result = await Task.FromResult(app.Execute(args));
 
             LogProgramStats();

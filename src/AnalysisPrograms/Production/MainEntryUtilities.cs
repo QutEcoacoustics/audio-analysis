@@ -7,6 +7,7 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
+// ReSharper disable once CheckNamespace
 namespace AnalysisPrograms
 {
     using Acoustics.Shared.Contracts;
@@ -15,21 +16,13 @@ namespace AnalysisPrograms
 #endif
     using System;
     using System.Collections.Generic;
-    using System.ComponentModel;
     using System.Diagnostics;
-    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Reflection;
-    using System.Runtime.Serialization;
-    using System.Text;
-    using System.Threading;
-    using System.Threading.Tasks;
     using Acoustics.Shared;
-    using EventStatistics;
     using log4net.Appender;
     using log4net.Core;
-    using log4net.Filter;
     using log4net.Repository.Hierarchy;
 #if DEBUG
     using Acoustics.Shared.Debugging;
@@ -38,65 +31,40 @@ namespace AnalysisPrograms
     using McMaster.Extensions.CommandLineUtils;
     using Production;
     using Production.Arguments;
+    using Production.Parsers;
 
     public static partial class MainEntry
     {
-        // http://stackoverflow.com/questions/1600962/displaying-the-build-date?lq=1
-        private static DateTime RetrieveLinkerTimestamp()
-        {
-            string filePath = Assembly.GetCallingAssembly().Location;
-            const int peHeaderOffset = 60;
-            const int linkerTimestampOffset = 8;
-            byte[] b = new byte[2048];
-            System.IO.Stream s = null;
+        // ReSharper disable once InconsistentNaming
+#if DEBUG
+        public const bool InDEBUG = true;
+#else
+        public const bool InDEBUG = false;
+#endif
 
-            try
+        public static readonly Dictionary<string, string> EnvironmentOptions =
+            new Dictionary<string, string>
             {
-                s = new System.IO.FileStream(filePath, System.IO.FileMode.Open, System.IO.FileAccess.Read);
-                s.Read(b, 0, 2048);
-            }
-            finally
-            {
-                s?.Close();
-            }
-
-            int i = BitConverter.ToInt32(b, peHeaderOffset);
-            int secondsSince1970 = BitConverter.ToInt32(b, i + linkerTimestampOffset);
-            DateTime dt = new DateTime(1970, 1, 1, 0, 0, 0);
-            dt = dt.AddSeconds(secondsSince1970);
-            dt = dt.AddHours(TimeZone.CurrentTimeZone.GetUtcOffset(dt).Hours);
-            return dt;
-        }
-
-        private static void Copyright()
-        {
-            Assembly asm = Assembly.GetExecutingAssembly();
-            FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(asm.Location);
-
-            LoggedConsole.WriteLine(Meta.Description + " - version " + fvi.FileVersion + " (" + (InDEBUG ? "DEBUG" : "RELEASE")
-                + " build, " + RetrieveLinkerTimestamp().ToString("g") + ") \n"
-                + "Git branch-version: " + fvi.ProductVersion + "\n"
-                + "Copyright QUT " + DateTime.Now.Year.ToString("0000"));
-        }
+                {
+                    ApPlainLoggingKey,
+                    "<true|false>\t Enable simpler logging - the default value is `false`"
+                },
+                {
+                    ApMetricsKey,
+                    "<true|false>\t (Not implemented) Enable or disable metrics - default value is `true`"
+                },
+            };
 
         private const string ApPlainLoggingKey = "AP_PLAIN_LOGGING";
         private const string ApMetricsKey = "AP_METRICS";
 
-        // ReSharper disable once InconsistentNaming
-        public static bool InDEBUG
+        internal enum Usages
         {
-            get
-            {
-#if DEBUG
-                return true;
-#endif
-#pragma warning disable 162
-                return false;
-#pragma warning restore 162
-            }
+            All,
+            Single,
+            ListAvailable,
+            NoAction,
         }
-
-        public static bool IsDebuggerAttached => Debugger.IsAttached;
 
         /// <summary>
         /// Gets a value indicating whether or not we should use simpler logging semantics. Usually means no color.
@@ -108,320 +76,9 @@ namespace AnalysisPrograms
         /// </summary>
         public static bool ApMetricRecording { get; private set; }
 
-        private static void AttachExceptionHandler()
-        {
-            Environment.ExitCode = ExceptionLookup.SpecialExceptionErrorLevel;
-
-            AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
-        }
-
-        internal static void AttachDebugger(ref DebugOptions options)
-        {
-            if (options == DebugOptions.No)
-            {
-                return;
-            }
-#if DEBUG
-            if (!Debugger.IsAttached)
-            {
-                if (options == DebugOptions.Prompt)
-                {
-                    var response = Prompt.GetYesNo(
-                        "Do you wish to debug? Attach now or press [Y] to attach. Press [N] or [ENTER] to continue.",
-                        defaultAnswer: false,
-                        promptColor: ConsoleColor.Cyan);
-                    options = response ? DebugOptions.Yes : DebugOptions.No;
-                }
-
-                if (options == DebugOptions.Yes)
-                {
-                    var vsProcess =
-                        VisualStudioAttacher.GetVisualStudioForSolutions(
-                            new List<string> { "AudioAnalysis.sln" });
-
-                    if (vsProcess != null)
-                    {
-                        VisualStudioAttacher.AttachVisualStudioToProcess(vsProcess, Process.GetCurrentProcess());
-                    }
-                    else
-                    {
-                        // try and attach the old fashioned way
-                        Debugger.Launch();
-                    }
-
-                    // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-                    if (Debugger.IsAttached)
-                    {
-                        LoggedConsole.WriteLine("\t>>> Attach sucessful");
-                    }
-                }
-
-                LoggedConsole.WriteLine();
-            }
-#endif
-        }
-
-        public static void BeforeExecute(MainArgs main, CommandLineApplication application)
-        {
-            // re-assign here... the application will be a sub-command here (which is tecnically a different CLA)
-            CommandLineApplication = application;
-
-            var debugOptions = main.DebugOption;
-            AttachDebugger(ref debugOptions);
-
-            ModifyVerbosity(main);
-
-            Log.Debug($"Metric reporting is {(ApMetricRecording ? "en" : "dis")}abled.");
-
-            LoadNativeCode();
-        }
-
         public static CommandLineApplication CommandLineApplication { get; private set; }
 
-        internal enum Usages
-        {
-            All,
-            Single,
-            ListAvailable,
-            NoAction,
-        }
-
-        internal static void PrintUsage(string message, Usages usageStyle, string commandName = null)
-        {
-            //Contract.Requires(usageStyle != Usages.Single || commandName != null);
-
-            var root = CommandLineApplication.Root();
-
-            if (!string.IsNullOrWhiteSpace(message))
-            {
-                LoggedConsole.WriteErrorLine(message);
-            }
-
-            if (usageStyle == Usages.All)
-            {
-                // print entire usage
-                root.ShowHelp();
-            }
-            else if (usageStyle == Usages.Single)
-            {
-                CommandLineApplication command;
-                if (commandName == root.Name)
-                {
-                    command = root;
-                }
-                else
-                {
-                    command = root.Commands.FirstOrDefault(x =>
-                        x.Name.Equals(commandName, StringComparison.InvariantCultureIgnoreCase));
-
-                    // sometimes this is called from AppDomainUnhandledException, in which case throwing another exception
-                    // just gets squashed!
-                    if (command == null)
-                    {
-                        var commandNotFoundMessage = $"Could not find a command with name that matches `{commandName}`.";
-                        Log.Fatal(commandNotFoundMessage);
-
-                        throw new CommandParsingException(CommandLineApplication, commandNotFoundMessage);
-                    }
-                }
-
-                command.ShowHelp();
-            }
-            else if (usageStyle == Usages.ListAvailable)
-            {
-                var commands = root.Commands;
-
-                using (var sb = new StringWriter())
-                {
-                    ((CustomHelpTextGenerator)CommandLineApplication.HelpTextGenerator).FormatCommands(sb, commands);
-
-                    LoggedConsole.WriteLine(sb.ToString());
-                }
-            }
-            else if (usageStyle == Usages.NoAction)
-            {
-                CommandLineApplication.ShowHint();
-            }
-            else
-            {
-                throw new InvalidOperationException();
-            }
-        }
-
-        public static readonly Dictionary<string, string> EnvironmentOptions =
-            new Dictionary<string, string>
-                {
-                    {
-                        ApPlainLoggingKey,
-                        "<true|false>\t Enable simpler logging - the default value is `false`"
-                    },
-                    {
-                        ApMetricsKey,
-                        "<true|false>\t (Not implemented) Enable or disable metrics - default value is `true`"
-                    },
-                };
-
-        private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs unhandledExceptionEventArgs)
-        {
-            Contract.Requires(unhandledExceptionEventArgs != null);
-            Contract.Requires(unhandledExceptionEventArgs.ExceptionObject != null);
-
-            const string FatalMessage = "Fatal error:\n  ";
-
-            var ex = (Exception)unhandledExceptionEventArgs.ExceptionObject;
-
-            ExceptionLookup.ExceptionStyle style;
-            bool found = false;
-            Exception inner = ex;
-
-            // TODO: it looks like all exceptions will always be wrapped in a TargetInvocationException now so we always want to unwrap at least once
-            switch (ex)
-            {
-                case TargetInvocationException _:
-                case AggregateException _:
-                    // unwrap
-                    inner = ex.InnerException;
-                    Log.Debug($"Unwrapped {ex.GetType().Name} exception to show a  {inner.GetType().Name}");
-                    found = ExceptionLookup.ErrorLevels.TryGetValue(inner.GetType(), out style);
-                    break;
-                default:
-                    found = ExceptionLookup.ErrorLevels.TryGetValue(ex.GetType(), out style);
-                    break;
-            }
-
-            found = found && style.Handle;
-
-            // if found, print message only if usage printing disabled
-            if (found && !style.PrintUsage)
-            {
-                // this branch prints the message, but the stack trace is only output in the log
-                NoConsole.Log.Fatal(FatalMessage, ex);
-                LoggedConsole.WriteFatalLine(FatalMessage + inner.Message);
-            }
-            else if (found && ex.GetType() != typeof(Exception))
-            {
-                // this branch prints the message, and command usage, but the stack trace is only output in the log
-                NoConsole.Log.Fatal(FatalMessage, ex);
-
-                var command = CommandLineApplication?.Name;
-                var message = FatalMessage + inner.Message;
-                PrintUsage(message, Usages.Single, command ?? string.Empty);
-            }
-            else
-            {
-                // otherwise its a unhandled exception, log and raise
-                // trying to print cleaner errors in console, so printing a full one to log, and the inner to the console
-                // this results in duplication in the log though
-                NoConsole.Log.Fatal("Unhandled exception ->\n", ex);
-                Log.Fatal("Unhandled exception ->\n", inner);
-
-                StringBuilder extraInformation = null;
-                PrintAggregateException(ex, ref extraInformation);
-
-                if (extraInformation != null)
-                {
-                    Log.Error(extraInformation.ToString());
-                }
-            }
-
-            int returnCode = style?.ErrorCode ?? ExceptionLookup.SpecialExceptionErrorLevel;
-
-            // finally return error level
-            NoConsole.Log.Info("ERRORLEVEL: " + returnCode);
-            if (Debugger.IsAttached)
-            {
-                // no don't exit, we want the exception to be raised to Window's Exception handling
-                // this will allow the debugger to appropriately break on the right line
-                Environment.ExitCode = returnCode;
-            }
-            else
-            {
-                // If debugger is not attached, we *do not* want to raise the error to the Windows level
-                // Everything has already been logged, just exit with appropriate errorlevel
-                Environment.Exit(returnCode);
-            }
-        }
-
-        private static void PrintAggregateException(Exception ex, ref StringBuilder innerExceptions, int depth = 0)
-        {
-            var depthString = "==".PadLeft(depth * 2, '=');
-
-            //innerExceptions = innerExceptions ?? new StringBuilder();
-
-            if (ex is AggregateException)
-            {
-                var aex = (AggregateException)ex;
-
-                //innerExceptions.AppendLine("Writing detailed information about inner exceptions!");
-
-                foreach (var exception in aex.InnerExceptions)
-                {
-                    //innerExceptions.AppendLine();
-                    Log.Fatal("\n\n" + depthString + "> Inner exception:", exception);
-
-                    if (exception is AggregateException)
-                    {
-                        PrintAggregateException(exception, ref innerExceptions, depth++);
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// This method will stop the program from exiting if the solution was built in #DEBUG
-        /// and the program was started by Visual Studio.
-        /// </summary>
-        [Conditional("DEBUG")]
-        internal static void HangBeforeExit()
-        {
-#if DEBUG
-            if (AppConfigHelper.IsMono)
-            {
-                return;
-            }
-
-            // if Michael is debugging with visual studio, this will prevent the window closing.
-            Process parentProcess = ProcessExtensions.ParentProcessUtilities.GetParentProcess();
-            if (parentProcess.ProcessName == "devenv")
-            {
-                LoggedConsole.WriteSuccessLine("FINISHED: Press RETURN key to exit.");
-                Console.ReadLine();
-            }
-#endif
-        }
-
-        private static void ParseEnvirionemnt()
-        {
-            ApPlainLogging = bool.TryParse(Environment.GetEnvironmentVariable(ApPlainLoggingKey), out var isTrue) && isTrue;
-            var repository = (Hierarchy)LogManager.GetRepository();
-            var root = repository.Root;
-            var cleanLogger = (Logger)repository.GetLogger("CleanLogger");
-
-            if (ApPlainLogging)
-            {
-                root.RemoveAppender("ConsoleAppender");
-                cleanLogger.RemoveAppender("CleanConsoleAppender");
-            }
-            else
-            {
-                root.RemoveAppender("SimpleConsoleAppender");
-            }
-
-            if (bool.TryParse(Environment.GetEnvironmentVariable(ApMetricsKey), out var parseMetrics))
-            {
-                ApMetricRecording = parseMetrics;
-            }
-            else
-            {
-                // if the env var is not set or not parseable, then set default value.
-                ApMetricRecording = true;
-            }
-        }
-
-        private static void ModifyVerbosity(MainArgs arguments)
-        {
-            SetLogVerbosity(arguments.LogLevel, arguments.QuietConsole);
-        }
+        public static bool IsDebuggerAttached => Debugger.IsAttached;
 
         public static void SetLogVerbosity(LogVerbosity logVerbosity, bool quietConsole = false)
         {
@@ -497,20 +154,256 @@ namespace AnalysisPrograms
             //            LoggedConsole.WriteFatalLine("Clean wrapper FATAL", new Exception("I'm a fake"));
         }
 
-        private static void LogProgramStats()
+        internal static void AttachDebugger(ref DebugOptions options)
         {
-            var thisProcess = Process.GetCurrentProcess();
-            var stats = new
+            if (options == DebugOptions.No)
             {
-                Platform = Environment.OSVersion.ToString(),
-                ProcessorCount = Environment.ProcessorCount,
-                ExecutionTime = (DateTime.Now - thisProcess.StartTime).TotalSeconds,
-                PeakWorkingSet = thisProcess.PeakWorkingSet64,
-            };
+                return;
+            }
+#if DEBUG
+            if (!Debugger.IsAttached)
+            {
+                if (options == DebugOptions.Prompt)
+                {
+                    var response = Prompt.GetYesNo(
+                        "Do you wish to debug? Attach now or press [Y] to attach. Press [N] or [ENTER] to continue.",
+                        defaultAnswer: false,
+                        promptColor: ConsoleColor.Cyan);
+                    options = response ? DebugOptions.Yes : DebugOptions.No;
+                }
 
-            var statsString = "Programs stats:\n" + Json.SerialiseToString(stats, prettyPrint: true);
+                if (options == DebugOptions.Yes)
+                {
+                    var vsProcess =
+                        VisualStudioAttacher.GetVisualStudioForSolutions(
+                            new List<string> { "AudioAnalysis.sln" });
 
-            NoConsole.Log.Info(statsString);
+                    if (vsProcess != null)
+                    {
+                        VisualStudioAttacher.AttachVisualStudioToProcess(vsProcess, Process.GetCurrentProcess());
+                    }
+                    else
+                    {
+                        // try and attach the old fashioned way
+                        Debugger.Launch();
+                    }
+
+                    // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+                    if (Debugger.IsAttached)
+                    {
+                        LoggedConsole.WriteLine("\t>>> Attach sucessful");
+                    }
+                }
+
+                LoggedConsole.WriteLine();
+            }
+#endif
+        }
+
+        internal static void BeforeExecute(MainArgs main, CommandLineApplication application)
+        {
+            // re-assign here... the application will be a sub-command here (which is tecnically a different CLA)
+            CommandLineApplication = application;
+
+            var debugOptions = main.DebugOption;
+            AttachDebugger(ref debugOptions);
+
+            ModifyVerbosity(main);
+
+            Log.Debug($"Metric reporting is {(ApMetricRecording ? "en" : "dis")}abled.");
+
+            LoadNativeCode();
+        }
+
+        internal static void Copyright()
+        {
+            LoggedConsole.WriteLine(
+                // ReSharper disable once UnreachableCode
+                $@"{Meta.Description} - version {BuildMetadata.VersionString} ({(InDEBUG ? "DEBUG" : "RELEASE")} build, {BuildMetadata.BuildDate})
+Git branch-version: {BuildMetadata.GitBranch}-{BuildMetadata.GitCommit}, DirtyBuild:{BuildMetadata.IsDirty}, CI:{BuildMetadata.CiBuild}
+Copyright {Meta.NowYear} {Meta.Organization}");
+        }
+
+        /// <summary>
+        /// This method will stop the program from exiting if the solution was built in #DEBUG
+        /// and the program was started by Visual Studio.
+        /// </summary>
+        [Conditional("DEBUG")]
+        internal static void HangBeforeExit()
+        {
+#if DEBUG
+            if (AppConfigHelper.IsMono)
+            {
+                return;
+            }
+
+            // if Michael is debugging with visual studio, this will prevent the window closing.
+            Process parentProcess = ProcessExtensions.ParentProcessUtilities.GetParentProcess();
+            if (parentProcess.ProcessName == "devenv")
+            {
+                LoggedConsole.WriteSuccessLine("FINISHED: Press RETURN key to exit.");
+                Console.ReadLine();
+            }
+#endif
+        }
+
+        internal static void PrintUsage(string message, Usages usageStyle, string commandName = null)
+        {
+            //Contract.Requires(usageStyle != Usages.Single || commandName != null);
+
+            var root = CommandLineApplication.Root();
+
+            if (!string.IsNullOrWhiteSpace(message))
+            {
+                LoggedConsole.WriteErrorLine(message);
+            }
+
+            if (usageStyle == Usages.All)
+            {
+                // print entire usage
+                root.ShowHelp();
+            }
+            else if (usageStyle == Usages.Single)
+            {
+                CommandLineApplication command;
+                if (commandName == root.Name)
+                {
+                    command = root;
+                }
+                else
+                {
+                    command = root.Commands.FirstOrDefault(x =>
+                        x.Name.Equals(commandName, StringComparison.InvariantCultureIgnoreCase));
+
+                    // sometimes this is called from AppDomainUnhandledException, in which case throwing another exception
+                    // just gets squashed!
+                    if (command == null)
+                    {
+                        var commandNotFoundMessage = $"Could not find a command with name that matches `{commandName}`.";
+                        Log.Fatal(commandNotFoundMessage);
+
+                        throw new CommandParsingException(CommandLineApplication, commandNotFoundMessage);
+                    }
+                }
+
+                command.ShowHelp();
+            }
+            else if (usageStyle == Usages.ListAvailable)
+            {
+                var commands = root.Commands;
+
+                using (var sb = new StringWriter())
+                {
+                    ((CustomHelpTextGenerator)CommandLineApplication.HelpTextGenerator).FormatCommands(sb, commands);
+
+                    LoggedConsole.WriteLine(sb.ToString());
+                }
+            }
+            else if (usageStyle == Usages.NoAction)
+            {
+                CommandLineApplication.ShowHint();
+            }
+            else
+            {
+                throw new InvalidOperationException();
+            }
+        }
+
+        private static void AttachExceptionHandler()
+        {
+            Environment.ExitCode = ExceptionLookup.SpecialExceptionErrorLevel;
+
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
+        }
+
+        private static CommandLineApplication CreateCommandLineApplication()
+        {
+            var console = PhysicalConsoleLogger.Default;
+            var app = CommandLineApplication = new CommandLineApplication<MainArgs>(console);
+
+            app.HelpTextGenerator = new CustomHelpTextGenerator { EnvironmentOptions = EnvironmentOptions };
+            app.ValueParsers.Add(new DateTimeOffsetParser());
+            app.ValueParsers.Add(new TimeSpanParser());
+            app.ValueParsers.Add(new FileInfoParser());
+            app.ValueParsers.Add(new DirectoryInfoParser());
+            app.Conventions.UseDefaultConventions();
+
+            return app;
+        }
+
+        private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs unhandledExceptionEventArgs)
+        {
+            Contract.Requires(unhandledExceptionEventArgs != null);
+            Contract.Requires(unhandledExceptionEventArgs.ExceptionObject != null);
+
+            const string fatalMessage = "Fatal error:\n  ";
+
+            var ex = (Exception)unhandledExceptionEventArgs.ExceptionObject;
+
+            ExceptionLookup.ExceptionStyle style;
+            bool found;
+            Exception inner = ex;
+
+            // TODO: it looks like all exceptions will always be wrapped in a TargetInvocationException now so we always want to unwrap at least once
+            switch (ex)
+            {
+                case TargetInvocationException _:
+                case AggregateException _:
+                    // unwrap
+                    inner = ex.InnerException ?? ex;
+                    Log.Debug($"Unwrapped {ex.GetType().Name} exception to show a  {inner.GetType().Name}");
+                    found = ExceptionLookup.ErrorLevels.TryGetValue(inner.GetType(), out style);
+                    break;
+                default:
+                    found = ExceptionLookup.ErrorLevels.TryGetValue(ex.GetType(), out style);
+                    break;
+            }
+
+            found = found && style.Handle;
+
+            // if found, print message only if usage printing disabled
+            if (found && !style.PrintUsage)
+            {
+                // this branch prints the message, but the stack trace is only output in the log
+                NoConsole.Log.Fatal(fatalMessage, ex);
+                LoggedConsole.WriteFatalLine(fatalMessage + inner.Message);
+            }
+            else if (found && ex.GetType() != typeof(Exception))
+            {
+                // this branch prints the message, and command usage, but the stack trace is only output in the log
+                NoConsole.Log.Fatal(fatalMessage, ex);
+
+                var command = CommandLineApplication?.Name;
+                var message = fatalMessage + inner.Message;
+                PrintUsage(message, Usages.Single, command ?? string.Empty);
+            }
+            else
+            {
+                // otherwise its a unhandled exception, log and raise
+                // trying to print cleaner errors in console, so printing a full one to log, and the inner to the console
+                // this results in duplication in the log though
+                NoConsole.Log.Fatal("Unhandled exception ->\n", ex);
+                Log.Fatal("Unhandled exception ->\n", inner);
+
+                PrintAggregateException(ex);
+            }
+
+            int returnCode = style?.ErrorCode ?? ExceptionLookup.SpecialExceptionErrorLevel;
+
+            // finally return error level
+            NoConsole.Log.Info("ERRORLEVEL: " + returnCode);
+            if (Debugger.IsAttached)
+            {
+                // no don't exit, we want the exception to be raised to Window's Exception handling
+                // this will allow the debugger to appropriately break on the right line
+                Environment.ExitCode = returnCode;
+            }
+            else
+            {
+                // If debugger is not attached, we *do not* want to raise the error to the Windows level
+                // Everything has already been logged, just exit with appropriate errorlevel
+                Environment.Exit(returnCode);
+            }
         }
 
         /// <summary>
@@ -532,6 +425,80 @@ namespace AnalysisPrograms
             // for sqlite
             // note: a custom dll map for sqlite can be found in SQLitePCLRaw.provider.e_sqlite3.dll.config
             SQLitePCL.Batteries_V2.Init();
+        }
+
+        private static void LogProgramStats()
+        {
+            var thisProcess = Process.GetCurrentProcess();
+            var stats = new
+            {
+                Platform = Environment.OSVersion.ToString(),
+                Environment.ProcessorCount,
+                ExecutionTime = (DateTime.Now - thisProcess.StartTime).TotalSeconds,
+                PeakWorkingSet = thisProcess.PeakWorkingSet64,
+            };
+
+            var statsString = "Programs stats:\n" + Json.SerialiseToString(stats, prettyPrint: true);
+
+            NoConsole.Log.Info(statsString);
+        }
+
+        private static void ModifyVerbosity(MainArgs arguments)
+        {
+            SetLogVerbosity(arguments.LogLevel, arguments.QuietConsole);
+        }
+
+        private static void ParseEnvirionemnt()
+        {
+            ApPlainLogging = bool.TryParse(Environment.GetEnvironmentVariable(ApPlainLoggingKey), out var isTrue) && isTrue;
+            var repository = (Hierarchy)LogManager.GetRepository();
+            var root = repository.Root;
+            var cleanLogger = (Logger)repository.GetLogger("CleanLogger");
+
+            if (ApPlainLogging)
+            {
+                root.RemoveAppender("ConsoleAppender");
+                cleanLogger.RemoveAppender("CleanConsoleAppender");
+            }
+            else
+            {
+                root.RemoveAppender("SimpleConsoleAppender");
+            }
+
+            if (bool.TryParse(Environment.GetEnvironmentVariable(ApMetricsKey), out var parseMetrics))
+            {
+                ApMetricRecording = parseMetrics;
+            }
+            else
+            {
+                // if the env var is not set or not parseable, then set default value.
+                ApMetricRecording = true;
+            }
+        }
+
+        private static void PrintAggregateException(Exception ex, int depth = 0)
+        {
+            var depthString = "==".PadLeft(depth * 2, '=');
+
+            //innerExceptions = innerExceptions ?? new StringBuilder();
+
+            if (ex is AggregateException)
+            {
+                var aex = (AggregateException)ex;
+
+                //innerExceptions.AppendLine("Writing detailed information about inner exceptions!");
+
+                foreach (var exception in aex.InnerExceptions)
+                {
+                    //innerExceptions.AppendLine();
+                    Log.Fatal("\n\n" + depthString + "> Inner exception:", exception);
+
+                    if (exception is AggregateException)
+                    {
+                        PrintAggregateException(exception, depth++);
+                    }
+                }
+            }
         }
     }
 }

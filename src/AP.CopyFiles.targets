@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildCommunityTasksPath>$(MSBuildProjectDirectory)\.build</MSBuildCommunityTasksPath>
+  </PropertyGroup>
+  <Target Name="APCopyFilesAfterBuild">
+    <!-- Copy our audio tools from lib to build dir -->
+    <Message Text="[APCopyFilesAfterBuild]: Scanning for lib files and config files" Importance="High" />
+    <ItemGroup>
+      <AudioTools Include="$(SolutionDir)\lib\audio-utils\**\*.*" />
+      <ConfigFiles Include="$(ProjectDir)..\AnalysisConfigFiles\**\*" />
+    </ItemGroup>
+    <Message Text="[APCopyFilesAfterBuild]: Copying lib files" Importance="High" />
+    <Copy SourceFiles="@(AudioTools)" DestinationFolder="$(TargetDir)\audio-utils\%(RecursiveDir)" SkipUnchangedFiles="true" />
+    <Message Text="[APCopyFilesAfterBuild]: Copying config files" Importance="High" />
+    <Copy SourceFiles="@(ConfigFiles)" DestinationFolder="$(TargetDir)\ConfigFiles\%(RecursiveDir)" SkipUnchangedFiles="true" />
+    <!-- Copy our linux sqlite native code to our pseudo runtime folder -->
+    <Message Text="[APCopyFilesAfterBuild]: Reading in packages.config" Importance="High" />
+    <XmlPeek Query="packages/package[@id='SQLitePCLRaw.lib.e_sqlite3.linux']/@*[name()='id' or name()='version']" XmlInputPath="packages.config">
+      <Output TaskParameter="Result" ItemName="SqliteLinuxPackageFragments" />
+    </XmlPeek>
+    <PropertyGroup>
+      <SqliteLinuxPackage>@(SqliteLinuxPackageFragments, '.')</SqliteLinuxPackage>
+    </PropertyGroup>
+    <Message Text="[APCopyFilesAfterBuild]: Xml found: $(SqliteLinuxPackage). Searching for linux sqlite native code..." Importance="High" />
+    <ItemGroup>
+      <SqliteNativeFiles Include="..\..\packages\$(SqliteLinuxPackage)\runtimes\**\*.*" />
+    </ItemGroup>
+    <Message Text="[APCopyFilesAfterBuild]: Found @(SqliteNativeFiles). Copying native code to libruntimes" Importance="High" />
+    <Copy SourceFiles="@(SqliteNativeFiles)" DestinationFolder="$(OutputPath)\\libruntimes\\%(RecursiveDir)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" Retries="3" RetryDelayMilliseconds="300" />
+    <Message Text="[APCopyFilesAfterBuild]: Completed copying native code" Importance="High" />
+  </Target>
+
+  <PropertyGroup>
+    <!-- Register our task that as something to run after standard targets -->
+    <BuildDependsOn>
+      $(BuildDependsOn);
+      APCopyFilesAfterBuild;
+    </BuildDependsOn>
+  </PropertyGroup>
+</Project>

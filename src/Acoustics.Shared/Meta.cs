@@ -11,19 +11,21 @@ namespace Acoustics.Shared
 
     public static class Meta
     {
+        public const string CopyrightSymbol = "©";
+
         public const string Description = "QUT Ecoacoustics Analysis Programs";
+
+        public const string GroupName = "QUT Ecoacoustics Research Group";
 
         public const string Name = "AnalysisPrograms.exe";
 
+        public static readonly int NowYear = DateTime.Now.Year;
+
         public static string Organization { get; } = "QUT";
-
-        public static string Copyright { get; } = "©";
-
-        public static string GroupName { get; } = "QUT Ecoacoustics Research Group";
 
         public static string Website { get; } = "http://research.ecosounds.org/";
 
-        public static string OrganizationTag => Copyright + " " + DateTime.Now.Year + " " + Organization;
+        public static string OrganizationTag => CopyrightSymbol + " " + NowYear + " " + Organization;
 
         public static string Repository { get; } = "https://github.com/QutBioacoustics/audio-analysis";
     }
