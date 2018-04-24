@@ -6,11 +6,13 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.Globalization;
     using System.IO;
     using System.Linq;
+    using System.Text;
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
@@ -63,6 +65,7 @@ namespace AnalysisPrograms
                 //AnalyseFrogDataSet();
                 //Audio2CsvOverOneFile();
                 //Audio2CsvOverMultipleFiles();
+                CodeToExtractFeatureVectorOfIndices();
                 //ConcatenateIndexFilesAndSpectrograms();
                 //ConcatenateMarineImages();
                 //ConcatenateImages();
@@ -85,7 +88,7 @@ namespace AnalysisPrograms
                 //TEST_FilterMovingAverage();
                 //TestImageProcessing();
                 //TestMatrix3dClass();
-                TestsOfFrequencyScales();
+                //TestsOfFrequencyScales();
                 //TestReadingFileOfSummaryIndices();
                 //TestStructureTensor();
                 //TestWavelets();
@@ -1014,7 +1017,7 @@ namespace AnalysisPrograms
             string dir =
                 @"H:\Documents\SensorNetworks\MyPapers\2017_DavidWatson\CaseStudy1 Liz\MachineLearningExercise";
             string fileName = "LizZnidersic_TasmanIsTractor_20151111__Towsey.Acoustic";
-            string[] indexNames = { "ACI", "ENT", "POW", "SPT", "RHZ"};
+            string[] indexNames = {"ACI", "ENT", "POW", "SPT", "RHZ"};
             var framecount =
                 1440; // could read this from first matrix but easier to declare it. Need it for reading in tagged data.
             int startOffsetMinute = 47; // 24 hours of recording starts at 12:47am. Need this as an offset.
@@ -1245,7 +1248,7 @@ namespace AnalysisPrograms
         {
             int sampleRate = 22050;
             double duration = 420; // signal duration in seconds = 7 minutes
-            int[] harmonics = { 500, 1000, 2000, 4000, 8000};
+            int[] harmonics = {500, 1000, 2000, 4000, 8000};
             var recording = DspFilters.GenerateTestRecording(sampleRate, duration, harmonics, WaveType.Consine);
             var outputDirectory = @"C:\SensorNetworks\SoftwareTests\TestLongDurationRecordings";
             var recordingPath = Path.Combine(outputDirectory, "TemporaryRecording.wav");
@@ -1354,7 +1357,7 @@ namespace AnalysisPrograms
                 SmallAreaThreshold = 100,
             };
 
-            double[] thresholdLevels = { 30.0, 25.0, 20.0, 15.0, 10.0, 5.0};
+            double[] thresholdLevels = {30.0, 25.0, 20.0, 15.0, 10.0, 5.0};
             var imageList = new List<Image>();
 
             foreach (double th in thresholdLevels)
@@ -1542,7 +1545,7 @@ namespace AnalysisPrograms
         public static void TestTernaryPlots()
         {
             //string[] keys = { "BGN", "POW", "EVN"};
-            string[] keys = { "ACI", "ENT", "EVN"};
+            string[] keys = {"ACI", "ENT", "EVN"};
 
             FileInfo[] indexFiles =
             {
@@ -1705,7 +1708,7 @@ namespace AnalysisPrograms
 
                 //double[] bounds = { 0.0, 3.0, 6.0 };
                 //double[] bounds = { 0.0, 2.0, 4.0, 8.0 };
-                double[] bounds = { 0.0, 2.0, 4.0, 6.0, 8.0, 10.0}; // noSkew
+                double[] bounds = {0.0, 2.0, 4.0, 6.0, 8.0, 10.0}; // noSkew
 
                 //double[] bounds = { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0 };
                 //double[] bounds = { 0.0, 1.0, 2.0, 4.0, 6.0, 10.0 }; // skew left
@@ -1748,7 +1751,7 @@ namespace AnalysisPrograms
                 for (int i = 0; i < fileCount; i++)
                 {
                     //ID0001_Species01.EVN.csv
-                    char[] delimiters = { '.', 's'};
+                    char[] delimiters = {'.', 's'};
                     string fileName = filePaths[i].Name;
                     string[] parts = fileName.Split(delimiters);
                     int speciesId = int.Parse(parts[1]);
@@ -1960,7 +1963,8 @@ namespace AnalysisPrograms
 
             // DRAW SPECTROGRAM
             var spectrogram = new SpectrogramStandard(config, recording.WavReader);
-            var image = spectrogram.GetImageFullyAnnotated(spectrogram.GetImage(), "SPECTROGRAM: " + fst + " " + profileName, freqScale.GridLineLocations);
+            var image = spectrogram.GetImageFullyAnnotated(spectrogram.GetImage(),
+                "SPECTROGRAM: " + fst + " " + profileName, freqScale.GridLineLocations);
             image.Save(imagePath, ImageFormat.Png);
             FileInfo fiImage = new FileInfo(imagePath);
 
@@ -2096,5 +2100,115 @@ namespace AnalysisPrograms
             FrequencyScale.DrawFrequencyLinesOnImage(combinedImage, frequencyScale.GridLineLocations, includeLabels: false);
             combinedImage.Save(pathToOutputImageFile);
         } */
+
+        /// <summary>
+        /// This code used to extract acoustic indices for recognisers.
+        /// It cycles through all the subdirecotries in a dir.
+        /// All depends on the consistency of file naming.
+        /// Check the call method for index names and bounds.
+        /// </summary>
+        public static void CodeToExtractFeatureVectorOfIndices()
+        {
+            //var sourceDir = new DirectoryInfo(@"C:\SensorNetworks\Collaborations\LizZnidersic\Original concatenated index files ARU10");
+            //string superDir = @"Y:\Results\2017Jun05-113313 - Liz, Towsey.Indices, ICD=60.0, #154\ConcatResults";
+            //var sourceDir = new DirectoryInfo(superDir + @"\David Watson_Liz_Tasmania_ARU10\ARU 10 27.12.2016 Data");
+            string superDir = @"Y:\Results\2017Apr13-135831 - Liz, Towsey.Indices, ICD=60.0, #154\ConcatResults";
+
+            //var sourceDir = new DirectoryInfo(superDir + @"\David Watson_Liz_USA - South Carolina_ARU UNIT 10\Data ARU 10-30.4.2016");
+            //var sourceDir = new DirectoryInfo(superDir + @"\David Watson_Liz_USA - South Carolina_ARU UNIT 7\Data ARU 7-30.4.2016");
+            var sourceDir = new DirectoryInfo(superDir + @"\David Watson_Liz_USA - South Carolina_ARU UNIT 3\Data ARU 3-21.4.2016");
+
+            var outputDir = new DirectoryInfo(@"C:\SensorNetworks\Collaborations\LizZnidersic\UnlabelledDataSets\Job154_2017Apr13_135831 SouthCarolina\ARU03");
+
+            DirectoryInfo[] dirs = sourceDir.GetDirectories();
+            Console.WriteLine("Dir Count = " + dirs.Length);
+            foreach (DirectoryInfo dir in dirs)
+            {
+                string site = sourceDir.Name;
+                string date = dir.Name;
+                string siteAndDate = site + "_" + date;
+                string filePrefix = siteAndDate + "__Towsey.Acoustic.";
+                string opFileName = siteAndDate + "_FeatureSet.csv";
+                var opFileInfo = new FileInfo(Path.Combine(outputDir.FullName, opFileName));
+                Console.WriteLine("Extracting dir " + dir.Name);
+                ExtractFeatureVectorOfIndices(dir, filePrefix, siteAndDate, opFileInfo);
+            }
+        }
+
+        /// <summary>
+        /// This code used to extract acoustic indices for recognisers.
+        /// </summary>
+        public static void ExtractFeatureVectorOfIndices(DirectoryInfo sourceDir, string filePrefix, string siteAndDate, FileInfo opFileInfo)
+        {
+            // source directory
+            string[] indexCodes = { "ACI", "ENT", "EVN" };
+            int startIndex = 22;
+            int endIndex = 74;
+            int length = endIndex - startIndex + 1;
+
+            // matrix of string
+            var extractedLines = new List<List<string>>();
+
+            // loop through all required index files
+            foreach (string indexKey in indexCodes)
+            {
+                var fileInfo = new FileInfo(Path.Combine(sourceDir.FullName, filePrefix + indexKey + ".csv"));
+
+                // init var to hold required data columns
+                var lines = new List<string>();
+
+                // read the file, line at a time and extract the required columns from the data matrix
+                using (TextReader reader = new StreamReader(fileInfo.FullName))
+                {
+                    // read and ignore the first line in source file which is a header.
+                    string line = reader.ReadLine();
+
+                    // create a new header line showing source INDEX
+                    var newHeader = new StringBuilder();
+                    for (int i = 0; i < length; i++)
+                    {
+                        int id = i + startIndex;
+                        newHeader.Append(indexKey + id.ToString("D4") + ", ");
+                    }
+
+                    lines.Add(newHeader.ToString());
+
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        //read one line at a time into an array of string
+                        var words = line.Split(',');
+
+                        // take subarray. +1 because the first column containing ID is ignored.
+                        var subArray = DataTools.Subarray(words, startIndex + 1, length);
+                        var newLine = DataTools.Array2String(subArray);
+                        lines.Add(newLine);
+                    }
+                } //end using
+
+                extractedLines.Add(lines);
+            }
+
+            // prepare output file
+            using (StreamWriter sw = new StreamWriter(opFileInfo.FullName))
+            {
+                using (TextWriter ssw = TextWriter.Synchronized(sw))
+                {
+                    // now join the lines into a feature vector
+                    int lineCount = extractedLines[0].Count;
+                    for (int i = 0; i < lineCount; i++)
+                    {
+                        string line = string.Empty;
+                        for (int j = 0; j < indexCodes.Length; j++)
+                        {
+                            line += extractedLines[j][i];
+                        }
+
+                        line += "?";
+
+                        ssw.WriteLine(line);
+                    }
+                }
+            }
+        } // end CodeToExtractFeatureVectorOfIndices()
     }
 }

@@ -1642,6 +1642,17 @@ namespace TowseyLibrary
             return sb.ToString();
           }
 
+        public static string Array2String(string[] array)
+        {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < array.Length; i++)
+            {
+                sb.Append(array[i] + ", ");
+            }
+
+            return sb.ToString();
+        }
+
         public static void WriteArray(double[] array)
         {
             string format = "F3";
