@@ -10,6 +10,7 @@ namespace Acoustics.Shared
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
+    using System.Runtime.Serialization;
     using System.Text;
     using System.Threading.Tasks;
     using Fasterflect;
@@ -21,6 +22,7 @@ namespace Acoustics.Shared
     public class ProcessRunner : IDisposable
     {
         private static readonly ILog Log = LogManager.GetLogger(nameof(ProcessRunner));
+        private static readonly ObjectIDGenerator InstanceTracker = new ObjectIDGenerator();
 
         private StringBuilder standardOutput;
         private StringBuilder errorOutput;
@@ -28,6 +30,7 @@ namespace Acoustics.Shared
         private Process process;
         private bool exitCodeSet;
         private int exitCode;
+        private long instanceId;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProcessRunner"/> class.
@@ -54,6 +57,10 @@ namespace Acoustics.Shared
 
             this.WaitForExit = true;
             this.MaxRetries = 0;
+            lock (this)
+            {
+                this.instanceId = InstanceTracker.GetId(this, out var _);
+            }
         }
 
         public int ExitCode
@@ -235,6 +242,11 @@ namespace Acoustics.Shared
 
             this.Dispose();
 
+            if (Log.IsVerboseEnabled())
+            {
+                Log.Verbose(this.instanceId + ": Process runner arguments:" + arguments);
+            }
+
             this.process = new Process
             {
                 StartInfo = new ProcessStartInfo
@@ -287,7 +299,7 @@ namespace Acoustics.Shared
                         // success, quit
                         if (Log.IsVerboseEnabled())
                         {
-                            Log.Verbose("Process killed after" + exceptions.Count + " handling code");
+                            Log.Verbose(this.instanceId + ": Process killed after " + exceptions.Count + " attempts. Exit code: " + this.exitCode);
                         }
 
                         return;
@@ -338,6 +350,11 @@ namespace Acoustics.Shared
 
                 if (this.WaitForExitMilliseconds > 0)
                 {
+                    // there are varoius bugs with the MONO implementation of this. here are two that are relevant:
+                    // https://bugzilla.xamarin.com/show_bug.cgi?id=27246
+                    // https://github.com/mono/mono/issues/6200
+                    // The upshot on this is that sometimes SIGCHLD will not be captured by mono, resulting in a
+                    // garunteed timeout in  high concurrency scenarios
                     var exited = this.process.WaitForExit(this.WaitForExitMilliseconds);
 
                     // https://msdn.microsoft.com/en-us/library/ty0d8k56(v=vs.110).aspx
@@ -347,6 +364,11 @@ namespace Acoustics.Shared
                     // overload that takes no parameter after receiving a true from this overload.
                     if (exited)
                     {
+                        if (Log.IsVerboseEnabled())
+                        {
+                            Log.Verbose(this.instanceId + ": Process exited without timing out: " + this.process.ExitCode);
+                        }
+
                         this.process.WaitForExit();
                     }
                     else
@@ -363,10 +385,6 @@ namespace Acoustics.Shared
                 }
 
                 this.ExitCode = this.process.ExitCode;
-                if (Log.IsVerboseEnabled())
-                {
-                        Log.Verbose("Process exited without timing out: " + this.process.ExitCode);
-                }
             }
 
             void OnProcessOnErrorDataReceived(object sender, DataReceivedEventArgs e)
@@ -390,7 +408,7 @@ namespace Acoustics.Shared
         {
             if (Log.IsVerboseEnabled())
             {
-                Log.Verbose("Process timeout handling code");
+                Log.Verbose(this.instanceId + ": Process timeout handling code. Exit code: " + this.process.ExitCode);
             }
 
             this.process.Refresh();
@@ -399,6 +417,24 @@ namespace Acoustics.Shared
             if (!exited)
             {
                 this.KillProcess();
+            }
+
+            // wild guess code - we're unable to really test this code except in high concurrency scenarios
+            // So timeouts are common in high concurrency scenarios because SIGCHLD are sometimes not captured by mono.
+            // The process is theoretically completing sucessfully but mono doesn't notice (see note in RunAndRead).
+            // If (despite timing out) however the exit code was captured, and execution was sucessfull, and we
+            // captured output, then there's a really nothing wrong with the execution (other than it timed out unnecessarilly).
+            // The following code cpatures the spirit of this notion and allows us to not repeat another failed timeout run if
+            // execution was probably successful.
+            if (this.process.ExitCode == 0 && (this.StandardOutput.Length > 0 || this.ErrorOutput.Length > 0))
+            {
+                // execution probably successful... continue as if it had worked
+                if (Log.IsVerboseEnabled())
+                {
+                    Log.Verbose(this.instanceId + ": Process timeout handling code. Continuing without retrying, execution was ***probably*** successful! Exit code: " + this.process.ExitCode);
+                }
+
+                return;
             }
 
             this.failedRuns.Add(string.Format(
@@ -416,7 +452,7 @@ namespace Acoustics.Shared
             {
                 if (Log.IsVerboseEnabled())
                 {
-                    Log.Verbose("Process run retying");
+                    Log.Verbose(this.instanceId + ": Process run retying");
                 }
 
                 retryMethod(arguments, workingDirectory, retryCount + 1);
