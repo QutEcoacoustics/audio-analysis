@@ -25,10 +25,8 @@ namespace AudioAnalysisTools.DSP
 
             KMeans kmeans = new KMeans(k: noOfClust)
             {
-
                 UseSeeding = Seeding.KMeansPlusPlus,
                 Distance = default(Cosine),
-
             };
 
             // Compute and retrieve the data centroids
@@ -143,8 +141,8 @@ namespace AudioAnalysisTools.DSP
         //write centroids to a csv file
         public static void WriteCentroidsToCSV(Dictionary<int, double[]> clusterIdCentroid)
         {
-            string pathToClusterSizeCsvFil = @"C:\Users\kholghim\Mahnoosh\PcaWhitening\ClusterCentroids.csv";
-            using (StreamWriter file = new StreamWriter(pathToClusterSizeCsvFil))
+            string pathToClusterSizeCsvFile = @"C:\Users\kholghim\Mahnoosh\PcaWhitening\ClusterCentroids.csv";
+            using (StreamWriter file = new StreamWriter(pathToClusterSizeCsvFile))
             {
                 foreach (var entry in clusterIdCentroid)
                 {

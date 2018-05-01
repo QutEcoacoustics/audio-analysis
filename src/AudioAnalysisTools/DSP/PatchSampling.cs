@@ -343,5 +343,19 @@ namespace AudioAnalysisTools.DSP
             list.Add(array);
             return list.ToArray();
         }
+
+        public static double GetMaxValue(double[] data)
+        {
+            double max = data[0];
+            for (int i = 1; i < data.Length; i++)
+            {
+                if (data[i] > max)
+                {
+                    max = data[i];
+                }
+            }
+
+            return max;
+        }
     }
 }
