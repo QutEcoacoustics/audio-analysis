@@ -12,6 +12,7 @@ namespace Acoustics.Shared
     using System.Linq;
     using System.Runtime.Serialization;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
     using Fasterflect;
     using log4net;
@@ -22,15 +23,15 @@ namespace Acoustics.Shared
     public class ProcessRunner : IDisposable
     {
         private static readonly ILog Log = LogManager.GetLogger(nameof(ProcessRunner));
-        private static readonly ObjectIDGenerator InstanceTracker = new ObjectIDGenerator();
+        private static long instanceCounter = 0;
 
+        private readonly long instanceId = Interlocked.Increment(ref instanceCounter);
         private StringBuilder standardOutput;
         private StringBuilder errorOutput;
         private List<string> failedRuns;
         private Process process;
         private bool exitCodeSet;
         private int exitCode;
-        private long instanceId;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProcessRunner"/> class.
@@ -57,10 +58,6 @@ namespace Acoustics.Shared
 
             this.WaitForExit = true;
             this.MaxRetries = 0;
-            lock (this)
-            {
-                this.instanceId = InstanceTracker.GetId(this, out var _);
-            }
         }
 
         public int ExitCode
