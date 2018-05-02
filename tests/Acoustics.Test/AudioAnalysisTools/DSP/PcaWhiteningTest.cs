@@ -439,8 +439,8 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             List<double[,]> randomPatches = new List<double[,]>();
             int patchWidth = finalBinCount; //256; //16; //full band patches
-            int patchHeight = 4; //16; // 2; // 4; // 6; //
-            int noOfRandomPatches = 10; //20; // 100; //500; //
+            int patchHeight = 4; //2; // 16; // 6; //
+            int noOfRandomPatches = 20; //20; // 100; //500; //
             //int fileCount = Directory.GetFiles(folderPath, "*.wav").Length;
 
             /*
@@ -508,12 +508,12 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             double[,] allPatchM = PatchSampling.ListOf2DArrayToOne2DArray(randomPatches);
 
             //Apply PCA Whitening
-            var actual = PcaWhitening.Whitening(allPatchM);
+            //var actual = PcaWhitening.Whitening(allPatchM);
 
             //Do k-means clustering
-            int noOfClusters = 64; //10; //50;
-            var clusteringOutput = KmeansClustering.Clustering(actual.Item2, noOfClusters);
-            //var clusteringOutput = KmeansClustering.Clustering(allPatchM, noOfClusters);
+            int noOfClusters = 32; //64; //10; //50;
+            //var clusteringOutput = KmeansClustering.Clustering(actual.Item2, noOfClusters);
+            var clusteringOutput = KmeansClustering.Clustering(allPatchM, noOfClusters);
             int[] sortOrder = KmeansClustering.SortClustersBasedOnSize(clusteringOutput.Item2);
 
             //Draw cluster image directly from centroid csv file: Michael's code (not working properly at the moment!)
@@ -632,7 +632,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             //+++++++++++++++++++++++++++++++++++Feature Transformation
 
-            //+++++++++++++++++++++++++++++++++++Temporal Summarisation
+            //+++++++++++++++++++++++++++++++++++Temporal Summarization
             // The resolution to generate features is 1 second
             // Each 6 patches form 1 second
             // for each 6 patch, we generate 3 vectors of mean, std, and max
@@ -641,27 +641,29 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             List<double[]> maxFeatureVectors = new List<double[]>();
             List<double[]> stdFeatureVectors = new List<double[]>();
             int c = 0;
+            int noFrames = 6; //12; // number of frames needs to be concatenated to form 1 second
             while (c < featureTransVectors.GetLength(0))
             {
-                //First, make a list of six patches
-                List<double[]> sixPatchesList = new List<double[]>();
-                for (int i = c; i < c + 6; i++)
+                //First, make a list of six patches that would be equal to 1 second
+                List<double[]> sequencesOfFramesList = new List<double[]>();
+                for (int i = c; i < c + noFrames; i++)
                 {
-                    sixPatchesList.Add(featureTransVectors[i]);
+                    sequencesOfFramesList.Add(featureTransVectors[i]);
                 }
 
                 List<double> mean = new List<double>();
                 List<double> std = new List<double>();
                 List<double> max = new List<double>();
-                double[][] sixPatches = sixPatchesList.ToArray();
+                double[,] sequencesOfFrames = sequencesOfFramesList.ToArray().ToMatrix();
+                int len = sequencesOfFrames.GetLength(1);
 
-                //Second, calculate mean, max, and standard deviation of six vectors elementwise
-                for (int j = 0; j < sixPatches.GetLength(1); j++)
+                //Second, calculate mean, max, and standard deviation of six vectors element-wise
+                for (int j = 0; j < sequencesOfFrames.GetLength(1); j++)
                 {
-                    double[] temp = new double[sixPatches.GetLength(0)];
-                    for (int k = 0; k < sixPatches.GetLength(0); k++)
+                    double[] temp = new double[sequencesOfFrames.GetLength(0)];
+                    for (int k = 0; k < sequencesOfFrames.GetLength(0); k++)
                     {
-                        temp[k] = sixPatches[k][j];
+                        temp[k] = sequencesOfFrames[k, j];
                     }
 
                     mean.Add(AutoAndCrossCorrelation.GetAverage(temp));
@@ -672,7 +674,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                 meanFeatureVectors.Add(mean.ToArray());
                 maxFeatureVectors.Add(max.ToArray());
                 stdFeatureVectors.Add(std.ToArray());
-                c += 6;
+                c += noFrames;
             }
 
             //+++++++++++++++++++++++++++++++++++Temporal Summarization
@@ -684,33 +686,22 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             //creating the header for CSV file
             List<string> header = new List<string>();
-            for (int i = 0; i < meanFeatureVectors.ToArray().GetLength(1); i++)
+            for (int i = 0; i < meanFeatureVectors.ToArray().ToMatrix().GetLength(1); i++)
             {
                 header.Add("mean" + i.ToString());
             }
 
-            for (int i = 0; i < stdFeatureVectors.ToArray().GetLength(1); i++)
+            for (int i = 0; i < stdFeatureVectors.ToArray().ToMatrix().GetLength(1); i++)
             {
                 header.Add("std" + i.ToString());
             }
 
-            for (int i = 0; i < maxFeatureVectors.ToArray().GetLength(1); i++)
+            for (int i = 0; i < maxFeatureVectors.ToArray().ToMatrix().GetLength(1); i++)
             {
                 header.Add("max" + i.ToString());
             }
 
-            //writing the header to CSV file
-            using (StreamWriter file = new StreamWriter(pathToFeatureVectorCsvFile))
-            {
-                foreach (var entry in header.ToArray())
-                {
-                    file.Write(entry + ",");
-                }
-
-                file.Write(Environment.NewLine);
-            }
-
-            //concatenating mean, std, and max vector to gether for each 1 second
+            //concatenating mean, std, and max vector together for each 1 second
             List<double[]> featureVectors = new List<double[]>();
             for (int i = 0; i < meanFeatureVectors.ToArray().GetLength(0); i++)
             {
@@ -725,6 +716,14 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             //writing feature vectors to CSV file
             using (StreamWriter file = new StreamWriter(pathToFeatureVectorCsvFile))
             {
+                //writing the header to CSV file
+                foreach (var entry in header.ToArray())
+                {
+                    file.Write(entry + ",");
+                }
+
+                file.Write(Environment.NewLine);
+
                 foreach (var entry in featureVectors.ToArray())
                 {
                     foreach (var value in entry)
