@@ -206,10 +206,11 @@ namespace AudioAnalysisTools.DSP
         }
 
         /*
-         * converts a sepctrogram matrix to 3 matrices by dividing the column (freq) into 3 parts
-         * currently the first 1/4 is the lower, the second and third 1/4 forms the mid, and the last 1/4 is the upper freq band.
+         * converts a sepctrogram matrix to 3 or 4 matrices by dividing the column (freq) into 3 or 4 parts
+         * noOfBand as an input parameter indicates how many output bands (3 or 4) are needed
+         * currently the first 1/4 is the lower, the second and third 1/4 forms the mid (or mid1 and mid2), and the last 1/4 is the upper freq band.
          */
-        public static List<double[,]> GetFreqBandMatrices(double[,] matrix)
+        public static List<double[,]> GetFreqBandMatrices(double[,] matrix, int noOfBands)
         {
             List<double[,]> allSubmatrices = new List<double[,]>();
             int cols = matrix.GetLength(1); //number of freq bins
@@ -217,7 +218,6 @@ namespace AudioAnalysisTools.DSP
             int newCol = cols / 4;
 
             double[,] minFreqBandMatrix = new double[rows, newCol];
-            double[,] midFreqBandMatrix = new double[rows, newCol * 2];
             double[,] maxFreqBandMatrix = new double[rows, newCol];
 
             //Note that I am not aware of any faster way to copy a part of 2D-array
@@ -230,15 +230,48 @@ namespace AudioAnalysisTools.DSP
             }
 
             allSubmatrices.Add(minFreqBandMatrix);
-            for (int i = 0; i < rows; i++)
+
+            if (noOfBands == 3)
             {
-                for (int j = 0; j < newCol*2; j++)
+                double[,] midFreqBandMatrix = new double[rows, newCol * 2];
+                for (int i = 0; i < rows; i++)
                 {
-                    midFreqBandMatrix[i, j] = matrix[i, j + newCol];
+                    for (int j = 0; j < newCol * 2; j++)
+                    {
+                        midFreqBandMatrix[i, j] = matrix[i, j + newCol];
+                    }
+                }
+
+                allSubmatrices.Add(midFreqBandMatrix);
+            }
+            else
+            {
+                if (noOfBands == 4)
+                {
+                    double[,] mid1FreqBandMatrix = new double[rows, newCol];
+                    double[,] mid2FreqBandMatrix = new double[rows, newCol];
+                    for (int i = 0; i < rows; i++)
+                    {
+                        for (int j = 0; j < newCol; j++)
+                        {
+                            mid1FreqBandMatrix[i, j] = matrix[i, j + newCol];
+                        }
+                    }
+
+                    allSubmatrices.Add(mid1FreqBandMatrix);
+
+                    for (int i = 0; i < rows; i++)
+                    {
+                        for (int j = 0; j < newCol; j++)
+                        {
+                            mid2FreqBandMatrix[i, j] = matrix[i, j + newCol * 2];
+                        }
+                    }
+
+                    allSubmatrices.Add(mid2FreqBandMatrix);
                 }
             }
 
-            allSubmatrices.Add(midFreqBandMatrix);
             for (int i = 0; i < rows; i++)
             {
                 for (int j = 0; j < newCol; j++)
@@ -248,6 +281,7 @@ namespace AudioAnalysisTools.DSP
             }
 
             allSubmatrices.Add(maxFreqBandMatrix);
+
             return allSubmatrices;
         }
 

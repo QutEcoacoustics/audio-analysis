@@ -227,7 +227,8 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             //+++++++++++++++++++++++++++++++++++++++++++++++++Exp3: different freq bands, different source-target, same patch size
             /* Exp5
            //First: creating 3 matrices from 3 different freq bands of the source spectrogram
-           List<double[,]> allSubmatrices = PatchSampling.GetFreqBandMatrices(sonogram.Data);
+           int noOfFreqBand = 3;
+           List<double[,]> allSubmatrices = PatchSampling.GetFreqBandMatrices(sonogram.Data, noOfFreqBand);
            double[][,] matrices = allSubmatrices.ToArray();
 
            //Second: creating 3 projection matrices from 3 different group of random patches
@@ -437,9 +438,16 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                 //NoiseReductionParameter = 2.0, //0.0,
             };
 
+            // +++++full band patches
             List<double[,]> randomPatches = new List<double[,]>();
-            int patchWidth = finalBinCount; //256; //16; //full band patches
-            int patchHeight = 4; //2; // 16; // 6; //
+            // +++++OR patches from different freq bands
+            List<double[,]> randomPatches0 = new List<double[,]>();
+            List<double[,]> randomPatches1 = new List<double[,]>();
+            List<double[,]> randomPatches2 = new List<double[,]>();
+            List<double[,]> randomPatches3 = new List<double[,]>();
+
+            int patchWidth = finalBinCount / 4; // when selecting patches from four different freq bands //finalBinCount; //256; //16; //full band patches
+            int patchHeight = 2; //4; // 16; // 6; //
             int noOfRandomPatches = 20; //20; // 100; //500; //
             //int fileCount = Directory.GetFiles(folderPath, "*.wav").Length;
 
@@ -499,21 +507,66 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                     //int rows = sonogram.Data.GetLength(0); //3247
                     //int cols = sonogram.Data.GetLength(1); //256
 
-                    randomPatches.Add(PatchSampling.GetPatches(sonogram.Data, patchWidth, patchHeight, noOfRandomPatches, "random").ToMatrix());
+                    // +++++full band patches
+                    //randomPatches.Add(PatchSampling.GetPatches(sonogram.Data, patchWidth, patchHeight, noOfRandomPatches, "random").ToMatrix()); 
+                    // +++++OR patches from four different freq bands (42 * 2)
+                    //creating 4 matrices from 4 different freq bands of the source spectrogram
+                    int noOfFreqBand = 4;
+                    List<double[,]> allSubmatrices = PatchSampling.GetFreqBandMatrices(sonogram.Data, noOfFreqBand);
+                    double[][,] matrices = allSubmatrices.ToArray();
+
+                    //Second: creating 4 projection matrices from 4 different group of random patches
+                    //obtained from 4 different freq bands of the source spectrogram
+                    List<double[,]> projectionMatrices = new List<double[,]>();
+                    List<double[,]> eigenVectors = new List<double[,]>();
+                    List<int> noOfComponents = new List<int>();
+
+                    int count = 0;
+                    while (count < allSubmatrices.Count)
+                    {
+                        if (count == 0)
+                        {
+                            randomPatches0.Add(PatchSampling.GetPatches(matrices[count], patchWidth, patchHeight, noOfRandomPatches, "random").ToMatrix());
+                            count++;
+                        }
+                        else
+                        {
+                            if (count == 1)
+                            {
+                                randomPatches1.Add(PatchSampling.GetPatches(matrices[count], patchWidth, patchHeight, noOfRandomPatches, "random").ToMatrix());
+                                count++;
+                            }
+                            else
+                            {
+                                //continue this for 2 and 3
+                            }
+                        }
+                    }
+                    for (int i = 0; i < allSubmatrices.Count; i++)
+                    {
+                        var randomPatchList = randomPatches+i.ToString()
+                        var randomPatch = PatchSampling.GetPatches(matrices[i], patchWidth, patchHeight, noOfRandomPatches, "random").ToMatrix();
+                        // here the random patches of each band should be add to a list of random patches assigned to that band
+                    }
                 }
 
             }
+
+            var whitening = PcaWhitening.Whitening(randomPatch);
+            projectionMatrices.Add(whitening.Item1);
+            eigenVectors.Add(whitening.Item3);
+            noOfComponents.Add(whitening.Item4);
 
             //convert list of random patches matrices to one matrix
             double[,] allPatchM = PatchSampling.ListOf2DArrayToOne2DArray(randomPatches);
 
             //Apply PCA Whitening
-            //var actual = PcaWhitening.Whitening(allPatchM);
+            var actual = PcaWhitening.Whitening(allPatchM);
 
             //Do k-means clustering
-            int noOfClusters = 32; //64; //10; //50;
-            //var clusteringOutput = KmeansClustering.Clustering(actual.Item2, noOfClusters);
-            var clusteringOutput = KmeansClustering.Clustering(allPatchM, noOfClusters);
+            int noOfClusters = 64; //32; //10; //50;
+            var clusteringOutput = KmeansClustering.Clustering(actual.Item2, noOfClusters);
+            //var clusteringOutput = KmeansClustering.Clustering(allPatchM, noOfClusters);
             int[] sortOrder = KmeansClustering.SortClustersBasedOnSize(clusteringOutput.Item2);
 
             //Draw cluster image directly from centroid csv file: Michael's code (not working properly at the moment!)
@@ -641,7 +694,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             List<double[]> maxFeatureVectors = new List<double[]>();
             List<double[]> stdFeatureVectors = new List<double[]>();
             int c = 0;
-            int noFrames = 6; //12; // number of frames needs to be concatenated to form 1 second
+            int noFrames = 12; //6; // number of frames needs to be concatenated to form 1 second
             while (c < featureTransVectors.GetLength(0))
             {
                 //First, make a list of six patches that would be equal to 1 second
