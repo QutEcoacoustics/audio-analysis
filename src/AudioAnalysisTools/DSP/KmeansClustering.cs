@@ -141,8 +141,8 @@ namespace AudioAnalysisTools.DSP
         //write centroids to a csv file
         public static void WriteCentroidsToCSV(Dictionary<int, double[]> clusterIdCentroid)
         {
-            string pathToClusterSizeCsvFile = @"C:\Users\kholghim\Mahnoosh\PcaWhitening\ClusterCentroids.csv";
-            using (StreamWriter file = new StreamWriter(pathToClusterSizeCsvFile))
+            string pathToClusterCsvFile = @"C:\Users\kholghim\Mahnoosh\PcaWhitening\ClusterCentroids.csv";
+            using (StreamWriter file = new StreamWriter(pathToClusterCsvFile))
             {
                 foreach (var entry in clusterIdCentroid)
                 {

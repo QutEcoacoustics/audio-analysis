@@ -313,6 +313,8 @@ namespace AudioAnalysisTools.DSP
             AddToArray(matrix, submat[0], "column");
             AddToArray(matrix, submat[1], "column", submat[0].GetLength(1));
             AddToArray(matrix, submat[2], "column", submat[0].GetLength(1) + submat[1].GetLength(1));
+            //if we have four freq bands
+            AddToArray(matrix, submat[3], "column", submat[0].GetLength(1) + submat[1].GetLength(1) + submat[2].GetLength(1));
             return matrix;
         }
 
