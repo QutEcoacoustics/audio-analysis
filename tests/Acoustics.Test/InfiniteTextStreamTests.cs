@@ -62,7 +62,7 @@ namespace Acoustics.Test
 
             Assert.IsTrue(s.Length > 1_000);
 
-            Debug.WriteLine(s);
+            //Debug.WriteLine(s);
         }
 
         [TestMethod]
@@ -103,7 +103,7 @@ namespace Acoustics.Test
 
             Assert.IsTrue(s.Length > 10_000);
 
-            Debug.WriteLine(s);
+            //Debug.WriteLine(s);
         }
     }
 }
