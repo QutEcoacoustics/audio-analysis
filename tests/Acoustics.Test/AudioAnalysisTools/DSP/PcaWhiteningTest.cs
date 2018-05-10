@@ -451,7 +451,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             int patchWidth = finalBinCount / 4; // when selecting patches from four different freq bands //finalBinCount; //256; //16; //full band patches
             int patchHeight = 2; //4; // 16; // 6; //
-            int noOfRandomPatches = 20; //20; // 100; //500; //
+            int noOfRandomPatches = 40; //20; //30; // 100; //500; //
             //int fileCount = Directory.GetFiles(folderPath, "*.wav").Length;
 
             /*
@@ -500,7 +500,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                     */
 
                     //sonogram.Data = SNR.NoiseReduce_Median(sonogram.Data, nhBackgroundThreshold: 2.0);
-                    sonogram.Data = PcaWhitening.NoiseReduction(sonogram.Data); //****
+                    sonogram.Data = PcaWhitening.NoiseReduction(sonogram.Data); //**********************************
 
                     //sonogram.Data = dataMatrix2;
                     //var noiseReducedImage = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "NOISEREDUCEDSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
@@ -565,7 +565,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             //double[,] allPatchM = PatchSampling.ListOf2DArrayToOne2DArray(randomPatches);
 
             //+++++4 freq bands
-            int noOfClusters = 64; //32; //10; //50;
+            int noOfClusters = 128; //64; //32; //10; //50;
             List<double[][]> allBandsCentroids = new List<double[][]>();
             List<KMeansClusterCollection> allClusteringOutput = new List<KMeansClusterCollection>();
             //foreach (var patchList in randomPatches)
@@ -574,10 +574,10 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             {
                 double[,] patchMatrix = PatchSampling.ListOf2DArrayToOne2DArray(randomPatches[i]);
                 //Apply PCA Whitening
-                //var actual = PcaWhitening.Whitening(patchMatrix);
+                var actual = PcaWhitening.Whitening(patchMatrix);
                 //Do k-means clustering
-                //var clusteringOutput = KmeansClustering.Clustering(actual.Item2, noOfClusters);
-                var clusteringOutput = KmeansClustering.Clustering(patchMatrix, noOfClusters);
+                var clusteringOutput = KmeansClustering.Clustering(actual.Item2, noOfClusters);
+                //var clusteringOutput = KmeansClustering.Clustering(patchMatrix, noOfClusters);
                 int[] sortOrder = KmeansClustering.SortClustersBasedOnSize(clusteringOutput.Item2);
                 //Draw cluster image directly from clustering output
                 List<KeyValuePair<int, double[]>> list = clusteringOutput.Item1.ToList();
@@ -689,8 +689,9 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             */
 
             //+++++++++++++++++++++++++++++++++++++++++++++++++++++Processing the target spectrogram
-            //var recording2Path = PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav");
-            var recording2Path = PathHelper.ResolveAsset(folderPath, "gympie_np_1192_353972_20160303_055854_60_0.wav");    // folder with 1000 files
+            var recording2Path = PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav");
+            //var recording2Path = PathHelper.ResolveAsset(folderPath, "gympie_np_1192_353972_20160303_055854_60_0.wav");    // folder with 1000 files
+            //var recording2Path = PathHelper.ResolveAsset(folderPath, "gympie_np_1192_353887_20151230_042625_60_0.wav");    // folder with 1000 files
             //var recording2Path = PathHelper.ResolveAsset(folderPath, "gympie_np_1192_354744_20151018_053923_60_0.wav");  // folder with 100 files
             var recording2 = new AudioRecording(recording2Path);
             /*
@@ -725,10 +726,12 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             //standImage2.Save(outputLinScaImagePath, ImageFormat.Png);
 
             //NOISE REDUCTION*******
+            
             //sonogram2.Data = SNR.NoiseReduce_Median(sonogram2.Data, nhBackgroundThreshold: 2.0);
             sonogram2.Data = PcaWhitening.NoiseReduction(sonogram2.Data);
             var image3 = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "NOISEREDUCEDMELSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
             image3.Save(outputNoiseReducedMelImagePath, ImageFormat.Png);
+            
 
             //extracting sequential patches from the target spectrogram
             //+++++++++++++++full band
@@ -858,7 +861,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                 List<double[]> stdFeatureVectors = new List<double[]>();
                 int c = 0;
                 int noFrames = 12; //6; // number of frames needs to be concatenated to form 1 second
-                while (c < freqBandFeature.GetLength(0))
+                while (c + noFrames < freqBandFeature.GetLength(0)) // *** while (c < freqBandFeature.GetLength(0))
                 {
                     //First, make a list of six patches that would be equal to 1 second
                     List<double[]> sequencesOfFramesList = new List<double[]>();
