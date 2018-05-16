@@ -399,7 +399,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             whitenedImage.Save(outputWhitenedSpectrogramPath, ImageFormat.Png);
             */
 
-            //+++++++++++++++++++++++++++++++++++++++++++++++++Exp5: patch sampling (full band patches) from 100 random 1-min recordings from Gympie
+            //+++++++++++++++++++++++++++++++++++++++++++++++++Exp5: patch sampling (full band patches) from 1000 random 1-min recordings from Gympie
 
             //check whether there is any file in the folder/subfolders
             if (Directory.GetFiles(folderPath, "*", SearchOption.AllDirectories).Length == 0)
@@ -430,7 +430,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             var sonoConfig = new SonogramConfig
             {
                 WindowSize = frameSize,
-                WindowOverlap = 0.1028, // since we need to make each 4 frames duration to be 1/6 of a second//  0.0, //according to Dan Stowell's paper // 0.2;
+                WindowOverlap = 0.1028, // since each 24 frames duration is equal to 1 second//  0.0, //according to Dan Stowell's paper // 0.2;
                 //SourceFName = recording.BaseName,
                 DoMelScale = (scaleType == FreqScaleType.Mel) ? true : false,
                 MelBinCount = (scaleType == FreqScaleType.Mel) ? finalBinCount : frameSize / 2,
@@ -442,17 +442,27 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             // +++++full band patches
             //List<double[,]> randomPatches = new List<double[,]>();
             // +++++OR patches from four different freq bands
-            int noOfFreqBand = 4;
-            List<List<double[,]>> randomPatches = new List<List<double[,]>>();
-            List<double[,]> randomPatch0 = new List<double[,]>();
-            List<double[,]> randomPatch1 = new List<double[,]>();
-            List<double[,]> randomPatch2 = new List<double[,]>();
-            List<double[,]> randomPatch3 = new List<double[,]>();
 
-            int patchWidth = finalBinCount / 4; // when selecting patches from four different freq bands //finalBinCount; //256; //16; //full band patches
-            int patchHeight = 2; //4; // 16; // 6; //
-            int noOfRandomPatches = 40; //20; //30; // 100; //500; //
+            //List<List<double[,]>> randomPatches = new List<List<double[,]>>();
+            //List<double[,]> randomPatch0 = new List<double[,]>();
+            //List<double[,]> randomPatch1 = new List<double[,]>();
+            //List<double[,]> randomPatch2 = new List<double[,]>();
+            //List<double[,]> randomPatch3 = new List<double[,]>();
+
+            int noOfFreqBand = 4;
+            int patchWidth = finalBinCount / noOfFreqBand; // when selecting patches from four different freq bands //finalBinCount; //256; //16; //full band patches
+            int patchHeight = 1; // 2; //4; // 16; // 6; //Frame size
+            int noOfRandomPatches = 80; // 40; //20; //30; // 100; //500; //
             //int fileCount = Directory.GetFiles(folderPath, "*.wav").Length;
+
+            //Define variable number of "randomPatch" lists based on "noOfFreqBand"
+            Dictionary<string, List<double[,]>> randomPatchLists = new Dictionary<string, List<double[,]>>();
+            for (int i = 0; i < noOfFreqBand; i++)
+            {
+                randomPatchLists.Add(string.Format("randomPatch{0}", i.ToString()), new List<double[,]>());
+            }
+
+            List<double[,]> randomPatches = new List<double[,]>();
 
             /*
             foreach (string filePath in Directory.GetFiles(folderPath, "*.wav"))
@@ -522,6 +532,9 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                     int count = 0;
                     while (count < allSubmatrices.Count)
                     {
+                        randomPatchLists[count.ToString()].Add(PatchSampling.GetPatches(allSubmatrices.ToArray()[count], patchWidth, patchHeight, noOfRandomPatches, "random").ToMatrix());
+                        count++;
+                        /*
                         if (count == 0)
                         {
                             randomPatch0.Add(PatchSampling.GetPatches(allSubmatrices.ToArray()[count], patchWidth, patchHeight, noOfRandomPatches, "random").ToMatrix());
@@ -551,33 +564,40 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                                 }
                             }
                         }
+                        */
                     }
                 }
             }
 
-            randomPatches.Add(randomPatch0);
-            randomPatches.Add(randomPatch1);
-            randomPatches.Add(randomPatch2);
-            randomPatches.Add(randomPatch3);
+            foreach (string key in randomPatchLists.Keys)
+            {
+                randomPatches.Add(PatchSampling.ListOf2DArrayToOne2DArray(randomPatchLists[key]));
+            }
+
+            //randomPatches.Add(randomPatch0);
+            //randomPatches.Add(randomPatch1);
+            //randomPatches.Add(randomPatch2);
+            //randomPatches.Add(randomPatch3);
 
             //convert list of random patches matrices to one matrix
             //+++++full band patches
             //double[,] allPatchM = PatchSampling.ListOf2DArrayToOne2DArray(randomPatches);
 
             //+++++4 freq bands
-            int noOfClusters = 128; //64; //32; //10; //50;
+            int noOfClusters = 256; // 128; //64; //32; //10; //50;
             List<double[][]> allBandsCentroids = new List<double[][]>();
             List<KMeansClusterCollection> allClusteringOutput = new List<KMeansClusterCollection>();
             //foreach (var patchList in randomPatches)
             //double[,] patchMatrix = PatchSampling.ListOf2DArrayToOne2DArray(patchList);
             for (int i = 0; i < randomPatches.Count; i++)
             {
-                double[,] patchMatrix = PatchSampling.ListOf2DArrayToOne2DArray(randomPatches[i]);
+                //double[,] patchMatrix = PatchSampling.ListOf2DArrayToOne2DArray(randomPatches[i]);
+                double[,] patchMatrix = randomPatches[i];
                 //Apply PCA Whitening
-                var actual = PcaWhitening.Whitening(patchMatrix);
+                //var actual = PcaWhitening.Whitening(patchMatrix);
                 //Do k-means clustering
-                var clusteringOutput = KmeansClustering.Clustering(actual.Item2, noOfClusters);
-                //var clusteringOutput = KmeansClustering.Clustering(patchMatrix, noOfClusters);
+                //var clusteringOutput = KmeansClustering.Clustering(actual.Item2, noOfClusters);
+                var clusteringOutput = KmeansClustering.Clustering(patchMatrix, noOfClusters);
                 int[] sortOrder = KmeansClustering.SortClustersBasedOnSize(clusteringOutput.Item2);
                 //Draw cluster image directly from clustering output
                 List<KeyValuePair<int, double[]>> list = clusteringOutput.Item1.ToList();
@@ -726,12 +746,10 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             //standImage2.Save(outputLinScaImagePath, ImageFormat.Png);
 
             //NOISE REDUCTION*******
-            
             //sonogram2.Data = SNR.NoiseReduce_Median(sonogram2.Data, nhBackgroundThreshold: 2.0);
             sonogram2.Data = PcaWhitening.NoiseReduction(sonogram2.Data);
             var image3 = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "NOISEREDUCEDMELSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
             image3.Save(outputNoiseReducedMelImagePath, ImageFormat.Png);
-            
 
             //extracting sequential patches from the target spectrogram
             //+++++++++++++++full band
@@ -854,14 +872,16 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             List<double[,]> allMaxFeatureVectors = new List<double[,]>();
             List<double[,]> allStdFeatureVectors = new List<double[,]>();
 
+            // number of frames needs to be concatenated to form 1 second. Each 24 frames make 1 second.
+            int noFrames = 24 / patchHeight;
+
             foreach (var freqBandFeature in allFeatureTransVectors)
             {
                 List<double[]> meanFeatureVectors = new List<double[]>();
                 List<double[]> maxFeatureVectors = new List<double[]>();
                 List<double[]> stdFeatureVectors = new List<double[]>();
                 int c = 0;
-                int noFrames = 12; //6; // number of frames needs to be concatenated to form 1 second
-                while (c + noFrames < freqBandFeature.GetLength(0)) // *** while (c < freqBandFeature.GetLength(0))
+                while (c + noFrames < freqBandFeature.GetLength(0))
                 {
                     //First, make a list of six patches that would be equal to 1 second
                     List<double[]> sequencesOfFramesList = new List<double[]>();

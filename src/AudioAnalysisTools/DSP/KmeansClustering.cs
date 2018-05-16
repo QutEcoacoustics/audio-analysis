@@ -165,7 +165,7 @@ namespace AudioAnalysisTools.DSP
             {
                 double[] patch = PcaWhitening.GetRow(sequentialPatchMatrix, i);
 
-                //find the nearest cnetroid to each patch
+                //find the nearest centroid to each patch
                 double [] scores = clusters.Scores(patch);
                 int ind = scores.IndexOf(clusters.Score(patch));
                 double[] nearestCentroid = clusters.Centroids[ind];

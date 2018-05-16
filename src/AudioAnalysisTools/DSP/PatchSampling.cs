@@ -206,17 +206,45 @@ namespace AudioAnalysisTools.DSP
         }
 
         /*
-         * converts a sepctrogram matrix to 3 or 4 matrices by dividing the column (freq) into 3 or 4 parts
-         * noOfBand as an input parameter indicates how many output bands (3 or 4) are needed
-         * currently the first 1/4 is the lower, the second and third 1/4 forms the mid (or mid1 and mid2), and the last 1/4 is the upper freq band.
+         * converts a spectrogram matrix to submatrices by dividing the column of input matrix to different freq bands with equal size
+         * Output submatrices have same number of rows and same number of columns
+         * noOfBand as an input parameter indicates how many output bands are needed
+         * Note that if we want the first 1/4 as the lower band, the second and third 1/4 as the mid,
+         * and the last 1/4 is the upper freq band, we need to use the commented part of the code.
          */
         public static List<double[,]> GetFreqBandMatrices(double[,] matrix, int noOfBands)
         {
             List<double[,]> allSubmatrices = new List<double[,]>();
             int cols = matrix.GetLength(1); //number of freq bins
             int rows = matrix.GetLength(0);
-            int newCol = cols / 4;
+            int newCol = cols / noOfBands;
 
+            /*
+            Dictionary<string, double[,]> FreqBandMatrices = new Dictionary<string, double[,]>();
+            for (int i = 0; i < noOfBands; i++)
+            {
+                FreqBandMatrices.Add(string.Format("FreqBandMatrix{0}", i.ToString()), new double[rows, newCol]);
+            }
+            */
+
+            int bandId = 0;
+            while (bandId < noOfBands)
+            {
+                double[,] m = new double[rows, newCol];
+                for (int i = 0; i < rows; i++)
+                {
+                    for (int j = 0; j < newCol; j++)
+                    {
+                        m[i, j] = matrix[i, j + (newCol * bandId)];
+                    }
+                }
+
+                allSubmatrices.Add(m);
+                //FreqBandMatrices[bandId.ToString()] = m;
+                bandId++;
+            }
+
+            /*
             double[,] minFreqBandMatrix = new double[rows, newCol];
             double[,] maxFreqBandMatrix = new double[rows, newCol];
 
@@ -281,7 +309,7 @@ namespace AudioAnalysisTools.DSP
             }
 
             allSubmatrices.Add(maxFreqBandMatrix);
-
+            */
             return allSubmatrices;
         }
 
