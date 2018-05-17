@@ -4,25 +4,19 @@
 
 namespace Acoustics.Test.AudioAnalysisTools.DSP
 {
-    using global::AudioAnalysisTools.DSP;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
     using Accord.MachineLearning;
-    using Accord.Statistics.Analysis;
     using Accord.Math;
-    using Accord.Statistics.Kernels;
-    using Acoustics.Tools.Wav;
+    using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.StandardSpectrograms;
     using global::AudioAnalysisTools.WavTools;
     using global::TowseyLibrary;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
     using NeuralNets;
     using TestHelpers;
 
@@ -407,15 +401,6 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                 throw new ArgumentException("The folder of recordings is empty...");
             }
 
-            /*
-            foreach (string filePath in Directory.GetFiles(folderPath, "*.wav"))
-            {
-                var recording = new AudioRecording(filePath);
-                int nq = recording.Nyquist;
-                break;
-            }
-            */
-
             //get the nyquist value from the first wav file in the folder of recordings
             int nq = new AudioRecording(Directory.GetFiles(folderPath, "*.wav")[0]).Nyquist;
 
@@ -430,27 +415,14 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             var sonoConfig = new SonogramConfig
             {
                 WindowSize = frameSize,
-                WindowOverlap = 0.1028, // since each 24 frames duration is equal to 1 second//  0.0, //according to Dan Stowell's paper // 0.2;
-                //SourceFName = recording.BaseName,
+                WindowOverlap = 0.1028, // since each 24 frames duration is equal to 1 second
                 DoMelScale = (scaleType == FreqScaleType.Mel) ? true : false,
                 MelBinCount = (scaleType == FreqScaleType.Mel) ? finalBinCount : frameSize / 2,
-                //NoiseReductionType = NoiseReductionType.Standard,
                 NoiseReductionType = NoiseReductionType.None,
-                //NoiseReductionParameter = 2.0, //0.0,
             };
 
-            // +++++full band patches
-            //List<double[,]> randomPatches = new List<double[,]>();
-            // +++++OR patches from four different freq bands
-
-            //List<List<double[,]>> randomPatches = new List<List<double[,]>>();
-            //List<double[,]> randomPatch0 = new List<double[,]>();
-            //List<double[,]> randomPatch1 = new List<double[,]>();
-            //List<double[,]> randomPatch2 = new List<double[,]>();
-            //List<double[,]> randomPatch3 = new List<double[,]>();
-
             int noOfFreqBand = 4;
-            int patchWidth = finalBinCount / noOfFreqBand; // when selecting patches from four different freq bands //finalBinCount; //256; //16; //full band patches
+            int patchWidth = finalBinCount / noOfFreqBand; // when selecting patches from four different freq bands //
             int patchHeight = 1; // 2; //4; // 16; // 6; //Frame size
             int noOfRandomPatches = 80; // 40; //20; //30; // 100; //500; //
             //int fileCount = Directory.GetFiles(folderPath, "*.wav").Length;
@@ -487,84 +459,22 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
                     var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
 
-                    // DO DRAW SPECTROGRAM
-                    //var fst = freqScale.ScaleType;
-                    //var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + freqScale.ScaleType.ToString(), freqScale.GridLineLocations);
-                    //image.Save(outputImagePath, ImageFormat.Png);
-
-                    //var image = amplitudeSpectrogram.GetImageFullyAnnotated(amplitudeSpectrogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-                    //image.Save(outputLinScaImagePath, ImageFormat.Png);
-
                     // DO RMS NORMALIZATION
                     sonogram.Data = PcaWhitening.RmsNormalization(sonogram.Data);
-                    //var normImage = amplitudeSpectrogram.GetImageFullyAnnotated(amplitudeSpectrogram.GetImage(), "NORMAmplitudeSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-                    //normImage.Save(outputNormAmpImagePath, ImageFormat.Png);
-
 
                     // DO NOISE REDUCTION
-                    /*
-                    var dataMatrix = SNR.NoiseReduce_Standard(sonogram.Data);
-                    sonogram.Data = dataMatrix;
-                    var noiseReducedImage = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "NOISEREDUCEDSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-                    noiseReducedImage.Save(outputNoiseReducedImagePath, ImageFormat.Png);
-                    */
-
                     //sonogram.Data = SNR.NoiseReduce_Median(sonogram.Data, nhBackgroundThreshold: 2.0);
-                    sonogram.Data = PcaWhitening.NoiseReduction(sonogram.Data); //**********************************
+                    sonogram.Data = PcaWhitening.NoiseReduction(sonogram.Data);
 
-                    //sonogram.Data = dataMatrix2;
-                    //var noiseReducedImage = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "NOISEREDUCEDSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-                    //noiseReducedImage.Save(outputNoiseReducedImagePath, ImageFormat.Png);
-
-                    // Do Patch Sampling
-                    //int rows = sonogram.Data.GetLength(0); //3247
-                    //int cols = sonogram.Data.GetLength(1); //256
-
-                    // +++++full band patches
-                    //randomPatches.Add(PatchSampling.GetPatches(sonogram.Data, patchWidth, patchHeight, noOfRandomPatches, "random").ToMatrix()); 
-                    // +++++OR patches from four different freq bands (42 * 2)
-                    //creating 4 matrices from 4 different freq bands of the source spectrogram
+                    //creating matrices from different freq bands of the source spectrogram
                     List<double[,]> allSubmatrices = PatchSampling.GetFreqBandMatrices(sonogram.Data, noOfFreqBand);
 
                     //Second: selecting random patches from each freq band matrix and add them to the corresponding patch list
-
-                    //might be a better way to do this
                     int count = 0;
                     while (count < allSubmatrices.Count)
                     {
-                        randomPatchLists[count.ToString()].Add(PatchSampling.GetPatches(allSubmatrices.ToArray()[count], patchWidth, patchHeight, noOfRandomPatches, "random").ToMatrix());
+                        randomPatchLists[string.Format("randomPatch{0}", count.ToString())].Add(PatchSampling.GetPatches(allSubmatrices.ToArray()[count], patchWidth, patchHeight, noOfRandomPatches, "random").ToMatrix());
                         count++;
-                        /*
-                        if (count == 0)
-                        {
-                            randomPatch0.Add(PatchSampling.GetPatches(allSubmatrices.ToArray()[count], patchWidth, patchHeight, noOfRandomPatches, "random").ToMatrix());
-                            count++;
-                        }
-                        else
-                        {
-                            if (count == 1)
-                            {
-                                randomPatch1.Add(PatchSampling.GetPatches(allSubmatrices.ToArray()[count], patchWidth, patchHeight, noOfRandomPatches, "random").ToMatrix());
-                                count++;
-                            }
-                            else
-                            {
-                                if (count == 2)
-                                {
-                                    randomPatch2.Add(PatchSampling.GetPatches(allSubmatrices.ToArray()[count], patchWidth, patchHeight, noOfRandomPatches, "random").ToMatrix());
-                                    count++;
-                                }
-                                else
-                                {
-                                    if (count == 3)
-                                    {
-                                        randomPatch3.Add(PatchSampling.GetPatches(allSubmatrices.ToArray()[count], patchWidth, patchHeight, noOfRandomPatches, "random").ToMatrix());
-                                        count++;
-                                    }
-                                }
-                            }
-                        }
-                        */
                     }
                 }
             }
@@ -574,24 +484,13 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                 randomPatches.Add(PatchSampling.ListOf2DArrayToOne2DArray(randomPatchLists[key]));
             }
 
-            //randomPatches.Add(randomPatch0);
-            //randomPatches.Add(randomPatch1);
-            //randomPatches.Add(randomPatch2);
-            //randomPatches.Add(randomPatch3);
-
             //convert list of random patches matrices to one matrix
-            //+++++full band patches
-            //double[,] allPatchM = PatchSampling.ListOf2DArrayToOne2DArray(randomPatches);
-
-            //+++++4 freq bands
             int noOfClusters = 256; // 128; //64; //32; //10; //50;
             List<double[][]> allBandsCentroids = new List<double[][]>();
             List<KMeansClusterCollection> allClusteringOutput = new List<KMeansClusterCollection>();
-            //foreach (var patchList in randomPatches)
-            //double[,] patchMatrix = PatchSampling.ListOf2DArrayToOne2DArray(patchList);
+
             for (int i = 0; i < randomPatches.Count; i++)
             {
-                //double[,] patchMatrix = PatchSampling.ListOf2DArrayToOne2DArray(randomPatches[i]);
                 double[,] patchMatrix = randomPatches[i];
                 //Apply PCA Whitening
                 //var actual = PcaWhitening.Whitening(patchMatrix);
@@ -637,135 +536,46 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                 //var freqScale = new FrequencyScale(FreqScaleType.Mel, nyquist, frameSize, finalBinCount, gridInterval);
 
                 var clusterImage = ImageTools.DrawMatrixWithoutNormalisation(mergedCentroidMatrix);
-                //clusterImage.RotateFlip(RotateFlipType.Rotate90FlipNone);
                 clusterImage.RotateFlip(RotateFlipType.Rotate270FlipNone);
                 clusterImage.Save(outputClusterImagePath, ImageFormat.Bmp);
 
-                //string filename = @"C:\Users\kholghim\Mahnoosh\PcaWhitening\Clusters50.bmp";
                 var outputClusteringImage = Path.Combine(resultDir, "ClustersWithGrid" + i.ToString() + ".bmp");
                 //Image bmp = ImageTools.ReadImage2Bitmap(filename);
                 FrequencyScale.DrawFrequencyLinesOnImage((Bitmap)clusterImage, freqScale, includeLabels: false);
                 clusterImage.Save(outputClusteringImage);
             }
 
-            /* ++++++++++++++++++++++++++++++full band patches
-            //Apply PCA Whitening
-            var actual = PcaWhitening.Whitening(allPatchM);
-
-            //Do k-means clustering
-            int noOfClusters = 64; //32; //10; //50;
-            var clusteringOutput = KmeansClustering.Clustering(actual.Item2, noOfClusters);
-            //var clusteringOutput = KmeansClustering.Clustering(allPatchM, noOfClusters);
-            int[] sortOrder = KmeansClustering.SortClustersBasedOnSize(clusteringOutput.Item2);
-
-            //Draw cluster image directly from centroid csv file: Michael's code (not working properly at the moment!)
-            //KmeansClustering.DrawClusterImage(patchWidth, patchHeight, sortOrder);
-
-            //Draw cluster image directly from clustering output
-            List<KeyValuePair<int, double[]>> list = clusteringOutput.Item1.ToList();
-            double[][] centroids = new double[list.Count][];
-
-            for (int i = 0; i < list.Count; i++)
-            {
-                centroids[i] = list[i].Value;
-            }
-
-            List<double[,]> allCentroids = new List<double[,]>();
-
-            for (int i = 0; i < centroids.Length; i++)
-            {
-                //convert each centroid to a matrix (4-by-128) in order of cluster ID
-                //double[,] cent = PatchSampling.Array2Matrix(centroids[i], patchWidth, patchHeight, "column");
-                //OR: in order of cluster size
-                double[,] cent = PatchSampling.Array2Matrix(centroids[sortOrder[i]], patchWidth, patchHeight, "column");
-
-                //normalize each centroid
-                double[,] normCent = DataTools.normalise(cent);
-
-                //add a row of zero to each centroid
-                double[,] cent2 = PatchSampling.AddRow(normCent).ToMatrix();
-
-                allCentroids.Add(cent2);
-            }
-
-            //concatenate all centroids
-            double[,] mergedCentroidMatrix = PatchSampling.ListOf2DArrayToOne2DArray(allCentroids);
-
-            //Draw clusters
-            //int gridInterval = 1000;
-            //var freqScale = new FrequencyScale(FreqScaleType.Mel, nyquist, frameSize, finalBinCount, gridInterval);
-
-            var clusterImage = ImageTools.DrawMatrixWithoutNormalisation(mergedCentroidMatrix);
-            //clusterImage.RotateFlip(RotateFlipType.Rotate90FlipNone);
-            clusterImage.RotateFlip(RotateFlipType.Rotate270FlipNone);
-            clusterImage.Save(outputClusterImagePath, ImageFormat.Bmp);
-
-            //string filename = @"C:\Users\kholghim\Mahnoosh\PcaWhitening\Clusters50.bmp";
-            string outputFile = @"C:\Users\kholghim\Mahnoosh\PcaWhitening\ClustersWithGrid.bmp";
-            //Image bmp = ImageTools.ReadImage2Bitmap(filename);
-            FrequencyScale.DrawFrequencyLinesOnImage((Bitmap)clusterImage, freqScale, includeLabels: false);
-            clusterImage.Save(outputFile);
-            //++++++++++++++++++++++++++++++full band patches
-            */
-
-            //+++++++++++++++++++++++++++++++++++++++++++++++++++++Processing the target spectrogram
+            //+++++++++++++++++++++++++++++++++++++++++++++++++++++Processing and generating features for the target spectrogram
             var recording2Path = PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav");
             //var recording2Path = PathHelper.ResolveAsset(folderPath, "gympie_np_1192_353972_20160303_055854_60_0.wav");    // folder with 1000 files
             //var recording2Path = PathHelper.ResolveAsset(folderPath, "gympie_np_1192_353887_20151230_042625_60_0.wav");    // folder with 1000 files
             //var recording2Path = PathHelper.ResolveAsset(folderPath, "gympie_np_1192_354744_20151018_053923_60_0.wav");  // folder with 100 files
-            var recording2 = new AudioRecording(recording2Path);
-            /*
-            var fst2 = FreqScaleType.Linear;
-            var freqScale2 = new FrequencyScale(fst2);
-            var sonoConfig2 = new SonogramConfig
-            {
-                WindowSize = freqScale2.FinalBinCount * 2,
-                WindowOverlap = 0.2,
-                SourceFName = recording2.BaseName,
-                NoiseReductionType = NoiseReductionType.None,
-                NoiseReductionParameter = 0.0,
-            };
-            var amplitudeSpectrogram2 = new AmplitudeSonogram(sonoConfig2, recording2.WavReader);
-            //amplitudeSpectrogram2.Configuration.WindowSize = freqScale2.WindowSize;
-            //var image2 = amplitudeSpectrogram2.GetImageFullyAnnotated(amplitudeSpectrogram2.GetImage(), "SPECTROGRAM: " + fst2.ToString(), freqScale2.GridLineLocations);
-            //image2.Save(outputAmpSpecImagePath, ImageFormat.Png);
-            */
 
+            var recording2 = new AudioRecording(recording2Path);
             var sonogram2 = new SpectrogramStandard(sonoConfig, recording2.WavReader);
 
             // DO DRAW SPECTROGRAM
             var image = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "MELSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
             image.Save(outputMelImagePath, ImageFormat.Png);
 
-            //Do RMS normalisation
+            //Do RMS normalization
             sonogram2.Data = PcaWhitening.RmsNormalization(sonogram2.Data);
             var image2 = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "NORMALISEDMELSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
             image2.Save(outputNormMelImagePath, ImageFormat.Png);
-            //var sonogram2 = new SpectrogramStandard(amplitudeSpectrogram2);
-            //var standImage2 = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "SPECTROGRAM: " + fst2.ToString(), freqScale2.GridLineLocations);
-            //standImage2.Save(outputLinScaImagePath, ImageFormat.Png);
 
-            //NOISE REDUCTION*******
-            //sonogram2.Data = SNR.NoiseReduce_Median(sonogram2.Data, nhBackgroundThreshold: 2.0);
+            //NOISE REDUCTION
             sonogram2.Data = PcaWhitening.NoiseReduction(sonogram2.Data);
             var image3 = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "NOISEREDUCEDMELSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
             image3.Save(outputNoiseReducedMelImagePath, ImageFormat.Png);
 
             //extracting sequential patches from the target spectrogram
-            //+++++++++++++++full band
-            //int rows = sonogram2.Data.GetLength(0); //3247
-            //int cols = sonogram2.Data.GetLength(1); //256
-            //var sequentialPatches = PatchSampling.GetPatches(sonogram2.Data, patchWidth, patchHeight, (rows / patchHeight) * (cols / patchWidth), "sequential");
-            //double[,] sequentialPatchMatrix2 = sequentialPatches.ToMatrix();
-
-            //+++++++++++++++4 freq band
             List<double[,]> allSubmatrices2 = PatchSampling.GetFreqBandMatrices(sonogram2.Data, noOfFreqBand);
             double[][,] matrices2 = allSubmatrices2.ToArray();
             List<double[,]> allSequentialPatchMatrix = new List<double[,]>();
             for (int i = 0; i < matrices2.GetLength(0); i++)
             {
-                int rows = matrices2[i].GetLength(0); //3247
-                int cols = matrices2[i].GetLength(1); //256
+                int rows = matrices2[i].GetLength(0);
+                int cols = matrices2[i].GetLength(1);
                 var sequentialPatches = PatchSampling.GetPatches(matrices2[i], patchWidth, patchHeight, (rows / patchHeight) * (cols / patchWidth), "sequential");
                 allSequentialPatchMatrix.Add(sequentialPatches.ToMatrix());
             }
@@ -774,24 +584,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             // to do the feature transformation, we normalize centroids and
             // sequential patches from the input spectrogram to unit length
             // Then, we calculate the dot product of each patch with the centroids' matrix
-            /*
-            //+++++++++++++++full band
-            double[][] normCentroids = new double[centroids.GetLength(0)][];
-            for (int i = 0; i < centroids.GetLength(0); i++)
-            {
-                normCentroids[i] = ART_2A.NormaliseVector(centroids[i]);
 
-            }
-
-            double[][] featureTransVectors = new double[sequentialPatches.GetLength(0)][];
-            for (int i = 0; i < sequentialPatches.GetLength(0); i++)
-            {
-                var normVec = ART_2A.NormaliseVector(sequentialPatches[i]); // normalize each patch to unit length
-                featureTransVectors[i] = normCentroids.ToMatrix().Dot(normVec);
-            }
-            */
-
-            //+++++++++++++++4 freq band
             List<double[][]> allNormCentroids = new List<double[][]>();
             for (int i = 0; i < allBandsCentroids.Count; i++)
             {
@@ -825,49 +618,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             // Each 6 patches form 1 second, when patches are formed by a sequence of four frames
             // for each 6 patch, we generate 3 vectors of mean, std, and max
             // The pre-assumption is that each input spectrogram is 1 minute
-            /*
-            //++++++++++++++full-band
-            List<double[]> meanFeatureVectors = new List<double[]>();
-            List<double[]> maxFeatureVectors = new List<double[]>();
-            List<double[]> stdFeatureVectors = new List<double[]>();
-            int c = 0;
-            int noFrames = 12; //6; // number of frames needs to be concatenated to form 1 second
-            while (c < featureTransVectors.GetLength(0))
-            {
-                //First, make a list of six patches that would be equal to 1 second
-                List<double[]> sequencesOfFramesList = new List<double[]>();
-                for (int i = c; i < c + noFrames; i++)
-                {
-                    sequencesOfFramesList.Add(featureTransVectors[i]);
-                }
 
-                List<double> mean = new List<double>();
-                List<double> std = new List<double>();
-                List<double> max = new List<double>();
-                double[,] sequencesOfFrames = sequencesOfFramesList.ToArray().ToMatrix();
-                int len = sequencesOfFrames.GetLength(1);
-
-                //Second, calculate mean, max, and standard deviation of six vectors element-wise
-                for (int j = 0; j < sequencesOfFrames.GetLength(1); j++)
-                {
-                    double[] temp = new double[sequencesOfFrames.GetLength(0)];
-                    for (int k = 0; k < sequencesOfFrames.GetLength(0); k++)
-                    {
-                        temp[k] = sequencesOfFrames[k, j];
-                    }
-
-                    mean.Add(AutoAndCrossCorrelation.GetAverage(temp));
-                    std.Add(AutoAndCrossCorrelation.GetStdev(temp));
-                    max.Add(PatchSampling.GetMaxValue(temp));
-                }
-
-                meanFeatureVectors.Add(mean.ToArray());
-                maxFeatureVectors.Add(max.ToArray());
-                stdFeatureVectors.Add(std.ToArray());
-                c += noFrames;
-            }
-            */
-            //+++++++++4 freq band
             List<double[,]> allMeanFeatureVectors = new List<double[,]>();
             List<double[,]> allMaxFeatureVectors = new List<double[,]>();
             List<double[,]> allStdFeatureVectors = new List<double[,]>();
@@ -883,7 +634,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                 int c = 0;
                 while (c + noFrames < freqBandFeature.GetLength(0))
                 {
-                    //First, make a list of six patches that would be equal to 1 second
+                    //First, make a list of patches that would be equal to 1 second
                     List<double[]> sequencesOfFramesList = new List<double[]>();
                     for (int i = c; i < c + noFrames; i++)
                     {
@@ -926,65 +677,11 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             //++++++++++++++++++++++++++++++++++Writing features to file
             //First, concatenate mean, max, std for each second.
             //Then write to CSV file.
-            /*
-            //+++++++++++full-band
-            string pathToFeatureVectorCsvFile = @"C:\Users\kholghim\Mahnoosh\PcaWhitening\FeatureVectors.csv";
 
-            //creating the header for CSV file
-            List<string> header = new List<string>();
-            for (int i = 0; i < meanFeatureVectors.ToArray().ToMatrix().GetLength(1); i++)
-            {
-                header.Add("mean" + i.ToString());
-            }
-
-            for (int i = 0; i < stdFeatureVectors.ToArray().ToMatrix().GetLength(1); i++)
-            {
-                header.Add("std" + i.ToString());
-            }
-
-            for (int i = 0; i < maxFeatureVectors.ToArray().ToMatrix().GetLength(1); i++)
-            {
-                header.Add("max" + i.ToString());
-            }
-
-            //concatenating mean, std, and max vector together for each 1 second
-            List<double[]> featureVectors = new List<double[]>();
-            for (int i = 0; i < meanFeatureVectors.ToArray().GetLength(0); i++)
-            {
-                List<double[]> featureList = new List<double[]>();
-                featureList.Add(meanFeatureVectors.ToArray()[i]);
-                featureList.Add(stdFeatureVectors.ToArray()[i]);
-                featureList.Add(maxFeatureVectors.ToArray()[i]);
-                double[] featureVector = DataTools.ConcatenateVectors(featureList);
-                featureVectors.Add(featureVector);
-            }
-
-            //writing feature vectors to CSV file
-            using (StreamWriter file = new StreamWriter(pathToFeatureVectorCsvFile))
-            {
-                //writing the header to CSV file
-                foreach (var entry in header.ToArray())
-                {
-                    file.Write(entry + ",");
-                }
-
-                file.Write(Environment.NewLine);
-
-                foreach (var entry in featureVectors.ToArray())
-                {
-                    foreach (var value in entry)
-                    {
-                        file.Write(value + ",");
-                    }
-
-                    file.Write(Environment.NewLine);
-                }
-            }
-            */
-            //++++++++++++++++++4 freq band
             for (int j = 0; j < allMeanFeatureVectors.Count; j++)
             {
                 var outputFeatureFile = Path.Combine(resultDir, "FeatureVectors" + j.ToString() + ".csv");
+
                 //creating the header for CSV file
                 List<string> header = new List<string>();
                 for (int i = 0; i < allMeanFeatureVectors.ToArray()[j].GetLength(1); i++)
@@ -1037,17 +734,6 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                 }
             }
 
-            //Apply PCA Whitening
-            //var actual2 = PcaWhitening.Whitening(sequentialPatchMatrix2);
-
-            //++++++++++++full-band
-            /*
-            //double[,] reconstructedSpec2 = PcaWhitening.ReconstructSpectrogram(actual.Item1, sequentialPatchMatrix2, actual.Item3, actual.Item4);
-            double[,] reconstructedSpec2 = KmeansClustering.ReconstructSpectrogram(sequentialPatchMatrix2, clusteringOutput.Item3);
-            //double[,] reconstructedSpec2 = KmeansClustering.ReconstructSpectrogram(actual2.Item2, clusteringOutput.Item3);
-            sonogram2.Data = PatchSampling.ConvertPatches(reconstructedSpec2, patchWidth, patchHeight, cols);
-            */
-            //++++++++++++4 freq bands
             List<double[,]> convertedSpec = new List<double[,]>();
             int columnPerFreqBand = sonogram2.Data.GetLength(1) / noOfFreqBand;
             for (int i = 0; i < allSequentialPatchMatrix.Count; i++)
@@ -1056,17 +742,11 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                 convertedSpec.Add(PatchSampling.ConvertPatches(reconstructedSpec2, patchWidth, patchHeight, columnPerFreqBand));
             }
 
-            //this function needs to be changed***************
             sonogram2.Data = PatchSampling.ConcatFreqBandMatrices(convertedSpec);
-            //++++++++++++4 freq bands
 
             // DO DRAW SPECTROGRAM
-            //var fst = freqScale.ScaleType;
             var respecImage = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "RECONSTRUCTEDSPECTROGRAM: " + freqScale.ScaleType.ToString(), freqScale.GridLineLocations);
             respecImage.Save(outputReSpecImagePath, ImageFormat.Png);
-
-            //var respecImage2 = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "RECONSTRUCTEDSPECTROGRAM: " + fst2.ToString(), freqScale2.GridLineLocations);
-            //respecImage2.Save(outputReSpecImagePath, ImageFormat.Png);
 
             //+++++++++++++++++++++++++++++++++++++++++++++++++Exp5: patch sampling from 100 random 1-min recordings from Gympie
 

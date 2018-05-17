@@ -4,10 +4,9 @@
 
 namespace AudioAnalysisTools.DSP
 {
+    using System;
     using Accord.Math;
     using Accord.Statistics.Analysis;
-    using System;
-    using System.Collections.Generic;
     using TowseyLibrary;
 
     public static class PcaWhitening
@@ -39,10 +38,8 @@ namespace AudioAnalysisTools.DSP
 
             double[][] output1 = pca.Transform(jaggedArr);
 
-            //according to Dieleman's paper, exp var = 0.99 (Multiscale approaches to music audio feature learning)
             pca.ExplainedVariance = 0.95;
 
-            //double[,] projectionMatrix = pca.Transform(jaggedArr, );
             double[][] output2 = pca.Transform(jaggedArr);
             double[,] projectedData = output2.ToMatrix();
             double[,] eigenVectors = pca.ComponentVectors.ToMatrix();
@@ -60,11 +57,8 @@ namespace AudioAnalysisTools.DSP
             //Build Projection Matrix
             //To do so, we need eigenVectors, and the number of columns of the projected data
             double[,] projectionMatrix = GetProjectionMatrix(eigenVectors, projectedData.GetLength(1));
-            //double[][] m = projectionMatrix.ToJagged();
 
             //write the projection matrix to disk
-
-
             /*
             //FIRST STEP: sort the eigenvectors based on the eigenvalue
             var eigPairs = new List<Tuple<double, double[]>>();
@@ -78,7 +72,6 @@ namespace AudioAnalysisTools.DSP
             eigPairs.Sort((x, y) => y.Item1.CompareTo(x.Item1));
             */
 
-            //return reversion;
             return new Tuple<double[,], double[,], double[,], int>(projectionMatrix, reversion, eigenVectors, components);
         }
 
@@ -185,14 +178,10 @@ namespace AudioAnalysisTools.DSP
         public static double[,] ReconstructSpectrogram(double[,] projectionMatrix, double[,] sequentialPatchMatrix, double[,] eigenVectors, int numberOfComponents)
         {
             double[][] patches = new double[sequentialPatchMatrix.GetLength(0)][];
-            //new double[sequentialPatchMatrix.GetLength(0)] [sequentialPatchMatrix.GetLength(1)];
-            //List<double[]> patches = new List<double[]>();
             for (int i = 0; i < sequentialPatchMatrix.GetLength(0); i++)
             {
                 double[] patch = GetRow(sequentialPatchMatrix, i);
-                //double[] cleanedPatch = projectionMatrix.Multiply(patch);
                 double[] cleanedPatch = projectionMatrix.Dot(patch);
-                //patches.Add(cleanedPatch);
                 patches[i] = cleanedPatch;
             }
 

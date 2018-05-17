@@ -1,20 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// <copyright file="PcaWhitening.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
 
 namespace AudioAnalysisTools.DSP
 {
-    using System.CodeDom;
-    using System.Diagnostics;
+    using System;
+    using System.Collections.Generic;
     using Accord.Math;
     using TowseyLibrary;
 
     public static class PatchSampling
     {
         /*
-         * sample a set of patches ("sequential" or "random") from a spectrogram
+         * sample a set of patches ("sequential" or "random" or "overlapped random") from a spectrogram
          * in "sequential" mode, it generates non-overlapping patches from the whole input matrix, and
          * in this case the "numOfPatches" can be simply set to zero.
          * However, in "random" mode, the method requires an input for the "numOfPatches" parameter.
@@ -23,47 +21,32 @@ namespace AudioAnalysisTools.DSP
         {
             List<double[]> patches = new List<double[]>();
 
-            int rows = spectrogram.GetLength(0); //3247
-            int cols = spectrogram.GetLength(1); //256
+            int rows = spectrogram.GetLength(0);
+            int cols = spectrogram.GetLength(1);
             Random rn = new Random();
 
             if (samplingMethod == "sequential")
             {
-                //int numberOfPatches = (rows / patchHeight) * (cols / patchWidth);
+                //generate non-overlapping patches
+                //convert matrix to submatrix
+                for (int r = 0; r < rows / patchHeight; r++)
+                {
+                    for (int c = 0; c < cols / patchWidth; c++)
+                    {
+                        double[,] submatrix = MatrixTools.Submatrix(spectrogram, r * patchHeight, c * patchWidth,
+                            (r * patchHeight) + patchHeight - 1, (c * patchWidth) + patchWidth - 1);
 
-                //checking whether the number of patches are smaller than size of patch matrix
-                //we don't want to generate a matrix with less columns than rows for PCA!
-                //if (numberOfPatches >= patchHeight * patchWidth)
-                //{
-                    //generate non-overlapping patches
-                    //convert matrix to submatrix
-                    for (int r = 0; r < rows / patchHeight; r++)
-                        {
-                            for (int c = 0; c < cols / patchWidth; c++)
-                                {
-                                    double[,] submatrix = MatrixTools.Submatrix(spectrogram, r * patchHeight, c * patchWidth,
-                                    (r * patchHeight) + patchHeight - 1, (c * patchWidth) + patchWidth - 1);
-
-                                    //convert a matrix to a vector by concatenating columns and
-                                    //store it to the array of vectors
-                                    patches.Add(MatrixTools.Matrix2Array(submatrix));
-                                }
-                        }
-                //}
-                //else
-               // {
-                    //generate overlapping patches
-                    //if (numberOfPatches < patchHeight * patchWidth)
-                   // {
-
-                    //}
-                //}
+                        //convert a matrix to a vector by concatenating columns and
+                        //store it to the array of vectors
+                        patches.Add(MatrixTools.Matrix2Array(submatrix));
+                    }
+                }
             }
             else
             {
                 if (samplingMethod == "random")
                 {
-                    for (int i = 0; i < numOfPatches; i++) //(rows / patchHeight) * patchHeight --> select 3232 random patches
+                    for (int i = 0; i < numOfPatches; i++)
                     {
                         int rInt = rn.Next(0, rows - patchHeight); //selecting a random number from the height of the matrix
                         int cInt = rn.Next(0, cols - patchWidth); //selecting a random number from the width of the matrix
@@ -85,8 +68,8 @@ namespace AudioAnalysisTools.DSP
                             //First select a random patch
                             int rInt = rn.Next(0, rows - patchHeight); //selecting a random number from the height of the matrix
                             int cInt = rn.Next(0, cols - patchWidth); //selecting a random number from the width of the matrix
-                            double[,] submatrix = MatrixTools.Submatrix(spectrogram, rInt, cInt,
-                                rInt + patchHeight - 1, cInt + patchWidth - 1);
+                            double[,] submatrix = MatrixTools.Submatrix(spectrogram, rInt, cInt, rInt + patchHeight - 1, cInt + patchWidth - 1);
+
                             //convert a matrix to a vector by concatenating columns and
                             //store it to the array of vectors
                             patches.Add(MatrixTools.Matrix2Array(submatrix));
@@ -95,6 +78,7 @@ namespace AudioAnalysisTools.DSP
                             //shifting the row by one
                             //note that we don't shift column as we select full band patches
                             rInt = rInt + 1;
+
                             //Second, slide the patch window (rInt+1) to select the next patch
                             double[,] submatrix2 = MatrixTools.Submatrix(spectrogram, rInt, cInt,
                                 rInt + patchHeight - 1, cInt + patchWidth - 1);
@@ -183,20 +167,20 @@ namespace AudioAnalysisTools.DSP
         public static double[,] ConvertList2Matrix(List<double[,]> list, int colSize, int patchWidth, int patchHeight) //(List<double[,]> list, int noItemInRow, int colSize, int patchHeight)
         {
             double[][,] arrayOfPatches = list.ToArray();
-            int rows = list.Count; //number of patches 3232 //4158
-            //int cols = list[0].Length; //assume all vectors in list are of same length //256 //196
-            int noItemInRow = colSize / patchWidth; //256/14=18
-            int noItemInCol = rows / noItemInRow; //4158/18=231
-            double[,] mx = new double[noItemInCol * patchHeight, noItemInRow * patchWidth]; //new double[(rows / noItemInRow) * patchHeight, colSize];
-            for (int i = 0; i < noItemInCol; i++) //the number of patches in each row of the matrix 3232/16=202
+            int rows = list.Count; //number of patches
+            //int cols = list[0].Length; //assume all vectors in list are of same length
+            int noItemInRow = colSize / patchWidth; 
+            int noItemInCol = rows / noItemInRow;
+            double[,] mx = new double[noItemInCol * patchHeight, noItemInRow * patchWidth]; 
+            for (int i = 0; i < noItemInCol; i++) //the number of patches in each row of the matrix 
             {
-                for (int j = 0; j < noItemInRow; j++) //the number of patches in each column of the matrix 16
+                for (int j = 0; j < noItemInRow; j++) //the number of patches in each column of the matrix
                 {
                     for (int r = 0; r < list[(i * noItemInRow) + j].GetLength(0); r++) //patch id = (i * noItemInRow) + j
                     {
                         for (int c = 0; c < list[(i * noItemInRow) + j].GetLength(1); c++)
                         {
-                            mx[r + (i * patchHeight), c + (j * patchWidth)] = arrayOfPatches[(i * noItemInRow) + j][r, c]; //mx[r + (i * noItemInRow), c + (j * noItemInRow)] = arrayOfPatches[(i * noItemInRow) + j][r, c];  //[r, c + ((i * noItemInRow) * list[i * noItemInRow].GetLength(0))]
+                            mx[r + (i * patchHeight), c + (j * patchWidth)] = arrayOfPatches[(i * noItemInRow) + j][r, c];
                         }
                     }
                 }
@@ -219,14 +203,6 @@ namespace AudioAnalysisTools.DSP
             int rows = matrix.GetLength(0);
             int newCol = cols / noOfBands;
 
-            /*
-            Dictionary<string, double[,]> FreqBandMatrices = new Dictionary<string, double[,]>();
-            for (int i = 0; i < noOfBands; i++)
-            {
-                FreqBandMatrices.Add(string.Format("FreqBandMatrix{0}", i.ToString()), new double[rows, newCol]);
-            }
-            */
-
             int bandId = 0;
             while (bandId < noOfBands)
             {
@@ -240,7 +216,6 @@ namespace AudioAnalysisTools.DSP
                 }
 
                 allSubmatrices.Add(m);
-                //FreqBandMatrices[bandId.ToString()] = m;
                 bandId++;
             }
 
@@ -314,10 +289,25 @@ namespace AudioAnalysisTools.DSP
         }
 
         /*
-         * concatenate submatrices with the same # of rows but different # of columns into one matrix.
+         * concatenate submatrices column-wise into one matrix, i.e., the number of rows for the output matrix
+         * is equal to the number of rows of each of the frequency band matrices.
          */
         public static double[,] ConcatFreqBandMatrices(List<double[,]> submatrices)
         {
+            //The assumption here is all frequency band matrices have the same number of columns.
+            int colSize = submatrices.Count * submatrices[0].GetLength(1);
+            int rowSize = submatrices[0].GetLength(0);
+            double[,] matrix = new double[rowSize, colSize];
+            int count = 0;
+            while (count < submatrices.Count)
+            {
+                AddToArray(matrix, submatrices[count], "column", submatrices[count].GetLength(1) * count);
+                count++;
+            }
+
+            //If we have frequency band matrices with different number of columns,
+            //Then the below commented code need to be used.
+            /*
             double[][,] submat = submatrices.ToArray();
             int colSize = 0;
             for (int i = 0; i < submat.Length; i++)
@@ -341,8 +331,8 @@ namespace AudioAnalysisTools.DSP
             AddToArray(matrix, submat[0], "column");
             AddToArray(matrix, submat[1], "column", submat[0].GetLength(1));
             AddToArray(matrix, submat[2], "column", submat[0].GetLength(1) + submat[1].GetLength(1));
-            //if we have four freq bands
-            AddToArray(matrix, submat[3], "column", submat[0].GetLength(1) + submat[1].GetLength(1) + submat[2].GetLength(1));
+            */
+
             return matrix;
         }
 
@@ -388,7 +378,7 @@ namespace AudioAnalysisTools.DSP
             return allPatchesMatrix;
         }
 
-        // adding a row of zero to 2D array
+        // adding a row of zero/one to 2D array
         // it should be a better way to so this!!!
         public static double[][] AddRow(double[,] matrix)
         {

@@ -1,20 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// <copyright file="PcaWhitening.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
 
 namespace AudioAnalysisTools.DSP
 {
-    using System.Diagnostics;
+    using System;
+    using System.Collections.Generic;
     using System.Drawing;
     using System.IO;
+    using System.Linq;
     using Accord.MachineLearning;
-    using Accord.MachineLearning.Clustering;
     using Accord.Math;
     using Accord.Math.Distances;
-    using Accord.Statistics.Filters;
-    using Acoustics.Shared.Csv;
     using TowseyLibrary;
 
     public static class KmeansClustering
@@ -29,7 +26,6 @@ namespace AudioAnalysisTools.DSP
                 Distance = default(Cosine),
             };
 
-            // Compute and retrieve the data centroids
             var clusters = kmeans.Learn(patches.ToJagged());
             //double[][] centroids = clusters.Centroids;
 
@@ -64,8 +60,8 @@ namespace AudioAnalysisTools.DSP
             }
 
              var images = new List<Image>();
-             int spacerWidth = 2; //patchHeight; //
-             int binCount = patchWidth; //128;
+             int spacerWidth = 2; //patchHeight;
+             int binCount = patchWidth;
              Image spacer = new Bitmap(spacerWidth, binCount);
              Graphics g = Graphics.FromImage(spacer);
              g.Clear(Color.BlanchedAlmond);
@@ -107,9 +103,6 @@ namespace AudioAnalysisTools.DSP
                 string[] centroid = new string[line.Length - 1];
                 Array.Copy(line, 1, centroid, 0, line.Length - 1);
                 double[] doubleCentroid = Array.ConvertAll(centroid, double.Parse);
-
-                //double[] centroid = new double[doubleLine.Length-1];
-                //Array.Copy(doubleLine, 1, centroid, 0, doubleLine.Length - 1);
                 clusterData.Add(doubleCentroid);
             }
 
