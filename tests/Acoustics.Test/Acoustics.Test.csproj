@@ -269,6 +269,7 @@
     <Compile Include="AudioAnalysisTools\DSP\NoiseRemovalTests.cs" />
     <Compile Include="AudioAnalysisTools\DSP\PatchSamplingTest.cs" />
     <Compile Include="AudioAnalysisTools\DSP\PcaWhiteningTest.cs" />
+    <Compile Include="AudioAnalysisTools\DSP\UnsupervisedFeatureLearningTest.cs" />
     <Compile Include="AudioAnalysisTools\EventStatistics\EventStatisticsCalculateTests.cs" />
     <Compile Include="AudioAnalysisTools\Indices\ClusterIndexTest.cs" />
     <Compile Include="AudioAnalysisTools\Indices\IndexCalculateTest.cs" />

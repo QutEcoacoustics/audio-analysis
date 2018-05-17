@@ -1,4 +1,4 @@
-﻿// <copyright file="PcaWhitening.cs" company="QutEcoacoustics">
+﻿// <copyright file="KmeansClustering.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -16,7 +16,7 @@ namespace AudioAnalysisTools.DSP
 
     public static class KmeansClustering
     {
-        public static Tuple<Dictionary<int, double[]>, Dictionary<int, double>, KMeansClusterCollection> Clustering(double[,] patches, int noOfClust)
+        public static Tuple<Dictionary<int, double[]>, Dictionary<int, double>, KMeansClusterCollection> Clustering(double[,] patches, int noOfClust, string pathToCentroidFile)
         {
             Accord.Math.Random.Generator.Seed = 0;
 
@@ -38,7 +38,7 @@ namespace AudioAnalysisTools.DSP
                 clusterIdCent.Add(clust.Index, clust.Centroid);
             }
 
-            WriteCentroidsToCSV(clusterIdCent);
+            WriteCentroidsToCSV(clusterIdCent, pathToCentroidFile);
 
             return new Tuple<Dictionary<int, double[]>, Dictionary<int, double>, KMeansClusterCollection>(clusterIdCent, clusterIdSize, clusters);
         }
@@ -110,14 +110,13 @@ namespace AudioAnalysisTools.DSP
         }
 
         //sort clusters based on their size and output the ordered cluster ID
-        public static int[] SortClustersBasedOnSize(Dictionary<int, double> clusterIdSize)
+        public static int[] SortClustersBasedOnSize(Dictionary<int, double> clusterIdSize, string outputfile)
         {
-            string pathToClusterSizeCsvFile = @"C:\Users\kholghim\Mahnoosh\PcaWhitening\ClusterSize.csv";
             int[] sortedClusID = new int[clusterIdSize.Keys.Count];
 
             //sort clusters based on the number of samples
             var items = from pair in clusterIdSize orderby pair.Value ascending select pair;
-            using (StreamWriter file = new StreamWriter(pathToClusterSizeCsvFile))
+            using (StreamWriter file = new StreamWriter(outputfile))
             {
                 int ind = 0;
                 foreach (var entry in items)
@@ -132,10 +131,9 @@ namespace AudioAnalysisTools.DSP
         }
 
         //write centroids to a csv file
-        public static void WriteCentroidsToCSV(Dictionary<int, double[]> clusterIdCentroid)
+        public static void WriteCentroidsToCSV(Dictionary<int, double[]> clusterIdCentroid, string pathToOutputFile)
         {
-            string pathToClusterCsvFile = @"C:\Users\kholghim\Mahnoosh\PcaWhitening\ClusterCentroids.csv";
-            using (StreamWriter file = new StreamWriter(pathToClusterCsvFile))
+            using (StreamWriter file = new StreamWriter(pathToOutputFile))
             {
                 foreach (var entry in clusterIdCentroid)
                 {
