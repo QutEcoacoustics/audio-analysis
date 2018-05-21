@@ -55,9 +55,13 @@ before_build:
   - git lfs pull
   # Determine whether or not we should tag and release
   # if the last tag hash matches the current build hash then we should not duplicate a release
-  - ps: $env:TAG_NOT_PREVIOUSLY_RELEASED = ($(git tag -l --format="%(objectname)") -notcontains $env:APPVEYOR_REPO_COMMIT)
-  - ps: $env:RELEASE_COMMIT = $env:APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED -ilike "*``[release``]*"; $env:SHOULD_RELEASE = ($env:RELEASE_COMMIT -ieq "true") -or ($env:APPVEYOR_SCHEDULED_BUILD -and ($env:TAG_NOT_PREVIOUSLY_RELEASED -ieq "true"));
-  - ps: ls env:* -Include SHOULD*,APPVEYOR_SCHEDULED_BUILD*,APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED*,RELEASE_COMMIT,TAG_NOT_PREVIOUSLY_RELEASED
+  - ps: |
+    $tags = git log --tags -n 10 --no-walk --format="%H %D"
+    Write-Output ("Recent tags:`n" + ($tags | Out-String))
+    $env:TAG_NOT_PREVIOUSLY_RELEASED=($tags -like "$env:APPVEYOR_REPO_COMMIT*").Length -eq 0
+    $env:RELEASE_COMMIT = $env:APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED -ilike "*``[release``]*"
+    $env:SHOULD_RELEASE = ($env:RELEASE_COMMIT -ieq "true") -or ($env:APPVEYOR_SCHEDULED_BUILD -and ($env:TAG_NOT_PREVIOUSLY_RELEASED -ieq "true"))
+    ls env:* -Include SHOULD*,APPVEYOR_SCHEDULED_BUILD*,APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED*,RELEASE_COMMIT,TAG_NOT_PREVIOUSLY_RELEASED
   # Restore packages 
   - nuget restore
   # Debugging a dirty flag in build version
