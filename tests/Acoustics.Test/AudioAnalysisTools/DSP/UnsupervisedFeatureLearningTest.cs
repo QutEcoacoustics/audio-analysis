@@ -31,10 +31,15 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             this.outputDirectory = PathHelper.GetTempDir();
         }
 
+        /*
+        <summary>
+        This method will be used in IAnalyser
+        </summary>
+        */
         [TestMethod]
         public void TestFeatureLearning()
         {
-            var outputDir = this.outputDirectory;
+            //var outputDir = this.outputDirectory;
             var resultDir = PathHelper.ResolveAssetPath("FeatureLearning");
             var folderPath = Path.Combine(resultDir, "random_audio_segments");
             //PathHelper.ResolveAssetPath(@"C:\Users\kholghim\Mahnoosh\PcaWhitening\random_audio_segments\1192_1000");
@@ -144,14 +149,16 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             for (int i = 0; i < randomPatches.Count; i++)
             {
                 double[,] patchMatrix = randomPatches[i];
+
                 //Apply PCA Whitening
-                var actual = PcaWhitening.Whitening(patchMatrix);
+                var whitenedSpectrogram = PcaWhitening.Whitening(patchMatrix);
+
                 //Do k-means clustering
                 string pathToClusterCsvFile = Path.Combine(resultDir, "ClusterCentroids" + i.ToString() + ".csv");
-                var clusteringOutput = KmeansClustering.Clustering(actual.Item2, noOfClusters, pathToClusterCsvFile);
+                var clusteringOutput = KmeansClustering.Clustering(whitenedSpectrogram.Item2, noOfClusters, pathToClusterCsvFile);
                 //var clusteringOutput = KmeansClustering.Clustering(patchMatrix, noOfClusters, pathToClusterCsvFile);
 
-                //sorting clsuters based on size and output it to a csv file
+                //sorting clusters based on size and output it to a csv file
                 string pathToClusterSizeCsvFile = Path.Combine(resultDir, "ClusterSize" + i.ToString() + ".csv");
                 int[] sortOrder = KmeansClustering.SortClustersBasedOnSize(clusteringOutput.Item2, pathToClusterSizeCsvFile);
 
@@ -164,14 +171,13 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                     centroids[j] = list[j].Value;
                 }
 
-                //****
                 allBandsCentroids.Add(centroids);
                 allClusteringOutput.Add(clusteringOutput.Item3);
 
                 List<double[,]> allCentroids = new List<double[,]>();
                 for (int k = 0; k < centroids.Length; k++)
                 {
-                    //convert each centroid to a matrix (4-by-128) in order of cluster ID
+                    //convert each centroid to a matrix in order of cluster ID
                     //double[,] cent = PatchSampling.Array2Matrix(centroids[i], patchWidth, patchHeight, "column");
                     //OR: in order of cluster size
                     double[,] cent = PatchSampling.Array2Matrix(centroids[sortOrder[k]], patchWidth, patchHeight, "column");
@@ -302,7 +308,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                     List<double> std = new List<double>();
                     List<double> max = new List<double>();
                     double[,] sequencesOfFrames = sequencesOfFramesList.ToArray().ToMatrix();
-                    int len = sequencesOfFrames.GetLength(1);
+                    //int len = sequencesOfFrames.GetLength(1);
 
                     //Second, calculate mean, max, and standard deviation of six vectors element-wise
                     for (int j = 0; j < sequencesOfFrames.GetLength(1); j++)

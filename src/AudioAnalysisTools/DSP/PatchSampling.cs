@@ -23,7 +23,8 @@ namespace AudioAnalysisTools.DSP
 
             int rows = spectrogram.GetLength(0);
             int cols = spectrogram.GetLength(1);
-            Random rn = new Random();
+            int seed = 100;
+            Random rn = new Random(seed);
 
             if (samplingMethod == "sequential")
             {
@@ -164,7 +165,7 @@ namespace AudioAnalysisTools.DSP
          * converts a list<double[,]> to a matrix.
          * construct the original matrix from a set of sequential patches
          */
-        public static double[,] ConvertList2Matrix(List<double[,]> list, int colSize, int patchWidth, int patchHeight) //(List<double[,]> list, int noItemInRow, int colSize, int patchHeight)
+        public static double[,] ConvertList2Matrix(List<double[,]> list, int colSize, int patchWidth, int patchHeight)
         {
             double[][,] arrayOfPatches = list.ToArray();
             int rows = list.Count; //number of patches

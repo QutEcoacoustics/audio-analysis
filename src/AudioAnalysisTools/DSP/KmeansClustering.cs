@@ -38,7 +38,7 @@ namespace AudioAnalysisTools.DSP
                 clusterIdCent.Add(clust.Index, clust.Centroid);
             }
 
-            WriteCentroidsToCSV(clusterIdCent, pathToCentroidFile);
+            WriteCentroidsToCsv(clusterIdCent, pathToCentroidFile);
 
             return new Tuple<Dictionary<int, double[]>, Dictionary<int, double>, KMeansClusterCollection>(clusterIdCent, clusterIdSize, clusters);
         }
@@ -93,12 +93,12 @@ namespace AudioAnalysisTools.DSP
             var clusterData = new List<double[]>();
             while (!file.EndOfStream)
             {
-                string[] line = file.ReadLine().Split(',');
+                string[] line = file.ReadLine()?.Split(',');
 
                 //remove null or empty values from the array
-                line = line.Where(s => !string.IsNullOrEmpty(s)).ToArray();
+                line = (line ?? throw new InvalidOperationException()).Where(s => !string.IsNullOrEmpty(s)).ToArray();
 
-                //the first element of the "line" array is the cluster ID, and the rest centroid vector!
+                //the first element of the "line" array is the cluster ID, and the rest centroid vector
                 //copy the centroid vector line[1] to line[line.length-2] to a new array called "centroid"
                 string[] centroid = new string[line.Length - 1];
                 Array.Copy(line, 1, centroid, 0, line.Length - 1);
@@ -112,7 +112,7 @@ namespace AudioAnalysisTools.DSP
         //sort clusters based on their size and output the ordered cluster ID
         public static int[] SortClustersBasedOnSize(Dictionary<int, double> clusterIdSize, string outputfile)
         {
-            int[] sortedClusID = new int[clusterIdSize.Keys.Count];
+            int[] sortedClusId = new int[clusterIdSize.Keys.Count];
 
             //sort clusters based on the number of samples
             var items = from pair in clusterIdSize orderby pair.Value ascending select pair;
@@ -122,16 +122,16 @@ namespace AudioAnalysisTools.DSP
                 foreach (var entry in items)
                 {
                     file.WriteLine("{0},{1}", entry.Key, entry.Value);
-                    sortedClusID[ind] = entry.Key;
+                    sortedClusId[ind] = entry.Key;
                     ind++;
                 }
             }
 
-            return sortedClusID;
+            return sortedClusId;
         }
 
         //write centroids to a csv file
-        public static void WriteCentroidsToCSV(Dictionary<int, double[]> clusterIdCentroid, string pathToOutputFile)
+        public static void WriteCentroidsToCsv(Dictionary<int, double[]> clusterIdCentroid, string pathToOutputFile)
         {
             using (StreamWriter file = new StreamWriter(pathToOutputFile))
             {
