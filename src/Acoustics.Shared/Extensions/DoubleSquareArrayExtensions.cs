@@ -201,5 +201,78 @@ namespace System
                 }
             }
         }
+
+        /// <summary>
+        /// returns an empty matrix with the same number of rows and columns of the input matrix.
+        /// </summary>
+        public static double[,] EmptyCopy(this double[,] matrix)
+        {
+            return new double[matrix.GetLength(0), matrix.GetLength(1)];
+        }
+
+        /// <summary>
+        /// retrieving a full column of a matrix
+        /// columnIndex is the column we want to access
+        /// </summary>
+        public static double[] GetColumn(this double[,] matrix, int columnIndex)
+        {
+            double[] column = new double[matrix.GetLength(0)];
+            for (int row = 0; row < matrix.GetLength(0); row++)
+            {
+                column[row] = matrix[row, columnIndex];
+            }
+
+            return column;
+        }
+
+        /// <summary>
+        /// retrieving a full row of a matrix
+        /// rowIndex is the row we want to access
+        /// </summary>
+        public static double[] GetRow(this double[,] matrix, int rowIndex)
+        {
+            double[] row = new double[matrix.GetLength(1)];
+            for (int column = 0; column < matrix.GetLength(1); column++)
+            {
+                row[column] = matrix[rowIndex, column];
+            }
+
+            return row;
+        }
+
+        /// <summary>
+        /// The merging direction when adding a 2D-array to another 2D-array.
+        /// </summary>
+        public enum MergingDirection
+        {
+            Row = 0,
+
+            Column = 1,
+        }
+
+        /// <summary>
+        /// adding a 2D-array to another 2D-array either by "column" or by "row"
+        /// </summary>
+
+        public static void AddToArray(double[,] result, double[,] array, MergingDirection mergingDirection, int start = 0)
+        {
+            for (int i = 0; i < array.GetLength(0); i++)
+            {
+                for (int j = 0; j < array.GetLength(1); j++)
+                {
+                    if (mergingDirection == MergingDirection.Row)
+                    {
+                        result[i + start, j] = array[i, j];
+                    }
+                    else
+                    {
+                        if (mergingDirection == MergingDirection.Column)
+                        {
+                            result[i, j + start] = array[i, j];
+                        }
+                    }
+                }
+            }
+        }
     }
 }

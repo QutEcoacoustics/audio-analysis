@@ -148,5 +148,22 @@ namespace System
 
             return true;
         }
+
+        /// <summary>
+        /// retrieving the max value of a vector
+        /// </summary>
+        public static double GetMaxValue(this double[] data)
+        {
+            double max = data[0];
+            for (int i = 1; i < data.Length; i++)
+            {
+                if (data[i] > max)
+                {
+                    max = data[i];
+                }
+            }
+
+            return max;
+        }
     }
 }

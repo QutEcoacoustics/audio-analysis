@@ -12,152 +12,153 @@ namespace AudioAnalysisTools.DSP
     using Accord.MachineLearning;
     using Accord.Math;
     using Accord.Math.Distances;
-    using TowseyLibrary;
+    using Accord.Statistics.Kernels;
+    using Acoustics.Shared;
+    using Acoustics.Shared.Csv;
+    using CsvHelper;
+    using Zio;
 
     public static class KmeansClustering
     {
-        public static Tuple<Dictionary<int, double[]>, Dictionary<int, double>, KMeansClusterCollection> Clustering(double[,] patches, int noOfClust, string pathToCentroidFile)
+        public class Output
         {
+            public Dictionary<int, double[]> ClusterIdCentroid { get; set; }
+
+            public Dictionary<int, double> ClusterIdSize { get; set; }
+
+            public KMeansClusterCollection Clusters { get; set; }
+        }
+
+        public static Output Clustering(double[,] patches, int numberOfClusters, string pathToCentroidFile)
+        {
+            // "Generator.Seed" sets a random seed for the framework's main internal number generator, which
+            // gets a reference to the random number generator used internally by the Accord.NET classes and methods.
+            // If set to a value less than or equal to zero, all generators will start with the same fixed seed, even among multiple threads.
+            // If set to any other value, the generators in other threads will start with fixed, but different, seeds.
+            // this method should be called before other computations.
             Accord.Math.Random.Generator.Seed = 0;
 
-            KMeans kmeans = new KMeans(k: noOfClust)
+            KMeans kmeans = new KMeans(k: numberOfClusters)
             {
                 UseSeeding = Seeding.KMeansPlusPlus,
                 Distance = default(Cosine),
             };
 
             var clusters = kmeans.Learn(patches.ToJagged());
-            //double[][] centroids = clusters.Centroids;
 
-            //get the cluster size
+            // get the cluster size
             Dictionary<int, double> clusterIdSize = new Dictionary<int, double>();
-            Dictionary<int, double[]> clusterIdCent = new Dictionary<int, double[]>();
+            Dictionary<int, double[]> clusterIdCentroid = new Dictionary<int, double[]>();
             foreach (var clust in clusters.Clusters)
             {
                 clusterIdSize.Add(clust.Index, clust.Proportion);
-                clusterIdCent.Add(clust.Index, clust.Centroid);
+                clusterIdCentroid.Add(clust.Index, clust.Centroid);
             }
 
-            WriteCentroidsToCsv(clusterIdCent, pathToCentroidFile);
+            Csv.WriteToCsv(pathToCentroidFile.ToFileInfo(), clusterIdCentroid);
 
-            return new Tuple<Dictionary<int, double[]>, Dictionary<int, double>, KMeansClusterCollection>(clusterIdCent, clusterIdSize, clusters);
+            var output = new Output()
+            {
+                ClusterIdCentroid = clusterIdCentroid,
+                ClusterIdSize = clusterIdSize,
+                Clusters = clusters,
+            };
+
+            return output;
         }
 
-        //Draw cluster image directly from a csv file containing the clusters' centroids (Michael's code)
-        //The output image is not correct yet!
+        /// <summary>
+        /// Draw cluster image directly from a csv file containing the clusters' centroids (Michael's code)
+        /// The output image is not correct yet, so I commented the method for now!
+        /// </summary>
+        /*
         public static void DrawClusterImage(int patchWidth, int patchHeight, int[] sortOrder)
         {
-             string pathToClusterCsvFile = @"C:\Users\kholghim\Mahnoosh\PcaWhitening\ClusterCentroids.csv";
-             string pathToOutputImageFile = @"C:\Users\kholghim\Mahnoosh\PcaWhitening\ClustersWithGrid.bmp";
+            string pathToClusterCsvFile = @"C:\ClusterCentroids.csv";
+            string pathToOutputImageFile = @"C:\ClustersWithGrid.bmp";
 
-             double[][] clusters = ReadClusterDataFromFile(pathToClusterCsvFile);
-             List<double[,]> clusterList = new List<double[,]>();
-             for (int i = 0; i < clusters.GetLength(0); i++)
+            // Read the cluster centroids from a csv file
+            // the first element of each line in CSV file is the cluster ID, and the rest centroid vector
+            double[,] csvData = Csv.ReadMatrixFromCsv<double>(pathToClusterCsvFile.ToFileInfo(), TwoDimensionalArray.None);
+            List<double[]> clusterData = new List<double[]>();
+
+            for (int i = 0; i < csvData.ToJagged().GetLength(0); i++)
+            {
+                double[] centroid = new double[csvData.ToJagged()[i].Length - 1];
+
+                // copy all elements of csvData.ToJagged()[i] to the centroid vector, except the first element
+                Array.Copy(csvData.ToJagged()[i], 1, centroid, 0, csvData.ToJagged()[i].Length - 1);
+                clusterData.Add(centroid);
+            }
+
+            double[][] clusters = clusterData.ToArray();
+            List<double[,]> clusterList = new List<double[,]>();
+            for (int i = 0; i < clusters.GetLength(0); i++)
             {
                 double[,] cent = PatchSampling.Array2Matrix(clusters[i], patchWidth, patchHeight, "column");
                 double[,] normCent = DataTools.normalise(cent);
                 clusterList.Add(normCent);
             }
 
-             var images = new List<Image>();
-             int spacerWidth = 2; //patchHeight;
-             int binCount = patchWidth;
-             Image spacer = new Bitmap(spacerWidth, binCount);
-             Graphics g = Graphics.FromImage(spacer);
-             g.Clear(Color.BlanchedAlmond);
+            var images = new List<Image>();
+            int spacerWidth = 2; // patchHeight;
+            int binCount = patchWidth;
+            Image spacer = new Bitmap(spacerWidth, binCount);
+            Graphics g = Graphics.FromImage(spacer);
+            g.Clear(Color.BlanchedAlmond);
 
-             for (int i = 0; i < sortOrder.Length; i++)
+            for (int i = 0; i < sortOrder.Length; i++)
             {
                 Image image = ImageTools.DrawMatrixWithoutNormalisation(clusterList[sortOrder[i]]);
                 // OR
                 // adapt the following method to draw matrix scaled up in size
-                //Image image = ImageTools.DrawMatrix(double[,] matrix, string pathName, bool doScale);
+                // Image image = ImageTools.DrawMatrix(double[,] matrix, string pathName, bool doScale);
 
                 images.Add(image);
                 images.Add(spacer);
             }
 
-             Bitmap combinedImage = (Bitmap)ImageTools.CombineImagesInLine(images);
-             // set up the mel frequency scale
-             int finalBinCount = 128;
-             var frequencyScale = new FrequencyScale(FreqScaleType.Mel, 11025, 1024, finalBinCount, hertzGridInterval: 1000);
+            Bitmap combinedImage = (Bitmap)ImageTools.CombineImagesInLine(images);
+            // set up the mel frequency scale
+            int finalBinCount = 128;
+            var frequencyScale = new FrequencyScale(FreqScaleType.Mel, 11025, 1024, finalBinCount, hertzGridInterval: 1000);
 
-             FrequencyScale.DrawFrequencyLinesOnImage(combinedImage, frequencyScale.GridLineLocations, includeLabels: false);
-             combinedImage.Save(pathToOutputImageFile);
+            FrequencyScale.DrawFrequencyLinesOnImage(combinedImage, frequencyScale.GridLineLocations, includeLabels: false);
+            combinedImage.Save(pathToOutputImageFile);
         }
+        */
 
-        //Reading the cluster centroids from a csv file into a double array
-        public static double[][] ReadClusterDataFromFile(string pathToClusterCsvFile)
+        /// <summary>
+        /// sort clusters based on their size and output the ordered cluster ID
+        /// </summary>
+        public static int[] SortClustersBasedOnSize(Dictionary<int, double> clusterIdSize)
         {
-            StreamReader file = new StreamReader(pathToClusterCsvFile);
-            var clusterData = new List<double[]>();
-            while (!file.EndOfStream)
-            {
-                string[] line = file.ReadLine()?.Split(',');
+            int[] sortedClusterId = new int[clusterIdSize.Keys.Count];
 
-                //remove null or empty values from the array
-                line = (line ?? throw new InvalidOperationException()).Where(s => !string.IsNullOrEmpty(s)).ToArray();
-
-                //the first element of the "line" array is the cluster ID, and the rest centroid vector
-                //copy the centroid vector line[1] to line[line.length-2] to a new array called "centroid"
-                string[] centroid = new string[line.Length - 1];
-                Array.Copy(line, 1, centroid, 0, line.Length - 1);
-                double[] doubleCentroid = Array.ConvertAll(centroid, double.Parse);
-                clusterData.Add(doubleCentroid);
-            }
-
-            return clusterData.ToArray();
-        }
-
-        //sort clusters based on their size and output the ordered cluster ID
-        public static int[] SortClustersBasedOnSize(Dictionary<int, double> clusterIdSize, string outputfile)
-        {
-            int[] sortedClusId = new int[clusterIdSize.Keys.Count];
-
-            //sort clusters based on the number of samples
+            // sort clusters based on the number of samples
             var items = from pair in clusterIdSize orderby pair.Value ascending select pair;
-            using (StreamWriter file = new StreamWriter(outputfile))
+            int ind = 0;
+            foreach (var entry in items)
             {
-                int ind = 0;
-                foreach (var entry in items)
-                {
-                    file.WriteLine("{0},{1}", entry.Key, entry.Value);
-                    sortedClusId[ind] = entry.Key;
-                    ind++;
-                }
+                sortedClusterId[ind] = entry.Key;
+                ind++;
             }
 
-            return sortedClusId;
+            return sortedClusterId;
         }
 
-        //write centroids to a csv file
-        public static void WriteCentroidsToCsv(Dictionary<int, double[]> clusterIdCentroid, string pathToOutputFile)
-        {
-            using (StreamWriter file = new StreamWriter(pathToOutputFile))
-            {
-                foreach (var entry in clusterIdCentroid)
-                {
-                    file.Write(entry.Key + ",");
-                    foreach (var cent in entry.Value)
-                    {
-                        file.Write(cent + ",");
-                    }
-
-                    file.Write(Environment.NewLine);
-                }
-            }
-        }
-
-        //reconstruct the spectrogram using centroids
+        /// <summary>
+        /// reconstruct the spectrogram using centroids
+        /// </summary>
         public static double[,] ReconstructSpectrogram(double[,] sequentialPatchMatrix, KMeansClusterCollection clusters)
         {
             double[][] patches = new double[sequentialPatchMatrix.GetLength(0)][];
             for (int i = 0; i < sequentialPatchMatrix.GetLength(0); i++)
             {
-                double[] patch = PcaWhitening.GetRow(sequentialPatchMatrix, i);
+                double[] patch = sequentialPatchMatrix.GetRow(i);
 
-                //find the nearest centroid to each patch
-                double [] scores = clusters.Scores(patch);
+                // find the nearest centroid to each patch
+                double[] scores = clusters.Scores(patch);
                 int ind = scores.IndexOf(clusters.Score(patch));
                 double[] nearestCentroid = clusters.Centroids[ind];
 
