@@ -10,6 +10,7 @@ namespace AnalysisPrograms.EventStatistics
     using System.Reflection;
     using System.Text;
     using System.Threading.Tasks;
+    using Acoustics.Shared;
     using AcousticWorkbench;
     using CsvHelper.Configuration;
     using log4net;
@@ -42,6 +43,15 @@ namespace AnalysisPrograms.EventStatistics
                    && this.EventEndSeconds.HasValue
                    && this.LowFrequencyHertz.HasValue
                    && this.HighFrequencyHertz.HasValue);
+        }
+
+        /// <summary>
+        /// Returns a JSON encoded string that describes this object.
+        /// </summary>
+        /// <returns>The string that describes this object.</returns>
+        public override string ToString()
+        {
+            return Json.SerialiseToString(this);
         }
 
         public sealed class ImportedEventNameClassMap : CsvClassMap<ImportedEvent>

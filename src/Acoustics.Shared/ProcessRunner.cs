@@ -405,7 +405,7 @@ namespace Acoustics.Shared
         {
             if (Log.IsVerboseEnabled())
             {
-                Log.Verbose(this.instanceId + ": Process timeout handling code. Exit code: " + this.process.ExitCode);
+                Log.Verbose(this.instanceId + ": Process timeout handling code... Attempting to kill process");
             }
 
             this.process.Refresh();

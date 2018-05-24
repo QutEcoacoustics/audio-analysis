@@ -188,7 +188,9 @@ namespace AnalysisPrograms.AcousticWorkbench.Orchestration
                 $"Metadata for audio recording media {audioRecordingId} retrieved, generating segments for associated events");
 
             // now generate the segments
-            var limit = audioRecording.DurationSeconds.AsRangeFromZero();
+            // we need to floor the duration to ensure later rounding does round past the limit of the recording
+            Log.Verbose($"Audio recording duration {audioRecording.DurationSeconds} will be floored");
+            var limit = audioRecording.DurationSeconds.Floor().AsRangeFromZero();
             var results = new List<RemoteSegmentWithData>(20);
             foreach (var importedEvent in events)
             {

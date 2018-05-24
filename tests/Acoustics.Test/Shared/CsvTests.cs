@@ -449,7 +449,9 @@ namespace Acoustics.Test.Shared
             var lines = File.ReadAllText(actual.FullName);
 
             Assert.AreEqual(expected, lines);
-            Debug.WriteLine(lines);
+
+            //Debug.WriteLine(lines);
+
             CollectionAssert.AreEqual(expected.ToArray(), lines.ToArray());
         }
 
