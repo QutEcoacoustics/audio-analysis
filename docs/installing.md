@@ -36,6 +36,7 @@ AnalysisPrograms.exe CheckEnvironment
 
 The following additional dependencies are required for Unix machines:
 
+- mono (version 5.5 or greater)
 - ffmpeg
 - wavpack
 - libsox-fmt-all
