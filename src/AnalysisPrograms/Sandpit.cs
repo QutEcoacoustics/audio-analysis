@@ -2114,19 +2114,28 @@ namespace AnalysisPrograms
             //var sourceDir = new DirectoryInfo(superDir + @"\David Watson_Liz_Tasmania_ARU10\ARU 10 27.12.2016 Data");
             string superDir = @"Y:\Results\2017Apr13-135831 - Liz, Towsey.Indices, ICD=60.0, #154\ConcatResults";
 
-            //var sourceDir = new DirectoryInfo(superDir + @"\David Watson_Liz_USA - South Carolina_ARU UNIT 10\Data ARU 10-30.4.2016");
-            //var sourceDir = new DirectoryInfo(superDir + @"\David Watson_Liz_USA - South Carolina_ARU UNIT 7\Data ARU 7-30.4.2016");
-            var sourceDir = new DirectoryInfo(superDir + @"\David Watson_Liz_USA - South Carolina_ARU UNIT 3\Data ARU 3-21.4.2016");
+            var sourceDir = new DirectoryInfo(superDir + @"\David Watson_Liz_USA - South Carolina_ARU UNIT 7");
+            //var sourceDir = new DirectoryInfo(superDir + @"\David Watson_Liz_USA - South Carolina_ARU UNIT 10");
+            string searchPattern = "2016*";
 
-            var outputDir = new DirectoryInfo(@"C:\SensorNetworks\Collaborations\LizZnidersic\UnlabelledDataSets\Job154_2017Apr13_135831 SouthCarolina\ARU03");
+            //var outputDir = new DirectoryInfo(@"C:\SensorNetworks\Collaborations\LizZnidersic\BlackRail\UnlabelledDataSets\Job154_2017Apr13_135831 SouthCarolina\ARU10");
+            var outputDir = new DirectoryInfo(@"C:\SensorNetworks\Collaborations\LizZnidersic\BlackRail\UnlabelledDataSets\Job154_2017Apr13_135831 SouthCarolina\ARU7");
+            if (!outputDir.Exists)
+            {
+                outputDir.Create();
+            }
 
-            DirectoryInfo[] dirs = sourceDir.GetDirectories();
+            DirectoryInfo[] dirs = sourceDir.GetDirectories(searchPattern, SearchOption.AllDirectories);
             Console.WriteLine("Dir Count = " + dirs.Length);
             foreach (DirectoryInfo dir in dirs)
             {
-                string site = sourceDir.Name;
+                // assume this file exists
+                var fileinfo = dir.GetFiles("*.ACI.csv");
+                string site = fileinfo[0].Name.Split('_')[0];
+                //string site = sourceDir.Name;
                 string date = dir.Name;
                 string siteAndDate = site + "_" + date;
+
                 string filePrefix = siteAndDate + "__Towsey.Acoustic.";
                 string opFileName = siteAndDate + "_FeatureSet.csv";
                 var opFileInfo = new FileInfo(Path.Combine(outputDir.FullName, opFileName));
@@ -2142,6 +2151,7 @@ namespace AnalysisPrograms
         {
             // source directory
             string[] indexCodes = { "ACI", "ENT", "EVN" };
+            int indexCount = indexCodes.Length;
             int startIndex = 22;
             int endIndex = 74;
             int length = endIndex - startIndex + 1;
@@ -2149,9 +2159,25 @@ namespace AnalysisPrograms
             // matrix of string
             var extractedLines = new List<List<string>>();
 
-            // loop through all required index files
-            foreach (string indexKey in indexCodes)
+            // init a new header line showing source INDEX
+            var newHeader = new StringBuilder();
+
+            // loop through all required index files and create the header line
+            for (int keyId = 0; keyId < indexCount; keyId++)
             {
+                string indexKey = indexCodes[keyId];
+
+                for (int i = 0; i < length; i++)
+                {
+                    int id = i + startIndex;
+                    newHeader.Append(indexKey + id.ToString("D4") + ",");
+                }
+            }
+            newHeader.Append("Target");
+
+            for (int keyId = 0; keyId < indexCount; keyId++)
+            {
+                string indexKey = indexCodes[keyId];
                 var fileInfo = new FileInfo(Path.Combine(sourceDir.FullName, filePrefix + indexKey + ".csv"));
 
                 // init var to hold required data columns
@@ -2162,16 +2188,6 @@ namespace AnalysisPrograms
                 {
                     // read and ignore the first line in source file which is a header.
                     string line = reader.ReadLine();
-
-                    // create a new header line showing source INDEX
-                    var newHeader = new StringBuilder();
-                    for (int i = 0; i < length; i++)
-                    {
-                        int id = i + startIndex;
-                        newHeader.Append(indexKey + id.ToString("D4") + ", ");
-                    }
-
-                    lines.Add(newHeader.ToString());
 
                     while ((line = reader.ReadLine()) != null)
                     {
@@ -2193,6 +2209,8 @@ namespace AnalysisPrograms
             {
                 using (TextWriter ssw = TextWriter.Synchronized(sw))
                 {
+                    ssw.WriteLine(newHeader.ToString());
+
                     // now join the lines into a feature vector
                     int lineCount = extractedLines[0].Count;
                     for (int i = 0; i < lineCount; i++)
@@ -2203,8 +2221,8 @@ namespace AnalysisPrograms
                             line += extractedLines[j][i];
                         }
 
+                        // add '?' as place holder for the unknown to be predicted
                         line += "?";
-
                         ssw.WriteLine(line);
                     }
                 }
