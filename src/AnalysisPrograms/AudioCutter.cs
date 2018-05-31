@@ -118,6 +118,12 @@ namespace AnalysisPrograms
                 ShortName = "p")]
             public bool Parallel { get; set; } = true;
 
+            [Option(
+                CommandOptionType.SingleValue,
+                Description = "TimeSpan offset hint required if file names do not contain time zone info. NO DEFAULT IS SET",
+                ShortName = "z")]
+            public TimeSpan? TimeSpanOffsetHint { get; set; }
+
             public override Task<int> Execute(CommandLineApplication app)
             {
                 AudioCutter.Execute(this);
@@ -185,11 +191,11 @@ namespace AnalysisPrograms
                 AnalysisMinSegmentDuration = TimeSpan.FromSeconds(arguments.SegmentDurationMinimum),
                 SegmentOverlapDuration = TimeSpan.FromSeconds(arguments.SegmentOverlap),
                 AnalysisTargetSampleRate = arguments.SampleRate,
-                AnalysisTempDirectory = arguments.TemporaryFilesDir.ToDirectoryInfo(),
+                AnalysisTempDirectory = (arguments.TemporaryFilesDir ?? arguments.OutputDir).ToDirectoryInfo(),
             };
 
             // create segments from file
-            var fileSegment = new FileSegment(arguments.InputFile.ToFileInfo(), TimeAlignment.None)
+            var fileSegment = new FileSegment(arguments.InputFile.ToFileInfo(), TimeAlignment.None, dateBehavior: FileSegment.FileDateBehavior.None)
             {
                 SegmentStartOffset = TimeSpan.FromSeconds(arguments.StartOffset),
             };
