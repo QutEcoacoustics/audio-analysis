@@ -483,28 +483,30 @@ namespace TowseyLibrary
         /// <summary>
         /// Returns the requested column of data from a CSV file and also returns the column header
         /// </summary>
-        /// <param name="fileName"></param>
-        /// <param name="colNumber"></param>
-        /// <param name="header"></param>
-        /// <returns></returns>
-         public static double[] ReadColumnOfCSVFile(string fileName, int colNumber, out string header)
+         public static double[] ReadColumnOfCsvFile(string fileName, int colNumber, out string header)
         {
             List<string> lines = FileTools.ReadTextFile(fileName);
             string[] words = lines[0].Split(',');
             header = words[colNumber];
 
-            double[] array = new double[lines.Count - 1]; //-1 because ignore header
+            // -1 because ignore header
+            double[] array = new double[lines.Count - 1];
 
-            //read csv data into arrays.
-            for (int i = 1; i < lines.Count; i++) //ignore first line = header.
+            // read csv data into arrays. Ignore first line = header.
+            for (int i = 1; i < lines.Count; i++)
             {
                 words = lines[i].Split(',');
-                array[i - 1] = double.Parse(words[colNumber]);
-                if (double.IsNaN(array[i - 1]))
+                if(words.Length <= colNumber)
                 {
                     array[i - 1] = 0.0;
+                    LoggedConsole.WriteErrorLine("WARNING: Error while reading line " + i + "of CSV file.");
                 }
-            }//end
+                else
+                {
+                    double value;
+                    array[i - 1] = double.TryParse(words[colNumber], out value) ? value : 0.0;
+                }
+            }
 
             return array;
         }

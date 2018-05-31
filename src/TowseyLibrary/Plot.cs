@@ -8,7 +8,7 @@ namespace TowseyLibrary
     using System.Drawing;
 
     /// <summary>
-    /// Represents a single array of data with Xand Y scales and other info useful for pltting a graph.
+    /// Represents a single array of data with Xand Y scales and other info useful for plotting a graph.
     /// Was first used to represent a track of scores at the bottom of a sonogram image.
     /// </summary>
     public class Plot

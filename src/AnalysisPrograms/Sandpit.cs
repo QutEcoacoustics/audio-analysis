@@ -23,6 +23,7 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.LongDurationSpectrograms;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
+    using log4net.Util;
     using McMaster.Extensions.CommandLineUtils;
     using Production;
     using Production.Arguments;
@@ -65,7 +66,13 @@ namespace AnalysisPrograms
                 //AnalyseFrogDataSet();
                 //Audio2CsvOverOneFile();
                 //Audio2CsvOverMultipleFiles();
+
+                // used to get files from availae for Black rail and Least Bittern papers.
                 CodeToExtractFeatureVectorOfIndices();
+                //CodeToGetLdfcSpectrogramsFromAvailae();
+                //CodeToPlaceScoreTracksUnderLdfcSpectrograms();
+                //CodeToPlaceScoreTracksUnderSingleImage();
+
                 //ConcatenateIndexFilesAndSpectrograms();
                 //ConcatenateMarineImages();
                 //ConcatenateImages();
@@ -2102,24 +2109,164 @@ namespace AnalysisPrograms
         } */
 
         /// <summary>
-        /// This code used to extract acoustic indices for recognisers.
+        /// This code used to get LDFC spectrograms from availae
+        /// It cycles through all the subdirecotries in a dir.
+        /// All depends on the consistency of file naming.
+        /// Check the call method for index names and bounds.
+        /// </summary>
+        public static void CodeToGetLdfcSpectrogramsFromAvailae()
+        {
+            //var sourceDir = new DirectoryInfo(@"C:\SensorNetworks\Collaborations\LizZnidersic\Original concatenated index files ARU10");
+            //var sourceDir = new DirectoryInfo(superDir + @"\David Watson_Liz_Tasmania_ARU10\ARU 10 27.12.2016 Data");
+
+            string superDir = @"Y:\Results\2017Apr13-135831 - Liz, Towsey.Indices, ICD=60.0, #154\ConcatResults";
+
+            //var sourceDir = new DirectoryInfo(superDir + @"\David Watson_Liz_USA - South Carolina_ARU UNIT 7");
+            var sourceDir = new DirectoryInfo(superDir + @"\David Watson_Liz_USA - South Carolina_ARU UNIT 10");
+            string searchPattern = "2016*";
+
+            var outputDir = new DirectoryInfo(@"C:\SensorNetworks\Collaborations\LizZnidersic\BlackRail\UnlabelledDataSets\Job154_2017Apr13_135831 SouthCarolina\ARU10_spectrograms");
+            //var outputDir = new DirectoryInfo(@"C:\SensorNetworks\Collaborations\LizZnidersic\BlackRail\UnlabelledDataSets\Job154_2017Apr13_135831 SouthCarolina\ARU7_spectrograms");
+            if (!outputDir.Exists)
+            {
+                outputDir.Create();
+            }
+
+            DirectoryInfo[] dirs = sourceDir.GetDirectories(searchPattern, SearchOption.AllDirectories);
+            Console.WriteLine("Dir Count = " + dirs.Length);
+            foreach (DirectoryInfo dir in dirs)
+            {
+                // assume this file exists
+                var fileinfo = dir.GetFiles("*__ACI-ENT-EVN.png");
+                string site = fileinfo[0].Name.Split('_')[0];
+                //string site = sourceDir.Name;
+                string date = dir.Name;
+                string siteAndDate = site + "_" + date;
+                string opFileName = siteAndDate + "_ACI-ENT-EVN.png";
+
+                foreach (var file in fileinfo)
+                {
+                    Console.WriteLine("Copying file:: " + file.Name);
+                    var opFileInfo = new FileInfo(Path.Combine(outputDir.FullName, opFileName));
+                    file.CopyTo(opFileInfo.FullName);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Places score tracks under a Single Image, assumed to be a spectrogram
+        /// </summary>
+        public static void CodeToPlaceScoreTracksUnderSingleImage()
+        {
+            // construct paths to files
+            string dirName = @"C:\SensorNetworks\Collaborations\LizZnidersic\LeastBittern";
+            //string imageName = "ORNL ARU 2 6.6.2017 Powerhouse trail Data_20170601__2Maps.png";
+            //var scoreFile = new FileInfo(Path.Combine(dirName, "ARU2_ORNL_20170601_LEBI_LZ_TrainingLabels.csv"));
+            string imageName = "ORNL ARU 2 6.6.2017 Powerhouse trail Data_20170604__2Maps.png";
+            var scoreFile = new FileInfo(Path.Combine(dirName, "ARU2_ORNL_20170604_LEBI_LZ_ValidationLabels.csv"));
+
+            var imageFile = new FileInfo(Path.Combine(dirName, imageName));
+            var opFile = Path.Combine(dirName, imageName + "WithScores.png");
+
+            double threshold = 3.5;
+            double maxScore = 15.0;
+            CodeToPlaceScoreTrackUnderImageFile(imageFile, scoreFile, opFile, maxScore, threshold);
+        }
+
+        /// <summary>
+        /// This code used to get LDFC spectrograms from availae
+        /// It cycles through all the subdirecotries in a dir.
+        /// All depends on the consistency of file naming.
+        /// Check the call method for index names and bounds.
+        /// </summary>
+        public static void CodeToPlaceScoreTracksUnderLdfcSpectrograms()
+        {
+            var scoreDir = new DirectoryInfo(@"C:\SensorNetworks\Collaborations\LizZnidersic\BlackRail\UnlabelledDataSets\Job154_2017Apr13_135831 SouthCarolina\ARU7_predictions");
+            var imageDir = new DirectoryInfo(@"C:\SensorNetworks\Collaborations\LizZnidersic\BlackRail\UnlabelledDataSets\Job154_2017Apr13_135831 SouthCarolina\ARU7_spectrograms");
+
+            var outputDir = new DirectoryInfo(@"C:\SensorNetworks\Collaborations\LizZnidersic\BlackRail\UnlabelledDataSets\Job154_2017Apr13_135831 SouthCarolina\ARU7_spectrogramsWithScores");
+            if (!outputDir.Exists)
+            {
+                outputDir.Create();
+            }
+
+            var imageFiles = imageDir.GetFiles("*ACI-ENT-EVN.png");
+            double threshold = 3.5;
+            double maxScore = 15.0;
+
+            Console.WriteLine("File Count= " + imageFiles.Length);
+            foreach (var spImageFile in imageFiles)
+            {
+                // assume this file exists
+                string site = spImageFile.Name.Split('_')[0];
+                string date = spImageFile.Name.Split('_')[1];
+                string scoreFileName = site + "_" + date + "_FeatureSet.csv";
+
+                // get the corresponding csv file of scores
+                var scoreFile = new FileInfo(Path.Combine(scoreDir.FullName, scoreFileName));
+
+                // construct path to output file
+                var opFile = Path.Combine(outputDir.FullName, spImageFile.Name);
+                CodeToPlaceScoreTrackUnderImageFile(spImageFile, scoreFile, opFile, maxScore, threshold);
+            }
+        }
+
+        public static void CodeToPlaceScoreTrackUnderImageFile(FileInfo imageFile, FileInfo scoreFile, string opFile, double maxScore, double threshold)
+        {
+            // read in the image file - assumed to be spectrogram
+            Image spectrogram = ImageTools.ReadImage2Bitmap(imageFile.FullName);
+
+            // Cannot get the following line to work, so use the depracated method
+            //var data1 = Csv.ReadMatrixFromCsv<double>(scoreFile);
+            var data = CsvTools.ReadColumnOfCsvFile(scoreFile.FullName, 1, out string header);
+
+            // create a score track
+            var scoreTrack = ImageTrack.GetNamedScoreTrack(data, scoreMin: 0.0, scoreMax: 15.0, scoreThreshold: threshold, name: "Predictions");
+
+            // attach score track to the LDFC spectrogram
+            var scoreImage = new Bitmap(spectrogram.Width, 40);
+            scoreTrack.DrawTrack(scoreImage);
+            Image[] images = { spectrogram, scoreImage };
+            var combinedImage = ImageTools.CombineImagesVertically(images);
+
+            // write image to file
+            //Console.WriteLine("Copying file:: " + fileinfo.Name);
+            combinedImage.Save(opFile);
+        }
+
+        /// <summary>
+        /// This code can be used to extract acoustic indices for recognisers.
         /// It cycles through all the subdirecotries in a dir.
         /// All depends on the consistency of file naming.
         /// Check the call method for index names and bounds.
         /// </summary>
         public static void CodeToExtractFeatureVectorOfIndices()
         {
+            /*
+            // THESE ARE PATHS FOR LEWINS RAIL PROJECT
             //var sourceDir = new DirectoryInfo(@"C:\SensorNetworks\Collaborations\LizZnidersic\Original concatenated index files ARU10");
-            //string superDir = @"Y:\Results\2017Jun05-113313 - Liz, Towsey.Indices, ICD=60.0, #154\ConcatResults";
             //var sourceDir = new DirectoryInfo(superDir + @"\David Watson_Liz_Tasmania_ARU10\ARU 10 27.12.2016 Data");
-            string superDir = @"Y:\Results\2017Apr13-135831 - Liz, Towsey.Indices, ICD=60.0, #154\ConcatResults";
+            */
 
-            var sourceDir = new DirectoryInfo(superDir + @"\David Watson_Liz_USA - South Carolina_ARU UNIT 7");
-            //var sourceDir = new DirectoryInfo(superDir + @"\David Watson_Liz_USA - South Carolina_ARU UNIT 10");
+            /*
+            // THESE ARE PATHS FOR BLACK RAIL PROJECT
+            //string superDir = @"Y:\Results\2017Jun05-113313 - Liz, Towsey.Indices, ICD=60.0, #154\ConcatResults";
+            string superDir = @"Y:\Results\2017Apr13-135831 - Liz, Towsey.Indices, ICD=60.0, #154\ConcatResults";
+            //var sourceDir = new DirectoryInfo(superDir + @"\David Watson_Liz_USA - South Carolina_ARU UNIT 7");
+            var sourceDir = new DirectoryInfo(superDir + @"\David Watson_Liz_USA - South Carolina_ARU UNIT 10");
             string searchPattern = "2016*";
 
-            //var outputDir = new DirectoryInfo(@"C:\SensorNetworks\Collaborations\LizZnidersic\BlackRail\UnlabelledDataSets\Job154_2017Apr13_135831 SouthCarolina\ARU10");
-            var outputDir = new DirectoryInfo(@"C:\SensorNetworks\Collaborations\LizZnidersic\BlackRail\UnlabelledDataSets\Job154_2017Apr13_135831 SouthCarolina\ARU7");
+            var outputDir = new DirectoryInfo(@"C:\SensorNetworks\Collaborations\LizZnidersic\BlackRail\UnlabelledDataSets\Job154_2017Apr13_135831 SouthCarolina\ARU10");
+            //var outputDir = new DirectoryInfo(@"C:\SensorNetworks\Collaborations\LizZnidersic\BlackRail\UnlabelledDataSets\Job154_2017Apr13_135831 SouthCarolina\ARU7");
+            */
+
+            // THESE ARE PATHS FOR LEAST BITTERN PROJECT
+            string superDir = @"Y:\Results\2017Jun26-111643- Liz, Towsey.Indices, ICD=60.0, #160\ConcatResults";
+            var sourceDir = new DirectoryInfo(superDir + @"\David Watson_Liz_Oak Ridge\ORNL ARU 2 6.6.2017 Powerhouse trail Data");
+            string searchPattern = "201706*";
+
+            var outputDir = new DirectoryInfo(@"G:\SensorNetworks\Collaborations\LizZnidersic\LeastBittern\UnlabelledDataSets");
+
             if (!outputDir.Exists)
             {
                 outputDir.Create();
@@ -2137,7 +2284,7 @@ namespace AnalysisPrograms
                 string siteAndDate = site + "_" + date;
 
                 string filePrefix = siteAndDate + "__Towsey.Acoustic.";
-                string opFileName = siteAndDate + "_FeatureSet.csv";
+                string opFileName = siteAndDate + "_FeatureSet3.csv";
                 var opFileInfo = new FileInfo(Path.Combine(outputDir.FullName, opFileName));
                 Console.WriteLine("Extracting dir " + dir.Name);
                 ExtractFeatureVectorOfIndices(dir, filePrefix, siteAndDate, opFileInfo);
@@ -2149,12 +2296,21 @@ namespace AnalysisPrograms
         /// </summary>
         public static void ExtractFeatureVectorOfIndices(DirectoryInfo sourceDir, string filePrefix, string siteAndDate, FileInfo opFileInfo)
         {
-            // source directory
+            // acooustic indices/features to select and the start and end frequency bins
+            /*
+            // BLACK RAIL
             string[] indexCodes = { "ACI", "ENT", "EVN" };
+            int startBin = 22;
+            int endBin = 74;
+            */
+
+            // LEAST BITTERN
+            string[] indexCodes = { "ACI", "ENT", "EVN", "R3D" };
+            int startBin = 12;
+            int endbin = 21;
+
             int indexCount = indexCodes.Length;
-            int startIndex = 22;
-            int endIndex = 74;
-            int length = endIndex - startIndex + 1;
+            int length = endbin - startBin + 1;
 
             // matrix of string
             var extractedLines = new List<List<string>>();
@@ -2169,10 +2325,11 @@ namespace AnalysisPrograms
 
                 for (int i = 0; i < length; i++)
                 {
-                    int id = i + startIndex;
+                    int id = i + startBin;
                     newHeader.Append(indexKey + id.ToString("D4") + ",");
                 }
             }
+
             newHeader.Append("Target");
 
             for (int keyId = 0; keyId < indexCount; keyId++)
@@ -2195,7 +2352,7 @@ namespace AnalysisPrograms
                         var words = line.Split(',');
 
                         // take subarray. +1 because the first column containing ID is ignored.
-                        var subArray = DataTools.Subarray(words, startIndex + 1, length);
+                        var subArray = DataTools.Subarray(words, startBin + 1, length);
                         var newLine = DataTools.Array2String(subArray);
                         lines.Add(newLine);
                     }
@@ -2221,8 +2378,10 @@ namespace AnalysisPrograms
                             line += extractedLines[j][i];
                         }
 
-                        // add '?' as place holder for the unknown to be predicted
-                        line += "?";
+                        // add '?' as place holder for an unknown category to be predicted
+                        // line += "?";
+                        // add '0' as place holder for a numeric value to be predicted
+                        line += "0";
                         ssw.WriteLine(line);
                     }
                 }
