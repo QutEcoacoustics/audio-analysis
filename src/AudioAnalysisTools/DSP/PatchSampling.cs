@@ -196,13 +196,15 @@ namespace AudioAnalysisTools.DSP
         {
             double[,] outputMatrix = new double[matrix.GetLength(0), maxFreqBin - minFreqBin + 1];
 
-            // copying a part of the original matrix with pre-defined boundaries to Y axis (freq bins) to a new matrix
+            int minColumnIndex = minFreqBin - 1;
+            int maxColumnIndex = maxFreqBin - 1;
 
-            for (int col = minFreqBin; col <= maxFreqBin; col++)
+            // copying a part of the original matrix with pre-defined boundaries to Y axis (freq bins) to a new matrix
+            for (int col = minColumnIndex; col <= maxColumnIndex; col++)
             {
                 for (int row = 0; row < matrix.GetLength(0); row++)
                 {
-                    outputMatrix[row, col - minFreqBin] = matrix[row, col];
+                    outputMatrix[row, col - minColumnIndex] = matrix[row, col];
                 }
             }
 

@@ -73,9 +73,9 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             // Define the minFreBin and MaxFreqBin to be able to work at arbitrary frequency bin bounds.
             // The default value is minFreqBin = 1 and maxFreqBin = finalBinCount.
             // To work with arbitrary frequency bin bounds we need to manually set these two parameters.
-            int minFreqBin = 1;
-            int maxFreqBin = finalBinCount;
-            int numFreqBand = 4;
+            int minFreqBin = 40; //1
+            int maxFreqBin = 76; //finalBinCount;
+            int numFreqBand = 1; //4;
             int patchWidth = (maxFreqBin - minFreqBin + 1) / numFreqBand; // finalBinCount / numFreqBand;
             int patchHeight = 1; // 2; // 4; // 16; // 6; // Frame size
             int numRandomPatches = 80; // 40; // 20; // 30; // 100; // 500; //
@@ -220,7 +220,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                 clusterImage.Save(outputClusteringImage);
             }
 
-            //+++++++++++++++++++++++++++++++++++++++++++++++++++++Processing and generating features for the target spectrogram
+            //+++++++++++++++++++++++++++++++++++++++++++++++++++++Processing and generating features for the target recordings
             var recording2Path = PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav");
             // var recording2Path = PathHelper.ResolveAsset(folderPath, "gympie_np_1192_353972_20160303_055854_60_0.wav");    // folder with 1000 files
             // var recording2Path = PathHelper.ResolveAsset(folderPath, "gympie_np_1192_353887_20151230_042625_60_0.wav");    // folder with 1000 files

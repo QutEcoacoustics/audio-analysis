@@ -73,8 +73,8 @@ namespace AnalysisPrograms
 
             // Black Rail call is between 1000 Hz and 3000 Hz, which is mapped to Mel value [1000, 1876]
             // Hence, we only work with freq bins between [46, 88]
-            int minFreqBin = 46;
-            int maxFreqBin = 88;
+            int minFreqBin = 40;
+            int maxFreqBin = 76;
             int numFreqBand = 1;
             int patchWidth = (maxFreqBin - minFreqBin + 1) / numFreqBand; //finalBinCount / numFreqBand;
             int patchHeight = 1; // 2; // 4; // 16; // 6; // Frame size
@@ -220,220 +220,230 @@ namespace AnalysisPrograms
                 clusterImage.Save(outputClusteringImage);
             }
 
-            //+++++++++++++++++++++++++++++++++++++++++++++++++++++Processing and generating features for the target spectrogram
+            //+++++++++++++++++++++++++++++++++++++++++++++++++++++Processing and generating features for the target recordings
             //var recording2Path = Path.Combine(trainSetPath, "SM304264_0+1_20160421_054539_29-30min.wav"); // an example from the train set
-            var recording2Path = Path.Combine(testSetPath, "SM304264_0+1_20160423_054539_29-30min.wav"); // an example from the test set
-            var recording2 = new AudioRecording(recording2Path);
-            var sonogram2 = new SpectrogramStandard(sonoConfig, recording2.WavReader);
-
-            // DO DRAW SPECTROGRAM
-            var image = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "MELSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-            image.Save(outputMelImagePath, ImageFormat.Png);
-
-            // Do RMS normalization
-            sonogram2.Data = SNR.RmsNormalization(sonogram2.Data);
-            var image2 = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "NORMALISEDMELSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-            image2.Save(outputNormMelImagePath, ImageFormat.Png);
-
-            // NOISE REDUCTION
-            sonogram2.Data = PcaWhitening.NoiseReduction(sonogram2.Data);
-            var image3 = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "NOISEREDUCEDMELSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-            image3.Save(outputNoiseReducedMelImagePath, ImageFormat.Png);
-
-            // check whether the full band spectrogram is needed or a matrix with arbitrary freq bins
-            if (minFreqBin != 1 || maxFreqBin != finalBinCount)
+            //var recording2Path = Path.Combine(testSetPath, "SM304264_0+1_20160423_054539_29-30min.wav"); // an example from the test set
+            // check whether there is any file in the folder/subfolders
+            if (Directory.GetFiles(testSetPath, "*", SearchOption.AllDirectories).Length == 0)
             {
-                inputMatrix = PatchSampling.GetArbitraryFreqBandMatrix(sonogram2.Data, minFreqBin, maxFreqBin);
-            }
-            else
-            {
-                inputMatrix = sonogram2.Data;
-            }
-            // extracting sequential patches from the target spectrogram
-            List<double[,]> allSubmatrices2 = PatchSampling.GetFreqBandMatrices(inputMatrix, numFreqBand);
-            double[][,] matrices2 = allSubmatrices2.ToArray();
-            List<double[,]> allSequentialPatchMatrix = new List<double[,]>();
-            for (int i = 0; i < matrices2.GetLength(0); i++)
-            {
-                int rows = matrices2[i].GetLength(0);
-                int columns = matrices2[i].GetLength(1);
-                var sequentialPatches = PatchSampling.GetPatches(matrices2[i], patchWidth, patchHeight, (rows / patchHeight) * (columns / patchWidth), PatchSampling.SamplingMethod.Sequential);
-                allSequentialPatchMatrix.Add(sequentialPatches.ToMatrix());
+                throw new ArgumentException("The folder of recordings is empty...");
             }
 
-            // +++++++++++++++++++++++++++++++++++Feature Transformation
-            // to do the feature transformation, we normalize centroids and
-            // sequential patches from the input spectrogram to unit length
-            // Then, we calculate the dot product of each patch with the centroids' matrix
-
-            List<double[][]> allNormCentroids = new List<double[][]>();
-            for (int i = 0; i < allBandsCentroids.Count; i++)
+            foreach (string filePath in Directory.GetFiles(testSetPath, "*.wav"))
             {
-                // double check the index of the list
-                double[][] normCentroids = new double[allBandsCentroids.ToArray()[i].GetLength(0)][];
-                for (int j = 0; j < allBandsCentroids.ToArray()[i].GetLength(0); j++)
+                FileInfo f = filePath.ToFileInfo();
+
+                // process the wav file if it is not empty
+                if (f.Length != 0)
                 {
-                    normCentroids[j] = ART_2A.NormaliseVector(allBandsCentroids.ToArray()[i][j]);
-                }
+                    var recording = new AudioRecording(filePath);
+                    sonoConfig.SourceFName = recording.BaseName;
 
-                allNormCentroids.Add(normCentroids);
-            }
+                    var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
 
-            List<double[][]> allFeatureTransVectors = new List<double[][]>();
-            for (int i = 0; i < allSequentialPatchMatrix.Count; i++)
-            {
-                double[][] featureTransVectors = new double[allSequentialPatchMatrix.ToArray()[i].GetLength(0)][];
-                for (int j = 0; j < allSequentialPatchMatrix.ToArray()[i].GetLength(0); j++)
-                {
-                    var normVector = ART_2A.NormaliseVector(allSequentialPatchMatrix.ToArray()[i].ToJagged()[j]); // normalize each patch to unit length
-                    featureTransVectors[j] = allNormCentroids.ToArray()[i].ToMatrix().Dot(normVector);
-                }
+                    // DO RMS NORMALIZATION
+                    sonogram.Data = SNR.RmsNormalization(sonogram.Data);
 
-                allFeatureTransVectors.Add(featureTransVectors);
-            }
+                    // DO NOISE REDUCTION
+                    // sonogram.Data = SNR.NoiseReduce_Median(sonogram.Data, nhBackgroundThreshold: 2.0);
+                    sonogram.Data = PcaWhitening.NoiseReduction(sonogram.Data);
 
-            // +++++++++++++++++++++++++++++++++++Feature Transformation
-
-            // +++++++++++++++++++++++++++++++++++Temporal Summarization
-            // The resolution to generate features is 1 second
-            // Each 6 patches form 1 second, when patches are formed by a sequence of four frames
-            // for each 6 patch, we generate 3 vectors of mean, std, and max
-            // The pre-assumption is that each input spectrogram is 1 minute
-
-            List<double[,]> allMeanFeatureVectors = new List<double[,]>();
-            List<double[,]> allMaxFeatureVectors = new List<double[,]>();
-            List<double[,]> allStdFeatureVectors = new List<double[,]>();
-
-            // number of frames needs to be concatenated to form 1 second. Each 24 frames make 1 second.
-            // to produce feature for 1 min resolution, we need to multiply numFrames to 60! 
-            int numFrames = 24 / patchHeight;
-
-            foreach (var freqBandFeature in allFeatureTransVectors)
-            {
-                List<double[]> meanFeatureVectors = new List<double[]>();
-                List<double[]> maxFeatureVectors = new List<double[]>();
-                List<double[]> stdFeatureVectors = new List<double[]>();
-                int c = 0;
-                while (c + numFrames < freqBandFeature.GetLength(0))
-                {
-                    // First, make a list of patches that would be equal to 1 second
-                    List<double[]> sequencesOfFramesList = new List<double[]>();
-                    for (int i = c; i < c + numFrames; i++)
+                    // check whether the full band spectrogram is needed or a matrix with arbitrary freq bins
+                    if (minFreqBin != 1 || maxFreqBin != finalBinCount)
                     {
-                        sequencesOfFramesList.Add(freqBandFeature[i]);
+                        inputMatrix = PatchSampling.GetArbitraryFreqBandMatrix(sonogram.Data, minFreqBin, maxFreqBin);
+                    }
+                    else
+                    {
+                        inputMatrix = sonogram.Data;
                     }
 
-                    List<double> mean = new List<double>();
-                    List<double> std = new List<double>();
-                    List<double> max = new List<double>();
-                    double[,] sequencesOfFrames = sequencesOfFramesList.ToArray().ToMatrix();
-                    // int len = sequencesOfFrames.GetLength(1);
-
-                    // Second, calculate mean, max, and standard deviation of six vectors element-wise
-                    for (int j = 0; j < sequencesOfFrames.GetLength(1); j++)
+                    // creating matrices from different freq bands of the source spectrogram
+                    List<double[,]> allSubmatrices2 = PatchSampling.GetFreqBandMatrices(inputMatrix, numFreqBand);
+                    double[][,] matrices2 = allSubmatrices2.ToArray();
+                    List<double[,]> allSequentialPatchMatrix = new List<double[,]>();
+                    for (int i = 0; i < matrices2.GetLength(0); i++)
                     {
-                        double[] temp = new double[sequencesOfFrames.GetLength(0)];
-                        for (int k = 0; k < sequencesOfFrames.GetLength(0); k++)
+                        int rows = matrices2[i].GetLength(0);
+                        int columns = matrices2[i].GetLength(1);
+                        var sequentialPatches = PatchSampling.GetPatches(matrices2[i], patchWidth, patchHeight, (rows / patchHeight) * (columns / patchWidth), PatchSampling.SamplingMethod.Sequential);
+                        allSequentialPatchMatrix.Add(sequentialPatches.ToMatrix());
+                    }
+
+                    // +++++++++++++++++++++++++++++++++++Feature Transformation
+                    // to do the feature transformation, we normalize centroids and
+                    // sequential patches from the input spectrogram to unit length
+                    // Then, we calculate the dot product of each patch with the centroids' matrix
+
+                    List<double[][]> allNormCentroids = new List<double[][]>();
+                    for (int i = 0; i < allBandsCentroids.Count; i++)
+                    {
+                        // double check the index of the list
+                        double[][] normCentroids = new double[allBandsCentroids.ToArray()[i].GetLength(0)][];
+                        for (int j = 0; j < allBandsCentroids.ToArray()[i].GetLength(0); j++)
                         {
-                            temp[k] = sequencesOfFrames[k, j];
+                            normCentroids[j] = ART_2A.NormaliseVector(allBandsCentroids.ToArray()[i][j]);
                         }
 
-                        mean.Add(AutoAndCrossCorrelation.GetAverage(temp));
-                        std.Add(AutoAndCrossCorrelation.GetStdev(temp));
-                        max.Add(temp.GetMaxValue());
+                        allNormCentroids.Add(normCentroids);
                     }
 
-                    meanFeatureVectors.Add(mean.ToArray());
-                    maxFeatureVectors.Add(max.ToArray());
-                    stdFeatureVectors.Add(std.ToArray());
-                    c += numFrames;
-                }
+                    List<double[][]> allFeatureTransVectors = new List<double[][]>();
+                    for (int i = 0; i < allSequentialPatchMatrix.Count; i++)
+                    {
+                        double[][] featureTransVectors = new double[allSequentialPatchMatrix.ToArray()[i].GetLength(0)][];
+                        for (int j = 0; j < allSequentialPatchMatrix.ToArray()[i].GetLength(0); j++)
+                        {
+                            var normVector = ART_2A.NormaliseVector(allSequentialPatchMatrix.ToArray()[i].ToJagged()[j]); // normalize each patch to unit length
+                            featureTransVectors[j] = allNormCentroids.ToArray()[i].ToMatrix().Dot(normVector);
+                        }
 
-                allMeanFeatureVectors.Add(meanFeatureVectors.ToArray().ToMatrix());
-                allMaxFeatureVectors.Add(maxFeatureVectors.ToArray().ToMatrix());
-                allStdFeatureVectors.Add(stdFeatureVectors.ToArray().ToMatrix());
-            }
+                        allFeatureTransVectors.Add(featureTransVectors);
+                    }
 
-            // +++++++++++++++++++++++++++++++++++Temporal Summarization
+                    // +++++++++++++++++++++++++++++++++++Feature Transformation
 
-            // ++++++++++++++++++++++++++++++++++Writing features to file
-            // First, concatenate mean, max, std for each second.
-            // Then write to CSV file.
+                    // +++++++++++++++++++++++++++++++++++Temporal Summarization
+                    // The resolution to generate features is 1 second
+                    // Each 6 patches form 1 second, when patches are formed by a sequence of four frames
+                    // for each 6 patch, we generate 3 vectors of mean, std, and max
+                    // The pre-assumption is that each input spectrogram is 1 minute
 
-            for (int j = 0; j < allMeanFeatureVectors.Count; j++)
-            {
-                var outputFeatureFile = Path.Combine(resultDir, "FeatureVectors" + j.ToString() + ".csv");
+                    List<double[,]> allMeanFeatureVectors = new List<double[,]>();
+                    List<double[,]> allMaxFeatureVectors = new List<double[,]>();
+                    List<double[,]> allStdFeatureVectors = new List<double[,]>();
 
-                // creating the header for CSV file
-                List<string> header = new List<string>();
-                for (int i = 0; i < allMeanFeatureVectors.ToArray()[j].GetLength(1); i++)
-                {
-                    header.Add("mean" + i.ToString());
-                }
+                    // number of frames needs to be concatenated to form 1 second. Each 24 frames make 1 second.
+                    int numFrames = 24 / patchHeight;
 
-                for (int i = 0; i < allStdFeatureVectors.ToArray()[j].GetLength(1); i++)
-                {
-                    header.Add("std" + i.ToString());
-                }
+                    foreach (var freqBandFeature in allFeatureTransVectors)
+                    {
+                        List<double[]> meanFeatureVectors = new List<double[]>();
+                        List<double[]> maxFeatureVectors = new List<double[]>();
+                        List<double[]> stdFeatureVectors = new List<double[]>();
+                        int c = 0;
+                        while (c + numFrames < freqBandFeature.GetLength(0))
+                        {
+                            // First, make a list of patches that would be equal to 1 second
+                            List<double[]> sequencesOfFramesList = new List<double[]>();
+                            for (int i = c; i < c + numFrames; i++)
+                            {
+                                sequencesOfFramesList.Add(freqBandFeature[i]);
+                            }
 
-                for (int i = 0; i < allMaxFeatureVectors.ToArray()[j].GetLength(1); i++)
-                {
-                    header.Add("max" + i.ToString());
-                }
+                            List<double> mean = new List<double>();
+                            List<double> std = new List<double>();
+                            List<double> max = new List<double>();
+                            double[,] sequencesOfFrames = sequencesOfFramesList.ToArray().ToMatrix();
+                            // int len = sequencesOfFrames.GetLength(1);
 
-                // concatenating mean, std, and max vector together for each 1 second
-                List<double[]> featureVectors = new List<double[]>();
-                for (int i = 0; i < allMeanFeatureVectors.ToArray()[j].ToJagged().GetLength(0); i++)
-                {
-                    List<double[]> featureList = new List<double[]>
+                            // Second, calculate mean, max, and standard deviation of six vectors element-wise
+                            for (int j = 0; j < sequencesOfFrames.GetLength(1); j++)
+                            {
+                                double[] temp = new double[sequencesOfFrames.GetLength(0)];
+                                for (int k = 0; k < sequencesOfFrames.GetLength(0); k++)
+                                {
+                                    temp[k] = sequencesOfFrames[k, j];
+                                }
+
+                                mean.Add(AutoAndCrossCorrelation.GetAverage(temp));
+                                std.Add(AutoAndCrossCorrelation.GetStdev(temp));
+                                max.Add(temp.GetMaxValue());
+                            }
+
+                            meanFeatureVectors.Add(mean.ToArray());
+                            maxFeatureVectors.Add(max.ToArray());
+                            stdFeatureVectors.Add(std.ToArray());
+                            c += numFrames;
+                        }
+
+                        allMeanFeatureVectors.Add(meanFeatureVectors.ToArray().ToMatrix());
+                        allMaxFeatureVectors.Add(maxFeatureVectors.ToArray().ToMatrix());
+                        allStdFeatureVectors.Add(stdFeatureVectors.ToArray().ToMatrix());
+                    }
+
+                    // +++++++++++++++++++++++++++++++++++Temporal Summarization
+
+                    // ++++++++++++++++++++++++++++++++++Writing features to file
+                    // First, concatenate mean, max, std for each second.
+                    // Then write to CSV file.
+
+                    for (int j = 0; j < allMeanFeatureVectors.Count; j++)
+                    {
+                        var outputFeatureFile = Path.Combine(resultDir, "FeatureVectors" + j.ToString() + ".csv");
+
+                        // creating the header for CSV file
+                        List<string> header = new List<string>();
+                        for (int i = 0; i < allMeanFeatureVectors.ToArray()[j].GetLength(1); i++)
+                        {
+                            header.Add("mean" + i.ToString());
+                        }
+
+                        for (int i = 0; i < allStdFeatureVectors.ToArray()[j].GetLength(1); i++)
+                        {
+                            header.Add("std" + i.ToString());
+                        }
+
+                        for (int i = 0; i < allMaxFeatureVectors.ToArray()[j].GetLength(1); i++)
+                        {
+                            header.Add("max" + i.ToString());
+                        }
+
+                        // concatenating mean, std, and max vector together for each 1 second
+                        List<double[]> featureVectors = new List<double[]>();
+                        for (int i = 0; i < allMeanFeatureVectors.ToArray()[j].ToJagged().GetLength(0); i++)
+                        {
+                            List<double[]> featureList = new List<double[]>
                     {
                         allMeanFeatureVectors.ToArray()[j].ToJagged()[i],
                         allMaxFeatureVectors.ToArray()[j].ToJagged()[i],
                         allStdFeatureVectors.ToArray()[j].ToJagged()[i],
                     };
-                    double[] featureVector = DataTools.ConcatenateVectors(featureList);
-                    featureVectors.Add(featureVector);
-                }
-
-                // writing feature vectors to CSV file
-                using (StreamWriter file = new StreamWriter(outputFeatureFile))
-                {
-                    // writing the header to CSV file
-                    foreach (var entry in header.ToArray())
-                    {
-                        file.Write(entry + ",");
-                    }
-
-                    file.Write(Environment.NewLine);
-
-                    foreach (var entry in featureVectors.ToArray())
-                    {
-                        foreach (var value in entry)
-                        {
-                            file.Write(value + ",");
+                            double[] featureVector = DataTools.ConcatenateVectors(featureList);
+                            featureVectors.Add(featureVector);
                         }
 
-                        file.Write(Environment.NewLine);
+                        // writing feature vectors to CSV file
+                        using (StreamWriter file = new StreamWriter(outputFeatureFile))
+                        {
+                            // writing the header to CSV file
+                            foreach (var entry in header.ToArray())
+                            {
+                                file.Write(entry + ",");
+                            }
+
+                            file.Write(Environment.NewLine);
+
+                            foreach (var entry in featureVectors.ToArray())
+                            {
+                                foreach (var value in entry)
+                                {
+                                    file.Write(value + ",");
+                                }
+
+                                file.Write(Environment.NewLine);
+                            }
+                        }
                     }
+
+                    /*
+                    // Reconstructing the target spectrogram based on clusters' centroids
+                    List<double[,]> convertedSpec = new List<double[,]>();
+                    int columnPerFreqBand = sonogram2.Data.GetLength(1) / numFreqBand;
+                    for (int i = 0; i < allSequentialPatchMatrix.Count; i++)
+                    {
+                        double[,] reconstructedSpec2 = KmeansClustering.ReconstructSpectrogram(allSequentialPatchMatrix.ToArray()[i], allClusteringOutput.ToArray()[i]);
+                        convertedSpec.Add(PatchSampling.ConvertPatches(reconstructedSpec2, patchWidth, patchHeight, columnPerFreqBand));
+                    }
+
+                    sonogram2.Data = PatchSampling.ConcatFreqBandMatrices(convertedSpec);
+
+                    // DO DRAW SPECTROGRAM
+                    var reconstructedSpecImage = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "RECONSTRUCTEDSPECTROGRAM: " + freqScale.ScaleType.ToString(), freqScale.GridLineLocations);
+                    reconstructedSpecImage.Save(outputReSpecImagePath, ImageFormat.Png);
+                    */
                 }
             }
-
-            /*
-            // Reconstructing the target spectrogram based on clusters' centroids
-            List<double[,]> convertedSpec = new List<double[,]>();
-            int columnPerFreqBand = sonogram2.Data.GetLength(1) / numFreqBand;
-            for (int i = 0; i < allSequentialPatchMatrix.Count; i++)
-            {
-                double[,] reconstructedSpec2 = KmeansClustering.ReconstructSpectrogram(allSequentialPatchMatrix.ToArray()[i], allClusteringOutput.ToArray()[i]);
-                convertedSpec.Add(PatchSampling.ConvertPatches(reconstructedSpec2, patchWidth, patchHeight, columnPerFreqBand));
-            }
-
-            sonogram2.Data = PatchSampling.ConcatFreqBandMatrices(convertedSpec);
-
-            // DO DRAW SPECTROGRAM
-            var reconstructedSpecImage = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "RECONSTRUCTEDSPECTROGRAM: " + freqScale.ScaleType.ToString(), freqScale.GridLineLocations);
-            reconstructedSpecImage.Save(outputReSpecImagePath, ImageFormat.Png);
-            */
         }
 
         [Command(
