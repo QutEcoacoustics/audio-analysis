@@ -1,10 +1,8 @@
-﻿// <copyright file="UnsupervisedFeatureLearningTest.cs" company="QutEcoacoustics">
-// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
-// </copyright>
+﻿using System;
+using System.Threading.Tasks;
 
-namespace Acoustics.Test.AudioAnalysisTools.DSP
+namespace AnalysisPrograms
 {
-    using System;
     using System.Collections.Generic;
     using System.Drawing;
     using System.Drawing.Imaging;
@@ -13,44 +11,43 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
     using Accord.MachineLearning;
     using Accord.Math;
     using Acoustics.Shared.Csv;
-    using global::AudioAnalysisTools.DSP;
-    using global::AudioAnalysisTools.StandardSpectrograms;
-    using global::AudioAnalysisTools.WavTools;
-    using global::TowseyLibrary;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
+    using McMaster.Extensions.CommandLineUtils;
     using NeuralNets;
-    using TestHelpers;
+    using Production.Arguments;
+    using TowseyLibrary;
 
-    [TestClass]
-    public class UnsupervisedFeatureLearningTest
+    public class MahnooshSandpit
     {
-        /// <summary>
-        /// This method will be used in IAnalyser
-        /// </summary>
-        [TestMethod]
-        public void TestFeatureLearning()
+        public const string CommandName = "MahnooshSandpit";
+
+        public void Execute(Arguments arguments)
         {
-            // var outputDir = this.outputDirectory;
-            var resultDir = PathHelper.ResolveAssetPath("FeatureLearning");
-            var folderPath = Path.Combine(resultDir, "liz"); //random_audio_segments
-            // PathHelper.ResolveAssetPath(@"C:\Users\kholghim\Mahnoosh\PcaWhitening\random_audio_segments\1192_1000");
-            // var resultDir = PathHelper.ResolveAssetPath(@"C:\Users\kholghim\Mahnoosh\PcaWhitening");
+            LoggedConsole.WriteLine("feature extraction process");
+
+            var inputDir = @"D:\Mahnoosh\Liz\";
+            var resultDir = Path.Combine(inputDir, "FeatureLearning"); //@"D:\Mahnoosh\Liz\FeatureLearning\";
+            var inputPath = Path.Combine(inputDir, "PatchSamplingSegments"); //@"D:\Mahnoosh\Liz\PatchSamplingSegments\";
+            var trainSetPath = Path.Combine(inputDir, "TrainSet");
+            var testSetPath = Path.Combine(inputDir, "TestSet");
             var outputMelImagePath = Path.Combine(resultDir, "MelScaleSpectrogram.png");
             var outputNormMelImagePath = Path.Combine(resultDir, "NormalizedMelScaleSpectrogram.png");
             var outputNoiseReducedMelImagePath = Path.Combine(resultDir, "NoiseReducedMelSpectrogram.png");
             var outputReSpecImagePath = Path.Combine(resultDir, "ReconstrcutedSpectrogram.png");
-            // var outputClusterImagePath = Path.Combine(resultDir, "Clusters.bmp");
+            var outputClusterImagePath = Path.Combine(resultDir, "Clusters.bmp");
 
             // +++++++++++++++++++++++++++++++++++++++++++++++++patch sampling from 1000 random 1-min recordings from Gympie
 
             // check whether there is any file in the folder/subfolders
-            if (Directory.GetFiles(folderPath, "*", SearchOption.AllDirectories).Length == 0)
+            if (Directory.GetFiles(inputPath, "*", SearchOption.AllDirectories).Length == 0)
             {
                 throw new ArgumentException("The folder of recordings is empty...");
             }
 
             // get the nyquist value from the first wav file in the folder of recordings
-            int nq = new AudioRecording(Directory.GetFiles(folderPath, "*.wav")[0]).Nyquist;
+            int nq = new AudioRecording(Directory.GetFiles(inputPath, "*.wav")[0]).Nyquist;
 
             int nyquist = nq; // 11025;
             int frameSize = 1024;
@@ -73,10 +70,13 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             // Define the minFreBin and MaxFreqBin to be able to work at arbitrary frequency bin bounds.
             // The default value is minFreqBin = 1 and maxFreqBin = finalBinCount.
             // To work with arbitrary frequency bin bounds we need to manually set these two parameters.
-            int minFreqBin = 1;
-            int maxFreqBin = finalBinCount;
-            int numFreqBand = 4;
-            int patchWidth = (maxFreqBin - minFreqBin + 1) / numFreqBand; // finalBinCount / numFreqBand;
+
+            // Black Rail call is between 1000 Hz and 3000 Hz, which is mapped to Mel value [1000, 1876]
+            // Hence, we only work with freq bins between [46, 88]
+            int minFreqBin = 46;
+            int maxFreqBin = 88;
+            int numFreqBand = 1;
+            int patchWidth = (maxFreqBin - minFreqBin + 1) / numFreqBand; //finalBinCount / numFreqBand;
             int patchHeight = 1; // 2; // 4; // 16; // 6; // Frame size
             int numRandomPatches = 80; // 40; // 20; // 30; // 100; // 500; //
             // int fileCount = Directory.GetFiles(folderPath, "*.wav").Length;
@@ -102,7 +102,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             */
             double[,] inputMatrix;
 
-            foreach (string filePath in Directory.GetFiles(folderPath, "*.wav"))
+            foreach (string filePath in Directory.GetFiles(inputPath, "*.wav"))
             {
                 FileInfo f = filePath.ToFileInfo();
 
@@ -150,7 +150,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             }
 
             // convert list of random patches matrices to one matrix
-            int numberOfClusters = 256; // 128; // 64; // 32; // 10; // 50;
+            int numberOfClusters = 500; //256; // 128; // 64; // 32; // 10; // 50;
             List<double[][]> allBandsCentroids = new List<double[][]>();
             List<KMeansClusterCollection> allClusteringOutput = new List<KMeansClusterCollection>();
 
@@ -221,11 +221,8 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             }
 
             //+++++++++++++++++++++++++++++++++++++++++++++++++++++Processing and generating features for the target spectrogram
-            var recording2Path = PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav");
-            // var recording2Path = PathHelper.ResolveAsset(folderPath, "gympie_np_1192_353972_20160303_055854_60_0.wav");    // folder with 1000 files
-            // var recording2Path = PathHelper.ResolveAsset(folderPath, "gympie_np_1192_353887_20151230_042625_60_0.wav");    // folder with 1000 files
-            // var recording2Path = PathHelper.ResolveAsset(folderPath, "gympie_np_1192_354744_20151018_053923_60_0.wav");  // folder with 100 files
-
+            //var recording2Path = Path.Combine(trainSetPath, "SM304264_0+1_20160421_054539_29-30min.wav"); // an example from the train set
+            var recording2Path = Path.Combine(testSetPath, "SM304264_0+1_20160423_054539_29-30min.wav"); // an example from the test set
             var recording2 = new AudioRecording(recording2Path);
             var sonogram2 = new SpectrogramStandard(sonoConfig, recording2.WavReader);
 
@@ -252,7 +249,6 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             {
                 inputMatrix = sonogram2.Data;
             }
-
             // extracting sequential patches from the target spectrogram
             List<double[,]> allSubmatrices2 = PatchSampling.GetFreqBandMatrices(inputMatrix, numFreqBand);
             double[][,] matrices2 = allSubmatrices2.ToArray();
@@ -309,6 +305,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             List<double[,]> allStdFeatureVectors = new List<double[,]>();
 
             // number of frames needs to be concatenated to form 1 second. Each 24 frames make 1 second.
+            // to produce feature for 1 min resolution, we need to multiply numFrames to 60! 
             int numFrames = 24 / patchHeight;
 
             foreach (var freqBandFeature in allFeatureTransVectors)
@@ -437,6 +434,19 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             var reconstructedSpecImage = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "RECONSTRUCTEDSPECTROGRAM: " + freqScale.ScaleType.ToString(), freqScale.GridLineLocations);
             reconstructedSpecImage.Save(outputReSpecImagePath, ImageFormat.Png);
             */
+        }
+
+        [Command(
+            CommandName,
+            Description = "Temporary entry point for unsupervised feature learning")]
+        public class Arguments : SubCommandBase
+        {
+            public override Task<int> Execute(CommandLineApplication app)
+            {
+                var instance = new MahnooshSandpit();
+                instance.Execute(this);
+                return this.Ok();
+            }
         }
     }
 }

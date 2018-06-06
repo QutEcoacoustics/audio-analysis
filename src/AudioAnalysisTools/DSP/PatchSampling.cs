@@ -190,6 +190,26 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
+        /// outputs a matrix with arbitrary minimum and maximum frequency bins.
+        /// </summary>
+        public static double[,] GetArbitraryFreqBandMatrix(double[,] matrix, int minFreqBin, int maxFreqBin)
+        {
+            double[,] outputMatrix = new double[matrix.GetLength(0), maxFreqBin - minFreqBin + 1];
+
+            // copying a part of the original matrix with pre-defined boundaries to Y axis (freq bins) to a new matrix
+
+            for (int col = minFreqBin; col <= maxFreqBin; col++)
+            {
+                for (int row = 0; row < matrix.GetLength(0); row++)
+                {
+                    outputMatrix[row, col - minFreqBin] = matrix[row, col];
+                }
+            }
+
+            return outputMatrix;
+        }
+
+        /// <summary>
         /// concatenate submatrices column-wise into one matrix, i.e., the number of rows for the output matrix
         /// is equal to the number of rows of each of the frequency band matrices.
         /// </summary>
@@ -202,7 +222,7 @@ namespace AudioAnalysisTools.DSP
             int count = 0;
             while (count < submatrices.Count)
             {
-                DoubleSquareArrayExtensions.AddToArray(matrix, submatrices[count], DoubleSquareArrayExtensions.MergingDirection.Column, submatrices[count].GetLength(1) * count);
+                matrix.AddToArray(submatrices[count], DoubleSquareArrayExtensions.MergingDirection.Column, submatrices[count].GetLength(1) * count);
                 count++;
             }
 
@@ -252,7 +272,7 @@ namespace AudioAnalysisTools.DSP
                     throw new ArgumentException("All arrays must be the same length");
                 }
 
-                DoubleSquareArrayExtensions.AddToArray(allPatchesMatrix, m, DoubleSquareArrayExtensions.MergingDirection.Row, i * m.GetLength(0));
+                allPatchesMatrix.AddToArray(m, DoubleSquareArrayExtensions.MergingDirection.Row, i * m.GetLength(0));
             }
 
             return allPatchesMatrix;
