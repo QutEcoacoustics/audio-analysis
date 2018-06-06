@@ -32,7 +32,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
         {
             // var outputDir = this.outputDirectory;
             var resultDir = PathHelper.ResolveAssetPath("FeatureLearning");
-            var folderPath = Path.Combine(resultDir, "liz"); //random_audio_segments
+            var folderPath = Path.Combine(resultDir, "random_audio_segments"); //Liz
             // PathHelper.ResolveAssetPath(@"C:\Users\kholghim\Mahnoosh\PcaWhitening\random_audio_segments\1192_1000");
             // var resultDir = PathHelper.ResolveAssetPath(@"C:\Users\kholghim\Mahnoosh\PcaWhitening");
             var outputMelImagePath = Path.Combine(resultDir, "MelScaleSpectrogram.png");
