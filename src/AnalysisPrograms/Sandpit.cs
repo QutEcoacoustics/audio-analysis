@@ -68,9 +68,9 @@ namespace AnalysisPrograms
                 //Audio2CsvOverMultipleFiles();
 
                 // used to get files from availae for Black rail and Least Bittern papers.
-                CodeToExtractFeatureVectorOfIndices();
+                //CodeToExtractFeatureVectorOfIndices();
                 //CodeToGetLdfcSpectrogramsFromAvailae();
-                //CodeToPlaceScoreTracksUnderLdfcSpectrograms();
+                CodeToPlaceScoreTracksUnderLdfcSpectrograms();
                 //CodeToPlaceScoreTracksUnderSingleImage();
 
                 //ConcatenateIndexFilesAndSpectrograms();
@@ -2116,17 +2116,26 @@ namespace AnalysisPrograms
         /// </summary>
         public static void CodeToGetLdfcSpectrogramsFromAvailae()
         {
+            // Lewin's Rail
             //var sourceDir = new DirectoryInfo(@"C:\SensorNetworks\Collaborations\LizZnidersic\Original concatenated index files ARU10");
             //var sourceDir = new DirectoryInfo(superDir + @"\David Watson_Liz_Tasmania_ARU10\ARU 10 27.12.2016 Data");
 
-            string superDir = @"Y:\Results\2017Apr13-135831 - Liz, Towsey.Indices, ICD=60.0, #154\ConcatResults";
-
+            // Black Rail
+            //string superDir = @"Y:\Results\2017Apr13-135831 - Liz, Towsey.Indices, ICD=60.0, #154\ConcatResults";
             //var sourceDir = new DirectoryInfo(superDir + @"\David Watson_Liz_USA - South Carolina_ARU UNIT 7");
-            var sourceDir = new DirectoryInfo(superDir + @"\David Watson_Liz_USA - South Carolina_ARU UNIT 10");
-            string searchPattern = "2016*";
-
-            var outputDir = new DirectoryInfo(@"C:\SensorNetworks\Collaborations\LizZnidersic\BlackRail\UnlabelledDataSets\Job154_2017Apr13_135831 SouthCarolina\ARU10_spectrograms");
+            //var sourceDir = new DirectoryInfo(superDir + @"\David Watson_Liz_USA - South Carolina_ARU UNIT 10");
+            //var outputDir = new DirectoryInfo(@"C:\SensorNetworks\Collaborations\LizZnidersic\BlackRail\UnlabelledDataSets\Job154_2017Apr13_135831 SouthCarolina\ARU10_spectrograms");
             //var outputDir = new DirectoryInfo(@"C:\SensorNetworks\Collaborations\LizZnidersic\BlackRail\UnlabelledDataSets\Job154_2017Apr13_135831 SouthCarolina\ARU7_spectrograms");
+            //string searchPattern = "2016*";
+
+            // Least Bittern
+            string superDir = @"Y:\Results\2017Jun26-111643- Liz, Towsey.Indices, ICD=60.0, #160\ConcatResults2\David Watson_Liz_Oak Ridge";
+            //var sourceDir = new DirectoryInfo(superDir + @"\ORNL ARU 2 6.6.2017 Powerhouse trail Data");
+            //var sourceDir = new DirectoryInfo(superDir + @"\ORNL ARU 2 17.5.2017 Data");
+            var sourceDir = new DirectoryInfo(superDir + @"\ORNL ARU 2 28.5.2017");
+            var outputDir = new DirectoryInfo(@"G:\SensorNetworks\Collaborations\LizZnidersic\LeastBittern\ARU2_ORNL_2017_LEBI_LZ_Spectrograms");
+            string searchPattern = "20170*";
+
             if (!outputDir.Exists)
             {
                 outputDir.Create();
@@ -2181,10 +2190,16 @@ namespace AnalysisPrograms
         /// </summary>
         public static void CodeToPlaceScoreTracksUnderLdfcSpectrograms()
         {
-            var scoreDir = new DirectoryInfo(@"C:\SensorNetworks\Collaborations\LizZnidersic\BlackRail\UnlabelledDataSets\Job154_2017Apr13_135831 SouthCarolina\ARU7_predictions");
-            var imageDir = new DirectoryInfo(@"C:\SensorNetworks\Collaborations\LizZnidersic\BlackRail\UnlabelledDataSets\Job154_2017Apr13_135831 SouthCarolina\ARU7_spectrograms");
+            // Black rail directories
+            //var scoreDir = new DirectoryInfo(@"C:\SensorNetworks\Collaborations\LizZnidersic\BlackRail\UnlabelledDataSets\Job154_2017Apr13_135831 SouthCarolina\ARU7_predictions");
+            //var imageDir = new DirectoryInfo(@"C:\SensorNetworks\Collaborations\LizZnidersic\BlackRail\UnlabelledDataSets\Job154_2017Apr13_135831 SouthCarolina\ARU7_spectrograms");
+            //var outputDir = new DirectoryInfo(@"C:\SensorNetworks\Collaborations\LizZnidersic\BlackRail\UnlabelledDataSets\Job154_2017Apr13_135831 SouthCarolina\ARU7_spectrogramsWithScores");
 
-            var outputDir = new DirectoryInfo(@"C:\SensorNetworks\Collaborations\LizZnidersic\BlackRail\UnlabelledDataSets\Job154_2017Apr13_135831 SouthCarolina\ARU7_spectrogramsWithScores");
+            // Least Bittern directories
+            var scoreDir = new DirectoryInfo(@"G:\SensorNetworks\Collaborations\LizZnidersic\LeastBittern\UnlabelledDataSets_Job160_predictions");
+            var imageDir = new DirectoryInfo(@"G:\SensorNetworks\Collaborations\LizZnidersic\LeastBittern\ARU2_ORNL_2017_LEBI_LZ_Spectrograms");
+            var outputDir = new DirectoryInfo(@"G:\SensorNetworks\Collaborations\LizZnidersic\LeastBittern\ARU2_ORNL_2017_LEBI_LZ_SpectrogramsWithScores");
+
             if (!outputDir.Exists)
             {
                 outputDir.Create();
@@ -2200,7 +2215,7 @@ namespace AnalysisPrograms
                 // assume this file exists
                 string site = spImageFile.Name.Split('_')[0];
                 string date = spImageFile.Name.Split('_')[1];
-                string scoreFileName = site + "_" + date + "_FeatureSet.csv";
+                string scoreFileName = site + "_" + date + "_FeatureSet3.csv";
 
                 // get the corresponding csv file of scores
                 var scoreFile = new FileInfo(Path.Combine(scoreDir.FullName, scoreFileName));
@@ -2221,7 +2236,8 @@ namespace AnalysisPrograms
             var data = CsvTools.ReadColumnOfCsvFile(scoreFile.FullName, 1, out string header);
 
             // create a score track
-            var scoreTrack = ImageTrack.GetNamedScoreTrack(data, scoreMin: 0.0, scoreMax: 15.0, scoreThreshold: threshold, name: "Predictions");
+            string name = "Predictions (max=" + maxScore + ")";
+            var scoreTrack = ImageTrack.GetNamedScoreTrack(data, scoreMin: 0.0, scoreMax: maxScore, scoreThreshold: threshold, name: name);
 
             // attach score track to the LDFC spectrogram
             var scoreImage = new Bitmap(spectrogram.Width, 40);
@@ -2261,11 +2277,19 @@ namespace AnalysisPrograms
             */
 
             // THESE ARE PATHS FOR LEAST BITTERN PROJECT
-            string superDir = @"Y:\Results\2017Jun26-111643- Liz, Towsey.Indices, ICD=60.0, #160\ConcatResults";
-            var sourceDir = new DirectoryInfo(superDir + @"\David Watson_Liz_Oak Ridge\ORNL ARU 2 6.6.2017 Powerhouse trail Data");
-            string searchPattern = "201706*";
+            // data on Y drive
+            //string superDir = @"Y:\Results\2017Jun26-111643- Liz, Towsey.Indices, ICD=60.0, #160\ConcatResults";
+            //var sourceDir = new DirectoryInfo(superDir + @"\David Watson_Liz_Oak Ridge\ORNL ARU 2 6.6.2017 Powerhouse trail Data");
 
-            var outputDir = new DirectoryInfo(@"G:\SensorNetworks\Collaborations\LizZnidersic\LeastBittern\UnlabelledDataSets");
+            // data from G drive
+            string superDir = @"G:\SensorNetworks\Collaborations\LizZnidersic\LeastBittern\OriginalResultsData";
+            //var sourceDir = new DirectoryInfo(superDir + @"\ORNL ARU 2 6.6.2017 Powerhouse trail Data");
+            //var sourceDir = new DirectoryInfo(superDir + @"\ORNL ARU 2 17.5.2017 Data");
+            var sourceDir = new DirectoryInfo(superDir + @"\ORNL ARU 2 6.6.2017 Powerhouse trail Data");
+
+            string searchPattern = "20170*";
+
+            var outputDir = new DirectoryInfo(@"G:\SensorNetworks\Collaborations\LizZnidersic\LeastBittern\UnlabelledDataSets_Job160");
 
             if (!outputDir.Exists)
             {
@@ -2305,9 +2329,10 @@ namespace AnalysisPrograms
             */
 
             // LEAST BITTERN
-            string[] indexCodes = { "ACI", "ENT", "EVN", "R3D" };
+            //string[] indexCodes = { "ACI", "ENT", "EVN", "R3D" };
+            string[] indexCodes = { "ACI", "ENT", "EVN" };
             int startBin = 12;
-            int endbin = 21;
+            int endbin = 18;
 
             int indexCount = indexCodes.Length;
             int length = endbin - startBin + 1;
