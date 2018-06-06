@@ -31,7 +31,7 @@ foreach($file in $files) {
     mkdir $output_directory
 
     # prepare command
-    $command = ".\AnalysisPrograms.exe audio2csv -source `"$file`" -config `".\configFiles\Towsey.Acoustic.30.yml`" -output `"$output_directory`" -n"
+    $command = ".\AnalysisPrograms.exe audio2csv `"$file`" `".\configFiles\Towsey.Acoustic.yml`" `"$output_directory`" -n"
     
     # finally, execute the command
     Invoke-Expression $command
