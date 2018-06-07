@@ -27,9 +27,9 @@ namespace AnalysisPrograms
         {
             LoggedConsole.WriteLine("feature extraction process");
 
-            var inputDir = @"D:\Mahnoosh\Liz\";
-            var resultDir = Path.Combine(inputDir, "FeatureLearning"); //@"D:\Mahnoosh\Liz\FeatureLearning\";
-            var inputPath = Path.Combine(inputDir, "PatchSamplingSegments"); //@"D:\Mahnoosh\Liz\PatchSamplingSegments\";
+            var inputDir = @"D:\Mahnoosh\Liz\"; //@"C:\Users\kholghim\Mahnoosh\UnsupervisedFeatureLearning\";
+            var resultDir = Path.Combine(inputDir, "FeatureLearning");
+            var inputPath = Path.Combine(inputDir, "PatchSamplingSegments");
             var trainSetPath = Path.Combine(inputDir, "TrainSet");
             var testSetPath = Path.Combine(inputDir, "TestSet");
             var outputMelImagePath = Path.Combine(resultDir, "MelScaleSpectrogram.png");
@@ -78,7 +78,7 @@ namespace AnalysisPrograms
             int numFreqBand = 1;
             int patchWidth = (maxFreqBin - minFreqBin + 1) / numFreqBand; //finalBinCount / numFreqBand;
             int patchHeight = 1; // 2; // 4; // 16; // 6; // Frame size
-            int numRandomPatches = 80; // 40; // 20; // 30; // 100; // 500; //
+            int numRandomPatches = 100; //80; // 40; // 20; // 30; //  500; //
             // int fileCount = Directory.GetFiles(folderPath, "*.wav").Length;
 
             // Define variable number of "randomPatch" lists based on "numFreqBand"
@@ -104,10 +104,10 @@ namespace AnalysisPrograms
 
             foreach (string filePath in Directory.GetFiles(inputPath, "*.wav"))
             {
-                FileInfo f = filePath.ToFileInfo();
+                FileInfo fileInfo = filePath.ToFileInfo();
 
                 // process the wav file if it is not empty
-                if (f.Length != 0)
+                if (fileInfo.Length != 0)
                 {
                     var recording = new AudioRecording(filePath);
                     sonoConfig.SourceFName = recording.BaseName;
@@ -138,7 +138,7 @@ namespace AnalysisPrograms
                     int count = 0;
                     while (count < allSubmatrices.Count)
                     {
-                        randomPatchLists[string.Format("randomPatch{0}", count.ToString())].Add(PatchSampling.GetPatches(allSubmatrices.ToArray()[count], patchWidth, patchHeight, numRandomPatches, PatchSampling.SamplingMethod.Random).ToMatrix());
+                        randomPatchLists[$"randomPatch{count.ToString()}"].Add(PatchSampling.GetPatches(allSubmatrices.ToArray()[count], patchWidth, patchHeight, numRandomPatches, PatchSampling.SamplingMethod.Random).ToMatrix());
                         count++;
                     }
                 }
@@ -150,7 +150,7 @@ namespace AnalysisPrograms
             }
 
             // convert list of random patches matrices to one matrix
-            int numberOfClusters = 500; //256; // 128; // 64; // 32; // 10; // 50;
+            int numberOfClusters = 20; //500; //256; // 128; // 64; // 32; // 10; // 50;
             List<double[][]> allBandsCentroids = new List<double[][]>();
             List<KMeansClusterCollection> allClusteringOutput = new List<KMeansClusterCollection>();
 
@@ -216,7 +216,7 @@ namespace AnalysisPrograms
 
                 var outputClusteringImage = Path.Combine(resultDir, "ClustersWithGrid" + i.ToString() + ".bmp");
                 // Image bmp = ImageTools.ReadImage2Bitmap(filename);
-                FrequencyScale.DrawFrequencyLinesOnImage((Bitmap)clusterImage, freqScale, includeLabels: false);
+                // FrequencyScale.DrawFrequencyLinesOnImage((Bitmap)clusterImage, freqScale, includeLabels: false);
                 clusterImage.Save(outputClusteringImage);
             }
 
@@ -231,10 +231,10 @@ namespace AnalysisPrograms
 
             foreach (string filePath in Directory.GetFiles(testSetPath, "*.wav"))
             {
-                FileInfo f = filePath.ToFileInfo();
+                FileInfo fileInfo = filePath.ToFileInfo();
 
                 // process the wav file if it is not empty
-                if (f.Length != 0)
+                if (fileInfo.Length != 0)
                 {
                     var recording = new AudioRecording(filePath);
                     sonoConfig.SourceFName = recording.BaseName;
@@ -305,10 +305,11 @@ namespace AnalysisPrograms
 
                     // +++++++++++++++++++++++++++++++++++Temporal Summarization
                     // The resolution to generate features is 1 second
-                    // Each 6 patches form 1 second, when patches are formed by a sequence of four frames
-                    // for each 6 patch, we generate 3 vectors of mean, std, and max
+                    // Each 24 single-frame patches form 1 second
+                    // for each 24 patch, we generate 3 vectors of mean, std, and max
                     // The pre-assumption is that each input spectrogram is 1 minute
 
+                    // store features of different bands in lists
                     List<double[,]> allMeanFeatureVectors = new List<double[,]>();
                     List<double[,]> allMaxFeatureVectors = new List<double[,]>();
                     List<double[,]> allStdFeatureVectors = new List<double[,]>();
@@ -370,7 +371,8 @@ namespace AnalysisPrograms
 
                     for (int j = 0; j < allMeanFeatureVectors.Count; j++)
                     {
-                        var outputFeatureFile = Path.Combine(resultDir, "FeatureVectors" + j.ToString() + ".csv");
+                        // write the features of each pre-defined frequency band into a separate CSV file
+                        var outputFeatureFile = Path.Combine(resultDir, "FeatureVectors-" + j.ToString() + fileInfo.Name + ".csv");
 
                         // creating the header for CSV file
                         List<string> header = new List<string>();
