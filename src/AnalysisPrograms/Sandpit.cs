@@ -95,7 +95,7 @@ namespace AnalysisPrograms
                 //TEST_FilterMovingAverage();
                 //TestImageProcessing();
                 //TestMatrix3dClass();
-                //TestsOfFrequencyScales();
+                TestsOfFrequencyScales();
                 //TestReadingFileOfSummaryIndices();
                 //TestStructureTensor();
                 //TestWavelets();
@@ -1024,7 +1024,7 @@ namespace AnalysisPrograms
             string dir =
                 @"H:\Documents\SensorNetworks\MyPapers\2017_DavidWatson\CaseStudy1 Liz\MachineLearningExercise";
             string fileName = "LizZnidersic_TasmanIsTractor_20151111__Towsey.Acoustic";
-            string[] indexNames = {"ACI", "ENT", "POW", "SPT", "RHZ"};
+            string[] indexNames = { "ACI", "ENT", "POW", "SPT", "RHZ" };
             var framecount =
                 1440; // could read this from first matrix but easier to declare it. Need it for reading in tagged data.
             int startOffsetMinute = 47; // 24 hours of recording starts at 12:47am. Need this as an offset.
@@ -1364,7 +1364,7 @@ namespace AnalysisPrograms
                 SmallAreaThreshold = 100,
             };
 
-            double[] thresholdLevels = {30.0, 25.0, 20.0, 15.0, 10.0, 5.0};
+            double[] thresholdLevels = { 30.0, 25.0, 20.0, 15.0, 10.0, 5.0};
             var imageList = new List<Image>();
 
             foreach (double th in thresholdLevels)
@@ -1552,7 +1552,7 @@ namespace AnalysisPrograms
         public static void TestTernaryPlots()
         {
             //string[] keys = { "BGN", "POW", "EVN"};
-            string[] keys = {"ACI", "ENT", "EVN"};
+            string[] keys = { "ACI", "ENT", "EVN"};
 
             FileInfo[] indexFiles =
             {
@@ -1715,7 +1715,7 @@ namespace AnalysisPrograms
 
                 //double[] bounds = { 0.0, 3.0, 6.0 };
                 //double[] bounds = { 0.0, 2.0, 4.0, 8.0 };
-                double[] bounds = {0.0, 2.0, 4.0, 6.0, 8.0, 10.0}; // noSkew
+                double[] bounds = { 0.0, 2.0, 4.0, 6.0, 8.0, 10.0}; // noSkew
 
                 //double[] bounds = { 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0 };
                 //double[] bounds = { 0.0, 1.0, 2.0, 4.0, 6.0, 10.0 }; // skew left
@@ -1758,7 +1758,7 @@ namespace AnalysisPrograms
                 for (int i = 0; i < fileCount; i++)
                 {
                     //ID0001_Species01.EVN.csv
-                    char[] delimiters = {'.', 's'};
+                    char[] delimiters = { '.', 's'};
                     string fileName = filePaths[i].Name;
                     string[] parts = fileName.Split(delimiters);
                     int speciesId = int.Parse(parts[1]);

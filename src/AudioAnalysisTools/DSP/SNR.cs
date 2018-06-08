@@ -200,6 +200,35 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
+        ///  Root Mean Square (RMS) Normalization
+        /// </summary>
+        public static double[,] RmsNormalization(double[,] matrix)
+        {
+            double sumOfSquares = 0;
+            double[,] normalizedMatrix = new double[matrix.GetLength(0), matrix.GetLength(1)];
+            for (int i = 0; i < matrix.GetLength(0); i++)
+            {
+                for (int j = 0; j < matrix.GetLength(1); j++)
+                {
+                    sumOfSquares += matrix[i, j] * matrix[i, j];
+                }
+            }
+
+            double rms = Math.Sqrt(sumOfSquares / (matrix.GetLength(0) * matrix.GetLength(1)));
+
+            for (int i = 0; i < matrix.GetLength(0); i++)
+            {
+                for (int j = 0; j < matrix.GetLength(1); j++)
+                {
+                    normalizedMatrix[i, j] = matrix[i, j] / rms;
+                }
+            }
+
+            return normalizedMatrix;
+        }
+
+
+        /// <summary>
         /// Returns the log(energy) in each frame of the signal.
         /// The energy of a frame is the log of the summed energy of all the samples in the frame.
         /// Normally, if the passed frames are FFT spectra, then would multiply by 2 because spectra are symmetrical about Nyquist.
@@ -234,7 +263,7 @@ namespace AudioAnalysisTools.DSP
                 //if (e > 0.25) LoggedConsole.WriteLine("e > 0.25 = " + e);
 
                 //to guard against log(0) but this should never happen!
-                if (e == double.MinValue)
+                if (e == Double.MinValue)
                 {
                     LoggedConsole.WriteLine("DSP.SignalLogEnergy() Warning!!! Zero Energy in frame " + i);
 
@@ -288,7 +317,7 @@ namespace AudioAnalysisTools.DSP
                 double e = sum / n; //NormaliseMatrixValues to frame size i.e. average energy per sample
 
                 //to guard against log(0) but this should never happen!
-                if (e == double.MinValue)
+                if (e == Double.MinValue)
                 {
                     LoggedConsole.WriteLine("DSP.SignalLogEnergy() Warning!!! Zero Energy in frame " + i);
                     logEnergy[i] = MinLogEnergyReference - MaxLogEnergyReference; //NormaliseMatrixValues to absolute scale
@@ -734,21 +763,21 @@ namespace AudioAnalysisTools.DSP
                     // split and parse elements of data line
                     var line = strLine.Split(',');
                     string filename = line[0];
-                    int minHz = int.Parse(line[1]);
-                    int maxHz = int.Parse(line[2]);
+                    int minHz = Int32.Parse(line[1]);
+                    int maxHz = Int32.Parse(line[2]);
                     TimeSpan start = TimeSpan.FromSeconds(1.0);
-                    TimeSpan duration = TimeSpan.FromSeconds(double.Parse(line[5]));
+                    TimeSpan duration = TimeSpan.FromSeconds(Double.Parse(line[5]));
 
                     FileInfo sourceRecording = Path.Combine(sourceDir.FullName, filename).ToFileInfo();
 
                     if (sourceRecording.Exists)
                     {
                         SnrStatistics stats = Calculate_SNR_ShortRecording(sourceRecording, configDict, start, duration, minHz, maxHz, threshold);
-                        opText.Add(string.Format(strLine + ",{0},{1},{2},{3}", stats.Threshold, stats.Snr, stats.FractionOfFramesExceedingThreshold, stats.FractionOfFramesExceedingOneThirdSnr));
+                        opText.Add(String.Format(strLine + ",{0},{1},{2},{3}", stats.Threshold, stats.Snr, stats.FractionOfFramesExceedingThreshold, stats.FractionOfFramesExceedingOneThirdSnr));
                     }
                     else
                     {
-                        opText.Add(string.Format(strLine + ", ######### WARNING: FILE DOES NOT EXIST >>>" + sourceRecording.Name + "<<<"));
+                        opText.Add(String.Format(strLine + ", ######### WARNING: FILE DOES NOT EXIST >>>" + sourceRecording.Name + "<<<"));
                     }
                 }
 
