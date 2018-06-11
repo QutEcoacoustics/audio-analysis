@@ -307,6 +307,7 @@
     <AdditionalFiles Include="..\..\stylecop.json">
       <Link>stylecop.json</Link>
     </AdditionalFiles>
+    <Compile Include="AnalysisPrograms\AudioCutterTests.cs" />
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>

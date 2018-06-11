@@ -140,13 +140,19 @@ namespace AnalysisPrograms.SourcePreparers
                     // yield each normal segment
                     foreach (long offset in segments)
                     {
-                        yield return LocalSourcePreparer.CreateSegment(
+                        // The null for minimum means, do not filter short segments. Short filtering is done in AnalysisCoordinator
+                        if (LocalSourcePreparer.TryCreateSegment(
                             ref aggregate,
                             offset,
                             segment,
                             startOffset,
                             endOffset,
-                            overlap);
+                            overlap,
+                            null /*settings.AnalysisMinSegmentDuration*/,
+                            out var validFileSegment))
+                        {
+                            yield return (ISegment<TSource>)validFileSegment;
+                        }
                     }
                 }
             }

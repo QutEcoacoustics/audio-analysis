@@ -74,13 +74,13 @@ namespace AnalysisPrograms
             public double? EndOffset { get; set; }
 
             [Option(
-                Description = "The minimum duration of a segmented audio file (in seconds, defaults to 10; must be within [0,3600]).",
+                Description = "The minimum duration of a segmented audio file (in seconds, defaults to 5; must be within [0, 3600]).",
                 ShortName = "")]
             [InRange(1, 3600)]
-            public double SegmentDurationMinimum { get; set; } = 10;
+            public double SegmentDurationMinimum { get; set; } = 5;
 
             [Option(
-                Description = "The duration of a segmented audio file (in seconds, defaults to 60; must be within [0,3600]).",
+                Description = "The duration of a segmented audio file (in seconds, defaults to 60; must be within [0, 3600]).",
                 ShortName = "d")]
             [InRange(1, 3600)]
             public double SegmentDuration { get; set; } = 60;
@@ -98,7 +98,7 @@ namespace AnalysisPrograms
             public string SegmentFileExtension { get; set; } = "wav";
 
             [Option(
-                Description = "The sample rate for segmented audio files (in hertz, defaults to 22050; valid values are 17640, 22050, 44100).",
+                Description = "The sample rate for segmented audio files (in hertz, defaults to 22050; valid values are 8000, 17640, 22050, 44100, 48000, 96000).",
                 ShortName = "r")]
             [InRange(8000, 96000)]
             public int SampleRate { get; set; } = 22050;
@@ -118,16 +118,9 @@ namespace AnalysisPrograms
                 ShortName = "p")]
             public bool Parallel { get; set; } = true;
 
-            [Option(
-                CommandOptionType.SingleValue,
-                Description = "TimeSpan offset hint required if file names do not contain time zone info. NO DEFAULT IS SET",
-                ShortName = "z")]
-            public TimeSpan? TimeSpanOffsetHint { get; set; }
-
             public override Task<int> Execute(CommandLineApplication app)
             {
-                AudioCutter.Execute(this);
-                return this.Ok();
+                return AudioCutter.Execute(this);
             }
 
             protected override ValidationResult OnValidate(ValidationContext context, CommandLineContext appContext)
@@ -172,7 +165,7 @@ namespace AnalysisPrograms
             }
         }
 
-        public static void Execute(Arguments arguments)
+        public static async Task<int> Execute(Arguments arguments)
         {
             if (arguments == null)
             {
@@ -181,7 +174,7 @@ namespace AnalysisPrograms
 
             var sw = new Stopwatch();
             sw.Start();
-            ISourcePreparer sourcePreparer = new LocalSourcePreparer();
+            ISourcePreparer sourcePreparer = new LocalSourcePreparer(filterShortSegments: true, useOldNamingFormat: false);
 
             //create analysis settings using arguments
             AnalysisSettings settings = new AnalysisSettings()
@@ -219,21 +212,25 @@ namespace AnalysisPrograms
             }
             else
             {
-                RunSequential(fileSegments, sourcePreparer, settings, arguments);
+                var runTime = await RunSequential(fileSegments, sourcePreparer, settings, arguments);
             }
 
             sw.Stop();
             LoggedConsole.WriteLine("Took {0}. Done.", sw.Elapsed);
+            return ExceptionLookup.Ok;
         }
 
-        private static void RunSequential(List<ISegment<FileInfo>> fileSegments, ISourcePreparer sourcePreparer, AnalysisSettings settings, Arguments arguments)
+        private static async Task<double> RunSequential(List<ISegment<FileInfo>> fileSegments, ISourcePreparer sourcePreparer, AnalysisSettings settings, Arguments arguments)
         {
             var totalItems = fileSegments.Count;
+            var totalTime = 0.0;
             for (var index = 0; index < fileSegments.Count; index++)
             {
                 var item = fileSegments[index];
-                CreateSegment(sourcePreparer, item, settings, arguments, index + 1, totalItems, arguments.MixDownToMono);
+                totalTime += await CreateSegment(sourcePreparer, item, settings, arguments, index + 1, totalItems, arguments.MixDownToMono);
             }
+
+            return totalTime;
         }
 
         private static void RunParallel(List<ISegment<FileInfo>> fileSegments, ISourcePreparer sourcePreparer, AnalysisSettings settings, Arguments arguments)
@@ -246,11 +243,12 @@ namespace AnalysisPrograms
                     var item1 = item;
                     int index1 = Convert.ToInt32(index);
 
-                    CreateSegment(sourcePreparer, item1, settings, arguments, index1 + 1, totalItems, arguments.MixDownToMono);
+                    // call create segment synchronously
+                    CreateSegment(sourcePreparer, item1, settings, arguments, index1 + 1, totalItems, arguments.MixDownToMono).Wait();
                 });
         }
 
-        private static void CreateSegment(
+        private static async Task<double> CreateSegment(
             ISourcePreparer sourcePreparer,
             ISegment<FileInfo> fileSegment,
             AnalysisSettings settings,
@@ -259,7 +257,12 @@ namespace AnalysisPrograms
             int itemCount,
             bool mixDownToMono)
         {
-            var task = sourcePreparer.PrepareFile(
+            var timer = Stopwatch.StartNew();
+
+            FileSegment preparedFile;
+            try
+            {
+                preparedFile = await sourcePreparer.PrepareFile(
                     arguments.OutputDir.ToDirectoryInfo(),
                     fileSegment,
                     settings.SegmentMediaType,
@@ -267,15 +270,20 @@ namespace AnalysisPrograms
                     settings.AnalysisTempDirectory,
                     null,
                     mixDownToMono);
-
-            task.Wait(120.Seconds());
-            var preparedFile = task.Result;
+            }
+            catch (IOException ioex)
+            {
+                LoggedConsole.WriteError($"Failed to cut segment {itemNumber} of {itemCount}:" + ioex.Message);
+                return double.NaN;
+            }
 
             LoggedConsole.WriteLine(
                 "Created segment {0} of {1}: {2}",
                 itemNumber,
                 itemCount,
                 preparedFile.SourceMetadata.Identifier);
+
+            return timer.Elapsed.TotalSeconds;
         }
     }
 }

@@ -172,6 +172,24 @@ namespace Acoustics.Test.TestHelpers
                 $"Expected path {path} NOT to exist but it was found. {message}");
         }
 
+        public static void Contains<TSequence, TResult>(
+            this CollectionAssert collectionAssert,
+            IEnumerable<TSequence> collection,
+            TResult expected,
+            Func<TSequence, TResult> mapper)
+        {
+            foreach (var item in collection)
+            {
+                var actual = mapper(item);
+                if (actual.Equals(expected))
+                {
+                    return;
+                }
+            }
+
+            Assert.Fail($"Expected '{expected}' was not found in collection");
+        }
+
         public enum DiffStyle
         {
             Full,

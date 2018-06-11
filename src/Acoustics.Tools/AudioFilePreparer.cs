@@ -76,14 +76,15 @@
             FileInfo source,
             string outputMediaType,
             AudioUtilityRequest request,
-            DirectoryInfo temporaryFilesDirectory)
+            DirectoryInfo temporaryFilesDirectory,
+            bool oldFormat = true)
         {
             var outputFileName = GetFileName(
                 source.Name,
                 outputMediaType,
                 request.OffsetStart,
                 request.OffsetEnd,
-                oldFormat: true);
+                oldFormat: oldFormat);
 
             var outputFile = new FileInfo(Path.Combine(outputDirectory.FullName, outputFileName));
 
