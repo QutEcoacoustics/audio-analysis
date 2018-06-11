@@ -156,6 +156,7 @@ namespace AnalysisBase
         /// Gets or sets the minimum audio file duration the analysis can process.
         /// This is the min duration without including overlap. Overlap will be added.
         /// This should be set to an initial value by an analysis.
+        /// This value is used in <see cref="AnalysisCoordinator.PrepareAnalysisSegments{TSource}"/>
         /// TODO: a chunk of audio without the overlap is a 'segment step'.
         /// </summary>
         public TimeSpan AnalysisMinSegmentDuration { get; set; }

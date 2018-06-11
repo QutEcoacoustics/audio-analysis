@@ -23,6 +23,14 @@ namespace AnalysisPrograms.SourcePreparers
     public class LocalSourcePreparer : ISourcePreparer
     {
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private readonly bool useOldNamingFormat;
+        private readonly bool filterShortSegments;
+
+        public LocalSourcePreparer(bool filterShortSegments = false, bool useOldNamingFormat = true)
+        {
+            this.filterShortSegments = filterShortSegments;
+            this.useOldNamingFormat = useOldNamingFormat;
+        }
 
         /// <summary>
         /// Prepare an audio file. This will be a single segment of a larger audio file, modified based on the analysisSettings.
@@ -73,7 +81,8 @@ namespace AnalysisPrograms.SourcePreparers
                     sourceFileInfo,
                     outputMediaType,
                     request,
-                    TempFileHelper.TempDir());
+                    TempFileHelper.TempDir(),
+                    oldFormat: this.useOldNamingFormat);
 
                 return new FileSegment(
                     preparedFile.TargetInfo.SourceFile,
@@ -148,7 +157,7 @@ namespace AnalysisPrograms.SourcePreparers
 
                 var analysisSegmentMaxDuration = settings.AnalysisMaxSegmentDuration?.TotalMilliseconds ?? fileSegmentDuration;
 
-                var analysisSegmentMinDuration = settings.AnalysisMinSegmentDuration.TotalMilliseconds;
+                var analysisSegmentMinDuration = this.filterShortSegments ? settings.AnalysisMinSegmentDuration : (TimeSpan?)null;
 
                 // segment into exact chunks - all but the last chunk will be equal to the max duration
                 var segments = AudioFilePreparer.DivideExactLeaveLeftoversAtEnd(
@@ -164,8 +173,19 @@ namespace AnalysisPrograms.SourcePreparers
                 {
                     Log.Debug($"Generated fractional segment for time alignment ({startOffset} - {startOffset + startDelta})");
                     var startAlignDelta = Convert.ToInt64(startDelta.TotalMilliseconds);
-                    yield return
-                        (ISegment<TSource>)CreateSegment(ref aggregate, startAlignDelta, fileSegment, startOffset, endOffset, overlap);
+
+                    if (TryCreateSegment(
+                        ref aggregate,
+                        startAlignDelta,
+                        fileSegment,
+                        startOffset,
+                        endOffset,
+                        overlap,
+                        analysisSegmentMinDuration,
+                        out var validFileSegment))
+                    {
+                        yield return (ISegment<TSource>)validFileSegment;
+                    }
                 }
                 else
                 {
@@ -176,8 +196,18 @@ namespace AnalysisPrograms.SourcePreparers
                 // yield each normal segment
                 foreach (long offset in segments)
                 {
-                    yield return
-                        (ISegment<TSource>)CreateSegment(ref aggregate, offset, fileSegment, startOffset, endOffset, overlap);
+                    if (TryCreateSegment(
+                        ref aggregate,
+                        offset,
+                        fileSegment,
+                        startOffset,
+                        endOffset,
+                        overlap,
+                        analysisSegmentMinDuration,
+                        out var validFileSegment))
+                    {
+                        yield return (ISegment<TSource>)validFileSegment;
+                    }
                 }
 
                 // include fractional segment cut from time alignment
@@ -186,19 +216,32 @@ namespace AnalysisPrograms.SourcePreparers
                 {
                     Log.Debug($"Generated fractional segment for time alignment ({endOffset - endDelta} - {endOffset})");
                     var endAlignDelta = Convert.ToInt64(endDelta.TotalMilliseconds);
-                    yield return
-                        (ISegment<TSource>)CreateSegment(ref aggregate, endAlignDelta, fileSegment, startOffset, endOffset, overlap);
+
+                    if (TryCreateSegment(
+                        ref aggregate,
+                        endAlignDelta,
+                        fileSegment,
+                        startOffset,
+                        endOffset,
+                        overlap,
+                        analysisSegmentMinDuration,
+                        out var validFileSegment))
+                    {
+                        yield return (ISegment<TSource>)validFileSegment;
+                    }
                 }
             }
         }
 
-        internal static ISegment<TSource> CreateSegment<TSource>(
+        internal static bool TryCreateSegment<TSource>(
             ref long aggregate,
-            long offset,
+            in long offset,
             ISegment<TSource> currentSegment,
-            TimeSpan startOffset,
-            TimeSpan endOffset,
-            TimeSpan overlap)
+            in TimeSpan startOffset,
+            in TimeSpan endOffset,
+            in TimeSpan overlap,
+            TimeSpan? minimumDuration,
+            out ISegment<TSource> newSegment)
         {
             var newStart = startOffset.Add(TimeSpan.FromMilliseconds(aggregate));
 
@@ -217,9 +260,23 @@ namespace AnalysisPrograms.SourcePreparers
 
             var newEnd = segmentEndOffset;
 
+            // The minimum segment filtering is usually taken care of in AnalysisCoordinator.
+            // However some code does not use AnalysisCoordinator so we duplicate the functionality here.
+            if (minimumDuration.HasValue)
+            {
+                if ((newEnd - newStart) < minimumDuration)
+                {
+                    Log.Warn(
+                        $"Omitting short segment {newStart}–{newEnd} because it is less than the minimum {minimumDuration}");
+                    newSegment = null;
+                    return false;
+                }
+            }
+
             // So we aren't actually cutting any files, rather we're preparing to cut files.
             // Thus the clone the object and set new offsets.
-            return currentSegment.SplitSegment(newStart.TotalSeconds, newEnd.TotalSeconds);
+            newSegment = currentSegment.SplitSegment(newStart.TotalSeconds, newEnd.TotalSeconds);
+            return true;
         }
 
         /// <summary>
@@ -274,7 +331,8 @@ namespace AnalysisPrograms.SourcePreparers
                     segment.Source,
                     outputMediaType,
                     request,
-                    temporaryFilesDirectory);
+                    temporaryFilesDirectory,
+                    oldFormat: this.useOldNamingFormat);
 
                 return new FileSegment(
                     preparedFile.TargetInfo.SourceFile,

@@ -325,6 +325,7 @@
     <AdditionalFiles Include="..\..\stylecop.json">
       <Link>stylecop.json</Link>
     </AdditionalFiles>
+    <Compile Include="AnalysisPrograms\AudioCutterTests.cs" />
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
@@ -396,6 +397,10 @@
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
+  <Target Name="AfterClean">
+    <Message Text="[AfterClean]: Deleting all extra files in $(TargetDir) (Unit tests don't clean up after themselves very well!)" Importance="High" />
+    <RemoveDir Directories="$(TargetDir);" />
+  </Target>
   <Target Name="AfterBuild">
     <!-- Copy our audio tools from lib to build dir -->
     <Message Text="[AfterBuild]: Scanning for lib files and config files" Importance="High" />

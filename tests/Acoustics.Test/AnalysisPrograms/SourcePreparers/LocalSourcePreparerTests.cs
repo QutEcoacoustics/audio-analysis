@@ -105,10 +105,28 @@
         }
 
         [TestMethod]
-        public void AbsoluteTimeAlignmentHasNoEffectWhenOffsetIsZero()
+        public void ShouldSupportMinimumSegmentFilter()
         {
             var source = TestHelper.AudioDetails[this.sourceFile.Name];
+            var fileSegment = new FileSegment(this.sourceFile, source.SampleRate.Value, source.Duration.Value);
 
+            this.preparer = new LocalSourcePreparer(filterShortSegments: true);
+
+            var analysisSegments = this.preparer.CalculateSegments(new[] { fileSegment }, this.settings).ToArray();
+
+            var expected = new[]
+            {
+                (0.0, 60.0).AsRange(),
+                (60.0, 120.0).AsRange(),
+                (120.0, 180.0).AsRange(),
+                (180.0, 240.0).AsRange(),
+            };
+            AssertSegmentsAreEqual(analysisSegments, expected);
+        }
+
+        [TestMethod]
+        public void AbsoluteTimeAlignmentHasNoEffectWhenOffsetIsZero()
+        {
             var newFile = this.testDirectory.CombineFile("4minute test_20161006-013000Z.mp3");
             this.sourceFile.CopyTo(newFile.FullName);
 
@@ -135,9 +153,7 @@
             Assert.Throws<InvalidFileDateException>(
                 () =>
                     {
-
                         var fileSegment = new FileSegment(this.sourceFile, TimeAlignment.TrimBoth);
-
                     });
 
         }
@@ -264,6 +280,8 @@
 
         private static void AssertSegmentsAreEqual(ISegment<FileInfo>[] acutal, Range<double>[] expected)
         {
+            Assert.AreEqual(acutal.Length, expected.Length, "The number of segments in actual and expected do not match");
+
             for (int i = 0; i < acutal.Length; i++)
             {
                 var expectedStart = expected[i].Minimum;

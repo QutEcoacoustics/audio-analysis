@@ -10,6 +10,18 @@ Best Practices
 - NEVER commit if the code does not build to the `master` branch
 - Try to work on branches if your code negatively affects production code
 - Write code in American English. Documentation may be written in Australian English.
+- Wherever possible **use un-prefixed SI units for variables**
+    1. Variables with no unit **MUST** be standard units
+        - `var duration = 30` should **always** be 30 seconds
+        - `var bandwidth = 50` should **always be hertz**
+    1. **Never** use imperial units
+    1. **Always** include the full unit in the name if it does not follow our standard
+        - avoid this if possible, see first point
+        - e.g. `var minKiloHertz = 3.5`
+        - e.g.  `var limitHours = 6`
+    1. **Do not** abbreviate units
+    1. It is **recommended** that full units be used in any user facing field name
+        - e.g. `EventEndSeconds` in a CSV file
 
 Required Software
 -----------------
