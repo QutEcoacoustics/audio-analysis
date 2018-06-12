@@ -32,7 +32,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
         {
             // var outputDir = this.outputDirectory;
             var resultDir = PathHelper.ResolveAssetPath("FeatureLearning");
-            var folderPath = Path.Combine(resultDir, "random_audio_segments"); //Liz
+            var folderPath = Path.Combine(resultDir, "random_audio_segments"); // Liz
             // PathHelper.ResolveAssetPath(@"C:\Users\kholghim\Mahnoosh\PcaWhitening\random_audio_segments\1192_1000");
             // var resultDir = PathHelper.ResolveAssetPath(@"C:\Users\kholghim\Mahnoosh\PcaWhitening");
             var outputMelImagePath = Path.Combine(resultDir, "MelScaleSpectrogram.png");
@@ -70,15 +70,38 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                 NoiseReductionType = NoiseReductionType.None,
             };
 
+            /*
+            // testing
+            var recordingPath3 = PathHelper.ResolveAsset(folderPath, "SM304264_0+1_20160421_024539_46-47min.wav");
+            var recording3 = new AudioRecording(recordingPath3);
+            var sonogram3 = new SpectrogramStandard(sonoConfig, recording3.WavReader);
+
+            // DO DRAW SPECTROGRAM
+            var image4 = sonogram3.GetImageFullyAnnotated(sonogram3.GetImage(), "MELSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
+            image4.Save(outputMelImagePath, ImageFormat.Png);
+
+            // Do RMS normalization
+            sonogram3.Data = SNR.RmsNormalization(sonogram3.Data);
+            var image5 = sonogram3.GetImageFullyAnnotated(sonogram3.GetImage(), "NORMALISEDMELSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
+            image5.Save(outputNormMelImagePath, ImageFormat.Png);
+
+            // NOISE REDUCTION
+            sonogram3.Data = PcaWhitening.NoiseReduction(sonogram3.Data);
+            var image6 = sonogram3.GetImageFullyAnnotated(sonogram3.GetImage(), "NOISEREDUCEDMELSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
+            image6.Save(outputNoiseReducedMelImagePath, ImageFormat.Png);
+
+            //testing
+            */
+
             // Define the minFreBin and MaxFreqBin to be able to work at arbitrary frequency bin bounds.
             // The default value is minFreqBin = 1 and maxFreqBin = finalBinCount.
             // To work with arbitrary frequency bin bounds we need to manually set these two parameters.
             int minFreqBin = 40; //1
-            int maxFreqBin = 76; //finalBinCount;
+            int maxFreqBin = 80; //finalBinCount;
             int numFreqBand = 1; //4;
             int patchWidth = (maxFreqBin - minFreqBin + 1) / numFreqBand; // finalBinCount / numFreqBand;
             int patchHeight = 1; // 2; // 4; // 16; // 6; // Frame size
-            int numRandomPatches = 80; // 40; // 20; // 30; // 100; // 500; //
+            int numRandomPatches = 20; // 40; // 80; // 30; // 100; // 500; //
             // int fileCount = Directory.GetFiles(folderPath, "*.wav").Length;
 
             // Define variable number of "randomPatch" lists based on "numFreqBand"
@@ -150,7 +173,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             }
 
             // convert list of random patches matrices to one matrix
-            int numberOfClusters = 256; // 128; // 64; // 32; // 10; // 50;
+            int numberOfClusters = 50; //256; // 128; // 64; // 32; // 10; //
             List<double[][]> allBandsCentroids = new List<double[][]>();
             List<KMeansClusterCollection> allClusteringOutput = new List<KMeansClusterCollection>();
 
@@ -162,9 +185,17 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                 var whitenedSpectrogram = PcaWhitening.Whitening(patchMatrix);
 
                 // Do k-means clustering
-                string pathToClusterCsvFile = Path.Combine(resultDir, "ClusterCentroids" + i.ToString() + ".csv");
-                var clusteringOutput = KmeansClustering.Clustering(whitenedSpectrogram.Reversion, numberOfClusters, pathToClusterCsvFile);
+                var clusteringOutput = KmeansClustering.Clustering(whitenedSpectrogram.Reversion, numberOfClusters);
                 // var clusteringOutput = KmeansClustering.Clustering(patchMatrix, noOfClusters, pathToClusterCsvFile);
+
+                // writing centroids to a csv file
+                // note that Csv.WriteToCsv can't write data types like dictionary<int, double[]> (problems with arrays)
+                // I converted the dictionary values to a matrix and used the Csv.WriteMatrixToCsv
+                // it might be a better way to do this
+                string pathToClusterCsvFile = Path.Combine(resultDir, "ClusterCentroids" + i.ToString() + ".csv");
+                var clusterCentroids = clusteringOutput.ClusterIdCentroid.Values.ToArray();
+                Csv.WriteMatrixToCsv(pathToClusterCsvFile.ToFileInfo(), clusterCentroids.ToMatrix());
+                //Csv.WriteToCsv(pathToClusterCsvFile.ToFileInfo(), clusterCentroids);
 
                 // sorting clusters based on size and output it to a csv file
                 Dictionary<int, double> clusterIdSize = clusteringOutput.ClusterIdSize;
@@ -309,7 +340,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             List<double[,]> allStdFeatureVectors = new List<double[,]>();
 
             // number of frames needs to be concatenated to form 1 second. Each 24 frames make 1 second.
-            int numFrames = 24 / patchHeight;
+            int numFrames = (24 / patchHeight) * 60;
 
             foreach (var freqBandFeature in allFeatureTransVectors)
             {

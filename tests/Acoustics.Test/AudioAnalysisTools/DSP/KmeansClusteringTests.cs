@@ -133,7 +133,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
                 // Do k-means clustering
                 string pathToClusterCsvFile = Path.Combine(outputDir.FullName, "ClusterCentroids" + i.ToString() + ".csv");
-                var clusteringOutput = KmeansClustering.Clustering(patchMatrix, numberOfClusters, pathToClusterCsvFile);
+                var clusteringOutput = KmeansClustering.Clustering(patchMatrix, numberOfClusters);
 
                 // sorting clusters based on size and output it to a csv file
                 Dictionary<int, double> clusterIdSize = clusteringOutput.ClusterIdSize;

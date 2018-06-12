@@ -1,13 +1,16 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿// <copyright file="UnsupervisedFeatureLearningTest.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
 
 namespace AnalysisPrograms
 {
+    using System;
     using System.Collections.Generic;
     using System.Drawing;
-    using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
     using Accord.MachineLearning;
     using Accord.Math;
     using Acoustics.Shared.Csv;
@@ -27,7 +30,7 @@ namespace AnalysisPrograms
         {
             LoggedConsole.WriteLine("feature extraction process");
 
-            var inputDir = @"D:\Mahnoosh\Liz\"; //@"C:\Users\kholghim\Mahnoosh\UnsupervisedFeatureLearning\";
+            var inputDir = @"D:\Mahnoosh\Liz\"; //@"C:\Users\kholghim\Mahnoosh\UnsupervisedFeatureLearning\"; //
             var resultDir = Path.Combine(inputDir, "FeatureLearning");
             var inputPath = Path.Combine(inputDir, "PatchSamplingSegments");
             var trainSetPath = Path.Combine(inputDir, "TrainSet");
@@ -38,7 +41,7 @@ namespace AnalysisPrograms
             var outputReSpecImagePath = Path.Combine(resultDir, "ReconstrcutedSpectrogram.png");
             var outputClusterImagePath = Path.Combine(resultDir, "Clusters.bmp");
 
-            // +++++++++++++++++++++++++++++++++++++++++++++++++patch sampling from 1000 random 1-min recordings from Gympie
+            // +++++++++++++++++++++++++++++++++++++++++++++++++patch sampling from 1-min recordings
 
             // check whether there is any file in the folder/subfolders
             if (Directory.GetFiles(inputPath, "*", SearchOption.AllDirectories).Length == 0)
@@ -67,18 +70,18 @@ namespace AnalysisPrograms
                 NoiseReductionType = NoiseReductionType.None,
             };
 
-            // Define the minFreBin and MaxFreqBin to be able to work at arbitrary frequency bin bounds.
+            // MinFreBin and MaxFreqBin to work with arbitrary frequency bin bounds.
             // The default value is minFreqBin = 1 and maxFreqBin = finalBinCount.
-            // To work with arbitrary frequency bin bounds we need to manually set these two parameters.
+            // For any other arbitrary frequency bin bounds, these two parameters need to be manually set .
 
             // Black Rail call is between 1000 Hz and 3000 Hz, which is mapped to Mel value [1000, 1876]
-            // Hence, we only work with freq bins between [46, 88]
+            // Hence, we only work with freq bins between [40, 76]
             int minFreqBin = 40;
-            int maxFreqBin = 76;
+            int maxFreqBin = 80; //76;
             int numFreqBand = 1;
             int patchWidth = (maxFreqBin - minFreqBin + 1) / numFreqBand; //finalBinCount / numFreqBand;
             int patchHeight = 1; // 2; // 4; // 16; // 6; // Frame size
-            int numRandomPatches = 100; //80; // 40; // 20; // 30; //  500; //
+            int numRandomPatches = 80; //20; //2; //10; //100; // 40; //  30; //  500; //
             // int fileCount = Directory.GetFiles(folderPath, "*.wav").Length;
 
             // Define variable number of "randomPatch" lists based on "numFreqBand"
@@ -150,7 +153,7 @@ namespace AnalysisPrograms
             }
 
             // convert list of random patches matrices to one matrix
-            int numberOfClusters = 20; //500; //256; // 128; // 64; // 32; // 10; // 50;
+            int numberOfClusters = 16; //128; //20; // 256; //500; // 128; // 64; // 32; // 10; // 50;
             List<double[][]> allBandsCentroids = new List<double[][]>();
             List<KMeansClusterCollection> allClusteringOutput = new List<KMeansClusterCollection>();
 
@@ -162,9 +165,17 @@ namespace AnalysisPrograms
                 var whitenedSpectrogram = PcaWhitening.Whitening(patchMatrix);
 
                 // Do k-means clustering
-                string pathToClusterCsvFile = Path.Combine(resultDir, "ClusterCentroids" + i.ToString() + ".csv");
-                var clusteringOutput = KmeansClustering.Clustering(whitenedSpectrogram.Reversion, numberOfClusters, pathToClusterCsvFile);
+                var clusteringOutput = KmeansClustering.Clustering(whitenedSpectrogram.Reversion, numberOfClusters);
                 // var clusteringOutput = KmeansClustering.Clustering(patchMatrix, noOfClusters, pathToClusterCsvFile);
+
+                // writing centroids to a csv file
+                // note that Csv.WriteToCsv can't write data types like dictionary<int, double[]> (problems with arrays)
+                // I converted the dictionary values to a matrix and used the Csv.WriteMatrixToCsv
+                // it might be a better way to do this
+                string pathToClusterCsvFile = Path.Combine(resultDir, "ClusterCentroids" + i.ToString() + ".csv");
+                var clusterCentroids = clusteringOutput.ClusterIdCentroid.Values.ToArray();
+                Csv.WriteMatrixToCsv(pathToClusterCsvFile.ToFileInfo(), clusterCentroids.ToMatrix());
+                //Csv.WriteToCsv(pathToClusterCsvFile.ToFileInfo(), clusterCentroids);
 
                 // sorting clusters based on size and output it to a csv file
                 Dictionary<int, double> clusterIdSize = clusteringOutput.ClusterIdSize;
@@ -228,6 +239,14 @@ namespace AnalysisPrograms
             {
                 throw new ArgumentException("The folder of recordings is empty...");
             }
+
+            //*****
+            // lists of features for all processing files
+            // the key is the file name, and the value is the features for different bands
+            Dictionary<string, List<double[,]>> allFilesMeanFeatureVectors = new Dictionary<string, List<double[,]>>();
+            Dictionary<string, List<double[,]>> allFilesMaxFeatureVectors = new Dictionary<string, List<double[,]>>();
+            Dictionary<string, List<double[,]>> allFilesStdFeatureVectors = new Dictionary<string, List<double[,]>>();
+            
 
             foreach (string filePath in Directory.GetFiles(testSetPath, "*.wav"))
             {
@@ -294,7 +313,8 @@ namespace AnalysisPrograms
                         double[][] featureTransVectors = new double[allSequentialPatchMatrix.ToArray()[i].GetLength(0)][];
                         for (int j = 0; j < allSequentialPatchMatrix.ToArray()[i].GetLength(0); j++)
                         {
-                            var normVector = ART_2A.NormaliseVector(allSequentialPatchMatrix.ToArray()[i].ToJagged()[j]); // normalize each patch to unit length
+                            // normalize each patch to unit length
+                            var normVector = ART_2A.NormaliseVector(allSequentialPatchMatrix.ToArray()[i].ToJagged()[j]);
                             featureTransVectors[j] = allNormCentroids.ToArray()[i].ToMatrix().Dot(normVector);
                         }
 
@@ -315,7 +335,7 @@ namespace AnalysisPrograms
                     List<double[,]> allStdFeatureVectors = new List<double[,]>();
 
                     // number of frames needs to be concatenated to form 1 second. Each 24 frames make 1 second.
-                    int numFrames = 24 / patchHeight;
+                    int numFrames = (24 / patchHeight) * 60; //24 / patchHeight; //
 
                     foreach (var freqBandFeature in allFeatureTransVectors)
                     {
@@ -325,7 +345,7 @@ namespace AnalysisPrograms
                         int c = 0;
                         while (c + numFrames < freqBandFeature.GetLength(0))
                         {
-                            // First, make a list of patches that would be equal to 1 second
+                            // First, make a list of patches that would be equal to the needed resolution (1 scond, 60 second, etc.)
                             List<double[]> sequencesOfFramesList = new List<double[]>();
                             for (int i = c; i < c + numFrames; i++)
                             {
@@ -363,8 +383,18 @@ namespace AnalysisPrograms
                         allStdFeatureVectors.Add(stdFeatureVectors.ToArray().ToMatrix());
                     }
 
+                    //*****
+                    // the keys of the following dictionaries contain file name
+                    // and their values are a list<double[,]> which the list.count is 
+                    // equal to the number of freq bands defined as an user-defined parameter.
+                    // the 2D-array is the feature vectors.
+                    allFilesMeanFeatureVectors.Add(fileInfo.Name, allMeanFeatureVectors);
+                    allFilesMaxFeatureVectors.Add(fileInfo.Name, allMaxFeatureVectors);
+                    allFilesStdFeatureVectors.Add(fileInfo.Name, allStdFeatureVectors);
+
                     // +++++++++++++++++++++++++++++++++++Temporal Summarization
 
+                    /*
                     // ++++++++++++++++++++++++++++++++++Writing features to file
                     // First, concatenate mean, max, std for each second.
                     // Then write to CSV file.
@@ -396,11 +426,11 @@ namespace AnalysisPrograms
                         for (int i = 0; i < allMeanFeatureVectors.ToArray()[j].ToJagged().GetLength(0); i++)
                         {
                             List<double[]> featureList = new List<double[]>
-                    {
-                        allMeanFeatureVectors.ToArray()[j].ToJagged()[i],
-                        allMaxFeatureVectors.ToArray()[j].ToJagged()[i],
-                        allStdFeatureVectors.ToArray()[j].ToJagged()[i],
-                    };
+                            {
+                                allMeanFeatureVectors.ToArray()[j].ToJagged()[i],
+                                allMaxFeatureVectors.ToArray()[j].ToJagged()[i],
+                                allStdFeatureVectors.ToArray()[j].ToJagged()[i],
+                            };
                             double[] featureVector = DataTools.ConcatenateVectors(featureList);
                             featureVectors.Add(featureVector);
                         }
@@ -427,7 +457,7 @@ namespace AnalysisPrograms
                             }
                         }
                     }
-
+                    */
                     /*
                     // Reconstructing the target spectrogram based on clusters' centroids
                     List<double[,]> convertedSpec = new List<double[,]>();
@@ -446,6 +476,116 @@ namespace AnalysisPrograms
                     */
                 }
             }
+
+            //*****
+            // ++++++++++++++++++++++++++++++++++Writing features to one file
+            // First, concatenate mean, max, std for each second.
+            // Then, write the features of each pre-defined frequency band into a separate CSV file.
+
+            var filesName = allFilesMeanFeatureVectors.Keys.ToArray();
+            var meanFeatures = allFilesMeanFeatureVectors.Values.ToArray();
+            var maxFeatures = allFilesMaxFeatureVectors.Values.ToArray();
+            var stdFeatures = allFilesStdFeatureVectors.Values.ToArray();
+
+            // The number of elements in the list shows the number of freq bands
+            // the size of each element in the list shows the number of files processed to generate feature for.
+            // the dimensions of the matrix shows the number of feature vectors generated for each file and the length of feature vector
+            var allMeans = new List<double[][,]>();
+            var allMaxs = new List<double[][,]>();
+            var allStds = new List<double[][,]>();
+
+            // looping over freq bands
+            for (int i = 0; i < meanFeatures[0].Count; i++)
+            {
+                var means = new List<double[,]>();
+                var maxs = new List<double[,]>();
+                var stds = new List<double[,]>();
+
+                // looping over all files
+                for (int k = 0; k < meanFeatures.Length; k++)
+                {
+                    means.Add(meanFeatures[k].ToArray()[i]);
+                    maxs.Add(maxFeatures[k].ToArray()[i]);
+                    stds.Add(stdFeatures[k].ToArray()[i]);
+                }
+
+                allMeans.Add(means.ToArray());
+                allMaxs.Add(maxs.ToArray());
+                allStds.Add(stds.ToArray());
+            }
+
+            // each element of meanFeatures array is a list of features for different frequency bands.
+            // looping over the number of freq bands
+            for (int i = 0; i < allMeans.ToArray().GetLength(0); i++)
+            {
+                // creating output feature file based on the number of freq bands
+                var outputFeatureFile = Path.Combine(resultDir, "FeatureVectors-" + i.ToString() + ".csv");
+
+                // creating the header for CSV file
+                List<string> header = new List<string>();
+                header.Add("file name");
+                for (int j = 0; j < allMeans.ToArray()[i][0].GetLength(1); j++)
+                {
+                    header.Add("mean" + j.ToString());
+                }
+
+                for (int j = 0; j < allStds.ToArray()[i][0].GetLength(1); j++)
+                {
+                    header.Add("std" + j.ToString());
+                }
+
+                for (int j = 0; j < allMaxs.ToArray()[i][0].GetLength(1); j++)
+                {
+                    header.Add("max" + j.ToString());
+                }
+
+                var csv = new StringBuilder();
+                string content = string.Empty;
+                foreach (var entry in header.ToArray())
+                {
+                    content += entry.ToString() + ",";
+                }
+
+                csv.AppendLine(content);
+
+                var allFilesFeatureVectors = new Dictionary<string, double[,]>();
+
+                // looping over files
+                for (int j = 0; j < allMeans.ToArray()[i].GetLength(0); j++)
+                {
+                    // concatenating mean, std, and max vector together for the pre-defined resolution
+                    List<double[]> featureVectors = new List<double[]>();
+                    for (int k = 0; k < allMeans.ToArray()[i][j].ToJagged().GetLength(0); k++)
+                    {
+                        List<double[]> featureList = new List<double[]>
+                        {
+                            allMeans.ToArray()[i][j].ToJagged()[k],
+                            allMaxs.ToArray()[i][j].ToJagged()[k],
+                            allStds.ToArray()[i][j].ToJagged()[k],
+                        };
+                        double[] featureVector = DataTools.ConcatenateVectors(featureList);
+                        featureVectors.Add(featureVector);
+                    }
+
+                    allFilesFeatureVectors.Add(filesName[j], featureVectors.ToArray().ToMatrix());
+                }
+
+                // writing feature vectors to CSV file
+                foreach (var entry in allFilesFeatureVectors)
+                {
+                    content = string.Empty;
+                    content += entry.Key.ToString() + ",";
+                    foreach (var cent in entry.Value)
+                    {
+                        content += cent.ToString() + ",";
+                    }
+
+                    csv.AppendLine(content);
+                }
+
+                File.WriteAllText(outputFeatureFile, csv.ToString());
+            }
+            //*****
         }
 
         [Command(
