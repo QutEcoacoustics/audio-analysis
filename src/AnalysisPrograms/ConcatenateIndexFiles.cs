@@ -57,7 +57,7 @@ namespace AnalysisPrograms
 
         [Command(
             CommandName,
-            Description = "Concatenates multiple consecutive index.csv files.")]
+            Description = "[BETA] Concatenates multiple consecutive index.csv files.")]
         public class Arguments : SubCommandBase
         {
             [Argument(
@@ -166,6 +166,12 @@ namespace AnalysisPrograms
             {
                 throw new NoDeveloperMethodException();
             }
+
+            Log.Warn(@"
+!
+!   THIS IS A BETA COMMAND.
+!   It generally works but only for very narrow scenarios. Your milage *will* vary.
+!");
 
             if (arguments.InputDataDirectory != null)
             {
