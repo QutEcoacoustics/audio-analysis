@@ -100,8 +100,8 @@
     <Reference Include="MathNet.Numerics, Version=3.20.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\MathNet.Numerics.3.20.2\lib\net40\MathNet.Numerics.dll</HintPath>
     </Reference>
-    <Reference Include="McMaster.Extensions.CommandLineUtils, Version=2.2.1.0, Culture=neutral, PublicKeyToken=6f71cb76b82f055d, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\McMaster.Extensions.CommandLineUtils.2.2.1\lib\net45\McMaster.Extensions.CommandLineUtils.dll</HintPath>
+    <Reference Include="McMaster.Extensions.CommandLineUtils, Version=2.2.4.0, Culture=neutral, PublicKeyToken=6f71cb76b82f055d, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\McMaster.Extensions.CommandLineUtils.2.2.4\lib\net45\McMaster.Extensions.CommandLineUtils.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Data.Sqlite, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
