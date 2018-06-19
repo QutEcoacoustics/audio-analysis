@@ -19,12 +19,16 @@
     <XmlPeek Query="packages/package[@id='SQLitePCLRaw.lib.e_sqlite3.linux']/@*[name()='id' or name()='version']" XmlInputPath="packages.config">
       <Output TaskParameter="Result" ItemName="SqliteLinuxPackageFragments" />
     </XmlPeek>
+    <XmlPeek Query="packages/package[@id='SQLitePCLRaw.lib.e_sqlite3.osx']/@*[name()='id' or name()='version']" XmlInputPath="packages.config">
+      <Output TaskParameter="Result" ItemName="SqliteOsxPackageFragments" />
+    </XmlPeek>
     <PropertyGroup>
       <SqliteLinuxPackage>@(SqliteLinuxPackageFragments, '.')</SqliteLinuxPackage>
+      <SqliteOsxPackage>@(SqliteOsxPackageFragments, '.')</SqliteOsxPackage>
     </PropertyGroup>
-    <Message Text="[APCopyFilesAfterBuild]: Xml found: $(SqliteLinuxPackage). Searching for linux sqlite native code..." Importance="High" />
+    <Message Text="[APCopyFilesAfterBuild]: Xml found: $(SqliteLinuxPackage), $(SqliteOsxPackage). Searching for linux/osx sqlite native code..." Importance="High" />
     <ItemGroup>
-      <SqliteNativeFiles Include="..\..\packages\$(SqliteLinuxPackage)\runtimes\**\*.*" />
+      <SqliteNativeFiles Include="..\..\packages\$(SqliteLinuxPackage)\runtimes\**\*.*;..\..\packages\$(SqliteOsxPackage)\runtimes\**\*.*" />
     </ItemGroup>
     <Message Text="[APCopyFilesAfterBuild]: Found @(SqliteNativeFiles). Copying native code to libruntimes" Importance="High" />
     <Copy SourceFiles="@(SqliteNativeFiles)" DestinationFolder="$(OutputPath)\\libruntimes\\%(RecursiveDir)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" Retries="3" RetryDelayMilliseconds="300" />
