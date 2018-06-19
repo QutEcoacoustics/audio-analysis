@@ -17,7 +17,10 @@ namespace Acoustics.Test.TestHelpers
             CodeBase = Environment.CurrentDirectory;
             TestResources = Path.Combine(CodeBase, "..", "..", "..", "Fixtures");
             SolutionRoot = Path.Combine(CodeBase, "..", "..", "..", "..");
+            AnalysisProgramsBuild = Path.Combine(SolutionRoot, "src", "AnalysisPrograms", "bin", "debug");
         }
+
+        public static string AnalysisProgramsBuild { get; set; }
 
         public static string SolutionRoot { get; }
 
