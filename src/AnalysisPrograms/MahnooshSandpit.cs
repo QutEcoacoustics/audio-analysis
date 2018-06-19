@@ -77,12 +77,12 @@ namespace AnalysisPrograms
 
             // Black Rail call is between 1000 Hz and 3000 Hz, which is mapped to Mel value [1000, 1876]
             // Hence, we only work with freq bins between [40, 76]
-            int minFreqBin = 40;
-            int maxFreqBin = 80; //76;
+            int minFreqBin = 40; //1; //
+            int maxFreqBin = 80; //finalBinCount; //76;
             int numFreqBand = 1;
             int patchWidth = (maxFreqBin - minFreqBin + 1) / numFreqBand; //finalBinCount / numFreqBand;
             int patchHeight = 1; // 2; // 4; // 16; // 6; // Frame size
-            int numRandomPatches = 80; //20; //2; //10; //100; // 40; //  30; //  500; //
+            int numRandomPatches = 4; //80; // 8; // 20; //2; //10; //100; // 40; //  30; //  500; //
             // int fileCount = Directory.GetFiles(folderPath, "*.wav").Length;
 
             // Define variable number of "randomPatch" lists based on "numFreqBand"
@@ -154,7 +154,7 @@ namespace AnalysisPrograms
             }
 
             // convert list of random patches matrices to one matrix
-            int numberOfClusters = 16; //128; //20; // 256; //500; // 128; // 64; // 32; // 10; // 50;
+            int numberOfClusters = 256; //10; //500; //16; //128; //20; // 500; // 128; // 64; // 32; //  50;
             List<double[][]> allBandsCentroids = new List<double[][]>();
             List<KMeansClusterCollection> allClusteringOutput = new List<KMeansClusterCollection>();
 
@@ -236,7 +236,7 @@ namespace AnalysisPrograms
             //var recording2Path = Path.Combine(trainSetPath, "SM304264_0+1_20160421_054539_29-30min.wav"); // an example from the train set
             //var recording2Path = Path.Combine(testSetPath, "SM304264_0+1_20160423_054539_29-30min.wav"); // an example from the test set
             // check whether there is any file in the folder/subfolders
-            if (Directory.GetFiles(testSetPath, "*", SearchOption.AllDirectories).Length == 0)
+            if (Directory.GetFiles(trainSetPath, "*", SearchOption.AllDirectories).Length == 0) //testSetPath
             {
                 throw new ArgumentException("The folder of recordings is empty...");
             }
@@ -249,8 +249,7 @@ namespace AnalysisPrograms
             Dictionary<string, List<double[,]>> allFilesStdFeatureVectors = new Dictionary<string, List<double[,]>>();
             Dictionary<string, List<double[,]>> allFilesSknewnessFeatureVectors = new Dictionary<string, List<double[,]>>();
 
-
-            foreach (string filePath in Directory.GetFiles(testSetPath, "*.wav"))
+            foreach (string filePath in Directory.GetFiles(trainSetPath, "*.wav")) //testSetPath
             {
                 FileInfo fileInfo = filePath.ToFileInfo();
 
@@ -316,7 +315,30 @@ namespace AnalysisPrograms
                         for (int j = 0; j < allSequentialPatchMatrix.ToArray()[i].GetLength(0); j++)
                         {
                             // normalize each patch to unit length
-                            var normVector = ART_2A.NormaliseVector(allSequentialPatchMatrix.ToArray()[i].ToJagged()[j]);
+                            var inputVector = allSequentialPatchMatrix.ToArray()[i].ToJagged()[j];
+                            var normVector = inputVector;
+
+                            /*
+                            if (inputVector.Euclidean() == 0)
+                            {
+                                LoggedConsole.WriteLine(j.ToString());
+                            }
+                            */
+
+                            // to avoid vectors with NaN values, only normalize those that their norm is not equal to zero.
+                            if (inputVector.Euclidean() != 0)
+                            {
+                                normVector = ART_2A.NormaliseVector(inputVector);
+                            }
+
+                            /*
+                            if (normVector.HasNaN())
+                            {
+                                var vec = allSequentialPatchMatrix.ToArray()[i].ToJagged()[j];
+                                LoggedConsole.WriteLine(j.ToString());
+                            }
+                            */
+
                             featureTransVectors[j] = allNormCentroids.ToArray()[i].ToMatrix().Dot(normVector);
                         }
 
@@ -365,7 +387,7 @@ namespace AnalysisPrograms
                             double[,] sequencesOfFrames = sequencesOfFramesList.ToArray().ToMatrix();
                             // int len = sequencesOfFrames.GetLength(1);
 
-                            // Second, calculate mean, max, and standard deviation (plus skewness) of six vectors element-wise
+                            // Second, calculate mean, max, and standard deviation (plus skewness) of vectors element-wise
                             for (int j = 0; j < sequencesOfFrames.GetLength(1); j++)
                             {
                                 double[] temp = new double[sequencesOfFrames.GetLength(0)];
@@ -387,6 +409,48 @@ namespace AnalysisPrograms
                             c += numFrames;
                         }
 
+                        // when (freqBandFeature.GetLength(0) % numFrames) != 0, it means at the end of the target recording (or the whole),
+                        // there are a number of frames (< numFrames) left unprocessed.
+                        if (freqBandFeature.GetLength(0) % numFrames != 0 && freqBandFeature.GetLength(0) % numFrames > 1)
+                        {
+                            // First, make a list of patches that would be less than the required resolution
+                            List<double[]> sequencesOfFramesList = new List<double[]>();
+                            int unprocessedFrames = freqBandFeature.GetLength(0) % numFrames;
+                            for (int i = freqBandFeature.GetLength(0) - unprocessedFrames;
+                                i < freqBandFeature.GetLength(0);
+                                i++)
+                            {
+                                sequencesOfFramesList.Add(freqBandFeature[i]);
+                            }
+
+                            List<double> mean = new List<double>();
+                            List<double> std = new List<double>();
+                            List<double> max = new List<double>();
+                            List<double> skewness = new List<double>();
+
+                            double[,] sequencesOfFrames = sequencesOfFramesList.ToArray().ToMatrix();
+
+                            // Second, calculate mean, max, and standard deviation (plus skewness) of vectors element-wise
+                            for (int j = 0; j < sequencesOfFrames.GetLength(1); j++)
+                            {
+                                double[] temp = new double[sequencesOfFrames.GetLength(0)];
+                                for (int k = 0; k < sequencesOfFrames.GetLength(0); k++)
+                                {
+                                    temp[k] = sequencesOfFrames[k, j];
+                                }
+
+                                mean.Add(AutoAndCrossCorrelation.GetAverage(temp));
+                                std.Add(AutoAndCrossCorrelation.GetStdev(temp));
+                                max.Add(temp.GetMaxValue());
+                                skewness.Add(temp.Skewness());
+                            }
+
+                            meanFeatureVectors.Add(mean.ToArray());
+                            maxFeatureVectors.Add(max.ToArray());
+                            stdFeatureVectors.Add(std.ToArray());
+                            skewnessFeatureVectors.Add(skewness.ToArray());
+                        }
+
                         allMeanFeatureVectors.Add(meanFeatureVectors.ToArray().ToMatrix());
                         allMaxFeatureVectors.Add(maxFeatureVectors.ToArray().ToMatrix());
                         allStdFeatureVectors.Add(stdFeatureVectors.ToArray().ToMatrix());
@@ -395,7 +459,7 @@ namespace AnalysisPrograms
 
                     //*****
                     // the keys of the following dictionaries contain file name
-                    // and their values are a list<double[,]> which the list.count is 
+                    // and their values are a list<double[,]> which the list.count is
                     // equal to the number of freq bands defined as an user-defined parameter.
                     // the 2D-array is the feature vectors.
                     allFilesMeanFeatureVectors.Add(fileInfo.Name, allMeanFeatureVectors);
