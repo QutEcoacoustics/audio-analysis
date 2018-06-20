@@ -2,7 +2,7 @@
 
 ## Types
 
-There are, in broad terms, these types of sub-programs (commands):
+The following four categories of sub-programs (commands) are available:
 
 -   Main commands
     -   Process large amounts of information (like `audio2csv`)
@@ -24,7 +24,7 @@ There are, in broad terms, these types of sub-programs (commands):
 Processes large audio recording with the specified analysis. Can run recognizers,
 calculate indices, or do other things, for very long recordings.
 
-See [details on Analyze Long Recordings](./commands/analyze_long_recording.md)
+See details here [Analyze Long Recordings](./commands/analyze_long_recording.md)
 
 ### Colour Spectrogram
 
@@ -32,12 +32,12 @@ This command produces a single false-colour (FC) spectrogram, taking as input
 the spectral indices produced by the _Acoustic Indices_ analysis on a single
 audio file.
 
-See [details on Colour Spectrogram](./commands/colour_spectrogram.md)
+See details here [Colour Spectrogram](./commands/colour_spectrogram.md)
 
 ### Concatenate Index Files
 
 This command joins together the results of several _Acoustic Indices_ analysis
 result sets to produce data and images for 24-hour blocks of data.
 
-See [details on Concatenate Index Files](./commands/concatenate_index_files.md)
+See details here [Concatenate Index Files](./commands/concatenate_index_files.md)
 

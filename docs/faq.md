@@ -4,16 +4,16 @@
 
 Short answer: computers.
 
-_AP.exe_ is designed primarily to be used by people that have significant computing
+_AP.exe_ is designed primarily to be used by people who have significant computing
 expertise. It designed specifically to be used by **other programs** for any real workloads.
 It is not designed to be human friendly.
 
 We encourage anyone to give it a go--don't be daunted by these docs--but keep in
 mind the target audience. You're in the right ballpark if:
 
-- If your workload involves thousands of files
-- If you need to use a script just to use _AP.exe_
-- If you have more RAM or CPU than you know what to do with
+- your workload involves hundreds/thousands of files; or
+- you need to use a script just to use _AP.exe_; or
+- you have more RAM or CPU than you know what to do with!
 
 More than likely if you're stuck we can help 😊.
 
@@ -33,9 +33,9 @@ is no longer readable text--rather it is just blobs of binary instructions that 
 
 Binaries that can be run as programs are often called _executables_.
 
-## What is ~~an _action_~~ a _command_?
+## What is a _command_?
 
 Our program is a monolith--a very large structure. To support doing different
 things we have various sub-programs that can be run by themselves. We call each
-of these sub-programs a _command_. If you run _AP.exe_ with no arguments it will
-list the available command that you can run.
+of these sub-programs a _command_. If you run _AP.exe_ with no arguments, it will
+list the available commands (sub-programs) that you can run.

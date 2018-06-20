@@ -8,7 +8,7 @@ The _AP.exe_ binary will run on any Windows computer with v4.6.2 of the .NET
 Framework installed.
 Practically, it means that these variants are supported:
 
-- Client SKUs
+- Client SKUs (stock keeping unit)
     - ✓ 10 Anniversary Update
     - \+ 10 November Update 
     - \+ 10 
