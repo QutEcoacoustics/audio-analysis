@@ -33,7 +33,7 @@ namespace AnalysisPrograms
 
         [Command(
             CommandName,
-            Description = "An program desinged to simulate load - does nothing other than burn CPU;")]
+            Description = "[UNMAINTAINED] An program designed to simulate load - does nothing other than burn CPU;")]
         public class Arguments : SubCommandBase
         {
             [Option(Description = "Burn load on multiple CPU threads?")]

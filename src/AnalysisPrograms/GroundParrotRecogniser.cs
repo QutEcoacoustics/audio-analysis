@@ -41,7 +41,7 @@ namespace AnalysisPrograms
 
         [Command(
             CommandName,
-            Description = "event pattern recognition - used for ground-parrots (BRAD version)")]
+            Description = "[UNMAINTAINED] event pattern recognition - used for ground-parrots (BRAD CLOW version)")]
         public class Arguments : SourceAndConfigArguments
         {
             public override Task<int> Execute(CommandLineApplication app)

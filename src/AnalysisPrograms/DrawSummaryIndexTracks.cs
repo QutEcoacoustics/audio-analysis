@@ -35,7 +35,7 @@ namespace AnalysisPrograms
 
         [Command(
             CommandName,
-            Description = "Input a csv file of summary indices.Outputs a tracks image.")]
+            Description = "[BETA] Input a csv file of summary indices.Outputs a tracks image.")]
         public class Arguments
             : SubCommandBase
         {

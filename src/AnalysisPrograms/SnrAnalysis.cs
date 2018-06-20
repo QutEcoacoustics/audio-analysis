@@ -30,7 +30,7 @@ namespace AnalysisPrograms
 
         [Command(
             CommandName,
-            Description = "Calculates signal to noise ratio for short files.")]
+            Description = "[UNMAINTAINED] Calculates signal to noise ratio for short files.")]
         public class Arguments : SourceConfigOutputDirArguments
         {
             public override Task<int> Execute(CommandLineApplication app)

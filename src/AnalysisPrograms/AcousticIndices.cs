@@ -56,7 +56,7 @@ namespace AnalysisPrograms
         public string Identifier => TowseyAcoustic;
 
         public string Description
-            => "Generates all our default acoustic indices, including summary indices and spectral indices. Also generates false color spectrograms IFF IndexCalculationDuration==60.0";
+            => "[BETA] Generates all our default summary & spectral acoustic indices. Also generates false color spectrograms IFF IndexCalculationDuration==60.0";
 
         public void BeforeAnalyze(AnalysisSettings analysisSettings)
         {

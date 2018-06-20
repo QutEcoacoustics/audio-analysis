@@ -46,6 +46,8 @@ namespace AnalysisPrograms.Recognizers
     /// </summary>
     internal class CycloranaNovaehollandiae : RecognizerBase
     {
+        public override string Description => "[Alpha/In development] Cyclorana novaehollandiae. See class header for algorithm description.";
+
         public override string Author => "Towsey";
 
         public override string SpeciesName => "CycloranaNovaehollandiae";
@@ -70,13 +72,6 @@ namespace AnalysisPrograms.Recognizers
         /// <summary>
         /// Do your analysis. This method is called once per segment (typically one-minute segments).
         /// </summary>
-        /// <param name="recording"></param>
-        /// <param name="configuration"></param>
-        /// <param name="segmentStartOffset"></param>
-        /// <param name="getSpectralIndexes"></param>
-        /// <param name="outputDirectory"></param>
-        /// <param name="imageWidth"></param>
-        /// <returns></returns>
         public override RecognizerResults Recognize(
             AudioRecording recording,
             Config configuration,

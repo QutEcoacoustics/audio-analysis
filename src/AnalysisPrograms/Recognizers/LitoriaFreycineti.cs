@@ -30,16 +30,12 @@ namespace AnalysisPrograms.Recognizers
     using TowseyLibrary;
 
     /// <summary>
-    /// This is a frog recognizer based on the "ribit" or "washboard" template
-    /// It detects ribit type calls by extracting three features: dominant frequency, pulse rate and pulse train duration.
-    ///
-    /// This type recognizer was first developed for the Canetoad and has been duplicated with modification for other frogs
-    /// To call this recognizer, the first command line argument must be "EventRecognizer".
-    /// Alternatively, this recognizer can be called via the MultiRecognizer.
-    ///
+    /// This recogniser is unfinished. No guarantees.
     /// </summary>
     internal class LitoriaFreycineti : RecognizerBase
     {
+        public override string Description => "[ALPHA/EMBRYONIC] Detects acoustic events of Litoria freycineti";
+
         public override string Author => "Stark";
 
         public override string SpeciesName => "LitoriaFreycineti";

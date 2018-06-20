@@ -39,6 +39,8 @@ namespace AnalysisPrograms.Recognizers
     /// </summary>
     public class LimnodynastesConvex : RecognizerBase
     {
+        public override string Description => "[ALPHA/EMBRYONIC] Detects acoustic events of Limnodynastes convex";
+
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         //DEBUG IMAGE this recognizer only. MUST set false for deployment.

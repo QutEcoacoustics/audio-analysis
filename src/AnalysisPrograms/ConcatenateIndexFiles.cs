@@ -57,7 +57,7 @@ namespace AnalysisPrograms
 
         [Command(
             CommandName,
-            Description = "[BETA] Concatenates multiple consecutive index.csv files.")]
+            Description = "[BETA] Concatenates multiple consecutive index.csv files. Caution required!!")]
         public class Arguments : SubCommandBase
         {
             [Argument(

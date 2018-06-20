@@ -40,6 +40,8 @@ namespace AnalysisPrograms.Recognizers
     /// </summary>
     internal class UperoleiaInundata : RecognizerBase
     {
+        public override string Description => "[ALPHA/EMBRYONIC] Detects acoustic events of Uperoleia inundata.";
+
         public override string Author => "Towsey";
 
         public override string SpeciesName => "UperoleiaInundata";

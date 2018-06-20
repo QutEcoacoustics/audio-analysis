@@ -14,7 +14,6 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.LongDurationSpectrograms.Zooming;
     using Draw.Zooming;
     using TowseyLibrary;
-
     using Zio;
 
     public static class HerveGlotinCollaboration

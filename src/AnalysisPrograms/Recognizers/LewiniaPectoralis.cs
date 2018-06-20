@@ -40,6 +40,8 @@ namespace AnalysisPrograms.Recognizers
     /// </summary>
     public class LewiniaPectoralis : RecognizerBase
     {
+        public override string Description => "[BETA/EXPERIMENTAL] Detects acoustic events of Lewin's Rail";
+
         public override string Author => "Towsey";
 
         public override string SpeciesName => "LewiniaPectoralis";

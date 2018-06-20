@@ -28,13 +28,13 @@ namespace AnalysisPrograms.Recognizers
     using TowseyLibrary;
 
     /// <summary>
-    /// This type recognizer was first developed for the Canetoad and has been duplicated with modification for other frogs
-    /// e.g. Litoria rothii and Litoria olongburesnsis.
-    /// To call this recognizer, the first command line argument must be "EventRecognizer".
-    /// Alternatively, this recognizer can be called via the MultiRecognizer.
+    /// Used to recognise calls of the White Heron in Bhutan.
+    /// Originally a project of Tshering Dema.
     /// </summary>
     public class ArdeaInsignis : RecognizerBase
     {
+        public override string Description => "[Beta/Experimental] White Heron - Bhutan";
+
         public override string Author => "Towsey";
 
         public override string SpeciesName => "ArdeaInsignis";

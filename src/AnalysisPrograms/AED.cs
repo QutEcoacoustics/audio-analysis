@@ -49,7 +49,7 @@ namespace AnalysisPrograms
         /// </summary>
         [Command(
             CommandName,
-            Description = "Acoustic event detection, for short files (~ 1min)")]
+            Description = "[BETA] Acoustic event detection, for short files (~ 1 min)")]
         public class Arguments : SourceConfigOutputDirArguments
         {
             public override Task<int> Execute(CommandLineApplication app)

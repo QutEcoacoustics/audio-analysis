@@ -45,6 +45,8 @@ namespace AnalysisPrograms.Recognizers
     /// </summary>
     internal class UperoleiaMimula : RecognizerBase
     {
+        public override string Description => "[ALPHA/EMBRYONIC] Detects acoustic events of Uperoleia mimula.";
+
         public override string Author => "Towsey";
 
         public override string SpeciesName => "UperoleiaMimula";

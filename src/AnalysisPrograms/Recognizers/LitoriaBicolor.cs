@@ -42,6 +42,8 @@ namespace AnalysisPrograms.Recognizers
 
     public class LitoriaBicolor : RecognizerBase
     {
+        public override string Description => "[ALPHA/EMBRYONIC] Detects acoustic events of Litoria bicolor";
+
         public override string Author => "Towsey";
 
         public override string SpeciesName => "LitoriaBicolor";

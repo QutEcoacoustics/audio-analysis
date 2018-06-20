@@ -27,7 +27,7 @@ namespace AnalysisPrograms
 
         [Command(
             CommandName,
-            Description = "Writes information about audio files to a csv file.",
+            Description = "[BETA] Writes information about audio files to a csv file.",
             ExtendedHelpText = "Note: Specify a directory to process or an input file containing file paths, but not both.")]
         public class Arguments : SubCommandBase
         {

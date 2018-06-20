@@ -53,7 +53,7 @@ namespace AnalysisPrograms
 
         [Command(
             CommandName,
-            Description = "Michael's experimental area.",
+            Description = "[UNMAINTAINED] Michael's personal experimental area.",
             ShowInHelpText = false)]
         public class Arguments : SubCommandBase
         {

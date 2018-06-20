@@ -34,6 +34,8 @@ namespace AnalysisPrograms.Recognizers
     /// </summary>
     internal class LitoriaOlong : RecognizerBase
     {
+        public override string Description => "[ALPHA/EMBRYONIC] Detects acoustic events of Litoria olong.";
+
         public override string Author => "Stark";
 
         public override string SpeciesName => "LitoriaOlong";

@@ -44,6 +44,8 @@ namespace AnalysisPrograms.Recognizers
 
     public class LitoriaWatjulumensis : RecognizerBase
     {
+        public override string Description => "[ALPHA/EMBRYONIC] Detects acoustic events of Litoria watchamacallit.";
+
         public override string Author => "Towsey";
 
         public override string SpeciesName => "LitoriaWatjulumensis";

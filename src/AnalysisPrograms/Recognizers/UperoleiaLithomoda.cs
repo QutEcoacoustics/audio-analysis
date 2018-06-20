@@ -49,6 +49,8 @@ namespace AnalysisPrograms.Recognizers
     /// </summary>
     internal class UperoleiaLithomoda : RecognizerBase
     {
+        public override string Description => "[ALPHA/EMBRYONIC] Detects acoustic events of Uperoleia lithomoda.";
+
         public override string Author => "Towsey";
 
         public override string SpeciesName => "UperoleiaLithomoda";
