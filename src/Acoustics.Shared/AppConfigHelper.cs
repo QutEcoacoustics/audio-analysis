@@ -11,14 +11,20 @@ namespace Acoustics.Shared
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.Specialized;
     using System.Configuration;
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using log4net;
 
     public static class AppConfigHelper
     {
+        private static readonly KeyValueConfigurationCollection SharedSettings;
+
+        private static readonly ILog Log = LogManager.GetLogger(nameof(AppConfigHelper));
+
         private static readonly string ExecutingAssemblyPath =
             (Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly()).Location;
 
@@ -38,6 +44,14 @@ namespace Acoustics.Shared
         public const string StandardDateFormatUtc = "yyyyMMdd-HHmmssZ";
 
         public const string StandardDateFormatUtcWithFractionalSeconds = "yyyyMMdd-HHmmss.FFFZ";
+
+        static AppConfigHelper()
+        {
+            ExeConfigurationFileMap exeConfigurationFileMap = new ExeConfigurationFileMap();
+            exeConfigurationFileMap.ExeConfigFilename = Path.Combine(ExecutingAssemblyDirectory, "AP.Settings.Config");
+            var sharedConfig = ConfigurationManager.OpenMappedExeConfiguration(exeConfigurationFileMap, ConfigurationUserLevel.None);
+            SharedSettings = sharedConfig.AppSettings.Settings;
+        }
 
         public static string FileDateFormatUtc
         {
@@ -283,15 +297,23 @@ namespace Acoustics.Shared
             }
         }
 
+        public static bool IsMacOsX
+        {
+            get
+            {
+                return Environment.OSVersion.Platform == PlatformID.MacOSX;
+            }
+        }
+
         public static string GetString(string key)
         {
-            if (ConfigurationManager.AppSettings.AllKeys.All(k => k != key))
+            if (!Contains(key))
             {
                 //throw new ConfigurationErrorsException("Could not find key: " + key);
-                return string.Empty;
+                return null;
             }
 
-            var value = ConfigurationManager.AppSettings[key];
+            var value = SharedSettings[key].Value;
 
             if (string.IsNullOrEmpty(value))
             {
@@ -303,7 +325,7 @@ namespace Acoustics.Shared
 
         public static bool Contains(string key)
         {
-            return ConfigurationManager.AppSettings.AllKeys.Any(k => k == key);
+            return SharedSettings.AllKeys.Contains(key);
         }
 
         //        public static IEnumerable<string> GetStrings(string key, params char[] separators)
@@ -315,7 +337,7 @@ namespace Acoustics.Shared
                 .Select(s => s.Trim())
                 .Where(v => !string.IsNullOrEmpty(v));
 
-            if (!values.Any() || values.All(s => string.IsNullOrEmpty(s)))
+            if (!values.Any() || values.All(string.IsNullOrEmpty))
             {
                 throw new ConfigurationErrorsException("Key " + key + " exists but does not have a value");
             }
@@ -493,13 +515,37 @@ namespace Acoustics.Shared
 
         private static string GetExeFile(string appConfigKey)
         {
+            string path = null;
+            string key = null;
             if (IsLinux)
             {
-                return GetString(appConfigKey + "Linux");
+                key = appConfigKey + "Linux";
+                path = GetString(key);
+            }
+            else if (IsMacOsX)
+            {
+                key = appConfigKey + "MacOsX";
+                path = GetString(key);
             }
             else
             {
-                return Path.Combine(AssemblyDir.FullName, GetString(appConfigKey));
+                key = appConfigKey;
+                path = GetString(appConfigKey);
+            }
+
+            if (path.IsNullOrEmpty())
+            {
+                Log.Warn($"No key found for `{key}` in the App.Config. This program may fail if this binary is needed.");
+                return null;
+            }
+
+            if (Path.IsPathRooted(path))
+            {
+                return path;
+            }
+            else
+            {
+                return Path.Combine(AssemblyDir.FullName, path);
             }
         }
     }

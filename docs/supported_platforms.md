@@ -51,7 +51,9 @@ $ mono AnalysisPrograms.exe list
 
 ### MacOSX
 
-Should the same as the Unix requirements, however, we have never run or tested
-the code on MacOS systems.
+We support Mac OS X 10.9 and later.
+
+Should the same as the Unix requirements, however, we have limited exeprience
+running on MacOSX systems.
 
 We'd like to hear from you if you do try!
