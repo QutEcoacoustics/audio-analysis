@@ -152,7 +152,7 @@
       <Link>AP.Settings.config</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="app.config">
+    <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />

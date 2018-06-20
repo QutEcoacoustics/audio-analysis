@@ -21,15 +21,6 @@ namespace Acoustics.Shared
 
     public static class AppConfigHelper
     {
-        private static readonly KeyValueConfigurationCollection SharedSettings;
-
-        private static readonly ILog Log = LogManager.GetLogger(nameof(AppConfigHelper));
-
-        private static readonly string ExecutingAssemblyPath =
-            (Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly()).Location;
-
-        public static readonly string ExecutingAssemblyDirectory = Path.GetDirectoryName(ExecutingAssemblyPath);
-
         public const string DefaultTargetSampleRateKey = "DefaultTargetSampleRate";
 
         public static int DefaultTargetSampleRate => GetInt(DefaultTargetSampleRateKey);
@@ -45,12 +36,63 @@ namespace Acoustics.Shared
 
         public const string StandardDateFormatUtcWithFractionalSeconds = "yyyyMMdd-HHmmss.FFFZ";
 
+        public static readonly string ExecutingAssemblyDirectory = Path.GetDirectoryName(ExecutingAssemblyPath);
+
+        private static readonly KeyValueConfigurationCollection SharedSettings;
+
+        private static readonly ILog Log = LogManager.GetLogger(nameof(AppConfigHelper));
+
+        private static readonly string ExecutingAssemblyPath =
+            (Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly()).Location;
+
+        private static readonly bool IsLinuxValue;
+        private static readonly bool IsWindowsValue;
+        private static readonly bool IsMacOsXValue;
+
         static AppConfigHelper()
         {
             ExeConfigurationFileMap exeConfigurationFileMap = new ExeConfigurationFileMap();
             exeConfigurationFileMap.ExeConfigFilename = Path.Combine(ExecutingAssemblyDirectory, "AP.Settings.Config");
             var sharedConfig = ConfigurationManager.OpenMappedExeConfiguration(exeConfigurationFileMap, ConfigurationUserLevel.None);
             SharedSettings = sharedConfig.AppSettings.Settings;
+
+            IsMono = Type.GetType("Mono.Runtime") != null;
+            CheckOs(ref IsWindowsValue, ref IsLinuxValue, ref IsMacOsXValue);
+
+        }
+
+        /// <summary>
+        /// Adapted from https://stackoverflow.com/a/38795621/224512
+        /// </summary>
+        private static void CheckOs(ref bool isWindows, ref bool isLinux, ref bool isMacOsX)
+        {
+            string windir = Environment.GetEnvironmentVariable("windir");
+            if (!string.IsNullOrEmpty(windir) && windir.Contains(@"\") && Directory.Exists(windir))
+            {
+                isWindows = true;
+            }
+            else if (File.Exists(@"/proc/sys/kernel/ostype"))
+            {
+                string osType = File.ReadAllText(@"/proc/sys/kernel/ostype");
+                if (osType.StartsWith("Linux", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Note: Android gets here too
+                    isLinux = true;
+                }
+                else
+                {
+                    throw new PlatformNotSupportedException(osType);
+                }
+            }
+            else if (File.Exists(@"/System/Library/CoreServices/SystemVersion.plist"))
+            {
+                // Note: iOS gets here too
+                isMacOsX = true;
+            }
+            else
+            {
+                throw new PlatformNotSupportedException("Unkown platform");
+            }
         }
 
         public static string FileDateFormatUtc
@@ -281,29 +323,13 @@ namespace Acoustics.Shared
             }
         }
 
-        public static bool IsMono
-        {
-            get
-            {
-                return Type.GetType("Mono.Runtime") != null;
-            }
-        }
+        public static bool IsMono { get; }
 
-        public static bool IsLinux
-        {
-            get
-            {
-                return Environment.OSVersion.Platform == PlatformID.Unix;
-            }
-        }
+        public static bool IsLinux => IsLinuxValue;
 
-        public static bool IsMacOsX
-        {
-            get
-            {
-                return Environment.OSVersion.Platform == PlatformID.MacOSX;
-            }
-        }
+        public static bool IsWindows => IsWindowsValue;
+
+        public static bool IsMacOsX => IsMacOsXValue;
 
         public static string GetString(string key)
         {
@@ -517,14 +543,15 @@ namespace Acoustics.Shared
         {
             string path = null;
             string key = null;
-            if (IsLinux)
-            {
-                key = appConfigKey + "Linux";
-                path = GetString(key);
-            }
-            else if (IsMacOsX)
+
+            if (IsMacOsX)
             {
                 key = appConfigKey + "MacOsX";
+                path = GetString(key);
+            }
+            else if (IsLinux)
+            {
+                key = appConfigKey + "Linux";
                 path = GetString(key);
             }
             else
