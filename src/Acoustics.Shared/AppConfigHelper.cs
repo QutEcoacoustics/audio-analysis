@@ -36,14 +36,13 @@ namespace Acoustics.Shared
 
         public const string StandardDateFormatUtcWithFractionalSeconds = "yyyyMMdd-HHmmss.FFFZ";
 
-        public static readonly string ExecutingAssemblyDirectory = Path.GetDirectoryName(ExecutingAssemblyPath);
+        private static readonly string ExecutingAssemblyPath =
+            (Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly()).Location;
+
 
         private static readonly KeyValueConfigurationCollection SharedSettings;
 
         private static readonly ILog Log = LogManager.GetLogger(nameof(AppConfigHelper));
-
-        private static readonly string ExecutingAssemblyPath =
-            (Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly()).Location;
 
         private static readonly bool IsLinuxValue;
         private static readonly bool IsWindowsValue;
@@ -60,6 +59,8 @@ namespace Acoustics.Shared
             CheckOs(ref IsWindowsValue, ref IsLinuxValue, ref IsMacOsXValue);
 
         }
+
+        public static string ExecutingAssemblyDirectory { get; } = Path.GetDirectoryName(ExecutingAssemblyPath);
 
         /// <summary>
         /// Adapted from https://stackoverflow.com/a/38795621/224512
