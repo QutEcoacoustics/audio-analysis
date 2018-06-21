@@ -34,7 +34,7 @@ For remote resources, the input file needs to have either one of these sets of f
 
         [Command(
             CommandName,
-            Description = "Event statistics accepts a list of events to analyze and returns a data file of statistics",
+            Description = "[BETA] Accepts a list of acoustic events to analyze. Returns a data file of statistics",
             ExtendedHelpText = AdditionalNotes)]
         public class Arguments
             : SourceConfigOutputDirArguments

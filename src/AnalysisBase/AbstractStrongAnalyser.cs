@@ -29,7 +29,7 @@ namespace AnalysisBase
         public abstract string Identifier { get; }
 
         /// <inheritdoc/>
-        public virtual string Description => "YOU SHOULD IMPLEMENT THIS!";
+        public virtual string Description => "YOU SHOULD OVERRIDE THIS!";
 
         /// <inheritdoc/>
         public virtual AnalysisSettings DefaultSettings

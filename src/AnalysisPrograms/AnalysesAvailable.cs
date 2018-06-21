@@ -86,7 +86,7 @@ namespace AnalysisPrograms
                     description = description.WordWrap(descrptionLength, indentifierWidth + typeLength);
                 }
 
-                table.AppendLine(string.Format(tableFormat, analyser.Identifier, isEventRecognizer ? "Event Recognizer" : "Unknown", description));
+                table.AppendLine(string.Format(tableFormat, analyser.Identifier, isEventRecognizer ? "Event Recognizer" : "Type unknown", description));
             }
 
             return table;
