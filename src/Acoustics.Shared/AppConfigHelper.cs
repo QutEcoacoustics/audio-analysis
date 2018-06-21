@@ -17,6 +17,7 @@ namespace Acoustics.Shared
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using ConfigFile;
     using log4net;
 
     public static class AppConfigHelper
@@ -39,7 +40,6 @@ namespace Acoustics.Shared
         private static readonly string ExecutingAssemblyPath =
             (Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly()).Location;
 
-
         private static readonly KeyValueConfigurationCollection SharedSettings;
 
         private static readonly ILog Log = LogManager.GetLogger(nameof(AppConfigHelper));
@@ -57,7 +57,6 @@ namespace Acoustics.Shared
 
             IsMono = Type.GetType("Mono.Runtime") != null;
             CheckOs(ref IsWindowsValue, ref IsLinuxValue, ref IsMacOsXValue);
-
         }
 
         public static string ExecutingAssemblyDirectory { get; } = Path.GetDirectoryName(ExecutingAssemblyPath);
@@ -190,7 +189,7 @@ namespace Acoustics.Shared
         {
             get
             {
-                return GetExeFile("AudioUtilityMp3SpltExe");
+                return GetExeFile("AudioUtilityMp3SpltExe", required: false);
             }
         }
 
@@ -201,7 +200,7 @@ namespace Acoustics.Shared
         {
             get
             {
-                return GetExeFile("AudioUtilityShntoolExe");
+                return GetExeFile("AudioUtilityShntoolExe", required: false);
             }
         }
 
@@ -334,13 +333,12 @@ namespace Acoustics.Shared
 
         public static string GetString(string key)
         {
-            if (!Contains(key))
-            {
-                //throw new ConfigurationErrorsException("Could not find key: " + key);
-                return null;
-            }
+            var found = TryGetString(key, out var value);
 
-            var value = SharedSettings[key].Value;
+            if (!found)
+            {
+                throw new ConfigurationErrorsException("Could not find key: " + key);
+            }
 
             if (string.IsNullOrEmpty(value))
             {
@@ -348,6 +346,13 @@ namespace Acoustics.Shared
             }
 
             return value;
+        }
+
+        public static bool TryGetString(string key, out string value)
+        {
+            var found = Contains(key);
+            value = found ? SharedSettings[key].Value : null;
+            return found;
         }
 
         public static bool Contains(string key)
@@ -540,30 +545,38 @@ namespace Acoustics.Shared
             return dirs;
         }
 
-        private static string GetExeFile(string appConfigKey)
+        private static string GetExeFile(string appConfigKey, bool required = true)
         {
-            string path = null;
-            string key = null;
+            string key;
 
             if (IsMacOsX)
             {
                 key = appConfigKey + "MacOsX";
-                path = GetString(key);
             }
             else if (IsLinux)
             {
                 key = appConfigKey + "Linux";
-                path = GetString(key);
             }
             else
             {
                 key = appConfigKey;
-                path = GetString(appConfigKey);
+            }
+
+            var found = TryGetString(key, out var path);
+
+            if (!found && required)
+            {
+                throw new ConfigFileException($"An exe path for `{key}` was not found in AP.Settings.config");
             }
 
             if (path.IsNullOrEmpty())
             {
-                Log.Warn($"No key found for `{key}` in the App.Config. This program may fail if this binary is needed.");
+                if (required)
+                {
+                    throw new ConfigFileException($"An exe path for `{key}` has an empty value set and it is required (in AP.Settings.config)");
+                }
+
+                Log.Debug($"No key found for `{key}` in the AP.Settings.config. This program may fail if this binary is needed.");
                 return null;
             }
 

@@ -13,7 +13,7 @@ namespace Acoustics.Tools.Audio
     using System.Collections.Generic;
     using System.Globalization;
     using System.IO;
-
+    using System.Threading;
     using Shared;
     using Shared.Contracts;
 
@@ -22,6 +22,8 @@ namespace Acoustics.Tools.Audio
     /// </summary>
     public class MasterAudioUtility : AbstractAudioUtility, IAudioUtility
     {
+        private static bool missingMp3SpltWarned = false;
+
         private readonly WavPackAudioUtility wvunpackUtility;
 
         private readonly FfmpegAudioUtility ffmpegUtility;
@@ -108,8 +110,9 @@ namespace Acoustics.Tools.Audio
             Contract.RequiresNotNull(this.soxUtility, nameof(this.soxUtility));
             Contract.RequiresNotNull(this.TemporaryFilesDirectory, nameof(this.TemporaryFilesDirectory));
 
-            if (this.mp3SpltUtility == null)
+            if (this.mp3SpltUtility == null && !missingMp3SpltWarned)
             {
+                missingMp3SpltWarned = true;   
                 this.Log.Warn("No Mp3Splt utility provided. If you try to segment MP3 the program will fail.");
             }
         }
