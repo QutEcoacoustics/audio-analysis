@@ -1,8 +1,6 @@
 ---
 # This config is for frog calls having a HONK architecture.
 # i.e. a brief single honk having a dominant frequency and one or more harmonics - evenly spaced."
-#
-AnalysisName: Towsey.LimnodynastesConvex
 SpeciesName: Limnodynastes convexiusculus
 AbbreviatedSpeciesName: L.convex
 

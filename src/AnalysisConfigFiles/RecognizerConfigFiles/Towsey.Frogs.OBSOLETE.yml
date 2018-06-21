@@ -1,6 +1,4 @@
 ---
-AnalysisName: Towsey.Frogs
-# General Parameters
 DisplayColumns: Frog
 
 # FROG_DATA_FILE=FrogDataAndCompilationFile.csv
