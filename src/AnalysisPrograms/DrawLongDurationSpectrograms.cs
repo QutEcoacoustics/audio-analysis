@@ -72,7 +72,7 @@ namespace AnalysisPrograms
 
         [Command(
             CommandName,
-            Description = "[BETA] Produces long - duration false - colour spectrograms from matrices of spectral indices.")]
+            Description = "[BETA] Produces long-duration, false-colour spectrograms from matrices of spectral indices.")]
         public class Arguments : SubCommandBase
         {
             [Option(Description = "Directory where the input data is located.")]

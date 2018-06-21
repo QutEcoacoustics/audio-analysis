@@ -31,7 +31,7 @@ AlignToMinute Options:
 
         [Command(
             CommandName,
-            Description = "Analyses long recordings by breaking them up into 1-min blocks",
+            Description = "[BETA] Analyses long recordings, cutting them into 1-minute blocks. Performs the analysis specified in Config file.",
             ExtendedHelpText = AdditionalNotes)]
         public class Arguments : SourceConfigOutputDirArguments
         {

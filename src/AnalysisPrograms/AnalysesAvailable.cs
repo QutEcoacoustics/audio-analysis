@@ -20,7 +20,7 @@ namespace AnalysisPrograms
 
     [Command(
         "AnalysesAvailable",
-        Description = "List available IAnalyzers available for use with audio2csv or eventRecognizer")]
+        Description = "Lists all IAnalyzers available for use with audio2csv or eventRecognizer")]
     public class AnalysesAvailable
         : SubCommandBase
     {

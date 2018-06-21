@@ -34,7 +34,7 @@ namespace AnalysisPrograms.Recognizers.Base
     {
         public const string CommandName = "EventRecognizer";
         private const string Description =
-            "The entry point for all species or event recognizers.Only to be used on short recordings(< 2 mins)." +
+            "The entry point for all species or event recognizers. Only to be used on short recordings (< 2 mins)." +
             "This recognizer runs any IEventRecognizer. The recognizer run is based on the " +
             "Identifier field and parsed from the AnalysisName field in the config file of the same name";
 

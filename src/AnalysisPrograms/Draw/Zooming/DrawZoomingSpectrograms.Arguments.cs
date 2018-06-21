@@ -19,7 +19,7 @@ namespace AnalysisPrograms.Draw.Zooming
 
         [Command(
             CommandName,
-            Description = "Produces long-duration false-colour spectrograms on different time scales.",
+            Description = "[BETA] Produces long-duration, false-colour spectrograms on different time scales.",
             ExtendedHelpText = "The `Tile` option will produce a full pyramid of tiles whereas the `Focused` option produces just one image")]
         public class Arguments : SubCommandBase
         {
