@@ -45,7 +45,7 @@ namespace AnalysisBase.ResultBases
 
             set
             {
-                this.ResultMinute = (int)Math.Floor(value % 60.0);
+                this.ResultMinute = (int)(value / 60.0);
                 this.resultStartSeconds = value;
             }
         }

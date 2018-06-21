@@ -320,8 +320,8 @@ namespace AnalysisPrograms
                        {
                            IntensityThreshold = configuration.GetDouble(nameof(AedConfiguration.IntensityThreshold)),
                            SmallAreaThreshold = configuration.GetInt(nameof(AedConfiguration.SmallAreaThreshold)),
-                           BandpassMinimum = configuration.GetInt(nameof(AedConfiguration.BandpassMinimum)),
-                           BandpassMaximum = configuration.GetInt(nameof(AedConfiguration.BandpassMaximum)),
+                           BandpassMinimum = configuration.GetIntOrNull(nameof(AedConfiguration.BandpassMinimum)),
+                           BandpassMaximum = configuration.GetIntOrNull(nameof(AedConfiguration.BandpassMaximum)),
                            IncludeHitElementsInOutput = configuration.GetBoolOrNull(nameof(AedConfiguration.IncludeHitElementsInOutput)) ?? false,
                            AedEventColor = configuration[nameof(AedConfiguration.AedEventColor)].ParseAsColor(),
                            AedHitColor = configuration[nameof(AedConfiguration.AedHitColor)].ParseAsColor(),
