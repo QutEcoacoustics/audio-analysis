@@ -33,7 +33,7 @@ namespace AnalysisPrograms.Recognizers
     /// </summary>
     public class ArdeaInsignis : RecognizerBase
     {
-        public override string Description => "[Beta/Experimental] White Heron - Bhutan";
+        public override string Description => "[BETA/Experimental] White Heron - Bhutan";
 
         public override string Author => "Towsey";
 

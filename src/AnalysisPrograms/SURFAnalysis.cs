@@ -40,6 +40,8 @@ namespace AnalysisPrograms
     {
         public const string CommandName = "SURFAnalysis";
 
+        //public override string Description => "[UNMAINTAINED] Uses SURF points of interest to classify recording segments of bird calls.";
+
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         // use the following paths for the command line for the <audio2sonogram> task.

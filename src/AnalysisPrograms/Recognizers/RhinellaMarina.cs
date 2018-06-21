@@ -40,7 +40,7 @@ namespace AnalysisPrograms.Recognizers
     /// </summary>
     internal class RhinellaMarina : RecognizerBase
     {
-        public override string Description => "[Beta/Experimental] Cane Toad. Recogniser looks for 12 Hz oscillation around 600 Hz band.";
+        public override string Description => "[BETA/Experimental] Cane Toad. Recogniser looks for 12 Hz oscillation around 600 Hz band.";
 
         public override string Author => "Towsey";
 

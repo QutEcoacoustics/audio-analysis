@@ -44,6 +44,8 @@ namespace AnalysisPrograms
     {
         public const string CommandName = "AED";
 
+        public override string Description => "[BETA] Acoustic event detection, for short files (~ 1 min)";
+
         /// <summary>
         /// The arguments.
         /// </summary>

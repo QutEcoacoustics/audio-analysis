@@ -48,7 +48,7 @@ namespace AnalysisPrograms.Recognizers
     /// </summary>
     internal class CriniaRemota : RecognizerBase
     {
-        public override string Description => "[Beta/Experimental] Remote froglet. See class header for algorithm description.";
+        public override string Description => "[BETA/Experimental] Remote froglet. See class header for algorithm description.";
 
         public override string Author => "Towsey";
 

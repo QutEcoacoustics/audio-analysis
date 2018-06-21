@@ -39,6 +39,8 @@ namespace AnalysisPrograms
     {
         public const string CommandName = "GroundParrot";
 
+        public override string Description => "[UNMAINTAINED] Uses event pattern recognition for ground-parrots";
+
         [Command(
             CommandName,
             Description = "[UNMAINTAINED] event pattern recognition - used for ground-parrots (BRAD CLOW version)")]

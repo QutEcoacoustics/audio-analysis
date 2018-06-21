@@ -46,7 +46,7 @@ namespace AnalysisPrograms.Recognizers
     /// </summary>
     internal class CycloranaNovaehollandiae : RecognizerBase
     {
-        public override string Description => "[Alpha/In development] Cyclorana novaehollandiae. See class header for algorithm description.";
+        public override string Description => "[ALPHA/In development] Cyclorana novaehollandiae. See class header for algorithm description.";
 
         public override string Author => "Towsey";
 
