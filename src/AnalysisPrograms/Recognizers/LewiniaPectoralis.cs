@@ -69,9 +69,6 @@ namespace AnalysisPrograms.Recognizers
             base.SummariseResults(settings, inputFileSegment, events, indices, spectralIndices, results);
         }
 
-        // OTHER CONSTANTS
-        //private const string ImageViewer = @"C:\Windows\system32\mspaint.exe";
-
         /// <summary>
         /// Do your analysis. This method is called once per segment (typically one-minute segments).
         /// </summary>
@@ -174,7 +171,7 @@ namespace AnalysisPrograms.Recognizers
                 {
                     Log.Debug("DebugImage is null, not writing file");
                 }
-                else
+                else if (MainEntry.InDEBUG)
                 {
                     var imageName = AnalysisResultName(recording.BaseName, this.SpeciesName, "png", "DebugSpectrogram");
                     var debugPath = outputDirectory.Combine(imageName);
