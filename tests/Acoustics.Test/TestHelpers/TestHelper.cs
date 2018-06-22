@@ -552,7 +552,7 @@
             var wvunpack = new WavPackAudioUtility(new FileInfo(AppConfigHelper.WvunpackExe));
             var sox = new SoxAudioUtility(new FileInfo(AppConfigHelper.SoxExe));
 
-            return new MasterAudioUtility(ffmpeg, mp3Splt, wvunpack, sox, ffmpegRawPcm);
+            return new MasterAudioUtility(ffmpeg, mp3Splt, wvunpack, sox, ffmpegRawPcm, PathHelper.GetTempDir());
         }
 
         public static IAudioUtility GetAudioUtilitySox()

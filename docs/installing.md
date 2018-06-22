@@ -32,7 +32,13 @@ running:
 AnalysisPrograms.exe CheckEnvironment
 ```
 
-## Unix && MacOSX
+## MacOSX
+
+The following additional dependencies are required for MaxOSX machines:
+
+- mono (version 5.5 or greater)
+
+## Unix
 
 The following additional dependencies are required for Unix machines:
 
@@ -48,5 +54,5 @@ The following additional dependencies are required for Unix machines:
 
 ## Coming soon: Docker
 
-We're working on a `Dockerfile` that will greatly simplify installation.
-Let us know if you're keen for it.
+We have a `Dockerfile` that theoretically works (BETA warning). See the 
+`build` directory to find it.

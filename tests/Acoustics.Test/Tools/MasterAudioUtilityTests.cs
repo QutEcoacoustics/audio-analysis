@@ -365,6 +365,28 @@ namespace Acoustics.Test.Tools
             TestHelper.ExceptionMatches<ArgumentNullException>(() => new SoxAudioUtility(null), "Value cannot be null");
         }
 
+        [TestMethod]
+        public void MasterAudioUtilityAllowsOptionalSupportForMp3splt()
+        {
+            // creation should normally fail but MasterAudioUtility was changed so that Mp3Splt was optional
+            var utility = new MasterAudioUtility(
+                (FfmpegAudioUtility)TestHelper.GetAudioUtilityFfmpeg(),
+                null, //(Mp3SpltAudioUtility)TestHelper.GetAudioUtilityMp3Splt(),
+                (WavPackAudioUtility)TestHelper.GetAudioUtilityWavunpack(),
+                (SoxAudioUtility)TestHelper.GetAudioUtilitySox(),
+                (FfmpegRawPcmAudioUtility)TestHelper.GetAudioUtilityFfmpegRawPcm());
+
+            // but it throws an exception if we try and segment a mp3
+            TestHelper.ExceptionMatches<NotSupportedException>(
+                () => utility.Modify(
+                    PathHelper.GetTestAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3"),
+                    MediaTypes.MediaTypeMp3,
+                    TempFileHelper.NewTempFile(),
+                    MediaTypes.MediaTypeWav,
+                    new AudioUtilityRequest()),
+                "MP3 conversion not supported because mp3splt utility has not been configured");
+        }
+
         private static FileInfo GetAudioUtilityExe(string name)
         {
             var baseResourceDir = PathHelper.GetResourcesBaseDir();

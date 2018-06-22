@@ -266,12 +266,12 @@
         {
             if (string.IsNullOrEmpty(expectedFileName))
             {
-                throw new ArgumentNullException("expectedFileName");
+                throw new ArgumentNullException(nameof(expectedFileName));
             }
 
             if (file == null)
             {
-                throw new ArgumentNullException("file");
+                throw new ArgumentNullException(nameof(file));
             }
 
             if (!File.Exists(file.FullName))
@@ -281,7 +281,7 @@
 
             if (!file.Name.Contains(expectedFileName))
             {
-                throw new ArgumentException("Expected file name to contain " + expectedFileName + ", but was: " + file.Name, "file");
+                throw new ArgumentException("Expected file name to contain " + expectedFileName + ", but was: " + file.Name, nameof(file));
             }
         }
 
@@ -389,6 +389,11 @@
             else
             {
                 processRunner.Run(arguments, workingDirectory);
+            }
+
+            if (processRunner.ExitCode != 0)
+            {
+                throw new AudioUtilityException($"Failed to execute process: exit code was `{processRunner.ExitCode}`. `{processRunner.ExecutableFile}` `{arguments}`");
             }
 
             if (this.Log.IsWarnEnabled)

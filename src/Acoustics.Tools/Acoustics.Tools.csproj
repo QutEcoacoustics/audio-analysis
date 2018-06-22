@@ -106,6 +106,7 @@
     <Compile Include="Audio\AbstractAudioUtility.cs" />
     <Compile Include="Audio\AbstractSpectrogramUtility.cs" />
     <Compile Include="Audio\AbstractUtility.cs" />
+    <Compile Include="Audio\AudioUtilityException.cs" />
     <Compile Include="Audio\BitDepthOperationNotImplemented.cs" />
     <Compile Include="Audio\ChannelNotAvailableException.cs" />
     <Compile Include="Audio\ChannelSelectionOperationNotImplemented.cs" />
@@ -147,7 +148,11 @@
     <AdditionalFiles Include="..\..\stylecop.json">
       <Link>stylecop.json</Link>
     </AdditionalFiles>
-    <None Include="app.config">
+    <None Include="..\AP.Settings.config">
+      <Link>AP.Settings.config</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />

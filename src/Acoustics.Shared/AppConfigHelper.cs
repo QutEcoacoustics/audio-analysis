@@ -11,19 +11,17 @@ namespace Acoustics.Shared
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.Specialized;
     using System.Configuration;
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using ConfigFile;
+    using log4net;
 
     public static class AppConfigHelper
     {
-        private static readonly string ExecutingAssemblyPath =
-            (Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly()).Location;
-
-        public static readonly string ExecutingAssemblyDirectory = Path.GetDirectoryName(ExecutingAssemblyPath);
-
         public const string DefaultTargetSampleRateKey = "DefaultTargetSampleRate";
 
         public static int DefaultTargetSampleRate => GetInt(DefaultTargetSampleRateKey);
@@ -38,6 +36,64 @@ namespace Acoustics.Shared
         public const string StandardDateFormatUtc = "yyyyMMdd-HHmmssZ";
 
         public const string StandardDateFormatUtcWithFractionalSeconds = "yyyyMMdd-HHmmss.FFFZ";
+
+        private static readonly string ExecutingAssemblyPath =
+            (Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly()).Location;
+
+        private static readonly KeyValueConfigurationCollection SharedSettings;
+
+        private static readonly ILog Log = LogManager.GetLogger(nameof(AppConfigHelper));
+
+        private static readonly bool IsLinuxValue;
+        private static readonly bool IsWindowsValue;
+        private static readonly bool IsMacOsXValue;
+
+        static AppConfigHelper()
+        {
+            ExeConfigurationFileMap exeConfigurationFileMap = new ExeConfigurationFileMap();
+            exeConfigurationFileMap.ExeConfigFilename = Path.Combine(ExecutingAssemblyDirectory, "AP.Settings.Config");
+            var sharedConfig = ConfigurationManager.OpenMappedExeConfiguration(exeConfigurationFileMap, ConfigurationUserLevel.None);
+            SharedSettings = sharedConfig.AppSettings.Settings;
+
+            IsMono = Type.GetType("Mono.Runtime") != null;
+            CheckOs(ref IsWindowsValue, ref IsLinuxValue, ref IsMacOsXValue);
+        }
+
+        public static string ExecutingAssemblyDirectory { get; } = Path.GetDirectoryName(ExecutingAssemblyPath);
+
+        /// <summary>
+        /// Adapted from https://stackoverflow.com/a/38795621/224512
+        /// </summary>
+        private static void CheckOs(ref bool isWindows, ref bool isLinux, ref bool isMacOsX)
+        {
+            string windir = Environment.GetEnvironmentVariable("windir");
+            if (!string.IsNullOrEmpty(windir) && windir.Contains(@"\") && Directory.Exists(windir))
+            {
+                isWindows = true;
+            }
+            else if (File.Exists(@"/proc/sys/kernel/ostype"))
+            {
+                string osType = File.ReadAllText(@"/proc/sys/kernel/ostype");
+                if (osType.StartsWith("Linux", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Note: Android gets here too
+                    isLinux = true;
+                }
+                else
+                {
+                    throw new PlatformNotSupportedException(osType);
+                }
+            }
+            else if (File.Exists(@"/System/Library/CoreServices/SystemVersion.plist"))
+            {
+                // Note: iOS gets here too
+                isMacOsX = true;
+            }
+            else
+            {
+                throw new PlatformNotSupportedException("Unkown platform");
+            }
+        }
 
         public static string FileDateFormatUtc
         {
@@ -133,7 +189,7 @@ namespace Acoustics.Shared
         {
             get
             {
-                return GetExeFile("AudioUtilityMp3SpltExe");
+                return GetExeFile("AudioUtilityMp3SpltExe", required: false);
             }
         }
 
@@ -144,7 +200,7 @@ namespace Acoustics.Shared
         {
             get
             {
-                return GetExeFile("AudioUtilityShntoolExe");
+                return GetExeFile("AudioUtilityShntoolExe", required: false);
             }
         }
 
@@ -267,31 +323,22 @@ namespace Acoustics.Shared
             }
         }
 
-        public static bool IsMono
-        {
-            get
-            {
-                return Type.GetType("Mono.Runtime") != null;
-            }
-        }
+        public static bool IsMono { get; }
 
-        public static bool IsLinux
-        {
-            get
-            {
-                return Environment.OSVersion.Platform == PlatformID.Unix;
-            }
-        }
+        public static bool IsLinux => IsLinuxValue;
+
+        public static bool IsWindows => IsWindowsValue;
+
+        public static bool IsMacOsX => IsMacOsXValue;
 
         public static string GetString(string key)
         {
-            if (ConfigurationManager.AppSettings.AllKeys.All(k => k != key))
-            {
-                //throw new ConfigurationErrorsException("Could not find key: " + key);
-                return string.Empty;
-            }
+            var found = TryGetString(key, out var value);
 
-            var value = ConfigurationManager.AppSettings[key];
+            if (!found)
+            {
+                throw new ConfigurationErrorsException("Could not find key: " + key);
+            }
 
             if (string.IsNullOrEmpty(value))
             {
@@ -301,9 +348,16 @@ namespace Acoustics.Shared
             return value;
         }
 
+        public static bool TryGetString(string key, out string value)
+        {
+            var found = Contains(key);
+            value = found ? SharedSettings[key].Value : null;
+            return found;
+        }
+
         public static bool Contains(string key)
         {
-            return ConfigurationManager.AppSettings.AllKeys.Any(k => k == key);
+            return SharedSettings.AllKeys.Contains(key);
         }
 
         //        public static IEnumerable<string> GetStrings(string key, params char[] separators)
@@ -315,7 +369,7 @@ namespace Acoustics.Shared
                 .Select(s => s.Trim())
                 .Where(v => !string.IsNullOrEmpty(v));
 
-            if (!values.Any() || values.All(s => string.IsNullOrEmpty(s)))
+            if (!values.Any() || values.All(string.IsNullOrEmpty))
             {
                 throw new ConfigurationErrorsException("Key " + key + " exists but does not have a value");
             }
@@ -491,15 +545,48 @@ namespace Acoustics.Shared
             return dirs;
         }
 
-        private static string GetExeFile(string appConfigKey)
+        private static string GetExeFile(string appConfigKey, bool required = true)
         {
-            if (IsLinux)
+            string key;
+
+            if (IsMacOsX)
             {
-                return GetString(appConfigKey + "Linux");
+                key = appConfigKey + "MacOsX";
+            }
+            else if (IsLinux)
+            {
+                key = appConfigKey + "Linux";
             }
             else
             {
-                return Path.Combine(AssemblyDir.FullName, GetString(appConfigKey));
+                key = appConfigKey;
+            }
+
+            var found = TryGetString(key, out var path);
+
+            if (!found && required)
+            {
+                throw new ConfigFileException($"An exe path for `{key}` was not found in AP.Settings.config");
+            }
+
+            if (path.IsNullOrEmpty())
+            {
+                if (required)
+                {
+                    throw new ConfigFileException($"An exe path for `{key}` has an empty value set and it is required (in AP.Settings.config)");
+                }
+
+                Log.Debug($"No key found for `{key}` in the AP.Settings.config. This program may fail if this binary is needed.");
+                return null;
+            }
+
+            if (Path.IsPathRooted(path))
+            {
+                return path;
+            }
+            else
+            {
+                return Path.Combine(AssemblyDir.FullName, path);
             }
         }
     }
