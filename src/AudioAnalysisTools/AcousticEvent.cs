@@ -72,12 +72,15 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        /// Gets or sets units = seconds
-        /// Time offset from start of current segment to start of event.
+        /// Gets the time offset from start of current segment to start of event in seconds.
         /// NOTE: AcousticEvents do not have a notion of time offset wrt start of recording ; - only to start of current recording segment.
         /// Proxied to EventBase.EventStartSeconds
         /// </summary>
-        public double TimeStart { get; set; }
+        /// <remarks>
+        /// Note: converted to private setter so we can control how this is set. Recommend using <see cref="SetEventPositionRelative"/>
+        /// after event instantiation to modify bounds.
+        /// </remarks>
+        public double TimeStart { get; private set; }
 
         /// <summary>
         /// Gets or sets units = seconds
@@ -86,7 +89,11 @@ namespace AudioAnalysisTools
         /// This field is NOT in EventBase. EventBase only requires TimeStart
         ///  because it is designed to also accomodate points.
         /// </summary>
-        public double TimeEnd { get; set; }
+        /// <remarks>
+        /// Note: converted to private setter so we can control how this is set. Recommend using <see cref="SetEventPositionRelative"/>
+        /// after event instantiation to modify bounds.
+        /// </remarks>
+        public double TimeEnd { get; private set; }
 
         public double EventEndSeconds => this.TimeEnd + this.SegmentStartSeconds;
 

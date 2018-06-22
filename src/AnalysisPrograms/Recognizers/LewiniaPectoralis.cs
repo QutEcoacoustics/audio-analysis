@@ -121,7 +121,7 @@ namespace AnalysisPrograms.Recognizers
             // cycle through the profiles and analyse recording using each of them
             foreach (var name in profileNames)
             {
-                LoggedConsole.WriteLine($"Reading profile <{name}>.");
+                Log.Debug($"Reading profile <{name}>.");
                 recognizerConfig.ReadConfigFile(configuration, name);
 
                 // ignore oscillations above this threshold freq
@@ -354,7 +354,7 @@ namespace AnalysisPrograms.Recognizers
                 maxDuration,
                 segmentStartOffset);
 
-            CropEvents(predictedEvents, upperArray);
+            CropEvents(predictedEvents, upperArray, segmentStartOffset);
             var hits = new double[rowCount, colCount];
 
             //######################################################################
@@ -378,7 +378,7 @@ namespace AnalysisPrograms.Recognizers
             return Tuple.Create(sonogram, hits, intensity, predictedEvents, debugImage);
         } //Analysis()
 
-        public static void CropEvents(List<AcousticEvent> events, double[] intensity)
+        public static void CropEvents(List<AcousticEvent> events, double[] intensity, TimeSpan segmentStartOffset)
         {
             double severity = 0.1;
             int length = intensity.Length;
@@ -399,8 +399,7 @@ namespace AnalysisPrograms.Recognizers
 
                 var o = new Oblong(newMinRow, ev.Oblong.ColumnLeft, newMaxRow, ev.Oblong.ColumnRight);
                 ev.Oblong = o;
-                ev.TimeStart = newMinRow * ev.FrameOffset;
-                ev.TimeEnd = newMaxRow * ev.FrameOffset;
+                ev.SetEventPositionRelative(segmentStartOffset, newMinRow * ev.FrameOffset, newMaxRow * ev.FrameOffset);
             }
         }
 

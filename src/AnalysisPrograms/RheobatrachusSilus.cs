@@ -150,7 +150,7 @@ namespace AnalysisPrograms
                 minDuration,
                 maxDuration,
                 segmentStartOffset);
-            CropEvents(predictedEvents, upperArray);
+            CropEvents(predictedEvents, upperArray, segmentStartOffset);
             var hits = new double[rowCount, colCount];
 
             var plots = new List<Plot>();
@@ -165,7 +165,7 @@ namespace AnalysisPrograms
             return Tuple.Create(sonogram, hits, plots, predictedEvents, tsRecordingtDuration);
         } //Analysis()
 
-        public static void CropEvents(List<AcousticEvent> events, double[] intensity)
+        public static void CropEvents(List<AcousticEvent> events, double[] intensity, TimeSpan segmentStartOffset)
         {
             double severity = 0.1;
             int length = intensity.Length;
@@ -186,8 +186,7 @@ namespace AnalysisPrograms
 
                 Oblong o = new Oblong(newMinRow, ev.Oblong.ColumnLeft, newMaxRow, ev.Oblong.ColumnRight);
                 ev.Oblong = o;
-                ev.TimeStart = newMinRow * ev.FrameOffset;
-                ev.TimeEnd = newMaxRow * ev.FrameOffset;
+                ev.SetEventPositionRelative(segmentStartOffset, newMinRow * ev.FrameOffset, newMaxRow * ev.FrameOffset);
             }
         }
     }
