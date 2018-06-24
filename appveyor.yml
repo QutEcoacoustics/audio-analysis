@@ -136,10 +136,10 @@ deploy:
       SHOULD_RELEASE: True
       
 # scripts to run after deployment
-after_deploy:
-  # build and push our docker image
-  - ps: docker login -u="$env:DOCKER_USER" -p="$env:DOCKER_PASS"
-  - ps: . .\build\build_docker.ps1 "$env:ApVersion"
+#after_deploy:
+#  # build and push our docker image
+#  - ps: docker login -u="$env:DOCKER_USER" -p="$env:DOCKER_PASS"
+#  - ps: . .\build\build_docker.ps1 "$env:ApVersion"
 
 
 notifications:
