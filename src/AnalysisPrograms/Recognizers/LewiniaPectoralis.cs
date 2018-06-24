@@ -175,7 +175,7 @@ namespace AnalysisPrograms.Recognizers
                 {
                     var imageName = AnalysisResultName(recording.BaseName, this.SpeciesName, "png", "DebugSpectrogram");
                     var debugPath = outputDirectory.Combine(imageName);
-                    debugImage.Save(debugPath.FullName);
+                    //debugImage.Save(debugPath.FullName);
                 }
 
                 foreach (var ae in predictedEvents)
