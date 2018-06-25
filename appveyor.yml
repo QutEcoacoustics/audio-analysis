@@ -128,7 +128,7 @@ deploy:
     description: "$(ApReleaseMessage)"
     auth_token: $(GH_CREATE_RELEASES_TOKEN)
     artifact: DebugPackage,ReleasePackage
-    prerelease: false
+    prerelease: true
     on:
       # Do not create new releases unless this is the master branch
       branch: master
