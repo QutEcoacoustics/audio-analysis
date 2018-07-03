@@ -407,14 +407,14 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                     header.Add("mean" + i.ToString());
                 }
 
-                for (int i = 0; i < allStdFeatureVectors.ToArray()[j].GetLength(1); i++)
-                {
-                    header.Add("std" + i.ToString());
-                }
-
                 for (int i = 0; i < allMaxFeatureVectors.ToArray()[j].GetLength(1); i++)
                 {
                     header.Add("max" + i.ToString());
+                }
+
+                for (int i = 0; i < allStdFeatureVectors.ToArray()[j].GetLength(1); i++)
+                {
+                    header.Add("std" + i.ToString());
                 }
 
                 // concatenating mean, std, and max vector together for each 1 second
