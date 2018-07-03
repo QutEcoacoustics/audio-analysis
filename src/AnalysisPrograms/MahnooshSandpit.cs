@@ -77,12 +77,12 @@ namespace AnalysisPrograms
 
             // Black Rail call is between 1000 Hz and 3000 Hz, which is mapped to Mel value [1000, 1876]
             // Hence, we only work with freq bins between [40, 76]
-            int minFreqBin = 40; //1; //
-            int maxFreqBin = 80; //finalBinCount; //76;
+            int minFreqBin = 1; //35; //40; //
+            int maxFreqBin = finalBinCount; //85; //80; //76;
             int numFreqBand = 1;
             int patchWidth = (maxFreqBin - minFreqBin + 1) / numFreqBand; //finalBinCount / numFreqBand;
             int patchHeight = 1; // 2; // 4; // 16; // 6; // Frame size
-            int numRandomPatches = 4; //80; // 8; // 20; //2; //10; //100; // 40; //  30; //  500; //
+            int numRandomPatches = 4; //8; //80; //  20; //2; //10; //100; // 40; //  30; //  500; //
             // int fileCount = Directory.GetFiles(folderPath, "*.wav").Length;
 
             // Define variable number of "randomPatch" lists based on "numFreqBand"
@@ -154,7 +154,7 @@ namespace AnalysisPrograms
             }
 
             // convert list of random patches matrices to one matrix
-            int numberOfClusters = 256; //10; //500; //16; //128; //20; // 500; // 128; // 64; // 32; //  50;
+            int numberOfClusters = 256; //500; //10; //16; //128; //20; // 500; // 128; // 64; // 32; //  50;
             List<double[][]> allBandsCentroids = new List<double[][]>();
             List<KMeansClusterCollection> allClusteringOutput = new List<KMeansClusterCollection>();
 
@@ -236,7 +236,7 @@ namespace AnalysisPrograms
             //var recording2Path = Path.Combine(trainSetPath, "SM304264_0+1_20160421_054539_29-30min.wav"); // an example from the train set
             //var recording2Path = Path.Combine(testSetPath, "SM304264_0+1_20160423_054539_29-30min.wav"); // an example from the test set
             // check whether there is any file in the folder/subfolders
-            if (Directory.GetFiles(trainSetPath, "*", SearchOption.AllDirectories).Length == 0) //testSetPath
+            if (Directory.GetFiles(trainSetPath, "*", SearchOption.AllDirectories).Length == 0) // testSetPath
             {
                 throw new ArgumentException("The folder of recordings is empty...");
             }
@@ -244,12 +244,13 @@ namespace AnalysisPrograms
             //*****
             // lists of features for all processing files
             // the key is the file name, and the value is the features for different bands
+            Dictionary<string, List<double[,]>> allFilesMinFeatureVectors = new Dictionary<string, List<double[,]>>();
             Dictionary<string, List<double[,]>> allFilesMeanFeatureVectors = new Dictionary<string, List<double[,]>>();
             Dictionary<string, List<double[,]>> allFilesMaxFeatureVectors = new Dictionary<string, List<double[,]>>();
             Dictionary<string, List<double[,]>> allFilesStdFeatureVectors = new Dictionary<string, List<double[,]>>();
             Dictionary<string, List<double[,]>> allFilesSknewnessFeatureVectors = new Dictionary<string, List<double[,]>>();
 
-            foreach (string filePath in Directory.GetFiles(trainSetPath, "*.wav")) //testSetPath
+            foreach (string filePath in Directory.GetFiles(trainSetPath, "*.wav")) // testSetPath
             {
                 FileInfo fileInfo = filePath.ToFileInfo();
 
@@ -350,20 +351,22 @@ namespace AnalysisPrograms
                     // +++++++++++++++++++++++++++++++++++Temporal Summarization
                     // Based on the resolution to generate featuree, the "numFrames" parameter will be set.
                     // Each 24 single-frame patches form 1 second
-                    // for each 24 patch, we generate 3 vectors of mean, std, and max (plus skewness from Accord.net)
+                    // for each 24 patch, we generate 3 vectors of min, mean, std, and max (plus skewness from Accord.net)
                     // The pre-assumption is that each input recording is 1 minute long
 
                     // store features of different bands in lists
+                    List<double[,]> allMinFeatureVectors = new List<double[,]>();
                     List<double[,]> allMeanFeatureVectors = new List<double[,]>();
                     List<double[,]> allMaxFeatureVectors = new List<double[,]>();
                     List<double[,]> allStdFeatureVectors = new List<double[,]>();
                     List<double[,]> allSkewnessFeatureVectors = new List<double[,]>();
 
                     // number of frames needs to be concatenated to form 1 second. Each 24 frames make 1 second.
-                    int numFrames = (24 / patchHeight) * 60; //24 / patchHeight; //
+                    int numFrames = (24 / patchHeight) * 60; //24 // patchHeight; //
 
                     foreach (var freqBandFeature in allFeatureTransVectors)
                     {
+                        List<double[]> minFeatureVectors = new List<double[]>();
                         List<double[]> meanFeatureVectors = new List<double[]>();
                         List<double[]> maxFeatureVectors = new List<double[]>();
                         List<double[]> stdFeatureVectors = new List<double[]>();
@@ -379,6 +382,7 @@ namespace AnalysisPrograms
                                 sequencesOfFramesList.Add(freqBandFeature[i]);
                             }
 
+                            List<double> min = new List<double>();
                             List<double> mean = new List<double>();
                             List<double> std = new List<double>();
                             List<double> max = new List<double>();
@@ -396,12 +400,14 @@ namespace AnalysisPrograms
                                     temp[k] = sequencesOfFrames[k, j];
                                 }
 
+                                min.Add(temp.GetMinValue());
                                 mean.Add(AutoAndCrossCorrelation.GetAverage(temp));
                                 std.Add(AutoAndCrossCorrelation.GetStdev(temp));
                                 max.Add(temp.GetMaxValue());
                                 skewness.Add(temp.Skewness());
                             }
 
+                            minFeatureVectors.Add(min.ToArray());
                             meanFeatureVectors.Add(mean.ToArray());
                             maxFeatureVectors.Add(max.ToArray());
                             stdFeatureVectors.Add(std.ToArray());
@@ -423,6 +429,7 @@ namespace AnalysisPrograms
                                 sequencesOfFramesList.Add(freqBandFeature[i]);
                             }
 
+                            List<double> min = new List<double>();
                             List<double> mean = new List<double>();
                             List<double> std = new List<double>();
                             List<double> max = new List<double>();
@@ -439,18 +446,21 @@ namespace AnalysisPrograms
                                     temp[k] = sequencesOfFrames[k, j];
                                 }
 
+                                min.Add(temp.GetMinValue());
                                 mean.Add(AutoAndCrossCorrelation.GetAverage(temp));
                                 std.Add(AutoAndCrossCorrelation.GetStdev(temp));
                                 max.Add(temp.GetMaxValue());
                                 skewness.Add(temp.Skewness());
                             }
 
+                            minFeatureVectors.Add(min.ToArray());
                             meanFeatureVectors.Add(mean.ToArray());
                             maxFeatureVectors.Add(max.ToArray());
                             stdFeatureVectors.Add(std.ToArray());
                             skewnessFeatureVectors.Add(skewness.ToArray());
                         }
 
+                        allMinFeatureVectors.Add(minFeatureVectors.ToArray().ToMatrix());
                         allMeanFeatureVectors.Add(meanFeatureVectors.ToArray().ToMatrix());
                         allMaxFeatureVectors.Add(maxFeatureVectors.ToArray().ToMatrix());
                         allStdFeatureVectors.Add(stdFeatureVectors.ToArray().ToMatrix());
@@ -462,6 +472,7 @@ namespace AnalysisPrograms
                     // and their values are a list<double[,]> which the list.count is
                     // equal to the number of freq bands defined as an user-defined parameter.
                     // the 2D-array is the feature vectors.
+                    allFilesMinFeatureVectors.Add(fileInfo.Name, allMinFeatureVectors);
                     allFilesMeanFeatureVectors.Add(fileInfo.Name, allMeanFeatureVectors);
                     allFilesMaxFeatureVectors.Add(fileInfo.Name, allMaxFeatureVectors);
                     allFilesStdFeatureVectors.Add(fileInfo.Name, allStdFeatureVectors);
@@ -558,6 +569,7 @@ namespace AnalysisPrograms
             // Then, write the features of each pre-defined frequency band into a separate CSV file.
 
             var filesName = allFilesMeanFeatureVectors.Keys.ToArray();
+            var minFeatures = allFilesMinFeatureVectors.Values.ToArray();
             var meanFeatures = allFilesMeanFeatureVectors.Values.ToArray();
             var maxFeatures = allFilesMaxFeatureVectors.Values.ToArray();
             var stdFeatures = allFilesStdFeatureVectors.Values.ToArray();
@@ -566,6 +578,7 @@ namespace AnalysisPrograms
             // The number of elements in the list shows the number of freq bands
             // the size of each element in the list shows the number of files processed to generate feature for.
             // the dimensions of the matrix shows the number of feature vectors generated for each file and the length of feature vector
+            var allMins = new List<double[][,]>();
             var allMeans = new List<double[][,]>();
             var allMaxs = new List<double[][,]>();
             var allStds = new List<double[][,]>();
@@ -574,6 +587,7 @@ namespace AnalysisPrograms
             // looping over freq bands
             for (int i = 0; i < meanFeatures[0].Count; i++)
             {
+                var mins = new List<double[,]>();
                 var means = new List<double[,]>();
                 var maxs = new List<double[,]>();
                 var stds = new List<double[,]>();
@@ -582,12 +596,14 @@ namespace AnalysisPrograms
                 // looping over all files
                 for (int k = 0; k < meanFeatures.Length; k++)
                 {
+                    mins.Add(minFeatures[k].ToArray()[i]);
                     means.Add(meanFeatures[k].ToArray()[i]);
                     maxs.Add(maxFeatures[k].ToArray()[i]);
                     stds.Add(stdFeatures[k].ToArray()[i]);
                     skewnesses.Add(skewnessFeatures[k].ToArray()[i]);
                 }
 
+                allMins.Add(mins.ToArray());
                 allMeans.Add(means.ToArray());
                 allMaxs.Add(maxs.ToArray());
                 allStds.Add(stds.ToArray());
@@ -604,19 +620,24 @@ namespace AnalysisPrograms
                 // creating the header for CSV file
                 List<string> header = new List<string>();
                 header.Add("file name");
+                for (int j = 0; j < allMins.ToArray()[i][0].GetLength(1); j++)
+                {
+                    header.Add("min" + j.ToString());
+                }
+
                 for (int j = 0; j < allMeans.ToArray()[i][0].GetLength(1); j++)
                 {
                     header.Add("mean" + j.ToString());
                 }
 
-                for (int j = 0; j < allStds.ToArray()[i][0].GetLength(1); j++)
-                {
-                    header.Add("std" + j.ToString());
-                }
-
                 for (int j = 0; j < allMaxs.ToArray()[i][0].GetLength(1); j++)
                 {
                     header.Add("max" + j.ToString());
+                }
+
+                for (int j = 0; j < allStds.ToArray()[i][0].GetLength(1); j++)
+                {
+                    header.Add("std" + j.ToString());
                 }
 
                 for (int j = 0; j < allSkewness.ToArray()[i][0].GetLength(1); j++)
@@ -644,6 +665,7 @@ namespace AnalysisPrograms
                     {
                         List<double[]> featureList = new List<double[]>
                         {
+                            allMins.ToArray()[i][j].ToJagged()[k],
                             allMeans.ToArray()[i][j].ToJagged()[k],
                             allMaxs.ToArray()[i][j].ToJagged()[k],
                             allStds.ToArray()[i][j].ToJagged()[k],
