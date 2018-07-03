@@ -129,6 +129,8 @@ namespace AnalysisPrograms.SourcePreparers
 
                     var segmentDuration = endOffset - startOffset;
 
+                    Log.Debug($"{nameof(LocalSourcePreparer)}.{nameof(this.CalculateSegments)}: Calculating segments for duration {segmentDuration}, each {settings.AnalysisMaxSegmentDuration.Value.TotalMilliseconds} long");
+
                     // segment into exact chunks - all but the last chunk will be equal to the max duration
                     var segments = AudioFilePreparer.DivideExactLeaveLeftoversAtEnd(
                         Convert.ToInt64(segmentDuration.TotalMilliseconds),
