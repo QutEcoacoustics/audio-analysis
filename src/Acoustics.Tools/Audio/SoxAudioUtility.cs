@@ -409,7 +409,7 @@
                         $"The file {source.FullName} reported a bit rate of {stringValue} which is not supported");
                 }
 
-                var value = double.Parse(stringValue);
+                var value = double.Parse(stringValue, CultureInfo.InvariantCulture);
 
                 value = value * magnitude;
 
@@ -655,7 +655,7 @@ a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
                 lines = process.StandardOutput.Split(new[] {'\n', '\r'}, StringSplitOptions.RemoveEmptyEntries);
             }
 
-            return TimeSpan.FromSeconds(double.Parse(lines.First()));
+            return TimeSpan.FromSeconds(double.Parse(lines.First(), CultureInfo.InvariantCulture));
         }
 
         private static string GetMediaType(Dictionary<string, string> rawData, string extension)

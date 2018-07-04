@@ -507,7 +507,7 @@
         protected int? ParseIntStringWithException(string text, string propertyName, IEnumerable<string> expectedNonNumeric = null)
         {
             int parsed = 0;
-            if (!int.TryParse(text, out parsed))
+            if (!int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out parsed))
             {
                 if (expectedNonNumeric != null && expectedNonNumeric.Contains(text))
                 {
@@ -532,7 +532,7 @@
         protected long? ParseLongStringWithException(string text, string propertyName, IEnumerable<string> expectedNonNumeric = null)
         {
             long parsed = 0;
-            if (!long.TryParse(text, out parsed))
+            if (!long.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out parsed))
             {
                 if (expectedNonNumeric != null && expectedNonNumeric.Contains(text))
                 {

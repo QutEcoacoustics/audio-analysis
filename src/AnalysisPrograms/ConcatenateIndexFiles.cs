@@ -101,7 +101,7 @@ namespace AnalysisPrograms
             public TimeSpan? TimeSpanOffsetHint { get; set; }
 
             [Option(
-                CommandOptionType.SingleValue,
+                CommandOptionType.NoValue,
                 Description = "Draw false-colour spectrograms after concatenating index files",
                 ShortName = "")]
             public bool DrawImages { get; set; } = true;
@@ -131,6 +131,7 @@ namespace AnalysisPrograms
             public string FalseColourSpectrogramConfig { get; set; }
 
             [Option(
+                CommandOptionType.NoValue,
                 Description = "Set true only when concatenating more than 24-hours of data into one image",
                 LongName = "concatenate-everything",
                 ShortName = "")]
