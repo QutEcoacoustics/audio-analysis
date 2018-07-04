@@ -70,10 +70,10 @@ namespace AnalysisPrograms
                 // used to get files from availae for Black rail and Least Bittern papers.
                 //CodeToExtractFeatureVectorOfIndices();
                 //CodeToGetLdfcSpectrogramsFromAvailae();
-                CodeToPlaceScoreTracksUnderLdfcSpectrograms();
+                //CodeToPlaceScoreTracksUnderLdfcSpectrograms();
                 //CodeToPlaceScoreTracksUnderSingleImage();
 
-                //ConcatenateIndexFilesAndSpectrograms();
+                ConcatenateIndexFilesAndSpectrograms();
                 //ConcatenateMarineImages();
                 //ConcatenateImages();
                 //ConcatenateTwelveImages();
@@ -95,7 +95,7 @@ namespace AnalysisPrograms
                 //TEST_FilterMovingAverage();
                 //TestImageProcessing();
                 //TestMatrix3dClass();
-                TestsOfFrequencyScales();
+                //TestsOfFrequencyScales();
                 //TestReadingFileOfSummaryIndices();
                 //TestStructureTensor();
                 //TestWavelets();
@@ -629,7 +629,7 @@ namespace AnalysisPrograms
         {
             // set the default values here
             var indexPropertiesConfig =
-                @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml";
+                @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\IndexPropertiesConfig.yml";
             var timeSpanOffsetHint = TimeSpan.FromHours(10); // default = Brisbane time
             var drawImages = true;
 
@@ -647,7 +647,7 @@ namespace AnalysisPrograms
 
             // SET DEFAULT COLOUR MAPS
             string colorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
-            string colorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_SPT;
+            string colorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_R3D;
 
             // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and EchoGaps.
             string gapRendering = "TimedGaps"; // the default
@@ -681,13 +681,13 @@ namespace AnalysisPrograms
             // The drive: work = G; home = E
             drive = "G";
             // top level directory
-            DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\WavFiles\\TestRecordings\\CompareSM2versusSM4\\MicrophoneTest_AvailaeResult111\\Old_microphone_SM2test"),
+            DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\Ecoacoustics\\WavFiles\\TestRecordings\\CompareSM2versusSM4\\MicrophoneTest_AvailaeResult111\\Old_microphone_SM2test"),
             };
             string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
             string opFileStem = "SM2WithOldMics";
             //string opFileStem = "SM4WithNewMics";
-            string opPath = $"{drive}:\\SensorNetworks\\Output\\WildLifeAcoustics\\MicrophoneTests";
-            var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatSpectrogramFalseColourConfig.yml");
+            string opPath = $"{drive}:\\Ecoacoustics\\Output\\WildLifeAcoustics\\MicrophoneTests";
+            var falseColourSpgConfig = new FileInfo($"{drive}:\\Ecoacoustics\\SoftwareTests\\TestConcatenation\\Data\\ConcatSpectrogramFalseColourConfig.yml");
             FileInfo sunriseDatafile = null;
             bool concatenateEverythingYouCanLayYourHandsOn = false; // Set false to work in 24-hour blocks only
             dtoStart = new DateTimeOffset(2016, 08, 09, 0, 0, 0, TimeSpan.Zero);
@@ -697,45 +697,72 @@ namespace AnalysisPrograms
             // ########################## END of Yvonne's recordings of SM2 and SM4
             */
 
-            // ########################## CONCATENATION of Pillaga Forest recordings from Brad Law
+            // ########################## CONCATENATION of MARINA SCARPELLI recordings from Brazil
             // The drive: work = G; home = E
-            drive = "G";
+            drive = "C";
 
-            // top level directory AVAILAE JOB #181
+            // top level directory AVAILAE JOB #
             string[] dataDirs =
             {
-                $"{drive}:\\SensorNetworks\\Output\\BradLaw\\PillagaData",
+                $"{drive}:\\Ecoacoustics\\Collaborations\\MarinaScarpelli\\Indices",
             };
-            string directoryFilter = "Pillaga*"; // this is a directory filter to locate only the required files
-            string opFileStem = "PillagaForest20121125";
-            string opPath = $"{drive}:\\SensorNetworks\\Output\\BradLaw";
-            var falseColourSpgConfig =
-                $"{drive}:\\SensorNetworks\\Output\\Bats\\config\\SpectrogramFalseColourConfig.yml";
+            string directoryFilter = "LEEC02_0_20161231_*.wav"; // this is a directory filter to locate only the required files
+            string opFileStem = "LEEC02_20161231_";
+            string opPath = $"{drive}:\\Ecoacoustics\\Collaborations\\MarinaScarpelli\\Concat";
+            var falseColourSpgConfig = $"{drive}:\\Work\\GitHub\\audio-analysis\\src\\AnalysisConfigFiles\\SpectrogramFalseColourConfig.yml";
             FileInfo sunriseDatafile = null;
 
             concatenateEverythingYouCanLayYourHandsOn = true;
 
             // start and end dates INCLUSIVE
-            dtoStart = new DateTimeOffset(2012, 08, 08, 0, 0, 0, TimeSpan.Zero);
-            dtoEnd = new DateTimeOffset(2012, 08, 08, 0, 0, 0, TimeSpan.Zero);
+            dtoStart = new DateTimeOffset(2016, 12, 31, 0, 0, 0, TimeSpan.Zero);
+            dtoEnd = new DateTimeOffset(2016, 12, 31, 0, 0, 0, TimeSpan.Zero);
 
             // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and EchoGaps.
-            gapRendering = "EchoGaps";
+            gapRendering = "TimedGaps";
 
             // ########################## END of Pillaga Forest recordings
 
+            /*
+                        // ########################## CONCATENATION of Pillaga Forest recordings from Brad Law
+                        // The drive: work = G; home = E
+                        drive = "G";
+
+                        // top level directory AVAILAE JOB #181
+                        string[] dataDirs =
+                        {
+                            $"{drive}:\\Ecoacoustics\\Output\\BradLaw\\PillagaData",
+                        };
+                        string directoryFilter = "Pillaga*"; // this is a directory filter to locate only the required files
+                        string opFileStem = "PillagaForest20121125";
+                        string opPath = $"{drive}:\\Ecoacoustics\\Output\\BradLaw";
+                        var falseColourSpgConfig =
+                            $"{drive}:\\Ecoacoustics\\Output\\Bats\\config\\SpectrogramFalseColourConfig.yml";
+                        FileInfo sunriseDatafile = null;
+
+                        concatenateEverythingYouCanLayYourHandsOn = true;
+
+                        // start and end dates INCLUSIVE
+                        dtoStart = new DateTimeOffset(2012, 08, 08, 0, 0, 0, TimeSpan.Zero);
+                        dtoEnd = new DateTimeOffset(2012, 08, 08, 0, 0, 0, TimeSpan.Zero);
+
+                        // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and EchoGaps.
+                        gapRendering = "EchoGaps";
+
+                        // ########################## END of Pillaga Forest recordings
+                        */
             /*
             // ########################## CONCATENATION of Yvonne's BAT recordings
             // The drive: work = G; home = E
             drive = "G";
 
             // top level directory AVAILAE JOB #181
-            DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\OutputDataSets\\YvonneBats_Gympie20170906"),
+            DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\Ecoacoustics\\OutputDataSets\\YvonneBats_Gympie20170906"),
             };
             string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
             string opFileStem = "GympieBATS_2017August";
-            string opPath = $"{drive}:\\SensorNetworks\\Output\\Bats\\BatsTestTimeGaps";
-            var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\Output\\Bats\\config\\SpectrogramFalseColourConfig.yml");
+            string opPath = $"{drive}:\\Ecoacoustics\\Output\\Bats\\BatsTestTimeGaps";
+            var falseColourSpgConfig = new FileInfo($"{drive}:\\Ecoacoustics\\Output\\Bats\\config\\SpectrogramFalseColourConfig.yml");
             FileInfo sunriseDatafile = null;
 
             // start and end dates INCLUSIVE
@@ -754,12 +781,12 @@ namespace AnalysisPrograms
             drive = "G";
 
             // top level directory
-            DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\Output\\Bhutan\\DebugConcatenateSourceData"),
+            DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\Ecoacoustics\\Output\\Bhutan\\DebugConcatenateSourceData"),
             };
             string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
             string opFileStem = "BhutanTest";
-            string opPath = $"{drive}:\\SensorNetworks\\Output\\Bhutan\\DebugConcatenateOutput";
-            var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatSpectrogramFalseColourConfig.yml");
+            string opPath = $"{drive}:\\Ecoacoustics\\Output\\Bhutan\\DebugConcatenateOutput";
+            var falseColourSpgConfig = new FileInfo($"{drive}:\\Ecoacoustics\\SoftwareTests\\TestConcatenation\\Data\\ConcatSpectrogramFalseColourConfig.yml");
             FileInfo sunriseDatafile = null;
             bool concatenateEverythingYouCanLayYourHandsOn = false; // Set false to work in 24-hour blocks only
             dtoStart = new DateTimeOffset(2017, 02, 03, 0, 0, 0, TimeSpan.Zero);
@@ -778,8 +805,8 @@ namespace AnalysisPrograms
             string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
             string opFileStem = "MengersenNightA";
             //string opFileStem = "MengersenNightB";
-            string opPath = $"{drive}:\\SensorNetworks\\Output\\Mengersen\\NightAConcatenated";
-            var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\SpectrogramFalseColourConfig.yml");
+            string opPath = $"{drive}:\\Ecoacoustics\\Output\\Mengersen\\NightAConcatenated";
+            var falseColourSpgConfig = new FileInfo($"{drive}:\\Ecoacoustics\\SoftwareTests\\Test_Concatenation\\Data\\SpectrogramFalseColourConfig.yml");
             timeSpanOffsetHint = TimeSpan.FromHours(-5);
             FileInfo sunriseDatafile = null;
             bool concatenateEverythingYouCanLayYourHandsOn = false; // Set false to work in 24-hour blocks only
@@ -805,9 +832,9 @@ namespace AnalysisPrograms
                                         };
             string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
             string opFileStem = "LizZnidersic_TasmanIsU2Mez";
-            string opPath = $"{drive}:\\SensorNetworks\\AvailaeFolders\\LizZnidersic\\Test_IndexDistributions";
+            string opPath = $"{drive}:\\Ecoacoustics\\AvailaeFolders\\LizZnidersic\\Test_IndexDistributions";
             //string opPath = $"{drive}:\\AvailaeFolders\\LizZnidersic\\TEST_missingData"; //was used to put results for testing missing data
-            var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\SpectrogramFalseColourConfig.yml");
+            var falseColourSpgConfig = new FileInfo($"{drive}:\\Ecoacoustics\\SoftwareTests\\Test_Concatenation\\Data\\SpectrogramFalseColourConfig.yml");
             timeSpanOffsetHint = TimeSpan.FromHours(8);
             FileInfo sunriseDatafile = null;
             bool concatenateEverythingYouCanLayYourHandsOn = false; // Set false to work in 24-hour blocks only
@@ -827,23 +854,23 @@ namespace AnalysisPrograms
             // ################################ CONCATENATE GROOTE DATA
             // This data derived from Groote recordings I brought back from JCU, July 2016.
             // top level directory
-            //DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\SensorNetworks\\Output\\Frogs\\Canetoad\\2016Oct28-174219 - Michael, Towsey.Indices, #120\\SD Card A"),
-            DirectoryInfo[] dataDirs = { new DirectoryInfo($"G:\\SensorNetworks\\OutputDataSets\\GrooteAcousticIndices_Job120\\SD Card A"),
+            //DirectoryInfo[] dataDirs = { new DirectoryInfo($"{drive}:\\Ecoacoustics\\Output\\Frogs\\Canetoad\\2016Oct28-174219 - Michael, Towsey.Indices, #120\\SD Card A"),
+            DirectoryInfo[] dataDirs = { new DirectoryInfo($"G:\\Ecoacoustics\\OutputDataSets\\GrooteAcousticIndices_Job120\\SD Card A"),
                                                    };
             string directoryFilter = "*.wav";  // this is a directory filter to locate only the required files
-            string testPath = $"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\ExpectedOutput";
-            var falseColourSpgConfig = new FileInfo($"{drive}:\\SensorNetworks\\SoftwareTests\\Test_Concatenation\\Data\\TEST_SpectrogramFalseColourConfig.yml");
+            string testPath = $"{drive}:\\Ecoacoustics\\SoftwareTests\\Test_Concatenation\\ExpectedOutput";
+            var falseColourSpgConfig = new FileInfo($"{drive}:\\Ecoacoustics\\SoftwareTests\\Test_Concatenation\\Data\\TEST_SpectrogramFalseColourConfig.yml");
             timeSpanOffsetHint = TimeSpan.FromHours(9.5);
             FileInfo sunriseDatafile = null;
             string opFileStem = "ConcatGrooteJCU";
-            string opPath = $"{drive}:\\SensorNetworks\\Output\\Frogs\\Canetoad\\ConcatGroote_Job120";
+            string opPath = $"{drive}:\\Ecoacoustics\\Output\\Frogs\\Canetoad\\ConcatGroote_Job120";
             bool concatenateEverythingYouCanLayYourHandsOn = false; // 24 hour blocks only
             // start and end dates INCLUSIVE
             dtoStart = new DateTimeOffset(2016, 08, 03, 0, 0, 0, TimeSpan.Zero);
             dtoEnd   = new DateTimeOffset(2016, 08, 03, 0, 0, 0, TimeSpan.Zero);
 
             eventDirs = new DirectoryInfo[1];
-            eventDirs[0] = new DirectoryInfo(@"G:\SensorNetworks\OutputDataSets\GrooteCaneToad_Job120\\SD Card A");
+            eventDirs[0] = new DirectoryInfo(@"G:\Ecoacoustics\OutputDataSets\GrooteCaneToad_Job120\\SD Card A");
             string eventFilePattern = "*_Towsey.RhinellaMarina.Events.csv";
             */
 
@@ -851,13 +878,13 @@ namespace AnalysisPrograms
             //// top level directory
             ////DirectoryInfo[] dataDirs = { new DirectoryInfo(@"Y:\Results\2015Dec14-094058 - Michael, Towsey.Indices, ICD=30.0, #70\towsey\MarineRecordings\Cornell\2013March-April"),
             ////                           };
-            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"C:\SensorNetworks\WavFiles\MarineRecordings\Cornell\2013March-April"),
+            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"C:\Ecoacoustics\WavFiles\MarineRecordings\Cornell\2013March-April"),
             //                           };
-            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"C:\SensorNetworks\WavFiles\MarineRecordings\Cornell\2013March-April"),
+            //DirectoryInfo[] dataDirs = { new DirectoryInfo(@"C:\Ecoacoustics\WavFiles\MarineRecordings\Cornell\2013March-April"),
             //                           };
             //string directoryFilter = "201303";
-            //string opPath = @"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013March";
-            ////string opPath = @"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013April";
+            //string opPath = @"C:\Ecoacoustics\Output\MarineSonograms\LdFcSpectrograms2013March";
+            ////string opPath = @"C:\Ecoacoustics\Output\MarineSonograms\LdFcSpectrograms2013April";
             //dtoStart = new DateTimeOffset(2013, 03, 01, 0, 0, 0, TimeSpan.Zero);
             //dtoEnd   = new DateTimeOffset(2013, 03, 31, 0, 0, 0, TimeSpan.Zero);
             //string opFileStem = "CornellMarine";
@@ -972,7 +999,7 @@ namespace AnalysisPrograms
             //                           };
             //string directoryFilter = "Site2";
             //string opPath = @"F:\AvailaeFolders\Griffith\Toby\20160201_FWrecordings";
-            ////string opPath = @"C:\SensorNetworks\Output\MarineSonograms\LdFcSpectrograms2013April";
+            ////string opPath = @"C:\Ecoacoustics\Output\MarineSonograms\LdFcSpectrograms2013April";
             //dtoStart = new DateTimeOffset(2015, 07, 09, 0, 0, 0, TimeSpan.Zero);
             //dtoEnd = new DateTimeOffset(2015, 07, 10, 0, 0, 0, TimeSpan.Zero);
             //string opFileStem = "Site1_20150709";
