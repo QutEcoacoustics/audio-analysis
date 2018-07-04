@@ -43,7 +43,7 @@ namespace Acoustics.Shared
                 new DateVariants(
                     @"^(.*)(?<date>(\d{4})(\d{2})(\d{2})(?<separator>T|-|_)(\d{2})(\d{2})(\d{2})(?![+-][\d:]{2,5}|Z)).*\.([a-zA-Z0-9]+)$",
                     AppConfigHelper.StandardDateFormatNoTimeZone,
-                    false,
+                    parseTimeZone: false,
                     AcceptedFormatsNoTimeZone),
 
                 // valid: prefix_20140101-235959+10.mp3, a_00000000-000000+00.a, a_99999999-999999+9999.dnsb48364JSFDSD
@@ -53,7 +53,16 @@ namespace Acoustics.Shared
                 new DateVariants(
                     @"^(.*)(?<date>(\d{4})(\d{2})(\d{2})(?<separator>T|-|_)(\d{2})(\d{2})(\d{2})(?![+-][:]{2,5})(?<offset>([+-](?!\d{0,5}:)(\d{4}|\d{2}))|Z)).*\.([a-zA-Z0-9]+)",
                     AppConfigHelper.StandardDateFormat,
-                    true, AcceptedFormatsTimeZone),
+                    parseTimeZone: true,
+                    AcceptedFormatsTimeZone),
+
+                // temporary support for an alternate date format. We will remove support for this format. We're also not documenting support for this date format.
+                // valid: prefix_2359-01012015.mp3, a_2359-01012015.a, a_2359-01012015.dnsb48364JSFDSD
+                new DateVariants(
+                    @"^(.*)(?<date>(\d{2})(\d{2})(?<separator>-)(\d{2})(\d{2})(\d{4})).*\.([a-zA-Z0-9]+)",
+                    "HHmm-ddMMyyyy",
+                    parseTimeZone: false,
+                    Array.Empty<string>()),
             };
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
