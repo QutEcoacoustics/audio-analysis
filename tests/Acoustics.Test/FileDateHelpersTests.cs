@@ -92,8 +92,6 @@ namespace Acoustics.Test
             }
         }
 
-        //private static DateTimeOffset Parse(string date) => DateTimeOffset.Parse(date);
-
         private Dictionary<string, DateTimeOffset> validFormats = new Dictionary<string, DateTimeOffset>
             {
                 ["sdncv*_-T&^%34jd_20140301_085031+0630blah_T-suffix.mp3"] = Parse("2014-03-01T08:50:31.000+06:30"),
@@ -116,7 +114,6 @@ namespace Acoustics.Test
                     FileDateHelpers.FileNameContainsDateTime(example.Key, out parsedDate),
                     $"Testing format: {example}");
 
-
                 Assert.AreEqual(example.Value, parsedDate);
             }
         }
@@ -131,6 +128,10 @@ namespace Acoustics.Test
                 ["SERF_20130314_000021_000.wav"] = Parse("2013-03-14T00:00:21.000+06:30"),
                 ["20150727T133138.wav"] = Parse("2015-07-27T13:31:38.000+06:30"),
                 ["20150801-064555.wav"] = Parse("2015-08-01T06:45:55.000+06:30"),
+
+                // Temporary support for another date format
+                ["0645-01082015.wav"] = Parse("2015-08-01T06:45:00.000+06:30"),
+                ["test_0645-01082015_test.wav"] = Parse("2015-08-01T06:45:00.000+06:30"),
             };
 
         [TestMethod]
@@ -147,11 +148,9 @@ namespace Acoustics.Test
                         offsetHint: new TimeSpan(6, 30, 0)),
                     $"Testing format: {example}");
 
-
                 Assert.AreEqual(example.Value, parsedDate);
             }
         }
-
 
         private readonly string[] unorderedFiles = new[]
             {
@@ -167,7 +166,6 @@ namespace Acoustics.Test
                 @"Y:\2015Sept20\Woondum3\20150918_000003Z.wav", @"Y:\2015Sept20\Woondum3\20150918_064554+1000.wav",
                 @"Y:\2015Sept20\Woondum3\20150918-133146+1130.wav", @"Y:\2015Sept20\Woondum3\20150918_201738.wav",
             };
-
 
         private DateTimeOffset[] orderedDates = new[]
             {
