@@ -61,9 +61,10 @@ HighFreqBound: 11000
 FrequencyScale: Linear
 
 # SAVE INTERMEDIARY FILES
-# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+# Available options (case-sensitive): [false/Never | true/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
-SaveIntermediateCsvFiles: Never
+# A boolean: [false|true]
+SaveIntermediateCsvFiles: false
 
 # SAVE INTERMEDIARY ONE-MINUTE (standard scale) SPECTROGRAMS
 # One-minute spectrograms can be saved in any analysis task.
@@ -74,7 +75,7 @@ SaveSonogramImages: Never
 # Next two parameters are used only when creating images for zooming spectrograms.
 # Warning: IndexCalculationDuration must be set = 0.2  when SaveSonogramData = true
 # TODO: this option should be refactored out into the spectrogram generation analyzer - currently confusing implementation
-SaveSonogramData: False
+SaveSonogramData: false
 
 # TileImageOutput
 # if true an additional set of images will be produced that are tiles
@@ -91,7 +92,7 @@ TileImageOutput: false
 #     prefix_20140101-235959+1000.wav
 #     prefix_20140101-235959+Z.wav
 # For more info on dates, see <dates.md> at https://github.com/QutEcoacoustics/audio-analysis/tree/master/docs
-RequireDateInFilename: False
+RequireDateInFilename: false
 
 # Do NOT change following path. It is required for drawing false-colour spectrograms
 IndexPropertiesConfig: './IndexPropertiesConfig.yml'
