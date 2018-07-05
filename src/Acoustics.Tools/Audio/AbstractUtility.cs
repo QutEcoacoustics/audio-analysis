@@ -506,8 +506,7 @@
 
         protected int? ParseIntStringWithException(string text, string propertyName, IEnumerable<string> expectedNonNumeric = null)
         {
-            int parsed = 0;
-            if (!int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out parsed))
+            if (!int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed))
             {
                 if (expectedNonNumeric != null && expectedNonNumeric.Contains(text))
                 {
@@ -531,8 +530,26 @@
 
         protected long? ParseLongStringWithException(string text, string propertyName, IEnumerable<string> expectedNonNumeric = null)
         {
-            long parsed = 0;
-            if (!long.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out parsed))
+            if (!long.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed))
+            {
+                if (expectedNonNumeric != null && expectedNonNumeric.Contains(text))
+                {
+                    if (this.Log.IsDebugEnabled)
+                    {
+                        this.Log.DebugFormat("Property '{0}' value '{1}' was found in '{2}', returning null.",
+                            propertyName, text, string.Join(", ", expectedNonNumeric));
+                    }
+                    return null;
+                }
+
+                throw new FormatException($"Failed parsing '{text}' to get {propertyName}.");
+            }
+
+            return parsed;
+        }
+        protected double? ParseDoubleStringWithException(string text, string propertyName, IEnumerable<string> expectedNonNumeric = null)
+        {
+            if (!double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed))
             {
                 if (expectedNonNumeric != null && expectedNonNumeric.Contains(text))
                 {

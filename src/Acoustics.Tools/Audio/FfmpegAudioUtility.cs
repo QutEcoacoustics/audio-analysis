@@ -233,7 +233,7 @@ namespace Acoustics.Tools.Audio
         /// </returns>
         protected override string ConstructInfoArgs(FileInfo source)
         {
-            const string ArgsFormat = " -sexagesimal -print_format default -show_error -show_streams -show_format \"{0}\"";
+            const string ArgsFormat = " -print_format default -show_error -show_streams -show_format \"{0}\"";
             var args = string.Format(ArgsFormat, source.FullName);
             return args;
         }
@@ -291,17 +291,9 @@ namespace Acoustics.Tools.Audio
             {
                 var stringDuration = result.RawData[keyDuration];
 
-                var formats = new[]
-                        {
-                            @"h\:mm\:ss\.ffffff", @"hh\:mm\:ss\.ffffff", @"h:mm:ss.ffffff",
-                            @"hh:mm:ss.ffffff",
-                        };
+                double? samples = this.ParseDoubleStringWithException(stringDuration.Trim(), keyDuration);
 
-                TimeSpan tsresult;
-                if (TimeSpan.TryParseExact(stringDuration.Trim(), formats, CultureInfo.InvariantCulture, out tsresult))
-                {
-                    result.Duration = tsresult;
-                }
+                result.Duration = TimeSpan.FromSeconds(samples.Value);
             }
 
             result.BitsPerSecond = GetBitRate(result.RawData);

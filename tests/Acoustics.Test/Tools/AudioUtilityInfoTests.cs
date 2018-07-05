@@ -123,6 +123,22 @@
         }
 
         [DataTestMethod]
+        [DataRow("very_very_large_file_24h_ffmpeg.flac", 86400)]
+        [DataRow("very_very_large_file_PT26H59M23.456S.flac", 97163.456)]
+        public void InfoWorksForVeryLongFiles(string file, double duration)
+        {
+            var utilities = new[] { TestHelper.GetAudioUtilitySox(), TestHelper.GetAudioUtilityFfmpeg() };
+
+            foreach (var utility in utilities)
+            {
+                var info = utility.Info(PathHelper.GetTestAudioFile(file));
+
+                Assert.IsNotNull(info.Duration);
+                Assert.AreEqual(duration, info.Duration.Value.TotalSeconds, 0.00001);
+            }
+        }
+
+        [DataTestMethod]
         [DataRow("4channelsPureTones.raw", typeof(NotImplementedException), "Raw formats inherently have no information to gather")]
         public void InfoFailsForMaster(string file, Type exception, string message)
         {

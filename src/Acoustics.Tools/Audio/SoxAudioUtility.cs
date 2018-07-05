@@ -120,7 +120,7 @@
         /// <summary>
         /// Gets the valid source media types.
         /// </summary>
-        protected override IEnumerable<string> ValidSourceMediaTypes => new[] { MediaTypes.MediaTypeWav, MediaTypes.MediaTypeMp3 };
+        protected override IEnumerable<string> ValidSourceMediaTypes => new[] { MediaTypes.MediaTypeWav, MediaTypes.MediaTypeMp3, MediaTypes.MediaTypeFlacAudio };
 
         /// <summary>
         /// Gets the invalid source media types.
@@ -335,38 +335,57 @@
             }
 
             // parse info info class
-            var keyDuration = "Duration";
-            var keyBitRate = "Bit Rate";
-            var keySampleRate = "Sample Rate";
-            var keyChannels = "Channels";
-            var keyPrecision = "Precision";
-
-            if (result.RawData.ContainsKey(keyDuration))
-            {
-                var stringDuration = result.RawData[keyDuration];
-
-                var formats = new[]
-                        {
-                            @"h\:mm\:ss\.ff", @"hh\:mm\:ss\.ff", @"h:mm:ss.ff",
-                            @"hh:mm:ss.ff",
-                        };
-
-                TimeSpan tsresult;
-                if (TimeSpan.TryParseExact(stringDuration.Trim(), formats, CultureInfo.InvariantCulture, out tsresult))
-                {
-                    result.Duration = tsresult;
-                }
-
-                var extra = this.Duration(source);
-                if (extra.HasValue)
-                {
-                    result.Duration = extra.Value;
-                }
-            }
+            const string keyDuration = "Duration";
+            const string keySamples = "Samples";
+            const string keyBitRate = "Bit Rate";
+            const string keySampleRate = "Sample Rate";
+            const string keyChannels = "Channels";
+            const string keyPrecision = "Precision";
 
             if (result.RawData.ContainsKey(keySampleRate))
             {
                 result.SampleRate = this.ParseIntStringWithException(result.RawData[keySampleRate], "sox.samplerate");
+            }
+
+            if (result.RawData.ContainsKey(keyDuration))
+            {
+                
+                var sampleCount = result.RawData[keySamples];
+
+                // most precise and efficient calculation, duration from sample count
+                if (sampleCount.IsNotEmpty() && result.SampleRate.HasValue)
+                {
+                    var samples = this.ParseLongStringWithException(sampleCount, "Samples");
+                    var duration = Math.Round((decimal)samples.Value / result.SampleRate.Value, 6, MidpointRounding.AwayFromZero);
+                    result.Duration = TimeSpan.FromSeconds((double)duration);
+                }
+                else
+                {
+                    // less precise and problematic for very long recordings (because of timespan parsing)
+                    // but still faster than another invocation
+                    var stringDuration = result.RawData[keyDuration];
+                    var formats = new[]
+                    {
+                        @"h\:mm\:ss\.ff", @"hh\:mm\:ss\.ff", @"h:mm:ss.ff",
+                        @"hh:mm:ss.ff",
+                    };
+
+                    if (TimeSpan.TryParseExact(stringDuration.Trim(), formats, CultureInfo.InvariantCulture,
+                        out var duration))
+                    {
+                        result.Duration = duration;
+                    }
+                    else
+                    {
+                        // last resort: ask sox specifically for the duration with another invocation
+                        // AT: this case used to always happen even if it was not necessary
+                        var extra = this.Duration(source);
+                        if (extra.HasValue)
+                        {
+                            result.Duration = extra.Value;
+                        }
+                    }
+                }
             }
 
             if (result.RawData.ContainsKey(keyChannels))
@@ -655,7 +674,7 @@ a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
                 lines = process.StandardOutput.Split(new[] {'\n', '\r'}, StringSplitOptions.RemoveEmptyEntries);
             }
 
-            return TimeSpan.FromSeconds(double.Parse(lines.First(), CultureInfo.InvariantCulture));
+            return TimeSpan.FromSeconds(this.ParseDoubleStringWithException(lines.FirstOrDefault(), "Duration").Value);
         }
 
         private static string GetMediaType(Dictionary<string, string> rawData, string extension)
