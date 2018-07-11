@@ -204,6 +204,7 @@
         [DataRow("Lewins Rail Kekkek.wav")]
         [DataRow("FemaleKoala MaleKoala.wav")]
         [DataRow("geckos.wav")]
+        [DataRow("4channelsPureTones.flac")]
         [DataRow("4channelsPureTones.wav")]
         [DataRow("different_channels_tone.wav")]
         [DataRow("different_channels_tone.mp3")]
@@ -227,7 +228,6 @@
         [DataRow("06Sibylla.wma")]
         [DataRow("Raw_audio_id_cd6e8ba1-11b4-4724-9562-f6ec893110aa.wv")]
         [DataRow("f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv")]
-        [DataRow("4channelsPureTones.flac")]
         [DataRow("4channelsPureTones.ogg")]
         [DataRow("4channelsPureTones.raw")]
         [DataRow("4channelsPureTones.wv")]
@@ -238,7 +238,7 @@
             var source = TestHelper.GetAudioFile(file);
             TestHelper.ExceptionMatches<NotSupportedException>(
                 () => util.Info(source),
-                "cannot be processed.  Valid formats are: wav (audio/x-wav), mp3 (audio/mpeg).");
+                "cannot be processed.  Valid formats are: wav (audio/wav), mp3 (audio/mpeg), flac (audio/flac).");
         }
 
         [DataTestMethod]

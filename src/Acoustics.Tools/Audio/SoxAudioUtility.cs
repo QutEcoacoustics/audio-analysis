@@ -696,6 +696,8 @@ a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
                         return MediaTypes.MediaTypeWav;
                     case "16-bit WavPack":
                         return MediaTypes.MediaTypeWavpack;
+                    case "16-bit FLAC":
+                        return MediaTypes.MediaTypeFlacAudio;
                     default:
                         return null;
                 }
