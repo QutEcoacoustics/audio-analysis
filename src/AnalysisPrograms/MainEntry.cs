@@ -13,10 +13,7 @@ namespace AnalysisPrograms
     using System.Reflection;
     using System.Threading.Tasks;
     using log4net;
-    using McMaster.Extensions.CommandLineUtils;
-    using Production;
     using Production.Arguments;
-    using Production.Parsers;
     using static System.Environment;
 
     /// <summary>
@@ -28,7 +25,7 @@ namespace AnalysisPrograms
 
         public static async Task<int> Main(string[] args)
         {
-            // HACK: Disable the following two line when argument refactoring is done
+            // HACK: Use the following two lines when debugger needs to be attached before argument parsing
             //var options = DebugOptions.Yes;
             //AttachDebugger(ref options);
 
@@ -43,7 +40,7 @@ namespace AnalysisPrograms
             var app = CreateCommandLineApplication();
 
             // Note: See MainEntry.BeforeExecute for commands run before invocation.
-            // note: Exception handling can be found in CurrentDomainOnUnhandledException
+            // Note: Exception handling can be found in CurrentDomainOnUnhandledException.
             var result = await Task.FromResult(app.Execute(args));
 
             LogProgramStats();

@@ -385,7 +385,8 @@ Copyright {Meta.NowYear} {Meta.Organization}");
                 // this branch prints the message, and command usage, but the stack trace is only output in the log
                 NoConsole.Log.Fatal(fatalMessage, ex);
 
-                var command = CommandLineApplication?.Name;
+                // the static CommandLineApplication is not set when CommandLineException is thrown
+                var command = inner is CommandParsingException exception ? exception.Command.Name : CommandLineApplication?.Name;
                 var message = fatalMessage + inner.Message;
                 PrintUsage(message, Usages.Single, command ?? string.Empty);
             }
