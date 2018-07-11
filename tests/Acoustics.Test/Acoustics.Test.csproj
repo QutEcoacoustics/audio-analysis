@@ -327,6 +327,7 @@
       <Link>stylecop.json</Link>
     </AdditionalFiles>
     <Compile Include="AnalysisPrograms\AudioCutterTests.cs" />
+    <None Include=".runsettings" />
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
