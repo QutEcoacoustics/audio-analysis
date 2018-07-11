@@ -195,7 +195,7 @@
             var source = TestHelper.GetAudioFile(file);
             TestHelper.ExceptionMatches<NotSupportedException>(
                 () => util.Info(source),
-                "cannot be processed.  Valid formats are: wav (audio/x-wav).");
+                "cannot be processed.  Valid formats are: wav (audio/wav).");
         }
 
         [DataTestMethod]

@@ -662,62 +662,35 @@ namespace Acoustics.Tools.Audio
 
             if (codecType == "audio")
             {
-                if (codecName == "wmav2" && codecLongName == "Windows Media Audio 2" && codecTag == "0x0161" &&
-                    formatName == "asf" && formatLongName == "ASF (Advanced / Active Streaming Format)")
+                switch (codecName)
                 {
-                    if (ext == "wma")
-                    {
-                        return MediaTypes.MediaTypeWma;
-                    }
-                    else
-                    { // .asf
-                        return MediaTypes.MediaTypeAsf;
-                    }
-                }
-                else if (codecName == "mp3" && codecLongName == "MP3 (MPEG audio layer 3)" &&
-                    formatName == "mp3" && formatLongName == "MP2/3 (MPEG audio layer 2/3)")
-                {
-                    return MediaTypes.MediaTypeMp3;
-                }
-                else if (codecName == "pcm_s16le" && codecLongName == "PCM signed 16-bit little-endian" && codecTag == "0x0001" &&
-                  formatName == "wav" && formatLongName == "WAV / WAVE (Waveform Audio)")
-                {
-                    return MediaTypes.MediaTypeWav;
-                }
-                else if (codecName == "vorbis" && codecLongName == "Vorbis" &&
-                  formatName == "matroska,webm" && formatLongName == "Matroska / WebM" && ext == "webm")
-                {
-                    return MediaTypes.MediaTypeWebMAudio;
-                }
-                else if (codecName == "vorbis" && codecLongName == "Vorbis" &&
-                  formatName == "ogg" && formatLongName == "Ogg")
-                {
-                    return MediaTypes.MediaTypeOggAudio;
-                }
-                else if (codecName == "flac" && codecLongName == "FLAC (Free Lossless Audio Codec)" &&
-                  formatName == "ogg" && formatLongName == "Ogg")
-                {
-                    return MediaTypes.MediaTypeOggAudio;
-                }
-                else if (codecName == "flac" && codecLongName == "FLAC (Free Lossless Audio Codec)" &&
-                  formatName == "flac" && formatLongName == "raw FLAC")
-                {
-                    return MediaTypes.MediaTypeFlacAudio1;
-                }
-                else if (codecName == "wavpack" && codecLongName == "WavPack" &&
-                  formatName == "wv" && formatLongName == "WavPack")
-                {
-                    return MediaTypes.MediaTypeWavpack;
-                }
-                else if (codecName == "aac" && codecLongName == "AAC (Advanced Audio Coding)" && codecTag == "0x6134706d" && codecTagString == "mp4a" &&
-                  formatName == "mov,mp4,m4a,3gp,3g2,mj2" && formatLongName == "QuickTime / MOV")
-                {
-                    return MediaTypes.MediaTypeMp4Audio;
-                }
-                else if (codecName == "aac" && codecLongName == "AAC (Advanced Audio Coding)" &&
-                  formatName == "aac" && formatLongName == "raw ADTS AAC (Advanced Audio Coding)")
-                {
-                    return MediaTypes.MediaTypeAac;
+                    case "wmav2" when codecLongName == "Windows Media Audio 2" && codecTag == "0x0161" && formatName == "asf" && formatLongName == "ASF (Advanced / Active Streaming Format)":
+                        if (ext == "wma")
+                        {
+                            return MediaTypes.MediaTypeWma;
+                        }
+                        else
+                        { 
+                            // .asf
+                            return MediaTypes.MediaTypeAsf;
+                        }
+                    case "mp3" when codecLongName == "MP3 (MPEG audio layer 3)" && formatName == "mp3" && formatLongName == "MP2/3 (MPEG audio layer 2/3)":
+                        return MediaTypes.MediaTypeMp3;
+                    case "pcm_s16le" when codecLongName == "PCM signed 16-bit little-endian" && codecTag == "0x0001" && formatName == "wav" && formatLongName == "WAV / WAVE (Waveform Audio)":
+                        return MediaTypes.MediaTypeWav;
+                    case "vorbis" when codecLongName == "Vorbis" && formatName == "matroska,webm" && formatLongName == "Matroska / WebM" && ext == "webm":
+                        return MediaTypes.MediaTypeWebMAudio;
+                    case "vorbis" when codecLongName == "Vorbis" && formatName == "ogg" && formatLongName == "Ogg":
+                    case "flac" when codecLongName == "FLAC (Free Lossless Audio Codec)" && formatName == "ogg" && formatLongName == "Ogg":
+                        return MediaTypes.MediaTypeOggAudio;
+                    case "flac" when codecLongName == "FLAC (Free Lossless Audio Codec)" && formatName == "flac" && formatLongName == "raw FLAC":
+                        return MediaTypes.MediaTypeFlacAudio;
+                    case "wavpack" when codecLongName == "WavPack" && formatName == "wv" && formatLongName == "WavPack":
+                        return MediaTypes.MediaTypeWavpack;
+                    case "aac" when codecLongName == "AAC (Advanced Audio Coding)" && codecTag == "0x6134706d" && codecTagString == "mp4a" && formatName == "mov,mp4,m4a,3gp,3g2,mj2" && formatLongName == "QuickTime / MOV":
+                        return MediaTypes.MediaTypeMp4Audio;
+                    case "aac" when codecLongName == "AAC (Advanced Audio Coding)" && formatName == "aac" && formatLongName == "raw ADTS AAC (Advanced Audio Coding)":
+                        return MediaTypes.MediaTypeAac;
                 }
             }
 

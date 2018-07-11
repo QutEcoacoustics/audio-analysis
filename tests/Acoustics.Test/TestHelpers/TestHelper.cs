@@ -171,7 +171,7 @@
                             SampleRate = 44100,
                             ChannelCount = 4,
                             BitsPerSecond = 693000,
-                            MediaType = MediaTypes.MediaTypeFlacAudio1,
+                            MediaType = MediaTypes.MediaTypeFlacAudio,
                             BitsPerSample = 16,
                         }
                 },
@@ -209,7 +209,7 @@
                         SampleRate = 44100,
                         ChannelCount = 4,
                         BitsPerSecond = 2822400,
-                        MediaType = MediaTypes.MediaTypeWav1,
+                        MediaType = MediaTypes.MediaTypeWav,
                         BitsPerSample = 16,
                     }
                 },
