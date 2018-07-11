@@ -184,6 +184,8 @@ namespace AnalysisPrograms
 
         public static void Execute(Arguments arguments)
         {
+            MainEntry.WarnIfDevleoperEntryUsed();
+
             if (arguments == null)
             {
                 throw new NoDeveloperMethodException();

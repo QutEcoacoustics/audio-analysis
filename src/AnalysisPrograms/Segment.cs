@@ -50,6 +50,8 @@ namespace AnalysisPrograms
 
         public static void Execute(Arguments arguments)
         {
+            MainEntry.WarnIfDevleoperEntryUsed();
+
             string date = "# DATE AND TIME: " + DateTime.Now;
             Log.WriteLine("# SEGMENTING A RECORDING");
             Log.WriteLine(date);

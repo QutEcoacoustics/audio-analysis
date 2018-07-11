@@ -210,18 +210,30 @@ namespace AnalysisPrograms
 
             ModifyVerbosity(main);
 
-            Log.Debug($"Metric reporting is {(ApMetricRecording ? "en" : "dis")}abled.");
+            Log.Debug($"Metric reporting is {(ApMetricRecording ? "en" : "dis")}abled (but not yet functional).");
 
             LoadNativeCode();
         }
 
         internal static void Copyright()
         {
-            LoggedConsole.WriteLine(
-                // ReSharper disable once UnreachableCode
-                $@"{Meta.Description} - version {BuildMetadata.VersionString} ({(InDEBUG ? "DEBUG" : "RELEASE")} build, {BuildMetadata.BuildDate})
+            LoggedConsole.WriteLine($@"{Meta.Description} - version {BuildMetadata.VersionString} ({(InDEBUG ? "DEBUG" : "RELEASE")} build, {BuildMetadata.BuildDate})
 Git branch-version: {BuildMetadata.GitBranch}-{BuildMetadata.GitCommit}, DirtyBuild:{BuildMetadata.IsDirty}, CI:{BuildMetadata.CiBuild}
 Copyright {Meta.NowYear} {Meta.Organization}");
+        }
+
+        internal static void WarnIfDevleoperEntryUsed(string message = null)
+        {
+            if (!InDEBUG)
+            {
+                message = message == null ? string.Empty : "\n!    " + message;
+                Log.Warn($@"!
+!
+!    The entry point called is designed for use by devleopers and debuggers.
+!    It is likely that this entry point does not do what you want and will fail.{message}
+!
+!");
+            }
         }
 
         /// <summary>

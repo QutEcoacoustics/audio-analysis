@@ -236,6 +236,8 @@ namespace AnalysisPrograms
 
         public static void Execute(Arguments arguments)
         {
+            MainEntry.WarnIfDevleoperEntryUsed();
+
             TowseyLibrary.Log.Verbosity = 1;
             string date = "# DATE AND TIME: " + DateTime.Now;
             LoggedConsole.WriteLine("# Running acoustic event detection.");
