@@ -210,9 +210,7 @@ namespace Acoustics.Shared
                 {
                     if (offsetHint == null)
                     {
-                        Log.Warn(
-                            "File date parse cannot parse date {0} - a timezone offset hint was not provided to the function for a date format with no timezone information"
-                                .Format2(stringDate));
+                        Log.Warn($"File date `{stringDate}` is amibiguous. The date is understood but no timezone offset could be found and a timezone offset hint was not provided.");
                         return false;
                     }
                     else
