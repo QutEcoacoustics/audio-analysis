@@ -127,7 +127,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             var whitenedSpectrogram = PcaWhitening.Whitening(sequentialPatchMatrix);
 
             // reconstructing the spectrogram from sequential patches and the projection matrix obtained from random patches
-            var projectionMatrix = whitenedSpectrogram.ProjectionMatrix;//whitenedSpectrogram.projectionMatrix;
+            var projectionMatrix = whitenedSpectrogram.ProjectionMatrix;
             var eigenVectors = whitenedSpectrogram.EigenVectors;
             var numComponents = whitenedSpectrogram.Components;
             double[,] reconstructedSpec = PcaWhitening.ReconstructSpectrogram(projectionMatrix, sequentialPatchMatrix, eigenVectors, numComponents);

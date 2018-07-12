@@ -182,7 +182,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                 clusterImage.Save(outputClusteringImage);
             }
 
-            //+++++++++++++++++++++++++++++++++++++++++++++++++++++Processing and generating features for the target spectrogram
+            //+++++++++++++++++++++++++++++++++++++++++++Reconstructing a target spectrogram from sequential patches and the cluster centroids
             var recording2Path = PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav");
             var recording2 = new AudioRecording(recording2Path);
             var sonogram2 = new SpectrogramStandard(sonoConfig, recording2.WavReader);

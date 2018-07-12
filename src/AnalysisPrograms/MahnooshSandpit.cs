@@ -77,12 +77,12 @@ namespace AnalysisPrograms
 
             // Black Rail call is between 1000 Hz and 3000 Hz, which is mapped to Mel value [1000, 1876]
             // Hence, we only work with freq bins between [40, 76]
-            int minFreqBin = 1; //35; //40; //
-            int maxFreqBin = finalBinCount; //85; //80; //76;
+            int minFreqBin = 1; //24; //35; //40; //
+            int maxFreqBin = finalBinCount; //95; //85; //80; //76;
             int numFreqBand = 1;
             int patchWidth = (maxFreqBin - minFreqBin + 1) / numFreqBand; //finalBinCount / numFreqBand;
-            int patchHeight = 1; // 2; // 4; // 16; // 6; // Frame size
-            int numRandomPatches = 4; //8; //80; //  20; //2; //10; //100; // 40; //  30; //  500; //
+            int patchHeight = 1; // 2; //  4; // 16; // 6; // Frame size
+            int numRandomPatches = 4; //40; //8; //16; //  80; //  2; //10; //100; //  30; //  500; //20; //
             // int fileCount = Directory.GetFiles(folderPath, "*.wav").Length;
 
             // Define variable number of "randomPatch" lists based on "numFreqBand"
@@ -154,7 +154,7 @@ namespace AnalysisPrograms
             }
 
             // convert list of random patches matrices to one matrix
-            int numberOfClusters = 256; //500; //10; //16; //128; //20; // 500; // 128; // 64; // 32; //  50;
+            int numberOfClusters = 256; //8; //128; //500; //10; //16; //20; // 500; // 128; // 64; // 32; //  50;
             List<double[][]> allBandsCentroids = new List<double[][]>();
             List<KMeansClusterCollection> allClusteringOutput = new List<KMeansClusterCollection>();
 
@@ -248,7 +248,7 @@ namespace AnalysisPrograms
             Dictionary<string, List<double[,]>> allFilesMeanFeatureVectors = new Dictionary<string, List<double[,]>>();
             Dictionary<string, List<double[,]>> allFilesMaxFeatureVectors = new Dictionary<string, List<double[,]>>();
             Dictionary<string, List<double[,]>> allFilesStdFeatureVectors = new Dictionary<string, List<double[,]>>();
-            Dictionary<string, List<double[,]>> allFilesSknewnessFeatureVectors = new Dictionary<string, List<double[,]>>();
+            Dictionary<string, List<double[,]>> allFilesSkewnessFeatureVectors = new Dictionary<string, List<double[,]>>();
 
             foreach (string filePath in Directory.GetFiles(trainSetPath, "*.wav")) // testSetPath
             {
@@ -373,9 +373,9 @@ namespace AnalysisPrograms
                         List<double[]> skewnessFeatureVectors = new List<double[]>();
 
                         int c = 0;
-                        while (c + numFrames < freqBandFeature.GetLength(0))
+                        while (c + numFrames <= freqBandFeature.GetLength(0))
                         {
-                            // First, make a list of patches that would be equal to the needed resolution (1 scond, 60 second, etc.)
+                            // First, make a list of patches that would be equal to the needed resolution (1 second, 60 second, etc.)
                             List<double[]> sequencesOfFramesList = new List<double[]>();
                             for (int i = c; i < c + numFrames; i++)
                             {
@@ -417,6 +417,8 @@ namespace AnalysisPrograms
 
                         // when (freqBandFeature.GetLength(0) % numFrames) != 0, it means at the end of the target recording (or the whole),
                         // there are a number of frames (< numFrames) left unprocessed.
+                        // this would be problematic when an the resulotion to genearte the feature vector is 1 min,
+                        // but the the length of the target recording is a bit less than one min.
                         if (freqBandFeature.GetLength(0) % numFrames != 0 && freqBandFeature.GetLength(0) % numFrames > 1)
                         {
                             // First, make a list of patches that would be less than the required resolution
@@ -476,7 +478,7 @@ namespace AnalysisPrograms
                     allFilesMeanFeatureVectors.Add(fileInfo.Name, allMeanFeatureVectors);
                     allFilesMaxFeatureVectors.Add(fileInfo.Name, allMaxFeatureVectors);
                     allFilesStdFeatureVectors.Add(fileInfo.Name, allStdFeatureVectors);
-                    allFilesSknewnessFeatureVectors.Add(fileInfo.Name, allSkewnessFeatureVectors);
+                    allFilesSkewnessFeatureVectors.Add(fileInfo.Name, allSkewnessFeatureVectors);
 
                     // +++++++++++++++++++++++++++++++++++Temporal Summarization
 
@@ -573,7 +575,7 @@ namespace AnalysisPrograms
             var meanFeatures = allFilesMeanFeatureVectors.Values.ToArray();
             var maxFeatures = allFilesMaxFeatureVectors.Values.ToArray();
             var stdFeatures = allFilesStdFeatureVectors.Values.ToArray();
-            var skewnessFeatures = allFilesSknewnessFeatureVectors.Values.ToArray();
+            var skewnessFeatures = allFilesSkewnessFeatureVectors.Values.ToArray();
 
             // The number of elements in the list shows the number of freq bands
             // the size of each element in the list shows the number of files processed to generate feature for.
