@@ -1,0 +1,44 @@
+---
+# Summary: Generates Clustering Features
+#
+# This analysis outputs:
+#     1. an image of the clusters' centroids
+#     2. a csv file that contains the vectors of the clusters' centroids
+#     3. a csv file that contains clusters' id and size
+#     4. a csv file that contains feature vectors
+#
+# The feature vectors can be used in training the machine learning models.
+
+
+# The properties to generate Mel scale
+FrequencyScaleType: Mel
+HertzInterval: 1000
+FrameSize: 1024
+FinalBinCount: 128
+
+
+# The default values for minFreqBin and maxFreqBin are 1 and FinalBinCount
+# For any other arbitrary frequency bin bounds, these two parameters need to be manually set.
+MinFreqBin: 1
+#MaxFreqBin: 128
+
+# The number of frequency band for feature generation process
+numFreqBand: 1
+
+# The width and height of the patches to be taken from the patch sampling set
+# A default patch is a single full-band frame which patchWidth = (maxFreqBin - minFreqBin + 1) / numFreqBand, patchHeight = 1
+# PatchWidth: 5
+PatchHeight: 1
+
+# The number of patches to be selected from each recording of the patch sampling set
+NumRandomPatches: 10
+
+# the number of clusters to be generated from the selected patch set
+NumClusters: 500
+
+
+# Applying noise reduction and whitening if these options are set to 'true'
+DoNoiseReduction: true
+DoWhitening: true
+...
+
