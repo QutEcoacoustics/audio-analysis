@@ -251,6 +251,7 @@
     <Compile Include="DSP\OctaveFreqScale.cs" />
     <Compile Include="DSP\PatchSampling.cs" />
     <Compile Include="DSP\PcaWhitening.cs" />
+    <Compile Include="DSP\PowerSpectrumDensity.cs" />
     <Compile Include="DSP\SNR.cs" />
     <Compile Include="DSP\MFCCStuff.cs" />
     <Compile Include="DSP\WaveType.cs" />
