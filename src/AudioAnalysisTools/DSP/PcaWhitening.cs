@@ -28,7 +28,7 @@ namespace AudioAnalysisTools.DSP
             public int Components { get; set; }
         }
 
-        public static Output Whitening(double[,] matrix)
+        public static Output Whitening(double[,] matrix, bool doWhitening)
         {
             if (matrix == null)
             {
@@ -43,7 +43,7 @@ namespace AudioAnalysisTools.DSP
             {
                 // the "Center" method only subtracts the mean.
                 Method = PrincipalComponentMethod.Center,
-                Whiten = true,
+                Whiten = doWhitening,
             };
 
             pca.Learn(jaggedArray);

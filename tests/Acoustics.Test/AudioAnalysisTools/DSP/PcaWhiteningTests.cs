@@ -68,7 +68,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             sonogram.Data = dataMatrix;
 
             // DO PCA WHITENING
-            var whitenedSpectrogram = PcaWhitening.Whitening(sonogram.Data);
+            var whitenedSpectrogram = PcaWhitening.Whitening(sonogram.Data, true);
 
             // DO UNIT TESTING
             // check if the dimensions of the reverted spectrogram (second output of the pca whitening) is equal to the input matrix
@@ -124,7 +124,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             double[,] sequentialPatchMatrix = sequentialPatches.ToMatrix();
 
             // DO PCA WHITENING
-            var whitenedSpectrogram = PcaWhitening.Whitening(sequentialPatchMatrix);
+            var whitenedSpectrogram = PcaWhitening.Whitening(sequentialPatchMatrix, true);
 
             // reconstructing the spectrogram from sequential patches and the projection matrix obtained from random patches
             var projectionMatrix = whitenedSpectrogram.ProjectionMatrix;

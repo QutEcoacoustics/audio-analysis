@@ -14,6 +14,7 @@ namespace AnalysisPrograms
     using Accord.MachineLearning;
     using Accord.Math;
     using Accord.Statistics;
+    using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
@@ -36,6 +37,7 @@ namespace AnalysisPrograms
             var inputPath = Path.Combine(inputDir, "PatchSamplingSegments");
             var trainSetPath = Path.Combine(inputDir, "TrainSet");
             var testSetPath = Path.Combine(inputDir, "TestSet");
+            var configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\FeatureLearningConfig.yml";
             var outputMelImagePath = Path.Combine(resultDir, "MelScaleSpectrogram.png");
             var outputNormMelImagePath = Path.Combine(resultDir, "NormalizedMelScaleSpectrogram.png");
             var outputNoiseReducedMelImagePath = Path.Combine(resultDir, "NoiseReducedMelSpectrogram.png");
@@ -52,19 +54,41 @@ namespace AnalysisPrograms
 
             // get the nyquist value from the first wav file in the folder of recordings
             int nq = new AudioRecording(Directory.GetFiles(inputPath, "*.wav")[0]).Nyquist;
-
             int nyquist = nq; // 11025;
-            int frameSize = 1024;
-            int finalBinCount = 128; // 256; // 100; // 40; // 200; //
-            int hertzInterval = 1000;
-            FreqScaleType scaleType = FreqScaleType.Mel;
+
+            //+++++
+            var configFile = configPath.ToFileInfo();
+
+            if (configFile == null)
+            {
+                throw new FileNotFoundException("No config file argument provided");
+            }
+            else if (!configFile.Exists)
+            {
+                throw new ArgumentException($"Config file {configFile.FullName} not found");
+            }
+
+            //var configuration = ConfigFile.Deserialize<AcousticIndices.AcousticIndicesConfig>(configFile);
+            var configuration = ConfigFile.Deserialize<FeatureLearningConfig>(configFile);
+            //+++++
+
+            int frameSize = configuration.FrameSize;   // 1024;
+            int finalBinCount = configuration.FinalBinCount; // 128; // 256; // 100; // 40; // 200; //
+            int hertzInterval = configuration.HertzInterval; // 1000;
+            FreqScaleType scaleType = configuration.FrequencyScaleType; // FreqScaleType.Mel;
             var freqScale = new FrequencyScale(scaleType, nyquist, frameSize, finalBinCount, hertzInterval);
             var fst = freqScale.ScaleType;
 
             var sonoConfig = new SonogramConfig
             {
                 WindowSize = frameSize,
-                // since each 24 frames duration is equal to 1 second
+
+                // the duration of each frame (according to the default value (i.e., 1024) of frame size) is 0.04644 seconds
+                // The question is how many single-frames (i.e., patch height is equal to 1) should be selected to form one second
+                // The "WindowOverlap" is calculated to answer this question
+                // each 24 single-frames duration is equal to 1 second
+                // note that the "WindowOverlap" value should be recalculated if frame size is changed
+                // this has not yet been considered in the Config file!
                 WindowOverlap = 0.1028,
                 DoMelScale = (scaleType == FreqScaleType.Mel) ? true : false,
                 MelBinCount = (scaleType == FreqScaleType.Mel) ? finalBinCount : frameSize / 2,
@@ -73,16 +97,16 @@ namespace AnalysisPrograms
 
             // MinFreBin and MaxFreqBin to work with arbitrary frequency bin bounds.
             // The default value is minFreqBin = 1 and maxFreqBin = finalBinCount.
-            // For any other arbitrary frequency bin bounds, these two parameters need to be manually set .
+            // For any other arbitrary frequency bin bounds, these two parameters need to be manually set.
 
             // Black Rail call is between 1000 Hz and 3000 Hz, which is mapped to Mel value [1000, 1876]
             // Hence, we only work with freq bins between [40, 76]
-            int minFreqBin = 1; //24; //35; //40; //
-            int maxFreqBin = finalBinCount; //95; //85; //80; //76;
-            int numFreqBand = 1;
-            int patchWidth = (maxFreqBin - minFreqBin + 1) / numFreqBand; //finalBinCount / numFreqBand;
-            int patchHeight = 1; // 2; //  4; // 16; // 6; // Frame size
-            int numRandomPatches = 4; //40; //8; //16; //  80; //  2; //10; //100; //  30; //  500; //20; //
+            int minFreqBin = configuration.MinFreqBin; // 24; //1; //35; //40; //
+            int maxFreqBin = configuration.MaxFreqBin; // 95; //103; //109; //finalBinCount; //85; //80; //76;
+            int numFreqBand = configuration.NumFreqBand; // 1;
+            int patchWidth = configuration.PatchWidth; // (maxFreqBin - minFreqBin + 1) / numFreqBand; //finalBinCount / numFreqBand;
+            int patchHeight = configuration.PatchHeight; // 1; // 2; //  4; // 16; // 6; // Frame size
+            int numRandomPatches = configuration.NumRandomPatches; // 4; //40; //8; //16; //  80; //  2; //10; //100; //  30; //  500; //20; //
             // int fileCount = Directory.GetFiles(folderPath, "*.wav").Length;
 
             // Define variable number of "randomPatch" lists based on "numFreqBand"
@@ -123,7 +147,12 @@ namespace AnalysisPrograms
 
                     // DO NOISE REDUCTION
                     // sonogram.Data = SNR.NoiseReduce_Median(sonogram.Data, nhBackgroundThreshold: 2.0);
-                    sonogram.Data = PcaWhitening.NoiseReduction(sonogram.Data);
+                    //sonogram.Data = PcaWhitening.NoiseReduction(sonogram.Data);
+
+                    if (configuration.DoNoiseReduction)
+                    {
+                        sonogram.Data = PcaWhitening.NoiseReduction(sonogram.Data);
+                    }
 
                     // check whether the full band spectrogram is needed or a matrix with arbitrary freq bins
                     if (minFreqBin != 1 || maxFreqBin != finalBinCount)
@@ -154,7 +183,7 @@ namespace AnalysisPrograms
             }
 
             // convert list of random patches matrices to one matrix
-            int numberOfClusters = 256; //8; //128; //500; //10; //16; //20; // 500; // 128; // 64; // 32; //  50;
+            int numClusters = configuration.NumClusters; // 256; //8; //128; //500; //10; //16; //20; // 500; // 128; // 64; // 32; //  50;
             List<double[][]> allBandsCentroids = new List<double[][]>();
             List<KMeansClusterCollection> allClusteringOutput = new List<KMeansClusterCollection>();
 
@@ -163,10 +192,10 @@ namespace AnalysisPrograms
                 double[,] patchMatrix = randomPatches[i];
 
                 // Apply PCA Whitening
-                var whitenedSpectrogram = PcaWhitening.Whitening(patchMatrix);
+                var whitenedSpectrogram = PcaWhitening.Whitening(patchMatrix, configuration.DoWhitening);
 
                 // Do k-means clustering
-                var clusteringOutput = KmeansClustering.Clustering(whitenedSpectrogram.Reversion, numberOfClusters);
+                var clusteringOutput = KmeansClustering.Clustering(whitenedSpectrogram.Reversion, numClusters);
                 // var clusteringOutput = KmeansClustering.Clustering(patchMatrix, noOfClusters, pathToClusterCsvFile);
 
                 // writing centroids to a csv file
@@ -236,7 +265,7 @@ namespace AnalysisPrograms
             //var recording2Path = Path.Combine(trainSetPath, "SM304264_0+1_20160421_054539_29-30min.wav"); // an example from the train set
             //var recording2Path = Path.Combine(testSetPath, "SM304264_0+1_20160423_054539_29-30min.wav"); // an example from the test set
             // check whether there is any file in the folder/subfolders
-            if (Directory.GetFiles(trainSetPath, "*", SearchOption.AllDirectories).Length == 0) // testSetPath
+            if (Directory.GetFiles(testSetPath, "*", SearchOption.AllDirectories).Length == 0) // trainSetPath
             {
                 throw new ArgumentException("The folder of recordings is empty...");
             }
@@ -250,7 +279,7 @@ namespace AnalysisPrograms
             Dictionary<string, List<double[,]>> allFilesStdFeatureVectors = new Dictionary<string, List<double[,]>>();
             Dictionary<string, List<double[,]>> allFilesSkewnessFeatureVectors = new Dictionary<string, List<double[,]>>();
 
-            foreach (string filePath in Directory.GetFiles(trainSetPath, "*.wav")) // testSetPath
+            foreach (string filePath in Directory.GetFiles(testSetPath, "*.wav")) // trainSetPath
             {
                 FileInfo fileInfo = filePath.ToFileInfo();
 
@@ -268,6 +297,10 @@ namespace AnalysisPrograms
                     // DO NOISE REDUCTION
                     // sonogram.Data = SNR.NoiseReduce_Median(sonogram.Data, nhBackgroundThreshold: 2.0);
                     sonogram.Data = PcaWhitening.NoiseReduction(sonogram.Data);
+                    if (configuration.DoNoiseReduction)
+                    {
+                        sonogram.Data = PcaWhitening.NoiseReduction(sonogram.Data);
+                    }
 
                     // check whether the full band spectrogram is needed or a matrix with arbitrary freq bins
                     if (minFreqBin != 1 || maxFreqBin != finalBinCount)
@@ -696,6 +729,82 @@ namespace AnalysisPrograms
                 File.WriteAllText(outputFeatureFile, csv.ToString());
             }
             //*****
+        }
+
+        public class FeatureLearningConfig : Config
+        {
+            public const FreqScaleType DefaultFrequencyScaleType = FreqScaleType.Mel;
+
+            public const int DefaultHertzInterval = 1000;
+
+            public const int DefaultFrameSize = 1024;
+
+            public const int DefaultFinalBinCount = 128;
+
+            public const int DefaultMinFreqBin = 1;
+
+            public const int DefaultMaxFreqBin = DefaultFinalBinCount;
+
+            public const int DefaultNumFreqBand = 1;
+
+            public const int DefaultPatchWidth = (DefaultMaxFreqBin - DefaultMinFreqBin + 1) / DefaultNumFreqBand;
+
+            public const int DefaultPatchHeight = 1;
+
+            public const int DefaultNumRandomPatches = 4;
+
+            public const int DefaultNumClusters = 256;
+
+            public const bool DefaultDoNoiseReduction = true;
+
+            public const bool DefaultDoWhitening = true;
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="FeatureLearningConfig"/> class.
+            /// CONSTRUCTOR
+            /// </summary>
+            public FeatureLearningConfig()
+            {
+                this.FrequencyScaleType = DefaultFrequencyScaleType;
+                this.HertzInterval = DefaultHertzInterval;
+                this.FrameSize = DefaultFrameSize;
+                this.FinalBinCount = DefaultFinalBinCount;
+                this.MinFreqBin = DefaultMinFreqBin;
+                this.MaxFreqBin = DefaultMaxFreqBin;
+                this.NumFreqBand = DefaultNumFreqBand;
+                this.PatchWidth = DefaultPatchWidth;
+                this.PatchHeight = DefaultPatchHeight;
+                this.NumRandomPatches = DefaultNumRandomPatches;
+                this.NumClusters = DefaultNumClusters;
+                this.DoNoiseReduction = DefaultDoNoiseReduction;
+                this.DoWhitening = DefaultDoWhitening;
+            }
+
+            public FreqScaleType FrequencyScaleType { get; set; }
+
+            public int HertzInterval { get; set; }
+
+            public int FrameSize { get; set; }
+
+            public int FinalBinCount { get; set; }
+
+            public int MinFreqBin { get; set; }
+
+            public int MaxFreqBin { get; set; }
+
+            public int NumFreqBand { get; set; }
+
+            public int PatchWidth { get; set; }
+
+            public int PatchHeight { get; set; }
+
+            public int NumRandomPatches { get; set; }
+
+            public int NumClusters { get; set; }
+
+            public bool DoNoiseReduction { get; set; }
+
+            public bool DoWhitening { get; set; }
         }
 
         [Command(
