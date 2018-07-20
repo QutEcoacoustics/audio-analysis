@@ -6,17 +6,14 @@ namespace AudioAnalysisTools.DSP
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
     using System.IO;
+    using System.Linq;
     using Accord.Math;
-    using Accord.Statistics.Kernels;
     using StandardSpectrograms;
     using TowseyLibrary;
     using WavTools;
 
-    public class PowerSpectrumDensity
+    public static class PowerSpectrumDensity
     {
         /// <summary>
         /// Input a directory of one-minute recording for one day
@@ -27,13 +24,12 @@ namespace AudioAnalysisTools.DSP
         ///     4) Take average of the energy values in each frequency bin to obtain power spectrum or PSD.
         /// Finally draw the the spectrogram of PSD values for the whole day.
         /// </summary>
-        public void PSD()
+        /*
+        public static void Psd()
         {
-            var inputDir = @"C:\Users\kholghim\Mahnoosh\UnsupervisedFeatureLearning\";
-            var resultDir = Path.Combine(inputDir, "PowerSpectrumDensity");
-            var inputPath =
-                Path.Combine(inputDir,
-                    "XXX"); // directory of the one-min recordings of one day (21 and 23 Apr - Black Rail Data)
+            var inputPath = @"C:\Users\kholghim\Mahnoosh\Liz\TrainSet\";
+            var resultDir = @"C:\Users\kholghim\Mahnoosh\Liz\PowerSpectrumDensity\train_PSD.bmp";
+            //var inputPath =Path.Combine(inputDir, "TrainSet"); // directory of the one-min recordings of one day (21 and 23 Apr - Black Rail Data)
 
             // check whether there is any file in the folder/subfolders
             if (Directory.GetFiles(inputPath, "*", SearchOption.AllDirectories).Length == 0)
@@ -88,7 +84,7 @@ namespace AudioAnalysisTools.DSP
                 }
             }
         }
-
+        */
         public static double[,] GetEnergyValues(double[,] fftCoefficients)
         {
             double[,] energySpectrogram = new double[fftCoefficients.GetLength(0), fftCoefficients.GetLength(1)];
@@ -108,13 +104,16 @@ namespace AudioAnalysisTools.DSP
             double[] powerSpectrum = new double[energySpectrogram.GetLength(1)];
             for (int j = 0; j < energySpectrogram.GetLength(1); j++)
             {
+                /*
                 double sum = 0;
                 for (int i = 0; i < energySpectrogram.GetLength(0); i++)
                 {
                     sum += energySpectrogram[i, j];
                 }
-
                 powerSpectrum[j] = sum / energySpectrogram.GetLength(0);
+                */
+
+                powerSpectrum[j] = MatrixTools.GetColumn(energySpectrogram, j).Average();
             }
 
             return powerSpectrum;
