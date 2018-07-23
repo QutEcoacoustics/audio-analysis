@@ -53,10 +53,17 @@ namespace AnalysisPrograms
                     ApMetricsKey,
                     "<true|false>\t (Not implemented) Enable or disable metrics - default value is `true`"
                 },
+#if DEBUG
+                {
+                    ApAutoAttachKey,
+                    "<true|false>\t Enable or disable auto attach for debugging - default value is `false`"
+                },
+#endif
             };
 
         private const string ApPlainLoggingKey = "AP_PLAIN_LOGGING";
         private const string ApMetricsKey = "AP_METRICS";
+        private const string ApAutoAttachKey = "AP_AUTO_ATTACH";
 
         internal enum Usages
         {
@@ -79,6 +86,11 @@ namespace AnalysisPrograms
         public static CommandLineApplication CommandLineApplication { get; private set; }
 
         public static bool IsDebuggerAttached => Debugger.IsAttached;
+
+        /// <summary>
+        /// Gets a value indicating whether or not the debugger should automatically attach.
+        /// </summary>
+        internal static bool ApAutoAttach { get; private set; }
 
         public static void SetLogVerbosity(LogVerbosity logVerbosity, bool quietConsole = false)
         {
@@ -154,7 +166,7 @@ namespace AnalysisPrograms
             //            LoggedConsole.WriteFatalLine("Clean wrapper FATAL", new Exception("I'm a fake"));
         }
 
-        internal static void AttachDebugger(ref DebugOptions options)
+        internal static void AttachDebugger(DebugOptions options)
         {
             if (options == DebugOptions.No)
             {
@@ -166,13 +178,13 @@ namespace AnalysisPrograms
                 if (options == DebugOptions.Prompt)
                 {
                     var response = Prompt.GetYesNo(
-                        "Do you wish to debug? Attach now or press [Y] to attach. Press [N] or [ENTER] to continue.",
+                        "Do you wish to debug? Attach now or press [Y] and [ENTER] to attach. Press [N] or [ENTER] to continue.",
                         defaultAnswer: false,
                         promptColor: ConsoleColor.Cyan);
                     options = response ? DebugOptions.Yes : DebugOptions.No;
                 }
 
-                if (options == DebugOptions.Yes)
+                if (options == DebugOptions.Yes || options == DebugOptions.YesSilent)
                 {
                     var vsProcess =
                         VisualStudioAttacher.GetVisualStudioForSolutions(
@@ -187,15 +199,17 @@ namespace AnalysisPrograms
                         // try and attach the old fashioned way
                         Debugger.Launch();
                     }
-
-                    // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-                    if (Debugger.IsAttached)
-                    {
-                        LoggedConsole.WriteLine("\t>>> Attach sucessful");
-                    }
                 }
 
-                LoggedConsole.WriteLine();
+                // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+                if (Debugger.IsAttached)
+                {
+                    if (options != DebugOptions.YesSilent)
+                    {
+                        LoggedConsole.WriteLine("\t>>> Attach sucessful");
+                        LoggedConsole.WriteLine();
+                    }
+                }
             }
 #endif
         }
@@ -205,8 +219,7 @@ namespace AnalysisPrograms
             // re-assign here... the application will be a sub-command here (which is tecnically a different CLA)
             CommandLineApplication = application;
 
-            var debugOptions = main.DebugOption;
-            AttachDebugger(ref debugOptions);
+            AttachDebugger(main.DebugOption);
 
             ModifyVerbosity(main);
 
@@ -478,15 +491,7 @@ Copyright {Meta.NowYear} {Meta.Organization}");
                 root.RemoveAppender("SimpleConsoleAppender");
             }
 
-            if (bool.TryParse(Environment.GetEnvironmentVariable(ApMetricsKey), out var parseMetrics))
-            {
-                ApMetricRecording = parseMetrics;
-            }
-            else
-            {
-                // if the env var is not set or not parseable, then set default value.
-                ApMetricRecording = true;
-            }
+            ApAutoAttach = bool.TryParse(Environment.GetEnvironmentVariable(ApAutoAttachKey), out var autoAttach) && autoAttach;
         }
 
         private static void PrintAggregateException(Exception ex, int depth = 0)

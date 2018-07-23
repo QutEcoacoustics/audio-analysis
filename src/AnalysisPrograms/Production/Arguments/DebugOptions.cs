@@ -9,5 +9,6 @@ namespace AnalysisPrograms.Production.Arguments
         No = 0,
         Yes = 1,
         Prompt = 3,
+        YesSilent = 4,
     }
 }

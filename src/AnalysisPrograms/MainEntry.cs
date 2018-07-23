@@ -25,11 +25,10 @@ namespace AnalysisPrograms
 
         public static async Task<int> Main(string[] args)
         {
-            // HACK: Use the following two lines when debugger needs to be attached before argument parsing
-            //var options = DebugOptions.Yes;
-            //AttachDebugger(ref options);
-
             ParseEnvirionemnt();
+
+            // Uses an env var to  attach debugger before argument parsing
+            AttachDebugger(ApAutoAttach ? DebugOptions.YesSilent : DebugOptions.No);
 
             Copyright();
 
