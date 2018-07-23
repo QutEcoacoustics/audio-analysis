@@ -30,13 +30,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
                     this.IndexPropertiesConfig = indicesPropertiesConfig.Path.ToOsPath();
 
                     // load
-                    this.IndexProperties = Indices.IndexProperties.GetIndexProperties(indicesPropertiesConfig);
+                    this.IndexProperties = ConfigFile.Deserialize<IndexPropertiesCollection>(this.IndexPropertiesConfig);
                 };
         }
 
         public string IndexPropertiesConfig { get; set; }
 
-        public Dictionary<string, IndexProperties> IndexProperties { get; set; }
+        public IndexPropertiesCollection IndexProperties { get; set; }
 
         /// <summary>
         /// Gets or sets an optional reference to a config that defines

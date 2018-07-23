@@ -14,6 +14,7 @@
 namespace AudioAnalysisTools.Indices
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Drawing;
     using System.IO;
@@ -23,7 +24,7 @@ namespace AudioAnalysisTools.Indices
     using Acoustics.Shared.Contracts;
 
     using AnalysisBase;
-
+    using Newtonsoft.Json;
     using TowseyLibrary;
     using YamlDotNet.Serialization;
 
@@ -33,7 +34,7 @@ namespace AudioAnalysisTools.Indices
     {
         string IndexPropertiesConfig { get; set; }
 
-        Dictionary<string, IndexProperties> IndexProperties { get; }
+        IndexPropertiesCollection IndexProperties { get; }
     }
 
     public abstract class AnalyzerConfigIndexProperties : AnalyzerConfig, IIndexPropertyReferenceConfiguration
@@ -44,13 +45,42 @@ namespace AudioAnalysisTools.Indices
                 {
                     var indicesPropertiesConfig = Indices.IndexProperties.Find(this, this.ConfigPath);
                     this.IndexPropertiesConfig = indicesPropertiesConfig.Path.ToOsPath();
-                    this.IndexProperties = Indices.IndexProperties.GetIndexProperties(indicesPropertiesConfig);
+                    this.IndexProperties = ConfigFile.Deserialize<IndexPropertiesCollection>(this.IndexPropertiesConfig);
                 };
         }
 
         public string IndexPropertiesConfig { get; set; }
 
-        public Dictionary<string, IndexProperties> IndexProperties { get; private set; }
+        public IndexPropertiesCollection IndexProperties { get; private set; }
+    }
+
+    public class IndexPropertiesCollection : Dictionary<string, IndexProperties>, IConfig
+    {
+        public IndexPropertiesCollection()
+        {
+            this.Loaded += (config) =>
+            {
+                int i = 0;
+                foreach (var kvp in this)
+                {
+                    // assign the key to the object for consistency
+                    kvp.Value.Key = kvp.Key;
+
+                    // HACK: infer order of properties for visualization based on order of for-each
+                    kvp.Value.Order = i;
+                    i++;
+                }
+            };
+        }
+
+        public event Action<IConfig> Loaded;
+
+        public string ConfigPath { get; set; }
+
+        void IConfig.InvokeLoaded()
+        {
+            this.Loaded?.Invoke(this);
+        }
     }
 
     /// <summary>
@@ -95,8 +125,12 @@ namespace AudioAnalysisTools.Indices
 
         private double defaultValue;
 
+        // ignored because we don't want to dump this info in ConfigFile log
+        [JsonIgnore]
         public string Key { get; set; }
 
+        // ignored because we don't want to dump this info in ConfigFile log
+        [JsonIgnore]
         public string Name { get; set; }
 
         public string DataType
@@ -110,7 +144,7 @@ namespace AudioAnalysisTools.Indices
         }
 
         [YamlIgnore]
-
+        [JsonIgnore]
         // TODO: this information should really be encoded rather than inferred
         public bool IsSpectralIndex => this.DataType == "double[]";
 
@@ -125,13 +159,19 @@ namespace AudioAnalysisTools.Indices
         }
 
         [YamlIgnore]
+        [JsonIgnore]
         public object DefaultValueCasted { get; private set; }
 
         [YamlIgnore]
+        [JsonIgnore]
         public int Order { get; set; }
 
+        // ignored because we don't want to dump this info in ConfigFile log
+        [JsonIgnore]
         public string ProjectID { get; set; }
 
+        // ignored because we don't want to dump this info in ConfigFile log
+        [JsonIgnore]
         public string Comment { get; set; }
 
         // for display purposes only
@@ -145,6 +185,8 @@ namespace AudioAnalysisTools.Indices
 
         public bool CalculateNormMax { get; set; }
 
+        // ignored because we don't want to dump this info in ConfigFile log
+        [JsonIgnore]
         public string Units { get; set; }
 
         // use these when calculated combination index.
@@ -294,45 +336,9 @@ namespace AudioAnalysisTools.Indices
         /// Returns a cached set of configuration properties.
         /// WARNING CACHED!
         /// </summary>
-        public static Dictionary<string, IndexProperties> GetIndexProperties(FileInfo configFile)
+        public static IndexPropertiesCollection GetIndexProperties(FileInfo configFile)
         {
-            return GetIndexProperties(configFile.ToFileEntry());
-        }
-
-        // TODO: refactor this caching into ConfigFile generally
-        public static Dictionary<string, IndexProperties> GetIndexProperties(FileEntry configFile)
-        {
-            Contract.RequiresNotNull(configFile, nameof(configFile));
-
-            // AT: the effects of this method have been significantly altered
-            // a) caching introduced - unknown effects for parallelism and dodgy file rewriting stuff
-            // b) static deserialization utilized (instead of Config)
-            lock (CachedProperties)
-            {
-                Dictionary<string, IndexProperties> props;
-                if (CachedProperties.TryGetValue(configFile.FullName, out props))
-                {
-                    return props;
-                }
-                else
-                {
-                    var deserialized = Yaml.Deserialize<Dictionary<string, IndexProperties>>(configFile);
-
-                    int i = 0;
-                    foreach (var kvp in deserialized)
-                    {
-                        // assign the key to the object for consistency
-                        kvp.Value.Key = kvp.Key;
-
-                        // HACK: infer order of properties for visualization based on order of for-each
-                        kvp.Value.Order = i;
-                        i++;
-                    }
-
-                    CachedProperties.Add(configFile.FullName, deserialized);
-                    return deserialized;
-                }
-            }
+            return ConfigFile.Deserialize<IndexPropertiesCollection>(configFile);
         }
 
         public static FileInfo Find(Config configuration, FileInfo originalConfigFile, bool allowDefault = false)

@@ -60,6 +60,9 @@
     <Reference Include="CsvHelper, Version=2.0.0.0, Culture=neutral, PublicKeyToken=8c4959082be5c823, processorArchitecture=MSIL">
       <HintPath>..\..\packages\CsvHelper.2.16.2.0\lib\net45\CsvHelper.dll</HintPath>
     </Reference>
+    <Reference Include="DeepCloner, Version=0.10.0.0, Culture=neutral, PublicKeyToken=dc0b95cf99bf4e99, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\DeepCloner.0.10.2\lib\net40\DeepCloner.dll</HintPath>
+    </Reference>
     <Reference Include="DotSpinners, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\DotSpinners.1.2.0\lib\net40\DotSpinners.dll</HintPath>
     </Reference>
@@ -143,8 +146,10 @@
     <Compile Include="CalcSunTimes.cs" />
     <Compile Include="ConfigFile\Config.cs" />
     <Compile Include="ConfigFile\ConfigFile.cs" />
+    <Compile Include="ConfigFile\ConfigFile.Deserialize.cs" />
     <Compile Include="ConfigFile\ConfigFile.Profiles.cs" />
     <Compile Include="ConfigFile\ConfigFileException.cs" />
+    <Compile Include="ConfigFile\IConfig.cs" />
     <Compile Include="ConfigFile\IProfile.cs" />
     <Compile Include="Contracts\Contract.cs" />
     <Compile Include="Csv\CsvExtensions.cs" />

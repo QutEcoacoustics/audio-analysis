@@ -45,7 +45,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             var distributions = common.IndexDistributions;
             var indexGeneration = common.IndexGenerationData;
-            var indexProperties = zoomConfig.IndexProperties;
 
             string fileStem = common.OriginalBasename;
 
@@ -54,7 +53,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // ####################### DERIVE ZOOMED OUT SPECTROGRAMS FROM SPECTRAL INDICES
 
             string[] keys = { "ACI", "BGN", "CVR", "DIF", "ENT", "EVN", "PMN", "POW", "RHZ", "RVT", "RPS", "RNG", "SUM", "SPT" };
-            indexProperties = InitialiseIndexProperties.FilterIndexPropertiesForSpectralOnly(indexProperties);
+            var indexProperties = InitialiseIndexProperties.FilterIndexPropertiesForSpectralOnly(zoomConfig.IndexProperties);
             Dictionary<string, double[,]> spectra = IndexMatrices.ReadSpectralIndices(inputDirectory, fileStem, analysisType, keys);
 
             Stopwatch sw = Stopwatch.StartNew();

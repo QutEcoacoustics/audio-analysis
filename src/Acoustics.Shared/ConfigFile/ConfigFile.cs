@@ -46,38 +46,6 @@ namespace Acoustics.Shared.ConfigFile
             internal set => defaultConfigFolder = value;
         }
 
-        public static Config Deserialize(FileInfo file)
-        {
-            return Deserialize(file.FullName);
-        }
-
-        public static Config Deserialize(string path)
-        {
-            var config = new Config(path);
-            config.InvokeLoaded();
-            return config;
-        }
-
-        public static T Deserialize<T>(FileInfo file)
-            where T : Config
-        {
-            return Deserialize<T>(file.FullName);
-        }
-
-        public static T Deserialize<T>(string path)
-            where T : Config
-        {
-            path = Path.GetFullPath(path);
-
-            (object generic, T config) = Yaml.LoadAndDeserialize<T>(path);
-
-            config.GenericConfig = generic;
-            config.ConfigPath = path;
-            config.InvokeLoaded();
-
-            return config;
-        }
-
         public static FileInfo ResolveOrDefault<T>(FileInfo file, params DirectoryInfo[] searchPaths)
         {
             return ResolveOrDefault<T>(file.FullName, searchPaths);
@@ -114,6 +82,82 @@ namespace Acoustics.Shared.ConfigFile
             }
 
             throw new ConfigFileException("Loading default config failed because " + errorMessage);
+        }
+
+        public static FileInfo Resolve(FileInfo file, params DirectoryInfo[] searchPaths)
+        {
+            Contract.Requires<ArgumentNullException>(file != null);
+
+            return Resolve(file.FullName, searchPaths);
+        }
+
+        public static FileInfo Resolve(string file, params DirectoryInfo[] searchPaths)
+        {
+            if (file.IsNullOrEmpty())
+            {
+                throw new ArgumentException("Try to resolve config failed, because supplied file argument was null or empty.", nameof(file));
+            }
+
+            var success = TryResolve(file, searchPaths.Select(x => x.ToDirectoryEntry()), out FileEntry configFile);
+
+            if (success)
+            {
+                return configFile.ToFileInfo();
+            }
+
+            var message = NotFoundMessage(file, searchPaths);
+            throw new ConfigFileException(message, file);
+        }
+
+        public static bool TryResolve(string file, IEnumerable<DirectoryEntry> searchPaths, out FileEntry configFile)
+        {
+            configFile = null;
+            if (string.IsNullOrWhiteSpace(file))
+            {
+                return false;
+            }
+
+            // this is a holdover from concrete file systems. The concept of a working directory has no real
+            // equivalent in a virtual file system but this is implemented for compatibility
+            // GetFullPath should take care of relative paths relative to current working directory
+            var fullPath = Path.GetFullPath(file);
+            if (File.Exists(fullPath))
+            {
+                configFile = fullPath.ToFileEntry();
+                return true;
+            }
+
+            if (Path.IsPathRooted(file))
+            {
+                // if absolute on concrete file system and can't be found then we can't resolve automatically
+                return false;
+            }
+
+            if (searchPaths != null)
+            {
+                foreach (var directory in searchPaths)
+                {
+                    var searchPath = directory.CombineFile(file);
+                    if (searchPath.Exists)
+                    {
+                        configFile = searchPath;
+                        return true;
+                    }
+                }
+            }
+
+            return TryResolveInConfigFolder(file, ref configFile);
+        }
+
+        private static string NotFoundMessage(string file, DirectoryInfo[] searchPaths)
+        {
+            var searchedIn = searchPaths
+                .Select(x => x.FullName)
+                .Concat(new[] { ConfigFolder + " (and all subdirectories)", Directory.GetCurrentDirectory() })
+                .Distinct()
+                .Aggregate(string.Empty, (lines, dir) => lines + "\n\t" + dir);
+            var message = $"The specified config file ({file}) could not be found.\nSearched in: {searchedIn}";
+            return message;
         }
 
         private static bool TryDefault<T>(out string errorMessage, out FileInfo fileInfo)
@@ -158,82 +202,6 @@ namespace Acoustics.Shared.ConfigFile
             }
 
             return false;
-        }
-
-        public static FileInfo Resolve(FileInfo file, params DirectoryInfo[] searchPaths)
-        {
-            Contract.Requires<ArgumentNullException>(file != null);
-
-            return Resolve(file.FullName, searchPaths);
-        }
-
-        public static FileInfo Resolve(string file, params DirectoryInfo[] searchPaths)
-        {
-            if (file.IsNullOrEmpty())
-            {
-                throw new ArgumentException("Try to resolve config failed, because supplied file argument was null or empty.", nameof(file));
-            }
-
-            var success = TryResolve(file, searchPaths.Select(x => x.ToDirectoryEntry()), out FileEntry configFile);
-
-            if (success)
-            {
-                return configFile.ToFileInfo();
-            }
-
-            var message = NotFoundMessage(file, searchPaths);
-            throw new ConfigFileException(message, file);
-        }
-
-        private static string NotFoundMessage(string file, DirectoryInfo[] searchPaths)
-        {
-            var searchedIn = searchPaths
-                .Select(x => x.FullName)
-                .Distinct()
-                .Concat(new[] { ConfigFolder + " (and all subdirectories)", Directory.GetCurrentDirectory() })
-                .Aggregate(string.Empty, (lines, dir) => lines + "\n\t" + dir);
-            var message = $"The specified config file ({file}) could not be found.\nSearched in: {searchedIn}";
-            return message;
-        }
-
-        public static bool TryResolve(string file, IEnumerable<DirectoryEntry> searchPaths, out FileEntry configFile)
-        {
-            configFile = null;
-            if (string.IsNullOrWhiteSpace(file))
-            {
-                return false;
-            }
-
-            // this is a holdover from concrete file systems. The concept of a working directory has no real
-            // equivalent in a virtual file system but this is implemented for compatibility
-            // GetFullPath should take care of relative paths relative to current working directory
-            var fullPath = Path.GetFullPath(file);
-            if (File.Exists(fullPath))
-            {
-                configFile = fullPath.ToFileEntry();
-                return true;
-            }
-
-            if (Path.IsPathRooted(file))
-            {
-                // if absolute on concrete file system and can't be found then we can't resolve automatically
-                return false;
-            }
-
-            if (searchPaths != null)
-            {
-                foreach (var directory in searchPaths)
-                {
-                    var searchPath = directory.CombineFile(file);
-                    if (searchPath.Exists)
-                    {
-                        configFile = searchPath;
-                        return true;
-                    }
-                }
-            }
-
-            return TryResolveInConfigFolder(file, ref configFile);
         }
 
         private static bool TryResolveInConfigFolder(string file, ref FileEntry configFile)
