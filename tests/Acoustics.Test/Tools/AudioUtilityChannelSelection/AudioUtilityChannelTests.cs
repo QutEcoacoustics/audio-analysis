@@ -18,6 +18,7 @@ namespace Acoustics.Test.Tools.AudioUtilityChannelSelection
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
     using Acoustics.Tools.Wav;
+    using Force.DeepCloner;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using MSTestExtensions;
     using TestHelpers;
@@ -482,7 +483,7 @@ namespace Acoustics.Test.Tools.AudioUtilityChannelSelection
             // adjust params for this test
             var sourceInfo = TestHelper.AudioDetails[sourceFile];
 
-            var expected = sourceInfo.JsonClone();
+            var expected = sourceInfo.ShallowClone();
             expected.ChannelCount = expectedFrequencies.Length;
 
             var audioUtilityRequest = customRequest ?? new AudioUtilityRequest();

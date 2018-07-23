@@ -238,6 +238,7 @@ Copyright {Meta.NowYear} {Meta.Organization}");
         internal static void WarnIfDevleoperEntryUsed(string message = null)
         {
             if (!InDEBUG)
+#pragma warning disable 162
             {
                 message = message == null ? string.Empty : "\n!    " + message;
                 Log.Warn($@"!
@@ -247,6 +248,7 @@ Copyright {Meta.NowYear} {Meta.Organization}");
 !
 !");
             }
+#pragma warning restore 162
         }
 
         /// <summary>

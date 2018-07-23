@@ -101,14 +101,11 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             }
 
             // 2. initialize the analyzer
-            // we're changing the way resolving config files works. Ideally, we'd like to use static type config files
+            // we're changing the way resolving config files works. Ideally, we'd like to use staticly typed config files
             // but we can't do that unless we know which type we have to load first! Currently analyzer to load is in
             // the config file so we can't know which analyzer we can use. Thus we will change to using the file name,
-            //or an argument to resolve the analyzer to load.
+            // or an argument to resolve the analyzer to load.
             // Get analysis name:
-            Log.Warn("The way analysis names are determined has changed. Now either use the CLI option "
-                + "`AnalysisIdentifier` or name the config file to matach an analysis name");
-
             IAnalyser2 analyzer = FindAndCheckAnalyser<IAnalyser2>(arguments.AnalysisIdentifier, configFile.Name);
 
             // 2. get the analysis config

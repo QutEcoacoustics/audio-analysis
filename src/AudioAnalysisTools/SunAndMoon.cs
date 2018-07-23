@@ -12,6 +12,7 @@ namespace AudioAnalysisTools
     using System.Text;
     using TowseyLibrary;
 
+    [Obsolete("This class is not generalizeable and shouldn't be used until it can be made so.")]
     public static class SunAndMoon
     {
         public class SunMoonTides
@@ -120,7 +121,7 @@ namespace AudioAnalysisTools
         public static Bitmap AddSunTrackToImage(int width, DateTimeOffset? dateTimeOffset, FileInfo sunriseDatafile)
         {
             // AT: I DON'T UNDERSTAND THIS CODE! I CAN'T FIX IT
-            LoggedConsole.WriteErrorLine("\t\tERROR: Sun track generation disabled - broken in long ago merge");
+            LoggedConsole.WriteWarnLine("\t\tERROR: Sun track generation disabled - broken in long ago merge");
             return null;
 
             //            if (!sunriseDatafile.Exists)
