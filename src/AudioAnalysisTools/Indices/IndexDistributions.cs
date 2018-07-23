@@ -286,7 +286,7 @@ namespace AudioAnalysisTools.Indices
 
         public static Dictionary<string, SpectralStats> Deserialize(FileEntry file)
         {
-            return Json.Deserialise<Dictionary<string, SpectralStats>>(file);
+            return Json.Deserialize<Dictionary<string, SpectralStats>>(file);
         }
     }
 }

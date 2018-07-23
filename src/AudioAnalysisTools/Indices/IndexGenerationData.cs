@@ -92,7 +92,7 @@ namespace AudioAnalysisTools.Indices
         /// </summary>
         public static IndexGenerationData GetIndexGenerationData(DirectoryEntry directory)
         {
-            return Json.Deserialise<IndexGenerationData>(FindFile(directory));
+            return Json.Deserialize<IndexGenerationData>(FindFile(directory));
         }
 
         public static FileEntry FindFile(DirectoryEntry directory)

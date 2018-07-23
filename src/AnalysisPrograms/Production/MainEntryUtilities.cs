@@ -451,7 +451,7 @@ Copyright {Meta.NowYear} {Meta.Organization}");
                 PeakWorkingSet = thisProcess.PeakWorkingSet64,
             };
 
-            var statsString = "Programs stats:\n" + Json.SerialiseToString(stats, prettyPrint: true);
+            var statsString = "Programs stats:\n" + Json.SerializeToString(stats, prettyPrint: true);
 
             NoConsole.Log.Info(statsString);
         }

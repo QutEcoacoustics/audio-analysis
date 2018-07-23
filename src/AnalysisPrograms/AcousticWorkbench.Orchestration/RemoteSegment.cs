@@ -133,7 +133,7 @@ namespace AnalysisPrograms.AcousticWorkbench.Orchestration
 
         public override string ToString()
         {
-            return "[RemoteSegmentWithData: " + Json.SerialiseToString(this) + "]";
+            return "[RemoteSegmentWithData: " + Json.SerializeToString(this) + "]";
         }
     }
 }

@@ -138,9 +138,9 @@ namespace Acoustics.Test.Shared
 
             double[,] matrix = Csv.ReadMatrixFromCsv<double>(this.testFile, TwoDimensionalArray.None);
 
-            Debug.WriteLine(Json.SerialiseToString(TestMatrix, prettyPrint: true));
+            Debug.WriteLine(Json.SerializeToString(TestMatrix, prettyPrint: true));
             Debug.WriteLine("Actual:");
-            Debug.WriteLine(Json.SerialiseToString(matrix, true));
+            Debug.WriteLine(Json.SerializeToString(matrix, true));
 
             CollectionAssert.AreEqual(TestMatrix, matrix);
         }
@@ -162,9 +162,9 @@ namespace Acoustics.Test.Shared
 
             double[,] matrix = Csv.ReadMatrixFromCsv<double>(this.testFile, TwoDimensionalArray.Rotate90AntiClockWise);
 
-            Debug.WriteLine(Json.SerialiseToString(TestMatrix, prettyPrint: true));
+            Debug.WriteLine(Json.SerializeToString(TestMatrix, prettyPrint: true));
             Debug.WriteLine("Actual:");
-            Debug.WriteLine(Json.SerialiseToString(matrix, true));
+            Debug.WriteLine(Json.SerializeToString(matrix, true));
 
             CollectionAssert.AreEqual(TestMatrix, matrix);
         }
@@ -176,9 +176,9 @@ namespace Acoustics.Test.Shared
 
             double[,] matrix = Csv.ReadMatrixFromCsv<double>(this.testFile, TwoDimensionalArray.Rotate90ClockWise);
 
-            Debug.WriteLine(Json.SerialiseToString(TestMatrix, prettyPrint: true));
+            Debug.WriteLine(Json.SerializeToString(TestMatrix, prettyPrint: true));
             Debug.WriteLine("Actual:");
-            Debug.WriteLine(Json.SerialiseToString(matrix, true));
+            Debug.WriteLine(Json.SerializeToString(matrix, true));
 
             CollectionAssert.AreEqual(TestMatrix, matrix);
         }
@@ -190,9 +190,9 @@ namespace Acoustics.Test.Shared
 
             double[,] matrix = Csv.ReadMatrixFromCsv<double>(this.testFile, TwoDimensionalArray.None);
 
-            Debug.WriteLine(Json.SerialiseToString(TestMatrix, prettyPrint: true));
+            Debug.WriteLine(Json.SerializeToString(TestMatrix, prettyPrint: true));
             Debug.WriteLine("Actual:");
-            Debug.WriteLine(Json.SerialiseToString(matrix, true));
+            Debug.WriteLine(Json.SerializeToString(matrix, true));
 
             matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
 

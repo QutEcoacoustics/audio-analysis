@@ -207,7 +207,7 @@ namespace AnalysisPrograms.EventStatistics
                 durationAudioProcessed = results.Sum(x => x.SegmentAudioDuration.TotalSeconds),
                 remoteAudioDownloaded = (preparer as RemoteSourcePreparer)?.TotalBytesRecieved,
             };
-            Log.Info("Summary statistics:\n" + Json.SerialiseToString(summaryStats));
+            Log.Info("Summary statistics:\n" + Json.SerializeToString(summaryStats));
 
             Log.Success("Event statistics analysis complete!");
 

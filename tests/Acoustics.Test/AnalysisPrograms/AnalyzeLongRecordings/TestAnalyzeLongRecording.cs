@@ -137,7 +137,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             var ldsBgnSpectrumFile = this.outputDirectory.CombineFile("Spectrum1.png");
             GraphsAndCharts.DrawGraph(array, "LD BGN SPECTRUM Linear", ldsBgnSpectrumFile);
 
-            var generationData = Json.Deserialise<IndexGenerationData>(IndexGenerationData.FindFile(resultsDirectory.ToDirectoryEntry()));
+            var generationData = Json.Deserialize<IndexGenerationData>(IndexGenerationData.FindFile(resultsDirectory.ToDirectoryEntry()));
             Assert.AreEqual("TemporaryRecording1", generationData.RecordingBasename);
         }
 
@@ -243,7 +243,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             // SECOND part of test is to create the LD spectrograms because they are not created when IndexCalcDuration < 60 seconds
             // first read in the index generation data
             var icdPath = resultsDirectory.CombineFile(recordingName + "__IndexGenerationData.json");
-            var indexConfigData = Json.Deserialise<IndexGenerationData>(icdPath);
+            var indexConfigData = Json.Deserialize<IndexGenerationData>(icdPath);
 
             var indexPropertiesConfig = PathHelper.ResolveConfigFile("IndexPropertiesConfig.yml");
 

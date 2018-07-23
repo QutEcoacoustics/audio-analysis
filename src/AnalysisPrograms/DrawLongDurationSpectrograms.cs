@@ -129,7 +129,7 @@ namespace AnalysisPrograms
             (FileEntry indexGenerationDataFile, FileEntry indexDistributionsFile) =
                 ZoomParameters.CheckNeededFilesExist(arguments.InputDataDirectory.ToDirectoryEntry());
 
-            var indexGenerationData = Json.Deserialise<IndexGenerationData>(indexGenerationDataFile);
+            var indexGenerationData = Json.Deserialize<IndexGenerationData>(indexGenerationDataFile);
 
             // spectral distribution statistics is required only when calcualting difference spectrograms.
             Dictionary<string, IndexDistributions.SpectralStats> indexDistributionsData = null;

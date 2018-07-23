@@ -105,7 +105,7 @@ namespace AnalysisPrograms
 
             var result = AnalyseOneRecording(arguments.Source, configDict, localEventStart, localEventEnd, (int)minHz, (int)mazHz, arguments.Output);
             Log.InfoFormat("SpectrogramPath:" + result.SpectrogramFile);
-            Log.InfoFormat("SnrStats:" + Json.SerialiseToString(result.SnrStatistics, prettyPrint: false));
+            Log.InfoFormat("SnrStats:" + Json.SerializeToString(result.SnrStatistics, prettyPrint: false));
         }
 
         /// <summary>
