@@ -23,6 +23,7 @@ namespace Acoustics.Test.Shared
         public TestContext TestContext { get; set; }
 
         [TestMethod]
+        [DoNotParallelize]
         public void UsesCleanlayout()
         {
             Logging.MemoryAppender.Clear();
@@ -45,6 +46,7 @@ namespace Acoustics.Test.Shared
         }
 
         [TestMethod]
+        [DoNotParallelize]
         public void PromptInteractive()
         {
             LoggedConsole.SuppressInteractive = false;

@@ -25,6 +25,7 @@ namespace Acoustics.Test.Shared
     using TestHelpers;
 
     [TestClass]
+    [DoNotParallelize]
     public class ConfigFileTests : OutputDirectoryTest
     {
         private static FileInfo knownConfigFile;

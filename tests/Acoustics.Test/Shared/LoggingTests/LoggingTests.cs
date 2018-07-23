@@ -15,6 +15,7 @@ namespace Acoustics.Test.Shared.LoggingTests
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
+    [DoNotParallelize]
     public class LoggingTests
     {
         [TestInitialize]

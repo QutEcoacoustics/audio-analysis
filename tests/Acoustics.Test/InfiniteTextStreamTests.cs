@@ -14,12 +14,14 @@ namespace Acoustics.Test
     using TestHelpers;
 
     [TestClass]
+    [DoNotParallelize]
     public class InfiniteTextStreamTests
     {
         private readonly TimeSpan timeout = TimeSpan.FromMilliseconds(600);
 
         [TestMethod]
         [Timeout(5_000)]
+
         public void InfiniteStreamIsInfinite()
         {
             Debug.WriteLine("Generating output");
