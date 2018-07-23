@@ -21,6 +21,7 @@ namespace AnalysisPrograms
     using System.Linq;
     using System.Reflection;
     using Acoustics.Shared;
+    using Acoustics.Shared.Logging;
     using log4net.Appender;
     using log4net.Core;
     using log4net.Repository.Hierarchy;
@@ -126,44 +127,11 @@ namespace AnalysisPrograms
                     throw new ArgumentOutOfRangeException();
             }
 
-            var repository = (Hierarchy)LogManager.GetRepository();
-            repository.Root.Level = modifiedLevel;
-            repository.Threshold = modifiedLevel;
-
-            // the quiet option limits the amount output we send to the console
-            // but the full leg level is still sent to log files
-            var appenders = repository.GetAppenders();
-            foreach (var appender in appenders)
-            {
-                if (appender is ConsoleAppender || appender is ManagedColoredConsoleAppender
-                                                || appender is ColoredConsoleAppender)
-                {
-                    ((AppenderSkeleton)appender).Threshold = quietConsole ? Level.Error : modifiedLevel;
-                }
-            }
-
-            repository.RaiseConfigurationChanged(EventArgs.Empty);
-
+            Logging.ModifyVerbosity(modifiedLevel, quietConsole);
             Log.Debug("Log level changed to: " + logVerbosity);
 
             // log test
-            //            Log.Debug("Log test DEBUG");
-            //            Log.Info("Log test INFO");
-            //            Log.Success("Log test SUCCESS");
-            //            Log.Warn("Log test WARN");
-            //            Log.Error("Log test ERROR");
-            //            Log.Fatal("Log test FATAL");
-            //            Log.Trace("Log test TRACE");
-            //            Log.Verbose("Log test VERBOSE");
-            //            LoggedConsole.Log.Info("Clean log INFO");
-            //            LoggedConsole.Log.Success("Clean log SUCCESS");
-            //            LoggedConsole.Log.Warn("Clean log WARN");
-            //            LoggedConsole.Log.Error("Clean log ERROR");
-            //            LoggedConsole.WriteLine("Clean wrapper INFO");
-            //            LoggedConsole.WriteSuccessLine("Clean wrapper SUCCESS");
-            //            LoggedConsole.WriteWarnLine("Clean wrapper WARN");
-            //            LoggedConsole.WriteErrorLine("Clean wrapper ERROR");
-            //            LoggedConsole.WriteFatalLine("Clean wrapper FATAL", new Exception("I'm a fake"));
+            //Logging.TestLogging();
         }
 
         internal static void AttachDebugger(DebugOptions options)
@@ -478,20 +446,10 @@ Copyright {Meta.NowYear} {Meta.Organization}");
 
         private static void ParseEnvirionemnt()
         {
-            ApPlainLogging = bool.TryParse(Environment.GetEnvironmentVariable(ApPlainLoggingKey), out var isTrue) && isTrue;
-            var repository = (Hierarchy)LogManager.GetRepository();
-            var root = repository.Root;
-            var cleanLogger = (Logger)repository.GetLogger("CleanLogger");
+            ApPlainLogging = bool.TryParse(Environment.GetEnvironmentVariable(ApPlainLoggingKey), out var plainLogging) && plainLogging;
 
-            if (ApPlainLogging)
-            {
-                root.RemoveAppender("ConsoleAppender");
-                cleanLogger.RemoveAppender("CleanConsoleAppender");
-            }
-            else
-            {
-                root.RemoveAppender("SimpleConsoleAppender");
-            }
+            // default value is true
+            ApMetricRecording = !bool.TryParse(Environment.GetEnvironmentVariable(ApMetricsKey), out var parseMetrics) || parseMetrics;
 
             ApAutoAttach = bool.TryParse(Environment.GetEnvironmentVariable(ApAutoAttachKey), out var autoAttach) && autoAttach;
         }

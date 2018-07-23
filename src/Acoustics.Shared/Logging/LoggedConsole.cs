@@ -8,7 +8,7 @@ namespace System
     using System.IO;
 
     using Acoustics.Shared;
-
+    using Acoustics.Shared.Logging;
     using DotSpinners;
     using log4net;
     using Text;
@@ -21,10 +21,11 @@ namespace System
     /// </summary>
     public static class LoggedConsole
     {
-        public static string LogFolder { get; } = Path.Combine(AppConfigHelper.ExecutingAssemblyDirectory, "Logs");
+        public static readonly ILog Log = LogManager.Exists(Logging.Cleanlogger);
 
-        public static readonly ILog Log = LogManager.GetLogger("CleanLogger");
         private static readonly TimeSpan PromptTimeout = TimeSpan.FromSeconds(60);
+
+        public static string LogFolder { get; } = Path.Combine(AppConfigHelper.ExecutingAssemblyDirectory, "Logs");
 
         public static bool SuppressInteractive { get; set; } = false;
 

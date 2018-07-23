@@ -186,6 +186,7 @@
     <Compile Include="Logging\LoggedConsole.cs" />
     <Compile Include="Logging\LogExtensions.cs" />
     <Compile Include="Csv\MatrixMapper.cs" />
+    <Compile Include="Logging\Logging.cs" />
     <Compile Include="Logging\NoConsole.cs" />
     <Compile Include="MediaTypes.cs" />
     <Compile Include="Meta.cs" />

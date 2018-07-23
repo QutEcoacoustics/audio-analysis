@@ -11,6 +11,7 @@ namespace Acoustics.Test.Shared
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
+    using Acoustics.Shared.Logging;
     using global::AnalysisPrograms;
     using global::AnalysisPrograms.Production.Arguments;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -21,25 +22,13 @@ namespace Acoustics.Test.Shared
     {
         public TestContext TestContext { get; set; }
 
-        //
-        // You can use the following additional attributes as you write your tests:
-        //
-        // Use ClassInitialize to run code before running the first test in the class
-        // [ClassInitialize()]
-        // public static void MyClassInitialize(TestContext testContext) { }
-        //
-        // Use ClassCleanup to run code after all tests in a class have run
-        // [ClassCleanup()]
-        // public static void MyClassCleanup() { }
-        //
-        // Use TestInitialize to run code before running each test 
-        // [TestInitialize()]
-        // public void MyTestInitialize() { }
-        //
-        // Use TestCleanup to run code after each test has run
-        // [TestCleanup()]
-        // public void MyTestCleanup() { }
-        //
+        [TestMethod]
+        public void UsesCleanlayout()
+        {
+            Logging.MemoryAppender.Clear();
+            LoggedConsole.WriteLine("test message");
+            Assert.AreEqual("test message", Logging.MemoryAppender.GetEvents()[0].RenderedMessage);
+        }
 
         [TestMethod]
         public void IsInteractive()

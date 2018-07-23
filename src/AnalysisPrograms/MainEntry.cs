@@ -12,7 +12,9 @@ namespace AnalysisPrograms
     using System;
     using System.Reflection;
     using System.Threading.Tasks;
+    using Acoustics.Shared.Logging;
     using log4net;
+    using log4net.Core;
     using Production.Arguments;
     using static System.Environment;
 
@@ -21,7 +23,7 @@ namespace AnalysisPrograms
     /// </summary>
     public static partial class MainEntry
     {
-        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog Log = LogManager.GetLogger(nameof(MainEntry));
 
         public static async Task<int> Main(string[] args)
         {
@@ -29,6 +31,8 @@ namespace AnalysisPrograms
 
             // Uses an env var to  attach debugger before argument parsing
             AttachDebugger(ApAutoAttach ? DebugOptions.YesSilent : DebugOptions.No);
+
+            Logging.Initialize(colorConsole: !ApPlainLogging, Level.Info, quietConsole: false);
 
             Copyright();
 
