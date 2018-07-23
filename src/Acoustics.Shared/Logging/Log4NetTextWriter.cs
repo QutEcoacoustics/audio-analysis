@@ -65,7 +65,7 @@ namespace Acoustics.Shared.Logging
                 case string _ when value.EndsWith(Environment.NewLine):
                     this.logCall(this.stringBuilder.ToString());
                     this.stringBuilder.Clear();
-                    return;
+                    break;
                 default:
                     this.stringBuilder.Append(value);
                     break;
