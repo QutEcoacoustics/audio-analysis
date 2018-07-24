@@ -9,6 +9,8 @@
 #
 # The feature vectors can be used in training the machine learning models.
 
+# The directory for the output of parallel job running on MahnooshSandpit
+# OutputDirectory: "D:\Mahnoosh\Liz\ParallelJobs\"
 
 # The properties to generate Mel scale
 FrequencyScaleType: Mel
@@ -20,7 +22,7 @@ FinalBinCount: 128
 # The default values for minFreqBin and maxFreqBin are 1 and FinalBinCount
 # For any other arbitrary frequency bin bounds, these two parameters need to be manually set.
 MinFreqBin: 1
-#MaxFreqBin: 128
+MaxFreqBin: 128
 
 # The number of frequency band for feature generation process
 numFreqBand: 1
@@ -31,10 +33,10 @@ numFreqBand: 1
 PatchHeight: 1
 
 # The number of patches to be selected from each recording of the patch sampling set
-NumRandomPatches: 10
+NumRandomPatches: 4
 
 # the number of clusters to be generated from the selected patch set
-NumClusters: 500
+NumClusters: 256
 
 
 # Applying noise reduction and whitening if these options are set to 'true'
