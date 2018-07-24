@@ -472,6 +472,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             */
         }
 
+        [Ignore]
         [TestMethod]
         public void PowerSpectrumDensityTest()
         {
