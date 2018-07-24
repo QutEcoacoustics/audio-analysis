@@ -524,13 +524,13 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                     var energySpectrogram = new EnergySpectrogram(sonoConfig, amplitudeSpectrogram.Data);
 
                     // square the FFT coefficients to get an energy spectrogram
-                    //double[,] energySpectrogram = PowerSpectrumDensity.GetEnergyValues(sonogram.Data);
+                    //double[,] energySpectrogram = PowerSpectrumDensity.GetEnergyValues(amplitudeSpectrogram.Data);
 
                     // RMS NORMALIZATION
-                    double[,] normalizedValues = SNR.RmsNormalization(energySpectrogram.Data);
+                    //double[,] normalizedValues = SNR.RmsNormalization(energySpectrogram);
 
                     // Median Noise Reduction
-                    double[,] noiseReducedValues = PcaWhitening.NoiseReduction(normalizedValues);
+                    double[,] noiseReducedValues = PcaWhitening.NoiseReduction(energySpectrogram.Data);
 
                     psd.Add(PowerSpectrumDensity.GetPowerSpectrum(noiseReducedValues));
                 }

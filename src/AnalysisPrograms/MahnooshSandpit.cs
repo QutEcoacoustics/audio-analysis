@@ -265,7 +265,7 @@ namespace AnalysisPrograms
             //var recording2Path = Path.Combine(trainSetPath, "SM304264_0+1_20160421_054539_29-30min.wav"); // an example from the train set
             //var recording2Path = Path.Combine(testSetPath, "SM304264_0+1_20160423_054539_29-30min.wav"); // an example from the test set
             // check whether there is any file in the folder/subfolders
-            if (Directory.GetFiles(testSetPath, "*", SearchOption.AllDirectories).Length == 0) // trainSetPath
+            if (Directory.GetFiles(trainSetPath, "*", SearchOption.AllDirectories).Length == 0) // testSetPath
             {
                 throw new ArgumentException("The folder of recordings is empty...");
             }
@@ -279,7 +279,7 @@ namespace AnalysisPrograms
             Dictionary<string, List<double[,]>> allFilesStdFeatureVectors = new Dictionary<string, List<double[,]>>();
             Dictionary<string, List<double[,]>> allFilesSkewnessFeatureVectors = new Dictionary<string, List<double[,]>>();
 
-            foreach (string filePath in Directory.GetFiles(testSetPath, "*.wav")) // trainSetPath
+            foreach (string filePath in Directory.GetFiles(trainSetPath, "*.wav")) // testSetPath
             {
                 FileInfo fileInfo = filePath.ToFileInfo();
 
@@ -757,7 +757,7 @@ namespace AnalysisPrograms
 
             public const bool DefaultDoNoiseReduction = true;
 
-            public const bool DefaultDoWhitening = true;
+            public const bool DefaultDoWhitening = false;
 
             /// <summary>
             /// Initializes a new instance of the <see cref="FeatureLearningConfig"/> class.
