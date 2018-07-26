@@ -472,7 +472,16 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             */
         }
 
-        [Ignore]
+        /// <summary>
+        /// Input a directory of one-minute recordings for one day
+        /// Calculate PSD:
+        ///     1) Apply FFT to produce the amplitude spectrogram at given window width.
+        ///     2) Square the FFT coefficients >> this gives an energy spectrogram.
+        ///     3) Do RMS normalization and Subtract the median energy value from each frequency bin.
+        ///     4) Take average of each of the energy values in each frequency bin >> this gives power spectrum or PSD.
+        /// Finally draw the the spectrogram of PSD values for the whole day.
+        /// </summary>
+        //[Ignore]
         [TestMethod]
         public void PowerSpectrumDensityTest()
         {
@@ -525,20 +534,24 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                     var energySpectrogram = new EnergySpectrogram(sonoConfig, amplitudeSpectrogram.Data);
 
                     // square the FFT coefficients to get an energy spectrogram
-                    //double[,] energySpectrogram = PowerSpectrumDensity.GetEnergyValues(amplitudeSpectrogram.Data);
+                    // double[,] energySpectrogram = PowerSpectrumDensity.GetEnergyValues(amplitudeSpectrogram.Data);
 
                     // RMS NORMALIZATION
-                    //double[,] normalizedValues = SNR.RmsNormalization(energySpectrogram);
+                    double[,] normalizedValues = SNR.RmsNormalization(energySpectrogram.Data);
 
                     // Median Noise Reduction
-                    double[,] noiseReducedValues = PcaWhitening.NoiseReduction(energySpectrogram.Data);
+                    double[,] noiseReducedValues = PcaWhitening.NoiseReduction(normalizedValues);
 
-                    psd.Add(PowerSpectrumDensity.GetPowerSpectrum(noiseReducedValues));
+                    //double[] psd = PowerSpectrumDensity.GetPowerSpectrum(noiseReducedValues);
+
+                    psd.Add(PowerSpectrumDensity.GetPowerSpectrum(noiseReducedValues).Log());
                 }
             }
 
             //ImageTools.DrawMatrix(psd.ToArray().ToMatrix(), resultPath);
-            ImageTools.DrawReversedMatrix(psd.ToArray().ToMatrix(), resultPath);
+            //ImageTools.DrawReversedMatrix(psd.ToArray().ToMatrix(), resultPath);
+            Image image = ImageTools.DrawReversedMatrixWithoutNormalisation(psd.ToArray().ToMatrix());
+            image.Save(resultPath, ImageFormat.Bmp);
         }
     }
 }

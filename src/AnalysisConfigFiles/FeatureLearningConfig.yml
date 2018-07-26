@@ -41,6 +41,6 @@ NumClusters: 256
 
 # Applying noise reduction and whitening if these options are set to 'true'
 DoNoiseReduction: true
-DoWhitening: true
+DoWhitening: false
 ...
 

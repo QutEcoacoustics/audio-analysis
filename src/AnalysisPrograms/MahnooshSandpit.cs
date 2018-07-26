@@ -37,7 +37,7 @@ namespace AnalysisPrograms
             var inputPath = Path.Combine(inputDir, "PatchSamplingSegments");
             var trainSetPath = Path.Combine(inputDir, "TrainSet");
             var testSetPath = Path.Combine(inputDir, "TestSet");
-            var configPath = @"D:\Mahnoosh\Liz\AnalysisConfigFiles\FeatureLearningConfig.yml"; //@"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\FeatureLearningConfig.yml";
+            var configPath = @"D:\Mahnoosh\Liz\AnalysisConfigFiles\FeatureLearningConfig.yml"; //@"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\FeatureLearningConfig.yml"; //
             var outputMelImagePath = Path.Combine(resultDir, "MelScaleSpectrogram.png");
             var outputNormMelImagePath = Path.Combine(resultDir, "NormalizedMelScaleSpectrogram.png");
             var outputNoiseReducedMelImagePath = Path.Combine(resultDir, "NoiseReducedMelSpectrogram.png");
@@ -757,7 +757,7 @@ namespace AnalysisPrograms
 
             public const bool DefaultDoNoiseReduction = true;
 
-            public const bool DefaultDoWhitening = false;
+            public const bool DefaultDoWhitening = true;
 
             /// <summary>
             /// Initializes a new instance of the <see cref="FeatureLearningConfig"/> class.
