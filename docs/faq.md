@@ -1,5 +1,21 @@
 # FAQ
 
+## How do I reproduce the results I'm given?
+
+You need four things to reproduce a result set:
+
+- The input data
+- The config file
+- The command used to run AP.exe
+- And the same version of AP.exe
+
+Getting the same input data is up to you. 
+
+The config file (and it's values), the command used, and the version of AP.exe
+are all recorded in the log file. Once you open the log file you can find and 
+extract all of these values. For more information on log files see the document
+on [log files](./logs.md).
+
 ## Who is this program designed for?
 
 Short answer: computers.
@@ -16,6 +32,37 @@ mind the target audience. You're in the right ballpark if:
 - you have more RAM or CPU than you know what to do with!
 
 More than likely if you're stuck we can help 😊.
+
+## We collect metrics/statistics; what information is collected and how is it used?
+
+**NOTE: this is an upcoming feature and has not been released yet**
+
+_AP.exe_ collects metrics (statistics) so that we can measure important parts
+of how our program is run. It lets us keep a track of how much computer
+resources we use, how much audio we analyze, and which commands and analyses
+are used the most. Metrics help us prioritize new features or important bugs
+and they also justify continued investment into this software.
+
+We collect mostly anonymous information. All information collected is also
+embedded into the [log file](./logs) of each run so you can inspect it
+yourself. AP.exe sends a payload to our metric collector similar
+to the following (entirely anonymous):
+
+```
+{
+  "Platform": "Microsoft Windows NT 6.2.9200.0",
+  "ProcessorCount": 32,
+  "ExecutionTime": 3441.2261135999997,
+  "PeakWorkingSet": 239583232,
+  “DurationAnalysed”: 86399.75
+}
+```
+
+When the metrics are collected we also record which public IP address they were
+sent from. 
+
+Metrics can be disabled with an an environment variable. If you're concerned
+with the data collection then please contact us so we can work out a compromise.
 
 ## What is a _binary_? What is an _executable_? What does _compiling_ mean?
 

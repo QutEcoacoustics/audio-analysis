@@ -3,6 +3,10 @@
 Log files record all the messages that you normally see in your terminal into a
 text file. Because these messages are saved to a text file we can:
 
+- reliably understand what actions the program took
+- help debug problems
+- extract provenance data to make experiments repeatable.
+
 # Important details
 
 - Every time _AP.exe_ runs a log file is saved in the `Logs` folder
