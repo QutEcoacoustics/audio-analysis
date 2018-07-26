@@ -15,9 +15,6 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
-    using TowseyLibrary;
-
-    // using TestHelpers;
 
     /// <summary>
     /// Notes on TESTS: (from Anthony in email @ 05/04/2017)
@@ -162,13 +159,6 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.CVR, AllowedDelta);
 
-            // DMN
-            expectedSpectrumFile = new FileInfo(resourcesDir + "\\PMN.bin");
-
-            // Binary.Serialize(expectedSpectrumFile, spectralIndices.PMN);
-            expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
-            CollectionAssert.That.AreEqual(expectedVector, spectralIndices.PMN, AllowedDelta);
-
             // ENT
             expectedSpectrumFile = new FileInfo(resourcesDir + "\\ENT.bin");
 
@@ -183,12 +173,12 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.EVN, AllowedDelta);
 
-            // POW
-            expectedSpectrumFile = new FileInfo(resourcesDir + "\\POW.bin");
+            // PMN
+            expectedSpectrumFile = new FileInfo(resourcesDir + "\\PMN.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.POW);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
-            CollectionAssert.That.AreEqual(expectedVector, spectralIndices.POW, AllowedDelta);
+            CollectionAssert.That.AreEqual(expectedVector, spectralIndices.PMN, AllowedDelta);
 
             // RHZ
             expectedSpectrumFile = new FileInfo(resourcesDir + "\\RHZ.bin");

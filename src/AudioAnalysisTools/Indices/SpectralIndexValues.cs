@@ -140,7 +140,7 @@ namespace AudioAnalysisTools.Indices
 
         public static Image CreateImageOfSpectralIndices(SpectralIndexValues spectralIndices)
         {
-            string[] keys = { "ACI", "BGN", "CVR", "ENT", "EVN", "PMN", "POW", "RHZ", "RNG", "RPS", "RVT", "R3D", "SPT" };
+            string[] keys = { "ACI", "BGN", "CVR", "ENT", "EVN", "PMN", "RHZ", "RNG", "RPS", "RVT", "R3D", "SPT" };
             var images = new List<Image>();
             foreach (var key in keys)
             {
@@ -165,9 +165,6 @@ namespace AudioAnalysisTools.Indices
                         break;
                     case "PMN":
                         normalisedIndex = DataTools.normalise(spectralIndices.PMN);
-                        break;
-                    case "POW":
-                        normalisedIndex = DataTools.normalise(spectralIndices.POW);
                         break;
                     case "RHZ":
                         normalisedIndex = DataTools.normalise(spectralIndices.RHZ);
@@ -226,12 +223,6 @@ namespace AudioAnalysisTools.Indices
         /// PMN calculates the average decibel spectrogram correctly.
         /// </summary>
         public double[] PMN { get; set; }
-
-        /// <summary>
-        /// Gets or sets the POW spectral index should eventually be depracated.
-        /// It is derived from an incorrect way of averaging decibel values
-        /// </summary>
-        public double[] POW { get; set; }
 
         // Spectral Ridges Horizontal
         public double[] RHZ { get; set; }

@@ -389,8 +389,8 @@ namespace AudioAnalysisTools.Indices
 
             // iii: CALCULATE noise reduced AVERAGE DECIBEL SPECTRUM
             // TODO: The method to calculate POW by averaging decibel values should be depracated. It is now replaced by index PMN.
-            spectralIndices.POW = SpectrogramTools.CalculateAvgSpectrumFromSpectrogram(deciBelSpectrogram);
-            spectralIndices.PMN = SpectrogramTools.CalculateAvgDecibelSpectrumFromSpectrogram(deciBelSpectrogram);
+            //spectralIndices.POW = SpectrogramTools.CalculateAvgSpectrumFromEnergySpectrogram(deciBelSpectrogram);
+            spectralIndices.PMN = SpectrogramTools.CalculateAvgDecibelSpectrumFromDecibelSpectrogram(deciBelSpectrogram);
 
             // iv: CALCULATE SPECTRAL COVER.
             //     NOTE: at this point, decibelSpectrogram is noise reduced. All values >= 0.0

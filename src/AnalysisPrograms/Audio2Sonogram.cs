@@ -171,6 +171,10 @@ namespace AnalysisPrograms
             return configDict;
         }
 
+        /// <summary>
+        /// Dictionary string, string> configDict is an obsolete class.
+        /// Should avoid calls to this method.
+        /// </summary>
         public static AudioToSonogramResult GenerateFourSpectrogramImages(
             FileInfo sourceRecording,
             FileInfo path2SoxSpectrogram,
