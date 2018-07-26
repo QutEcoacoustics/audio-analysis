@@ -614,7 +614,7 @@
         {
             var fft = DSP_Frames.ExtractEnvelopeAndAmplSpectrogram(signal, wavReader.SampleRate, wavReader.Epsilon, 512, 0.0);
 
-            var histogram = SpectrogramTools.CalculateAvgSpectrumFromSpectrogram(fft.AmplitudeSpectrogram);
+            var histogram = SpectrogramTools.CalculateAvgSpectrumFromEnergySpectrogram(fft.AmplitudeSpectrogram);
 
             var max = histogram.Max();
             double threshold = max * 0.8;

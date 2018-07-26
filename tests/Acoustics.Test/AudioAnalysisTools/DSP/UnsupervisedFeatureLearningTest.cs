@@ -517,12 +517,13 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                     sonoConfig.SourceFName = recording.BaseName;
 
                     //var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
-                    var amplitudeSpectrogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
+                    //var amplitudeSpectrogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
                     // save the matrix 
                     // skip normalisation
                     // skip mel
 
-                    var energySpectrogram = new EnergySpectrogram(sonoConfig, amplitudeSpectrogram.Data);
+                    //var energySpectrogram = new EnergySpectrogram(sonoConfig, amplitudeSpectrogram.Data);
+                    var energySpectrogram = new EnergySpectrogram(sonoConfig, recording.WavReader);
 
                     // square the FFT coefficients to get an energy spectrogram
                     //double[,] energySpectrogram = PowerSpectrumDensity.GetEnergyValues(amplitudeSpectrogram.Data);
@@ -533,7 +534,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                     // Median Noise Reduction
                     double[,] noiseReducedValues = PcaWhitening.NoiseReduction(energySpectrogram.Data);
 
-                    psd.Add(PowerSpectrumDensity.GetPowerSpectrum(noiseReducedValues));
+                    psd.Add(PowerSpectralDensity.GetPowerSpectrum(noiseReducedValues));
                 }
             }
 

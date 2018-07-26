@@ -13,7 +13,7 @@ namespace AudioAnalysisTools.DSP
     using TowseyLibrary;
     using WavTools;
 
-    public static class PowerSpectrumDensity
+    public static class PowerSpectralDensity
     {
         /// <summary>
         /// Input a directory of one-minute recording for one day
