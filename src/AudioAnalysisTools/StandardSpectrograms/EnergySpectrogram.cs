@@ -7,7 +7,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
     using System;
     using Acoustics.Tools.Wav;
     using DSP;
-    using TowseyLibrary;
     using WavTools;
 
     /// <summary>
@@ -90,14 +89,20 @@ namespace AudioAnalysisTools.StandardSpectrograms
             this.Data = PowerSpectralDensity.GetEnergyValues(this.Data);
 
             // (iii) NOISE REDUCTION
-            var tuple = SNR.NoiseReduce(this.Data, this.Configuration.NoiseReductionType, this.Configuration.NoiseReductionParameter);
-            this.Data = tuple.Item1;   // store data matrix
+            //var tuple = SNR.NoiseReduce(this.Data, this.Configuration.NoiseReductionType, this.Configuration.NoiseReductionParameter);
+            //this.Data = tuple.Item1;   // store data matrix
 
             //if (this.SnrData != null)
             //{
             //    // store the full bandwidth modal noise profile
             //    this.SnrData.ModalNoiseProfile = tuple.Item2;
             //}
+        }
+
+        public EnergySpectrogram(AmplSpectrogram amplitudeSpectrogram)
+        {
+            // CONVERT AMPLITUDES TO ENERGY
+            this.Data = PowerSpectralDensity.GetEnergyValues(amplitudeSpectrogram.Data);
         }
 
         public SonogramConfig Configuration { get; set; }
@@ -117,7 +122,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// <summary>
         /// Gets or sets instance of class SNR that stores info about signal energy and dB per frame
         /// </summary>
-        public SNR SnrData { get; set; }
+        //public SNR SnrData { get; set; }
 
     }
 }
