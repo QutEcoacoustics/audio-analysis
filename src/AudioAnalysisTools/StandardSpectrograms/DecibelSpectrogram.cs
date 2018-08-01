@@ -51,6 +51,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             this.FrameStep = amplitudeSpectrogram.FrameStep;
             this.FBinWidth = amplitudeSpectrogram.FBinWidth;
             this.FramesPerSecond = amplitudeSpectrogram.FramesPerSecond;
+            this.Data = amplitudeSpectrogram.Data;
 
             // (ii) CONVERT AMPLITUDES TO DECIBELS
             this.Data = MFCCStuff.DecibelSpectra(this.Data, this.Configuration.WindowPower, this.SampleRate, this.Configuration.epsilon);
