@@ -591,7 +591,7 @@ BGN:
   NormMin: -100.0
   NormMax: -30.0
   CalculateNormMin: true
-  CalculateNormMax: true
+  CalculateNormMax: false
   ProjectID: Acoustic Indices
   Units: "dB"
 CVR:
@@ -638,10 +638,10 @@ EVN:
   DataType: double[]
   DefaultValue: 0.0
   DoDisplay: true
-  NormMin: 2.0
-  NormMax: 6.0
+  NormMin: 0.0
+  NormMax: 2.0
   CalculateNormMin: false
-  CalculateNormMax: true
+  CalculateNormMax: false
   ProjectID: Acoustic Indices
   Units: "events/s"
 SUM:
