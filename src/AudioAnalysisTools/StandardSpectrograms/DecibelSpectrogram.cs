@@ -1,34 +1,62 @@
-﻿// <copyright file="SpectrogramStandard.cs" company="QutEcoacoustics">
+﻿// <copyright file="DecibelSpectrogram.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
 namespace AudioAnalysisTools.StandardSpectrograms
 {
     using System;
+    using Acoustics.Tools.Wav;
     using DSP;
-    using TowseyLibrary;
 
+    /// <summary>
+    /// There are three constructors
+    /// </summary>
     public class DecibelSpectrogram
     {
-        public DecibelSpectrogram(SonogramConfig config, double[,] amplitudeSpectrogram)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DecibelSpectrogram"/> class.
+        /// Use this constructor when you have two paths for config file and audio file
+        /// </summary>
+        public DecibelSpectrogram(string configFile, string audioFile)
+            : this(SonogramConfig.Load(configFile), new WavReader(audioFile))
         {
-            this.Configuration = config;
-            this.FrameCount = amplitudeSpectrogram.GetLength(0);
-            //this.Data = amplitudeSpectrogram;
-            double[,] m = amplitudeSpectrogram;
+        }
 
-            // (i) IF REQUIRED CONVERT TO FULL BAND WIDTH MEL SCALE
-            // Make sure you have Configuration.MelBinCount somewhere
-            //if (this.Configuration.DoMelScale)
-            //{
-                //m = MFCCStuff.MelFilterBank(m, this.Configuration.MelBinCount, this.NyquistFrequency, 0, this.NyquistFrequency); // using the Greg integral
-            //}
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DecibelSpectrogram"/> class.
+        /// Use this constructor when you have config and audio objects
+        /// It creates an amplitude spectrogram
+        /// </summary>
+        public DecibelSpectrogram(SonogramConfig config, WavReader wav)
+            : this(new AmplSpectrogram(config, wav))
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DecibelSpectrogram"/> class.
+        /// There are three CONSTRUCTORS
+        /// </summary>
+        public DecibelSpectrogram(AmplSpectrogram amplitudeSpectrogram)
+        {
+            this.Configuration = amplitudeSpectrogram.Configuration;
+            this.Duration = amplitudeSpectrogram.Duration;
+            this.SampleRate = amplitudeSpectrogram.SampleRate;
+
+            this.Duration = amplitudeSpectrogram.Duration;
+            this.SampleRate = amplitudeSpectrogram.SampleRate;
+            this.NyquistFrequency = amplitudeSpectrogram.SampleRate / 2;
+            this.MaxAmplitude = amplitudeSpectrogram.MaxAmplitude;
+            this.FrameCount = amplitudeSpectrogram.FrameCount;
+            this.FrameDuration = amplitudeSpectrogram.FrameDuration;
+            this.FrameStep = amplitudeSpectrogram.FrameStep;
+            this.FBinWidth = amplitudeSpectrogram.FBinWidth;
+            this.FramesPerSecond = amplitudeSpectrogram.FramesPerSecond;
 
             // (ii) CONVERT AMPLITUDES TO DECIBELS
-            m = MFCCStuff.DecibelSpectra(m, this.Configuration.WindowPower, this.SampleRate, this.Configuration.epsilon);
+            this.Data = MFCCStuff.DecibelSpectra(this.Data, this.Configuration.WindowPower, this.SampleRate, this.Configuration.epsilon);
 
             // (iii) NOISE REDUCTION
-            var tuple = SNR.NoiseReduce(m, this.Configuration.NoiseReductionType, this.Configuration.NoiseReductionParameter);
+            var tuple = SNR.NoiseReduce(this.Data, this.Configuration.NoiseReductionType, this.Configuration.NoiseReductionParameter);
             this.Data = tuple.Item1;   // store data matrix
 
             if (this.SnrData != null)
@@ -37,6 +65,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             }
         }
 
+        /*
         /// <summary>
         /// Initializes a new instance of the <see cref="SpectrogramStandard"/> class.
         /// use this constructor to cut out a portion of a spectrum from start to end time.
@@ -58,15 +87,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
             {
                 this.DecibelsPerFrame[i] = sg.DecibelsPerFrame[startFrame + i];
             }
-
-            /*
-            // Subband functionality no longer available. Discontinued March 2017 because not being used
-            // this.subBandMinHz = sg.subBandMinHz; //min freq (Hz) of the required subband
-            // this.subBandMaxHz = sg.subBandMaxHz; //max freq (Hz) of the required subband
-            //sg.SnrSubband { get; private set; }
-            //this.DecibelsInSubband = new double[frameCount];  // Normalised decibels in extracted freq band
-            //for (int i = 0; i < frameCount; i++) this.DecibelsInSubband[i] = sg.DecibelsInSubband[startFrame + i];
-            */
 
             this.DecibelReference = sg.DecibelReference; // Used to NormaliseMatrixValues the dB values for MFCCs
             this.DecibelsNormalised = new double[frameCount];
@@ -92,7 +112,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 }
             }
         }//end CONSTRUCTOR
+        */
 
+            /*
         /// <summary>
         /// Normalise the dynamic range of spectrogram between 0dB and value of DynamicRange.
         /// Also must adjust the SNR.DecibelsInSubband and this.DecibelsNormalised
@@ -118,6 +140,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             this.Data = newMatrix;
         }
+        */
 
         public SonogramConfig Configuration { get; set; }
 
@@ -128,19 +151,19 @@ namespace AudioAnalysisTools.StandardSpectrograms
         public TimeSpan Duration { get; protected set; }
 
         // the following values are dependent on sampling rate.
-        public int NyquistFrequency => this.SampleRate / 2;
+        public int NyquistFrequency { get; protected set; }
 
         // Duration of full frame or window in seconds
-        public double FrameDuration => this.Configuration.WindowSize / (double)this.SampleRate;
+        public double FrameDuration { get; protected set; }
 
-        // Duration of non-overlapped part of window/frame in seconds
-        public double FrameStep => this.Configuration.GetFrameOffset(this.SampleRate);
+        // Separation of frame starts in seconds
+        public double FrameStep { get; protected set; }
 
-        public double FBinWidth => this.NyquistFrequency / (double)this.Configuration.FreqBinCount;
+        public double FBinWidth { get; protected set; }
 
-        public double FramesPerSecond => 1 / this.FrameStep;
+        public double FramesPerSecond { get; protected set; }
 
-        public int FrameCount { get; protected set; } //Temporarily set to (int)(Duration.TotalSeconds/FrameOffset) then reset later
+        public int FrameCount { get; protected set; }
 
         /// <summary>
         /// Gets or sets instance of class SNR that stores info about signal energy and dB per frame
@@ -168,6 +191,5 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// Gets or sets the spectrogram data matrix of doubles
         /// </summary>
         public double[,] Data { get; set; }
-
-    } //end of class SpectralSonogram
+    }
 }

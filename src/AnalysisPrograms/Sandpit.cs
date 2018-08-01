@@ -6,7 +6,6 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.Globalization;
@@ -23,9 +22,7 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.LongDurationSpectrograms;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-    using log4net.Util;
     using McMaster.Extensions.CommandLineUtils;
-    using Production;
     using Production.Arguments;
     using TowseyLibrary;
 
@@ -70,7 +67,7 @@ namespace AnalysisPrograms
                 // used to get files from availae for Black rail and Least Bittern papers.
                 //CodeToExtractFeatureVectorOfIndices();
                 //CodeToGetLdfcSpectrogramsFromAvailae();
-                CodeToPlaceScoreTracksUnderLdfcSpectrograms();
+                //CodeToPlaceScoreTracksUnderLdfcSpectrograms();
                 //CodeToPlaceScoreTracksUnderSingleImage();
 
                 //ConcatenateIndexFilesAndSpectrograms();
@@ -80,6 +77,7 @@ namespace AnalysisPrograms
                 //CubeHelixDrawTestImage();
                 //DrawLongDurationSpectrogram();
                 //DrawClusterSequence();
+                DrawStandardSpectrograms();
 
                 //ExtractSpectralFeatures();
                 //HerveGlotinMethods();
@@ -95,7 +93,7 @@ namespace AnalysisPrograms
                 //TEST_FilterMovingAverage();
                 //TestImageProcessing();
                 //TestMatrix3dClass();
-                TestsOfFrequencyScales();
+                //TestsOfFrequencyScales();
                 //TestReadingFileOfSummaryIndices();
                 //TestStructureTensor();
                 //TestWavelets();
@@ -491,6 +489,17 @@ namespace AnalysisPrograms
             };
 
             AnalyseLongRecording.Execute(arguments);
+        }
+
+        public static void DrawStandardSpectrograms()
+        {
+            // the default ld fc spectrogram config file
+            var audioFile = @"C:\Ecoacoustics\WavFiles\TestRecordings\BAC\BAC2_20071008-085040.wav";
+            string configFile = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Sonogram.yml";
+            var amplSpectrogram = new AmplSpectrogram(configFile, audioFile);
+            var image = SpectrogramTools.GetImage(amplSpectrogram.Data, amplSpectrogram.NyquistFrequency, amplSpectrogram.Configuration.DoMelScale);
+            var image1 = SpectrogramTools.GetImageFullyAnnotated(image, "TITLE", null, amplSpectrogram.Duration);
+            image1.Save(@"C:\Ecoacoustics\WavFiles\TestRecordings\BAC\BAC2_20071008-085040.png");
         }
 
         public static void DrawLongDurationSpectrogram()

@@ -1,4 +1,4 @@
-// <copyright file="AmplitudeSonogram.cs" company="QutEcoacoustics">
+// <copyright file="AmplSpectrogram.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -10,7 +10,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
     using WavTools;
 
     /// <summary>
-    /// This class is designed to produce a full-bandwidth spectrogram of spectral amplitudes
+    /// This class is designed to produce a full-bandwidth amplitude spectrogram
     /// </summary>
     public class AmplSpectrogram
     {
@@ -36,9 +36,14 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             //set config params to the current recording
             this.SampleRate = wav.SampleRate;
+            this.NyquistFrequency = wav.SampleRate / 2;
             this.Configuration.Duration = wav.Time;
             this.Configuration.SampleRate = wav.SampleRate; //also set the Nyquist
             this.MaxAmplitude = wav.CalculateMaximumAmplitude();
+            this.FrameDuration = this.Configuration.WindowSize / (double)wav.SampleRate;
+            this.FrameStep = this.Configuration.GetFrameOffset(this.SampleRate);
+            this.FBinWidth = this.NyquistFrequency / (double)this.Configuration.FreqBinCount;
+            this.FramesPerSecond = 1 / this.FrameStep;
 
             var recording = new AudioRecording(wav);
             var fftdata = DSP_Frames.ExtractEnvelopeAndFfts(
@@ -57,7 +62,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
             // IF REQUIRED CONVERT TO MEL SCALE
             if (this.Configuration.DoMelScale)
             {
-                this.Data = MFCCStuff.MelFilterBank(this.Data, this.Configuration.MelBinCount, this.NyquistFrequency, 0, this.NyquistFrequency); // using the Greg integral
+                // this mel scale conversion uses the "Greg integral" !
+                this.Data = MFCCStuff.MelFilterBank(this.Data, this.Configuration.MelBinCount, this.NyquistFrequency, 0, this.NyquistFrequency);
             }
         }
 
@@ -67,20 +73,19 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         public int SampleRate { get; set; }
 
+        public int NyquistFrequency { get; protected set; }
+
         public TimeSpan Duration { get; protected set; }
 
-        // the following values are dependent on sampling rate.
-        public int NyquistFrequency => this.SampleRate / 2;
-
         // Duration of full frame or window in seconds
-        public double FrameDuration => this.Configuration.WindowSize / (double)this.SampleRate;
+        public double FrameDuration { get; protected set; }
 
         // Duration of non-overlapped part of window/frame in seconds
-        public double FrameStep => this.Configuration.GetFrameOffset(this.SampleRate);
+        public double FrameStep { get; protected set; }
 
-        public double FBinWidth => this.NyquistFrequency / (double)this.Configuration.FreqBinCount;
+        public double FBinWidth { get; protected set; }
 
-        public double FramesPerSecond => 1 / this.FrameStep;
+        public double FramesPerSecond { get; protected set; }
 
         public int FrameCount { get; protected set; }
 
