@@ -16,6 +16,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
     using Acoustics.Shared;
     using ColorMine.ColorSpaces;
     using DSP;
+    using LongDurationSpectrograms;
     using TowseyLibrary;
 
     public static class SpectrogramTools
@@ -839,5 +840,33 @@ namespace AudioAnalysisTools.StandardSpectrograms
         // #######################################################################################################################################
         // ### ABOVE METHODS DRAW TIME GRID LINES ON SPECTROGRAMS ####################################################################################
         // #######################################################################################################################################
+
+
+        public static Image GetImageFullyAnnotated(Image image, string title, int[,] gridLineLocations, TimeSpan duration)
+        {
+            if (image == null)
+            {
+                throw new ArgumentNullException(nameof(image));
+            }
+
+            FrequencyScale.DrawFrequencyLinesOnImage((Bitmap)image, gridLineLocations, includeLabels: true);
+
+            var titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
+            var timeBmp = ImageTrack.DrawTimeTrack(duration, image.Width);
+            var list = new List<Image> { titleBar, timeBmp, image, timeBmp };
+            var compositeImage = ImageTools.CombineImagesVertically(list);
+            return compositeImage;
+        }
+
+        public static Image GetImage(double[,] data, int nyquist, bool DoMel)
+        {
+            int subBandMinHz = 1000;
+            int subBandMaxHz = 9000;
+            bool doHighlightSubband = false;
+
+            int maxFrequency = nyquist;
+            var image = BaseSonogram.GetSonogramImage(data, nyquist, maxFrequency, DoMel, 1, doHighlightSubband, subBandMinHz, subBandMaxHz);
+            return image;
+        }
     }
 }
