@@ -26,7 +26,6 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
         private DirectoryInfo outputDirectory;
 
         [TestInitialize]
-
         public void Setup()
         {
             this.outputDirectory = PathHelper.GetTempDir();
