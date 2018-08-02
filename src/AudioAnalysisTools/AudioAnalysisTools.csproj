@@ -295,10 +295,11 @@
     <Compile Include="Oscillations2014.cs" />
     <Compile Include="RidgeDetection.cs" />
     <Compile Include="SiteDescription.cs" />
-    <Compile Include="StandardSpectrograms\AmplSpectrogram.cs" />
+    <Compile Include="StandardSpectrograms\AmplitudeSpectrogram.cs" />
     <Compile Include="StandardSpectrograms\AmplitudeSonogram.cs" />
     <Compile Include="StandardSpectrograms\EnergySpectrogram.cs" />
     <Compile Include="StandardSpectrograms\DecibelSpectrogram.cs" />
+    <Compile Include="StandardSpectrograms\SpectrogramSettings.cs" />
     <Compile Include="SunAndMoon.cs" />
     <Compile Include="SURFFeatures.cs" />
     <Compile Include="TileImage\AbsoluteDateTilingProfile.cs" />

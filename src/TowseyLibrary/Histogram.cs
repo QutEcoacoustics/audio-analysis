@@ -147,9 +147,6 @@ namespace TowseyLibrary
         /// <summary>
         /// HISTOGRAM from a matrix of double
         /// </summary>
-        /// <param name="data"></param>
-        /// <param name="binCount"></param>
-        /// <returns></returns>
         public static int[] Histo(double[,] data, int binCount)
         {
             double min;
@@ -158,7 +155,6 @@ namespace TowseyLibrary
             double binWidth = (max - min) / binCount;
 
             //LoggedConsole.WriteLine("data min=" + min + "  data max=" + max + " binwidth=" + binWidth);
-
             return Histo(data, binCount, min, max, binWidth);
         }
 
@@ -322,10 +318,6 @@ namespace TowseyLibrary
         /// <summary>
         ///  make histogram of integers where each bin has unit width
         /// </summary>
-        /// <param name="data"></param>
-        /// <param name="min"></param>
-        /// <param name="max"></param>
-        /// <returns></returns>
         public static int[] Histo(int[] data, out int min, out int max)
         {
             int length = data.Length;
@@ -365,9 +357,6 @@ namespace TowseyLibrary
         /// <summary>
         /// Returns the bin ID that coincides with the passed percentile
         /// </summary>
-        /// <param name="histogram"></param>
-        /// <param name="percentile"></param>
-        /// <returns></returns>
         public static int GetPercentileBin(int[] histogram, int percentile)
         {
             if (percentile > 99)
