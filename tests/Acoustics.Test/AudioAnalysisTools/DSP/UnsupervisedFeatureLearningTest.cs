@@ -500,7 +500,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
         ///     4) Take average of each of the energy values in each frequency bin >> this gives power spectrum or PSD.
         /// Finally draw the the spectrogram of PSD values for the whole day.
         /// </summary>
-        [Ignore]
+        //[Ignore]
         [TestMethod]
         public void PowerSpectrumDensityTest()
         {
@@ -520,20 +520,20 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             int nq = new AudioRecording(Directory.GetFiles(inputPath, "*.wav")[0]).Nyquist;
             int nyquist = nq; // 11025;
             int frameSize = 1024;
-            int finalBinCount = 512; //128;
+            int finalBinCount = 256; //512; //
             int hertzInterval = 1000;
-            //FreqScaleType scaleType = FreqScaleType.Mel;
-            //var freqScale = new FrequencyScale(scaleType, nyquist, frameSize, finalBinCount, hertzInterval);
-            //var fst = freqScale.ScaleType;
-            var fst = FreqScaleType.Linear;
-            var freqScale = new FrequencyScale(fst);
+            FreqScaleType scaleType = FreqScaleType.Mel;
+            var freqScale = new FrequencyScale(scaleType, nyquist, frameSize, finalBinCount, hertzInterval);
+            var fst = freqScale.ScaleType;
+            //var fst = FreqScaleType.Linear;
+            //var freqScale = new FrequencyScale(fst);
 
             var sonoConfig = new SonogramConfig
             {
                 WindowSize = frameSize,
                 WindowOverlap = 0.1028,
-                //DoMelScale = (scaleType == FreqScaleType.Mel) ? true : false,
-                //MelBinCount = (scaleType == FreqScaleType.Mel) ? finalBinCount : frameSize / 2,
+                DoMelScale = (scaleType == FreqScaleType.Mel) ? true : false,
+                MelBinCount = (scaleType == FreqScaleType.Mel) ? finalBinCount : frameSize / 2,
                 NoiseReductionType = NoiseReductionType.None,
             };
 
@@ -554,10 +554,10 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                     // skip normalisation
                     // skip mel
 
-                    var sonogram = new AmplSpectrogram(sonoConfig, recording.WavReader);
+                    //var sonogram = new AmplSpectrogram(sonoConfig, recording.WavReader);
                     //var energySpectrogram = new EnergySpectrogram(sonoConfig, amplitudeSpectrogram.Data);
                     //var energySpectrogram = new EnergySpectrogram(sonoConfig, recording.WavReader);
-                    var energySpectrogram = new EnergySpectrogram(sonogram);
+                    var energySpectrogram = new EnergySpectrogram(sonoConfig, recording.WavReader);
 
                     // square the FFT coefficients to get an energy spectrogram
                     // double[,] energySpectrogram = PowerSpectrumDensity.GetEnergyValues(amplitudeSpectrogram.Data);
@@ -566,19 +566,20 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                     double[,] normalizedValues = SNR.RmsNormalization(energySpectrogram.Data);
 
                     // Median Noise Reduction
-                    double[,] noiseReducedValues = PcaWhitening.NoiseReduction(normalizedValues);
+                    //double[,] noiseReducedValues = PcaWhitening.NoiseReduction(normalizedValues);
 
                     //double[] psd = PowerSpectrumDensity.GetPowerSpectrum(noiseReducedValues);
 
-                    psd.Add(PowerSpectralDensity.GetPowerSpectrum(noiseReducedValues));
+                    //psd.Add(SpectrogramTools.CalculateAvgSpectrumFromEnergySpectrogram(normalizedValues));
+                    psd.Add(PowerSpectralDensity.GetPowerSpectrum(normalizedValues));
                 }
             }
 
             //ImageTools.DrawMatrix(psd.ToArray().ToMatrix(), resultPath);
             //ImageTools.DrawReversedMatrix(psd.ToArray().ToMatrix(), resultPath);
-            var data = MatrixTools.Matrix2LogValues(psd.ToArray().ToMatrix());
-            Image image = ImageTools.DrawReversedMatrixWithoutNormalisation(data);
-            //Image image = ImageTools.DrawReversedMatrixWithoutNormalisation(psd.ToArray().ToMatrix());
+            //var data = MatrixTools.Matrix2LogValues(psd.ToArray().ToMatrix());
+            //Image image = ImageTools.DrawReversedMatrixWithoutNormalisation(data);
+            Image image = ImageTools.DrawReversedMatrixWithoutNormalisation(psd.ToArray().ToMatrix());
             image.Save(resultPath, ImageFormat.Bmp);
         }
 
@@ -595,9 +596,9 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             int nyquist = new AudioRecording(recordingPath).Nyquist; // 11025;
             int frameSize = 1024;
-            int finalBinCount = 128; //512; // 256; // 100; // 40; // 200; //
+            int finalBinCount = 512; //256; //128; //  100; // 40; // 200; //
             int hertzInterval = 1000;
-            FreqScaleType scaleType = FreqScaleType.Mel;
+            FreqScaleType scaleType = FreqScaleType.Linear;
             var freqScale = new FrequencyScale(scaleType, nyquist, frameSize, finalBinCount, hertzInterval);
             var fst = freqScale.ScaleType;
 
@@ -615,15 +616,16 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             sonoConfig.SourceFName = recording.BaseName;
 
             //var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
-            var sonogram = new AmplSpectrogram(sonoConfig, recording.WavReader);
-            var logSonogramData = MatrixTools.Matrix2LogValues(sonogram.Data);
+            //var sonogram = new AmplSpectrogram(sonoConfig, recording.WavReader);
+            var sonogram = new DecibelSpectrogram(sonoConfig, recording.WavReader);
+            //var logSonogramData = MatrixTools.Matrix2LogValues(sonogram.Data);
 
-            var image = SpectrogramTools.GetImage(logSonogramData, nyquist, sonoConfig.DoMelScale);
+            var image = SpectrogramTools.GetImage(sonogram.Data, nyquist, sonoConfig.DoMelScale);
             var specImage = SpectrogramTools.GetImageFullyAnnotated(image, "MELSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations, sonoConfig.Duration);
             specImage.Save(outputMelScaImagePath, ImageFormat.Png);
 
             // DO RMS NORMALIZATION
-            sonogram.Data = SNR.RmsNormalization(logSonogramData);
+            sonogram.Data = SNR.RmsNormalization(sonogram.Data);
 
             var image2 = SpectrogramTools.GetImage(sonogram.Data, nyquist, sonoConfig.DoMelScale);
             var normImage = SpectrogramTools.GetImageFullyAnnotated(image2, "NORMALIZEDSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations, sonoConfig.Duration);
