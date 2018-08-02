@@ -72,6 +72,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         } // Number of points to smooth FFT spectra
 
         public double epsilon { get; set; } //small value to prevent log of zero value
+
         public bool DoPreemphasis { get; set; }
 
         public int? MinFreqBand { get; set; }

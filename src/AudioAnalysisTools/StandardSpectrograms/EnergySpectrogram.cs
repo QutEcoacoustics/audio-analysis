@@ -4,56 +4,38 @@
 
 namespace AudioAnalysisTools.StandardSpectrograms
 {
-    using System;
+    using System.Collections.Generic;
+    using System.Drawing.Imaging;
+    using System.IO;
     using Acoustics.Tools.Wav;
     using TowseyLibrary;
 
     /// <summary>
-    /// There are three CONSTRUCTORS
+    /// There are two CONSTRUCTORS
     /// </summary>
     public class EnergySpectrogram
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="EnergySpectrogram"/> class.
-        /// Use this constructor when you have two paths for config file and audio file
-        /// </summary>
-        public EnergySpectrogram(string configFile, string audioFile)
-            : this(SonogramConfig.Load(configFile), new WavReader(audioFile))
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EnergySpectrogram"/> class.
         /// Use this constructor when you have config and audio objects
-        /// It creates an amplitude spectrogram
         /// </summary>
-        public EnergySpectrogram(SonogramConfig config, WavReader wav)
-            : this(new AmplSpectrogram(config, wav))
+        public EnergySpectrogram(SpectrogramSettings config, WavReader wav)
+            : this(new AmplitudeSpectrogram(config, wav))
         {
         }
 
-        public EnergySpectrogram(AmplSpectrogram amplitudeSpectrogram)
+        public EnergySpectrogram(AmplitudeSpectrogram amplitudeSpectrogram)
         {
             this.Configuration = amplitudeSpectrogram.Configuration;
-            this.Duration = amplitudeSpectrogram.Duration;
-            this.SampleRate = amplitudeSpectrogram.SampleRate;
-
-            this.Duration = amplitudeSpectrogram.Duration;
-            this.SampleRate = amplitudeSpectrogram.SampleRate;
-            this.NyquistFrequency = amplitudeSpectrogram.SampleRate / 2;
-            this.MaxAmplitude = amplitudeSpectrogram.MaxAmplitude;
-            this.FrameCount = amplitudeSpectrogram.FrameCount;
-            this.FrameDuration = amplitudeSpectrogram.FrameDuration;
-            this.FrameStep = amplitudeSpectrogram.FrameStep;
-            this.FBinWidth = amplitudeSpectrogram.FBinWidth;
-            this.FramesPerSecond = amplitudeSpectrogram.FramesPerSecond;
+            this.Attributes = amplitudeSpectrogram.Attributes;
 
             // CONVERT AMPLITUDES TO ENERGY
-            //this.Data = PowerSpectralDensity.GetEnergyValues(amplitudeSpectrogram.Data);
             this.Data = MatrixTools.SquareValues(amplitudeSpectrogram.Data);
         }
 
-        public SonogramConfig Configuration { get; set; }
+        public SpectrogramSettings Configuration { get; set; }
+
+        public SpectrogramAttributes Attributes { get; set; }
 
         /// <summary>
         /// Gets or sets the spectrogram data matrix of doubles
@@ -61,25 +43,26 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// </summary>
         public double[,] Data { get; set; }
 
-        public int SampleRate { get; set; }
+        public void GetPsd(string path)
+        {
+            var psd = MatrixTools.GetColumnAverages(this.Data);
 
-        public TimeSpan Duration { get; protected set; }
+            FileTools.WriteArray2File(psd, path + ".csv");
+            GraphsAndCharts.DrawGraph(psd, "Title", new FileInfo(path));
 
-        // the following values are dependent on sampling rate.
-        public int NyquistFrequency { get; set; }
+            //GraphsAndCharts.DrawGraph("Title", psd, width, height, 4 new FileInfo(path));
+            //image.Save(path, ImageFormat.Png);
+        }
 
-        public double MaxAmplitude { get; set; }
+        public void GetLogPsd(string path)
+        {
+            var psd = MatrixTools.GetColumnAverages(this.Data);
+            var logPsd = DataTools.LogValues(psd);
+            FileTools.WriteArray2File(logPsd, path + ".csv");
+            GraphsAndCharts.DrawGraph(logPsd, "log PSD", new FileInfo(path));
 
-        // Duration of full frame or window in seconds
-        public double FrameDuration { get; protected set; }
-
-        // Duration of non-overlapped part of window/frame in seconds
-        public double FrameStep { get; protected set; }
-
-        public double FBinWidth { get; protected set; }
-
-        public double FramesPerSecond { get; protected set; }
-
-        public int FrameCount { get; protected set; }
+            //GraphsAndCharts.DrawGraph("Title", psd, width, height, 4 new FileInfo(path));
+            //image.Save(path, ImageFormat.Png);
+        }
     }
 }

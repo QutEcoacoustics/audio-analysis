@@ -4,56 +4,37 @@
 
 namespace AudioAnalysisTools.StandardSpectrograms
 {
-    using System;
+    using System.Drawing;
+    using System.Drawing.Imaging;
     using Acoustics.Tools.Wav;
     using DSP;
+    using TowseyLibrary;
 
     /// <summary>
-    /// There are three constructors
+    /// There are two constructors
     /// </summary>
     public class DecibelSpectrogram
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="DecibelSpectrogram"/> class.
-        /// Use this constructor when you have two paths for config file and audio file
-        /// </summary>
-        public DecibelSpectrogram(string configFile, string audioFile)
-            : this(SonogramConfig.Load(configFile), new WavReader(audioFile))
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="DecibelSpectrogram"/> class.
-        /// Use this constructor when you have config and audio objects
+        /// This constructor requires config and audio objects
         /// It creates an amplitude spectrogram
         /// </summary>
-        public DecibelSpectrogram(SonogramConfig config, WavReader wav)
-            : this(new AmplSpectrogram(config, wav))
+        public DecibelSpectrogram(SpectrogramSettings config, WavReader wav)
+            : this(new AmplitudeSpectrogram(config, wav))
         {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DecibelSpectrogram"/> class.
-        /// There are three CONSTRUCTORS
         /// </summary>
-        public DecibelSpectrogram(AmplSpectrogram amplitudeSpectrogram)
+        public DecibelSpectrogram(AmplitudeSpectrogram amplitudeSpectrogram)
         {
             this.Configuration = amplitudeSpectrogram.Configuration;
-            this.Duration = amplitudeSpectrogram.Duration;
-            this.SampleRate = amplitudeSpectrogram.SampleRate;
-
-            this.Duration = amplitudeSpectrogram.Duration;
-            this.SampleRate = amplitudeSpectrogram.SampleRate;
-            this.NyquistFrequency = amplitudeSpectrogram.SampleRate / 2;
-            this.MaxAmplitude = amplitudeSpectrogram.MaxAmplitude;
-            this.FrameCount = amplitudeSpectrogram.FrameCount;
-            this.FrameDuration = amplitudeSpectrogram.FrameDuration;
-            this.FrameStep = amplitudeSpectrogram.FrameStep;
-            this.FBinWidth = amplitudeSpectrogram.FBinWidth;
-            this.FramesPerSecond = amplitudeSpectrogram.FramesPerSecond;
+            this.Attributes = amplitudeSpectrogram.Attributes;
 
             // (ii) CONVERT AMPLITUDES TO DECIBELS
-            this.Data = MFCCStuff.DecibelSpectra(this.Data, this.Configuration.WindowPower, this.SampleRate, this.Configuration.epsilon);
+            this.Data = MFCCStuff.DecibelSpectra(amplitudeSpectrogram.Data, this.Attributes.WindowPower, this.Attributes.SampleRate, this.Attributes.Epsilon);
 
             // (iii) NOISE REDUCTION
             var tuple = SNR.NoiseReduce(this.Data, this.Configuration.NoiseReductionType, this.Configuration.NoiseReductionParameter);
@@ -114,61 +95,26 @@ namespace AudioAnalysisTools.StandardSpectrograms
         }//end CONSTRUCTOR
         */
 
-            /*
+        public SpectrogramSettings Configuration { get; set; }
+
+        public SpectrogramAttributes Attributes { get; set; }
+
         /// <summary>
-        /// Normalise the dynamic range of spectrogram between 0dB and value of DynamicRange.
-        /// Also must adjust the SNR.DecibelsInSubband and this.DecibelsNormalised
+        /// Gets or sets the spectrogram data matrix of doubles
         /// </summary>
-        public void NormaliseDynamicRange(double dynamicRange)
-        {
-            int frameCount = this.Data.GetLength(0);
-            int featureCount = this.Data.GetLength(1);
-            double minIntensity; // min value in matrix
-            double maxIntensity; // max value in matrix
-            DataTools.MinMax(this.Data, out minIntensity, out maxIntensity);
-            double[,] newMatrix = new double[frameCount, featureCount];
-
-            //each row of matrix is a frame
-            for (int i = 0; i < frameCount; i++)
-            {
-                //each col of matrix is a feature
-                for (int j = 0; j < featureCount; j++)
-                {
-                    newMatrix[i, j] = this.Data[i, j];
-                }
-            }
-
-            this.Data = newMatrix;
-        }
-        */
-
-        public SonogramConfig Configuration { get; set; }
-
-        public double MaxAmplitude { get; set; }
-
-        public int SampleRate { get; set; }
-
-        public TimeSpan Duration { get; protected set; }
-
-        // the following values are dependent on sampling rate.
-        public int NyquistFrequency { get; protected set; }
-
-        // Duration of full frame or window in seconds
-        public double FrameDuration { get; protected set; }
-
-        // Separation of frame starts in seconds
-        public double FrameStep { get; protected set; }
-
-        public double FBinWidth { get; protected set; }
-
-        public double FramesPerSecond { get; protected set; }
-
-        public int FrameCount { get; protected set; }
+        public double[,] Data { get; set; }
 
         /// <summary>
         /// Gets or sets instance of class SNR that stores info about signal energy and dB per frame
         /// </summary>
         public SNR SnrData { get; set; }
+
+        public double MaxAmplitude { get; set; }
+
+        // TODO
+        // Need to calculate the following for decibel spectrograms only
+        // ##################################################################################################
+        // TODO The following properties need to be calculated within the DecibelSpectrogram class.
 
         /// <summary>
         /// Gets or sets decibels per signal frame
@@ -187,9 +133,49 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// </summary>
         public int[] SigState { get; protected set; }
 
-        /// <summary>
-        /// Gets or sets the spectrogram data matrix of doubles
-        /// </summary>
-        public double[,] Data { get; set; }
+        // ################################# SPECTROGRAM METHODS BELOW HERE ###############################
+
+        public void DrawSpectrogram(string path)
+        {
+            var image = DrawSpectrogramAnnotated(this.Data, this.Configuration, this.Attributes);
+            image.Save(path, ImageFormat.Png);
+        }
+
+        // ################################# STATIC METHODS BELOW HERE ###############################
+
+        public static Image DrawSpectrogramAnnotated(double[,] data, SpectrogramSettings config, SpectrogramAttributes attributes)
+        {
+            // normalise the data between 0 and 95th percentiles
+            int binCount = 100;
+            double min;
+            double max;
+            DataTools.MinMax(data, out min, out max);
+            double binWidth = (max - min) / binCount;
+            var histogram = Histogram.Histo(data, binCount, min, max, binWidth);
+            int percentile = 95;
+            int binId = Histogram.GetPercentileBin(histogram, percentile);
+            double upperBound = min + (binId * percentile);
+            var normedMatrix = MatrixTools.NormaliseInZeroOne(data, min, upperBound);
+
+            int nyquist = attributes.NyquistFrequency;
+            int frameSize = config.WindowSize;
+
+            // assuming linear frequency scale
+            int finalBinCount = frameSize / 2;
+            var scaleType = FreqScaleType.Linear;
+
+            // if doing mel scale then
+            if (config.DoMelScale)
+            {
+                finalBinCount = 256; //128; //512; // 256; // 100; // 40; // 200; //
+                scaleType = FreqScaleType.Mel;
+            }
+
+            var freqScale = new FrequencyScale(scaleType, nyquist, frameSize, finalBinCount, hertzGridInterval: 1000);
+
+            var image = SpectrogramTools.GetImage(normedMatrix, nyquist, config.DoMelScale);
+            var annotatedImage = SpectrogramTools.GetImageFullyAnnotated(image, config.SourceFileName + ": " + scaleType.ToString(), freqScale.GridLineLocations, attributes.Duration);
+            return annotatedImage;
+        }
     }
 }

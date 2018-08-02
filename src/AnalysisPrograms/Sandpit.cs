@@ -15,6 +15,7 @@ namespace AnalysisPrograms
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
+    using Acoustics.Tools.Wav;
     using AnalyseLongRecordings;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
@@ -491,15 +492,31 @@ namespace AnalysisPrograms
             AnalyseLongRecording.Execute(arguments);
         }
 
+        /// <summary>
+        /// Draws a standard spectrogram
+        /// </summary>
         public static void DrawStandardSpectrograms()
         {
-            // the default ld fc spectrogram config file
             var audioFile = @"C:\Ecoacoustics\WavFiles\TestRecordings\BAC\BAC2_20071008-085040.wav";
-            string configFile = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Sonogram.yml";
-            var amplSpectrogram = new AmplSpectrogram(configFile, audioFile);
-            var image = SpectrogramTools.GetImage(amplSpectrogram.Data, amplSpectrogram.NyquistFrequency, amplSpectrogram.Configuration.DoMelScale);
-            var image1 = SpectrogramTools.GetImageFullyAnnotated(image, "TITLE", null, amplSpectrogram.Duration);
-            image1.Save(@"C:\Ecoacoustics\WavFiles\TestRecordings\BAC\BAC2_20071008-085040.png");
+            var recording = new WavReader(audioFile);
+
+            var settings = new SpectrogramSettings()
+            {
+                SourceFileName = "BAC2_20071008-085040",
+                WindowSize = 1024,
+                WindowOverlap = 0.0,
+                DoMelScale = false,
+                MelBinCount = 256,
+                NoiseReductionType = NoiseReductionType.Median,
+                NoiseReductionParameter = 0.0,
+             };
+
+            //var amplSpectrogram = new AmplitudeSpectrogram(settings, recording);
+            //var dbSpectrogram = new DecibelSpectrogram(settings, recording);
+            //dbSpectrogram.DrawSpectrogram(@"C:\Ecoacoustics\WavFiles\TestRecordings\BAC\BAC2_20071008-085040_MelMedian.png");
+
+            var energySpectro = new EnergySpectrogram(settings, recording);
+            energySpectro.GetLogPsd(@"C:\Ecoacoustics\WavFiles\TestRecordings\BAC\BAC2_20071008-085040_LogPSD.png");
         }
 
         public static void DrawLongDurationSpectrogram()
