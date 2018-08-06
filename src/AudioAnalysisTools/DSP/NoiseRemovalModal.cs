@@ -75,7 +75,10 @@ namespace AudioAnalysisTools.DSP
         /// IF This modal noise is subtracted from each frame dB, the effect is to set set average background noise level = 0 dB.
         /// The algorithm is described in Lamel et al, 1981.
         /// USED TO SEGMENT A RECORDING INTO SILENCE AND VOCALISATION
-        /// NOTE: noiseThreshold is passed as decibels. Original algorithm ONLY SEARCHES in range min to 10dB above min.
+        /// NOTE: noiseThreshold is passed as decibels. Original Lamel algorithm ONLY SEARCHES in range min to 10dB above min.
+        /// 
+        /// This method debugged on 7 Aug 2018 using following command line arguments:
+        /// audio2csv Y:\TheNatureConservency\Myanmar\20180517\site112\2018_02_14_Bar5\20180214_Bar5\20180214_101121_Bar5.wav Towsey.Acoustic.yml C:\Temp... -m True
         /// </summary>
         /// <param name="dBarray">signal in decibel values</param>
         /// <param name="minDb">minimum value in the passed array of decibel values</param>
@@ -119,9 +122,9 @@ namespace AudioAnalysisTools.DSP
                 }
             }
 
-            if (min <= SNR.MinimumDbBoundForEnvirNoise)
+            if (min <= SNR.MinimumDbBoundForEnvironmentalNoise)
             {
-                min = SNR.MinimumDbBoundForEnvirNoise;
+                min = SNR.MinimumDbBoundForEnvironmentalNoise;
             }
 
             // return the outs!
