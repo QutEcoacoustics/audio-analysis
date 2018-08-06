@@ -1,4 +1,4 @@
-﻿// <copyright file="SNR.cs" company="QutEcoacoustics">
+// <copyright file="SNR.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -43,8 +43,13 @@ namespace AudioAnalysisTools.DSP
         public const double MinimumDbBoundForZeroSignal = -90; // used as minimum bound when normalising dB values. Calculated from actual zero signal.
         public const double MinimumDbBoundForEnvirNoise = -80; // might also be used as minimum bound. Calculated from actual silent environmental recording.
 
-        //reference logEnergies for signal segmentation, energy normalisation etc
-        public const double MinLogEnergyReference = -6.0;    // = -60dB. Typical noise value for BAC2 recordings = -4.5 = -45dB
+        /// <summary>
+        /// Reference logEnergies for signal segmentation, energy normalisation etc
+        /// MinLogEnergyReference was changed from -6.0 to -8.0 on 6th August 2018 to accommodate signals with extended zero values.
+        /// Typical noise value for BAC2 recordings = -4.5 = -45dB
+        /// Typical noise value for quiet recordings with SM4 = -8.0 = -80dB
+        /// </summary>
+        public const double MinLogEnergyReference = -8.0;
         public const double MaxLogEnergyReference = 0.0;     // = Math.Log10(1.00) which assumes max frame amplitude = 1.0
 
         //public const double MaxLogEnergyReference = -0.602;// = Math.Log10(0.25) which assumes max average frame amplitude = 0.5

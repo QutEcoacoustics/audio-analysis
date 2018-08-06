@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="IndexCalculate.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -15,7 +15,6 @@ namespace AudioAnalysisTools.Indices
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
-    using System.IO;
     using System.Linq;
     using System.Reflection;
     using DSP;
@@ -97,7 +96,7 @@ namespace AudioAnalysisTools.Indices
             int endSample = startSample + subsegmentSampleCount - 1;
 
             // Default behaviour: set SUBSEGMENT = total recording
-            AudioRecording subsegmentRecording = recording;
+            var subsegmentRecording = recording;
 
             // But if the indexCalculationDuration < segmentDuration
             if (indexCalculationDuration < segmentDuration)
@@ -119,7 +118,7 @@ namespace AudioAnalysisTools.Indices
                     Logger.Trace("  Backtrack subsegment to fill missing data from imperfect audio cuts because not enough samples available. " + (oldStart - startSample) + " samples overlap.");
                 }
 
-                double[] subsamples = DataTools.Subarray(recording.WavReader.Samples, startSample, subsegmentSampleCount);
+                var subsamples = DataTools.Subarray(recording.WavReader.Samples, startSample, subsegmentSampleCount);
                 var wr = new Acoustics.Tools.Wav.WavReader(subsamples, 1, 16, sampleRate);
                 subsegmentRecording = new AudioRecording(wr);
             }

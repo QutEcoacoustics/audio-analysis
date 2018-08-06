@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="InitialiseIndexProperties.cs" company="QutEcoacoustics">
 //   All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -16,7 +16,7 @@ namespace AudioAnalysisTools.Indices
     using System.Linq;
     using DSP;
 
-    ///
+    /*
     /// TO CREATE AND IMPLEMENT A NEW ACOUSTIC INDEX (BOTH SUMMARY AND SPECTRAL INDICES), DO THE FOLLOWING:
     /// 1) Create a KEY or IDENTIFIER for the index in the list below. Always use this key when referencing the index.
     /// 2) Declare the properties of the new index in the YAML file: C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml
@@ -25,6 +25,7 @@ namespace AudioAnalysisTools.Indices
     /// 4a) e.g. for spectral index:   indexValues.AddSpectrum(InitialiseIndexProperties.KEYspectralENT, spectrumOfENTvalues);
     /// 4b) e.g. for summary index:    indexValues.StoreIndex(InitialiseIndexProperties.KEYindexName, indexValue);
     /// ==============
+    */
 
     /// <summary>
     /// This static class contains all the keys to identify available acoustic indices.
@@ -72,26 +73,22 @@ namespace AudioAnalysisTools.Indices
         public const string KeYspectralEvn = "EVN";
         public const string KeYspectralSpt = "SPT";
         public const double DefaultSignalMin = SNR.MinimumDbBoundForZeroSignal - 20; //in decibels
+        public const double ZeroSignalThreshold = 0.001; // all values in zero signal are less than this value
 
         public static double ClippingThreshold
         {
             get
             {
-                int bitsPerSample = 16;
-                double epsilon = Math.Pow(0.5, bitsPerSample - 1);
+                const int bitsPerSample = 16;
+                var epsilon = Math.Pow(0.5, bitsPerSample - 1);
                 return epsilon * 4;
             }
         }
 
-        public const double ZeroSignalThreshold = 0.001; // all values in zero signal are less than this value
-
         public static Dictionary<string, IndexProperties> FilterIndexPropertiesForSpectralOnly(
-            Dictionary<string, IndexProperties> indexProperties)
-        {
-            return indexProperties
+            Dictionary<string, IndexProperties> indexProperties) => indexProperties
                 .Where(kvp => kvp.Value.IsSpectralIndex)
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-        }
 
         public static Dictionary<string, IndexProperties> GetDictionaryOfSummaryIndexProperties(Dictionary<string, IndexProperties> indexProperties)
         {

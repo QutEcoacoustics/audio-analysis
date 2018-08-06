@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="IndexProperties.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -14,14 +14,11 @@
 namespace AudioAnalysisTools.Indices
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Drawing;
     using System.IO;
 
-    using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
-    using Acoustics.Shared.Contracts;
 
     using AnalysisBase;
     using Newtonsoft.Json;
@@ -91,6 +88,12 @@ namespace AudioAnalysisTools.Indices
     /// </summary>
     public class IndexProperties
     {
+        private static readonly Dictionary<string, Dictionary<string, IndexProperties>> CachedProperties = new Dictionary<string, Dictionary<string, IndexProperties>>();
+
+        private string dataType;
+
+        private double defaultValue;
+
         static IndexProperties()
         {
             ConfigFile.Defaults.Add(typeof(Dictionary<string, IndexProperties>), "IndexPropertiesConfig.yml");
@@ -107,7 +110,7 @@ namespace AudioAnalysisTools.Indices
             this.Name = string.Empty;
             this.DataType = "double";
             this.DefaultValue = default(double);
-            this.ProjectID = "NOT SET";
+            this.ProjectId = "NOT SET";
             this.Comment = "Relax - everything is OK";
             this.DoDisplay = true;
             this.NormMin = 0.0;
@@ -118,12 +121,6 @@ namespace AudioAnalysisTools.Indices
             this.IncludeInComboIndex = false;
             this.ComboWeight = 0.0;
         }
-
-        private static readonly Dictionary<string, Dictionary<string, IndexProperties>> CachedProperties = new Dictionary<string, Dictionary<string, IndexProperties>>();
-
-        private string dataType;
-
-        private double defaultValue;
 
         // ignored because we don't want to dump this info in ConfigFile log
         [JsonIgnore]
@@ -168,7 +165,7 @@ namespace AudioAnalysisTools.Indices
 
         // ignored because we don't want to dump this info in ConfigFile log
         [JsonIgnore]
-        public string ProjectID { get; set; }
+        public string ProjectId { get; set; }
 
         // ignored because we don't want to dump this info in ConfigFile log
         [JsonIgnore]
@@ -318,10 +315,9 @@ namespace AudioAnalysisTools.Indices
             // now add in image patches for possible erroneous index segments
             if (errors != null && errors.Count > 0)
             {
-                bool verticalText = false;
                 foreach (GapsAndJoins errorSegment in errors)
                 {
-                    var errorBmp = errorSegment.DrawErrorPatch(trackHeight - 2, verticalText);
+                    var errorBmp = errorSegment.DrawErrorPatch(trackHeight - 2, textInVerticalOrientation: false);
                     if (errorBmp != null)
                     {
                         g.DrawImage(errorBmp, errorSegment.StartPosition, 1);
