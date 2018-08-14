@@ -39,11 +39,9 @@ param(
     [string]$package = "Stable",
 
     [Parameter(ParameterSetName = "GitHub", Mandatory=$true)]
-    [ValidatePattern('\d{2}\.\d{1,2}\.\d{1,2}\.\d{1,2}')]
     [string]$version,
 
     [Parameter(ParameterSetName = "AppVeyor", Mandatory=$true)]
-    [ValidatePattern("\d{1,4}")]
     [string]$ci_build_number,
 
     [Parameter()]
@@ -74,10 +72,18 @@ switch ($type) {
         }
     }
     "GitHub" {
+        if ($version -notmatch '\d{2}\.\d{1,2}\.\d{1,2}\.\d{1,2}') {
+            Write-Error "The version argument '$version' did not look like a version (w.x.y.z)"
+            exit 1
+        }
         $source = "github"
         $exact_version = $version
     }
     "AppVeyor" {
+        if ($ci_build_number -notmatch '\d{1,4}') {
+            Write-Error "The ci_build_number argument '$ci_build_number' is not a valid number"
+            exit 1
+        }
         $source = "appveyor"
         $exact_version = $ci_build_number
     }
