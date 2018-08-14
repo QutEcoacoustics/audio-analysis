@@ -38,10 +38,10 @@ param(
     [ValidateSet('Stable', 'Weekly', 'Continuous')]
     [string]$package = "Stable",
 
-    [Parameter(ParameterSetName = "GitHub", Mandatory=$true)]
+    [Parameter(ParameterSetName = "GitHub", Mandatory = $true)]
     [string]$version,
 
-    [Parameter(ParameterSetName = "AppVeyor", Mandatory=$true)]
+    [Parameter(ParameterSetName = "AppVeyor", Mandatory = $true)]
     [string]$ci_build_number,
 
     [Parameter()]
@@ -172,9 +172,11 @@ finally {
 $destination = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($destination)
 if (Test-Path $destination) {
     Write-Warning "Deleting old installation at '$destination' (but keeping log files)"
-    $script_name = split-path $PSCommandPath -Leaf
-    Remove-Item -Path "$destination/*" -Recurse -ErrorAction Stop -Exclude "$script_name","*log*"
-    Start-Sleep 1
+    if ($PsCmdlet.ShouldProcess($destination, "Deleting old install")) {
+        $script_name = split-path $PSCommandPath -Leaf
+        Remove-Item -Path "$destination/*" -Recurse -ErrorAction Stop -Exclude "$script_name", "*log*"
+        Start-Sleep 1
+    }
 }
 else {
     New-Item $destination -ItemType Directory -ErrorAction Stop
@@ -185,9 +187,16 @@ else {
 Write-Output "Downloading asset $asset_url"
 $downloaded_zip = "$destination/AP.zip"
 if ($PsCmdlet.ShouldProcess($asset_url, "Downloading asset")) {
-    $asset_response = Invoke-WebRequest $asset_url -OutFile $downloaded_zip -PassThru
-    if ($asset_response.StatusCode -ne 200) {
-        throw "failed downloading $asset_url"
+    # use curl if available (faster)
+    $curl = Get-Command curl* -CommandType Application -TotalCount 1
+    if ($curl) {
+        & $curl -L -o "$downloaded_zip" "$asset_url"
+    }
+    else {
+        $asset_response = Invoke-WebRequest $asset_url -OutFile $downloaded_zip -PassThru
+        if ($asset_response.StatusCode -ne 200) {
+            throw "failed downloading $asset_url"
+        }
     }
 }
 
@@ -201,25 +210,26 @@ if ($PsCmdlet.ShouldProcess($downloaded_zip, "Extracting AP.exe zip")) {
 Write-Output "Download complete, installed to $destination"
 
 
-$IsWindows = $IsWindows -or ($PSVersionTable.PSVersion.Major -lt 6)
-if ($IsWindows) {
+$IsWin = $IsWindows -or ($PSVersionTable.PSVersion.Major -lt 6)
+if ($IsWin) {
     $paths = [Environment]::GetEnvironmentVariables("User").Path -split [IO.Path]::PathSeparator
     if ($paths -notcontains $destination) {
         Write-Output "Adding AP.exe to PATH"
-        $paths =  $paths | Where-Object { $_ }
+        $paths = $paths | Where-Object { $_ }
         $paths += $destination
         $user_path = ($paths -join [IO.Path]::PathSeparator)
-        [Environment]::SetEnvironmentVariable("Path", $user_path, "User")
-
-        # this change to so that the process env vars have access
-        $env:Path += ([IO.Path]::PathSeparator + $destination)
+        if ($PsCmdlet.ShouldProcess("PATH", "Adding $destionation to PATH")) {
+            [Environment]::SetEnvironmentVariable("Path", $user_path, "User")
+            # this change to so that the process env vars have access
+            $env:Path += ([IO.Path]::PathSeparator + $destination)
+        }
     }
 }
-# TODO Unix/MacOs
+# TODO Unix/MacOs symlinking
 
 $check_environment = $null
 if ($PsCmdlet.ShouldProcess("AnalysisPrograms.exe", "Checking the install")) {
-    if ($IsWindows) {
+    if ($IsWin) {
         . "$destination/AnalysisPrograms.exe" CheckEnvironment
         $check_environment = $LASTEXITCODE
     }

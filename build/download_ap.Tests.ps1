@@ -1,6 +1,6 @@
 #!/usr/bin/pwsh
 
-#Requires -Version 6
+#Requires -Version 5
 
 # Tests for the download_ap.ps1 script
 
@@ -71,11 +71,14 @@ Describe 'AP.exe installer script' {
 
     Context 'Installing the files' {
         BeforeAll {
-            $here = "$PSScriptRoot/test_download"
-            $old_path = $env:Path
-            $env:Path = ""
-
-            (Get-Command "download_ap.ps1" -erroraction 'silentlycontinue' ) | Should -BeNullOrEmpty
+            $here = [System.IO.Path]::GetFullPath("$PSScriptRoot/test_download")
+            
+            # remove any path modifications from previous test runs
+            $env:Path = $env:Path -replace "$here",''
+            $paths = [Environment]::GetEnvironmentVariables("User").Path -split [IO.Path]::PathSeparator
+            $paths = $paths | Where-Object { $_ -ne $here }
+            $user_path = ($paths -join [IO.Path]::PathSeparator)
+            [Environment]::SetEnvironmentVariable("Path", $user_path, "User")
 
             $result_all = Invoke -Destination $here
             
@@ -85,8 +88,7 @@ Describe 'AP.exe installer script' {
             $result.Destination | Should -BeIn ("/AP", "C:\AP")
         }
         It 'updates path on install' {
-            Write-Host ("Debugging: " + $env:Path)
-            $env:Path | Should -BeLike "*test_download*"
+            $env:Path | Should -BeLike "*$here*"
             # Enable this test after we bootstrap the releases
             #(Get-Command "download_ap.ps1" -erroraction 'silentlycontinue' ) | Should -Not -BeNullOrEmpty
         }
@@ -108,7 +110,6 @@ Describe 'AP.exe installer script' {
 
         AfterAll {
             Remove-Item $here -Recurse
-            $env:Path = $old_path
         }
     }
 }
