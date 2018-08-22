@@ -38,12 +38,14 @@ namespace AudioAnalysisTools.Indices
     {
         protected AnalyzerConfigIndexProperties()
         {
-            this.Loaded += config =>
-                {
-                    var indicesPropertiesConfig = Indices.IndexProperties.Find(this, this.ConfigPath);
-                    this.IndexPropertiesConfig = indicesPropertiesConfig.Path.ToOsPath();
-                    this.IndexProperties = ConfigFile.Deserialize<IndexPropertiesCollection>(this.IndexPropertiesConfig);
-                };
+            void OnLoaded(IConfig config)
+            {
+                var indicesPropertiesConfig = Indices.IndexProperties.Find(this, this.ConfigPath);
+                this.IndexPropertiesConfig = indicesPropertiesConfig.Path.ToOsPath();
+                this.IndexProperties = ConfigFile.Deserialize<IndexPropertiesCollection>(this.IndexPropertiesConfig);
+            }
+
+            this.Loaded += OnLoaded;
         }
 
         public string IndexPropertiesConfig { get; set; }
@@ -53,9 +55,14 @@ namespace AudioAnalysisTools.Indices
 
     public class IndexPropertiesCollection : Dictionary<string, IndexProperties>, IConfig
     {
+        static IndexPropertiesCollection()
+        {
+            ConfigFile.Defaults.Add(typeof(IndexPropertiesCollection), "IndexPropertiesConfig.yml");
+        }
+
         public IndexPropertiesCollection()
         {
-            this.Loaded += (config) =>
+            void OnLoaded(IConfig config)
             {
                 int i = 0;
                 foreach (var kvp in this)
@@ -67,7 +74,9 @@ namespace AudioAnalysisTools.Indices
                     kvp.Value.Order = i;
                     i++;
                 }
-            };
+            }
+
+            this.Loaded += OnLoaded;
         }
 
         public event Action<IConfig> Loaded;

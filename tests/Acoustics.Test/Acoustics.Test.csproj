@@ -284,6 +284,7 @@
     <Compile Include="AudioAnalysisTools\Indices\IndexCalculateTest.cs" />
     <Compile Include="AudioAnalysisTools\Indices\IndexMatricesTests.cs" />
     <Compile Include="AudioAnalysisTools\LongDurationSpectrograms\LdSpectrogramConfigTests.cs" />
+    <Compile Include="AudioAnalysisTools\LongDurationSpectrograms\LDSpectrogramRGBTests.cs" />
     <Compile Include="AudioAnalysisTools\LongDurationSpectrograms\LdSpectrogramStitchingTests.cs" />
     <Compile Include="AudioAnalysisTools\LongDurationSpectrograms\Zooming\ZoomCommonTests.cs" />
     <Compile Include="AudioAnalysisTools\Oscillations2014\OscillationTests.cs" />
