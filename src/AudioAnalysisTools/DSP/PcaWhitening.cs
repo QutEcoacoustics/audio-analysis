@@ -165,7 +165,7 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// Median Noise Reduction
+        /// 10-percentile Noise Reduction
         /// </summary>
         public static double[,] NoiseReduction(double[,] matrix)
         {
@@ -173,7 +173,8 @@ namespace AudioAnalysisTools.DSP
 
             // calculate modal noise profile
             // NoiseProfile profile = NoiseProfile.CalculateModalNoiseProfile(matrix, sdCount: 0.0);
-            NoiseProfile profile = NoiseProfile.CalculateMedianNoiseProfile(matrix);
+            //NoiseProfile profile = NoiseProfile.CalculateMedianNoiseProfile(matrix);
+            NoiseProfile profile = NoiseProfile.CalculatePercentileNoiseProfile(matrix, 10); //40 //20
 
             // smooth the noise profile
             double[] smoothedProfile = DataTools.filterMovingAverage(profile.NoiseThresholds, width: 7);
