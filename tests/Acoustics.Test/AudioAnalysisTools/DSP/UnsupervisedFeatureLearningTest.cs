@@ -500,13 +500,13 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
         ///     4) Take average of each of the energy values in each frequency bin >> this gives power spectrum or PSD.
         /// Finally draw the the spectrogram of PSD values for the whole day.
         /// </summary>
-        //[Ignore]
+        [Ignore]
         [TestMethod]
         public void PowerSpectrumDensityTest()
         {
             var inputPath = @"C:\Users\kholghim\Mahnoosh\Liz\TrainSet\";
-            var resultPath =
-                @"C:\Users\kholghim\Mahnoosh\Liz\PowerSpectrumDensity\train_PSD.bmp"; // @"M:\Postdoc\PowerSpectrumDensity\train_PSD.bmp";//
+            var resultPsdPath = @"C:\Users\kholghim\Mahnoosh\Liz\PowerSpectrumDensity\train_LogPSD.bmp";
+            var resultNoiseReducedPsdPath = @"C:\Users\kholghim\Mahnoosh\Liz\PowerSpectrumDensity\train_LogPSD_NoiseReduced.bmp";
 
             //var inputPath =Path.Combine(inputDir, "TrainSet"); // directory of the one-min recordings of one day (21 and 23 Apr - Black Rail Data)
 
@@ -520,11 +520,11 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             int nq = new AudioRecording(Directory.GetFiles(inputPath, "*.wav")[0]).Nyquist;
             int nyquist = nq; // 11025;
             int frameSize = 1024;
-            int finalBinCount = 256; //512; //
+            int finalBinCount = 512; //256; //
             int hertzInterval = 1000;
             FreqScaleType scaleType = FreqScaleType.Linear;
-            var freqScale = new FrequencyScale(scaleType, nyquist, frameSize, finalBinCount, hertzInterval);
-            var fst = freqScale.ScaleType;
+            //var freqScale = new FrequencyScale(scaleType, nyquist, frameSize, finalBinCount, hertzInterval);
+            //var fst = freqScale.ScaleType;
             //var fst = FreqScaleType.Linear;
             //var freqScale = new FrequencyScale(fst);
 
@@ -533,16 +533,22 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                 WindowSize = frameSize,
                 WindowOverlap = 0.1028,
 
-                DoMelScale = (scaleType == FreqScaleType.Mel) ? true : false,
+                //DoMelScale = (scaleType == FreqScaleType.Mel) ? true : false,
                 //MelBinCount = (scaleType == FreqScaleType.Mel) ? finalBinCount : frameSize / 2,
 
-                //DoMelScale = true,
+                //DoMelScale = false,
                 MelBinCount = 256,
-                //DoMelScale = (scaleType == FreqScaleType.Mel) ? true : false,
+                DoMelScale = (scaleType == FreqScaleType.Mel) ? true : false,
                 //MelBinCount = (scaleType == FreqScaleType.Mel) ? finalBinCount : frameSize / 2,
 
                 NoiseReductionType = NoiseReductionType.None,
                 NoiseReductionParameter = 0.0,
+            };
+
+            var attributes = new SpectrogramAttributes()
+            {
+                NyquistFrequency = nyquist,
+                Duration = TimeSpan.FromMinutes(1440),
             };
 
             List<double[]> psd = new List<double[]>();
@@ -562,7 +568,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                     // skip mel
                     settings.SourceFileName = recording.BaseName;
 
-                    var energySpectro = new EnergySpectrogram(settings, recording.WavReader);
+                    var spectrogram = new EnergySpectrogram(settings, recording.WavReader);
                     //var sonogram = new AmplitudeSpectrogram(settings, recording.WavReader);
 
                     //var energySpectrogram = new EnergySpectrogram(sonoConfig, amplitudeSpectrogram.Data);
@@ -574,49 +580,73 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
                     // RMS NORMALIZATION
                     //double[,] normalizedValues = SNR.RmsNormalization(energySpectro.Data);
-                    energySpectro.Data = SNR.RmsNormalization(energySpectro.Data);
+                    //energySpectro.Data = SNR.RmsNormalization(energySpectro.Data);
 
                     // Median Noise Reduction
-                    energySpectro.Data = PcaWhitening.NoiseReduction(energySpectro.Data);
+                    //spectrogram.Data = PcaWhitening.NoiseReduction(spectrogram.Data);
+                    //spectrogram.Data = SNR.NoiseReduce_Standard(spectrogram.Data);
 
-                    //double[] psd = PowerSpectrumDensity.GetPowerSpectrum(noiseReducedValues);
-                    psd.Add(energySpectro.GetLogPsd());
+                    //double[] psd = PowerSpectralDensity.GetPowerSpectrum(noiseReducedValues);
+                    //psd.Add(energySpectro.GetLogPsd());
+                    psd.Add(MatrixTools.GetColumnAverages(spectrogram.Data));
 
                     //psd.Add(SpectrogramTools.CalculateAvgSpectrumFromEnergySpectrogram(normalizedValues));
                     //psd.Add(PowerSpectralDensity.GetPowerSpectrum(normalizedValues));
                 }
             }
 
+            // writing psd matrix to csv file
+            //Csv.WriteMatrixToCsv(new FileInfo(@"C:\Users\kholghim\Mahnoosh\Liz\PowerSpectrumDensity\psd.csv"), psd.ToArray().ToMatrix());
+            //Image imagePsd = DecibelSpectrogram.DrawSpectrogramAnnotated(psd.ToArray().ToMatrix(), settings, attributes);
+            //imagePsd.Save(resultPsdPath, ImageFormat.Bmp);
+            var psdMatrix = psd.ToArray().ToMatrix();
+
+            // calculate the log of matrix
+            var logPsd = MatrixTools.Matrix2LogValues(psdMatrix);
+            Csv.WriteMatrixToCsv(new FileInfo(@"C:\Users\kholghim\Mahnoosh\Liz\PowerSpectrumDensity\logPsd.csv"), logPsd);
+
+            Image image = DecibelSpectrogram.DrawSpectrogramAnnotated(logPsd, settings, attributes);
+            image.Save(resultPsdPath, ImageFormat.Bmp);
+
+            var noiseReducedLogPsd = PcaWhitening.NoiseReduction(logPsd); //SNR.NoiseReduce_Standard(logPsd); //SNR.NoiseReduce_Mean(logPsd, 0.0);//SNR.NoiseReduce_Median(logPsd, 0.0); //
+            Csv.WriteMatrixToCsv(new FileInfo(@"C:\Users\kholghim\Mahnoosh\Liz\PowerSpectrumDensity\logPsd_NoiseReduced.csv"), logPsd);
+
+            Image image2 = DecibelSpectrogram.DrawSpectrogramAnnotated(noiseReducedLogPsd, settings, attributes);
+            image2.Save(resultNoiseReducedPsdPath, ImageFormat.Bmp);
+
             //ImageTools.DrawMatrix(psd.ToArray().ToMatrix(), resultPath);
             //ImageTools.DrawReversedMatrix(psd.ToArray().ToMatrix(), resultPath);
             //var data = MatrixTools.Matrix2LogValues(psd.ToArray().ToMatrix());
             //Image image = ImageTools.DrawReversedMatrixWithoutNormalisation(data);
-            Image image = ImageTools.DrawReversedMatrixWithoutNormalisation(psd.ToArray().ToMatrix());
-            image.Save(resultPath, ImageFormat.Bmp);
+            //Image image = ImageTools.DrawReversedMatrixWithoutNormalisation(logPsd);
         }
 
         [TestMethod]
         public void TestSpectrograms()
         {
-            var recordingPath = PathHelper.ResolveAsset("Recordings", "SM304264_0+1_20160421_004539_47-48min.wav");
+            var recordingPath = PathHelper.ResolveAsset("Recordings", "SM304264_0+1_20160421_004539_47-48min.wav"); //    "SM304264_0+1_20160421_094539_37-38min.wav"
             var resultDir = PathHelper.ResolveAssetPath("SpectrogramTestResults");
             var outputAmpSpecImagePath = Path.Combine(resultDir, "AmplitudeSpectrogram.bmp");
+            var outputDecibelSpecImagePath = Path.Combine(resultDir, "DecibelSpectrogram.bmp");
+            var outputEnergySpecImagePath = Path.Combine(resultDir, "EnergySpectrogram.bmp");
+            var outputLogEnergySpecImagePath = Path.Combine(resultDir, "LogEnergySpectrogram.bmp");
             var outputLinScaImagePath = Path.Combine(resultDir, "LinearScaleSpectrogram.bmp");
             var outputMelScaImagePath = Path.Combine(resultDir, "MelScaleSpectrogram.bmp");
             var outputNormalizedImagePath = Path.Combine(resultDir, "NormalizedSpectrogram.bmp");
             var outputNoiseReducedImagePath = Path.Combine(resultDir, "NoiseReducedSpectrogram.bmp");
             var outputLogPsdImagePath = Path.Combine(resultDir, "Psd.bmp");
 
-            int nyquist = new AudioRecording(recordingPath).Nyquist; // 11025;
+            var recording = new AudioRecording(recordingPath);
+            int nyquist = recording.Nyquist; // 11025;
             int frameSize = 1024;
             int finalBinCount = 512; //256; //128; //  100; // 40; // 200; //
             int hertzInterval = 1000;
 
             //FreqScaleType scaleType = FreqScaleType.Linear;
-            var scaleType = FreqScaleType.Linear;
+            var scaleType = FreqScaleType.Mel;
 
-            var freqScale = new FrequencyScale(scaleType, nyquist, frameSize, finalBinCount, hertzInterval);
-            var fst = freqScale.ScaleType;
+            //var freqScale = new FrequencyScale(scaleType, nyquist, frameSize, finalBinCount, hertzInterval);
+            //var fst = freqScale.ScaleType;
 
             var settings = new SpectrogramSettings()
             {
@@ -625,23 +655,33 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                 DoMelScale = (scaleType == FreqScaleType.Mel) ? true : false,
                 MelBinCount = 256, //(scaleType == FreqScaleType.Mel) ? finalBinCount : frameSize / 2,
                 NoiseReductionType = NoiseReductionType.None,
+                //NoiseReductionType = NoiseReductionType.Median,
             };
-
-            var recording = new AudioRecording(recordingPath);
+            //settings.NoiseReductionParameter = 0.0; // backgroundNeighbourhood noise reduction in dB
 
             settings.SourceFileName = recording.BaseName;
-
             //var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
 
-            //var sonogram = new AmplitudeSpectrogram(settings, recording.WavReader);
+            var sonogram = new EnergySpectrogram(settings, recording.WavReader);
+            sonogram.Data = MatrixTools.Matrix2LogValues(sonogram.Data);
+
+            var attributes = new SpectrogramAttributes()
+            {
+                NyquistFrequency = sonogram.Attributes.NyquistFrequency,
+                Duration = sonogram.Attributes.Duration,
+            };
+
+            Image image = DecibelSpectrogram.DrawSpectrogramAnnotated(sonogram.Data, settings, attributes);
+            image.Save(outputLogEnergySpecImagePath, ImageFormat.Bmp);
+
             //var logSonogramData = MatrixTools.Matrix2LogValues(sonogram.Data);
             //var dbSpectrogram = new DecibelSpectrogram(settings, recording.WavReader);
             //dbSpectrogram.DrawSpectrogram(outputMelScaImagePath);
 
-            var energySpectro = new EnergySpectrogram(settings, recording.WavReader);
+            //var energySpectro = new EnergySpectrogram(settings, recording.WavReader);
 
             //var image = SpectrogramTools.GetImage(sonogram.Data, nyquist, settings.DoMelScale);
-            //var specImage = SpectrogramTools.GetImageFullyAnnotated(image, "MELSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations, sonoConfig.Duration);
+            //var specImage = SpectrogramTools.GetImageFullyAnnotated(image, "MELSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations, settings.Duration);
 
             //var logSonogramData = MatrixTools.Matrix2LogValues(sonogram.Data);
 
@@ -649,10 +689,11 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             //var specImage = SpectrogramTools.GetImageFullyAnnotated(image, "MELSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations, sonogram.Attributes.Duration);
 
             //specImage.Save(outputMelScaImagePath, ImageFormat.Png);
+            //specImage.Save(outputAmpSpecImagePath, ImageFormat.Png);
 
             // DO RMS NORMALIZATION
             //sonogram.Data = SNR.RmsNormalization(sonogram.Data);
-            energySpectro.Data = SNR.RmsNormalization(energySpectro.Data);
+            //energySpectro.Data = SNR.RmsNormalization(energySpectro.Data);
 
             //dbSpectrogram.DrawSpectrogram(outputNormalizedImagePath);
             //var image2 = SpectrogramTools.GetImage(dbSpectrogram.Data, nyquist, settings.DoMelScale);
@@ -660,13 +701,15 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             //normImage.Save(outputNormalizedImagePath, ImageFormat.Png);
 
             // DO NOISE REDUCTION
-            energySpectro.Data = PcaWhitening.NoiseReduction(energySpectro.Data);
+            sonogram.Data = PcaWhitening.NoiseReduction(sonogram.Data);
             //dbSpectrogram.DrawSpectrogram(outputNoiseReducedImagePath);
             //var image3 = SpectrogramTools.GetImage(dbSpectrogram.Data, nyquist, settings.DoMelScale);
             //var noiseReducedImage = SpectrogramTools.GetImageFullyAnnotated(image3, "NOISEREDUCEDSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations, sonogram.Attributes.Duration);
             //noiseReducedImage.Save(outputNoiseReducedImagePath, ImageFormat.Png);
+            Image image2 = DecibelSpectrogram.DrawSpectrogramAnnotated(sonogram.Data, settings, attributes);
+            image2.Save(outputNoiseReducedImagePath, ImageFormat.Bmp);
 
-            energySpectro.DrawLogPsd(outputLogPsdImagePath);
+            //energySpectro.DrawLogPsd(outputLogPsdImagePath);
 
             /*
             var fst = FreqScaleType.Linear;
