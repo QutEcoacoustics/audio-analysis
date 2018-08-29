@@ -241,6 +241,9 @@
     <Compile Include="DSP\DSP_Filters.cs" />
     <Compile Include="DSP\DSP_Frames.cs" />
     <Compile Include="DSP\DSP_IIRFilter.cs" />
+    <Compile Include="DSP\FeatureExtraction.cs" />
+    <Compile Include="DSP\FeatureLearning.cs" />
+    <Compile Include="DSP\FeatureLearningSettings.cs" />
     <Compile Include="DSP\FFT2D.cs" />
     <Compile Include="DSP\FrequencyScale.cs" />
     <Compile Include="DSP\KmeansClustering.cs" />
