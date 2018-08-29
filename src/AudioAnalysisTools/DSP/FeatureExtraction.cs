@@ -55,6 +55,8 @@ namespace AudioAnalysisTools.DSP
             int patchWidth =
                 (maxFreqBin - minFreqBin + 1) / numFreqBand; //configuration.PatchWidth; // finalBinCount / numFreqBand;
             int patchHeight = config.PatchHeight; // 1; // 2; //  4; // 16; // 6; // Frame size
+            int frameWindowLength = config.FrameWindowLength;
+            int stepSize = config.StepSize;
 
             // check whether there is any file in the folder/subfolders
             if (Directory.GetFiles(inputPath, "*", SearchOption.AllDirectories).Length == 0) // trainSetPath

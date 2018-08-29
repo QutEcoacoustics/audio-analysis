@@ -293,6 +293,9 @@
     <Compile Include="ConcatenateIndexFiles.cs" />
     <Compile Include="Draw\Zooming\DrawZoomingSpectrograms.cs" />
     <Compile Include="HerveGlotinCollaboration.cs" />
+	<Compile Include="DSP\FeatureLearningSettings.cs" />
+	<Compile Include="DSP\FeatureLearning.cs" />
+	<Compile Include="DSP\FeatureExtraction.cs" />
     <Compile Include="MahnooshSandpit.cs" />
     <Compile Include="Production\Arguments\DebugOptions.cs" />
     <Compile Include="Production\Arguments\HelpArgs.cs" />
