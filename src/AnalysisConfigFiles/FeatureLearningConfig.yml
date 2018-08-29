@@ -14,15 +14,15 @@
 
 # The properties to generate Mel scale
 FrequencyScaleType: Mel
-HertzInterval: 1000
+# HertzInterval: 1000
 FrameSize: 1024
 FinalBinCount: 128
 
 
 # The default values for minFreqBin and maxFreqBin are 1 and FinalBinCount
 # For any other arbitrary frequency bin bounds, these two parameters need to be manually set.
-MinFreqBin: 1
-MaxFreqBin: 128
+MinFreqBin: 24
+MaxFreqBin: 82
 
 # The number of frequency band for feature generation process
 numFreqBand: 1
@@ -32,15 +32,21 @@ numFreqBand: 1
 # PatchWidth: 5
 PatchHeight: 1
 
+# the number of frames that their feature vectors will be conctaneted in order to preserve temporal information.
+FrameWindowLength : 8 
+
+# the step size to make a window of frames
+StepSize : 1
+
 # The number of patches to be selected from each recording of the patch sampling set
-NumRandomPatches: 4
+NumRandomPatches: 16
 
 # the number of clusters to be generated from the selected patch set
-NumClusters: 256
+NumClusters: 64
 
 
 # Applying noise reduction and whitening if these options are set to 'true'
 DoNoiseReduction: true
-DoWhitening: false
+DoWhitening: true
 ...
 
