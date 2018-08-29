@@ -152,11 +152,22 @@ namespace AudioAnalysisTools.StandardSpectrograms
             DataTools.MinMax(data, out min, out max);
             double binWidth = (max - min) / binCount;
             var histogram = Histogram.Histo(data, binCount, min, max, binWidth);
+
+            
             int percentile = 95;
             int binId = Histogram.GetPercentileBin(histogram, percentile);
             double upperBound = min + (binId * percentile);
             var normedMatrix = MatrixTools.NormaliseInZeroOne(data, min, upperBound);
-
+            
+            /*
+            int minPercentile = 5;
+            int minBinId = Histogram.GetPercentileBin(histogram, minPercentile);
+            double lowerBound = min + (minBinId * minPercentile);
+            int maxPercentile = 95;
+            int maxBinId = Histogram.GetPercentileBin(histogram, maxPercentile);
+            double upperBound = min + (maxBinId * maxPercentile);
+            var normedMatrix = MatrixTools.NormaliseInZeroOne(data, lowerBound, upperBound);
+            */
             int nyquist = attributes.NyquistFrequency;
             int frameSize = config.WindowSize;
 
