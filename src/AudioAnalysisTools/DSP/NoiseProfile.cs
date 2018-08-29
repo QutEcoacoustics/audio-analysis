@@ -116,6 +116,8 @@ namespace AudioAnalysisTools.DSP
         /// <param name="matrix">the spectrogram with origin top-left</param>
         public static NoiseProfile CalculateMedianNoiseProfile(double[,] matrix)
         {
+            return CalculatePercentileNoiseProfile(matrix, 50);
+            /*
             int rowCount = matrix.GetLength(0);
             int colCount = matrix.GetLength(1);
             double[] noiseMedian = new double[colCount];
@@ -127,6 +129,36 @@ namespace AudioAnalysisTools.DSP
                 double[] freqBin = MatrixTools.GetColumn(matrix, col);
                 Array.Sort(freqBin);
                 noiseMedian[col] = freqBin[rowCount / 2];
+                minsOfBins[col] = freqBin.Min();
+                maxsOfBins[col] = freqBin.Max();
+            }
+
+            var profile = new NoiseProfile()
+            {
+                NoiseMedian = noiseMedian,
+                NoiseSd = null,
+                NoiseThresholds = noiseMedian,
+                MinDb = minsOfBins,
+                MaxDb = maxsOfBins,
+            };
+            return profile;
+            */
+
+        }
+
+        public static NoiseProfile CalculatePercentileNoiseProfile(double[,] matrix, int percentile)
+        {
+            int rowCount = matrix.GetLength(0);
+            int colCount = matrix.GetLength(1);
+            double[] noiseMedian = new double[colCount];
+            double[] minsOfBins = new double[colCount];
+            double[] maxsOfBins = new double[colCount];
+
+            for (int col = 0; col < colCount; col++)
+            {
+                double[] freqBin = MatrixTools.GetColumn(matrix, col);
+                Array.Sort(freqBin);
+                noiseMedian[col] = freqBin[rowCount * percentile / 100];
                 minsOfBins[col] = freqBin.Min();
                 maxsOfBins[col] = freqBin.Max();
             }
