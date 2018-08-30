@@ -10,7 +10,7 @@ namespace AudioAnalysisTools.DSP
     {
         public const FreqScaleType DefaultFrequencyScaleType = FreqScaleType.Mel;
 
-        public const int DefaultHertzInterval = 1000;
+        //public const int DefaultHertzInterval = 1000;
 
         public const int DefaultFrameSize = 1024;
 
@@ -45,7 +45,7 @@ namespace AudioAnalysisTools.DSP
         public FeatureLearningSettings()
         {
             this.FrequencyScaleType = DefaultFrequencyScaleType;
-            this.HertzInterval = DefaultHertzInterval;
+            //this.HertzInterval = DefaultHertzInterval;
             this.FrameSize = DefaultFrameSize;
             this.FinalBinCount = DefaultFinalBinCount;
             this.MinFreqBin = DefaultMinFreqBin;
@@ -61,7 +61,7 @@ namespace AudioAnalysisTools.DSP
 
         public FreqScaleType FrequencyScaleType { get; set; }
 
-        public int HertzInterval { get; set; }
+        //public int HertzInterval { get; set; }
 
         public int FrameSize { get; set; }
 

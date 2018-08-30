@@ -9,7 +9,6 @@ namespace AudioAnalysisTools.DSP
     using System.IO;
     using System.Linq;
     using System.Text;
-    using System.Threading.Tasks;
     using Accord.Math;
     using Accord.Statistics;
     using NeuralNets;
@@ -23,15 +22,16 @@ namespace AudioAnalysisTools.DSP
     public class FeatureExtraction
     {
         /// <summary>
-        /// Apply feature learning process on a set of target (1-minute) recordings
-        /// Output feature vectors
+        /// Apply feature learning process on a set of target (1-minute) recordings (inputPath)
+        /// according to the a set of centroids learnt using feature learning process.
+        /// Output feature vectors (outputPath)
         /// </summary>
         public static void UnsupervisedFeatureExtraction(FeatureLearningSettings config, List<double[][]> allCentroids,
             string inputPath, string outputPath)
         {
             int frameSize = config.FrameSize;
             int finalBinCount = config.FinalBinCount;
-            int hertzInterval = config.HertzInterval;
+            //int hertzInterval = 1000;
             FreqScaleType scaleType = config.FrequencyScaleType;
             var settings = new SpectrogramSettings()
             {
@@ -55,7 +55,11 @@ namespace AudioAnalysisTools.DSP
             int patchWidth =
                 (maxFreqBin - minFreqBin + 1) / numFreqBand; //configuration.PatchWidth; // finalBinCount / numFreqBand;
             int patchHeight = config.PatchHeight; // 1; // 2; //  4; // 16; // 6; // Frame size
+
+            // the number of frames that their feature vectors will be concatenated in order to preserve temporal information.
             int frameWindowLength = config.FrameWindowLength;
+
+            // he step size to make a window of frames
             int stepSize = config.StepSize;
 
             // check whether there is any file in the folder/subfolders
@@ -142,9 +146,13 @@ namespace AudioAnalysisTools.DSP
                     }
 
                     List<double[][]> allFeatureTransVectors = new List<double[][]>();
+
+                    // processing the sequential patch matrix for each band
                     for (int i = 0; i < allSequentialPatchMatrix.Count; i++)
                     {
-                        double[][] featureTransVectors = new double[allSequentialPatchMatrix.ToArray()[i].GetLength(0)][];
+                        List<double[]> featureTransVectors = new List<double[]>();
+                        double[][] similarityVectors = new double[allSequentialPatchMatrix.ToArray()[i].GetLength(0)][];
+
                         for (int j = 0; j < allSequentialPatchMatrix.ToArray()[i].GetLength(0); j++)
                         {
                             // normalize each patch to unit length
@@ -172,10 +180,32 @@ namespace AudioAnalysisTools.DSP
                             }
                             */
 
-                            featureTransVectors[j] = allNormCentroids.ToArray()[i].ToMatrix().Dot(normVector);
+                            similarityVectors[j] = allNormCentroids.ToArray()[i].ToMatrix().Dot(normVector);
                         }
 
-                        allFeatureTransVectors.Add(featureTransVectors);
+                        // To preserve the temporal information, we can concatenate the similarity vectors of a group of frames with
+                        // the length indicated as FrameWindowLength
+
+                        // patchId refers to the patch id that has been processed so far according to the step size.
+                        int patchId = 0;
+
+                        // patchCounter refers to the number of patches that has been processed so far accroding to FrameWindowLength.
+                        //int patchCounter = 0;
+
+                        while (patchId + frameWindowLength < similarityVectors.GetLength(0))
+                        {
+                            List<double[]> patchGroup = new List<double[]>();
+                            for (int k = 0; k < frameWindowLength; k++)
+                            {
+                                patchGroup.Add(similarityVectors[k + patchId]);
+                            }
+
+                            //patchCounter = patchCounter + patchGroup.Count;
+                            featureTransVectors.Add(DataTools.ConcatenateVectors(patchGroup));
+                            patchId = patchId + stepSize;
+                        }
+
+                        allFeatureTransVectors.Add(featureTransVectors.ToArray());
                     }
 
                     // +++++++++++++++++++++++++++++++++++Feature Transformation
@@ -249,7 +279,7 @@ namespace AudioAnalysisTools.DSP
 
                         // when (freqBandFeature.GetLength(0) % numFrames) != 0, it means there are a number of frames (< numFrames)
                         // (or the whole) at the end of the target recording , left unprocessed.
-                        // this would be problematic when an the resulotion to genearte the feature vector is 1 min,
+                        // this would be problematic when an the resolution to generate the feature vector is 1 min,
                         // but the the length of the target recording is a bit less than one min.
                         if (freqBandFeature.GetLength(0) % numFrames != 0 && freqBandFeature.GetLength(0) % numFrames > 1)
                         {

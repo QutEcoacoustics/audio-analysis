@@ -153,12 +153,11 @@ namespace AudioAnalysisTools.StandardSpectrograms
             double binWidth = (max - min) / binCount;
             var histogram = Histogram.Histo(data, binCount, min, max, binWidth);
 
-            
             int percentile = 95;
             int binId = Histogram.GetPercentileBin(histogram, percentile);
             double upperBound = min + (binId * percentile);
             var normedMatrix = MatrixTools.NormaliseInZeroOne(data, min, upperBound);
-            
+
             /*
             int minPercentile = 5;
             int minBinId = Histogram.GetPercentileBin(histogram, minPercentile);

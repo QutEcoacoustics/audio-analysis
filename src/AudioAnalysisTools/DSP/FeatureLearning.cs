@@ -6,17 +6,9 @@ namespace AudioAnalysisTools.DSP
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
     using System.IO;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Accord.MachineLearning;
     using Accord.Math;
-    using Acoustics.Shared.Csv;
-    using Acoustics.Tools.Wav;
     using StandardSpectrograms;
-    using TowseyLibrary;
     using WavTools;
 
     /// <summary>
@@ -38,7 +30,7 @@ namespace AudioAnalysisTools.DSP
 
             int frameSize = config.FrameSize;
             int finalBinCount = config.FinalBinCount;
-            int hertzInterval = config.HertzInterval;
+            //int hertzInterval = 1000;
             FreqScaleType scaleType = config.FrequencyScaleType;
             var settings = new SpectrogramSettings()
             {

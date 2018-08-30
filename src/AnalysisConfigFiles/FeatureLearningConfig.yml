@@ -32,7 +32,7 @@ numFreqBand: 1
 # PatchWidth: 5
 PatchHeight: 1
 
-# the number of frames that their feature vectors will be conctaneted in order to preserve temporal information.
+# the number of frames that their feature vectors will be concatenated in order to preserve temporal information.
 FrameWindowLength : 8 
 
 # the step size to make a window of frames
