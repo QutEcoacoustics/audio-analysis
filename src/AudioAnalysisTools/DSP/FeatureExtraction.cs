@@ -183,10 +183,11 @@ namespace AudioAnalysisTools.DSP
                             similarityVectors[j] = allNormCentroids.ToArray()[i].ToMatrix().Dot(normVector);
                         }
 
-                        // To preserve the temporal information, we can concatenate the similarity vectors of a group of frames with
-                        // the length indicated as FrameWindowLength
+                        // To preserve the temporal information, we can concatenate the similarity vectors of a group of frames using
+                        // FrameWindowLength
 
                         // patchId refers to the patch id that has been processed so far according to the step size.
+                        // if we want no overlap between different frame windows, then stepSize = frameWindowLength
                         int patchId = 0;
 
                         // patchCounter refers to the number of patches that has been processed so far accroding to FrameWindowLength.

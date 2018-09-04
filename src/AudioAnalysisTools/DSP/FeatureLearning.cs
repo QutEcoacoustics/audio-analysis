@@ -147,8 +147,10 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// Apply feature learning process on a set of 1-minute recordings that contains the bird call of interest
-        /// in order to build one cluster (supervisedly built cluster!)
+        /// This method is called supervised feature learning because the frames to form a cluster
+        /// have been manually selected from 1-min recordings.
+        /// The input to this methods is a group of frames that contains the bird of interest based on the
+        /// configuration set, i.e., the freq band...
         /// </summary>
         public static List<KmeansClustering.Output> supervisedFeatureLearning(FeatureLearningSettings config,
             string inputPath)

@@ -33,16 +33,16 @@ numFreqBand: 1
 PatchHeight: 1
 
 # the number of frames that their feature vectors will be concatenated in order to preserve temporal information.
-FrameWindowLength : 8 
+FrameWindowLength : 1 
 
 # the step size to make a window of frames
 StepSize : 1
 
 # The number of patches to be selected from each recording of the patch sampling set
-NumRandomPatches: 16
+NumRandomPatches: 1000
 
 # the number of clusters to be generated from the selected patch set
-NumClusters: 64
+NumClusters: 256
 
 
 # Applying noise reduction and whitening if these options are set to 'true'
