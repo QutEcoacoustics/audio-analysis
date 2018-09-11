@@ -11,6 +11,7 @@ namespace AudioAnalysisTools.DSP
     using System.Text;
     using Accord.Math;
     using Accord.Statistics;
+    using Acoustics.Shared.Csv;
     using NeuralNets;
     using StandardSpectrograms;
     using TowseyLibrary;
@@ -29,6 +30,7 @@ namespace AudioAnalysisTools.DSP
         public static void UnsupervisedFeatureExtraction(FeatureLearningSettings config, List<double[][]> allCentroids,
             string inputPath, string outputPath)
         {
+            var simVecDir = Directory.CreateDirectory(Path.Combine(outputPath, "SimilarityVectors"));
             int frameSize = config.FrameSize;
             int finalBinCount = config.FinalBinCount;
             //int hertzInterval = 1000;
@@ -63,7 +65,7 @@ namespace AudioAnalysisTools.DSP
             int stepSize = config.StepSize;
 
             // check whether there is any file in the folder/subfolders
-            if (Directory.GetFiles(inputPath, "*", SearchOption.AllDirectories).Length == 0) // trainSetPath
+            if (Directory.GetFiles(inputPath, "*", SearchOption.AllDirectories).Length == 0)
             {
                 throw new ArgumentException("The folder of recordings is empty...");
             }
@@ -79,13 +81,14 @@ namespace AudioAnalysisTools.DSP
 
             double[,] inputMatrix;
 
-            foreach (string filePath in Directory.GetFiles(inputPath, "*.wav")) // trainSetPath
+            foreach (string filePath in Directory.GetFiles(inputPath, "*.wav"))
             {
                 FileInfo fileInfo = filePath.ToFileInfo();
 
                 // process the wav file if it is not empty
                 if (fileInfo.Length != 0)
                 {
+                    string pathToSimilrityVectorsFile = Path.Combine(simVecDir.FullName, fileInfo.Name + ".csv");
                     var recording = new AudioRecording(filePath);
                     settings.SourceFileName = recording.BaseName;
 
@@ -182,6 +185,8 @@ namespace AudioAnalysisTools.DSP
 
                             similarityVectors[j] = allNormCentroids.ToArray()[i].ToMatrix().Dot(normVector);
                         }
+
+                        Csv.WriteMatrixToCsv(pathToSimilrityVectorsFile.ToFileInfo(), similarityVectors.ToMatrix());
 
                         // To preserve the temporal information, we can concatenate the similarity vectors of a group of frames using
                         // FrameWindowLength
