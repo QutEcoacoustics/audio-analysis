@@ -32,7 +32,7 @@ namespace AnalysisPrograms
 
         public void Execute(Arguments arguments)
         {
-            LoggedConsole.WriteLine("feature learning process");
+            LoggedConsole.WriteLine("feature learning process...");
 
             var inputDir = @"D:\Mahnoosh\Liz\"; //@"C:\Users\kholghim\Mahnoosh\Liz\"; // @"C:\Users\kholghim\Mahnoosh\UnsupervisedFeatureLearning\"; // @"M:\Postdoc\Liz\"; //
             var resultDir = Path.Combine(inputDir, "FeatureLearning");
@@ -934,10 +934,10 @@ namespace AnalysisPrograms
         {
             public override Task<int> Execute(CommandLineApplication app)
             {
-                var instance = new MahnooshSandpit();
-                instance.Execute(this);
+                //var instance = new MahnooshSandpit();
+                //instance.Execute(this);
                 //GenerateSpectrograms();
-                //ExtractClusteringFeatures();
+                ExtractClusteringFeatures();
 
                 return this.Ok();
             }
