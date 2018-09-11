@@ -111,11 +111,28 @@ namespace AudioAnalysisTools.DSP
 
                     // Second: selecting random patches from each freq band matrix and add them to the corresponding patch list
                     int count = 0;
+
+                    // file counter
+                    //int no = 0;
+
                     while (count < allSubmatrices.Count)
                     {
                         randomPatchLists[$"randomPatch{count.ToString()}"].Add(PatchSampling
                             .GetPatches(allSubmatrices.ToArray()[count], patchWidth, patchHeight, numRandomPatches,
                                 PatchSampling.SamplingMethod.Random).ToMatrix());
+                         /*
+
+                        //  take the total number of frames out of each second minute paper
+                        if (no / 2 == 0)
+                        {
+                            int rows = allSubmatrices.ToArray()[count].GetLength(0);
+                            int columns = allSubmatrices.ToArray()[count].GetLength(1);
+                            randomPatchLists[$"randomPatch{count.ToString()}"].Add(PatchSampling
+                                .GetPatches(allSubmatrices.ToArray()[count], patchWidth, patchHeight, (rows / patchHeight) * (columns / patchWidth),
+                                    PatchSampling.SamplingMethod.Sequential).ToMatrix());
+                            no++;
+                        }
+                        */
                         count++;
                     }
                 }

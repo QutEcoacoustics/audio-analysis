@@ -34,7 +34,7 @@ namespace AnalysisPrograms
         {
             LoggedConsole.WriteLine("feature learning process");
 
-            var inputDir = @"D:\Mahnoosh\Liz\"; //@"M:\Postdoc\Liz\"; //@"C:\Users\kholghim\Mahnoosh\UnsupervisedFeatureLearning\"; //
+            var inputDir = @"D:\Mahnoosh\Liz\"; //@"C:\Users\kholghim\Mahnoosh\Liz\"; // @"C:\Users\kholghim\Mahnoosh\UnsupervisedFeatureLearning\"; // @"M:\Postdoc\Liz\"; //
             var resultDir = Path.Combine(inputDir, "FeatureLearning");
             var inputPath = Path.Combine(inputDir, "TrainSet"); //PatchSamplingSegments //PatchSampling
             var trainSetPath = Path.Combine(inputDir, "TrainSet");
@@ -934,10 +934,10 @@ namespace AnalysisPrograms
         {
             public override Task<int> Execute(CommandLineApplication app)
             {
-                //var instance = new MahnooshSandpit();
-                //instance.Execute(this);
+                var instance = new MahnooshSandpit();
+                instance.Execute(this);
                 //GenerateSpectrograms();
-                ExtractClusteringFeatures();
+                //ExtractClusteringFeatures();
 
                 return this.Ok();
             }
@@ -945,12 +945,12 @@ namespace AnalysisPrograms
 
         public static void ExtractClusteringFeatures()
         {
-            LoggedConsole.WriteLine("feature extraction process");
-            var inputDir = @"D:\Mahnoosh\Liz\"; //@"M:\Postdoc\Liz\"; //@"C:\Users\kholghim\Mahnoosh\UnsupervisedFeatureLearning\"; //
+            LoggedConsole.WriteLine("feature extraction process...");
+            var inputDir = @"D:\Mahnoosh\Liz\"; //@"C:\Users\kholghim\Mahnoosh\UnsupervisedFeatureLearning\"; //@"M:\Postdoc\Liz\"; //
             var resultDir = Path.Combine(inputDir, "FeatureLearning");
-            var trainSetPath = Path.Combine(inputDir, "TrainSet");
+            //var trainSetPath = Path.Combine(inputDir, "TrainSet");
             var testSetPath = Path.Combine(inputDir, "TestSet");
-            var configPath = @"D:\Mahnoosh\Liz\AnalysisConfigFiles\FeatureLearningConfig.yml"; // @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\FeatureLearningConfig.yml"; //
+            var configPath = @"D:\Mahnoosh\Liz\AnalysisConfigFiles\FeatureLearningConfig.yml"; //@"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\FeatureLearningConfig.yml"; //  
             var centroidsPath = Path.Combine(resultDir, "ClusterCentroids0.csv");
 
             var configFile = configPath.ToFileInfo();

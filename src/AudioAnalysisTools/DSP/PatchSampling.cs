@@ -6,6 +6,7 @@ namespace AudioAnalysisTools.DSP
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using Accord.Math;
     using TowseyLibrary;
 
@@ -348,21 +349,37 @@ namespace AudioAnalysisTools.DSP
         /// </summary>
         private static List<double[]> GetRandomPatches(double[,] matrix, int patchWidth, int patchHeight, int numberOfPatches)
         {
-            int seed = 100;
-            Random randomNumber = new Random(seed);
-            List<double[]> patches = new List<double[]>();
+            // Note: to make the method more flexible in terms of selecting a random patch with any height and width,
+            // first a random number generator is defined for both patchHeight and patchWidth.
+            // However, the possibility of selecting duplicates especially when selecting too many random numbers from
+            // a range (e.g., 1000 out of 1440) is high with a a random generator.
+            // Since, we are mostly interested in full-band patches, i.e., patchWidth = (maxFreqBin - minFreqBin + 1) / numFreqBand,
+            // it is important to select non-duplicate patchHeights. Hence, instead of a random generator for patchHeight,
+            // a better solution is to make a sequence of numbers to be selected, shuffle them, and
+            // finally, a first n (number of required patches) numbers could be selected.
 
             int rows = matrix.GetLength(0);
             int columns = matrix.GetLength(1);
-            for (int i = 0; i < numberOfPatches; i++)
+
+            int seed = 100;
+            Random randomNumber = new Random(seed);
+
+            // not sure whether it is better to use new Guid() instead of randomNumber.Next()
+            var randomRowNumbers = Enumerable.Range(0, rows - patchHeight).OrderBy(x => randomNumber.Next()).Take(numberOfPatches).ToList();
+            List<double[]> patches = new List<double[]>();
+
+            for (int i = 0; i < randomRowNumbers.Count; i++) //for (int i = 0; i < numberOfPatches; i++)
             {
                 // selecting a random number from the height of the matrix
-                int rowRandomNumber = randomNumber.Next(0, rows - patchHeight);
+                //int rowRandomNumber = randomNumber.Next(0, rows - patchHeight);
 
                 // selecting a random number from the width of the matrix
                 int columnRandomNumber = randomNumber.Next(0, columns - patchWidth);
-                double[,] submatrix = MatrixTools.Submatrix(matrix, rowRandomNumber, columnRandomNumber,
-                    rowRandomNumber + patchHeight - 1, columnRandomNumber + patchWidth - 1);
+
+                double[,] submatrix = MatrixTools.Submatrix(matrix, randomRowNumbers[i], columnRandomNumber,
+                    randomRowNumbers[i] + patchHeight - 1, columnRandomNumber + patchWidth - 1);
+
+                //double[,] submatrix = MatrixTools.Submatrix(matrix, rowRandomNumber, columnRandomNumber, rowRandomNumber + patchHeight - 1, columnRandomNumber + patchWidth - 1);
 
                 // convert a matrix to a vector by concatenating columns and
                 // store it to the array of vectors
