@@ -288,6 +288,7 @@
     <Compile Include="AudioAnalysisTools\LongDurationSpectrograms\LdSpectrogramStitchingTests.cs" />
     <Compile Include="AudioAnalysisTools\LongDurationSpectrograms\Zooming\ZoomCommonTests.cs" />
     <Compile Include="AudioAnalysisTools\Oscillations2014\OscillationTests.cs" />
+    <Compile Include="AudioAnalysisTools\SpectralPeakTracking2018Tests.cs" />
     <Compile Include="AudioAnalysisTools\StandardSpectrograms\SonogramTests.cs" />
     <Compile Include="AudioAnalysisTools\TileImage\AbsoluteDateTimeTilerTests.cs" />
     <Compile Include="AudioAnalysisTools\TileImage\TilerTests.cs" />
