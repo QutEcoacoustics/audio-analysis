@@ -11,9 +11,11 @@ namespace AnalysisPrograms.Recognizers
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.WavTools;
     using Base;
+
     public class PezoporusOccidentalis: RecognizerBase
     {
         public override string Author { get; }
+
         public override string SpeciesName { get; }
 
         public override RecognizerResults Recognize(AudioRecording audioRecording, Config configuration, TimeSpan segmentStartOffset,
