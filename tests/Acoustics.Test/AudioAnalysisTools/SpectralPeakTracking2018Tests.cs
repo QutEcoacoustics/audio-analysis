@@ -41,5 +41,29 @@ namespace Acoustics.Test.AudioAnalysisTools
 
         }
 
+        [TestMethod]
+        public void FindLocalSpectralPeaksTest()
+        {
+            var inputMatrix = PathHelper.ResolveAsset("SpectralPeakTracking", "matrix2.csv");
+            var matrix = Csv.ReadMatrixFromCsv<double>(inputMatrix, TwoDimensionalArray.None);
+
+            int[][] expectedLocalPeaksIndex = new int[][] { new int[] { 0, 7 }, new int[] { 1, 11 } };
+
+            int[] peakBinsIndex = new int[] { 7, 11, 6, 6, 6, 6, 6, 6, 6, 6 };
+
+            int widthMidBand = 4;
+            int topBufferSize = 2;
+            int bottomBufferSize = 2;
+            double threshold = 4.0;
+
+            var actualLocalPeaks = SpectralPeakTracking2018.FindLocalSpectralPeaks(matrix, peakBinsIndex, widthMidBand,
+                topBufferSize, bottomBufferSize, threshold);
+
+            for (int i = 0; i < expectedLocalPeaksIndex.GetLength(0); i++)
+            {
+                Assert.AreEqual(expectedLocalPeaksIndex[i][0], actualLocalPeaks[i][0]);
+                Assert.AreEqual(expectedLocalPeaksIndex[i][1], actualLocalPeaks[i][1]);
+            }
+        }
     }
 }

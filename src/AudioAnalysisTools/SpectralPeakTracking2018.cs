@@ -25,31 +25,15 @@ namespace AudioAnalysisTools
                 throw new ArgumentNullException(nameof(dbSpectrogram));
             }
 
-            int frameCount = dbSpectrogram.GetLength(0);
-            //int freqBinCount = dbSpectrogram.GetLength(1);
+            // find the peak bin index in each spectrum/frame of the input spectrogram
+            int[] peakBinsIndex = GetPeakBinsIndex(dbSpectrogram, settings.MinFreqBin, settings.MaxFreqBin);
 
-            var peakBinsIndex = GetPeakBinsIndex(dbSpectrogram, settings.MinFreqBin, settings.MaxFreqBin);
+            // find the local peak per spectrum
+            int[][] localPeaks = FindLocalSpectralPeaks(dbSpectrogram, peakBinsIndex, settings.WidthMidFreqBand, settings.TopBuffer, settings.BottomBuffer, settings.DbThreshold);
 
-            // for all frames in dB array
-            for (int r = 0; r < frameCount; r++)
-            {
-                double[] spectrum = DataTools.GetRow(dbSpectrogram, r);
-
-                //find the boundaries of middle frequency band
-                int minMid = peakBinsIndex[r] - (settings.WidthMidFreqBand / 2);
-                int maxMid = peakBinsIndex[r] + (settings.WidthMidFreqBand / 2);
-
-                double midBandAvgEnergy = CalculateAverageEnergy(spectrum, minMid, maxMid);
-
-
-                //double topBandAvgEnergy = CalculateAverageEnergy(spectrum, );
-
-
-            }
-
+            // Do Spectral Peak Tracking
 
         }
-
 
         /// <summary>
         /// outputs an array of peak bins indices per frame
@@ -71,6 +55,58 @@ namespace AudioAnalysisTools
             return peakBins;
         }
 
+        public static int[][] FindLocalSpectralPeaks(double[,] matrix, int[] peakBinsIndex, int widthMidBand,
+            int topBufferSize, int bottomBufferSize, double threshold)
+        {
+            int frameCount = matrix.GetLength(0);
+
+            // save the target peak bins index [frameCount, freqBinCount]
+            List<int[]> targetPeakBinsIndex = new List<int[]>();
+
+            // for all frames of the input spectrogram
+            for (int r = 0; r < frameCount; r++)
+            {
+                // retrieve each frame
+                double[] spectrum = DataTools.GetRow(matrix, r);
+
+                //find the boundaries of middle frequency band: the min bin index and the max bin index
+                int minMid = peakBinsIndex[r] - (widthMidBand / 2);
+                int maxMid = peakBinsIndex[r] + (widthMidBand / 2);
+
+                // find the average energy
+                double midBandAvgEnergy = CalculateAverageEnergy(spectrum, minMid, maxMid);
+
+                //find the boundaries of top frequency band: the min bin index and the max bin index
+                int minTop = maxMid + 1;
+                int maxTop = minTop + topBufferSize;
+
+                // find the average energy
+                double topBandAvgEnergy = CalculateAverageEnergy(spectrum, minTop, maxTop);
+
+                //find the boundaries of top frequency band: the min bin index and the max bin index
+                int maxBottom = minMid - 1;
+                int minBottom = maxBottom - bottomBufferSize;
+
+                // find the average energy
+                double bottomBandAvgEnergy = CalculateAverageEnergy(spectrum, minBottom, maxBottom);
+
+                // peak energy in each spectrum
+                double peakEnergy = midBandAvgEnergy - ((topBandAvgEnergy + bottomBandAvgEnergy) / 2);
+
+                int[] ind = new int[2];
+
+                // record the peak if teh peak energy is higher than a threshold
+                if (peakEnergy > threshold)
+                {
+                    ind[0] = r;
+                    ind[1] = peakBinsIndex[r];
+                    targetPeakBinsIndex.Add(ind);
+                }
+            }
+
+            return targetPeakBinsIndex.ToArray();
+        }
+
         /// <summary>
         /// outputs the average energy within a specified band
         /// </summary>
@@ -83,7 +119,7 @@ namespace AudioAnalysisTools
                 sum = sum + spectrum[i];
             }
 
-            double avgEnergy = sum / ( maxInd - minInd + 1 );
+            double avgEnergy = sum / (maxInd - minInd + 1);
 
             return avgEnergy;
         }
