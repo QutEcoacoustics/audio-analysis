@@ -13,7 +13,6 @@ namespace AnalysisPrograms.SpectralPeakTracking
         public const int DefaultFrameWidth = 1024;
         public const double DefaultFrameOverlap = 0.2;
 
-
         /// <summary>
         /// Initializes a new instance of the <see cref="SpectralPeakTrackingConfig"/> class.
         /// CONSTRUCTOR

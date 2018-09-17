@@ -6,10 +6,6 @@ namespace AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Acoustics.Shared.ConfigFile;
     using StandardSpectrograms;
     using TowseyLibrary;
 
@@ -32,7 +28,7 @@ namespace AudioAnalysisTools
             int[][] localPeaks = FindLocalSpectralPeaks(dbSpectrogram, peakBinsIndex, settings.WidthMidFreqBand, settings.TopBuffer, settings.BottomBuffer, settings.DbThreshold);
 
             // Do Spectral Peak Tracking
-
+            // SpectralTrack.GetSpectralPeakTracks()
         }
 
         /// <summary>
@@ -146,8 +142,6 @@ namespace AudioAnalysisTools
 
             return outputMatrix;
         }
-
-
     }
 
     public class SpectralPeakTrackingSettings

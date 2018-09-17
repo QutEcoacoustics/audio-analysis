@@ -1,20 +1,19 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+// <copyright file="SpectralPeakTrackingEntry.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
 
 namespace AnalysisPrograms.SpectralPeakTracking
 {
+    using System;
     using System.IO;
+    using System.Threading.Tasks;
     using Acoustics.Shared.ConfigFile;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-    using Production.Arguments;
-    using Production.Validation;
     using McMaster.Extensions.CommandLineUtils;
+    using Production.Arguments;
 
     public static class SpectralPeakTrackingEntry
     {
