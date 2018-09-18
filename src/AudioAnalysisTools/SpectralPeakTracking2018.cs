@@ -6,6 +6,7 @@ namespace AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
+    using System.Drawing;
     using StandardSpectrograms;
     using TowseyLibrary;
 
@@ -14,18 +15,27 @@ namespace AudioAnalysisTools
     /// </summary>
     public static class SpectralPeakTracking2018
     {
-        public static void SpectralPeakTracking(double[,] dbSpectrogram, SpectralPeakTrackingSettings settings)
+        public static int[][] SpectralPeakTracking(double[,] spectrogram, SpectralPeakTrackingSettings settings, double hertzPerFreqBin)
         {
-            if (dbSpectrogram == null)
+            if (spectrogram == null)
             {
-                throw new ArgumentNullException(nameof(dbSpectrogram));
+                throw new ArgumentNullException(nameof(spectrogram));
             }
 
+            int MinSearchFreqBin = Convert.ToInt32(settings.MinSearchFreq / hertzPerFreqBin);
+            int MaxSearchFreqBin = Convert.ToInt32(settings.MaxSearchFreq / hertzPerFreqBin);
+
             // find the peak bin index in each spectrum/frame of the input spectrogram
-            int[] peakBinsIndex = GetPeakBinsIndex(dbSpectrogram, settings.MinFreqBin, settings.MaxFreqBin);
+            int[] peakBinsIndex = GetPeakBinsIndex(spectrogram, MinSearchFreqBin, MaxSearchFreqBin);
+
+            var syllableBinWidth = Convert.ToInt32(settings.SyllableBandWidth / hertzPerFreqBin);
+            var topSideBinWidth = Convert.ToInt32(settings.TopSideBand / hertzPerFreqBin);
+            var bottomSideBinWidth = Convert.ToInt32(settings.BottomSideBand / hertzPerFreqBin);
 
             // find the local peak per spectrum
-            int[][] localPeaks = FindLocalSpectralPeaks(dbSpectrogram, peakBinsIndex, settings.WidthMidFreqBand, settings.TopBuffer, settings.BottomBuffer, settings.DbThreshold);
+            int[][] localPeaks = FindLocalSpectralPeaks(spectrogram, peakBinsIndex, syllableBinWidth, topSideBinWidth, bottomSideBinWidth, settings.DbThreshold);
+
+            return localPeaks;
 
             // Do Spectral Peak Tracking
             // SpectralTrack.GetSpectralPeakTracks()
@@ -39,7 +49,7 @@ namespace AudioAnalysisTools
             // get a submatrix with min and max frequency bins defined in settings.
             double[,] targetMatrix = GetArbitraryFreqBandMatrix(matrix, minFreqBin, maxFreqBin);
 
-            // find the peak bins in each spectral of teh target matrix
+            // find the peak bins in each spectral of the target matrix
             int[] peakBins = SpectrogramTools.HistogramOfSpectralPeaks(targetMatrix).Item2;
 
             // map the index of peak bins in the target matrix to original input matrix
@@ -91,8 +101,11 @@ namespace AudioAnalysisTools
 
                 int[] ind = new int[2];
 
+                // convert avg enerrgy to decibel values
+                var peakEnergyInDb = 10 * Math.Log10(peakEnergy);
+
                 // record the peak if teh peak energy is higher than a threshold
-                if (peakEnergy > threshold)
+                if (peakEnergyInDb > threshold)
                 {
                     ind[0] = r;
                     ind[1] = peakBinsIndex[r];
@@ -142,33 +155,61 @@ namespace AudioAnalysisTools
 
             return outputMatrix;
         }
+
+        public static double[,] MakeHitMatrix(double[,] matrix, int[][] pointsOfInterest)
+        {
+            double[,] hits = new double[matrix.GetLength(0), matrix.GetLength(1)];
+
+            for (int i = 0; i < pointsOfInterest.GetLength(0); i++)
+            {
+                int rowIndex = pointsOfInterest[i][0];
+                int colIndex = pointsOfInterest[i][1];
+                hits[rowIndex, colIndex] = 1.0;
+            }
+
+            return hits;
+        }
+
+        public static Image DrawSonogram(BaseSonogram sonogram, double[,] hits)
+        {
+            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage());
+            image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+            image.AddTrack(ImageTrack.GetSegmentationTrack(sonogram));
+
+            if (hits != null)
+            {
+                image.OverlayRedMatrix(hits, 1.0);
+            }
+
+            return image.GetImage();
+        }
     }
 
     public class SpectralPeakTrackingSettings
     {
         // min and max Hertz of band in which searching for peak energy
-        public const int DefaultMinFreqBin = 1500;
-        public const int DefaultMaxFreqBin = 3500;
+        public const int DefaultMinSearchFreq = 1500;
+        public const int DefaultMaxSearchFreq = 3500;
 
         // width of the middle frequency search band in Hertz.
-        public const int DefaultWidthMidFreqBand = 2000;
+        public const int DefaultSyllableBandWidth = 1000;
 
         // a bottom and top buffer band in Hertz
-        public const int DefaultBottomBuffer = 1000;
-        public const int DefaultTopBuffer = 4000;
+        public const int DefaultBottomSideBand = 500;
+        public const int DefaultTopSideBand = 500;
 
         // a decibel threshold for detecting a peak
-        public const double DefaultDbThreshold = 0.0;
+        public const double DefaultDbThreshold = 12.0;
 
-        public int MinFreqBin { get; set; } = DefaultMinFreqBin;
+        public int MinSearchFreq { get; set; } = DefaultMinSearchFreq;
 
-        public int MaxFreqBin { get; set; } = DefaultMaxFreqBin;
+        public int MaxSearchFreq { get; set; } = DefaultMaxSearchFreq;
 
-        public int WidthMidFreqBand { get; set; } = DefaultWidthMidFreqBand;
+        public int SyllableBandWidth { get; set; } = DefaultSyllableBandWidth;
 
-        public int BottomBuffer { get; set; } = DefaultBottomBuffer;
+        public int BottomSideBand { get; set; } = DefaultBottomSideBand;
 
-        public int TopBuffer { get; set; } = DefaultTopBuffer;
+        public int TopSideBand { get; set; } = DefaultTopSideBand;
 
         public double DbThreshold { get; set; } = DefaultDbThreshold;
     }

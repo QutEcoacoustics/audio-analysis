@@ -4,9 +4,17 @@
 
 namespace Acoustics.Test.AudioAnalysisTools
 {
+    using System;
+    using System.Drawing.Imaging;
+    using System.IO;
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
+    using global::AnalysisPrograms.SpectralPeakTracking;
     using global::AudioAnalysisTools;
+    using global::AudioAnalysisTools.DSP;
+    using global::AudioAnalysisTools.StandardSpectrograms;
+    using global::AudioAnalysisTools.WavTools;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
 
@@ -58,6 +66,60 @@ namespace Acoustics.Test.AudioAnalysisTools
                 Assert.AreEqual(expectedLocalPeaksIndex[i][0], actualLocalPeaks[i][0]);
                 Assert.AreEqual(expectedLocalPeaksIndex[i][1], actualLocalPeaks[i][1]);
             }
+        }
+
+        [Ignore]
+        [TestMethod]
+        public void SpectralPeakTest()
+        {
+            var configPath = @"C:\Users\kholghim\Mahnoosh\Night_parrot\SpectralPeakTrackingConfig.yml";
+            var recordingPath = @"C:\Users\kholghim\Mahnoosh\Night_parrot\JY-(cleaned)-3-Night_Parrot-pair.Western_Qld.wav";
+            var imagePath = @"C:\Users\kholghim\Mahnoosh\Night_parrot\image.bmp";
+
+            var configFile = configPath.ToFileInfo();
+
+            if (configFile == null)
+            {
+                throw new FileNotFoundException("No config file argument provided");
+            }
+            else if (!configFile.Exists)
+            {
+                throw new ArgumentException($"Config file {configFile.FullName} not found");
+            }
+
+            var configuration = ConfigFile.Deserialize<SpectralPeakTrackingConfig>(configFile);
+
+            var recording = new AudioRecording(recordingPath);
+
+            // get the nyquist value from the recording
+            int nyquist = new AudioRecording(recordingPath).Nyquist;
+            int frameSize = configuration.FrameWidth;
+            double frameOverlap = configuration.FrameOverlap;
+            int finalBinCount = 512;
+            var hertzPerFreqBin = nyquist / finalBinCount;
+            FreqScaleType scaleType = FreqScaleType.Linear;
+
+            var sonoConfig = new SonogramConfig
+            {
+                WindowSize = frameSize,
+                WindowOverlap = frameOverlap,
+                DoMelScale = (scaleType == FreqScaleType.Mel) ? true : false,
+                MelBinCount = (scaleType == FreqScaleType.Mel) ? finalBinCount : frameSize / 2,
+                NoiseReductionType = NoiseReductionType.None,
+            };
+
+            //var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
+            var amplitudeSpectrogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
+            var energySpectrogram = new EnergySpectrogram(amplitudeSpectrogram);
+            var decibelSpectrogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
+            // Noise Reduction to be added
+
+            var localPeaks = SpectralPeakTracking2018.SpectralPeakTracking(energySpectrogram.Data, configuration.Settings, hertzPerFreqBin);
+
+            // draw the local peaks
+            double[,] hits = SpectralPeakTracking2018.MakeHitMatrix(energySpectrogram.Data, localPeaks);
+            var image = SpectralPeakTracking2018.DrawSonogram(decibelSpectrogram, hits);
+            image.Save(imagePath, ImageFormat.Bmp);
         }
     }
 }

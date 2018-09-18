@@ -5,6 +5,7 @@
 namespace AnalysisPrograms.SpectralPeakTracking
 {
     using System;
+    using System.Drawing.Imaging;
     using System.IO;
     using System.Threading.Tasks;
     using Acoustics.Shared.ConfigFile;
@@ -43,8 +44,9 @@ namespace AnalysisPrograms.SpectralPeakTracking
             // pass the config to the algorithm
             // output the results
 
-            var configPath = @"SpectralPeakTrackingConfig.yml";
-            var recordingPath = @"";
+            var configPath = @"C:\Users\kholghim\Mahnoosh\Night_parrot\SpectralPeakTrackingConfig.yml";
+            var recordingPath = @"C:\Users\kholghim\Mahnoosh\Night_parrot\JY-(cleaned)-3-Night_Parrot-pair.Western_Qld.mp3";
+            var imagePath = @"C:\Users\kholghim\Mahnoosh\Night_parrot\image.bmp";
 
             var configFile = configPath.ToFileInfo();
 
@@ -66,6 +68,7 @@ namespace AnalysisPrograms.SpectralPeakTracking
             int frameSize = configuration.FrameWidth;
             double frameOverlap = configuration.FrameOverlap;
             int finalBinCount = 512;
+            var hertzPerFreqBin = nyquist / finalBinCount;
             FreqScaleType scaleType = FreqScaleType.Linear;
 
             var sonoConfig = new SonogramConfig
@@ -77,13 +80,18 @@ namespace AnalysisPrograms.SpectralPeakTracking
                 NoiseReductionType = NoiseReductionType.None,
             };
 
-            var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
+            //var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
+            var amplitudeSpectrogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
+            var energySpectrogram = new EnergySpectrogram(amplitudeSpectrogram);
 
             // Noise Reduction to be added
 
-            SpectralPeakTracking2018.SpectralPeakTracking(sonogram.Data, configuration.Settings);
+            var localPeaks = SpectralPeakTracking2018.SpectralPeakTracking(energySpectrogram.Data, configuration.Settings, hertzPerFreqBin);
 
+            // draw the local peaks
+            double[,] hits = SpectralPeakTracking2018.MakeHitMatrix(energySpectrogram.Data, localPeaks);
+            var image = SpectralPeakTracking2018.DrawSonogram(energySpectrogram, hits);
+            image.Save(imagePath, ImageFormat.Bmp);
         }
-
     }
 }
