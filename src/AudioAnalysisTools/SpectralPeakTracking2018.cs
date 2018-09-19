@@ -7,6 +7,7 @@ namespace AudioAnalysisTools
     using System;
     using System.Collections.Generic;
     using System.Drawing;
+    using System.Linq;
     using StandardSpectrograms;
     using TowseyLibrary;
 
@@ -15,7 +16,7 @@ namespace AudioAnalysisTools
     /// </summary>
     public static class SpectralPeakTracking2018
     {
-        public static int[][] SpectralPeakTracking(double[,] spectrogram, SpectralPeakTrackingSettings settings, double hertzPerFreqBin)
+        public static Tuple<int[][], int[][]> SpectralPeakTracking(double[,] spectrogram, SpectralPeakTrackingSettings settings, double hertzPerFreqBin)
         {
             if (spectrogram == null)
             {
@@ -33,12 +34,19 @@ namespace AudioAnalysisTools
             var bottomSideBinWidth = Convert.ToInt32(settings.BottomSideBand / hertzPerFreqBin);
 
             // find the local peak per spectrum
-            int[][] localPeaks = FindLocalSpectralPeaks(spectrogram, peakBinsIndex, syllableBinWidth, topSideBinWidth, bottomSideBinWidth, settings.DbThreshold);
+            Tuple<int[][], int[][]> localPeaksAndBands = FindLocalSpectralPeaks(spectrogram, peakBinsIndex, syllableBinWidth, topSideBinWidth, bottomSideBinWidth, settings.DbThreshold);
 
-            return localPeaks;
+            // make an array of zero and one local peaks
+            int[] SpectralPeakArray = MakeSpectralPeakArray(spectrogram, localPeaksAndBands.Item1);
+
+            double frameDuration = 1024 / 48000;
+            double framesPerSecond = 60 / frameDuration;
+            int herzOffset = 0;
 
             // Do Spectral Peak Tracking
-            // SpectralTrack.GetSpectralPeakTracks()
+            var spectralTracks = SpectralTrack.GetSpectralTracks(SpectralPeakArray, framesPerSecond, hertzPerFreqBin, herzOffset, SpectralTrack.MIN_TRACK_DURATION, SpectralTrack.MAX_INTRASYLLABLE_GAP, SpectralTrack.MAX_FREQ_BOUND);
+
+            return localPeaksAndBands;
         }
 
         /// <summary>
@@ -61,7 +69,7 @@ namespace AudioAnalysisTools
             return peakBins;
         }
 
-        public static int[][] FindLocalSpectralPeaks(double[,] matrix, int[] peakBinsIndex, int widthMidBand,
+        public static Tuple<int[][], int[][]> FindLocalSpectralPeaks(double[,] matrix, int[] peakBinsIndex, int widthMidBand,
             int topBufferSize, int bottomBufferSize, double threshold)
         {
             int frameCount = matrix.GetLength(0);
@@ -69,11 +77,17 @@ namespace AudioAnalysisTools
             // save the target peak bins index [frameCount, freqBinCount]
             List<int[]> targetPeakBinsIndex = new List<int[]>();
 
+            // save the bands' boundaries in each frame
+            List<int[]> bandIndex = new List<int[]>();
+
             // for all frames of the input spectrogram
             for (int r = 0; r < frameCount; r++)
             {
                 // retrieve each frame
                 double[] spectrum = DataTools.GetRow(matrix, r);
+
+                // smoothing to remove noise
+                spectrum = DataTools.filterMovingAverage(spectrum, 3);
 
                 //find the boundaries of middle frequency band: the min bin index and the max bin index
                 int minMid = peakBinsIndex[r] - (widthMidBand / 2);
@@ -100,6 +114,7 @@ namespace AudioAnalysisTools
                 double peakEnergy = midBandAvgEnergy - ((topBandAvgEnergy + bottomBandAvgEnergy) / 2);
 
                 int[] ind = new int[2];
+                int[] bandInd = new int[5];
 
                 // convert avg enerrgy to decibel values
                 var peakEnergyInDb = 10 * Math.Log10(peakEnergy);
@@ -111,9 +126,17 @@ namespace AudioAnalysisTools
                     ind[1] = peakBinsIndex[r];
                     targetPeakBinsIndex.Add(ind);
                 }
+
+                // saving the index of top, mid, and bottom band boundaries
+                bandInd[0] = r;
+                bandInd[1] = minBottom;
+                bandInd[2] = minMid;
+                bandInd[3] = maxMid;
+                bandInd[4] = maxTop;
+                bandIndex.Add(bandInd);
             }
 
-            return targetPeakBinsIndex.ToArray();
+            return Tuple.Create(targetPeakBinsIndex.ToArray(), bandIndex.ToArray());
         }
 
         /// <summary>
@@ -156,20 +179,67 @@ namespace AudioAnalysisTools
             return outputMatrix;
         }
 
-        public static double[,] MakeHitMatrix(double[,] matrix, int[][] pointsOfInterest)
+        /// <summary>
+        /// outputs a matrix with the same size of the input matrix.
+        /// all values are zero, except the points of interest (i.e., local spectral peaks).
+        /// these bins can be filled with amplitude values or 1.
+        /// </summary>
+        public static double[,] MakeHitMatrix(double[,] matrix, int[][] pointsOfInterest, int[][] bandIndex)
         {
+            // initialize a matrix with the same size of the input matrix with zero values
             double[,] hits = new double[matrix.GetLength(0), matrix.GetLength(1)];
 
             for (int i = 0; i < pointsOfInterest.GetLength(0); i++)
             {
                 int rowIndex = pointsOfInterest[i][0];
                 int colIndex = pointsOfInterest[i][1];
-                hits[rowIndex, colIndex] = 1.0;
+                hits[rowIndex, colIndex] = 1.0; // matrix[rowIndex, colIndex]
+
+                /*
+                // bands
+                int colIndex1 = bandIndex[i][1];
+                int colIndex2 = bandIndex[i][2];
+                int colIndex3 = bandIndex[i][3];
+                int colIndex4 = bandIndex[i][4];
+                hits[rowIndex, colIndex1] = 1.0;
+                hits[rowIndex, colIndex2] = 1.0;
+                hits[rowIndex, colIndex3] = 1.0;
+                hits[rowIndex, colIndex4] = 1.0;
+                */
             }
 
+            // bands
+            for (int i = 0; i < bandIndex.GetLength(0); i++)
+            {
+                int rowIndex = bandIndex[i][0];
+                int colIndex1 = bandIndex[i][1];
+                int colIndex2 = bandIndex[i][2];
+                int colIndex3 = bandIndex[i][3];
+                int colIndex4 = bandIndex[i][4];
+                hits[rowIndex, colIndex1] = 1.0;
+                hits[rowIndex, colIndex2] = 1.0;
+                hits[rowIndex, colIndex3] = 1.0;
+                hits[rowIndex, colIndex4] = 1.0;
+            }
+ 
             return hits;
         }
 
+        public static int[] MakeSpectralPeakArray(double[,] matrix, int[][] targetPeakBinsIndex)
+        {
+            int[] peakArray = new int[matrix.GetLength(0)];
+            for (int i = 0; i < targetPeakBinsIndex.GetLength(0); i++)
+            {
+                int ind = targetPeakBinsIndex[i][0];
+                peakArray[ind] = targetPeakBinsIndex[i][1];
+            }
+
+            return peakArray;
+        }
+
+        /// <summary>
+        /// draw the spectrogram with red marks indicating the local spectral peaks.
+        /// </summary>
         public static Image DrawSonogram(BaseSonogram sonogram, double[,] hits)
         {
             Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage());
@@ -192,7 +262,7 @@ namespace AudioAnalysisTools
         public const int DefaultMaxSearchFreq = 3500;
 
         // width of the middle frequency search band in Hertz.
-        public const int DefaultSyllableBandWidth = 1000;
+        public const int DefaultSyllableBandWidth = 500;
 
         // a bottom and top buffer band in Hertz
         public const int DefaultBottomSideBand = 500;

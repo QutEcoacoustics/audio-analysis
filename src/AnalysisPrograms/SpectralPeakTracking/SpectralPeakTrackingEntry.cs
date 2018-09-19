@@ -86,10 +86,10 @@ namespace AnalysisPrograms.SpectralPeakTracking
 
             // Noise Reduction to be added
 
-            var localPeaks = SpectralPeakTracking2018.SpectralPeakTracking(energySpectrogram.Data, configuration.Settings, hertzPerFreqBin);
+            var localPeaksBands = SpectralPeakTracking2018.SpectralPeakTracking(energySpectrogram.Data, configuration.Settings, hertzPerFreqBin);
 
             // draw the local peaks
-            double[,] hits = SpectralPeakTracking2018.MakeHitMatrix(energySpectrogram.Data, localPeaks);
+            double[,] hits = SpectralPeakTracking2018.MakeHitMatrix(energySpectrogram.Data, localPeaksBands.Item1, localPeaksBands.Item2);
             var image = SpectralPeakTracking2018.DrawSonogram(energySpectrogram, hits);
             image.Save(imagePath, ImageFormat.Bmp);
         }

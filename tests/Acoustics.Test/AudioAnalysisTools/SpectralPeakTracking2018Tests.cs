@@ -59,7 +59,7 @@ namespace Acoustics.Test.AudioAnalysisTools
             double threshold = 4.0;
 
             var actualLocalPeaks = SpectralPeakTracking2018.FindLocalSpectralPeaks(matrix, peakBinsIndex, widthMidBand,
-                topBufferSize, bottomBufferSize, threshold);
+                topBufferSize, bottomBufferSize, threshold).Item1;
 
             for (int i = 0; i < expectedLocalPeaksIndex.GetLength(0); i++)
             {
@@ -70,7 +70,7 @@ namespace Acoustics.Test.AudioAnalysisTools
 
         [Ignore]
         [TestMethod]
-        public void SpectralPeakTest()
+        public void LocalSpectralPeakTest()
         {
             var configPath = @"C:\Users\kholghim\Mahnoosh\Night_parrot\SpectralPeakTrackingConfig.yml";
             var recordingPath = @"C:\Users\kholghim\Mahnoosh\Night_parrot\JY-(cleaned)-3-Night_Parrot-pair.Western_Qld.wav";
@@ -112,14 +112,18 @@ namespace Acoustics.Test.AudioAnalysisTools
             var amplitudeSpectrogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
             var energySpectrogram = new EnergySpectrogram(amplitudeSpectrogram);
             var decibelSpectrogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
+
             // Noise Reduction to be added
 
-            var localPeaks = SpectralPeakTracking2018.SpectralPeakTracking(energySpectrogram.Data, configuration.Settings, hertzPerFreqBin);
+            var localPeaksBands = SpectralPeakTracking2018.SpectralPeakTracking(energySpectrogram.Data, configuration.Settings, hertzPerFreqBin);
 
             // draw the local peaks
-            double[,] hits = SpectralPeakTracking2018.MakeHitMatrix(energySpectrogram.Data, localPeaks);
+            double[,] hits = SpectralPeakTracking2018.MakeHitMatrix(energySpectrogram.Data, localPeaksBands.Item1, localPeaksBands.Item2);
             var image = SpectralPeakTracking2018.DrawSonogram(decibelSpectrogram, hits);
             image.Save(imagePath, ImageFormat.Bmp);
+
+            // make an array of zero and one local peaks
+            //int[] SpectralPeakArray = SpectralPeakTracking2018.MakeSpectralPeakArray(energySpectrogram.Data, localPeaksBands.Item1);
         }
     }
 }
