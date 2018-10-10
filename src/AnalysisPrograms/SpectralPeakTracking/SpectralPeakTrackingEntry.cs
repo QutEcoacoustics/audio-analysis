@@ -83,14 +83,20 @@ namespace AnalysisPrograms.SpectralPeakTracking
             //var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
             var amplitudeSpectrogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
             var energySpectrogram = new EnergySpectrogram(amplitudeSpectrogram);
+            var decibelSpectrogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
+
+            double frameStepSize = sonoConfig.GetFrameOffset();
+            double stepDuration = frameStepSize / (nyquist * 2);
+
+
 
             // Noise Reduction to be added
 
-            var localPeaksBands = SpectralPeakTracking2018.SpectralPeakTracking(energySpectrogram.Data, configuration.Settings, hertzPerFreqBin);
+            var output = SpectralPeakTracking2018.SpectralPeakTracking(energySpectrogram.Data, configuration.Settings, hertzPerFreqBin);
 
             // draw the local peaks
-            double[,] hits = SpectralPeakTracking2018.MakeHitMatrix(energySpectrogram.Data, localPeaksBands.Item1, localPeaksBands.Item2);
-            var image = SpectralPeakTracking2018.DrawSonogram(energySpectrogram, hits);
+            double[,] hits = SpectralPeakTracking2018.MakeHitMatrix(energySpectrogram.Data, output.TargetPeakBinsIndex, output.BandIndex);
+            var image = SpectralPeakTracking2018.DrawSonogram(decibelSpectrogram, hits);
             image.Save(imagePath, ImageFormat.Bmp);
         }
     }

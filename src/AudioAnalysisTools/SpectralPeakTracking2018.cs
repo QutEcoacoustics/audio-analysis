@@ -7,7 +7,6 @@ namespace AudioAnalysisTools
     using System;
     using System.Collections.Generic;
     using System.Drawing;
-    using System.Linq;
     using StandardSpectrograms;
     using TowseyLibrary;
 
@@ -16,7 +15,16 @@ namespace AudioAnalysisTools
     /// </summary>
     public static class SpectralPeakTracking2018
     {
-        public static Tuple<int[][], int[][]> SpectralPeakTracking(double[,] spectrogram, SpectralPeakTrackingSettings settings, double hertzPerFreqBin)
+        public class Output
+        {
+            public int[][] TargetPeakBinsIndex { get; set; }
+
+            public int[][] BandIndex { get; set; }
+
+            public List<SpectralTrack> SpecTracks { get; set; }
+        }
+
+        public static Output SpectralPeakTracking(double[,] spectrogram, SpectralPeakTrackingSettings settings, double hertzPerFreqBin)
         {
             if (spectrogram == null)
             {
@@ -36,17 +44,28 @@ namespace AudioAnalysisTools
             // find the local peak per spectrum
             Tuple<int[][], int[][]> localPeaksAndBands = FindLocalSpectralPeaks(spectrogram, peakBinsIndex, syllableBinWidth, topSideBinWidth, bottomSideBinWidth, settings.DbThreshold);
 
-            // make an array of zero and one local peaks
+            // make an array of the index of local peaks. Zero means there is no local peak identified.
             int[] SpectralPeakArray = MakeSpectralPeakArray(spectrogram, localPeaksAndBands.Item1);
 
-            double frameDuration = 1024 / 48000;
-            double framesPerSecond = 60 / frameDuration;
+            double frameDuration = (1024 * (1 - 0.2)) / 22050;
+            double framesPerSecond = 1 / frameDuration;
             int herzOffset = 0;
+            TimeSpan minDuration = TimeSpan.FromMilliseconds(100);
+            TimeSpan maxIntraSyllableGap = TimeSpan.FromMilliseconds(150);
+            int maxFreq = 6000; //???
 
+            // debug this
             // Do Spectral Peak Tracking
-            var spectralTracks = SpectralTrack.GetSpectralTracks(SpectralPeakArray, framesPerSecond, hertzPerFreqBin, herzOffset, SpectralTrack.MIN_TRACK_DURATION, SpectralTrack.MAX_INTRASYLLABLE_GAP, SpectralTrack.MAX_FREQ_BOUND);
+            var spectralTracks = SpectralTrack.GetSpectralTracks(SpectralPeakArray, framesPerSecond, hertzPerFreqBin, herzOffset, minDuration, maxIntraSyllableGap, maxFreq);
 
-            return localPeaksAndBands;
+            var output = new Output()
+            {
+                TargetPeakBinsIndex = localPeaksAndBands.Item1,
+                BandIndex = localPeaksAndBands.Item2,
+                SpecTracks = spectralTracks,
+            };
+
+            return output;
         }
 
         /// <summary>
@@ -87,7 +106,7 @@ namespace AudioAnalysisTools
                 double[] spectrum = DataTools.GetRow(matrix, r);
 
                 // smoothing to remove noise
-                spectrum = DataTools.filterMovingAverage(spectrum, 3);
+                //spectrum = DataTools.filterMovingAverage(spectrum, 3);
 
                 //find the boundaries of middle frequency band: the min bin index and the max bin index
                 int minMid = peakBinsIndex[r] - (widthMidBand / 2);
@@ -116,10 +135,10 @@ namespace AudioAnalysisTools
                 int[] ind = new int[2];
                 int[] bandInd = new int[5];
 
-                // convert avg enerrgy to decibel values
+                // convert avg energy to decibel values
                 var peakEnergyInDb = 10 * Math.Log10(peakEnergy);
 
-                // record the peak if teh peak energy is higher than a threshold
+                // record the peak if the peak energy is higher than a threshold
                 if (peakEnergyInDb > threshold)
                 {
                     ind[0] = r;
@@ -194,20 +213,8 @@ namespace AudioAnalysisTools
                 int rowIndex = pointsOfInterest[i][0];
                 int colIndex = pointsOfInterest[i][1];
                 hits[rowIndex, colIndex] = 1.0; // matrix[rowIndex, colIndex]
-
-                /*
-                // bands
-                int colIndex1 = bandIndex[i][1];
-                int colIndex2 = bandIndex[i][2];
-                int colIndex3 = bandIndex[i][3];
-                int colIndex4 = bandIndex[i][4];
-                hits[rowIndex, colIndex1] = 1.0;
-                hits[rowIndex, colIndex2] = 1.0;
-                hits[rowIndex, colIndex3] = 1.0;
-                hits[rowIndex, colIndex4] = 1.0;
-                */
             }
-
+            /*
             // bands
             for (int i = 0; i < bandIndex.GetLength(0); i++)
             {
@@ -221,7 +228,7 @@ namespace AudioAnalysisTools
                 hits[rowIndex, colIndex3] = 1.0;
                 hits[rowIndex, colIndex4] = 1.0;
             }
- 
+            */
             return hits;
         }
 
@@ -253,6 +260,28 @@ namespace AudioAnalysisTools
 
             return image.GetImage();
         }
+
+        /// <summary>
+        /// draw the spectrogram with spectral tracks.
+        /// </summary>
+        public static Image DrawTracks(BaseSonogram sonogram, double[,] hits, List<SpectralTrack> tracks)
+        {
+            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage());
+            image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+            image.AddTrack(ImageTrack.GetSegmentationTrack(sonogram));
+
+            if (tracks != null)
+            {
+                image.AddTracks(tracks, sonogram.FramesPerSecond, sonogram.FBinWidth);
+            }
+
+            if (hits != null)
+            {
+                image.OverlayRedMatrix(hits, 1.0);
+            }
+
+            return image.GetImage();
+        }
     }
 
     public class SpectralPeakTrackingSettings
@@ -261,7 +290,7 @@ namespace AudioAnalysisTools
         public const int DefaultMinSearchFreq = 1500;
         public const int DefaultMaxSearchFreq = 3500;
 
-        // width of the middle frequency search band in Hertz.
+        // width of the middle frequency search band in Hertz
         public const int DefaultSyllableBandWidth = 500;
 
         // a bottom and top buffer band in Hertz

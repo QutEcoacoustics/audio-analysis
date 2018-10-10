@@ -73,8 +73,9 @@ namespace Acoustics.Test.AudioAnalysisTools
         public void LocalSpectralPeakTest()
         {
             var configPath = @"C:\Users\kholghim\Mahnoosh\Night_parrot\SpectralPeakTrackingConfig.yml";
-            var recordingPath = @"C:\Users\kholghim\Mahnoosh\Night_parrot\JY-(cleaned)-3-Night_Parrot-pair.Western_Qld.wav";
-            var imagePath = @"C:\Users\kholghim\Mahnoosh\Night_parrot\image.bmp";
+            var recordingPath = @"C:\Users\kholghim\Mahnoosh\Night_parrot\JY-(cleaned)-3-Night_Parrot-pair.Western_Qld_downsampled.wav"; //"C:\Users\kholghim\Mahnoosh\Night_parrot\SM16 24 Sep 2018 6.30 am.wav"; //"C:\Users\kholghim\Mahnoosh\Night_parrot\S4A07296_20180419_050023_11-12min.wav"; //"M:\Postdoc\Night_parrot\S4A07296_20180419_050023_Ch1.wav"; //
+            var imagePath = @"C:\Users\kholghim\Mahnoosh\Night_parrot\image.bmp"; //image_NP_SM16 24 Sep 2018 6.30 am.bmp";
+            var trackImagePath = @"C:\Users\kholghim\Mahnoosh\Night_parrot\trackImage.bmp";
 
             var configFile = configPath.ToFileInfo();
 
@@ -103,8 +104,8 @@ namespace Acoustics.Test.AudioAnalysisTools
             {
                 WindowSize = frameSize,
                 WindowOverlap = frameOverlap,
-                DoMelScale = (scaleType == FreqScaleType.Mel) ? true : false,
-                MelBinCount = (scaleType == FreqScaleType.Mel) ? finalBinCount : frameSize / 2,
+                //DoMelScale = (scaleType == FreqScaleType.Mel) ? true : false,
+                //MelBinCount = (scaleType == FreqScaleType.Mel) ? finalBinCount : frameSize / 2,
                 NoiseReductionType = NoiseReductionType.None,
             };
 
@@ -114,16 +115,19 @@ namespace Acoustics.Test.AudioAnalysisTools
             var decibelSpectrogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
 
             // Noise Reduction to be added
+            //var noiseReducedSpectrogram = SNR.NoiseReduce_Standard(energySpectrogram.Data);
 
-            var localPeaksBands = SpectralPeakTracking2018.SpectralPeakTracking(energySpectrogram.Data, configuration.Settings, hertzPerFreqBin);
+            var output = SpectralPeakTracking2018.SpectralPeakTracking(energySpectrogram.Data, configuration.Settings, hertzPerFreqBin);
 
             // draw the local peaks
-            double[,] hits = SpectralPeakTracking2018.MakeHitMatrix(energySpectrogram.Data, localPeaksBands.Item1, localPeaksBands.Item2);
+            double[,] hits = SpectralPeakTracking2018.MakeHitMatrix(energySpectrogram.Data, output.TargetPeakBinsIndex, output.BandIndex);
             var image = SpectralPeakTracking2018.DrawSonogram(decibelSpectrogram, hits);
             image.Save(imagePath, ImageFormat.Bmp);
 
-            // make an array of zero and one local peaks
-            //int[] SpectralPeakArray = SpectralPeakTracking2018.MakeSpectralPeakArray(energySpectrogram.Data, localPeaksBands.Item1);
+            // draw spectral tracks
+            var trackImage = SpectralPeakTracking2018.DrawTracks(decibelSpectrogram, hits, output.SpecTracks);
+            trackImage.Save(trackImagePath, ImageFormat.Bmp);
+
         }
     }
 }
