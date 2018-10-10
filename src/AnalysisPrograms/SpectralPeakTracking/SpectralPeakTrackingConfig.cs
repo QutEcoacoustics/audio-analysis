@@ -17,6 +17,6 @@ namespace AnalysisPrograms.SpectralPeakTracking
 
         public double FrameOverlap { get; set; } = DefaultFrameOverlap;
 
-        public SpectralPeakTrackingSettings Settings { get; set; } = new SpectralPeakTrackingSettings();
+        public SpectralPeakTrackingSettings SptSettings { get; set; } = new SpectralPeakTrackingSettings();
     }
 }

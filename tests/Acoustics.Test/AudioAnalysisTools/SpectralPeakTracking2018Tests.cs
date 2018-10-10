@@ -117,7 +117,7 @@ namespace Acoustics.Test.AudioAnalysisTools
             // Noise Reduction to be added
             //var noiseReducedSpectrogram = SNR.NoiseReduce_Standard(energySpectrogram.Data);
 
-            var output = SpectralPeakTracking2018.SpectralPeakTracking(energySpectrogram.Data, configuration.Settings, hertzPerFreqBin);
+            var output = SpectralPeakTracking2018.SpectralPeakTracking(energySpectrogram.Data, configuration.SptSettings, hertzPerFreqBin);
 
             // draw the local peaks
             double[,] hits = SpectralPeakTracking2018.MakeHitMatrix(energySpectrogram.Data, output.TargetPeakBinsIndex, output.BandIndex);

@@ -50,8 +50,8 @@ namespace AudioAnalysisTools
             double frameDuration = (1024 * (1 - 0.2)) / 22050;
             double framesPerSecond = 1 / frameDuration;
             int herzOffset = 0;
-            TimeSpan minDuration = TimeSpan.FromMilliseconds(100);
-            TimeSpan maxIntraSyllableGap = TimeSpan.FromMilliseconds(150);
+            TimeSpan minDuration = TimeSpan.FromMilliseconds(40);
+            TimeSpan maxIntraSyllableGap = TimeSpan.FromMilliseconds(350);
             int maxFreq = 6000; //???
 
             // debug this
