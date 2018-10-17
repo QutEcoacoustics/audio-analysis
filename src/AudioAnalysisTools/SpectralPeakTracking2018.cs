@@ -7,6 +7,9 @@ namespace AudioAnalysisTools
     using System;
     using System.Collections.Generic;
     using System.Drawing;
+    using System.IO;
+    using Accord.Statistics.Kernels;
+    using Acoustics.Shared.Csv;
     using StandardSpectrograms;
     using TowseyLibrary;
 
@@ -21,10 +24,12 @@ namespace AudioAnalysisTools
 
             public int[][] BandIndex { get; set; }
 
-            public List<SpectralTrack> SpecTracks { get; set; }
+            public object[][] peakTrackInfoList { get; set; }
+
+            //public List<SpectralTrack> SpecTracks { get; set; }
         }
 
-        public static Output SpectralPeakTracking(double[,] spectrogram, SpectralPeakTrackingSettings settings, double hertzPerFreqBin)
+        public static Output SpectralPeakTracking(double[,] spectrogram, SpectralPeakTrackingSettings settings, double hertzPerFreqBin, double timePerFrame)
         {
             if (spectrogram == null)
             {
@@ -47,6 +52,11 @@ namespace AudioAnalysisTools
             // make an array of the index of local peaks. Zero means there is no local peak identified.
             int[] SpectralPeakArray = MakeSpectralPeakArray(spectrogram, localPeaksAndBands.Item1);
 
+            var peakTrackInfo = SpectralPeakTracking(spectrogram, SpectralPeakArray, timePerFrame, hertzPerFreqBin);
+            
+            /*
+            // Do Spectral Peak Tracking
+            // debug this
             double frameDuration = (1024 * (1 - 0.2)) / 22050;
             double framesPerSecond = 1 / frameDuration;
             int herzOffset = 0;
@@ -54,15 +64,14 @@ namespace AudioAnalysisTools
             TimeSpan maxIntraSyllableGap = TimeSpan.FromMilliseconds(350);
             int maxFreq = 6000; //???
 
-            // debug this
-            // Do Spectral Peak Tracking
             var spectralTracks = SpectralTrack.GetSpectralTracks(SpectralPeakArray, framesPerSecond, hertzPerFreqBin, herzOffset, minDuration, maxIntraSyllableGap, maxFreq);
-
+            */
             var output = new Output()
             {
                 TargetPeakBinsIndex = localPeaksAndBands.Item1,
                 BandIndex = localPeaksAndBands.Item2,
-                SpecTracks = spectralTracks,
+                //SpecTracks = spectralTracks,
+                peakTrackInfoList = peakTrackInfo,
             };
 
             return output;
@@ -116,27 +125,28 @@ namespace AudioAnalysisTools
                 double midBandAvgEnergy = CalculateAverageEnergy(spectrum, minMid, maxMid);
 
                 //find the boundaries of top frequency band: the min bin index and the max bin index
-                int minTop = maxMid + 1;
+                int minTop = maxMid + 1; //maxMid + 2; //
                 int maxTop = minTop + topBufferSize;
 
                 // find the average energy
                 double topBandAvgEnergy = CalculateAverageEnergy(spectrum, minTop, maxTop);
 
                 //find the boundaries of top frequency band: the min bin index and the max bin index
-                int maxBottom = minMid - 1;
+                int maxBottom = minMid - 1; //minMid - 2; //
                 int minBottom = maxBottom - bottomBufferSize;
 
                 // find the average energy
                 double bottomBandAvgEnergy = CalculateAverageEnergy(spectrum, minBottom, maxBottom);
 
                 // peak energy in each spectrum
-                double peakEnergy = midBandAvgEnergy - ((topBandAvgEnergy + bottomBandAvgEnergy) / 2);
+                //double peakEnergy = midBandAvgEnergy - ((topBandAvgEnergy + bottomBandAvgEnergy) / 2);
+                double peakEnergyInDb = 10 * Math.Log10(midBandAvgEnergy / ((topBandAvgEnergy + bottomBandAvgEnergy) / 2));
 
                 int[] ind = new int[2];
                 int[] bandInd = new int[5];
 
                 // convert avg energy to decibel values
-                var peakEnergyInDb = 10 * Math.Log10(peakEnergy);
+                //var peakEnergyInDb = 10 * Math.Log10(peakEnergy);
 
                 // record the peak if the peak energy is higher than a threshold
                 if (peakEnergyInDb > threshold)
@@ -156,6 +166,59 @@ namespace AudioAnalysisTools
             }
 
             return Tuple.Create(targetPeakBinsIndex.ToArray(), bandIndex.ToArray());
+        }
+
+        public static object[][] SpectralPeakTracking(double[,] spectrogram, int[] SpectralPeakArray, double timePerFrame, double hertzPerFreqBin)
+        {
+            int startX;
+            int endX;
+            int startY;
+            int endY;
+            int peakCount = 0;
+            var score = 0;
+            List<object[]> peakTrackInfoList = new List<object[]>();
+
+            for (int i = 0; i < SpectralPeakArray.Length; i++)
+            {
+                if (SpectralPeakArray[i] != 0)
+                {
+                    object[] peakTrackInfo = new object[6];
+                    startX = i;
+                    startY = SpectralPeakArray[i] - 2;
+                    endX = startX + 17;
+                    endY = startY + 4;
+                    //double[,] targetMatrix = GetArbitraryMatrix(spectrogram, startY, endY, startX, endX);
+                    for (int j = startX; j < endX; j++)
+                    {
+                        if (SpectralPeakArray[j] >= startY && SpectralPeakArray[j] <= endY)
+                        {
+                            peakCount++;
+                        }
+                    }
+
+                    score = peakCount / 18;
+
+                    peakTrackInfo[0] = i; // frame number
+                    peakTrackInfo[1] = i * timePerFrame;
+                    peakTrackInfo[2] = SpectralPeakArray[i]; // bin number
+                    peakTrackInfo[3] = SpectralPeakArray[i] * hertzPerFreqBin;
+                    peakTrackInfo[4] = score;
+
+                    if (score >= 4 / 18)
+                    {
+                        peakTrackInfo[5] = "Yes";
+                    }
+                    else
+                    {
+                        peakTrackInfo[5] = "No";
+                    }
+
+                    peakTrackInfoList.Add(peakTrackInfo);
+                }
+            }
+
+            return peakTrackInfoList.ToArray();
+
         }
 
         /// <summary>
@@ -192,6 +255,28 @@ namespace AudioAnalysisTools
                 for (int row = 0; row < matrix.GetLength(0); row++)
                 {
                     outputMatrix[row, col - minColumnIndex] = matrix[row, col];
+                }
+            }
+
+            return outputMatrix;
+        }
+
+        /// <summary>
+        /// outputs a matrix with arbitrary boundaries to Y (freq) and X (time) axes.
+        /// </summary>
+        public static double[,] GetArbitraryMatrix(double[,] matrix, int startY, int endY, int startX, int endX)
+        {
+            double[,] outputMatrix = new double[endX - startX + 1, endY - startY + 1];
+
+            int minColumnIndex = startY - 1;
+            int maxColumnIndex = endY - 1;
+
+            // copying a part of the original matrix with pre-defined boundaries to X and Y axes to a new matrix
+            for (int row = startX; row <= endX; row++)
+            {
+                for (int col = startY; col <= endY; col++)
+                {
+                    outputMatrix[row - startX, col - startY] = matrix[row, col];
                 }
             }
 
