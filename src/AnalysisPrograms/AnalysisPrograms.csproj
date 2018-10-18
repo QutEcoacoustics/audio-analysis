@@ -415,8 +415,8 @@
       <Link>download_ap.ps1</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <None Include="..\AP.Settings.config">
-      <Link>AP.Settings.config</Link>
+    <None Include="..\AP.Settings.json">
+      <Link>AP.Settings.json</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="App.config">
