@@ -103,8 +103,8 @@
     <Reference Include="MSTestExtensions, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\MSTestExtensions.4.0.0\lib\MSTestExtensions.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="SmartFormat, Version=2.1.0.2, Culture=neutral, PublicKeyToken=568866805651201f, processorArchitecture=MSIL">
       <HintPath>..\..\packages\SmartFormat.Net.2.1.0.2\lib\net45\SmartFormat.dll</HintPath>
@@ -294,6 +294,7 @@
     <Compile Include="AudioAnalysisTools\LongDurationSpectrograms\Zooming\ZoomTiledSpectrogramTests.cs" />
     <Compile Include="DotNetVersionTests.cs" />
     <Compile Include="RuntimesTests.cs" />
+    <Compile Include="Shared\AppConfigHelperTests.cs" />
     <Compile Include="Shared\ConfigTests.cs" />
     <Compile Include="Shared\LoggingTests\LoggingTests.cs" />
     <Compile Include="Shared\ProcessRunnerTests.cs" />
