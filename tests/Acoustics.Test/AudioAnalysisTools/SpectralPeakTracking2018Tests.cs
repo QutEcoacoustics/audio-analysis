@@ -5,8 +5,11 @@
 namespace Acoustics.Test.AudioAnalysisTools
 {
     using System;
+    using System.Collections.Generic;
     using System.Drawing.Imaging;
     using System.IO;
+    using System.Linq;
+    using System.Text;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
@@ -56,7 +59,7 @@ namespace Acoustics.Test.AudioAnalysisTools
             int widthMidBand = 4;
             int topBufferSize = 2;
             int bottomBufferSize = 2;
-            double threshold = 4.0;
+            double threshold = 1.0;
 
             var actualLocalPeaks = SpectralPeakTracking2018.FindLocalSpectralPeaks(matrix, peakBinsIndex, widthMidBand,
                 topBufferSize, bottomBufferSize, threshold).Item1;
@@ -73,10 +76,10 @@ namespace Acoustics.Test.AudioAnalysisTools
         public void LocalSpectralPeakTest()
         {
             var configPath = @"C:\Users\kholghim\Mahnoosh\Night_parrot\SpectralPeakTrackingConfig.yml";
-            var recordingPath = @"Y:\RichardSeaton\NP Monitoring\Kalamurina May18\Night Parrot calls Kala 2018\SM7 24 Sep 2018 5.30 am.wav";// "Y:\RichardSeaton\NP Monitoring\Kalamurina May18\Night Parrot calls Kala 2018\SM27 22 Sep 2018 3.30 am.wav"; //"Y:\RichardSeaton\NP Monitoring\Kalamurina May18\Night Parrot calls Kala 2018\SM16 24 Sep 2018 6.30 am.wav"; //"Y:\RichardSeaton\NP Monitoring\Kalamurina May18\Night Parrot calls Kala 2018\SM16 23 Sep 2018 6.30 am.wav"; //"Y:\RichardSeaton\NP Monitoring\Kalamurina May18\Night Parrot calls Kala 2018\SM7 24 Sep 2018 6.30 am.wav"; //"Y:\RichardSeaton\NP Monitoring\Kalamurina May18\Night Parrot calls Kala 2018\SM7 24 Sep 2018 5.30 am.wav";// "Y:\RichardSeaton\NP Monitoring\Kalamurina May18\Night Parrot calls Kala 2018\SM4 24 Sep 2018 6.30 am.wav"; //"C:\Users\kholghim\Mahnoosh\Night_parrot\Night Parrot call-WA-hollow whistle-didit.wav";//"Y:\RichardSeaton\NP Monitoring\Kalamurina May18\Night Parrot calls Kala 2018\SM3 24 Sep 2018 6.30 am.wav"; //"C:\Users\kholghim\Mahnoosh\Night_parrot\JY-(cleaned)-3-Night_Parrot-pair.Western_Qld_downsampled.wav"; //"C:\Users\kholghim\Mahnoosh\Night_parrot\SM16 24 Sep 2018 6.30 am.wav"; //"C:\Users\kholghim\Mahnoosh\Night_parrot\S4A07296_20180419_050023_11-12min.wav"; //"M:\Postdoc\Night_parrot\S4A07296_20180419_050023_Ch1.wav"; //
-            var imagePath = @"C:\Users\kholghim\Mahnoosh\Night_parrot\image_whistle_peaks_SM7 24 Sep 2018 5.30 am_1500_3500_100_250_3.bmp"; //image_NP_SM16 24 Sep 2018 6.30 am.bmp";
+            var recordingPath = @"Y:\RichardSeaton\NP Monitoring\Kalamurina May18\Night Parrot calls Kala 2018\SM27 22 Sep 2018 3.30 am.wav";
+            var imagePath = @"C:\Users\kholghim\Mahnoosh\Night_parrot\image_whistle_peaks_SM27 22 Sep 2018 3.30 am_1500_3500_100_250_6.bmp";
             //var trackImagePath = @"C:\Users\kholghim\Mahnoosh\Night_parrot\trackImage.bmp";
-            var pathToCsvFile = @"C:\Users\kholghim\Mahnoosh\Night_parrot\PeakTrackInfo.csv";
+            var pathToCsvFile = @"C:\Users\kholghim\Mahnoosh\Night_parrot\PeakTrackInfo_SM27 22 Sep 2018 3.30 am.csv";
 
             var configFile = configPath.ToFileInfo();
 
@@ -110,26 +113,48 @@ namespace Acoustics.Test.AudioAnalysisTools
                 NoiseReductionType = NoiseReductionType.None,
             };
 
-            var frameStep = frameSize - (frameSize / frameOverlap);
-            var secondsPerFrame = frameSize / (nyquist * 2);
-            var timePerFrame = frameStep * secondsPerFrame;
+            var frameStep = frameSize * (1 - frameOverlap);
+            var secondsPerFrame = frameStep / (nyquist * 2);
 
             //var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
             var amplitudeSpectrogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
             var energySpectrogram = new EnergySpectrogram(amplitudeSpectrogram);
             var decibelSpectrogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
 
-            // Noise Reduction to be added
+            // Noise Reduction
             //var noiseReducedSpectrogram = SNR.NoiseReduce_Standard(energySpectrogram.Data);
 
-            var output = SpectralPeakTracking2018.SpectralPeakTracking(energySpectrogram.Data, configuration.SptSettings, hertzPerFreqBin, timePerFrame);
+            var output = SpectralPeakTracking2018.SpectralPeakTracking(energySpectrogram.Data, configuration.SptSettings, hertzPerFreqBin, secondsPerFrame);
 
             // draw the local peaks
             double[,] hits = SpectralPeakTracking2018.MakeHitMatrix(energySpectrogram.Data, output.TargetPeakBinsIndex, output.BandIndex);
             var image = SpectralPeakTracking2018.DrawSonogram(decibelSpectrogram, hits);
             image.Save(imagePath, ImageFormat.Bmp);
 
-            Csv.WriteToCsv(pathToCsvFile.ToFileInfo(), output.peakTrackInfoList);
+            string[] header = new[] { "Frame No", "Start Time", "Bin No", "Freq", "Score", "Detection" };
+            var csv = new StringBuilder();
+            string content = string.Empty;
+            foreach (var entry in header.ToArray())
+            {
+                content += entry.ToString() + ",";
+            }
+
+            csv.AppendLine(content);
+
+            foreach (var entry in output.peakTrackInfoList)
+            {
+                content = string.Empty;
+                foreach (var value in entry)
+                {
+                    content += value.ToString() + ",";
+                }
+
+                csv.AppendLine(content);
+            }
+
+            File.WriteAllText(pathToCsvFile, csv.ToString());
+
+            //Csv.WriteMatrixToCsv(pathToCsvFile.ToFileInfo(), output.peakTrackInfoList);
 
             // draw spectral tracks
             //var trackImage = SpectralPeakTracking2018.DrawTracks(decibelSpectrogram, hits, output.SpecTracks);

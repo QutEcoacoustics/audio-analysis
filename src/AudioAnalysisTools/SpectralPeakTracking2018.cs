@@ -8,6 +8,7 @@ namespace AudioAnalysisTools
     using System.Collections.Generic;
     using System.Drawing;
     using System.IO;
+    using System.Linq;
     using Accord.Statistics.Kernels;
     using Acoustics.Shared.Csv;
     using StandardSpectrograms;
@@ -24,7 +25,7 @@ namespace AudioAnalysisTools
 
             public int[][] BandIndex { get; set; }
 
-            public object[][] peakTrackInfoList { get; set; }
+            public List<object[]> peakTrackInfoList { get; set; }
 
             //public List<SpectralTrack> SpecTracks { get; set; }
         }
@@ -52,6 +53,7 @@ namespace AudioAnalysisTools
             // make an array of the index of local peaks. Zero means there is no local peak identified.
             int[] SpectralPeakArray = MakeSpectralPeakArray(spectrogram, localPeaksAndBands.Item1);
 
+            // find a track of peaks in a pre-defined set of boundaries
             var peakTrackInfo = SpectralPeakTracking(spectrogram, SpectralPeakArray, timePerFrame, hertzPerFreqBin);
             
             /*
@@ -168,18 +170,19 @@ namespace AudioAnalysisTools
             return Tuple.Create(targetPeakBinsIndex.ToArray(), bandIndex.ToArray());
         }
 
-        public static object[][] SpectralPeakTracking(double[,] spectrogram, int[] SpectralPeakArray, double timePerFrame, double hertzPerFreqBin)
+        public static List<object[]> SpectralPeakTracking(double[,] spectrogram, int[] SpectralPeakArray, double timePerFrame, double hertzPerFreqBin)
         {
             int startX;
             int endX;
             int startY;
             int endY;
-            int peakCount = 0;
-            var score = 0;
+
             List<object[]> peakTrackInfoList = new List<object[]>();
 
             for (int i = 0; i < SpectralPeakArray.Length; i++)
             {
+                int peakCount = 0;
+                var score = 0;
                 if (SpectralPeakArray[i] != 0)
                 {
                     object[] peakTrackInfo = new object[6];
@@ -188,36 +191,52 @@ namespace AudioAnalysisTools
                     endX = startX + 17;
                     endY = startY + 4;
                     //double[,] targetMatrix = GetArbitraryMatrix(spectrogram, startY, endY, startX, endX);
-                    for (int j = startX; j < endX; j++)
+
+                    if (endX < spectrogram.GetLength(0) && endY < spectrogram.GetLength(1))
                     {
-                        if (SpectralPeakArray[j] >= startY && SpectralPeakArray[j] <= endY)
+                        for (int j = startX; j < endX; j++)
                         {
-                            peakCount++;
+                            if (SpectralPeakArray[j] >= startY && SpectralPeakArray[j] <= endY)
+                            {
+                                peakCount++;
+                            }
                         }
+
+                        score = peakCount; //peakCount / 18;
+
+                        if (score >= 5) //4 / 18
+                        {
+                            peakTrackInfo[0] = i; // frame number
+                            peakTrackInfo[1] = i * timePerFrame;
+                            peakTrackInfo[2] = SpectralPeakArray[i]; // bin number
+                            peakTrackInfo[3] = SpectralPeakArray[i] * hertzPerFreqBin;
+                            peakTrackInfo[4] = score;
+                            peakTrackInfo[5] = "Yes";
+                            peakTrackInfoList.Add(peakTrackInfo);
+                        }
+
+                        /*
+                        peakTrackInfo[0] = i; // frame number
+                        peakTrackInfo[1] = i * timePerFrame;
+                        peakTrackInfo[2] = SpectralPeakArray[i]; // bin number
+                        peakTrackInfo[3] = SpectralPeakArray[i] * hertzPerFreqBin;
+                        peakTrackInfo[4] = score;
+
+                        if (score >= 4) //4 / 18
+                        {
+                            peakTrackInfo[5] = "Yes";
+                        }
+                        else
+                        {
+                            peakTrackInfo[5] = "No";
+                        }
+                        peakTrackInfoList.Add(peakTrackInfo);
+                        */
                     }
-
-                    score = peakCount / 18;
-
-                    peakTrackInfo[0] = i; // frame number
-                    peakTrackInfo[1] = i * timePerFrame;
-                    peakTrackInfo[2] = SpectralPeakArray[i]; // bin number
-                    peakTrackInfo[3] = SpectralPeakArray[i] * hertzPerFreqBin;
-                    peakTrackInfo[4] = score;
-
-                    if (score >= 4 / 18)
-                    {
-                        peakTrackInfo[5] = "Yes";
-                    }
-                    else
-                    {
-                        peakTrackInfo[5] = "No";
-                    }
-
-                    peakTrackInfoList.Add(peakTrackInfo);
                 }
             }
 
-            return peakTrackInfoList.ToArray();
+            return peakTrackInfoList;
 
         }
 
