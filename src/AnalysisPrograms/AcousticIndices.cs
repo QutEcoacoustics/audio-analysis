@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="AcousticIndices.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -275,7 +275,7 @@ namespace AnalysisPrograms
              */
             var indexConfigData = new IndexGenerationData()
                 {
-                    RecordingType = inputFileSegment.Source.Extension,
+                    RecordingExtension = inputFileSegment.Source.Extension,
                     RecordingBasename = basename,
                     RecordingStartDate = inputFileSegment.TargetFileStartDate,
                     RecordingDuration = inputFileSegment.TargetFileDuration.Value,
