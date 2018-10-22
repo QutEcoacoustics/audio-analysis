@@ -1,4 +1,4 @@
-﻿// <copyright file="CustomHelpTextGenerator.cs" company="QutEcoacoustics">
+// <copyright file="CustomHelpTextGenerator.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // Copyright (c) Nate McMaster.
@@ -49,7 +49,7 @@ namespace AnalysisPrograms.Production
         {
             if (this.EnvironmentOptions.Any())
             {
-                output.Write("\nEnvironment variables: \n" + this.FormatEnvironmentVariables());
+                output.Write("\nEnvironment variables: \n" + this.FormatEnvironmentVariables() + "\n");
             }
 
             base.GenerateFooter(application, output);
