@@ -99,6 +99,10 @@ namespace AudioAnalysisTools
             return peakBins;
         }
 
+        /// <summary>
+        /// find spectral peaks per frame by subtracting the average energy of top and bottom band from the syllable band energy.
+        /// then if it is higher than a dB threshold, the index of the peak bin will be returned.
+        /// </summary>
         public static Tuple<int[][], int[][]> FindLocalSpectralPeaks(double[,] matrix, int[] peakBinsIndex, int widthMidBand,
             int topBufferSize, int bottomBufferSize, double threshold)
         {
@@ -170,6 +174,11 @@ namespace AudioAnalysisTools
             return Tuple.Create(targetPeakBinsIndex.ToArray(), bandIndex.ToArray());
         }
 
+        /// <summary>
+        /// if there is any local peak in a frame, this method will middle the peak bin and will count the following peaks in a
+        /// pre-defined boundary (startX, endX, startY, endY). If the number of peaks in that boundary is higher than a threshold,
+        /// that will be considered as a call.
+        /// </summary>
         public static List<object[]> SpectralPeakTracking(double[,] spectrogram, int[] SpectralPeakArray, double timePerFrame, double hertzPerFreqBin)
         {
             int startX;
