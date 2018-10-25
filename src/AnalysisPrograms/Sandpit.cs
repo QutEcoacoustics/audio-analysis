@@ -73,7 +73,7 @@ namespace AnalysisPrograms
                 //CodeToPlaceScoreTracksUnderLdfcSpectrograms();
                 //CodeToPlaceScoreTracksUnderSingleImage();
 
-                ConcatenateIndexFilesAndSpectrograms();
+                //ConcatenateIndexFilesAndSpectrograms();
                 //ConcatenateMarineImages();
                 //ConcatenateImages();
                 //ConcatenateTwelveImages();
@@ -103,6 +103,9 @@ namespace AnalysisPrograms
                 //TestTernaryPlots();
                 //TestDirectorySearchAndFileSearch();
                 //TestNoiseReduction();
+                Oscillations2014.TESTMETHOD_DrawOscillationSpectrogram();
+                //Oscillations2014.TESTMETHOD_GetSpectralIndex_Osc();
+                //Test_DrawFourSpectrograms();
 
                 Console.WriteLine("# Finished Sandpit Task!    Press any key to exit.");
                 return this.Ok();
@@ -1256,9 +1259,6 @@ namespace AnalysisPrograms
             // FrequencyScale.TESTMETHOD_OctaveFrequencyScale1();
             // FrequencyScale.TESTMETHOD_OctaveFrequencyScale2();
 
-            //Audio2Sonogram.TESTMETHOD_DrawFourSpectrograms();
-            //Oscillations2014.TESTMETHOD_DrawOscillationSpectrogram();
-
             // The following test methods test various configs of concatenation
             // ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest1();
             // ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest2();
@@ -1275,10 +1275,15 @@ namespace AnalysisPrograms
             FrequencyScale.TESTMETHOD_DrawFrequencyLinesOnImage();
         }
 
+        public static void Test_DrawFourSpectrograms()
+        {
+            Audio2Sonogram.TESTMETHOD_DrawFourSpectrograms();
+        }
+
         /// <summary>
-        /// Unit test of AnalyseLongRecording() using artificial signal
-        /// </summary>
-        public static void TestAnalyseLongRecordingUsingArtificialSignal()
+                /// Unit test of AnalyseLongRecording() using artificial signal
+                /// </summary>
+                public static void TestAnalyseLongRecordingUsingArtificialSignal()
         {
             int sampleRate = 22050;
             double duration = 420; // signal duration in seconds = 7 minutes

@@ -1,4 +1,4 @@
-﻿// <copyright file="ImageTools.cs" company="QutEcoacoustics">
+// <copyright file="ImageTools.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -3382,13 +3382,6 @@ namespace TowseyLibrary
             return bmp;
         }
 
-        public static Image DrawXandYaxes(Image image, int scaleWidth, double xInterval, double xTicInterval, int xOffset, double yInterval, double yTicInterval, int yOffset)
-        {
-            Image returnImage = DrawYaxisScale(image, scaleWidth, yInterval, yTicInterval, yOffset);
-            returnImage = DrawXaxisScale(returnImage, scaleWidth, xInterval, xTicInterval, xOffset);
-            return returnImage;
-        }
-
         /// <summary>
         /// Draws horizontal gridlines on Image
         /// </summary>
@@ -3426,36 +3419,40 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// assumes the y-axis has been drawn already
+        /// assumes the y-axis has already been drawn already.
+        /// Therefore require an offset at bottom left to accommodate the width of the y-axis.
         /// </summary>
-        public static Image DrawXaxisScale(Image image, int scaleHeight, double xInterval, double xTicInterval, int xOffset)
+        public static Image DrawXaxisScale(Image image, int scaleHeight, double xInterval, double xTicInterval, int yScalePadding, int xOffset)
         {
             int ticCount = (int)((image.Width - scaleHeight) / xTicInterval);
             var pen = new Pen(Color.White);
             var stringFont = new Font("Arial", 10);
             var g = Graphics.FromImage(image);
+
+            // draw on the grid lines
             for (int i = 1; i <= ticCount; i++)
             {
-                int x1 = scaleHeight + (int)(i * xTicInterval) - xOffset;
+                int x1 = yScalePadding + (int)(i * xTicInterval) + xOffset;
                 g.DrawLine(pen, x1, 0, x1, image.Height - 1);
             }
 
+            // create the x-axis scale
             Image scaleImage = new Bitmap(image.Width, scaleHeight);
             g = Graphics.FromImage(scaleImage);
             pen = new Pen(Color.Black);
             g.Clear(Color.LightGray);
             for (int i = 0; i <= ticCount; i++)
             {
-                int x1 = scaleHeight + (int)(i * xTicInterval) - xOffset;
+                int x1 = yScalePadding + (int)(i * xTicInterval) + xOffset;
                 g.DrawLine(pen, x1, 0, x1, scaleHeight - 1);
-                g.DrawLine(pen, x1 + 1, 0, x1 + 1, scaleHeight - 1);
+                //g.DrawLine(pen, x1 + 1, 0, x1 + 1, scaleHeight - 1);
 
                 string value = Math.Round(xInterval * i).ToString();
-                g.DrawString(value, stringFont, Brushes.Black, new PointF(x1, 1));
+                g.DrawString(value, stringFont, Brushes.Black, new PointF(x1, 0));
             }
 
             g.DrawRectangle(pen, 0, 0, image.Width - 1, scaleHeight - 1);
-            Image[] array = new Image[2];
+            var array = new Image[2];
             array[0] = image;
             array[1] = scaleImage;
             return CombineImagesVertically(array);
