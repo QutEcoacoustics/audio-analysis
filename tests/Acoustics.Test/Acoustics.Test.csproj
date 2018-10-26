@@ -297,6 +297,7 @@
     <Compile Include="Shared\AppConfigHelperTests.cs" />
     <Compile Include="Shared\ConfigTests.cs" />
     <Compile Include="Shared\LoggingTests\LoggingTests.cs" />
+    <Compile Include="Shared\PathHelperTests.cs" />
     <Compile Include="Shared\ProcessRunnerTests.cs" />
     <Compile Include="Shared\RangeTests.cs" />
     <Compile Include="TestHelpers\Factories\AudioRecordingFactory.cs" />

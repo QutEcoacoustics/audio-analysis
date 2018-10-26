@@ -234,6 +234,7 @@
     <Compile Include="Meta.cs" />
     <Compile Include="NonClosingStreamWrapper.cs" />
     <Compile Include="Orderer.cs" />
+    <Compile Include="PathUtils.cs" />
     <Compile Include="Plugins.cs" />
     <Compile Include="ProcessRunner.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
