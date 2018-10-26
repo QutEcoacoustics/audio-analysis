@@ -297,7 +297,7 @@
     <Compile Include="Shared\AppConfigHelperTests.cs" />
     <Compile Include="Shared\ConfigTests.cs" />
     <Compile Include="Shared\LoggingTests\LoggingTests.cs" />
-    <Compile Include="Shared\PathHelperTests.cs" />
+    <Compile Include="Shared\PathUtilsTests.cs" />
     <Compile Include="Shared\ProcessRunnerTests.cs" />
     <Compile Include="Shared\RangeTests.cs" />
     <Compile Include="TestHelpers\Factories\AudioRecordingFactory.cs" />
@@ -330,7 +330,7 @@
     <Compile Include="Tools\AudioUtilityWavTests.cs" />
     <Compile Include="Tools\MasterAudioUtilityTests.cs" />
     <Compile Include="EnumerableExtensionsTests.cs" />
-    <Compile Include="Tools\SoxUtilityResampleTests.cs" />
+    <Compile Include="Tools\SoxUtilityTests.cs" />
     <Compile Include="Tools\WavReaderTests.cs" />
     <Compile Include="TowseyLibrary\DataToolsTests.cs" />
     <Content Include="ExampleTestTemplate.cs.txt" />

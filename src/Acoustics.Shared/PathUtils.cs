@@ -50,6 +50,7 @@ namespace Acoustics.Shared
         /// modification.
         /// </remarks>
         /// <param name="path">The path to convert.</param>
+        /// <exception cref="FileNotFoundException">If the requested file does not exist</exception>
         /// <returns>An 8.3 filename extracted from kernel32.dll.</returns>
         public static string GetShortFilename(string path)
         {
@@ -63,9 +64,16 @@ namespace Acoustics.Shared
                 return path;
             }
 
+            if (!File.Exists(path))
+            {
+                throw new FileNotFoundException(
+                    "Can't get a short file name for a file that does not exist",
+                    path);
+            }
+
             var shortPath = new StringBuilder(MaxPath);
 
-            path = @"\?\" + path;
+            path = @"\\?\" + path;
 
             // https://referencesource.microsoft.com/#System.Windows.Forms/winforms/Managed/System/WinForms/Help.cs,208
             // If this is a local path, convert it to a short path name.  Pass 0 as the length the first time

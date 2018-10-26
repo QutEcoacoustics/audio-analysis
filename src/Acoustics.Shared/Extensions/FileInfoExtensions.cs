@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="FileInfoExtensions.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -148,6 +148,10 @@ namespace System
 
         public static FileInfo Touch(this FileInfo info)
         {
+            Contract.RequiresNotNull(info);
+
+            Directory.CreateDirectory(info.DirectoryName);
+
             using (File.OpenWrite(info.FullName))
             {
             }
