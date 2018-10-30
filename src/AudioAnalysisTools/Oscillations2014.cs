@@ -73,7 +73,10 @@ namespace AudioAnalysisTools
         public static void TESTMETHOD_DrawOscillationSpectrogram()
         {
             {
-                var sourceRecording = @"C:\Work\GitHub\audio-analysis\tests\Fixtures\Recordings\BAC2_20071008-085040.wav".ToFileInfo();
+                //var sourceRecording = @"C:\Work\GitHub\audio-analysis\tests\Fixtures\Recordings\BAC2_20071008-085040.wav".ToFileInfo();
+                //var sourceRecording = @"C:\Work\GitHub\audio-analysis\tests\Fixtures\Recordings\BAC2_20071008-085040_seconds30to32.wav".ToFileInfo();
+                //var sourceRecording = @"C:\Work\GitHub\audio-analysis\tests\Fixtures\Recordings\BAC2_20071008-085040_seconds45to46.wav".ToFileInfo();
+                var sourceRecording = @"C:\Work\GitHub\audio-analysis\tests\Fixtures\Recordings\BAC2_20071008-085040_seconds49to49.wav".ToFileInfo();
                 var output = @"C:\Ecoacoustics\SoftwareTests\TestOscillationSpectrogram".ToDirectoryInfo();
                 var expectedResultsDir = new DirectoryInfo(Path.Combine(output.FullName, TestTools.ExpectedResultsDir));
                 if (!expectedResultsDir.Exists)
@@ -101,7 +104,7 @@ namespace AudioAnalysisTools
                 pathName = Path.Combine(output.FullName, fileName);
                 var csvFile1 = new FileInfo(pathName + ".csv");
 
-                fileName = sourceName + ".OSCSpectralIndex";
+                fileName = sourceName + ".SpectralIndex.OSC";
                 pathName = Path.Combine(output.FullName, fileName);
                 var csvFile2 = new FileInfo(pathName + ".csv");
 
@@ -124,8 +127,12 @@ namespace AudioAnalysisTools
         {
             // 1. set up the resources
             var sourceRecording = @"C:\Work\GitHub\audio-analysis\tests\Fixtures\Recordings\BAC2_20071008-085040.wav".ToFileInfo();
+            //var sourceRecording = @"C:\Work\GitHub\audio-analysis\tests\Fixtures\Recordings\BAC2_20071008-085040_seconds30to32.wav".ToFileInfo();
+            //var sourceRecording = @"C:\Work\GitHub\audio-analysis\tests\Fixtures\Recordings\BAC2_20071008-085040_seconds45to46.wav".ToFileInfo();
+            //var sourceRecording = @"C:\Work\GitHub\audio-analysis\tests\Fixtures\Recordings\BAC2_20071008-085040_seconds49to49.wav".ToFileInfo();
             var output = @"C:\Ecoacoustics\SoftwareTests\TestOscillationSpectrogram".ToDirectoryInfo();
             var sourceName = Path.GetFileNameWithoutExtension(sourceRecording.Name);
+            var opStem = sourceName + ".SpectralIndex.OSC";
             var expectedResultsDir = new DirectoryInfo(Path.Combine(output.FullName, TestTools.ExpectedResultsDir));
             if (!expectedResultsDir.Exists)
             {
@@ -135,17 +142,31 @@ namespace AudioAnalysisTools
             var configDict = GetDefaultConfigDictionary(sourceRecording);
 
             // 2. Get the spectral index
-            var spectralIndex = GetSpectralIndex_Osc(sourceRecording, configDict);
+            var spectralIndexShort = GetSpectralIndex_Osc(sourceRecording, configDict);
 
-            // 3. Write the vector to csv file
-            var fileName1 = sourceName + ".OSCSpectralIndex.csv";
-            var pathName1 = new FileInfo(Path.Combine(output.FullName, fileName1));
+            // 3. double length of the vector because want to work with 256 element vector for LDFC purposes
+            var spectralIndex = DataTools.VectorDoubleLengthByAverageInterpolation(spectralIndexShort);
+
+            // 4. Write the vector to csv file
+            var pathName1 = new FileInfo(Path.Combine(output.FullName, opStem + ".csv"));
             Acoustics.Shared.Csv.Csv.WriteToCsv(pathName1, spectralIndex);
 
             // 4. draw image of the vector for debug purposes.
-            var vectorImage = ImageTools.DrawVectorInColour(DataTools.reverseArray(spectralIndex), cellWidth: 5);
-            var fileName2 = sourceName + ".SpectralIndex.OSC.png";
-            var pathName2 = Path.Combine(output.FullName, fileName2);
+            //var vectorImage = ImageTools.DrawVectorInColour(DataTools.reverseArray(spectralIndex), cellWidth: 5);
+            spectralIndex = DataTools.NormaliseByScalingMaxValueToOne(spectralIndex);
+            int cellWidth = 30;
+            int cellHeight = 2;
+            var vectorImage = ImageTools.DrawVectorInGrayScaleWithoutNormalisation(DataTools.reverseArray(spectralIndex), cellWidth, cellHeight);
+
+            // set up a frequency scale for easier interpretation
+            int herzInterval = 1000;
+            var sampleRate = double.Parse(configDict[AnalysisKeys.ResampleRate]);
+            var windowSize = double.Parse(configDict[AnalysisKeys.FrameLength]);
+            double freqBinWidth = sampleRate / windowSize / 2; // Divide by 2 bcause have doubled length of the spectral index vector
+            double yTicInterval = herzInterval / freqBinWidth * cellHeight;
+            int yOffset = cellHeight / 2;
+            vectorImage = ImageTools.DrawYaxisScale(vectorImage, 10, herzInterval, yTicInterval, yOffset);
+            var pathName2 = Path.Combine(output.FullName, opStem + ".png");
             vectorImage.Save(pathName2, ImageFormat.Png);
         }
 
@@ -209,7 +230,7 @@ namespace AudioAnalysisTools
             const int sampleLength = 128;
             configDict[AnalysisKeys.OscilDetection2014SampleLength] = sampleLength.ToString();
 
-            const double sensitivityThreshold = 0.2;
+            const double sensitivityThreshold = 0.3;
             configDict[AnalysisKeys.OscilDetection2014SensitivityThreshold] = sensitivityThreshold.ToString(CultureInfo.CurrentCulture);
             return configDict;
         }
@@ -267,6 +288,10 @@ namespace AudioAnalysisTools
             {
                 sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.FrameCount - 1, binCount - 1);
             }
+
+            // get the appropriate sampleLength (patch size) for short recordings
+            int framecount = sonogram.Data.GetLength(0);
+            sampleLength = AdjustSampleSize(framecount, sampleLength);
 
             var algorithmName1 = "autocorr-svd-fft";
             var freqOscilMatrix1 = GetFrequencyByOscillationsMatrix(sonogram.Data, sensitivity, sampleLength, algorithmName1);
@@ -352,6 +377,11 @@ namespace AudioAnalysisTools
             // each value is to be drawn as a 5 pixel x 5 pixel square
             int xscale = 5;
             int yscale = 5;
+            if (maxRows < 10)
+            {
+                xscale = 10;
+            }
+
             var image1 = ImageTools.DrawMatrixInColour(freqOscilMatrix, xPixelsPerCell: xscale, yPixelsPerCell: yscale);
 
             var image2 = ImageTools.DrawVectorInColour(DataTools.reverseArray(spectralIndex), cellWidth: xscale);
@@ -571,7 +601,7 @@ namespace AudioAnalysisTools
                 spectrum = DataTools.Subarray(spectrum, 1, spectrum.Length - 2);
 
                 // reduce the power in first coeff because it can dominate - this is a hack!
-                spectrum[0] *= 0.66;
+                spectrum[0] *= 0.5;
 
                 spectrum = DataTools.SquareValues(spectrum);
 
@@ -636,7 +666,7 @@ namespace AudioAnalysisTools
 
                 // reduce the power in the low coeff because these can dominate.
                 // This is a hack!
-                spectrum[0] *= 0.66;
+                spectrum[0] *= 0.33;
 
                 // convert to energy and calculate total power in spectrum
                 spectrum = DataTools.SquareValues(spectrum);
@@ -687,7 +717,7 @@ namespace AudioAnalysisTools
                 double[] spectrum = wpd.GetWPDEnergySpectrumWithoutDC();
 
                 // reduce the power in first coeff because it can dominate - this is a hack!
-                spectrum[0] *= 0.66;
+                spectrum[0] *= 0.5;
 
                 spectrum = DataTools.SquareValues(spectrum);
 
@@ -830,9 +860,6 @@ namespace AudioAnalysisTools
         {
             var sensitivity = double.Parse(configDict[AnalysisKeys.OscilDetection2014SensitivityThreshold]);
 
-            // Sample length i.e. number of frames spanned to calculate oscillations per second
-            int sampleLength = int.Parse(configDict[AnalysisKeys.OscilDetection2014SampleLength]);
-
             // set up the default songram config object
             var sonoConfig = new SonogramConfig(configDict)
             {
@@ -840,6 +867,8 @@ namespace AudioAnalysisTools
             };
 
             var recordingSegment = new AudioRecording(sourceRecording.FullName);
+
+            //double recordingLengthInSeconds = recordingSegment.Duration.TotalSeconds;
             BaseSonogram sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
 
             // Taking the square-root emphasizes the low amplitude features.
@@ -854,6 +883,14 @@ namespace AudioAnalysisTools
                 sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.FrameCount - 1, binCount - 1);
             }
 
+            // Sample length i.e. number of frames spanned to calculate oscillations per second
+            int framecount = sonogram.Data.GetLength(0);
+
+            // get required sample length
+            int sampleLength = int.Parse(configDict[AnalysisKeys.OscilDetection2014SampleLength]);
+
+            // adjust sample length i.e. patch size for short recordings.
+            sampleLength = AdjustSampleSize(framecount, sampleLength);
             var freqOscilMatrix = GetFrequencyByOscillationsMatrix(sonogram.Data, sensitivity, sampleLength, "autocorr-fft");
 
             //NOTE: Generate an oscillations spectral index for making LDFC spectrograms by taking the max of each column
@@ -893,6 +930,34 @@ namespace AudioAnalysisTools
             period = 2 * dctCoeff.Length / (double)indexOfMaxValue / framesPerSecond; //convert maxID to period in seconds
             intenisty = dctCoeff[indexOfMaxValue];
         }
+
+        /// <summary>
+        ///  Adjusts sample length i.e. patch size for short recordings
+        /// </summary>
+        /// <param name="framecount">number of frames in the frequency bin to be processed</param>
+        /// <param name="sampleLength">the number of frames to be included in each patch</param>
+        /// <returns>appropriately reduced patch size</returns>
+        public static int AdjustSampleSize(int framecount, int sampleLength)
+        {
+            if (framecount < sampleLength * 4)
+            {
+                sampleLength /= 2;
+            }
+
+            if (framecount < sampleLength * 2)
+            {
+                sampleLength = 32;
+            }
+
+            if (framecount < sampleLength * 2)
+            {
+                sampleLength = 8;
+            }
+
+            return sampleLength;
+        }
+
+
 
         private static Image DrawTitleBarOfOscillationSpectrogram(string algorithmName, int width)
         {

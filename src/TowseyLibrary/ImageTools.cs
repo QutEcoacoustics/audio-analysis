@@ -3598,6 +3598,50 @@ namespace TowseyLibrary
             return bmp;
         }
 
+        public static Image DrawVectorInGrayScale(double[] vector, int cellWidth, int cellHeight)
+        {
+            var norm = DataTools.normalise(vector);
+            var bmp = DrawVectorInGrayScaleWithoutNormalisation(norm, cellWidth, cellHeight);
+            return bmp;
+        }
+
+        /// <summary>
+        /// This method assumes that the vector has already been normalised by some means such that all values lie between 0.0 and 1.0 
+        /// </summary>
+        /// <param name="vector">the vector of normalised values</param>
+        /// <param name="cellWidth">the width of the image</param>
+        /// <param name="cellHeight">the height of each image row</param>
+        public static Image DrawVectorInGrayScaleWithoutNormalisation(double[] vector, int cellWidth, int cellHeight)
+        {
+            int rows = vector.Length;
+            int cols = 1;
+            int yPixelCount = cellHeight * rows;
+            int xPixelCount = cellWidth;
+            var bmp = new Bitmap(xPixelCount, yPixelCount, PixelFormat.Format24bppRgb);
+
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    int xOffset = cellWidth * c;
+                    int yOffset = cellHeight * r;
+
+                    // use reverse gray scale i.e. white = low value, black = high value
+                    int gray = 255 - (int)Math.Floor(255 * vector[r]);
+                    var colour = Color.FromArgb(gray, (int)gray, (int)gray);
+                    for (int x = 0; x < xPixelCount; x++)
+                    {
+                        for (int y = 0; y < cellHeight; y++)
+                        {
+                            bmp.SetPixel(xOffset + x, yOffset + y, colour);
+                        }
+                    }
+                }
+            }
+
+            return bmp;
+        }
+
         public static Image DrawMatrixInColour(double[,] matrix, int xPixelsPerCell, int yPixelsPerCell)
         {
             double[,] norm = DataTools.normalise(matrix);
