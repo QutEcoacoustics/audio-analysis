@@ -10,11 +10,8 @@ namespace AnalysisPrograms
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
-    using System.Text;
     using System.Threading.Tasks;
-    using Accord.MachineLearning;
     using Accord.Math;
-    using Accord.Statistics;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
@@ -22,7 +19,6 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using McMaster.Extensions.CommandLineUtils;
-    using NeuralNets;
     using Production.Arguments;
     using TowseyLibrary;
 
@@ -34,17 +30,17 @@ namespace AnalysisPrograms
         {
             LoggedConsole.WriteLine("feature learning process...");
 
-            var inputDir = @"D:\Mahnoosh\Liz\"; //@"C:\Users\kholghim\Mahnoosh\Liz\"; // @"C:\Users\kholghim\Mahnoosh\UnsupervisedFeatureLearning\"; // @"M:\Postdoc\Liz\"; //
+            var inputDir = @"M:\Postdoc\Liz\"; //@"C:\Users\kholghim\Mahnoosh\Liz\"; //@"D:\Mahnoosh\Liz\"; // @"C:\Users\kholghim\Mahnoosh\UnsupervisedFeatureLearning\"; // 
             var resultDir = Path.Combine(inputDir, "FeatureLearning");
             var inputPath = Path.Combine(inputDir, "TrainSet"); //PatchSamplingSegments //PatchSampling
             var trainSetPath = Path.Combine(inputDir, "TrainSet");
-            var testSetPath = Path.Combine(inputDir, "TestSet");
-            var configPath = @"D:\Mahnoosh\Liz\AnalysisConfigFiles\FeatureLearningConfig.yml"; //@"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\FeatureLearningConfig.yml"; //
-            var outputMelImagePath = Path.Combine(resultDir, "MelScaleSpectrogram.png");
-            var outputNormMelImagePath = Path.Combine(resultDir, "NormalizedMelScaleSpectrogram.png");
-            var outputNoiseReducedMelImagePath = Path.Combine(resultDir, "NoiseReducedMelSpectrogram.png");
-            var outputReSpecImagePath = Path.Combine(resultDir, "ReconstrcutedSpectrogram.png");
-            var outputClusterImagePath = Path.Combine(resultDir, "Clusters.bmp");
+            // var testSetPath = Path.Combine(inputDir, "TestSet");
+            var configPath = @"C:\Users\kholghim\Mahnoosh\Liz\FeatureLearningConfig.yml"; //@"D:\Mahnoosh\Liz\AnalysisConfigFiles\FeatureLearningConfig.yml"; //@"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\FeatureLearningConfig.yml"; //
+            // var outputMelImagePath = Path.Combine(resultDir, "MelScaleSpectrogram.png");
+            // var outputNormMelImagePath = Path.Combine(resultDir, "NormalizedMelScaleSpectrogram.png");
+            // var outputNoiseReducedMelImagePath = Path.Combine(resultDir, "NoiseReducedMelSpectrogram.png");
+            // var outputReSpecImagePath = Path.Combine(resultDir, "ReconstrcutedSpectrogram.png");
+            // var outputClusterImagePath = Path.Combine(resultDir, "Clusters.bmp");
 
             // +++++++++++++++++++++++++++++++++++++++++++++++++patch sampling from 1-min recordings
 
@@ -946,11 +942,11 @@ namespace AnalysisPrograms
         public static void ExtractClusteringFeatures()
         {
             LoggedConsole.WriteLine("feature extraction process...");
-            var inputDir = @"D:\Mahnoosh\Liz\"; //@"C:\Users\kholghim\Mahnoosh\UnsupervisedFeatureLearning\"; //@"M:\Postdoc\Liz\"; //
+            var inputDir = @"M:\Postdoc\Liz\"; //@"D:\Mahnoosh\Liz\"; //@"C:\Users\kholghim\Mahnoosh\UnsupervisedFeatureLearning\"; //@"M:\Postdoc\Liz\"; //
             var resultDir = Path.Combine(inputDir, "FeatureLearning");
             //var trainSetPath = Path.Combine(inputDir, "TrainSet");
             var testSetPath = Path.Combine(inputDir, "TestSet");
-            var configPath = @"D:\Mahnoosh\Liz\AnalysisConfigFiles\FeatureLearningConfig.yml"; //@"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\FeatureLearningConfig.yml"; //  
+            var configPath = @"C:\Users\kholghim\Mahnoosh\Liz\FeatureLearningConfig.yml"; //@"D:\Mahnoosh\Liz\AnalysisConfigFiles\FeatureLearningConfig.yml"; //@"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\FeatureLearningConfig.yml"; // 
             var centroidsPath = Path.Combine(resultDir, "ClusterCentroids0.csv");
 
             var configFile = configPath.ToFileInfo();
@@ -985,7 +981,7 @@ namespace AnalysisPrograms
 
             int frameSize = 1024;
             int finalBinCount = 256;
-            int hertzInterval = 1000;
+            // int hertzInterval = 1000;
             FreqScaleType scaleType = FreqScaleType.Mel;
             var settings = new SpectrogramSettings()
             {

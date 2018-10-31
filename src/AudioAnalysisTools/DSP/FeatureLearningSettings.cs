@@ -38,55 +38,61 @@ namespace AudioAnalysisTools.DSP
 
         public const bool DefaultDoWhitening = true;
 
+        public const int DefaultMaxPoolingFactor = 1;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="FeatureLearningSettings"/> class.
         /// CONSTRUCTOR
         /// </summary>
+        
+        /*
         public FeatureLearningSettings()
         {
             this.FrequencyScaleType = DefaultFrequencyScaleType;
-            //this.HertzInterval = DefaultHertzInterval;
             this.FrameSize = DefaultFrameSize;
             this.FinalBinCount = DefaultFinalBinCount;
             this.MinFreqBin = DefaultMinFreqBin;
             this.MaxFreqBin = DefaultMaxFreqBin;
             this.NumFreqBand = DefaultNumFreqBand;
-            //this.PatchWidth = DefaultPatchWidth;
             this.PatchHeight = DefaultPatchHeight;
             this.NumRandomPatches = DefaultNumRandomPatches;
             this.NumClusters = DefaultNumClusters;
             this.DoNoiseReduction = DefaultDoNoiseReduction;
             this.DoWhitening = DefaultDoWhitening;
+            this.MaxPoolingFactor = DefaultMaxPoolingFactor;
         }
+        */
 
-        public FreqScaleType FrequencyScaleType { get; set; }
+        public FreqScaleType FrequencyScaleType { get; set; } = DefaultFrequencyScaleType;
 
-        //public int HertzInterval { get; set; }
+        //public int HertzInterval { get; set; } = DefaultHertzInterval;
 
-        public int FrameSize { get; set; }
+        public int FrameSize { get; set; } = DefaultFrameSize;
 
-        public int FinalBinCount { get; set; }
+        public int FinalBinCount { get; set; } = DefaultFinalBinCount;
 
-        public int MinFreqBin { get; set; }
+        public int MinFreqBin { get; set; } = DefaultMinFreqBin;
 
-        public int MaxFreqBin { get; set; }
+        public int MaxFreqBin { get; set; } = DefaultMaxFreqBin;
 
-        public int NumFreqBand { get; set; }
+        public int NumFreqBand { get; set; } = DefaultNumFreqBand;
 
-        //public int PatchWidth { get; set; }
+        //public int PatchWidth { get; set; } = DefaultPatchWidth;
 
-        public int PatchHeight { get; set; }
+        public int PatchHeight { get; set; } = DefaultPatchHeight;
 
-        public int FrameWindowLength { get; set; }
+        public int FrameWindowLength { get; set; } = DefaultFrameWindowLength;
 
-        public int StepSize { get; set; }
+        public int StepSize { get; set; } = DefaultStepSize;
 
-        public int NumRandomPatches { get; set; }
+        public int NumRandomPatches { get; set; } = DefaultNumRandomPatches;
 
-        public int NumClusters { get; set; }
+        public int NumClusters { get; set; } = DefaultNumClusters;
 
-        public bool DoNoiseReduction { get; set; }
+        public bool DoNoiseReduction { get; set; } = DefaultDoNoiseReduction;
 
-        public bool DoWhitening { get; set; }
+        public bool DoWhitening { get; set; } = DefaultDoWhitening;
+
+        public int MaxPoolingFactor { get; set; } = DefaultMaxPoolingFactor;
     }
 }

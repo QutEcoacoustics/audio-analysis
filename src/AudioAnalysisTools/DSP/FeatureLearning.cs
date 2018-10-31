@@ -9,6 +9,7 @@ namespace AudioAnalysisTools.DSP
     using System.IO;
     using Accord.Math;
     using StandardSpectrograms;
+    using TowseyLibrary;
     using WavTools;
 
     /// <summary>
@@ -117,22 +118,28 @@ namespace AudioAnalysisTools.DSP
 
                     while (count < allSubmatrices.Count)
                     {
-                        randomPatchLists[$"randomPatch{count.ToString()}"].Add(PatchSampling
-                            .GetPatches(allSubmatrices.ToArray()[count], patchWidth, patchHeight, numRandomPatches,
-                                PatchSampling.SamplingMethod.Random).ToMatrix());
-                         /*
+                        // downsampling the input matrix by a factor of n (MaxPoolingFactor) using max pooling
+                        double[,] downsampledMatrix = MaxPooling(allSubmatrices.ToArray()[count], config.MaxPoolingFactor);
 
-                        //  take the total number of frames out of each second minute paper
-                        if (no / 2 == 0)
-                        {
-                            int rows = allSubmatrices.ToArray()[count].GetLength(0);
-                            int columns = allSubmatrices.ToArray()[count].GetLength(1);
-                            randomPatchLists[$"randomPatch{count.ToString()}"].Add(PatchSampling
-                                .GetPatches(allSubmatrices.ToArray()[count], patchWidth, patchHeight, (rows / patchHeight) * (columns / patchWidth),
-                                    PatchSampling.SamplingMethod.Sequential).ToMatrix());
-                            no++;
-                        }
-                        */
+                        randomPatchLists[$"randomPatch{count.ToString()}"].Add(PatchSampling
+                            .GetPatches(downsampledMatrix, patchWidth, patchHeight, numRandomPatches,
+                                PatchSampling.SamplingMethod.Random).ToMatrix());
+
+                        /*
+                        randomPatchLists[$"randomPatch{count.ToString()}"].Add(PatchSampling.
+                            GetPatches(allSubmatrices.ToArray()[count], patchWidth, patchHeight, numRandomPatches, 
+                                PatchSampling.SamplingMethod.Random).ToMatrix());
+                       //  take the total number of frames out of each second minute paper
+                       if (no / 2 == 0)
+                       {
+                           int rows = allSubmatrices.ToArray()[count].GetLength(0);
+                           int columns = allSubmatrices.ToArray()[count].GetLength(1);
+                           randomPatchLists[$"randomPatch{count.ToString()}"].Add(PatchSampling
+                               .GetPatches(allSubmatrices.ToArray()[count], patchWidth, patchHeight, (rows / patchHeight) * (columns / patchWidth),
+                                   PatchSampling.SamplingMethod.Sequential).ToMatrix());
+                           no++;
+                       }
+                       */
                         count++;
                     }
                 }
@@ -161,6 +168,34 @@ namespace AudioAnalysisTools.DSP
             }
 
             return allClusteringOutput;
+        }
+
+        /// <summary>
+        /// This method downsamples the input matrix (x,y) by a factor of n on the temporal scale (x) using max pooling
+        /// </summary>
+        public static double[,] MaxPooling(double[,] matrix, int factor)
+        {
+            int count = 0;
+            List<double[]> downsampledMatrix = new List<double[]>();
+            while (count + factor <= matrix.GetLength(0))
+            {
+                List<double> maxValues = new List<double>();
+                for (int j = 0; j < matrix.GetLength(1); j++)
+                {
+                    List<double> temp = new List<double>();
+                    for (int i = count; i < count + factor; i++)
+                    {
+                        temp.Add(matrix[i, j]);
+                    }
+
+                    maxValues.Add(temp.ToArray().GetMaxValue());
+                }
+
+                downsampledMatrix.Add(maxValues.ToArray());
+                count = count + factor;
+            }
+
+            return downsampledMatrix.ToArray().ToMatrix();
         }
 
         /// <summary>

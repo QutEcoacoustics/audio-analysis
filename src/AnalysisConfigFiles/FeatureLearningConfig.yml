@@ -18,7 +18,6 @@ FrequencyScaleType: Mel
 FrameSize: 1024
 FinalBinCount: 128
 
-
 # The default values for minFreqBin and maxFreqBin are 1 and FinalBinCount
 # For any other arbitrary frequency bin bounds, these two parameters need to be manually set.
 MinFreqBin: 24
@@ -44,9 +43,11 @@ NumRandomPatches: 1000
 # the number of clusters to be generated from the selected patch set
 NumClusters: 256
 
-
 # Applying noise reduction and whitening if these options are set to 'true'
 DoNoiseReduction: true
 DoWhitening: true
+
+# The factor of data downsampling using max pooling
+MaxPoolingFactor: 6
 ...
 

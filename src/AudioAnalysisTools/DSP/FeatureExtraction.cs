@@ -61,8 +61,11 @@ namespace AudioAnalysisTools.DSP
             // the number of frames that their feature vectors will be concatenated in order to preserve temporal information.
             int frameWindowLength = config.FrameWindowLength;
 
-            // he step size to make a window of frames
+            // the step size to make a window of frames
             int stepSize = config.StepSize;
+
+            // the factor of downsampling
+            int maxPoolingFactor = config.MaxPoolingFactor;
 
             // check whether there is any file in the folder/subfolders
             if (Directory.GetFiles(inputPath, "*", SearchOption.AllDirectories).Length == 0)
@@ -88,7 +91,7 @@ namespace AudioAnalysisTools.DSP
                 // process the wav file if it is not empty
                 if (fileInfo.Length != 0)
                 {
-                    string pathToSimilrityVectorsFile = Path.Combine(simVecDir.FullName, fileInfo.Name + ".csv");
+                    string pathToSimilarityVectorsFile = Path.Combine(simVecDir.FullName, fileInfo.Name + ".csv");
                     var recording = new AudioRecording(filePath);
                     settings.SourceFileName = recording.BaseName;
 
@@ -124,9 +127,13 @@ namespace AudioAnalysisTools.DSP
                     List<double[,]> allSequentialPatchMatrix = new List<double[,]>();
                     for (int i = 0; i < matrices2.GetLength(0); i++)
                     {
-                        int rows = matrices2[i].GetLength(0);
-                        int columns = matrices2[i].GetLength(1);
-                        var sequentialPatches = PatchSampling.GetPatches(matrices2[i], patchWidth, patchHeight, (rows / patchHeight) * (columns / patchWidth), PatchSampling.SamplingMethod.Sequential);
+                        // downsampling the input matrix by a factor of n (MaxPoolingFactor) using max pooling
+                        double[,] downsampledMatrix = FeatureLearning.MaxPooling(matrices2[i], config.MaxPoolingFactor);
+
+                        int rows = downsampledMatrix.GetLength(0); // matrices2[i].GetLength(0);
+                        int columns = downsampledMatrix.GetLength(1); // matrices2[i].GetLength(1);
+                        var sequentialPatches = PatchSampling.GetPatches(downsampledMatrix, patchWidth, patchHeight, (rows / patchHeight) * (columns / patchWidth), PatchSampling.SamplingMethod.Sequential);
+                        //var sequentialPatches = PatchSampling.GetPatches(matrices2[i], patchWidth, patchHeight, (rows / patchHeight) * (columns / patchWidth), PatchSampling.SamplingMethod.Sequential);
                         allSequentialPatchMatrix.Add(sequentialPatches.ToMatrix());
                     }
 
@@ -186,16 +193,16 @@ namespace AudioAnalysisTools.DSP
                             similarityVectors[j] = allNormCentroids.ToArray()[i].ToMatrix().Dot(normVector);
                         }
 
-                        Csv.WriteMatrixToCsv(pathToSimilrityVectorsFile.ToFileInfo(), similarityVectors.ToMatrix());
+                        Csv.WriteMatrixToCsv(pathToSimilarityVectorsFile.ToFileInfo(), similarityVectors.ToMatrix());
 
-                        // To preserve the temporal information, we can concatenate the similarity vectors of a group of frames using
-                        // FrameWindowLength
+                        // To preserve the temporal information, we can concatenate the similarity vectors of a group of frames
+                        // using FrameWindowLength
 
                         // patchId refers to the patch id that has been processed so far according to the step size.
                         // if we want no overlap between different frame windows, then stepSize = frameWindowLength
                         int patchId = 0;
 
-                        // patchCounter refers to the number of patches that has been processed so far accroding to FrameWindowLength.
+                        // patchCounter refers to the number of patches that has been processed so far according to FrameWindowLength.
                         //int patchCounter = 0;
 
                         while (patchId + frameWindowLength < similarityVectors.GetLength(0))
@@ -229,8 +236,12 @@ namespace AudioAnalysisTools.DSP
                     List<double[,]> allStdFeatureVectors = new List<double[,]>();
                     List<double[,]> allSkewnessFeatureVectors = new List<double[,]>();
 
-                    // number of frames needs to be concatenated to form 1 second. Each 24 frames make 1 second.
-                    int numFrames = (24 / patchHeight) * 60; //24 // patchHeight; //
+                    // number of frames needs to be concatenated to form 1 minute in the case of Black Rail.
+                    // Each 24 frames form 1 second.
+                    // factors such as stepSize, and maxPoolingFactor should be considered in temporal summarization.
+                    //int numFrames = (24 / patchHeight) * 60; //24 // patchHeight;
+
+                    int numFrames = (24 * 60) / (patchHeight * stepSize * maxPoolingFactor);
 
                     foreach (var freqBandFeature in allFeatureTransVectors)
                     {
