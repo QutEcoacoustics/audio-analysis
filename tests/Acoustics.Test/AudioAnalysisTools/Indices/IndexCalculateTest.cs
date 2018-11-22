@@ -178,7 +178,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             // OSC
             expectedSpectrumFile = new FileInfo(resourcesDir + "\\OSC.bin");
 
-            // Binary.Serialize(expectedSpectrumFile, spectralIndices.OSC);
+            //Binary.Serialize(expectedSpectrumFile, spectralIndices.OSC);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.OSC, AllowedDelta);
 

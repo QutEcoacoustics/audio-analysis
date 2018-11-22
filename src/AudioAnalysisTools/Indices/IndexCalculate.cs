@@ -285,7 +285,18 @@ namespace AudioAnalysisTools.Indices
             var tuple3 = SpectrogramTools.CalculateAvgSpectrumAndVarianceSpectrumFromAmplitudeSpectrogram(amplitudeSpectrogram);
             summaryIndices.Ndsi = SpectrogramTools.CalculateNdsi(tuple3.Item1, sampleRate, 1000, 2000, 8000);
 
-            // (B) ################################## EXTRACT SPECTRAL INDICES FROM THE AMPLITUDE SPECTROGRAM ##################################
+            // (B) ################################## EXTRACT OSC SPECTRAL INDEX DIRECTLY FROM THE RECORDING ##################################
+            // Get the oscillation spectral index OSC separately from signal because need a different frame size etc.
+
+            var sampleLength = Oscillations2014.DefaultSampleLength;
+            var frameLength = Oscillations2014.DefaultFrameLength;
+            var sensitivity = Oscillations2014.DefaultSensitivityThreshold;
+            var spectralIndexShort = Oscillations2014.GetSpectralIndex_Osc(subsegmentRecording, frameLength, sampleLength, sensitivity);
+
+            // double length of the vector because want to work with 256 element vector for LDFC purposes
+            spectralIndices.OSC = DataTools.VectorDoubleLengthByAverageInterpolation(spectralIndexShort);
+
+            // (C) ################################## EXTRACT SPECTRAL INDICES FROM THE AMPLITUDE SPECTROGRAM ##################################
 
             // i: CALCULATE SPECTRUM OF THE SUM OF FREQ BIN AMPLITUDES - used for later calculation of ACI
             spectralIndices.SUM = MatrixTools.SumColumns(amplitudeSpectrogram);
@@ -388,7 +399,7 @@ namespace AudioAnalysisTools.Indices
 
             // iii: CALCULATE noise reduced AVERAGE DECIBEL SPECTRUM
             // TODO: The method to calculate POW by averaging decibel values should be depracated. It is now replaced by index PMN.
-            spectralIndices.POW = SpectrogramTools.CalculateAvgSpectrumFromSpectrogram(deciBelSpectrogram);
+            //spectralIndices.POW = SpectrogramTools.CalculateAvgSpectrumFromSpectrogram(deciBelSpectrogram);
             spectralIndices.PMN = SpectrogramTools.CalculateAvgDecibelSpectrumFromSpectrogram(deciBelSpectrogram);
 
             // iv: CALCULATE SPECTRAL COVER.
