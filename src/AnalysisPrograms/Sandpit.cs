@@ -58,7 +58,7 @@ namespace AnalysisPrograms
         public class Arguments : SubCommandBase
         {
             public override Task<int> Execute(CommandLineApplication app)
-            {
+            { 
                 var tStart = DateTime.Now;
                 Log.Verbosity = 1;
                 Log.WriteLine("# Start Time = " + tStart.ToString(CultureInfo.InvariantCulture));
@@ -104,7 +104,7 @@ namespace AnalysisPrograms
                 //TestDirectorySearchAndFileSearch();
                 //TestNoiseReduction();
                 Oscillations2014.TESTMETHOD_DrawOscillationSpectrogram();
-                //Oscillations2014.TESTMETHOD_GetSpectralIndex_Osc();
+                Oscillations2014.TESTMETHOD_GetSpectralIndex_Osc();
                 //Test_DrawFourSpectrograms();
 
                 Console.WriteLine("# Finished Sandpit Task!    Press any key to exit.");
@@ -324,9 +324,9 @@ namespace AnalysisPrograms
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
 
             // Ivan Campos recordings
-            string recordingPath = @"G:\SensorNetworks\WavFiles\Ivancampos\INCIPO01_20161031_024006_898.wav";
-            string outputPath = @"G:\SensorNetworks\Output\IvanCampos\17";
-            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
+            //string recordingPath = @"G:\SensorNetworks\WavFiles\Ivancampos\INCIPO01_20161031_024006_898.wav";
+            //string outputPath = @"G:\SensorNetworks\Output\IvanCampos\17";
+            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
 
             // Test recordings from Wildlife Acoustics demonstrating their compression algorithm
             //string recordingPath = @"D:\SensorNetworks\WildLifeAcoustics\sm4_compression_demo\S4A00068_20160506_063000.wav";
@@ -377,6 +377,12 @@ namespace AnalysisPrograms
             //       Source = @"Z:\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3".ToFileInfo(),
             //       Config = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg".ToFileInfo(),
             //       Output = @"C:\SensorNetworks\Output\SERF\AfterRefactoring".ToDirectoryInfo()
+
+            // SERF RECORDINGS FROM 19th June 2013
+            // these are six hour recordings
+            string recordingPath = @"G:\Ecoacoustics\WavFiles\SERF\2013June19\SERF_20130619_064615_000.wav";
+            string outputPath = @"C:\Ecoacoustics\Output\SERF\SERFIndicesNew_2013June19";
+            string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Acoustic.yml";
 
             // GROUND PARROT
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\groundParrot_Perigian_TEST.wav";

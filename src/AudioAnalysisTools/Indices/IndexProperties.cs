@@ -17,9 +17,7 @@ namespace AudioAnalysisTools.Indices
     using System.Collections.Generic;
     using System.Drawing;
     using System.IO;
-
     using Acoustics.Shared.ConfigFile;
-
     using AnalysisBase;
     using Newtonsoft.Json;
     using TowseyLibrary;
@@ -40,10 +38,10 @@ namespace AudioAnalysisTools.Indices
         {
             this.Loaded += config =>
                 {
-                    var indicesPropertiesConfig = Indices.IndexProperties.Find(this, this.ConfigPath);
-                    this.IndexPropertiesConfig = indicesPropertiesConfig.Path.ToOsPath();
-                    this.IndexProperties = ConfigFile.Deserialize<IndexPropertiesCollection>(this.IndexPropertiesConfig);
-                };
+                var indicesPropertiesConfig = Indices.IndexProperties.Find(this, this.ConfigPath);
+                this.IndexPropertiesConfig = indicesPropertiesConfig.Path.ToOsPath();
+                this.IndexProperties = ConfigFile.Deserialize<IndexPropertiesCollection>(this.IndexPropertiesConfig);
+            };
         }
 
         public string IndexPropertiesConfig { get; set; }

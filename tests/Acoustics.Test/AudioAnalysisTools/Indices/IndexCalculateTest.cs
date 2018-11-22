@@ -1,4 +1,4 @@
-﻿// <copyright file="IndexCalculateTest.cs" company="QutEcoacoustics">
+// <copyright file="IndexCalculateTest.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -15,7 +15,6 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
-    using TowseyLibrary;
 
     // using TestHelpers;
 
@@ -53,7 +52,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
         {
             var sourceRecording = PathHelper.ResolveAsset(@"Recordings\BAC2_20071008-085040.wav");
             var configFile = PathHelper.ResolveConfigFile(@"Towsey.Acoustic.yml");
-            var indexPropertiesConfig = PathHelper.ResolveConfigFile(@"IndexPropertiesConfig.yml");
+            //var indexPropertiesConfig = PathHelper.ResolveConfigFile(@"IndexPropertiesConfig.yml");
 
             // var outputDir = this.outputDirectory;
             // Create temp directory to store output
@@ -111,7 +110,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
         {
             var sourceRecording = PathHelper.ResolveAsset(@"Recordings\BAC2_20071008-085040.wav");
             var configFile = PathHelper.ResolveConfigFile(@"Towsey.Acoustic.yml");
-            var indexPropertiesConfig = PathHelper.ResolveConfigFile(@"IndexPropertiesConfig.yml");
+            //var indexPropertiesConfig = PathHelper.ResolveConfigFile(@"IndexPropertiesConfig.yml");
 
             // var outputDir = this.outputDirectory;
             var resourcesDir = PathHelper.ResolveAssetPath("Indices");
@@ -162,13 +161,6 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.CVR, AllowedDelta);
 
-            // DMN
-            expectedSpectrumFile = new FileInfo(resourcesDir + "\\PMN.bin");
-
-            // Binary.Serialize(expectedSpectrumFile, spectralIndices.PMN);
-            expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
-            CollectionAssert.That.AreEqual(expectedVector, spectralIndices.PMN, AllowedDelta);
-
             // ENT
             expectedSpectrumFile = new FileInfo(resourcesDir + "\\ENT.bin");
 
@@ -183,12 +175,33 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.EVN, AllowedDelta);
 
+            // OSC
+            expectedSpectrumFile = new FileInfo(resourcesDir + "\\OSC.bin");
+
+            // Binary.Serialize(expectedSpectrumFile, spectralIndices.OSC);
+            expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
+            CollectionAssert.That.AreEqual(expectedVector, spectralIndices.OSC, AllowedDelta);
+
+            // PMN
+            expectedSpectrumFile = new FileInfo(resourcesDir + "\\PMN.bin");
+
+            // Binary.Serialize(expectedSpectrumFile, spectralIndices.PMN);
+            expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
+            CollectionAssert.That.AreEqual(expectedVector, spectralIndices.PMN, AllowedDelta);
+
             // POW
-            expectedSpectrumFile = new FileInfo(resourcesDir + "\\POW.bin");
+            //expectedSpectrumFile = new FileInfo(resourcesDir + "\\POW.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.POW);
+            //expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
+            //CollectionAssert.That.AreEqual(expectedVector, spectralIndices.POW, AllowedDelta);
+
+            // R3D
+            expectedSpectrumFile = new FileInfo(resourcesDir + "\\R3D.bin");
+
+            // Binary.Serialize(expectedSpectrumFile, spectralIndices.R3D);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
-            CollectionAssert.That.AreEqual(expectedVector, spectralIndices.POW, AllowedDelta);
+            CollectionAssert.That.AreEqual(expectedVector, spectralIndices.R3D, AllowedDelta);
 
             // RHZ
             expectedSpectrumFile = new FileInfo(resourcesDir + "\\RHZ.bin");
@@ -218,13 +231,6 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.RVT, AllowedDelta);
 
-            // R3D
-            expectedSpectrumFile = new FileInfo(resourcesDir + "\\R3D.bin");
-
-            // Binary.Serialize(expectedSpectrumFile, spectralIndices.R3D);
-            expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
-            CollectionAssert.That.AreEqual(expectedVector, spectralIndices.R3D, AllowedDelta);
-
             // SPT
             expectedSpectrumFile = new FileInfo(resourcesDir + "\\SPT.bin");
 
@@ -245,7 +251,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
         {
             var sourceRecording = PathHelper.ResolveAsset(@"Recordings\BAC2_20071008-085040.wav");
             var configFile = PathHelper.ResolveConfigFile(@"Towsey.Acoustic.yml");
-            var indexPropertiesConfig = PathHelper.ResolveConfigFile(@"IndexPropertiesConfig.yml");
+            //var indexPropertiesConfig = PathHelper.ResolveConfigFile(@"IndexPropertiesConfig.yml");
 
             // var outputDir = this.outputDirectory;
             // Create temp directory to store output
@@ -311,7 +317,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             var subsegmentRecording = new AudioRecording(wr);
 
             var configFile = PathHelper.ResolveConfigFile(@"Towsey.Acoustic.yml");
-            var indexPropertiesConfig = PathHelper.ResolveConfigFile(@"IndexPropertiesConfig.yml");
+            //var indexPropertiesConfig = PathHelper.ResolveConfigFile(@"IndexPropertiesConfig.yml");
 
             // Create temp directory to store output
             if (!this.outputDirectory.Exists)

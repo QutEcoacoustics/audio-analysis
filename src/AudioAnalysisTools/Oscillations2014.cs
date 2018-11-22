@@ -42,11 +42,16 @@ namespace AudioAnalysisTools
     /// </summary>
     public static class Oscillations2014
     {
-        // sampleLength is the number of frames taken from a frequency bin on which to do autocorr-fft.
-        // longer sample lengths are better for longer duration, slower moving events.
-        // shorter sample lengths are better for short duration, fast moving events.
+        // The following default values for detecting oscillations interact.
+        // 1. Default frame length for testing oscillations is set at 256 because allows for greater temporal resolution
+        //    However need to double length of the resulting vector when want to use as spectral index.
+        // 2. SampleLength is the number of frames taken from a frequency bin on which to do autocorr-fft.
+        //    Longer sample lengths are better for longer duration, slower moving events.
+        //    Shorter sample lengths are better for short duration, fast moving events.
+        public static int DefaultResampleRate = 22050;
+        public static int DefaultFrameLength = 256;
         public static int DefaultSampleLength = 128;
-        public static double DefaultSensitivityThreshold = 0.2;
+        public static double DefaultSensitivityThreshold = 0.4;
 
         /// <summary>
         /// In line class used to return results from the static method Oscillations2014.GetFreqVsOscillationsDataAndImage();
@@ -73,11 +78,16 @@ namespace AudioAnalysisTools
         public static void TESTMETHOD_DrawOscillationSpectrogram()
         {
             {
-                //var sourceRecording = @"C:\Work\GitHub\audio-analysis\tests\Fixtures\Recordings\BAC2_20071008-085040.wav".ToFileInfo();
+                var sourceRecording = @"C:\Work\GitHub\audio-analysis\tests\Fixtures\Recordings\BAC2_20071008-085040.wav".ToFileInfo();
                 //var sourceRecording = @"C:\Work\GitHub\audio-analysis\tests\Fixtures\Recordings\BAC2_20071008-085040_seconds30to32.wav".ToFileInfo();
                 //var sourceRecording = @"C:\Work\GitHub\audio-analysis\tests\Fixtures\Recordings\BAC2_20071008-085040_seconds45to46.wav".ToFileInfo();
-                var sourceRecording = @"C:\Work\GitHub\audio-analysis\tests\Fixtures\Recordings\BAC2_20071008-085040_seconds49to49.wav".ToFileInfo();
+                //var sourceRecording = @"C:\Work\GitHub\audio-analysis\tests\Fixtures\Recordings\BAC2_20071008-085040_seconds49to49.wav".ToFileInfo();
                 var output = @"C:\Ecoacoustics\SoftwareTests\TestOscillationSpectrogram".ToDirectoryInfo();
+                var sourceName = Path.GetFileNameWithoutExtension(sourceRecording.Name);
+                var fileName1 = sourceName + ".FreqOscilSpectrogram7";
+                var fileName2 = sourceName + ".FreqOscilDataMatrix7";
+                //var fileName3 = sourceName + ".SpectralIndex7.OSC";
+
                 var expectedResultsDir = new DirectoryInfo(Path.Combine(output.FullName, TestTools.ExpectedResultsDir));
                 if (!expectedResultsDir.Exists)
                 {
@@ -93,29 +103,27 @@ namespace AudioAnalysisTools
                 var tuple = GenerateOscillationDataAndImages(sourceRecording, configDict, true);
 
                 // (1) Save image file of this matrix.
-                var sourceName = Path.GetFileNameWithoutExtension(sourceRecording.Name);
-                var fileName = sourceName + ".FreqOscilSpectrogram";
-                var pathName = Path.Combine(output.FullName, fileName);
+                var pathName = Path.Combine(output.FullName, fileName1);
                 var imagePath = pathName + ".png";
                 tuple.Item1.Save(imagePath, ImageFormat.Png);
 
-                // construct output file names
-                fileName = sourceName + ".FreqOscilDataMatrix";
-                pathName = Path.Combine(output.FullName, fileName);
+                // construct output file name for freqOscilMatrix1
+                // and save matrix of oscillation data
+                pathName = Path.Combine(output.FullName, fileName2);
                 var csvFile1 = new FileInfo(pathName + ".csv");
-
-                fileName = sourceName + ".SpectralIndex.OSC";
-                pathName = Path.Combine(output.FullName, fileName);
-                var csvFile2 = new FileInfo(pathName + ".csv");
-
-                // Save matrix of oscillation data stored in freqOscilMatrix1
                 Acoustics.Shared.Csv.Csv.WriteMatrixToCsv(csvFile1, tuple.Item2);
+
+                // construct output file name for spectral index
+                //pathName = Path.Combine(output.FullName, fileName3);
+                //var csvFile2 = new FileInfo(pathName + ".csv");
+                // NOTE: As of Nov 2018, prepare the spectral index in a separate method: TESTMETHOD_GetSpectralIndex_Osc().
 
                 // Do my version of UNIT TESTING - This is the File Equality Test.
                 var expectedTestFile1 = new FileInfo(Path.Combine(expectedResultsDir.FullName, "OscillationSpectrogram_MatrixTest.EXPECTED.csv"));
-                var expectedTestFile2 = new FileInfo(Path.Combine(expectedResultsDir.FullName, "OscillationSpectrogram_VectorTest.EXPECTED.csv"));
                 TestTools.FileEqualityTest("Matrix Equality", csvFile1, expectedTestFile1);
-                TestTools.FileEqualityTest("Vector Equality", csvFile2, expectedTestFile2);
+
+                //var expectedTestFile2 = new FileInfo(Path.Combine(expectedResultsDir.FullName, "OscillationSpectrogram_VectorTest.EXPECTED.csv"));
+                //TestTools.FileEqualityTest("Vector Equality", csvFile2, expectedTestFile2);
                 Console.WriteLine("\n\n");
             }
         }
@@ -132,17 +140,17 @@ namespace AudioAnalysisTools
             //var sourceRecording = @"C:\Work\GitHub\audio-analysis\tests\Fixtures\Recordings\BAC2_20071008-085040_seconds49to49.wav".ToFileInfo();
             var output = @"C:\Ecoacoustics\SoftwareTests\TestOscillationSpectrogram".ToDirectoryInfo();
             var sourceName = Path.GetFileNameWithoutExtension(sourceRecording.Name);
-            var opStem = sourceName + ".SpectralIndex.OSC";
+            var opStem = sourceName + ".SpectralIndex7.OSC";
             var expectedResultsDir = new DirectoryInfo(Path.Combine(output.FullName, TestTools.ExpectedResultsDir));
             if (!expectedResultsDir.Exists)
             {
                 expectedResultsDir.Create();
             }
 
-            var configDict = GetDefaultConfigDictionary(sourceRecording);
+            var recordingSegment = new AudioRecording(sourceRecording.FullName);
 
-            // 2. Get the spectral index
-            var spectralIndexShort = GetSpectralIndex_Osc(sourceRecording, configDict);
+            // 2. Get the spectral index using default values
+            var spectralIndexShort = GetSpectralIndex_Osc(recordingSegment, DefaultFrameLength, DefaultSampleLength, DefaultSensitivityThreshold);
 
             // 3. double length of the vector because want to work with 256 element vector for LDFC purposes
             var spectralIndex = DataTools.VectorDoubleLengthByAverageInterpolation(spectralIndexShort);
@@ -156,13 +164,11 @@ namespace AudioAnalysisTools
             spectralIndex = DataTools.NormaliseByScalingMaxValueToOne(spectralIndex);
             int cellWidth = 30;
             int cellHeight = 2;
-            var vectorImage = ImageTools.DrawVectorInGrayScaleWithoutNormalisation(DataTools.reverseArray(spectralIndex), cellWidth, cellHeight);
+            var vectorImage = ImageTools.DrawVectorInGrayScaleWithoutNormalisation(DataTools.reverseArray(spectralIndex), cellWidth, cellHeight, true);
 
             // set up a frequency scale for easier interpretation
             int herzInterval = 1000;
-            var sampleRate = double.Parse(configDict[AnalysisKeys.ResampleRate]);
-            var windowSize = double.Parse(configDict[AnalysisKeys.FrameLength]);
-            double freqBinWidth = sampleRate / windowSize / 2; // Divide by 2 bcause have doubled length of the spectral index vector
+            double freqBinWidth = DefaultResampleRate / (double)DefaultFrameLength / 2; // Divide by 2 bcause have doubled length of the spectral index vector
             double yTicInterval = herzInterval / freqBinWidth * cellHeight;
             int yOffset = cellHeight / 2;
             vectorImage = ImageTools.DrawYaxisScale(vectorImage, 10, herzInterval, yTicInterval, yOffset);
@@ -217,7 +223,6 @@ namespace AudioAnalysisTools
                 [AnalysisKeys.AddAxes] = configuration[AnalysisKeys.AddAxes] ?? "true",
             };
 
-
             // SET THE 2 KEY PARAMETERS HERE FOR DETECTION OF OSCILLATION
             // often need different frame size doing Oscil Detection
             const int oscilDetection2014FrameSize = 256;
@@ -233,6 +238,36 @@ namespace AudioAnalysisTools
             const double sensitivityThreshold = 0.3;
             configDict[AnalysisKeys.OscilDetection2014SensitivityThreshold] = sensitivityThreshold.ToString(CultureInfo.CurrentCulture);
             return configDict;
+        }
+
+        public static double[,] GetSpectrogramMatrix(AudioRecording recordingSegment, int frameLength)
+        {
+            // set up the default songram config object
+            var sonoConfig = new SonogramConfig
+            {
+                WindowSize = frameLength,
+                WindowOverlap = 0.0,
+            };
+
+            BaseSonogram sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
+
+            // Taking the decibel spectrogram also works
+            // BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
+
+            // Do not do noise removal - it is unnecessary because only taking frequency bins three at a time.
+            // Can take square-root of amplitude spectrogram. This emphasizes the low amplitude features.
+            // Omitting sqrt results in detection of fewer oscillations
+            //sonogram.Data = MatrixTools.SquareRootOfValues(sonogram.Data);
+
+            // remove the DC bin if it has not already been removed.
+            // Assume test of divisible by 2 is good enough.
+            int binCount = sonogram.Data.GetLength(1);
+            if (!binCount.IsEven())
+            {
+                sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.FrameCount - 1, binCount - 1);
+            }
+
+            return sonogram.Data;
         }
 
         /// <summary>
@@ -272,34 +307,22 @@ namespace AudioAnalysisTools
             }
 
             var recordingSegment = new AudioRecording(audioSegment.FullName);
-            BaseSonogram sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
+            var spgm = GetSpectrogramMatrix(recordingSegment, DefaultFrameLength);
 
-            // Taking the square-root emphasizes the low amplitude features.
-            // Could omit this but it gives fewer detections of oscillations
-            // Taking the decibel spectrogram also works
-            // BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
-            // Do not do any noise removal - it is unnecessary because only taking frequency bins three at a time.
-            sonogram.Data = MatrixTools.SquareRootOfValues(sonogram.Data);
-
-            // remove the DC bin if it has not already been removed.
-            // Assume test of divisible by 2 is good enough.
-            int binCount = sonogram.Data.GetLength(1);
-            if (!binCount.IsEven())
-            {
-                sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.FrameCount - 1, binCount - 1);
-            }
+            double framesPerSecond = DefaultResampleRate / (double)DefaultFrameLength;
+            double freqBinWidth = framesPerSecond;
 
             // get the appropriate sampleLength (patch size) for short recordings
-            int framecount = sonogram.Data.GetLength(0);
+            int framecount = spgm.GetLength(0);
             sampleLength = AdjustSampleSize(framecount, sampleLength);
 
             var algorithmName1 = "autocorr-svd-fft";
-            var freqOscilMatrix1 = GetFrequencyByOscillationsMatrix(sonogram.Data, sensitivity, sampleLength, algorithmName1);
-            var image1 = GetFreqVsOscillationsImage(freqOscilMatrix1, sonogram.FramesPerSecond, sonogram.FBinWidth, sampleLength, algorithmName1);
+            var freqOscilMatrix1 = GetFrequencyByOscillationsMatrix(spgm, sensitivity, sampleLength, algorithmName1);
+            var image1 = GetFreqVsOscillationsImage(freqOscilMatrix1, framesPerSecond, freqBinWidth, sampleLength, algorithmName1);
 
             var algorithmName2 = "autocorr-fft";
-            var freqOscilMatrix2 = GetFrequencyByOscillationsMatrix(sonogram.Data, sensitivity, sampleLength, algorithmName2);
-            var image2 = GetFreqVsOscillationsImage(freqOscilMatrix2, sonogram.FramesPerSecond, sonogram.FBinWidth, sampleLength, algorithmName2);
+            var freqOscilMatrix2 = GetFrequencyByOscillationsMatrix(spgm, sensitivity, sampleLength, algorithmName2);
+            var image2 = GetFreqVsOscillationsImage(freqOscilMatrix2, framesPerSecond, freqBinWidth, sampleLength, algorithmName2);
 
             //IMPORTANT NOTE: To generate an OSC spectral index matrix for making LDFC spectrograms, use the following line:
             //var spectralIndex = MatrixTools.GetMaximumColumnValues(freqOscilMatrix2);
@@ -382,9 +405,12 @@ namespace AudioAnalysisTools
                 xscale = 10;
             }
 
-            var image1 = ImageTools.DrawMatrixInColour(freqOscilMatrix, xPixelsPerCell: xscale, yPixelsPerCell: yscale);
+            //var image1 = ImageTools.DrawMatrixInColour(freqOscilMatrix, xPixelsPerCell: xscale, yPixelsPerCell: yscale);
+            //var image2 = ImageTools.DrawVectorInColour(DataTools.reverseArray(spectralIndex), cellWidth: xscale);
+            var image1 = ImageTools.DrawMatrixInGrayScale(freqOscilMatrix, xPixelsPerCell: xscale, yPixelsPerCell: yscale, reverse: true);
 
-            var image2 = ImageTools.DrawVectorInColour(DataTools.reverseArray(spectralIndex), cellWidth: xscale);
+            spectralIndex = DataTools.NormaliseByScalingMaxValueToOne(spectralIndex);
+            var image2 = ImageTools.DrawVectorInGrayScaleWithoutNormalisation(DataTools.reverseArray(spectralIndex), xscale, yscale, reverse: true);
 
             var image = ImageTools.CombineImagesInLine(new[] { image1, image2 });
 
@@ -856,42 +882,16 @@ namespace AudioAnalysisTools
             return vector;
         }
 
-        public static double[] GetSpectralIndex_Osc(FileInfo sourceRecording, Dictionary<string, string> configDict)
+        public static double[] GetSpectralIndex_Osc(AudioRecording recordingSegment, int frameLength, int sampleLength, double sensitivity)
         {
-            var sensitivity = double.Parse(configDict[AnalysisKeys.OscilDetection2014SensitivityThreshold]);
-
-            // set up the default songram config object
-            var sonoConfig = new SonogramConfig(configDict)
-            {
-                WindowSize = int.Parse(configDict[AnalysisKeys.FrameLength]),
-            };
-
-            var recordingSegment = new AudioRecording(sourceRecording.FullName);
-
-            //double recordingLengthInSeconds = recordingSegment.Duration.TotalSeconds;
-            BaseSonogram sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
-
-            // Taking the square-root emphasizes the low amplitude features.
-            // Could omit this but it gives fewer detections of oscillations
-            sonogram.Data = MatrixTools.SquareRootOfValues(sonogram.Data);
-
-            // remove the DC bin if it has not already been removed.
-            // Assume test of divisible by 2 is good enough.
-            int binCount = sonogram.Data.GetLength(1);
-            if (!binCount.IsEven())
-            {
-                sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.FrameCount - 1, binCount - 1);
-            }
+            var spgm = GetSpectrogramMatrix(recordingSegment, frameLength);
 
             // Sample length i.e. number of frames spanned to calculate oscillations per second
-            int framecount = sonogram.Data.GetLength(0);
-
-            // get required sample length
-            int sampleLength = int.Parse(configDict[AnalysisKeys.OscilDetection2014SampleLength]);
+            int framecount = spgm.GetLength(0);
 
             // adjust sample length i.e. patch size for short recordings.
             sampleLength = AdjustSampleSize(framecount, sampleLength);
-            var freqOscilMatrix = GetFrequencyByOscillationsMatrix(sonogram.Data, sensitivity, sampleLength, "autocorr-fft");
+            var freqOscilMatrix = GetFrequencyByOscillationsMatrix(spgm, sensitivity, sampleLength, "autocorr-fft");
 
             //NOTE: Generate an oscillations spectral index for making LDFC spectrograms by taking the max of each column
             var spectralIndex = MatrixTools.GetMaximumColumnValues(freqOscilMatrix);
