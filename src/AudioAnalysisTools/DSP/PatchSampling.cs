@@ -9,6 +9,7 @@ namespace AudioAnalysisTools.DSP
     using System.Linq;
     using Accord.Math;
     using TowseyLibrary;
+    using WavTools;
 
     public static class PatchSampling
     {
@@ -439,6 +440,34 @@ namespace AudioAnalysisTools.DSP
             }
 
             return patches;
+        }
+
+        /// <summary>
+        /// cut audio to subsegments of  desired length.
+        /// return list of subsegments
+        /// </summary>
+        public static List<AudioRecording> GetSubsegmentsSamples(AudioRecording recording, double subsegmentDurationInSeconds, double frameStep)
+        {
+            List<AudioRecording> subsegments = new List<AudioRecording>();
+
+            int sampleRate = recording.WavReader.SampleRate;
+            var segmentDuration = recording.WavReader.Time.TotalSeconds;
+            int segmentSampleCount = (int)(segmentDuration * sampleRate);
+            int subsegmentSampleCount = (int)(subsegmentDurationInSeconds * sampleRate);
+            double subsegmentFrameCount = subsegmentSampleCount / (double)frameStep;
+            subsegmentFrameCount = (int)Math.Ceiling(subsegmentFrameCount);
+            subsegmentSampleCount = (int)(subsegmentFrameCount * frameStep);
+
+            for (int i = 0; i < segmentSampleCount; subsegmentSampleCount++)
+            {
+                AudioRecording subsegmentRecording = recording;
+                double[] subsamples = DataTools.Subarray(recording.WavReader.Samples, i, subsegmentSampleCount);
+                var wr = new Acoustics.Tools.Wav.WavReader(subsamples, 1, 16, sampleRate);
+                subsegmentRecording = new AudioRecording(wr);
+                subsegments.Add(subsegmentRecording);
+            }
+
+            return subsegments;
         }
     }
 }

@@ -49,6 +49,7 @@ namespace AudioAnalysisTools.DSP
                 NoiseReductionType = NoiseReductionType.None,
                 NoiseReductionParameter = 0.0,
             };
+            double frameStep = frameSize - settings.WindowOverlap;
             int minFreqBin = config.MinFreqBin; // 24; //1; //35; //40; //
             int maxFreqBin = config.MaxFreqBin; // 95; //103; //109; //finalBinCount; //85; //80; //76;
             int numFreqBand = config.NumFreqBand; // 1;
@@ -66,6 +67,7 @@ namespace AudioAnalysisTools.DSP
 
             List<double[,]> randomPatches = new List<double[,]>();
             double[,] inputMatrix;
+            List<AudioRecording> recordings = new List<AudioRecording>();
 
             foreach (string filePath in Directory.GetFiles(inputPath, "*.wav"))
             {
@@ -77,70 +79,82 @@ namespace AudioAnalysisTools.DSP
                     var recording = new AudioRecording(filePath);
                     settings.SourceFileName = recording.BaseName;
 
-                    var amplitudeSpectrogram = new AmplitudeSpectrogram(settings, recording.WavReader);
-
-                    //var logScaleSpectrogram = MatrixTools.Matrix2LogValues(amplitudeSpectrogram.Data);
-                    var decibelSpectrogram = new DecibelSpectrogram(amplitudeSpectrogram);
-
-                    //var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
-
-                    // DO RMS NORMALIZATION
-                    //sonogram.Data = SNR.RmsNormalization(sonogram.Data);
-
-                    // DO NOISE REDUCTION
-                    // sonogram.Data = SNR.NoiseReduce_Median(sonogram.Data, nhBackgroundThreshold: 2.0);
-                    //sonogram.Data = PcaWhitening.NoiseReduction(sonogram.Data);
-
-                    if (config.DoNoiseReduction)
+                    if (config.DoSegmentation)
                     {
-                        decibelSpectrogram.Data = PcaWhitening.NoiseReduction(decibelSpectrogram.Data);
-                    }
-
-                    // check whether the full band spectrogram is needed or a matrix with arbitrary freq bins
-                    if (minFreqBin != 1 || maxFreqBin != finalBinCount)
-                    {
-                        inputMatrix =
-                            PatchSampling.GetArbitraryFreqBandMatrix(decibelSpectrogram.Data, minFreqBin, maxFreqBin);
+                        recordings = PatchSampling.GetSubsegmentsSamples(recording, config.SubsegmentDurationInSeconds, frameStep);
                     }
                     else
                     {
-                        inputMatrix = decibelSpectrogram.Data;
+                        recordings.Add(recording);
                     }
 
-                    // creating matrices from different freq bands of the source spectrogram
-                    List<double[,]> allSubmatrices = PatchSampling.GetFreqBandMatrices(inputMatrix, numFreqBand);
-
-                    // Second: selecting random patches from each freq band matrix and add them to the corresponding patch list
-                    int count = 0;
-
-                    // file counter
-                    //int no = 0;
-
-                    while (count < allSubmatrices.Count)
+                    for (int i = 0; i < recordings.Count; i++)
                     {
-                        // downsampling the input matrix by a factor of n (MaxPoolingFactor) using max pooling
-                        double[,] downsampledMatrix = MaxPooling(allSubmatrices.ToArray()[count], config.MaxPoolingFactor);
+                        var amplitudeSpectrogram = new AmplitudeSpectrogram(settings, recording.WavReader);
 
-                        randomPatchLists[$"randomPatch{count.ToString()}"].Add(PatchSampling
-                            .GetPatches(downsampledMatrix, patchWidth, patchHeight, numRandomPatches,
-                                PatchSampling.SamplingMethod.Random).ToMatrix());
+                        //var logScaleSpectrogram = MatrixTools.Matrix2LogValues(amplitudeSpectrogram.Data);
+                        var decibelSpectrogram = new DecibelSpectrogram(amplitudeSpectrogram);
 
-                        /*
-                        randomPatchLists[$"randomPatch{count.ToString()}"].Add(PatchSampling.
-                            GetPatches(allSubmatrices.ToArray()[count], patchWidth, patchHeight, numRandomPatches, 
-                                PatchSampling.SamplingMethod.Random).ToMatrix());
-                       //  take the total number of frames out of each second minute paper
-                       if (no / 2 == 0)
-                       {
-                           int rows = allSubmatrices.ToArray()[count].GetLength(0);
-                           int columns = allSubmatrices.ToArray()[count].GetLength(1);
-                           randomPatchLists[$"randomPatch{count.ToString()}"].Add(PatchSampling
-                               .GetPatches(allSubmatrices.ToArray()[count], patchWidth, patchHeight, (rows / patchHeight) * (columns / patchWidth),
-                                   PatchSampling.SamplingMethod.Sequential).ToMatrix());
-                           no++;
-                       }
-                       */
-                        count++;
+                        //var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
+
+                        // DO RMS NORMALIZATION
+                        //sonogram.Data = SNR.RmsNormalization(sonogram.Data);
+
+                        // DO NOISE REDUCTION
+                        // sonogram.Data = SNR.NoiseReduce_Median(sonogram.Data, nhBackgroundThreshold: 2.0);
+                        //sonogram.Data = PcaWhitening.NoiseReduction(sonogram.Data);
+
+                        if (config.DoNoiseReduction)
+                        {
+                            decibelSpectrogram.Data = PcaWhitening.NoiseReduction(decibelSpectrogram.Data);
+                        }
+
+                        // check whether the full band spectrogram is needed or a matrix with arbitrary freq bins
+                        if (minFreqBin != 1 || maxFreqBin != finalBinCount)
+                        {
+                            inputMatrix =
+                                PatchSampling.GetArbitraryFreqBandMatrix(decibelSpectrogram.Data, minFreqBin, maxFreqBin);
+                        }
+                        else
+                        {
+                            inputMatrix = decibelSpectrogram.Data;
+                        }
+
+                        // creating matrices from different freq bands of the source spectrogram
+                        List<double[,]> allSubmatrices = PatchSampling.GetFreqBandMatrices(inputMatrix, numFreqBand);
+
+                        // Second: selecting random patches from each freq band matrix and add them to the corresponding patch list
+                        int count = 0;
+
+                        // file counter
+                        //int no = 0;
+
+                        while (count < allSubmatrices.Count)
+                        {
+                            // downsampling the input matrix by a factor of n (MaxPoolingFactor) using max pooling
+                            double[,] downsampledMatrix = MaxPooling(allSubmatrices.ToArray()[count], config.MaxPoolingFactor);
+
+                            randomPatchLists[$"randomPatch{count.ToString()}"].Add(PatchSampling
+                                .GetPatches(downsampledMatrix, patchWidth, patchHeight, numRandomPatches,
+                                    PatchSampling.SamplingMethod.Random).ToMatrix());
+
+                            /*
+                            randomPatchLists[$"randomPatch{count.ToString()}"].Add(PatchSampling.
+                                GetPatches(allSubmatrices.ToArray()[count], patchWidth, patchHeight, numRandomPatches, 
+                                    PatchSampling.SamplingMethod.Random).ToMatrix());
+                           //  take the total number of frames out of each second minute paper
+                           if (no / 2 == 0)
+                           {
+                               int rows = allSubmatrices.ToArray()[count].GetLength(0);
+                               int columns = allSubmatrices.ToArray()[count].GetLength(1);
+                               randomPatchLists[$"randomPatch{count.ToString()}"].Add(PatchSampling
+                                   .GetPatches(allSubmatrices.ToArray()[count], patchWidth, patchHeight, (rows / patchHeight) * (columns / patchWidth),
+                                       PatchSampling.SamplingMethod.Sequential).ToMatrix());
+                               no++;
+                           }
+                           */
+                            count++;
+                        }
                     }
                 }
             }

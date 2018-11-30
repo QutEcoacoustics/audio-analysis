@@ -51,6 +51,7 @@ namespace AudioAnalysisTools.DSP
                 NoiseReductionType = NoiseReductionType.None,
                 NoiseReductionParameter = 0.0,
             };
+            double frameStep = frameSize - settings.WindowOverlap;
             int minFreqBin = config.MinFreqBin; // 24; //1; //35; //40; //
             int maxFreqBin = config.MaxFreqBin; // 95; //103; //109; //finalBinCount; //85; //80; //76;
             int numFreqBand = config.NumFreqBand; // 1;
@@ -76,371 +77,401 @@ namespace AudioAnalysisTools.DSP
             //*****
             // lists of features for all processing files
             // the key is the file name, and the value is the features for different bands
-            Dictionary<string, List<double[,]>> allFilesMinFeatureVectors = new Dictionary<string, List<double[,]>>();
-            Dictionary<string, List<double[,]>> allFilesMeanFeatureVectors = new Dictionary<string, List<double[,]>>();
-            Dictionary<string, List<double[,]>> allFilesMaxFeatureVectors = new Dictionary<string, List<double[,]>>();
-            Dictionary<string, List<double[,]>> allFilesStdFeatureVectors = new Dictionary<string, List<double[,]>>();
-            Dictionary<string, List<double[,]>> allFilesSkewnessFeatureVectors = new Dictionary<string, List<double[,]>>();
+            Dictionary<string, List<List<double[,]>>> allFilesMinFeatureVectors = new Dictionary<string, List<List<double[,]>>>();
+            Dictionary<string, List<List<double[,]>>> allFilesMeanFeatureVectors = new Dictionary<string, List<List<double[,]>>>();
+            Dictionary<string, List<List<double[,]>>> allFilesMaxFeatureVectors = new Dictionary<string, List<List<double[,]>>>();
+            Dictionary<string, List<List<double[,]>>> allFilesStdFeatureVectors = new Dictionary<string, List<List<double[,]>>>();
+            Dictionary<string, List<List<double[,]>>> allFilesSkewnessFeatureVectors = new Dictionary<string, List<List<double[,]>>>();
 
             double[,] inputMatrix;
+            List<AudioRecording> recordings = new List<AudioRecording>();
 
             foreach (string filePath in Directory.GetFiles(inputPath, "*.wav"))
             {
                 FileInfo fileInfo = filePath.ToFileInfo();
 
+                // lists of features for subsegments of a file
+                List<List<double[,]>> allSegmentsMinFeatureVectors = new List<List<double[,]>>();
+                List<List<double[,]>> allSegmentsMeanFeatureVectors = new List<List<double[,]>>();
+                List<List<double[,]>> allSegmentsMaxFeatureVectors = new List<List<double[,]>>();
+                List<List<double[,]>> allSegmentsStdFeatureVectors = new List<List<double[,]>>();
+                List<List<double[,]>> allSegmentSkewnessFeatureVectors = new List<List<double[,]>>();
+
                 // process the wav file if it is not empty
                 if (fileInfo.Length != 0)
                 {
-                    string pathToSimilarityVectorsFile = Path.Combine(simVecDir.FullName, fileInfo.Name + ".csv");
                     var recording = new AudioRecording(filePath);
                     settings.SourceFileName = recording.BaseName;
 
-                    //var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
-                    var amplitudeSpectrogram = new AmplitudeSpectrogram(settings, recording.WavReader);
-                    //var logSonogramData = MatrixTools.Matrix2LogValues(sonogram.Data);
-                    var decibelSpectrogram = new DecibelSpectrogram(amplitudeSpectrogram);
-
-                    // DO RMS NORMALIZATION
-                    //sonogram.Data = SNR.RmsNormalization(sonogram.Data);
-
-                    // DO NOISE REDUCTION
-                    // sonogram.Data = SNR.NoiseReduce_Median(sonogram.Data, nhBackgroundThreshold: 2.0);
-                    //sonogram.Data = PcaWhitening.NoiseReduction(sonogram.Data);
-                    if (config.DoNoiseReduction)
+                    if (config.DoSegmentation)
                     {
-                        decibelSpectrogram.Data = PcaWhitening.NoiseReduction(decibelSpectrogram.Data);
-                    }
-
-                    // check whether the full band spectrogram is needed or a matrix with arbitrary freq bins
-                    if (minFreqBin != 1 || maxFreqBin != finalBinCount)
-                    {
-                        inputMatrix = PatchSampling.GetArbitraryFreqBandMatrix(decibelSpectrogram.Data, minFreqBin, maxFreqBin);
+                        recordings = PatchSampling.GetSubsegmentsSamples(recording, config.SubsegmentDurationInSeconds, frameStep);
                     }
                     else
                     {
-                        inputMatrix = decibelSpectrogram.Data;
+                        recordings.Add(recording);
                     }
 
-                    // creating matrices from different freq bands of the source spectrogram
-                    List<double[,]> allSubmatrices2 = PatchSampling.GetFreqBandMatrices(inputMatrix, numFreqBand);
-                    double[][,] matrices2 = allSubmatrices2.ToArray();
-                    List<double[,]> allSequentialPatchMatrix = new List<double[,]>();
-                    for (int i = 0; i < matrices2.GetLength(0); i++)
+                    for (int s = 0; s < recordings.Count; s++)
                     {
-                        // downsampling the input matrix by a factor of n (MaxPoolingFactor) using max pooling
-                        double[,] downsampledMatrix = FeatureLearning.MaxPooling(matrices2[i], config.MaxPoolingFactor);
+                        string pathToSimilarityVectorsFile = Path.Combine(simVecDir.FullName, fileInfo.Name + "-" + s.ToString() + ".csv");
+                        //var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
+                        var amplitudeSpectrogram = new AmplitudeSpectrogram(settings, recording.WavReader);
+                        //var logSonogramData = MatrixTools.Matrix2LogValues(sonogram.Data);
+                        var decibelSpectrogram = new DecibelSpectrogram(amplitudeSpectrogram);
 
-                        int rows = downsampledMatrix.GetLength(0); // matrices2[i].GetLength(0);
-                        int columns = downsampledMatrix.GetLength(1); // matrices2[i].GetLength(1);
-                        var sequentialPatches = PatchSampling.GetPatches(downsampledMatrix, patchWidth, patchHeight, (rows / patchHeight) * (columns / patchWidth), PatchSampling.SamplingMethod.Sequential);
-                        //var sequentialPatches = PatchSampling.GetPatches(matrices2[i], patchWidth, patchHeight, (rows / patchHeight) * (columns / patchWidth), PatchSampling.SamplingMethod.Sequential);
-                        allSequentialPatchMatrix.Add(sequentialPatches.ToMatrix());
-                    }
+                        // DO RMS NORMALIZATION
+                        //sonogram.Data = SNR.RmsNormalization(sonogram.Data);
 
-                    // +++++++++++++++++++++++++++++++++++Feature Transformation
-                    // to do the feature transformation, we normalize centroids and
-                    // sequential patches from the input spectrogram to unit length
-                    // Then, we calculate the dot product of each patch with the centroids' matrix
-
-                    List<double[][]> allNormCentroids = new List<double[][]>();
-                    for (int i = 0; i < allCentroids.Count; i++)
-                    {
-                        // double check the index of the list
-                        double[][] normCentroids = new double[allCentroids.ToArray()[i].GetLength(0)][];
-                        for (int j = 0; j < allCentroids.ToArray()[i].GetLength(0); j++)
+                        // DO NOISE REDUCTION
+                        // sonogram.Data = SNR.NoiseReduce_Median(sonogram.Data, nhBackgroundThreshold: 2.0);
+                        //sonogram.Data = PcaWhitening.NoiseReduction(sonogram.Data);
+                        if (config.DoNoiseReduction)
                         {
-                            normCentroids[j] = ART_2A.NormaliseVector(allCentroids.ToArray()[i][j]);
+                            decibelSpectrogram.Data = PcaWhitening.NoiseReduction(decibelSpectrogram.Data);
                         }
 
-                        allNormCentroids.Add(normCentroids);
-                    }
-
-                    List<double[][]> allFeatureTransVectors = new List<double[][]>();
-
-                    // processing the sequential patch matrix for each band
-                    for (int i = 0; i < allSequentialPatchMatrix.Count; i++)
-                    {
-                        List<double[]> featureTransVectors = new List<double[]>();
-                        double[][] similarityVectors = new double[allSequentialPatchMatrix.ToArray()[i].GetLength(0)][];
-
-                        for (int j = 0; j < allSequentialPatchMatrix.ToArray()[i].GetLength(0); j++)
+                        // check whether the full band spectrogram is needed or a matrix with arbitrary freq bins
+                        if (minFreqBin != 1 || maxFreqBin != finalBinCount)
                         {
-                            // normalize each patch to unit length
-                            var inputVector = allSequentialPatchMatrix.ToArray()[i].ToJagged()[j];
-                            var normVector = inputVector;
-
-                            /*
-                            if (inputVector.Euclidean() == 0)
-                            {
-                                LoggedConsole.WriteLine(j.ToString());
-                            }
-                            */
-
-                            // to avoid vectors with NaN values, only normalize those that their norm is not equal to zero.
-                            if (inputVector.Euclidean() != 0)
-                            {
-                                normVector = ART_2A.NormaliseVector(inputVector);
-                            }
-
-                            /*
-                            if (normVector.HasNaN())
-                            {
-                                var vec = allSequentialPatchMatrix.ToArray()[i].ToJagged()[j];
-                                LoggedConsole.WriteLine(j.ToString());
-                            }
-                            */
-
-                            similarityVectors[j] = allNormCentroids.ToArray()[i].ToMatrix().Dot(normVector);
+                            inputMatrix = PatchSampling.GetArbitraryFreqBandMatrix(decibelSpectrogram.Data, minFreqBin, maxFreqBin);
+                        }
+                        else
+                        {
+                            inputMatrix = decibelSpectrogram.Data;
                         }
 
-                        Csv.WriteMatrixToCsv(pathToSimilarityVectorsFile.ToFileInfo(), similarityVectors.ToMatrix());
-
-                        // To preserve the temporal information, we can concatenate the similarity vectors of a group of frames
-                        // using FrameWindowLength
-
-                        // patchId refers to the patch id that has been processed so far according to the step size.
-                        // if we want no overlap between different frame windows, then stepSize = frameWindowLength
-                        int patchId = 0;
-
-                        // patchCounter refers to the number of patches that has been processed so far according to FrameWindowLength.
-                        //int patchCounter = 0;
-
-                        while (patchId + frameWindowLength < similarityVectors.GetLength(0))
+                        // creating matrices from different freq bands of the source spectrogram
+                        List<double[,]> allSubmatrices2 = PatchSampling.GetFreqBandMatrices(inputMatrix, numFreqBand);
+                        double[][,] matrices2 = allSubmatrices2.ToArray();
+                        List<double[,]> allSequentialPatchMatrix = new List<double[,]>();
+                        for (int i = 0; i < matrices2.GetLength(0); i++)
                         {
-                            List<double[]> patchGroup = new List<double[]>();
-                            for (int k = 0; k < frameWindowLength; k++)
-                            {
-                                patchGroup.Add(similarityVectors[k + patchId]);
-                            }
+                            // downsampling the input matrix by a factor of n (MaxPoolingFactor) using max pooling
+                            double[,] downsampledMatrix = FeatureLearning.MaxPooling(matrices2[i], config.MaxPoolingFactor);
 
-                            //patchCounter = patchCounter + patchGroup.Count;
-                            featureTransVectors.Add(DataTools.ConcatenateVectors(patchGroup));
-                            patchId = patchId + stepSize;
+                            int rows = downsampledMatrix.GetLength(0); // matrices2[i].GetLength(0); //
+                            int columns = downsampledMatrix.GetLength(1); // matrices2[i].GetLength(1); //
+                            var sequentialPatches = PatchSampling.GetPatches(downsampledMatrix, patchWidth, patchHeight, (rows / patchHeight) * (columns / patchWidth), PatchSampling.SamplingMethod.Sequential);
+                            //var sequentialPatches = PatchSampling.GetPatches(matrices2[i], patchWidth, patchHeight, (rows / patchHeight) * (columns / patchWidth), PatchSampling.SamplingMethod.Sequential);
+                            allSequentialPatchMatrix.Add(sequentialPatches.ToMatrix());
                         }
 
-                        allFeatureTransVectors.Add(featureTransVectors.ToArray());
-                    }
+                        // +++++++++++++++++++++++++++++++++++Feature Transformation
+                        // to do the feature transformation, we normalize centroids and
+                        // sequential patches from the input spectrogram to unit length
+                        // Then, we calculate the dot product of each patch with the centroids' matrix
 
-                    // +++++++++++++++++++++++++++++++++++Feature Transformation
-
-                    // +++++++++++++++++++++++++++++++++++Temporal Summarization
-                    // Based on the resolution to generate features, the "numFrames" parameter will be set.
-                    // Each 24 single-frame patches form 1 second
-                    // for each 24 patch, we generate 5 vectors of min, mean, std, and max (plus skewness from Accord.net)
-                    // The pre-assumption is that each input recording is 1 minute long
-
-                    // store features of different bands in lists
-                    List<double[,]> allMinFeatureVectors = new List<double[,]>();
-                    List<double[,]> allMeanFeatureVectors = new List<double[,]>();
-                    List<double[,]> allMaxFeatureVectors = new List<double[,]>();
-                    List<double[,]> allStdFeatureVectors = new List<double[,]>();
-                    List<double[,]> allSkewnessFeatureVectors = new List<double[,]>();
-
-                    // number of frames needs to be concatenated to form 1 minute in the case of Black Rail.
-                    // Each 24 frames form 1 second.
-                    // factors such as stepSize, and maxPoolingFactor should be considered in temporal summarization.
-                    //int numFrames = (24 / patchHeight) * 60; //24 // patchHeight;
-
-                    int numFrames = (24 * 60) / (patchHeight * stepSize * maxPoolingFactor);
-
-                    foreach (var freqBandFeature in allFeatureTransVectors)
-                    {
-                        List<double[]> minFeatureVectors = new List<double[]>();
-                        List<double[]> meanFeatureVectors = new List<double[]>();
-                        List<double[]> maxFeatureVectors = new List<double[]>();
-                        List<double[]> stdFeatureVectors = new List<double[]>();
-                        List<double[]> skewnessFeatureVectors = new List<double[]>();
-
-                        int c = 0;
-                        while (c + numFrames <= freqBandFeature.GetLength(0))
+                        List<double[][]> allNormCentroids = new List<double[][]>();
+                        for (int i = 0; i < allCentroids.Count; i++)
                         {
-                            // First, make a list of patches that would be equal to the needed resolution (1 second, 60 second, etc.)
-                            List<double[]> sequencesOfFramesList = new List<double[]>();
-                            for (int i = c; i < c + numFrames; i++)
+                            // double check the index of the list
+                            double[][] normCentroids = new double[allCentroids.ToArray()[i].GetLength(0)][];
+                            for (int j = 0; j < allCentroids.ToArray()[i].GetLength(0); j++)
                             {
-                                sequencesOfFramesList.Add(freqBandFeature[i]);
+                                normCentroids[j] = ART_2A.NormaliseVector(allCentroids.ToArray()[i][j]);
                             }
 
-                            List<double> min = new List<double>();
-                            List<double> mean = new List<double>();
-                            List<double> std = new List<double>();
-                            List<double> max = new List<double>();
-                            List<double> skewness = new List<double>();
+                            allNormCentroids.Add(normCentroids);
+                        }
 
-                            double[,] sequencesOfFrames = sequencesOfFramesList.ToArray().ToMatrix();
-                            // int len = sequencesOfFrames.GetLength(1);
+                        List<double[][]> allFeatureTransVectors = new List<double[][]>();
 
-                            // Second, calculate mean, max, and standard deviation (plus skewness) of vectors element-wise
-                            for (int j = 0; j < sequencesOfFrames.GetLength(1); j++)
+                        // processing the sequential patch matrix for each band
+                        for (int i = 0; i < allSequentialPatchMatrix.Count; i++)
+                        {
+                            List<double[]> featureTransVectors = new List<double[]>();
+                            double[][] similarityVectors = new double[allSequentialPatchMatrix.ToArray()[i].GetLength(0)][];
+
+                            for (int j = 0; j < allSequentialPatchMatrix.ToArray()[i].GetLength(0); j++)
                             {
-                                double[] temp = new double[sequencesOfFrames.GetLength(0)];
-                                for (int k = 0; k < sequencesOfFrames.GetLength(0); k++)
+                                // normalize each patch to unit length
+                                var inputVector = allSequentialPatchMatrix.ToArray()[i].ToJagged()[j];
+                                var normVector = inputVector;
+
+                                /*
+                                if (inputVector.Euclidean() == 0)
                                 {
-                                    temp[k] = sequencesOfFrames[k, j];
+                                    LoggedConsole.WriteLine(j.ToString());
+                                }
+                                */
+
+                                // to avoid vectors with NaN values, only normalize those that their norm is not equal to zero.
+                                if (inputVector.Euclidean() != 0)
+                                {
+                                    normVector = ART_2A.NormaliseVector(inputVector);
                                 }
 
-                                min.Add(temp.GetMinValue());
-                                mean.Add(AutoAndCrossCorrelation.GetAverage(temp));
-                                std.Add(AutoAndCrossCorrelation.GetStdev(temp));
-                                max.Add(temp.GetMaxValue());
-                                skewness.Add(temp.Skewness());
-                            }
-
-                            minFeatureVectors.Add(min.ToArray());
-                            meanFeatureVectors.Add(mean.ToArray());
-                            maxFeatureVectors.Add(max.ToArray());
-                            stdFeatureVectors.Add(std.ToArray());
-                            skewnessFeatureVectors.Add(skewness.ToArray());
-                            c += numFrames;
-                        }
-
-                        // when (freqBandFeature.GetLength(0) % numFrames) != 0, it means there are a number of frames (< numFrames)
-                        // (or the whole) at the end of the target recording , left unprocessed.
-                        // this would be problematic when an the resolution to generate the feature vector is 1 min,
-                        // but the the length of the target recording is a bit less than one min.
-                        if (freqBandFeature.GetLength(0) % numFrames != 0 && freqBandFeature.GetLength(0) % numFrames > 1)
-                        {
-                            // First, make a list of patches that would be less than the required resolution
-                            List<double[]> sequencesOfFramesList = new List<double[]>();
-                            int unprocessedFrames = freqBandFeature.GetLength(0) % numFrames;
-                            for (int i = freqBandFeature.GetLength(0) - unprocessedFrames;
-                                i < freqBandFeature.GetLength(0);
-                                i++)
-                            {
-                                sequencesOfFramesList.Add(freqBandFeature[i]);
-                            }
-
-                            List<double> min = new List<double>();
-                            List<double> mean = new List<double>();
-                            List<double> std = new List<double>();
-                            List<double> max = new List<double>();
-                            List<double> skewness = new List<double>();
-
-                            double[,] sequencesOfFrames = sequencesOfFramesList.ToArray().ToMatrix();
-
-                            // Second, calculate mean, max, and standard deviation (plus skewness) of vectors element-wise
-                            for (int j = 0; j < sequencesOfFrames.GetLength(1); j++)
-                            {
-                                double[] temp = new double[sequencesOfFrames.GetLength(0)];
-                                for (int k = 0; k < sequencesOfFrames.GetLength(0); k++)
+                                /*
+                                if (normVector.HasNaN())
                                 {
-                                    temp[k] = sequencesOfFrames[k, j];
+                                    var vec = allSequentialPatchMatrix.ToArray()[i].ToJagged()[j];
+                                    LoggedConsole.WriteLine(j.ToString());
+                                }
+                                */
+
+                                similarityVectors[j] = allNormCentroids.ToArray()[i].ToMatrix().Dot(normVector);
+                            }
+
+                            Csv.WriteMatrixToCsv(pathToSimilarityVectorsFile.ToFileInfo(), similarityVectors.ToMatrix());
+
+                            // To preserve the temporal information, we can concatenate the similarity vectors of a group of frames
+                            // using FrameWindowLength
+
+                            // patchId refers to the patch id that has been processed so far according to the step size.
+                            // if we want no overlap between different frame windows, then stepSize = frameWindowLength
+                            int patchId = 0;
+
+                            // patchCounter refers to the number of patches that has been processed so far according to FrameWindowLength.
+                            //int patchCounter = 0;
+
+                            while (patchId + frameWindowLength < similarityVectors.GetLength(0))
+                            {
+                                List<double[]> patchGroup = new List<double[]>();
+                                for (int k = 0; k < frameWindowLength; k++)
+                                {
+                                    patchGroup.Add(similarityVectors[k + patchId]);
                                 }
 
-                                min.Add(temp.GetMinValue());
-                                mean.Add(AutoAndCrossCorrelation.GetAverage(temp));
-                                std.Add(AutoAndCrossCorrelation.GetStdev(temp));
-                                max.Add(temp.GetMaxValue());
-                                skewness.Add(temp.Skewness());
+                                //patchCounter = patchCounter + patchGroup.Count;
+                                featureTransVectors.Add(DataTools.ConcatenateVectors(patchGroup));
+                                patchId = patchId + stepSize;
                             }
 
-                            minFeatureVectors.Add(min.ToArray());
-                            meanFeatureVectors.Add(mean.ToArray());
-                            maxFeatureVectors.Add(max.ToArray());
-                            stdFeatureVectors.Add(std.ToArray());
-                            skewnessFeatureVectors.Add(skewness.ToArray());
+                            allFeatureTransVectors.Add(featureTransVectors.ToArray());
                         }
 
-                        allMinFeatureVectors.Add(minFeatureVectors.ToArray().ToMatrix());
-                        allMeanFeatureVectors.Add(meanFeatureVectors.ToArray().ToMatrix());
-                        allMaxFeatureVectors.Add(maxFeatureVectors.ToArray().ToMatrix());
-                        allStdFeatureVectors.Add(stdFeatureVectors.ToArray().ToMatrix());
-                        allSkewnessFeatureVectors.Add(skewnessFeatureVectors.ToArray().ToMatrix());
-                    }
+                        // +++++++++++++++++++++++++++++++++++Feature Transformation
 
-                    //*****
-                    // the keys of the following dictionaries contain file name
-                    // and their values are a list<double[,]> which the list.count is
-                    // equal to the number of freq bands defined as an user-defined parameter.
-                    // the 2D-array is the feature vectors.
-                    allFilesMinFeatureVectors.Add(fileInfo.Name, allMinFeatureVectors);
-                    allFilesMeanFeatureVectors.Add(fileInfo.Name, allMeanFeatureVectors);
-                    allFilesMaxFeatureVectors.Add(fileInfo.Name, allMaxFeatureVectors);
-                    allFilesStdFeatureVectors.Add(fileInfo.Name, allStdFeatureVectors);
-                    allFilesSkewnessFeatureVectors.Add(fileInfo.Name, allSkewnessFeatureVectors);
+                        // +++++++++++++++++++++++++++++++++++Temporal Summarization
+                        // Based on the resolution to generate features, the "numFrames" parameter will be set.
+                        // Each 24 single-frame patches form 1 second
+                        // for each 24 patch, we generate 5 vectors of min, mean, std, and max (plus skewness from Accord.net)
+                        // The pre-assumption is that each input recording is 1 minute long
 
-                    // +++++++++++++++++++++++++++++++++++Temporal Summarization
+                        // store features of different bands in lists
+                        List<double[,]> allMinFeatureVectors = new List<double[,]>();
+                        List<double[,]> allMeanFeatureVectors = new List<double[,]>();
+                        List<double[,]> allMaxFeatureVectors = new List<double[,]>();
+                        List<double[,]> allStdFeatureVectors = new List<double[,]>();
+                        List<double[,]> allSkewnessFeatureVectors = new List<double[,]>();
 
-                    /*
-                    // ++++++++++++++++++++++++++++++++++Writing features to file
-                    // First, concatenate mean, max, std for each second.
-                    // Then write to CSV file.
+                        // number of frames needs to be concatenated to form 1 minute in the case of Black Rail.
+                        // Each 24 frames form 1 second.
+                        // factors such as stepSize, and maxPoolingFactor should be considered in temporal summarization.
+                        //int numFrames = (24 / patchHeight) * 60; //24 // patchHeight;
+                        //int numFrames = (24 * 60) / (patchHeight * stepSize * maxPoolingFactor);
 
-                    for (int j = 0; j < allMeanFeatureVectors.Count; j++)
-                    {
-                        // write the features of each pre-defined frequency band into a separate CSV file
-                        var outputFeatureFile = Path.Combine(resultDir, "FeatureVectors-" + j.ToString() + fileInfo.Name + ".csv");
+                        // For Least Bittern, feature vector is generated for each second that contains 24 frames.
+                        int numFrames = 24 / (patchHeight * stepSize * maxPoolingFactor);
 
-                        // creating the header for CSV file
-                        List<string> header = new List<string>();
-                        for (int i = 0; i < allMeanFeatureVectors.ToArray()[j].GetLength(1); i++)
+                        foreach (var freqBandFeature in allFeatureTransVectors)
                         {
-                            header.Add("mean" + i.ToString());
-                        }
+                            List<double[]> minFeatureVectors = new List<double[]>();
+                            List<double[]> meanFeatureVectors = new List<double[]>();
+                            List<double[]> maxFeatureVectors = new List<double[]>();
+                            List<double[]> stdFeatureVectors = new List<double[]>();
+                            List<double[]> skewnessFeatureVectors = new List<double[]>();
 
-                        for (int i = 0; i < allStdFeatureVectors.ToArray()[j].GetLength(1); i++)
-                        {
-                            header.Add("std" + i.ToString());
-                        }
-
-                        for (int i = 0; i < allMaxFeatureVectors.ToArray()[j].GetLength(1); i++)
-                        {
-                            header.Add("max" + i.ToString());
-                        }
-
-                        // concatenating mean, std, and max vector together for each 1 second
-                        List<double[]> featureVectors = new List<double[]>();
-                        for (int i = 0; i < allMeanFeatureVectors.ToArray()[j].ToJagged().GetLength(0); i++)
-                        {
-                            List<double[]> featureList = new List<double[]>
+                            int c = 0;
+                            while (c + numFrames <= freqBandFeature.GetLength(0))
                             {
-                                allMeanFeatureVectors.ToArray()[j].ToJagged()[i],
-                                allMaxFeatureVectors.ToArray()[j].ToJagged()[i],
-                                allStdFeatureVectors.ToArray()[j].ToJagged()[i],
-                            };
-                            double[] featureVector = DataTools.ConcatenateVectors(featureList);
-                            featureVectors.Add(featureVector);
-                        }
-
-                        // writing feature vectors to CSV file
-                        using (StreamWriter file = new StreamWriter(outputFeatureFile))
-                        {
-                            // writing the header to CSV file
-                            foreach (var entry in header.ToArray())
-                            {
-                                file.Write(entry + ",");
-                            }
-
-                            file.Write(Environment.NewLine);
-
-                            foreach (var entry in featureVectors.ToArray())
-                            {
-                                foreach (var value in entry)
+                                // First, make a list of patches that would be equal to the needed resolution (1 second, 60 second, etc.)
+                                List<double[]> sequencesOfFramesList = new List<double[]>();
+                                for (int i = c; i < c + numFrames; i++)
                                 {
-                                    file.Write(value + ",");
+                                    sequencesOfFramesList.Add(freqBandFeature[i]);
+                                }
+
+                                List<double> min = new List<double>();
+                                List<double> mean = new List<double>();
+                                List<double> std = new List<double>();
+                                List<double> max = new List<double>();
+                                List<double> skewness = new List<double>();
+
+                                double[,] sequencesOfFrames = sequencesOfFramesList.ToArray().ToMatrix();
+                                // int len = sequencesOfFrames.GetLength(1);
+
+                                // Second, calculate mean, max, and standard deviation (plus skewness) of vectors element-wise
+                                for (int j = 0; j < sequencesOfFrames.GetLength(1); j++)
+                                {
+                                    double[] temp = new double[sequencesOfFrames.GetLength(0)];
+                                    for (int k = 0; k < sequencesOfFrames.GetLength(0); k++)
+                                    {
+                                        temp[k] = sequencesOfFrames[k, j];
+                                    }
+
+                                    min.Add(temp.GetMinValue());
+                                    mean.Add(AutoAndCrossCorrelation.GetAverage(temp));
+                                    std.Add(AutoAndCrossCorrelation.GetStdev(temp));
+                                    max.Add(temp.GetMaxValue());
+                                    skewness.Add(temp.Skewness());
+                                }
+
+                                minFeatureVectors.Add(min.ToArray());
+                                meanFeatureVectors.Add(mean.ToArray());
+                                maxFeatureVectors.Add(max.ToArray());
+                                stdFeatureVectors.Add(std.ToArray());
+                                skewnessFeatureVectors.Add(skewness.ToArray());
+                                c += numFrames;
+                            }
+
+                            // when (freqBandFeature.GetLength(0) % numFrames) != 0, it means there are a number of frames (< numFrames)
+                            // (or the whole) at the end of the target recording , left unprocessed.
+                            // this would be problematic when an the resolution to generate the feature vector is 1 min,
+                            // but the the length of the target recording is a bit less than one min.
+                            if (freqBandFeature.GetLength(0) % numFrames != 0 && freqBandFeature.GetLength(0) % numFrames > 1)
+                            {
+                                // First, make a list of patches that would be less than the required resolution
+                                List<double[]> sequencesOfFramesList = new List<double[]>();
+                                int unprocessedFrames = freqBandFeature.GetLength(0) % numFrames;
+                                for (int i = freqBandFeature.GetLength(0) - unprocessedFrames;
+                                    i < freqBandFeature.GetLength(0);
+                                    i++)
+                                {
+                                    sequencesOfFramesList.Add(freqBandFeature[i]);
+                                }
+
+                                List<double> min = new List<double>();
+                                List<double> mean = new List<double>();
+                                List<double> std = new List<double>();
+                                List<double> max = new List<double>();
+                                List<double> skewness = new List<double>();
+
+                                double[,] sequencesOfFrames = sequencesOfFramesList.ToArray().ToMatrix();
+
+                                // Second, calculate mean, max, and standard deviation (plus skewness) of vectors element-wise
+                                for (int j = 0; j < sequencesOfFrames.GetLength(1); j++)
+                                {
+                                    double[] temp = new double[sequencesOfFrames.GetLength(0)];
+                                    for (int k = 0; k < sequencesOfFrames.GetLength(0); k++)
+                                    {
+                                        temp[k] = sequencesOfFrames[k, j];
+                                    }
+
+                                    min.Add(temp.GetMinValue());
+                                    mean.Add(AutoAndCrossCorrelation.GetAverage(temp));
+                                    std.Add(AutoAndCrossCorrelation.GetStdev(temp));
+                                    max.Add(temp.GetMaxValue());
+                                    skewness.Add(temp.Skewness());
+                                }
+
+                                minFeatureVectors.Add(min.ToArray());
+                                meanFeatureVectors.Add(mean.ToArray());
+                                maxFeatureVectors.Add(max.ToArray());
+                                stdFeatureVectors.Add(std.ToArray());
+                                skewnessFeatureVectors.Add(skewness.ToArray());
+                            }
+
+                            allMinFeatureVectors.Add(minFeatureVectors.ToArray().ToMatrix());
+                            allMeanFeatureVectors.Add(meanFeatureVectors.ToArray().ToMatrix());
+                            allMaxFeatureVectors.Add(maxFeatureVectors.ToArray().ToMatrix());
+                            allStdFeatureVectors.Add(stdFeatureVectors.ToArray().ToMatrix());
+                            allSkewnessFeatureVectors.Add(skewnessFeatureVectors.ToArray().ToMatrix());
+                        }
+
+                        // add the features of all subsegments to a list
+                        allSegmentsMinFeatureVectors.Add(allMinFeatureVectors);
+                        allSegmentsMeanFeatureVectors.Add(allMeanFeatureVectors);
+                        allSegmentsMaxFeatureVectors.Add(allMaxFeatureVectors);
+                        allSegmentsStdFeatureVectors.Add(allStdFeatureVectors);
+                        allSegmentSkewnessFeatureVectors.Add(allSkewnessFeatureVectors);
+
+                        //*****
+                        // the keys of the following dictionaries contain file name
+                        // and their values are a list<list<double[,]>> which the list.count is
+                        // the number of subsegments for which features are extracted
+                        // and for each subsegment, the number of freq bands defined as an user-defined parameter.
+                        // the 2D-array is the feature vectors.
+                        allFilesMinFeatureVectors.Add(fileInfo.Name, allSegmentsMinFeatureVectors);
+                        allFilesMeanFeatureVectors.Add(fileInfo.Name, allSegmentsMeanFeatureVectors);
+                        allFilesMaxFeatureVectors.Add(fileInfo.Name, allSegmentsMaxFeatureVectors);
+                        allFilesStdFeatureVectors.Add(fileInfo.Name, allSegmentsStdFeatureVectors);
+                        allFilesSkewnessFeatureVectors.Add(fileInfo.Name, allSegmentSkewnessFeatureVectors);
+
+                        // +++++++++++++++++++++++++++++++++++Temporal Summarization
+
+                        /*
+                        // ++++++++++++++++++++++++++++++++++Writing features to file
+                        // First, concatenate mean, max, std for each second.
+                        // Then write to CSV file.
+
+                        for (int j = 0; j < allMeanFeatureVectors.Count; j++)
+                        {
+                            // write the features of each pre-defined frequency band into a separate CSV file
+                            var outputFeatureFile = Path.Combine(resultDir, "FeatureVectors-" + j.ToString() + fileInfo.Name + ".csv");
+
+                            // creating the header for CSV file
+                            List<string> header = new List<string>();
+                            for (int i = 0; i < allMeanFeatureVectors.ToArray()[j].GetLength(1); i++)
+                            {
+                                header.Add("mean" + i.ToString());
+                            }
+
+                            for (int i = 0; i < allStdFeatureVectors.ToArray()[j].GetLength(1); i++)
+                            {
+                                header.Add("std" + i.ToString());
+                            }
+
+                            for (int i = 0; i < allMaxFeatureVectors.ToArray()[j].GetLength(1); i++)
+                            {
+                                header.Add("max" + i.ToString());
+                            }
+
+                            // concatenating mean, std, and max vector together for each 1 second
+                            List<double[]> featureVectors = new List<double[]>();
+                            for (int i = 0; i < allMeanFeatureVectors.ToArray()[j].ToJagged().GetLength(0); i++)
+                            {
+                                List<double[]> featureList = new List<double[]>
+                                {
+                                    allMeanFeatureVectors.ToArray()[j].ToJagged()[i],
+                                    allMaxFeatureVectors.ToArray()[j].ToJagged()[i],
+                                    allStdFeatureVectors.ToArray()[j].ToJagged()[i],
+                                };
+                                double[] featureVector = DataTools.ConcatenateVectors(featureList);
+                                featureVectors.Add(featureVector);
+                            }
+
+                            // writing feature vectors to CSV file
+                            using (StreamWriter file = new StreamWriter(outputFeatureFile))
+                            {
+                                // writing the header to CSV file
+                                foreach (var entry in header.ToArray())
+                                {
+                                    file.Write(entry + ",");
                                 }
 
                                 file.Write(Environment.NewLine);
+
+                                foreach (var entry in featureVectors.ToArray())
+                                {
+                                    foreach (var value in entry)
+                                    {
+                                        file.Write(value + ",");
+                                    }
+
+                                    file.Write(Environment.NewLine);
+                                }
                             }
                         }
-                    }
-                    */
-                    /*
-                    // Reconstructing the target spectrogram based on clusters' centroids
-                    List<double[,]> convertedSpec = new List<double[,]>();
-                    int columnPerFreqBand = sonogram2.Data.GetLength(1) / numFreqBand;
-                    for (int i = 0; i < allSequentialPatchMatrix.Count; i++)
-                    {
-                        double[,] reconstructedSpec2 = KmeansClustering.ReconstructSpectrogram(allSequentialPatchMatrix.ToArray()[i], allClusteringOutput.ToArray()[i]);
-                        convertedSpec.Add(PatchSampling.ConvertPatches(reconstructedSpec2, patchWidth, patchHeight, columnPerFreqBand));
-                    }
+                        */
+                        /*
+                        // Reconstructing the target spectrogram based on clusters' centroids
+                        List<double[,]> convertedSpec = new List<double[,]>();
+                        int columnPerFreqBand = sonogram2.Data.GetLength(1) / numFreqBand;
+                        for (int i = 0; i < allSequentialPatchMatrix.Count; i++)
+                        {
+                            double[,] reconstructedSpec2 = KmeansClustering.ReconstructSpectrogram(allSequentialPatchMatrix.ToArray()[i], allClusteringOutput.ToArray()[i]);
+                            convertedSpec.Add(PatchSampling.ConvertPatches(reconstructedSpec2, patchWidth, patchHeight, columnPerFreqBand));
+                        }
 
-                    sonogram2.Data = PatchSampling.ConcatFreqBandMatrices(convertedSpec);
+                        sonogram2.Data = PatchSampling.ConcatFreqBandMatrices(convertedSpec);
 
-                    // DO DRAW SPECTROGRAM
-                    var reconstructedSpecImage = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "RECONSTRUCTEDSPECTROGRAM: " + freqScale.ScaleType.ToString(), freqScale.GridLineLocations);
-                    reconstructedSpecImage.Save(outputReSpecImagePath, ImageFormat.Png);
-                    */
+                        // DO DRAW SPECTROGRAM
+                        var reconstructedSpecImage = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "RECONSTRUCTEDSPECTROGRAM: " + freqScale.ScaleType.ToString(), freqScale.GridLineLocations);
+                        reconstructedSpecImage.Save(outputReSpecImagePath, ImageFormat.Png);
+                        */
+                    }
                 }
             }
 
@@ -448,9 +479,8 @@ namespace AudioAnalysisTools.DSP
             // ++++++++++++++++++++++++++++++++++Writing features to one file
             // First, concatenate mean, max, std for each second.
             // Then, write the features of each pre-defined frequency band into a separate CSV file.
-
             var filesName = allFilesMeanFeatureVectors.Keys.ToArray();
-            var minFeatures = allFilesMinFeatureVectors.Values.ToArray();
+            var minFeatures = allFilesMinFeatureVectors.Values.ToArray(); // list<list<double[,]>>[]
             var meanFeatures = allFilesMeanFeatureVectors.Values.ToArray();
             var maxFeatures = allFilesMaxFeatureVectors.Values.ToArray();
             var stdFeatures = allFilesStdFeatureVectors.Values.ToArray();
@@ -459,41 +489,57 @@ namespace AudioAnalysisTools.DSP
             // The number of elements in the list shows the number of freq bands
             // the size of each element in the list shows the number of files processed to generate feature for.
             // the dimensions of the matrix shows the number of feature vectors generated for each file and the length of feature vector
-            var allMins = new List<double[][,]>();
-            var allMeans = new List<double[][,]>();
-            var allMaxs = new List<double[][,]>();
-            var allStds = new List<double[][,]>();
-            var allSkewness = new List<double[][,]>();
+            var allMins = new List<List<List<double[,]>>>();
+            var allMeans = new List<List<List<double[,]>>>();
+            var allMaxs = new List<List<List<double[,]>>>();
+            var allStds = new List<List<List<double[,]>>>();
+            var allSkewness = new List<List<List<double[,]>>>();
 
             // looping over freq bands
-            for (int i = 0; i < meanFeatures[0].Count; i++)
+            for (int i = 0; i < meanFeatures[0].ToArray()[0].Count; i++)
             {
-                var mins = new List<double[,]>();
-                var means = new List<double[,]>();
-                var maxs = new List<double[,]>();
-                var stds = new List<double[,]>();
-                var skewnesses = new List<double[,]>();
+                var mins = new List<List<double[,]>>();
+                var means = new List<List<double[,]>>();
+                var maxs = new List<List<double[,]>>();
+                var stds = new List<List<double[,]>>();
+                var skewnesses = new List<List<double[,]>>();
 
                 // looping over all files
                 for (int k = 0; k < meanFeatures.Length; k++)
                 {
-                    mins.Add(minFeatures[k].ToArray()[i]);
-                    means.Add(meanFeatures[k].ToArray()[i]);
-                    maxs.Add(maxFeatures[k].ToArray()[i]);
-                    stds.Add(stdFeatures[k].ToArray()[i]);
-                    skewnesses.Add(skewnessFeatures[k].ToArray()[i]);
+                    var minsSeg = new List<double[,]>();
+                    var meansSeg = new List<double[,]>();
+                    var maxsSeg = new List<double[,]>();
+                    var stdsSeg = new List<double[,]>();
+                    var skewnessesSeg = new List<double[,]>();
+
+                    // looping over segments
+                    for (int j = 0; j < meanFeatures[k].ToArray().Length; j++)
+                    {
+                        minsSeg.Add(minFeatures[k].ToArray()[j].ToArray()[i]);
+                        meansSeg.Add(meanFeatures[k].ToArray()[j].ToArray()[i]);
+                        maxsSeg.Add(maxFeatures[k].ToArray()[j].ToArray()[i]);
+                        stdsSeg.Add(stdFeatures[k].ToArray()[j].ToArray()[i]);
+                        skewnessesSeg.Add(skewnessFeatures[k].ToArray()[j].ToArray()[i]);
+                    }
+
+                    mins.Add(minsSeg);
+                    means.Add(meansSeg);
+                    maxs.Add(maxsSeg);
+                    stds.Add(stdsSeg);
+                    skewnesses.Add(skewnessesSeg);
                 }
 
-                allMins.Add(mins.ToArray());
-                allMeans.Add(means.ToArray());
-                allMaxs.Add(maxs.ToArray());
-                allStds.Add(stds.ToArray());
-                allSkewness.Add(skewnesses.ToArray());
+                allMins.Add(mins);
+                allMeans.Add(means);
+                allMaxs.Add(maxs);
+                allStds.Add(stds);
+                allSkewness.Add(skewnesses);
             }
 
             // each element of meanFeatures array is a list of features for different frequency bands.
             // looping over the number of freq bands
-            for (int i = 0; i < allMeans.ToArray().GetLength(0); i++)
+            for (int i = 0; i < allMeans.ToArray().Length; i++)
             {
                 // creating output feature file based on the number of freq bands
                 var outputFeatureFile = Path.Combine(outputPath, "FeatureVectors-" + i.ToString() + ".csv");
@@ -501,27 +547,34 @@ namespace AudioAnalysisTools.DSP
                 // creating the header for CSV file
                 List<string> header = new List<string>();
                 header.Add("file name");
-                for (int j = 0; j < allMins.ToArray()[i][0].GetLength(1); j++)
+                for (int j = 0; j < allMins.ToArray()[i].ToArray().ToArray().GetLength(1); j++)
                 {
                     header.Add("min" + j.ToString());
                 }
 
-                for (int j = 0; j < allMeans.ToArray()[i][0].GetLength(1); j++)
+                /*
+                for (int j = 0; j < allMins.ToArray()[i][0].GetLength(1); j++)
+                {
+                    header.Add("min" + j.ToString());
+                }
+                */
+
+                for (int j = 0; j < allMeans.ToArray()[i].ToArray().ToArray().GetLength(1); j++)
                 {
                     header.Add("mean" + j.ToString());
                 }
 
-                for (int j = 0; j < allMaxs.ToArray()[i][0].GetLength(1); j++)
+                for (int j = 0; j < allMaxs.ToArray()[i].ToArray().ToArray().GetLength(1); j++)
                 {
                     header.Add("max" + j.ToString());
                 }
 
-                for (int j = 0; j < allStds.ToArray()[i][0].GetLength(1); j++)
+                for (int j = 0; j < allStds.ToArray()[i].ToArray().ToArray().GetLength(1); j++)
                 {
                     header.Add("std" + j.ToString());
                 }
 
-                for (int j = 0; j < allSkewness.ToArray()[i][0].GetLength(1); j++)
+                for (int j = 0; j < allSkewness.ToArray()[i].ToArray().ToArray().GetLength(1); j++)
                 {
                     header.Add("skewness" + j.ToString());
                 }
@@ -538,25 +591,31 @@ namespace AudioAnalysisTools.DSP
                 var allFilesFeatureVectors = new Dictionary<string, double[,]>();
 
                 // looping over files
-                for (int j = 0; j < allMeans.ToArray()[i].GetLength(0); j++)
+                for (int j = 0; j < allMeans.ToArray()[i].ToArray().Length; j++)
                 {
+
+                    // looping over segments
+                    for (int k = 0; k < allMeans.ToArray()[i].ToArray().GetLength(0); k++)
+                    {
+
                     // concatenating mean, std, and max vector together for the pre-defined resolution
                     List<double[]> featureVectors = new List<double[]>();
-                    for (int k = 0; k < allMeans.ToArray()[i][j].ToJagged().GetLength(0); k++)
+                    for (int l = 0; l < allMeans.ToArray()[i].ToArray()[j].ToArray()[k].ToJagged().GetLength(0); l++)
                     {
                         List<double[]> featureList = new List<double[]>
                         {
-                            allMins.ToArray()[i][j].ToJagged()[k],
-                            allMeans.ToArray()[i][j].ToJagged()[k],
-                            allMaxs.ToArray()[i][j].ToJagged()[k],
-                            allStds.ToArray()[i][j].ToJagged()[k],
-                            allSkewness.ToArray()[i][j].ToJagged()[k],
+                            allMins.ToArray()[i].ToArray()[j].ToArray()[k].ToJagged()[l],
+                            allMeans.ToArray()[i].ToArray()[j].ToArray()[k].ToJagged()[l],
+                            allMaxs.ToArray()[i].ToArray()[j].ToArray()[k].ToJagged()[l],
+                            allStds.ToArray()[i].ToArray()[j].ToArray()[k].ToJagged()[l],
+                            allSkewness.ToArray()[i].ToArray()[j].ToArray()[k].ToJagged()[l],
                         };
                         double[] featureVector = DataTools.ConcatenateVectors(featureList);
                         featureVectors.Add(featureVector);
                     }
 
-                    allFilesFeatureVectors.Add(filesName[j], featureVectors.ToArray().ToMatrix());
+                    allFilesFeatureVectors.Add(filesName[j] + "Second_" + k, featureVectors.ToArray().ToMatrix());
+                    }
                 }
 
                 // writing feature vectors to CSV file

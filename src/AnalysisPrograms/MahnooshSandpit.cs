@@ -30,12 +30,12 @@ namespace AnalysisPrograms
         {
             LoggedConsole.WriteLine("feature learning process...");
 
-            var inputDir = @"M:\Postdoc\Liz\"; //@"C:\Users\kholghim\Mahnoosh\Liz\"; //@"D:\Mahnoosh\Liz\"; // @"C:\Users\kholghim\Mahnoosh\UnsupervisedFeatureLearning\"; // 
+            var inputDir = @"M:\Postdoc\Liz\Least Bittern\"; //@"D:\Mahnoosh\Liz\"; //@"C:\Users\kholghim\Mahnoosh\Liz\"; // @"C:\Users\kholghim\Mahnoosh\UnsupervisedFeatureLearning\"; // 
             var resultDir = Path.Combine(inputDir, "FeatureLearning");
             var inputPath = Path.Combine(inputDir, "TrainSet"); //PatchSamplingSegments //PatchSampling
             var trainSetPath = Path.Combine(inputDir, "TrainSet");
             // var testSetPath = Path.Combine(inputDir, "TestSet");
-            var configPath = @"C:\Users\kholghim\Mahnoosh\Liz\FeatureLearningConfig.yml"; //@"D:\Mahnoosh\Liz\AnalysisConfigFiles\FeatureLearningConfig.yml"; //@"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\FeatureLearningConfig.yml"; //
+            var configPath = @"D:\Mahnoosh\Liz\AnalysisConfigFiles\FeatureLearningConfig.yml"; //@"C:\Users\kholghim\Mahnoosh\Liz\FeatureLearningConfig.yml"; //@"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\FeatureLearningConfig.yml"; //
             // var outputMelImagePath = Path.Combine(resultDir, "MelScaleSpectrogram.png");
             // var outputNormMelImagePath = Path.Combine(resultDir, "NormalizedMelScaleSpectrogram.png");
             // var outputNoiseReducedMelImagePath = Path.Combine(resultDir, "NoiseReducedMelSpectrogram.png");
@@ -60,7 +60,6 @@ namespace AnalysisPrograms
             var configuration = ConfigFile.Deserialize<FeatureLearningSettings>(configFile);
             int patchWidth =
                 (configuration.MaxFreqBin - configuration.MinFreqBin + 1) / configuration.NumFreqBand;
-            //+++++
 
             var clusteringOutputList = FeatureLearning.UnsupervisedFeatureLearning(configuration, inputPath);
 
@@ -942,11 +941,11 @@ namespace AnalysisPrograms
         public static void ExtractClusteringFeatures()
         {
             LoggedConsole.WriteLine("feature extraction process...");
-            var inputDir = @"M:\Postdoc\Liz\"; //@"D:\Mahnoosh\Liz\"; //@"C:\Users\kholghim\Mahnoosh\UnsupervisedFeatureLearning\"; //@"M:\Postdoc\Liz\"; //
+            var inputDir = @"D:\Mahnoosh\Liz\"; //@"M:\Postdoc\Liz\"; //@"C:\Users\kholghim\Mahnoosh\UnsupervisedFeatureLearning\"; //@"M:\Postdoc\Liz\"; //
             var resultDir = Path.Combine(inputDir, "FeatureLearning");
             //var trainSetPath = Path.Combine(inputDir, "TrainSet");
             var testSetPath = Path.Combine(inputDir, "TestSet");
-            var configPath = @"C:\Users\kholghim\Mahnoosh\Liz\FeatureLearningConfig.yml"; //@"D:\Mahnoosh\Liz\AnalysisConfigFiles\FeatureLearningConfig.yml"; //@"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\FeatureLearningConfig.yml"; // 
+            var configPath = @"D:\Mahnoosh\Liz\AnalysisConfigFiles\FeatureLearningConfig.yml"; //@"C:\Users\kholghim\Mahnoosh\Liz\FeatureLearningConfig.yml"; //@"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\FeatureLearningConfig.yml"; // 
             var centroidsPath = Path.Combine(resultDir, "ClusterCentroids0.csv");
 
             var configFile = configPath.ToFileInfo();

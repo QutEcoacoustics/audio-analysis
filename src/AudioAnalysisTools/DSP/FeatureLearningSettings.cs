@@ -40,11 +40,15 @@ namespace AudioAnalysisTools.DSP
 
         public const int DefaultMaxPoolingFactor = 1;
 
+        public const bool DefaultDoSegmentation = true;
+
+        public const double DefaultSubsegmentDurationInSeconds = 1.0;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="FeatureLearningSettings"/> class.
         /// CONSTRUCTOR
         /// </summary>
-        
+
         /*
         public FeatureLearningSettings()
         {
@@ -94,5 +98,9 @@ namespace AudioAnalysisTools.DSP
         public bool DoWhitening { get; set; } = DefaultDoWhitening;
 
         public int MaxPoolingFactor { get; set; } = DefaultMaxPoolingFactor;
+
+        public bool DoSegmentation { get; set; } = DefaultDoSegmentation;
+
+        public double SubsegmentDurationInSeconds { get; set; } = DefaultSubsegmentDurationInSeconds;
     }
 }
