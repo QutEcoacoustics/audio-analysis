@@ -24,7 +24,7 @@ namespace AudioAnalysisTools.DSP
     {
         /// <summary>
         /// Apply feature learning process on a set of target (1-minute) recordings (inputPath)
-        /// according to the a set of centroids learnt using feature learning process.
+        /// according to the a set of centroids learned using feature learning process.
         /// Output feature vectors (outputPath)
         /// </summary>
         public static void UnsupervisedFeatureExtraction(FeatureLearningSettings config, List<double[][]> allCentroids,
@@ -77,11 +77,11 @@ namespace AudioAnalysisTools.DSP
             //*****
             // lists of features for all processing files
             // the key is the file name, and the value is the features for different bands
-            Dictionary<string, List<List<double[,]>>> allFilesMinFeatureVectors = new Dictionary<string, List<List<double[,]>>>();
-            Dictionary<string, List<List<double[,]>>> allFilesMeanFeatureVectors = new Dictionary<string, List<List<double[,]>>>();
-            Dictionary<string, List<List<double[,]>>> allFilesMaxFeatureVectors = new Dictionary<string, List<List<double[,]>>>();
-            Dictionary<string, List<List<double[,]>>> allFilesStdFeatureVectors = new Dictionary<string, List<List<double[,]>>>();
-            Dictionary<string, List<List<double[,]>>> allFilesSkewnessFeatureVectors = new Dictionary<string, List<List<double[,]>>>();
+            Dictionary<string, List<double[,]>> allFilesMinFeatureVectors = new Dictionary<string, List<double[,]>>();
+            Dictionary<string, List<double[,]>> allFilesMeanFeatureVectors = new Dictionary<string, List<double[,]>>();
+            Dictionary<string, List<double[,]>> allFilesMaxFeatureVectors = new Dictionary<string, List<double[,]>>();
+            Dictionary<string, List<double[,]>> allFilesStdFeatureVectors = new Dictionary<string, List<double[,]>>();
+            Dictionary<string, List<double[,]>> allFilesSkewnessFeatureVectors = new Dictionary<string, List<double[,]>>();
 
             double[,] inputMatrix;
             List<AudioRecording> recordings = new List<AudioRecording>();
@@ -89,13 +89,6 @@ namespace AudioAnalysisTools.DSP
             foreach (string filePath in Directory.GetFiles(inputPath, "*.wav"))
             {
                 FileInfo fileInfo = filePath.ToFileInfo();
-
-                // lists of features for subsegments of a file
-                List<List<double[,]>> allSegmentsMinFeatureVectors = new List<List<double[,]>>();
-                List<List<double[,]>> allSegmentsMeanFeatureVectors = new List<List<double[,]>>();
-                List<List<double[,]>> allSegmentsMaxFeatureVectors = new List<List<double[,]>>();
-                List<List<double[,]>> allSegmentsStdFeatureVectors = new List<List<double[,]>>();
-                List<List<double[,]>> allSegmentSkewnessFeatureVectors = new List<List<double[,]>>();
 
                 // process the wav file if it is not empty
                 if (fileInfo.Length != 0)
@@ -370,24 +363,17 @@ namespace AudioAnalysisTools.DSP
                             allSkewnessFeatureVectors.Add(skewnessFeatureVectors.ToArray().ToMatrix());
                         }
 
-                        // add the features of all subsegments to a list
-                        allSegmentsMinFeatureVectors.Add(allMinFeatureVectors);
-                        allSegmentsMeanFeatureVectors.Add(allMeanFeatureVectors);
-                        allSegmentsMaxFeatureVectors.Add(allMaxFeatureVectors);
-                        allSegmentsStdFeatureVectors.Add(allStdFeatureVectors);
-                        allSegmentSkewnessFeatureVectors.Add(allSkewnessFeatureVectors);
-
                         //*****
                         // the keys of the following dictionaries contain file name
-                        // and their values are a list<list<double[,]>> which the list.count is
-                        // the number of subsegments for which features are extracted
-                        // and for each subsegment, the number of freq bands defined as an user-defined parameter.
+                        // and their values are a list<double[,]> which the list.count is
+                        // the number of all subsegments for which features are extracted
+                        // the number of freq bands defined as an user-defined parameter.
                         // the 2D-array is the feature vectors.
-                        allFilesMinFeatureVectors.Add(fileInfo.Name, allSegmentsMinFeatureVectors);
-                        allFilesMeanFeatureVectors.Add(fileInfo.Name, allSegmentsMeanFeatureVectors);
-                        allFilesMaxFeatureVectors.Add(fileInfo.Name, allSegmentsMaxFeatureVectors);
-                        allFilesStdFeatureVectors.Add(fileInfo.Name, allSegmentsStdFeatureVectors);
-                        allFilesSkewnessFeatureVectors.Add(fileInfo.Name, allSegmentSkewnessFeatureVectors);
+                        allFilesMinFeatureVectors.Add(fileInfo.Name + "-" + s.ToString(), allMinFeatureVectors);
+                        allFilesMeanFeatureVectors.Add(fileInfo.Name + "-" + s.ToString(), allMeanFeatureVectors);
+                        allFilesMaxFeatureVectors.Add(fileInfo.Name + "-" + s.ToString(), allMaxFeatureVectors);
+                        allFilesStdFeatureVectors.Add(fileInfo.Name + "-" + s.ToString(), allStdFeatureVectors);
+                        allFilesSkewnessFeatureVectors.Add(fileInfo.Name + "-" + s.ToString(), allSkewnessFeatureVectors);
 
                         // +++++++++++++++++++++++++++++++++++Temporal Summarization
 
@@ -480,7 +466,7 @@ namespace AudioAnalysisTools.DSP
             // First, concatenate mean, max, std for each second.
             // Then, write the features of each pre-defined frequency band into a separate CSV file.
             var filesName = allFilesMeanFeatureVectors.Keys.ToArray();
-            var minFeatures = allFilesMinFeatureVectors.Values.ToArray(); // list<list<double[,]>>[]
+            var minFeatures = allFilesMinFeatureVectors.Values.ToArray(); 
             var meanFeatures = allFilesMeanFeatureVectors.Values.ToArray();
             var maxFeatures = allFilesMaxFeatureVectors.Values.ToArray();
             var stdFeatures = allFilesStdFeatureVectors.Values.ToArray();
@@ -489,57 +475,42 @@ namespace AudioAnalysisTools.DSP
             // The number of elements in the list shows the number of freq bands
             // the size of each element in the list shows the number of files processed to generate feature for.
             // the dimensions of the matrix shows the number of feature vectors generated for each file and the length of feature vector
-            var allMins = new List<List<List<double[,]>>>();
-            var allMeans = new List<List<List<double[,]>>>();
-            var allMaxs = new List<List<List<double[,]>>>();
-            var allStds = new List<List<List<double[,]>>>();
-            var allSkewness = new List<List<List<double[,]>>>();
+            var allMins = new List<double[][,]>();
+            var allMeans = new List<double[][,]>();
+            var allMaxs = new List<double[][,]>();
+            var allStds = new List<double[][,]>();
+            var allSkewness = new List<double[][,]>();
+
 
             // looping over freq bands
-            for (int i = 0; i < meanFeatures[0].ToArray()[0].Count; i++)
+            for (int i = 0; i < meanFeatures[0].Count; i++)
             {
-                var mins = new List<List<double[,]>>();
-                var means = new List<List<double[,]>>();
-                var maxs = new List<List<double[,]>>();
-                var stds = new List<List<double[,]>>();
-                var skewnesses = new List<List<double[,]>>();
+                var mins = new List<double[,]>();
+                var means = new List<double[,]>();
+                var maxs = new List<double[,]>();
+                var stds = new List<double[,]>();
+                var skewnesses = new List<double[,]>();
 
                 // looping over all files
                 for (int k = 0; k < meanFeatures.Length; k++)
                 {
-                    var minsSeg = new List<double[,]>();
-                    var meansSeg = new List<double[,]>();
-                    var maxsSeg = new List<double[,]>();
-                    var stdsSeg = new List<double[,]>();
-                    var skewnessesSeg = new List<double[,]>();
-
-                    // looping over segments
-                    for (int j = 0; j < meanFeatures[k].ToArray().Length; j++)
-                    {
-                        minsSeg.Add(minFeatures[k].ToArray()[j].ToArray()[i]);
-                        meansSeg.Add(meanFeatures[k].ToArray()[j].ToArray()[i]);
-                        maxsSeg.Add(maxFeatures[k].ToArray()[j].ToArray()[i]);
-                        stdsSeg.Add(stdFeatures[k].ToArray()[j].ToArray()[i]);
-                        skewnessesSeg.Add(skewnessFeatures[k].ToArray()[j].ToArray()[i]);
-                    }
-
-                    mins.Add(minsSeg);
-                    means.Add(meansSeg);
-                    maxs.Add(maxsSeg);
-                    stds.Add(stdsSeg);
-                    skewnesses.Add(skewnessesSeg);
+                    mins.Add(minFeatures[k].ToArray()[i]);
+                    means.Add(meanFeatures[k].ToArray()[i]);
+                    maxs.Add(maxFeatures[k].ToArray()[i]);
+                    stds.Add(stdFeatures[k].ToArray()[i]);
+                    skewnesses.Add(skewnessFeatures[k].ToArray()[i]);
                 }
 
-                allMins.Add(mins);
-                allMeans.Add(means);
-                allMaxs.Add(maxs);
-                allStds.Add(stds);
-                allSkewness.Add(skewnesses);
+                allMins.Add(mins.ToArray());
+                allMeans.Add(means.ToArray());
+                allMaxs.Add(maxs.ToArray());
+                allStds.Add(stds.ToArray());
+                allSkewness.Add(skewnesses.ToArray());
             }
 
             // each element of meanFeatures array is a list of features for different frequency bands.
             // looping over the number of freq bands
-            for (int i = 0; i < allMeans.ToArray().Length; i++)
+            for (int i = 0; i < allMeans.ToArray().GetLength(0); i++)
             {
                 // creating output feature file based on the number of freq bands
                 var outputFeatureFile = Path.Combine(outputPath, "FeatureVectors-" + i.ToString() + ".csv");
@@ -547,34 +518,28 @@ namespace AudioAnalysisTools.DSP
                 // creating the header for CSV file
                 List<string> header = new List<string>();
                 header.Add("file name");
-                for (int j = 0; j < allMins.ToArray()[i].ToArray().ToArray().GetLength(1); j++)
-                {
-                    header.Add("min" + j.ToString());
-                }
 
-                /*
                 for (int j = 0; j < allMins.ToArray()[i][0].GetLength(1); j++)
                 {
                     header.Add("min" + j.ToString());
                 }
-                */
 
-                for (int j = 0; j < allMeans.ToArray()[i].ToArray().ToArray().GetLength(1); j++)
+                for (int j = 0; j < allMeans.ToArray()[i][0].GetLength(1); j++)
                 {
                     header.Add("mean" + j.ToString());
                 }
 
-                for (int j = 0; j < allMaxs.ToArray()[i].ToArray().ToArray().GetLength(1); j++)
+                for (int j = 0; j < allMaxs.ToArray()[i][0].GetLength(1); j++)
                 {
                     header.Add("max" + j.ToString());
                 }
 
-                for (int j = 0; j < allStds.ToArray()[i].ToArray().ToArray().GetLength(1); j++)
+                for (int j = 0; j < allStds.ToArray()[i][0].GetLength(1); j++)
                 {
                     header.Add("std" + j.ToString());
                 }
 
-                for (int j = 0; j < allSkewness.ToArray()[i].ToArray().ToArray().GetLength(1); j++)
+                for (int j = 0; j < allSkewness.ToArray()[i][0].GetLength(1); j++)
                 {
                     header.Add("skewness" + j.ToString());
                 }
@@ -591,31 +556,26 @@ namespace AudioAnalysisTools.DSP
                 var allFilesFeatureVectors = new Dictionary<string, double[,]>();
 
                 // looping over files
-                for (int j = 0; j < allMeans.ToArray()[i].ToArray().Length; j++)
+                for (int j = 0; j < allMeans.ToArray()[i].GetLength(0); j++)
                 {
-
-                    // looping over segments
-                    for (int k = 0; k < allMeans.ToArray()[i].ToArray().GetLength(0); k++)
-                    {
 
                     // concatenating mean, std, and max vector together for the pre-defined resolution
                     List<double[]> featureVectors = new List<double[]>();
-                    for (int l = 0; l < allMeans.ToArray()[i].ToArray()[j].ToArray()[k].ToJagged().GetLength(0); l++)
+                    for (int k = 0; k < allMeans.ToArray()[i][j].ToJagged().GetLength(0); k++)
                     {
                         List<double[]> featureList = new List<double[]>
                         {
-                            allMins.ToArray()[i].ToArray()[j].ToArray()[k].ToJagged()[l],
-                            allMeans.ToArray()[i].ToArray()[j].ToArray()[k].ToJagged()[l],
-                            allMaxs.ToArray()[i].ToArray()[j].ToArray()[k].ToJagged()[l],
-                            allStds.ToArray()[i].ToArray()[j].ToArray()[k].ToJagged()[l],
-                            allSkewness.ToArray()[i].ToArray()[j].ToArray()[k].ToJagged()[l],
+                            allMins.ToArray()[i][j].ToJagged()[k],
+                            allMeans.ToArray()[i][j].ToJagged()[k],
+                            allMaxs.ToArray()[i][j].ToJagged()[k],
+                            allStds.ToArray()[i][j].ToJagged()[k],
+                            allSkewness.ToArray()[i][j].ToJagged()[k],
                         };
                         double[] featureVector = DataTools.ConcatenateVectors(featureList);
                         featureVectors.Add(featureVector);
                     }
 
-                    allFilesFeatureVectors.Add(filesName[j] + "Second_" + k, featureVectors.ToArray().ToMatrix());
-                    }
+                    allFilesFeatureVectors.Add(filesName[j], featureVectors.ToArray().ToMatrix());
                 }
 
                 // writing feature vectors to CSV file
@@ -633,6 +593,7 @@ namespace AudioAnalysisTools.DSP
 
                 File.WriteAllText(outputFeatureFile, csv.ToString());
             }
+
             //*****
         }
     }
