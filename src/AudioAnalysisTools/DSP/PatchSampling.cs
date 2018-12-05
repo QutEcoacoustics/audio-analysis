@@ -443,7 +443,7 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// cut audio to subsegments of  desired length.
+        /// cut audio to subsegments of desired length.
         /// return list of subsegments
         /// </summary>
         public static List<AudioRecording> GetSubsegmentsSamples(AudioRecording recording, double subsegmentDurationInSeconds, double frameStep)
@@ -458,10 +458,10 @@ namespace AudioAnalysisTools.DSP
             subsegmentFrameCount = (int)Math.Ceiling(subsegmentFrameCount);
             subsegmentSampleCount = (int)(subsegmentFrameCount * frameStep);
 
-            for (int i = 0; i < segmentSampleCount; subsegmentSampleCount++)
+            for (int i = 0; i < (int)(segmentSampleCount / subsegmentSampleCount); i++)
             {
                 AudioRecording subsegmentRecording = recording;
-                double[] subsamples = DataTools.Subarray(recording.WavReader.Samples, i, subsegmentSampleCount);
+                double[] subsamples = DataTools.Subarray(recording.WavReader.Samples, i * subsegmentSampleCount, subsegmentSampleCount);
                 var wr = new Acoustics.Tools.Wav.WavReader(subsamples, 1, 16, sampleRate);
                 subsegmentRecording = new AudioRecording(wr);
                 subsegments.Add(subsegmentRecording);

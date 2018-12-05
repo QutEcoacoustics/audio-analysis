@@ -43,13 +43,13 @@ namespace AudioAnalysisTools.DSP
                 // each 24 single-frames duration is equal to 1 second
                 // note that the "WindowOverlap" value should be recalculated if frame size is changed
                 // this has not yet been considered in the Config file!
-                WindowOverlap = 0.1028,
+                WindowOverlap = 0.1027832, //0.1028,
                 DoMelScale = (scaleType == FreqScaleType.Mel) ? true : false,
                 MelBinCount = (scaleType == FreqScaleType.Mel) ? finalBinCount : frameSize / 2,
                 NoiseReductionType = NoiseReductionType.None,
                 NoiseReductionParameter = 0.0,
             };
-            double frameStep = frameSize - settings.WindowOverlap;
+            double frameStep = frameSize - (settings.WindowOverlap * frameSize);
             int minFreqBin = config.MinFreqBin; // 24; //1; //35; //40; //
             int maxFreqBin = config.MaxFreqBin; // 95; //103; //109; //finalBinCount; //85; //80; //76;
             int numFreqBand = config.NumFreqBand; // 1;
@@ -90,7 +90,7 @@ namespace AudioAnalysisTools.DSP
 
                     for (int i = 0; i < recordings.Count; i++)
                     {
-                        var amplitudeSpectrogram = new AmplitudeSpectrogram(settings, recording.WavReader);
+                        var amplitudeSpectrogram = new AmplitudeSpectrogram(settings, recordings[i].WavReader);
 
                         //var logScaleSpectrogram = MatrixTools.Matrix2LogValues(amplitudeSpectrogram.Data);
                         var decibelSpectrogram = new DecibelSpectrogram(amplitudeSpectrogram);
