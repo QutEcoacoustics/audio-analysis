@@ -455,8 +455,8 @@ namespace AudioAnalysisTools.DSP
             int segmentSampleCount = (int)(segmentDuration * sampleRate);
             int subsegmentSampleCount = (int)(subsegmentDurationInSeconds * sampleRate);
             double subsegmentFrameCount = subsegmentSampleCount / (double)frameStep;
-            subsegmentFrameCount = (int)Math.Ceiling(subsegmentFrameCount);
-            subsegmentSampleCount = (int)(subsegmentFrameCount * frameStep);
+            subsegmentFrameCount = (int)subsegmentFrameCount; //(int)Math.Ceiling(subsegmentFrameCount)
+            subsegmentSampleCount = ((int)(subsegmentFrameCount * frameStep) < subsegmentSampleCount) ? subsegmentSampleCount : (int)(subsegmentFrameCount * frameStep);
 
             for (int i = 0; i < (int)(segmentSampleCount / subsegmentSampleCount); i++)
             {
