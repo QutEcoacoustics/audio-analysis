@@ -19,12 +19,10 @@ namespace AudioAnalysisTools.Indices
     using System.IO;
 
     using Acoustics.Shared.ConfigFile;
-
     using AnalysisBase;
     using Newtonsoft.Json;
     using TowseyLibrary;
     using YamlDotNet.Serialization;
-
     using Zio;
 
     public interface IIndexPropertyReferenceConfiguration
