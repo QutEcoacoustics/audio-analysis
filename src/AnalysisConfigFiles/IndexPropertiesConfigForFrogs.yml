@@ -16,8 +16,8 @@
   includeInComboIndex: false
   comboWeight: 0.0
 -
-  Key: AVG
-  Name: spectralAVG
+  Key: PMN
+  Name: spectralPMN
   Comment: "Spectrum of average dB amplitude in each frequency bin after noise removal."
   DataType: double[]
   DefaultValue: 0.0
@@ -94,8 +94,7 @@
   Units: ""
   includeInComboIndex: false
   comboWeight: 0.0
-
--  
+-
   Key: OSC
   Name: spectralOSC
   Comment: " The oscillation structure of the specific frequency band "
@@ -108,7 +107,7 @@
   Units: ""
   includeInComboIndex: false
   comboWeight: 0.0
--  
+-
   Key: HAR
   Name: spectralHAR
   Comment: " The Harmonic structure of the specific frequency band "
@@ -121,7 +120,6 @@
   Units: ""
   includeInComboIndex: false
   comboWeight: 0.0
-  
 -
   Key: ENG
   Name: spectralENG

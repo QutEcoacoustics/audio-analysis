@@ -554,8 +554,8 @@ SUM:
   CalculateNormMax: false
   ProjectID: Acoustic Indices
   Units: ""
-POW:
-  Name: spectralPOW
+PMN:
+  Name: spectralPMN
   Comment: "Spectrum of average dB power in each frequency bin after noise removal."
   DataType: double[]
   DefaultValue: 0.0
