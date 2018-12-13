@@ -1,4 +1,4 @@
-﻿// <copyright file="SpectralIndicesToAndFromTable.cs" company="QutEcoacoustics">
+// <copyright file="SpectralIndicesToAndFromTable.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -9,7 +9,6 @@ namespace AudioAnalysisTools.Indices
     using System.IO;
     using System.Linq;
     using System.Text;
-    using LongDurationSpectrograms;
     using TowseyLibrary;
 
     /// <summary>
@@ -52,9 +51,9 @@ namespace AudioAnalysisTools.Indices
                 arguments.OutputDir.Create();
             }
 
-            const string Title = "# READ FILES OF SPECTRAL INDICES INTO SINGLE PIVOT-TABLE - used for preparing 3D-Spectrograms";
+            const string title = "# READ FILES OF SPECTRAL INDICES INTO SINGLE PIVOT-TABLE - used for preparing 3D-Spectrograms";
             string dateNow = "# DATE AND TIME: " + DateTime.Now;
-            LoggedConsole.WriteLine(Title);
+            LoggedConsole.WriteLine(title);
             LoggedConsole.WriteLine(dateNow);
             LoggedConsole.WriteLine("# Input directory:  " + arguments.InputDir.Name);
             LoggedConsole.WriteLine("# Index Properties: " + arguments.IndexPropertiesConfig.Name);
@@ -84,7 +83,7 @@ namespace AudioAnalysisTools.Indices
             dictIP = InitialiseIndexProperties.FilterIndexPropertiesForSpectralOnly(dictIP);
             string[] spectrogramKeys = dictIP.Keys.ToArray();
 
-            int count = 0;
+            //int count = 0;
             DirectoryInfo[] dirList = inputDirInfo.GetDirectories();
             foreach (DirectoryInfo dir in dirList)
             {
@@ -150,13 +149,13 @@ namespace AudioAnalysisTools.Indices
             // set up the output file with headers if it does not exist
             if (!File.Exists(opFilePath))
             {
-                string outputCSVHeader = "Year,DayOfYear,MinOfDay,FreqBin";
+                string outputCsvHeader = "Year,DayOfYear,MinOfDay,FreqBin";
                 foreach (string key in dict.Keys)
                 {
-                    outputCSVHeader = outputCSVHeader + "," + key;
+                    outputCsvHeader = outputCsvHeader + "," + key;
                 }
 
-                FileTools.WriteTextFile(opFilePath, outputCSVHeader);
+                FileTools.WriteTextFile(opFilePath, outputCsvHeader);
             }
 
             List<string> lines = new List<string>();
@@ -172,8 +171,8 @@ namespace AudioAnalysisTools.Indices
                 int numberOfMinutes = thisStartMinute + min;
                 for (int bin = 0; bin < freqBinCount; bin++)
                 {
-                    int binID = freqBinCount - bin - 1;
-                    StringBuilder line = new StringBuilder(linestart + "," + numberOfMinutes + "," + binID);
+                    int binId = freqBinCount - bin - 1;
+                    StringBuilder line = new StringBuilder(linestart + "," + numberOfMinutes + "," + binId);
 
                     foreach (string key in dict.Keys)
                     {
@@ -193,10 +192,10 @@ namespace AudioAnalysisTools.Indices
         }
 
         /// <summary>
-        /// reads a single csv file in form of table and returns a dictionary of spectral indices.
+        /// Reads a single csv file in form of table and returns a dictionary of spectral indices.
         /// </summary>
-        /// <param name="csvFileName"></param>
-        /// <returns></returns>
+        /// <param name="csvFileName">path to file containing a table of spectral index values</param>
+        /// <returns>dictionary of matrices</returns>
         public static Dictionary<string, double[,]> ReadPivotTableToSpectralIndices(string csvFileName)
         {
             // MICHAEL: the new Csv class can read this in, and optionally transpose as it reads
