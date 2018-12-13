@@ -16,6 +16,8 @@ namespace AudioAnalysisTools.Indices
 
     public class SpectralIndexValues : SpectralIndexBase
     {
+        private static string[] keys = { "ACI", "BGN", "CVR", "ENT", "EVN", "PMN", "RHZ", "RNG", "RPS", "RVT", "R3D", "SPT" };
+
         private static readonly Dictionary<string, Func<SpectralIndexBase, double[]>> CachedSelectorsInternal;
         private static readonly Dictionary<string, Action<SpectralIndexValues, double[]>> CachedSettersInternal;
 
@@ -140,7 +142,6 @@ namespace AudioAnalysisTools.Indices
 
         public static Image CreateImageOfSpectralIndices(SpectralIndexValues spectralIndices)
         {
-            string[] keys = { "ACI", "BGN", "CVR", "ENT", "EVN", "PMN", "POW", "RHZ", "RNG", "RPS", "RVT", "R3D", "SPT" };
             var images = new List<Image>();
             foreach (var key in keys)
             {
@@ -165,9 +166,6 @@ namespace AudioAnalysisTools.Indices
                         break;
                     case "PMN":
                         normalisedIndex = DataTools.normalise(spectralIndices.PMN);
-                        break;
-                    case "POW":
-                        normalisedIndex = DataTools.normalise(spectralIndices.POW);
                         break;
                     case "RHZ":
                         normalisedIndex = DataTools.normalise(spectralIndices.RHZ);
@@ -221,17 +219,15 @@ namespace AudioAnalysisTools.Indices
         public double[] EVN { get; set; }
 
         /// <summary>
-        /// Gets or sets pMN = Power Minus Noise.
-        /// PMN is measured in decibels but should replace POW as the average decibel spectrogram.
-        /// PMN calculates the average decibel spectrogram correctly.
+        /// Gets or sets the oscillation spectral index index. Created October 2018.
         /// </summary>
-        public double[] PMN { get; set; }
+        public double[] OSC { get; set; }
 
         /// <summary>
-        /// Gets or sets the POW spectral index should eventually be depracated.
-        /// It is derived from an incorrect way of averaging decibel values
+        /// Gets or sets PMN = Power Minus Noise.
+        /// PMN is measured in decibels. It replaces the previous POW as the average decibel spectrogram.
         /// </summary>
-        public double[] POW { get; set; }
+        public double[] PMN { get; set; }
 
         // Spectral Ridges Horizontal
         public double[] RHZ { get; set; }
