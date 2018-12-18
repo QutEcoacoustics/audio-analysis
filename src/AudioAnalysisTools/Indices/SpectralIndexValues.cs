@@ -8,7 +8,6 @@ namespace AudioAnalysisTools.Indices
     using System.Collections.Generic;
     using System.Drawing;
     using System.Linq;
-
     using Acoustics.Shared;
     using AnalysisBase.ResultBases;
     using Fasterflect;
@@ -117,79 +116,20 @@ namespace AudioAnalysisTools.Indices
             }
         }
 
-        public static Dictionary<string, Func<SpectralIndexBase, double[]>> CachedSelectors
-        {
-            get
-            {
-                return CachedSelectorsInternal;
-            }
-        }
+        public static Dictionary<string, Func<SpectralIndexBase, double[]>> CachedSelectors => CachedSelectorsInternal;
 
-        public static Dictionary<string, Action<SpectralIndexValues, double[]>> CachedSetters
-        {
-            get
-            {
-                return CachedSettersInternal;
-            }
-        }
+        public static Dictionary<string, Action<SpectralIndexValues, double[]>> CachedSetters => CachedSettersInternal;
 
-        public static string[] GetKeys()
-        {
-            return CachedSelectorsInternal.Keys.ToArray();
-        }
+        public static string[] Keys = CachedSelectors.Keys.ToArray();
 
         public static Image CreateImageOfSpectralIndices(SpectralIndexValues spectralIndices)
         {
-            string[] keys = { "ACI", "BGN", "CVR", "ENT", "EVN", "PMN", "POW", "RHZ", "RNG", "RPS", "RVT", "R3D", "SPT" };
-            var images = new List<Image>();
-            foreach (var key in keys)
-            {
-                double[] normalisedIndex = null;
 
-                switch (key)
-                {
-                    case "ACI":
-                        normalisedIndex = DataTools.normalise(spectralIndices.ACI);
-                        break;
-                    case "BGN":
-                        normalisedIndex = DataTools.normalise(spectralIndices.BGN);
-                        break;
-                    case "CVR":
-                        normalisedIndex = DataTools.normalise(spectralIndices.CVR);
-                        break;
-                    case "ENT":
-                        normalisedIndex = DataTools.normalise(spectralIndices.ENT);
-                        break;
-                    case "EVN":
-                        normalisedIndex = DataTools.normalise(spectralIndices.EVN);
-                        break;
-                    case "PMN":
-                        normalisedIndex = DataTools.normalise(spectralIndices.PMN);
-                        break;
-                    case "POW":
-                        normalisedIndex = DataTools.normalise(spectralIndices.POW);
-                        break;
-                    case "RHZ":
-                        normalisedIndex = DataTools.normalise(spectralIndices.RHZ);
-                        break;
-                    case "RNG":
-                        normalisedIndex = DataTools.normalise(spectralIndices.RNG);
-                        break;
-                    case "RPS":
-                        normalisedIndex = DataTools.normalise(spectralIndices.RPS);
-                        break;
-                    case "RVT":
-                        normalisedIndex = DataTools.normalise(spectralIndices.RVT);
-                        break;
-                    case "R3D":
-                        normalisedIndex = DataTools.normalise(spectralIndices.R3D);
-                        break;
-                    case "SPT":
-                        normalisedIndex = DataTools.normalise(spectralIndices.SPT);
-                        break;
-                    default:
-                        break;
-                }
+            var images = new List<Image>();
+            foreach (var key in Keys)
+            {
+                var spectrum = CachedSelectors[key](spectralIndices);
+                double[] normalisedIndex = DataTools.normalise(spectrum);
 
                 var image = GraphsAndCharts.DrawGraph(key, normalisedIndex, 100);
                 images.Add(image);
@@ -214,24 +154,26 @@ namespace AudioAnalysisTools.Indices
 
         public double[] CVR { get; set; }
 
+        // This property only calculated for ACI when zooming
         public double[] DIF { get; set; }
 
+        // Entropy
         public double[] ENT { get; set; }
 
         public double[] EVN { get; set; }
 
         /// <summary>
-        /// Gets or sets pMN = Power Minus Noise.
+        /// Gets or sets the OSC (oscillation) spectral index.
+        /// This index added in November 2018.
+        /// </summary>
+        public double[] OSC { get; set; }
+
+        /// <summary>
+        /// Gets or sets PMN = Power Minus Noise.
         /// PMN is measured in decibels but should replace POW as the average decibel spectrogram.
         /// PMN calculates the average decibel spectrogram correctly.
         /// </summary>
         public double[] PMN { get; set; }
-
-        /// <summary>
-        /// Gets or sets the POW spectral index should eventually be depracated.
-        /// It is derived from an incorrect way of averaging decibel values
-        /// </summary>
-        public double[] POW { get; set; }
 
         // Spectral Ridges Horizontal
         public double[] RHZ { get; set; }
@@ -251,6 +193,7 @@ namespace AudioAnalysisTools.Indices
         // Spectral Peak Tracks
         public double[] SPT { get; set; }
 
+        // This property only calculated for ACI when zooming
         public double[] SUM { get; set; }
 
         public override Dictionary<string, Func<SpectralIndexBase, double[]>> GetSelectors()
