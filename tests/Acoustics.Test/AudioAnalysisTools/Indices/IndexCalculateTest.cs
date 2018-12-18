@@ -1,4 +1,4 @@
-﻿// <copyright file="IndexCalculateTest.cs" company="QutEcoacoustics">
+// <copyright file="IndexCalculateTest.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -182,13 +182,6 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.EVN);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.EVN, AllowedDelta);
-
-            // POW
-            expectedSpectrumFile = new FileInfo(resourcesDir + "\\POW.bin");
-
-            // Binary.Serialize(expectedSpectrumFile, spectralIndices.POW);
-            expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
-            CollectionAssert.That.AreEqual(expectedVector, spectralIndices.POW, AllowedDelta);
 
             // RHZ
             expectedSpectrumFile = new FileInfo(resourcesDir + "\\RHZ.bin");
