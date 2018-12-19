@@ -8,7 +8,6 @@ namespace AudioAnalysisTools.Indices
     using System.Collections.Generic;
     using System.Drawing;
     using System.Linq;
-
     using Acoustics.Shared;
     using AnalysisBase.ResultBases;
     using Fasterflect;
@@ -142,6 +141,11 @@ namespace AudioAnalysisTools.Indices
 
         public static Image CreateImageOfSpectralIndices(SpectralIndexValues spectralIndices)
         {
+<<<<<<< HEAD
+            //string[] keys = { "ACI", "BGN", "CVR", "ENT", "EVN", "OSC", "PMN", "R3D", "RHZ", "RNG", "RPS", "RVT", "SPT" };
+            var keys = InitialiseIndexProperties.ListOfKeys;
+=======
+>>>>>>> master
             var images = new List<Image>();
             foreach (var key in keys)
             {
@@ -163,6 +167,9 @@ namespace AudioAnalysisTools.Indices
                         break;
                     case "EVN":
                         normalisedIndex = DataTools.normalise(spectralIndices.EVN);
+                        break;
+                    case "OSC":
+                        normalisedIndex = DataTools.normalise(spectralIndices.OSC);
                         break;
                     case "PMN":
                         normalisedIndex = DataTools.normalise(spectralIndices.PMN);
@@ -206,16 +213,19 @@ namespace AudioAnalysisTools.Indices
         /// </remarks>
         public IndexCalculateConfig Configuration { get; }
 
+        // 1:
         public double[] ACI { get; set; }
 
+        // 2:
         public double[] BGN { get; set; }
 
+        // 3:
         public double[] CVR { get; set; }
 
-        public double[] DIF { get; set; }
-
+        // 4:
         public double[] ENT { get; set; }
 
+        // 5:
         public double[] EVN { get; set; }
 
         /// <summary>
@@ -223,29 +233,32 @@ namespace AudioAnalysisTools.Indices
         /// </summary>
         public double[] OSC { get; set; }
 
+        // 8: Sum of Spectral Ridges in Horizontal, postive and neg slope directions (RHZ+RPS+RNG)
+        public double[] R3D { get; set; }
         /// <summary>
+        
         /// Gets or sets PMN = Power Minus Noise.
         /// PMN is measured in decibels. It replaces the previous POW as the average decibel spectrogram.
         /// </summary>
         public double[] PMN { get; set; }
 
-        // Spectral Ridges Horizontal
+        // 9: Spectral Ridges Horizontal
         public double[] RHZ { get; set; }
 
-        // Spectral Ridges Vertical
+        // 10: Spectral Ridges Vertical
         public double[] RVT { get; set; }
 
-        // Spectral Ridges Positive slope
+        // 11: Spectral Ridges Positive slope
         public double[] RPS { get; set; }
 
-        // Spectral Ridges Negative Slope
+        // 12: Spectral Ridges Negative Slope
         public double[] RNG { get; set; }
 
-        // Sum of Spectral Ridges in Horizontal, postive and neg slope directions (RHZ+RPS+RNG)
-        public double[] R3D { get; set; }
-
-        // Spectral Peak Tracks
+        // 13: Spectral Peak Tracks
         public double[] SPT { get; set; }
+
+        // The following two indices are not standard acoustic indices but are only used in the intermediate calculations
+        public double[] DIF { get; set; }
 
         public double[] SUM { get; set; }
 

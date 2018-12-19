@@ -17,7 +17,6 @@ namespace AudioAnalysisTools.Indices
     using System.Collections.Generic;
     using System.Drawing;
     using System.IO;
-
     using Acoustics.Shared.ConfigFile;
     using AnalysisBase;
     using Newtonsoft.Json;

@@ -280,7 +280,7 @@ namespace AnalysisPrograms.Recognizers
                     double oscilFreq;
                     double period;
                     double intensity;
-                    Oscillations2014.GetOscillation(differenceArray, framesPerSecond, cosines, out oscilFreq, out period, out intensity);
+                    Oscillations2014.GetOscillationUsingDct(differenceArray, framesPerSecond, cosines, out oscilFreq, out period, out intensity);
 
                     bool periodWithinBounds = period > lbConfig.MinPeriod && period < lbConfig.MaxPeriod;
 
