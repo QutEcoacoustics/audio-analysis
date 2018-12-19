@@ -243,13 +243,13 @@ namespace AudioAnalysisTools
         public static double[,] GetSpectrogramMatrix(AudioRecording recordingSegment, int frameLength)
         {
             // set up the default songram config object
-            var sonoConfig = new SonogramConfig
-            {
-                WindowSize = frameLength,
-                WindowOverlap = 0.0,
-            };
+            // var sonoConfig = new SonogramConfig
+            // {
+            //     WindowSize = frameLength,
+            //     WindowOverlap = 0.0,
+            // };
 
-            BaseSonogram sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
+            // BaseSonogram sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
 
             // Taking the decibel spectrogram also works
             // BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
@@ -261,13 +261,17 @@ namespace AudioAnalysisTools
 
             // remove the DC bin if it has not already been removed.
             // Assume test of divisible by 2 is good enough.
-            int binCount = sonogram.Data.GetLength(1);
-            if (!binCount.IsEven())
-            {
-                sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.FrameCount - 1, binCount - 1);
-            }
+            // int binCount = sonogram.Data.GetLength(1);
+            // if (!binCount.IsEven())
+            // {
+            //     sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.FrameCount - 1, binCount - 1);
+            // }
 
-            return sonogram.Data;
+            // AT: Switched to below method of extracting the spectrogram because BaseSonogram
+            // does not allow small spectrograms (less than 0.2s) to calculated.
+
+            var fft = DSP_Frames.ExtractEnvelopeAndFfts(recordingSegment, frameLength, frameLength);
+            return fft.AmplitudeSpectrogram;
         }
 
         /// <summary>

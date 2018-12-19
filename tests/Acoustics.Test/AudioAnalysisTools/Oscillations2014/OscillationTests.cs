@@ -107,7 +107,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Oscillations2014
 
                 //TODO  Following test fails when using CSV reader because the reader cuts out first line of the matrix
                 //var expectedMatrix = Csv.ReadMatrixFromCsv<double>(expectedMatrixFile);
-                CollectionAssert.AreEqual(expectedMatrix, tuple.Item2);
+                CollectionAssert.That.AreEqual(expectedMatrix, tuple.Item2, 0.000001);
             }
         }
 
@@ -160,7 +160,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Oscillations2014
                 // TODO  this test fails when using CSV reader because the reader cuts out first element/line of the vector
                 //var expectedVector = (double[])Csv.ReadFromCsv<double>(expectedIndexPath);
                 var expectedVector = Binary.Deserialize<double[]>(expectedIndexPath);
-                CollectionAssert.AreEqual(expectedVector, spectralIndex);
+                CollectionAssert.That.AreEqual(expectedVector, spectralIndex, 0.000001);
             }
         }
     }
