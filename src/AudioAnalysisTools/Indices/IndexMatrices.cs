@@ -392,7 +392,7 @@ namespace AudioAnalysisTools.Indices
 
         public static Dictionary<string, double[,]> AddDerivedIndices(Dictionary<string, double[,]> spectrogramMatrices)
         {
-            string key = "POW";
+            string key = "PMN";
             string newKey = "Sqrt" + key;
             if (spectrogramMatrices.ContainsKey(key) && !spectrogramMatrices.ContainsKey(newKey))
             {

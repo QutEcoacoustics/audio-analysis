@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="SpectrogramConstants.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -29,11 +29,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public const string RGBMap_BGN_PMN_SPT = "BGN-PMN-SPT"; //R-G-B
         public const string RGBMap_BGN_PMN_CLS = "BGN-PMN-CLS"; //R-G-B
         public const string RGBMap_BGN_PMN_R3D = "BGN-PMN-R3D";
-        public const string RGBMap_BGN_PMN_CVR = "BGN-POW-CVR"; //R-G-B
-
-        // Prior to March 2015 POW was called AVG. Var name was changed because value is signal power and therefore POW is more descriptive.
-        public const string RGBMap_BGN_POW_CVR = "BGN-POW-CVR"; //R-G-B
-        public const string RGBMap_BGN_POW_EVN = "BGN-POW-EVN"; //R-G-B
+        public const string RGBMap_BGN_PMN_CVR = "BGN-PMN-CVR"; //R-G-B
 
         // these parameters manipulate the colour map and appearance of the false-colour LONG DURATION spectrogram
         public const double BACKGROUND_FILTER_COEFF = -0.25; //value must lie in -1.0 to +1.0
