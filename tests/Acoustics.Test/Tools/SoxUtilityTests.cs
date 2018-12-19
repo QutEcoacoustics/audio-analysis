@@ -1,5 +1,5 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="SoxUtilityResampleTests.cs" company="QutEcoacoustics">
+// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="SoxUtilityTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
@@ -12,14 +12,51 @@ namespace Acoustics.Test.Tools
     using System.IO;
     using Acoustics.Shared;
     using Acoustics.Tools;
+    using Acoustics.Tools.Audio;
     using Acoustics.Tools.Wav;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using MSTestExtensions;
     using TestHelpers;
 
     [TestClass]
-    public class SoxUtilityResampleTests: BaseTest
+    public class SoxUtilityTests : OutputDirectoryTest
     {
+        [TestMethod]
+        public void WeHackAroundUnicodePathProblemsInWindowsSox()
+        {
+            if (!AppConfigHelper.IsWindows)
+            {
+                return;
+            }
+
+            var sox = new SoxAudioUtility(
+                AppConfigHelper.SoxExe.ToFileInfo(),
+                this.outputDirectory,
+                enableShortNameHack: false);
+
+            // create a file we know sox can't handle
+            var fixture = "different_channels_tone.wav";
+            var fixtureAsset = PathHelper.ResolveAsset(fixture);
+            var path = this.outputDirectory.CombineFile("🤷‍♂️20180616_145526😂.wav");
+
+            fixtureAsset.CopyTo(path.FullName);
+
+            // SoX should fail - if it ever doesn't fail here we can remove
+            // the short name/unicode hack
+            Assert.ThrowsException<AudioUtilityException>(
+                () => sox.Info(path));
+
+            // and with the hack it should work
+            sox = new SoxAudioUtility(
+                AppConfigHelper.SoxExe.ToFileInfo(),
+                this.outputDirectory,
+                enableShortNameHack: true);
+
+            var actual = sox.Info(path);
+
+            TestHelper.CheckAudioUtilityInfo(TestHelper.AudioDetails[fixture], actual);
+        }
+
         [TestMethod]
         public void SoxResamplingShouldBeDeterministic()
         {
@@ -47,8 +84,12 @@ namespace Acoustics.Test.Tools
             {
                 var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
-                util.Modify(source, MediaTypes.GetMediaType(source.Extension), output,
-                    MediaTypes.GetMediaType(output.Extension), request);
+                util.Modify(
+                    source,
+                    MediaTypes.GetMediaType(source.Extension),
+                    output,
+                    MediaTypes.GetMediaType(output.Extension),
+                    request);
 
                 var actual = util.Info(output);
 

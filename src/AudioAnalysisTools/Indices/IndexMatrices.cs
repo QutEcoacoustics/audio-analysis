@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="IndexMatrices.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -19,6 +19,7 @@ namespace AudioAnalysisTools.Indices
     using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Csv;
     using log4net;
+    using StandardSpectrograms;
     using TowseyLibrary;
 
     using Zio;
@@ -179,51 +180,6 @@ namespace AudioAnalysisTools.Indices
 
             return dictionary;
         }
-
-        /*
-                static T[,] CreateRectangularArray<T>(IList<T[]> arrays)
-                {
-                    // TODO: Validation and special-casing for arrays.Count == 0
-                    int minorLength = arrays[0].Length;
-                    T[,] ret = new T[arrays.Count, minorLength];
-                    for (int i = 0; i < arrays.Count; i++)
-                    {
-                        var array = arrays[i];
-                        if (array.Length != minorLength)
-                        {
-                            throw new ArgumentException
-                                ("All arrays must be the same length");
-                        }
-                        for (int j = 0; j < minorLength; j++)
-                        {
-                            ret[i, j] = array[j];
-                        }
-                    }
-                    return ret;
-                }
-
-                static T[,] CreateRectangularArrayFromListOfColumnArrays<T>(IList<T[]> arrays)
-                {
-                    // TODO: Validation and special-casing for arrays.Count == 0
-                    int rowCount = arrays[0].Length;
-                    int colCount = arrays.Count;
-                    T[,] ret = new T[rowCount, colCount];
-                    for (int c = 0; c < colCount; c++)
-                    {
-                        var array = arrays[c];
-                        if (array.Length != rowCount)
-                        {
-                            throw new ArgumentException
-                                ("All arrays must be the same length");
-                        }
-                        for (int r = 0; r < rowCount; r++)
-                        {
-                            ret[r, c] = array[r];
-                        }
-                    }
-                    return ret;
-                }
-        */
 
         public static Dictionary<string, double[,]> GetSpectralIndexFilesAndConcatenate(
             DirectoryInfo[] dirs,
@@ -436,7 +392,7 @@ namespace AudioAnalysisTools.Indices
 
         public static Dictionary<string, double[,]> AddDerivedIndices(Dictionary<string, double[,]> spectrogramMatrices)
         {
-            string key = "POW";
+            string key = "PMN";
             string newKey = "Sqrt" + key;
             if (spectrogramMatrices.ContainsKey(key) && !spectrogramMatrices.ContainsKey(newKey))
             {
@@ -589,18 +545,19 @@ namespace AudioAnalysisTools.Indices
         }
 
         /// <summary>
-        /// compresses the spectral index data in the temporal direction by a factor dervied from the data scale and
+        /// Compresses the spectral index data in the temporal direction by a factor derived from the data scale and
         /// required image scale.
-        /// In all cases, the compression is done by taking the average.
-        /// The method got more complicated in June 2016 when refactored it to cope with recording blocks less than
+        /// In most cases, the compression is done by taking the average. ACI, ENT, BGN, and PMN are special cases,
+        /// requiring a special form of averaging.
+        /// This method got more complicated in June 2016 when it was refactored to cope with recording blocks less than
         /// one minute long.
         /// </summary>
-        /// <param name="spectra">The spectra to compress</param>
-        /// <param name="imageScale">The scale to compress to</param>
-        /// <param name="dataScale">The scale of the <see cref="spectra"/></param>
+        /// <param name="spectra">The spectra to compress as a dictionary of spectrogram matrices</param>
+        /// <param name="imageScale">The scale (time resolution) of the compressed output spectrogram</param>
+        /// <param name="dataScale">The scale (time resolution) of the input spectral indices<see cref="spectra"/></param>
         /// <param name="roundingFunc">
-        /// How fractional spectra should be delt with.
-        /// Should be one of or similar to <see cref="Math.Round(double)"/>,
+        /// How fractional spectra should be dealt with.
+        /// It should be one of or similar to <see cref="Math.Round(double)"/>,
         /// <see cref="Math.Floor(double)"/>, or <see cref="Math.Ceiling(double)"/>.
         /// </param>
         public static Dictionary<string, double[,]> CompressIndexSpectrograms(
@@ -611,6 +568,7 @@ namespace AudioAnalysisTools.Indices
         {
             roundingFunc = roundingFunc ?? Math.Floor;
 
+            // the scaling factor should usually be > 1.0.
             var rawScalingFactor = imageScale.Ticks / (double)dataScale.Ticks;
             int scalingFactor = (int)Math.Round(rawScalingFactor);
 
@@ -619,19 +577,19 @@ namespace AudioAnalysisTools.Indices
                 "CompressIndexSpectrograms only supports rescaling between factors that produce integer ratios");
 
             var compressedSpectra = new Dictionary<string, double[,]>();
-            int step = scalingFactor;
 
-            // if there's no need to compress, simply return
-            if (step == 0)
+            // if there is no need to compress, simply return
+            if (scalingFactor == 1)
             {
                 return spectra;
             }
 
+            //process each spectrogram in turn
             foreach (string key in spectra.Keys)
             {
-                double[,] matrix = spectra[key];
-                int rowCount = matrix.GetLength(0);
-                int colCount = matrix.GetLength(1);
+                double[,] inputMatrix = spectra[key];
+                int rowCount = inputMatrix.GetLength(0);
+                int colCount = inputMatrix.GetLength(1);
 
                 int compressionWindow = scalingFactor;
                 int compressedLength = (int)roundingFunc((double)colCount / scalingFactor);
@@ -640,31 +598,27 @@ namespace AudioAnalysisTools.Indices
                     compressedLength = 1;
                 }
 
-                var newMatrix = new double[rowCount, compressedLength];
+                // init compressed output matrix
+                var outputMatrix = new double[rowCount, compressedLength];
 
                 // using this form to ensure we can reach the end of array
-                int maxColCount = (compressedLength - 1) * scalingFactor;
+                int outputColCount = (compressedLength - 1) * scalingFactor;
 
                 // the ENTROPY matrix requires separate calculation
-                if (key == "ENT" && scalingFactor > 1)
+                if (key == nameof(SpectralIndexValues.ENT))
                 {
-                    double[] tempArray = new double[scalingFactor];
-                    matrix = spectra["SUM"];
+                    inputMatrix = spectra[nameof(SpectralIndexValues.SUM)];
                     for (int r = 0; r < rowCount; r++)
                     {
-                        for (int c = 0; c <= maxColCount; c += step)
+                        for (int c = 0; c <= outputColCount; c += scalingFactor)
                         {
-                            var colIndex = c / scalingFactor;
-                            for (int i = 0; i < compressionWindow; i++)
+                            // partial compression windows at the end of the array
+                            var windowSize = Math.Min(colCount - c, compressionWindow);
+                            double[] tempArray = new double[windowSize];
+                            for (int i = c; i < c + windowSize; i++)
                             {
-                                // partial compression windows at the end of the array
-                                if (c + i >= colCount)
-                                {
-                                    continue;
-                                }
-
                                 // square the amplitude to give energy
-                                tempArray[i] = matrix[r, c + i] * matrix[r, c + i];
+                                tempArray[i - c] = inputMatrix[r, i] * inputMatrix[r, i];
                             }
 
                             double entropy = DataTools.EntropyNormalised(tempArray);
@@ -673,67 +627,89 @@ namespace AudioAnalysisTools.Indices
                                 entropy = 1.0;
                             }
 
-                            newMatrix[r, colIndex] = 1 - entropy;
+                            var colIndex = c / scalingFactor;
+                            outputMatrix[r, colIndex] = 1 - entropy;
                         }
                     }
                 }
-                else if (key == "ACI" && scalingFactor > 1)
+                else if (key == nameof(SpectralIndexValues.PMN) || key == nameof(SpectralIndexValues.BGN))
+                {
+                    // indices whose units are in decibels require separate calculation
+                    // i.e. PMN (POWER MINUS NOISE) and BGN (background noise)
+                    inputMatrix = spectra[key];
+                    for (int r = 0; r < rowCount; r++)
+                    {
+                        for (int c = 0; c <= outputColCount; c += scalingFactor)
+                        {
+                            // partial compression windows at the end of the array
+                            var windowSize = Math.Min(colCount - c, compressionWindow);
+                            double[] tempArray = new double[windowSize];
+                            for (int i = c; i < c + windowSize; i++)
+                            {
+                                //store original values in temp array
+                                tempArray[i - c] = inputMatrix[r, i];
+                            }
+
+                            var colIndex = c / scalingFactor;
+                            outputMatrix[r, colIndex] = SpectrogramTools.AverageAnArrayOfDecibelValues(tempArray);
+                        }
+                    }
+                }
+                else if (key == nameof(SpectralIndexValues.ACI))
                 {
                     // THE ACI matrix requires separate calculation
                     for (int r = 0; r < rowCount; r++)
                     {
-                        for (int c = 0; c <= maxColCount; c += step)
+                        for (int c = 0; c <= outputColCount; c += scalingFactor)
                         {
-                            var colIndex = c / scalingFactor;
                             var difSum = 0.0;
                             var sumSum = 0.0;
-                            for (int i = 0; i < compressionWindow; i++)
+                            for (int i = c; i < c + compressionWindow; i++)
                             {
                                 // partial compression windows at the end of the array
-                                if (c + i >= colCount)
+                                if (i >= colCount)
                                 {
-                                    continue;
+                                    break;
                                 }
 
-                                difSum += spectra["DIF"][r, c + i];
-                                sumSum += spectra["SUM"][r, c + i];
+                                difSum += spectra[nameof(SpectralIndexValues.DIF)][r, i];
+                                sumSum += spectra[nameof(SpectralIndexValues.SUM)][r, i];
                             }
 
-                            newMatrix[r, colIndex] = difSum / sumSum;
+                            var colIndex = c / scalingFactor;
+                            outputMatrix[r, colIndex] = difSum / sumSum;
                         }
                     }
                 }
-
-                // TODO: @towsey, PMN should probably have a separate calculation as well?
                 else
                 {
                     // average all other spectral indices
-                    matrix = spectra[key];
+                    inputMatrix = spectra[key];
                     for (int r = 0; r < rowCount; r++)
                     {
-                        for (int c = 0; c <= maxColCount; c += step)
+                        for (int c = 0; c <= outputColCount; c += scalingFactor)
                         {
-                            var colIndex = c / scalingFactor;
                             var sum = 0.0;
                             int count = 0;
-                            for (int i = 0; i < compressionWindow; i++)
+                            for (int i = c; i < c + compressionWindow; i++)
                             {
                                 // partial compression windows at the end of the array
-                                if (c + i >= colCount)
+                                if (i >= colCount)
                                 {
-                                    continue;
+                                    break;
                                 }
 
                                 count++;
-                                sum += matrix[r, c + i];
+                                sum += inputMatrix[r, i];
                             }
 
-                            newMatrix[r, colIndex] = sum / count;
+                            var colIndex = c / scalingFactor;
+                            outputMatrix[r, colIndex] = sum / count;
                         }
                     }
                 }
 
-                compressedSpectra[key] = newMatrix;
+                compressedSpectra[key] = outputMatrix;
             }
 
             return compressedSpectra;

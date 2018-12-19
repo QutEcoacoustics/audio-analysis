@@ -1,4 +1,4 @@
-﻿// <copyright file="ConcatenateIndexFiles.cs" company="QutEcoacoustics">
+// <copyright file="ConcatenateIndexFiles.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -898,7 +898,7 @@ namespace AnalysisPrograms
                 IndexPropertiesConfig = $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_IndexPropertiesConfig.yml",
                 FalseColourSpectrogramConfig = falseColourSpgConfig,
                 ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
-                ColorMap2 = "BGN-POW-SPT", // This color map dates pre-May 2017.
+                ColorMap2 = "BGN-PMN-SPT", // This color map dates pre-May 2017.
                 ConcatenateEverythingYouCanLayYourHandsOn = true,
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
                 DrawImages = true,
@@ -944,7 +944,7 @@ namespace AnalysisPrograms
                 IndexPropertiesConfig = $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_IndexPropertiesConfig.yml",
                 FalseColourSpectrogramConfig = falseColourSpgConfig,
                 ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
-                ColorMap2 = "BGN-POW-SPT", // This color map dates pre-May 2017.
+                ColorMap2 = "BGN-PMN-SPT", // This color map dates pre-May 2017.
                 ConcatenateEverythingYouCanLayYourHandsOn = false, // 24 hour blocks only
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
                 DrawImages = true,
@@ -989,7 +989,7 @@ namespace AnalysisPrograms
                 IndexPropertiesConfig = $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_IndexPropertiesConfig.yml",
                 FalseColourSpectrogramConfig = falseColourSpgConfig,
                 ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
-                ColorMap2 = "BGN-POW-SPT", // This color map dates pre-May 2017.
+                ColorMap2 = "BGN-PMN-SPT", // This color map dates pre-May 2017.
                 ConcatenateEverythingYouCanLayYourHandsOn = false, // 24 hour blocks only
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
                 DrawImages = true,
@@ -1046,7 +1046,7 @@ namespace AnalysisPrograms
                 IndexPropertiesConfig = $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_IndexPropertiesConfig.yml",
                 FalseColourSpectrogramConfig = falseColourSpgConfig,
                 ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
-                ColorMap2 = "BGN-POW-SPT", // This color map dates pre-May 2017.
+                ColorMap2 = "BGN-PMN-SPT", // This color map dates pre-May 2017.
                 ConcatenateEverythingYouCanLayYourHandsOn = true,
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
                 DrawImages = true,

@@ -1,11 +1,11 @@
-﻿namespace Acoustics.Tools.Audio
+namespace Acoustics.Tools.Audio
 {
     using System;
     using System.Collections.Generic;
     using System.Globalization;
     using System.IO;
     using System.Linq;
-
+    using log4net;
     using Shared;
 
     /// <summary>
@@ -13,6 +13,7 @@
     /// </summary>
     public class SoxAudioUtility : AbstractAudioUtility, IAudioUtility
     {
+        private readonly bool enableShortNameHack;
         /*
          * Some things to test out/try:
          * stat - audio stats
@@ -50,14 +51,22 @@
         /// <param name="soxExe">
         /// The exe file.
         /// </param>
+        /// <param name="temporaryFilesDirectory">
+        /// Which directory should hold temporary files.
+        /// </param>
+        /// <param name="enableShortNameHack">
+        /// Whether or not filenames with unicode characters should be shortened
+        /// to 8.3 filenames on Windows.
+        /// </param>
         /// <exception cref="FileNotFoundException">
         /// Could not find exe.
         /// </exception>
         /// <exception cref="ArgumentNullException">
         /// <paramref name="soxExe"/> is <c>null</c>.
         /// </exception>
-        public SoxAudioUtility(FileInfo soxExe, DirectoryInfo temporaryFilesDirectory)
+        public SoxAudioUtility(FileInfo soxExe, DirectoryInfo temporaryFilesDirectory, bool enableShortNameHack = true)
         {
+            this.enableShortNameHack = enableShortNameHack;
             this.CheckExe(soxExe, "sox");
             this.ExecutableModify = soxExe;
             this.ExecutableInfo = soxExe;
@@ -230,7 +239,7 @@
                 forceOutput = "-t wavpcm ";
             }
 
-            return $"{repeatable} -q -V4 \"{source.FullName}\" {forceOutput}\"{output.FullName}\" {trim} {rate} {remix} {bandpass}";
+            return $"{repeatable} -q -V4 \"{this.FixFilename(source)}\" {forceOutput}\"{output.FullName}\" {trim} {rate} {remix} {bandpass}";
         }
 
         private static string FormatChannelSelection(AudioUtilityRequest request)
@@ -274,7 +283,7 @@
         /// </returns>
         protected override string ConstructInfoArgs(FileInfo source)
         {
-            string args = " --info -V4 \"" + source.FullName + "\"";
+            string args = $" --info -V4 \"{this.FixFilename(source)}\"";
             return args;
         }
 
@@ -540,6 +549,31 @@
             {
                 return TimeSpan.Zero;
             }
+        }
+
+        private string FixFilename(FileInfo file)
+        {
+            var path = file.FullName;
+            if (!this.enableShortNameHack)
+            {
+                return path;
+            }
+
+            if (!AppConfigHelper.IsWindows)
+            {
+                return path;
+            }
+
+            if (!PathUtils.HasUnicodeOrUnsafeChars(path))
+            {
+                return path;
+            }
+
+            var shortPath = PathUtils.GetShortFilename(path);
+            this.Log.Trace(
+                $"SoX unicode path bug avoided by shortening '{path}' to '{shortPath}'");
+
+            return shortPath;
         }
 
         private AudioUtilityInfo SoxStats(FileInfo source)

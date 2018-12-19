@@ -1060,7 +1060,7 @@ namespace AnalysisPrograms
             string dir =
                 @"H:\Documents\SensorNetworks\MyPapers\2017_DavidWatson\CaseStudy1 Liz\MachineLearningExercise";
             string fileName = "LizZnidersic_TasmanIsTractor_20151111__Towsey.Acoustic";
-            string[] indexNames = { "ACI", "ENT", "POW", "SPT", "RHZ" };
+            string[] indexNames = { "ACI", "ENT", "PMN", "SPT", "RHZ" };
             var framecount =
                 1440; // could read this from first matrix but easier to declare it. Need it for reading in tagged data.
             int startOffsetMinute = 47; // 24 hours of recording starts at 12:47am. Need this as an offset.
@@ -1589,7 +1589,7 @@ namespace AnalysisPrograms
         /// </summary>
         public static void TestTernaryPlots()
         {
-            //string[] keys = { "BGN", "POW", "EVN"};
+            //string[] keys = { "BGN", "PMN", "EVN"};
             string[] keys = { "ACI", "ENT", "EVN"};
 
             FileInfo[] indexFiles =
@@ -1808,7 +1808,7 @@ namespace AnalysisPrograms
 
                         //string match = @"CornellMarine_*__ACI-ENT-EVN.SpectralRibbon.png";
                         //string opFileStem = "CornellMarine.ACI-ENT-EVN.SpectralRibbon.2013MarchApril";
-
+                        // WARNING: POW was removed in December 2018
                         string match = @"CornellMarine_*__BGN-POW-EVN.SpectralRibbon.png";
                         string opFileStem = "CornellMarine.BGN-POW-EVN.SpectralRibbon.2013MarchApril";
 

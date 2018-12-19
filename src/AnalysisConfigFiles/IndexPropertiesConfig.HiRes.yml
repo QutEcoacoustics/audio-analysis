@@ -578,18 +578,6 @@ PMN:
   CalculateNormMax: true
   ProjectID: Acoustic Indices
   Units: "dB"
-POW:
-  Name: spectralPOW
-  Comment: "DEPRACATED: Spectrum of average dB power in each frequency bin after noise removal."
-  DataType: double[]
-  DefaultValue: 0.0
-  DoDisplay: true
-  NormMin: 0.0
-  NormMax: 20.0
-  CalculateNormMin: true
-  CalculateNormMax: true
-  ProjectID: Acoustic Indices
-  Units: "dB"
 RHZ:
   Name: spectralRHZ
   Comment: "Spectrum of average number of horizontal spectral ridges per sec."

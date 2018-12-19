@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="IndexGenerationData.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -7,7 +7,6 @@
 namespace AudioAnalysisTools.Indices
 {
     using System;
-    using System.IO;
     using System.Linq;
     using Acoustics.Shared;
     using LongDurationSpectrograms;
@@ -18,15 +17,6 @@ namespace AudioAnalysisTools.Indices
     {
         public const string FileNameFragment = "IndexGenerationData";
 
-        public IndexGenerationData()
-        {
-            /* Ant:
-             *  I removed these defaults. They do not make sense.
-             *  The index generation data is NOT valid if it is missing values.
-             *  That is not an error that should be automatically compensated for.
-             */
-        }
-
         /// <summary>
         /// Gets or sets the configuration options used to draw long duration spectrograms
         /// </summary>
@@ -35,7 +25,7 @@ namespace AudioAnalysisTools.Indices
         /// <summary>
         /// Gets or sets the extension of the original audio file.
         /// </summary>
-        public string RecordingType { get; set; }
+        public string RecordingExtension { get; set; }
 
         /// <summary>
         /// Gets or sets backgroundFilterCoeff is used to adjust colour contrast of false-colour images. Default = 0.75.
@@ -97,8 +87,8 @@ namespace AudioAnalysisTools.Indices
 
         public static FileEntry FindFile(DirectoryEntry directory)
         {
-            const string Pattern = "*" + FileNameFragment + "*";
-            return directory.EnumerateFiles(Pattern).Single();
+            const string pattern = "*" + FileNameFragment + "*";
+            return directory.EnumerateFiles(pattern).Single();
         }
     }
 }

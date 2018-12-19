@@ -80,7 +80,7 @@ SaveSonogramData: false
 # TileImageOutput
 # if true an additional set of images will be produced that are tiles
 # if true, RequireDateInFilename must be set
-TileImageOutput: false
+TileOutput: false
 
 # RequireDateInFilename:
 # If true, an unambiguous date-time must be provided in the source file's name.

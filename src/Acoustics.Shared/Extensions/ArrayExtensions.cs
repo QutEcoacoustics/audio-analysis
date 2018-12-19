@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="ArrayExtensions.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -73,7 +73,7 @@ namespace System
         {
             if (destinationArray == null)
             {
-                throw new ArgumentNullException("destinationArray");
+                throw new ArgumentNullException(nameof(destinationArray));
             }
 
             for (int i = 0; i < destinationArray.Length; i++)

@@ -26,7 +26,7 @@ Best Practices
 Required Software
 -----------------
 
-The required software for devleoping new code (not running the program) includes:
+The required software for developing new code (not running the program) includes:
 
 - A Windows OS (we're working on making this Linux compatible)
 - Visual Studio 2017

@@ -1487,7 +1487,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
             else
             {
-                image1 = SpectrogramFraming(cs1, image1NoChrome);
+                image1 = SpectrogramFraming(cs1, (Image)image1NoChrome.Clone());
                 var outputPath1 = FilenameHelpers.AnalysisResultPath(outputDirectory, cs1.FileName, colorMap1, "png");
                 image1.Save(outputPath1);
             }
@@ -1502,7 +1502,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             else
             {
                 cs1.ColorMap = colorMap2;
-                image2 = SpectrogramFraming(cs1, image2NoChrome);
+                image2 = SpectrogramFraming(cs1, (Image)image2NoChrome.Clone());
                 var outputPath2 = FilenameHelpers.AnalysisResultPath(outputDirectory, cs1.FileName, colorMap2, "png");
                 image2.Save(outputPath2);
             }

@@ -90,8 +90,8 @@ namespace AudioAnalysisTools.Indices
         //public const string KeySpectralRvt = "RVT";
         //public const string KeySpectralSpt = "SPT";
 
-        // A list of the keys for spectral indices
-        public static string[] ListOfKeys = { "ACI", "BGN", "CVR", "ENT", "EVN", "OSC", "PMN", "R3D", "RHZ", "RNG", "RPS", "RVT", "SPT" };
+        public const double DefaultSignalMin = SNR.MinimumDbBoundForZeroSignal - 20; //in decibels
+        public const double ZeroSignalThreshold = 0.001; // all values in zero signal are less than this value
 
         public static double ClippingThreshold
         {

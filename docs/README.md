@@ -22,7 +22,6 @@ what analyses are to be done and on which files.
 
 - [Introduction](./introduction.md)
 - [FAQ](./faq.md)
-- [Supported Platforms](./supported_platforms.md)
 - [Downloading and Installing](./installing.md) AnalysisPrograms.exe
 - [Introduction to running commands](./cli.md)
 - [Commands](./commands.md)

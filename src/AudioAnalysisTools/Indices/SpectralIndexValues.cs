@@ -15,6 +15,8 @@ namespace AudioAnalysisTools.Indices
 
     public class SpectralIndexValues : SpectralIndexBase
     {
+        private static string[] keys = { "ACI", "BGN", "CVR", "ENT", "EVN", "PMN", "RHZ", "RNG", "RPS", "RVT", "R3D", "SPT" };
+
         private static readonly Dictionary<string, Func<SpectralIndexBase, double[]>> CachedSelectorsInternal;
         private static readonly Dictionary<string, Action<SpectralIndexValues, double[]>> CachedSettersInternal;
 
@@ -139,8 +141,11 @@ namespace AudioAnalysisTools.Indices
 
         public static Image CreateImageOfSpectralIndices(SpectralIndexValues spectralIndices)
         {
+<<<<<<< HEAD
             //string[] keys = { "ACI", "BGN", "CVR", "ENT", "EVN", "OSC", "PMN", "R3D", "RHZ", "RNG", "RPS", "RVT", "SPT" };
             var keys = InitialiseIndexProperties.ListOfKeys;
+=======
+>>>>>>> master
             var images = new List<Image>();
             foreach (var key in keys)
             {
@@ -224,20 +229,18 @@ namespace AudioAnalysisTools.Indices
         public double[] EVN { get; set; }
 
         /// <summary>
-        /// 6: Gets or sets the OSC spectral index should eventually be depracated.
-        /// It is derived from an incorrect way of averaging decibel values
+        /// Gets or sets the oscillation spectral index index. Created October 2018.
         /// </summary>
         public double[] OSC { get; set; }
 
-        /// <summary>
-        /// 7: Gets or sets pMN = Power Minus Noise.
-        /// PMN is measured in decibels but should replace POW as the average decibel spectrogram.
-        /// PMN calculates the average decibel spectrogram correctly.
-        /// </summary>
-        public double[] PMN { get; set; }
-
         // 8: Sum of Spectral Ridges in Horizontal, postive and neg slope directions (RHZ+RPS+RNG)
         public double[] R3D { get; set; }
+        /// <summary>
+        
+        /// Gets or sets PMN = Power Minus Noise.
+        /// PMN is measured in decibels. It replaces the previous POW as the average decibel spectrogram.
+        /// </summary>
+        public double[] PMN { get; set; }
 
         // 9: Spectral Ridges Horizontal
         public double[] RHZ { get; set; }
