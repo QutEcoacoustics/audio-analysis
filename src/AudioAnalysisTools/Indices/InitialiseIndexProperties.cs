@@ -65,7 +65,7 @@ namespace AudioAnalysisTools.Indices
 
         //KEYS FOR SPECTRAL INDICES
         public const string KeYspectralAci = "ACI";
-        public const string KeYspectralAvg = "AVG";  // average dB value in each frequency bin after noise removal
+        //public const string KeYspectralAvg = "AVG"; // average dB value in each frequency bin after noise removal
         public const string KeYspectralBgn = "BGN"; // modal dB value in each frequency bin calculated during noise removal
         public const string KeYspectralCls = "CLS";
         public const string KeYspectralCvr = "CVR";

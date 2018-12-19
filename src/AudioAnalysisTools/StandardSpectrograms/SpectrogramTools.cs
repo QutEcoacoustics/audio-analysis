@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="SpectrogramTools.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -638,15 +638,20 @@ namespace AudioAnalysisTools.StandardSpectrograms
             return avgSpectrum;
         }
 
+        /// <summary>
+        /// Here is some test data for this method: array = new[] { 96.0, 100.0, 90.0, 97.0 };
+        /// The return value should = 96.988 dB
+        /// First need to calculate the original value i.e. exponential or antilog.
+        /// See also DataTools.AntiLogBase10(double value);
+        /// </summary>
+        /// <param name="array">an array of decibel values</param>
+        /// <returns>a decibel value</returns>
         public static double AverageAnArrayOfDecibelValues(double[] array)
         {
-            // this is test data. Return value should = 96.988 dB
-            // array = new[] { 96.0, 100.0, 90.0, 97.0 };
             int count = array.Length;
             double sum = 0.0;
             for (int j = 0; j < count; j++)
             {
-                // add the antilogs - see DataTools.AntiLogBase10(double value);
                 sum += Math.Exp(array[j] / 10 * Math.Log(10));
             }
 

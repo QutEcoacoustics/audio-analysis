@@ -1,4 +1,4 @@
-﻿// <copyright file="SonogramTests.cs" company="QutEcoacoustics">
+// <copyright file="SonogramTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -26,6 +26,7 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
     [TestClass]
     public class SonogramTests
     {
+        private const double AllowedDelta = 0.000001;
         private DirectoryInfo outputDirectory;
 
         /*
@@ -58,6 +59,26 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
         public void Cleanup()
         {
             PathHelper.DeleteTempDir(this.outputDirectory);
+        }
+
+        /// <summary>
+        /// METHOD TO CHECK that averaging of decibel values is working.
+        /// var array = new[] { 96.0, 100.0, 90.0, 97.0 };
+        /// The return value should = 96.98816759 dB
+        /// </summary>
+        [TestMethod]
+        public void TestAverageOfDecibelValues()
+        {
+            var decibelArray1 = new[] { 96.0, 100.0, 90.0, 97.0 };
+            var decibelArray2 = new[] { -96.0, -100.0, -90.0, -97.0 };
+
+            // run this once to generate expected test data
+            // uncomment this to update the binary data. Should be rarely needed
+
+            var average = SpectrogramTools.AverageAnArrayOfDecibelValues(decibelArray1);
+            Assert.AreEqual(96.98816759, average, AllowedDelta);
+            average = SpectrogramTools.AverageAnArrayOfDecibelValues(decibelArray2);
+            Assert.AreEqual(-94.11528038, average, AllowedDelta);
         }
 
         /// <summary>
