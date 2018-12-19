@@ -1,4 +1,4 @@
-﻿// <copyright file="ConcatenationTests.cs" company="QutEcoacoustics">
+// <copyright file="ConcatenationTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -78,7 +78,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                 IndexPropertiesConfig = indexPropertiesConfig.FullName,
                 FalseColourSpectrogramConfig = testConfig.FullName,
                 ColorMap1 = LDSpectrogramRGB.DefaultColorMap1,
-                ColorMap2 = "BGN-POW-EVN", // POW was depracated post May 2017
+                ColorMap2 = "BGN-PMN-EVN", // POW was depracated post May 2017
                 ConcatenateEverythingYouCanLayYourHandsOn = true, // join everything found
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
                 DrawImages = true,
@@ -133,7 +133,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                 IndexPropertiesConfig = indexPropertiesConfig.FullName,
                 FalseColourSpectrogramConfig = testConfig.FullName,
                 ColorMap1 = LDSpectrogramRGB.DefaultColorMap1,
-                ColorMap2 = "BGN-POW-EVN", // POW was depracated post May 2017
+                ColorMap2 = "BGN-PMN-EVN", // POW was depracated post May 2017
                 ConcatenateEverythingYouCanLayYourHandsOn = false, // 24 hour blocks only
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
                 DrawImages = true,
@@ -190,7 +190,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                 IndexPropertiesConfig = indexPropertiesConfig.FullName,
                 FalseColourSpectrogramConfig = testConfig.FullName,
                 ColorMap1 = LDSpectrogramRGB.DefaultColorMap1,
-                ColorMap2 = "BGN-POW-EVN", // POW was depracated post May 2017
+                ColorMap2 = "BGN-PMN-EVN", // POW was depracated post May 2017
                 ConcatenateEverythingYouCanLayYourHandsOn = false, // 24 hour blocks only
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
                 DrawImages = true,
@@ -250,7 +250,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             var config = Yaml.Deserialize<LdSpectrogramConfig>(defaultConfigFile);
 
             // make changes to config file as required for test
-            config.ColorMap1 = "BGN-ENT-POW";
+            config.ColorMap1 = "BGN-ENT-PMN";
             config.ColorMap2 = "ACI-RNG-EVN";
 
             // write new config
@@ -285,7 +285,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             Assert.That.FileExists(outputDataDir.CombineFile(prefix + "Towsey.Acoustic.Indices.csv"));
             Assert.That.FileNotExists(outputDataDir.CombineFile(prefix + "SummaryIndex.csv"));
 
-            var imageFileInfo1 = outputDataDir.CombineFile(prefix + "BGN-ENT-POW.png");
+            var imageFileInfo1 = outputDataDir.CombineFile(prefix + "BGN-ENT-PMN.png");
             Assert.IsTrue(imageFileInfo1.Exists);
 
             var imageFileInfo2 = outputDataDir.CombineFile(prefix + "ACI-RNG-EVN.png");

@@ -15,33 +15,32 @@ namespace AudioAnalysisTools.Indices
 
     public class SpectralIndexValues : SpectralIndexBase
     {
-        private static readonly Dictionary<string, Func<SpectralIndexBase, double[]>> CachedSelectorsInternal;
-        private static readonly Dictionary<string, Action<SpectralIndexValues, double[]>> CachedSettersInternal;
-
         static SpectralIndexValues()
         {
             var getters = ReflectionExtensions.GetGetters<SpectralIndexValues, double[]>();
 
-            CachedSelectorsInternal = new Dictionary<string, Func<SpectralIndexBase, double[]>>(getters.Count);
+            CachedSelectors = new Dictionary<string, Func<SpectralIndexBase, double[]>>(getters.Count);
             foreach (var keyValuePair in getters)
             {
                 // var key = keyValuePair.Key;
                 var selector = keyValuePair.Value;
 
-                CachedSelectorsInternal.Add(
+                CachedSelectors.Add(
                     keyValuePair.Key,
                     spectrumBase => selector((SpectralIndexValues)spectrumBase));
             }
 
+            Keys = CachedSelectors.Keys.ToArray();
+
             var setters = ReflectionExtensions.GetSetters<SpectralIndexValues, double[]>();
 
-            CachedSettersInternal = new Dictionary<string, Action<SpectralIndexValues, double[]>>(getters.Count);
+            CachedSetters = new Dictionary<string, Action<SpectralIndexValues, double[]>>(getters.Count);
             foreach (var keyValuePair in setters)
             {
                 // var key = keyValuePair.Key;
                 var setter = keyValuePair.Value;
 
-                CachedSettersInternal.Add(
+                CachedSetters.Add(
                     keyValuePair.Key,
                     (spectrumBase, value) => setter(spectrumBase, value));
             }
@@ -72,7 +71,9 @@ namespace AudioAnalysisTools.Indices
                 // WARNING: Potential throw site
                 // No need to give following warning because should call CheckExistenceOfSpectralIndexValues() method before entering loop.
                 // This prevents multiple warnings through loop.
-                this.SetPropertyValue(cachedSetter.Key, initArray);
+                //this.SetPropertyValue(cachedSetter.Key, initArray);
+
+                cachedSetter.Value(this, initArray);
             }
 
             this.Configuration = configuration;
@@ -88,7 +89,7 @@ namespace AudioAnalysisTools.Indices
         /// </param>
         public static SpectralIndexValues[] ImportFromDictionary(Dictionary<string, double[,]> dictionaryOfSpectra)
         {
-            return dictionaryOfSpectra.FromTwoDimensionalArray<SpectralIndexValues, double>(CachedSetters, TwoDimensionalArray.Rotate90AntiClockWise);
+            return dictionaryOfSpectra.FromTwoDimensionalArray(CachedSetters, TwoDimensionalArray.Rotate90AntiClockWise);
         }
 
         /// <summary>
@@ -97,9 +98,6 @@ namespace AudioAnalysisTools.Indices
         /// </summary>
         public static void CheckExistenceOfSpectralIndexValues(Dictionary<string, IndexProperties> indexProperties)
         {
-            var siv = new SpectralIndexValues();
-            double[] dummyArray = null;
-
             foreach (var kvp in indexProperties)
             {
                 if (!kvp.Value.IsSpectralIndex)
@@ -107,7 +105,7 @@ namespace AudioAnalysisTools.Indices
                     continue;
                 }
 
-                var success = siv.TrySetPropertyValue(kvp.Key, dummyArray);
+                var success = CachedSelectors.ContainsKey(kvp.Key);
                 if (!success)
                 {
                     LoggedConsole.WriteWarnLine(
@@ -116,15 +114,14 @@ namespace AudioAnalysisTools.Indices
             }
         }
 
-        public static Dictionary<string, Func<SpectralIndexBase, double[]>> CachedSelectors => CachedSelectorsInternal;
+        public static Dictionary<string, Func<SpectralIndexBase, double[]>> CachedSelectors { get; }
 
-        public static Dictionary<string, Action<SpectralIndexValues, double[]>> CachedSetters => CachedSettersInternal;
+        public static Dictionary<string, Action<SpectralIndexValues, double[]>> CachedSetters { get; }
 
-        public static string[] Keys = CachedSelectors.Keys.ToArray();
+        public static string[] Keys { get; }
 
         public static Image CreateImageOfSpectralIndices(SpectralIndexValues spectralIndices)
         {
-
             var images = new List<Image>();
             foreach (var key in Keys)
             {
@@ -144,7 +141,7 @@ namespace AudioAnalysisTools.Indices
         /// </summary>
         /// <remarks>
         /// This property was added when we started generating lots of results that used
-        /// different parameters - we needed a way to diambiguate them.
+        /// different parameters - we needed a way to disambiguate them.
         /// </remarks>
         public IndexCalculateConfig Configuration { get; }
 
