@@ -15,11 +15,6 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
-<<<<<<< HEAD
-
-    // using TestHelpers;
-=======
->>>>>>> master
 
     /// <summary>
     /// Notes on TESTS: (from Anthony in email @ 05/04/2017)
@@ -55,10 +50,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
         {
             var sourceRecording = PathHelper.ResolveAsset(@"Recordings\BAC2_20071008-085040.wav");
             var configFile = PathHelper.ResolveConfigFile(@"Towsey.Acoustic.yml");
-<<<<<<< HEAD
-=======
 
->>>>>>> master
             //var indexPropertiesConfig = PathHelper.ResolveConfigFile(@"IndexPropertiesConfig.yml");
 
             // var outputDir = this.outputDirectory;
@@ -118,10 +110,6 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             //var indexPropertiesConfig = PathHelper.ResolveConfigFile(@"IndexPropertiesConfig.yml");
             var sourceRecording = PathHelper.ResolveAsset(@"Recordings\BAC2_20071008-085040.wav");
             var configFile = PathHelper.ResolveConfigFile(@"Towsey.Acoustic.yml");
-<<<<<<< HEAD
-            //var indexPropertiesConfig = PathHelper.ResolveConfigFile(@"IndexPropertiesConfig.yml");
-=======
->>>>>>> master
 
             // var outputDir = this.outputDirectory;
             var resourcesDir = PathHelper.ResolveAssetPath("Indices");
@@ -186,7 +174,6 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.EVN, AllowedDelta);
 
-<<<<<<< HEAD
             // OSC
             expectedSpectrumFile = new FileInfo(resourcesDir + "\\OSC.bin");
 
@@ -201,27 +188,12 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.PMN, AllowedDelta);
 
-            // POW
-            //expectedSpectrumFile = new FileInfo(resourcesDir + "\\POW.bin");
-
-            // Binary.Serialize(expectedSpectrumFile, spectralIndices.POW);
-            //expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
-            //CollectionAssert.That.AreEqual(expectedVector, spectralIndices.POW, AllowedDelta);
-
             // R3D
             expectedSpectrumFile = new FileInfo(resourcesDir + "\\R3D.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.R3D);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.R3D, AllowedDelta);
-=======
-            // PMN - power minus noise
-            expectedSpectrumFile = new FileInfo(resourcesDir + "\\PMN.bin");
-
-            // Binary.Serialize(expectedSpectrumFile, spectralIndices.PMN);
-            expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
-            CollectionAssert.That.AreEqual(expectedVector, spectralIndices.PMN, AllowedDelta);
->>>>>>> master
 
             // RHZ
             expectedSpectrumFile = new FileInfo(resourcesDir + "\\RHZ.bin");
@@ -272,10 +244,6 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             //var indexPropertiesConfig = PathHelper.ResolveConfigFile(@"IndexPropertiesConfig.yml");
             var sourceRecording = PathHelper.ResolveAsset(@"Recordings\BAC2_20071008-085040.wav");
             var configFile = PathHelper.ResolveConfigFile(@"Towsey.Acoustic.yml");
-<<<<<<< HEAD
-            //var indexPropertiesConfig = PathHelper.ResolveConfigFile(@"IndexPropertiesConfig.yml");
-=======
->>>>>>> master
 
             // var outputDir = this.outputDirectory;
             // Create temp directory to store output

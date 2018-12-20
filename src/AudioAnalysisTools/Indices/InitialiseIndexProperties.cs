@@ -90,9 +90,6 @@ namespace AudioAnalysisTools.Indices
         //public const string KeySpectralRvt = "RVT";
         //public const string KeySpectralSpt = "SPT";
 
-        public const double DefaultSignalMin = SNR.MinimumDbBoundForZeroSignal - 20; //in decibels
-        public const double ZeroSignalThreshold = 0.001; // all values in zero signal are less than this value
-
         public static double ClippingThreshold
         {
             get

@@ -15,35 +15,32 @@ namespace AudioAnalysisTools.Indices
 
     public class SpectralIndexValues : SpectralIndexBase
     {
-        private static string[] keys = { "ACI", "BGN", "CVR", "ENT", "EVN", "PMN", "RHZ", "RNG", "RPS", "RVT", "R3D", "SPT" };
-
-        private static readonly Dictionary<string, Func<SpectralIndexBase, double[]>> CachedSelectorsInternal;
-        private static readonly Dictionary<string, Action<SpectralIndexValues, double[]>> CachedSettersInternal;
-
         static SpectralIndexValues()
         {
             var getters = ReflectionExtensions.GetGetters<SpectralIndexValues, double[]>();
 
-            CachedSelectorsInternal = new Dictionary<string, Func<SpectralIndexBase, double[]>>(getters.Count);
+            CachedSelectors = new Dictionary<string, Func<SpectralIndexBase, double[]>>(getters.Count);
             foreach (var keyValuePair in getters)
             {
                 // var key = keyValuePair.Key;
                 var selector = keyValuePair.Value;
 
-                CachedSelectorsInternal.Add(
+                CachedSelectors.Add(
                     keyValuePair.Key,
                     spectrumBase => selector((SpectralIndexValues)spectrumBase));
             }
 
+            Keys = CachedSelectors.Keys.ToArray();
+
             var setters = ReflectionExtensions.GetSetters<SpectralIndexValues, double[]>();
 
-            CachedSettersInternal = new Dictionary<string, Action<SpectralIndexValues, double[]>>(getters.Count);
+            CachedSetters = new Dictionary<string, Action<SpectralIndexValues, double[]>>(getters.Count);
             foreach (var keyValuePair in setters)
             {
                 // var key = keyValuePair.Key;
                 var setter = keyValuePair.Value;
 
-                CachedSettersInternal.Add(
+                CachedSetters.Add(
                     keyValuePair.Key,
                     (spectrumBase, value) => setter(spectrumBase, value));
             }
@@ -74,7 +71,9 @@ namespace AudioAnalysisTools.Indices
                 // WARNING: Potential throw site
                 // No need to give following warning because should call CheckExistenceOfSpectralIndexValues() method before entering loop.
                 // This prevents multiple warnings through loop.
-                this.SetPropertyValue(cachedSetter.Key, initArray);
+                //this.SetPropertyValue(cachedSetter.Key, initArray);
+
+                cachedSetter.Value(this, initArray);
             }
 
             this.Configuration = configuration;
@@ -90,7 +89,7 @@ namespace AudioAnalysisTools.Indices
         /// </param>
         public static SpectralIndexValues[] ImportFromDictionary(Dictionary<string, double[,]> dictionaryOfSpectra)
         {
-            return dictionaryOfSpectra.FromTwoDimensionalArray<SpectralIndexValues, double>(CachedSetters, TwoDimensionalArray.Rotate90AntiClockWise);
+            return dictionaryOfSpectra.FromTwoDimensionalArray(CachedSetters, TwoDimensionalArray.Rotate90AntiClockWise);
         }
 
         /// <summary>
@@ -99,9 +98,6 @@ namespace AudioAnalysisTools.Indices
         /// </summary>
         public static void CheckExistenceOfSpectralIndexValues(Dictionary<string, IndexProperties> indexProperties)
         {
-            var siv = new SpectralIndexValues();
-            double[] dummyArray = null;
-
             foreach (var kvp in indexProperties)
             {
                 if (!kvp.Value.IsSpectralIndex)
@@ -109,7 +105,7 @@ namespace AudioAnalysisTools.Indices
                     continue;
                 }
 
-                var success = siv.TrySetPropertyValue(kvp.Key, dummyArray);
+                var success = CachedSelectors.ContainsKey(kvp.Key);
                 if (!success)
                 {
                     LoggedConsole.WriteWarnLine(
@@ -118,83 +114,19 @@ namespace AudioAnalysisTools.Indices
             }
         }
 
-        public static Dictionary<string, Func<SpectralIndexBase, double[]>> CachedSelectors
-        {
-            get
-            {
-                return CachedSelectorsInternal;
-            }
-        }
+        public static Dictionary<string, Func<SpectralIndexBase, double[]>> CachedSelectors { get; }
 
-        public static Dictionary<string, Action<SpectralIndexValues, double[]>> CachedSetters
-        {
-            get
-            {
-                return CachedSettersInternal;
-            }
-        }
+        public static Dictionary<string, Action<SpectralIndexValues, double[]>> CachedSetters { get; }
 
-        public static string[] GetKeys()
-        {
-            return CachedSelectorsInternal.Keys.ToArray();
-        }
+        public static string[] Keys { get; }
 
         public static Image CreateImageOfSpectralIndices(SpectralIndexValues spectralIndices)
         {
-<<<<<<< HEAD
-            //string[] keys = { "ACI", "BGN", "CVR", "ENT", "EVN", "OSC", "PMN", "R3D", "RHZ", "RNG", "RPS", "RVT", "SPT" };
-            var keys = InitialiseIndexProperties.ListOfKeys;
-=======
->>>>>>> master
             var images = new List<Image>();
-            foreach (var key in keys)
+            foreach (var key in Keys)
             {
-                double[] normalisedIndex = null;
-
-                switch (key)
-                {
-                    case "ACI":
-                        normalisedIndex = DataTools.normalise(spectralIndices.ACI);
-                        break;
-                    case "BGN":
-                        normalisedIndex = DataTools.normalise(spectralIndices.BGN);
-                        break;
-                    case "CVR":
-                        normalisedIndex = DataTools.normalise(spectralIndices.CVR);
-                        break;
-                    case "ENT":
-                        normalisedIndex = DataTools.normalise(spectralIndices.ENT);
-                        break;
-                    case "EVN":
-                        normalisedIndex = DataTools.normalise(spectralIndices.EVN);
-                        break;
-                    case "OSC":
-                        normalisedIndex = DataTools.normalise(spectralIndices.OSC);
-                        break;
-                    case "PMN":
-                        normalisedIndex = DataTools.normalise(spectralIndices.PMN);
-                        break;
-                    case "RHZ":
-                        normalisedIndex = DataTools.normalise(spectralIndices.RHZ);
-                        break;
-                    case "RNG":
-                        normalisedIndex = DataTools.normalise(spectralIndices.RNG);
-                        break;
-                    case "RPS":
-                        normalisedIndex = DataTools.normalise(spectralIndices.RPS);
-                        break;
-                    case "RVT":
-                        normalisedIndex = DataTools.normalise(spectralIndices.RVT);
-                        break;
-                    case "R3D":
-                        normalisedIndex = DataTools.normalise(spectralIndices.R3D);
-                        break;
-                    case "SPT":
-                        normalisedIndex = DataTools.normalise(spectralIndices.SPT);
-                        break;
-                    default:
-                        break;
-                }
+                var spectrum = CachedSelectors[key](spectralIndices);
+                double[] normalisedIndex = DataTools.normalise(spectrum);
 
                 var image = GraphsAndCharts.DrawGraph(key, normalisedIndex, 100);
                 images.Add(image);
@@ -209,7 +141,7 @@ namespace AudioAnalysisTools.Indices
         /// </summary>
         /// <remarks>
         /// This property was added when we started generating lots of results that used
-        /// different parameters - we needed a way to diambiguate them.
+        /// different parameters - we needed a way to disambiguate them.
         /// </remarks>
         public IndexCalculateConfig Configuration { get; }
 
@@ -222,6 +154,7 @@ namespace AudioAnalysisTools.Indices
         // 3:
         public double[] CVR { get; set; }
 
+        // Entropy
         // 4:
         public double[] ENT { get; set; }
 
@@ -235,10 +168,10 @@ namespace AudioAnalysisTools.Indices
 
         // 8: Sum of Spectral Ridges in Horizontal, postive and neg slope directions (RHZ+RPS+RNG)
         public double[] R3D { get; set; }
+
         /// <summary>
-        
         /// Gets or sets PMN = Power Minus Noise.
-        /// PMN is measured in decibels. It replaces the previous POW as the average decibel spectrogram.
+        /// PMN is measured in decibels but should replace POW as the average decibel spectrogram.
         /// </summary>
         public double[] PMN { get; set; }
 
@@ -257,6 +190,7 @@ namespace AudioAnalysisTools.Indices
         // 13: Spectral Peak Tracks
         public double[] SPT { get; set; }
 
+        // This property only calculated for ACI when zooming
         // The following two indices are not standard acoustic indices but are only used in the intermediate calculations
         public double[] DIF { get; set; }
 

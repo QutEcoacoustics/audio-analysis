@@ -74,7 +74,7 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms.Zooming
             // create some fake spectra
             int duration = (int)(recordingDuration.TotalSeconds / dataScale.TotalSeconds);
             var spectra = new Dictionary<string, double[,]>();
-            foreach (var key in SpectralIndexValues.GetKeys())
+            foreach (var key in SpectralIndexValues.Keys)
             {
                 spectra.Add(key, new double[256, duration]);
                 var bgnKey = nameof(SpectralIndexValues.BGN);

@@ -7,11 +7,10 @@
 //   Important properties are:
 //   1) the colour map which maps three acoutic indices to RGB.
 //   2) The scale of the x and y axes which are determined by the sample rate, frame size etc.
-//   In order to create false colour spectrograms, copy the method
-//   public static void DrawFalseColourSpectrograms(LDSpectrogramConfig configuration)
+//   In order to create false colour spectrograms, copy the following method:
+//                                           public static void DrawFalseColourSpectrograms(LDSpectrogramConfig configuration)
 //   All the arguments can be passed through a config file.
-//   Create the config file through an instance of the class LDSpectrogramConfig
-//   and then call config.WritConfigToYAML(FileInfo path).
+//   Create the config file through an instance of the class LDSpectrogramConfig and then call config.WritConfigToYAML(FileInfo path).
 //   Then pass that path to the above static method.
 //
 //  Activity Codes for other tasks to do with spectrograms and audio files:
@@ -64,9 +63,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     /// </summary>
     public class LDSpectrogramRGB
     {
+        // Below is some history about how indices were assigned to the RGB channels to make long-duration false-colour spectrograms
         // string[] keys = { "ACI", "TEN", "CVR", "BGN", "AVG", "VAR" }; // the OLDEST default i.e. used in 2014
         // string[] keys = { "ACI", "ENT", "EVN", "BGN", "POW", "EVN" }; // the OLD default i.e. since July 2015
-        // assign indices to RGB - the next two lines are for experimental purposes
+        // More recently (2018 onwards) other combinations have been used expecially for the blue channel index.
         // public static readonly string DefaultColorMap1 = "ACI, ENT, EVN";
         // public static readonly string DefaultColorMap2 = "BGN, PMN, R3D";
 
@@ -74,15 +74,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public static readonly string DefaultColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
         public static readonly string DefaultColorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_R3D;
 
-        // Before May 2017, only the required six spectral indices were incorporated in a dicitonary of spectral matrices.
-        // Since May 2017, all the likely available matrices are incorporated into a dictionary. Note the new names for PMN and R3D, previously POW and HPN respectively.
-        // Note 1: This default array will be subsequently over-written by the indices in the IndexPropertiesConfig file if one is available.
-        // Note 1: RHZ, SPT and CVR are correlated with POW and do not add much. CLS is not particularly useful. Currently using R3D
-        private static readonly string[] DefaultKeys = { "ACI", "BGN", "CLS", "CVR", "ENT", "EVN", "PMN", "POW", "RHZ", "RVT", "RPS", "RNG", "R3D", "SPT" };
-
         public static string[] GetArrayOfAvailableKeys()
         {
-            return DefaultKeys;
+            // Before May 2017, only the required six spectral indices were incorporated in a dictionary of spectral matrices.
+            // Since May 2017, all the likely available matrices are incorporated into a dictionary. Note the new names for PMN and R3D, previously POW and HPN respectively.
+            // Note 1: This default array will be subsequently over-written by the indices in the IndexPropertiesConfig file if one is available.
+            // Note 1: RHZ, SPT and CVR are correlated with POW and do not add much. CLS is not particularly useful. Currently using R3D
+            // Decmeber 2018: Now all spectral indices are always used in drawing images
+            return SpectralIndexValues.Keys;
         }
 
         // used to save all spectrograms as dictionary of matrices
@@ -113,7 +112,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             this.FrameWidth = SpectrogramConstants.FRAME_LENGTH; // default value - from which spectrogram was derived
             this.XTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL; // default = one minute spectra and hourly time lines
             this.StartOffset = SpectrogramConstants.MINUTE_OFFSET;
-            this.SpectrogramKeys = DefaultKeys;
+            this.SpectrogramKeys = GetArrayOfAvailableKeys();
         }
 
         /// <summary>
@@ -139,7 +138,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // IMPORTANT NOTE: If an IndexPropertiesConfig file is available, these default keys are later over-written in the method
             // SetSpectralIndexProperties(Dictionary < string, IndexProperties > dictionaryOfSpectralIndexProperties)
             // Consequently the INDEX names in DefaultKeys should match those in IndexPropertiesConfig file. If they do not, consequences are undefined!
-            this.SpectrogramKeys = DefaultKeys;
+            this.SpectrogramKeys = GetArrayOfAvailableKeys();
         }
 
         /// <summary>
@@ -505,7 +504,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         public void DrawGreyScaleSpectrograms(DirectoryInfo opdir, string opFileName)
         {
-            string[] keys = this.SpectrogramKeys;
+            var keys = SpectralIndexValues.Keys;
+            //string[] keys = this.SpectrogramKeys;
             this.DrawGreyScaleSpectrograms(opdir, opFileName, keys);
         }
 

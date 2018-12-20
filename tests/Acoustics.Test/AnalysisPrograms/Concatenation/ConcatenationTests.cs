@@ -81,7 +81,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                 IndexPropertiesConfig = indexPropertiesConfig.FullName,
                 FalseColourSpectrogramConfig = testConfig.FullName,
                 ColorMap1 = LDSpectrogramRGB.DefaultColorMap1,
-                ColorMap2 = "BGN-PMN-EVN",
+                ColorMap2 = "BGN-PMN-EVN", // POW was depracated post May 2017
                 ConcatenateEverythingYouCanLayYourHandsOn = true, // join everything found
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
                 DrawImages = true,
@@ -136,7 +136,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                 IndexPropertiesConfig = indexPropertiesConfig.FullName,
                 FalseColourSpectrogramConfig = testConfig.FullName,
                 ColorMap1 = LDSpectrogramRGB.DefaultColorMap1,
-                ColorMap2 = "BGN-PMN-EVN",
+                ColorMap2 = "BGN-PMN-EVN", // POW was depracated post May 2017
                 ConcatenateEverythingYouCanLayYourHandsOn = false, // 24 hour blocks only
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
                 DrawImages = true,
@@ -193,7 +193,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                 IndexPropertiesConfig = indexPropertiesConfig.FullName,
                 FalseColourSpectrogramConfig = testConfig.FullName,
                 ColorMap1 = LDSpectrogramRGB.DefaultColorMap1,
-                ColorMap2 = "BGN-PMN-EVN",
+                ColorMap2 = "BGN-PMN-EVN", // POW was depracated post May 2017
                 ConcatenateEverythingYouCanLayYourHandsOn = false, // 24 hour blocks only
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
                 DrawImages = true,
