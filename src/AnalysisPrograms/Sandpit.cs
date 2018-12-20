@@ -58,7 +58,7 @@ namespace AnalysisPrograms
         public class Arguments : SubCommandBase
         {
             public override Task<int> Execute(CommandLineApplication app)
-            {
+            { 
                 var tStart = DateTime.Now;
                 Log.Verbosity = 1;
                 Log.WriteLine("# Start Time = " + tStart.ToString(CultureInfo.InvariantCulture));
@@ -73,7 +73,7 @@ namespace AnalysisPrograms
                 //CodeToPlaceScoreTracksUnderLdfcSpectrograms();
                 //CodeToPlaceScoreTracksUnderSingleImage();
 
-                ConcatenateIndexFilesAndSpectrograms();
+                //ConcatenateIndexFilesAndSpectrograms();
                 //ConcatenateMarineImages();
                 //ConcatenateImages();
                 //ConcatenateTwelveImages();
@@ -103,6 +103,9 @@ namespace AnalysisPrograms
                 //TestTernaryPlots();
                 //TestDirectorySearchAndFileSearch();
                 //TestNoiseReduction();
+                Oscillations2014.TESTMETHOD_DrawOscillationSpectrogram();
+                Oscillations2014.TESTMETHOD_GetSpectralIndex_Osc();
+                //Test_DrawFourSpectrograms();
 
                 Console.WriteLine("# Finished Sandpit Task!    Press any key to exit.");
                 return this.Ok();
@@ -321,9 +324,9 @@ namespace AnalysisPrograms
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
 
             // Ivan Campos recordings
-            string recordingPath = @"G:\SensorNetworks\WavFiles\Ivancampos\INCIPO01_20161031_024006_898.wav";
-            string outputPath = @"G:\SensorNetworks\Output\IvanCampos\17";
-            string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
+            //string recordingPath = @"G:\SensorNetworks\WavFiles\Ivancampos\INCIPO01_20161031_024006_898.wav";
+            //string outputPath = @"G:\SensorNetworks\Output\IvanCampos\17";
+            //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
 
             // Test recordings from Wildlife Acoustics demonstrating their compression algorithm
             //string recordingPath = @"D:\SensorNetworks\WildLifeAcoustics\sm4_compression_demo\S4A00068_20160506_063000.wav";
@@ -374,6 +377,12 @@ namespace AnalysisPrograms
             //       Source = @"Z:\SERF\TaggedRecordings\SE\7a667c05-825e-4870-bc4b-9cec98024f5a_101013-0000.mp3".ToFileInfo(),
             //       Config = @"C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.cfg".ToFileInfo(),
             //       Output = @"C:\SensorNetworks\Output\SERF\AfterRefactoring".ToDirectoryInfo()
+
+            // SERF RECORDINGS FROM 19th June 2013
+            // these are six hour recordings
+            string recordingPath = @"G:\Ecoacoustics\WavFiles\SERF\2013June19\SERF_20130619_064615_000.wav";
+            string outputPath = @"C:\Ecoacoustics\Output\SERF\SERFIndicesNew_2013June19";
+            string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Acoustic.yml";
 
             // GROUND PARROT
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\groundParrot_Perigian_TEST.wav";
@@ -1051,7 +1060,7 @@ namespace AnalysisPrograms
             string dir =
                 @"H:\Documents\SensorNetworks\MyPapers\2017_DavidWatson\CaseStudy1 Liz\MachineLearningExercise";
             string fileName = "LizZnidersic_TasmanIsTractor_20151111__Towsey.Acoustic";
-            string[] indexNames = { "ACI", "ENT", "POW", "SPT", "RHZ" };
+            string[] indexNames = { "ACI", "ENT", "PMN", "SPT", "RHZ" };
             var framecount =
                 1440; // could read this from first matrix but easier to declare it. Need it for reading in tagged data.
             int startOffsetMinute = 47; // 24 hours of recording starts at 12:47am. Need this as an offset.
@@ -1256,9 +1265,6 @@ namespace AnalysisPrograms
             // FrequencyScale.TESTMETHOD_OctaveFrequencyScale1();
             // FrequencyScale.TESTMETHOD_OctaveFrequencyScale2();
 
-            //Audio2Sonogram.TESTMETHOD_DrawFourSpectrograms();
-            //Oscillations2014.TESTMETHOD_DrawOscillationSpectrogram();
-
             // The following test methods test various configs of concatenation
             // ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest1();
             // ConcatenateIndexFiles.TESTMETHOD_ConcatenateIndexFilesTest2();
@@ -1275,10 +1281,15 @@ namespace AnalysisPrograms
             FrequencyScale.TESTMETHOD_DrawFrequencyLinesOnImage();
         }
 
+        public static void Test_DrawFourSpectrograms()
+        {
+            Audio2Sonogram.TESTMETHOD_DrawFourSpectrograms();
+        }
+
         /// <summary>
-        /// Unit test of AnalyseLongRecording() using artificial signal
-        /// </summary>
-        public static void TestAnalyseLongRecordingUsingArtificialSignal()
+                /// Unit test of AnalyseLongRecording() using artificial signal
+                /// </summary>
+                public static void TestAnalyseLongRecordingUsingArtificialSignal()
         {
             int sampleRate = 22050;
             double duration = 420; // signal duration in seconds = 7 minutes
@@ -1578,7 +1589,7 @@ namespace AnalysisPrograms
         /// </summary>
         public static void TestTernaryPlots()
         {
-            //string[] keys = { "BGN", "POW", "EVN"};
+            //string[] keys = { "BGN", "PMN", "EVN"};
             string[] keys = { "ACI", "ENT", "EVN"};
 
             FileInfo[] indexFiles =
@@ -1797,7 +1808,7 @@ namespace AnalysisPrograms
 
                         //string match = @"CornellMarine_*__ACI-ENT-EVN.SpectralRibbon.png";
                         //string opFileStem = "CornellMarine.ACI-ENT-EVN.SpectralRibbon.2013MarchApril";
-
+                        // WARNING: POW was removed in December 2018
                         string match = @"CornellMarine_*__BGN-POW-EVN.SpectralRibbon.png";
                         string opFileStem = "CornellMarine.BGN-POW-EVN.SpectralRibbon.2013MarchApril";
 

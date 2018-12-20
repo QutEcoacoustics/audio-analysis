@@ -1,4 +1,4 @@
-﻿// <copyright file="HerveGlotinCollaboration.cs" company="QutEcoacoustics">
+// <copyright file="HerveGlotinCollaboration.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -211,6 +211,7 @@ namespace AnalysisPrograms
 
                     // copy files
                     // POW, EVN, SPT, RHZ, RVT, RPS, RNG
+                    // WARNING: POW was removed December 2018
                     string[] copyArray = { "POW", "EVN", "SPT", "RHZ", "RVT", "RPS", "RNG" };
                     DirectoryInfo sourceDirectory = new DirectoryInfo(csvDir);
                     string destinationDirectory = parentDir + @"\TrainingClassifier";

@@ -1,4 +1,4 @@
-﻿// <copyright file="LDSpectrogramStitching.cs" company="QutEcoacoustics">
+// <copyright file="LDSpectrogramStitching.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -84,7 +84,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             FileInfo sunriseDataFile = null,
             List<GapsAndJoins> segmentErrors = null)
         {
-            // derive new indices such as sqrt(POW), NCDI etc -- main reason for this is to view what their distributions look like.
+            // derive new indices such as sqrt(PMN), NCDI etc -- main reason for this is to view what their distributions look like.
             dictionary = IndexMatrices.AddDerivedIndices(dictionary);
 
             // Calculate the index distribution statistics and write to a json file. Also save as png image

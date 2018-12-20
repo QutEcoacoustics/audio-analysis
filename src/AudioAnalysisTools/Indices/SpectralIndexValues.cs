@@ -145,52 +145,55 @@ namespace AudioAnalysisTools.Indices
         /// </remarks>
         public IndexCalculateConfig Configuration { get; }
 
+        // 1:
         public double[] ACI { get; set; }
 
+        // 2:
         public double[] BGN { get; set; }
 
+        // 3:
         public double[] CVR { get; set; }
 
-        // This property only calculated for ACI when zooming
-        public double[] DIF { get; set; }
-
         // Entropy
+        // 4:
         public double[] ENT { get; set; }
 
+        // 5:
         public double[] EVN { get; set; }
 
         /// <summary>
-        /// Gets or sets the OSC (oscillation) spectral index.
-        /// This index added in November 2018.
+        /// Gets or sets the oscillation spectral index index. Created October 2018.
         /// </summary>
         public double[] OSC { get; set; }
+
+        // 8: Sum of Spectral Ridges in Horizontal, postive and neg slope directions (RHZ+RPS+RNG)
+        public double[] R3D { get; set; }
 
         /// <summary>
         /// Gets or sets PMN = Power Minus Noise.
         /// PMN is measured in decibels but should replace POW as the average decibel spectrogram.
-        /// PMN calculates the average decibel spectrogram correctly.
         /// </summary>
         public double[] PMN { get; set; }
 
-        // Spectral Ridges Horizontal
+        // 9: Spectral Ridges Horizontal
         public double[] RHZ { get; set; }
 
-        // Spectral Ridges Vertical
+        // 10: Spectral Ridges Vertical
         public double[] RVT { get; set; }
 
-        // Spectral Ridges Positive slope
+        // 11: Spectral Ridges Positive slope
         public double[] RPS { get; set; }
 
-        // Spectral Ridges Negative Slope
+        // 12: Spectral Ridges Negative Slope
         public double[] RNG { get; set; }
 
-        // Sum of Spectral Ridges in Horizontal, postive and neg slope directions (RHZ+RPS+RNG)
-        public double[] R3D { get; set; }
-
-        // Spectral Peak Tracks
+        // 13: Spectral Peak Tracks
         public double[] SPT { get; set; }
 
         // This property only calculated for ACI when zooming
+        // The following two indices are not standard acoustic indices but are only used in the intermediate calculations
+        public double[] DIF { get; set; }
+
         public double[] SUM { get; set; }
 
         public override Dictionary<string, Func<SpectralIndexBase, double[]>> GetSelectors()

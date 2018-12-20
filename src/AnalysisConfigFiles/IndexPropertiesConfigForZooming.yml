@@ -577,7 +577,7 @@ ACI:
   NormMin: 0.4
   NormMax: 0.7
   CalculateNormMin: true
-  CalculateNormMax: false
+  CalculateNormMax: true
   ProjectID: Acoustic Indices
   Units: ""
 BGN:
@@ -591,9 +591,21 @@ BGN:
   NormMin: -100.0
   NormMax: -30.0
   CalculateNormMin: true
-  CalculateNormMax: false
+  CalculateNormMax: true
   ProjectID: Acoustic Indices
   Units: "dB"
+CLS:
+  Name: spectralCLS
+  Comment: "Cluster count: number of distinct spectral clusters in each freq bin of the mid-band."
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 4.0
+  CalculateNormMin: true
+  CalculateNormMax: false
+  ProjectID: Acoustic Indices
+  Units: ""
 CVR:
   Name: spectralCVR
   Comment: "Freq bin COVER: Spectrum of the fraction of active elements in each freq bin where amplitude > threshold = 3 dB."
@@ -638,15 +650,15 @@ EVN:
   DataType: double[]
   DefaultValue: 0.0
   DoDisplay: true
-  NormMin: 0.0
-  NormMax: 2.0
-  CalculateNormMin: true
-  CalculateNormMax: false
+  NormMin: 2.0
+  NormMax: 6.0
+  CalculateNormMin: false
+  CalculateNormMax: true
   ProjectID: Acoustic Indices
   Units: "events/s"
 OSC:
   Name: spectralOSC
-  Comment: "Spectrum of Oscillation amplitudes derived from the amplitude spgram."
+  Comment: "Spectrum of Oscillation amplitudes derived from the ampl spgram."
   DataType: double[]
   DefaultValue: 0.0
   DoDisplay: true

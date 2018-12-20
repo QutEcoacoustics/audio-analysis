@@ -584,7 +584,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             bmpNeg.Save(Path.Combine(outputDirectory.FullName, outputFileName + ".COLNEG.png"));
 
-            string key = InitialiseIndexProperties.KeYspectralBgn;
+            string key = InitialiseIndexProperties.KeySpectralBgn;
             if (!this.SpectrogramMatrices.ContainsKey(key))
             {
                 LoggedConsole.WriteLine("\nWARNING: SG {0} does not contain key: {1}", outputFileName, key);
@@ -1532,16 +1532,16 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             CreateTwoMapsImage(outputDirectory, fileStem, image1, imageX, image2);
 
+            // AS OF DECEMBER 2018, no longer produce SUMMARY RIBBONS. Did not prove useful.
             //ribbon = cs.GetSummaryIndexRibbon(colorMap1);
-            var ribbon = cs1.GetSummaryIndexRibbonWeighted(colorMap1);
-
-            ribbon.Save(FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, colorMap1 + ".SummaryRibbon", "png"));
-
+            //var ribbon = cs1.GetSummaryIndexRibbonWeighted(colorMap1);
+            //ribbon.Save(FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, colorMap1 + ".SummaryRibbon", "png"));
             //ribbon = cs.GetSummaryIndexRibbon(colorMap2);
-            ribbon = cs1.GetSummaryIndexRibbonWeighted(colorMap2);
-            ribbon.Save(FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, colorMap2 + ".SummaryRibbon", "png"));
+            //ribbon = cs1.GetSummaryIndexRibbonWeighted(colorMap2);
+            //ribbon.Save(FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, colorMap2 + ".SummaryRibbon", "png"));
 
-            ribbon = cs1.GetSpectrogramRibbon(colorMap1, 32);
+            // Spectrogram ribbons are very useful for viewing multiple days of recording.
+            var ribbon = cs1.GetSpectrogramRibbon(colorMap1, 32);
             ribbon.Save(FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, colorMap1 + ".SpectralRibbon", "png"));
             ribbon = cs1.GetSpectrogramRibbon(colorMap2, 32);
             ribbon.Save(FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, colorMap2 + ".SpectralRibbon", "png"));

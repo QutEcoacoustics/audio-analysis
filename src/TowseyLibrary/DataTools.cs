@@ -8,6 +8,7 @@ namespace TowseyLibrary
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using MathNet.Numerics;
 
     public class DataTools
     {
@@ -18,15 +19,15 @@ namespace TowseyLibrary
             LoggedConsole.WriteLine("TESTING METHODS IN CLASS DataTools");
 
             bool doit1 = false;
-            if (doit1) //test Submatrix()
+            if (doit1) // test Submatrix()
             {
                 LoggedConsole.WriteLine("");
                 string fName = testDir + "testOfReadingMatrixFile.txt";
                 double[,] matrix = FileTools.ReadDoubles2Matrix(fName);
 
-                //int rowCount = matrix.GetLength(0);//height
-                //int colCount = matrix.GetLength(1);//width
-                //LoggedConsole.WriteLine("rowCount=" + rowCount + "  colCount=" + colCount);
+                // int rowCount = matrix.GetLength(0);//height
+                // int colCount = matrix.GetLength(1);//width
+                // LoggedConsole.WriteLine("rowCount=" + rowCount + "  colCount=" + colCount);
                 writeMatrix(matrix);
                 LoggedConsole.WriteLine("");
                 int r1 = 2;
@@ -40,9 +41,9 @@ namespace TowseyLibrary
                 LoggedConsole.WriteLine("Submatrix has " + smRows + " rows and " + smCols + " columns");
                 double[,] sub = Submatrix(matrix, r1, c1, r2, c2);
                 writeMatrix(sub);
-            }//end test ReadDoubles2Matrix(string fName)
+            }// end test ReadDoubles2Matrix(string fName)
 
-            if (true) //test NormaliseMatrixValues(double[,] m, double normMin, double normMax)
+            if (true) // test NormaliseMatrixValues(double[,] m, double normMin, double normMax)
             {
                 string fName = testDir + "testOfReadingMatrixFile.txt";
                 double[,] matrix = FileTools.ReadDoubles2Matrix(fName);
@@ -56,21 +57,21 @@ namespace TowseyLibrary
                 matrix = Normalise(matrix, 0, 1);
                 LoggedConsole.WriteLine("\n\n");
                 writeMatrix(matrix);
-            }//end test NormaliseMatrixValues(double[,] m, double normMin, double normMax)
+            }// end test NormaliseMatrixValues(double[,] m, double normMin, double normMax)
 
-            //COPY THIS TEST TEMPLATE
-            if (false) //test Method(parameters)
+            // COPY THIS TEST TEMPLATE
+            if (false) // test Method(parameters)
             {
-            }//end test Method(string fName)
+            }// end test Method(string fName)
 
-            LoggedConsole.WriteLine("FINISHED"); //end
-            LoggedConsole.WriteLine("FINISHED"); //end
-        }//end of MAIN
+            LoggedConsole.WriteLine("FINISHED"); // end
+            LoggedConsole.WriteLine("FINISHED"); // end
+        }// end of MAIN
 
-        //***************************************************************************
-        //***************************************************************************
-        //***************************************************************************
-        //***************************************************************************
+        // ***************************************************************************
+        // ***************************************************************************
+        // ***************************************************************************
+        // ***************************************************************************
 
         public static double AntiLogBase10(double value)
         {
@@ -98,7 +99,7 @@ namespace TowseyLibrary
             int end = start + length - 1;
             if (end >= array.Length)
             {
-                //LoggedConsole.WriteLine("WARNING! DataTools.Subarray(): subarray extends to far.");
+                // LoggedConsole.WriteLine("WARNING! DataTools.Subarray(): subarray extends to far.");
                 return null;
             }
 
@@ -124,7 +125,7 @@ namespace TowseyLibrary
             int end = start + length - 1;
             if (end >= A.Length)
             {
-                //LoggedConsole.WriteLine("WARNING! DataTools.Subarray(): subarray extends to far.");
+                // LoggedConsole.WriteLine("WARNING! DataTools.Subarray(): subarray extends to far.");
                 return null;
             }
 
@@ -150,8 +151,8 @@ namespace TowseyLibrary
             int end = start + length - 1;
             if (end >= A.Length)
             {
-                //LoggedConsole.WriteLine("WARNING! DataTools.Subarray(): subarray extends to far.");
-                //return null;
+                // LoggedConsole.WriteLine("WARNING! DataTools.Subarray(): subarray extends to far.");
+                // return null;
                 end = A.Length - 1;
                 length = end - start + 1;
             }
@@ -208,35 +209,35 @@ namespace TowseyLibrary
             bool isHit = false;
             int startFrame = 0;
 
-            for (int i = 0; i < count; i++) //pass over all frames
+            for (int i = 0; i < count; i++) // pass over all frames
             {
-                if (isHit == false && values[i] > threshold) //start of an event
+                if (isHit == false && values[i] > threshold) // start of an event
                 {
                     isHit = true;
                     startFrame = i;
                 }
-                else //check for the end of an event
-                    if (isHit == true && values[i] <= threshold) //this is end of an event, so initialise it
+                else // check for the end of an event
+                    if (isHit == true && values[i] <= threshold) // this is end of an event, so initialise it
                     {
                         isHit = false;
                         var segment = new double[3];
                         segment[0] = startFrame;
-                        segment[1] = i;  //endFrame
+                        segment[1] = i;  // endFrame
 
-                        //obtain average value.
+                        // obtain average value.
                         double av = 0.0;
                         for (int n = startFrame; n <= i; n++)
                     {
                         av += values[n];
                     }
 
-                        segment[2] = av / (i - startFrame + 1); //average value.
+                        segment[2] = av / (i - startFrame + 1); // average value.
                         events.Add(segment);
                     }
-            } //end of pass over all frames
+            } // end of pass over all frames
 
             return events;
-        }//end method SegmentArrayOnThreshold()
+        }// end method SegmentArrayOnThreshold()
 
         public static List<double[]> RemoveNullElementsFromList(List<double[]> list)
         {
@@ -255,7 +256,7 @@ namespace TowseyLibrary
         public static double[,] ConvertList2Matrix(List<double[]> list)
         {
             int rows = list.Count;
-            int cols = list[0].Length; //assume all vectors in list are of same length
+            int cols = list[0].Length; // assume all vectors in list are of same length
             double[,] op = new double[rows, cols];
             for (int i = 0; i < rows; i++)
             {
@@ -288,7 +289,7 @@ namespace TowseyLibrary
         public static double[,] ConvertJaggedToMatrix(double[][] list)
         {
             int rows = list.Length;
-            int cols = list[0].Length; //assume all vectors in list are of same length
+            int cols = list[0].Length; // assume all vectors in list are of same length
             double[,] op = new double[rows, cols];
             for (int i = 0; i < rows; i++)
             {
@@ -481,7 +482,7 @@ namespace TowseyLibrary
 
         public static double[,] TwoOfThree(double[,] m1, double[,] m2, double[,] m3)
         {
-            int rows = m1.GetLength(0); //assume all matrices have same dimensions
+            int rows = m1.GetLength(0); // assume all matrices have same dimensions
             int cols = m2.GetLength(1);
             double[,] M = new double[rows, cols];
 
@@ -518,12 +519,12 @@ namespace TowseyLibrary
         /// <summary>
         /// reduces length of the passed vector by combining consecutive values into an average
         /// </summary>
-        /// <param name="V"></param>
-        /// <param name="factor"></param>
-        /// <returns></returns>
-        public static double[] VectorReduceLength(double[] V, int factor)
+        /// <param name="v">the vector</param>
+        /// <param name="factor">reduction factor</param>
+        /// <returns>the reduced vector</returns>
+        public static double[] VectorReduceLength(double[] v, int factor)
         {
-            int newLength = V.Length / factor;
+            int newLength = v.Length / factor;
             double[] newVector = new double[newLength];
 
             for (int i = 0; i < newLength; i++)
@@ -532,7 +533,7 @@ namespace TowseyLibrary
                 double sum = 0.0;
                 for (int j = 0; j < factor; j++)
                 {
-                    sum += V[index + j];
+                    sum += v[index + j];
                 }
 
                 newVector[i] = sum / factor;
@@ -542,68 +543,90 @@ namespace TowseyLibrary
         }
 
         /// <summary>
+        /// reduces length of the passed vector by combining consecutive values into an average
+        /// </summary>
+        /// <param name="v">the vector</param>
+        /// <returns>the reduced vector</returns>
+        public static double[] VectorDoubleLengthByAverageInterpolation(double[] v)
+        {
+            int newLength = v.Length * 2;
+            double[] newVector = new double[newLength];
+
+            for (int i = 0; i < newLength - 1; i++)
+            {
+                int originalIndex = i / 2;
+                if (i.IsEven())
+                {
+                    newVector[i] = v[originalIndex];
+                }
+                else
+                {
+                    // index is odd
+                    newVector[i] = (v[originalIndex] + v[originalIndex + 1]) / 2;
+                }
+            }
+
+            newVector[newLength - 1] = v[v.Length - 1];
+            return newVector;
+        }
+
+        /// <summary>
         /// returns the euclidian length of vector
         /// </summary>
-        /// <param name="V"></param>
-        /// <returns></returns>
-        public static double VectorEuclidianLength(double[] V)
+        public static double VectorEuclidianLength(double[] v)
         {
-            int length = V.Length;
+            int length = v.Length;
 
             double d = 0.0;
 
             for (int i = 0; i < length; i++)
             {
-                d += V[i] * V[i];
+                d += v[i] * v[i];
             }
 
             return Math.Sqrt(d);
         }
 
-        public static double[] Vector_NormLength(double[] V)
+        public static double[] Vector_NormLength(double[] v)
         {
-            double euclidLength = VectorEuclidianLength(V);
-            double[] Vnorm = new double[V.Length];
+            double euclidLength = VectorEuclidianLength(v);
+            double[] vnorm = new double[v.Length];
 
-            for (int i = 0; i < V.Length; i++)
+            for (int i = 0; i < v.Length; i++)
             {
-                Vnorm[i] = V[i] / euclidLength;
+                vnorm[i] = v[i] / euclidLength;
             }
 
             // now that length = 1.0;
-            double L = VectorEuclidianLength(Vnorm);
-            if (L > 1.00001)
+            double length = VectorEuclidianLength(vnorm);
+            if (length > 1.00001)
             {
-                LoggedConsole.WriteLine("WARNING:DataUtilities.Vector_NormLength() LENGTH=" + L);
+                LoggedConsole.WriteLine("WARNING:DataUtilities.Vector_NormLength() LENGTH=" + length);
             }
 
-            if (L < 0.99999)
+            if (length < 0.99999)
             {
-                LoggedConsole.WriteLine("WARNING:DataUtilities.Vector_NormLength() LENGTH=" + L);
+                LoggedConsole.WriteLine("WARNING:DataUtilities.Vector_NormLength() LENGTH=" + length);
             }
 
-            return Vnorm;
+            return vnorm;
         }
 
         /// <summary>
         /// returns the vector normalised for min and max values
         /// </summary>
-        /// <param name="V"></param>
-        /// <returns></returns>
-        public static double[] Vector_NormRange(double[] V)
+        public static double[] Vector_NormRange(double[] v)
         {
             double min;
             double max;
-            MinMax(V, out min, out max);
+            MinMax(v, out min, out max);
             double range = max - min;
 
-            double[] Vnorm = new double[V.Length];
+            double[] Vnorm = new double[v.Length];
 
-            for (int i = 0; i < V.Length; i++)
+            for (int i = 0; i < v.Length; i++)
             {
-                Vnorm[i] = (V[i] - min) / range;
-
-                //LoggedConsole.WriteLine(i + ", " + Vnorm[i]);
+                Vnorm[i] = (v[i] - min) / range;
             }
 
             return Vnorm;
@@ -692,7 +715,7 @@ namespace TowseyLibrary
         {
             int length = signal.Length;
             int count = 0;
-            for (int j = 1; j < length; j++) //foreach sample
+            for (int j = 1; j < length; j++) // foreach sample
             {
                 count += Math.Abs(Math.Sign(signal[j]) - Math.Sign(signal[j - 1]));
             }
@@ -709,7 +732,7 @@ namespace TowseyLibrary
         {
             int length = signal.Length;
             int count = 0;
-            for (int j = 1; j < length; j++) //foreach sample
+            for (int j = 1; j < length; j++) // foreach sample
             {
                 if (signal[j - 1] >= 0.0 && signal[j] < 0.0)
                 {
@@ -738,7 +761,7 @@ namespace TowseyLibrary
             return count;
         }
 
-//=============================================================================
+// =============================================================================
 
         public static double[] reverseArray(double[] V)
         {
@@ -797,7 +820,7 @@ namespace TowseyLibrary
             return newArray;
         }
 
-        //###############################################################################################################
+        // ###############################################################################################################
         // METHODS TO GET THE TYPE OF AN ARRAY OF STRING - used by CSVTools when reading in CSV file to a DataTable.
         public static Type[] GetArrayTypes(List<string[]> listOfArrays)
         {
@@ -873,7 +896,7 @@ namespace TowseyLibrary
             return true;
         }
 
-        //###############################################################################################################
+        // ###############################################################################################################
 
         /// <summary>
         /// sorts an array of doubles in DESCENDING order i.e. max first.
@@ -890,7 +913,7 @@ namespace TowseyLibrary
                 rankOrder[i] = maxIndex;
                 sort[i] = clone[maxIndex];
 
-                //if(i % 100==0)
+                // if(i % 100==0)
                 //    LoggedConsole.WriteLine("{0}: {1}   {2:f2}", i, maxIndex, array[maxIndex]);
                 clone[maxIndex] = -double.MaxValue;
             }
@@ -917,7 +940,7 @@ namespace TowseyLibrary
                 rankOrder[i] = minIndex;
                 sort[i] = clone[minIndex];
 
-                //if(i % 100==0)
+                // if(i % 100==0)
                 //    LoggedConsole.WriteLine("{0}: {1}   {2:f2}", i, maxIndex, array[maxIndex]);
                 clone[minIndex] = double.MaxValue;
             }
@@ -931,7 +954,7 @@ namespace TowseyLibrary
         /// </summary>
         public static System.Tuple<int[], int[]> SortArray(List<int> array)
         {
-            //Array.Sort(array);
+            // Array.Sort(array);
             int[] rankOrder = new int[array.Count];
             int[] sort = new int[array.Count];
             for (int i = 0; i < array.Count; i++)
@@ -940,7 +963,7 @@ namespace TowseyLibrary
                 rankOrder[i] = maxIndex;
                 sort[i] = array[maxIndex];
 
-                //if(i % 100==0)
+                // if(i % 100==0)
                 //    LoggedConsole.WriteLine("{0}: {1}   {2:f2}", i, maxIndex, array[maxIndex]);
                 array[maxIndex] = -int.MaxValue;
             }
@@ -950,7 +973,7 @@ namespace TowseyLibrary
 
         public static System.Tuple<int[], int[]> SortArray(int[] a)
         {
-            //Array.Sort(array);
+            // Array.Sort(array);
             int[] array = (int[])a.Clone();
             int[] rankOrder = new int[array.Length];
             int[] sort = new int[array.Length];
@@ -960,7 +983,7 @@ namespace TowseyLibrary
                 rankOrder[i] = maxIndex;
                 sort[i] = array[maxIndex];
 
-                //if(i % 100==0)
+                // if(i % 100==0)
                 //    LoggedConsole.WriteLine("{0}: {1}   {2:f2}", i, maxIndex, array[maxIndex]);
                 array[maxIndex] = -int.MaxValue;
             }
@@ -1031,8 +1054,8 @@ namespace TowseyLibrary
                 maxPercentile = 1.0;
             }
 
-            //if (minPercentile < 0.0) throw new ArgumentException("minPercentile must be at least 0.0");
-            //if (maxPercentile > 1.0) throw new ArgumentException("maxPercentile must be at most 1.0");
+            // if (minPercentile < 0.0) throw new ArgumentException("minPercentile must be at least 0.0");
+            // if (maxPercentile > 1.0) throw new ArgumentException("maxPercentile must be at most 1.0");
             double min;
             double max;
             MinMax(matrix, out min, out max);
@@ -1048,19 +1071,19 @@ namespace TowseyLibrary
                 return;
             }
 
-            const int n = 1024;      //number of bins for histogram
-            int[] bins = new int[n]; //histogram of power in sonogram
-            int M = matrix.GetLength(0); //width
-            int N = matrix.GetLength(1); //height
+            const int n = 1024;      // number of bins for histogram
+            int[] bins = new int[n]; // histogram of power in sonogram
+            int M = matrix.GetLength(0); // width
+            int N = matrix.GetLength(1); // height
             double range = max - min;
             for (int i = 0; i < M; i++)
             {
                 for (int j = 0; j < N; j++)
-                { //NormaliseMatrixValues power for given min and max
-                    int k = (int)Math.Floor(n * (matrix[i, j] - min) / range); //NormaliseMatrixValues
+                { // NormaliseMatrixValues power for given min and max
+                    int k = (int)Math.Floor(n * (matrix[i, j] - min) / range); // NormaliseMatrixValues
                     if (k < 0)
                     {
-                        k = 0;      //range check
+                        k = 0;      // range check
                     }
 
                     if (k >= n)
@@ -1190,7 +1213,7 @@ namespace TowseyLibrary
             return list;
         }
 
-        //=============================================================================
+        // =============================================================================
 
         /// <summary>
         /// prunes the start and end of an array to remove low values.
@@ -1202,10 +1225,10 @@ namespace TowseyLibrary
             int length = data.Length;
             int[] bounds = new int[2];
 
-            //double min, max;
-            //DataTools.MinMax(data, out min, out max);
-            //double range = max - min;
-            //double threshold = min + (range * severity); //must be 10% of max.
+            // double min, max;
+            // DataTools.MinMax(data, out min, out max);
+            // double range = max - min;
+            // double threshold = min + (range * severity); //must be 10% of max.
 
             for (int i = 0; i < data.Length - 1; i++)
             {
@@ -1238,8 +1261,8 @@ namespace TowseyLibrary
             double min, max;
             MinMax(data, out min, out max);
             double range = max - min;
-            double lowThreshold = min + (range * severity);      //must be 10% of max.
-            double topThreshold = min + (range * (1 - severity)); //must be 90% of max.
+            double lowThreshold = min + (range * severity);      // must be 10% of max.
+            double topThreshold = min + (range * (1 - severity)); // must be 90% of max.
 
             for (int i = 1; i < data.Length - 1; i++)
             {
@@ -1256,7 +1279,7 @@ namespace TowseyLibrary
                         continue;
                     }
 
-                if (peak || data[i] > topThreshold) //which ever comes first
+                if (peak || data[i] > topThreshold) // which ever comes first
                 {
                     peaks[0] = i;
                     break;
@@ -1278,7 +1301,7 @@ namespace TowseyLibrary
                         continue;
                     }
 
-                if (peak || data[i] > topThreshold) //which ever comes first
+                if (peak || data[i] > topThreshold) // which ever comes first
                 {
                     peaks[1] = i;
                     break;
@@ -1473,7 +1496,7 @@ namespace TowseyLibrary
         return peakLocations.ToArray();
     }
 
-    //=============================================================================
+    // =============================================================================
 
         /// <summary>
         /// returns a list of gaps between 1s in a binary array
@@ -1529,7 +1552,7 @@ namespace TowseyLibrary
             return gaps;
         }
 
-//=============================================================================
+// =============================================================================
 
         public static double[] counts2RF(int[] counts)
   {
@@ -1605,7 +1628,7 @@ namespace TowseyLibrary
         return rf;
   }
 
-//=============================================================================
+// =============================================================================
 
         public static void WriteArrayList(List<string> list)
   {
@@ -1678,7 +1701,7 @@ namespace TowseyLibrary
         public static string WriteArrayAsCsvLine(double[] array, string format)
     {
         var sb = new StringBuilder(array[0].ToString(format));
-        int count = array.Length; //dimension
+        int count = array.Length; // dimension
         for (int i = 1; i < count; i++)
         {
             sb.Append("," + array[i].ToString(format));
@@ -1689,7 +1712,7 @@ namespace TowseyLibrary
 
         public static void WriteArrayInLine(double[] array, string format)
   {
-      int count = array.Length; //dimension
+      int count = array.Length; // dimension
       for (int i = 0; i < count; i++)
       {
           LoggedConsole.Write(" " + array[i].ToString(format));
@@ -1700,8 +1723,8 @@ namespace TowseyLibrary
 
         public static void writeMatrix(double[,] matrix, string format)
   {
-      int rowCount = matrix.GetLength(0); //height
-      int colCount = matrix.GetLength(1); //width
+      int rowCount = matrix.GetLength(0); // height
+      int colCount = matrix.GetLength(1); // width
       for (int i = 0; i < rowCount; i++)
       {
           for (int j = 0; j < colCount; j++)
@@ -1724,8 +1747,8 @@ namespace TowseyLibrary
 
         public static void WriteMatrix(int[,] matrix)
   {
-      int rowCount = matrix.GetLength(0); //height
-      int colCount = matrix.GetLength(1); //width
+      int rowCount = matrix.GetLength(0); // height
+      int colCount = matrix.GetLength(1); // width
       for (int i = 0; i < rowCount; i++)
       {
           for (int j = 0; j < colCount; j++)
@@ -1743,8 +1766,8 @@ namespace TowseyLibrary
 
         public static void writeMatrix2File(double[,] matrix, string fPath)
   {
-      int rowCount = matrix.GetLength(0); //height
-      int colCount = matrix.GetLength(1); //width
+      int rowCount = matrix.GetLength(0); // height
+      int colCount = matrix.GetLength(1); // width
       for (int i = 0; i < rowCount; i++)
       {
           for (int j = 0; j < colCount; j++)
@@ -1781,7 +1804,7 @@ namespace TowseyLibrary
       int[] intdata = new int[data.Length];
       for (int i = 0; i < data.Length; i++)
             {
-                intdata[i] = (int)Math.Round(2 * (data[i] - min)); //subtract min to remove neg values
+                intdata[i] = (int)Math.Round(2 * (data[i] - min)); // subtract min to remove neg values
             }
 
       writeBarGraph(intdata);
@@ -1920,7 +1943,7 @@ namespace TowseyLibrary
 
       LoggedConsole.WriteLine();
 
-      //if(i % 50 == 0) Console.ReadLine();
+      // if(i % 50 == 0) Console.ReadLine();
     }
 
     LoggedConsole.WriteLine("Min=" + min + " Max=" + max + "  Scaling factor=" + sf);
@@ -2109,9 +2132,9 @@ namespace TowseyLibrary
       int width = matrix.GetLength(1);
       double[,] M = new double[height, width];
 
-      for (int col = 0; col < width; col++) //for all cols
+      for (int col = 0; col < width; col++) // for all cols
       {
-          for (int y = 0; y < height; y++) //for all rows
+          for (int y = 0; y < height; y++) // for all rows
           {
               if (matrix[y, col] < threshold)
                     {
@@ -2122,7 +2145,7 @@ namespace TowseyLibrary
                         M[y, col] = 1.0;
                     }
                 }
-      }//for all cols
+      }// for all cols
 
       return M;
   }// end of Threshold()
@@ -2290,9 +2313,9 @@ namespace TowseyLibrary
           colSums[j] = sum;
       }
 
-      //sum = 0.0;
-      //for (int j = 0; j < cols; j++) sum += colSums[j];
-      //LoggedConsole.WriteLine("sum="+sum.ToString("F5"));
+      // sum = 0.0;
+      // for (int j = 0; j < cols; j++) sum += colSums[j];
+      // LoggedConsole.WriteLine("sum="+sum.ToString("F5"));
       return colSums;
   }
 
@@ -2352,7 +2375,7 @@ namespace TowseyLibrary
         return smdVector;
     }
 
-        //copy first n values of vector1 into vector 2}
+        // copy first n values of vector1 into vector 2}
         public static double[] CopyVector(int n, double[] v1)
     {
         double[] v2 = new double[v1.Length];
@@ -2364,7 +2387,7 @@ namespace TowseyLibrary
         return v2;
     }
 
-    //returns copy of a vector
+    // returns copy of a vector
         public static double[] CopyVector(double[] v1)
     {
         double[] v2 = new double[v1.Length];
@@ -2629,7 +2652,7 @@ namespace TowseyLibrary
                         int newCol = (int)Math.Round(c * colScale);
                         newCol = (int)Math.Round(c * 4.1);
 
-                        //newCol = 1;
+                        // newCol = 1;
                         if (newRow >= newRowCount)
                     {
                         newRow = newRowCount - 1;
@@ -2640,7 +2663,7 @@ namespace TowseyLibrary
                         newCol = newColCount - 1;
                     }
 
-                    //if (newMatrix[newRow, newCol] < matrix[r, c])
+                    // if (newMatrix[newRow, newCol] < matrix[r, c])
                         newMatrix[newRow, newCol] = matrix[r, c];
                     }
             }
@@ -2648,7 +2671,7 @@ namespace TowseyLibrary
             return newMatrix;
     }
 
-//===========================================================================================================================================================
+// ===========================================================================================================================================================
 
         /// <summary>
         /// This algorithm is derived from the Lamel et al algorithm used in the SNR class.
@@ -2662,7 +2685,7 @@ namespace TowseyLibrary
         {
             int L = array.Length;
 
-            //CALCULATE THE MIN AND MAX OF THE ARRAY
+            // CALCULATE THE MIN AND MAX OF THE ARRAY
             double min = double.MaxValue;
             double max = -double.MaxValue;
             for (int i = 0; i < L; i++)
@@ -2678,7 +2701,7 @@ namespace TowseyLibrary
                 }
             }
 
-            //set up Histogram
+            // set up Histogram
             int binCount = 100;
             double binWidth = (max - min) / binCount;
             int[] histo = new int[binCount];
@@ -2701,23 +2724,23 @@ namespace TowseyLibrary
 
             double[] smoothHisto = filterMovingAverage(histo, 3);
 
-            //DataTools.writeBarGraph(histo);
+            // DataTools.writeBarGraph(histo);
 
             // find peak of lowBins histogram
             // FIND MAX VALUE IN BOTTOM FRACTION OF RANGE. ASSUMES NOISE IS GAUSSIAN and that their is some signal.
-            //int upperBound = (int)(binCount * SNR.FRACTIONAL_BOUND_FOR_MODE);
-            //for (int i = upperBound; i < binCount; i++) smoothHisto[i] = 0;//set top N% of intensity bins = 0.
+            // int upperBound = (int)(binCount * SNR.FRACTIONAL_BOUND_FOR_MODE);
+            // for (int i = upperBound; i < binCount; i++) smoothHisto[i] = 0;//set top N% of intensity bins = 0.
             int peakID = GetMaxIndex(smoothHisto);
-            Q = min + ((peakID + 1) * binWidth); //modal noise level
+            Q = min + ((peakID + 1) * binWidth); // modal noise level
 
-            //calculate SD of the background noise
+            // calculate SD of the background noise
             double total = 0;
-            double ssd = 0.0; //sum of squared deviations
+            double ssd = 0.0; // sum of squared deviations
             for (int i = 0; i < peakID; i++)
             {
                 total += smoothHisto[i];
                 double dev = (peakID - i) * binWidth;
-                ssd += dev * dev; //sum of squared deviations
+                ssd += dev * dev; // sum of squared deviations
             }
 
             if (peakID > 0)
@@ -2726,7 +2749,7 @@ namespace TowseyLibrary
             }
             else
             {
-                oneSD = Math.Sqrt(binWidth * binWidth / smoothHisto[0]); //deal with case where peakID = 0 to prevent division by 0;
+                oneSD = Math.Sqrt(binWidth * binWidth / smoothHisto[0]); // deal with case where peakID = 0 to prevent division by 0;
             }
         }
 
@@ -2800,7 +2823,7 @@ namespace TowseyLibrary
 
         public static double DotProduct(double[] v1, double[] v2)
         {
-            //assume v1 and v2 have same dimensions
+            // assume v1 and v2 have same dimensions
             int L = v1.Length;
             double sum = 0.0;
             for (int i = 0; i < L; i++)
@@ -2813,7 +2836,7 @@ namespace TowseyLibrary
 
         public static double PatternSimilarity(double[] pattern, double[] data)
         {
-            //assume vectors have same dimensions
+            // assume vectors have same dimensions
 
             var normalisedPattern = DataTools.normalise(pattern);
             var normalisedData = DataTools.Normalise(data, -1.0, 1.0);
@@ -2825,17 +2848,17 @@ namespace TowseyLibrary
 
             double similarity = sum / pattern.Length;
 
-            //if (similarity < 0)
-            //{
+            // if (similarity < 0)
+            // {
             //    similarity = 0.0;
-            //}
+            // }
 
             return similarity;
         }
 
         public static double CosineSimilarity(double[] v1, double[] v2)
         {
-            //assume v1 and v2 have same dimensions
+            // assume v1 and v2 have same dimensions
             double sum = 0.0;
             double v1Squared = 0.0;
             double v2Squared = 0.0;
@@ -2851,7 +2874,7 @@ namespace TowseyLibrary
 
         public static double CosineSimilarity(double[,] m1, double[,] m2)
         {
-            //assume m1 and m2 have same dimensions
+            // assume m1 and m2 have same dimensions
             double sum = 0.0;
             double m1Squared = 0.0;
             double m2Squared = 0.0;
@@ -2877,7 +2900,7 @@ namespace TowseyLibrary
         /// <returns></returns>
         public static int HammingDistance(double[] v1, double[] v2)
         {
-            //assume v1 and v2 have same dimensions
+            // assume v1 and v2 have same dimensions
             int L = v1.Length;
             int d = 0;
             for (int i = 0; i < L; i++)
@@ -2899,7 +2922,7 @@ namespace TowseyLibrary
         /// <returns></returns>
         public double EuclidianDistance(double[,] m1, double[,] m2)
         {
-            //check m1 and m2 have same dimensions
+            // check m1 and m2 have same dimensions
             int rows1 = m1.GetLength(0);
             int cols1 = m1.GetLength(1);
             int rows2 = m2.GetLength(0);
@@ -2914,7 +2937,7 @@ namespace TowseyLibrary
                 throw new Exception("Matrices have unequal column numbers.");
             }
 
-            //calculate euclidian distance
+            // calculate euclidian distance
             double sum = 0.0;
             for (int i = 0; i < rows1; i++)
             {
@@ -2926,7 +2949,7 @@ namespace TowseyLibrary
             }
 
             return Math.Sqrt(sum);
-        } //end
+        } // end
 
         /// <summary>
         /// returns EUCLIDIAN DISTANCE BETWEEN two vectors
@@ -2936,13 +2959,13 @@ namespace TowseyLibrary
         /// <returns></returns>
         public static double EuclidianDistance(double[] v1, double[] v2)
         {
-            //check v1 and v2 have same length
+            // check v1 and v2 have same length
             if (v1.Length != v2.Length)
             {
                 throw new Exception("Vectors have unequal length.");
             }
 
-            //calculate euclidian distance
+            // calculate euclidian distance
             double sum = 0.0;
             for (int i = 0; i < v1.Length; i++)
             {
@@ -2951,7 +2974,7 @@ namespace TowseyLibrary
             }
 
             return Math.Sqrt(sum);
-        } //end
+        } // end
 
         /// <summary>
         /// returns EUCLIDIAN DISTANCE BETWEEN two vectors
@@ -2961,13 +2984,13 @@ namespace TowseyLibrary
         /// <returns></returns>
         public static double EuclidianDistance(byte[] v1, byte[] v2)
         {
-            //check v1 and v2 have same length
+            // check v1 and v2 have same length
             if (v1.Length != v2.Length)
             {
                 throw new Exception("Vectors have unequal length.");
             }
 
-            //calculate euclidian distance
+            // calculate euclidian distance
             double sum = 0.0;
             for (int i = 0; i < v1.Length; i++)
             {
@@ -2976,11 +2999,11 @@ namespace TowseyLibrary
             }
 
             return Math.Sqrt(sum);
-        } //end
+        } // end
 
         public static double DotProduct(double[,] m1, double[,] m2)
         {
-            //check m1 and m2 have same dimensions
+            // check m1 and m2 have same dimensions
             int rows1 = m1.GetLength(0);
             int cols1 = m1.GetLength(1);
             int rows2 = m2.GetLength(0);
@@ -3026,9 +3049,9 @@ namespace TowseyLibrary
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    double dBels = 10 * Math.Log10(m[i, j]);    //convert power to decibels
+                    double dBels = 10 * Math.Log10(m[i, j]);    // convert power to decibels
 
-                    //NOTE: the decibels calculation should be a ratio.
+                    // NOTE: the decibels calculation should be a ratio.
                     // Here the ratio is implied ie relative to the power in the original normalised signal
             //        if (dBels <= min) min = dBels;
               //      else
@@ -3062,7 +3085,7 @@ namespace TowseyLibrary
         /// <returns></returns>
         public static double[,] Normalise(double[,] m, double normMin, double normMax)
         {
-            //m = NormaliseMatrixValues(m);
+            // m = NormaliseMatrixValues(m);
             double min = double.MaxValue;
             double max = -double.MaxValue;
 
@@ -3088,7 +3111,7 @@ namespace TowseyLibrary
             double range = max - min;
             double normRange = normMax - normMin;
 
-            //LoggedConsole.WriteLine("range ="+ range+"  normRange="+normRange);
+            // LoggedConsole.WriteLine("range ="+ range+"  normRange="+normRange);
 
             for (int i = 0; i < rows; i++)
             {
@@ -3111,7 +3134,7 @@ namespace TowseyLibrary
         /// <returns></returns>
         public static double[] Normalise(double[] v, double normMin, double normMax)
         {
-            //m = NormaliseMatrixValues(m);
+            // m = NormaliseMatrixValues(m);
             double min = double.MaxValue;
             double max = -double.MaxValue;
 
@@ -3133,7 +3156,7 @@ namespace TowseyLibrary
             double range = max - min;
             double normRange = normMax - normMin;
 
-            //LoggedConsole.WriteLine("range ="+ range+"  normRange="+normRange);
+            // LoggedConsole.WriteLine("range ="+ range+"  normRange="+normRange);
 
             for (int i = 0; i < length; i++)
             {
@@ -3270,7 +3293,7 @@ namespace TowseyLibrary
         /// <returns></returns>
         public static double[] normalise(int[] v)
         {
-            //find min an max
+            // find min an max
             int min = int.MaxValue;
             int max = -int.MaxValue;
             for (int i = 0; i < v.Length; i++)
@@ -3319,11 +3342,9 @@ namespace TowseyLibrary
         /// normalizes the passed array between 0,1.
         /// Ensures all values are positive
         /// </summary>
-        /// <param name="v"></param>
-        /// <returns></returns>
         public static double[] normalise(double[] v)
         {
-            //find min an max
+            // find min an max
             double min = double.MaxValue;
             double max = -double.MaxValue;
             for (int i = 0; i < v.Length; i++)
@@ -3356,6 +3377,38 @@ namespace TowseyLibrary
         }
 
         /// <summary>
+        /// Normalises the passed vector by keeping the vector's zero
+        /// but scaling the max value down to 1.0.
+        /// WARNING: This method assumes that all values in the passed array are >= zero.
+        /// </summary>
+        public static double[] NormaliseByScalingMaxValueToOne(double[] v)
+        {
+            // find min an max
+            double min = 0.0;
+            double max = -double.MaxValue;
+            for (int i = 0; i < v.Length; i++)
+            {
+                if (v[i] > max)
+                {
+                    max = v[i];
+                }
+            }
+
+            if (max == 0.0)
+            {
+                return v;
+            }
+
+            double[] ret = new double[v.Length];
+            for (int i = 0; i < v.Length; i++)
+            {
+                ret[i] = (v[i] - min) / max;
+            }
+
+            return ret;
+        }
+
+        /// <summary>
         /// Normalises a vector in 0, 1 and also returns a threshold value accordingly normalised.
         /// </summary>
         /// <param name="v"></param>
@@ -3364,7 +3417,7 @@ namespace TowseyLibrary
         /// <param name="normalisedThreshold"></param>
         public static void Normalise(double[] v, double threshold, out double[] output, out double normalisedThreshold)
         {
-            //find min and max
+            // find min and max
             double min = double.MaxValue;
             double max = -double.MaxValue;
             for (int i = 0; i < v.Length; i++)
@@ -3407,7 +3460,7 @@ namespace TowseyLibrary
         /// <returns></returns>
         public static double[] NormaliseArea(int[] array)
         {
-            double[] v = normalise(array); //ensures all values in 0,1
+            double[] v = normalise(array); // ensures all values in 0,1
             double sum = 0;
             for (int i = 0; i < v.Length; i++)
             {
@@ -3434,14 +3487,14 @@ namespace TowseyLibrary
         /// <returns></returns>
         public static double[] NormaliseArea(double[] data)
         {
-            double[] v = normalise(data); //ensures all values in 0,1
+            double[] v = normalise(data); // ensures all values in 0,1
             double sum = 0.0;
             for (int i = 0; i < v.Length; i++)
             {
                 sum += v[i];
             }
 
-            //Console.WriteLine("Area={0:f4}",sum);
+            // Console.WriteLine("Area={0:f4}",sum);
             if (sum == 0.0)
             {
                 return data;
@@ -3504,7 +3557,7 @@ namespace TowseyLibrary
                 probs[i] = sum;
             }
 
-            //Console.WriteLine("cumulative prob = "+sum);
+            // Console.WriteLine("cumulative prob = "+sum);
             return probs;
         } // end ConvertProbabilityDistribution2CummulativeProbabilites()
 
@@ -3525,20 +3578,20 @@ namespace TowseyLibrary
             double edge = 0.0;
             for (int i = 0; i < rows; i++)
             {
-                edge += m[i, 0] + m[i, cols - 1]; //sum the sides
+                edge += m[i, 0] + m[i, cols - 1]; // sum the sides
             }
 
             for (int i = 1; i < cols - 1; i++)
             {
-                edge += m[0, i] + m[rows - 1, i]; //sum top and bottom
+                edge += m[0, i] + m[rows - 1, i]; // sum top and bottom
             }
 
             edge /= (2 * rows) + (2 * cols) - 4;
 
-            //truncate everything to edge average
-            //for (int i = 0; i < rows; i++)
+            // truncate everything to edge average
+            // for (int i = 0; i < rows; i++)
             //    for (int j = 0; j < cols; j++) if (m[i, j] < edge) m[i, j] = edge;
-            //set all edges to edge average
+            // set all edges to edge average
             for (int i = 0; i < rows; i++)
             {
                 m[i, 0] = edge;
@@ -3559,7 +3612,7 @@ namespace TowseyLibrary
                 m[rows - 1, i] = edge;
             }
 
-            //find min and max
+            // find min and max
             double min = double.MaxValue;
             double max = -double.MaxValue;
             for (int i = 0; i < rows; i++)
@@ -3581,7 +3634,7 @@ namespace TowseyLibrary
             double range = max - min;
             double normRange = normMax - normMin;
 
-            //LoggedConsole.WriteLine("range ="+ range+"  normRange="+normRange);
+            // LoggedConsole.WriteLine("range ="+ range+"  normRange="+normRange);
 
             double[,] ret = new double[rows, cols];
             for (int i = 0; i < rows; i++)
@@ -3609,7 +3662,7 @@ namespace TowseyLibrary
     // square root of sum to get vector mapLength
     double norm = Math.Sqrt(SS);
 
-    //LoggedConsole.WriteLine("SS="+SS+"  norm="+norm);
+    // LoggedConsole.WriteLine("SS="+SS+"  norm="+norm);
 
     double[] ret = new double[length]; // vector to return
     for (int i = 0; i < length; i++)
@@ -3622,7 +3675,7 @@ namespace TowseyLibrary
 
         public static double[] normalise2UnitLength(double[] v)
   {
-      double SS = 0.0; //sum of squares
+      double SS = 0.0; // sum of squares
       int length = v.Length;
 
       for (int i = 0; i < length; i++)
@@ -3633,7 +3686,7 @@ namespace TowseyLibrary
             // square root of sum to get vector mapLength
       double norm = Math.Sqrt(SS);
 
-      //LoggedConsole.WriteLine("SS=" + SS + "  norm=" + norm);
+      // LoggedConsole.WriteLine("SS=" + SS + "  norm=" + norm);
 
       double[] ret = new double[length]; // vector to return
       for (int i = 0; i < length; i++)
@@ -3644,7 +3697,7 @@ namespace TowseyLibrary
       return ret;
   }
 
-  //NormaliseMatrixValues and compress/bound the values
+  // NormaliseMatrixValues and compress/bound the values
         public static double[,] Clip(double[,] m, double minPercentile, double maxPercentile)
   {
       double minCut;
@@ -3769,9 +3822,9 @@ namespace TowseyLibrary
       return exponent;
   }
 
-//***************************************************************************************************************************************
+// ***************************************************************************************************************************************
 
-        public const double ln2 = 0.69314718;   //log 2 base e
+        public const double ln2 = 0.69314718;   // log 2 base e
 
   /// <summary>
   /// Calculates the entropy of the passed discrete distribution.
@@ -3825,7 +3878,7 @@ namespace TowseyLibrary
         /// </summary>
         public static double EntropyNormalised(double[] v)
         {
-            //some safety checks but unlikely to happen
+            // some safety checks but unlikely to happen
             int posCount = v.Count(p => p > 0.0);
             if (posCount == 0)
             {
@@ -3837,14 +3890,14 @@ namespace TowseyLibrary
                 return 0.0; // energy concentrated in one value - i.e. zero entropy
             }
 
-            double[] pmf2 = Normalise2Probabilites(v); //pmf = probability mass funciton
-            double normFactor = Math.Log(v.Length) / ln2; //normalize for length of the array
+            double[] pmf2 = Normalise2Probabilites(v); // pmf = probability mass funciton
+            double normFactor = Math.Log(v.Length) / ln2; // normalize for length of the array
             return Entropy(pmf2) / normFactor;
         }
 
         public static double EntropyNormalised(int[] v)
         {
-            //some safety checks but unlikely to happen
+            // some safety checks but unlikely to happen
             int posCount = v.Count(p => p > 0.0);
             if (posCount == 0)
                 {
@@ -3856,17 +3909,17 @@ namespace TowseyLibrary
                     return 0.0;        // energy concentrated in one value - i.e. zero entropy
                 }
 
-            double[] pmf2 = NormaliseArea(v); //pmf = probability mass funciton
-            double normFactor = Math.Log(v.Length) / ln2; //normalize for length of the array
+            double[] pmf2 = NormaliseArea(v); // pmf = probability mass funciton
+            double normFactor = Math.Log(v.Length) / ln2; // normalize for length of the array
             return Entropy(pmf2) / normFactor;
         }
 
         public static double MutualInformation(int[,] counts)
         {
-            //some safety checks but unlikely to happen
-            //int posCount = v.Count(p => p > 0.0);
-            //if (posCount == 0) return Double.NaN; // cannot calculate entropy
-            //if (posCount == 1) return 0.0;        // energy concentrated in one value - i.e. zero entropy
+            // some safety checks but unlikely to happen
+            // int posCount = v.Count(p => p > 0.0);
+            // if (posCount == 0) return Double.NaN; // cannot calculate entropy
+            // if (posCount == 1) return 0.0;        // energy concentrated in one value - i.e. zero entropy
 
             int rowCount = counts.GetLength(0);
             int colCount = counts.GetLength(1);
@@ -3886,22 +3939,22 @@ namespace TowseyLibrary
                 }
             }
 
-            //calcualte probabilities
+            // calcualte probabilities
 
-            double[] rowProbs = new double[rowCount]; //pmf = probability mass funciton
+            double[] rowProbs = new double[rowCount]; // pmf = probability mass funciton
             for (int r = 0; r < rowCount; r++) // for all time frames
             {
                 rowProbs[r] = rowSums[r] / (double)totalSum;
             }
 
-            //double Hrows = DataTools.EntropyNormalised(rowProbs);
-            double[] colProbs = new double[colCount]; //pmf = probability mass funciton
+            // double Hrows = DataTools.EntropyNormalised(rowProbs);
+            double[] colProbs = new double[colCount]; // pmf = probability mass funciton
             for (int c = 0; c < colCount; c++) // for all time frames
             {
                 colProbs[c] = colSums[c] / (double)totalSum;
             }
 
-            //double Hcols = DataTools.EntropyNormalised(colProbs);
+            // double Hcols = DataTools.EntropyNormalised(colProbs);
             double[,] matrixProbs = new double[rowCount, colCount];
             for (int r = 0; r < rowCount; r++) // for all time frames
             {
@@ -3935,7 +3988,7 @@ namespace TowseyLibrary
                 }
             }
 
-            //double normFactor = Math.Log(v.Length) / DataTools.ln2; //normalize for length of the array
+            // double normFactor = Math.Log(v.Length) / DataTools.ln2; //normalize for length of the array
             return MI;
         }
 
@@ -3949,7 +4002,7 @@ namespace TowseyLibrary
          */
         public static double RelativeEntropy(double[] distr)
     {
-        //some safety checks but unlikely to happen
+        // some safety checks but unlikely to happen
         int posCount = distr.Count(p => p > 0.0);
         if (posCount == 0)
             {
@@ -3991,7 +4044,7 @@ namespace TowseyLibrary
         return H1 - H2;
     }
 
-//***************************************************************************************************************************************
+// ***************************************************************************************************************************************
   /// <summary>
   ///  Returns the min and max of a set of integer values in the passed array
   /// </summary>
@@ -4034,7 +4087,7 @@ namespace TowseyLibrary
             }
         }
 
-        //=============================================================================
+        // =============================================================================
 
         public static void MinMax(double[] data, out double min, out double max)
         {
@@ -4072,7 +4125,7 @@ namespace TowseyLibrary
                     }
 
                 av += data[i];
-            }//end for loop
+            }// end for loop
 
             av /= data.Length;
         }
@@ -4098,7 +4151,7 @@ namespace TowseyLibrary
                     {
                         max = data[i, j];
                     }
-                }//end double loop
+                }// end double loop
             }
         }
 
@@ -4157,7 +4210,7 @@ namespace TowseyLibrary
       indexMin = 0;
       indexMax = 0;
 
-      //if (data == null) return;
+      // if (data == null) return;
       min = data[0];
       max = data[0];
       for (int i = 1; i < data.Length; i++)
@@ -4255,7 +4308,7 @@ namespace TowseyLibrary
    */
         public static void getMaxIndex(double[] data, out int indexMax)
   {
-    //if(data == null) return -1;
+    // if(data == null) return -1;
     indexMax = 0;
     double max = data[0];
     for (int i = 1; i < data.Length; i++)
@@ -4265,7 +4318,7 @@ namespace TowseyLibrary
             max = data[i];
             indexMax = i;
 
-         //LoggedConsole.WriteLine("max="+max+"@ i="+i);
+         // LoggedConsole.WriteLine("max="+max+"@ i="+i);
       }
     }
   }
@@ -4279,7 +4332,7 @@ namespace TowseyLibrary
     /// <returns></returns>
         public static int GetMaxIndex(double[] data)
   {
-      //if(data == null) return -1;
+      // if(data == null) return -1;
       int indexMax = 0;
       double max = data[0];
       for (int i = 1; i < data.Length; i++)
@@ -4301,7 +4354,7 @@ namespace TowseyLibrary
         /// <returns></returns>
         public static int GetMinIndex(double[] data)
   {
-      //if(data == null) return -1;
+      // if(data == null) return -1;
       int indexMin = 0;
       double min = data[0];
       for (int i = 1; i < data.Length; i++)
@@ -4323,7 +4376,7 @@ namespace TowseyLibrary
    */
         public static void getMaxIndex(int[] data, out int indexMax)
   {
-    //if(data == null) return -1;
+    // if(data == null) return -1;
     indexMax = 0;
     int max = data[0];
     for (int i = 1; i < data.Length; i++)
@@ -4333,7 +4386,7 @@ namespace TowseyLibrary
             max = data[i];
             indexMax = i;
 
-        //LoggedConsole.WriteLine("max="+max+"@ i="+i);
+        // LoggedConsole.WriteLine("max="+max+"@ i="+i);
       }
     }
   }
@@ -4453,7 +4506,7 @@ namespace TowseyLibrary
    */
         public static int[] Data2Bins(int[] data, int min, int binWidth, int numBins)
   {
-    //LoggedConsole.WriteLine("numBins="+numBins);
+    // LoggedConsole.WriteLine("numBins="+numBins);
     // initialise bin counts
     int[] binCounts = new int[numBins];
     for (int i = 0; i < numBins; i++)
@@ -4470,7 +4523,7 @@ namespace TowseyLibrary
     return binCounts;
   }
 
-  //=============================================================================
+  // =============================================================================
 
       /// <summary>
       /// Returns the min, max, mode and one-sided standard deviation of an array of double values.
@@ -4494,7 +4547,7 @@ namespace TowseyLibrary
                 writeBarGraph(histo);
             }
 
-            //Calculate the SD on longest tail. Assume that the tail is Gaussian.
+            // Calculate the SD on longest tail. Assume that the tail is Gaussian.
           int indexOfMode, indexOfOneSD;
           GetModeAndOneTailedStandardDeviation(histo, out indexOfMode, out indexOfOneSD);
           mode = min + (indexOfMode * binWidth);
@@ -4507,13 +4560,13 @@ namespace TowseyLibrary
           SD = delta * binWidth;
 
           // the below av and sd are just a check on the one-tailed calcualtion.
-          //double avDist, sdDist;
-          //NormalDist.AverageAndSD(values, out avDist, out sdDist);
-          //double[] avAndsd = new double[2];
-          //avAndsd[0] = avDist;
-          //avAndsd[1] = sdDist;
-          //Console.Write("Standard av & sd for data.");
-          //Console.WriteLine(NormalDist.formatAvAndSD(avAndsd, 3));
+          // double avDist, sdDist;
+          // NormalDist.AverageAndSD(values, out avDist, out sdDist);
+          // double[] avAndsd = new double[2];
+          // avAndsd[0] = avDist;
+          // avAndsd[1] = sdDist;
+          // Console.Write("Standard av & sd for data.");
+          // Console.WriteLine(NormalDist.formatAvAndSD(avAndsd, 3));
       }
 
   /// <summary>
@@ -4534,7 +4587,7 @@ namespace TowseyLibrary
       double[] smoothedHisto = filterMovingAverage(histo, 3);
       indexOfMode = GetMaxIndex(smoothedHisto);
 
-      //indexOfMode = DataTools.GetMaxIndex(histo); // this was first line in method prior to 15th April 2015.
+      // indexOfMode = DataTools.GetMaxIndex(histo); // this was first line in method prior to 15th April 2015.
 
       int halfway = histo.Length / 2;
       double totalAreaUnderLowerCurve = 0.0;
@@ -4543,14 +4596,14 @@ namespace TowseyLibrary
 
       if (indexOfMode >= halfway)
       {
-          for (int i = indexOfMode; i >= 0; i--) //sum area back to zero inex.
+          for (int i = indexOfMode; i >= 0; i--) // sum area back to zero inex.
           {
               totalAreaUnderLowerCurve += histo[i];
           }
 
           thresholdSum = totalAreaUnderLowerCurve * 0.68; // 0.68 = area under one SD
           partialSum = 0.0;
-          for (int i = indexOfMode; i >= 0; i--) //sum in direction of zero index.
+          for (int i = indexOfMode; i >= 0; i--) // sum in direction of zero index.
           {
               partialSum += histo[i];
               indexOfOneSD = i;
@@ -4560,7 +4613,7 @@ namespace TowseyLibrary
               }
           }
       }
-      else //bin count < halfway - //sum area up to length of array.
+      else // bin count < halfway - //sum area up to length of array.
       {
           for (int i = indexOfMode; i < histo.Length; i++)
           {
@@ -4569,7 +4622,7 @@ namespace TowseyLibrary
 
           thresholdSum = totalAreaUnderLowerCurve * 0.68; // 0.68 = area under one SD
           partialSum = 0.0;
-          for (int i = indexOfMode; i < histo.Length; i++) //sum in direction of max index.
+          for (int i = indexOfMode; i < histo.Length; i++) // sum in direction of max index.
           {
               partialSum += histo[i];
               indexOfOneSD = i;
@@ -4581,7 +4634,7 @@ namespace TowseyLibrary
       }
   } // GetModeAndOneStandardDeviation()
 
-//=============================================================================
+// =============================================================================
 
   /**
    * returns the area under the curve between two points on
@@ -4593,11 +4646,11 @@ namespace TowseyLibrary
     double width = Math.Abs(x2 - x1);
     double area = (width * y1) + (width * (y2 - y1) / 2);
 
-    //LoggedConsole.WriteLine(x1+"  "+y1+"  "+x2+"  "+y2+"  area="+area);
+    // LoggedConsole.WriteLine(x1+"  "+y1+"  "+x2+"  "+y2+"  area="+area);
     return area;
   }
 
- //******************************************************************************
+ // ******************************************************************************
 
   /**
    * CALCULATES THE COMBINATORIAL(N,K) as
@@ -4636,7 +4689,7 @@ namespace TowseyLibrary
                 return 1;
             }
 
-            //LoggedConsole.WriteLine("N="+N+", K="+K);
+            // LoggedConsole.WriteLine("N="+N+", K="+K);
 
             // COMB(N,K)  = COMB(N, N-K);
             // more efficient to compute combinations if use K < N/2
@@ -4650,23 +4703,23 @@ namespace TowseyLibrary
             // this method divides numerator and denominator numbers as it goes.
             // finally caste the double to a long.
 
-            //  first component of C(N,K)
+            // first component of C(N,K)
     double comb = N / (double)(N - K);
 
-    //LoggedConsole.WriteLine("c=0  comb="+comb);
+    // LoggedConsole.WriteLine("c=0  comb="+comb);
 
     // now multiply by remaining components of C(N,K)
     for (int c = 1; c < N - K; c++)
     {
         comb *= (N - c) / (double)(N - K - c);
 
-      //LoggedConsole.WriteLine("c="+c+"  NOM  ="+(N-c)+"  DENOM="+(N-K-c)+"   comb="+comb);
+      // LoggedConsole.WriteLine("c="+c+"  NOM  ="+(N-c)+"  DENOM="+(N-K-c)+"   comb="+comb);
     }
 
     return (long)comb;
   }
 
-//=============================================================================
+// =============================================================================
 
         public static void TEST_FilterMovingAverage()
   {
@@ -4677,7 +4730,7 @@ namespace TowseyLibrary
                 V0[i] = i;
             }
 
-            //for (int i = 0; i < V0.Length; i++)
+            // for (int i = 0; i < V0.Length; i++)
             //    V0[i] = 1.0;
 
       double[] V1 = filterMovingAverageOLD(V0, window);
@@ -4726,7 +4779,7 @@ namespace TowseyLibrary
     double[] dbSignal = new double[length];
     for (int i = 0; i < length; i++)
             {
-                dbSignal[i] = signal[i]; //clone
+                dbSignal[i] = signal[i]; // clone
             }
 
     return filterMovingAverage(dbSignal, width);
@@ -4749,7 +4802,7 @@ namespace TowseyLibrary
       double[] fs = new double[length]; // filtered signal
       int edge = width / 2;            // half window width.
 
-      //int    odd  = width%2;          // odd or even filter window.
+      // int    odd  = width%2;          // odd or even filter window.
       double sum = 0.0;
 
       // filter leading edge
@@ -4772,7 +4825,7 @@ namespace TowseyLibrary
                 sum += signal[i - edge + j];
             }
 
-          //sum = signal[i-1]+signal[i]+signal[i+1];
+          // sum = signal[i-1]+signal[i]+signal[i+1];
           fs[i] = sum / width;
       }
 
@@ -4852,7 +4905,7 @@ namespace TowseyLibrary
           sum += signal[i];
       }
 
-      //Console.WriteLine("sum={0}", sum);
+      // Console.WriteLine("sum={0}", sum);
       // sum the central part of signal
       for (int i = edge + 1; i < length - edge; i++)
       {
@@ -4913,7 +4966,7 @@ namespace TowseyLibrary
           sum += signal[i];
       }
 
-      //Console.WriteLine("sum={0}", sum);
+      // Console.WriteLine("sum={0}", sum);
       for (int i = edge + 1; i < length - edge; i++)
       {
           // sum = sum - left edge + right edge
@@ -4938,7 +4991,7 @@ namespace TowseyLibrary
       return fs;
   }
 
-//=========================================================================================================================
+// =========================================================================================================================
 //   THE FOLLOWING GROUP OF METHODS DETECT PERIODICITY IN ARRAYS
   // Used for harmonic detection but not found to be useful in the end!!!!!!!!!
 
@@ -4956,7 +5009,7 @@ namespace TowseyLibrary
       int L = values.Length;
       double[] oscillationScores = new double[L];
       int midPeriod = minPeriod + ((maxPeriod - minPeriod) / 2);
-      int buffer = (int)(maxPeriod * 2.5); //avoid end of recording/array
+      int buffer = (int)(maxPeriod * 2.5); // avoid end of recording/array
 
       for (int r = 0; r < L - buffer; r++)
       {
@@ -5003,10 +5056,10 @@ namespace TowseyLibrary
               var result = PeriodicityAndPhaseDetection(values, period, phase);
               double onPeriodScore = result.Item1;
 
-              //double offPeriodScore = result.Item2;
-              //int onCount  = result.Item3;
-              //int offCount = result.Item4;
-              //double periodScore = onPeriodScore - offPeriodScore;
+              // double offPeriodScore = result.Item2;
+              // int onCount  = result.Item3;
+              // int offCount = result.Item4;
+              // double periodScore = onPeriodScore - offPeriodScore;
               double periodScore = onPeriodScore;
 
               if (periodScore > maxScore)
@@ -5015,12 +5068,12 @@ namespace TowseyLibrary
                   bestPeriod = period;
                   bestPhase = phase;
 
-                  //returnScore = (onPeriodScore / onCount) - (offPeriodScore / offCount);
-                  //returnScore = periodScore;
+                  // returnScore = (onPeriodScore / onCount) - (offPeriodScore / offCount);
+                  // returnScore = periodScore;
                   returnScore = maxScore;
               }
-          }//phase
-      }//period
+          }// phase
+      }// period
 
       return Tuple.Create(returnScore, bestPeriod, bestPhase);
   }
@@ -5070,7 +5123,7 @@ namespace TowseyLibrary
             }
       }
 
-      //int index = previousPeakLocation;
+      // int index = previousPeakLocation;
       List<int> periods = new List<int>();
       for (int i = previousPeakLocation + 1; i < L; i++)
       {
@@ -5086,7 +5139,7 @@ namespace TowseyLibrary
       return Tuple.Create(mean, sd, peakCount);
   }
 
-  //============================================================================================================================
+  // ============================================================================================================================
 
         public static string Time_ConvertSecs2Mins(double seconds)
   {
@@ -5101,16 +5154,16 @@ namespace TowseyLibrary
         /// </summary>
         /// <param name="dateString"></param>
         /// <returns></returns>
-  //public static DateTime Time_ConvertDateString2DayOfYear(string dateString)
-  //{
+  // public static DateTime Time_ConvertDateString2DayOfYear(string dateString)
+  // {
   //      // file name has following structure:  SERF_20130314.SpectralIndices.PivotTable.csv
   //      var yr = dateString.Substring(0, 4);
   //      var mn = dateString.Substring(4, 2);
   //      var dy = dateString.Substring(6, 2);
 
-  //    var dt = new DateTime(Int32.Parse(yr), Int32.Parse(mn), Int32.Parse(dy));
+  // var dt = new DateTime(Int32.Parse(yr), Int32.Parse(mn), Int32.Parse(dy));
   //    return dt;
-  //}
+  // }
 
         public static string[] MonthNames = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
 
@@ -5134,9 +5187,9 @@ namespace TowseyLibrary
         return dt;
     }
 
-        //============================================================================================================================
+        // ============================================================================================================================
 
-  //*************************************************************************************************************************************
+  // *************************************************************************************************************************************
 
   /**
    * Pads a string to given length.
@@ -5186,7 +5239,7 @@ namespace TowseyLibrary
       return rd;
   }
 
-  //=============================================================================
+  // =============================================================================
 
 /// <summary>
 /// Given an array of monotonically increasing or decreasing values and a reference value,
@@ -5249,15 +5302,15 @@ namespace TowseyLibrary
                 // get its index from probability distribution
                 int distributionIndex = WhichSideOfCentre(distribution, rn, 0, distribution.Length);
 
-                //convert distribution array index to an index appropriate to non-replacement of samples
+                // convert distribution array index to an index appropriate to non-replacement of samples
                 int newIndex = (int)Math.Floor(distributionIndex * list.Count / (double)distribution.Length);
 
-                //recover original index
+                // recover original index
                 returnSampleArray[i] = list[newIndex];
                 list.RemoveAt(newIndex);
             }
 
             return returnSampleArray;
         }
-    }//class dataTools()
+    }// class dataTools()
 }

@@ -542,6 +542,18 @@ EVN:
   CalculateNormMax: true
   ProjectID: Acoustic Indices
   Units: "events/s"
+OSC:
+  Name: spectralOSC
+  Comment: "Spectrum of Oscillation amplitudes derived from the ampl spgram."
+  DataType: double[]
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 10.0
+  CalculateNormMin: true
+  CalculateNormMax: true
+  ProjectID: Acoustic Indices
+  Units: ""
 SUM:
   Name: spectralSUM
   Comment: "Spectrum of summed FFT coefficients derived from the ampl spgram. This spgram not displayed. It is used for intermediate calculations only."
@@ -562,18 +574,6 @@ PMN:
   DoDisplay: true
   NormMin: 0.0
   NormMax: 5.5
-  CalculateNormMin: true
-  CalculateNormMax: true
-  ProjectID: Acoustic Indices
-  Units: "dB"
-POW:
-  Name: spectralPOW
-  Comment: "DEPRACATED: Spectrum of average dB power in each frequency bin after noise removal."
-  DataType: double[]
-  DefaultValue: 0.0
-  DoDisplay: true
-  NormMin: 0.0
-  NormMax: 20.0
   CalculateNormMin: true
   CalculateNormMax: true
   ProjectID: Acoustic Indices
