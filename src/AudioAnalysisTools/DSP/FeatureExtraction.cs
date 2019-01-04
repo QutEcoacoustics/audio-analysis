@@ -518,7 +518,7 @@ namespace AudioAnalysisTools.DSP
                 // creating the header for CSV file
                 List<string> header = new List<string>();
                 header.Add("file name");
-
+                /*
                 for (int j = 0; j < allMins.ToArray()[i][0].GetLength(1); j++)
                 {
                     header.Add("min" + j.ToString());
@@ -533,17 +533,17 @@ namespace AudioAnalysisTools.DSP
                 {
                     header.Add("max" + j.ToString());
                 }
-
+                */
                 for (int j = 0; j < allStds.ToArray()[i][0].GetLength(1); j++)
                 {
                     header.Add("std" + j.ToString());
                 }
-
+                /*
                 for (int j = 0; j < allSkewness.ToArray()[i][0].GetLength(1); j++)
                 {
                     header.Add("skewness" + j.ToString());
                 }
-
+                */
                 var csv = new StringBuilder();
                 string content = string.Empty;
                 foreach (var entry in header.ToArray())
@@ -565,11 +565,11 @@ namespace AudioAnalysisTools.DSP
                     {
                         List<double[]> featureList = new List<double[]>
                         {
-                            allMins.ToArray()[i][j].ToJagged()[k],
-                            allMeans.ToArray()[i][j].ToJagged()[k],
-                            allMaxs.ToArray()[i][j].ToJagged()[k],
+                            //allMins.ToArray()[i][j].ToJagged()[k],
+                            //allMeans.ToArray()[i][j].ToJagged()[k],
+                            //allMaxs.ToArray()[i][j].ToJagged()[k],
                             allStds.ToArray()[i][j].ToJagged()[k],
-                            allSkewness.ToArray()[i][j].ToJagged()[k],
+                            //allSkewness.ToArray()[i][j].ToJagged()[k],
                         };
                         double[] featureVector = DataTools.ConcatenateVectors(featureList);
                         featureVectors.Add(featureVector);

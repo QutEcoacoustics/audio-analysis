@@ -30,12 +30,12 @@ namespace AnalysisPrograms
         {
             LoggedConsole.WriteLine("feature learning process...");
 
-            var inputDir = @"M:\Postdoc\Liz\Least Bittern\"; //@"D:\Mahnoosh\Liz\"; //@"C:\Users\kholghim\Mahnoosh\Liz\"; // @"C:\Users\kholghim\Mahnoosh\UnsupervisedFeatureLearning\"; // 
+            var inputDir = @"D:\Mahnoosh\Liz\Least_Bittern\"; // @"M:\Postdoc\Liz\Least Bittern\"; //@"D:\Mahnoosh\Liz\"; //@"C:\Users\kholghim\Mahnoosh\Liz\"; // @"C:\Users\kholghim\Mahnoosh\UnsupervisedFeatureLearning\"; // 
             var resultDir = Path.Combine(inputDir, "FeatureLearning");
-            var inputPath = Path.Combine(inputDir, "TrainSet\\one_min_recordings-samples"); //TrainSet //PatchSamplingSegments //PatchSampling
-            var trainSetPath = Path.Combine(inputDir, "TrainSet\\one_min_recordings-samples"); //TrainSet
+            var inputPath = Path.Combine(inputDir, "TrainSet\\one_min_recordings"); //TrainSet //PatchSamplingSegments //PatchSampling
+            var trainSetPath = Path.Combine(inputDir, "TrainSet\\train_data"); //TrainSet
             // var testSetPath = Path.Combine(inputDir, "TestSet");
-            var configPath = @"M:\Postdoc\Liz\Least Bittern\FeatureLearningConfig.yml"; //@"D:\Mahnoosh\Liz\AnalysisConfigFiles\FeatureLearningConfig.yml"; //@"C:\Users\kholghim\Mahnoosh\Liz\FeatureLearningConfig.yml"; //@"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\FeatureLearningConfig.yml"; //
+            var configPath = @"D:\Mahnoosh\Liz\Least_Bittern\FeatureLearningConfig.yml"; //@"M:\Postdoc\Liz\Least Bittern\FeatureLearningConfig.yml"; //@"D:\Mahnoosh\Liz\AnalysisConfigFiles\FeatureLearningConfig.yml"; //@"C:\Users\kholghim\Mahnoosh\Liz\FeatureLearningConfig.yml"; //@"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\FeatureLearningConfig.yml"; //
             // var outputMelImagePath = Path.Combine(resultDir, "MelScaleSpectrogram.png");
             // var outputNormMelImagePath = Path.Combine(resultDir, "NormalizedMelScaleSpectrogram.png");
             // var outputNoiseReducedMelImagePath = Path.Combine(resultDir, "NoiseReducedMelSpectrogram.png");
@@ -134,7 +134,6 @@ namespace AnalysisPrograms
             // extracting features
             FeatureExtraction.UnsupervisedFeatureExtraction(configuration, allBandsCentroids, trainSetPath, resultDir);
             LoggedConsole.WriteLine("Done...");
-
         }
 
         [Command(
@@ -144,23 +143,135 @@ namespace AnalysisPrograms
         {
             public override Task<int> Execute(CommandLineApplication app)
             {
-                var instance = new MahnooshSandpit();
-                instance.Execute(this);
+                //var instance = new MahnooshSandpit();
+                //instance.Execute(this);
                 //GenerateSpectrograms();
-                //ExtractClusteringFeatures();
+                ExtractClusteringFeatures();
 
                 return this.Ok();
             }
         }
 
+        // output is the cluster centroids that obtained from an semi-supervised feature learning approach.
+        public static void BuildSemisupervisedClusters()
+        {
+            LoggedConsole.WriteLine("semi-supervised clustering process...");
+            var inputDir = @"M:\Postdoc\Liz\Least Bittern\"; //@"D:\Mahnoosh\Liz\Least_Bittern\"; // @"D:\Mahnoosh\Liz\"; //@"C:\Users\kholghim\Mahnoosh\Liz\"; // @"C:\Users\kholghim\Mahnoosh\UnsupervisedFeatureLearning\"; // 
+            var resultDir = Path.Combine(inputDir, "SemisupervisedClusters");
+            var inputPath = Path.Combine(inputDir, "TrainSet\\one_min_recordings"); //PatchSamplingSegments 
+            // the infoFile contains the info about the frames of interest for supervised feature learning.
+            var frameInfoFilePath = @"M:\Postdoc\Liz\Least Bittern\manual-cluster\PositiveFrames.csv";//Path.Combine(inputDir, "TrainSet\\train_data");
+            var configPath = @"M:\Postdoc\Liz\Least Bittern\FeatureLearningConfig.yml"; // @"D:\Mahnoosh\Liz\Least_Bittern\FeatureLearningConfig.yml";
+
+            var configFile = configPath.ToFileInfo();
+
+            if (configFile == null)
+            {
+                throw new FileNotFoundException("No config file argument provided");
+            }
+            else if (!configFile.Exists)
+            {
+                throw new ArgumentException($"Config file {configFile.FullName} not found");
+            }
+
+            var configuration = ConfigFile.Deserialize<FeatureLearningSettings>(configFile);
+            int patchWidth =
+                (configuration.MaxFreqBin - configuration.MinFreqBin + 1) / configuration.NumFreqBand;
+
+            var frameInfoFile = frameInfoFilePath.ToFileInfo();
+
+            if (frameInfoFile == null)
+            {
+                throw new FileNotFoundException("No information file argument provided");
+            }
+            else if (!frameInfoFile.Exists)
+            {
+                throw new ArgumentException($"Info file {frameInfoFile.FullName} not found");
+            }
+
+            string[,] frameInfo = Csv.ReadMatrixFromCsv<string>(frameInfoFile, TwoDimensionalArray.None);
+
+            var clusteringOutputList = FeatureLearning.SemisupervisedFeatureLearning(configuration, inputPath, frameInfo);
+
+            List<double[][]> allBandsCentroids = new List<double[][]>();
+            for (int i = 0; i < clusteringOutputList.Count; i++)
+            {
+                var clusteringOutput = clusteringOutputList[i];
+
+                // writing centroids to a csv file
+                // note that Csv.WriteToCsv can't write data types like dictionary<int, double[]> (problems with arrays)
+                // I converted the dictionary values to a matrix and used the Csv.WriteMatrixToCsv
+                // it might be a better way to do this
+                string pathToClusterCsvFile = Path.Combine(resultDir, "ClusterCentroids" + i.ToString() + ".csv");
+                var clusterCentroids = clusteringOutput.ClusterIdCentroid.Values.ToArray();
+                Csv.WriteMatrixToCsv(pathToClusterCsvFile.ToFileInfo(), clusterCentroids.ToMatrix());
+                //Csv.WriteToCsv(pathToClusterCsvFile.ToFileInfo(), clusterCentroids);
+
+                // sorting clusters based on size and output it to a csv file
+                Dictionary<int, double> clusterIdSize = clusteringOutput.ClusterIdSize;
+                int[] sortOrder = KmeansClustering.SortClustersBasedOnSize(clusterIdSize);
+
+                // Write cluster ID and size to a CSV file
+                string pathToClusterSizeCsvFile = Path.Combine(resultDir, "ClusterSize" + i.ToString() + ".csv");
+                Csv.WriteToCsv(pathToClusterSizeCsvFile.ToFileInfo(), clusterIdSize);
+
+                // Draw cluster image directly from clustering output
+                List<KeyValuePair<int, double[]>> list = clusteringOutput.ClusterIdCentroid.ToList();
+                double[][] centroids = new double[list.Count][];
+
+                for (int j = 0; j < list.Count; j++)
+                {
+                    centroids[j] = list[j].Value;
+                }
+
+                allBandsCentroids.Add(centroids);
+                //allClusteringOutput.Add(clusteringOutput.Clusters);
+
+                List<double[,]> allCentroids = new List<double[,]>();
+                for (int k = 0; k < centroids.Length; k++)
+                {
+                    // convert each centroid to a matrix in order of cluster ID
+                    // double[,] cent = PatchSampling.ArrayToMatrixByColumn(centroids[i], patchWidth, patchHeight);
+                    // OR: in order of cluster size
+                    double[,] cent = MatrixTools.ArrayToMatrixByColumn(centroids[sortOrder[k]], patchWidth, configuration.PatchHeight);
+
+                    // normalize each centroid
+                    double[,] normCent = DataTools.normalise(cent);
+
+                    // add a row of zero to each centroid
+                    double[,] cent2 = PatchSampling.AddRow(normCent);
+
+                    allCentroids.Add(cent2);
+                }
+
+                // concatenate all centroids
+                double[,] mergedCentroidMatrix = PatchSampling.ListOf2DArrayToOne2DArray(allCentroids);
+
+                // Draw clusters
+                // int gridInterval = 1000;
+                // var freqScale = new FrequencyScale(FreqScaleType.Mel, nyquist, frameSize, finalBinCount, gridInterval);
+
+                var clusterImage = ImageTools.DrawMatrixWithoutNormalisation(mergedCentroidMatrix);
+                clusterImage.RotateFlip(RotateFlipType.Rotate270FlipNone);
+                // clusterImage.Save(outputClusterImagePath, ImageFormat.Bmp);
+
+                var outputClusteringImage = Path.Combine(resultDir, "ClustersWithGrid" + i.ToString() + ".bmp");
+                // Image bmp = ImageTools.ReadImage2Bitmap(filename);
+                // FrequencyScale.DrawFrequencyLinesOnImage((Bitmap)clusterImage, freqScale, includeLabels: false);
+                clusterImage.Save(outputClusteringImage);
+            }
+
+            LoggedConsole.WriteLine("Done...");
+        }
+
         public static void ExtractClusteringFeatures()
         {
             LoggedConsole.WriteLine("feature extraction process...");
-            var inputDir = @"D:\Mahnoosh\Liz\"; //@"M:\Postdoc\Liz\"; //@"C:\Users\kholghim\Mahnoosh\UnsupervisedFeatureLearning\"; //@"M:\Postdoc\Liz\"; //
+            var inputDir = @"D:\Mahnoosh\Liz\Least_Bittern\"; // @"D:\Mahnoosh\Liz\"; //@"M:\Postdoc\Liz\"; //@"C:\Users\kholghim\Mahnoosh\UnsupervisedFeatureLearning\"; //@"M:\Postdoc\Liz\"; //
             var resultDir = Path.Combine(inputDir, "FeatureLearning");
             //var trainSetPath = Path.Combine(inputDir, "TrainSet");
-            var testSetPath = Path.Combine(inputDir, "TestSet");
-            var configPath = @"D:\Mahnoosh\Liz\AnalysisConfigFiles\FeatureLearningConfig.yml"; //@"C:\Users\kholghim\Mahnoosh\Liz\FeatureLearningConfig.yml"; //@"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\FeatureLearningConfig.yml"; // 
+            var testSetPath = Path.Combine(inputDir, "TestSet\\one_min_recordings");
+            var configPath = @"D:\Mahnoosh\Liz\Least_Bittern\FeatureLearningConfig.yml"; //@"D:\Mahnoosh\Liz\AnalysisConfigFiles\FeatureLearningConfig.yml"; //@"C:\Users\kholghim\Mahnoosh\Liz\FeatureLearningConfig.yml"; //@"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\FeatureLearningConfig.yml"; // 
             var centroidsPath = Path.Combine(resultDir, "ClusterCentroids0.csv");
 
             var configFile = configPath.ToFileInfo();
