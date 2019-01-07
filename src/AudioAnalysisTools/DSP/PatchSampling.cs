@@ -10,6 +10,7 @@ namespace AudioAnalysisTools.DSP
     using Accord.Math;
     using TowseyLibrary;
     using WavTools;
+    using YamlDotNet.Core.Tokens;
 
     public static class PatchSampling
     {
@@ -262,21 +263,25 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// convert a list of patch matrices to one matrix
+        /// convert a list of patch matrices to one matrix by row
+        /// patch matrices can have different row numbers but must have the same column number
         /// </summary>
         public static double[,] ListOf2DArrayToOne2DArray(List<double[,]> listOfPatchMatrices)
         {
-            int numberOfPatches = listOfPatchMatrices[0].GetLength(0);
-            double[,] allPatchesMatrix = new double[listOfPatchMatrices.Count * numberOfPatches, listOfPatchMatrices[0].GetLength(1)];
+            int sumNumberOfPatches = 0;
+            foreach (var matrix in listOfPatchMatrices)
+            {
+                sumNumberOfPatches = matrix.GetLength(0) + sumNumberOfPatches;
+            }
+
+            double[,] allPatchesMatrix = new double[sumNumberOfPatches, listOfPatchMatrices[0].GetLength(1)];
+            int start = 0;
+
             for (int i = 0; i < listOfPatchMatrices.Count; i++)
             {
                 var m = listOfPatchMatrices[i];
-                if (m.GetLength(0) != numberOfPatches)
-                {
-                    throw new ArgumentException("All arrays must be the same length");
-                }
-
-                allPatchesMatrix.AddToArray(m, DoubleSquareArrayExtensions.MergingDirection.Row, i * m.GetLength(0));
+                allPatchesMatrix.AddToArray(m, DoubleSquareArrayExtensions.MergingDirection.Row, start);
+                start = m.GetLength(0) + start;
             }
 
             return allPatchesMatrix;
