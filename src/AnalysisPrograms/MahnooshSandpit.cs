@@ -146,21 +146,22 @@ namespace AnalysisPrograms
                 //var instance = new MahnooshSandpit();
                 //instance.Execute(this);
                 //GenerateSpectrograms();
-                ExtractClusteringFeatures();
+                //ExtractClusteringFeatures();
+                BuildSemisupervisedClusters();
 
                 return this.Ok();
             }
         }
 
-        // output is the cluster centroids that obtained from an semi-supervised feature learning approach.
+        // output is the cluster centroids that obtained from a semi-supervised feature learning approach.
         public static void BuildSemisupervisedClusters()
         {
             LoggedConsole.WriteLine("semi-supervised clustering process...");
             var inputDir = @"M:\Postdoc\Liz\Least Bittern\"; //@"D:\Mahnoosh\Liz\Least_Bittern\"; // @"D:\Mahnoosh\Liz\"; //@"C:\Users\kholghim\Mahnoosh\Liz\"; // @"C:\Users\kholghim\Mahnoosh\UnsupervisedFeatureLearning\"; // 
             var resultDir = Path.Combine(inputDir, "SemisupervisedClusters");
-            var inputPath = Path.Combine(inputDir, "TrainSet\\one_min_recordings"); //PatchSamplingSegments 
+            var inputPath = Path.Combine(inputDir, "TrainSet\\one_min_recordings-samples"); //one_min_recordings  //PatchSamplingSegments 
             // the infoFile contains the info about the frames of interest for supervised feature learning.
-            var frameInfoFilePath = @"M:\Postdoc\Liz\Least Bittern\manual-cluster\PositiveFrames.csv";//Path.Combine(inputDir, "TrainSet\\train_data");
+            var frameInfoFilePath = @"M:\Postdoc\Liz\Least Bittern\manual-cluster\positive_frames.csv";//Path.Combine(inputDir, "TrainSet\\train_data");
             var configPath = @"M:\Postdoc\Liz\Least Bittern\FeatureLearningConfig.yml"; // @"D:\Mahnoosh\Liz\Least_Bittern\FeatureLearningConfig.yml";
 
             var configFile = configPath.ToFileInfo();
@@ -190,6 +191,7 @@ namespace AnalysisPrograms
             }
 
             string[,] frameInfo = Csv.ReadMatrixFromCsv<string>(frameInfoFile, TwoDimensionalArray.None);
+            //centroids.Add(Csv.ReadMatrixFromCsv<double>(centroidsPath.ToFileInfo(), TwoDimensionalArray.None)
 
             var clusteringOutputList = FeatureLearning.SemisupervisedFeatureLearning(configuration, inputPath, frameInfo);
 

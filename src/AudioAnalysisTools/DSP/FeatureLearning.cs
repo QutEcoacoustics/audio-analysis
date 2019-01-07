@@ -8,6 +8,7 @@ namespace AudioAnalysisTools.DSP
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using Accord.MachineLearning;
     using Accord.Math;
     using StandardSpectrograms;
     using TowseyLibrary;
@@ -223,14 +224,13 @@ namespace AudioAnalysisTools.DSP
         public static List<KmeansClustering.Output> SemisupervisedFeatureLearning(FeatureLearningSettings config,
             string inputPath, string[,] frameInfo)
         {
-            // making a dictionary of frame info
-            Dictionary<string, Dictionary<int, int[]>> info = new Dictionary<string, Dictionary<int, int[]>>();
+            // making a dictionary of frame info as file name and second number as key, and start and end frame number as value.
+            Dictionary<Tuple<string, int>, int[]> info = new Dictionary<Tuple<string, int>, int[]>();
             for (int i = 0; i < frameInfo.GetLength(0); i++)
             {
-                Dictionary<int, int[]> dict = new Dictionary<int, int[]>();
+                Tuple<string, int> keys = new Tuple<string, int>(frameInfo[i, 0], Convert.ToInt32(frameInfo[i, 1]));
                 int[] values = new int[2] { Convert.ToInt32(frameInfo[i, 2]), Convert.ToInt32(frameInfo[i, 3]) };
-                dict.Add(Convert.ToInt32(frameInfo[i, 1]), values);
-                info.Add(frameInfo[i, 0], dict);
+                info.Add(keys, values);
             }
 
             // check whether there is any file in the folder/subfolders
@@ -277,11 +277,13 @@ namespace AudioAnalysisTools.DSP
             }
 
             // Define variable number of "manuallySelectedPatch" lists based on "numFreqBand"
+            /*
             Dictionary<string, List<double[,]>> manuallySelectedPatchLists = new Dictionary<string, List<double[,]>>();
             for (int i = 0; i < numFreqBand; i++)
             {
                 manuallySelectedPatchLists.Add(string.Format("manuallySelectedPatch{0}", i.ToString()), new List<double[,]>());
             }
+            */
 
             List<double[,]> randomPatches = new List<double[,]>();
             List<double[,]> positivePatches = new List<double[,]>();
@@ -336,20 +338,13 @@ namespace AudioAnalysisTools.DSP
                         List<int> positiveFrameNumbers = new List<int>();
                         foreach (var entry in info)
                         {
-                            // check whether the file has positive frame
-                            if (fileInfo.Name == entry.Key)
+                            // check whether the file  and the current second (i) has positive frame
+                            if ((fileInfo.Name == entry.Key.Item1) && (i == entry.Key.Item2))
                             {
-                                //check whether the current second (i) has positive frames.
-                                foreach (var entry2 in entry.Value)
+                                // make a list of frame numbers
+                                for (int j = entry.Value[0]; j <= entry.Value[1]; j++)
                                 {
-                                    if (i == entry2.Key)
-                                    {
-                                        //make a list of frame numbers
-                                        for (int j = entry2.Value[0]; j <= entry2.Value[1]; j++)
-                                        {
-                                            positiveFrameNumbers.Add(j);
-                                        }
-                                    }
+                                    positiveFrameNumbers.Add(j);
                                 }
                             }
                         }
@@ -371,7 +366,9 @@ namespace AudioAnalysisTools.DSP
                                 }
                             }
 
-                            if (flag)
+                            // if flag is false, it means that the frame does not contain a part of bird call and should be added
+                            // to the negativeFrameNumbers list.
+                            if (!flag)
                             {
                                 negativeFrameNumbers.Add(j);
                             }
@@ -384,7 +381,7 @@ namespace AudioAnalysisTools.DSP
                                 List<double[]> positiveFrames = new List<double[]>();
                                 foreach (var number in positiveFrameNumbers)
                                 {
-                                    positiveFrames.Add(submatrix.ToJagged()[number]);
+                                    positiveFrames.Add(submatrix.ToJagged()[number - 1]);
                                 }
 
                                 allPositiveFramesSubmatrices.Add(positiveFrames.ToArray().ToMatrix());
@@ -392,7 +389,7 @@ namespace AudioAnalysisTools.DSP
                                 List<double[]> negativeFrames = new List<double[]>();
                                 foreach (var number in negativeFrameNumbers)
                                 {
-                                    negativeFrames.Add(submatrix.ToJagged()[number]);
+                                    negativeFrames.Add(submatrix.ToJagged()[number - 1]);
                                 }
 
                                 allNegativeFramesSubmatrices.Add(positiveFrames.ToArray().ToMatrix());
@@ -451,6 +448,7 @@ namespace AudioAnalysisTools.DSP
             List<KmeansClustering.Output> unsupervisedClusteringOutput = new List<KmeansClustering.Output>();
             List<KmeansClustering.Output> supervisedClusteringOutput = new List<KmeansClustering.Output>();
 
+            // clustering of random patches
             for (int i = 0; i < randomPatches.Count; i++)
             {
                 double[,] patchMatrix = randomPatches[i];
@@ -463,6 +461,7 @@ namespace AudioAnalysisTools.DSP
                 unsupervisedClusteringOutput.Add(clusteringOutput);
             }
 
+            // build one cluster out of positive frames
             for (int i = 0; i < positivePatches.Count; i++)
             {
                 double[,] patchMatrix = positivePatches[i];
@@ -476,7 +475,8 @@ namespace AudioAnalysisTools.DSP
                 supervisedClusteringOutput.Add(clusteringOutput);
             }
 
-            var positiveClusterId = config.NumClusters;
+            // merge the output of two clustering obtained from supervised and unsupervised approaches
+            var positiveClusterId = config.NumClusters - 1;
             List<double[][]> positiveCentroids = new List<double[][]>();
             List<double[]> positiveClusterSize = new List<double[]>();
 
@@ -490,7 +490,6 @@ namespace AudioAnalysisTools.DSP
 
             for (int i = 0; i < semisupervisedClusteringOutput.Count; i++)
             {
-                //check this line
                 semisupervisedClusteringOutput[i].ClusterIdCentroid.Add(positiveClusterId, positiveCentroids[i][0]);
                 semisupervisedClusteringOutput[i].ClusterIdSize.Add(positiveClusterId, positiveClusterSize[i][0]);
             }
