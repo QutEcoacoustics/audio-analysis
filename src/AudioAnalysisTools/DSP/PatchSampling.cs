@@ -10,7 +10,6 @@ namespace AudioAnalysisTools.DSP
     using Accord.Math;
     using TowseyLibrary;
     using WavTools;
-    using YamlDotNet.Core.Tokens;
 
     public static class PatchSampling
     {
@@ -299,7 +298,6 @@ namespace AudioAnalysisTools.DSP
             int minY = matrix.GetLength(1);
 
             // copying the original matrix to a new matrix (row by row)
-
             for (int i = 0; i < minX; ++i)
             {
                 Array.Copy(matrix, i * matrix.GetLength(1), newMatrix, i * matrix.GetLength(1), minY);

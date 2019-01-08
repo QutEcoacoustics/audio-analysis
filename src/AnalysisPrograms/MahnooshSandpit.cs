@@ -147,22 +147,23 @@ namespace AnalysisPrograms
                 //instance.Execute(this);
                 //GenerateSpectrograms();
                 //ExtractClusteringFeatures();
-                BuildSemisupervisedClusters();
+                BuildSemisupervisedClusteringFeatures();
 
                 return this.Ok();
             }
         }
 
         // output is the cluster centroids that obtained from a semi-supervised feature learning approach.
-        public static void BuildSemisupervisedClusters()
+        public static void BuildSemisupervisedClusteringFeatures()
         {
-            LoggedConsole.WriteLine("semi-supervised clustering process...");
-            var inputDir = @"M:\Postdoc\Liz\Least Bittern\"; //@"D:\Mahnoosh\Liz\Least_Bittern\"; // @"D:\Mahnoosh\Liz\"; //@"C:\Users\kholghim\Mahnoosh\Liz\"; // @"C:\Users\kholghim\Mahnoosh\UnsupervisedFeatureLearning\"; // 
-            var resultDir = Path.Combine(inputDir, "SemisupervisedClusters");
-            var inputPath = Path.Combine(inputDir, "TrainSet\\one_min_recordings-samples"); //one_min_recordings  //PatchSamplingSegments 
+            LoggedConsole.WriteLine("semi-supervised feature learning process...");
+            var inputDir = @"D:\Mahnoosh\Liz\Least_Bittern\"; //@"M:\Postdoc\Liz\Least Bittern\"; // @"D:\Mahnoosh\Liz\"; //@"C:\Users\kholghim\Mahnoosh\Liz\"; // @"C:\Users\kholghim\Mahnoosh\UnsupervisedFeatureLearning\"; // 
+            var resultDir = Path.Combine(inputDir, "SemisupervisedClusteringFeatures");
+            var inputPath = Path.Combine(inputDir, "TrainSet\\one_min_recordings"); //one_min_recordings-samples  //PatchSamplingSegments 
+
             // the infoFile contains the info about the frames of interest for supervised feature learning.
-            var frameInfoFilePath = @"M:\Postdoc\Liz\Least Bittern\manual-cluster\positive_frames.csv";//Path.Combine(inputDir, "TrainSet\\train_data");
-            var configPath = @"M:\Postdoc\Liz\Least Bittern\FeatureLearningConfig.yml"; // @"D:\Mahnoosh\Liz\Least_Bittern\FeatureLearningConfig.yml";
+            var frameInfoFilePath = @"D:\Mahnoosh\Liz\Least_Bittern\TrainSet\positive_frames.csv"; //@"M:\Postdoc\Liz\Least Bittern\manual-cluster\positive_frames.csv";//Path.Combine(inputDir, "TrainSet\\train_data");
+            var configPath = @"D:\Mahnoosh\Liz\Least_Bittern\FeatureLearningConfig.yml"; //@"M:\Postdoc\Liz\Least Bittern\FeatureLearningConfig.yml"; // 
 
             var configFile = configPath.ToFileInfo();
 
@@ -227,7 +228,6 @@ namespace AnalysisPrograms
                 }
 
                 allBandsCentroids.Add(centroids);
-                //allClusteringOutput.Add(clusteringOutput.Clusters);
 
                 List<double[,]> allCentroids = new List<double[,]>();
                 for (int k = 0; k < centroids.Length; k++)
@@ -263,6 +263,8 @@ namespace AnalysisPrograms
                 clusterImage.Save(outputClusteringImage);
             }
 
+            // extracting features
+            FeatureExtraction.UnsupervisedFeatureExtraction(configuration, allBandsCentroids, inputPath, resultDir);
             LoggedConsole.WriteLine("Done...");
         }
 

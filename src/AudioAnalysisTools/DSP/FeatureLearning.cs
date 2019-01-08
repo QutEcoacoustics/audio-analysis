@@ -405,6 +405,7 @@ namespace AudioAnalysisTools.DSP
 
                         while (count < allNegativeFramesSubmatrices.Count)
                         {
+                            // select random patches from those semgments that do not contain the call of interest
                             if (allPositiveFramesSubmatrices.Count != 0)
                             {
                                 // downsampling the input matrix by a factor of n (MaxPoolingFactor) using max pooling
@@ -416,13 +417,35 @@ namespace AudioAnalysisTools.DSP
                                         (rows / patchHeight) * (columns / patchWidth),
                                         PatchSampling.SamplingMethod.Sequential).ToMatrix());
                             }
+                            else
+                            {
+                                // downsampling the input matrix by a factor of n (MaxPoolingFactor) using max pooling
+                                double[,] downsampledNegativeMatrix = MaxPooling(allNegativeFramesSubmatrices.ToArray()[count], config.MaxPoolingFactor);
+                                randomPatchLists[$"randomPatch{count.ToString()}"].Add(PatchSampling
+                                    .GetPatches(downsampledNegativeMatrix, patchWidth, patchHeight, numRandomPatches,
+                                        PatchSampling.SamplingMethod.Random).ToMatrix());
+                            }
 
+                            /*
+                             We can use this block of code instead of line 422 to 426, of we want to select random patches from negative grames of the segments with call of interest
                             // downsampling the input matrix by a factor of n (MaxPoolingFactor) using max pooling
                             double[,] downsampledNegativeMatrix = MaxPooling(allNegativeFramesSubmatrices.ToArray()[count], config.MaxPoolingFactor);
-
-                            randomPatchLists[$"randomPatch{count.ToString()}"].Add(PatchSampling
+                            if (downsampledNegativeMatrix.GetLength(0) < numRandomPatches)
+                            {
+                                int numR = downsampledNegativeMatrix.GetLength(0);
+                                int numC = downsampledNegativeMatrix.GetLength(1);
+                                randomPatchLists[$"randomPatch{count.ToString()}"].Add(PatchSampling
+                                    .GetPatches(downsampledNegativeMatrix, patchWidth, patchHeight,
+                                       (numR / patchHeight) * (numC / patchWidth),
+                                       PatchSampling.SamplingMethod.Sequential).ToMatrix());
+                            }
+                            else
+                            {
+                                randomPatchLists[$"randomPatch{count.ToString()}"].Add(PatchSampling
                                 .GetPatches(downsampledNegativeMatrix, patchWidth, patchHeight, numRandomPatches,
                                     PatchSampling.SamplingMethod.Random).ToMatrix());
+                            }
+                            */
 
                             count++;
                         }

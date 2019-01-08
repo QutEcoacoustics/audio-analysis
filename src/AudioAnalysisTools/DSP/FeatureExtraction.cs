@@ -481,7 +481,6 @@ namespace AudioAnalysisTools.DSP
             var allStds = new List<double[][,]>();
             var allSkewness = new List<double[][,]>();
 
-
             // looping over freq bands
             for (int i = 0; i < meanFeatures[0].Count; i++)
             {
@@ -518,7 +517,7 @@ namespace AudioAnalysisTools.DSP
                 // creating the header for CSV file
                 List<string> header = new List<string>();
                 header.Add("file name");
-                /*
+
                 for (int j = 0; j < allMins.ToArray()[i][0].GetLength(1); j++)
                 {
                     header.Add("min" + j.ToString());
@@ -533,17 +532,17 @@ namespace AudioAnalysisTools.DSP
                 {
                     header.Add("max" + j.ToString());
                 }
-                */
+
                 for (int j = 0; j < allStds.ToArray()[i][0].GetLength(1); j++)
                 {
                     header.Add("std" + j.ToString());
                 }
-                /*
+
                 for (int j = 0; j < allSkewness.ToArray()[i][0].GetLength(1); j++)
                 {
                     header.Add("skewness" + j.ToString());
                 }
-                */
+
                 var csv = new StringBuilder();
                 string content = string.Empty;
                 foreach (var entry in header.ToArray())
@@ -558,18 +557,17 @@ namespace AudioAnalysisTools.DSP
                 // looping over files
                 for (int j = 0; j < allMeans.ToArray()[i].GetLength(0); j++)
                 {
-
                     // concatenating mean, std, and max vector together for the pre-defined resolution
                     List<double[]> featureVectors = new List<double[]>();
                     for (int k = 0; k < allMeans.ToArray()[i][j].ToJagged().GetLength(0); k++)
                     {
                         List<double[]> featureList = new List<double[]>
                         {
-                            //allMins.ToArray()[i][j].ToJagged()[k],
-                            //allMeans.ToArray()[i][j].ToJagged()[k],
-                            //allMaxs.ToArray()[i][j].ToJagged()[k],
+                            allMins.ToArray()[i][j].ToJagged()[k],
+                            allMeans.ToArray()[i][j].ToJagged()[k],
+                            allMaxs.ToArray()[i][j].ToJagged()[k],
                             allStds.ToArray()[i][j].ToJagged()[k],
-                            //allSkewness.ToArray()[i][j].ToJagged()[k],
+                            allSkewness.ToArray()[i][j].ToJagged()[k],
                         };
                         double[] featureVector = DataTools.ConcatenateVectors(featureList);
                         featureVectors.Add(featureVector);
