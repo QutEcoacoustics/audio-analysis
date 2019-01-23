@@ -311,7 +311,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         /// <summary>
         /// This method sets default indices to use if passed Dictionary = null.
-        /// This may not be a good idea. Trying it out. Maybe better to crash!
+        /// This may not be a good idea. Trying it out. Maybe better to crash!.
         /// </summary>
         public void SetSpectralIndexProperties(Dictionary<string, IndexProperties> dictionaryOfSpectralIndexProperties)
         {
@@ -552,7 +552,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         public Image DrawGreyscaleSpectrogramOfIndex(string key)
         {
-            double[,] matrix = this.GetNormalisedSpectrogramMatrix(key);
+            var matrix = this.GetNormalisedSpectrogramMatrix(key);
             if (matrix == null)
             {
                 return null;
@@ -1081,7 +1081,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             {
                 // draw extra time scale with absolute start time. AND THEN Do SOMETHING WITH IT.
                 timeBmp2 = ImageTrack.DrawTimeTrack(fullDuration, cs.RecordingStartDate, bmp1.Width, trackHeight);
-                suntrack = SunAndMoon.AddSunTrackToImage(bmp1.Width, dateTimeOffset, cs.SunriseDataFile);
+
+                //suntrack = SunAndMoon.AddSunTrackToImage(bmp1.Width, dateTimeOffset, cs.SunriseDataFile);
             }
 
             if (cs.FreqScale == null)
@@ -1096,10 +1097,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // draw the composite bitmap
             var imageList = new List<Image> { titleBar, timeBmp1, bmp1, timeBmp2 };
-            if (suntrack != null)
-            {
-                imageList.Add(suntrack);
-            }
+            //if (suntrack != null)
+            //{
+            //    imageList.Add(suntrack);
+            //}
 
             var compositeBmp = (Bitmap)ImageTools.CombineImagesVertically(imageList);
             return compositeBmp;
@@ -1166,9 +1167,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return bmp;
         }
 
+        /// <summary>
+        /// This method assumes that all the passed matrices are normalised and of the same dimensions.
+        /// The method implements a hack to enhance the blue colour because the human eye is less sensitive to blue.
+        /// If there is a problem with one or more of the three rgb values, a gray pixel is substituted not a black pixel.
+        /// Black is a frequent colour in LDFC spectrograms, but gray is highly unlikely,
+        /// and therefore its presence stands out as indicating an error in one or more of the rgb values.
+        /// </summary>
         public static Image DrawRgbColourMatrix(double[,] redM, double[,] grnM, double[,] bluM, bool doReverseColour)
         {
-            // assume all matricies are normalised and of the same dimensions
             int rows = redM.GetLength(0); //number of rows
             int cols = redM.GetLength(1); //number
 
@@ -1184,28 +1191,23 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     var d2 = grnM[row, column];
                     var d3 = bluM[row, column];
 
-                    // blank indices painted grey.
-                    if (double.IsNaN(d1))
+                    // if any of the indices is blank/NaN then render as grey.
+                    if (double.IsNaN(d1) || double.IsNaN(d2) || double.IsNaN(d3))
                     {
                         d1 = 0.5;
-                    }
-
-                    if (double.IsNaN(d2))
-                    {
                         d2 = 0.5;
-                    }
-
-                    if (double.IsNaN(d3))
-                    {
                         d3 = 0.5;
                     }
 
                     // enhance blue colour - it is difficult to see on a black background
-                    // This is a hack - there should be a principled way to do this.
-                    if (d1 < 0.1 && d2 < 0.1 && d3 > 0.2)
+                    // This is a hack - there should be a principled way to do this!
+                    // The effect is to create a more visible cyan colour.
+                    if (d1 < 0.1 && d2 < 0.1 && d3 > 0.1)
                     {
                         d2 += 0.7 * d3;
                         d3 += 0.2;
+
+                        // check for values over 1.0
                         d2 = Math.Min(1.0, d2);
                         d3 = Math.Min(1.0, d3);
                     }
@@ -1407,7 +1409,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             cs1.SiteName = siteDescription?.SiteName;
             cs1.Latitude = siteDescription?.Latitude;
             cs1.Longitude = siteDescription?.Longitude;
-            cs1.SunriseDataFile = sunriseDataFile;
+            //cs1.SunriseDataFile = sunriseDataFile;
             cs1.ErroneousSegments = segmentErrors;
 
             // calculate start time by combining DatetimeOffset with minute offset.
