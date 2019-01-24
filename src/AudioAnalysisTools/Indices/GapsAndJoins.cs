@@ -1,4 +1,4 @@
-﻿// <copyright file="GapsAndJoins.cs" company="QutEcoacoustics">
+// <copyright file="GapsAndJoins.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -8,6 +8,7 @@ namespace AudioAnalysisTools.Indices
     using System.Collections.Generic;
     using System.Drawing;
     using System.IO;
+    using System.Linq;
     using Acoustics.Shared;
     using TowseyLibrary;
 
@@ -126,47 +127,63 @@ namespace AudioAnalysisTools.Indices
         public static List<GapsAndJoins> DataIntegrityCheckForNoRecording(IEnumerable<SummaryIndexValues> summaryIndices, ConcatMode gapRendering)
         {
             // init list of gaps and joins
-            var gaps = new List<GapsAndJoins>();
-
-            bool isValidBlock = true;
-            GapsAndJoins gap = null;
+            var joins = new List<GapsAndJoins>();
+            string previousFileName = summaryIndices.First<SummaryIndexValues>().FileName;
 
             // now loop through the rows/vectors of indices
             int index = 0;
             foreach (var row in summaryIndices)
             {
-                // if this row is missing signal
-                if (row.FileName == IndexMatrices.MissingRowString)
+                //if (previousFileName == null)
+                //{
+                //    previousFileName = row.FileName;
+                //}
+
+                //if (row.FileName != previousFileName)
+                //{
+                //    if (isValidBlock)
+                //    {
+                //        isValidBlock = false;
+                //        fileJoin = new GapsAndJoins
+                //            {
+                //                StartPosition = index,
+                //                GapDescription = gapDescriptionFileJoin,
+                //                GapRendering = gapRendering,
+                //            };
+                //    }
+                //    else
+                //    {
+                //        // come to end of a bad patch
+                //        isValidBlock = true;
+                //        fileJoin.EndPosition = index - 1;
+                //        joins.Add(fileJoin);
+                //    }
+                //}
+
+                if (row.FileName != previousFileName)
                 {
-                    if (isValidBlock)
+                    var fileJoin = new GapsAndJoins
                     {
-                        isValidBlock = false;
-                        gap = new GapsAndJoins
-                            {
-                                StartPosition = index,
-                                GapDescription = gapDescriptionMissingData,
-                                GapRendering = gapRendering,
-                            };
-                    }
-                }
-                else if (!isValidBlock && row.FileName != IndexMatrices.MissingRowString)
-                {
-                    // come to end of a bad patch
-                    isValidBlock = true;
-                    gap.EndPosition = index - 1;
-                    gaps.Add(gap);
+                        StartPosition = index,
+                        GapDescription = gapDescriptionFileJoin,
+                        GapRendering = gapRendering,
+                        EndPosition = index, // this renders to one pixel width.
+                    };
+
+                    joins.Add(fileJoin);
+                    previousFileName = row.FileName;
                 }
 
                 index++;
             }
 
             // if not OK at end of the array, need to terminate the gap.
-            if (!isValidBlock)
-            {
-                gaps[gaps.Count - 1].EndPosition = index - 1;
-            }
+            //if (!isValidBlock)
+            //{
+            //    joins[joins.Count - 1].EndPosition = joins[joins.Count - 1].EndPosition;
+            //}
 
-            return gaps;
+            return joins;
         }
 
         /// <summary>
@@ -177,54 +194,64 @@ namespace AudioAnalysisTools.Indices
         /// <returns>a list of erroneous segments</returns>
         public static List<GapsAndJoins> DataIntegrityCheckForFileJoins(IEnumerable<SummaryIndexValues> summaryIndices, ConcatMode gapRendering)
         {
-           // init list of gaps and joins
-            var gaps = new List<GapsAndJoins>();
-
-            bool isValidBlock = true;
-            string previousFileName = null;
-            GapsAndJoins gap = null;
+            // init list of gaps and joins
+            var joins = new List<GapsAndJoins>();
+            string previousFileName = summaryIndices.First<SummaryIndexValues>().FileName;
 
             // now loop through the rows/vectors of indices
             int index = 0;
             foreach (var row in summaryIndices)
             {
-                if (previousFileName == null)
-                {
-                    previousFileName = row.FileName;
-                }
+                //if (previousFileName == null)
+                //{
+                //    previousFileName = row.FileName;
+                //}
+
+                //if (row.FileName != previousFileName)
+                //{
+                //    if (isValidBlock)
+                //    {
+                //        isValidBlock = false;
+                //        fileJoin = new GapsAndJoins
+                //            {
+                //                StartPosition = index,
+                //                GapDescription = gapDescriptionFileJoin,
+                //                GapRendering = gapRendering,
+                //            };
+                //    }
+                //    else
+                //    {
+                //        // come to end of a bad patch
+                //        isValidBlock = true;
+                //        fileJoin.EndPosition = index - 1;
+                //        joins.Add(fileJoin);
+                //    }
+                //}
 
                 if (row.FileName != previousFileName)
                 {
-                    if (isValidBlock)
+                    var fileJoin = new GapsAndJoins
                     {
-                        isValidBlock = false;
-                        gap = new GapsAndJoins
-                            {
-                                StartPosition = index,
-                                GapDescription = gapDescriptionFileJoin,
-                                GapRendering = gapRendering,
-                            };
-                    }
-                    else
-                    {
-                        // come to end of a bad patch
-                        isValidBlock = true;
-                        gap.EndPosition = index - 1;
-                        gaps.Add(gap);
-                    }
+                        StartPosition = index,
+                        GapDescription = gapDescriptionFileJoin,
+                        GapRendering = gapRendering,
+                        EndPosition = index, // this renders to one pixel width.
+                    };
+
+                    joins.Add(fileJoin);
+                    previousFileName = row.FileName;
                 }
 
-                previousFileName = row.FileName;
                 index++;
             }
 
             // if not OK at end of the array, need to terminate the gap.
-            if (!isValidBlock)
-            {
-                gaps[gaps.Count - 1].EndPosition = gaps[gaps.Count - 1].EndPosition;
-            }
+            //if (!isValidBlock)
+            //{
+            //    joins[joins.Count - 1].EndPosition = joins[joins.Count - 1].EndPosition;
+            //}
 
-            return gaps;
+            return joins;
         }
 
         /// <summary>
@@ -493,15 +520,15 @@ namespace AudioAnalysisTools.Indices
                 // g.DrawLine(Pens.Black, 0, height, width, 0);
 
                 // Write description of the error cause.
-                var font = new Font("Arial", 9.0f, FontStyle.Bold);
+                var font = new Font("Arial", 8.0f, FontStyle.Bold);
                 if (textInVerticalOrientation)
                 {
                     var drawFormat = new StringFormat(StringFormatFlags.DirectionVertical);
-                    g.DrawString("     " + this.GapDescription, font, Brushes.Black, 2, 10, drawFormat);
+                    g.DrawString(" " + this.GapDescription, font, Brushes.Black, 2, 10, drawFormat);
                 }
                 else
                 {
-                    g.DrawString("     " + this.GapDescription, font, Brushes.Black, 2, fontVerticalPosition);
+                    g.DrawString(" " + this.GapDescription, font, Brushes.Black, 2, fontVerticalPosition);
                 }
             }
 
