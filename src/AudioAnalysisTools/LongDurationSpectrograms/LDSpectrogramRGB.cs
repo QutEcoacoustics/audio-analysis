@@ -1187,43 +1187,43 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             {
                 for (int column = 0; column < cols; column++)
                 {
-                    var d1 = redM[row, column];
-                    var d2 = grnM[row, column];
-                    var d3 = bluM[row, column];
+                    var r = redM[row, column];
+                    var g = grnM[row, column];
+                    var b = bluM[row, column];
 
                     // if any of the indices is blank/NaN then render as grey.
-                    if (double.IsNaN(d1) || double.IsNaN(d2) || double.IsNaN(d3))
+                    if (double.IsNaN(r) || double.IsNaN(g) || double.IsNaN(b))
                     {
-                        d1 = 0.5;
-                        d2 = 0.5;
-                        d3 = 0.5;
+                        r = 0.5;
+                        g = 0.5;
+                        b = 0.5;
                     }
 
-                    // enhance blue colour - it is difficult to see on a black background
+                    // enhance blue color - it is difficult to see on a black background
                     // This is a hack - there should be a principled way to do this!
                     // The effect is to create a more visible cyan colour.
-                    if (d1 < 0.1 && d2 < 0.1 && d3 > 0.1)
+                    if (r < 0.1 && g < 0.1 && b > 0.1)
                     {
-                        d2 += 0.7 * d3;
-                        d3 += 0.2;
+                        g += 0.7 * b;
+                        b += 0.2;
 
                         // check for values over 1.0
-                        d2 = Math.Min(1.0, d2);
-                        d3 = Math.Min(1.0, d3);
+                        g = Math.Min(1.0, g);
+                        b = Math.Min(1.0, b);
                     }
 
                     if (doReverseColour)
                     {
-                        d1 = 1 - d1;
-                        d2 = 1 - d2;
-                        d3 = 1 - d3;
+                        r = 1 - r;
+                        g = 1 - g;
+                        b = 1 - b;
                     }
 
-                    var v1 = Convert.ToInt32(Math.Max(0, d1 * maxRgbValue));
-                    var v2 = Convert.ToInt32(Math.Max(0, d2 * maxRgbValue));
-                    var v3 = Convert.ToInt32(Math.Max(0, d3 * maxRgbValue));
-                    var colour = Color.FromArgb(v1, v2, v3);
-                    bmp.SetPixel(column, row, colour);
+                    var v1 = r.ScaleUnitToByte();
+                    var v2 = g.ScaleUnitToByte();
+                    var v3 = b.ScaleUnitToByte();
+                    var color = Color.FromArgb(v1, v2, v3);
+                    bmp.SetPixel(column, row, color);
                 } //end all columns
             }
 
