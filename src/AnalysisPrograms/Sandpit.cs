@@ -58,13 +58,13 @@ namespace AnalysisPrograms
         public class Arguments : SubCommandBase
         {
             public override Task<int> Execute(CommandLineApplication app)
-            {
+            { 
                 var tStart = DateTime.Now;
                 Log.Verbosity = 1;
                 Log.WriteLine("# Start Time = " + tStart.ToString(CultureInfo.InvariantCulture));
 
                 //AnalyseFrogDataSet();
-                Audio2CsvOverOneFile();
+                //Audio2CsvOverOneFile();
                 //Audio2CsvOverMultipleFiles();
 
                 // used to get files from availae for Black rail and Least Bittern papers.
@@ -103,8 +103,8 @@ namespace AnalysisPrograms
                 //TestTernaryPlots();
                 //TestDirectorySearchAndFileSearch();
                 //TestNoiseReduction();
-                //Oscillations2014.TESTMETHOD_DrawOscillationSpectrogram();
-                //Oscillations2014.TESTMETHOD_GetSpectralIndex_Osc();
+                Oscillations2014.TESTMETHOD_DrawOscillationSpectrogram();
+                Oscillations2014.TESTMETHOD_GetSpectralIndex_Osc();
                 //Test_DrawFourSpectrograms();
 
                 Console.WriteLine("# Finished Sandpit Task!    Press any key to exit.");
@@ -356,13 +356,6 @@ namespace AnalysisPrograms
             //            string configPath    = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
             //            string outputPath    = @"C:\SensorNetworks\Output\Test\Test2";
 
-            // One day TEST RECORDING FROM TasmanIsland, 2015, Unit2 at the MEZ site.
-            // There are 24 consecutive one-hour recordings
-            // These recordings are used to test analysis programs over 24 hours of recording.
-            string recordingPath = @"C:\Ecoacoustics\WavFiles\LizZnidersic\TasmanIsland2015_Unit2_Mez\SM304256_0+1_20151114_001652.wav";
-            string outputPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\01";
-            string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Acoustic.yml";
-
             //CHANNEL INTEGRITY
             //string recordingPath = @"Y:\Yvonne\Cooloola\2015Oct04\GympieNP\20151001-064550+1000.wav";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.ChannelIntegrity.yml";
@@ -387,9 +380,9 @@ namespace AnalysisPrograms
 
             // SERF RECORDINGS FROM 19th June 2013
             // these are six hour recordings
-            //string recordingPath = @"G:\Ecoacoustics\WavFiles\SERF\2013June19\SERF_20130619_064615_000.wav";
-            //string outputPath = @"C:\Ecoacoustics\Output\SERF\SERFIndicesNew_2013June19";
-            //string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Acoustic.yml";
+            string recordingPath = @"G:\Ecoacoustics\WavFiles\SERF\2013June19\SERF_20130619_064615_000.wav";
+            string outputPath = @"C:\Ecoacoustics\Output\SERF\SERFIndicesNew_2013June19";
+            string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Acoustic.yml";
 
             // GROUND PARROT
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\groundParrot_Perigian_TEST.wav";
