@@ -1,4 +1,4 @@
-﻿// <copyright file="FrequencyScale.cs" company="QutEcoacoustics">
+// <copyright file="FrequencyScale.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -396,9 +396,16 @@ namespace AudioAnalysisTools.DSP
             for (int b = 0; b < bandCount; b++)
             {
                 int y = height - gridLineLocations[b, 0];
+                int hertzValue = gridLineLocations[b, 1];
+                if (bmp.Width < 120)
+                {
+                    // convert label to kHz so does not hide too much spectrogram
+                    hertzValue = hertzValue / 1000;
+                }
+
                 if (y > 1)
                 {
-                    g.DrawString($"{gridLineLocations[b, 1]}", new Font("Thachoma", 8), txtColour, 1, y);
+                    g.DrawString($"{hertzValue}", new Font("Thachoma", 8), txtColour, 1, y);
                 }
             }
         } //end AddHzGridLines()

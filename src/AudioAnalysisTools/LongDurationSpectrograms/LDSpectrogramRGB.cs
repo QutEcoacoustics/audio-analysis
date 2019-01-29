@@ -36,6 +36,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Drawing;
+    using System.Drawing.Drawing2D;
     using System.Drawing.Imaging;
     using System.Globalization;
     using System.IO;
@@ -476,6 +477,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     {
                         minBound = indexProperties.NormMin;
                     }
+
+                    // Do not want OSC min set too low. Happens because min can = zero
+                    if (key.Equals("OSC") && minBound < indexProperties.NormMin)
+                    {
+                        minBound = indexProperties.NormMin;
+                    }
                 }
 
                 if (indexProperties.CalculateNormMax)
@@ -500,22 +507,20 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
         /// <summary>
-        /// Draws all available spectrograms in grey scale
-        /// </summary>
-        public void DrawGreyScaleSpectrograms(DirectoryInfo opdir, string opFileName)
-        {
-            var keys = SpectralIndexValues.Keys;
-            //string[] keys = this.SpectrogramKeys;
-            this.DrawGreyScaleSpectrograms(opdir, opFileName, keys);
-        }
-
-        /// <summary>
         /// draws only those spectrograms in the passed array of keys
         /// </summary>
         public void DrawGreyScaleSpectrograms(DirectoryInfo opdir, string opFileName, string[] keys)
         {
+            // init List of track images
+            var listOfImages = new List<Image>();
+
             foreach (string key in keys)
             {
+                if (key == "SUM" || key == "DIF")
+                {
+                    continue;
+                }
+
                 if (!this.SpectrogramMatrices.ContainsKey(key))
                 {
                     LoggedConsole.WriteErrorLine("\n\nWARNING: From method LDSpectrogram.DrawGreyScaleSpectrograms()");
@@ -540,10 +545,38 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     continue;
                 }
 
-                // the directory for the following path must exist
-                var path = FilenameHelpers.AnalysisResultPath(opdir, opFileName, key, "png");
                 var bmp = this.DrawGreyscaleSpectrogramOfIndex(key);
-                bmp?.Save(path);
+
+                var header = new Bitmap(bmp.Width, 20);
+                Graphics g = Graphics.FromImage(header);
+                g.Clear(Color.LightGray);
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+                //g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                //g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                g.DrawString(key, new Font("Tahoma", 9), Brushes.Black, 4, 4);
+                var indexImage = ImageTools.CombineImagesVertically(new List<Image>(new Image[] { header, bmp }));
+
+                // save the image - the directory for the path must exist
+                //var path = FilenameHelpers.AnalysisResultPath(opdir, opFileName, key, "png");
+                //indexImage?.Save(path);
+
+                listOfImages.Add(indexImage);
+            }
+
+            // save the combined track image - the directory for the path must exist
+            var path = FilenameHelpers.AnalysisResultPath(opdir, opFileName, "KEYS", "png");
+            int imageCount = listOfImages.Count;
+
+            // check how wide combined image will be. If tracks are wider than 180 = 3 hours, then go vertical
+            if (listOfImages[0].Width * imageCount > 180 * imageCount)
+            {
+                var combinedImage = ImageTools.CombineImagesVertically(listOfImages);
+                combinedImage?.Save(path);
+            }
+            else
+            {
+                var combinedImage = ImageTools.CombineImagesInLine(listOfImages);
+                combinedImage?.Save(path);
             }
         }
 
@@ -1473,10 +1506,18 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             cs1.IndexStats = indexStatistics;
 
             // draw gray scale spectrogram for each index.
-            string[] keys = colorMap1.Split('-');
+            //string[] keys = colorMap1.Split('-');
+            //cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem, keys);
+            //keys = colorMap2.Split('-');
+            // draw all available gray scale index spectrograms.
+            var keys = SpectralIndexValues.Keys;
             cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem, keys);
-            keys = colorMap2.Split('-');
-            cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem, keys);
+
+            //    //string[] keys = this.SpectrogramKeys;
+            //cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem, keys);
+            //}
+            //keys = colorMap2.Split('-');
+            //cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem, keys);
 
             // create and save first false-colour spectrogram image
             var image1NoChrome = cs1.DrawFalseColourSpectrogramChromeless(cs1.ColorMode, colorMap1);
