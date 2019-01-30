@@ -397,11 +397,6 @@ namespace AudioAnalysisTools.DSP
             {
                 int y = height - gridLineLocations[b, 0];
                 int hertzValue = gridLineLocations[b, 1];
-                if (bmp.Width < 120)
-                {
-                    // convert label to kHz so does not hide too much spectrogram
-                    hertzValue = hertzValue / 1000;
-                }
 
                 if (y > 1)
                 {

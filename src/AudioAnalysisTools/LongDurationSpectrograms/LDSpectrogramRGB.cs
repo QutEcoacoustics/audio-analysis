@@ -511,16 +511,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         public void DrawGreyScaleSpectrograms(DirectoryInfo opdir, string opFileName, string[] keys)
         {
-            // init List of track images
-            var listOfImages = new List<Image>();
-
             foreach (string key in keys)
             {
-                if (key == "SUM" || key == "DIF")
-                {
-                    continue;
-                }
-
                 if (!this.SpectrogramMatrices.ContainsKey(key))
                 {
                     LoggedConsole.WriteErrorLine("\n\nWARNING: From method LDSpectrogram.DrawGreyScaleSpectrograms()");
@@ -545,6 +537,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     continue;
                 }
 
+                var ipList = this.GetSpectralIndexProperties();
+                if (!ipList[key].DoDisplay)
+                {
+                    continue;
+                }
+
                 var bmp = this.DrawGreyscaleSpectrogramOfIndex(key);
 
                 var header = new Bitmap(bmp.Width, 20);
@@ -557,32 +555,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 var indexImage = ImageTools.CombineImagesVertically(new List<Image>(new Image[] { header, bmp }));
 
                 // save the image - the directory for the path must exist
-                //var path = FilenameHelpers.AnalysisResultPath(opdir, opFileName, key, "png");
-                //indexImage?.Save(path);
-
-                listOfImages.Add(indexImage);
-            }
-
-            // save the combined track image - the directory for the path must exist
-            var path = FilenameHelpers.AnalysisResultPath(opdir, opFileName, "KEYS", "png");
-            int imageCount = listOfImages.Count;
-
-            // check how wide combined image will be. If tracks are wider than 180 = 3 hours, then go vertical
-            if (listOfImages[0].Width * imageCount > 180 * imageCount)
-            {
-                var combinedImage = ImageTools.CombineImagesVertically(listOfImages);
-                combinedImage?.Save(path);
-            }
-            else
-            {
-                var combinedImage = ImageTools.CombineImagesInLine(listOfImages);
-                combinedImage?.Save(path);
+                var path = FilenameHelpers.AnalysisResultPath(opdir, opFileName, key, "png");
+                indexImage?.Save(path);
             }
         }
 
         /// <summary>
-        /// Assume calling method has done all the reality checks
-        /// </summary>
+        /// Assume calling method has done all the reality checks </summary>
         public Image DrawGreyscaleSpectrogramOfIndex(string key)
         {
             double[,] matrix = this.GetNormalisedSpectrogramMatrix(key);
