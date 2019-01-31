@@ -327,6 +327,7 @@ namespace AudioAnalysisTools.Indices
                     if (errorBmp != null)
                     {
                         g.DrawImage(errorBmp, errorSegment.StartPosition, 1);
+                        //newBmp = DrawFileJoins(newBmp, list);
                     }
                 }
             }

@@ -356,7 +356,8 @@ namespace AnalysisPrograms
                             dictionaryOfSummaryIndices,
                             imageTitle,
                             indexGenerationData.IndexCalculationDuration,
-                            indexGenerationData.RecordingStartDate);
+                            indexGenerationData.RecordingStartDate,
+                            gapsAndJoins);
 
                     var imagePath = FilenameHelpers.AnalysisResultPath(resultsDir, outputFileStem, "SummaryIndices", "png");
                     tracksImage.Save(imagePath);

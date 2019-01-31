@@ -73,7 +73,7 @@ namespace AnalysisPrograms
                 //CodeToPlaceScoreTracksUnderLdfcSpectrograms();
                 //CodeToPlaceScoreTracksUnderSingleImage();
 
-                //ConcatenateIndexFilesAndSpectrograms();
+                ConcatenateIndexFilesAndSpectrograms();
                 //ConcatenateMarineImages();
                 //ConcatenateImages();
                 //ConcatenateTwelveImages();
@@ -103,8 +103,8 @@ namespace AnalysisPrograms
                 //TestTernaryPlots();
                 //TestDirectorySearchAndFileSearch();
                 //TestNoiseReduction();
-                Oscillations2014.TESTMETHOD_DrawOscillationSpectrogram();
-                Oscillations2014.TESTMETHOD_GetSpectralIndex_Osc();
+                //Oscillations2014.TESTMETHOD_DrawOscillationSpectrogram();
+                //Oscillations2014.TESTMETHOD_GetSpectralIndex_Osc();
                 //Test_DrawFourSpectrograms();
 
                 Console.WriteLine("# Finished Sandpit Task!    Press any key to exit.");
@@ -632,7 +632,7 @@ namespace AnalysisPrograms
         }
 
         /// <summary>
-        /// This action item = "concatenateIndexFiles"
+        /// This action item = "concatenateIndexFiles".
         /// </summary>
         public static void ConcatenateIndexFilesAndSpectrograms()
         {
@@ -708,6 +708,7 @@ namespace AnalysisPrograms
 
             // ########################## CONCATENATION of MARINA SCARPELLI recordings from Brazil
             // The drive: work = G; home = E
+            /*
             drive = "C";
 
             // top level directory AVAILAE JOB #
@@ -728,9 +729,33 @@ namespace AnalysisPrograms
             dtoEnd = new DateTimeOffset(2016, 12, 31, 0, 0, 0, TimeSpan.Zero);
 
             // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and EchoGaps.
+            gapRendering = "TimedGaps";  */
+
+            // ######################### END OF CONCATENATION of MARINA SCARPELLI recordings from Brazil
+
+            // ######################### START OF FIX ISSUE #170 concat crashes
+            // ######################### use data from availae 
+
+            // top level directory AVAILAE JOB #
+            string[] dataDirs =
+            {
+                @"Y:\Results\20180608-103353 - Tshering, Towsey.Indices, #216\Tshering\WBH_Walaytar\WBH_2018\Bermo",
+            };
+
+            string directoryFilter = "WAKLAYTAR_20180321_*.wav"; // this is a directory filter to locate only the required files
+            string opFileStem = "WAKLAYTAR_20180321";
+            string opPath = @"C:\Ecoacoustics\Output\Test\DebugIssue170";
+            var falseColourSpgConfig = $"C:\\Work\\GitHub\\audio-analysis\\src\\AnalysisConfigFiles\\SpectrogramFalseColourConfig.yml";
+            concatenateEverythingYouCanLayYourHandsOn = true;
+
+            // start and end dates INCLUSIVE
+            //dtoStart = new DateTimeOffset(2016, 12, 31, 0, 0, 0, TimeSpan.Zero);
+            //dtoEnd = new DateTimeOffset(2016, 12, 31, 0, 0, 0, TimeSpan.Zero);
+
+            // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and EchoGaps.
             gapRendering = "TimedGaps";
 
-            // ########################## END of Pillaga Forest recordings
+            // ########################## END of FIX ISSUE #170 concat crashes
 
             /*
                         // ########################## CONCATENATION of Pillaga Forest recordings from Brad Law

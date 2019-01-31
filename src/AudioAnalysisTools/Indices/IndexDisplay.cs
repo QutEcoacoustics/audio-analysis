@@ -73,8 +73,7 @@ namespace AudioAnalysisTools.Indices
                 dictionary,
                 titleText,
                 indexCalculationDuration,
-                recordingStartDate,
-                sunriseDataFile = null);
+                recordingStartDate);
         }
 
         /// <summary>
@@ -86,7 +85,6 @@ namespace AudioAnalysisTools.Indices
             string titleText,
             TimeSpan indexCalculationDuration,
             DateTimeOffset? recordingStartDate,
-            FileInfo sunriseDataFile = null,
             List<GapsAndJoins> errors = null,
             bool verbose = false)
         {
@@ -162,7 +160,7 @@ namespace AudioAnalysisTools.Indices
             {
                 // draw extra time scale with absolute start time. AND THEN Do SOMETHING WITH IT.
                 timeBmp2 = ImageTrack.DrawTimeTrack(fullDuration, dateTimeOffset, graphWidth, trackHeight);
-                suntrack = SunAndMoon.AddSunTrackToImage(scaleLength, dateTimeOffset, sunriseDataFile);
+                //suntrack = SunAndMoon.AddSunTrackToImage(scaleLength, dateTimeOffset, sunriseDataFile);
             }
 
             //draw the composite bitmap

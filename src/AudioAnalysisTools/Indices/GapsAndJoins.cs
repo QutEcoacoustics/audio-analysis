@@ -1,4 +1,4 @@
-﻿// <copyright file="GapsAndJoins.cs" company="QutEcoacoustics">
+// <copyright file="GapsAndJoins.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -8,6 +8,7 @@ namespace AudioAnalysisTools.Indices
     using System.Collections.Generic;
     using System.Drawing;
     using System.IO;
+    using System.Linq;
     using Acoustics.Shared;
     using TowseyLibrary;
 
@@ -180,49 +181,50 @@ namespace AudioAnalysisTools.Indices
            // init list of gaps and joins
             var gaps = new List<GapsAndJoins>();
 
-            bool isValidBlock = true;
-            string previousFileName = null;
-            GapsAndJoins gap = null;
+            //bool isValidBlock = true;
+            var firstRow = summaryIndices.First();
+            string previousFileName = firstRow.FileName;
+            //GapsAndJoins gap = null;
 
             // now loop through the rows/vectors of indices
             int index = 0;
             foreach (var row in summaryIndices)
             {
-                if (previousFileName == null)
-                {
-                    previousFileName = row.FileName;
-                }
+                //if (previousFileName == null)
+                //{
+                //    previousFileName = row.FileName;
+                //}
 
                 if (row.FileName != previousFileName)
                 {
-                    if (isValidBlock)
-                    {
-                        isValidBlock = false;
-                        gap = new GapsAndJoins
+                    //if (isValidBlock)
+                    //{
+                    //    isValidBlock = false;
+                    var gap = new GapsAndJoins
                             {
                                 StartPosition = index,
                                 GapDescription = gapDescriptionFileJoin,
                                 GapRendering = gapRendering,
+                                EndPosition = index + 1,
                             };
-                    }
-                    else
-                    {
-                        // come to end of a bad patch
-                        isValidBlock = true;
-                        gap.EndPosition = index - 1;
-                        gaps.Add(gap);
-                    }
+                    //}
+                    //else
+                    //{
+                    //    // come to end of a bad patch
+                    //    isValidBlock = true;
+                    //}
+                    gaps.Add(gap);
+                    previousFileName = row.FileName;
                 }
 
-                previousFileName = row.FileName;
                 index++;
             }
 
-            // if not OK at end of the array, need to terminate the gap.
-            if (!isValidBlock)
-            {
-                gaps[gaps.Count - 1].EndPosition = gaps[gaps.Count - 1].EndPosition;
-            }
+            //// if not OK at end of the array, need to terminate the gap.
+            //if (!isValidBlock)
+            //{
+            //    gaps[gaps.Count - 1].EndPosition = gaps[gaps.Count - 1].EndPosition;
+            //}
 
             return gaps;
         }
@@ -430,6 +432,7 @@ namespace AudioAnalysisTools.Indices
         {
             var newBmp = DrawGapPatches(bmp, list, gapDescriptionInvalidValue, bmp.Height, true);
             newBmp = DrawGapPatches(newBmp, list, gapDescriptionZeroSignal, bmp.Height, true);
+            newBmp = DrawFileJoins(newBmp, list);
 
             // This one must be done last, in case user requests no gap rendering.
             // In this case, we have to cut out parts of image, starting at the end and working forward.
@@ -456,6 +459,10 @@ namespace AudioAnalysisTools.Indices
                     {
                         bmp = DrawEchoPatch(bmp, error);
                     }
+                    else if (error.GapRendering.Equals(ConcatMode.EchoGaps))
+                    {
+                        bmp = DrawEchoPatch(bmp, error);
+                    }
                     else
                     {
                         var patch = error.DrawErrorPatch(height, textInVerticalOrientation);
@@ -464,6 +471,24 @@ namespace AudioAnalysisTools.Indices
                             g.DrawImage(patch, error.StartPosition, 1);
                         }
                     }
+                }
+            }
+
+            return bmp;
+        }
+
+        public static Image DrawFileJoins(Image bmp, List<GapsAndJoins> errorList)
+        {
+            var g = Graphics.FromImage(bmp);
+            var pen = new Pen(Color.HotPink);
+
+            // assume errors are in temporal order and pull out in reverse order
+            for (int i = errorList.Count - 1; i >= 0; i--)
+            {
+                var error = errorList[i];
+                if (error.GapDescription.Equals(gapDescriptionFileJoin))
+                {
+                    g.DrawLine(pen, error.StartPosition, 0, error.StartPosition, bmp.Height);
                 }
             }
 
