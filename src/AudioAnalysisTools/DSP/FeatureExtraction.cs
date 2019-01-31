@@ -33,7 +33,6 @@ namespace AudioAnalysisTools.DSP
             var simVecDir = Directory.CreateDirectory(Path.Combine(outputPath, "SimilarityVectors"));
             int frameSize = config.FrameSize;
             int finalBinCount = config.FinalBinCount;
-            //int hertzInterval = 1000;
             FreqScaleType scaleType = config.FrequencyScaleType;
             var settings = new SpectrogramSettings()
             {
@@ -45,19 +44,19 @@ namespace AudioAnalysisTools.DSP
                 // each 24 single-frames duration is equal to 1 second
                 // note that the "WindowOverlap" value should be recalculated if frame size is changed
                 // this has not yet been considered in the Config file!
-                WindowOverlap = 0.10725204, //0.10351562, //0.10292676, //0.1027832, //0.1028,
+                WindowOverlap = 0.10725204,
                 DoMelScale = (scaleType == FreqScaleType.Mel) ? true : false,
                 MelBinCount = (scaleType == FreqScaleType.Mel) ? finalBinCount : frameSize / 2,
                 NoiseReductionType = NoiseReductionType.None,
                 NoiseReductionParameter = 0.0,
             };
-            double frameStep = frameSize * (1 - settings.WindowOverlap); //frameSize - (settings.WindowOverlap * frameSize);
-            int minFreqBin = config.MinFreqBin; // 24; //1; //35; //40; //
-            int maxFreqBin = config.MaxFreqBin; // 95; //103; //109; //finalBinCount; //85; //80; //76;
-            int numFreqBand = config.NumFreqBand; // 1;
+            double frameStep = frameSize * (1 - settings.WindowOverlap);
+            int minFreqBin = config.MinFreqBin;
+            int maxFreqBin = config.MaxFreqBin;
+            int numFreqBand = config.NumFreqBand;
             int patchWidth =
-                (maxFreqBin - minFreqBin + 1) / numFreqBand; //configuration.PatchWidth; // finalBinCount / numFreqBand;
-            int patchHeight = config.PatchHeight; // 1; // 2; //  4; // 16; // 6; // Frame size
+                (maxFreqBin - minFreqBin + 1) / numFreqBand;
+            int patchHeight = config.PatchHeight;
 
             // the number of frames that their feature vectors will be concatenated in order to preserve temporal information.
             int frameWindowLength = config.FrameWindowLength;
@@ -108,17 +107,13 @@ namespace AudioAnalysisTools.DSP
                     for (int s = 0; s < recordings.Count; s++)
                     {
                         string pathToSimilarityVectorsFile = Path.Combine(simVecDir.FullName, fileInfo.Name + "-" + s.ToString() + ".csv");
-                        //var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
                         var amplitudeSpectrogram = new AmplitudeSpectrogram(settings, recordings[s].WavReader);
-                        //var logSonogramData = MatrixTools.Matrix2LogValues(sonogram.Data);
                         var decibelSpectrogram = new DecibelSpectrogram(amplitudeSpectrogram);
 
                         // DO RMS NORMALIZATION
                         //sonogram.Data = SNR.RmsNormalization(sonogram.Data);
 
                         // DO NOISE REDUCTION
-                        // sonogram.Data = SNR.NoiseReduce_Median(sonogram.Data, nhBackgroundThreshold: 2.0);
-                        //sonogram.Data = PcaWhitening.NoiseReduction(sonogram.Data);
                         if (config.DoNoiseReduction)
                         {
                             decibelSpectrogram.Data = PcaWhitening.NoiseReduction(decibelSpectrogram.Data);
@@ -143,10 +138,9 @@ namespace AudioAnalysisTools.DSP
                             // downsampling the input matrix by a factor of n (MaxPoolingFactor) using max pooling
                             double[,] downsampledMatrix = FeatureLearning.MaxPooling(matrices2[i], config.MaxPoolingFactor);
 
-                            int rows = downsampledMatrix.GetLength(0); // matrices2[i].GetLength(0); //
-                            int columns = downsampledMatrix.GetLength(1); // matrices2[i].GetLength(1); //
+                            int rows = downsampledMatrix.GetLength(0);
+                            int columns = downsampledMatrix.GetLength(1);
                             var sequentialPatches = PatchSampling.GetPatches(downsampledMatrix, patchWidth, patchHeight, (rows / patchHeight) * (columns / patchWidth), PatchSampling.SamplingMethod.Sequential);
-                            //var sequentialPatches = PatchSampling.GetPatches(matrices2[i], patchWidth, patchHeight, (rows / patchHeight) * (columns / patchWidth), PatchSampling.SamplingMethod.Sequential);
                             allSequentialPatchMatrix.Add(sequentialPatches.ToMatrix());
                         }
 
@@ -182,26 +176,11 @@ namespace AudioAnalysisTools.DSP
                                 var inputVector = allSequentialPatchMatrix.ToArray()[i].ToJagged()[j];
                                 var normVector = inputVector;
 
-                                /*
-                                if (inputVector.Euclidean() == 0)
-                                {
-                                    LoggedConsole.WriteLine(j.ToString());
-                                }
-                                */
-
                                 // to avoid vectors with NaN values, only normalize those that their norm is not equal to zero.
                                 if (inputVector.Euclidean() != 0)
                                 {
                                     normVector = ART_2A.NormaliseVector(inputVector);
                                 }
-
-                                /*
-                                if (normVector.HasNaN())
-                                {
-                                    var vec = allSequentialPatchMatrix.ToArray()[i].ToJagged()[j];
-                                    LoggedConsole.WriteLine(j.ToString());
-                                }
-                                */
 
                                 similarityVectors[j] = allNormCentroids.ToArray()[i].ToMatrix().Dot(normVector);
                             }
@@ -214,10 +193,6 @@ namespace AudioAnalysisTools.DSP
                             // patchId refers to the patch id that has been processed so far according to the step size.
                             // if we want no overlap between different frame windows, then stepSize = frameWindowLength
                             int patchId = 0;
-
-                            // patchCounter refers to the number of patches that has been processed so far according to FrameWindowLength.
-                            //int patchCounter = 0;
-
                             while (patchId + frameWindowLength - 1 < similarityVectors.GetLength(0))
                             {
                                 List<double[]> patchGroup = new List<double[]>();
@@ -226,7 +201,6 @@ namespace AudioAnalysisTools.DSP
                                     patchGroup.Add(similarityVectors[k + patchId]);
                                 }
 
-                                //patchCounter = patchCounter + patchGroup.Count;
                                 featureTransVectors.Add(DataTools.ConcatenateVectors(patchGroup));
                                 patchId = patchId + stepSize;
                             }
@@ -249,13 +223,8 @@ namespace AudioAnalysisTools.DSP
                         List<double[,]> allStdFeatureVectors = new List<double[,]>();
                         List<double[,]> allSkewnessFeatureVectors = new List<double[,]>();
 
-                        // number of frames needs to be concatenated to form 1 minute in the case of Black Rail.
-                        // Each 24 frames form 1 second.
+                        // Each 24 frames form 1 second using WindowOverlap
                         // factors such as stepSize, and maxPoolingFactor should be considered in temporal summarization.
-                        //int numFrames = (24 / patchHeight) * 60; //24 // patchHeight;
-                        //int numFrames = (24 * 60) / (patchHeight * stepSize * maxPoolingFactor);
-
-                        // For Least Bittern, feature vector is generated for each second that contains 24 frames.
                         int numFrames = 24 / (patchHeight * stepSize * maxPoolingFactor);
 
                         foreach (var freqBandFeature in allFeatureTransVectors)
@@ -283,7 +252,6 @@ namespace AudioAnalysisTools.DSP
                                 List<double> skewness = new List<double>();
 
                                 double[,] sequencesOfFrames = sequencesOfFramesList.ToArray().ToMatrix();
-                                // int len = sequencesOfFrames.GetLength(1);
 
                                 // Second, calculate mean, max, and standard deviation (plus skewness) of vectors element-wise
                                 for (int j = 0; j < sequencesOfFrames.GetLength(1); j++)
@@ -376,92 +344,10 @@ namespace AudioAnalysisTools.DSP
                         allFilesSkewnessFeatureVectors.Add(fileInfo.Name + "-" + s.ToString(), allSkewnessFeatureVectors);
 
                         // +++++++++++++++++++++++++++++++++++Temporal Summarization
-
-                        /*
-                        // ++++++++++++++++++++++++++++++++++Writing features to file
-                        // First, concatenate mean, max, std for each second.
-                        // Then write to CSV file.
-
-                        for (int j = 0; j < allMeanFeatureVectors.Count; j++)
-                        {
-                            // write the features of each pre-defined frequency band into a separate CSV file
-                            var outputFeatureFile = Path.Combine(resultDir, "FeatureVectors-" + j.ToString() + fileInfo.Name + ".csv");
-
-                            // creating the header for CSV file
-                            List<string> header = new List<string>();
-                            for (int i = 0; i < allMeanFeatureVectors.ToArray()[j].GetLength(1); i++)
-                            {
-                                header.Add("mean" + i.ToString());
-                            }
-
-                            for (int i = 0; i < allStdFeatureVectors.ToArray()[j].GetLength(1); i++)
-                            {
-                                header.Add("std" + i.ToString());
-                            }
-
-                            for (int i = 0; i < allMaxFeatureVectors.ToArray()[j].GetLength(1); i++)
-                            {
-                                header.Add("max" + i.ToString());
-                            }
-
-                            // concatenating mean, std, and max vector together for each 1 second
-                            List<double[]> featureVectors = new List<double[]>();
-                            for (int i = 0; i < allMeanFeatureVectors.ToArray()[j].ToJagged().GetLength(0); i++)
-                            {
-                                List<double[]> featureList = new List<double[]>
-                                {
-                                    allMeanFeatureVectors.ToArray()[j].ToJagged()[i],
-                                    allMaxFeatureVectors.ToArray()[j].ToJagged()[i],
-                                    allStdFeatureVectors.ToArray()[j].ToJagged()[i],
-                                };
-                                double[] featureVector = DataTools.ConcatenateVectors(featureList);
-                                featureVectors.Add(featureVector);
-                            }
-
-                            // writing feature vectors to CSV file
-                            using (StreamWriter file = new StreamWriter(outputFeatureFile))
-                            {
-                                // writing the header to CSV file
-                                foreach (var entry in header.ToArray())
-                                {
-                                    file.Write(entry + ",");
-                                }
-
-                                file.Write(Environment.NewLine);
-
-                                foreach (var entry in featureVectors.ToArray())
-                                {
-                                    foreach (var value in entry)
-                                    {
-                                        file.Write(value + ",");
-                                    }
-
-                                    file.Write(Environment.NewLine);
-                                }
-                            }
-                        }
-                        */
-                        /*
-                        // Reconstructing the target spectrogram based on clusters' centroids
-                        List<double[,]> convertedSpec = new List<double[,]>();
-                        int columnPerFreqBand = sonogram2.Data.GetLength(1) / numFreqBand;
-                        for (int i = 0; i < allSequentialPatchMatrix.Count; i++)
-                        {
-                            double[,] reconstructedSpec2 = KmeansClustering.ReconstructSpectrogram(allSequentialPatchMatrix.ToArray()[i], allClusteringOutput.ToArray()[i]);
-                            convertedSpec.Add(PatchSampling.ConvertPatches(reconstructedSpec2, patchWidth, patchHeight, columnPerFreqBand));
-                        }
-
-                        sonogram2.Data = PatchSampling.ConcatFreqBandMatrices(convertedSpec);
-
-                        // DO DRAW SPECTROGRAM
-                        var reconstructedSpecImage = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "RECONSTRUCTEDSPECTROGRAM: " + freqScale.ScaleType.ToString(), freqScale.GridLineLocations);
-                        reconstructedSpecImage.Save(outputReSpecImagePath, ImageFormat.Png);
-                        */
                     }
                 }
             }
 
-            //*****
             // ++++++++++++++++++++++++++++++++++Writing features to one file
             // First, concatenate mean, max, std for each second.
             // Then, write the features of each pre-defined frequency band into a separate CSV file.
@@ -591,8 +477,6 @@ namespace AudioAnalysisTools.DSP
 
                 File.WriteAllText(outputFeatureFile, csv.ToString());
             }
-
-            //*****
         }
     }
 }

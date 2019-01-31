@@ -8,10 +8,8 @@ namespace AudioAnalysisTools.DSP
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using Accord.MachineLearning;
     using Accord.Math;
     using StandardSpectrograms;
-    using TowseyLibrary;
     using WavTools;
 
     /// <summary>
@@ -20,7 +18,7 @@ namespace AudioAnalysisTools.DSP
     public static class FeatureLearning
     {
         /// <summary>
-        /// Apply feature learning process on a set of patch sampling set (1-minute recordings) in an unsupervised manner
+        /// Apply feature learning process on a set of patch sampling set in an unsupervised manner
         /// Output clusters
         /// </summary>
         public static List<KmeansClustering.Output> UnsupervisedFeatureLearning(FeatureLearningSettings config, string inputPath)
@@ -33,7 +31,6 @@ namespace AudioAnalysisTools.DSP
 
             int frameSize = config.FrameSize;
             int finalBinCount = config.FinalBinCount;
-            //int hertzInterval = 1000;
             FreqScaleType scaleType = config.FrequencyScaleType;
             var settings = new SpectrogramSettings()
             {
@@ -45,19 +42,19 @@ namespace AudioAnalysisTools.DSP
                 // each 24 single-frames duration is equal to 1 second
                 // note that the "WindowOverlap" value should be recalculated if frame size is changed
                 // this has not yet been considered in the Config file!
-                WindowOverlap = 0.10725204, //0.10351562, //0.10292676, // 0.1027832, //0.1028,
+                WindowOverlap = 0.10725204,
                 DoMelScale = (scaleType == FreqScaleType.Mel) ? true : false,
                 MelBinCount = (scaleType == FreqScaleType.Mel) ? finalBinCount : frameSize / 2,
                 NoiseReductionType = NoiseReductionType.None,
                 NoiseReductionParameter = 0.0,
             };
-            double frameStep = frameSize * (1 - settings.WindowOverlap); //frameSize - (settings.WindowOverlap * frameSize);
-            int minFreqBin = config.MinFreqBin; // 24; //1; //35; //40; //
-            int maxFreqBin = config.MaxFreqBin; // 95; //103; //109; //finalBinCount; //85; //80; //76;
-            int numFreqBand = config.NumFreqBand; // 1;
+            double frameStep = frameSize * (1 - settings.WindowOverlap);
+            int minFreqBin = config.MinFreqBin;
+            int maxFreqBin = config.MaxFreqBin;
+            int numFreqBand = config.NumFreqBand;
             int patchWidth =
-                (maxFreqBin - minFreqBin + 1) / numFreqBand; //configuration.PatchWidth; // finalBinCount / numFreqBand;
-            int patchHeight = config.PatchHeight; // 1; // 2; //  4; // 16; // 6; // Frame size
+                (maxFreqBin - minFreqBin + 1) / numFreqBand;
+            int patchHeight = config.PatchHeight;
             int numRandomPatches = config.NumRandomPatches;
 
             // Define variable number of "randomPatch" lists based on "numFreqBand"
@@ -93,18 +90,10 @@ namespace AudioAnalysisTools.DSP
                     for (int i = 0; i < recordings.Count; i++)
                     {
                         var amplitudeSpectrogram = new AmplitudeSpectrogram(settings, recordings[i].WavReader);
-
-                        //var logScaleSpectrogram = MatrixTools.Matrix2LogValues(amplitudeSpectrogram.Data);
                         var decibelSpectrogram = new DecibelSpectrogram(amplitudeSpectrogram);
-
-                        //var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
 
                         // DO RMS NORMALIZATION
                         //sonogram.Data = SNR.RmsNormalization(sonogram.Data);
-
-                        // DO NOISE REDUCTION
-                        // sonogram.Data = SNR.NoiseReduce_Median(sonogram.Data, nhBackgroundThreshold: 2.0);
-                        //sonogram.Data = PcaWhitening.NoiseReduction(sonogram.Data);
 
                         if (config.DoNoiseReduction)
                         {
@@ -125,11 +114,8 @@ namespace AudioAnalysisTools.DSP
                         // creating matrices from different freq bands of the source spectrogram
                         List<double[,]> allSubmatrices = PatchSampling.GetFreqBandMatrices(inputMatrix, numFreqBand);
 
-                        // Second: selecting random patches from each freq band matrix and add them to the corresponding patch list
+                        // selecting random patches from each freq band matrix and add them to the corresponding patch list
                         int count = 0;
-
-                        // file counter
-                        //int no = 0;
 
                         while (count < allSubmatrices.Count)
                         {
@@ -139,22 +125,6 @@ namespace AudioAnalysisTools.DSP
                             randomPatchLists[$"randomPatch{count.ToString()}"].Add(PatchSampling
                                 .GetPatches(downsampledMatrix, patchWidth, patchHeight, numRandomPatches,
                                     PatchSampling.SamplingMethod.Random).ToMatrix());
-
-                            /*
-                            randomPatchLists[$"randomPatch{count.ToString()}"].Add(PatchSampling.
-                                GetPatches(allSubmatrices.ToArray()[count], patchWidth, patchHeight, numRandomPatches, 
-                                    PatchSampling.SamplingMethod.Random).ToMatrix());
-                           //  take the total number of frames out of each second minute paper
-                           if (no / 2 == 0)
-                           {
-                               int rows = allSubmatrices.ToArray()[count].GetLength(0);
-                               int columns = allSubmatrices.ToArray()[count].GetLength(1);
-                               randomPatchLists[$"randomPatch{count.ToString()}"].Add(PatchSampling
-                                   .GetPatches(allSubmatrices.ToArray()[count], patchWidth, patchHeight, (rows / patchHeight) * (columns / patchWidth),
-                                       PatchSampling.SamplingMethod.Sequential).ToMatrix());
-                               no++;
-                           }
-                           */
                             count++;
                         }
                     }
@@ -168,7 +138,7 @@ namespace AudioAnalysisTools.DSP
 
             // convert list of random patches matrices to one matrix
             int numClusters =
-                config.NumClusters; // 256; //8; //128; //500; //10; //16; //20; // 500; // 128; // 64; // 32; //  50;
+                config.NumClusters;
 
             List<KmeansClustering.Output> allClusteringOutput = new List<KmeansClustering.Output>();
             for (int i = 0; i < randomPatches.Count; i++)
@@ -176,7 +146,7 @@ namespace AudioAnalysisTools.DSP
                 double[,] patchMatrix = randomPatches[i];
 
                 // Apply PCA Whitening
-                var whitenedSpectrogram = PcaWhitening.Whitening(patchMatrix, config.DoWhitening);
+                var whitenedSpectrogram = PcaWhitening.Whitening(config.DoWhitening, patchMatrix);
 
                 // Do k-means clustering
                 var clusteringOutput = KmeansClustering.Clustering(whitenedSpectrogram.Reversion, numClusters);
@@ -215,8 +185,8 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// This method is called semi-supervised feature learning because the frames to form one of the clusters
-        /// have been manually selected from 1-min recordings.
+        /// This method is called semi-supervised feature learning because one of the clusters is formed using
+        /// the positive frames manually selected from 1-min recordings.
         /// The input to this methods is a group of files that contains the call of interest,
         /// a 2D-array that contains file name, the second number and the corresponding frame numbers in each file.
         /// At the moment, this method only handles single-frames as patches (PatchHeight = 1).
@@ -233,6 +203,7 @@ namespace AudioAnalysisTools.DSP
                 info.Add(keys, values);
             }
 
+            // processing the recordings within the input path
             // check whether there is any file in the folder/subfolders
             if (Directory.GetFiles(inputPath, "*", SearchOption.AllDirectories).Length == 0)
             {
@@ -252,18 +223,18 @@ namespace AudioAnalysisTools.DSP
                 // each 24 single-frames duration is equal to 1 second
                 // note that the "WindowOverlap" value should be recalculated if frame size is changed
                 // this has not yet been considered in the Config file!
-                WindowOverlap = 0.10725204, //0.10351562, //0.10292676, // 0.1027832, //0.1028,
+                WindowOverlap = 0.10725204,
                 DoMelScale = (scaleType == FreqScaleType.Mel) ? true : false,
                 MelBinCount = (scaleType == FreqScaleType.Mel) ? finalBinCount : frameSize / 2,
                 NoiseReductionType = NoiseReductionType.None,
                 NoiseReductionParameter = 0.0,
             };
-            double frameStep = frameSize * (1 - settings.WindowOverlap); //frameSize - (settings.WindowOverlap * frameSize);
+            double frameStep = frameSize * (1 - settings.WindowOverlap);
             int minFreqBin = config.MinFreqBin;
             int maxFreqBin = config.MaxFreqBin;
             int numFreqBand = config.NumFreqBand;
             int patchWidth =
-                (maxFreqBin - minFreqBin + 1) / numFreqBand; //configuration.PatchWidth; // finalBinCount / numFreqBand;
+                (maxFreqBin - minFreqBin + 1) / numFreqBand;
             int patchHeight = config.PatchHeight;
             int numRandomPatches = config.NumRandomPatches;
 
@@ -275,15 +246,6 @@ namespace AudioAnalysisTools.DSP
                 randomPatchLists.Add(string.Format("randomPatch{0}", i.ToString()), new List<double[,]>());
                 sequentialPatchLists.Add(string.Format("sequentialPatch{0}", i.ToString()), new List<double[,]>());
             }
-
-            // Define variable number of "manuallySelectedPatch" lists based on "numFreqBand"
-            /*
-            Dictionary<string, List<double[,]>> manuallySelectedPatchLists = new Dictionary<string, List<double[,]>>();
-            for (int i = 0; i < numFreqBand; i++)
-            {
-                manuallySelectedPatchLists.Add(string.Format("manuallySelectedPatch{0}", i.ToString()), new List<double[,]>());
-            }
-            */
 
             List<double[,]> randomPatches = new List<double[,]>();
             List<double[,]> positivePatches = new List<double[,]>();
@@ -334,7 +296,7 @@ namespace AudioAnalysisTools.DSP
                         // creating matrices from different freq bands of the source spectrogram
                         List<double[,]> allSubmatrices = PatchSampling.GetFreqBandMatrices(inputMatrix, numFreqBand);
 
-                        // check whether the file has positive frame
+                        // check whether the file has any positive frame
                         List<int> positiveFrameNumbers = new List<int>();
                         foreach (var entry in info)
                         {
@@ -400,12 +362,12 @@ namespace AudioAnalysisTools.DSP
                             allNegativeFramesSubmatrices = allSubmatrices;
                         }
 
-                        // Second: selecting random patches from each freq band matrix and add them to the corresponding patch list
+                        // selecting random patches from each freq band matrix and add them to the corresponding patch list
                         int count = 0;
 
                         while (count < allNegativeFramesSubmatrices.Count)
                         {
-                            // select random patches from those semgments that do not contain the call of interest
+                            // select random patches from those segments that do not contain the call of interest
                             if (allPositiveFramesSubmatrices.Count != 0)
                             {
                                 // downsampling the input matrix by a factor of n (MaxPoolingFactor) using max pooling
@@ -427,7 +389,7 @@ namespace AudioAnalysisTools.DSP
                             }
 
                             /*
-                             We can use this block of code instead of line 422 to 426, of we want to select random patches from negative grames of the segments with call of interest
+                             We can use this block of code instead of line 384 to 389, if we want to select random patches from negative frames of the segments with call of interest
                             // downsampling the input matrix by a factor of n (MaxPoolingFactor) using max pooling
                             double[,] downsampledNegativeMatrix = MaxPooling(allNegativeFramesSubmatrices.ToArray()[count], config.MaxPoolingFactor);
                             if (downsampledNegativeMatrix.GetLength(0) < numRandomPatches)
@@ -477,7 +439,7 @@ namespace AudioAnalysisTools.DSP
                 double[,] patchMatrix = randomPatches[i];
 
                 // Apply PCA Whitening
-                var whitenedSpectrogram = PcaWhitening.Whitening(patchMatrix, config.DoWhitening);
+                var whitenedSpectrogram = PcaWhitening.Whitening(config.DoWhitening, patchMatrix);
 
                 // Do k-means clustering
                 var clusteringOutput = KmeansClustering.Clustering(whitenedSpectrogram.Reversion, numClusters);
@@ -490,7 +452,7 @@ namespace AudioAnalysisTools.DSP
                 double[,] patchMatrix = positivePatches[i];
 
                 // Apply PCA Whitening
-                var whitenedSpectrogram = PcaWhitening.Whitening(patchMatrix, config.DoWhitening);
+                var whitenedSpectrogram = PcaWhitening.Whitening(config.DoWhitening, patchMatrix);
 
                 // Do k-means clustering
                 // build one cluster from positive patches

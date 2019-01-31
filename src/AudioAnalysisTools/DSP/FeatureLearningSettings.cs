@@ -44,29 +44,6 @@ namespace AudioAnalysisTools.DSP
 
         public const double DefaultSubsegmentDurationInSeconds = 1.0;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FeatureLearningSettings"/> class.
-        /// CONSTRUCTOR
-        /// </summary>
-
-        /*
-        public FeatureLearningSettings()
-        {
-            this.FrequencyScaleType = DefaultFrequencyScaleType;
-            this.FrameSize = DefaultFrameSize;
-            this.FinalBinCount = DefaultFinalBinCount;
-            this.MinFreqBin = DefaultMinFreqBin;
-            this.MaxFreqBin = DefaultMaxFreqBin;
-            this.NumFreqBand = DefaultNumFreqBand;
-            this.PatchHeight = DefaultPatchHeight;
-            this.NumRandomPatches = DefaultNumRandomPatches;
-            this.NumClusters = DefaultNumClusters;
-            this.DoNoiseReduction = DefaultDoNoiseReduction;
-            this.DoWhitening = DefaultDoWhitening;
-            this.MaxPoolingFactor = DefaultMaxPoolingFactor;
-        }
-        */
-
         public FreqScaleType FrequencyScaleType { get; set; } = DefaultFrequencyScaleType;
 
         //public int HertzInterval { get; set; } = DefaultHertzInterval;

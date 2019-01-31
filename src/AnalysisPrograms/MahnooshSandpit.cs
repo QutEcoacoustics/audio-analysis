@@ -30,12 +30,14 @@ namespace AnalysisPrograms
         {
             LoggedConsole.WriteLine("feature learning process...");
 
-            var inputDir = @"D:\Mahnoosh\Liz\Least_Bittern\"; // @"M:\Postdoc\Liz\Least Bittern\"; //@"D:\Mahnoosh\Liz\"; //@"C:\Users\kholghim\Mahnoosh\Liz\"; // @"C:\Users\kholghim\Mahnoosh\UnsupervisedFeatureLearning\"; // 
-            var resultDir = Path.Combine(inputDir, "FeatureLearning");
-            var inputPath = Path.Combine(inputDir, "TrainSet\\one_min_recordings"); //TrainSet //PatchSamplingSegments //PatchSampling
-            var trainSetPath = Path.Combine(inputDir, "TrainSet\\train_data"); //TrainSet
+            var inputDir = @"D:\Mahnoosh\Liz\Least_Bittern\";
+            var inputPath = Path.Combine(inputDir, "TrainSet\\one_min_recordings");
+            var trainSetPath = Path.Combine(inputDir, "TrainSet\\train_data");
             // var testSetPath = Path.Combine(inputDir, "TestSet");
-            var configPath = @"D:\Mahnoosh\Liz\Least_Bittern\FeatureLearningConfig.yml"; //@"M:\Postdoc\Liz\Least Bittern\FeatureLearningConfig.yml"; //@"D:\Mahnoosh\Liz\AnalysisConfigFiles\FeatureLearningConfig.yml"; //@"C:\Users\kholghim\Mahnoosh\Liz\FeatureLearningConfig.yml"; //@"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\FeatureLearningConfig.yml"; //
+            var configPath = @"D:\Mahnoosh\Liz\Least_Bittern\FeatureLearningConfig.yml";
+            var resultDir = Path.Combine(inputDir, "FeatureLearning");
+            Directory.CreateDirectory(resultDir);
+
             // var outputMelImagePath = Path.Combine(resultDir, "MelScaleSpectrogram.png");
             // var outputNormMelImagePath = Path.Combine(resultDir, "NormalizedMelScaleSpectrogram.png");
             // var outputNoiseReducedMelImagePath = Path.Combine(resultDir, "NoiseReducedMelSpectrogram.png");
@@ -55,8 +57,6 @@ namespace AnalysisPrograms
                 throw new ArgumentException($"Config file {configFile.FullName} not found");
             }
 
-            //var configuration = ConfigFile.Deserialize<AcousticIndices.AcousticIndicesConfig>(configFile);
-            //var configuration = ConfigFile.Deserialize<FeatureLearningConfig>(configFile);
             var configuration = ConfigFile.Deserialize<FeatureLearningSettings>(configFile);
             int patchWidth =
                 (configuration.MaxFreqBin - configuration.MinFreqBin + 1) / configuration.NumFreqBand;
@@ -75,7 +75,6 @@ namespace AnalysisPrograms
                 string pathToClusterCsvFile = Path.Combine(resultDir, "ClusterCentroids" + i.ToString() + ".csv");
                 var clusterCentroids = clusteringOutput.ClusterIdCentroid.Values.ToArray();
                 Csv.WriteMatrixToCsv(pathToClusterCsvFile.ToFileInfo(), clusterCentroids.ToMatrix());
-                //Csv.WriteToCsv(pathToClusterCsvFile.ToFileInfo(), clusterCentroids);
 
                 // sorting clusters based on size and output it to a csv file
                 Dictionary<int, double> clusterIdSize = clusteringOutput.ClusterIdSize;
@@ -95,7 +94,6 @@ namespace AnalysisPrograms
                 }
 
                 allBandsCentroids.Add(centroids);
-                //allClusteringOutput.Add(clusteringOutput.Clusters);
 
                 List<double[,]> allCentroids = new List<double[,]>();
                 for (int k = 0; k < centroids.Length; k++)
@@ -118,16 +116,9 @@ namespace AnalysisPrograms
                 double[,] mergedCentroidMatrix = PatchSampling.ListOf2DArrayToOne2DArray(allCentroids);
 
                 // Draw clusters
-                // int gridInterval = 1000;
-                // var freqScale = new FrequencyScale(FreqScaleType.Mel, nyquist, frameSize, finalBinCount, gridInterval);
-
                 var clusterImage = ImageTools.DrawMatrixWithoutNormalisation(mergedCentroidMatrix);
                 clusterImage.RotateFlip(RotateFlipType.Rotate270FlipNone);
-                // clusterImage.Save(outputClusterImagePath, ImageFormat.Bmp);
-
                 var outputClusteringImage = Path.Combine(resultDir, "ClustersWithGrid" + i.ToString() + ".bmp");
-                // Image bmp = ImageTools.ReadImage2Bitmap(filename);
-                // FrequencyScale.DrawFrequencyLinesOnImage((Bitmap)clusterImage, freqScale, includeLabels: false);
                 clusterImage.Save(outputClusteringImage);
             }
 
@@ -138,7 +129,7 @@ namespace AnalysisPrograms
 
         [Command(
             CommandName,
-            Description = "Temporary entry point for unsupervised feature learning")]
+            Description = "Temporary entry point for unsupervised and semi-supervised feature learning")]
         public class Arguments : SubCommandBase
         {
             public override Task<int> Execute(CommandLineApplication app)
@@ -157,13 +148,14 @@ namespace AnalysisPrograms
         public static void BuildSemisupervisedClusteringFeatures()
         {
             LoggedConsole.WriteLine("semi-supervised feature learning process...");
-            var inputDir = @"D:\Mahnoosh\Liz\Least_Bittern\"; //@"M:\Postdoc\Liz\Least Bittern\"; // @"D:\Mahnoosh\Liz\"; //@"C:\Users\kholghim\Mahnoosh\Liz\"; // @"C:\Users\kholghim\Mahnoosh\UnsupervisedFeatureLearning\"; // 
-            var resultDir = Path.Combine(inputDir, "SemisupervisedClusteringFeatures");
-            var inputPath = Path.Combine(inputDir, "TrainSet\\one_min_recordings"); //one_min_recordings-samples  //PatchSamplingSegments 
+            var inputDir = @"D:\Mahnoosh\Liz\Least_Bittern\";
+            var inputPath = Path.Combine(inputDir, "TrainSet\\one_min_recordings");
 
             // the infoFile contains the info about the frames of interest for supervised feature learning.
-            var frameInfoFilePath = @"D:\Mahnoosh\Liz\Least_Bittern\TrainSet\positive_frames.csv"; //@"M:\Postdoc\Liz\Least Bittern\manual-cluster\positive_frames.csv";//Path.Combine(inputDir, "TrainSet\\train_data");
-            var configPath = @"D:\Mahnoosh\Liz\Least_Bittern\FeatureLearningConfig.yml"; //@"M:\Postdoc\Liz\Least Bittern\FeatureLearningConfig.yml"; // 
+            var frameInfoFilePath = @"D:\Mahnoosh\Liz\Least_Bittern\TrainSet\positive_frames.csv";
+            var configPath = @"D:\Mahnoosh\Liz\Least_Bittern\FeatureLearningConfig.yml";
+            var resultDir = Path.Combine(inputDir, "SemisupervisedClusteringFeatures");
+            Directory.CreateDirectory(resultDir);
 
             var configFile = configPath.ToFileInfo();
 
@@ -177,6 +169,7 @@ namespace AnalysisPrograms
             }
 
             var configuration = ConfigFile.Deserialize<FeatureLearningSettings>(configFile);
+
             int patchWidth =
                 (configuration.MaxFreqBin - configuration.MinFreqBin + 1) / configuration.NumFreqBand;
 
@@ -191,8 +184,8 @@ namespace AnalysisPrograms
                 throw new ArgumentException($"Info file {frameInfoFile.FullName} not found");
             }
 
+            // frame info contains information about positive frames
             string[,] frameInfo = Csv.ReadMatrixFromCsv<string>(frameInfoFile, TwoDimensionalArray.None);
-            //centroids.Add(Csv.ReadMatrixFromCsv<double>(centroidsPath.ToFileInfo(), TwoDimensionalArray.None)
 
             var clusteringOutputList = FeatureLearning.SemisupervisedFeatureLearning(configuration, inputPath, frameInfo);
 
@@ -208,7 +201,6 @@ namespace AnalysisPrograms
                 string pathToClusterCsvFile = Path.Combine(resultDir, "ClusterCentroids" + i.ToString() + ".csv");
                 var clusterCentroids = clusteringOutput.ClusterIdCentroid.Values.ToArray();
                 Csv.WriteMatrixToCsv(pathToClusterCsvFile.ToFileInfo(), clusterCentroids.ToMatrix());
-                //Csv.WriteToCsv(pathToClusterCsvFile.ToFileInfo(), clusterCentroids);
 
                 // sorting clusters based on size and output it to a csv file
                 Dictionary<int, double> clusterIdSize = clusteringOutput.ClusterIdSize;
@@ -250,16 +242,9 @@ namespace AnalysisPrograms
                 double[,] mergedCentroidMatrix = PatchSampling.ListOf2DArrayToOne2DArray(allCentroids);
 
                 // Draw clusters
-                // int gridInterval = 1000;
-                // var freqScale = new FrequencyScale(FreqScaleType.Mel, nyquist, frameSize, finalBinCount, gridInterval);
-
                 var clusterImage = ImageTools.DrawMatrixWithoutNormalisation(mergedCentroidMatrix);
                 clusterImage.RotateFlip(RotateFlipType.Rotate270FlipNone);
-                // clusterImage.Save(outputClusterImagePath, ImageFormat.Bmp);
-
                 var outputClusteringImage = Path.Combine(resultDir, "ClustersWithGrid" + i.ToString() + ".bmp");
-                // Image bmp = ImageTools.ReadImage2Bitmap(filename);
-                // FrequencyScale.DrawFrequencyLinesOnImage((Bitmap)clusterImage, freqScale, includeLabels: false);
                 clusterImage.Save(outputClusteringImage);
             }
 
@@ -271,11 +256,11 @@ namespace AnalysisPrograms
         public static void ExtractClusteringFeatures()
         {
             LoggedConsole.WriteLine("feature extraction process...");
-            var inputDir = @"D:\Mahnoosh\Liz\Least_Bittern\"; // @"D:\Mahnoosh\Liz\"; //@"M:\Postdoc\Liz\"; //@"C:\Users\kholghim\Mahnoosh\UnsupervisedFeatureLearning\"; //@"M:\Postdoc\Liz\"; //
+            var inputDir = @"D:\Mahnoosh\Liz\Least_Bittern\";
             var resultDir = Path.Combine(inputDir, "FeatureLearning");
             //var trainSetPath = Path.Combine(inputDir, "TrainSet");
             var testSetPath = Path.Combine(inputDir, "TestSet\\one_min_recordings");
-            var configPath = @"D:\Mahnoosh\Liz\Least_Bittern\FeatureLearningConfig.yml"; //@"D:\Mahnoosh\Liz\AnalysisConfigFiles\FeatureLearningConfig.yml"; //@"C:\Users\kholghim\Mahnoosh\Liz\FeatureLearningConfig.yml"; //@"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\FeatureLearningConfig.yml"; // 
+            var configPath = @"D:\Mahnoosh\Liz\Least_Bittern\FeatureLearningConfig.yml";
             var centroidsPath = Path.Combine(resultDir, "ClusterCentroids0.csv");
 
             var configFile = configPath.ToFileInfo();
@@ -299,8 +284,8 @@ namespace AnalysisPrograms
 
         public static void GenerateSpectrograms()
         {
-            var recordingDir = @"M:\Postdoc\Liz\SupervisedPatchSamplingSet\Recordings\"; //@"C:\Users\kholghim\Mahnoosh\Liz\TrainSet\SM304264_0+1_20160421_094539_37-38min.wav";  // "SM304264_0+1_20160421_004539_47-48min.wav"
-            var resultDir = @"M:\Postdoc\Liz\SupervisedPatchSamplingSet\";
+            var recordingDir = @"M:\Liz\SupervisedPatchSamplingSet\Recordings\"; 
+            var resultDir = @"M:\Liz\SupervisedPatchSamplingSet\";
 
             // check whether there is any file in the folder/subfolders
             if (Directory.GetFiles(recordingDir, "*", SearchOption.AllDirectories).Length == 0)
@@ -310,7 +295,6 @@ namespace AnalysisPrograms
 
             int frameSize = 1024;
             int finalBinCount = 256;
-            // int hertzInterval = 1000;
             FreqScaleType scaleType = FreqScaleType.Mel;
             var settings = new SpectrogramSettings()
             {
@@ -322,17 +306,12 @@ namespace AnalysisPrograms
                 // each 24 single-frames duration is equal to 1 second
                 // note that the "WindowOverlap" value should be recalculated if frame size is changed
                 // this has not yet been considered in the Config file!
-                WindowOverlap = 0.1028,
+                WindowOverlap = 0.10725204,
                 DoMelScale = (scaleType == FreqScaleType.Mel) ? true : false,
                 MelBinCount = (scaleType == FreqScaleType.Mel) ? finalBinCount : frameSize / 2,
                 NoiseReductionType = NoiseReductionType.None,
                 NoiseReductionParameter = 0.0,
             };
-            //int minFreqBin = 24; // i.e., 500 Hz
-            //int maxFreqBin = 82; // i.e., 3500 Hz
-            //int numFreqBand = 1;
-
-            //double[,] inputMatrix;
 
             foreach (string filePath in Directory.GetFiles(recordingDir, "*.wav"))
             {
@@ -347,9 +326,6 @@ namespace AnalysisPrograms
                     var amplitudeSpectrogram = new AmplitudeSpectrogram(settings, recording.WavReader);
 
                     var decibelSpectrogram = new DecibelSpectrogram(amplitudeSpectrogram);
-
-                    // DO RMS NORMALIZATION
-                    //sonogram.Data = SNR.RmsNormalization(sonogram.Data);
 
                     // DO NOISE REDUCTION
                     decibelSpectrogram.Data = PcaWhitening.NoiseReduction(decibelSpectrogram.Data);
@@ -368,22 +344,6 @@ namespace AnalysisPrograms
                     // write the matrix to a csv file
                     string pathToMatrixFiles = Path.Combine(resultDir, "Matrices", settings.SourceFileName + ".csv");
                     Csv.WriteMatrixToCsv(pathToMatrixFiles.ToFileInfo(), decibelSpectrogram.Data);
-
-                    /*
-                    // check whether the full band spectrogram is needed or a matrix with arbitrary freq bins
-                    if (minFreqBin != 1 || maxFreqBin != finalBinCount)
-                    {
-                        inputMatrix =
-                            PatchSampling.GetArbitraryFreqBandMatrix(decibelSpectrogram.Data, minFreqBin, maxFreqBin);
-                    }
-                    else
-                    {
-                        inputMatrix = decibelSpectrogram.Data;
-                    }
-
-                    // creating matrices from different freq bands of the source spectrogram
-                    List<double[,]> allSubmatrices = PatchSampling.GetFreqBandMatrices(inputMatrix, numFreqBand);
-                    */
                 }
             }
         }
