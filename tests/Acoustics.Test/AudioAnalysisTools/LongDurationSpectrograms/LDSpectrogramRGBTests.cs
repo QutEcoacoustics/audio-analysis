@@ -15,12 +15,12 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
+    using Acoustics.Test.TestHelpers;
     using global::AnalysisBase.ResultBases;
     using global::AnalysisPrograms;
     using global::AudioAnalysisTools.Indices;
     using global::AudioAnalysisTools.LongDurationSpectrograms;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
 
     [TestClass]
     public class LDSpectrogramRGBTests : OutputDirectoryTest
@@ -31,13 +31,13 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms
             var indexPropertiesFile = ConfigFile.Default<IndexPropertiesCollection>();
             var indexProperties = ConfigFile.Deserialize<IndexPropertiesCollection>(indexPropertiesFile);
 
-            var indexSpecotrgrams = new Dictionary<string, double[,]>(6);
+            var indexSpectrograms = new Dictionary<string, double[,]>(6);
             var indexStatistics = new Dictionary<string, IndexDistributions.SpectralStats>();
             var keys = (LDSpectrogramRGB.DefaultColorMap1 + "-" + LDSpectrogramRGB.DefaultColorMap2).Split('-');
             foreach (var key in keys)
             {
                 var matrix = new double[256, 60].Fill(indexProperties[key].DefaultValue);
-                indexSpecotrgrams.Add(key, matrix);
+                indexSpectrograms.Add(key, matrix);
 
                 indexStatistics.Add(key, IndexDistributions.GetModeAndOneTailedStandardDeviation(matrix, 300, IndexDistributions.UpperPercentileDefault));
             }
@@ -58,15 +58,18 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms
                 },
                 basename: "RGB_TEST",
                 analysisType: AcousticIndices.AnalysisName,
-                indexSpectrograms: indexSpecotrgrams,
-                summaryIndices: Enumerable.Range(0, 60)
-                    .Select((x) => new SummaryIndexValues(60.0.Seconds(), indexProperties)).ToArray(),
+                indexSpectrograms: indexSpectrograms,
+                summaryIndices: Enumerable
+                    .Range(0, 60)
+                    .Select((x) => new SummaryIndexValues(60.0.Seconds(), indexProperties))
+                    .Cast<SummaryIndexBase>()
+                    .ToArray(),
                 indexStatistics: indexStatistics,
                 imageChrome: ImageChrome.Without);
 
             foreach (var (image, key) in images)
             {
-                // image.Save(Path.Combine(this.outputDirectory.FullName, key + ".png"), ImageFormat.Png);
+                Assert.That.ImageIsSize(60, 256, image);
                 Assert.That.ImageRegionIsColor(Rectangle.FromLTRB(0, 0, 60, 256), Color.Black, (Bitmap)image);
             }
         }

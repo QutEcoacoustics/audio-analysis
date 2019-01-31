@@ -495,6 +495,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                         maxBound = this.IndexStats[key].Maximum * 0.1;
                     }
                 }
+
+                // In some rare cases the resulting range is zero which will produce NaNs when normalized.
+                // In this case we just reset the bounds backs to the defaults in the config file.
+                // ReSharper disable once CompareOfFloatsByEqualityOperator - we are interested in ranges that are exactly zero distance
+                if (maxBound == minBound)
+                {
+                    minBound = indexProperties.NormMin;
+                    maxBound = indexProperties.NormMax;
+                }
             }
 
             // check min, max values

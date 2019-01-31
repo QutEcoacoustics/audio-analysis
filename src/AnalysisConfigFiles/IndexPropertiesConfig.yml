@@ -613,7 +613,7 @@ DIF:
   Comment: "Spectrum of summed DIFFERENCES between consecutive FFT coeff's in the ampl spgram. This spgram not displayed. It is used as intermediate for subsequent calculation of ACI."
   DataType: double[]
   DefaultValue: 0.0
-  DoDisplay: true
+  DoDisplay: false
   NormMin: 0.0
   NormMax: 10.0
   CalculateNormMin: false
@@ -661,7 +661,7 @@ SUM:
   Comment: "Spectrum of summed FFT coefficients derived from the ampl spgram. This spgram not displayed. It is used for intermediate calculations only."
   DataType: double[]
   DefaultValue: 0.0
-  DoDisplay: true
+  DoDisplay: false
   NormMin: 0.0
   NormMax: 10.0
   CalculateNormMin: false
