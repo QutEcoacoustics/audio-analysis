@@ -28,7 +28,7 @@ namespace AudioAnalysisTools.DSP
             public int Components { get; set; }
         }
 
-        public static Output Whitening(double[,] matrix, bool doWhitening)
+        public static Output Whitening(bool doWhitening, double[,] matrix)
         {
             if (matrix == null)
             {
@@ -171,17 +171,13 @@ namespace AudioAnalysisTools.DSP
         {
             double[,] nrm = matrix;
 
-            // calculate modal noise profile
-            // NoiseProfile profile = NoiseProfile.CalculateModalNoiseProfile(matrix, sdCount: 0.0);
-            //NoiseProfile profile = NoiseProfile.CalculateMedianNoiseProfile(matrix);
-            NoiseProfile profile = NoiseProfile.CalculatePercentileNoiseProfile(matrix, 10); //40 //20
+            // calculate 10-percentile noise profile
+            NoiseProfile profile = NoiseProfile.CalculatePercentileNoiseProfile(matrix, 10);
 
             // smooth the noise profile
             double[] smoothedProfile = DataTools.filterMovingAverage(profile.NoiseThresholds, width: 7);
 
             nrm = SNR.TruncateBgNoiseFromSpectrogram(nrm, smoothedProfile);
-
-            // nrm = SNR.NoiseReduce_Standard(nrm, smoothedProfile, nhBackgroundThreshold: 2.0);
 
             return nrm;
         }

@@ -372,7 +372,7 @@ namespace AudioAnalysisTools.DSP
             var randomRowNumbers = Enumerable.Range(0, rows - patchHeight).OrderBy(x => randomNumber.Next()).Take(numberOfPatches).ToList();
             List<double[]> patches = new List<double[]>();
 
-            for (int i = 0; i < randomRowNumbers.Count; i++) //for (int i = 0; i < numberOfPatches; i++)
+            for (int i = 0; i < randomRowNumbers.Count; i++)
             {
                 // selecting a random number from the height of the matrix
                 //int rowRandomNumber = randomNumber.Next(0, rows - patchHeight);
@@ -382,8 +382,6 @@ namespace AudioAnalysisTools.DSP
 
                 double[,] submatrix = MatrixTools.Submatrix(matrix, randomRowNumbers[i], columnRandomNumber,
                     randomRowNumbers[i] + patchHeight - 1, columnRandomNumber + patchWidth - 1);
-
-                //double[,] submatrix = MatrixTools.Submatrix(matrix, rowRandomNumber, columnRandomNumber, rowRandomNumber + patchHeight - 1, columnRandomNumber + patchWidth - 1);
 
                 // convert a matrix to a vector by concatenating columns and
                 // store it to the array of vectors
@@ -458,7 +456,7 @@ namespace AudioAnalysisTools.DSP
             int segmentSampleCount = (int)(segmentDuration * sampleRate);
             int subsegmentSampleCount = (int)(subsegmentDurationInSeconds * sampleRate);
             double subsegmentFrameCount = subsegmentSampleCount / (double)frameStep;
-            subsegmentFrameCount = (int)subsegmentFrameCount; //(int)Math.Ceiling(subsegmentFrameCount)
+            subsegmentFrameCount = (int)subsegmentFrameCount;
             subsegmentSampleCount = ((int)(subsegmentFrameCount * frameStep) < subsegmentSampleCount) ? subsegmentSampleCount : (int)(subsegmentFrameCount * frameStep);
 
             for (int i = 0; i < (int)(segmentSampleCount / subsegmentSampleCount); i++)

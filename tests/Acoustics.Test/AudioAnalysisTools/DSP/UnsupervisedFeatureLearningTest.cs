@@ -188,7 +188,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                 double[,] patchMatrix = randomPatches[i];
 
                 // Apply PCA Whitening
-                var whitenedSpectrogram = PcaWhitening.Whitening(patchMatrix, true);
+                var whitenedSpectrogram = PcaWhitening.Whitening(true, patchMatrix);
 
                 // Do k-means clustering
                 var clusteringOutput = KmeansClustering.Clustering(whitenedSpectrogram.Reversion, numberOfClusters);

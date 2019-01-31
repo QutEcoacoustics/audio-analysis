@@ -4,14 +4,9 @@
 
 namespace AudioAnalysisTools.DSP
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
+
     using System.Linq;
-    using Accord.Math;
-    using StandardSpectrograms;
     using TowseyLibrary;
-    using WavTools;
 
     public static class PowerSpectralDensity
     {

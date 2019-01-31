@@ -6,14 +6,10 @@ namespace AudioAnalysisTools.DSP
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
-    using System.IO;
     using System.Linq;
     using Accord.MachineLearning;
     using Accord.Math;
     using Accord.Math.Distances;
-    using CsvHelper;
-    using Zio;
 
     public static class KmeansClustering
     {
