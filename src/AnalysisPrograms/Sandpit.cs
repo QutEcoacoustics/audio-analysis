@@ -61,7 +61,7 @@ namespace AnalysisPrograms
                 Log.WriteLine("# Start Time = " + tStart.ToString(CultureInfo.InvariantCulture));
 
                 //AnalyseFrogDataSet();
-                //Audio2CsvOverOneFile();
+                Audio2CsvOverOneFile();
                 //Audio2CsvOverMultipleFiles();
 
                 // used to get files from availae for Black rail and Least Bittern papers.
@@ -384,6 +384,12 @@ namespace AnalysisPrograms
             // these are six hour recordings
             //string recordingPath = @"G:\Ecoacoustics\WavFiles\SERF\2013June19\SERF_20130619_064615_000.wav";
             //string outputPath = @"C:\Ecoacoustics\Output\SERF\SERFIndicesNew_2013June19";
+            //string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Acoustic.yml";
+
+          // USE 24-hour data or parts of from MEZ, TASMAn ISLAND, liz Znidersic
+            // these are six hour recordings
+            //string recordingPath = @"C:\Ecoacoustics\WavFiles\LizZnidersic\TasmanIsland2015_Unit2_Mez\SM304256_0+1_20151114_031652.wav";
+            //string outputPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\04";
             //string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Acoustic.yml";
 
             // GROUND PARROT

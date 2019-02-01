@@ -73,5 +73,45 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms
                 Assert.That.ImageRegionIsColor(Rectangle.FromLTRB(0, 0, 60, 256), Color.Black, (Bitmap)image);
             }
         }
+
+        [TestMethod]
+        public void TestDrawRgbColorMatrix()
+        {
+            // init three matrices
+            double[,] redM = new double[5, 5];
+            double[,] grnM = new double[5, 5];
+            double[,] bluM = new double[5, 5];
+
+            //convert some values to null or NaN
+            redM[1, 1] = double.NaN;
+            grnM[1, 1] = double.NaN;
+            bluM[1, 1] = double.NaN;
+
+            redM[2, 2] = 1.0;
+            grnM[2, 2] = 1.0;
+            bluM[2, 2] = double.NaN;
+
+            redM[3, 3] = 0.01;
+            grnM[3, 3] = 0.01;
+            bluM[3, 3] = 0.11;
+
+            var image = (Bitmap)LDSpectrogramRGB.DrawRgbColourMatrix(redM, grnM, bluM, doReverseColour: true);
+
+            Assert.That.PixelIsColor(new Point(1, 1), Color.FromArgb(128, 128, 128), image);
+            Assert.That.PixelIsColor(new Point(2, 2), Color.FromArgb(128, 128, 128), image);
+
+            // empty values are rendered as white because of `doReverseColour`
+            Assert.That.ImageRegionIsColor(Rectangle.FromLTRB(0,0, 1,5), Color.FromArgb(255, 255, 255), image);
+            Assert.That.ImageRegionIsColor(Rectangle.FromLTRB(4,0, 5,5), Color.FromArgb(255, 255, 255), image);
+
+            // To intensify the blue, this method adds 0.7 * d3 to the green value;
+            // and it adds 0.2 to the blue value;
+            // The effect is to create a more visible cyan color.
+            int r = (1 - redM[3, 3]).ScaleUnitToByte();
+            int g = (1 - (grnM[3, 3] + (0.7 * bluM[3, 3]))).ScaleUnitToByte();
+            int b = (1 - (bluM[3, 3] + 0.2)).ScaleUnitToByte();
+            var cyanColor = Color.FromArgb(r, g, b);
+            Assert.That.PixelIsColor(new Point(3, 3), cyanColor, image);
+        }
     }
 }
