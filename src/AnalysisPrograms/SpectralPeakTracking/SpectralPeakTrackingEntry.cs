@@ -44,9 +44,9 @@ namespace AnalysisPrograms.SpectralPeakTracking
             // pass the config to the algorithm
             // output the results
 
-            var configPath = @"C:\Users\kholghim\Mahnoosh\Night_parrot\SpectralPeakTrackingConfig.yml";
-            var recordingPath = @"C:\Users\kholghim\Mahnoosh\Night_parrot\JY-(cleaned)-3-Night_Parrot-pair.Western_Qld.mp3";
-            var imagePath = @"C:\Users\kholghim\Mahnoosh\Night_parrot\image.bmp";
+            var configPath = @"SpectralPeakTrackingConfig.yml";
+            var recordingPath = @"";
+            var imagePath = @"";
 
             var configFile = configPath.ToFileInfo();
 
