@@ -82,7 +82,8 @@ namespace AnalysisPrograms.SpectralPeakTracking
 
             //var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
             var amplitudeSpectrogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
-            var energySpectrogram = new EnergySpectrogram(amplitudeSpectrogram);
+            // Broken in merge b7e03070a9cd72ab0632789a3412967a6cc54cd6
+            //var energySpectrogram = new EnergySpectrogram(amplitudeSpectrogram);
             var decibelSpectrogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
 
             double frameStepSize = sonoConfig.GetFrameOffset();

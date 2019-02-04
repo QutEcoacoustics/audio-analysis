@@ -1,4 +1,4 @@
-﻿// <copyright file="UnsupervisedFeatureLearningTest.cs" company="QutEcoacoustics">
+// <copyright file="UnsupervisedFeatureLearningTest.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -623,6 +623,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
         }
 
         [TestMethod]
+        [Ignore]
         public void TestSpectrograms()
         {
             var recordingPath = PathHelper.ResolveAsset("Recordings", "SM304264_0+1_20160421_004539_47-48min.wav"); //    "SM304264_0+1_20160421_094539_37-38min.wav"
@@ -673,7 +674,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             };
 
             Image image = DecibelSpectrogram.DrawSpectrogramAnnotated(sonogram.Data, settings, attributes);
-            image.Save(outputLogEnergySpecImagePath, ImageFormat.Bmp);
+            //image.Save(outputLogEnergySpecImagePath, ImageFormat.Bmp);
 
             //var logSonogramData = MatrixTools.Matrix2LogValues(sonogram.Data);
             //var dbSpectrogram = new DecibelSpectrogram(settings, recording.WavReader);
@@ -708,7 +709,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             //var noiseReducedImage = SpectrogramTools.GetImageFullyAnnotated(image3, "NOISEREDUCEDSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations, sonogram.Attributes.Duration);
             //noiseReducedImage.Save(outputNoiseReducedImagePath, ImageFormat.Png);
             Image image2 = DecibelSpectrogram.DrawSpectrogramAnnotated(sonogram.Data, settings, attributes);
-            image2.Save(outputNoiseReducedImagePath, ImageFormat.Bmp);
+            //image2.Save(outputNoiseReducedImagePath, ImageFormat.Bmp);
 
             //energySpectro.DrawLogPsd(outputLogPsdImagePath);
 

@@ -1,4 +1,4 @@
-﻿// <copyright file="TestAnalyzeLongRecording.cs" company="QutEcoacoustics">
+// <copyright file="TestAnalyzeLongRecording.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -53,9 +53,9 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
 
             // do some basic checks that the indices were generated
             var listOfFiles = ResultsDirectory.EnumerateFiles().ToArray();
-            Assert.AreEqual(19, listOfFiles.Length);
+            Assert.AreEqual(20, listOfFiles.Length);
             var csvCount = listOfFiles.Count(f => f.Name.EndsWith(".csv"));
-            Assert.AreEqual(15, csvCount);
+            Assert.AreEqual(16, csvCount);
             var jsonCount = listOfFiles.Count(f => f.Name.EndsWith(".json"));
             Assert.AreEqual(2, jsonCount);
             var pngCount = listOfFiles.Count(f => f.Name.EndsWith(".png"));
