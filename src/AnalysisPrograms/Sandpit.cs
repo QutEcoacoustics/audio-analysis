@@ -6,7 +6,6 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.Globalization;
@@ -16,17 +15,15 @@ namespace AnalysisPrograms
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
-    using AnalyseLongRecordings;
+    using AnalysisPrograms.AnalyseLongRecordings;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-    using log4net.Util;
     using McMaster.Extensions.CommandLineUtils;
-    using Production;
-    using Production.Arguments;
+    using AnalysisPrograms.Production.Arguments;
     using TowseyLibrary;
 
     /// <summary>
@@ -74,6 +71,7 @@ namespace AnalysisPrograms
                 //CodeToPlaceScoreTracksUnderSingleImage();
 
                 //ConcatenateIndexFilesAndSpectrograms();
+                ConcatenateGreyScaleSpectrogramImages();
                 //ConcatenateMarineImages();
                 //ConcatenateImages();
                 //ConcatenateTwelveImages();
@@ -323,6 +321,10 @@ namespace AnalysisPrograms
             //string outputPath = @"G:\SensorNetworks\Output\BradLaw\Pillaga24";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
 
+            string recordingPath = @"C:\Ecoacoustics\WavFiles\LizZnidersic\TasmanIsland2015_Unit2_Mez\SM304256_0+1_20151114_001652.wav";
+            string outputPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\01";
+            string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Acoustic.yml";
+
             // Ivan Campos recordings
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Ivancampos\INCIPO01_20161031_024006_898.wav";
             //string outputPath = @"G:\SensorNetworks\Output\IvanCampos\17";
@@ -384,11 +386,11 @@ namespace AnalysisPrograms
             //string outputPath = @"C:\Ecoacoustics\Output\SERF\SERFIndicesNew_2013June19";
             //string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Acoustic.yml";
 
-            // USE 24-hour data or parts of from MEZ, TASMAn ISLAND, liz Znidersic
+          // USE 24-hour data or parts of from MEZ, TASMAn ISLAND, liz Znidersic
             // these are six hour recordings
-            string recordingPath = @"C:\Ecoacoustics\WavFiles\LizZnidersic\TasmanIsland2015_Unit2_Mez\SM304256_0+1_20151114_031652.wav";
-            string outputPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\04";
-            string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Acoustic.yml";
+            //string recordingPath = @"C:\Ecoacoustics\WavFiles\LizZnidersic\TasmanIsland2015_Unit2_Mez\SM304256_0+1_20151114_031652.wav";
+            //string outputPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\04";
+            //string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Acoustic.yml";
 
             // GROUND PARROT
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\groundParrot_Perigian_TEST.wav";
@@ -1056,11 +1058,60 @@ namespace AnalysisPrograms
         }
 
         /// <summary>
-        /// read a set of Spectral index files and extract values from frequency band
-        /// This work done for Liz Znidersic paper.
-        /// End of the method requires access to Liz tagging info.
+        /// TODO Combine the grey scale spectrograms produced by AnalysisPrograms.exe
+        /// This method will be useful for comparing the response of different spectral indices to the same acoustic event.
+        /// Use this when you want best acoustic features for doing ML using spectral index features.
         /// </summary>
-        public static void ExtractSpectralFeatures()
+        public static void ConcatenateGreyScaleSpectrogramImages()
+        {
+
+            var ipDirInfo = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\01\Towsey.Acoustic");
+            var opDirInfo = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\01\Towsey.Acoustic");
+            var opFileName = "SM304256_0+1_20151114_001652";
+
+            //string[] keys = { "ACI", "BGN", "CVR", "ENT", "EVN", "OSC", "PMN", "R3D", "RHZ", "RNG", "RPS", "RVT", "SPT" };
+            var keys = SpectralIndexValues.Keys;
+
+            //Read list of images into List
+            var listOfImages = new List<Image>();
+
+            foreach (var key in keys)
+            {
+                if (key == "DIF" || key == "SUM")
+                {
+                    continue;
+                }
+
+                // construct the path
+                //var path = Path.Combine(ipDirInfo.FullName, opFileName + key + ".png");
+                var path = FilenameHelpers.AnalysisResultPath(ipDirInfo, opFileName, key, "png");
+                var indexImage = ImageTools.ReadImage2Bitmap(path);
+
+                listOfImages.Add(indexImage);
+            }
+
+            var opPath = FilenameHelpers.AnalysisResultPath(opDirInfo, opFileName, "KEYS", "png");
+
+            // check how wide combined image will be. If tracks are wider than 180 = 3 hours, then go vertical
+            int imageCount = listOfImages.Count;
+            if (listOfImages[0].Width * imageCount > 180 * imageCount)
+            {
+                var combinedImage = ImageTools.CombineImagesVertically(listOfImages);
+                combinedImage?.Save(opPath);
+            }
+            else
+            {
+                var combinedImage = ImageTools.CombineImagesInLine(listOfImages);
+                combinedImage?.Save(opPath);
+            }
+        }
+
+    /// <summary>
+    /// read a set of Spectral index files and extract values from frequency band
+    /// This work done for Liz Znidersic paper.
+    /// End of the method requires access to Liz tagging info.
+    /// </summary>
+    public static void ExtractSpectralFeatures()
         {
             // parameters
             string dir =
