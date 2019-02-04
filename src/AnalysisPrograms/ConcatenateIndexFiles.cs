@@ -1,4 +1,4 @@
-﻿// <copyright file="ConcatenateIndexFiles.cs" company="QutEcoacoustics">
+// <copyright file="ConcatenateIndexFiles.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -57,7 +57,7 @@ namespace AnalysisPrograms
 
         [Command(
             CommandName,
-            Description = "[BETA] Concatenates multiple consecutive index.csv files.")]
+            Description = "[BETA] Concatenates multiple consecutive AcousticIndex.csv files. Caution required!!")]
         public class Arguments : SubCommandBase
         {
             [Argument(
@@ -101,7 +101,7 @@ namespace AnalysisPrograms
             public TimeSpan? TimeSpanOffsetHint { get; set; }
 
             [Option(
-                CommandOptionType.SingleValue,
+                CommandOptionType.NoValue,
                 Description = "Draw false-colour spectrograms after concatenating index files",
                 ShortName = "")]
             public bool DrawImages { get; set; } = true;
@@ -131,6 +131,7 @@ namespace AnalysisPrograms
             public string FalseColourSpectrogramConfig { get; set; }
 
             [Option(
+                CommandOptionType.NoValue,
                 Description = "Set true only when concatenating more than 24-hours of data into one image",
                 LongName = "concatenate-everything",
                 ShortName = "")]
@@ -897,7 +898,7 @@ namespace AnalysisPrograms
                 IndexPropertiesConfig = $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_IndexPropertiesConfig.yml",
                 FalseColourSpectrogramConfig = falseColourSpgConfig,
                 ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
-                ColorMap2 = "BGN-POW-SPT", // This color map dates pre-May 2017.
+                ColorMap2 = "BGN-PMN-SPT", // This color map dates pre-May 2017.
                 ConcatenateEverythingYouCanLayYourHandsOn = true,
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
                 DrawImages = true,
@@ -943,7 +944,7 @@ namespace AnalysisPrograms
                 IndexPropertiesConfig = $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_IndexPropertiesConfig.yml",
                 FalseColourSpectrogramConfig = falseColourSpgConfig,
                 ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
-                ColorMap2 = "BGN-POW-SPT", // This color map dates pre-May 2017.
+                ColorMap2 = "BGN-PMN-SPT", // This color map dates pre-May 2017.
                 ConcatenateEverythingYouCanLayYourHandsOn = false, // 24 hour blocks only
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
                 DrawImages = true,
@@ -988,7 +989,7 @@ namespace AnalysisPrograms
                 IndexPropertiesConfig = $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_IndexPropertiesConfig.yml",
                 FalseColourSpectrogramConfig = falseColourSpgConfig,
                 ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
-                ColorMap2 = "BGN-POW-SPT", // This color map dates pre-May 2017.
+                ColorMap2 = "BGN-PMN-SPT", // This color map dates pre-May 2017.
                 ConcatenateEverythingYouCanLayYourHandsOn = false, // 24 hour blocks only
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
                 DrawImages = true,
@@ -1045,7 +1046,7 @@ namespace AnalysisPrograms
                 IndexPropertiesConfig = $"{drive}:\\SensorNetworks\\SoftwareTests\\TestConcatenation\\Data\\ConcatTest_IndexPropertiesConfig.yml",
                 FalseColourSpectrogramConfig = falseColourSpgConfig,
                 ColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN,
-                ColorMap2 = "BGN-POW-SPT", // This color map dates pre-May 2017.
+                ColorMap2 = "BGN-PMN-SPT", // This color map dates pre-May 2017.
                 ConcatenateEverythingYouCanLayYourHandsOn = true,
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
                 DrawImages = true,

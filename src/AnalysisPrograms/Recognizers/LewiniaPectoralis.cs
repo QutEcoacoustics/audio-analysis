@@ -40,6 +40,8 @@ namespace AnalysisPrograms.Recognizers
     /// </summary>
     public class LewiniaPectoralis : RecognizerBase
     {
+        public override string Description => "[BETA/EXPERIMENTAL] Detects acoustic events of Lewin's Rail";
+
         public override string Author => "Towsey";
 
         public override string SpeciesName => "LewiniaPectoralis";
@@ -66,9 +68,6 @@ namespace AnalysisPrograms.Recognizers
             // No operation - do nothing. Feel free to add your own logic.
             base.SummariseResults(settings, inputFileSegment, events, indices, spectralIndices, results);
         }
-
-        // OTHER CONSTANTS
-        //private const string ImageViewer = @"C:\Windows\system32\mspaint.exe";
 
         /// <summary>
         /// Do your analysis. This method is called once per segment (typically one-minute segments).
@@ -119,7 +118,7 @@ namespace AnalysisPrograms.Recognizers
             // cycle through the profiles and analyse recording using each of them
             foreach (var name in profileNames)
             {
-                LoggedConsole.WriteLine($"Reading profile <{name}>.");
+                Log.Debug($"Reading profile <{name}>.");
                 recognizerConfig.ReadConfigFile(configuration, name);
 
                 // ignore oscillations above this threshold freq
@@ -172,11 +171,11 @@ namespace AnalysisPrograms.Recognizers
                 {
                     Log.Debug("DebugImage is null, not writing file");
                 }
-                else
+                else if (MainEntry.InDEBUG)
                 {
                     var imageName = AnalysisResultName(recording.BaseName, this.SpeciesName, "png", "DebugSpectrogram");
                     var debugPath = outputDirectory.Combine(imageName);
-                    debugImage.Save(debugPath.FullName);
+                    //debugImage.Save(debugPath.FullName);
                 }
 
                 foreach (var ae in predictedEvents)
@@ -352,7 +351,7 @@ namespace AnalysisPrograms.Recognizers
                 maxDuration,
                 segmentStartOffset);
 
-            CropEvents(predictedEvents, upperArray);
+            CropEvents(predictedEvents, upperArray, segmentStartOffset);
             var hits = new double[rowCount, colCount];
 
             //######################################################################
@@ -376,7 +375,7 @@ namespace AnalysisPrograms.Recognizers
             return Tuple.Create(sonogram, hits, intensity, predictedEvents, debugImage);
         } //Analysis()
 
-        public static void CropEvents(List<AcousticEvent> events, double[] intensity)
+        public static void CropEvents(List<AcousticEvent> events, double[] intensity, TimeSpan segmentStartOffset)
         {
             double severity = 0.1;
             int length = intensity.Length;
@@ -397,8 +396,7 @@ namespace AnalysisPrograms.Recognizers
 
                 var o = new Oblong(newMinRow, ev.Oblong.ColumnLeft, newMaxRow, ev.Oblong.ColumnRight);
                 ev.Oblong = o;
-                ev.TimeStart = newMinRow * ev.FrameOffset;
-                ev.TimeEnd = newMaxRow * ev.FrameOffset;
+                ev.SetEventPositionRelative(segmentStartOffset, newMinRow * ev.FrameOffset, newMaxRow * ev.FrameOffset);
             }
         }
 

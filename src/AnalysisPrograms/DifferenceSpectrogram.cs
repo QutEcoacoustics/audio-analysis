@@ -24,7 +24,7 @@ namespace AnalysisPrograms
 
         [Command(
             CommandName,
-            Description = "[INOPERABLE] Produces a false-colour spectrogram that show only the differences between two spectrograms.")]
+            Description = "[INOPERABLE] Produces a spectrogram that displays statistical differences between two LDFC spectrograms.")]
         public class Arguments : SubCommandBase
         {
             [Option(Description = "Path to configuration file in YAML format")]

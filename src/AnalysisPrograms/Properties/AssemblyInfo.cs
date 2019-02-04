@@ -21,4 +21,3 @@ using Acoustics.Shared;
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("ffe49822-6c42-4211-87a9-e5dd162fb189")]
-[assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config", Watch = true)]

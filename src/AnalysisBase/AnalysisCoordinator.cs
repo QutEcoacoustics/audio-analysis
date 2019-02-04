@@ -265,10 +265,13 @@ namespace AnalysisBase
             AnalysisSettings settings)
         {
             // ensure all segments are valid and have source metadata set
+            double duration = 0; 
             foreach (var segment in segments)
             {
+                var segmentDuration = segment.EndOffsetSeconds - segment.StartOffsetSeconds;
+                duration += segmentDuration;
                 Contract.Requires<InvalidSegmentException>(
-                    segment.EndOffsetSeconds - segment.StartOffsetSeconds > 0,
+                    segmentDuration > 0,
                     $"Segment {segment} was invalid because end was less than start");
 
                 Contract.Requires<InvalidSegmentException>(segment.Source != null, $"Segment {segment} source was null");
@@ -283,6 +286,8 @@ namespace AnalysisBase
                     matchingSegments.Length == 1,
                     $"Supplied segment is a duplicate of another segment. Supplied:\n{segment}\nMatches\n: {string.Join("\n-----------\n", matchingSegments.Select(x => x.ToString()))}");
             }
+
+            Log.Info($"Analysis Coordinator will analyze a total of {duration} seconds of audio");
 
             // split the provided segments up into processable chunks
             var analysisSegments = preparer.CalculateSegments(segments, settings).ToArray();

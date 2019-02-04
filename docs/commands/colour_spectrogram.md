@@ -16,13 +16,13 @@ This section describes the command line arguments required to draw a false-colou
 spectrogram derived from matrices of spectral acoustic indices extracted from 
 single long-duration audio recording.
 
-To run the analysis, type:
+To run the command, type:
 
 ```
 $ AnalysisPrograms.exe DrawLongDurationSpectrograms [options];
 ```
 
-The output of this analysis is a set of false-colour and grey-scale
+The output of this command is a set of false-colour and grey-scale
 long-duration index spectrograms.
 
 Here is an example of a command line with abbreviated path names:
@@ -68,5 +68,5 @@ Here is some additional information about the more important parameters:
         -   Linear125Octaves30Nyquist11025
         -   Octaves24Nyquist32000
         -   Linear125Octaves28Nyquist32000
-    - [TODO: Update] Only "Linear", "Linear125Octaves7Tones28Nyquist32000" work at present.
--   `YAxisTicInterval`: 1000. Horizontal grid lines will be placed every 1kHz interval.
+    - [TODO: Update] Only "Linear", "Mel", and "Linear125Octaves7Tones28Nyquist32000" are available at present.
+-   `YAxisTicInterval`: 1000. Horizontal grid lines will be placed every 1kHz interval. This can be set to 5000, if the recording sample rate is 96 kHz, or to 2000 if the recording sample rate is 44.1 kHz.

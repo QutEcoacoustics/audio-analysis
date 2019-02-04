@@ -39,9 +39,11 @@ namespace AnalysisPrograms
     {
         public const string CommandName = "GroundParrot";
 
+        public override string Description => "[UNMAINTAINED] Uses event pattern recognition for ground-parrots";
+
         [Command(
             CommandName,
-            Description = "event pattern recognition - used for ground-parrots (BRAD version)")]
+            Description = "[UNMAINTAINED] event pattern recognition - used for ground-parrots (BRAD CLOW version)")]
         public class Arguments : SourceAndConfigArguments
         {
             public override Task<int> Execute(CommandLineApplication app)
@@ -182,6 +184,8 @@ namespace AnalysisPrograms
 
         public static void Execute(Arguments arguments)
         {
+            MainEntry.WarnIfDevleoperEntryUsed();
+
             if (arguments == null)
             {
                 throw new NoDeveloperMethodException();

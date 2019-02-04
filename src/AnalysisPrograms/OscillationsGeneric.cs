@@ -73,7 +73,7 @@ namespace AnalysisPrograms
 
         [Command(
             CommandName,
-            Description = "Does a generic search for oscillations in the passed audio file. Short recordings only.")]
+            Description = "[BETA] Does a generic search for oscillations in the passed audio file. Short recordings only.")]
         public class Arguments : SourceConfigOutputDirArguments
         {
             [Option(Description = "The start offset (in seconds) of the source audio file to operate on")]

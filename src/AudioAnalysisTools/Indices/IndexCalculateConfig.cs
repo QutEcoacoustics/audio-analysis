@@ -1,12 +1,10 @@
-﻿// <copyright file="IndexCalculateConfig.cs" company="QutEcoacoustics">
+// <copyright file="IndexCalculateConfig.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
 namespace AudioAnalysisTools.Indices
 {
     using System;
-    using System.IO;
-    using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
 
     using DSP;
@@ -25,12 +23,6 @@ namespace AudioAnalysisTools.Indices
     /// </summary>
     public class IndexCalculateConfig : AnalyzerConfigIndexProperties, IEquatable<IndexCalculateConfig>, ICloneable
     {
-        private static readonly ILog Log = LogManager.GetLogger(nameof(IndexCalculateConfig));
-
-        // Make sure the comparer is static, so that the equality operations are only generated once
-        private static readonly MemberwiseEqualityComparer<IndexCalculateConfig> Comparer =
-            MemberwiseEqualityComparer<IndexCalculateConfig>.ByFields;
-
         // EXTRACT INDICES: IF (frameLength = 128 AND sample rate = 22050) THEN frame duration = 5.805ms.
         // EXTRACT INDICES: IF (frameLength = 256 AND sample rate = 22050) THEN frame duration = 11.61ms.
         // EXTRACT INDICES: IF (frameLength = 512 AND sample rate = 22050) THEN frame duration = 23.22ms.
@@ -56,6 +48,12 @@ namespace AudioAnalysisTools.Indices
         public const int DefaultMelScale = 0;
 
         public const double DefaultBgNoiseNeighborhood = 5;
+
+        private static readonly ILog Log = LogManager.GetLogger(nameof(IndexCalculateConfig));
+
+        // Make sure the comparer is static, so that the equality operations are only generated once
+        private static readonly MemberwiseEqualityComparer<IndexCalculateConfig> Comparer =
+            MemberwiseEqualityComparer<IndexCalculateConfig>.ByFields;
 
         private FreqScaleType frequencyScale;
         private double indexCalculationDuration = DefaultIndexCalculationDurationInSeconds;
@@ -252,7 +250,7 @@ namespace AudioAnalysisTools.Indices
 
         object ICloneable.Clone()
         {
-            IndexCalculateConfig deepClone = this.DeepClone<IndexCalculateConfig>();
+            IndexCalculateConfig deepClone = this.DeepClone();
             Log.Trace("Cloning a copy of IndexCalculateConfig");
             return deepClone;
         }

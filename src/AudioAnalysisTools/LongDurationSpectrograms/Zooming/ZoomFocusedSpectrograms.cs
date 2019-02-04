@@ -1,4 +1,4 @@
-﻿// <copyright file="ZoomFocusedSpectrograms.cs" company="QutEcoacoustics">
+// <copyright file="ZoomFocusedSpectrograms.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -45,7 +45,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             var distributions = common.IndexDistributions;
             var indexGeneration = common.IndexGenerationData;
-            var indexProperties = zoomConfig.IndexProperties;
 
             string fileStem = common.OriginalBasename;
 
@@ -53,8 +52,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // ####################### DERIVE ZOOMED OUT SPECTROGRAMS FROM SPECTRAL INDICES
 
-            string[] keys = { "ACI", "BGN", "CVR", "DIF", "ENT", "EVN", "PMN", "POW", "RHZ", "RVT", "RPS", "RNG", "SUM", "SPT" };
-            indexProperties = InitialiseIndexProperties.FilterIndexPropertiesForSpectralOnly(indexProperties);
+            string[] keys = { "ACI", "BGN", "CVR", "DIF", "ENT", "EVN", "PMN", "PMN", "RHZ", "RVT", "RPS", "RNG", "SUM", "SPT" };
+            var indexProperties = InitialiseIndexProperties.FilterIndexPropertiesForSpectralOnly(zoomConfig.IndexProperties);
             Dictionary<string, double[,]> spectra = IndexMatrices.ReadSpectralIndices(inputDirectory, fileStem, analysisType, keys);
 
             Stopwatch sw = Stopwatch.StartNew();
@@ -122,7 +121,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // get the index data to add into the
             // TimeSpan imageScale1 = TimeSpan.FromSeconds(0.1);
-            double[,] indexData = spectra["POW"];
+            double[,] indexData = spectra["PMN"];
 
             // make the images
             for (int i = 0; i < compressionCount; i++)

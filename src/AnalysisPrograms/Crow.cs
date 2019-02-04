@@ -15,7 +15,7 @@ namespace AnalysisPrograms
 
     [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
 
-    //[Obsolete("This recognizer clsas has been dismembered, keeping only the core funcitonal method")]
+    //[Obsolete("This recognizer class has been dismembered, keeping only the core functional method")]
     public class Crow
     {
         /// <summary>

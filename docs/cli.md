@@ -61,7 +61,7 @@ For example:
 $ AnalysisPrograms.exe help audio2csv
 ```
 
-In this command line, ‘help’ is an *command* and the command-name, *audio2csv*, is
+In this command line, ‘help’ is a *command* and the command-name, *audio2csv*, is
 an option.
 
 ## Options
@@ -116,7 +116,7 @@ Alternatively, you can append one of the following switches to the command line:
 ## Beware these Syntax Gotchas**
 
 -   **Never** finish a double quoted string argument with a backslash (\\). In
-    particular, do not end directory names like this:
+    particular, do *not* end directory names like this:
     “C:\\\\Path\\OutputDirectory\\”. The parsing rules for such cases are
     complicated and outside of our control. See
     [here](https://msdn.microsoft.com/en-us/library/system.environment.getcommandlineargs.aspx)

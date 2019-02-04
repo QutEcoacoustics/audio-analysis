@@ -3,13 +3,17 @@
 Log files record all the messages that you normally see in your terminal into a
 text file. Because these messages are saved to a text file we can:
 
+- reliably understand what actions the program took
+- help debug problems
+- extract provenance data to make experiments repeatable.
+
 # Important details
 
 - Every time _AP.exe_ runs a log file is saved in the `Logs` folder
 - The `Logs` folder is in the same directory as the `AnalysisPrograms.exe`
   program
-- The latest log will always be named `log.txt`
-- The latest 20 logs will be kept, after which they are deleted
+- The logs will always be named `log_<SOMEDATE>.txt` where `<SOMEDATE>` is replaced with a date time stamp.
+- The latest 50 logs will be kept, after which they are deleted
 - We recommend you save every log from every analysis you run
   - This will soon be easier once [#157](https://github.com/QutEcoacoustics/audio-analysis/issues/157)
     is complete.

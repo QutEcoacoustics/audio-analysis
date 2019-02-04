@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="IndexProperties.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -17,40 +17,73 @@ namespace AudioAnalysisTools.Indices
     using System.Collections.Generic;
     using System.Drawing;
     using System.IO;
-
-    using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
-    using Acoustics.Shared.Contracts;
-
     using AnalysisBase;
-
+    using Newtonsoft.Json;
     using TowseyLibrary;
     using YamlDotNet.Serialization;
-
     using Zio;
 
     public interface IIndexPropertyReferenceConfiguration
     {
         string IndexPropertiesConfig { get; set; }
 
-        Dictionary<string, IndexProperties> IndexProperties { get; }
+        IndexPropertiesCollection IndexProperties { get; }
     }
 
     public abstract class AnalyzerConfigIndexProperties : AnalyzerConfig, IIndexPropertyReferenceConfiguration
     {
         protected AnalyzerConfigIndexProperties()
         {
-            this.Loaded += config =>
-                {
-                    var indicesPropertiesConfig = Indices.IndexProperties.Find(this, this.ConfigPath);
-                    this.IndexPropertiesConfig = indicesPropertiesConfig.Path.ToOsPath();
-                    this.IndexProperties = Indices.IndexProperties.GetIndexProperties(indicesPropertiesConfig);
-                };
+            void OnLoaded(IConfig config)
+            {
+                var indicesPropertiesConfig = Indices.IndexProperties.Find(this, this.ConfigPath);
+                this.IndexPropertiesConfig = indicesPropertiesConfig.Path.ToOsPath();
+                this.IndexProperties = ConfigFile.Deserialize<IndexPropertiesCollection>(this.IndexPropertiesConfig);
+            }
+
+            this.Loaded += OnLoaded;
         }
 
         public string IndexPropertiesConfig { get; set; }
 
-        public Dictionary<string, IndexProperties> IndexProperties { get; private set; }
+        public IndexPropertiesCollection IndexProperties { get; private set; }
+    }
+
+    public class IndexPropertiesCollection : Dictionary<string, IndexProperties>, IConfig
+    {
+        static IndexPropertiesCollection()
+        {
+            ConfigFile.Defaults.Add(typeof(IndexPropertiesCollection), "IndexPropertiesConfig.yml");
+        }
+
+        public IndexPropertiesCollection()
+        {
+            void OnLoaded(IConfig config)
+            {
+                int i = 0;
+                foreach (var kvp in this)
+                {
+                    // assign the key to the object for consistency
+                    kvp.Value.Key = kvp.Key;
+
+                    // HACK: infer order of properties for visualization based on order of for-each
+                    kvp.Value.Order = i;
+                    i++;
+                }
+            }
+
+            this.Loaded += OnLoaded;
+        }
+
+        public event Action<IConfig> Loaded;
+
+        public string ConfigPath { get; set; }
+
+        void IConfig.InvokeLoaded()
+        {
+            this.Loaded?.Invoke(this);
+        }
     }
 
     /// <summary>
@@ -61,6 +94,12 @@ namespace AudioAnalysisTools.Indices
     /// </summary>
     public class IndexProperties
     {
+        private static readonly Dictionary<string, Dictionary<string, IndexProperties>> CachedProperties = new Dictionary<string, Dictionary<string, IndexProperties>>();
+
+        private string dataType;
+
+        private double defaultValue;
+
         static IndexProperties()
         {
             ConfigFile.Defaults.Add(typeof(Dictionary<string, IndexProperties>), "IndexPropertiesConfig.yml");
@@ -77,7 +116,7 @@ namespace AudioAnalysisTools.Indices
             this.Name = string.Empty;
             this.DataType = "double";
             this.DefaultValue = default(double);
-            this.ProjectID = "NOT SET";
+            this.ProjectId = "NOT SET";
             this.Comment = "Relax - everything is OK";
             this.DoDisplay = true;
             this.NormMin = 0.0;
@@ -89,14 +128,12 @@ namespace AudioAnalysisTools.Indices
             this.ComboWeight = 0.0;
         }
 
-        private static readonly Dictionary<string, Dictionary<string, IndexProperties>> CachedProperties = new Dictionary<string, Dictionary<string, IndexProperties>>();
-
-        private string dataType;
-
-        private double defaultValue;
-
+        // ignored because we don't want to dump this info in ConfigFile log
+        [JsonIgnore]
         public string Key { get; set; }
 
+        // ignored because we don't want to dump this info in ConfigFile log
+        [JsonIgnore]
         public string Name { get; set; }
 
         public string DataType
@@ -110,7 +147,7 @@ namespace AudioAnalysisTools.Indices
         }
 
         [YamlIgnore]
-
+        [JsonIgnore]
         // TODO: this information should really be encoded rather than inferred
         public bool IsSpectralIndex => this.DataType == "double[]";
 
@@ -125,13 +162,19 @@ namespace AudioAnalysisTools.Indices
         }
 
         [YamlIgnore]
+        [JsonIgnore]
         public object DefaultValueCasted { get; private set; }
 
         [YamlIgnore]
+        [JsonIgnore]
         public int Order { get; set; }
 
-        public string ProjectID { get; set; }
+        // ignored because we don't want to dump this info in ConfigFile log
+        [JsonIgnore]
+        public string ProjectId { get; set; }
 
+        // ignored because we don't want to dump this info in ConfigFile log
+        [JsonIgnore]
         public string Comment { get; set; }
 
         // for display purposes only
@@ -145,6 +188,8 @@ namespace AudioAnalysisTools.Indices
 
         public bool CalculateNormMax { get; set; }
 
+        // ignored because we don't want to dump this info in ConfigFile log
+        [JsonIgnore]
         public string Units { get; set; }
 
         // use these when calculated combination index.
@@ -215,12 +260,14 @@ namespace AudioAnalysisTools.Indices
             return string.Format(" {0} ({1:f2} .. {2:f2} {3})", this.Name, this.NormMin, this.NormMax, this.Units);
         }
 
+        public Image GetPlotImage(double[] array, List<GapsAndJoins> errors = null) => this.GetPlotImage(array, Color.White, errors);
+
         /// <summary>
         /// For writing this method:
         ///    See CLASS: DrawSummaryIndices
         ///       METHOD: Bitmap ConstructVisualIndexImage(DataTable dt, string title, int timeScale, double[] order, bool doNormalise)
         /// </summary>
-        public Image GetPlotImage(double[] array, List<GapsAndJoins> errors = null)
+        public Image GetPlotImage(double[] array, Color backgroundColour, List<GapsAndJoins> errors = null)
         {
             int dataLength = array.Length;
             string annotation = this.GetPlotAnnotation();
@@ -228,11 +275,10 @@ namespace AudioAnalysisTools.Indices
 
             int trackWidth = dataLength + IndexDisplay.TrackEndPanelWidth;
             int trackHeight = IndexDisplay.DefaultTrackHeight;
-            Color[] grayScale = ImageTools.GrayScale();
 
             Bitmap bmp = new Bitmap(trackWidth, trackHeight);
             Graphics g = Graphics.FromImage(bmp);
-            g.Clear(grayScale[240]);
+            g.Clear(backgroundColour);
 
             // for pixels in the line
             for (int i = 0; i < dataLength; i++)
@@ -267,19 +313,15 @@ namespace AudioAnalysisTools.Indices
                 bmp.SetPixel(i, 0, Color.Gray);
             }
 
-            // end over all pixels
-            int endWidth = trackWidth - dataLength;
             var font = new Font("Arial", 9.0f, FontStyle.Regular);
-            g.FillRectangle(Brushes.Black, dataLength + 1, 0, endWidth, trackHeight);
-            g.DrawString(annotation, font, Brushes.White, new PointF(dataLength + 5, 2));
+            g.DrawString(annotation, font, Brushes.Black, new PointF(dataLength, 5));
 
             // now add in image patches for possible erroneous index segments
             if (errors != null && errors.Count > 0)
             {
-                bool verticalText = false;
                 foreach (GapsAndJoins errorSegment in errors)
                 {
-                    var errorBmp = errorSegment.DrawErrorPatch(trackHeight - 2, verticalText);
+                    var errorBmp = errorSegment.DrawErrorPatch(trackHeight - 2, textInVerticalOrientation: false);
                     if (errorBmp != null)
                     {
                         g.DrawImage(errorBmp, errorSegment.StartPosition, 1);
@@ -294,45 +336,9 @@ namespace AudioAnalysisTools.Indices
         /// Returns a cached set of configuration properties.
         /// WARNING CACHED!
         /// </summary>
-        public static Dictionary<string, IndexProperties> GetIndexProperties(FileInfo configFile)
+        public static IndexPropertiesCollection GetIndexProperties(FileInfo configFile)
         {
-            return GetIndexProperties(configFile.ToFileEntry());
-        }
-
-        // TODO: refactor this caching into ConfigFile generally
-        public static Dictionary<string, IndexProperties> GetIndexProperties(FileEntry configFile)
-        {
-            Contract.RequiresNotNull(configFile, nameof(configFile));
-
-            // AT: the effects of this method have been significantly altered
-            // a) caching introduced - unknown effects for parallelism and dodgy file rewriting stuff
-            // b) static deserialization utilized (instead of Config)
-            lock (CachedProperties)
-            {
-                Dictionary<string, IndexProperties> props;
-                if (CachedProperties.TryGetValue(configFile.FullName, out props))
-                {
-                    return props;
-                }
-                else
-                {
-                    var deserialized = Yaml.Deserialize<Dictionary<string, IndexProperties>>(configFile);
-
-                    int i = 0;
-                    foreach (var kvp in deserialized)
-                    {
-                        // assign the key to the object for consistency
-                        kvp.Value.Key = kvp.Key;
-
-                        // HACK: infer order of properties for visualization based on order of for-each
-                        kvp.Value.Order = i;
-                        i++;
-                    }
-
-                    CachedProperties.Add(configFile.FullName, deserialized);
-                    return deserialized;
-                }
-            }
+            return ConfigFile.Deserialize<IndexPropertiesCollection>(configFile);
         }
 
         public static FileInfo Find(Config configuration, FileInfo originalConfigFile, bool allowDefault = false)

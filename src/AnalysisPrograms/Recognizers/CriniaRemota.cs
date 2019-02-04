@@ -30,7 +30,7 @@ namespace AnalysisPrograms.Recognizers
     using TowseyLibrary;
 
     /// <summary>
-    /// Crinia remota, AKA: The remote froglet
+    /// Crinia remota, AKA: The Remote froglet
     /// This is a frog recognizer based on the "trill" or "washboard" template
     /// It detects an irregular trill type typical of many frogs.
     /// NOTE: The standard canetoad oscillation recognizer is not suitable for those frogs whose trill is irregular.
@@ -48,6 +48,8 @@ namespace AnalysisPrograms.Recognizers
     /// </summary>
     internal class CriniaRemota : RecognizerBase
     {
+        public override string Description => "[BETA/Experimental] Remote froglet. See class header for algorithm description.";
+
         public override string Author => "Towsey";
 
         public override string SpeciesName => "CriniaRemota";

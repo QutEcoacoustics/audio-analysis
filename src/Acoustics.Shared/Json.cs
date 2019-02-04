@@ -14,53 +14,64 @@ namespace Acoustics.Shared
 
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
-
     using Zio;
 
     public static class Json
     {
+        static Json()
+        {
+            Serializer = new JsonSerializer()
+            {
+                Formatting = Formatting.Indented,
+            };
+        }
+
+        public static JsonSerializer Serializer { get; }
+
         public static void Serialise<T>(FileInfo file, T obj)
         {
-            var serializer = new JsonSerializer();
-            serializer.Formatting = Formatting.Indented;
-
             using (var stream = file.CreateText())
             using (var writer = new JsonTextWriter(stream))
             {
-                serializer.Serialize(writer, obj);
+                Serializer.Serialize(writer, obj);
             }
         }
 
         public static void Serialise<T>(TextWriter stream, T obj)
         {
-            var serializer = new JsonSerializer();
-            serializer.Formatting = Formatting.Indented;
-
             using (var writer = new JsonTextWriter(stream))
             {
-                serializer.Serialize(writer, obj);
+                Serializer.Serialize(writer, obj);
             }
         }
 
-        public static string SerialiseToString<T>(T obj, bool prettyPrint = true)
+        public static string SerializeToString<T>(T obj, bool prettyPrint = true)
         {
-            return JsonConvert.SerializeObject(obj, prettyPrint ? Formatting.Indented : Formatting.None);
+            return SerializeToString(obj, prettyPrint, null);
         }
 
-        public static T Deserialise<T>(FileInfo file)
+        public static T Deserialize<T>(FileInfo file)
         {
-            return Deserialise<T>(file.ToFileEntry());
+            return Deserialize<T>(file.ToFileEntry());
         }
 
-        public static T Deserialise<T>(FileEntry file)
+        public static T Deserialize<T>(FileEntry file)
         {
-            var serializer = new JsonSerializer();
-
             using (var stream = file.OpenText())
             using (var reader = new JsonTextReader(stream))
             {
-                return serializer.Deserialize<T>(reader);
+                return Serializer.Deserialize<T>(reader);
             }
+        }
+
+        public static T DeserializeFromString<T>(string json)
+        {
+            return JsonConvert.DeserializeObject<T>(json);
+        }
+
+        internal static string SerializeToString<T>(T obj, bool prettyPrint, JsonSerializerSettings settings)
+        {
+            return JsonConvert.SerializeObject(obj, prettyPrint ? Formatting.Indented : Formatting.None, settings);
         }
 
         public class LegacyTimeSpanDataConverter : JsonConverter

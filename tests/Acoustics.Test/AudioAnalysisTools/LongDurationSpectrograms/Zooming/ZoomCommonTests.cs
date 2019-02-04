@@ -1,4 +1,4 @@
-﻿// <copyright file="ZoomCommonTests.cs" company="QutEcoacoustics">
+// <copyright file="ZoomCommonTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -60,7 +60,13 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms.Zooming
             // 1 second short of an hour - this is the test case
             var endTime = recordingDuration;
 
-            var config = new LdSpectrogramConfig();
+            var config = new LdSpectrogramConfig()
+            {
+                // same color map to reduce memory stress for test
+                ColorMap1 = SpectrogramConstants.RGBMap_BGN_PMN_R3D,
+                ColorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_R3D,
+            };
+
             var generationData = new IndexGenerationData()
                                      {
                                          IndexCalculationDuration = dataScale,
@@ -74,24 +80,10 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms.Zooming
             // create some fake spectra
             int duration = (int)(recordingDuration.TotalSeconds / dataScale.TotalSeconds);
             var spectra = new Dictionary<string, double[,]>();
-            foreach (var key in SpectralIndexValues.GetKeys())
+            foreach (var key in config.GetKeys())
             {
-                spectra.Add(key, new double[256, duration]);
-                var bgnKey = nameof(SpectralIndexValues.BGN);
-                if (key == bgnKey)
-                {
-                    spectra[bgnKey].Fill(indexProperties[bgnKey].DefaultValue);
-                }
-
-                // due to a bug in DrawRgbColourMatrix the ACI calculation ends up being NaN.
-                // This we fill one of our other spectra to a non-zero value to get the black colour we desire
-                // Bug reference: https://github.com/QutEcoacoustics/audio-analysis/issues/154
-                var sumKey = nameof(SpectralIndexValues.SUM);
-                if (key == sumKey)
-                {
-                    // this forces ACI calculation to 0 / 1 instead of 0 / 0
-                    spectra[sumKey].Fill(1.0);
-                }
+                var values = new double[256, duration].Fill(indexProperties[key].DefaultValue);
+                spectra.Add(key, values);
             }
 
             string basename = "abc";

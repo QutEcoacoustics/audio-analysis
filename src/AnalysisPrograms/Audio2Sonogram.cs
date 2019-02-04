@@ -51,7 +51,7 @@ namespace AnalysisPrograms
         // audio2sonogram "C:\SensorNetworks\WavFiles\LewinsRail\BAC1_20071008-081607.wav" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.cfg"  C:\SensorNetworks\Output\Sonograms\BAC1_20071008-081607.png 0   0  true
         [Command(
             Name = CommandName,
-            Description = "Generates multiple standarf spectrogram images and oscilllations info")]
+            Description = "[BETA] Generates multiple standard-scale spectrogram images and oscillations info")]
         public class Arguments : SourceConfigOutputDirArguments
         {
             [Option(Description = "The start offset to start analyzing from (in seconds)")]

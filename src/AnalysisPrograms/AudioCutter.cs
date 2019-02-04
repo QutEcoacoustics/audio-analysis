@@ -28,7 +28,7 @@ namespace AnalysisPrograms
 
         [Command(
             CommandName,
-            Description = "Cuts audio into segments of desired length and format")]
+            Description = "[BETA] Cuts audio into segments of desired length and format")]
         public class Arguments : SubCommandBase
         {
             //[ArgDescription("The directory containing audio files.")]

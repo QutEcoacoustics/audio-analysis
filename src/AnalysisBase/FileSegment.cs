@@ -45,13 +45,36 @@ namespace AnalysisBase
         /// Initializes a new instance of the <see cref="FileSegment"/> class.
         /// Use this constructor if you know all the information about a segment beforehand.
         /// </summary>
-        public FileSegment(FileInfo source, int sampleRate, TimeSpan duration, FileDateBehavior dateBehavior = FileDateBehavior.None, DateTimeOffset? suppliedDate = null)
+        public FileSegment(FileInfo source, int sampleRate, TimeSpan duration, DateTimeOffset? suppliedDate = null)
         {
+            // when we should know everything about the file, we don't want to try and parse the date again...
+            // we either picked it up the first time or it is not available
+            this.dateBehavior = FileDateBehavior.None;
+            this.Source = source;
+
+            var basename = Path.GetFileNameWithoutExtension(this.Source.Name);
+            var fileDate = suppliedDate;
+
+            this.SourceMetadata = new SourceMetadata(duration, sampleRate, basename, fileDate);
+
+            this.Alignment = TimeAlignment.None;
+
+            Contract.Ensures(this.Validate(), "FileSegment did not validate");
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FileSegment"/> class.
+        /// Use this constructor if you know all the information about a segment beforehand (except for the date it was created).
+        /// </summary>
+        public FileSegment(FileInfo source, int sampleRate, TimeSpan duration, FileDateBehavior dateBehavior)
+        {
+            // when we should know eveyrthing about the file, we don't want to try and parse the date again...
+            // we either picked it up the first time or it is not available
             this.dateBehavior = dateBehavior;
             this.Source = source;
 
             var basename = Path.GetFileNameWithoutExtension(this.Source.Name);
-            var fileDate = this.ParseDate(suppliedDate);
+            var fileDate = this.ParseDate(null);
 
             this.SourceMetadata = new SourceMetadata(duration, sampleRate, basename, fileDate);
 
@@ -207,7 +230,6 @@ namespace AnalysisBase
                 source: this.Source,
                 sampleRate: this.SourceMetadata.SampleRate,
                 duration: this.SourceMetadata.Duration,
-                dateBehavior: this.dateBehavior,
                 suppliedDate: this.TargetFileStartDate);
 
             return newSegment;
@@ -311,7 +333,22 @@ namespace AnalysisBase
             }
 
             this.triedToParseDate = true;
-            var date = suppliedDate ?? this.AudioFileStart();
+            DateTimeOffset? date = suppliedDate;
+            if (date == null)
+            {
+                bool fileDateFound = FileDateHelpers.FileNameContainsDateTime(this.Source.Name, out var parsedDate);
+
+                if (fileDateFound)
+                {
+                    date = parsedDate;
+                    Log.Info("Parsed file start date as " + parsedDate.ToString("O"));
+                }
+
+                // Historical note: This method previously supported inferring the date of the recording from the file's
+                // last modified timestamp. This method ultimately proved unreliable and inefficient.
+                // Support was removed for this edge case mid 2017.
+            }
+
 
             if (this.dateBehavior == FileDateBehavior.Required)
             {
@@ -323,29 +360,6 @@ namespace AnalysisBase
             }
 
             return date;
-        }
-
-        private DateTimeOffset? AudioFileStart()
-        {
-            DateTimeOffset parsedDate;
-            bool fileDateFound = FileDateHelpers.FileNameContainsDateTime(this.Source.Name, out parsedDate);
-
-            if (fileDateFound)
-            {
-                Log.Info("Parsed file start date as " + parsedDate.ToString("O"));
-                return parsedDate;
-            }
-
-            if (this.dateBehavior == FileDateBehavior.Required)
-            {
-                return null;
-            }
-
-            // Historical note: This method previously supported inferring the date of the recording from the file's
-            // last modified timestamp. This method ultimately proved unreliable and inefficient.
-            // Support was removed for this edge case mid 2017.
-
-            return null;
         }
     }
 }

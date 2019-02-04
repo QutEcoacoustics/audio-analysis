@@ -34,7 +34,7 @@ namespace AnalysisPrograms
 
         [Command(
             CommandName,
-            Description = "Creates a set of four standard spectrograms derived using different algorithms. For short recordings only.")]
+            Description = "[BETA] Creates a set of four standard-scale spectrograms derived using different algorithms. For short recordings only.")]
         public class Arguments : SourceAndConfigArguments
         {
             [Option(Description = "A file path to write output to")]

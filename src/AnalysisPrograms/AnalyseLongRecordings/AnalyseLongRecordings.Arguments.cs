@@ -31,7 +31,7 @@ AlignToMinute Options:
 
         [Command(
             CommandName,
-            Description = "Analyses long recordings by breaking them up into 1-min blocks",
+            Description = "Analyses long recordings, cutting them into blocks. Performs the analysis specified in Config file.",
             ExtendedHelpText = AdditionalNotes)]
         public class Arguments : SourceConfigOutputDirArguments
         {
@@ -67,7 +67,7 @@ AlignToMinute Options:
             public double? EndOffset { get; set; }
 
             [Option(
-                Description = "Allow advancing the start of the analysis to the nearest minute. A valid datetime must be available in the file name. Seed additional notes for options.",
+                Description = "Allow advancing the start of the analysis to the nearest minute. A valid datetime must be available in the file name. See additional notes for options.",
                 ShortName = "")]
             public TimeAlignment AlignToMinute { get; set; } = TimeAlignment.None;
 

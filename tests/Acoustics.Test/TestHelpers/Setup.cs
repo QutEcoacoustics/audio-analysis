@@ -9,8 +9,10 @@ namespace Acoustics.Test.TestHelpers
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
+    using Acoustics.Shared.Logging;
     using global::AnalysisPrograms;
     using global::AnalysisPrograms.Production.Arguments;
+    using log4net.Core;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
@@ -19,7 +21,12 @@ namespace Acoustics.Test.TestHelpers
         [AssemblyInitialize]
         public static void AssemblyInitialize(TestContext context)
         {
-            MainEntry.SetLogVerbosity(LogVerbosity.Warn, true);
+            Logging.Initialize(
+                enableMemoryLogger: true,
+                enableFileLogger: false,
+                colorConsole: false,
+                defaultLevel: Level.Info,
+                quietConsole: true);
         }
     }
 }

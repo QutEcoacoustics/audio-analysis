@@ -51,7 +51,7 @@ namespace AnalysisPrograms.EventStatistics
         /// <returns>The string that describes this object.</returns>
         public override string ToString()
         {
-            return Json.SerialiseToString(this);
+            return Json.SerializeToString(this);
         }
 
         public sealed class ImportedEventNameClassMap : CsvClassMap<ImportedEvent>

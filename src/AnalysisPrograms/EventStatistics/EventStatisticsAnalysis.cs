@@ -28,7 +28,7 @@ namespace AnalysisPrograms.EventStatistics
 
         public override string Identifier { get; } = "Ecosounds.EventStatistics";
 
-        public override string Description { get; } = "Event statistics calculation analysis used to extract critical statistics (features) from an acoustic event";
+        public override string Description { get; } = "[BETA] Calculates useful statistics (features) from an acoustic event";
 
         public override AnalysisSettings DefaultSettings { get; } = new AnalysisSettings
         {

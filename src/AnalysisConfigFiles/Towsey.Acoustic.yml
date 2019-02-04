@@ -1,51 +1,72 @@
 ---
-# Summary: Calculates acoustic indices
+# Summary: Calculates summary and spectral acoustic indices
 #
-# The csv files this analysis outputs can be used to construct:
-#     1. long-duration false-color spectrograms
-#     2. a focused stack of zooming false-color spectrograms
-#     3. the tiles for zooming false-color spectrograms
-#
+# The csv files of indices output by this analysis can be used to construct:
+#     1. long-duration, false-colour spectrograms
+#     2. a focused stack of zooming false-colour spectrograms
+#     3. the tiles for zooming false-colour spectrograms
 #
 
-AnalysisName: Towsey.Acoustic
+#The AnalysisName property is no longer required. Analysis type is now identified by config file name.
+#AnalysisName: Towsey.Acoustic
+
 #SegmentDuration: units=seconds;
+# Long duration recordings are cut into short segments for more efficient processing. Default segment length = 60 seconds.
+# WARNING: You should not change this property!!  
 SegmentDuration: 60
+
 #SegmentOverlap: units=seconds;
+# WARNING: You should not change this property!!
 SegmentOverlap: 0
 
-# IndexCalculationDuration: units=seconds (default=60 seconds; use 0.1 for zooming spectrogram tiles)
+# IndexCalculationDuration: units=seconds (default=60 seconds)
 # The Timespan (in seconds) over which summary and spectral indices are calculated
+# This value MUST not exceed value of SegmentDuration.
+# Default value = 60 seconds, however can be reduced down to 0.1 seconds for higher resolution.
+#                 IndexCalculationDuration should divide SegmentDuration with MODULO zero
 IndexCalculationDuration: 60.0
 
-# BgNoiseNeighborhood: units=seconds (default IndexCalculationDuration = 60 seconds)
-# BG noise for any location is calculated by extending the region of index calculation from 5 seconds before start to 5 sec after end of current index interval.
-#    Ten seconds is considered a minimum interval to obtain a reliable estimate of BG noise.
-#    The  BG noise interval is not extended beyond start or end of recording segment.
-#    Consequently for a 60sec Index calculation duration, the  BG noise is calculated form the 60sec segment only.
+# BgNoiseNeighborhood: units=seconds
+# By default, when IndexCalculationDuration = 60 seconds, background (stationary) noise is calculated from the full 60 second recording.
+# When IndexCalculationDuration is less than 60 seconds, background (stationary) noise is calculated by extending the region of
+# index calculation from N seconds before start to N seconds after the end of current index interval.
+# The default value for N equals 5 seconds, because ten seconds is considered the minimum interval to obtain a reliable estimate of BG noise.
+# IMPORTANT NOTE: The BG noise interval is not extended beyond the start or end of a recording segment.
+#                 Consequently the first or last 10 seconds of a recording segment used to resolve edge effects.
 BgNoiseNeighborhood: 5
 
+# By default, all recordings are down-sampled or up-sampled to 22050 Hz.
+# If you have a recording sampled at a higher rate, AND you wish to retain it, then set the correct value here.
 # Resample rate must be 2 X the desired Nyquist
 ResampleRate: 22050
 
 # FRAME LENGTH. units=samples
-# FrameWidth is used without overlap to calculate the spectral indices. Typical value=512
+# Typical value=512 where resample rate = 22050.
+# Frame Overlap is NEVER used when calculating acoustic indices.
 FrameLength: 512
 
-
-#Default values in code are LowFreqBound=1000Hz & MidFreqBound=8000
+# Defining three frequency bands.
+# It is often useful to define three frequency bands, low, middle and high.
+# Six of the summary indices are calculated for the mid-band only.
+# This is useful to avoid low frequency anthropogenic noise and to target bird species which mostly sing in the 1-8 khz band.
+# The lower and upper bound of the mid-frequency band are set by LowFreqBound and HighFreqBound respectively. 
+# Default values in code are LowFreqBound=1000Hz & MidFreqBound=8000
 LowFreqBound: 1000
 MidFreqBound: 8000
 HighFreqBound: 11000
 
-# FrequencyScale options are currently only Linear and Octave
-# Octave scale is to be used only for Jasco Marine recordings @ sample rate = 64000
+# FrequencyScale options are currently only Linear, Mel and Octave scales
+# Octave scale is to be used only for recordings having a high sample rate =64kHz (Nyquist = 32kHz)
+#              It is linear to 125Hz (60 bins), followed by 7 octaves of 28 bins each (for total 256 bins).
 FrequencyScale: Linear
 
 # SAVE INTERMEDIARY FILES
-# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+# Available options (case-sensitive): [false/Never | true/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
+# A boolean: [false|true]
 SaveIntermediateCsvFiles: false
+
+# SAVE INTERMEDIARY ONE-MINUTE (standard scale) SPECTROGRAMS
 # One-minute spectrograms can be saved in any analysis task.
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveSonogramImages: Never
@@ -56,22 +77,29 @@ SaveSonogramImages: Never
 # TODO: this option should be refactored out into the spectrogram generation analyzer - currently confusing implementation
 SaveSonogramData: false
 
-
+# TileImageOutput
 # if true an additional set of images will be produced that are tiles
 # if true, RequireDateInFilename must be set
-TileImageOutput: false
+TileOutput: false
 
-# if true, an unambiguous date time must be provided in the source file's name.
-# if true, an exception will be thrown if no such date is found
-# if false, and a valid date is still found in file name, it will still be parsed
+# RequireDateInFilename:
+# If true, an unambiguous date-time must be provided in the source file's name.
+# If true, an exception will be thrown if no such date is found
+# If false, and a valid date is still found in file name, it will still be parsed
 # supports formats like:
-#     prefix_20140101T235959+1000.mp3
-#     prefix_20140101T235959+Z.mp3
-#     prefix_20140101-235959+1000.mp3
-#     prefix_20140101-235959+Z.mp3
+#     prefix_20140101T235959+1000.wav,  where +1000 is the time-zone offset for Brisbane.
+#     prefix_20140101T235959+Z.wav,     where +Z is the zero time-zone offset.
+#     prefix_20140101-235959+1000.wav
+#     prefix_20140101-235959+Z.wav
+# For more info on dates, see <dates.md> at https://github.com/QutEcoacoustics/audio-analysis/tree/master/docs
 RequireDateInFilename: false
 
+# Do NOT change following path. It is required for drawing false-colour spectrograms
 IndexPropertiesConfig: './IndexPropertiesConfig.yml'
+
+# EventThreshold: min value=0.0; max value=1.0.
+# This value can sometimes be used to manage the FP/FN trade-off performance of a call recogniser.
+# Not always used however. 
 EventThreshold: 0.2
 ...
 

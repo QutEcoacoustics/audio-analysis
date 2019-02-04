@@ -1,4 +1,4 @@
-﻿// <copyright file="ConcatenationTests.cs" company="QutEcoacoustics">
+// <copyright file="ConcatenationTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -25,8 +25,11 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
     /// Notes on TESTS: (from Anthony in email @ 05/04/2017)
     /// (1) small tests are better
     /// (2) simpler tests are better
-    /// (3) use an appropriate serialisation format
+    /// (3) use an appropriate serialization format
     /// (4) for binary large objects(BLOBs) make sure git-lfs is tracking them
+    ///
+    /// Note: these tests are poorly designed. We need to use/generate mock data
+    /// because the data stored in the zip files can easily become out dated.
     /// </summary>
     [TestClass]
     public class ConcatenationTests : OutputDirectoryTest
@@ -78,7 +81,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                 IndexPropertiesConfig = indexPropertiesConfig.FullName,
                 FalseColourSpectrogramConfig = testConfig.FullName,
                 ColorMap1 = LDSpectrogramRGB.DefaultColorMap1,
-                ColorMap2 = "BGN-CVR-EVN", // POW was depracated post May 2017
+                ColorMap2 = "BGN-PMN-EVN", // POW was depracated post May 2017
                 ConcatenateEverythingYouCanLayYourHandsOn = true, // join everything found
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
                 DrawImages = true,
@@ -133,7 +136,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                 IndexPropertiesConfig = indexPropertiesConfig.FullName,
                 FalseColourSpectrogramConfig = testConfig.FullName,
                 ColorMap1 = LDSpectrogramRGB.DefaultColorMap1,
-                ColorMap2 = "BGN-CVR-EVN", // POW was depracated post May 2017
+                ColorMap2 = "BGN-PMN-EVN", // POW was depracated post May 2017
                 ConcatenateEverythingYouCanLayYourHandsOn = false, // 24 hour blocks only
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
                 DrawImages = true,
@@ -167,8 +170,8 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
         /// <summary>
         /// METHOD TO CHECK Concatenation of spectral and summary index files when ConcatenateEverythingYouCanLayYourHandsOn = false
         /// that is, concatenate in 24 hour blocks only.
-        /// This test is same as TEST2 above escept that the start and end date have been set to null.
-        /// Start and end dates will be set to first and last by default and all available data will be concatentated in 24 hour blocks.
+        /// This test is same as TEST2 above except that the start and end date have been set to null.
+        /// Start and end dates will be set to first and last by default and all available data will be concatenated in 24 hour blocks.
         /// In the case of this dataset, the two partial days of data will be concatenated separately.
         /// </summary>
         [TestMethod]
@@ -190,7 +193,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                 IndexPropertiesConfig = indexPropertiesConfig.FullName,
                 FalseColourSpectrogramConfig = testConfig.FullName,
                 ColorMap1 = LDSpectrogramRGB.DefaultColorMap1,
-                ColorMap2 = "BGN-CVR-EVN", // POW was depracated post May 2017
+                ColorMap2 = "BGN-PMN-EVN", // POW was depracated post May 2017
                 ConcatenateEverythingYouCanLayYourHandsOn = false, // 24 hour blocks only
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
                 DrawImages = true,
@@ -250,7 +253,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             var config = Yaml.Deserialize<LdSpectrogramConfig>(defaultConfigFile);
 
             // make changes to config file as required for test
-            config.ColorMap1 = "BGN-ENT-CVR";
+            config.ColorMap1 = "BGN-ENT-PMN";
             config.ColorMap2 = "ACI-RNG-EVN";
 
             // write new config
@@ -278,14 +281,14 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             ConcatenateIndexFiles.Execute(arguments);
 
-            // Make sure files that match our config file are actully created!
+            // Make sure files that match our config file are actually created!
             var outputDataDir = this.outputDirectory.Combine(arguments.FileStemName, dateString);
             var prefix = arguments.FileStemName + "_" + dateString + "__";
 
             Assert.That.FileExists(outputDataDir.CombineFile(prefix + "Towsey.Acoustic.Indices.csv"));
             Assert.That.FileNotExists(outputDataDir.CombineFile(prefix + "SummaryIndex.csv"));
 
-            var imageFileInfo1 = outputDataDir.CombineFile(prefix + "BGN-ENT-CVR.png");
+            var imageFileInfo1 = outputDataDir.CombineFile(prefix + "BGN-ENT-PMN.png");
             Assert.IsTrue(imageFileInfo1.Exists);
 
             var imageFileInfo2 = outputDataDir.CombineFile(prefix + "ACI-RNG-EVN.png");

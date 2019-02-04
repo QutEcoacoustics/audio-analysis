@@ -66,7 +66,7 @@ namespace Acoustics.Shared.ConfigFile
                 return false;
             }
 
-            return profileNode is Dictionary<string, object>;
+            return profileNode is Dictionary<object, object>;
         }
 
         public static string[] GetProfileNames<TConfig>(TConfig configuration)

@@ -1,4 +1,4 @@
-﻿// <copyright file="NoiseRemovalTests.cs" company="QutEcoacoustics">
+// <copyright file="NoiseRemovalTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -18,6 +18,15 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
     /// Only one test is implemented for Modal noise removal using the method of Lamel et al.
     /// TODO There are several more tests that could be implemented for various methods of noise removal.
     /// See the NoiseProfile class
+    /// 
+    /// One additional noise removal method is LOCAL CONRAST Normalisation.
+    /// LCN over frequency bins is better and faster than standard noise removal.
+    ///   double neighbourhoodSeconds = 0.25;
+    ///   int neighbourhoodFrames = (int)(sonogram.FramesPerSecond * neighbourhoodSeconds);
+    ///   double lcnContrastLevel = 0.5; // was previously 0.1
+    ///   LoggedConsole.WriteLine("LCN: FramesPerSecond (Prior to LCN) = {0}", sonogram.FramesPerSecond);
+    ///   LoggedConsole.WriteLine("LCN: Neighbourhood of {0} seconds = {1} frames", neighbourhoodSeconds, neighbourhoodFrames);
+    ///   sonogram.Data = NoiseRemoval_Briggs.NoiseReduction_byLCNDivision(sonogram.Data, neighbourhoodFrames, lcnContrastLevel);
     /// </summary>
     [TestClass]
     public class NoiseRemovalTests

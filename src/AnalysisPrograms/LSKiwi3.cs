@@ -363,7 +363,7 @@ namespace AnalysisPrograms
 
             //double minGap = 10.0; //seconds
             //MergeEvents(events, minGap);    //decide not to use this
-            CropEvents(events, dBArray, minDuration);
+            CropEvents(events, dBArray, minDuration, segmentStartOffset);
 
             // PREPARE HITS MATRIX - now do not do because computaionally expensive and makes songrams a bit difficult to interpret
             double[,] hits = null;
@@ -846,7 +846,7 @@ namespace AnalysisPrograms
         }
 
         //assume that the events are all from the same sex.
-        public static void MergeEvents(List<AcousticEvent> events, double minGapInSeconds)
+        public static void MergeEvents(List<AcousticEvent> events, double minGapInSeconds, TimeSpan segmentStartOffset)
         {
             int count = events.Count;
             for (int i = count - 2; i >= 0; i--)
@@ -859,7 +859,7 @@ namespace AnalysisPrograms
                 if (startEv2 - endEv1 < 10) /*&& (name1 == name2))*/ // events are close so MergeEvents them
                 {
                     events[i].Oblong = null;
-                    events[i].TimeEnd = events[i + 1].TimeEnd;
+                    events[i].SetEventPositionRelative(segmentStartOffset, events[i].TimeStart, events[i + 1].TimeEnd);
                     if (events[i + 1].kiwi_intensityScore > events[i].kiwi_intensityScore)
                     {
                         events[i].kiwi_intensityScore = events[i + 1].kiwi_intensityScore;
@@ -900,7 +900,7 @@ namespace AnalysisPrograms
             }
         } //MergeEvents()
 
-        public static void CropEvents(List<AcousticEvent> events, double[] activity, double minDurationInSeconds)
+        public static void CropEvents(List<AcousticEvent> events, double[] activity, double minDurationInSeconds, TimeSpan segmentStartOffset)
         {
             double croppingSeverity = 0.2;
             int length = activity.Length;
@@ -923,8 +923,7 @@ namespace AnalysisPrograms
                 }
 
                 ev.Oblong = null;
-                ev.TimeStart = newMinRow * ev.FrameOffset;
-                ev.TimeEnd = newMaxRow * ev.FrameOffset;
+                ev.SetEventPositionRelative(segmentStartOffset, newMinRow * ev.FrameOffset, newMaxRow * ev.FrameOffset);
 
                 //int frameCount = (int)Math.Round(ev.Duration / ev.FrameOffset);
             }

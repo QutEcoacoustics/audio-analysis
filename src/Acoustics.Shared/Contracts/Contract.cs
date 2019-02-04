@@ -5,11 +5,7 @@
 namespace Acoustics.Shared.Contracts
 {
     using System;
-    using System.Collections.Generic;
     using System.Diagnostics;
-    using System.Linq;
-    using System.Runtime.CompilerServices;
-    using System.Text;
     using JetBrains.Annotations;
 
     /// <summary>
@@ -28,6 +24,22 @@ namespace Acoustics.Shared.Contracts
         [DebuggerHidden]
         [ContractAnnotation("value:null => halt")]
         public static void RequiresNotNull(object value, string name = "", string message = "Precondition failed - value was null")
+        {
+            if (value == null)
+            {
+                throw new ArgumentNullException(name, message);
+            }
+        }
+
+        /// <summary>
+        /// Ensures the supplied value to be not null, otherwise throw a argument null exception.
+        /// </summary>
+        /// <param name="value">Whether or not the exception should be thrown</param>
+        /// <param name="name">The name of the argument that was null</param>
+        /// <param name="message">The message to add to the exception if the check fails</param>
+        [DebuggerHidden]
+        [ContractAnnotation("value:null => halt")]
+        public static void EnsuresNotNull(object value, string name = "", string message = "Postcondition failed - value was null")
         {
             if (value == null)
             {
@@ -76,7 +88,7 @@ namespace Acoustics.Shared.Contracts
 
         /// <summary>
         /// Require the supplied boolean to be true, otherwise throw an exception.
-        /// This is a mirror of <see cref="Requires{T}"/> and behaves identically.
+        /// This is a mirror of <see cref="Requires{T}(bool,string)"/> and behaves identically.
         /// If you wish to check a condition at the end of your method, move the <see cref="Ensures{T}"/> call there.
         /// </summary>
         /// <typeparam name="T">The type of exception to throw</typeparam>

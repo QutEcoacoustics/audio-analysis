@@ -3,7 +3,6 @@
 # i.e. a brief single honk having a dominant frequency and one or more harmonics - evenly spaced.
 # The algorithm is copied from Algorithm2 of the PlatyplectrumOrnatum recognizer.
 #
-AnalysisName: Towsey.UperoleiaLithomoda
 SpeciesName: Uperoleia lithomoda
 AbbreviatedSpeciesName: U.lithomoda
 

@@ -42,7 +42,7 @@ m: false
         public void Initialize()
         {
             var reader = new StringReader(TestYaml);
-            this.config = new Config(reader, null);
+            this.config = ConfigFile.Deserialize(reader, "I don't exist");
         }
 
         [TestMethod]

@@ -34,9 +34,9 @@ namespace AnalysisPrograms.Recognizers.Base
     {
         public const string CommandName = "EventRecognizer";
         private const string Description =
-            "The entry point for all species or event recognizers.Only to be used on short recordings(< 2 mins)." +
-            "This recognizer runs any IEventRecognizer. The recognizer run is based on the " +
-            "Identifier field and parsed from the AnalysisName field in the config file of the same name";
+            "The entry point for all species or event recognizers. Only to be used on short recordings (< 2 mins) that exactly match the code assumptions (e.g. correct format, channels, sample rate)." +
+            "This recognizer runs any IEventRecognizer. The recognizer run" +
+            "follows the same rules as " + AnalyseLongRecording.CommandName;
 
         [Command(
             CommandName,
@@ -61,6 +61,7 @@ namespace AnalysisPrograms.Recognizers.Base
         /// </summary>
         public static void Execute(Arguments arguments)
         {
+            MainEntry.WarnIfDevleoperEntryUsed("EventRecognizer entry does not do any audio maniuplation.");
             Log.Info("Running event recognizer");
 
             var sourceAudio = arguments.Source;

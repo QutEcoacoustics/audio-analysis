@@ -10,17 +10,16 @@ multiple runs of the *audio2csv* command, and concatenates them to produce one
 or more concatenated false-colour index spectrograms.
 
 Typically, this command is used to produce a sequence of one or more 24-hour
-false-colour spectrograms. 24-hour false-colour spectrograms are easier to
+false-colour spectrograms, where the original recordings can be anything from 30 minutes to 24 hours duration. 24-hour false-colour spectrograms are much easier to
 interpret because sound-marks, such as the morning chorus, evening chorus, and
-insect tracks are easier to identify. Typically, environmental recordings are
-anything from 30 minutes to 24 hours in duration. False-colour index spectrograms
+insect tracks, are easier to identify. False-colour index spectrograms
 shorter than about 3 hours are difficult to interpret due to the lack of
 soundscape context.
 
 There is also an option with this command to concatenate the false-colour
 spectrograms of every audio recording that can be found in a specified directory
-into one large dataset/image. Due to memory constraints however, one would not
-usually concatenate more than about 48 hours of recordings.
+into one large data-set and image. Due to memory constraints however, one would not
+usually attempt to concatenate more than about 48 hours of recordings.
 
 It is **strongly** recommended you only run this command on files from a single
 acoustic sensor deployment - don't mix recordings from different sites or

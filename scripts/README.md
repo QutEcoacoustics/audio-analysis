@@ -6,7 +6,7 @@ This has a few advantages:
 **It simplifies the code**. We don't need to know about the particular 
 way you store your data, or the way you want your data processed.
 
-**It allows for greater customiszation**. By building a set of composable
+**It allows for greater customization**. By building a set of composable
 tools, it allows you to choose what analysis done, and when. You wan't it
 all? You got it. You only want the first bit done once, and the second done
 100 times with parameter sweeps? Go for it.
@@ -28,14 +28,14 @@ include it here as an example for others to use.
 ## PowerShell
 
 You'll see a lot of scripts in this folder that are written in PowerShell.
-If you're not familar with it, you can consider it as the Windows equivalent
+If you're not familiar with it, you can consider it as the Windows equivalent
 of the Bash shell. @atruskie like's PowerShell because in their personal
 opinion, the syntax is more reasonable than Bash, and the enhanced support
 for dates, times, and regular expressions are well worth the investment.
 
 As of [PowerShell 6.0](https://github.com/PowerShell/PowerShell#-powershell)
 the shell is cross platform and well worth investigating. If you're not
-convinced, the scripts should be easy enough to reimplment in your favourite
+convinced, the scripts should be easy enough to reimplement in your favourite
 language (like Bash)--and we would of course appreciate any translated
 scripts sent back to us as contributed examples.
 

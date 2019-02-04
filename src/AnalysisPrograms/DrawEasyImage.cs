@@ -32,7 +32,7 @@ namespace AnalysisPrograms
 
         [Command(
             CommandName,
-            Description = "Concatenates multiple consecutive index results into a format suitable for years of data.")]
+            Description = "[UNMAINTAINED] Produces image derived from concatenation of multiple consecutive index files. Suitable for years of recorded data.")]
         public class Arguments : SubCommandBase
         {
             [Option(

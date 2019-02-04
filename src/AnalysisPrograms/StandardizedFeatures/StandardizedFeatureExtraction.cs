@@ -26,6 +26,8 @@ namespace AnalysisPrograms.StandardizedFeatures
 
     public class StandardizedFeatureExtraction : AbstractStrongAnalyser
     {
+        public override string Description => "Performs a standardized feature extraction for ML tasks identifying faunal vocalisations.";
+
         private static readonly ILog Log = LogManager.GetLogger(nameof(StandardizedFeatureExtraction));
 
         public override void BeforeAnalyze(AnalysisSettings analysisSettings)
@@ -42,11 +44,6 @@ namespace AnalysisPrograms.StandardizedFeatures
         public override string Identifier
         {
             get { return "Ecosounds.StandardizedFeatures"; }
-        }
-
-        public virtual string Description
-        {
-            get { return "Performs a standardized feature extraction for ML tasks identifying faunal vocalisations."; }
         }
 
         public override AnalyzerConfig ParseConfig(FileInfo file)

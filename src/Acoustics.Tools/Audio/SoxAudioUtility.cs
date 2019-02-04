@@ -1,11 +1,11 @@
-﻿namespace Acoustics.Tools.Audio
+namespace Acoustics.Tools.Audio
 {
     using System;
     using System.Collections.Generic;
     using System.Globalization;
     using System.IO;
     using System.Linq;
-
+    using log4net;
     using Shared;
 
     /// <summary>
@@ -13,6 +13,7 @@
     /// </summary>
     public class SoxAudioUtility : AbstractAudioUtility, IAudioUtility
     {
+        private readonly bool enableShortNameHack;
         /*
          * Some things to test out/try:
          * stat - audio stats
@@ -50,14 +51,22 @@
         /// <param name="soxExe">
         /// The exe file.
         /// </param>
+        /// <param name="temporaryFilesDirectory">
+        /// Which directory should hold temporary files.
+        /// </param>
+        /// <param name="enableShortNameHack">
+        /// Whether or not filenames with unicode characters should be shortened
+        /// to 8.3 filenames on Windows.
+        /// </param>
         /// <exception cref="FileNotFoundException">
         /// Could not find exe.
         /// </exception>
         /// <exception cref="ArgumentNullException">
         /// <paramref name="soxExe"/> is <c>null</c>.
         /// </exception>
-        public SoxAudioUtility(FileInfo soxExe, DirectoryInfo temporaryFilesDirectory)
+        public SoxAudioUtility(FileInfo soxExe, DirectoryInfo temporaryFilesDirectory, bool enableShortNameHack = true)
         {
+            this.enableShortNameHack = enableShortNameHack;
             this.CheckExe(soxExe, "sox");
             this.ExecutableModify = soxExe;
             this.ExecutableInfo = soxExe;
@@ -120,7 +129,7 @@
         /// <summary>
         /// Gets the valid source media types.
         /// </summary>
-        protected override IEnumerable<string> ValidSourceMediaTypes => new[] { MediaTypes.MediaTypeWav, MediaTypes.MediaTypeMp3 };
+        protected override IEnumerable<string> ValidSourceMediaTypes => new[] { MediaTypes.MediaTypeWav, MediaTypes.MediaTypeMp3, MediaTypes.MediaTypeFlacAudio };
 
         /// <summary>
         /// Gets the invalid source media types.
@@ -230,7 +239,7 @@
                 forceOutput = "-t wavpcm ";
             }
 
-            return $"{repeatable} -q -V4 \"{source.FullName}\" {forceOutput}\"{output.FullName}\" {trim} {rate} {remix} {bandpass}";
+            return $"{repeatable} -q -V4 \"{this.FixFilename(source)}\" {forceOutput}\"{output.FullName}\" {trim} {rate} {remix} {bandpass}";
         }
 
         private static string FormatChannelSelection(AudioUtilityRequest request)
@@ -274,7 +283,7 @@
         /// </returns>
         protected override string ConstructInfoArgs(FileInfo source)
         {
-            string args = " --info -V4 \"" + source.FullName + "\"";
+            string args = $" --info -V4 \"{this.FixFilename(source)}\"";
             return args;
         }
 
@@ -335,38 +344,57 @@
             }
 
             // parse info info class
-            var keyDuration = "Duration";
-            var keyBitRate = "Bit Rate";
-            var keySampleRate = "Sample Rate";
-            var keyChannels = "Channels";
-            var keyPrecision = "Precision";
-
-            if (result.RawData.ContainsKey(keyDuration))
-            {
-                var stringDuration = result.RawData[keyDuration];
-
-                var formats = new[]
-                        {
-                            @"h\:mm\:ss\.ff", @"hh\:mm\:ss\.ff", @"h:mm:ss.ff",
-                            @"hh:mm:ss.ff",
-                        };
-
-                TimeSpan tsresult;
-                if (TimeSpan.TryParseExact(stringDuration.Trim(), formats, CultureInfo.InvariantCulture, out tsresult))
-                {
-                    result.Duration = tsresult;
-                }
-
-                var extra = this.Duration(source);
-                if (extra.HasValue)
-                {
-                    result.Duration = extra.Value;
-                }
-            }
+            const string keyDuration = "Duration";
+            const string keySamples = "Samples";
+            const string keyBitRate = "Bit Rate";
+            const string keySampleRate = "Sample Rate";
+            const string keyChannels = "Channels";
+            const string keyPrecision = "Precision";
 
             if (result.RawData.ContainsKey(keySampleRate))
             {
                 result.SampleRate = this.ParseIntStringWithException(result.RawData[keySampleRate], "sox.samplerate");
+            }
+
+            if (result.RawData.ContainsKey(keyDuration))
+            {
+                
+                var sampleCount = result.RawData[keySamples];
+
+                // most precise and efficient calculation, duration from sample count
+                if (sampleCount.IsNotEmpty() && result.SampleRate.HasValue)
+                {
+                    var samples = this.ParseLongStringWithException(sampleCount, "Samples");
+                    var duration = Math.Round((decimal)samples.Value / result.SampleRate.Value, 6, MidpointRounding.AwayFromZero);
+                    result.Duration = TimeSpan.FromSeconds((double)duration);
+                }
+                else
+                {
+                    // less precise and problematic for very long recordings (because of timespan parsing)
+                    // but still faster than another invocation
+                    var stringDuration = result.RawData[keyDuration];
+                    var formats = new[]
+                    {
+                        @"h\:mm\:ss\.ff", @"hh\:mm\:ss\.ff", @"h:mm:ss.ff",
+                        @"hh:mm:ss.ff",
+                    };
+
+                    if (TimeSpan.TryParseExact(stringDuration.Trim(), formats, CultureInfo.InvariantCulture,
+                        out var duration))
+                    {
+                        result.Duration = duration;
+                    }
+                    else
+                    {
+                        // last resort: ask sox specifically for the duration with another invocation
+                        // AT: this case used to always happen even if it was not necessary
+                        var extra = this.Duration(source);
+                        if (extra.HasValue)
+                        {
+                            result.Duration = extra.Value;
+                        }
+                    }
+                }
             }
 
             if (result.RawData.ContainsKey(keyChannels))
@@ -409,7 +437,7 @@
                         $"The file {source.FullName} reported a bit rate of {stringValue} which is not supported");
                 }
 
-                var value = double.Parse(stringValue);
+                var value = double.Parse(stringValue, CultureInfo.InvariantCulture);
 
                 value = value * magnitude;
 
@@ -521,6 +549,31 @@
             {
                 return TimeSpan.Zero;
             }
+        }
+
+        private string FixFilename(FileInfo file)
+        {
+            var path = file.FullName;
+            if (!this.enableShortNameHack)
+            {
+                return path;
+            }
+
+            if (!AppConfigHelper.IsWindows)
+            {
+                return path;
+            }
+
+            if (!PathUtils.HasUnicodeOrUnsafeChars(path))
+            {
+                return path;
+            }
+
+            var shortPath = PathUtils.GetShortFilename(path);
+            this.Log.Trace(
+                $"SoX unicode path bug avoided by shortening '{path}' to '{shortPath}'");
+
+            return shortPath;
         }
 
         private AudioUtilityInfo SoxStats(FileInfo source)
@@ -655,7 +708,7 @@ a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
                 lines = process.StandardOutput.Split(new[] {'\n', '\r'}, StringSplitOptions.RemoveEmptyEntries);
             }
 
-            return TimeSpan.FromSeconds(double.Parse(lines.First()));
+            return TimeSpan.FromSeconds(this.ParseDoubleStringWithException(lines.FirstOrDefault(), "Duration").Value);
         }
 
         private static string GetMediaType(Dictionary<string, string> rawData, string extension)
@@ -677,6 +730,8 @@ a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
                         return MediaTypes.MediaTypeWav;
                     case "16-bit WavPack":
                         return MediaTypes.MediaTypeWavpack;
+                    case "16-bit FLAC":
+                        return MediaTypes.MediaTypeFlacAudio;
                     default:
                         return null;
                 }

@@ -1,4 +1,4 @@
-﻿// <copyright file="PathHelper.cs" company="QutEcoacoustics">
+// <copyright file="PathHelper.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -17,7 +17,10 @@ namespace Acoustics.Test.TestHelpers
             CodeBase = Environment.CurrentDirectory;
             TestResources = Path.Combine(CodeBase, "..", "..", "..", "Fixtures");
             SolutionRoot = Path.Combine(CodeBase, "..", "..", "..", "..");
+            AnalysisProgramsBuild = Path.Combine(SolutionRoot, "src", "AnalysisPrograms", "bin", "debug");
         }
+
+        public static string AnalysisProgramsBuild { get; set; }
 
         public static string SolutionRoot { get; }
 

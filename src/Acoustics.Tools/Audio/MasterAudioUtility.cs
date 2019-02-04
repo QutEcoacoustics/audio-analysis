@@ -13,18 +13,22 @@ namespace Acoustics.Tools.Audio
     using System.Collections.Generic;
     using System.Globalization;
     using System.IO;
-
+    using System.Threading;
     using Shared;
+    using Shared.Contracts;
 
     /// <summary>
     /// Combined audio utility that makes use of the most appropriate audio utility for the task.
     /// </summary>
     public class MasterAudioUtility : AbstractAudioUtility, IAudioUtility
     {
+        private static bool missingMp3SpltWarned = false;
+
         private readonly WavPackAudioUtility wvunpackUtility;
 
         private readonly FfmpegAudioUtility ffmpegUtility;
 
+        // we allow only mp3splt utility to  be null
         private readonly Mp3SpltAudioUtility mp3SpltUtility;
 
         private readonly SoxAudioUtility soxUtility;
@@ -38,12 +42,20 @@ namespace Acoustics.Tools.Audio
         public MasterAudioUtility()
         {
             this.wvunpackUtility = new WavPackAudioUtility(new FileInfo(AppConfigHelper.WvunpackExe));
-            this.mp3SpltUtility = new Mp3SpltAudioUtility(new FileInfo(AppConfigHelper.Mp3SpltExe));
+
+            var mp3SpltExe = AppConfigHelper.Mp3SpltExe;
+            if (mp3SpltExe != null)
+            {
+                this.mp3SpltUtility = new Mp3SpltAudioUtility(new FileInfo(mp3SpltExe));
+            }
+
             this.ffmpegUtility = new FfmpegAudioUtility(new FileInfo(AppConfigHelper.FfmpegExe), new FileInfo(AppConfigHelper.FfprobeExe));
             this.ffmpegRawPcmUtility = new FfmpegRawPcmAudioUtility(new FileInfo(AppConfigHelper.FfmpegExe));
             this.soxUtility = new SoxAudioUtility(new FileInfo(AppConfigHelper.SoxExe));
 
-            this.TemporaryFilesDirectory = TempFileHelper.TempDir();
+            this.TemporaryFilesDirectory = this.TemporaryFilesDirectory ?? TempFileHelper.TempDir();
+
+            this.Validate();
         }
 
         /// <summary>
@@ -87,6 +99,22 @@ namespace Acoustics.Tools.Audio
             this.soxUtility = soxUtility;
 
             this.TemporaryFilesDirectory = temporaryFilesDirectory ?? TempFileHelper.TempDir();
+
+            this.Validate();
+        }
+
+        private void Validate()
+        {
+            Contract.RequiresNotNull(this.ffmpegUtility, nameof(this.ffmpegUtility));
+            Contract.RequiresNotNull(this.wvunpackUtility, nameof(this.wvunpackUtility));
+            Contract.RequiresNotNull(this.soxUtility, nameof(this.soxUtility));
+            Contract.RequiresNotNull(this.TemporaryFilesDirectory, nameof(this.TemporaryFilesDirectory));
+
+            if (this.mp3SpltUtility == null && !missingMp3SpltWarned)
+            {
+                missingMp3SpltWarned = true;   
+                this.Log.Warn("No Mp3Splt utility provided. If you try to segment MP3 the program will fail.");
+            }
         }
 
         /// <summary>
@@ -446,6 +474,11 @@ namespace Acoustics.Tools.Audio
 
         private FileInfo SegmentMp3(FileInfo source, string sourceMimeType, AudioUtilityRequest request)
         {
+            if (this.mp3SpltUtility == null)
+            {
+                throw new NotSupportedException($"MP3 conversion not supported because mp3splt utility has not been configured for this { nameof(MasterAudioUtility)}.");
+            }
+
             // use a temp file to segment.
             var mp3SpltTempFile = TempFileHelper.NewTempFile(this.TemporaryFilesDirectory, MediaTypes.GetExtension(MediaTypes.MediaTypeMp3));
 

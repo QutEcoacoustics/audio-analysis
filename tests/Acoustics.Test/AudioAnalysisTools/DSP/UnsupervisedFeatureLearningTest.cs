@@ -28,6 +28,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
         /// This method will be used in IAnalyser
         /// </summary>
         [TestMethod]
+        [Ignore]
         public void TestFeatureLearning()
         {
             // var outputDir = this.outputDirectory;

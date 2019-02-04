@@ -72,7 +72,7 @@ namespace AnalysisPrograms
 
         [Command(
             CommandName,
-            Description = "Produces long - duration false - colour spectrograms from matrices of spectral indices.")]
+            Description = "[BETA] Produces long-duration, false-colour spectrograms from matrices of spectral indices.")]
         public class Arguments : SubCommandBase
         {
             [Option(Description = "Directory where the input data is located.")]
@@ -129,7 +129,7 @@ namespace AnalysisPrograms
             (FileEntry indexGenerationDataFile, FileEntry indexDistributionsFile) =
                 ZoomParameters.CheckNeededFilesExist(arguments.InputDataDirectory.ToDirectoryEntry());
 
-            var indexGenerationData = Json.Deserialise<IndexGenerationData>(indexGenerationDataFile);
+            var indexGenerationData = Json.Deserialize<IndexGenerationData>(indexGenerationDataFile);
 
             // spectral distribution statistics is required only when calcualting difference spectrograms.
             Dictionary<string, IndexDistributions.SpectralStats> indexDistributionsData = null;

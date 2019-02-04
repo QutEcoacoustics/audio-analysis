@@ -1,4 +1,4 @@
-﻿// <copyright file="TestAnalyzeLongRecording.cs" company="QutEcoacoustics">
+// <copyright file="TestAnalyzeLongRecording.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -54,7 +54,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
         /// Acoustic indices as calculated from Linear frequency scale spectrogram.
         /// </summary>
         [TestMethod]
-        [Timeout(45_000)]
+        [Timeout(60_000)]
         public void TestAnalyzeSr22050Recording()
         {
             int sampleRate = 22050;
@@ -98,7 +98,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             var resultsDirectory = this.outputDirectory.Combine("Towsey.Acoustic");
             var listOfFiles = resultsDirectory.EnumerateFiles().ToArray();
 
-            Assert.AreEqual(32, listOfFiles.Length);
+            Assert.AreEqual(38, listOfFiles.Length);
 
             var csvCount = listOfFiles.Count(f => f.Name.EndsWith(".csv"));
             Assert.AreEqual(15, csvCount);
@@ -107,7 +107,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             Assert.AreEqual(2, jsonCount);
 
             var pngCount = listOfFiles.Count(f => f.Name.EndsWith(".png"));
-            Assert.AreEqual(15, pngCount);
+            Assert.AreEqual(20, pngCount);
 
             var twoMapsImagePath = resultsDirectory.CombineFile("TemporaryRecording1__2Maps.png");
             var twoMapsImage = ImageTools.ReadImage2Bitmap(twoMapsImagePath.FullName);
@@ -137,7 +137,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             var ldsBgnSpectrumFile = this.outputDirectory.CombineFile("Spectrum1.png");
             GraphsAndCharts.DrawGraph(array, "LD BGN SPECTRUM Linear", ldsBgnSpectrumFile);
 
-            var generationData = Json.Deserialise<IndexGenerationData>(IndexGenerationData.FindFile(resultsDirectory.ToDirectoryEntry()));
+            var generationData = Json.Deserialize<IndexGenerationData>(IndexGenerationData.FindFile(resultsDirectory.ToDirectoryEntry()));
             Assert.AreEqual("TemporaryRecording1", generationData.RecordingBasename);
         }
 
@@ -243,7 +243,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             // SECOND part of test is to create the LD spectrograms because they are not created when IndexCalcDuration < 60 seconds
             // first read in the index generation data
             var icdPath = resultsDirectory.CombineFile(recordingName + "__IndexGenerationData.json");
-            var indexConfigData = Json.Deserialise<IndexGenerationData>(icdPath);
+            var indexConfigData = Json.Deserialize<IndexGenerationData>(icdPath);
 
             var indexPropertiesConfig = PathHelper.ResolveConfigFile("IndexPropertiesConfig.yml");
 
@@ -266,10 +266,10 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
                     analysisType: analysisType,
                     indexSpectrograms: dictionaryOfSpectra);
 
-            // test number of images - should now be 15
+            // test number of images - should now be 23
             listOfFiles = resultsDirectory.EnumerateFiles().ToArray();
             pngCount = listOfFiles.Count(f => f.Name.EndsWith(".png"));
-            Assert.AreEqual(16, pngCount);
+            Assert.AreEqual(21, pngCount);
 
             var twoMapsImagePath = resultsDirectory.CombineFile(recordingName + "__2Maps.png");
             var twoMapsImage = ImageTools.ReadImage2Bitmap(twoMapsImagePath.FullName);

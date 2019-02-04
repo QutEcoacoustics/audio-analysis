@@ -36,6 +36,8 @@ namespace AnalysisPrograms.Recognizers
     /// </summary>
     public class LitoriaNasutaOLD : RecognizerBase
     {
+        public override string Description => "[ALPHA/EMBRYONIC] Unfinished - see class header.";
+
         public override string Author => "Towsey";
 
         public override string SpeciesName => "LitoriaNasuta";

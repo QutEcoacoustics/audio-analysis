@@ -61,6 +61,8 @@ namespace AnalysisPrograms
 
         public const int ResampleRate = 17640;
 
+        public override string Description => "[BETA/EXPERIMENTAL] Recogniser for male koalla bellow. Detects inhalation oscillations.";
+
         public string DefaultConfiguration
         {
             get

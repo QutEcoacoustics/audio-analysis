@@ -21,6 +21,7 @@ namespace AnalysisPrograms
     using System.Linq;
     using System.Reflection;
     using Acoustics.Shared;
+    using Acoustics.Shared.Logging;
     using log4net.Appender;
     using log4net.Core;
     using log4net.Repository.Hierarchy;
@@ -53,10 +54,17 @@ namespace AnalysisPrograms
                     ApMetricsKey,
                     "<true|false>\t (Not implemented) Enable or disable metrics - default value is `true`"
                 },
+#if DEBUG
+                {
+                    ApAutoAttachKey,
+                    "<true|false>\t Enable or disable auto attach for debugging - default value is `false`"
+                },
+#endif
             };
 
         private const string ApPlainLoggingKey = "AP_PLAIN_LOGGING";
         private const string ApMetricsKey = "AP_METRICS";
+        private const string ApAutoAttachKey = "AP_AUTO_ATTACH";
 
         internal enum Usages
         {
@@ -79,6 +87,11 @@ namespace AnalysisPrograms
         public static CommandLineApplication CommandLineApplication { get; private set; }
 
         public static bool IsDebuggerAttached => Debugger.IsAttached;
+
+        /// <summary>
+        /// Gets a value indicating whether or not the debugger should automatically attach.
+        /// </summary>
+        internal static bool ApAutoAttach { get; private set; }
 
         public static void SetLogVerbosity(LogVerbosity logVerbosity, bool quietConsole = false)
         {
@@ -114,47 +127,14 @@ namespace AnalysisPrograms
                     throw new ArgumentOutOfRangeException();
             }
 
-            var repository = (Hierarchy)LogManager.GetRepository();
-            repository.Root.Level = modifiedLevel;
-            repository.Threshold = modifiedLevel;
-
-            // the quiet option limits the amount output we send to the console
-            // but the full leg level is still sent to log files
-            var appenders = repository.GetAppenders();
-            foreach (var appender in appenders)
-            {
-                if (appender is ConsoleAppender || appender is ManagedColoredConsoleAppender
-                                                || appender is ColoredConsoleAppender)
-                {
-                    ((AppenderSkeleton)appender).Threshold = quietConsole ? Level.Error : modifiedLevel;
-                }
-            }
-
-            repository.RaiseConfigurationChanged(EventArgs.Empty);
-
+            Logging.ModifyVerbosity(modifiedLevel, quietConsole);
             Log.Debug("Log level changed to: " + logVerbosity);
 
             // log test
-            //            Log.Debug("Log test DEBUG");
-            //            Log.Info("Log test INFO");
-            //            Log.Success("Log test SUCCESS");
-            //            Log.Warn("Log test WARN");
-            //            Log.Error("Log test ERROR");
-            //            Log.Fatal("Log test FATAL");
-            //            Log.Trace("Log test TRACE");
-            //            Log.Verbose("Log test VERBOSE");
-            //            LoggedConsole.Log.Info("Clean log INFO");
-            //            LoggedConsole.Log.Success("Clean log SUCCESS");
-            //            LoggedConsole.Log.Warn("Clean log WARN");
-            //            LoggedConsole.Log.Error("Clean log ERROR");
-            //            LoggedConsole.WriteLine("Clean wrapper INFO");
-            //            LoggedConsole.WriteSuccessLine("Clean wrapper SUCCESS");
-            //            LoggedConsole.WriteWarnLine("Clean wrapper WARN");
-            //            LoggedConsole.WriteErrorLine("Clean wrapper ERROR");
-            //            LoggedConsole.WriteFatalLine("Clean wrapper FATAL", new Exception("I'm a fake"));
+            //Logging.TestLogging();
         }
 
-        internal static void AttachDebugger(ref DebugOptions options)
+        internal static void AttachDebugger(DebugOptions options)
         {
             if (options == DebugOptions.No)
             {
@@ -166,13 +146,13 @@ namespace AnalysisPrograms
                 if (options == DebugOptions.Prompt)
                 {
                     var response = Prompt.GetYesNo(
-                        "Do you wish to debug? Attach now or press [Y] to attach. Press [N] or [ENTER] to continue.",
+                        "Do you wish to debug? Attach now or press [Y] and [ENTER] to attach. Press [N] or [ENTER] to continue.",
                         defaultAnswer: false,
                         promptColor: ConsoleColor.Cyan);
                     options = response ? DebugOptions.Yes : DebugOptions.No;
                 }
 
-                if (options == DebugOptions.Yes)
+                if (options == DebugOptions.Yes || options == DebugOptions.YesSilent)
                 {
                     var vsProcess =
                         VisualStudioAttacher.GetVisualStudioForSolutions(
@@ -187,15 +167,17 @@ namespace AnalysisPrograms
                         // try and attach the old fashioned way
                         Debugger.Launch();
                     }
-
-                    // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-                    if (Debugger.IsAttached)
-                    {
-                        LoggedConsole.WriteLine("\t>>> Attach sucessful");
-                    }
                 }
 
-                LoggedConsole.WriteLine();
+                // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+                if (Debugger.IsAttached)
+                {
+                    if (options != DebugOptions.YesSilent)
+                    {
+                        LoggedConsole.WriteLine("\t>>> Attach sucessful");
+                        LoggedConsole.WriteLine();
+                    }
+                }
             }
 #endif
         }
@@ -205,23 +187,36 @@ namespace AnalysisPrograms
             // re-assign here... the application will be a sub-command here (which is tecnically a different CLA)
             CommandLineApplication = application;
 
-            var debugOptions = main.DebugOption;
-            AttachDebugger(ref debugOptions);
+            AttachDebugger(main.DebugOption);
 
             ModifyVerbosity(main);
 
-            Log.Debug($"Metric reporting is {(ApMetricRecording ? "en" : "dis")}abled.");
+            Log.Debug($"Metric reporting is {(ApMetricRecording ? "en" : "dis")}abled (but not yet functional).");
 
             LoadNativeCode();
         }
 
         internal static void Copyright()
         {
-            LoggedConsole.WriteLine(
-                // ReSharper disable once UnreachableCode
-                $@"{Meta.Description} - version {BuildMetadata.VersionString} ({(InDEBUG ? "DEBUG" : "RELEASE")} build, {BuildMetadata.BuildDate})
+            LoggedConsole.WriteLine($@"{Meta.Description} - version {BuildMetadata.VersionString} ({(InDEBUG ? "DEBUG" : "RELEASE")} build, {BuildMetadata.BuildDate})
 Git branch-version: {BuildMetadata.GitBranch}-{BuildMetadata.GitCommit}, DirtyBuild:{BuildMetadata.IsDirty}, CI:{BuildMetadata.CiBuild}
 Copyright {Meta.NowYear} {Meta.Organization}");
+        }
+
+        internal static void WarnIfDevleoperEntryUsed(string message = null)
+        {
+            if (!InDEBUG)
+#pragma warning disable 162
+            {
+                message = message == null ? string.Empty : "\n!    " + message;
+                Log.Warn($@"!
+!
+!    The entry point called is designed for use by devleopers and debuggers.
+!    It is likely that this entry point does not do what you want and will fail.{message}
+!
+!");
+            }
+#pragma warning restore 162
         }
 
         /// <summary>
@@ -373,7 +368,8 @@ Copyright {Meta.NowYear} {Meta.Organization}");
                 // this branch prints the message, and command usage, but the stack trace is only output in the log
                 NoConsole.Log.Fatal(fatalMessage, ex);
 
-                var command = CommandLineApplication?.Name;
+                // the static CommandLineApplication is not set when CommandLineException is thrown
+                var command = inner is CommandParsingException exception ? exception.Command.Name : CommandLineApplication?.Name;
                 var message = fatalMessage + inner.Message;
                 PrintUsage(message, Usages.Single, command ?? string.Empty);
             }
@@ -438,7 +434,7 @@ Copyright {Meta.NowYear} {Meta.Organization}");
                 PeakWorkingSet = thisProcess.PeakWorkingSet64,
             };
 
-            var statsString = "Programs stats:\n" + Json.SerialiseToString(stats, prettyPrint: true);
+            var statsString = "Programs stats:\n" + Json.SerializeToString(stats, prettyPrint: true);
 
             NoConsole.Log.Info(statsString);
         }
@@ -450,30 +446,12 @@ Copyright {Meta.NowYear} {Meta.Organization}");
 
         private static void ParseEnvirionemnt()
         {
-            ApPlainLogging = bool.TryParse(Environment.GetEnvironmentVariable(ApPlainLoggingKey), out var isTrue) && isTrue;
-            var repository = (Hierarchy)LogManager.GetRepository();
-            var root = repository.Root;
-            var cleanLogger = (Logger)repository.GetLogger("CleanLogger");
+            ApPlainLogging = bool.TryParse(Environment.GetEnvironmentVariable(ApPlainLoggingKey), out var plainLogging) && plainLogging;
 
-            if (ApPlainLogging)
-            {
-                root.RemoveAppender("ConsoleAppender");
-                cleanLogger.RemoveAppender("CleanConsoleAppender");
-            }
-            else
-            {
-                root.RemoveAppender("SimpleConsoleAppender");
-            }
+            // default value is true
+            ApMetricRecording = !bool.TryParse(Environment.GetEnvironmentVariable(ApMetricsKey), out var parseMetrics) || parseMetrics;
 
-            if (bool.TryParse(Environment.GetEnvironmentVariable(ApMetricsKey), out var parseMetrics))
-            {
-                ApMetricRecording = parseMetrics;
-            }
-            else
-            {
-                // if the env var is not set or not parseable, then set default value.
-                ApMetricRecording = true;
-            }
+            ApAutoAttach = bool.TryParse(Environment.GetEnvironmentVariable(ApAutoAttachKey), out var autoAttach) && autoAttach;
         }
 
         private static void PrintAggregateException(Exception ex, int depth = 0)

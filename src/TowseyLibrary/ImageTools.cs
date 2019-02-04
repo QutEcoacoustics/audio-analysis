@@ -1,4 +1,4 @@
-﻿// <copyright file="ImageTools.cs" company="QutEcoacoustics">
+// <copyright file="ImageTools.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -3382,13 +3382,6 @@ namespace TowseyLibrary
             return bmp;
         }
 
-        public static Image DrawXandYaxes(Image image, int scaleWidth, double xInterval, double xTicInterval, int xOffset, double yInterval, double yTicInterval, int yOffset)
-        {
-            Image returnImage = DrawYaxisScale(image, scaleWidth, yInterval, yTicInterval, yOffset);
-            returnImage = DrawXaxisScale(returnImage, scaleWidth, xInterval, xTicInterval, xOffset);
-            return returnImage;
-        }
-
         /// <summary>
         /// Draws horizontal gridlines on Image
         /// </summary>
@@ -3426,36 +3419,40 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// assumes the y-axis has been drawn already
+        /// assumes the y-axis has already been drawn already.
+        /// Therefore require an offset at bottom left to accommodate the width of the y-axis.
         /// </summary>
-        public static Image DrawXaxisScale(Image image, int scaleHeight, double xInterval, double xTicInterval, int xOffset)
+        public static Image DrawXaxisScale(Image image, int scaleHeight, double xInterval, double xTicInterval, int yScalePadding, int xOffset)
         {
             int ticCount = (int)((image.Width - scaleHeight) / xTicInterval);
             var pen = new Pen(Color.White);
             var stringFont = new Font("Arial", 10);
             var g = Graphics.FromImage(image);
+
+            // draw on the grid lines
             for (int i = 1; i <= ticCount; i++)
             {
-                int x1 = scaleHeight + (int)(i * xTicInterval) - xOffset;
+                int x1 = yScalePadding + (int)(i * xTicInterval) + xOffset;
                 g.DrawLine(pen, x1, 0, x1, image.Height - 1);
             }
 
+            // create the x-axis scale
             Image scaleImage = new Bitmap(image.Width, scaleHeight);
             g = Graphics.FromImage(scaleImage);
             pen = new Pen(Color.Black);
             g.Clear(Color.LightGray);
             for (int i = 0; i <= ticCount; i++)
             {
-                int x1 = scaleHeight + (int)(i * xTicInterval) - xOffset;
+                int x1 = yScalePadding + (int)(i * xTicInterval) + xOffset;
                 g.DrawLine(pen, x1, 0, x1, scaleHeight - 1);
-                g.DrawLine(pen, x1 + 1, 0, x1 + 1, scaleHeight - 1);
+                //g.DrawLine(pen, x1 + 1, 0, x1 + 1, scaleHeight - 1);
 
                 string value = Math.Round(xInterval * i).ToString();
-                g.DrawString(value, stringFont, Brushes.Black, new PointF(x1, 1));
+                g.DrawString(value, stringFont, Brushes.Black, new PointF(x1, 0));
             }
 
             g.DrawRectangle(pen, 0, 0, image.Width - 1, scaleHeight - 1);
-            Image[] array = new Image[2];
+            var array = new Image[2];
             array[0] = image;
             array[1] = scaleImage;
             return CombineImagesVertically(array);
@@ -3467,8 +3464,8 @@ namespace TowseyLibrary
         /// <param name="matrix">the data</param>
         public static void DrawMatrix(double[,] matrix, string pathName, bool doScale)
         {
-            int rows = matrix.GetLength(0); //number of rows
-            int cols = matrix.GetLength(1); //number
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
 
             int maxYpixels = rows;
             int maxXpixels = cols;
@@ -3494,12 +3491,9 @@ namespace TowseyLibrary
             int Ypixels = YpixelsPerCell * rows;
             int Xpixels = XpixelsPerCell * cols;
 
-            // LoggedConsole.WriteLine("Xpixels=" + Xpixels + "  Ypixels=" + Ypixels);
-            // LoggedConsole.WriteLine("cellXpixels=" + cellXpixels + "  cellYpixels=" + cellYpixels);
-
             Color[] grayScale = GrayScale();
 
-            Bitmap bmp = new Bitmap(Xpixels, Ypixels, PixelFormat.Format24bppRgb);
+            var bmp = new Bitmap(Xpixels, Ypixels, PixelFormat.Format24bppRgb);
 
             double[,] norm = DataTools.normalise(matrix);
             for (int r = 0; r < rows; r++)
@@ -3514,19 +3508,15 @@ namespace TowseyLibrary
 
                     int xOffset = XpixelsPerCell * c;
                     int yOffset = YpixelsPerCell * r;
-
-                    // LoggedConsole.WriteLine("xOffset=" + xOffset + "  yOffset=" + yOffset + "  colorId=" + colorId);
-
                     for (int x = 0; x < XpixelsPerCell; x++)
                     {
                         for (int y = 0; y < YpixelsPerCell; y++)
                         {
-                            //LoggedConsole.WriteLine("x=" + (xOffset+x) + "  yOffset=" + (yOffset+y) + "  colorId=" + colorId);
                             bmp.SetPixel(xOffset + x, yOffset + y, grayScale[greyId]);
                         }
                     }
-                }//end all columns
-            }//end all rows
+                }
+            }
 
             bmp.Save(pathName);
         }
@@ -3595,8 +3585,61 @@ namespace TowseyLibrary
                             }
                         }
                     }
-                } //end all columns
-            } //end all rows
+                }
+            }
+
+            return bmp;
+        }
+
+        public static Image DrawVectorInGrayScale(double[] vector, int cellWidth, int cellHeight)
+        {
+            var norm = DataTools.normalise(vector);
+            var bmp = DrawVectorInGrayScaleWithoutNormalisation(norm, cellWidth, cellHeight, true);
+            return bmp;
+        }
+
+        /// <summary>
+        /// This method assumes that the vector has already been normalised by some means such that all values lie between 0.0 and 1.0
+        /// </summary>
+        /// <param name="vector">the vector of normalised values</param>
+        /// <param name="cellWidth">the width of the image</param>
+        /// <param name="cellHeight">the height of each image row</param>
+        public static Image DrawVectorInGrayScaleWithoutNormalisation(double[] vector, int cellWidth, int cellHeight, bool reverse)
+        {
+            int rows = vector.Length;
+            int cols = 1;
+            int yPixelCount = cellHeight * rows;
+            int xPixelCount = cellWidth;
+            var bmp = new Bitmap(xPixelCount, yPixelCount, PixelFormat.Format24bppRgb);
+
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    int xOffset = cellWidth * c;
+                    int yOffset = cellHeight * r;
+
+                    // use reverse gray scale i.e. white = low value, black = high value
+                    int gray;
+                    if (reverse)
+                    {
+                        gray = (int)Math.Floor(255 * vector[r]);
+                    }
+                    else
+                    {
+                        gray = 255 - (int)Math.Floor(255 * vector[r]);
+                    }
+
+                    var colour = Color.FromArgb(gray, (int)gray, (int)gray);
+                    for (int x = 0; x < xPixelCount; x++)
+                    {
+                        for (int y = 0; y < cellHeight; y++)
+                        {
+                            bmp.SetPixel(xOffset + x, yOffset + y, colour);
+                        }
+                    }
+                }
+            }
 
             return bmp;
         }
@@ -3645,59 +3688,69 @@ namespace TowseyLibrary
                             }
                         }
                     }
-                } //end all columns
-            } //end all rows
+                }
+            }
 
             return bmp;
+        }
+
+        public static void DrawMatrix(double[,] matrix, int cellXpixels, int cellYpixels, string pathName)
+        {
+            var bmp = ImageTools.DrawMatrixInGrayScale(matrix, cellXpixels, cellYpixels, true);
+            bmp.Save(pathName);
         }
 
         /// <summary>
         /// Draws matrix according to user defined scale
         /// </summary>
         /// <param name="matrix">the data</param>
-        /// <param name="cellXpixels">X axis scale - pixels per cell</param>
-        /// <param name="cellYpixels">Y axis scale - pixels per cell</param>
-        public static void DrawMatrix(double[,] matrix, int cellXpixels, int cellYpixels, string pathName)
+        /// <param name="xPixelsPerCell">X axis scale - pixels per cell</param>
+        /// <param name="yPixelsPerCell">Y axis scale - pixels per cell</param>
+        /// <param name="reverse">determines black on white or white on black</param>
+        public static Bitmap DrawMatrixInGrayScale(double[,] matrix, int xPixelsPerCell, int yPixelsPerCell, bool reverse)
         {
-            int rows = matrix.GetLength(0); //number of rows
-            int cols = matrix.GetLength(1); //number
-            int Ypixels = cellYpixels * rows;
-            int Xpixels = cellXpixels * cols;
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+            int Ypixels = yPixelsPerCell * rows;
+            int Xpixels = xPixelsPerCell * cols;
             Color[] grayScale = GrayScale();
-            Bitmap bmp = new Bitmap(Xpixels, Ypixels, PixelFormat.Format24bppRgb);
+            var bmp = new Bitmap(Xpixels, Ypixels, PixelFormat.Format24bppRgb);
 
             double[,] norm = DataTools.normalise(matrix);
             for (int r = 0; r < rows; r++)
             {
+                int colorId;
                 for (int c = 0; c < cols; c++)
                 {
-                    double val = norm[r, c];
-                    int colorId = (int)Math.Floor(norm[r, c] * 255);
-                    int xOffset = cellXpixels * c;
-                    int yOffset = cellYpixels * r;
-
-                    //LoggedConsole.WriteLine("xOffset=" + xOffset + "  yOffset=" + yOffset + "  colorId=" + colorId);
-
-                    for (int x = 0; x < cellXpixels; x++)
+                    if (reverse)
                     {
-                        for (int y = 0; y < cellYpixels; y++)
+                        colorId = (int)Math.Floor(norm[r, c] * 255);
+                    }
+                    else
+                    {
+                        colorId = 255 - (int)Math.Floor(norm[r, c] * 255);
+                    }
+
+                    int xOffset = xPixelsPerCell * c;
+                    int yOffset = yPixelsPerCell * r;
+
+                    for (int x = 0; x < xPixelsPerCell; x++)
+                    {
+                        for (int y = 0; y < yPixelsPerCell; y++)
                         {
-                            //LoggedConsole.WriteLine("x=" + (xOffset+x) + "  yOffset=" + (yOffset+y) + "  colorId=" + colorId);
                             bmp.SetPixel(xOffset + x, yOffset + y, grayScale[colorId]);
                         }
                     }
-                }//end all columns
-            }//end all rows
+                }
+            }
 
-            bmp.Save(pathName);
+            return bmp;
         }
 
         /// <summary>
         /// Stacks the passed images one on top of the other.
         /// Assumes that all images have the same width.
         /// </summary>
-        /// <param name="list"></param>
-        /// <returns></returns>
         public static Image CombineImagesVertically(List<Image> list)
         {
             return CombineImagesVertically(list.ToArray());

@@ -7,11 +7,12 @@ namespace Acoustics.Shared.ConfigFile
     using System;
     using System.Collections.Generic;
     using System.Globalization;
-    using System.IO;
+    using System.Reflection;
+    using Contracts;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Serialization;
 
-    using Acoustics.Shared.Contracts;
-
-    public class Config
+    public class Config : IConfig
     {
         private static readonly Convert<bool> BoolConverter =
             (string value, out bool convertedValue) => bool.TryParse(value, out convertedValue);
@@ -31,27 +32,14 @@ namespace Acoustics.Shared.ConfigFile
         private static readonly Convert<TimeSpan> TimeSpanConverter = (string value, out TimeSpan convertedValue) =>
             TimeSpan.TryParse(value, CultureInfo.InvariantCulture, out convertedValue);
 
-        public Config()
+        protected internal Config()
         {
             // no op
         }
 
-        internal Config(TextReader streamReader, string configPath)
-        {
-            this.Initialize(streamReader, configPath);
-        }
-
-        internal Config(string configPath)
-        {
-            using (var fileStream = File.OpenText(configPath))
-            {
-                this.Initialize(fileStream, configPath);
-            }
-        }
-
         private delegate bool Convert<T>(string value, out T convertedValue);
 
-        public event Action<Config> Loaded;
+        public event Action<IConfig> Loaded;
 
         private enum MatchType
         {
@@ -60,9 +48,14 @@ namespace Acoustics.Shared.ConfigFile
             Found,
         }
 
-        public string ConfigPath { get; internal set; }
+        public string ConfigPath { get; set; }
 
-        public object GenericConfig { get; internal set; }
+        /// <summary>
+        /// Gets or sets the generic object graph that mirrors the configuration.
+        /// This object is ignored for JSON serialization in log dumping if
+        /// the current Type is exactly this type (not an inherited child).
+        /// </summary>
+        public object GenericConfig { get; set; }
 
         public string this[string key] => this.GetStringOrNull(key);
 
@@ -134,7 +127,7 @@ namespace Acoustics.Shared.ConfigFile
             return result;
         }
 
-        internal void InvokeLoaded()
+        void IConfig.InvokeLoaded()
         {
             this.Loaded?.Invoke(this);
         }
@@ -143,12 +136,6 @@ namespace Acoustics.Shared.ConfigFile
             where T : struct
         {
             return (string value, out T convertedValue) => Enum.TryParse(value, true, out convertedValue);
-        }
-
-        private void Initialize(TextReader streamReader, string configPath)
-        {
-            this.GenericConfig = Yaml.Deserialize<object>(streamReader);
-            this.ConfigPath = configPath;
         }
 
         // Recursive!
@@ -329,6 +316,24 @@ namespace Acoustics.Shared.ConfigFile
                 default:
                     throw new InvalidOperationException();
             }
+        }
+    }
+
+    public class ConfigSerializeContractResolver : DefaultContractResolver
+    {
+        public static readonly ConfigSerializeContractResolver Instance = new ConfigSerializeContractResolver();
+
+        protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
+        {
+            JsonProperty property = base.CreateProperty(member, memberSerialization);
+
+            if (property.DeclaringType == typeof(Config) && property.PropertyName == nameof(Config.GenericConfig))
+            {
+                // only serialize generic config iff the current type is Config exactly
+                property.ShouldSerialize = instance => typeof(Config) == instance.GetType();
+            }
+
+            return property;
         }
     }
 }

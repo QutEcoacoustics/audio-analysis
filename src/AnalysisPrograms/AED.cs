@@ -44,12 +44,14 @@ namespace AnalysisPrograms
     {
         public const string CommandName = "AED";
 
+        public override string Description => "[BETA] Acoustic event detection, for short files (~ 1 min)";
+
         /// <summary>
         /// The arguments.
         /// </summary>
         [Command(
             CommandName,
-            Description = "Acoustic event detection, for short files (~ 1min)")]
+            Description = "[BETA] Acoustic event detection, for short files (~ 1 min)")]
         public class Arguments : SourceConfigOutputDirArguments
         {
             public override Task<int> Execute(CommandLineApplication app)
@@ -234,6 +236,8 @@ namespace AnalysisPrograms
 
         public static void Execute(Arguments arguments)
         {
+            MainEntry.WarnIfDevleoperEntryUsed();
+
             TowseyLibrary.Log.Verbosity = 1;
             string date = "# DATE AND TIME: " + DateTime.Now;
             LoggedConsole.WriteLine("# Running acoustic event detection.");
@@ -318,8 +322,8 @@ namespace AnalysisPrograms
                        {
                            IntensityThreshold = configuration.GetDouble(nameof(AedConfiguration.IntensityThreshold)),
                            SmallAreaThreshold = configuration.GetInt(nameof(AedConfiguration.SmallAreaThreshold)),
-                           BandpassMinimum = configuration.GetInt(nameof(AedConfiguration.BandpassMinimum)),
-                           BandpassMaximum = configuration.GetInt(nameof(AedConfiguration.BandpassMaximum)),
+                           BandpassMinimum = configuration.GetIntOrNull(nameof(AedConfiguration.BandpassMinimum)),
+                           BandpassMaximum = configuration.GetIntOrNull(nameof(AedConfiguration.BandpassMaximum)),
                            IncludeHitElementsInOutput = configuration.GetBoolOrNull(nameof(AedConfiguration.IncludeHitElementsInOutput)) ?? false,
                            AedEventColor = configuration[nameof(AedConfiguration.AedEventColor)].ParseAsColor(),
                            AedHitColor = configuration[nameof(AedConfiguration.AedHitColor)].ParseAsColor(),

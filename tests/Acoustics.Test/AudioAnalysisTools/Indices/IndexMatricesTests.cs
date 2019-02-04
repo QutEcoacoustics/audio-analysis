@@ -1,4 +1,4 @@
-﻿// <copyright file="IndexMatricesTests.cs" company="QutEcoacoustics">
+// <copyright file="IndexMatricesTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -20,6 +20,26 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
     [TestClass]
     public class IndexMatricesTests : OutputDirectoryTest
     {
+        public static IEnumerable<object[]> ScaleCombinations
+        {
+            get
+            {
+                var scales = new[] { 60.0, 30, 15, 10, 7.5, 3.2, 1.6, 0.8, 0.4, 0.2, 0.1 };
+                var dataSizes = new[] { 60, 3599, 359900 };
+                var keys = new[] { nameof(SpectralIndexValues.BGN), "I_DO_NOT_EXIST" };
+
+                var combinations = from s in scales from d in dataSizes from k in keys select new object[] { s, d, k };
+
+                // these scales uses a lot of memory, our CI server can't handle it, so exclude them
+                if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("APPVEYOR")))
+                {
+                    combinations = combinations.Where(x => !((double)x[0] < 0.4 && (int)x[1] > 100_000));
+                }
+
+                return combinations;
+            }
+        }
+
         [TestMethod]
         public void TestReadSpectrogram()
         {
@@ -138,45 +158,59 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             Assert.AreEqual(3, result.First().Value.Length);
         }
 
-        public static IEnumerable<object[]> ScaleCombinations
-        {
-            get
-            {
-                var scales = new[] { 60.0, 30, 15, 10, 7.5, 3.2, 1.6, 0.8, 0.4, 0.2, 0.1 };
-                var dataSizes = new[] { 60, 3599, 359900 };
-
-                var combinations = from s in scales from d in dataSizes select new object[] { s, d };
-
-                // these scales uses a lot of memory, our CI server can't handle it, so exclude them
-                if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("APPVEYOR")))
-                {
-                    combinations = combinations.Where(x => !((double)x[0] < 0.4 && (int)x[1] > 100_000));
-                }
-
-                return combinations;
-            }
-        }
-
         [DataTestMethod]
         [DynamicData(nameof(ScaleCombinations))]
-        public void CompressIndexSpectrogramsFillsAllValuesTest(double renderScale, int dataSize)
+        public void CompressIndexSpectrogramsFillsAllValuesTest(double renderScale, int dataSize, string key)
         {
-            var bgnSpectra = new double[256, dataSize].Fill(-100);
-            var spectra = new Dictionary<string, double[,]> { { "BGN", bgnSpectra }, };
+            var someSpectra = new double[256, dataSize].Fill(-100);
+            var spectra = new Dictionary<string, double[,]> { { key, someSpectra }, };
             var compressed = IndexMatrices.CompressIndexSpectrograms(
                 spectra,
                 renderScale.Seconds(),
                 0.1.Seconds(),
                 d => Math.Round(d, MidpointRounding.AwayFromZero));
 
-            var bgn = compressed["BGN"];
-            var average = bgn.Average();
+            // ReSharper disable once CompareOfFloatsByEqualityOperator (We are testing exact values)
+            if (renderScale == 0.1)
+            {
+                // in cases where the scales are equal, the method should short circuit and
+                // just return the same matrix.
+                Assert.AreEqual(spectra, compressed);
+            }
+
+            var compressedSpectra = compressed[key];
+            var average = compressedSpectra.Average();
 
             // this test is specifically testing whether the last column has the correct value
-            var lastColumn = MatrixTools.GetColumn(bgn, bgn.LastColumnIndex());
-            Assert.AreEqual(-100, lastColumn.Average());
+            var lastColumn = MatrixTools.GetColumn(compressedSpectra, compressedSpectra.LastColumnIndex());
+            var lastColumnAverage = lastColumn.Average();
+            Assert.AreEqual(-100, lastColumnAverage, 0.0000000001, $"Expected last column to have value -100 but it was {lastColumnAverage:R}");
 
-            Assert.AreEqual(-100, average);
+            Assert.AreEqual(-100, average, 0.0000000001, $"Expected total average to be -100 but it was {average:R}");
+        }
+
+        [TestMethod]
+        public void CompressIndexSpectrogramsBasicAverageTest()
+        {
+            // testing an average that occurs with three windows, each of 5 values,
+            // with the last window being two values too long
+            var someSpectra = new double[256, 13].ForEach((i, j) => i);
+            var spectra = new Dictionary<string, double[,]> { { "I_DO_NOT_EXIST", someSpectra }, };
+            var compressed = IndexMatrices.CompressIndexSpectrograms(
+                spectra,
+                5.Seconds(),
+                1.Seconds(),
+                d => Math.Round(d, MidpointRounding.AwayFromZero));
+
+            var compressedSpectra = compressed["I_DO_NOT_EXIST"];
+            var average = compressedSpectra.Average();
+            Assert.AreEqual(127.5, average, $"Expected total average to be -100 but it was {average}");
+
+            // and make sure every value is as we expect
+            for (int j = 0; j < compressedSpectra.LastColumnIndex(); j++)
+            {
+                Assert.AreEqual(127.5, compressedSpectra.GetColumn(j).Average());
+            }
         }
     }
 }

@@ -40,6 +40,8 @@ namespace AnalysisPrograms.Recognizers
     /// </summary>
     internal class LitoriaFallax : RecognizerBase
     {
+        public override string Description => "[ALPHA/EMBRYONIC] Detects acoustic events of Litoria fallax";
+
         public override string Author => "Towsey";
 
         public override string SpeciesName => "LitoriaFallax";

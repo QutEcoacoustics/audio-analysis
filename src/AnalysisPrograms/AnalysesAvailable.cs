@@ -20,7 +20,7 @@ namespace AnalysisPrograms
 
     [Command(
         "AnalysesAvailable",
-        Description = "List available IAnalyzers available for use with audio2csv or eventRecognizer")]
+        Description = "Lists all IAnalyzers available for use with audio2csv or eventRecognizer")]
     public class AnalysesAvailable
         : SubCommandBase
     {
@@ -86,7 +86,7 @@ namespace AnalysisPrograms
                     description = description.WordWrap(descrptionLength, indentifierWidth + typeLength);
                 }
 
-                table.AppendLine(string.Format(tableFormat, analyser.Identifier, isEventRecognizer ? "Event Recognizer" : "Unknown", description));
+                table.AppendLine(string.Format(tableFormat, analyser.Identifier, isEventRecognizer ? "Event Recognizer" : "Type unknown", description));
             }
 
             return table;

@@ -5,6 +5,7 @@
 // ReSharper disable once CheckNamespace
 namespace System
 {
+    using Acoustics.Shared.Logging;
     using log4net;
 
     /// <summary>
@@ -13,6 +14,13 @@ namespace System
     /// </summary>
     public static class NoConsole
     {
-        public static readonly ILog Log = LogManager.GetLogger("LogFileOnly");
+        static NoConsole()
+        {
+            // this must be initialized in the static constructor otherwise we run into
+            // order of execution conflicts with logger initialization
+            Log = LogManager.Exists(Logging.Logfileonly);
+        }
+
+        public static ILog Log { get; }
     }
 }

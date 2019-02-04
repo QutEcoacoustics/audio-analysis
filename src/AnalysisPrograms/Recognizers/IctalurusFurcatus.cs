@@ -33,6 +33,8 @@ namespace AnalysisPrograms.Recognizers
     /// </summary>
     internal class IctalurusFurcatus : RecognizerBase
     {
+        public override string Description => "[ALPHA/EMBRYONIC] Detects acoustic events of Blue Catfish";
+
         public override string Author => "Towsey";
 
         public override string SpeciesName => "IctalurusFurcatus";

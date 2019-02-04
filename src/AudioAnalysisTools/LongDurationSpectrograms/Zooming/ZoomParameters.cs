@@ -32,7 +32,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
             // get the indexDistributions and the indexGenerationData AND the common.OriginalBasename
             var paths = CheckNeededFilesExist(inputDirectory);
 
-            this.IndexGenerationData = Json.Deserialise<IndexGenerationData>(paths.indexGenerationDataFile);
+            this.IndexGenerationData = Json.Deserialize<IndexGenerationData>(paths.indexGenerationDataFile);
             this.IndexDistributions = Indices.IndexDistributions.Deserialize(paths.indexDistributionsFile);
 
             // double check file format matches what we expect

@@ -1,7 +1,6 @@
 ---
 # Summary: Runs a list of event recognizers that implement the IEventRecognizer interface.
 #
-AnalysisName: Ecosounds.MultiRecognizer
 #SpeciesName:
 #AbbreviatedSpeciesName:
 
@@ -10,7 +9,6 @@ AnalysisName: Ecosounds.MultiRecognizer
 # Note also, that the config file paths are resolved my appending '.yml' to the end of each item in the species list.
 SpeciesList:
   - Towsey.BlueCatfish
-#  - Truskinger.ExempliGratia
 
 # Standard settings
 EventThreshold: 0.2

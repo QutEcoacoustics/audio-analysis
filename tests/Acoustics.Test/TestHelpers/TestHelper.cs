@@ -171,7 +171,7 @@
                             SampleRate = 44100,
                             ChannelCount = 4,
                             BitsPerSecond = 693000,
-                            MediaType = MediaTypes.MediaTypeFlacAudio1,
+                            MediaType = MediaTypes.MediaTypeFlacAudio,
                             BitsPerSample = 16,
                         }
                 },
@@ -209,7 +209,7 @@
                         SampleRate = 44100,
                         ChannelCount = 4,
                         BitsPerSecond = 2822400,
-                        MediaType = MediaTypes.MediaTypeWav1,
+                        MediaType = MediaTypes.MediaTypeWav,
                         BitsPerSample = 16,
                     }
                 },
@@ -510,8 +510,8 @@
             if (expected.BitsPerSecond.HasValue && actual.BitsPerSecond.HasValue)
             {
                 // Sox only reports three decimal places and rounds other things
-                var actualBps = (int)((double)actual.BitsPerSecond.Value).RoundToSignficantDigits(3);
-                var expectedBps = (int)((double)expected.BitsPerSecond.Value).RoundToSignficantDigits(3);
+                var actualBps = (int)((double)actual.BitsPerSecond.Value).RoundToSignificantDigits(3);
+                var expectedBps = (int)((double)expected.BitsPerSecond.Value).RoundToSignificantDigits(3);
                 Assert.AreEqual(expectedBps, actualBps, 0);
             }
 
@@ -552,7 +552,7 @@
             var wvunpack = new WavPackAudioUtility(new FileInfo(AppConfigHelper.WvunpackExe));
             var sox = new SoxAudioUtility(new FileInfo(AppConfigHelper.SoxExe));
 
-            return new MasterAudioUtility(ffmpeg, mp3Splt, wvunpack, sox, ffmpegRawPcm);
+            return new MasterAudioUtility(ffmpeg, mp3Splt, wvunpack, sox, ffmpegRawPcm, PathHelper.GetTempDir());
         }
 
         public static IAudioUtility GetAudioUtilitySox()

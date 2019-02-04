@@ -12,11 +12,10 @@ namespace AnalysisPrograms
     using System;
     using System.Reflection;
     using System.Threading.Tasks;
+    using Acoustics.Shared.Logging;
     using log4net;
-    using McMaster.Extensions.CommandLineUtils;
-    using Production;
+    using log4net.Core;
     using Production.Arguments;
-    using Production.Parsers;
     using static System.Environment;
 
     /// <summary>
@@ -24,15 +23,16 @@ namespace AnalysisPrograms
     /// </summary>
     public static partial class MainEntry
     {
-        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog Log = LogManager.GetLogger(nameof(MainEntry));
 
         public static async Task<int> Main(string[] args)
         {
-            // HACK: Disable the following two line when argument refactoring is done
-            //var options = DebugOptions.Yes;
-            //AttachDebugger(ref options);
-
             ParseEnvirionemnt();
+
+            // Uses an env var to  attach debugger before argument parsing
+            AttachDebugger(ApAutoAttach ? DebugOptions.YesSilent : DebugOptions.No);
+
+            Logging.Initialize(colorConsole: !ApPlainLogging, Level.Info, quietConsole: false);
 
             Copyright();
 
@@ -43,7 +43,7 @@ namespace AnalysisPrograms
             var app = CreateCommandLineApplication();
 
             // Note: See MainEntry.BeforeExecute for commands run before invocation.
-            // note: Exception handling can be found in CurrentDomainOnUnhandledException
+            // Note: Exception handling can be found in CurrentDomainOnUnhandledException.
             var result = await Task.FromResult(app.Execute(args));
 
             LogProgramStats();

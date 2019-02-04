@@ -1,4 +1,4 @@
-﻿// <copyright file="SNR.cs" company="QutEcoacoustics">
+// <copyright file="SNR.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -7,9 +7,6 @@ namespace AudioAnalysisTools.DSP
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using Acoustics.Shared;
-    using Acoustics.Shared.ConfigFile;
-
     using StandardSpectrograms;
     using TowseyLibrary;
     using WavTools;
@@ -39,17 +36,30 @@ namespace AudioAnalysisTools.DSP
         public const double FractionalBoundForMode = 0.95;
         public const double FractionalBoundForLowPercentile = 0.2; // used when removing lowest percentile noise from a signal waveform
 
-        //reference dB levels for different signals
-        public const double MinimumDbBoundForZeroSignal = -90; // used as minimum bound when normalising dB values. Calculated from actual zero signal.
-        public const double MinimumDbBoundForEnvirNoise = -80; // might also be used as minimum bound. Calculated from actual silent environmental recording.
+        /// <summary>
+        /// Reference dB levels for a zero signal
+        /// Used as minimum bound when normalising dB values.
+        /// This value was based on the observation of an actual zero signal on an SM2.
+        /// However, SM4 has a lower noise level. Consequently this value lowered to -100 on 7th August 2018.
+        /// </summary>
+        public const double MinimumDbBoundForZeroSignal = -100;
 
-        //reference logEnergies for signal segmentation, energy normalisation etc
-        public const double MinLogEnergyReference = -6.0;    // = -60dB. Typical noise value for BAC2 recordings = -4.5 = -45dB
+        /// <summary>
+        /// Reference dB levels for recording of very silent environment
+        /// Used as minimum bound when normalising dB values.
+        /// This value was based on actual recording of cold winter morning (Gympie) using an SM2.
+        /// However, SM4 has a lower noise level. Consequently this value lowered to -90 on 7th August 2018.
+        /// </summary>
+        public const double MinimumDbBoundForEnvironmentalNoise = -90;
+
+        /// <summary>
+        /// Reference logEnergies for signal segmentation, energy normalisation etc
+        /// MinLogEnergyReference was changed from -6.0 to -8.0 on 6th August 2018 to accommodate signals with extended zero values.
+        /// Typical noise value using Jason Wimmer original handheld recorders was = -4.5 = -45dB
+        /// Typical noise value for quiet recordings with SM4 = -8.0 or -9.0, i.e. -80 to -90 dB
+        /// </summary>
+        public const double MinLogEnergyReference = -8.0;
         public const double MaxLogEnergyReference = 0.0;     // = Math.Log10(1.00) which assumes max frame amplitude = 1.0
-
-        //public const double MaxLogEnergyReference = -0.602;// = Math.Log10(0.25) which assumes max average frame amplitude = 0.5
-        //public const double MaxLogEnergyReference = -0.310;// = Math.Log10(0.49) which assumes max average frame amplitude = 0.7
-        //note that the cicada recordings reach max average frame amplitude = 0.55
 
         // number of noise standard deviations included in noise threshold - determines severity of noise reduction.
         public const double DefaultStddevCount = 0.0;
@@ -57,34 +67,8 @@ namespace AudioAnalysisTools.DSP
         //SETS MINIMUM DECIBEL BOUND when removing local backgroundnoise
         public const double DefaultNhBgThreshold = 2.0;
 
-        // Default high energy threshold when measuring fraction of high energy frames.
-        // IMPORTANT - This value ONLY applies BEFORE noise removal.
-        // The value has been chosen somewhat arbitrarily. It is relevant only when doing noise removal using Lamel et al algorithm
-        public const double DefaultHighEnergyThresholdInDecibels = -10.0;
-
         public const string KeyNoiseReductionType = "NOISE_REDUCTION_TYPE";
         public const string KeyDynamicRange = "DYNAMIC_RANGE";
-
-        /*
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SNR"/> class.
-        /// CONSTRUCTOR
-        /// But this constructor is only called once with dummy data.
-        /// Not sure what purpose this constructor serves.
-        /// </summary>
-        /// <param name="frames">all the overlapped frames of a signal</param>
-        public SNR(double[,] frames)
-        {
-            var logEnergy = CalculateLogEnergyOfsignalFrames(frames);
-            this.FrameDecibels = ConvertLogEnergy2Decibels(logEnergy); // convert logEnergy to decibels.
-            this.SubtractBackgroundNoise_dB();
-            this.NoiseRange = this.MinDb - this.NoiseSubtracted;
-
-            // need an appropriate dB reference level for normalising dB arrays.
-            ////this.MaxReferenceDecibelsWrtNoise = this.Snr;                        // OK
-            this.MaxReferenceDecibelsWrtNoise = this.MaxDb - this.MinDb; // BEST BECAUSE TAKES NOISE LEVEL INTO ACCOUNT
-        }
-        */
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SNR"/> class.
@@ -98,9 +82,13 @@ namespace AudioAnalysisTools.DSP
             var logEnergy = CalculateLogEnergyOfsignalFrames(signal, frameIDs);
             this.FrameDecibels = ConvertLogEnergy2Decibels(logEnergy); //convert logEnergy to decibels. Just x10.
 
-            // calculate fraction of high energy frames PRIOR to noise removal.
-            double dbThreshold = DefaultHighEnergyThresholdInDecibels;
-            this.FractionOfHighEnergyFrames = CalculateFractionOfHighEnergyFrames(this.FrameDecibels, dbThreshold);
+            // Calculate fraction of high energy frames PRIOR to noise removal.
+            // Need to set a high energy threshold when measuring fraction of high energy frames.
+            // IMPORTANT - This value ONLY applies BEFORE noise removal.
+            // The value has been chosen somewhat arbitrarily.
+            // It is relevant only when doing noise removal using Lamel et al algorithm
+            double defaultHighEnergyThresholdInDecibel = -10.0;
+            this.FractionOfHighEnergyFrames = CalculateFractionOfHighEnergyFrames(this.FrameDecibels, defaultHighEnergyThresholdInDecibel);
 
             this.SubtractBackgroundNoise_dB();
             this.NoiseRange = this.MinDb - this.NoiseSubtracted;
@@ -121,7 +109,12 @@ namespace AudioAnalysisTools.DSP
 
         public double NoiseSubtracted { get; set; }
 
-        //= max_dB - Q, that is, max decibels minus the modal noise
+        /// <summary>
+        /// Gets or sets Snr.
+        /// SNR = max_dB - Q
+        /// that is, max decibels minus the modal noise
+        /// This is notation used by Lamel et al.
+        /// </summary>
         public double Snr { get; set; }
 
         // NoiseRange = this.MinDb - this.NoiseSubtracted
@@ -153,21 +146,6 @@ namespace AudioAnalysisTools.DSP
         //########################################################################################################################################################
         //# START STATIC METHODS TO DO WITH CALCULATIONS OF SIGNAL ENERGY AND DECIBELS############################################################################
 
-        private static double CalculateFractionOfHighEnergyFrames(double[] dbArray, double dbThreshold)
-        {
-            int length = dbArray.Length;
-            int count = 0;
-            for (int i = 0; i < length; i++)
-            {
-                if (dbArray[i] > dbThreshold)
-                {
-                    count++;
-                }
-            }
-
-            return count / (double)length;
-        }
-
         /// <summary>
         /// NormaliseMatrixValues the power values using the passed reference decibel level.
         /// NOTE: This method assumes that the energy values are in decibels and that they have been scaled
@@ -177,7 +155,7 @@ namespace AudioAnalysisTools.DSP
         {
             //NormaliseMatrixValues power between 0.0 decibels and max decibels.
             int length = dB.Length;
-            double[] e = new double[length];
+            var e = new double[length];
             for (int i = 0; i < length; i++)
             {
                 e[i] = dB[i];
@@ -200,12 +178,14 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        ///  Root Mean Square (RMS) Normalization
+        /// Root Mean Square (RMS) Normalization
+        /// Matrix is assumed to be a spectrogram
+        /// Divides the spectrogram values by the RMS in order to adjust for varying levels of signal strength.
         /// </summary>
         public static double[,] RmsNormalization(double[,] matrix)
         {
             double sumOfSquares = 0;
-            double[,] normalizedMatrix = new double[matrix.GetLength(0), matrix.GetLength(1)];
+            var normalizedMatrix = new double[matrix.GetLength(0), matrix.GetLength(1)];
             for (int i = 0; i < matrix.GetLength(0); i++)
             {
                 for (int j = 0; j < matrix.GetLength(1); j++)
@@ -227,7 +207,6 @@ namespace AudioAnalysisTools.DSP
             return normalizedMatrix;
         }
 
-
         /// <summary>
         /// Returns the log(energy) in each frame of the signal.
         /// The energy of a frame is the log of the summed energy of all the samples in the frame.
@@ -247,7 +226,7 @@ namespace AudioAnalysisTools.DSP
 
             //window or frame width
             int n = frameIDs[0, 1] + 1;
-            double[] logEnergy = new double[frameCount];
+            var logEnergy = new double[frameCount];
             for (int i = 0; i < frameCount; i++)
             {
                 // foreach sample in frame
@@ -257,13 +236,14 @@ namespace AudioAnalysisTools.DSP
                     sum += Math.Pow(signal[frameIDs[i, 0] + j], 2); //sum the energy = amplitude squared
                 }
 
-                double e = sum / n; //NormaliseMatrixValues to frame size i.e. average energy per sample
+                //NormaliseMatrixValues to frame size i.e. average energy per sample
+                double e = sum / n;
 
                 //LoggedConsole.WriteLine("e=" + e);
                 //if (e > 0.25) LoggedConsole.WriteLine("e > 0.25 = " + e);
 
                 //to guard against log(0) but this should never happen!
-                if (e == Double.MinValue)
+                if (e <= double.MinValue)
                 {
                     LoggedConsole.WriteLine("DSP.SignalLogEnergy() Warning!!! Zero Energy in frame " + i);
 
@@ -303,7 +283,7 @@ namespace AudioAnalysisTools.DSP
         {
             int frameCount = frames.GetLength(0);
             int n = frames.GetLength(1);
-            double[] logEnergy = new double[frameCount];
+            var logEnergy = new double[frameCount];
             for (int i = 0; i < frameCount; i++)
             {
                 //sum over all samples in frame
@@ -314,10 +294,11 @@ namespace AudioAnalysisTools.DSP
                     sum += frames[i, j] * frames[i, j];
                 }
 
-                double e = sum / n; //NormaliseMatrixValues to frame size i.e. average energy per sample
+                //NormaliseMatrixValues to frame size i.e. average energy per sample
+                double e = sum / n;
 
                 //to guard against log(0) but this should never happen!
-                if (e == Double.MinValue)
+                if (e <= double.MinValue)
                 {
                     LoggedConsole.WriteLine("DSP.SignalLogEnergy() Warning!!! Zero Energy in frame " + i);
                     logEnergy[i] = MinLogEnergyReference - MaxLogEnergyReference; //NormaliseMatrixValues to absolute scale
@@ -343,7 +324,7 @@ namespace AudioAnalysisTools.DSP
         public static double[] Signal2Decibels(double[] signal)
         {
             int length = signal.Length;
-            double[] dB = new double[length];
+            var dB = new double[length];
             for (int i = 0; i < length; i++)
             {
                 // 10 times log of amplitude squared
@@ -369,7 +350,7 @@ namespace AudioAnalysisTools.DSP
             int frameCount = dBMatrix.GetLength(0);
             int minBin = (int)(minHz / freqBinWidth);
             int maxBin = (int)(maxHz / freqBinWidth);
-            double[] db = new double[frameCount];
+            var db = new double[frameCount];
 
             // foreach frame
             for (int i = 0; i < frameCount; i++)
@@ -396,19 +377,25 @@ namespace AudioAnalysisTools.DSP
         {
             int frameCount = inSpectro.GetLength(0);
             int n = inSpectro.GetLength(1);
-            double[,] outSpectro = new double[frameCount, subbandCount];
+            var outSpectro = new double[frameCount, subbandCount];
             int binWidth = n / subbandCount;
-            for (int i = 0; i < frameCount; i++) //foreach frame
+
+            // for each frame
+            for (int i = 0; i < frameCount; i++)
             {
                 int startBin;
                 double sum = 0.0;
-                for (int j = 0; j < subbandCount - 1; j++) // foreach output band EXCEPT THE LAST
+
+                // foreach output band EXCEPT THE LAST
+                for (int j = 0; j < subbandCount - 1; j++)
                 {
                     startBin = j * binWidth;
                     var endBin = startBin + binWidth;
-                    for (int b = startBin; b < endBin; b++) // foreach output band
+
+                    // foreach output band sum the spectral values
+                    for (int b = startBin; b < endBin; b++)
                     {
-                        sum += inSpectro[i, b]; // sum the spectral values
+                        sum += inSpectro[i, b];
                     }
 
                     outSpectro[i, j] = sum;
@@ -525,6 +512,21 @@ namespace AudioAnalysisTools.DSP
             }
 
             return intensity;
+        }
+
+        private static double CalculateFractionOfHighEnergyFrames(double[] dbArray, double dbThreshold)
+        {
+            int length = dbArray.Length;
+            int count = 0;
+            for (int i = 0; i < length; i++)
+            {
+                if (dbArray[i] > dbThreshold)
+                {
+                    count++;
+                }
+            }
+
+            return count / (double)length;
         }
 
         // ########################################################################################################################################################
@@ -702,8 +704,8 @@ namespace AudioAnalysisTools.DSP
             configDict["NoiseReductionType"] = "None";
 
             // 1) get recording
-            AudioRecording recordingSegment = new AudioRecording(sourceRecording.FullName);
-            SonogramConfig sonoConfig = new SonogramConfig(configDict); // default values config
+            var recordingSegment = new AudioRecording(sourceRecording.FullName);
+            var sonoConfig = new SonogramConfig(configDict); // default values config
 
             // 2) get decibel spectrogram
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
@@ -712,86 +714,6 @@ namespace AudioAnalysisTools.DSP
             sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.Data.GetLength(0) - 1, sonogram.Data.GetLength(1) - 1);
 
             return CalculateSnrInFreqBand(sonogram, start, duration, minHz, maxHz, threshold);
-        }
-
-        /// <summary>
-        /// This method written 18-09-2014 to process Xueyan's query recordings.
-        /// Calculate the SNR statistics for each recording and then write info back to csv file
-        /// </summary>
-        public static void Calculate_SNR_ofXueyans_data()
-        {
-            var configFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo();
-
-            // csv file containing recording info, call bounds etc
-            var csvFileInfo = @"C:\SensorNetworks\WavFiles\XueyanQueryCalls\CallBoundsForXueyanDataSet_19thSept2014.csv".ToFileInfo();
-            var sourceDir = csvFileInfo.Directory;
-            var opDir = csvFileInfo.Directory;
-
-            Config configuration = ConfigFile.Deserialize(configFile);
-            var configDict = new Dictionary<string, string>(configuration.ToDictionary());
-
-            //set up text for the output file
-            var opText = new List<string>();
-
-            // set a decibel threshold for determining energy distribution in call
-            double threshold = 9.0;
-
-            try
-            {
-                FileStream aFile = new FileStream(csvFileInfo.FullName, FileMode.Open);
-                StreamReader sr = new StreamReader(aFile);
-
-                // read the header
-                var strLine = sr.ReadLine();
-                opText.Add(strLine + ",Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTHalfSNR");
-                while ((strLine = sr.ReadLine()) != null)
-                {
-                    //    // cannot use next line because column headers contain illegal characters
-                    //    //var data = Csv.ReadFromCsv<string[]>(csvInfo).ToList();
-                    //    List<string> rows = FileTools.ReadTextFile(csvFile.FullName);
-
-                    //    // remove trailing commas, spaces etc
-                    //    for (int i = 0; i < rows.Count; i++)
-                    //    {
-                    //        if (rows[i].Length == 0) continue;
-                    //        while ((rows[i].EndsWith(",")) || (rows[i].EndsWith(" ")))
-                    //        {
-                    //            rows[i] = rows[i].Substring(0, rows[i].Length - 1);
-                    //        }
-                    //    }
-
-                    // split and parse elements of data line
-                    var line = strLine.Split(',');
-                    string filename = line[0];
-                    int minHz = Int32.Parse(line[1]);
-                    int maxHz = Int32.Parse(line[2]);
-                    TimeSpan start = TimeSpan.FromSeconds(1.0);
-                    TimeSpan duration = TimeSpan.FromSeconds(Double.Parse(line[5]));
-
-                    FileInfo sourceRecording = Path.Combine(sourceDir.FullName, filename).ToFileInfo();
-
-                    if (sourceRecording.Exists)
-                    {
-                        SnrStatistics stats = Calculate_SNR_ShortRecording(sourceRecording, configDict, start, duration, minHz, maxHz, threshold);
-                        opText.Add(String.Format(strLine + ",{0},{1},{2},{3}", stats.Threshold, stats.Snr, stats.FractionOfFramesExceedingThreshold, stats.FractionOfFramesExceedingOneThirdSnr));
-                    }
-                    else
-                    {
-                        opText.Add(String.Format(strLine + ", ######### WARNING: FILE DOES NOT EXIST >>>" + sourceRecording.Name + "<<<"));
-                    }
-                }
-
-                sr.Close();
-            }
-            catch (IOException e)
-            {
-                Console.WriteLine("An IO exception has been thrown!");
-                Console.WriteLine(e.ToString());
-                return;
-            }
-
-            string path = Path.Combine(opDir.FullName, "SNRDataFromMichaelForXueyan_19thSept2014.csv");
-            FileTools.WriteTextFile(path, opText, true);
         }
 
         // ########################################################################################################################################################
@@ -811,16 +733,12 @@ namespace AudioAnalysisTools.DSP
         ///
         public static BackgroundNoise SubtractBackgroundNoiseFromWaveform_dB(double[] dBarray, double sdCount)
         {
-            double noiseMode;
-            double noiseSd;
-            double minDb;
-            double maxDb;
 
             // Implements the algorithm in Lamel et al, 1981.
-            NoiseRemovalModal.CalculateNoiseUsingLamelsAlgorithm(dBarray, out minDb, out maxDb, out noiseMode, out noiseSd);
+            NoiseRemovalModal.CalculateNoiseUsingLamelsAlgorithm(dBarray, out var minDb, out var maxDb, out var noiseMode, out var noiseSd);
 
             // subtract noise.
-            double threshold = noiseMode + (noiseSd * sdCount);
+            var threshold = noiseMode + (noiseSd * sdCount);
             double snr = maxDb - threshold;
             double[] dBFrames = SubtractAndTruncate2Zero(dBarray, threshold);
             return new BackgroundNoise()
@@ -1216,6 +1134,7 @@ namespace AudioAnalysisTools.DSP
             return outM;
         }
 
+        /*
         public static double[,] TruncateNegativeValues2Zero(double[,] m)
         {
             int rows = m.GetLength(0);
@@ -1238,6 +1157,7 @@ namespace AudioAnalysisTools.DSP
 
             return matrix;
         }
+        */
 
         /// <summary>
         /// sets the dynamic range in dB for a sonogram.

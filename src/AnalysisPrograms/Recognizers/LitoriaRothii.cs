@@ -41,6 +41,8 @@ namespace AnalysisPrograms.Recognizers
     /// </summary>
     public class LitoriaRothii : RecognizerBase
     {
+        public override string Description => "[ALPHA/EMBRYONIC] Detects acoustic events of Litoria rothii.";
+
         public override string Author => "Towsey";
 
         public override string SpeciesName => "LitoriaRothii";
@@ -158,7 +160,7 @@ namespace AnalysisPrograms.Recognizers
                 double oscilFreq;
                 double period;
                 double intensity;
-                Oscillations2014.GetOscillation(subArray, framesPerSecond, cosines, out oscilFreq, out period, out intensity);
+                Oscillations2014.GetOscillationUsingDct(subArray, framesPerSecond, cosines, out oscilFreq, out period, out intensity);
                 bool periodWithinBounds = period > minPeriod && period < maxPeriod;
 
                 if (!periodWithinBounds)

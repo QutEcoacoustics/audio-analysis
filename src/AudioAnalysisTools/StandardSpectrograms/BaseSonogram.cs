@@ -1,4 +1,4 @@
-﻿// <copyright file="BaseSonogram.cs" company="QutEcoacoustics">
+// <copyright file="BaseSonogram.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -133,7 +133,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             //bool doExtractSubband = this.SubBandMinHz > 0 || this.SubBandMaxHz < this.NyquistFrequency;
 
             this.Duration = wav.Time;
-            double minDuration = 1.0;
+            double minDuration = 0.2;
             if (this.Duration.TotalSeconds < minDuration)
             {
                 LoggedConsole.WriteLine("Signal must at least {0} seconds long to produce a sonogram!", minDuration);

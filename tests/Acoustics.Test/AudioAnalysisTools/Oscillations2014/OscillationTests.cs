@@ -1,4 +1,4 @@
-﻿// <copyright file="ConcatenationTests.cs" company="QutEcoacoustics">
+// <copyright file="OscillationTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -8,6 +8,8 @@ namespace Acoustics.Test.AudioAnalysisTools.Oscillations2014
     using System.IO;
     using Acoustics.Shared;
     using global::AudioAnalysisTools;
+    using global::AudioAnalysisTools.WavTools;
+    using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
 
@@ -55,17 +57,15 @@ namespace Acoustics.Test.AudioAnalysisTools.Oscillations2014
         /// Test for drawing of two Oscillation Spectrograms using different algorithms
         /// </summary>
         [TestMethod]
-        [Ignore("The update from 864f7a491e2ea0e938161bd390c1c931ecbdf63c possibly broke this test and I do not know how to repair it. TODO @towsey")]
+        // [Ignore("The update from 864f7a491e2ea0e938161bd390c1c931ecbdf63c possibly broke this test and I do not know how to repair it.
+        // TODO @towsey")]
         public void TwoOscillationTests()
         {
             {
                 var sourceRecording = PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav");
-                var configFile = PathHelper.ResolveAsset("Oscillations2014", "Towsey.Sonogram.yml");
 
                 // 1. get the config dictionary
-                var configDict = Oscillations2014.GetConfigDictionary(configFile, true);
-                configDict[ConfigKeys.Recording.Key_RecordingCallName] = sourceRecording.FullName;
-                configDict[ConfigKeys.Recording.Key_RecordingFileName] = sourceRecording.Name;
+                var configDict = Oscillations2014.GetDefaultConfigDictionary(sourceRecording);
 
                 // 2. Create temp directory to store output
                 if (!this.outputDirectory.Exists)
@@ -76,55 +76,91 @@ namespace Acoustics.Test.AudioAnalysisTools.Oscillations2014
                 // 3. Generate the FREQUENCY x OSCILLATIONS Graphs and csv data
                 var tuple = Oscillations2014.GenerateOscillationDataAndImages(sourceRecording, configDict, true);
 
-                // Calculate the sample length i.e. number of frames spanned to calculate oscillations per second
-                int sampleLength = Oscillations2014.DefaultSampleLength;
-                if (configDict.ContainsKey(AnalysisKeys.OscilDetection2014SampleLength))
-                {
-                    sampleLength = int.Parse(configDict[AnalysisKeys.OscilDetection2014SampleLength]);
-                }
-
                 // construct name of expected image file to save
                 var sourceName = Path.GetFileNameWithoutExtension(sourceRecording.Name);
-                var stem = sourceName + ".FreqOscilSpectrogram_" + sampleLength;
+                var stem = sourceName + ".FreqOscilSpectrogram";
 
                 // construct name of expected matrix osc spectrogram to save file
-                var expectedMatrixFile = PathHelper.ResolveAsset("Oscillations2014", stem + ".Matrix.EXPECTED.bin");
+                var expectedMatrixFile = PathHelper.ResolveAsset("Oscillations2014", stem + ".Matrix.EXPECTED.csv");
 
-                // construct name of expected matrix osc spectrogram to save file
-                var expectedSpectrumFile = PathHelper.ResolveAsset("Oscillations2014", stem + ".Vector.EXPECTED.bin");
-
-                // Run this once to generate expected image and data files (############ IMPORTANT: remember to move saved files OUT of bin/Debug directory!)
                 // SAVE THE OUTPUT if true
+                // WARNING: this will overwrite fixtures
                 if (false)
                 {
                     // 1: save image of oscillation spectrogram
                     string imageName = stem + ".EXPECTED.png";
-                    string imagePath = Path.Combine(this.outputDirectory.FullName, imageName);
+                    string imagePath = Path.Combine(PathHelper.ResolveAssetPath("Oscillations2014"), imageName);
                     tuple.Item1.Save(imagePath, ImageFormat.Png);
 
                     // 2: Save matrix of oscillation data stored in freqOscilMatrix1
-                    // Acoustics.Shared.Csv.Csv.WriteMatrixToCsv(expectedMatrixFile.FullName, tuple.Item2);
+                    //Csv.WriteMatrixToCsv(expectedMatrixFile, tuple.Item2);
                     Binary.Serialize(expectedMatrixFile, tuple.Item2);
-
-                    // 3: save oscillationsSpectrum OR the OSC spectral index.
-                    // Acoustics.Shared.Csv.Csv.WriteToCsv(spectralFile, tuple.Item3);
-                    // Json.Serialise(expectedSpectrumFile, tuple.Item3);
-                    Binary.Serialize(expectedSpectrumFile, tuple.Item3);
                 }
 
-                // Run three tests. Have to deserialise the expected data files
+                // Run two tests. Have to deserialise the expected data files
                 // 1: Compare image files - check that image dimensions are correct
-                Assert.AreEqual(356, tuple.Item1.Width);
-                Assert.AreEqual(678, tuple.Item1.Height);
+                Assert.AreEqual(350, tuple.Item1.Width);
+                Assert.AreEqual(675, tuple.Item1.Height);
 
                 // 2. Compare matrix data
                 var expectedMatrix = Binary.Deserialize<double[,]>(expectedMatrixFile);
-                CollectionAssert.AreEqual(expectedMatrix, tuple.Item2);
 
-                // 3. Compare OSC spectral index
-                // var expectedVector = Json.Deserialise<double[]>(expectedSpectrumFile);
-                var expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
-                CollectionAssert.AreEqual(expectedVector, tuple.Item3);
+                //TODO  Following test fails when using CSV reader because the reader cuts out first line of the matrix
+                //var expectedMatrix = Csv.ReadMatrixFromCsv<double>(expectedMatrixFile);
+                CollectionAssert.That.AreEqual(expectedMatrix, tuple.Item2, 0.000001);
+            }
+        }
+
+        [TestMethod]
+        public void SpectralIndexOsc_Test()
+        {
+            {
+                var sourceRecording = PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav");
+
+                // 1. Create temp directory to store output
+                if (!this.outputDirectory.Exists)
+                {
+                    this.outputDirectory.Create();
+                }
+
+                // 2. Get the spectral index
+                var recordingSegment = new AudioRecording(sourceRecording.FullName);
+                var frameLength = Oscillations2014.DefaultFrameLength;
+                var sampleLength = Oscillations2014.DefaultSampleLength;
+                var threshold = Oscillations2014.DefaultSensitivityThreshold;
+                var spectralIndex = Oscillations2014.GetSpectralIndex_Osc(recordingSegment, frameLength, sampleLength, threshold);
+
+                // 3. construct name of spectral index vector
+                // SAVE THE OUTPUT if true
+                // WARNING: this will overwrite fixtures
+                var sourceName = Path.GetFileNameWithoutExtension(sourceRecording.Name);
+                var stem = sourceName + ".SpectralIndex.OSC";
+                var expectedIndexPath = PathHelper.ResolveAsset("Oscillations2014", stem + ".EXPECTED.csv");
+                if (false)
+                {
+                    // 4. Save spectral index vector to file
+                    //Csv.WriteToCsv(expectedIndexPath, spectralIndex);
+                    //Json.Serialise(expectedIndexPath, spectralIndex);
+                    Binary.Serialize(expectedIndexPath, spectralIndex);
+
+                    // 5. Get the vector as image and save as image file
+                    // no need to do tests on this image but it is useful to visualise output
+                    var expectedVectorImage = ImageTools.DrawVectorInColour(DataTools.reverseArray(spectralIndex), cellWidth: 10);
+                    var expectedImagePath = PathHelper.ResolveAsset("Oscillations2014", stem + ".png");
+                    expectedVectorImage.Save(expectedImagePath.FullName, ImageFormat.Png);
+                }
+
+                // 6. Get the vector as image and save as image file
+                // no need to do tests on this image but it is useful to compare with expected visual output
+                var currentVectorImage = ImageTools.DrawVectorInColour(DataTools.reverseArray(spectralIndex), cellWidth: 10);
+                var currentImagePath = Path.Combine(this.outputDirectory.FullName, stem + ".png");
+                currentVectorImage.Save(currentImagePath, ImageFormat.Png);
+
+                // 7. Run test. Compare vectors
+                // TODO  this test fails when using CSV reader because the reader cuts out first element/line of the vector
+                //var expectedVector = (double[])Csv.ReadFromCsv<double>(expectedIndexPath);
+                var expectedVector = Binary.Deserialize<double[]>(expectedIndexPath);
+                CollectionAssert.That.AreEqual(expectedVector, spectralIndex, 0.000001);
             }
         }
     }

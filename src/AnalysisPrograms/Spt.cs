@@ -33,7 +33,7 @@ namespace AnalysisPrograms
 
         [Command(
             CommandName,
-            Description = "[UNMAINTAINED] Spectral Peak Tracking.Probably not useful anymore.")]
+            Description = "[UNMAINTAINED] Spectral Peak Tracking. Probably not useful anymore.")]
         public class Arguments : SubCommandBase
         {
             [Option(Description = "The source audio file to operate on")]

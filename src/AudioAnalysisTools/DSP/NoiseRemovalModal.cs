@@ -1,4 +1,4 @@
-﻿// <copyright file="NoiseRemovalModal.cs" company="QutEcoacoustics">
+// <copyright file="NoiseRemovalModal.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -7,7 +7,7 @@ namespace AudioAnalysisTools.DSP
     using System;
     using System.Drawing;
 
-    using AudioAnalysisTools.StandardSpectrograms;
+    using StandardSpectrograms;
 
     using TowseyLibrary;
 
@@ -32,36 +32,33 @@ namespace AudioAnalysisTools.DSP
         {
             // The number of SDs above the mean for noise removal.
             // Set sdCount = -0.5 becuase when sdCount >= zero, noies removal is a bit severe for environmental recordings.
-            double sdCount = -0.5;
+            var sdCount = -0.5;
             var nrt = NoiseReductionType.Modal;
-            Tuple<double[,], double[]> tuple = SNR.NoiseReduce(deciBelSpectrogram, nrt, sdCount);
+            var tuple = SNR.NoiseReduce(deciBelSpectrogram, nrt, sdCount);
 
-            double[,] noiseReducedSpectrogram1 = tuple.Item1;
+            var noiseReducedSpectrogram1 = tuple.Item1;
 
-            // smoothed modal profile
-            // double[] noiseProfile = tuple.Item2;
-
-            string title = "title1";
-            Image image1 = DrawSonogram(noiseReducedSpectrogram1, xAxisInterval, stepDuration, nyquist, hzInterval, title);
+            var title = "title1";
+            var image1 = DrawSonogram(noiseReducedSpectrogram1, xAxisInterval, stepDuration, nyquist, hzInterval, title);
 
             double dBThreshold = 0.0; // SPECTRAL dB THRESHOLD for smoothing background
             double[,] noiseReducedSpectrogram2 = SNR.RemoveNeighbourhoodBackgroundNoise(noiseReducedSpectrogram1, dBThreshold);
             title = "title2";
-            Image image2 = DrawSonogram(noiseReducedSpectrogram2, xAxisInterval, stepDuration, nyquist, hzInterval, title);
+            var image2 = DrawSonogram(noiseReducedSpectrogram2, xAxisInterval, stepDuration, nyquist, hzInterval, title);
 
             // SPECTRAL dB THRESHOLD for smoothing background
             dBThreshold = 3.0;
             noiseReducedSpectrogram2 = SNR.RemoveNeighbourhoodBackgroundNoise(noiseReducedSpectrogram1, dBThreshold);
             title = "title3";
-            Image image3 = DrawSonogram(noiseReducedSpectrogram2, xAxisInterval, stepDuration, nyquist, hzInterval, title);
+            var image3 = DrawSonogram(noiseReducedSpectrogram2, xAxisInterval, stepDuration, nyquist, hzInterval, title);
 
             // SPECTRAL dB THRESHOLD for smoothing background
             dBThreshold = 10.0;
             noiseReducedSpectrogram2 = SNR.RemoveNeighbourhoodBackgroundNoise(noiseReducedSpectrogram1, dBThreshold);
             title = "title4";
-            Image image4 = DrawSonogram(noiseReducedSpectrogram2, xAxisInterval, stepDuration, nyquist, hzInterval, title);
+            var image4 = DrawSonogram(noiseReducedSpectrogram2, xAxisInterval, stepDuration, nyquist, hzInterval, title);
 
-            Image[] array = new Image[4];
+            var array = new Image[4];
             array[0] = image1;
             array[1] = image2;
             array[2] = image3;
@@ -78,7 +75,10 @@ namespace AudioAnalysisTools.DSP
         /// IF This modal noise is subtracted from each frame dB, the effect is to set set average background noise level = 0 dB.
         /// The algorithm is described in Lamel et al, 1981.
         /// USED TO SEGMENT A RECORDING INTO SILENCE AND VOCALISATION
-        /// NOTE: noiseThreshold is passed as decibels. Original algorithm ONLY SEARCHES in range min to 10dB above min.
+        /// NOTE: noiseThreshold is passed as decibels. Original Lamel algorithm ONLY SEARCHES in range min to 10dB above min.
+        /// 
+        /// This method debugged on 7 Aug 2018 using following command line arguments:
+        /// audio2csv Y:\TheNatureConservency\Myanmar\20180517\site112\2018_02_14_Bar5\20180214_Bar5\20180214_101121_Bar5.wav Towsey.Acoustic.yml C:\Temp... -m True
         /// </summary>
         /// <param name="dBarray">signal in decibel values</param>
         /// <param name="minDb">minimum value in the passed array of decibel values</param>
@@ -94,10 +94,7 @@ namespace AudioAnalysisTools.DSP
         {
             // set constants
             double noiseThreshold_DB = 10.0; // dB
-            double minDecibels = (SNR.MinLogEnergyReference - SNR.MaxLogEnergyReference) * 10; // = -60dB
-            int binCount = 100; // number of bins for histogram is FIXED
-
-            //int indexOfUpperBound = (int)(binCount * SNR.FRACTIONAL_BOUND_FOR_MODE); // mode cannot be higher than this
+            var binCount = 100; // number of bins for histogram is FIXED
             double histogramBinWidth = noiseThreshold_DB / binCount;
 
             //ignore first N and last N frames when calculating background noise level because
@@ -115,11 +112,6 @@ namespace AudioAnalysisTools.DSP
             double max = -double.MaxValue;
             for (int i = buffer; i < arrayLength - buffer; i++)
             {
-                if (dBarray[i] <= minDecibels)
-                {
-                    continue; //ignore lowest values when establishing noise level
-                }
-
                 if (dBarray[i] < min)
                 {
                     min = dBarray[i];
@@ -130,18 +122,23 @@ namespace AudioAnalysisTools.DSP
                 }
             }
 
+            if (min <= SNR.MinimumDbBoundForEnvironmentalNoise)
+            {
+                min = SNR.MinimumDbBoundForEnvironmentalNoise;
+            }
+
             // return the outs!
             minDb = min;
             maxDb = max;
 
-            int[] histo = new int[binCount];
-            double absThreshold = minDb + noiseThreshold_DB;
+            var histo = new int[binCount];
+            var absThreshold = minDb + noiseThreshold_DB;
 
-            for (int i = 0; i < arrayLength; i++)
+            for (var i = 0; i < arrayLength; i++)
             {
                 if (dBarray[i] <= absThreshold)
                 {
-                    int id = (int)((dBarray[i] - minDb) / histogramBinWidth);
+                    var id = (int)((dBarray[i] - minDb) / histogramBinWidth);
                     if (id >= binCount)
                     {
                         id = binCount - 1;
@@ -155,13 +152,12 @@ namespace AudioAnalysisTools.DSP
                 }
             }
 
-            double[] smoothHisto = DataTools.filterMovingAverage(histo, 3);
+            var smoothHisto = DataTools.filterMovingAverage(histo, 3);
 
             //DataTools.writeBarGraph(histo);
 
             // find peak of lowBins histogram
-            int indexOfMode, indexOfOneSd;
-            SNR.GetModeAndOneStandardDeviation(smoothHisto, out indexOfMode, out indexOfOneSd);
+            SNR.GetModeAndOneStandardDeviation(smoothHisto, out var indexOfMode, out var indexOfOneSd);
 
             // return remaining outs!
             modeNoise = min + ((indexOfMode + 1) * histogramBinWidth); // modal noise level
@@ -185,11 +181,11 @@ namespace AudioAnalysisTools.DSP
 
         private static Image DrawSonogram(double[,] data, TimeSpan xInterval, TimeSpan xAxisPixelDuration, int nyquist, int herzInterval, string title)
         {
-            Image image = ImageTools.GetMatrixImage(data);
+            var image = ImageTools.GetMatrixImage(data);
 
-            Image titleBar = BaseSonogram.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
-            TimeSpan minuteOffset = TimeSpan.Zero;
-            TimeSpan labelInterval = TimeSpan.FromSeconds(5);
+            var titleBar = BaseSonogram.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
+            var minuteOffset = TimeSpan.Zero;
+            var labelInterval = TimeSpan.FromSeconds(5);
             image = BaseSonogram.FrameSonogram(image, titleBar, minuteOffset, xInterval, xAxisPixelDuration, labelInterval, nyquist, herzInterval);
             return image;
         }

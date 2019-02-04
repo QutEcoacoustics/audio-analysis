@@ -1,7 +1,6 @@
 ---
 # Summary: Runs a list of event recognizers that implement the IEventRecognizer interface.
-#
-AnalysisName: Ecosounds.MultiRecognizer
+# AnalysisName: Ecosounds.MultiRecognizer
 
 # The default sample rate for all recognizers is 22050. No point changing this. 
 # ResampleRate: 22050

@@ -1,7 +1,11 @@
 ﻿namespace Acoustics.Test.Tools
 {
     using System;
+    using System.Collections.Generic;
+    using System.Globalization;
+    using System.Linq;
     using System.Reflection;
+    using System.Threading;
     using Acoustics.Shared;
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
@@ -61,6 +65,79 @@
             TestHelper.CheckAudioUtilityInfo(expected, info);
         }
 
+        public static IEnumerable<object[]> TestFilesAndCultureData()
+        {
+            var files = new[]
+            {
+                "06Sibylla.asf",
+                "Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3",
+                "A French Fiddle Speaks.mp3",
+                "ocioncosta-lindamenina.ogg",
+                "Lewins Rail Kekkek.wav",
+                "FemaleKoala MaleKoala.wav",
+                "geckos.wav",
+                "Lewins Rail Kekkek.webm",
+                "06Sibylla.wma",
+                "Raw_audio_id_cd6e8ba1-11b4-4724-9562-f6ec893110aa.wv",
+                "f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv",
+                "4channelsPureTones.wav",
+                "4channelsPureTones.flac",
+                "4channelsPureTones.ogg",
+                "4channelsPureTones.wv",
+                "different_channels_tone.wav",
+                "different_channels_tone.mp3",
+                "4min test.mp3",
+            };
+
+            var cultures = new string[]
+            {
+                "en-AU",
+                "de-DE",
+                "it-it",
+            };
+
+            return files.SelectMany(f => cultures.Select(c => new object[] {f, c}));
+        }
+
+        [DataTestMethod]
+        [DynamicData(nameof(TestFilesAndCultureData), DynamicDataSourceType.Method)]
+        public void InfoWorksForMasterInDifferentCultures(string file, string culture)
+        {
+            var originalCulture = Thread.CurrentThread.CurrentCulture;
+            Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+            try
+            {
+                var util = TestHelper.GetAudioUtility();
+
+                var source = TestHelper.GetAudioFile(file);
+                var info = util.Info(source);
+
+                var expected = TestHelper.AudioDetails[file];
+
+                TestHelper.CheckAudioUtilityInfo(expected, info);
+            }
+            finally
+            {
+                Thread.CurrentThread.CurrentCulture = originalCulture;
+            }
+        }
+
+        [DataTestMethod]
+        [DataRow("very_very_large_file_24h_ffmpeg.flac", 86400)]
+        [DataRow("very_very_large_file_PT26H59M23.456S.flac", 97163.456)]
+        public void InfoWorksForVeryLongFiles(string file, double duration)
+        {
+            var utilities = new[] { TestHelper.GetAudioUtilitySox(), TestHelper.GetAudioUtilityFfmpeg() };
+
+            foreach (var utility in utilities)
+            {
+                var info = utility.Info(PathHelper.GetTestAudioFile(file));
+
+                Assert.IsNotNull(info.Duration);
+                Assert.AreEqual(duration, info.Duration.Value.TotalSeconds, 0.00001);
+            }
+        }
+
         [DataTestMethod]
         [DataRow("4channelsPureTones.raw", typeof(NotImplementedException), "Raw formats inherently have no information to gather")]
         public void InfoFailsForMaster(string file, Type exception, string message)
@@ -118,7 +195,7 @@
             var source = TestHelper.GetAudioFile(file);
             TestHelper.ExceptionMatches<NotSupportedException>(
                 () => util.Info(source),
-                "cannot be processed.  Valid formats are: wav (audio/x-wav).");
+                "cannot be processed.  Valid formats are: wav (audio/wav).");
         }
 
         [DataTestMethod]
@@ -127,6 +204,7 @@
         [DataRow("Lewins Rail Kekkek.wav")]
         [DataRow("FemaleKoala MaleKoala.wav")]
         [DataRow("geckos.wav")]
+        [DataRow("4channelsPureTones.flac")]
         [DataRow("4channelsPureTones.wav")]
         [DataRow("different_channels_tone.wav")]
         [DataRow("different_channels_tone.mp3")]
@@ -150,7 +228,6 @@
         [DataRow("06Sibylla.wma")]
         [DataRow("Raw_audio_id_cd6e8ba1-11b4-4724-9562-f6ec893110aa.wv")]
         [DataRow("f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv")]
-        [DataRow("4channelsPureTones.flac")]
         [DataRow("4channelsPureTones.ogg")]
         [DataRow("4channelsPureTones.raw")]
         [DataRow("4channelsPureTones.wv")]
@@ -161,7 +238,7 @@
             var source = TestHelper.GetAudioFile(file);
             TestHelper.ExceptionMatches<NotSupportedException>(
                 () => util.Info(source),
-                "cannot be processed.  Valid formats are: wav (audio/x-wav), mp3 (audio/mpeg).");
+                "cannot be processed.  Valid formats are: wav (audio/wav), mp3 (audio/mpeg), flac (audio/flac).");
         }
 
         [DataTestMethod]

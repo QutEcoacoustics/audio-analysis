@@ -14,17 +14,19 @@ namespace Acoustics.Test
     using TestHelpers;
 
     [TestClass]
+    [DoNotParallelize]
     public class InfiniteTextStreamTests
     {
-        private readonly TimeSpan timeout = TimeSpan.FromMilliseconds(600);
+        private readonly TimeSpan timeout = TimeSpan.FromMilliseconds(1000);
 
         [TestMethod]
         [Timeout(5_000)]
+
         public void InfiniteStreamIsInfinite()
         {
             Debug.WriteLine("Generating output");
 
-            StringBuilder builder = new StringBuilder(1_000_000);
+            var builder = new StringBuilder(1_000_000);
             var source = new CancellationTokenSource();
             var token = source.Token;
 
@@ -50,7 +52,7 @@ namespace Acoustics.Test
                 }
             }
 
-            var work = Task.Run((Action)Generate, token);
+            var work = Task.Run(Generate, token);
 
             Assert.IsFalse(work.IsCompleted);
             source.CancelAfter(this.timeout);
@@ -58,9 +60,9 @@ namespace Acoustics.Test
             Assert.IsTrue(work.IsCompleted);
 
             string s = builder.ToString();
-            Debug.WriteLine($"Generation complete (length: {s.Length}:");
+            Debug.WriteLine($"Generation complete (length: {s.Length}):");
 
-            Assert.IsTrue(s.Length > 1_000);
+            Assert.IsTrue(s.Length > 1_000, $"Length {s.Length} was not greater than expected length of 1000");
 
             //Debug.WriteLine(s);
         }

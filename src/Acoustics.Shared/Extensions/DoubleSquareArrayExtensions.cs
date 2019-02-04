@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="DoubleSquareArrayExtensions.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -127,6 +127,22 @@ namespace System
                 for (int j = 0; j < height; j++)
                 {
                     array[i, j] = value;
+                }
+            }
+
+            return array;
+        }
+
+        public static T[,] ForEach<T>(this T[,] array, Func<int, int, T> transform)
+        {
+            var width = array.GetLength(0);
+            var height = array.GetLength(1);
+
+            for (int i = 0; i < width; i++)
+            {
+                for (int j = 0; j < height; j++)
+                {
+                    array[i, j] = transform(i, j);
                 }
             }
 

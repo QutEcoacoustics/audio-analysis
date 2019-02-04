@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="ZoomTiledSpectrograms.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -166,7 +166,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
             Log.Info("START DRAWING ZOOMED-IN FRAME SPECTROGRAMS");
 
             TimeSpan dataDuration =
-                TimeSpan.FromTicks(spectra["POW"].GetLength(1) * indexGeneration.IndexCalculationDuration.Ticks);
+                TimeSpan.FromTicks(spectra["PMN"].GetLength(1) * indexGeneration.IndexCalculationDuration.Ticks);
             TimeSpan duration = indexGeneration.RecordingDuration;
 
             Contract.Requires(

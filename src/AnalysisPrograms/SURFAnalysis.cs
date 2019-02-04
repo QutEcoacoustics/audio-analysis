@@ -42,9 +42,6 @@ namespace AnalysisPrograms
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        // use the following paths for the command line for the <audio2sonogram> task.
-        // audio2InputForConvCNN "Path to CSV file"   @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Mangalam.Sonogram.yml"  "Output directory" true
-
         [Command(
             CommandName,
             Description = "[UNMAINTAINED] Uses SURF points of interest to classify recording segments of bird calls.")]
@@ -478,6 +475,8 @@ namespace AnalysisPrograms
     /// </summary>
     public class PreprocessorForSurfAnalysis : IAnalyser2
     {
+        public string Description => "[UNMAINTAINED] Uses SURF points of interest to classify recording segments of bird calls.";
+
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         public PreprocessorForSurfAnalysis()
@@ -496,8 +495,6 @@ namespace AnalysisPrograms
         public string DisplayName { get; private set; }
 
         public string Identifier { get; private set; }
-
-        public string Description => "TODO";
 
         public AnalysisSettings DefaultSettings { get; private set; }
 

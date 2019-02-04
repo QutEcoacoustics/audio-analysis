@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="IndexCalculate.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -15,7 +15,6 @@ namespace AudioAnalysisTools.Indices
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
-    using System.IO;
     using System.Linq;
     using System.Reflection;
     using DSP;
@@ -97,7 +96,7 @@ namespace AudioAnalysisTools.Indices
             int endSample = startSample + subsegmentSampleCount - 1;
 
             // Default behaviour: set SUBSEGMENT = total recording
-            AudioRecording subsegmentRecording = recording;
+            var subsegmentRecording = recording;
 
             // But if the indexCalculationDuration < segmentDuration
             if (indexCalculationDuration < segmentDuration)
@@ -119,7 +118,7 @@ namespace AudioAnalysisTools.Indices
                     Logger.Trace("  Backtrack subsegment to fill missing data from imperfect audio cuts because not enough samples available. " + (oldStart - startSample) + " samples overlap.");
                 }
 
-                double[] subsamples = DataTools.Subarray(recording.WavReader.Samples, startSample, subsegmentSampleCount);
+                var subsamples = DataTools.Subarray(recording.WavReader.Samples, startSample, subsegmentSampleCount);
                 var wr = new Acoustics.Tools.Wav.WavReader(subsamples, 1, 16, sampleRate);
                 subsegmentRecording = new AudioRecording(wr);
             }
@@ -286,7 +285,18 @@ namespace AudioAnalysisTools.Indices
             var tuple3 = SpectrogramTools.CalculateAvgSpectrumAndVarianceSpectrumFromAmplitudeSpectrogram(amplitudeSpectrogram);
             summaryIndices.Ndsi = SpectrogramTools.CalculateNdsi(tuple3.Item1, sampleRate, 1000, 2000, 8000);
 
-            // (B) ################################## EXTRACT SPECTRAL INDICES FROM THE AMPLITUDE SPECTROGRAM ##################################
+            // (B) ################################## EXTRACT OSC SPECTRAL INDEX DIRECTLY FROM THE RECORDING ##################################
+            // Get the oscillation spectral index OSC separately from signal because need a different frame size etc.
+
+            var sampleLength = Oscillations2014.DefaultSampleLength;
+            var frameLength = Oscillations2014.DefaultFrameLength;
+            var sensitivity = Oscillations2014.DefaultSensitivityThreshold;
+            var spectralIndexShort = Oscillations2014.GetSpectralIndex_Osc(subsegmentRecording, frameLength, sampleLength, sensitivity);
+
+            // double length of the vector because want to work with 256 element vector for LDFC purposes
+            spectralIndices.OSC = DataTools.VectorDoubleLengthByAverageInterpolation(spectralIndexShort);
+
+            // (C) ################################## EXTRACT SPECTRAL INDICES FROM THE AMPLITUDE SPECTROGRAM ##################################
 
             // i: CALCULATE SPECTRUM OF THE SUM OF FREQ BIN AMPLITUDES - used for later calculation of ACI
             spectralIndices.SUM = MatrixTools.SumColumns(amplitudeSpectrogram);
@@ -388,9 +398,7 @@ namespace AudioAnalysisTools.Indices
             deciBelSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(deciBelSpectrogram, nhThreshold: 2.0);
 
             // iii: CALCULATE noise reduced AVERAGE DECIBEL SPECTRUM
-            // TODO: The method to calculate POW by averaging decibel values should be depracated. It is now replaced by index PMN.
-            //spectralIndices.POW = SpectrogramTools.CalculateAvgSpectrumFromEnergySpectrogram(deciBelSpectrogram);
-            spectralIndices.PMN = SpectrogramTools.CalculateAvgDecibelSpectrumFromDecibelSpectrogram(deciBelSpectrogram);
+            spectralIndices.PMN = SpectrogramTools.CalculateAvgDecibelSpectrumFromSpectrogram(deciBelSpectrogram);
 
             // iv: CALCULATE SPECTRAL COVER.
             //     NOTE: at this point, decibelSpectrogram is noise reduced. All values >= 0.0

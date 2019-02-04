@@ -23,6 +23,8 @@ namespace AnalysisPrograms
 
     public class ChannelIntegrityAnalyzer : AbstractStrongAnalyser
     {
+        public override string Description => "[ALPHA] Experimental code produced for Y.Phillip's thesis";
+
         public override string DisplayName => "ChannelIntegrity";
 
         public override string Identifier => "Towsey.ChannelIntegrity";

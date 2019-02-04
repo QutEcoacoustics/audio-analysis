@@ -50,6 +50,8 @@ namespace AnalysisPrograms.Recognizers
     /// </summary>
     internal class PlatyplectrumOrnatum : RecognizerBase
     {
+        public override string Description => "[ALPHA/EMBRYONIC] Detects acoustic events of Platyplectrum ornatum.";
+
         public override string Author => "Towsey";
 
         public override string SpeciesName => "PlatyplectrumOrnatum";

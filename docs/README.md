@@ -20,11 +20,11 @@ what analyses are to be done and on which files.
 
 ## Table of contents
 
+- [Introduction](./introduction.md)
 - [FAQ](./faq.md)
-- [Supported Platforms](./supported_platforms.md)
 - [Downloading and Installing](./installing.md) AnalysisPrograms.exe
 - [Introduction to running commands](./cli.md)
-- [commands](./commands.md)
+- [Commands](./commands.md)
 - [Config Files](./config_files.md)
 - [Supported Audio Formats](./formats.md)
 - [List of Analyses](./analyses/)

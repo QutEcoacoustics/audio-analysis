@@ -43,6 +43,8 @@ namespace AnalysisPrograms.Recognizers.Base
             public string[] SpeciesList { get; set; }
         }
 
+        public override string Description => "[BETA] A method to run multiple event/species recognisers, depending on entries in config file.";
+
         public override string Author => "Ecosounds";
 
         public override string SpeciesName => "MultiRecognizer";

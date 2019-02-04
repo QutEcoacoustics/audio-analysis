@@ -258,8 +258,8 @@
       <HintPath>..\..\packages\System.Xml.ReaderWriter.4.3.0\lib\net46\System.Xml.ReaderWriter.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="YamlDotNet, Version=4.3.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\YamlDotNet.4.3.0\lib\net45\YamlDotNet.dll</HintPath>
+    <Reference Include="YamlDotNet, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\YamlDotNet.5.3.0\lib\net45\YamlDotNet.dll</HintPath>
     </Reference>
     <Reference Include="Zio, Version=0.3.6.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Zio.0.3.6\lib\net45\Zio.dll</HintPath>
@@ -327,6 +327,7 @@
     <Compile Include="Recognizers\LitoriaFreycineti.cs" />
     <Compile Include="Recognizers\LitoriaWatjulumensis.cs" />
     <Compile Include="Recognizers\LitoriaBicolor.cs" />
+    <Compile Include="Recognizers\PezoporusOccidentalis.cs" />
     <Compile Include="Recognizers\UperoleiaLithomoda.cs" />
     <Compile Include="Recognizers\PlatyplectrumOrnatum.cs" />
     <Compile Include="Recognizers\LimnodynastesConvex.cs" />
@@ -348,6 +349,8 @@
     <Compile Include="SourcePreparers\RemoteSourcePreparer.cs" />
     <Compile Include="SourcePreparers\LocalSourcePreparer.cs" />
     <Compile Include="SourcePreparers\RemoteSourcePreparerException.cs" />
+    <Compile Include="SpectralPeakTracking\SpectralPeakTrackingConfig.cs" />
+    <Compile Include="SpectralPeakTracking\SpectralPeakTrackingEntry.cs" />
     <Compile Include="StandardizedFeatures\StandardizedFeatureExtractionConfig.cs" />
     <Compile Include="StandardizedFeatures\StandardizedFeatureExtraction.cs" />
     <Compile Include="SURFAnalysis.cs" />
@@ -418,13 +421,17 @@
     <AdditionalFiles Include="..\..\stylecop.json">
       <Link>stylecop.json</Link>
     </AdditionalFiles>
+    <Content Include="..\..\build\download_ap.ps1">
+      <Link>download_ap.ps1</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="..\AP.Settings.json">
+      <Link>AP.Settings.json</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
-    <Content Include="log4net.config">
-      <SubType>Designer</SubType>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <None Include="packages.config" />
     <None Include="SQLitePCLRaw.provider.e_sqlite3.dll.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -449,8 +456,8 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Analyzer Include="..\..\packages\StyleCop.Analyzers.1.1.0-beta006\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll" />
-    <Analyzer Include="..\..\packages\StyleCop.Analyzers.1.1.0-beta006\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
+    <Analyzer Include="..\..\packages\StyleCop.Analyzers.Unstable.1.1.1.61\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll" />
+    <Analyzer Include="..\..\packages\StyleCop.Analyzers.Unstable.1.1.1.61\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
