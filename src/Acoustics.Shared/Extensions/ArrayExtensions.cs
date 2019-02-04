@@ -165,5 +165,22 @@ namespace System
 
             return max;
         }
+
+        /// <summary>
+        /// retrieving the min value of a vector
+        /// </summary>
+        public static double GetMinValue(this double[] data)
+        {
+            double min = data[0];
+            for (int i = 1; i < data.Length; i++)
+            {
+                if (data[i] < min)
+                {
+                    min = data[i];
+                }
+            }
+
+            return min;
+        }
     }
 }

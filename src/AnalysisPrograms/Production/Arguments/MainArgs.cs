@@ -52,6 +52,7 @@ namespace AnalysisPrograms.Production.Arguments
     [Subcommand(DummyAnalysis.CommandName, typeof(DummyAnalysis.Arguments))]
     [Subcommand(FileRenamer.CommandName, typeof(FileRenamer.Arguments))]
     [Subcommand(Sandpit.CommandName, typeof(Sandpit.Arguments))]
+    [Subcommand(MahnooshSandpit.CommandName, typeof(MahnooshSandpit.Arguments))]
     public class MainArgs
     {
         private async Task<int> OnExecuteAsync(CommandLineApplication app)

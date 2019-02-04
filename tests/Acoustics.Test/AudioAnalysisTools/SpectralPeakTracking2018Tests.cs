@@ -104,7 +104,17 @@ namespace Acoustics.Test.AudioAnalysisTools
             var hertzPerFreqBin = nyquist / finalBinCount;
             FreqScaleType scaleType = FreqScaleType.Linear;
 
-            var sonoConfig = new SonogramConfig
+            var spectrogramSettings = new SpectrogramSettings()
+            {
+                WindowSize = frameSize,
+                WindowOverlap = frameOverlap,
+                //DoMelScale = (scaleType == FreqScaleType.Mel) ? true : false,
+                //MelBinCount = (scaleType == FreqScaleType.Mel) ? finalBinCount : frameSize / 2,
+                NoiseReductionType = NoiseReductionType.None,
+            };
+
+
+            var sonoConfig = new SonogramConfig()
             {
                 WindowSize = frameSize,
                 WindowOverlap = frameOverlap,
@@ -117,7 +127,7 @@ namespace Acoustics.Test.AudioAnalysisTools
             var secondsPerFrame = frameStep / (nyquist * 2);
 
             //var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
-            var amplitudeSpectrogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
+            var amplitudeSpectrogram = new AmplitudeSpectrogram(spectrogramSettings, recording.WavReader);
             var energySpectrogram = new EnergySpectrogram(amplitudeSpectrogram);
             var decibelSpectrogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
 
