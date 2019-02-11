@@ -26,7 +26,6 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
         private DirectoryInfo outputDirectory;
 
         [TestInitialize]
-
         public void Setup()
         {
             this.outputDirectory = PathHelper.GetTempDir();
@@ -133,7 +132,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
                 // Do k-means clustering
                 string pathToClusterCsvFile = Path.Combine(outputDir.FullName, "ClusterCentroids" + i.ToString() + ".csv");
-                var clusteringOutput = KmeansClustering.Clustering(patchMatrix, numberOfClusters, pathToClusterCsvFile);
+                var clusteringOutput = KmeansClustering.Clustering(patchMatrix, numberOfClusters);
 
                 // sorting clusters based on size and output it to a csv file
                 Dictionary<int, double> clusterIdSize = clusteringOutput.ClusterIdSize;
@@ -182,7 +181,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                 clusterImage.Save(outputClusteringImage);
             }
 
-            //+++++++++++++++++++++++++++++++++++++++++++++++++++++Processing and generating features for the target spectrogram
+            //+++++++++++++++++++++++++++++++++++++++++++Reconstructing a target spectrogram from sequential patches and the cluster centroids
             var recording2Path = PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav");
             var recording2 = new AudioRecording(recording2Path);
             var sonogram2 = new SpectrogramStandard(sonoConfig, recording2.WavReader);

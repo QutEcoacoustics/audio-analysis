@@ -241,6 +241,9 @@
     <Compile Include="DSP\DSP_Filters.cs" />
     <Compile Include="DSP\DSP_Frames.cs" />
     <Compile Include="DSP\DSP_IIRFilter.cs" />
+    <Compile Include="DSP\FeatureExtraction.cs" />
+    <Compile Include="DSP\FeatureLearning.cs" />
+    <Compile Include="DSP\FeatureLearningSettings.cs" />
     <Compile Include="DSP\FFT2D.cs" />
     <Compile Include="DSP\FrequencyScale.cs" />
     <Compile Include="DSP\KmeansClustering.cs" />
@@ -251,6 +254,7 @@
     <Compile Include="DSP\OctaveFreqScale.cs" />
     <Compile Include="DSP\PatchSampling.cs" />
     <Compile Include="DSP\PcaWhitening.cs" />
+    <Compile Include="DSP\PowerSpectralDensity.cs" />
     <Compile Include="DSP\SNR.cs" />
     <Compile Include="DSP\MFCCStuff.cs" />
     <Compile Include="DSP\WaveType.cs" />
@@ -294,7 +298,12 @@
     <Compile Include="Oscillations2014.cs" />
     <Compile Include="RidgeDetection.cs" />
     <Compile Include="SiteDescription.cs" />
+    <Compile Include="StandardSpectrograms\AmplitudeSpectrogram.cs" />
     <Compile Include="StandardSpectrograms\AmplitudeSonogram.cs" />
+    <Compile Include="StandardSpectrograms\EnergySpectrogram.cs" />
+    <Compile Include="StandardSpectrograms\DecibelSpectrogram.cs" />
+    <Compile Include="StandardSpectrograms\SpectrogramSettings.cs" />
+    <Compile Include="SpectralPeakTracking2018.cs" />
     <Compile Include="SunAndMoon.cs" />
     <Compile Include="SURFFeatures.cs" />
     <Compile Include="TileImage\AbsoluteDateTilingProfile.cs" />

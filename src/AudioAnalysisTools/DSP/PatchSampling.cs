@@ -6,8 +6,10 @@ namespace AudioAnalysisTools.DSP
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using Accord.Math;
     using TowseyLibrary;
+    using WavTools;
 
     public static class PatchSampling
     {
@@ -190,6 +192,28 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
+        /// outputs a matrix with arbitrary minimum and maximum frequency bins.
+        /// </summary>
+        public static double[,] GetArbitraryFreqBandMatrix(double[,] matrix, int minFreqBin, int maxFreqBin)
+        {
+            double[,] outputMatrix = new double[matrix.GetLength(0), maxFreqBin - minFreqBin + 1];
+
+            int minColumnIndex = minFreqBin - 1;
+            int maxColumnIndex = maxFreqBin - 1;
+
+            // copying a part of the original matrix with pre-defined boundaries to Y axis (freq bins) to a new matrix
+            for (int col = minColumnIndex; col <= maxColumnIndex; col++)
+            {
+                for (int row = 0; row < matrix.GetLength(0); row++)
+                {
+                    outputMatrix[row, col - minColumnIndex] = matrix[row, col];
+                }
+            }
+
+            return outputMatrix;
+        }
+
+        /// <summary>
         /// concatenate submatrices column-wise into one matrix, i.e., the number of rows for the output matrix
         /// is equal to the number of rows of each of the frequency band matrices.
         /// </summary>
@@ -202,7 +226,7 @@ namespace AudioAnalysisTools.DSP
             int count = 0;
             while (count < submatrices.Count)
             {
-                DoubleSquareArrayExtensions.AddToArray(matrix, submatrices[count], DoubleSquareArrayExtensions.MergingDirection.Column, submatrices[count].GetLength(1) * count);
+                matrix.AddToArray(submatrices[count], DoubleSquareArrayExtensions.MergingDirection.Column, submatrices[count].GetLength(1) * count);
                 count++;
             }
 
@@ -238,21 +262,25 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// convert a list of patch matrices to one matrix
+        /// convert a list of patch matrices to one matrix by row
+        /// patch matrices can have different row numbers but must have the same column number
         /// </summary>
         public static double[,] ListOf2DArrayToOne2DArray(List<double[,]> listOfPatchMatrices)
         {
-            int numberOfPatches = listOfPatchMatrices[0].GetLength(0);
-            double[,] allPatchesMatrix = new double[listOfPatchMatrices.Count * numberOfPatches, listOfPatchMatrices[0].GetLength(1)];
+            int sumNumberOfPatches = 0;
+            foreach (var matrix in listOfPatchMatrices)
+            {
+                sumNumberOfPatches = matrix.GetLength(0) + sumNumberOfPatches;
+            }
+
+            double[,] allPatchesMatrix = new double[sumNumberOfPatches, listOfPatchMatrices[0].GetLength(1)];
+            int start = 0;
+
             for (int i = 0; i < listOfPatchMatrices.Count; i++)
             {
                 var m = listOfPatchMatrices[i];
-                if (m.GetLength(0) != numberOfPatches)
-                {
-                    throw new ArgumentException("All arrays must be the same length");
-                }
-
-                DoubleSquareArrayExtensions.AddToArray(allPatchesMatrix, m, DoubleSquareArrayExtensions.MergingDirection.Row, i * m.GetLength(0));
+                allPatchesMatrix.AddToArray(m, DoubleSquareArrayExtensions.MergingDirection.Row, start);
+                start = m.GetLength(0) + start;
             }
 
             return allPatchesMatrix;
@@ -270,7 +298,6 @@ namespace AudioAnalysisTools.DSP
             int minY = matrix.GetLength(1);
 
             // copying the original matrix to a new matrix (row by row)
-
             for (int i = 0; i < minX; ++i)
             {
                 Array.Copy(matrix, i * matrix.GetLength(1), newMatrix, i * matrix.GetLength(1), minY);
@@ -326,21 +353,35 @@ namespace AudioAnalysisTools.DSP
         /// </summary>
         private static List<double[]> GetRandomPatches(double[,] matrix, int patchWidth, int patchHeight, int numberOfPatches)
         {
-            int seed = 100;
-            Random randomNumber = new Random(seed);
-            List<double[]> patches = new List<double[]>();
+            // Note: to make the method more flexible in terms of selecting a random patch with any height and width,
+            // first a random number generator is defined for both patchHeight and patchWidth.
+            // However, the possibility of selecting duplicates especially when selecting too many random numbers from
+            // a range (e.g., 1000 out of 1440) is high with a a random generator.
+            // Since, we are mostly interested in full-band patches, i.e., patchWidth = (maxFreqBin - minFreqBin + 1) / numFreqBand,
+            // it is important to select non-duplicate patchHeights. Hence, instead of a random generator for patchHeight,
+            // a better solution is to make a sequence of numbers to be selected, shuffle them, and
+            // finally, a first n (number of required patches) numbers could be selected.
 
             int rows = matrix.GetLength(0);
             int columns = matrix.GetLength(1);
-            for (int i = 0; i < numberOfPatches; i++)
+
+            int seed = 100;
+            Random randomNumber = new Random(seed);
+
+            // not sure whether it is better to use new Guid() instead of randomNumber.Next()
+            var randomRowNumbers = Enumerable.Range(0, rows - patchHeight).OrderBy(x => randomNumber.Next()).Take(numberOfPatches).ToList();
+            List<double[]> patches = new List<double[]>();
+
+            for (int i = 0; i < randomRowNumbers.Count; i++)
             {
                 // selecting a random number from the height of the matrix
-                int rowRandomNumber = randomNumber.Next(0, rows - patchHeight);
+                //int rowRandomNumber = randomNumber.Next(0, rows - patchHeight);
 
                 // selecting a random number from the width of the matrix
                 int columnRandomNumber = randomNumber.Next(0, columns - patchWidth);
-                double[,] submatrix = MatrixTools.Submatrix(matrix, rowRandomNumber, columnRandomNumber,
-                    rowRandomNumber + patchHeight - 1, columnRandomNumber + patchWidth - 1);
+
+                double[,] submatrix = MatrixTools.Submatrix(matrix, randomRowNumbers[i], columnRandomNumber,
+                    randomRowNumbers[i] + patchHeight - 1, columnRandomNumber + patchWidth - 1);
 
                 // convert a matrix to a vector by concatenating columns and
                 // store it to the array of vectors
@@ -400,6 +441,34 @@ namespace AudioAnalysisTools.DSP
             }
 
             return patches;
+        }
+
+        /// <summary>
+        /// cut audio to subsegments of desired length.
+        /// return list of subsegments
+        /// </summary>
+        public static List<AudioRecording> GetSubsegmentsSamples(AudioRecording recording, double subsegmentDurationInSeconds, double frameStep)
+        {
+            List<AudioRecording> subsegments = new List<AudioRecording>();
+
+            int sampleRate = recording.WavReader.SampleRate;
+            var segmentDuration = recording.WavReader.Time.TotalSeconds;
+            int segmentSampleCount = (int)(segmentDuration * sampleRate);
+            int subsegmentSampleCount = (int)(subsegmentDurationInSeconds * sampleRate);
+            double subsegmentFrameCount = subsegmentSampleCount / (double)frameStep;
+            subsegmentFrameCount = (int)subsegmentFrameCount;
+            subsegmentSampleCount = ((int)(subsegmentFrameCount * frameStep) < subsegmentSampleCount) ? subsegmentSampleCount : (int)(subsegmentFrameCount * frameStep);
+
+            for (int i = 0; i < (int)(segmentSampleCount / subsegmentSampleCount); i++)
+            {
+                AudioRecording subsegmentRecording = recording;
+                double[] subsamples = DataTools.Subarray(recording.WavReader.Samples, i * subsegmentSampleCount, subsegmentSampleCount);
+                var wr = new Acoustics.Tools.Wav.WavReader(subsamples, 1, 16, sampleRate);
+                subsegmentRecording = new AudioRecording(wr);
+                subsegments.Add(subsegmentRecording);
+            }
+
+            return subsegments;
         }
     }
 }

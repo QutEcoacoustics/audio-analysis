@@ -36,6 +36,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Drawing;
+    using System.Drawing.Drawing2D;
     using System.Drawing.Imaging;
     using System.Globalization;
     using System.IO;
@@ -311,7 +312,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         /// <summary>
         /// This method sets default indices to use if passed Dictionary = null.
-        /// This may not be a good idea. Trying it out. Maybe better to crash!
+        /// This may not be a good idea. Trying it out. Maybe better to crash!.
         /// </summary>
         public void SetSpectralIndexProperties(Dictionary<string, IndexProperties> dictionaryOfSpectralIndexProperties)
         {
@@ -476,6 +477,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     {
                         minBound = indexProperties.NormMin;
                     }
+
+                    // Do not want OSC min set too low. Happens because min can = zero
+                    if (key.Equals("OSC") && minBound < indexProperties.NormMin)
+                    {
+                        minBound = indexProperties.NormMin;
+                    }
                 }
 
                 if (indexProperties.CalculateNormMax)
@@ -488,6 +495,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                         maxBound = this.IndexStats[key].Maximum * 0.1;
                     }
                 }
+
+                // In some rare cases the resulting range is zero which will produce NaNs when normalized.
+                // In this case we just reset the bounds backs to the defaults in the config file.
+                // ReSharper disable once CompareOfFloatsByEqualityOperator - we are interested in ranges that are exactly zero distance
+                if (maxBound == minBound)
+                {
+                    minBound = indexProperties.NormMin;
+                    maxBound = indexProperties.NormMax;
+                }
             }
 
             // check min, max values
@@ -497,16 +513,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // de-demphasize the background small values
             matrix = MatrixTools.FilterBackgroundValues(matrix, this.BackgroundFilter);
             return matrix;
-        }
-
-        /// <summary>
-        /// Draws all available spectrograms in grey scale
-        /// </summary>
-        public void DrawGreyScaleSpectrograms(DirectoryInfo opdir, string opFileName)
-        {
-            var keys = SpectralIndexValues.Keys;
-            //string[] keys = this.SpectrogramKeys;
-            this.DrawGreyScaleSpectrograms(opdir, opFileName, keys);
         }
 
         /// <summary>
@@ -540,19 +546,34 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     continue;
                 }
 
-                // the directory for the following path must exist
-                var path = FilenameHelpers.AnalysisResultPath(opdir, opFileName, key, "png");
+                var ipList = this.GetSpectralIndexProperties();
+                if (!ipList[key].DoDisplay)
+                {
+                    continue;
+                }
+
                 var bmp = this.DrawGreyscaleSpectrogramOfIndex(key);
-                bmp?.Save(path);
+
+                var header = new Bitmap(bmp.Width, 20);
+                Graphics g = Graphics.FromImage(header);
+                g.Clear(Color.LightGray);
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+                //g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                //g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                g.DrawString(key, new Font("Tahoma", 9), Brushes.Black, 4, 4);
+                var indexImage = ImageTools.CombineImagesVertically(new List<Image>(new Image[] { header, bmp }));
+
+                // save the image - the directory for the path must exist
+                var path = FilenameHelpers.AnalysisResultPath(opdir, opFileName, key, "png");
+                indexImage?.Save(path);
             }
         }
 
         /// <summary>
-        /// Assume calling method has done all the reality checks
-        /// </summary>
+        /// Assume calling method has done all the reality checks </summary>
         public Image DrawGreyscaleSpectrogramOfIndex(string key)
         {
-            double[,] matrix = this.GetNormalisedSpectrogramMatrix(key);
+            var matrix = this.GetNormalisedSpectrogramMatrix(key);
             if (matrix == null)
             {
                 return null;
@@ -1081,7 +1102,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             {
                 // draw extra time scale with absolute start time. AND THEN Do SOMETHING WITH IT.
                 timeBmp2 = ImageTrack.DrawTimeTrack(fullDuration, cs.RecordingStartDate, bmp1.Width, trackHeight);
-                suntrack = SunAndMoon.AddSunTrackToImage(bmp1.Width, dateTimeOffset, cs.SunriseDataFile);
+
+                //suntrack = SunAndMoon.AddSunTrackToImage(bmp1.Width, dateTimeOffset, cs.SunriseDataFile);
             }
 
             if (cs.FreqScale == null)
@@ -1096,10 +1118,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // draw the composite bitmap
             var imageList = new List<Image> { titleBar, timeBmp1, bmp1, timeBmp2 };
-            if (suntrack != null)
-            {
-                imageList.Add(suntrack);
-            }
+            //if (suntrack != null)
+            //{
+            //    imageList.Add(suntrack);
+            //}
 
             var compositeBmp = (Bitmap)ImageTools.CombineImagesVertically(imageList);
             return compositeBmp;
@@ -1166,9 +1188,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return bmp;
         }
 
+        /// <summary>
+        /// This method assumes that all the passed matrices are normalised and of the same dimensions.
+        /// The method implements a hack to enhance the blue colour because the human eye is less sensitive to blue.
+        /// If there is a problem with one or more of the three rgb values, a gray pixel is substituted not a black pixel.
+        /// Black is a frequent colour in LDFC spectrograms, but gray is highly unlikely,
+        /// and therefore its presence stands out as indicating an error in one or more of the rgb values.
+        /// </summary>
         public static Image DrawRgbColourMatrix(double[,] redM, double[,] grnM, double[,] bluM, bool doReverseColour)
         {
-            // assume all matricies are normalised and of the same dimensions
             int rows = redM.GetLength(0); //number of rows
             int cols = redM.GetLength(1); //number
 
@@ -1180,48 +1208,43 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             {
                 for (int column = 0; column < cols; column++)
                 {
-                    var d1 = redM[row, column];
-                    var d2 = grnM[row, column];
-                    var d3 = bluM[row, column];
+                    var r = redM[row, column];
+                    var g = grnM[row, column];
+                    var b = bluM[row, column];
 
-                    // blank indices painted grey.
-                    if (double.IsNaN(d1))
+                    // if any of the indices is blank/NaN then render as grey.
+                    if (double.IsNaN(r) || double.IsNaN(g) || double.IsNaN(b))
                     {
-                        d1 = 0.5;
+                        r = 0.5;
+                        g = 0.5;
+                        b = 0.5;
                     }
 
-                    if (double.IsNaN(d2))
+                    // enhance blue color - it is difficult to see on a black background
+                    // This is a hack - there should be a principled way to do this!
+                    // The effect is to create a more visible cyan colour.
+                    if (r < 0.1 && g < 0.1 && b > 0.1)
                     {
-                        d2 = 0.5;
-                    }
+                        g += 0.7 * b;
+                        b += 0.2;
 
-                    if (double.IsNaN(d3))
-                    {
-                        d3 = 0.5;
-                    }
-
-                    // enhance blue colour - it is difficult to see on a black background
-                    // This is a hack - there should be a principled way to do this.
-                    if (d1 < 0.1 && d2 < 0.1 && d3 > 0.2)
-                    {
-                        d2 += 0.7 * d3;
-                        d3 += 0.2;
-                        d2 = Math.Min(1.0, d2);
-                        d3 = Math.Min(1.0, d3);
+                        // check for values over 1.0
+                        g = Math.Min(1.0, g);
+                        b = Math.Min(1.0, b);
                     }
 
                     if (doReverseColour)
                     {
-                        d1 = 1 - d1;
-                        d2 = 1 - d2;
-                        d3 = 1 - d3;
+                        r = 1 - r;
+                        g = 1 - g;
+                        b = 1 - b;
                     }
 
-                    var v1 = Convert.ToInt32(Math.Max(0, d1 * maxRgbValue));
-                    var v2 = Convert.ToInt32(Math.Max(0, d2 * maxRgbValue));
-                    var v3 = Convert.ToInt32(Math.Max(0, d3 * maxRgbValue));
-                    var colour = Color.FromArgb(v1, v2, v3);
-                    bmp.SetPixel(column, row, colour);
+                    var v1 = r.ScaleUnitToByte();
+                    var v2 = g.ScaleUnitToByte();
+                    var v3 = b.ScaleUnitToByte();
+                    var color = Color.FromArgb(v1, v2, v3);
+                    bmp.SetPixel(column, row, color);
                 } //end all columns
             }
 
@@ -1407,7 +1430,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             cs1.SiteName = siteDescription?.SiteName;
             cs1.Latitude = siteDescription?.Latitude;
             cs1.Longitude = siteDescription?.Longitude;
-            cs1.SunriseDataFile = sunriseDataFile;
+            //cs1.SunriseDataFile = sunriseDataFile;
             cs1.ErroneousSegments = segmentErrors;
 
             // calculate start time by combining DatetimeOffset with minute offset.
@@ -1473,10 +1496,18 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             cs1.IndexStats = indexStatistics;
 
             // draw gray scale spectrogram for each index.
-            string[] keys = colorMap1.Split('-');
+            //string[] keys = colorMap1.Split('-');
+            //cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem, keys);
+            //keys = colorMap2.Split('-');
+            // draw all available gray scale index spectrograms.
+            var keys = SpectralIndexValues.Keys;
             cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem, keys);
-            keys = colorMap2.Split('-');
-            cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem, keys);
+
+            //    //string[] keys = this.SpectrogramKeys;
+            //cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem, keys);
+            //}
+            //keys = colorMap2.Split('-');
+            //cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem, keys);
 
             // create and save first false-colour spectrogram image
             var image1NoChrome = cs1.DrawFalseColourSpectrogramChromeless(cs1.ColorMode, colorMap1);
