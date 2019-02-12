@@ -50,19 +50,19 @@ namespace AnalysisPrograms
         public const string CommandName = "Sandpit";
 
         [Command(
-            CommandName,
-            Description = "[UNMAINTAINED] Michael's personal experimental area.",
-            ShowInHelpText = false)]
+        CommandName,
+        Description = "[UNMAINTAINED] Michael's personal experimental area.",
+        ShowInHelpText = false)]
         public class Arguments : SubCommandBase
         {
             public override Task<int> Execute(CommandLineApplication app)
-            { 
+            {
                 var tStart = DateTime.Now;
                 Log.Verbosity = 1;
                 Log.WriteLine("# Start Time = " + tStart.ToString(CultureInfo.InvariantCulture));
 
                 //AnalyseFrogDataSet();
-                Audio2CsvOverOneFile();
+                //Audio2CsvOverOneFile();
                 //Audio2CsvOverMultipleFiles();
 
                 // used to get files from availae for Black rail and Least Bittern papers.
@@ -71,15 +71,15 @@ namespace AnalysisPrograms
                 //CodeToPlaceScoreTracksUnderLdfcSpectrograms();
                 //CodeToPlaceScoreTracksUnderSingleImage();
 
-                //ConcatenateIndexFilesAndSpectrograms();
-                ConcatenateGreyScaleSpectrogramImages();
+                ConcatenateIndexFilesAndSpectrograms();
+                //ConcatenateGreyScaleSpectrogramImages();
                 //ConcatenateMarineImages();
                 //ConcatenateImages();
                 //ConcatenateTwelveImages();
                 //CubeHelixDrawTestImage();
                 //DrawLongDurationSpectrogram();
                 //DrawClusterSequence();
-                DrawStandardSpectrograms();
+                //DrawStandardSpectrograms();
 
                 //ExtractSpectralFeatures();
                 //HerveGlotinMethods();
@@ -323,8 +323,8 @@ namespace AnalysisPrograms
             //string outputPath = @"G:\SensorNetworks\Output\BradLaw\Pillaga24";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
 
-            string recordingPath = @"C:\Ecoacoustics\WavFiles\LizZnidersic\TasmanIsland2015_Unit2_Mez\SM304256_0+1_20151114_001652.wav";
-            string outputPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\01";
+            string recordingPath = @"C:\Ecoacoustics\WavFiles\LizZnidersic\TasmanIsland2015_Unit2_Mez\SM304256_0+1_20151114_031652.wav";
+            string outputPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\04";
             string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Acoustic.yml";
 
             // Ivan Campos recordings
@@ -529,7 +529,7 @@ namespace AnalysisPrograms
                 MelBinCount = 256,
                 NoiseReductionType = NoiseReductionType.Median,
                 NoiseReductionParameter = 0.0,
-             };
+            };
 
             //var amplSpectrogram = new AmplitudeSpectrogram(settings, recording);
             //var dbSpectrogram = new DecibelSpectrogram(settings, recording);
@@ -669,7 +669,7 @@ namespace AnalysisPrograms
         }
 
         /// <summary>
-        /// This action item = "concatenateIndexFiles"
+        /// This action item = "concatenateIndexFiles".
         /// </summary>
         public static void ConcatenateIndexFilesAndSpectrograms()
         {
@@ -693,7 +693,7 @@ namespace AnalysisPrograms
 
             // SET DEFAULT COLOUR MAPS
             string colorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
-            string colorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_R3D;
+            string colorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_RHZ;
 
             // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and EchoGaps.
             string gapRendering = "TimedGaps"; // the default
@@ -743,21 +743,16 @@ namespace AnalysisPrograms
             // ########################## END of Yvonne's recordings of SM2 and SM4
             */
 
-            // ########################## CONCATENATION of MARINA SCARPELLI recordings from Brazil
-            // The drive: work = G; home = E
-            drive = "C";
-
-            // top level directory AVAILAE JOB #
+            // ########################## CONCATENATION of 24-hour TEST  recordings from Liz Znidersic
+            // top level directory
             string[] dataDirs =
             {
-                $"{drive}:\\Ecoacoustics\\Collaborations\\MarinaScarpelli\\Indices",
+                @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez",
             };
-            string directoryFilter = "LEEC02_0_20161231_*.wav"; // this is a directory filter to locate only the required files
-            string opFileStem = "LEEC02_20161231_";
-            string opPath = $"{drive}:\\Ecoacoustics\\Collaborations\\MarinaScarpelli\\Concat";
-            var falseColourSpgConfig = $"{drive}:\\Work\\GitHub\\audio-analysis\\src\\AnalysisConfigFiles\\SpectrogramFalseColourConfig.yml";
-            FileInfo sunriseDatafile = null;
-
+            string directoryFilter = "0*"; // this is a directory filter to locate only the required files
+            string opFileStem = "Testing";
+            string opPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Concat";
+            var falseColourSpgConfig = $"C:\\Work\\GitHub\\audio-analysis\\src\\AnalysisConfigFiles\\SpectrogramFalseColourConfig.yml";
             concatenateEverythingYouCanLayYourHandsOn = true;
 
             // start and end dates INCLUSIVE
@@ -767,36 +762,63 @@ namespace AnalysisPrograms
             // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and EchoGaps.
             gapRendering = "TimedGaps";
 
-            // ########################## END of Pillaga Forest recordings
+            // ########################## END of 24-hour TEST recordings
 
             /*
-                        // ########################## CONCATENATION of Pillaga Forest recordings from Brad Law
-                        // The drive: work = G; home = E
-                        drive = "G";
+            // ########################## CONCATENATION of MARINA SCARPELLI recordings from Brazil
+            // The drive: work = G; home = E
+            drive = "C";
 
-                        // top level directory AVAILAE JOB #181
-                        string[] dataDirs =
-                        {
-                            $"{drive}:\\Ecoacoustics\\Output\\BradLaw\\PillagaData",
-                        };
-                        string directoryFilter = "Pillaga*"; // this is a directory filter to locate only the required files
-                        string opFileStem = "PillagaForest20121125";
-                        string opPath = $"{drive}:\\Ecoacoustics\\Output\\BradLaw";
-                        var falseColourSpgConfig =
-                            $"{drive}:\\Ecoacoustics\\Output\\Bats\\config\\SpectrogramFalseColourConfig.yml";
-                        FileInfo sunriseDatafile = null;
+            // top level directory
+            string[] dataDirs =
+            {
+                $"{drive}:\\Ecoacoustics\\Collaborations\\MarinaScarpelli\\Indices",
+            };
+            string directoryFilter = "LEEC02_0_20161231_*.wav"; // this is a directory filter to locate only the required files
+            string opFileStem = "LEEC02_20161231_";
+            string opPath = $"{drive}:\\Ecoacoustics\\Collaborations\\MarinaScarpelli\\Concat";
+            var falseColourSpgConfig = $"{drive}:\\Work\\GitHub\\audio-analysis\\src\\AnalysisConfigFiles\\SpectrogramFalseColourConfig.yml";
+            concatenateEverythingYouCanLayYourHandsOn = true;
 
-                        concatenateEverythingYouCanLayYourHandsOn = true;
+            // start and end dates INCLUSIVE
+            dtoStart = new DateTimeOffset(2016, 12, 31, 0, 0, 0, TimeSpan.Zero);
+            dtoEnd = new DateTimeOffset(2016, 12, 31, 0, 0, 0, TimeSpan.Zero);
 
-                        // start and end dates INCLUSIVE
-                        dtoStart = new DateTimeOffset(2012, 08, 08, 0, 0, 0, TimeSpan.Zero);
-                        dtoEnd = new DateTimeOffset(2012, 08, 08, 0, 0, 0, TimeSpan.Zero);
+            // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and EchoGaps.
+            gapRendering = "TimedGaps";
 
-                        // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and EchoGaps.
-                        gapRendering = "EchoGaps";
+            // ########################## END of MARINA SCARPELLI recordings
+            */
 
-                        // ########################## END of Pillaga Forest recordings
-                        */
+            /*
+            // ########################## CONCATENATION of Pillaga Forest recordings from Brad Law
+            // The drive: work = G; home = E
+            drive = "G";
+
+            // top level directory AVAILAE JOB #181
+            string[] dataDirs =
+            {
+                $"{drive}:\\Ecoacoustics\\Output\\BradLaw\\PillagaData",
+            };
+            string directoryFilter = "Pillaga*"; // this is a directory filter to locate only the required files
+            string opFileStem = "PillagaForest20121125";
+            string opPath = $"{drive}:\\Ecoacoustics\\Output\\BradLaw";
+            var falseColourSpgConfig =
+                $"{drive}:\\Ecoacoustics\\Output\\Bats\\config\\SpectrogramFalseColourConfig.yml";
+            FileInfo sunriseDatafile = null;
+
+            concatenateEverythingYouCanLayYourHandsOn = true;
+
+            // start and end dates INCLUSIVE
+            dtoStart = new DateTimeOffset(2012, 08, 08, 0, 0, 0, TimeSpan.Zero);
+            dtoEnd = new DateTimeOffset(2012, 08, 08, 0, 0, 0, TimeSpan.Zero);
+
+            // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and EchoGaps.
+            gapRendering = "EchoGaps";
+
+            // ########################## END of Pillaga Forest recordings
+            */
+
             /*
             // ########################## CONCATENATION of Yvonne's BAT recordings
             // The drive: work = G; home = E
@@ -1094,11 +1116,12 @@ namespace AnalysisPrograms
         public static void ConcatenateGreyScaleSpectrogramImages()
         {
 
-            var ipDirInfo = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\01\Towsey.Acoustic");
-            var opDirInfo = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\01\Towsey.Acoustic");
-            var opFileName = "SM304256_0+1_20151114_001652";
+            var ipDirInfo = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\04\Towsey.Acoustic");
+            var opDirInfo = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\04\Towsey.Acoustic");
+            var opFileName = "SM304256_0+1_20151114_031652";
 
             //string[] keys = { "ACI", "BGN", "CVR", "ENT", "EVN", "OSC", "PMN", "R3D", "RHZ", "RNG", "RPS", "RVT", "SPT" };
+            // the following line gets all current spectral indices, including DIF and SUM which we will want to exclude.
             var keys = SpectralIndexValues.Keys;
 
             //Read list of images into List
@@ -1135,12 +1158,12 @@ namespace AnalysisPrograms
             }
         }
 
-    /// <summary>
-    /// read a set of Spectral index files and extract values from frequency band
-    /// This work done for Liz Znidersic paper.
-    /// End of the method requires access to Liz tagging info.
-    /// </summary>
-    public static void ExtractSpectralFeatures()
+        /// <summary>
+        /// read a set of Spectral index files and extract values from frequency band
+        /// This work done for Liz Znidersic paper.
+        /// End of the method requires access to Liz tagging info.
+        /// </summary>
+        public static void ExtractSpectralFeatures()
         {
             // parameters
             string dir =

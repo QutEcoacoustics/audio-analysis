@@ -94,7 +94,7 @@ ClippingIndex:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 1.0
+  NormMax: 5.0
   ProjectID: Acoustic Indices
   Units: "avClips/s"
   IncludeInComboIndex: false
