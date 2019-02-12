@@ -656,7 +656,7 @@ namespace AnalysisPrograms
 
             // SET DEFAULT COLOUR MAPS
             string colorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
-            string colorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_R3D;
+            string colorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_RHZ;
 
             // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and EchoGaps.
             string gapRendering = "TimedGaps"; // the default
@@ -734,26 +734,27 @@ namespace AnalysisPrograms
             // ######################### END OF CONCATENATION of MARINA SCARPELLI recordings from Brazil
 
             // ######################### START OF FIX ISSUE #170 concat crashes
-            // ######################### use data from availae 
+            // ######################### use data from availae
 
             // top level directory AVAILAE JOB #
             string[] dataDirs =
             {
-                @"Y:\Results\20180608-103353 - Tshering, Towsey.Indices, #216\Tshering\WBH_Walaytar\WBH_2018\Bermo",
+                //@"Y:\Results\20180608-103353 - Tshering, Towsey.Indices, #216\Tshering\WBH_Walaytar\WBH_2018\Bermo",
+                @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez",
             };
 
-            string directoryFilter = "WAKLAYTAR_20180321_*.wav"; // this is a directory filter to locate only the required files
-            string opFileStem = "WAKLAYTAR_20180321";
+            string directoryFilter = "0*"; // this is a directory filter to locate only the required files
+            string opFileStem = "TasmanIslandMez";
             string opPath = @"C:\Ecoacoustics\Output\Test\DebugIssue170";
-            var falseColourSpgConfig = $"C:\\Work\\GitHub\\audio-analysis\\src\\AnalysisConfigFiles\\SpectrogramFalseColourConfig.yml";
+
+            // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and EchoGaps.
+            gapRendering = "TimedGaps";
             concatenateEverythingYouCanLayYourHandsOn = true;
+            var falseColourSpgConfig = $"C:\\Work\\GitHub\\audio-analysis\\src\\AnalysisConfigFiles\\SpectrogramFalseColourConfig.yml";
 
             // start and end dates INCLUSIVE
             //dtoStart = new DateTimeOffset(2016, 12, 31, 0, 0, 0, TimeSpan.Zero);
             //dtoEnd = new DateTimeOffset(2016, 12, 31, 0, 0, 0, TimeSpan.Zero);
-
-            // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and EchoGaps.
-            gapRendering = "TimedGaps";
 
             // ########################## END of FIX ISSUE #170 concat crashes
 

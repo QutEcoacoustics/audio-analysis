@@ -77,7 +77,7 @@ namespace AudioAnalysisTools.Indices
         }
 
         /// <summary>
-        /// Converts summary indices to a tracks image
+        /// Converts summary indices to a tracks image, one track for each index.
         /// </summary>
         public static Bitmap DrawImageOfSummaryIndices(
             Dictionary<string, IndexProperties> listOfIndexProperties,

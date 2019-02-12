@@ -50,7 +50,7 @@ namespace AudioAnalysisTools.Indices
         private static string gapDescriptionMissingData = "No Recording";
         private static string gapDescriptionZeroSignal = "ERROR: Zero Signal";
         private static string gapDescriptionInvalidValue = "Invalid Index Value";
-        private static string gapDescriptionFileJoin = "File Join";
+        public static string gapDescriptionFileJoin = "File Join";
 
         public string GapDescription { get; set; }
 
@@ -66,9 +66,9 @@ namespace AudioAnalysisTools.Indices
         /// <summary>
         /// Does several data integrity checks.
         /// </summary>
-        /// <param name="summaryIndices">a dictionary of summary indices</param>
-        /// <param name="gapRendering">describes how recording gaps are to be rendered</param>
-        /// <returns>a list of erroneous segments</returns>
+        /// <param name="summaryIndices">a dictionary of summary indices.</param>
+        /// <param name="gapRendering">describes how recording gaps are to be rendered.</param>
+        /// <returns>a list of erroneous segments.</returns>
         public static List<GapsAndJoins> DataIntegrityCheck(IEnumerable<SummaryIndexValues> summaryIndices, ConcatMode gapRendering)
         {
             // Integrity check 1: look for whether a recording minute exists
@@ -121,8 +121,8 @@ namespace AudioAnalysisTools.Indices
         /// This method reads through a SUMMARY index array to make sure there was actually a signal to analyse.
         /// If this occurs an gap/join event is flagged.
         /// </summary>
-        /// <param name="summaryIndices">array of summary indices</param>
-        /// <param name="gapRendering">how to render the gap in image terms</param>
+        /// <param name="summaryIndices">array of summary indices.</param>
+        /// <param name="gapRendering">how to render the gap in image terms.</param>
         /// <returns>a list of erroneous segments</returns>
         public static List<GapsAndJoins> DataIntegrityCheckForNoRecording(IEnumerable<SummaryIndexValues> summaryIndices, ConcatMode gapRendering)
         {
@@ -173,33 +173,22 @@ namespace AudioAnalysisTools.Indices
         /// <summary>
         /// This method reads through a SUMMARY index array to check for file joins.
         /// </summary>
-        /// <param name="summaryIndices">array of summary indices</param>
-        /// <param name="gapRendering">how to render the gap in image terms</param>
-        /// <returns>a list of erroneous segments</returns>
+        /// <param name="summaryIndices">array of summary indices.</param>
+        /// <param name="gapRendering">how to render the gap in image terms.</param>
+        /// <returns>a list of erroneous segments.</returns>
         public static List<GapsAndJoins> DataIntegrityCheckForFileJoins(IEnumerable<SummaryIndexValues> summaryIndices, ConcatMode gapRendering)
         {
            // init list of gaps and joins
             var gaps = new List<GapsAndJoins>();
-
-            //bool isValidBlock = true;
             var firstRow = summaryIndices.First();
             string previousFileName = firstRow.FileName;
-            //GapsAndJoins gap = null;
 
             // now loop through the rows/vectors of indices
             int index = 0;
             foreach (var row in summaryIndices)
             {
-                //if (previousFileName == null)
-                //{
-                //    previousFileName = row.FileName;
-                //}
-
                 if (row.FileName != previousFileName)
                 {
-                    //if (isValidBlock)
-                    //{
-                    //    isValidBlock = false;
                     var gap = new GapsAndJoins
                             {
                                 StartPosition = index,
@@ -207,24 +196,12 @@ namespace AudioAnalysisTools.Indices
                                 GapRendering = gapRendering,
                                 EndPosition = index + 1,
                             };
-                    //}
-                    //else
-                    //{
-                    //    // come to end of a bad patch
-                    //    isValidBlock = true;
-                    //}
                     gaps.Add(gap);
                     previousFileName = row.FileName;
                 }
 
                 index++;
             }
-
-            //// if not OK at end of the array, need to terminate the gap.
-            //if (!isValidBlock)
-            //{
-            //    gaps[gaps.Count - 1].EndPosition = gaps[gaps.Count - 1].EndPosition;
-            //}
 
             return gaps;
         }
@@ -240,7 +217,7 @@ namespace AudioAnalysisTools.Indices
         /// <returns>a list of erroneous segments</returns>
         public static List<GapsAndJoins> DataIntegrityCheckForZeroSignal(IEnumerable<SummaryIndexValues> summaryIndices)
         {
-            const double Tolerance = 0.0001;
+            const double tolerance = 0.0001;
 
             // init list of errors
             var errors = new List<GapsAndJoins>();
@@ -251,7 +228,7 @@ namespace AudioAnalysisTools.Indices
             foreach (var row in summaryIndices)
             {
                 // if (zeroSignal index > 0), i.e. if signal == zero
-                if (Math.Abs(row.ZeroSignal) > Tolerance)
+                if (Math.Abs(row.ZeroSignal) > tolerance)
                 {
                     if (allOk)
                     {
@@ -264,7 +241,7 @@ namespace AudioAnalysisTools.Indices
                         };
                     }
                 }
-                else if (!allOk && Math.Abs(row.ZeroSignal) < Tolerance)
+                else if (!allOk && Math.Abs(row.ZeroSignal) < tolerance)
                 {
                     // come to end of a bad patch
                     allOk = true;
@@ -292,7 +269,7 @@ namespace AudioAnalysisTools.Indices
         /// The tests done here are not particularly realistic and the chosen errors are possible unlikely to occur.
         /// TODO Other data integrity tests can be inserted in the future.
         /// </summary>
-        /// <param name="summaryIndices">Dictionary of the currently calculated summary indices</param>
+        /// <param name="summaryIndices">Dictionary of the currently calculated summary indices.</param>
         /// <returns>a list of erroneous segments</returns>
         public static List<GapsAndJoins> DataIntegrityCheckIndexValues(Dictionary<string, double[]> summaryIndices)
         {
@@ -360,9 +337,9 @@ namespace AudioAnalysisTools.Indices
         /// This test is not particularly realistic but might occur.
         /// Other tests can be inserted in the future.
         /// </summary>
-        /// <param name="spectralIndices">Dictionary of the currently calculated spectral indices</param>
-        /// <param name="gapRendering">how to render the gap in image terms</param>
-        /// <returns>a list of erroneous segments</returns>
+        /// <param name="spectralIndices">Dictionary of the currently calculated spectral indices.</param>
+        /// <param name="gapRendering">how to render the gap in image terms.</param>
+        /// <returns>a list of erroneous segments.</returns>
         public static List<GapsAndJoins> DataIntegrityCheckSpectralIndices(
             Dictionary<string, double[,]> spectralIndices,
             ConcatMode gapRendering)
@@ -422,17 +399,23 @@ namespace AudioAnalysisTools.Indices
         }
 
         /// <summary>
-        /// This method draws the error segments in in hierarchical order, highest level errors first.
+        /// This method draws error segments on false-colour spectrograms and/or summary index plots.
+        /// It draws them in hierarchical order, highest level errors first.
         /// This way error due to missing recording is drawn last and overwrites other casading errors due to missing recording.
         /// </summary>
         /// <param name="bmp">The chromeless spectrogram to have segments drawn on it.</param>
-        /// <param name="list">list of erroneous segments</param>
+        /// <param name="list">list of erroneous segments.</param>
+        /// <param name="drawFileJoins">drawing file joins is optional.</param>
         /// <returns>spectrogram with erroneous segments marked.</returns>
-        public static Image DrawErrorSegments(Image bmp, List<GapsAndJoins> list)
+        public static Image DrawErrorSegments(Image bmp, List<GapsAndJoins> list, bool drawFileJoins)
         {
             var newBmp = DrawGapPatches(bmp, list, gapDescriptionInvalidValue, bmp.Height, true);
             newBmp = DrawGapPatches(newBmp, list, gapDescriptionZeroSignal, bmp.Height, true);
-            newBmp = DrawFileJoins(newBmp, list);
+
+            if (drawFileJoins)
+            {
+                newBmp = DrawFileJoins(newBmp, list);
+            }
 
             // This one must be done last, in case user requests no gap rendering.
             // In this case, we have to cut out parts of image, starting at the end and working forward.
@@ -480,7 +463,7 @@ namespace AudioAnalysisTools.Indices
         public static Image DrawFileJoins(Image bmp, List<GapsAndJoins> errorList)
         {
             var g = Graphics.FromImage(bmp);
-            var pen = new Pen(Color.HotPink);
+            var pen = new Pen(Color.HotPink, 1);
 
             // assume errors are in temporal order and pull out in reverse order
             for (int i = errorList.Count - 1; i >= 0; i--)
@@ -499,15 +482,14 @@ namespace AudioAnalysisTools.Indices
         /// Draws a error patch based on properties of the error type.
         /// Depends on how gap rendering is to be done.
         /// </summary>
-        /// <param name="height">height in pixels of the error patch</param>
-        /// <param name="textInVerticalOrientation">orientation of error text should match orientation of the patch</param>
+        /// <param name="height">height in pixels of the error patch.</param>
+        /// <param name="textInVerticalOrientation">orientation of error text should match orientation of the patch.</param>
         public Bitmap DrawErrorPatch(int height, bool textInVerticalOrientation)
         {
             int width = this.EndPosition - this.StartPosition + 1;
             var bmp = new Bitmap(width, height);
             int fontVerticalPosition = (height / 2) - 10;
             var g = Graphics.FromImage(bmp);
-
             g.Clear(this.GapDescription == gapDescriptionMissingData ? Color.LightGray : Color.HotPink);
 
             // Draw error message and black cross over error patch only if is wider than arbitrary 10 pixels.
@@ -534,7 +516,7 @@ namespace AudioAnalysisTools.Indices
         }
 
         /// <summary>
-        /// Cuts out gap portion of a spectrogram image
+        /// Cuts out gap portion of a spectrogram image.
         /// </summary>
         public static Image RemoveGapPatch(Image source, GapsAndJoins error)
         {
@@ -564,7 +546,7 @@ namespace AudioAnalysisTools.Indices
         }
 
         /// <summary>
-        /// Draws an echo patch into a spectrogram image
+        /// Draws an echo patch into a spectrogram image.
         /// </summary>
         public static Image DrawEchoPatch(Image source, GapsAndJoins error)
         {
