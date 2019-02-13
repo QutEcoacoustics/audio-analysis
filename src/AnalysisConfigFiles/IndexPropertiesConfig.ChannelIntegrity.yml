@@ -1,0 +1,187 @@
+--- 
+# WARNING!!! The keys used below MUST BE EXACTLY the SAME as those declared in the class InitialiseIndexProperties (starting at line 30).
+
+# the root object name maps to the Key property on the IndexProperties class
+ 
+RankOrder: # AKA IndexCount
+  Name: Rank order of audio segment
+  Comment: "Rank of minute segment in temporal order from start of recording."
+  DataType: int
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 100.0
+  ProjectID: Acoustic Indices
+  Units: ""
+  IncludeInComboIndex: false
+  ComboWeight: 0.0
+StartOffset:
+  Name: Segment start time
+  Comment: "Exact time span (total minutes) from start of recording to start of this segment."
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: false
+  NormMin: 0.0
+  NormMax: 200.0
+  ProjectID: Acoustic Indices
+  Units: "min"
+  IncludeInComboIndex: false
+  ComboWeight: 0.0
+StartOffsetMinute:
+  Name: Segment start minute
+  Comment: "Total minutes from start of recording to start of this segment."
+  DataType: int
+  DefaultValue: 0.0
+  DoDisplay: false
+  NormMin: 0.0
+  NormMax: 200.0
+  ProjectID: Acoustic Indices
+  Units: "min"
+  IncludeInComboIndex: false
+  ComboWeight: 0.0
+StartOffsetSecond:
+  Name: Segment start second
+  Comment: "Total seconds from start of recording to start of this segment."
+  DataType: int
+  DefaultValue: 0.0
+  DoDisplay: false
+  NormMin: 0.0
+  NormMax: 200.0
+  ProjectID: Acoustic Indices
+  Units: "sec"
+  IncludeInComboIndex: false
+  ComboWeight: 0.0
+SegmentDuration:
+  Name: Time duration of audio segment
+  Comment: "Exact time span (total minutes) of this audio segment - typically 1.0 minutes."
+  DataType: TimeSpan
+  DefaultValue: 0.0
+  DoDisplay: false
+  NormMin: 0.0
+  NormMax: 1.0
+  ProjectID: Acoustic Indices
+  Units: "min"
+  IncludeInComboIndex: false
+  ComboWeight: 0.0
+ZeroSignal:
+  Name: Zero Signal Index
+  Comment: "Indicates if signal segment is flat or zero."
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 1.0
+  ProjectID: Acoustic Indices
+  Units: ""
+  IncludeInComboIndex: false
+  ComboWeight: 0.0
+ClippingIndex:
+  Name: Clipping Index
+  Comment: "Av number of clipped samples/sec i.e. where the abs. amplitude of two conscutive samples is within 4*epislon of the max signal value."
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 5.0
+  ProjectID: Acoustic Indices
+  Units: "avClips/s"
+  IncludeInComboIndex: false
+  ComboWeight: 0.0
+ZeroCrossingFractionLeft:
+  Name: Zero Crossing Fraction Left
+  Comment: ""
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 1.0
+  ProjectID: Channel Integrity
+  Units: ""
+ZeroCrossingFractionRight:
+  Name: Zero Crossing Fraction Right
+  Comment: ""
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 1.0
+  ProjectID: Channel Integrity
+  Units: ""
+ChannelSimilarity:
+  Name: Channel Similarity
+  Comment: "similarityIndex = (min*min)/(max*max), where min=min of two channels and max = max of the two. Summed over all freq bins"
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 1.0
+  ProjectID: Channel Integrity
+  Units: ""
+ChannelDiffDecibels:
+  Name: Channel Difference in decibels
+  Comment: "decibelIndex = dBmax-dBmin, where dBmin=min of two channels and dBmax = max of the two. Summed over all freq bins"
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: -8.0
+  NormMax: 8.0
+  ProjectID: Channel Integrity
+  Units: "decibels"
+AverageDecibelBias:
+  Name: Average Channel Bias in decibels
+  Comment: "avDecibelBias += (dbLeft-dbRight). Summed over all freq bins"
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: -8.0
+  NormMax: 8.0
+  ProjectID: Channel Integrity
+  Units: "decibels"
+MedianDecibelBias:
+  Name: Median Channel Bias in decibels
+  Comment: "medianDecibelBias += (medianOfLeftSpectrum-medianOfRightSpectrum). Summed over all freq bins"
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: -0.2
+  NormMax: 0.2
+  ProjectID: Channel Integrity
+  Units: "decibels"
+LowFreqDecibelBias:
+  Name: Low Freq Channel dB Bias
+  Comment: "lowFreqDbBias += (dbLeft-dbRight). Summed over low freq bins, 0-2kHz"
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: -10.0
+  NormMax: 10.0
+  ProjectID: Channel Integrity
+  Units: "decibels"
+MidFreqDecibelBias:
+  Name: Mid-Freq Channel dB Bias
+  Comment: "midFreqDbBias += (dbLeft-dbRight). Summed over mid freq bins, 2-7kHz"
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: -10.0
+  NormMax: 10.0
+  ProjectID: Channel Integrity
+  Units: "decibels"
+HighFreqDecibelBias:
+  Name: High Freq Channel dB Bias
+  Comment: "highFreqDbBias += (dbLeft-dbRight). Summed over high freq bins, 7khz-nyquist"
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: -5.0
+  NormMax: 5.0
+  ProjectID: Channel Integrity
+  Units: "decibels"
+FileName:
+  Name: File Name
+  Comment: "FILLER TO STOP WARNING MESSAGE! File Name"
+  DataType: int
+  DefaultValue: 0.0
+  DoDisplay: false
+  ProjectID: Acoustic Indices
+  Units: ""
