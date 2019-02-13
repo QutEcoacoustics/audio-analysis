@@ -252,20 +252,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return summaryIndices;
         }
 
-        public static Dictionary<string, double[]> ConvertToDictionaryOfSummaryIndices(List<SummaryIndexValues> summaryIndices)
-        {
-            // Now add in derived indices i.e. NCDI etc
-            // Decided NOT to do this anymore
-            // dictionaryOfSummaryIndices = IndexMatrices.AddDerivedIndices(dictionaryOfSummaryIndices);
-
-            // Put SUMMARY indices into dictionary. TODO need to generalise the following method
-            // ################# WARNING: THIS METHOD ONLY GETS A "HARD CODED" LIST OF SUMMARY INDICES. See the method.
-            var dictionaryOfSummaryIndices = IndexMatrices.GetDictionaryOfSummaryIndices(summaryIndices);
-
-            // return the dictionary - it will be used later to produce an index tracks image.
-            return dictionaryOfSummaryIndices;
-        }
-
         // ##############################################################################################################
         // ######################### ORIGINAL METHOD FOR STITCHING  Gianna Pavan's DATA (10 minutes every 30 minutes)
 

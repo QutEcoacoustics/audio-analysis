@@ -60,26 +60,22 @@ namespace AudioAnalysisTools.Indices
         public const string KeyHtemporal = "Htemporal";
         public const string KeyHpeak = "Hpeaks";
         public const string KeyHAvSpectrum = "HAvSpectrum";
-        public const string KeyhVarSpectrum = "HVarSpectrum";
+        public const string KeyHVarSpectrum = "HVarSpectrum";
         public const string KeyAcousticComplexity = "AcousticComplexity";
         public const string KeyClusterCount = "ClusterCount";
         public const string KeyClusterDur = "AvClusterDuration";
         public const string Key3GramCount = "3GramCount";
         public const string KeySptPerSec = "SPTPerSec";
         public const string KeySptDur = "AvSPTDuration";
-        public const string KeyRain = "RainIndex";
-        public const string KeyCicada = "CicadaIndex";
 
         //KEYS FOR SPECTRAL INDICES
-        // Initialy thought these would be used but currently (Nov 2018) only use BGN, so commented the rest.
+        // Initially thought that these would be useful but as of February 2019 none used, so commented.
 
         //public const string KeYspectralAci = "ACI";
-        ////public const string KeYspectralAvg = "AVG"; // average dB value in each frequency bin after noise removal
-        public const string KeySpectralBgn = "BGN"; // modal dB value in each frequency bin calculated during noise removal
-
+        //public const string KeySpectralBgn = "BGN";
         //public const string KeYspectralCls = "CLS";
         //public const string KeYspectralCvr = "CVR";
-        ////public const string KeYspectralEnt = "ENT";
+        //public const string KeYspectralEnt = "ENT";
         //public const string KeYspectralEvn = "EVN";
         //public const string KeySpectralOsc = "OSC";
         //public const string KeySpectralPmn = "PMN";
@@ -112,7 +108,6 @@ namespace AudioAnalysisTools.Indices
             {
                 if (!ip.IsSpectralIndex)
                 {
-                    // summary indices are never of type double[]
                     dict.Add(ip.Key, ip);
                 }
             }

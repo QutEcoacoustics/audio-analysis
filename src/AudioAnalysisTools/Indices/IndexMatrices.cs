@@ -152,35 +152,6 @@ namespace AudioAnalysisTools.Indices
             return summaryIndices;
         }
 
-        /// <summary>
-        /// WARNING: THIS METHOD ONLY GETS FIXED LIST OF INDICES.
-        ///             Also it requires every index to be of type DOUBLE even when htis is not appropriate.
-        /// TODO: This needs to be generalized
-        /// </summary>
-        public static Dictionary<string, double[]> GetDictionaryOfSummaryIndices(List<SummaryIndexValues> summaryIndices)
-        {
-            var dictionary = new Dictionary<string, double[]>
-            {
-                { GapsAndJoins.KeyZeroSignal, summaryIndices.Select(x => x.ZeroSignal).ToArray() },
-                { "ClippingIndex", summaryIndices.Select(x => x.ClippingIndex).ToArray() },
-                { "BackgroundNoise", summaryIndices.Select(x => x.BackgroundNoise).ToArray() },
-                { "Snr", summaryIndices.Select(x => x.Snr).ToArray() },
-                { "EventsPerSecond", summaryIndices.Select(x => x.EventsPerSecond).ToArray() },
-                { "Activity", summaryIndices.Select(x => x.Activity).ToArray() },
-                { "HighFreqCover", summaryIndices.Select(x => x.HighFreqCover).ToArray() },
-                { "MidFreqCover", summaryIndices.Select(x => x.MidFreqCover).ToArray() },
-                { "LowFreqCover", summaryIndices.Select(x => x.LowFreqCover).ToArray() },
-                { "TemporalEntropy", summaryIndices.Select(x => x.TemporalEntropy).ToArray() },
-                { "EntropyOfAverageSpectrum", summaryIndices.Select(x => x.EntropyOfAverageSpectrum).ToArray() },
-                { "EntropyOfPeaksSpectrum", summaryIndices.Select(x => x.EntropyOfPeaksSpectrum).ToArray() },
-                { "AcousticComplexity", summaryIndices.Select(x => x.AcousticComplexity).ToArray() },
-                { "ClusterCount", summaryIndices.Select(x => x.ClusterCount).ToArray() },
-                { "ThreeGramCount", summaryIndices.Select(x => x.ThreeGramCount).ToArray() },
-            };
-
-            return dictionary;
-        }
-
         public static Dictionary<string, double[,]> GetSpectralIndexFilesAndConcatenate(
             DirectoryInfo[] dirs,
             string analysisType,
@@ -471,7 +442,7 @@ namespace AudioAnalysisTools.Indices
         /// <summary>
         /// Returns dictionary of spectral indices.
         /// Assumes both arrays of same length and keys correspond to file name.
-        /// TODO: Do this better one day!
+        /// TODO: Do this better one day!.
         /// </summary>
         public static Dictionary<string, double[,]> ReadSummaryIndexFiles(FileInfo[] files, string[] keys)
         {
@@ -479,8 +450,7 @@ namespace AudioAnalysisTools.Indices
             var dict = new Dictionary<string, double[,]>();
             for (int c = 0; c < count; c++)
             {
-                int freqBinCount;
-                double[,] matrix = ReadSpectrogram(files[c], out freqBinCount);
+                double[,] matrix = ReadSpectrogram(files[c], out var freqBinCount);
                 dict.Add(keys[c], matrix);
             }
 
