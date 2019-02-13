@@ -186,7 +186,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                  titletext,
                                  indexGenerationData.IndexCalculationDuration,
                                  indexGenerationData.RecordingStartDate,
-                                 sunriseDatafile,
                                  erroneousSegments,
                                  verbose);
             var imagePath = FilenameHelpers.AnalysisResultPath(opDir, opFileStem, SummaryIndicesStr, ImgFileExt);

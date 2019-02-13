@@ -107,11 +107,10 @@ namespace AudioAnalysisTools.Indices
 
         /// <summary>
         /// Initializes a new instance of the <see cref="IndexProperties"/> class.
-        /// constructor sets default values
+        /// constructor sets default values.
         /// </summary>
         public IndexProperties()
         {
-            // TODO: why not initialise these to null, the proper empty value?
             this.Key = "NOT SET";
             this.Name = string.Empty;
             this.DataType = "double";
@@ -148,7 +147,7 @@ namespace AudioAnalysisTools.Indices
 
         [YamlIgnore]
         [JsonIgnore]
-        // TODO: this information should really be encoded rather than inferred
+        //TODO: this information should really be encoded rather than inferred
         public bool IsSpectralIndex => this.DataType == "double[]";
 
         public double DefaultValue
@@ -197,75 +196,46 @@ namespace AudioAnalysisTools.Indices
 
         public double ComboWeight { get; set; }
 
-        private void UpdateTypedDefault()
-        {
-            if (this.DataType == "int")
-            {
-                this.DefaultValueCasted = (int)this.DefaultValue;
-            }
-            else if (this.DataType == "double" || this.dataType == "double[]")
-            {
-                this.DefaultValueCasted = this.DefaultValue;
-            }
-            else if (this.DataType == "TimeSpan")
-            {
-                this.DefaultValueCasted = TimeSpan.FromSeconds(this.DefaultValue);
-            }
-            else
-            {
-                throw new InvalidOperationException("Unknown data type");
-            }
-        }
-
-        public double NormaliseValue(double value)
-        {
-            return DataTools.NormaliseInZeroOne(value, this.NormMin, this.NormMax);
-        }
-
-       //public double[,] NormaliseIndexValues(double[,] M)
-        //{
-        //    return MatrixTools.NormaliseInZeroOne(M, this.NormMin, this.NormMax);
-        //}
+        public double NormaliseValue(double value) => DataTools.NormaliseInZeroOne(value, this.NormMin, this.NormMax);
 
         /// <summary>
-        /// Units for indices include: dB, ms, % and dimensionless
+        /// Units for indices include: dB, ms, % and dimensionless.
         /// </summary>
         public string GetPlotAnnotation()
         {
             if (this.Units == string.Empty)
             {
-                return string.Format(" {0} ({1:f2} .. {2:f2} {3})", this.Name, this.NormMin, this.NormMax, this.Units);
+                return $" {this.Name} ({this.NormMin:f2} .. {this.NormMax:f2} {this.Units})";
             }
 
             if (this.Units == "%")
             {
-                return string.Format(" {0} ({1:f0} .. {2:f0}{3})", this.Name, this.NormMin, this.NormMax, this.Units);
+                return $" {this.Name} ({this.NormMin:f0} .. {this.NormMax:f0}{this.Units})";
             }
 
             if (this.Units == "dB")
             {
-                return string.Format(" {0} ({1:f0} .. {2:f0} {3})", this.Name, this.NormMin, this.NormMax, this.Units);
+                return $" {this.Name} ({this.NormMin:f0} .. {this.NormMax:f0} {this.Units})";
             }
 
             if (this.Units == "ms")
             {
-                return string.Format(" {0} ({1:f0} .. {2:f0}{3})", this.Name, this.NormMin, this.NormMax, this.Units);
+                return $" {this.Name} ({this.NormMin:f0} .. {this.NormMax:f0}{this.Units})";
             }
 
             if (this.Units == "s")
             {
-                return string.Format(" {0} ({1:f1} .. {2:f1}{3})", this.Name, this.NormMin, this.NormMax, this.Units);
+                return $" {this.Name} ({this.NormMin:f1} .. {this.NormMax:f1}{this.Units})";
             }
 
-            return string.Format(" {0} ({1:f2} .. {2:f2} {3})", this.Name, this.NormMin, this.NormMax, this.Units);
+            return $" {this.Name} ({this.NormMin:f2} .. {this.NormMax:f2} {this.Units})";
         }
 
         public Image GetPlotImage(double[] array, List<GapsAndJoins> errors = null) => this.GetPlotImage(array, Color.White, errors);
 
         /// <summary>
-        /// For writing this method:
-        ///    See CLASS: DrawSummaryIndices
-        ///       METHOD: Bitmap ConstructVisualIndexImage(DataTable dt, string title, int timeScale, double[] order, bool doNormalise)
+        /// This method called from Indexdisplay.DrawImageOfSummaryIndices().
+        /// It draws a single plot/track of one summary index.
         /// </summary>
         public Image GetPlotImage(double[] array, Color backgroundColour, List<GapsAndJoins> errors = null)
         {
@@ -316,17 +286,11 @@ namespace AudioAnalysisTools.Indices
             var font = new Font("Arial", 9.0f, FontStyle.Regular);
             g.DrawString(annotation, font, Brushes.Black, new PointF(dataLength, 5));
 
-            // now add in image patches for possible erroneous index segments
-            if (errors != null && errors.Count > 0)
+            // now add in image patches for possible erroneous segments
+            bool errorsExist = errors != null && errors.Count > 0;
+            if (errorsExist)
             {
-                foreach (GapsAndJoins errorSegment in errors)
-                {
-                    var errorBmp = errorSegment.DrawErrorPatch(trackHeight - 2, textInVerticalOrientation: false);
-                    if (errorBmp != null)
-                    {
-                        g.DrawImage(errorBmp, errorSegment.StartPosition, 1);
-                    }
-                }
+                bmp = (Bitmap)GapsAndJoins.DrawErrorSegments(bmp, errors, false);
             }
 
             return bmp;
@@ -334,7 +298,7 @@ namespace AudioAnalysisTools.Indices
 
         /// <summary>
         /// Returns a cached set of configuration properties.
-        /// WARNING CACHED!
+        /// WARNING CACHED!.
         /// </summary>
         public static IndexPropertiesCollection GetIndexProperties(FileInfo configFile)
         {
@@ -385,6 +349,26 @@ namespace AudioAnalysisTools.Indices
                 out var configFile);
 
             return found ? configFile : null;
+        }
+
+        private void UpdateTypedDefault()
+        {
+            if (this.DataType == "int")
+            {
+                this.DefaultValueCasted = (int)this.DefaultValue;
+            }
+            else if (this.DataType == "double" || this.dataType == "double[]")
+            {
+                this.DefaultValueCasted = this.DefaultValue;
+            }
+            else if (this.DataType == "TimeSpan")
+            {
+                this.DefaultValueCasted = TimeSpan.FromSeconds(this.DefaultValue);
+            }
+            else
+            {
+                throw new InvalidOperationException("Unknown data type");
+            }
         }
     }
 }

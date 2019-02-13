@@ -376,7 +376,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public bool ReadStandardDeviationSpectrogramCsvs(DirectoryInfo ipdir, string fileName)
         {
             int freqBinCount;
-            this.spgrStdDevMatrices = IndexMatrices.ReadSpectrogramCSVFiles(ipdir, fileName, this.ColorMap, out freqBinCount);
+            this.spgrStdDevMatrices = IndexMatrices.ReadSpectrogramCsvFiles(ipdir, fileName, this.ColorMap, out freqBinCount);
             this.FrameWidth = freqBinCount * 2;
             if (this.spgrStdDevMatrices == null)
             {
@@ -651,7 +651,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             bool errorsExist = this.ErroneousSegments != null && this.ErroneousSegments.Count > 0;
             if (errorsExist)
             {
-                bmp = GapsAndJoins.DrawErrorSegments(bmp, this.ErroneousSegments);
+                bmp = GapsAndJoins.DrawErrorSegments(bmp, this.ErroneousSegments, false);
             }
 
             return bmp;

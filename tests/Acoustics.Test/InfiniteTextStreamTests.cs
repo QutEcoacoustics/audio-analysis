@@ -52,7 +52,7 @@ namespace Acoustics.Test
                 }
             }
 
-            var work = Task.Run(Generate, token);
+            var work = Task.Run((Action)Generate, token);
 
             Assert.IsFalse(work.IsCompleted);
             source.CancelAfter(this.timeout);

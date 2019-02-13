@@ -339,6 +339,8 @@ namespace AnalysisPrograms
                 var concatenatedSummaryIndices = LdSpectrogramStitching.ConcatenateAllSummaryIndexFiles(summaryIndexFiles, resultsDir, indexGenerationData, outputFileStem);
                 WriteSummaryIndexFile(resultsDir, outputFileStem, AcousticIndices.TowseyAcoustic, concatenatedSummaryIndices);
 
+                // Put SUMMARY indices into dictionary. TODO need to generalise a lower method
+                // ################# WARNING: THIS METHOD ONLY GETS A "HARD CODED" LIST OF SUMMARY INDICES. See the method.
                 var dictionaryOfSummaryIndices = LdSpectrogramStitching.ConvertToDictionaryOfSummaryIndices(concatenatedSummaryIndices);
 
                 // REALITY CHECK - check for continuous zero indices or anything else that might indicate defective signal,
@@ -356,7 +358,8 @@ namespace AnalysisPrograms
                             dictionaryOfSummaryIndices,
                             imageTitle,
                             indexGenerationData.IndexCalculationDuration,
-                            indexGenerationData.RecordingStartDate);
+                            indexGenerationData.RecordingStartDate,
+                            gapsAndJoins);
 
                     var imagePath = FilenameHelpers.AnalysisResultPath(resultsDir, outputFileStem, "SummaryIndices", "png");
                     tracksImage.Save(imagePath);
@@ -441,6 +444,8 @@ namespace AnalysisPrograms
                 var concatenatedSummaryIndices = LdSpectrogramStitching.ConcatenateAllSummaryIndexFiles(indexFiles, resultsDir, indexGenerationData, outputBaseName);
                 WriteSummaryIndexFile(resultsDir, outputBaseName, AcousticIndices.TowseyAcoustic, concatenatedSummaryIndices);
 
+                // Put SUMMARY indices into dictionary. TODO need to generalise a lower method
+                // ################# WARNING: THIS METHOD ONLY GETS A "HARD CODED" LIST OF SUMMARY INDICES. See the method.
                 var summaryDict = LdSpectrogramStitching.ConvertToDictionaryOfSummaryIndices(concatenatedSummaryIndices);
 
                 if (summaryDict == null)

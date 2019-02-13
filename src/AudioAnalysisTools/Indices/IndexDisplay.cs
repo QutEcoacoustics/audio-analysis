@@ -73,12 +73,11 @@ namespace AudioAnalysisTools.Indices
                 dictionary,
                 titleText,
                 indexCalculationDuration,
-                recordingStartDate,
-                sunriseDataFile);
+                recordingStartDate);
         }
 
         /// <summary>
-        /// Converts summary indices to a tracks image.
+        /// Converts summary indices to a tracks image, one track for each index.
         /// </summary>
         public static Bitmap DrawImageOfSummaryIndices(
             Dictionary<string, IndexProperties> listOfIndexProperties,
@@ -86,7 +85,6 @@ namespace AudioAnalysisTools.Indices
             string titleText,
             TimeSpan indexCalculationDuration,
             DateTimeOffset? recordingStartDate,
-            FileInfo sunriseDataFile = null,
             List<GapsAndJoins> errors = null,
             bool verbose = false)
         {
