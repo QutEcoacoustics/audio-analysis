@@ -88,6 +88,8 @@ namespace AnalysisPrograms
 
         public static bool IsDebuggerAttached => Debugger.IsAttached;
 
+        public static Logging Logging { get; private set; }
+
         /// <summary>
         /// Gets a value indicating whether or not the debugger should automatically attach.
         /// </summary>
@@ -174,7 +176,7 @@ namespace AnalysisPrograms
                 {
                     if (options != DebugOptions.YesSilent)
                     {
-                        LoggedConsole.WriteLine("\t>>> Attach sucessful");
+                        LoggedConsole.WriteLine("\t>>> Attach successful");
                         LoggedConsole.WriteLine();
                     }
                 }
@@ -184,7 +186,7 @@ namespace AnalysisPrograms
 
         internal static void BeforeExecute(MainArgs main, CommandLineApplication application)
         {
-            // re-assign here... the application will be a sub-command here (which is tecnically a different CLA)
+            // re-assign here... the application will be a sub-command here (which is technically a different CLA)
             CommandLineApplication = application;
 
             AttachDebugger(main.DebugOption);
@@ -203,7 +205,7 @@ Git branch-version: {BuildMetadata.GitBranch}-{BuildMetadata.GitCommit}, DirtyBu
 Copyright {Meta.NowYear} {Meta.Organization}");
         }
 
-        internal static void WarnIfDevleoperEntryUsed(string message = null)
+        internal static void WarnIfDeveloperEntryUsed(string message = null)
         {
             if (!InDEBUG)
 #pragma warning disable 162
@@ -211,7 +213,7 @@ Copyright {Meta.NowYear} {Meta.Organization}");
                 message = message == null ? string.Empty : "\n!    " + message;
                 Log.Warn($@"!
 !
-!    The entry point called is designed for use by devleopers and debuggers.
+!    The entry point called is designed for use by developers and debuggers.
 !    It is likely that this entry point does not do what you want and will fail.{message}
 !
 !");

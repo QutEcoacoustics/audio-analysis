@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="MainEntry.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -32,7 +32,7 @@ namespace AnalysisPrograms
             // Uses an env var to  attach debugger before argument parsing
             AttachDebugger(ApAutoAttach ? DebugOptions.YesSilent : DebugOptions.No);
 
-            Logging.Initialize(colorConsole: !ApPlainLogging, Level.Info, quietConsole: false);
+            Logging = new Logging(colorConsole: !ApPlainLogging, Level.Info, quietConsole: false);
 
             Copyright();
 

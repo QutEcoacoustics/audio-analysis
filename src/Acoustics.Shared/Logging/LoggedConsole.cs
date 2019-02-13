@@ -21,7 +21,7 @@ namespace System
     /// </summary>
     public static class LoggedConsole
     {
-        public static readonly ILog Log = LogManager.Exists(Logging.Cleanlogger);
+        public static readonly ILog Log = LogManager.Exists(Logging.CleanLogger);
 
         private static readonly TimeSpan PromptTimeout = TimeSpan.FromSeconds(60);
 

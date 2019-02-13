@@ -13,6 +13,7 @@ namespace Acoustics.Test.Shared.LoggingTests
     using log4net;
     using log4net.Core;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using TestHelpers;
 
     [TestClass]
     [DoNotParallelize]
@@ -37,10 +38,10 @@ namespace Acoustics.Test.Shared.LoggingTests
         [DataRow(nameof(Level.All), 19)]
         public void TestVerbosityModifier(string targetVerbosity, int expectedMessageCount)
         {
-            lock (Logging.MemoryAppender)
+            lock (TestSetup.TestLogging.MemoryAppender)
             {
                 // clear the log
-                Logging.MemoryAppender.Clear();
+                TestSetup.TestLogging.MemoryAppender.Clear();
 
                 Level level = typeof(Level).TryGetFieldValue(targetVerbosity, Flags.AllMembers) as Level;
                 if (level == null)
@@ -50,20 +51,12 @@ namespace Acoustics.Test.Shared.LoggingTests
 
                 Assert.IsNotNull(level);
 
-                Logging.ModifyVerbosity(level, true);
+                TestSetup.TestLogging.ModifyVerbosity(level, true);
 
-                Logging.TestLogging();
+                TestSetup.TestLogging.TestLogging();
 
-                Assert.AreEqual(expectedMessageCount, Logging.MemoryAppender.GetEvents().Length);
+                Assert.AreEqual(expectedMessageCount, TestSetup.TestLogging.MemoryAppender.GetEvents().Length);
             }
         }
-
-        [TestMethod]
-        public void InitializeCanOnlyBeCalledOnce()
-        {
-            Assert.ThrowsException<InvalidOperationException>(
-                () => Logging.Initialize(false, Level.Info, true));
-        }
-
     }
 }
