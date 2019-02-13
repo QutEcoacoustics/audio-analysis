@@ -115,6 +115,7 @@ namespace AudioAnalysisTools.Indices
             return dict;
         }
 
+        /*
         public static Dictionary<string, string> GetKeyTranslationDictionary()
         {
             var dict = new Dictionary<string, string>
@@ -153,5 +154,6 @@ namespace AudioAnalysisTools.Indices
 
             return dict;
         }
+        */
     }
 }
