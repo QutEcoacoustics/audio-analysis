@@ -114,46 +114,5 @@ namespace AudioAnalysisTools.Indices
 
             return dict;
         }
-
-        /*
-        public static Dictionary<string, string> GetKeyTranslationDictionary()
-        {
-            var dict = new Dictionary<string, string>
-            {
-                { "IndexCount", "RankOrder" },
-                { "COUNT", "RankOrder" },
-                { "START-MIN", "StartMinute" },
-                { "SEGMENT-DUR", "AnalysisIdealSegmentDuration" },
-                { "hiSIG-AMPL", "HighAmplitudeIndex" },
-                { "CLIPPING", "ClippingIndex" },
-                { "SIGNAL-AMPL", "AvSignalAmplitude" },
-                { "BKGROUND", "BackgroundNoise" },
-                { "SNR", "SNR" },
-                { "SNR-ACTIVE", "AvSNRActive" },
-                { "AvSNROfActiveFrames", "AvSNRActive" },
-                { "ACTIVITY", "Activity" },
-                { "EVENTS-RATE", "EventsPerSec" },
-                { "avEVENT-DUR", "AvEventDuration" },
-                { "HF-CVR", "HF_CVR" },
-                { "MF-CVR", "MF_CVR" },
-                { "LF-CVR", "LF_CVR" },
-                { "H-TEMP", "Htemp" },
-                { "Htemporal", "Htemp" },
-                { "H-PEAK", "Hpeak" },
-                { "H-SPG", "HAvSpectrum" },
-                { "H-VAR", "HVarSpectrum" },
-                { "ACI", "AcousticComplexity" },
-                { "CLUSTER-COUNT", "ClusterCount" },
-                { "avCLUST-DUR", "AvClusterDuration" },
-                { "3GRAM-COUNT", "3GramCount" },
-                { "SPT-RATE", "SPTPerSec" },
-                { "avSPT-DUR", "AvSPTDuration" },
-                { "RAIN", "RainIndex" },
-                { "CICADA", "CicadaIndex" },
-            };
-
-            return dict;
-        }
-        */
     }
 }

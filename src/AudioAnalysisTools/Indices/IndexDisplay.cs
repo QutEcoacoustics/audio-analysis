@@ -59,8 +59,7 @@ namespace AudioAnalysisTools.Indices
             FileInfo csvFile,
             string titleText,
             TimeSpan indexCalculationDuration,
-            DateTimeOffset? recordingStartDate,
-            FileInfo sunriseDataFile = null)
+            DateTimeOffset? recordingStartDate)
         {
             if (!csvFile.Exists)
             {
@@ -73,8 +72,7 @@ namespace AudioAnalysisTools.Indices
                 dictionary,
                 titleText,
                 indexCalculationDuration,
-                recordingStartDate,
-                sunriseDataFile);
+                recordingStartDate);
         }
 
         /// <summary>
@@ -86,7 +84,6 @@ namespace AudioAnalysisTools.Indices
             string titleText,
             TimeSpan indexCalculationDuration,
             DateTimeOffset? recordingStartDate,
-            FileInfo sunriseDataFile = null,
             List<GapsAndJoins> errors = null,
             bool verbose = false)
         {
@@ -98,7 +95,6 @@ namespace AudioAnalysisTools.Indices
             var backgroundColour = Color.White;
             foreach (string key in dictionaryOfSummaryIndices.Keys)
             {
-                string correctKey = key;
                 if (!listOfIndexProperties.ContainsKey(key))
                 {
                     if (verbose)
@@ -109,7 +105,7 @@ namespace AudioAnalysisTools.Indices
                     continue;
                 }
 
-                IndexProperties ip = listOfIndexProperties[correctKey];
+                IndexProperties ip = listOfIndexProperties[key];
                 if (!ip.DoDisplay)
                 {
                     continue;
