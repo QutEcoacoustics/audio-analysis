@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="MainEntryUtilities.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -143,7 +143,7 @@ namespace AnalysisPrograms
                 return;
             }
 #if DEBUG
-            if (!Debugger.IsAttached)
+            if (!Debugger.IsAttached && !IsMsTestRunningMe())
             {
                 if (options == DebugOptions.Prompt)
                 {
@@ -234,6 +234,11 @@ Copyright {Meta.NowYear} {Meta.Organization}");
                 return;
             }
 
+            if (IsMsTestRunningMe())
+            {
+                return;
+            }
+
             // if Michael is debugging with visual studio, this will prevent the window closing.
             Process parentProcess = ProcessExtensions.ParentProcessUtilities.GetParentProcess();
             if (parentProcess.ProcessName == "devenv")
@@ -243,6 +248,16 @@ Copyright {Meta.NowYear} {Meta.Organization}");
             }
 #endif
         }
+
+#if DEBUG
+        internal static bool IsMsTestRunningMe()
+        {
+            // https://stackoverflow.com/questions/3167617/determine-if-code-is-running-as-part-of-a-unit-test
+            string testAssemblyName = "Microsoft.VisualStudio.TestPlatform.TestFramework";
+            return AppDomain.CurrentDomain.GetAssemblies()
+                .Any(a => a.FullName.StartsWith(testAssemblyName));
+        }
+#endif
 
         internal static void PrintUsage(string message, Usages usageStyle, string commandName = null)
         {
@@ -319,10 +334,10 @@ Copyright {Meta.NowYear} {Meta.Organization}");
             var app = CommandLineApplication = new CommandLineApplication<MainArgs>(console);
 
             app.HelpTextGenerator = new CustomHelpTextGenerator { EnvironmentOptions = EnvironmentOptions };
-            app.ValueParsers.Add(new DateTimeOffsetParser());
-            app.ValueParsers.Add(new TimeSpanParser());
-            app.ValueParsers.Add(new FileInfoParser());
-            app.ValueParsers.Add(new DirectoryInfoParser());
+            app.ValueParsers.AddOrReplace(new DateTimeOffsetParser());
+            app.ValueParsers.AddOrReplace(new TimeSpanParser());
+            app.ValueParsers.AddOrReplace(new FileInfoParser());
+            app.ValueParsers.AddOrReplace(new DirectoryInfoParser());
             app.Conventions.UseDefaultConventions();
 
             return app;
