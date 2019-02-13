@@ -159,7 +159,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             FileInfo indexPropertiesConfigFileInfo,
             DirectoryInfo opDir,
             SiteDescription siteDescription,
-            FileInfo sunriseDatafile = null,
+            FileInfo sunriseDatafile = null, // no longer supported
             List<GapsAndJoins> erroneousSegments = null, // info if have fatal errors i.e. no signal
             bool verbose = false)
         {
