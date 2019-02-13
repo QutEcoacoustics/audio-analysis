@@ -27,11 +27,11 @@ namespace AudioAnalysisTools.Indices
         private static readonly ILog Logger = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         /// <summary>
-        /// Uses a dictionary of index properties to draw an image of summary index tracks
+        /// Uses a dictionary of index properties to draw an image of summary index tracks.
         /// </summary>
-        /// <param name="csvFile"> file containing the summary indices </param>
-        /// <param name="indexPropertiesConfig"> indexPropertiesConfig </param>
-        /// <param name="title"> image title </param>
+        /// <param name="csvFile"> file containing the summary indices.</param>
+        /// <param name="indexPropertiesConfig"> indexPropertiesConfig.</param>
+        /// <param name="title">image title.</param>
         /// <param name="indexCalculationDuration"> The index Calculation Duration. </param>
         /// <param name="recordingStartDate"> The recording Start Date. </param>
         public static Bitmap DrawImageOfSummaryIndexTracks(
@@ -52,7 +52,7 @@ namespace AudioAnalysisTools.Indices
         }
 
         /// <summary>
-        /// Reads csv file containing summary indices and converts them to a tracks image
+        /// Reads csv file containing summary indices and converts them to a tracks image.
         /// </summary>
         public static Bitmap DrawImageOfSummaryIndices(
             Dictionary<string, IndexProperties> listOfIndexProperties,
@@ -90,9 +90,6 @@ namespace AudioAnalysisTools.Indices
             List<GapsAndJoins> errors = null,
             bool verbose = false)
         {
-            // to translate past keys into current keys
-            Dictionary<string, string> translationDictionary = InitialiseIndexProperties.GetKeyTranslationDictionary();
-
             const int trackHeight = DefaultTrackHeight;
             int scaleLength = 0;
             var bitmapList = new List<Tuple<IndexProperties, Image>>(dictionaryOfSummaryIndices.Keys.Count);
@@ -104,25 +101,12 @@ namespace AudioAnalysisTools.Indices
                 string correctKey = key;
                 if (!listOfIndexProperties.ContainsKey(key))
                 {
-                    if (translationDictionary.ContainsKey(key))
+                    if (verbose)
                     {
-                        correctKey = translationDictionary[key];
-                        LoggedConsole.WriteWarnLine(
-                            "The csv header is an unknown index <{0}>. Translated to <{1}>",
-                            key,
-                            correctKey);
+                        Logger.Warn("{0} index configuration could not be found. Index is ignored and not rendered.".Format2(key));
                     }
-                    else
-                    {
-                        if (verbose)
-                        {
-                            Logger.Warn(
-                              "A index properties configuration could not be found for {0} (not even in the translation directory). Property is ignored and not rendered"
-                                  .Format2(key));
-                        }
 
-                        continue;
-                    }
+                    continue;
                 }
 
                 IndexProperties ip = listOfIndexProperties[correctKey];
@@ -180,9 +164,9 @@ namespace AudioAnalysisTools.Indices
         }
 
         /// <summary>
-        /// Reads csv file containing summary indices and converts them to a tracks image
+        /// Reads csv file containing summary indices and converts them to a tracks image.
         /// </summary>
-        /// <returns>an image of two clipping tracks</returns>
+        /// <returns>an image of two clipping tracks.</returns>
         public static Bitmap DrawHighAmplitudeClippingTrack(FileInfo csvFile)
         {
             if (!csvFile.Exists)
@@ -199,9 +183,9 @@ namespace AudioAnalysisTools.Indices
         }
 
         /// <summary>
-        /// Reads csv file containing summary indices and converts them to a tracks image
+        /// Reads csv file containing summary indices and converts them to a tracks image.
         /// </summary>
-        /// <returns>a bitmap image</returns>
+        /// <returns>a bitmap image.</returns>
         public static Bitmap DrawHighAmplitudeClippingTrack(double[] array1, double[] array2)
         {
             double[] values1 = DataTools.NormaliseInZeroOne(array1, 0, 1.0);
@@ -211,10 +195,8 @@ namespace AudioAnalysisTools.Indices
             int trackWidth = dataLength;
             int trackHeight = DefaultTrackHeight;
 
-            //Color[] grayScale = ImageTools.GrayScale();
-
-            Bitmap bmp = new Bitmap(trackWidth, trackHeight);
-            Graphics g = Graphics.FromImage(bmp);
+            var bmp = new Bitmap(trackWidth, trackHeight);
+            var g = Graphics.FromImage(bmp);
 
             //g.Clear(grayScale[240]);
             g.Clear(Color.LightGray);
