@@ -231,11 +231,13 @@ namespace AudioAnalysisTools.Indices
             return $" {this.Name} ({this.NormMin:f2} .. {this.NormMax:f2} {this.Units})";
         }
 
+        public Image GetPlotImage(double[] array, List<GapsAndJoins> errors = null) => this.GetPlotImage(array, Color.White, errors);
+
         /// <summary>
         /// This method called from Indexdisplay.DrawImageOfSummaryIndices().
         /// It draws a single plot/track of one summary index.
         /// </summary>
-        public Image GetPlotImage(double[] array, List<GapsAndJoins> errors = null)
+        public Image GetPlotImage(double[] array, Color backgroundColour, List<GapsAndJoins> errors = null)
         {
             int dataLength = array.Length;
             string annotation = this.GetPlotAnnotation();
@@ -243,11 +245,10 @@ namespace AudioAnalysisTools.Indices
 
             int trackWidth = dataLength + IndexDisplay.TrackEndPanelWidth;
             int trackHeight = IndexDisplay.DefaultTrackHeight;
-            Color[] grayScale = ImageTools.GrayScale();
 
             Bitmap bmp = new Bitmap(trackWidth, trackHeight);
             Graphics g = Graphics.FromImage(bmp);
-            g.Clear(grayScale[240]);
+            g.Clear(backgroundColour);
 
             // for pixels in the line
             for (int i = 0; i < dataLength; i++)
@@ -282,10 +283,8 @@ namespace AudioAnalysisTools.Indices
                 bmp.SetPixel(i, 0, Color.Gray);
             }
 
-            int endWidth = trackWidth - dataLength;
             var font = new Font("Arial", 9.0f, FontStyle.Regular);
-            g.FillRectangle(Brushes.Black, dataLength + 1, 0, endWidth, trackHeight);
-            g.DrawString(annotation, font, Brushes.White, new PointF(dataLength + 5, 2));
+            g.DrawString(annotation, font, Brushes.Black, new PointF(dataLength, 5));
 
             // now add in image patches for possible erroneous segments
             bool errorsExist = errors != null && errors.Count > 0;

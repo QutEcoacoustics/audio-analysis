@@ -98,7 +98,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             var resultsDirectory = this.outputDirectory.Combine("Towsey.Acoustic");
             var listOfFiles = resultsDirectory.EnumerateFiles().ToArray();
 
-            Assert.AreEqual(31, listOfFiles.Length);
+            Assert.AreEqual(38, listOfFiles.Length);
 
             var csvCount = listOfFiles.Count(f => f.Name.EndsWith(".csv"));
             Assert.AreEqual(16, csvCount);
@@ -107,7 +107,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             Assert.AreEqual(2, jsonCount);
 
             var pngCount = listOfFiles.Count(f => f.Name.EndsWith(".png"));
-            Assert.AreEqual(13, pngCount);
+            Assert.AreEqual(20, pngCount);
 
             var twoMapsImagePath = resultsDirectory.CombineFile("TemporaryRecording1__2Maps.png");
             var twoMapsImage = ImageTools.ReadImage2Bitmap(twoMapsImagePath.FullName);
@@ -266,10 +266,10 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
                     analysisType: analysisType,
                     indexSpectrograms: dictionaryOfSpectra);
 
-            // test number of images - should now be 14
+            // test number of images - should now be 23
             listOfFiles = resultsDirectory.EnumerateFiles().ToArray();
             pngCount = listOfFiles.Count(f => f.Name.EndsWith(".png"));
-            Assert.AreEqual(14, pngCount);
+            Assert.AreEqual(21, pngCount);
 
             var twoMapsImagePath = resultsDirectory.CombineFile(recordingName + "__2Maps.png");
             var twoMapsImage = ImageTools.ReadImage2Bitmap(twoMapsImagePath.FullName);

@@ -398,7 +398,7 @@ namespace AudioAnalysisTools.Indices
             deciBelSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(deciBelSpectrogram, nhThreshold: 2.0);
 
             // iii: CALCULATE noise reduced AVERAGE DECIBEL SPECTRUM
-            spectralIndices.PMN = SpectrogramTools.CalculateAvgDecibelSpectrumFromSpectrogram(deciBelSpectrogram);
+            spectralIndices.PMN = SpectrogramTools.CalculateAvgDecibelSpectrumFromDecibelSpectrogram(deciBelSpectrogram);
 
             // iv: CALCULATE SPECTRAL COVER.
             //     NOTE: at this point, decibelSpectrogram is noise reduced. All values >= 0.0
