@@ -341,9 +341,7 @@ namespace AnalysisPrograms
                 var concatenatedSummaryIndices = LdSpectrogramStitching.ConcatenateAllSummaryIndexFiles(summaryIndexFiles, resultsDir, indexGenerationData, outputFileStem);
                 WriteSummaryIndexFile(resultsDir, outputFileStem, AcousticIndices.TowseyAcoustic, concatenatedSummaryIndices);
 
-                // Put SUMMARY indices into dictionary. TODO need to generalise a lower method
-                // ################# WARNING: THIS METHOD ONLY GETS A "HARD CODED" LIST OF SUMMARY INDICES. See the method.
-                var dictionaryOfSummaryIndices = LdSpectrogramStitching.ConvertToDictionaryOfSummaryIndices(concatenatedSummaryIndices);
+                var dictionaryOfSummaryIndices = SummaryIndexValues.ConvertToDictionaryOfSummaryIndices(concatenatedSummaryIndices);
 
                 // REALITY CHECK - check for continuous zero indices or anything else that might indicate defective signal,
                 //                 incomplete analysis of recordings, recording gaps or file joins.
@@ -446,9 +444,7 @@ namespace AnalysisPrograms
                 var concatenatedSummaryIndices = LdSpectrogramStitching.ConcatenateAllSummaryIndexFiles(indexFiles, resultsDir, indexGenerationData, outputBaseName);
                 WriteSummaryIndexFile(resultsDir, outputBaseName, AcousticIndices.TowseyAcoustic, concatenatedSummaryIndices);
 
-                // Put SUMMARY indices into dictionary. TODO need to generalise a lower method
-                // ################# WARNING: THIS METHOD ONLY GETS A "HARD CODED" LIST OF SUMMARY INDICES. See the method.
-                var summaryDict = LdSpectrogramStitching.ConvertToDictionaryOfSummaryIndices(concatenatedSummaryIndices);
+                var summaryDict = SummaryIndexValues.ConvertToDictionaryOfSummaryIndices(concatenatedSummaryIndices);
 
                 if (summaryDict == null)
                 {

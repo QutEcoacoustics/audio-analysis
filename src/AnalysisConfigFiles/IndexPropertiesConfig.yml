@@ -2,6 +2,7 @@
 # WARNING!!! The keys (i.e. root name of each object below) MUST BE EXACTLY the SAME as those 
 #            declared in the class InitialiseIndexProperties (starting at line 30).
 # The root object name maps to the Key property on the IndexProperties class
+# and to the members in the class SummaryIndexValues:SummaryIndexBase
  
 RankOrder:
   Name: Rank order of audio segment
@@ -13,8 +14,6 @@ RankOrder:
   NormMax: 240.0
   ProjectID: Acoustic Indices
   Units: ""
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
 StartOffset:
   Name: Segment start time
   Comment: "Exact time span (total minutes) from start of recording to start of this segment."
@@ -25,8 +24,6 @@ StartOffset:
   NormMax: 200.0
   ProjectID: Acoustic Indices
   Units: "min"
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
 StartOffsetMinute:
   Name: Segment start minute
   Comment: "Total minutes from start of recording to start of this segment."
@@ -37,8 +34,6 @@ StartOffsetMinute:
   NormMax: 200.0
   ProjectID: Acoustic Indices
   Units: "min"
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
 StartOffsetSecond:
   Name: Segment start second
   Comment: "Total seconds from start of recording to start of this segment."
@@ -49,8 +44,6 @@ StartOffsetSecond:
   NormMax: 200.0
   ProjectID: Acoustic Indices
   Units: "sec"
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
 SegmentDuration:
   Name: Time duration of audio segment
   Comment: "Exact time span (total minutes) of this audio segment - typically 1.0 minutes."
@@ -61,8 +54,6 @@ SegmentDuration:
   NormMax: 1.0
   ProjectID: Acoustic Indices
   Units: "min"
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
 HighAmplitudeIndex:
   Name: High Amplitude Index
   Comment: "Av number of samples/sec where abs. amplitude is within 10*epislon of the max signal value."
@@ -73,8 +64,6 @@ HighAmplitudeIndex:
   NormMax: 5.0
   ProjectID: Acoustic Indices
   Units: "av/s"
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
 ZeroSignal:
   Name: Zero Signal Index
   Comment: "Indicates if signal segment is flat or zero."
@@ -85,8 +74,6 @@ ZeroSignal:
   NormMax: 1.0
   ProjectID: Acoustic Indices
   Units: ""
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
 ClippingIndex:
   Name: Clipping Index
   Comment: "Av number of clipped samples/sec i.e. where the abs. amplitude of two conscutive samples is within 4*epislon of the max signal value."
@@ -97,8 +84,6 @@ ClippingIndex:
   NormMax: 5.0
   ProjectID: Acoustic Indices
   Units: "avClips/s"
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
 AvgSignalAmplitude:
   Name: av Signal Ampl
   Comment: "Av amplitude of the signal envelope in dB."
@@ -110,8 +95,6 @@ AvgSignalAmplitude:
   NormMax: -10.0
   ProjectID: Acoustic Indices
   Units: "dB"
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
 BackgroundNoise:
   Name: Background Noise
   Comment: "Av amplitude of the noise removed from the audio segment using the method of Lamel et al."
@@ -123,8 +106,6 @@ BackgroundNoise:
   NormMax: -10.0
   ProjectID: Acoustic Indices
   Units: "dB"
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
 Snr:
   Name: Maximum SNR
   Comment: "Max amplitude of signal envelope after noise removal."
@@ -135,8 +116,6 @@ Snr:
   NormMax: 50.0
   ProjectID: Acoustic Indices
   Units: "dB"
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
 AvgSnrOfActiveFrames:
   Name: av SNR (Active frames)
   Comment: "Av amplitude of active frames in signal envelope after noise removal. Active frames are those with amplitude > threshold 3 dB."
@@ -147,8 +126,6 @@ AvgSnrOfActiveFrames:
   NormMax: 30.0
   ProjectID: Acoustic Indices
   Units: "dB"
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
 Activity:
   Name: Activity
   Comment: "% of active frames i.e. where SNR exceeds threshold = 3 dB."
@@ -159,8 +136,6 @@ Activity:
   NormMax: 1.0
   ProjectID: Acoustic Indices
   Units: ""
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
 EventsPerSecond:
   Name: Events per sec
   Comment: "Av number of events per second. An event is any consecutive sequence of active frames having duration > threshold = 100 ms."
@@ -171,8 +146,6 @@ EventsPerSecond:
   NormMax: 5.0
   ProjectID: Acoustic Indices
   Units: ""
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
 #EventsTotal:
 #  Name: Event Count
 #  Comment: "The total count of acoustic events per minute of recording."
@@ -193,18 +166,6 @@ EventsPerSecond:
 #  NormMax: 25
 #  ProjectID: Acoustic Indices
 #  Units: ""
-#AvgEventDuration:
-#  Name: Av Event Duration
-#  Comment: "Av duration in ms of the events in an audio segment."
-#  DataType: TimeSpan
-#  DefaultValue: 0.0
-#  DoDisplay: false
-#  NormMin: 0.0
-#  NormMax: 1000
-#  ProjectID: Acoustic Indices
-#  Units: "ms"
-#  IncludeInComboIndex: false
-#  ComboWeight: 0.0
 HighFreqCover:
   Name: hf Cover
   Comment: "% hf Cover 4000 Hz to 8800 Hz"
@@ -215,8 +176,6 @@ HighFreqCover:
   NormMax: 0.5
   ProjectID: Acoustic Indices
   Units: ""
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
 MidFreqCover:
   Name: mf Cover
   Comment: "% mf Cover. 500 Hz to 4000 Hz"
@@ -227,8 +186,6 @@ MidFreqCover:
   NormMax: 0.50
   ProjectID: Acoustic Indices
   Units: ""
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
 LowFreqCover:
   Name: lf Cover
   Comment: "% lf Cover. 0 - 500 Hz"
@@ -239,8 +196,6 @@ LowFreqCover:
   NormMax: 0.50
   ProjectID: Acoustic Indices
   Units: ""
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
 AcousticComplexity:
   Name: ACI
   Comment: "ACI"
@@ -251,8 +206,6 @@ AcousticComplexity:
   NormMax: 0.7
   ProjectID: Acoustic Indices
   Units: ""
-  IncludeInComboIndex: true
-  ComboWeight: 0.2
 TemporalEntropy:
   Name: 1-H[t]
   Comment: "1-Ht is a measure of concentration of acoustic energy instead of energy dispersal."
@@ -263,20 +216,6 @@ TemporalEntropy:
   NormMax: 0.5
   ProjectID: Acoustic Indices
   Units: ""
-  IncludeInComboIndex: true
-  ComboWeight: 0.3
-#SqrtTempEntropy:
-#  Name: Sqrt(1-H[t])
-#  Comment: "Sqrt(1-Ht) is an attempt to obtain more even distribution of Ht values. NormMax = sqrt(0.5)"
-#  DataType: double
-#  DefaultValue: 0.0
-#  DoDisplay: true
-#  NormMin: 0.0
-#  NormMax: 0.7
-#  ProjectID: Acoustic Indices
-#  Units: ""
-#  IncludeInComboIndex: false
-#  ComboWeight: 0.0
 LogTempEntropy:
   Name: Log(1-H[t])
   Comment: "Log(1-Ht) is an attempt to obtain more even distribution of Ht values. NormMax = log(1 + 0.5)"
@@ -287,8 +226,6 @@ LogTempEntropy:
   NormMax: 0.176
   ProjectID: Acoustic Indices
   Units: ""
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
 EntropyOfAverageSpectrum:
   Name: 1-H[avg spectrum]
   Comment: "1-H[spectral avg] is a measure of concentration of acoustic energy in the average spectrum over one minute."
@@ -299,8 +236,6 @@ EntropyOfAverageSpectrum:
   NormMax: 1.0
   ProjectID: Acoustic Indices
   Units: ""
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
 EntropyOfVarianceSpectrum:
   Name: 1-H[var spectrum]
   Comment: "1-H[spectral var] is a measure of concentration of acoustic energy in the variance spectrum over one minute."
@@ -311,8 +246,6 @@ EntropyOfVarianceSpectrum:
   NormMax: 1.0
   ProjectID: Acoustic Indices
   Units: ""
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
 EntropyOfPeaksSpectrum:
   Name: 1-H[peak freq spectrum]
   Comment: "1-H[peak freq] is a measure of concentration of peak frequencies over one minute."
@@ -323,8 +256,6 @@ EntropyOfPeaksSpectrum:
   NormMax: 1.0
   ProjectID: Acoustic Indices
   Units: ""
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
 EntropyOfCoVSpectrum:
   Name: 1-H[CoV spectrum]
   Comment: "1-H[CoV sp] is a measure of concentration of energy in the Coeff of Variance Spectrum."
@@ -335,8 +266,6 @@ EntropyOfCoVSpectrum:
   NormMax: 1.0
   ProjectID: Acoustic Indices
   Units: ""
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
 ClusterCount:
   Name: Cluster Count
   Comment: "Number of spectral clusters in one minute audio segment as determined by a clustering algorithm."
@@ -347,20 +276,6 @@ ClusterCount:
   NormMax: 50
   ProjectID: Acoustic Indices
   Units: ""
-  IncludeInComboIndex: true
-  ComboWeight: 0.3
-#AvgClusterDuration:
-#  Name: av Cluster Duration
-#  Comment: "Average duration in ms of the spectrum cluster sequences."
-#  DataType: TimeSpan
-#  DefaultValue: 0.0
-#  DoDisplay: true
-#  NormMin: 0
-#  NormMax: 250
-#  ProjectID: Acoustic Indices
-#  Units: "ms"
-#  IncludeInComboIndex: false
-#  ComboWeight: 0.0
 ThreeGramCount:
   Name: 3-gram Count
   Comment: "Number of different tri-gram spectral cluster sequences."
@@ -371,8 +286,6 @@ ThreeGramCount:
   NormMax: 1500
   ProjectID: Acoustic Indices
   Units: ""
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
 SptDensity:
   Name: SPT density
   Comment: "Average number of spectral peaks tracks traversing a frame."
@@ -383,32 +296,6 @@ SptDensity:
   NormMax: 10.0
   ProjectID: Acoustic Indices
   Units: ""
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
-#SptPerSecond:
-#  Name: av Tracks/Sec
-#  Comment: "Average number of spectral tracks per second."
-#  DataType: double
-#  DefaultValue: 0.0
-#  DoDisplay: true
-#  NormMin: 0
-#  NormMax: 50
-#  ProjectID: Acoustic Indices
-#  Units: ""
-#  IncludeInComboIndex: false
-#  ComboWeight: 0.0
-#AvgSptDuration:
-#  Name: av Track Duration
-#  Comment: "Average duration of a spectral track."
-#  DataType: TimeSpan
-#  DefaultValue: 0.0
-#  DoDisplay: true
-#  NormMin: 0.25
-#  NormMax: 2.0
-#  ProjectID: Acoustic Indices
-#  Units: "s"
-#  IncludeInComboIndex: false
-#  ComboWeight: 0.0
 NDSI:
   Name: NDSI
   Comment: "Normalised Difference Soundscape Index) calculated from PSD - originated from Stuart Gage."
@@ -419,26 +306,26 @@ NDSI:
   NormMax: 1.0
   ProjectID: Acoustic Indices
   Units: ""
-NDSI-LM:
-  Name: NDSI-LM
-  Comment: "Normalised Difference Soundscape Index) ratio of Mid/Low freq bands."
-  DataType: double
-  DefaultValue: 0.0
-  DoDisplay: false
-  NormMin: -1.0
-  NormMax: 1.0
-  ProjectID: Acoustic Indices
-  Units: ""
-NDSI-MH:
-  Name: NDSI-MH
-  Comment: "Normalised Difference Soundscape Index)  ratio of High/Mid freq bands."
-  DataType: double
-  DefaultValue: 0.0
-  DoDisplay: false
-  NormMin: -1.0
-  NormMax: 1.0
-  ProjectID: Acoustic Indices
-  Units: ""
+#NDSI-LM:
+#  Name: NDSI-LM
+#  Comment: "Normalised Difference Soundscape Index) ratio of Mid/Low freq bands."
+#  DataType: double
+#  DefaultValue: 0.0
+#  DoDisplay: false
+#  NormMin: -1.0
+#  NormMax: 1.0
+#  ProjectID: Acoustic Indices
+#  Units: ""
+#NDSI-MH:
+#  Name: NDSI-MH
+#  Comment: "Normalised Difference Soundscape Index)  ratio of High/Mid freq bands."
+#  DataType: double
+#  DefaultValue: 0.0
+#  DoDisplay: false
+#  NormMin: -1.0
+#  NormMax: 1.0
+# ProjectID: Acoustic Indices
+#  Units: ""
 FileName:
   Name: File Name
   Comment: "FILLER TO STOP WARNING MESSAGE! File Name"

@@ -7,11 +7,11 @@ namespace AudioAnalysisTools.Indices
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using AnalysisBase.ResultBases;
-
-    using StandardSpectrograms;
-
+    using DSP;
     using Fasterflect;
+    using StandardSpectrograms;
     using TowseyLibrary;
 
     public class IndexCalculateResult
@@ -24,8 +24,6 @@ namespace AudioAnalysisTools.Indices
             IndexCalculateConfig configuration)
         {
             TimeSpan durationOfResult = indexCalculationDuration; // subsegment TimeSpan
-
-            // TimeSpan startOffset = analysisSettings.SegmentStartOffset.Value; // offset from beginning of source audio
             TimeSpan subsegmentOffsetFromStartOfSource = subsegmentOffset; // offset from beginning of source audio
 
             this.Hits = null;
@@ -82,13 +80,13 @@ namespace AudioAnalysisTools.Indices
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SummaryIndexValues"/> class.
-        /// All summary indices initialised to zero except background and av Sig AMplitude both = -100 dB.
+        /// All summary indices initialised to zero except BackgroundNoise and AvgSignalAmplitude both = -100 dB.
         /// </summary>
         public SummaryIndexValues()
         {
             // serialization entry
-            this.BackgroundNoise = -100;
-            this.AvgSignalAmplitude = -100;
+            this.BackgroundNoise = SNR.MinimumDbBoundForZeroSignal;    // equals -100 dB, Feb 2019;
+            this.AvgSignalAmplitude = SNR.MinimumDbBoundForZeroSignal;
         }
 
         public SummaryIndexValues(TimeSpan wavDuration, Dictionary<string, IndexProperties> indexProperties)
@@ -110,6 +108,49 @@ namespace AudioAnalysisTools.Indices
             }
         }
 
+        public static Dictionary<string, double[]> ConvertToDictionaryOfSummaryIndices(List<SummaryIndexValues> summaryIndices)
+        {
+            // Now add in derived indices i.e. NCDI etc
+            // Decided NOT to do this anymore
+            // dictionaryOfSummaryIndices = IndexMatrices.AddDerivedIndices(dictionaryOfSummaryIndices);
+
+            // Put SUMMARY indices into dictionary. TODO need to generalise the following method
+            // ################# WARNING: THIS METHOD ONLY GETS A "HARD CODED" LIST OF SUMMARY INDICES. See the method.
+            var dictionaryOfSummaryIndices = GetDictionaryOfSummaryIndices(summaryIndices);
+
+            // return the dictionary - it will be used later to produce an index tracks image.
+            return dictionaryOfSummaryIndices;
+        }
+
+        /// <summary>
+        /// WARNING: THIS METHOD ONLY GETS FIXED LIST OF INDICES.
+        ///             Also it requires every index to be of type DOUBLE even when htis is not appropriate.
+        /// TODO: This needs to be generalized.
+        /// </summary>
+        public static Dictionary<string, double[]> GetDictionaryOfSummaryIndices(List<SummaryIndexValues> summaryIndices)
+        {
+            var dictionary = new Dictionary<string, double[]>
+            {
+                { GapsAndJoins.KeyZeroSignal, summaryIndices.Select(x => x.ZeroSignal).ToArray() },
+                { "ClippingIndex", summaryIndices.Select(x => x.ClippingIndex).ToArray() },
+                { "BackgroundNoise", summaryIndices.Select(x => x.BackgroundNoise).ToArray() },
+                { "Snr", summaryIndices.Select(x => x.Snr).ToArray() },
+                { "EventsPerSecond", summaryIndices.Select(x => x.EventsPerSecond).ToArray() },
+                { "Activity", summaryIndices.Select(x => x.Activity).ToArray() },
+                { "HighFreqCover", summaryIndices.Select(x => x.HighFreqCover).ToArray() },
+                { "MidFreqCover", summaryIndices.Select(x => x.MidFreqCover).ToArray() },
+                { "LowFreqCover", summaryIndices.Select(x => x.LowFreqCover).ToArray() },
+                { "TemporalEntropy", summaryIndices.Select(x => x.TemporalEntropy).ToArray() },
+                { "EntropyOfAverageSpectrum", summaryIndices.Select(x => x.EntropyOfAverageSpectrum).ToArray() },
+                { "EntropyOfPeaksSpectrum", summaryIndices.Select(x => x.EntropyOfPeaksSpectrum).ToArray() },
+                { "AcousticComplexity", summaryIndices.Select(x => x.AcousticComplexity).ToArray() },
+                { "ClusterCount", summaryIndices.Select(x => x.ClusterCount).ToArray() },
+                { "ThreeGramCount", summaryIndices.Select(x => x.ThreeGramCount).ToArray() },
+            };
+
+            return dictionary;
+        }
+
         public double ZeroSignal { get; set; }
 
         public double HighAmplitudeIndex { get; set; }
@@ -128,10 +169,6 @@ namespace AudioAnalysisTools.Indices
 
         public double EventsPerSecond { get; set; }
 
-        // Commented out on 2nd Feb 2015.
-        // AvgEventDuration is no longer accurately calculated now that estimating it on subsegments of < 1 second duration.
-        // public TimeSpan AvgEventDuration { get; set; }
-
         public double HighFreqCover { get; set; }
 
         public double MidFreqCover { get; set; }
@@ -142,39 +179,23 @@ namespace AudioAnalysisTools.Indices
 
         public double TemporalEntropy { get; set; }
 
-        public double EntropyOfAverageSpectrum { get; set; } // this is new more accurate name
-
-        public double AvgEntropySpectrum { get; set; } // this is old name for EntropyOfAverageSpectrum
+        public double EntropyOfAverageSpectrum { get; set; }
 
         public double EntropyOfVarianceSpectrum { get; set; }
 
-        public double VarianceEntropySpectrum { get; set; } // this is old name for EntropyOfVarianceSpectrum
-
         public double EntropyOfPeaksSpectrum { get; set; }
-
-        public double EntropyPeaks { get; set; } // this is old name for EntropyOfPeaksSpectrum
 
         public double EntropyOfCoVSpectrum { get; set; }
 
         // meaningless when calculated over short
         public double ClusterCount { get; set; }
 
-        // public TimeSpan AvgClusterDuration { get; set; }
-
         public double ThreeGramCount { get; set; }
-
-        // public double SptPerSecond { get; set; }
-
-        //public TimeSpan AvgSptDuration { get; set; }
 
         // Normalised difference soundscape Index
         public double Ndsi { get; set; }
 
         public double SptDensity { get; set; }
-
-        //public double RainIndex { get; set; }
-
-        //public double CicadaIndex { get; set; }
 
         private static Dictionary<string, Func<SummaryIndexValues, object>> CachedSelectors { get; set; }
     }

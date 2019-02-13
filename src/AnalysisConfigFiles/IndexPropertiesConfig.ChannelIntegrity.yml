@@ -13,8 +13,6 @@ RankOrder: # AKA IndexCount
   NormMax: 100.0
   ProjectID: Acoustic Indices
   Units: ""
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
 StartOffset:
   Name: Segment start time
   Comment: "Exact time span (total minutes) from start of recording to start of this segment."
@@ -25,8 +23,6 @@ StartOffset:
   NormMax: 200.0
   ProjectID: Acoustic Indices
   Units: "min"
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
 StartOffsetMinute:
   Name: Segment start minute
   Comment: "Total minutes from start of recording to start of this segment."
@@ -37,8 +33,6 @@ StartOffsetMinute:
   NormMax: 200.0
   ProjectID: Acoustic Indices
   Units: "min"
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
 StartOffsetSecond:
   Name: Segment start second
   Comment: "Total seconds from start of recording to start of this segment."
@@ -49,8 +43,6 @@ StartOffsetSecond:
   NormMax: 200.0
   ProjectID: Acoustic Indices
   Units: "sec"
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
 SegmentDuration:
   Name: Time duration of audio segment
   Comment: "Exact time span (total minutes) of this audio segment - typically 1.0 minutes."
@@ -61,8 +53,6 @@ SegmentDuration:
   NormMax: 1.0
   ProjectID: Acoustic Indices
   Units: "min"
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
 ZeroSignal:
   Name: Zero Signal Index
   Comment: "Indicates if signal segment is flat or zero."
@@ -73,8 +63,6 @@ ZeroSignal:
   NormMax: 1.0
   ProjectID: Acoustic Indices
   Units: ""
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
 ClippingIndex:
   Name: Clipping Index
   Comment: "Av number of clipped samples/sec i.e. where the abs. amplitude of two conscutive samples is within 4*epislon of the max signal value."
@@ -85,8 +73,6 @@ ClippingIndex:
   NormMax: 5.0
   ProjectID: Acoustic Indices
   Units: "avClips/s"
-  IncludeInComboIndex: false
-  ComboWeight: 0.0
 ZeroCrossingFractionLeft:
   Name: Zero Crossing Fraction Left
   Comment: ""
