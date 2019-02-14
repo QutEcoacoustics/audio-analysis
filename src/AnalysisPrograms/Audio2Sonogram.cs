@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="Audio2Sonogram.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -327,52 +327,47 @@ namespace AnalysisPrograms
 
         // ########################################  AUDIO2SONOGRAM TEST METHOD BELOW HERE ######################################################
 
-        public static void TESTMETHOD_DrawFourSpectrograms()
+        public static void TESTMETHOD_DrawFourSpectrograms(FileInfo sourceRecording, DirectoryInfo output, FileInfo configFile)
         {
+            var expectedResultsDir = new DirectoryInfo(Path.Combine(output.FullName, "ExpectedTestResults"));
+            if (!expectedResultsDir.Exists)
             {
-                var sourceRecording = @"C:\SensorNetworks\SoftwareTests\TestRecordings\BAC2_20071008-085040.wav".ToFileInfo();
-                var output = @"C:\SensorNetworks\SoftwareTests\TestFourSonograms".ToDirectoryInfo();
-                var configFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo();
-                var expectedResultsDir = new DirectoryInfo(Path.Combine(output.FullName, "ExpectedTestResults"));
-                if (!expectedResultsDir.Exists)
-                {
-                    expectedResultsDir.Create();
-                }
-
-                // 1. get the config dictionary
-                var configDict = GetConfigDictionary(configFile, true);
-                configDict[ConfigKeys.Recording.Key_RecordingCallName] = sourceRecording.FullName;
-                configDict[ConfigKeys.Recording.Key_RecordingFileName] = sourceRecording.Name;
-
-                // 2. Create temp copy of recording
-                int resampleRate = Convert.ToInt32(configDict[AnalysisKeys.ResampleRate]);
-                var tempAudioSegment = AudioRecording.CreateTemporaryAudioFile(sourceRecording, output, resampleRate);
-
-                // 3. GET composite image of 4 sonograms
-                var sourceName = Path.GetFileNameWithoutExtension(sourceRecording.Name);
-                var soxImage = new FileInfo(Path.Combine(output.FullName, sourceName + ".SOX.png"));
-                var result = GenerateFourSpectrogramImages(tempAudioSegment, soxImage, configDict, dataOnly: false, makeSoxSonogram: false);
-                var outputImage = new FileInfo(Path.Combine(output.FullName, sourceName + ".FourSpectrograms.png"));
-                result.CompositeImage.Save(outputImage.FullName, ImageFormat.Png);
-
-                // construct output file names
-                var fileName = sourceName + ".FourSpectrogramsImageInfo";
-                var pathName = Path.Combine(output.FullName, fileName);
-                var csvFile1 = new FileInfo(pathName + ".json");
-
-                // Do my version of UNIT TESTING - This is the File Equality Test.
-                // First construct a test result file containing image info
-                var sb = new StringBuilder("Width,Height\n");
-                sb.AppendLine($"{result.CompositeImage.Width},{result.CompositeImage.Height}");
-
-                // Acoustics.Shared.Csv.Csv.WriteToCsv(csvFile1, sb);
-                FileTools.WriteTextFile(csvFile1.FullName, sb.ToString());
-
-                // Now do the test
-                var expectedTestFile1 = new FileInfo(Path.Combine(expectedResultsDir.FullName, "FourSpectrogramsTest.EXPECTED.json"));
-                TestTools.FileEqualityTest("Matrix Equality", csvFile1, expectedTestFile1);
-                Console.WriteLine("\n\n");
+                expectedResultsDir.Create();
             }
+
+            // 1. get the config dictionary
+            var configDict = GetConfigDictionary(configFile, true);
+            configDict[ConfigKeys.Recording.Key_RecordingCallName] = sourceRecording.FullName;
+            configDict[ConfigKeys.Recording.Key_RecordingFileName] = sourceRecording.Name;
+
+            // 2. Create temp copy of recording
+            int resampleRate = Convert.ToInt32(configDict[AnalysisKeys.ResampleRate]);
+            var tempAudioSegment = AudioRecording.CreateTemporaryAudioFile(sourceRecording, output, resampleRate);
+
+            // 3. GET composite image of 4 sonograms
+            var sourceName = Path.GetFileNameWithoutExtension(sourceRecording.Name);
+            var soxImage = new FileInfo(Path.Combine(output.FullName, sourceName + ".SOX.png"));
+            var result = GenerateFourSpectrogramImages(tempAudioSegment, soxImage, configDict, dataOnly: false, makeSoxSonogram: false);
+            var outputImage = new FileInfo(Path.Combine(output.FullName, sourceName + ".FourSpectrograms.png"));
+            result.CompositeImage.Save(outputImage.FullName, ImageFormat.Png);
+
+            // construct output file names
+            var fileName = sourceName + ".FourSpectrogramsImageInfo";
+            var pathName = Path.Combine(output.FullName, fileName);
+            var csvFile1 = new FileInfo(pathName + ".json");
+
+            // Do my version of UNIT TESTING - This is the File Equality Test.
+            // First construct a test result file containing image info
+            var sb = new StringBuilder("Width,Height\n");
+            sb.AppendLine($"{result.CompositeImage.Width},{result.CompositeImage.Height}");
+
+            // Acoustics.Shared.Csv.Csv.WriteToCsv(csvFile1, sb);
+            FileTools.WriteTextFile(csvFile1.FullName, sb.ToString());
+
+            // Now do the test
+            var expectedTestFile1 = new FileInfo(Path.Combine(expectedResultsDir.FullName, "FourSpectrogramsTest.EXPECTED.json"));
+            TestTools.FileEqualityTest("Matrix Equality", csvFile1, expectedTestFile1);
+            Console.WriteLine("\n\n");
         }
     }
 

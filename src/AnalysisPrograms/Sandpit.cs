@@ -71,7 +71,7 @@ namespace AnalysisPrograms
                 //CodeToPlaceScoreTracksUnderLdfcSpectrograms();
                 //CodeToPlaceScoreTracksUnderSingleImage();
 
-                ConcatenateIndexFilesAndSpectrograms();
+                //ConcatenateIndexFilesAndSpectrograms();
                 //ConcatenateGreyScaleSpectrogramImages();
                 //ConcatenateMarineImages();
                 //ConcatenateImages();
@@ -80,6 +80,7 @@ namespace AnalysisPrograms
                 //DrawLongDurationSpectrogram();
                 //DrawClusterSequence();
                 //DrawStandardSpectrograms();
+                Test_DrawFourSpectrograms();
 
                 //ExtractSpectralFeatures();
                 //HerveGlotinMethods();
@@ -105,7 +106,6 @@ namespace AnalysisPrograms
                 //TestNoiseReduction();
                 //Oscillations2014.TESTMETHOD_DrawOscillationSpectrogram();
                 //Oscillations2014.TESTMETHOD_GetSpectralIndex_Osc();
-                //Test_DrawFourSpectrograms();
 
                 Console.WriteLine("# Finished Sandpit Task!    Press any key to exit.");
                 return this.Ok();
@@ -531,12 +531,20 @@ namespace AnalysisPrograms
                 NoiseReductionParameter = 0.0,
             };
 
-            //var amplSpectrogram = new AmplitudeSpectrogram(settings, recording);
-            //var dbSpectrogram = new DecibelSpectrogram(settings, recording);
-            //dbSpectrogram.DrawSpectrogram(@"C:\Ecoacoustics\WavFiles\TestRecordings\BAC\BAC2_20071008-085040_MelMedian.png");
+            var amplSpectrogram = new AmplitudeSpectrogram(settings, recording);
+            var dbSpectrogram = new DecibelSpectrogram(settings, recording);
+            dbSpectrogram.DrawSpectrogram(@"C:\Ecoacoustics\WavFiles\TestRecordings\BAC\2019Output\BAC2_20071008-085040_MelMedian.png");
 
             var energySpectro = new EnergySpectrogram(settings, recording);
-            energySpectro.DrawLogPsd(@"C:\Ecoacoustics\WavFiles\TestRecordings\BAC\BAC2_20071008-085040_LogPSD.png");
+            energySpectro.DrawLogPsd(@"C:\Ecoacoustics\WavFiles\TestRecordings\BAC\2019Output\BAC2_20071008-085040_LogPSD.png");
+        }
+
+        public static void Test_DrawFourSpectrograms()
+        {
+            var sourceRecording = @"C:\Ecoacoustics\WavFiles\TestRecordings\BAC\BAC2_20071008-085040.wav".ToFileInfo();
+            var output = @"C:\Ecoacoustics\SoftwareTests\TestFourSonograms\2019Results".ToDirectoryInfo();
+            var configFile = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo();
+            Audio2Sonogram.TESTMETHOD_DrawFourSpectrograms(sourceRecording, output, configFile);
         }
 
         public static void DrawLongDurationSpectrogram()
@@ -1388,11 +1396,6 @@ namespace AnalysisPrograms
             // EventStatisticsCalculate.TestCalculateEventStatistics();
 
             FrequencyScale.TESTMETHOD_DrawFrequencyLinesOnImage();
-        }
-
-        public static void Test_DrawFourSpectrograms()
-        {
-            Audio2Sonogram.TESTMETHOD_DrawFourSpectrograms();
         }
 
         /// <summary>

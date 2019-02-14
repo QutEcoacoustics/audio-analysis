@@ -6,7 +6,7 @@ SegmentOverlap: 0
 
 ResampleRate: 22050
 #FRAME LENGTH in samples - must be power of 2
-FrameLength: 512
+FrameLength: 1024
 
 #Frame Overlap as fraction: default=0.0 
 FrameOverlap: 0.25
@@ -32,7 +32,7 @@ MIN_VOCAL_DURATION: 0.1
 #TimeReductionFactor: 1          
 #FreqReductionFactor: 1
 
-MakeSoxSonogram: false
+MakeSoxSonogram: true
 SonogramTitle: Sonogram
 SonogramComment: "Sonogram produced using SOX"
 #SonogramColored: false
