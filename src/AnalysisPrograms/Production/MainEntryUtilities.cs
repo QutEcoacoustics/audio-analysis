@@ -204,7 +204,7 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine(
                 $@"{Meta.Description} - version {BuildMetadata.VersionString} ({(InDEBUG ? "DEBUG" : "RELEASE")} build, {BuildMetadata.BuildDate}){NewLine}" +
                 $@"Git branch-version: {BuildMetadata.GitBranch}-{BuildMetadata.GitCommit}, DirtyBuild:{BuildMetadata.IsDirty}, CI:{BuildMetadata.CiBuild}{NewLine}" +
-                $@"Copyright {Meta.NowYear} {Meta.Organization}{NewLine}");
+                $@"Copyright {Meta.NowYear} {Meta.Organization}");
         }
 
         internal static void WarnIfDeveloperEntryUsed(string message = null)
