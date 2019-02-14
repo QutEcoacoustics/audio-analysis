@@ -74,13 +74,14 @@ namespace System
             Log.Info(obj);
         }
 
-        public static void WriteError(string str)
-        {
-            Log.Error(str);
-        }
-
         public static void WriteErrorLine(string format, params object[] args)
         {
+            if (args.Length == 0)
+            {
+                Log.Error(format);
+                return;
+            }
+
             var str = string.Format(format, args);
             Log.Error(str);
         }

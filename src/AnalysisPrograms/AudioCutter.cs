@@ -1,4 +1,4 @@
-﻿// <copyright file="AudioCutter.cs" company="QutEcoacoustics">
+// <copyright file="AudioCutter.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -273,7 +273,7 @@ namespace AnalysisPrograms
             }
             catch (IOException ioex)
             {
-                LoggedConsole.WriteError($"Failed to cut segment {itemNumber} of {itemCount}:" + ioex.Message);
+                LoggedConsole.WriteErrorLine($"Failed to cut segment {itemNumber} of {itemCount}:" + ioex.Message);
                 return double.NaN;
             }
 

@@ -330,7 +330,7 @@ Copyright {Meta.NowYear} {Meta.Organization}");
 
         private static CommandLineApplication CreateCommandLineApplication()
         {
-            var console = PhysicalConsoleLogger.Default;
+            var console = new PhysicalConsoleLogger();
             var app = CommandLineApplication = new CommandLineApplication<MainArgs>(console);
 
             app.HelpTextGenerator = new CustomHelpTextGenerator { EnvironmentOptions = EnvironmentOptions };

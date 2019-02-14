@@ -4,35 +4,39 @@ namespace Acoustics.Test.TestHelpers
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.IO;
+    using System.Linq;
     using System.Text;
 
     internal class ConsoleRedirector : IDisposable
     {
-        private readonly ArrayStringWriter consoleOutput = new ArrayStringWriter();
+        private readonly ArrayStringWriter capturedOutput = new ArrayStringWriter();
         private readonly TextWriter originalConsoleOutput;
 
         public ConsoleRedirector()
         {
-            this.originalConsoleOutput = Console.Out;
-            Console.SetOut(this.consoleOutput);
+            Console.Out.Close();
+            Console.SetOut(this.capturedOutput);
         }
 
-        public ReadOnlyCollection<string> Lines => this.consoleOutput.Lines;
+        public ReadOnlyCollection<string> Lines => this.capturedOutput.Lines;
 
         public void Dispose()
         {
-            Console.SetOut(this.originalConsoleOutput);
-            LoggedConsole.Write("------CAPTURED CONSOLE OUTPUT--------\n" + this.GetString());
-            this.consoleOutput.Dispose();
+            var writer = new StreamWriter(Console.OpenStandardOutput())
+            {
+                AutoFlush = true,
+            };
+            Console.SetOut(writer);
+
+            LoggedConsole.Write($"------CAPTURED CONSOLE OUTPUT ({this.Lines.Count} lines)--------\n{this.GetString()}");
+            this.capturedOutput.Dispose();
         }
 
-        public string GetString() => string.Join(Environment.NewLine, this.consoleOutput.Lines);
+        public string GetString() => string.Join(Environment.NewLine, this.capturedOutput.Lines);
 
         public class ArrayStringWriter : TextWriter
         {
-            private static readonly char[] NewLineChars = Environment.NewLine.ToCharArray();
             private readonly List<string> lines;
-            private bool halfLine;
 
             public ArrayStringWriter(int size)
             {
@@ -40,11 +44,6 @@ namespace Acoustics.Test.TestHelpers
                 {
                     string.Empty,
                 };
-
-                if (NewLineChars.Length > 2)
-                {
-                    throw new PlatformNotSupportedException("Cannot process a new line token that had more than two chars");
-                }
             }
 
             public ArrayStringWriter()
@@ -58,53 +57,26 @@ namespace Acoustics.Test.TestHelpers
 
             public override void Write(char c)
             {
-                bool match = NewLineChars[0] == c;
-
-                if (NewLineChars.Length == 1)
+                switch (c)
                 {
-                    if (match)
-                    {
+                    case '\r':
+                        break;
+                    case '\n':
                         this.lines.Add(string.Empty);
-                    }
-                    else
-                    {
+                        break;
+                    default:
                         this.lines[this.lines.Count - 1] += c;
-                    }
-                }
-                else
-                {
-                    if (match)
-                    {
-                        this.halfLine = true;
-                    }
-                    else if (this.halfLine)
-                    {
-                        this.halfLine = false;
-                        if (NewLineChars[1] == c)
-                        {
-                            this.lines.Add(string.Empty);
-                        }
-                        else
-                        {
-                            this.lines[this.lines.Count - 1] += c;
-                        }
-                    }
-                    else
-                    {
-                        this.lines[this.lines.Count - 1] += c;
-                    }
+                        break;
                 }
             }
 
             public override void Write(string value)
             {
-                this.halfLine = false;
                 this.Append(value);
             }
 
             public override void WriteLine(string value)
             {
-                this.halfLine = false;
                 this.AddNewLine(value);
             }
 
@@ -127,15 +99,16 @@ namespace Acoustics.Test.TestHelpers
 
                 var split = s.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
 
-                if (split.Length == 1)
+                if (split.Length > 0)
                 {
                     this.lines[this.lines.Count - 1] += split[0];
                 }
-                else if (split.Length > 1)
+
+                if (split.Length > 1)
                 {
-                    foreach (var line in split)
+                    foreach (var line in split.Skip(1))
                     {
-                        this.AddNewLine(line);
+                        this.lines.Add(line);
                     }
                 }
             }

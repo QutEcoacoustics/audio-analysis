@@ -7,6 +7,7 @@ namespace Acoustics.Test.AnalysisPrograms
     using System;
     using System.Collections.ObjectModel;
     using System.Threading.Tasks;
+    using Accord.Math.Optimization;
     using Acoustics.Shared;
     using Acoustics.Test.TestHelpers;
     using global::AnalysisPrograms;
@@ -16,6 +17,7 @@ namespace Acoustics.Test.AnalysisPrograms
     [DoNotParallelize]
     public class MainEntryTests
     {
+        [DoNotParallelize]
         [TestMethod]
         public async Task DefaultCliWorks()
         {
@@ -30,6 +32,7 @@ namespace Acoustics.Test.AnalysisPrograms
             }
         }
 
+        [DoNotParallelize]
         [TestMethod]
         public async Task DefaultHelpWorks()
         {
@@ -41,9 +44,11 @@ namespace Acoustics.Test.AnalysisPrograms
 
                 this.AssertContainsCopyright(console.Lines);
                 this.AssertContainsGitHashAndVersion(console.Lines);
+                StringAssert.StartsWith(console.Lines[6], Meta.Description);
             }
         }
 
+        [DoNotParallelize]
         [TestMethod]
         public async Task DefaultVersionWorks()
         {
@@ -55,6 +60,23 @@ namespace Acoustics.Test.AnalysisPrograms
 
                 this.AssertContainsCopyright(console.Lines);
                 this.AssertContainsGitHashAndVersion(console.Lines);
+                StringAssert.StartsWith(console.Lines[3], BuildMetadata.VersionString);
+            }
+        }
+
+        [DoNotParallelize]
+        [TestMethod]
+        public async Task CheckEnvironmentWorks()
+        {
+            using (var console = new ConsoleRedirector())
+            {
+                var code = await MainEntry.Main(new[] { "CheckEnvironment" });
+
+                Assert.AreEqual(0, code);
+
+                this.AssertContainsCopyright(console.Lines);
+                this.AssertContainsGitHashAndVersion(console.Lines);
+                StringAssert.Contains(console.Lines[4], "SUCCESS - Valid environment");
             }
         }
 

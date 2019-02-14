@@ -9,6 +9,16 @@ namespace Acoustics.Shared.Logging
     using System.Text;
     using log4net;
 
+    /// <summary>
+    /// Forwards chars from a text writer to a log as well.
+    /// </summary>
+    /// <remarks>
+    /// We generally expect the log not to output to the console as well since
+    /// this class copies events to the log and then sends them to the base stream,
+    /// which should be the console.
+    ///
+    /// Thus using the <see cref="NoConsole.Log"/> logger is a good choice.
+    /// </remarks>
     public class Log4NetTextWriter : TextWriter
     {
         private readonly TextWriter baseStream;
@@ -47,8 +57,7 @@ namespace Acoustics.Shared.Logging
                 case '\r':
                     break;
                 case '\n':
-                    this.logCall(this.stringBuilder.ToString());
-                    this.stringBuilder.Clear();
+                    this.Flush();
                     break;
                 default:
                     this.stringBuilder.Append(value);
@@ -63,8 +72,9 @@ namespace Acoustics.Shared.Logging
             switch (value)
             {
                 case string _ when value.EndsWith(Environment.NewLine):
-                    this.logCall(this.stringBuilder.ToString());
-                    this.stringBuilder.Clear();
+                    var valueWithoutNewline = value.Substring(0, value.Length - Environment.NewLine.Length);
+                    this.stringBuilder.Append(valueWithoutNewline);
+                    this.Flush();
                     break;
                 default:
                     this.stringBuilder.Append(value);
@@ -72,6 +82,19 @@ namespace Acoustics.Shared.Logging
             }
 
             this.baseStream.Write(value);
+        }
+
+        public override void Flush()
+        {
+            this.logCall(this.stringBuilder.ToString());
+            this.stringBuilder.Clear();
+            base.Flush();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            this.Flush();
+            base.Dispose(disposing);
         }
     }
 }

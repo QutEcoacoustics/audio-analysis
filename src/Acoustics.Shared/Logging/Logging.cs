@@ -15,6 +15,7 @@ namespace Acoustics.Shared.Logging
     using log4net.Appender;
     using log4net.Core;
     using log4net.Layout;
+    using log4net.Layout.Pattern;
     using log4net.Repository.Hierarchy;
     using log4net.Util;
     using static log4net.Appender.ManagedColoredConsoleAppender;
@@ -59,6 +60,8 @@ namespace Acoustics.Shared.Logging
             Level defaultLevel,
             bool quietConsole)
         {
+            LogManager.ResetConfiguration();
+
             this.repository = (Hierarchy)LogManager.GetRepository();
 
             this.repository.LevelMap.Add(LogExtensions.PromptLevel);
