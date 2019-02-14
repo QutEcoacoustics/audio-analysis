@@ -5,8 +5,8 @@
 # and to the members in the class SummaryIndexValues:SummaryIndexBase
  
 RankOrder:
-  Name: Rank order of audio segment
-  Comment: "Rank of minute segment in temporal order from start of recording."
+  Name: Ordering of audio segments
+  Comment: "Ensures that audio segments are correctly ordered."
   DataType: int
   DefaultValue: 0.0
   DoDisplay: true
@@ -34,7 +34,7 @@ StartOffsetMinute:
   NormMax: 200.0
   ProjectID: Acoustic Indices
   Units: "min"
-StartOffsetSecond:
+ResultStartSeconds:
   Name: Segment start second
   Comment: "Total seconds from start of recording to start of this segment."
   DataType: int
@@ -44,16 +44,16 @@ StartOffsetSecond:
   NormMax: 200.0
   ProjectID: Acoustic Indices
   Units: "sec"
-SegmentDuration:
+SegmentDurationSeconds:
   Name: Time duration of audio segment
-  Comment: "Exact time span (total minutes) of this audio segment - typically 1.0 minutes."
+  Comment: "Time span of audio segment - typically 60 seconds."
   DataType: TimeSpan
   DefaultValue: 0.0
   DoDisplay: false
   NormMin: 0.0
   NormMax: 1.0
   ProjectID: Acoustic Indices
-  Units: "min"
+  Units: "s"
 HighAmplitudeIndex:
   Name: High Amplitude Index
   Comment: "Av number of samples/sec where abs. amplitude is within 10*epislon of the max signal value."
@@ -296,7 +296,7 @@ SptDensity:
   NormMax: 10.0
   ProjectID: Acoustic Indices
   Units: ""
-NDSI:
+Ndsi:
   Name: NDSI
   Comment: "Normalised Difference Soundscape Index) calculated from PSD - originated from Stuart Gage."
   DataType: double

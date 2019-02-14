@@ -10,6 +10,7 @@ namespace AudioAnalysisTools.Indices
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using System.Text;
     using AnalysisBase.ResultBases;
     using StandardSpectrograms;
     using log4net;
@@ -85,29 +86,32 @@ namespace AudioAnalysisTools.Indices
             TimeSpan indexCalculationDuration,
             DateTimeOffset? recordingStartDate,
             List<GapsAndJoins> errors = null,
-            bool verbose = false)
+            bool verbose = true)
         {
             const int trackHeight = DefaultTrackHeight;
             int scaleLength = 0;
+            var backgroundColour = Color.White;
+
+            // init list of bitmap images to store image tracks
             var bitmapList = new List<Tuple<IndexProperties, Image>>(dictionaryOfSummaryIndices.Keys.Count);
 
+            // set up strings to store info about which indices are used
+            var s1 = new StringBuilder("Indices not found:");
+            var s2 = new StringBuilder("Indices not plotted:");
+
             // accumulate the individual tracks in a List
-            var backgroundColour = Color.White;
             foreach (string key in dictionaryOfSummaryIndices.Keys)
             {
                 if (!listOfIndexProperties.ContainsKey(key))
                 {
-                    if (verbose)
-                    {
-                        Logger.Warn("{0} index configuration could not be found. Index is ignored and not rendered.".Format2(key));
-                    }
-
+                    s1.Append(" {0},".Format2(key));
                     continue;
                 }
 
                 IndexProperties ip = listOfIndexProperties[key];
                 if (!ip.DoDisplay)
                 {
+                    s2.Append(" {0},".Format2(key));
                     continue;
                 }
 
@@ -118,6 +122,12 @@ namespace AudioAnalysisTools.Indices
                 backgroundColour = backgroundColour == Color.LightGray ? Color.White : Color.LightGray;
                 var bitmap = ip.GetPlotImage(array, backgroundColour, errors);
                 bitmapList.Add(Tuple.Create(ip, bitmap));
+            }
+
+            if (verbose)
+            {
+                Logger.Warn(s1.ToString());
+                Logger.Warn(s2.ToString());
             }
 
             var listOfBitmaps = bitmapList

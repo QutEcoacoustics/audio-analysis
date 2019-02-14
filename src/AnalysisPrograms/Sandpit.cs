@@ -42,7 +42,7 @@ namespace AnalysisPrograms
     /// audiofilecheck - Writes information about audio files to a csv file.
     /// snr - Calls SnrAnalysis.Execute():  Calculates signal to noise ratio.
     /// audiocutter - Cuts audio into segments of desired length and format
-    /// createfoursonograms
+    /// createfoursonograms.
     /// </summary>
     // TODO: [OPENSOURCE] empty out this file
     public class Sandpit
@@ -62,7 +62,7 @@ namespace AnalysisPrograms
                 Log.WriteLine("# Start Time = " + tStart.ToString(CultureInfo.InvariantCulture));
 
                 //AnalyseFrogDataSet();
-                Audio2CsvOverOneFile();
+                //Audio2CsvOverOneFile();
                 //Audio2CsvOverMultipleFiles();
 
                 // used to get files from availae for Black rail and Least Bittern papers.
@@ -71,7 +71,7 @@ namespace AnalysisPrograms
                 //CodeToPlaceScoreTracksUnderLdfcSpectrograms();
                 //CodeToPlaceScoreTracksUnderSingleImage();
 
-                //ConcatenateIndexFilesAndSpectrograms();
+                ConcatenateIndexFilesAndSpectrograms();
                 //ConcatenateGreyScaleSpectrogramImages();
                 //ConcatenateMarineImages();
                 //ConcatenateImages();
@@ -324,8 +324,8 @@ namespace AnalysisPrograms
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
 
             // Test on STANDARD 24-HOUR RECORDING
-            string recordingPath = @"C:\Ecoacoustics\WavFiles\LizZnidersic\TasmanIsland2015_Unit2_Mez\SM304256_0+1_20151114_071652.wav";
-            string outputPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\08";
+            string recordingPath = @"C:\Ecoacoustics\WavFiles\LizZnidersic\TasmanIsland2015_Unit2_Mez\SM304256_0+1_20151114_131652.wav";
+            string outputPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\14";
             string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Acoustic.yml";
 
             // Ivan Campos recordings
@@ -694,7 +694,7 @@ namespace AnalysisPrograms
 
             // SET DEFAULT COLOUR MAPS
             string colorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
-            string colorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_RHZ;
+            string colorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_OSC;
 
             // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and EchoGaps.
             string gapRendering = "TimedGaps"; // the default
@@ -750,9 +750,9 @@ namespace AnalysisPrograms
             {
                 @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez",
             };
-            string directoryFilter = "0*"; // this is a directory filter to locate only the required files
+            string directoryFilter = @"Towsey.Acoustic"; // this is a directory filter to locate only the required files
             string opFileStem = "Testing";
-            string opPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Concat";
+            string opPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\Concat3";
             var falseColourSpgConfig = $"C:\\Work\\GitHub\\audio-analysis\\src\\AnalysisConfigFiles\\SpectrogramFalseColourConfig.yml";
             concatenateEverythingYouCanLayYourHandsOn = true;
 

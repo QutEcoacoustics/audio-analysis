@@ -155,12 +155,12 @@ namespace AnalysisPrograms
             }
         }
 
+        /// <summary>
+        /// Concatenation is designed only for the output from a "Towsey.Acoustic" analysis.
+        /// </summary>
         public static void Execute(Arguments arguments)
         {
-            // Concatenation is designed only for the output from a "Towsey.Acoustic" analysis.
-
-            // Get the currently available sepctral indices
-            // RHZ, SPT and CVR are correlated with POW and do not add much. CLS not particularly useful. Now using R3D
+            // Get the currently available spectral indices
             string[] keys = LDSpectrogramRGB.GetArrayOfAvailableKeys();
 
             if (arguments == null)
@@ -266,8 +266,9 @@ namespace AnalysisPrograms
 
             string outputFileStem = arguments.FileStemName;
 
-            // SET UP DEFAULT SITE LOCATION INFO    --  DISCUSS IWTH ANTHONY
+            // SET UP DEFAULT SITE LOCATION INFO --  DISCUSS IWTH ANTHONY
             // The following location data is used only to draw the sunrise/sunset tracks on images.
+            // But sun tracks now depracated.
             double? latitude = null;
             double? longitude = null;
             var siteDescription = new SiteDescription
@@ -293,8 +294,7 @@ namespace AnalysisPrograms
 
                 indexPropertiesConfig = arguments.IndexPropertiesConfig.ToFileInfo();
 
-                // prepare the false-colour spgm config file
-                // or set up a default config
+                // prepare the LDFC spgm config file or set up a default config
                 // WARNING: This default config is used when testing. If you alter these defaults, Unit Test results may be affected.
                 var colourSpectrogramConfig = arguments?.FalseColourSpectrogramConfig?.ToFileInfo();
                 ldSpectrogramConfig = (colourSpectrogramConfig?.Exists ?? false)
@@ -339,6 +339,7 @@ namespace AnalysisPrograms
                 var concatenatedSummaryIndices = LdSpectrogramStitching.ConcatenateAllSummaryIndexFiles(summaryIndexFiles, resultsDir, indexGenerationData, outputFileStem);
                 WriteSummaryIndexFile(resultsDir, outputFileStem, AcousticIndices.TowseyAcoustic, concatenatedSummaryIndices);
 
+                // WARNING: call to this method only returns a fixed list of indices.
                 var dictionaryOfSummaryIndices = SummaryIndexValues.ConvertToDictionaryOfSummaryIndices(concatenatedSummaryIndices);
 
                 // REALITY CHECK - check for continuous zero indices or anything else that might indicate defective signal,
@@ -441,6 +442,7 @@ namespace AnalysisPrograms
                 var concatenatedSummaryIndices = LdSpectrogramStitching.ConcatenateAllSummaryIndexFiles(indexFiles, resultsDir, indexGenerationData, outputBaseName);
                 WriteSummaryIndexFile(resultsDir, outputBaseName, AcousticIndices.TowseyAcoustic, concatenatedSummaryIndices);
 
+                // WARNING: call to this method only returns a fixed list of indices.
                 var summaryDict = SummaryIndexValues.ConvertToDictionaryOfSummaryIndices(concatenatedSummaryIndices);
 
                 if (summaryDict == null)

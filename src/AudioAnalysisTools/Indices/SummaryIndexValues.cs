@@ -108,47 +108,46 @@ namespace AudioAnalysisTools.Indices
             }
         }
 
+        /// <summary>
+        /// Put SUMMARY indices into dictionary.
+        /// ################# WARNING: THIS METHOD ONLY GETS A "HARD CODED" LIST OF SUMMARY INDICES. See the method.
+        /// TODO need to generalise the following method.
+        /// </summary>
+        /// <param name="summaryIndices">a list of summary index values ordered by minute segments and not by name of index.</param>
+        /// <returns>a dictionary whose keys are summary index names and values are arrays of double.</returns>
         public static Dictionary<string, double[]> ConvertToDictionaryOfSummaryIndices(List<SummaryIndexValues> summaryIndices)
         {
+            // Put SUMMARY indices into dictionary.
+            var dictionaryOfSummaryIndices = new Dictionary<string, double[]>
+            {
+                { GapsAndJoins.KeyZeroSignal, summaryIndices.Select(x => x.ZeroSignal).ToArray() },
+                { "ClippingIndex", summaryIndices.Select(x => x.ClippingIndex).ToArray() },
+                { "HighAmplitudeIndex", summaryIndices.Select(x => x.HighAmplitudeIndex).ToArray() },
+                { "AvgSignalAmplitude", summaryIndices.Select(x => x.AvgSignalAmplitude).ToArray() },
+                { "BackgroundNoise", summaryIndices.Select(x => x.BackgroundNoise).ToArray() },
+                { "Snr", summaryIndices.Select(x => x.Snr).ToArray() },
+                { "AvgSnrOfActiveFrames", summaryIndices.Select(x => x.AvgSnrOfActiveFrames).ToArray() },
+                { "Activity", summaryIndices.Select(x => x.Activity).ToArray() },
+                { "EventsPerSecond", summaryIndices.Select(x => x.EventsPerSecond).ToArray() },
+                { "HighFreqCover", summaryIndices.Select(x => x.HighFreqCover).ToArray() },
+                { "MidFreqCover", summaryIndices.Select(x => x.MidFreqCover).ToArray() },
+                { "LowFreqCover", summaryIndices.Select(x => x.LowFreqCover).ToArray() },
+                { "AcousticComplexity", summaryIndices.Select(x => x.AcousticComplexity).ToArray() },
+                { "TemporalEntropy", summaryIndices.Select(x => x.TemporalEntropy).ToArray() },
+                { "EntropyOfAverageSpectrum", summaryIndices.Select(x => x.EntropyOfAverageSpectrum).ToArray() },
+                { "EntropyOfPeaksSpectrum", summaryIndices.Select(x => x.EntropyOfPeaksSpectrum).ToArray() },
+                { "ClusterCount", summaryIndices.Select(x => x.ClusterCount).ToArray() },
+                { "ThreeGramCount", summaryIndices.Select(x => x.ThreeGramCount).ToArray() },
+                { "SptDensity", summaryIndices.Select(x => x.SptDensity).ToArray() },
+                { "Ndsi", summaryIndices.Select(x => x.Ndsi).ToArray() },
+            };
+
             // Now add in derived indices i.e. NCDI etc
             // Decided NOT to do this anymore
             // dictionaryOfSummaryIndices = IndexMatrices.AddDerivedIndices(dictionaryOfSummaryIndices);
 
-            // Put SUMMARY indices into dictionary. TODO need to generalise the following method
-            // ################# WARNING: THIS METHOD ONLY GETS A "HARD CODED" LIST OF SUMMARY INDICES. See the method.
-            var dictionaryOfSummaryIndices = GetDictionaryOfSummaryIndices(summaryIndices);
-
             // return the dictionary - it will be used later to produce an index tracks image.
             return dictionaryOfSummaryIndices;
-        }
-
-        /// <summary>
-        /// WARNING: THIS METHOD ONLY GETS FIXED LIST OF INDICES.
-        ///             Also it requires every index to be of type DOUBLE even when htis is not appropriate.
-        /// TODO: This needs to be generalized.
-        /// </summary>
-        public static Dictionary<string, double[]> GetDictionaryOfSummaryIndices(List<SummaryIndexValues> summaryIndices)
-        {
-            var dictionary = new Dictionary<string, double[]>
-            {
-                { GapsAndJoins.KeyZeroSignal, summaryIndices.Select(x => x.ZeroSignal).ToArray() },
-                { "ClippingIndex", summaryIndices.Select(x => x.ClippingIndex).ToArray() },
-                { "BackgroundNoise", summaryIndices.Select(x => x.BackgroundNoise).ToArray() },
-                { "Snr", summaryIndices.Select(x => x.Snr).ToArray() },
-                { "EventsPerSecond", summaryIndices.Select(x => x.EventsPerSecond).ToArray() },
-                { "Activity", summaryIndices.Select(x => x.Activity).ToArray() },
-                { "HighFreqCover", summaryIndices.Select(x => x.HighFreqCover).ToArray() },
-                { "MidFreqCover", summaryIndices.Select(x => x.MidFreqCover).ToArray() },
-                { "LowFreqCover", summaryIndices.Select(x => x.LowFreqCover).ToArray() },
-                { "TemporalEntropy", summaryIndices.Select(x => x.TemporalEntropy).ToArray() },
-                { "EntropyOfAverageSpectrum", summaryIndices.Select(x => x.EntropyOfAverageSpectrum).ToArray() },
-                { "EntropyOfPeaksSpectrum", summaryIndices.Select(x => x.EntropyOfPeaksSpectrum).ToArray() },
-                { "AcousticComplexity", summaryIndices.Select(x => x.AcousticComplexity).ToArray() },
-                { "ClusterCount", summaryIndices.Select(x => x.ClusterCount).ToArray() },
-                { "ThreeGramCount", summaryIndices.Select(x => x.ThreeGramCount).ToArray() },
-            };
-
-            return dictionary;
         }
 
         public double ZeroSignal { get; set; }
