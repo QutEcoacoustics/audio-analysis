@@ -122,8 +122,8 @@ namespace AudioAnalysisTools.Indices
             {
                 { GapsAndJoins.KeyZeroSignal, summaryIndices.Select(x => x.ZeroSignal).ToArray() },
                 { "ClippingIndex", summaryIndices.Select(x => x.ClippingIndex).ToArray() },
-                { "HighAmplitudeIndex", summaryIndices.Select(x => x.HighAmplitudeIndex).ToArray() },
-                { "AvgSignalAmplitude", summaryIndices.Select(x => x.AvgSignalAmplitude).ToArray() },
+                //{ "HighAmplitudeIndex", summaryIndices.Select(x => x.HighAmplitudeIndex).ToArray() },
+                //{ "AvgSignalAmplitude", summaryIndices.Select(x => x.AvgSignalAmplitude).ToArray() },
                 { "BackgroundNoise", summaryIndices.Select(x => x.BackgroundNoise).ToArray() },
                 { "Snr", summaryIndices.Select(x => x.Snr).ToArray() },
                 { "AvgSnrOfActiveFrames", summaryIndices.Select(x => x.AvgSnrOfActiveFrames).ToArray() },
