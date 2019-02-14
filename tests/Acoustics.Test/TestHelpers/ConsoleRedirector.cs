@@ -28,7 +28,7 @@ namespace Acoustics.Test.TestHelpers
             };
             Console.SetOut(writer);
 
-            LoggedConsole.Write($"------CAPTURED CONSOLE OUTPUT ({this.Lines.Count} lines)--------\n{this.GetString()}");
+            Console.WriteLine($"------CAPTURED CONSOLE OUTPUT ({this.Lines.Count} lines)--------\n{this.GetString()}");
             this.capturedOutput.Dispose();
         }
 

@@ -33,6 +33,7 @@ namespace AnalysisPrograms
     using Production;
     using Production.Arguments;
     using Production.Parsers;
+    using static System.Environment;
 
     public static partial class MainEntry
     {
@@ -200,9 +201,10 @@ namespace AnalysisPrograms
 
         internal static void Copyright()
         {
-            LoggedConsole.WriteLine($@"{Meta.Description} - version {BuildMetadata.VersionString} ({(InDEBUG ? "DEBUG" : "RELEASE")} build, {BuildMetadata.BuildDate})
-Git branch-version: {BuildMetadata.GitBranch}-{BuildMetadata.GitCommit}, DirtyBuild:{BuildMetadata.IsDirty}, CI:{BuildMetadata.CiBuild}
-Copyright {Meta.NowYear} {Meta.Organization}");
+            LoggedConsole.WriteLine(
+                $@"{Meta.Description} - version {BuildMetadata.VersionString} ({(InDEBUG ? "DEBUG" : "RELEASE")} build, {BuildMetadata.BuildDate}){NewLine}" +
+                $@"Git branch-version: {BuildMetadata.GitBranch}-{BuildMetadata.GitCommit}, DirtyBuild:{BuildMetadata.IsDirty}, CI:{BuildMetadata.CiBuild}{NewLine}" +
+                $@"Copyright {Meta.NowYear} {Meta.Organization}{NewLine}");
         }
 
         internal static void WarnIfDeveloperEntryUsed(string message = null)
@@ -323,7 +325,7 @@ Copyright {Meta.NowYear} {Meta.Organization}");
 
         private static void AttachExceptionHandler()
         {
-            Environment.ExitCode = ExceptionLookup.SpecialExceptionErrorLevel;
+            ExitCode = ExceptionLookup.SpecialExceptionErrorLevel;
 
             AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
         }
@@ -409,13 +411,13 @@ Copyright {Meta.NowYear} {Meta.Organization}");
             {
                 // no don't exit, we want the exception to be raised to Window's Exception handling
                 // this will allow the debugger to appropriately break on the right line
-                Environment.ExitCode = returnCode;
+                ExitCode = returnCode;
             }
             else
             {
                 // If debugger is not attached, we *do not* want to raise the error to the Windows level
                 // Everything has already been logged, just exit with appropriate errorlevel
-                Environment.Exit(returnCode);
+                Exit(returnCode);
             }
         }
 
@@ -445,8 +447,8 @@ Copyright {Meta.NowYear} {Meta.Organization}");
             var thisProcess = Process.GetCurrentProcess();
             var stats = new
             {
-                Platform = Environment.OSVersion.ToString(),
-                Environment.ProcessorCount,
+                Platform = OSVersion.ToString(),
+                ProcessorCount,
                 ExecutionTime = (DateTime.Now - thisProcess.StartTime).TotalSeconds,
                 PeakWorkingSet = thisProcess.PeakWorkingSet64,
             };
@@ -463,12 +465,12 @@ Copyright {Meta.NowYear} {Meta.Organization}");
 
         private static void ParseEnvirionemnt()
         {
-            ApPlainLogging = bool.TryParse(Environment.GetEnvironmentVariable(ApPlainLoggingKey), out var plainLogging) && plainLogging;
+            ApPlainLogging = bool.TryParse(GetEnvironmentVariable(ApPlainLoggingKey), out var plainLogging) && plainLogging;
 
             // default value is true
-            ApMetricRecording = !bool.TryParse(Environment.GetEnvironmentVariable(ApMetricsKey), out var parseMetrics) || parseMetrics;
+            ApMetricRecording = !bool.TryParse(GetEnvironmentVariable(ApMetricsKey), out var parseMetrics) || parseMetrics;
 
-            ApAutoAttach = bool.TryParse(Environment.GetEnvironmentVariable(ApAutoAttachKey), out var autoAttach) && autoAttach;
+            ApAutoAttach = bool.TryParse(GetEnvironmentVariable(ApAutoAttachKey), out var autoAttach) && autoAttach;
         }
 
         private static void PrintAggregateException(Exception ex, int depth = 0)
