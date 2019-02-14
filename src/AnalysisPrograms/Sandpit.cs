@@ -71,7 +71,7 @@ namespace AnalysisPrograms
                 //CodeToPlaceScoreTracksUnderLdfcSpectrograms();
                 //CodeToPlaceScoreTracksUnderSingleImage();
 
-                ConcatenateIndexFilesAndSpectrograms();
+                //ConcatenateIndexFilesAndSpectrograms();
                 //ConcatenateGreyScaleSpectrogramImages();
                 //ConcatenateMarineImages();
                 //ConcatenateImages();
@@ -80,6 +80,7 @@ namespace AnalysisPrograms
                 //DrawLongDurationSpectrogram();
                 //DrawClusterSequence();
                 //DrawStandardSpectrograms();
+                Test_DrawFourSpectrograms();
 
                 //ExtractSpectralFeatures();
                 //HerveGlotinMethods();
@@ -106,7 +107,6 @@ namespace AnalysisPrograms
                 //TestNoiseReduction();
                 //Oscillations2014.TESTMETHOD_DrawOscillationSpectrogram();
                 //Oscillations2014.TESTMETHOD_GetSpectralIndex_Osc();
-                //Test_DrawFourSpectrograms();
 
                 Console.WriteLine("# Finished Sandpit Task!    Press any key to exit.");
                 return this.Ok();
@@ -514,8 +514,17 @@ namespace AnalysisPrograms
             AnalyseLongRecording.Execute(arguments);
         }
 
+        public static void Test_DrawFourSpectrograms()
+        {
+            var sourceRecording = @"C:\SensorNetworks\SoftwareTests\TestRecordings\BAC2_20071008-085040.wav".ToFileInfo();
+            var output = @"C:\SensorNetworks\SoftwareTests\TestFourSonograms".ToDirectoryInfo();
+            var configFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo();
+            //Audio2Sonogram.TESTMETHOD_DrawFourSpectrograms(sourceRecording, output, configFile);
+        }
+
         /// <summary>
-        /// Draws a standard spectrogram
+        /// Draws a standard spectrogram, w/wo noise removal & melscale/linear.
+        /// This worked Feb 2019.
         /// </summary>
         public static void DrawStandardSpectrograms()
         {
@@ -527,18 +536,18 @@ namespace AnalysisPrograms
                 SourceFileName = "BAC2_20071008-085040",
                 WindowSize = 1024,
                 WindowOverlap = 0.0,
-                DoMelScale = false,
+                DoMelScale = true,
                 MelBinCount = 256,
-                NoiseReductionType = NoiseReductionType.Median,
+                NoiseReductionType = NoiseReductionType.None,
                 NoiseReductionParameter = 0.0,
             };
 
-            //var amplSpectrogram = new AmplitudeSpectrogram(settings, recording);
-            //var dbSpectrogram = new DecibelSpectrogram(settings, recording);
-            //dbSpectrogram.DrawSpectrogram(@"C:\Ecoacoustics\WavFiles\TestRecordings\BAC\BAC2_20071008-085040_MelMedian.png");
+            var amplSpectrogram = new AmplitudeSpectrogram(settings, recording);
+            var dbSpectrogram = new DecibelSpectrogram(settings, recording);
+            dbSpectrogram.DrawSpectrogram(@"C:\Ecoacoustics\WavFiles\TestRecordings\BAC\2019Output\BAC2_20071008-085040_MelNoNoiseRemoval.png");
 
             var energySpectro = new EnergySpectrogram(settings, recording);
-            energySpectro.DrawLogPsd(@"C:\Ecoacoustics\WavFiles\TestRecordings\BAC\BAC2_20071008-085040_LogPSD.png");
+            energySpectro.DrawLogPsd(@"C:\Ecoacoustics\WavFiles\TestRecordings\BAC\2019Output\BAC2_20071008-085040_MelLogPSD_NoNoiseRemoval.png");
         }
 
         public static void DrawLongDurationSpectrogram()
@@ -1415,11 +1424,6 @@ namespace AnalysisPrograms
             // EventStatisticsCalculate.TestCalculateEventStatistics();
 
             FrequencyScale.TESTMETHOD_DrawFrequencyLinesOnImage();
-        }
-
-        public static void Test_DrawFourSpectrograms()
-        {
-            Audio2Sonogram.TESTMETHOD_DrawFourSpectrograms();
         }
 
         /// <summary>
