@@ -6,6 +6,7 @@ namespace Acoustics.Test.AnalysisPrograms
 {
     using System;
     using System.Collections.ObjectModel;
+    using System.Linq;
     using System.Threading.Tasks;
     using Accord.Math.Optimization;
     using Acoustics.Shared;
@@ -78,6 +79,35 @@ namespace Acoustics.Test.AnalysisPrograms
                 this.AssertContainsGitHashAndVersion(console.Lines);
                 StringAssert.Contains(console.Lines[4], "SUCCESS - Valid environment");
             }
+        }
+
+        [TestMethod]
+        public void OptionClusteringIsDisabled()
+        {
+            var args = new[]
+            {
+                "ConcatenateIndexFiles",
+                PathHelper.ResolveAssetPath("Concatenation"),
+                "-o:null",
+
+                // with option clustering enabled the -fcs actually means -f -c -s
+                "-fcs",
+                "foo.yml",
+
+                // which conflicts with the -f argument here
+                "-f",
+                "blah",
+            };
+
+            var app = MainEntry.CreateCommandLineApplication();
+
+            // before the code for this test was fixed an exception was thrown on the following line
+            // `McMaster.Extensions.CommandLineUtils.CommandParsingException: Unexpected value 'blah' for option 'f'`
+            var parseResult = app.Parse(args);
+
+            Assert.AreEqual("blah", parseResult.SelectedCommand.Options.Single(x => x.LongName == "file-stem-name").Value());
+            Assert.AreEqual("foo.yml", parseResult.SelectedCommand.Options.Single(x => x.LongName == "false-colour-spectrogram-config").Value());
+            Assert.IsFalse(parseResult.SelectedCommand.ClusterOptions);
         }
 
         private void AssertContainsCopyright(ReadOnlyCollection<string> lines)

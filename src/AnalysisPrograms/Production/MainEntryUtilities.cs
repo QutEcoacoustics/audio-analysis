@@ -323,18 +323,11 @@ namespace AnalysisPrograms
             }
         }
 
-        private static void AttachExceptionHandler()
-        {
-            ExitCode = ExceptionLookup.SpecialExceptionErrorLevel;
-
-            AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
-        }
-
-        private static CommandLineApplication CreateCommandLineApplication()
+        internal static CommandLineApplication CreateCommandLineApplication()
         {
             var console = new PhysicalConsoleLogger();
             var app = CommandLineApplication = new CommandLineApplication<MainArgs>(console);
-
+            app.ClusterOptions = false;
             app.HelpTextGenerator = new CustomHelpTextGenerator { EnvironmentOptions = EnvironmentOptions };
             app.ValueParsers.AddOrReplace(new DateTimeOffsetParser());
             app.ValueParsers.AddOrReplace(new TimeSpanParser());
@@ -343,6 +336,13 @@ namespace AnalysisPrograms
             app.Conventions.UseDefaultConventions();
 
             return app;
+        }
+
+        private static void AttachExceptionHandler()
+        {
+            Environment.ExitCode = ExceptionLookup.SpecialExceptionErrorLevel;
+
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
         }
 
         private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs unhandledExceptionEventArgs)

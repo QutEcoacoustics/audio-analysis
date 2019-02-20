@@ -1,4 +1,4 @@
-﻿
+
 namespace MQUTeR.FSharp.Shared
     
     open System
@@ -29,7 +29,7 @@ namespace MQUTeR.FSharp.Shared
     [<AutoOpen>]
     module Logger =
         open log4net
-        [<assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config", Watch = true)>]
+
         do
             ()
 

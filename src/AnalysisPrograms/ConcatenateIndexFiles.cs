@@ -81,7 +81,9 @@ namespace AnalysisPrograms
             [Option(Description = "Used to get the required data.csv files, which are assumed to be in a matching dir or subdirectory. E.g. use name of audio file suffix e.g.: *.wav")]
             public string DirectoryFilter { get; set; }
 
-            [Option(Description = "File stem name for output files.")]
+            [Option(
+                CommandOptionType.SingleValue,
+                Description = "File stem name for output files.")]
             public string FileStemName { get; set; }
 
             [Option(
