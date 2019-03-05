@@ -767,6 +767,7 @@ namespace AnalysisPrograms
             /*
             // ########################## CONCATENATION of MARINA SCARPELLI recordings from Brazil
             // The drive: work = G; home = E
+            /*
             drive = "C";
 
             // top level directory
@@ -785,10 +786,34 @@ namespace AnalysisPrograms
             dtoEnd = new DateTimeOffset(2016, 12, 31, 0, 0, 0, TimeSpan.Zero);
 
             // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and EchoGaps.
-            gapRendering = "TimedGaps";
+            gapRendering = "TimedGaps";  */
 
-            // ########################## END of MARINA SCARPELLI recordings
-            */
+            // ######################### END OF CONCATENATION of MARINA SCARPELLI recordings from Brazil
+
+            // ######################### START OF FIX ISSUE #170 concat crashes
+            // ######################### use data from availae
+
+            // top level directory AVAILAE JOB #
+            string[] dataDirs =
+            {
+                //@"Y:\Results\20180608-103353 - Tshering, Towsey.Indices, #216\Tshering\WBH_Walaytar\WBH_2018\Bermo",
+                @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez",
+            };
+
+            string directoryFilter = "0*"; // this is a directory filter to locate only the required files
+            string opFileStem = "TasmanIslandMez";
+            string opPath = @"C:\Ecoacoustics\Output\Test\DebugIssue170";
+
+            // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and EchoGaps.
+            gapRendering = "TimedGaps";
+            concatenateEverythingYouCanLayYourHandsOn = true;
+            var falseColourSpgConfig = $"C:\\Work\\GitHub\\audio-analysis\\src\\AnalysisConfigFiles\\SpectrogramFalseColourConfig.yml";
+
+            // start and end dates INCLUSIVE
+            //dtoStart = new DateTimeOffset(2016, 12, 31, 0, 0, 0, TimeSpan.Zero);
+            //dtoEnd = new DateTimeOffset(2016, 12, 31, 0, 0, 0, TimeSpan.Zero);
+
+            // ########################## END of FIX ISSUE #170 concat crashes
 
             /*
             // ########################## CONCATENATION of Pillaga Forest recordings from Brad Law

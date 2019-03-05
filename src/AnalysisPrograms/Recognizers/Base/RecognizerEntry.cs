@@ -61,7 +61,7 @@ namespace AnalysisPrograms.Recognizers.Base
         /// </summary>
         public static void Execute(Arguments arguments)
         {
-            MainEntry.WarnIfDevleoperEntryUsed("EventRecognizer entry does not do any audio maniuplation.");
+            MainEntry.WarnIfDeveloperEntryUsed("EventRecognizer entry does not do any audio maniuplation.");
             Log.Info("Running event recognizer");
 
             var sourceAudio = arguments.Source;

@@ -1,4 +1,4 @@
-﻿// <copyright file="Logging.cs" company="QutEcoacoustics">
+// <copyright file="Logging.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -10,75 +10,217 @@ namespace Acoustics.Shared.Logging
     using System.IO;
     using System.Text;
     using System.Threading.Tasks;
-    using Contracts;
+    using Acoustics.Shared.Contracts;
     using log4net;
     using log4net.Appender;
     using log4net.Core;
     using log4net.Layout;
+    using log4net.Layout.Pattern;
     using log4net.Repository.Hierarchy;
     using log4net.Util;
     using static log4net.Appender.ManagedColoredConsoleAppender;
 
-    public static class Logging
+    public class Logging
     {
-        public const string Cleanlogger = "CleanLogger";
-        public const string Logfileonly = "LogFileOnly";
+        public const string CleanLogger = "CleanLogger";
+        public const string LogFileOnly = "LogFileOnly";
 
-        private static bool configured;
-        private static Logger rootLogger;
-        private static Logger cleanLogger;
-        private static Logger noConsoleLogger;
-        private static AppenderSkeleton standardConsoleAppender;
-        private static AppenderSkeleton cleanConsoleAppender;
-        private static Hierarchy repository;
-
-        internal static MemoryAppender MemoryAppender { get; private set; }
+        private readonly Logger rootLogger;
+        // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
+        private readonly Logger cleanLogger;
+        // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
+        private readonly Logger noConsoleLogger;
+        private readonly AppenderSkeleton standardConsoleAppender;
+        private readonly AppenderSkeleton cleanConsoleAppender;
+        private readonly Hierarchy repository;
 
         /// <summary>
-        /// Initializes the logging system.
+        /// Initializes a new instance of the <see cref="Logging"/> class.
         /// </summary>
         /// <param name="colorConsole">If True, colored logs will be used.</param>
         /// <param name="defaultLevel">The default level to set for the root logger.</param>
-        /// <param name="quietConsole">If True limits the level on the appenders to <see cref="Level.Error"/></param>
-        public static void Initialize(bool colorConsole, Level defaultLevel, bool quietConsole)
+        /// <param name="quietConsole">If True limits the level on the appenders to <see cref="Level.Error"/>.</param>
+        public Logging(bool colorConsole, Level defaultLevel, bool quietConsole)
+            : this(enableMemoryLogger: false, enableFileLogger: true, colorConsole, defaultLevel, quietConsole)
         {
-            // This is the default case.
-            Initialize(enableMemoryLogger: false, enableFileLogger: true, colorConsole, defaultLevel, quietConsole);
         }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Logging"/> class.
+        /// </summary>
+        /// <param name="enableMemoryLogger">If true, stores a copy of all log events in memory. Used for testing.</param>
+        /// <param name="enableFileLogger">If true, outputs log events to a file.</param>
+        /// <param name="colorConsole">If True, colored logs will be used.</param>
+        /// <param name="defaultLevel">The default level to set for the root logger.</param>
+        /// <param name="quietConsole">If True limits the level on the appenders to <see cref="Level.Error"/>.</param>
+        internal Logging(
+            bool enableMemoryLogger,
+            bool enableFileLogger,
+            bool colorConsole,
+            Level defaultLevel,
+            bool quietConsole)
+        {
+            LogManager.ResetConfiguration();
+
+            this.repository = (Hierarchy)LogManager.GetRepository();
+
+            this.repository.LevelMap.Add(LogExtensions.PromptLevel);
+            this.repository.LevelMap.Add(LogExtensions.SuccessLevel);
+
+            this.rootLogger = this.repository.Root;
+            this.cleanLogger = (Logger)this.repository.GetLogger(CleanLogger);
+            this.noConsoleLogger = (Logger)this.repository.GetLogger(LogFileOnly);
+
+            // cleanLogger.Hierarchy = repository;
+            // noConsoleLogger.Hierarchy = repository;
+
+            // our two special loggers do not forward log events to the root logger
+            this.cleanLogger.Additivity = false;
+            this.noConsoleLogger.Additivity = false;
+
+            // this is the base level for the logging system
+            this.repository.Threshold = defaultLevel;
+            this.rootLogger.Level = defaultLevel;
+
+            // log to a file
+            PatternLayout standardPattern = new PatternLayout
+            {
+                ConversionPattern = "%date{o} [%thread] %-5level %logger - %message%newline%exception",
+            };
+            standardPattern.ActivateOptions();
+
+            string logFilePath = null;
+            if (enableFileLogger)
+            {
+                var fileAppender = new RollingFileAppender()
+                {
+                    AppendToFile = false,
+                    Encoding = Encoding.UTF8,
+                    StaticLogFileName = true,
+
+                    // We clean our logs ourselves, so it might be assumed that MaxSizeRollBackups is not needed,
+                    // however this constraint is needed to trigger log4net's dedupe function for duplicate file names
+                    MaxSizeRollBackups = 100,
+                    Layout = standardPattern,
+                    Name = nameof(RollingFileAppender),
+
+                    // ReSharper disable StringLiteralTypo
+                    File = new PatternString("Logs/log_%utcdate{yyyyMMddTHHmmssZ}.txt").Format(),
+
+                    // ReSharper restore StringLiteralTypo
+
+                    PreserveLogFileNameExtension = true,
+                    RollingStyle = RollingFileAppender.RollingMode.Once,
+                };
+                this.rootLogger.AddAppender(fileAppender);
+                this.cleanLogger.AddAppender(fileAppender);
+                this.noConsoleLogger.AddAppender(fileAppender);
+                fileAppender.ActivateOptions();
+                logFilePath = fileAppender.File;
+            }
+
+            if (enableMemoryLogger)
+            {
+                this.MemoryAppender = new MemoryAppender()
+                {
+                    Layout = standardPattern,
+                };
+                this.rootLogger.AddAppender(this.MemoryAppender);
+                this.cleanLogger.AddAppender(this.MemoryAppender);
+                this.noConsoleLogger.AddAppender(this.MemoryAppender);
+                this.MemoryAppender.ActivateOptions();
+            }
+
+            // log to a console
+            PatternLayout consolePattern = new PatternLayout
+            {
+                ConversionPattern = "[%date{o}] %-5level - %message%newline%exception",
+            };
+            consolePattern.ActivateOptions();
+            this.standardConsoleAppender =
+                colorConsole ? (AppenderSkeleton)new ManagedColoredConsoleAppender() : new ConsoleAppender();
+            this.standardConsoleAppender.Layout = consolePattern;
+
+            PatternLayout cleanPattern = new PatternLayout
+            {
+                ConversionPattern = "%message%newline",
+            };
+            cleanPattern.ActivateOptions();
+            this.cleanConsoleAppender =
+                colorConsole ? (AppenderSkeleton)new ManagedColoredConsoleAppender() : new ConsoleAppender();
+            this.cleanConsoleAppender.Layout = cleanPattern;
+
+            if (colorConsole)
+            {
+                var mapping = new[]
+                {
+                    new LevelColors { ForeColor = ConsoleColor.Magenta, Level = LogExtensions.PromptLevel },
+                    new LevelColors { ForeColor = ConsoleColor.Red, Level = Level.Fatal },
+                    new LevelColors { ForeColor = ConsoleColor.DarkRed, Level = Level.Error },
+                    new LevelColors { ForeColor = ConsoleColor.Yellow, Level = Level.Warn },
+                    new LevelColors { ForeColor = ConsoleColor.Green, Level = LogExtensions.SuccessLevel },
+                    new LevelColors { ForeColor = ConsoleColor.Green, Level = Level.Notice },
+                    new LevelColors { ForeColor = ConsoleColor.Gray, Level = Level.Info },
+                    new LevelColors { ForeColor = ConsoleColor.Cyan, Level = Level.Debug },
+                    new LevelColors { ForeColor = ConsoleColor.DarkCyan, Level = Level.Trace },
+                    new LevelColors { ForeColor = ConsoleColor.DarkBlue, Level = Level.Verbose },
+                };
+
+                foreach (var map in mapping)
+                {
+                    ((ManagedColoredConsoleAppender)this.standardConsoleAppender).AddMapping(map);
+                    ((ManagedColoredConsoleAppender)this.cleanConsoleAppender).AddMapping(map);
+                }
+            }
+
+            this.standardConsoleAppender.ActivateOptions();
+            this.cleanConsoleAppender.ActivateOptions();
+
+            this.rootLogger.AddAppender(this.standardConsoleAppender);
+            this.cleanLogger.AddAppender(this.cleanConsoleAppender);
+
+            this.repository.Configured = true;
+            this.ModifyVerbosity(defaultLevel, quietConsole);
+
+            if (enableFileLogger)
+            {
+                // Fire and forget the async cleaning task.
+                // We'll never know if this fails or not, the exception is captured in the task
+                // that we do NOT await. We do however log any exceptions.
+                // ReSharper disable once AssignmentIsFullyDiscarded
+                _ = this.CleanLogs(logFilePath);
+            }
+        }
+
+        internal MemoryAppender MemoryAppender { get; }
 
         /// <summary>
         /// Initializes the logging system.
         /// </summary>
         /// <param name="defaultLevel">The default level to set for the root logger.</param>
         /// <param name="quietConsole">If True limits the level on the appenders to <see cref="Level.Error"/></param>
-        public static void ModifyVerbosity(Level defaultLevel, bool quietConsole)
+        public void ModifyVerbosity(Level defaultLevel, bool quietConsole)
         {
-            Contract.Requires<InvalidOperationException>(configured, "The logger system must be initialised before verbosity is changed");
-
-            repository.Threshold = defaultLevel;
-            rootLogger.Level = defaultLevel;
+            this.repository.Threshold = defaultLevel;
+            this.rootLogger.Level = defaultLevel;
 
             var quietThreshold = quietConsole ? Level.Error : Level.All;
 
-            if (cleanConsoleAppender != null)
+            if (this.cleanConsoleAppender != null)
             {
-                cleanConsoleAppender.Threshold = quietThreshold;
+                this.cleanConsoleAppender.Threshold = quietThreshold;
             }
 
-            if (standardConsoleAppender != null)
+            if (this.standardConsoleAppender != null)
             {
-                standardConsoleAppender.Threshold = quietThreshold;
+                this.standardConsoleAppender.Threshold = quietThreshold;
             }
 
-            repository.RaiseConfigurationChanged(EventArgs.Empty);
+            this.repository.RaiseConfigurationChanged(EventArgs.Empty);
         }
 
-        public static void TestLogging()
+        public void TestLogging()
         {
-            Contract.Requires<InvalidOperationException>(
-                configured,
-                "The logger system must be initialised before the logging can be tested");
-
             var log = LogManager.GetLogger(nameof(Logging));
 
             log.Prompt("Log test PROMPT");
@@ -103,153 +245,11 @@ namespace Acoustics.Shared.Logging
         }
 
         /// <summary>
-        /// Initializes the logging system with extra options used by unit tests.
-        /// </summary>
-        /// <param name="enableMemoryLogger">If true, stores a copy of all log events in memory. Used for testing.</param>
-        /// <param name="enableFileLogger">If true, outputs log events to a file.</param>
-        /// <param name="colorConsole">If True, colored logs will be used.</param>
-        /// <param name="defaultLevel">The default level to set for the root logger.</param>
-        /// <param name="quietConsole">If True limits the level on the appenders to <see cref="Level.Error"/></param>
-        internal static void Initialize(
-            bool enableMemoryLogger,
-            bool enableFileLogger,
-            bool colorConsole,
-            Level defaultLevel,
-            bool quietConsole)
-        {
-            Contract.Requires<InvalidOperationException>(!configured, "The logger system can only be initialised once");
-            configured = true;
-
-            repository = (Hierarchy)LogManager.GetRepository();
-
-            repository.LevelMap.Add(LogExtensions.PromptLevel);
-            repository.LevelMap.Add(LogExtensions.SuccessLevel);
-
-            rootLogger = repository.Root;
-            cleanLogger = (Logger)repository.GetLogger(Cleanlogger);
-            noConsoleLogger = (Logger)repository.GetLogger(Logfileonly);
-
-            // cleanLogger.Hierarchy = repository;
-            // noConsoleLogger.Hierarchy = repository;
-
-            // our two special loggers do not forward log events to the root logger
-            cleanLogger.Additivity = false;
-            noConsoleLogger.Additivity = false;
-
-            // this is the base level for the logging system
-            repository.Threshold = defaultLevel;
-            rootLogger.Level = defaultLevel;
-
-            // log to a file
-            PatternLayout standardPattern = new PatternLayout
-            {
-                ConversionPattern = "%date{o} [%thread] %-5level %logger - %message%newline%exception",
-            };
-            standardPattern.ActivateOptions();
-
-            string logFilePath = null;
-            if (enableFileLogger)
-            {
-                var fileAppender = new RollingFileAppender()
-                {
-                    AppendToFile = false,
-                    Encoding = Encoding.UTF8,
-                    StaticLogFileName = true,
-
-                    // We clean our logs ourselves, so it might be assumed that MaxSizeRollBackups is not needed,
-                    // however this constraint is needed to trigger log4net's dedupe function for duplicate file names
-                    MaxSizeRollBackups = 100,
-                    Layout = standardPattern,
-                    Name = nameof(RollingFileAppender),
-                    File = new PatternString("Logs/log_%utcdate{yyyyMMddTHHmmssZ}.txt").Format(),
-                    PreserveLogFileNameExtension = true,
-                    RollingStyle = RollingFileAppender.RollingMode.Once,
-                };
-                rootLogger.AddAppender(fileAppender);
-                cleanLogger.AddAppender(fileAppender);
-                noConsoleLogger.AddAppender(fileAppender);
-                fileAppender.ActivateOptions();
-                logFilePath = fileAppender.File;
-            }
-
-            if (enableMemoryLogger)
-            {
-                MemoryAppender = new MemoryAppender()
-                {
-                    Layout = standardPattern,
-                };
-                rootLogger.AddAppender(MemoryAppender);
-                cleanLogger.AddAppender(MemoryAppender);
-                noConsoleLogger.AddAppender(MemoryAppender);
-                MemoryAppender.ActivateOptions();
-            }
-
-            // log to a console
-            PatternLayout consolePattern = new PatternLayout
-            {
-                ConversionPattern = "[%date{o}] %-5level - %message%newline%exception",
-            };
-            consolePattern.ActivateOptions();
-            standardConsoleAppender =
-                colorConsole ? (AppenderSkeleton)new ManagedColoredConsoleAppender() : new ConsoleAppender();
-            standardConsoleAppender.Layout = consolePattern;
-
-            PatternLayout cleanPattern = new PatternLayout
-            {
-                ConversionPattern = "%message%newline",
-            };
-            cleanPattern.ActivateOptions();
-            cleanConsoleAppender =
-                colorConsole ? (AppenderSkeleton)new ManagedColoredConsoleAppender() : new ConsoleAppender();
-            cleanConsoleAppender.Layout = cleanPattern;
-
-            if (colorConsole)
-            {
-                var mapping = new[]
-                {
-                    new LevelColors { ForeColor = ConsoleColor.Magenta, Level = LogExtensions.PromptLevel },
-                    new LevelColors { ForeColor = ConsoleColor.Red, Level = Level.Fatal },
-                    new LevelColors { ForeColor = ConsoleColor.DarkRed, Level = Level.Error },
-                    new LevelColors { ForeColor = ConsoleColor.Yellow, Level = Level.Warn },
-                    new LevelColors { ForeColor = ConsoleColor.Green, Level = LogExtensions.SuccessLevel },
-                    new LevelColors { ForeColor = ConsoleColor.Green, Level = Level.Notice },
-                    new LevelColors { ForeColor = ConsoleColor.Gray, Level = Level.Info },
-                    new LevelColors { ForeColor = ConsoleColor.Cyan, Level = Level.Debug },
-                    new LevelColors { ForeColor = ConsoleColor.DarkCyan, Level = Level.Trace },
-                    new LevelColors { ForeColor = ConsoleColor.DarkBlue, Level = Level.Verbose },
-                };
-
-                foreach (var map in mapping)
-                {
-                    ((ManagedColoredConsoleAppender)standardConsoleAppender).AddMapping(map);
-                    ((ManagedColoredConsoleAppender)cleanConsoleAppender).AddMapping(map);
-                }
-            }
-
-            standardConsoleAppender.ActivateOptions();
-            cleanConsoleAppender.ActivateOptions();
-
-            rootLogger.AddAppender(standardConsoleAppender);
-            cleanLogger.AddAppender(cleanConsoleAppender);
-
-            repository.Configured = true;
-            ModifyVerbosity(defaultLevel, quietConsole);
-
-            if (enableFileLogger)
-            {
-                // Fire and forget the async cleaning task.
-                // We'll never know if this fails or not, the exception is captured in the task
-                // that we do NOT await. We do however log any exceptions.
-                _ = CleanLogs(logFilePath);
-            }
-        }
-
-        /// <summary>
-        /// Rolling log file appender has no concept of cleaning up logs with a datestamp in their name.
+        /// Rolling log file appender has no concept of cleaning up logs with a date stamp in their name.
         /// This we have to clean them manually.
         /// </summary>
         /// <returns>A task.</returns>
-        private static async Task CleanLogs(string logFilePath)
+        private async Task CleanLogs(string logFilePath)
         {
             Contract.RequiresNotNull(logFilePath);
             const int threshold = 60;
@@ -305,6 +305,7 @@ namespace Acoustics.Shared.Logging
 
             try
             {
+                // ReSharper disable once RedundantCast
                 await Task.Run((Action)CleanFiles);
             }
             catch (Exception ex)

@@ -138,7 +138,7 @@ namespace AudioAnalysisTools.Indices
 
             // reads all known files spectral indices
             int freqBinCount;
-            Dictionary<string, double[,]> dict = IndexMatrices.ReadSpectrogramCSVFiles(targetDirInfo, targetFileName, spectrogramKeys, out freqBinCount);
+            Dictionary<string, double[,]> dict = IndexMatrices.ReadSpectrogramCsvFiles(targetDirInfo, targetFileName, spectrogramKeys, out freqBinCount);
 
             if (dict.Count() == 0)
             {

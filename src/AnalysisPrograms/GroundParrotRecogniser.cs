@@ -184,7 +184,7 @@ namespace AnalysisPrograms
 
         public static void Execute(Arguments arguments)
         {
-            MainEntry.WarnIfDevleoperEntryUsed();
+            MainEntry.WarnIfDeveloperEntryUsed();
 
             if (arguments == null)
             {

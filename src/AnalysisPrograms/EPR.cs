@@ -180,7 +180,7 @@ namespace AnalysisPrograms
 
         public static void Execute(Arguments arguments)
         {
-            MainEntry.WarnIfDevleoperEntryUsed();
+            MainEntry.WarnIfDeveloperEntryUsed();
 
             string title = "# EVENT PATTERN RECOGNITION.";
             string date = "# DATE AND TIME: " + DateTime.Now;

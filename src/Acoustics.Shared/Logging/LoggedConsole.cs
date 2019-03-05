@@ -21,7 +21,7 @@ namespace System
     /// </summary>
     public static class LoggedConsole
     {
-        public static readonly ILog Log = LogManager.Exists(Logging.Cleanlogger);
+        public static readonly ILog Log = LogManager.Exists(Logging.CleanLogger);
 
         private static readonly TimeSpan PromptTimeout = TimeSpan.FromSeconds(60);
 
@@ -74,13 +74,14 @@ namespace System
             Log.Info(obj);
         }
 
-        public static void WriteError(string str)
-        {
-            Log.Error(str);
-        }
-
         public static void WriteErrorLine(string format, params object[] args)
         {
+            if (args.Length == 0)
+            {
+                Log.Error(format);
+                return;
+            }
+
             var str = string.Format(format, args);
             Log.Error(str);
         }

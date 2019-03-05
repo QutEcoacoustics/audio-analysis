@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="AnalyseLongRecording.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -379,7 +379,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             if (analyser == null)
             {
                 var error = $"We can not determine what analysis you want to run. We tried to search for \"{searchName}\"";
-                LoggedConsole.WriteError(error);
+                LoggedConsole.WriteErrorLine(error);
                 var knownAnalyzers = analysers.Aggregate(string.Empty, (a, i) => a + $"  {i.Identifier}\n");
                 LoggedConsole.WriteLine("Available analysers are:\n" + knownAnalyzers);
 
