@@ -392,21 +392,21 @@ namespace AnalysisPrograms.AnalyseLongRecordings
         }
 
         /// <summary>
-        /// Generic organization of resources after a run
+        /// Generic organization of resources after a run.
         /// </summary>
         private static void Cleanup(Arguments args, FileInfo configFile)
         {
-            if (args.WhenExitCopyConfig)
+            if (args.WhenExitCopyConfig && args.Config.NotNull())
             {
                 configFile.CopyTo(Path.Combine(args.Output.FullName, Path.GetFileName(args.Config)), true);
             }
 
-            if (args.WhenExitCopyLog)
+            if (args.WhenExitCopyLog && MainEntry.Logging.LogFileName.NotNull())
             {
                 var logDirectory = LoggedConsole.LogFolder;
-                var logFile = Path.Combine(logDirectory, "log.txt");
+                var logFile = Path.Combine(logDirectory, MainEntry.Logging.LogFileName);
 
-                File.Copy(logFile, Path.Combine(args.Output.FullName, "log.txt"), true);
+                File.Copy(logFile, Path.Combine(args.Output.FullName, MainEntry.Logging.LogFileName), true);
             }
         }
     }

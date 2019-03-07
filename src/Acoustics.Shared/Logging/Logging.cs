@@ -92,6 +92,7 @@ namespace Acoustics.Shared.Logging
             string logFilePath = null;
             if (enableFileLogger)
             {
+                this.LogFileName = new PatternString("log_ %utcdate{yyyyMMddTHHmmssZ}.txt").Format();
                 var fileAppender = new RollingFileAppender()
                 {
                     AppendToFile = false,
@@ -105,7 +106,7 @@ namespace Acoustics.Shared.Logging
                     Name = nameof(RollingFileAppender),
 
                     // ReSharper disable StringLiteralTypo
-                    File = new PatternString("Logs/log_%utcdate{yyyyMMddTHHmmssZ}.txt").Format(),
+                    File = "Logs/" + this.LogFileName,
 
                     // ReSharper restore StringLiteralTypo
 
@@ -191,6 +192,8 @@ namespace Acoustics.Shared.Logging
                 _ = this.CleanLogs(logFilePath);
             }
         }
+
+        public string LogFileName { get; private set; }
 
         internal MemoryAppender MemoryAppender { get; }
 
