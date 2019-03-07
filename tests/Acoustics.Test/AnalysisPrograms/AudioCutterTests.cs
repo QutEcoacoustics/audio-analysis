@@ -1,29 +1,118 @@
-﻿// <copyright file="AudioCutterTests.cs" company="QutEcoacoustics">
+// <copyright file="AudioCutterTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
 namespace Acoustics.Test.AnalysisPrograms
 {
     using System;
+    using System.ComponentModel.DataAnnotations;
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
+    using Acoustics.Test.TestHelpers;
     using global::AnalysisPrograms;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
 
     [TestClass]
     public class AudioCutterTests : OutputDirectoryTest
     {
         private static readonly Func<FileInfo, string> FileInfoMapper = info => info.Name;
-        private readonly string testfile = PathHelper.ResolveAssetPath("f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv");
+        private readonly string testFile = PathHelper.ResolveAssetPath("f969b39d-2705-42fc-992c-252a776f1af3_090705-0600.wv");
+
+        [TestMethod]
+        public void ArgsAllowedValues()
+        {
+            var args = new[]
+            {
+                "AudioCutter",
+                this.testFile,
+                this.outputDirectory.FullName,
+
+                // test we can allow really long segments
+                "-d",
+                "43200",
+
+                // test we can allow really long overlaps
+                "--segment-overlap",
+                "43200",
+            };
+
+            var app = MainEntry.CreateCommandLineApplication();
+
+            // the following lines should throw a validation exception if any of the test above are failing
+            var parseResult = app.Parse(args);
+            var result = parseResult.SelectedCommand.GetValidationResult();
+
+            Assert.IsTrue(result == ValidationResult.Success);
+        }
+
+        [TestMethod]
+        public void ArgsNotAllowedValues()
+        {
+            var args = new[]
+            {
+                "AudioCutter",
+                this.testFile,
+                this.outputDirectory.FullName,
+
+                // must be >= 1
+                "--segment-duration-minimum",
+                "0",
+
+                // must be >= 1
+                "-d",
+                "0",
+            };
+
+            var app = MainEntry.CreateCommandLineApplication();
+
+            // the following lines should throw a validation exception if any of the test above are failing
+            var parseResult = app.Parse(args);
+            var result = parseResult.SelectedCommand.GetValidationResult();
+
+            CollectionAssert.AreEquivalent(
+                new[]
+                {
+                    nameof(AudioCutter.Arguments.SegmentDuration),
+                    nameof(AudioCutter.Arguments.SegmentDurationMinimum),
+                },
+                result.MemberNames.ToArray());
+        }
+
+        [TestMethod]
+        public void ArgsNotAllowedValues2()
+        {
+            var args = new[]
+            {
+                "AudioCutter",
+                this.testFile,
+                this.outputDirectory.FullName,
+
+                // must be >= 0
+                "--segment-overlap",
+                "-1",
+            };
+
+            var app = MainEntry.CreateCommandLineApplication();
+
+            // the following lines should throw a validation exception if any of the test above are failing
+            var parseResult = app.Parse(args);
+            var result = parseResult.SelectedCommand.GetValidationResult();
+
+            CollectionAssert.AreEquivalent(
+                new[]
+                {
+                    "--segment-overlap",
+                },
+                result.MemberNames.ToArray());
+        }
 
         [TestMethod]
         public async Task TestAudioCutterSimple()
         {
             await AudioCutter.Execute(new AudioCutter.Arguments
             {
-                InputFile = this.testfile,
+                InputFile = this.testFile,
                 OutputDir = this.outputDirectory.FullName,
                 Parallel = false,
             });
@@ -36,7 +125,7 @@ namespace Acoustics.Test.AnalysisPrograms
         {
             await AudioCutter.Execute(new AudioCutter.Arguments
             {
-                InputFile = this.testfile,
+                InputFile = this.testFile,
                 OutputDir = this.outputDirectory.FullName,
                 Parallel = true,
             });
@@ -49,7 +138,7 @@ namespace Acoustics.Test.AnalysisPrograms
         {
             await AudioCutter.Execute(new AudioCutter.Arguments
             {
-                InputFile = this.testfile,
+                InputFile = this.testFile,
                 OutputDir = this.outputDirectory.FullName,
                 Parallel = true,
                 SegmentFileExtension = "mp3",
@@ -59,11 +148,27 @@ namespace Acoustics.Test.AnalysisPrograms
         }
 
         [TestMethod]
+        public async Task TestAudioCutterReallyLargeSegmentDuration()
+        {
+            await AudioCutter.Execute(new AudioCutter.Arguments
+            {
+                InputFile = this.testFile,
+                OutputDir = this.outputDirectory.FullName,
+                Parallel = true,
+                SegmentDuration = 6 * 3600,
+            });
+
+            var files = this.outputDirectory.GetFiles().ToArray();
+            Assert.AreEqual(1, files.Length);
+            CollectionAssert.That.Contains(files, $"f969b39d-2705-42fc-992c-252a776f1af3_090705-0600_0-600.wav", FileInfoMapper);
+        }
+
+        [TestMethod]
         public async Task TestAudioCutterOffsetsAndDuration()
         {
             await AudioCutter.Execute(new AudioCutter.Arguments
             {
-                InputFile = this.testfile,
+                InputFile = this.testFile,
                 OutputDir = this.outputDirectory.FullName,
                 StartOffset = 150,
                 EndOffset = 300,
@@ -81,7 +186,7 @@ namespace Acoustics.Test.AnalysisPrograms
         {
             await AudioCutter.Execute(new AudioCutter.Arguments
             {
-                InputFile = this.testfile,
+                InputFile = this.testFile,
                 OutputDir = this.outputDirectory.FullName,
                 SampleRate = 8000,
             });
@@ -138,7 +243,7 @@ namespace Acoustics.Test.AnalysisPrograms
         {
             await AudioCutter.Execute(new AudioCutter.Arguments
             {
-                InputFile = this.testfile,
+                InputFile = this.testFile,
                 OutputDir = this.outputDirectory.FullName,
                 SegmentOverlap = 30,
                 SegmentDuration = 60 * 4,
