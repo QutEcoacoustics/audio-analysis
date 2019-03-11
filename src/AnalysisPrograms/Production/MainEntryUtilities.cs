@@ -327,6 +327,7 @@ namespace AnalysisPrograms
         {
             var console = new PhysicalConsoleLogger();
             var app = CommandLineApplication = new CommandLineApplication<MainArgs>(console);
+            app.UsePagerForHelpText = false;
             app.ClusterOptions = false;
             app.HelpTextGenerator = new CustomHelpTextGenerator { EnvironmentOptions = EnvironmentOptions };
             app.ValueParsers.AddOrReplace(new DateTimeOffsetParser());

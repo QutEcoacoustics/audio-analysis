@@ -110,6 +110,14 @@ namespace Acoustics.Test.AnalysisPrograms
             Assert.IsFalse(parseResult.SelectedCommand.ClusterOptions);
         }
 
+        [TestMethod]
+        public void HelpPagingIsDisabled()
+        {
+            var app = MainEntry.CreateCommandLineApplication();
+
+            Assert.IsFalse(app.UsePagerForHelpText);
+        }
+
         private void AssertContainsCopyright(ReadOnlyCollection<string> lines)
         {
             // copyright always on third line
