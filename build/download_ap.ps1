@@ -186,7 +186,7 @@ Write-Output "Downloading asset $asset_url"
 $downloaded_zip = "$destination/AP.zip"
 if ($PsCmdlet.ShouldProcess($asset_url, "Downloading asset")) {
     # use curl if available (faster)
-    $curl = Get-Command curl, curl.exe -CommandType Application | select -First 1
+    $curl = Get-Command curl, curl.exe -CommandType Application  -ErrorAction SilentlyContinue | select -First 1
     if ($curl) {
         & $curl -L -o "$downloaded_zip" "$asset_url"
 
@@ -204,7 +204,7 @@ if ($PsCmdlet.ShouldProcess($asset_url, "Downloading asset")) {
 
 # extract asset
 if ($PsCmdlet.ShouldProcess($downloaded_zip, "Extracting AP.exe zip")) {
-    if (Get-Command unzip -CommandType Application) {
+    if (Get-Command unzip -CommandType Application -ErrorAction SilentlyContinue) {
         unzip -q -o $downloaded_zip -d $destination
 
         if ($LASTEXITCODE -ne 0) {
