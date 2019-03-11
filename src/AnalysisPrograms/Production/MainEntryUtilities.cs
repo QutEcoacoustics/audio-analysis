@@ -275,7 +275,7 @@ namespace AnalysisPrograms
             if (usageStyle == Usages.All)
             {
                 // print entire usage
-                root.ShowHelp();
+                root.ShowHelp(false);
             }
             else if (usageStyle == Usages.Single)
             {
@@ -300,7 +300,7 @@ namespace AnalysisPrograms
                     }
                 }
 
-                command.ShowHelp();
+                command.ShowHelp(false);
             }
             else if (usageStyle == Usages.ListAvailable)
             {
