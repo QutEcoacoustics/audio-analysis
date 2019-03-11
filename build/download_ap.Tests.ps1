@@ -61,10 +61,10 @@ Describe 'AP.exe installer script' {
             $result.AssetUrl | Should -BeLike '*github.com*'
         }
         It 'can download a build from AppVeyor' {
-            $result = Invoke -ci_build_number 515 -WhatIf
+            $result = Invoke -ci_build_number 678 -WhatIf
             $result.Type | Should -Be "AppVeyor"
             $result.Source | Should -Be "appveyor"
-            $result.ResolvedVersion | Should -Be '515'
+            $result.ResolvedVersion | Should -Be '678'
             $result.AssetUrl | Should -BeLike '*appveyor.com*'
         }
     }
