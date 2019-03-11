@@ -15,7 +15,6 @@ namespace Acoustics.Shared.Logging
     using log4net.Appender;
     using log4net.Core;
     using log4net.Layout;
-    using log4net.Layout.Pattern;
     using log4net.Repository.Hierarchy;
     using log4net.Util;
     using static log4net.Appender.ManagedColoredConsoleAppender;
@@ -24,10 +23,13 @@ namespace Acoustics.Shared.Logging
     {
         public const string CleanLogger = "CleanLogger";
         public const string LogFileOnly = "LogFileOnly";
+        private const string LogPrefix = "log_";
 
         private readonly Logger rootLogger;
+
         // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
         private readonly Logger cleanLogger;
+
         // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
         private readonly Logger noConsoleLogger;
         private readonly AppenderSkeleton standardConsoleAppender;
@@ -92,7 +94,7 @@ namespace Acoustics.Shared.Logging
             string logFilePath = null;
             if (enableFileLogger)
             {
-                this.LogFileName = new PatternString("log_ %utcdate{yyyyMMddTHHmmssZ}.txt").Format();
+                this.LogFileName = new PatternString(LogPrefix + "%utcdate{yyyyMMddTHHmmssZ}.txt").Format();
                 var fileAppender = new RollingFileAppender()
                 {
                     AppendToFile = false,
@@ -256,13 +258,13 @@ namespace Acoustics.Shared.Logging
         {
             Contract.RequiresNotNull(logFilePath);
             const int threshold = 60;
-            const int target = 50;
+            int target = 50;
 
             void CleanFiles()
             {
                 var logsPath = Path.GetDirectoryName(logFilePath) ??
                                throw new InvalidOperationException("Could not resolve logs directory path: " + logFilePath);
-                var files = Directory.GetFiles(logsPath, "log_*.txt");
+                var files = Directory.GetFiles(logsPath, LogPrefix + "*.txt");
                 if (files.Length > threshold)
                 {
                     var sorted = new SortedDictionary<DateTime, List<string>>();
@@ -271,12 +273,21 @@ namespace Acoustics.Shared.Logging
                         var name = Path.GetFileName(file);
 
                         // assuming a format of log_20180717T130822Z.1.txt
-                        var datePart = name.Substring(4, name.IndexOf(".", StringComparison.Ordinal) - 4);
-                        var date = DateTime.ParseExact(
+                        int prefixLength = LogPrefix.Length;
+                        var datePart = name.Substring(prefixLength, name.IndexOf(".", StringComparison.Ordinal) - prefixLength);
+                        var success = DateTime.TryParseExact(
                             datePart,
                             "yyyyMMddTHHmmssZ",
                             CultureInfo.InvariantCulture,
-                            DateTimeStyles.AssumeUniversal);
+                            DateTimeStyles.AssumeUniversal,
+                            out var date);
+
+                        if (!success)
+                        {
+                            // the default date value will ensure value is added into sorted list
+                            // and it will be deleted first!
+                            LoggedConsole.WriteWarnLine($"Log file with name `{name}` has invalid date format and is being cleaned");
+                        }
 
                         if (sorted.ContainsKey(date))
                         {
