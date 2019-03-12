@@ -6,6 +6,7 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Reflection;
     using System.Text;
@@ -14,6 +15,7 @@ namespace AnalysisPrograms
     using Acoustics.Shared;
     using Acoustics.Tools.Audio;
     using AnalysisPrograms.AnalyseLongRecordings;
+    using AnalysisPrograms.Production;
     using AnalysisPrograms.Production.Arguments;
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
@@ -24,9 +26,9 @@ namespace AnalysisPrograms
 
         private static readonly ILog Log = LogManager.GetLogger(nameof(CheckEnvironment));
 
-        private void Execute(Arguments arguments)
+        private int Execute(Arguments arguments)
         {
-            List<Exception> errors = new List<Exception>();
+            var errors = new List<string>();
             Log.Info("Checking required executables can be found");
 
             // master audio utility checks for available executables
@@ -36,7 +38,12 @@ namespace AnalysisPrograms
             }
             catch (Exception ex)
             {
-                errors.Add(ex);
+                errors.Add(ex.Message);
+            }
+
+            if (MainEntry.CheckForDataAnnotations() is string message)
+            {
+                errors.Add(message);
             }
 
             if (AppConfigHelper.IsMono)
@@ -45,10 +52,10 @@ namespace AnalysisPrograms
                 if (type != null)
                 {
                     MethodInfo displayName = type.GetMethod("GetDisplayName", BindingFlags.NonPublic | BindingFlags.Static);
-                    if (displayName != null)
+
+                    if (displayName?.Invoke(null, null) is string name)
                     {
-                        var name = displayName.Invoke(null, null);
-                        var version = Regex.Match(name as string, @".*(\d+\.\d+\.\d+\.\d+).*").Groups[1].Value;
+                        var version = Regex.Match(name, @".*(\d+\.\d+\.\d+\.\d+).*").Groups[1].Value;
                         Console.WriteLine(version);
                         if (new Version(version) > new Version(5, 5))
                         {
@@ -56,12 +63,12 @@ namespace AnalysisPrograms
                         }
                         else
                         {
-                            errors.Add(new Exception($"Mono version is {name}, we require at least Mono 5.5"));
+                            errors.Add($"Mono version is {name}, we require at least Mono 5.5");
                         }
                     }
                     else
                     {
-                        errors.Add(new Exception("Could not check Mono version"));
+                        errors.Add("Could not get Mono display name");
                     }
                 }
             }
@@ -70,10 +77,18 @@ namespace AnalysisPrograms
             if (errors.Count == 0)
             {
                 Log.Success("Valid environment");
+
+                return ExceptionLookup.Ok;
             }
             else
             {
-                throw new AggregateException(errors.ToArray());
+                foreach (var error in errors)
+                {
+                    Log.Error(error);
+                }
+
+                // not using exception lookup on purpose - it's static constructor loads more types
+                return ExceptionLookup.UnhandledExceptionErrorCode;
             }
         }
 
@@ -85,8 +100,7 @@ namespace AnalysisPrograms
             public override Task<int> Execute(CommandLineApplication app)
             {
                 var instance = new CheckEnvironment();
-                instance.Execute(this);
-                return this.Ok();
+                return Task.FromResult(instance.Execute(this));
             }
         }
 
