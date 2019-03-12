@@ -199,6 +199,36 @@ namespace AnalysisPrograms
             LoadNativeCode();
         }
 
+        /// <summary>
+        /// Checks to see whether we can load a DLL that we depend on from the GAC.
+        /// We have to check this early on or else we get some pretty hard to
+        /// diagnose errors (and also because our CLI parser depends on it).
+        /// </summary>
+        /// <returns>A message if there is a problem.</returns>
+        internal static string CheckForDataAnnotations()
+        {
+            // https://github.com/QutEcoacoustics/audio-analysis/issues/225
+            try
+            {
+                Assembly.Load(
+                    "System.ComponentModel.DataAnnotations, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35");
+                return null;
+            }
+            catch (FileNotFoundException fnfex)
+            {
+                return $@"{fnfex.ToString()}
+!
+!
+!
+In cases where System.ComponentModel.DataAnnotations is not found we have
+previously found that the mono install is corrupt. Try installing mono again
+and make sure you install the `mono-complete` package.
+!
+!
+!";
+            }
+        }
+
         internal static void Copyright()
         {
             LoggedConsole.WriteLine(
@@ -339,9 +369,19 @@ namespace AnalysisPrograms
             return app;
         }
 
-        private static void AttachExceptionHandler()
+        /// <summary>
+        /// Attaches an exception handler and also does a check
+        /// to see if necessary DLLs exist. WARNING: can quit process!.
+        /// </summary>
+        private static void PrepareForErrors()
         {
-            Environment.ExitCode = ExceptionLookup.SpecialExceptionErrorLevel;
+            ExitCode = ExceptionLookup.UnhandledExceptionErrorCode;
+
+            if (CheckForDataAnnotations() is string message)
+            {
+                Console.WriteLine(message);
+                Exit(ExceptionLookup.UnhandledExceptionErrorCode);
+            }
 
             AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
         }
@@ -404,7 +444,7 @@ namespace AnalysisPrograms
                 PrintAggregateException(ex);
             }
 
-            int returnCode = style?.ErrorCode ?? ExceptionLookup.SpecialExceptionErrorLevel;
+            int returnCode = style?.ErrorCode ?? ExceptionLookup.UnhandledExceptionErrorCode;
 
             // finally return error level
             NoConsole.Log.Info("ERRORLEVEL: " + returnCode);

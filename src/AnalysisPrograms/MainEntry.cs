@@ -36,7 +36,7 @@ namespace AnalysisPrograms
 
             Copyright();
 
-            AttachExceptionHandler();
+            PrepareForErrors();
 
             NoConsole.Log.Info($"Executable called with these arguments: {NewLine}{CommandLine}{NewLine}");
 
