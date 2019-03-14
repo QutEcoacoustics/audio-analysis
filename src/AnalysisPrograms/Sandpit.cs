@@ -1408,7 +1408,7 @@ namespace AnalysisPrograms
             int sampleRate = 22050;
             double duration = 420; // signal duration in seconds = 7 minutes
             int[] harmonics = {500, 1000, 2000, 4000, 8000};
-            var recording = DspFilters.GenerateTestRecording(sampleRate, duration, harmonics, WaveType.Consine);
+            var recording = DspFilters.GenerateTestRecording(sampleRate, duration, harmonics, WaveType.Cosine);
             var outputDirectory = @"C:\SensorNetworks\SoftwareTests\TestLongDurationRecordings";
             var recordingPath = Path.Combine(outputDirectory, "TemporaryRecording.wav");
             WavWriter.WriteWavFileViaFfmpeg(recordingPath.ToFileInfo(), recording.WavReader);
