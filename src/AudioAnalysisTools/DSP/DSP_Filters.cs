@@ -28,7 +28,7 @@ namespace AudioAnalysisTools.DSP
             var freqScale = new FrequencyScale(sampleRate / 2, windowSize, 1000);
             string path = @"C:\SensorNetworks\Output\Sonograms\UnitTestSonograms\SineSignal1.png";
 
-            var recording = GenerateTestRecording(sampleRate, duration, harmonics, WaveType.Consine);
+            var recording = GenerateTestRecording(sampleRate, duration, harmonics, WaveType.Cosine);
             var sonoConfig = new SonogramConfig
             {
                 WindowSize = freqScale.WindowSize,
@@ -79,7 +79,7 @@ namespace AudioAnalysisTools.DSP
             int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
             var freqScale = new FrequencyScale(FreqScaleType.Linear125Octaves7Tones28Nyquist32000);
             string path = @"C:\SensorNetworks\Output\Sonograms\UnitTestSonograms\SineSignal2.png";
-            var recording = GenerateTestRecording(sampleRate, duration, harmonics, WaveType.Consine);
+            var recording = GenerateTestRecording(sampleRate, duration, harmonics, WaveType.Cosine);
 
             // init the default sonogram config
             var sonoConfig = new SonogramConfig
@@ -143,7 +143,7 @@ namespace AudioAnalysisTools.DSP
         public static double[] GenerateTestSignal(int sampleRate, double duration, int[] harmonics, WaveType waveType)
         {
             double[] signal = null;
-            if (waveType == WaveType.Consine)
+            if (waveType == WaveType.Cosine)
             {
                 signal = GetSignalOfAddedCosines(sampleRate, duration, harmonics);
             }
