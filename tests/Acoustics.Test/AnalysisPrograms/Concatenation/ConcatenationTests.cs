@@ -9,16 +9,13 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
     using System.IO;
     using System.IO.Compression;
     using System.Linq;
-
     using Acoustics.Shared;
     using global::AnalysisPrograms;
-
     using global::AudioAnalysisTools.Indices;
     using global::AudioAnalysisTools.LongDurationSpectrograms;
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
-    using TowseyLibrary;
 
     /// <summary>
     /// Test methods for the various Frequency Scales
@@ -341,7 +338,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                 var actualImage = ImageTools.ReadImage2Bitmap(imagePath);
                 Assert.That.ImageIsSize(expectedWidth, 632, actualImage);
 
-                // target region for each image: 40,254, 20,20
+                // target region for each image: 40, 254, 20,20
                 switch (gapRendering)
                 {
                     case ConcatMode.TimedGaps:
@@ -355,7 +352,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                     case ConcatMode.NoGaps:
                         // There should basically be no pattern here
                         var histogram = ImageTools.GetColorHistogramNormalized(
-                            actualImage, 
+                            actualImage,
                             new Rectangle(40, 254, 20, 20));
 
                         // should not have empty space

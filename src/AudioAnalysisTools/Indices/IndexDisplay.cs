@@ -130,7 +130,7 @@ namespace AudioAnalysisTools.Indices
                     continue;
                 }
 
-                string name = ip.Name;
+                //string name = ip.Name;
                 double[] array = dictionaryOfSummaryIndices[key];
                 scaleLength = array.Length;
                 Image bitmap = ip.GetPlotImage(array, errors);
@@ -144,11 +144,11 @@ namespace AudioAnalysisTools.Indices
                 .Where(b => b != null).ToList();
 
             //set up the composite image parameters
-            int X_offset = 2;
-            int graphWidth = X_offset + scaleLength;
-            int imageWidth = X_offset + scaleLength + TrackEndPanelWidth;
-            TimeSpan scaleDuration = TimeSpan.FromMinutes(scaleLength);
-            int imageHt = trackHeight * (listOfBitmaps.Count + 4); //+3 for title and top and bottom time tracks
+            int x_offset = 2;
+            int graphWidth = x_offset + scaleLength;
+            int imageWidth = x_offset + scaleLength + TrackEndPanelWidth;
+            //TimeSpan scaleDuration = TimeSpan.FromMinutes(scaleLength);
+            //int imageHt = trackHeight * (listOfBitmaps.Count + 4); //+3 for title and top and bottom time tracks
             Bitmap titleBmp = ImageTrack.DrawTitleTrack(imageWidth, trackHeight, titleText);
 
             //Bitmap time1Bmp = ImageTrack.DrawTimeTrack(scaleDuration, TimeSpan.Zero, DrawSummaryIndices.TimeScale, graphWidth, TrackHeight, "Time (hours)");
@@ -156,13 +156,13 @@ namespace AudioAnalysisTools.Indices
             TimeSpan fullDuration = TimeSpan.FromTicks(xAxisPixelDuration.Ticks * graphWidth);
             Bitmap timeBmp1 = ImageTrack.DrawTimeRelativeTrack(fullDuration, graphWidth, trackHeight);
             Bitmap timeBmp2 = timeBmp1;
-            Bitmap suntrack = null;
+            //Bitmap suntrack = null;
             DateTimeOffset? dateTimeOffset = recordingStartDate;
             if (dateTimeOffset.HasValue)
             {
                 // draw extra time scale with absolute start time. AND THEN Do SOMETHING WITH IT.
                 timeBmp2 = ImageTrack.DrawTimeTrack(fullDuration, dateTimeOffset, graphWidth, trackHeight);
-                suntrack = SunAndMoon.AddSunTrackToImage(scaleLength, dateTimeOffset, sunriseDataFile);
+                //suntrack = SunAndMoon.AddSunTrackToImage(scaleLength, dateTimeOffset, sunriseDataFile);
             }
 
             //draw the composite bitmap
@@ -175,7 +175,7 @@ namespace AudioAnalysisTools.Indices
             }
 
             imageList.Add(timeBmp2);
-            imageList.Add(suntrack);
+            //imageList.Add(suntrack);
             Bitmap compositeBmp = (Bitmap)ImageTools.CombineImagesVertically(imageList);
             return compositeBmp;
         }

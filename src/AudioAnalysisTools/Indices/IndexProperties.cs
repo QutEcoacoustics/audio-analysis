@@ -275,8 +275,8 @@ namespace AudioAnalysisTools.Indices
             int trackHeight = IndexDisplay.DefaultTrackHeight;
             Color[] grayScale = ImageTools.GrayScale();
 
-            Bitmap bmp = new Bitmap(trackWidth, trackHeight);
-            Graphics g = Graphics.FromImage(bmp);
+            var bmp = new Bitmap(trackWidth, trackHeight);
+            var g = Graphics.FromImage(bmp);
             g.Clear(grayScale[240]);
 
             // for pixels in the line
