@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="AnalyseLongRecordings.Arguments.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -31,7 +31,7 @@ AlignToMinute Options:
 
         [Command(
             CommandName,
-            Description = "Analyses long recordings, cutting them into blocks. Performs the analysis specified in Config file.",
+            Description = "Analyzes long recordings, cutting them into blocks. Performs the analysis specified in Config file.",
             ExtendedHelpText = AdditionalNotes)]
         public class Arguments : SourceConfigOutputDirArguments
         {
@@ -43,7 +43,7 @@ AlignToMinute Options:
 #endif
             }
 
-            [Option(Description = "Sets the name of the analysis to run. If not set, analysis identifer is parsed from the config file name.")]
+            [Option(Description = "Sets the name of the analysis to run. If not set, analysis identifier is parsed from the config file name.")]
             public string AnalysisIdentifier { get; set; }
 
             [Option(
