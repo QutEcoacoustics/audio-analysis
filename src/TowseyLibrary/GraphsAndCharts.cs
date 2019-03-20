@@ -47,9 +47,7 @@ namespace TowseyLibrary
             g.DrawLine(pen1, 0, height - 1, imageWidth, height - 1);
 
             // draw upper percentile bound
-            g.DrawLine(pen4, upperBound, height - 1, upperBound, 0);
-
-            g.DrawString(label, stringFont, Brushes.Wheat, new PointF(4, 3));
+            g.DrawLine(pen4, upperBound, height - 1, upperBound, height / 3);
 
             if (statistics != null)
             {
@@ -88,8 +86,9 @@ namespace TowseyLibrary
                 g.FillRectangle(brush, x, height - y, barWidth, y);
             }
 
-            // draw mode bin
-            g.DrawLine(pen4, modeBin, height - 1, modeBin, 0);
+            // draw label and modal bin
+            g.DrawString(label, stringFont, Brushes.Wheat, new PointF(4, 3));
+            g.DrawLine(pen4, modeBin, height - 1, modeBin, height / 3);
 
             return bmp;
         }
