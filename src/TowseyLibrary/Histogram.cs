@@ -1,4 +1,4 @@
-﻿// <copyright file="Histogram.cs" company="QutEcoacoustics">
+// <copyright file="Histogram.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -453,8 +453,7 @@ namespace TowseyLibrary
             // calculate statistics for values in matrix
             double[] values = DataTools.Matrix2Array(matrix);
             const bool DisplayHistogram = false;
-            double min, max, mode, SD;
-            DataTools.GetModeAndOneTailedStandardDeviation(values, DisplayHistogram, out min, out max, out mode, out SD);
+            DataTools.GetModeAndOneTailedStandardDeviation(values, DisplayHistogram, out double min, out double max, out int modalBin, out double mode, out double sd);
 
             int width = 100;  // pixels
             int height = 100; // pixels
@@ -467,8 +466,9 @@ namespace TowseyLibrary
                             {
                                 { "min", min },
                                 { "max", max },
+                                { "modal", modalBin },
                                 { "mode", mode },
-                                { "sd", SD },
+                                { "sd", sd },
                             },
                         width,
                         height);

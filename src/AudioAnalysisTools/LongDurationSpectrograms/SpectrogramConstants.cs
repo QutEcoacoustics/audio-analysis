@@ -29,10 +29,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public const string RGBMap_BGN_PMN_SPT = "BGN-PMN-SPT"; //R-G-B
         public const string RGBMap_BGN_PMN_CLS = "BGN-PMN-CLS"; //R-G-B
         public const string RGBMap_BGN_PMN_OSC = "BGN-PMN-OSC";
-        public const string RGBMap_BGN_PMN_RHZ = "BGN-PMN-RHZ";
         public const string RGBMap_BGN_PMN_R3D = "BGN-PMN-R3D";
         public const string RGBMap_BGN_PMN_RHZ = "BGN-PMN-RHZ";
-        public const string RGBMap_BGN_PMN_OSC = "BGN-PMN-OSC";
         public const string RGBMap_BGN_PMN_CVR = "BGN-PMN-CVR"; //R-G-B
 
         // these parameters manipulate the colour map and appearance of the false-colour LONG DURATION spectrogram

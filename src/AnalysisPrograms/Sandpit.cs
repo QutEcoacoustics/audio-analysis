@@ -71,7 +71,7 @@ namespace AnalysisPrograms
                 //CodeToPlaceScoreTracksUnderLdfcSpectrograms();
                 //CodeToPlaceScoreTracksUnderSingleImage();
 
-                ConcatenateIndexFilesAndSpectrograms();
+                //ConcatenateIndexFilesAndSpectrograms();
                 //ConcatenateGreyScaleSpectrogramImages();
                 //ConcatenateMarineImages();
                 //ConcatenateImages();
@@ -89,6 +89,7 @@ namespace AnalysisPrograms
                 //ResourcesForRheobatrachusSilusRecogniser();
                 //TestAnalyseLongRecordingUsingArtificialSignal();
                 //TestArbimonSegmentationAlgorithm();
+                TestDrawHistogram();
                 //TestEigenValues();
                 //TestChannelIntegrity();
                 //TestDct();
@@ -742,7 +743,7 @@ namespace AnalysisPrograms
             colorMap2 = "BGN-POW-CLS";
             // ########################## END of Yvonne's recordings of SM2 and SM4
             */
-
+            /*
             // ########################## CONCATENATION of 24-hour TEST  recordings from Liz Znidersic
             // top level directory
             string[] dataDirs =
@@ -761,7 +762,7 @@ namespace AnalysisPrograms
 
             // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and EchoGaps.
             gapRendering = "TimedGaps";
-
+            */
             // ########################## END of 24-hour TEST recordings
 
             /*
@@ -1494,6 +1495,314 @@ namespace AnalysisPrograms
             var image2 = GraphsAndCharts.DrawGraph("LD BGN SPECTRUM", normalisedIndex, 100);
             var ldsBgnSpectrumFile = outputDir.CombineFile("Spectrum2.png");
             image2.Save(ldsBgnSpectrumFile.FullName);
+        }
+
+        /// <summary>
+        /// Tests the drawing of a histogram of BGN values dervied from data located at: 
+        ///        Z:\tasmania_mez\output_zooming_indices\Towsey.Acoustic
+        /// This test is by way of attending to QUTEcoacoustics Issue #186
+        /// The distribution statistics are:
+        /// "Minimum": -110.74302631902833,
+        /// "Maximum": -44.00885043566803,
+        /// "Mode": -96.9512966364672,
+        /// "StandardDeviation": 4.0040505530016182,
+        /// "UpperPercentile": 98,
+        /// "UpperPercentileBin": 174,
+        /// "Count": 221181440.
+        /// </summary>
+        public static void TestDrawHistogram()
+        {
+            int[] distribution =
+            {
+                1, 2, 7, 8, 73, 83, 195, 432, 682,1644,2621,4655,7813,11935,17246,24803,33591,43249,54333,65208,75729,87135,96440,104096,110214,
+                121722,
+                128390,
+                138336,
+                147016,
+                156372,
+                163644,
+                166318,
+                164770,
+                163155,
+                158976,
+                155657,
+                155933,
+                156507,
+                158176,
+                149535,
+                131686,
+                103811,
+                81364,
+                71492,
+                77750,
+                102405,
+                141582,
+                174329,
+                203910,
+                239008,
+                286775,
+                356480,
+                475234,
+                639319,
+                881903,
+                1383086,
+                2448051,
+                4478415,
+                7651295,
+                11607067,
+                15415577,
+                17915490,
+                18405485,
+                16783249,
+                13824441,
+                10585914,
+                7907210,
+                6030484,
+                4794337,
+                3974758,
+                3357695,
+                2940875,
+                2620874,
+                2349632,
+                2122577,
+                1932630,
+                1769112,
+                1649037,
+                1547783,
+                1459096,
+                1379839,
+                1303302,
+                1218706,
+                1141774,
+                1065302,
+                989003,
+                915842,
+                849973,
+                792082,
+                751371,
+                705448,
+                673538,
+                640900,
+                609732,
+                590720,
+                570525,
+                554886,
+                542704,
+                525214,
+                511713,
+                504054,
+                489061,
+                482371,
+                477460,
+                469684,
+                465019,
+                464784,
+                463130,
+                471294,
+                472988,
+                477931,
+                487694,
+                490929,
+                504352,
+                506022,
+                514559,
+                524511,
+                532120,
+                539667,
+                549030,
+                550959,
+                549555,
+                543018,
+                533275,
+                528735,
+                511541,
+                505002,
+                503153,
+                494837,
+                488639,
+                479920,
+                468004,
+                458980,
+                452198,
+                439419,
+                427299,
+                419077,
+                412942,
+                402728,
+                392793,
+                380144,
+                371799,
+                363792,
+                355276,
+                346957,
+                338039,
+                328357,
+                324295,
+                316964,
+                305427,
+                303147,
+                296545,
+                293390,
+                282624,
+                274414,
+                268267,
+                258093,
+                252943,
+                247530,
+                238958,
+                232172,
+                226631,
+                219153,
+                211740,
+                206198,
+                201907,
+                194437,
+                189735,
+                187535,
+                182418,
+                177998,
+                171918,
+                164774,
+                162404,
+                158788,
+                154316,
+                150446,
+                146819,
+                144324,
+                143652,
+                142663,
+                140900,
+                138487,
+                135326,
+                135268,
+                131577,
+                130240,
+                130077,
+                129643,
+                124460,
+                125488,
+                122459,
+                120075,
+                117914,
+                116033,
+                112523,
+                109994,
+                103546,
+                101266,
+                97021,
+                92399,
+                87952,
+                82482,
+                78217,
+                73882,
+                68510,
+                65289,
+                60752,
+                57658,
+                53378,
+                50235,
+                47692,
+                43817,
+                40615,
+                38038,
+                32463,
+                29407,
+                26603,
+                24261,
+                21458,
+                17756,
+                15624,
+                13682,
+                11949,
+                9779,
+                9067,
+                7517,
+                6549,
+                6308,
+                5118,
+                4441,
+                3533,
+                3466,
+                2931,
+                2529,
+                1994,
+                2099,
+                1820,
+                1388,
+                1128,
+                1141,
+                1005,
+                809,
+                737,
+                675,
+                472,
+                522,
+                423,
+                515,
+                268,
+                286,
+                175,
+                178,
+                197,
+                180,
+                121,
+                138,
+                110,
+                104,
+                104,
+                80,
+                85,
+                50,
+                59,
+                102,
+                50,
+                39,
+                38,
+                30,
+                37,
+                24,
+                25,
+                21,
+                63,
+                19,
+                8,
+                9,
+                14,
+                18,
+                15,
+                11,
+                12,
+                10,
+                7,
+                66,6,4,3,1,4,2,2,4,2,3,1,1,3,1,51,
+            };
+
+            string label = "Test";
+            double min = -110.74302631902833;
+            double max = -44.00885043566803;
+            double mode = -96.9512966364672;
+            double sd = 4.0040505530016182;
+            // "UpperPercentile": 98,
+            int upperPercentileBin = 174;
+            double upperPercentileValue = -72.037;
+            //int count = 221181440;
+            int count = distribution.Sum();
+            var dict = new Dictionary<string, double>()
+            {
+                { "min", min },
+                { "max", max },
+                { "mode", mode },
+                { "sd", sd },
+                { "98%", upperPercentileValue },
+                { "count", count },
+            };
+            int imageWidth = 300;
+            int imageHeight = 100;
+            var dirPath = new DirectoryInfo("C:\\Temp");
+
+            var image = GraphsAndCharts.DrawHistogram(label, distribution, upperPercentileBin, dict, imageWidth, imageHeight);
+            var path = Path.Combine(dirPath.FullName, "name.png");
+            image.Save(path);
         }
 
         /// <summary>

@@ -38,6 +38,8 @@ namespace AudioAnalysisTools.Indices
 
             public double Mode { get; set; }
 
+            public int ModalBin { get; set; }
+
             public double StandardDeviation { get; set; }
 
             public int UpperPercentile { get; set; }
@@ -219,8 +221,7 @@ namespace AudioAnalysisTools.Indices
             int upperPercentile = 0;
             double[] values = DataTools.Matrix2Array(matrix);
             const bool displayHistogram = false;
-            double min, max, mode, sd;
-            DataTools.GetModeAndOneTailedStandardDeviation(values, displayHistogram, out min, out max, out mode, out sd);
+            DataTools.GetModeAndOneTailedStandardDeviation(values, displayHistogram, out var min, out var max, out var modalBin, out var mode, out var sd);
             int[] histogram = Histogram.Histo(matrix, binCount);
 
             return new SpectralStats()
@@ -228,6 +229,7 @@ namespace AudioAnalysisTools.Indices
                 Minimum = min,
                 Maximum = max,
                 Mode = mode,
+                ModalBin = modalBin,
                 StandardDeviation = sd,
                 UpperPercentile = upperPercentile,
                 Distribution = histogram,
@@ -243,14 +245,14 @@ namespace AudioAnalysisTools.Indices
         public static SpectralStats GetModeAndOneTailedStandardDeviation(double[] values, int binCount, int upperPercentile)
         {
             const bool displayHistogram = false;
-            double min, max, mode, sd;
-            DataTools.GetModeAndOneTailedStandardDeviation(values, displayHistogram, out min, out max, out mode, out sd);
+            DataTools.GetModeAndOneTailedStandardDeviation(values, displayHistogram, out var min, out var max, out var modalBin, out var mode, out var sd);
             int[] histogram = Histogram.Histo(values, binCount);
 
             return new SpectralStats()
             {
                 Minimum = min,
                 Maximum = max,
+                ModalBin = modalBin,
                 Mode = mode,
                 StandardDeviation = sd,
                 UpperPercentile = upperPercentile,

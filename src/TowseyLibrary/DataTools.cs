@@ -4523,21 +4523,22 @@ namespace TowseyLibrary
     return binCounts;
   }
 
-  // =============================================================================
+    // =============================================================================
 
-      /// <summary>
-      /// Returns the min, max, mode and one-sided standard deviation of an array of double values.
-      /// This method accomodates the possibility that the distribution of values is a truncated Gaussian or a skewed Gaussian.
-      /// Once the modal position has been determined, it is assumed that the Sd is to be determined from the long-tailed side.
-      /// i.e. the modal position is assumed to be the average of the underlying distribution.
-      /// This method is used to calculate the mean and SD of acoustic indices whose distributions are very skewed, e.g. temporal entropy and cover.
-      /// </summary>
-      /// <param name="values"></param>
-      /// <param name="min"></param>
-      /// <param name="max"></param>
-      /// <param name="mode"></param>
-      /// <param name="SD"></param>
-        public static void GetModeAndOneTailedStandardDeviation(double[] values, bool writeHistogram, out double min, out double max, out double mode, out double SD)
+    /// <summary>
+    /// Returns the min, max, mode and one-sided standard deviation of an array of double values.
+    /// This method accomodates the possibility that the distribution of values is a truncated Gaussian or a skewed Gaussian.
+    /// Once the modal position has been determined, it is assumed that the Sd is to be determined from the long-tailed side.
+    /// i.e. the modal position is assumed to be the average of the underlying distribution.
+    /// This method is used to calculate the mean and SD of acoustic indices whose distributions are very skewed, e.g. temporal entropy and cover.
+    /// </summary>
+    /// <param name="values">an array of values.</param>
+    /// <param name="min">min value.</param>
+    /// <param name="max">max value in the array.</param>
+    /// <param name="modalBin">bin having modal value.</param>
+    /// <param name="mode">the value of the mode.</param>
+    /// <param name="SD">standard deviation of the distribution.</param>
+    public static void GetModeAndOneTailedStandardDeviation(double[] values, bool writeHistogram, out double min, out double max, out int modalBin, out double mode, out double SD)
       {
           int binCount = 300;
           double binWidth;
@@ -4551,6 +4552,7 @@ namespace TowseyLibrary
           int indexOfMode, indexOfOneSD;
           GetModeAndOneTailedStandardDeviation(histo, out indexOfMode, out indexOfOneSD);
           mode = min + (indexOfMode * binWidth);
+          modalBin = indexOfMode;
           int delta = Math.Abs(indexOfOneSD - indexOfMode);
           if (delta < 1)
             {
