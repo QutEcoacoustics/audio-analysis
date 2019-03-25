@@ -21,6 +21,7 @@ namespace AudioAnalysisTools.Indices
     using DSP;
     using StandardSpectrograms;
     using log4net;
+    using MoreLinq.Extensions;
     using TowseyLibrary;
     using Zio;
 
@@ -357,7 +358,7 @@ namespace AudioAnalysisTools.Indices
         }
 
         /// <summary>
-        /// Returns a sorted list of file paths, sorted on file name.
+        /// Returns a unique, sorted, list of file paths, sorted on file name.
         /// IMPORTANT: Sorts on alphanumerics, NOT on date or time encoded in the file name.
         /// </summary>
         public static FileInfo[] GetFilesInDirectories(DirectoryInfo[] directories, string pattern)
@@ -378,14 +379,7 @@ namespace AudioAnalysisTools.Indices
                 fileList.AddRange(files);
             }
 
-            //if (fileList.Count == 0)
-            //{
-            //    // No need for this warning. It comes later.
-            //    LoggedConsole.WriteErrorLine($"No file names match pattern <{pattern}>. Returns empty list of files");
-            //}
-
-            FileInfo[] returnList = fileList.ToArray();
-            Array.Sort(returnList, (f1, f2) => f1.Name.CompareTo(f2.Name));
+            FileInfo[] returnList = fileList.DistinctBy(x => x.FullName).OrderBy(x => x.Name).ToArray();
 
             return returnList;
         }

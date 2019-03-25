@@ -89,6 +89,10 @@ namespace AnalysisPrograms.Production
                     new ExceptionStyle() { ErrorCode = 105, PrintUsage = false }
                 },
                 {
+                    typeof(InvalidDataSetException),
+                    new ExceptionStyle() {ErrorCode = 106, PrintUsage = false }
+                },
+                {
                     typeof(AnalysisOptionDevilException),
                     new ExceptionStyle
                     {

@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="FileDateHelpers.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -27,13 +27,13 @@ namespace Acoustics.Shared
         {
                 "yyyyMMdd[-|T|_]HHmmss (if timezone offset hint provided)",
                 "yyyyMMdd[-|T|_]HHmmssZ",
-            };
+        };
 
         private static readonly string[] AcceptedFormatsTimeZone =
         {
                 "yyyyMMdd[-|T|_]HHmmss[+|-]HH",
                 "yyyyMMdd[-|T|_]HHmmss[+|-]HHmm",
-            };
+        };
 
         internal static readonly DateVariants[] PossibleFormats =
             {
@@ -79,9 +79,15 @@ namespace Acoustics.Shared
             var datesAndFiles = new SortedDictionary<DateTimeOffset, FileInfo>();
             foreach (var file in files)
             {
-                DateTimeOffset parsedDate;
-                if (FileNameContainsDateTime(file.Name, out parsedDate, offsetHint))
+                if (FileNameContainsDateTime(file.Name, out var parsedDate, offsetHint))
                 {
+                    if (datesAndFiles.ContainsKey(parsedDate))
+                    {
+                        string message =
+                            $"There was a duplicate date. File {file} with date {parsedDate,'r'} conflicts with existing file {datesAndFiles[parsedDate]}";
+                        throw new InvalidDataSetException(message);
+                    }
+
                     datesAndFiles.Add(parsedDate, file);
                 }
             }

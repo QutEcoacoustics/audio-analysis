@@ -223,6 +223,7 @@
     <Compile Include="Formatters.cs" />
     <Compile Include="GraphicsSegmented.cs" />
     <Compile Include="ImageTooLargeForGraphicsException.cs" />
+    <Compile Include="InvalidDataSetException.cs" />
     <Compile Include="Json.cs" />
     <Compile Include="Logging\Log4NetTextWriter.cs" />
     <Compile Include="Logging\LoggedConsole.cs" />
