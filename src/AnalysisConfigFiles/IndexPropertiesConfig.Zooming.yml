@@ -651,7 +651,7 @@ OSC:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 10.0
+  NormMax: 5.0
   CalculateNormMin: true
   CalculateNormMax: true
   ProjectID: Acoustic Indices

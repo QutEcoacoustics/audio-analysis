@@ -42,7 +42,10 @@ namespace AnalysisPrograms
     /// audiofilecheck - Writes information about audio files to a csv file.
     /// snr - Calls SnrAnalysis.Execute():  Calculates signal to noise ratio.
     /// audiocutter - Cuts audio into segments of desired length and format
-    /// createfoursonograms
+    /// createfoursonograms.
+    ///
+    /// NOTE: In March 2019, several config files were removed because no longer used or relevant.
+    /// Therefore many of the config paths below will no longer be valid.
     /// </summary>
     // TODO: [OPENSOURCE] empty out this file
     public class Sandpit
