@@ -9,16 +9,13 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
     using System.IO;
     using System.IO.Compression;
     using System.Linq;
-
     using Acoustics.Shared;
+    using Acoustics.Test.TestHelpers;
     using global::AnalysisPrograms;
-
     using global::AudioAnalysisTools.Indices;
     using global::AudioAnalysisTools.LongDurationSpectrograms;
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
-    using TowseyLibrary;
 
     /// <summary>
     /// Test methods for the various Frequency Scales
@@ -58,7 +55,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
         /// <summary>
         /// METHOD TO CHECK Concatenation of spectral and summary index files when
-        /// ConcatenateEverythingYouCanLayYourHandsOn = true
+        /// ConcatenateEverythingYouCanLayYourHandsOn = true.
         /// </summary>
         [TestMethod]
         public void ConcatenateEverythingYouCanLayYourHandsOn()
@@ -107,13 +104,13 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             var actualImage = ImageTools.ReadImage2Bitmap(imageFileInfo.FullName);
             Assert.That.ImageIsSize(722, 632, actualImage);
             Assert.That.PixelIsColor(new Point(100, 100), Color.FromArgb(211, 211, 211), actualImage);
-            Assert.That.PixelIsColor(new Point(200, 100), Color.FromArgb(54, 29, 18), actualImage);
+            Assert.That.PixelIsColor(new Point(200, 125), Color.FromArgb(47, 34, 255), actualImage);
             Assert.That.PixelIsColor(new Point(675, 600), Color.FromArgb(255, 105, 180), actualImage);
         }
 
         /// <summary>
         /// METHOD TO CHECK Concatenation of spectral and summary index files when ConcatenateEverythingYouCanLayYourHandsOn = false
-        /// that is, concatenate in 24 hour blocks only. In this test we concatenate only 26/07/2016
+        /// that is, concatenate in 24 hour blocks only. In this test we concatenate only 26/07/2016.
         /// </summary>
         [TestMethod]
         public void ConcatenateIndexFilesTest24Hour()
@@ -163,8 +160,8 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             // we expect only the second half (past midnight) of the image to be rendered
             Assert.That.ImageIsSize(512, 632, actualImage);
-            Assert.That.PixelIsColor(new Point(100, 100), Color.FromArgb(32, 25, 36), actualImage);
-            Assert.That.PixelIsColor(new Point(100, 160), Color.FromArgb(0, 80, 132), actualImage);
+            Assert.That.PixelIsColor(new Point(105, 154), Color.FromArgb(21, 200, 255), actualImage);
+            Assert.That.PixelIsColor(new Point(100, 160), Color.FromArgb(0, 69, 131), actualImage);
         }
 
         /// <summary>
@@ -220,7 +217,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             var actualImage1 = ImageTools.ReadImage2Bitmap(image1FileInfo.FullName);
             Assert.That.ImageIsSize(210, 632, actualImage1);
             Assert.That.PixelIsColor(new Point(100, 100), Color.FromArgb(211, 211, 211), actualImage1);
-            Assert.That.PixelIsColor(new Point(50, 50), Color.FromArgb(86, 29, 17), actualImage1);
+            Assert.That.PixelIsColor(new Point(50, 50), Color.FromArgb(66, 17, 14), actualImage1);
 
             // IMAGE 2: Compare image files - check that image exists and dimensions are correct
             var dateString2 = "20160726";
@@ -235,7 +232,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             var actualImage2 = ImageTools.ReadImage2Bitmap(image2FileInfo.FullName);
             Assert.That.ImageIsSize(512, 632, actualImage2);
-            Assert.That.PixelIsColor(new Point(50, 124), Color.FromArgb(70, 38, 255), actualImage2);
+            Assert.That.PixelIsColor(new Point(50, 124), Color.FromArgb(57, 28, 255), actualImage2);
             Assert.That.PixelIsColor(new Point(460, 600), Color.FromArgb(255, 105, 180), actualImage2);
         }
 
@@ -305,14 +302,14 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
         [DataRow(ConcatMode.EchoGaps, new[] { 1440, 1420, 1440 })]
         public void SampledDataConcatModeTests(ConcatMode gapRendering, int[] expectedWidths)
         {
-            const string Ark01 = "Ark01";
+            const string ark01 = "Ark01";
 
             var arguments = new ConcatenateIndexFiles.Arguments
                 {
                     InputDataDirectories = new[] { newZealandArk01IndicesDirectory },
                     OutputDirectory = this.outputDirectory,
                     DirectoryFilter = "*.wav",
-                    FileStemName = Ark01,
+                    FileStemName = ark01,
                     StartDate = null,
                     EndDate = null,
                     IndexPropertiesConfig = PathHelper.ResolveConfigFile("IndexPropertiesConfig.yml").FullName,
@@ -330,7 +327,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             var dateStrings = new[] { "20161209", "20161210", "20161211" }.Zip(expectedWidths, ValueTuple.Create);
             foreach (var (dateString, expectedWidth) in dateStrings)
             {
-                var prefix = Path.Combine(this.outputDirectory.FullName, Ark01, dateString, Ark01 + "_" + dateString + "__");
+                var prefix = Path.Combine(this.outputDirectory.FullName, ark01, dateString, ark01 + "_" + dateString + "__");
 
                 Assert.That.PathExists(prefix + "Towsey.Acoustic.Indices.csv");
                 Assert.That.PathNotExists(prefix + "SummaryIndex.csv");
@@ -355,7 +352,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                     case ConcatMode.NoGaps:
                         // There should basically be no pattern here
                         var histogram = ImageTools.GetColorHistogramNormalized(
-                            actualImage, 
+                            actualImage,
                             new Rectangle(40, 254, 20, 20));
 
                         // should not have empty space
@@ -375,8 +372,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                             new Rectangle(40, 254, 1, 20),
                             19,
                             1,
-                            actualImage,
-                            0.0);
+                            actualImage);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(gapRendering), gapRendering, null);

@@ -467,10 +467,19 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // check if user wants to use the automated bounds.
             if (this.IndexStats != null)
             {
+                // get the stats for this key
+                var stats = this.IndexStats[key];
                 if (indexProperties.CalculateNormMin)
                 {
-                    //min = this.IndexStats[key].Mode;
-                    minBound = this.IndexStats[key].Mode - (this.IndexStats[key].StandardDeviation * 0.1);
+                    // By default the minimum bound is set slightly below the modal value of the index.
+                    minBound = stats.Mode - (stats.StandardDeviation * 0.1);
+
+                    // case where mode = min. Usually this occurs when mode = 0.0.
+                    if (stats.Mode < 0.001)
+                    {
+                        var binWidth = (stats.Maximum - stats.Minimum) / stats.Distribution.Length;
+                        minBound += binWidth;
+                    }
 
                     // fix case where signal is defective &= zero. We do not want ACI min ever set too low.
                     if (key.Equals("ACI") && minBound < 0.3)
@@ -487,12 +496,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
                 if (indexProperties.CalculateNormMax)
                 {
-                    maxBound = this.IndexStats[key].GetValueOfNthPercentile(IndexDistributions.UpperPercentileDefault);
+                    maxBound = stats.GetValueOfNthPercentile(IndexDistributions.UpperPercentileDefault);
 
                     // correct for case where max bound = zero. This can happen where ICD is very short i.e. 0.1s.
                     if (maxBound < 0.0001)
                     {
-                        maxBound = this.IndexStats[key].Maximum * 0.1;
+                        maxBound = stats.Maximum * 0.1;
                     }
                 }
 
@@ -621,7 +630,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <summary>
         /// Draw a chromeless false colour spectrogram.
         /// Chromeless means WITHOUT all the trimmings, such as title bar axis labels, grid lines etc.
-        /// However it does add in notated error segments
+        /// However it does add in notated error segments.
         /// </summary>
         public Image DrawFalseColourSpectrogramChromeless(string colorMode, string colorMap)
         {

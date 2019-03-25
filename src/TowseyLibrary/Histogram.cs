@@ -1,4 +1,4 @@
-﻿// <copyright file="Histogram.cs" company="QutEcoacoustics">
+// <copyright file="Histogram.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -6,17 +6,14 @@ namespace TowseyLibrary
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
     using System.Linq;
-    using System.Text;
 
     public static class Histogram
     {
         public static int[] Histo(double[] data, int binCount)
         {
-            double min;
             double max;
-            DataTools.MinMax(data, out min, out max);
+            DataTools.MinMax(data, out var min, out max);
             double range = max - min;
             int[] bins = new int[binCount];
 
@@ -145,16 +142,12 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// HISTOGRAM from a matrix of double
+        /// HISTOGRAM from a matrix of double.
         /// </summary>
         public static int[] Histo(double[,] data, int binCount)
         {
-            double min;
-            double max;
-            DataTools.MinMax(data, out min, out max);
+            DataTools.MinMax(data, out var min, out var max);
             double binWidth = (max - min) / binCount;
-
-            //LoggedConsole.WriteLine("data min=" + min + "  data max=" + max + " binwidth=" + binWidth);
             return Histo(data, binCount, min, max, binWidth);
         }
 
@@ -190,18 +183,17 @@ namespace TowseyLibrary
         /// returns a fixed width histogram.
         /// Width is determined by user supplied min and max.
         /// </summary>
-        /// <param name="data"></param>
-        /// <param name="binWidth"> should be an integer width</param>
-        /// <param name="min"></param>
-        /// <param name="max"></param>
-        /// <returns></returns>
+        /// <param name="data">the histogram data.</param>
+        /// <param name="binWidth"> should be an integer width.</param>
+        /// <param name="min">min value.</param>
+        /// <param name="max">max value.</param>
         public static int[] Histo_FixedWidth(int[] data, int binWidth, int min, int max)
         {
             int range = max - min + 1;
             int binCount = range / binWidth;
 
             // init freq bin array
-            int[] bins = new int[binCount];
+            var bins = new int[binCount];
             for (int i = 0; i < data.Length; i++)
             {
                 int id = (data[i] - min) / binWidth;
@@ -225,11 +217,10 @@ namespace TowseyLibrary
         /// returns a fixed width histogram.
         /// Width is determined by user supplied min and max.
         /// </summary>
-        /// <param name="data"></param>
+        /// <param name="data">the data.</param>
         /// <param name="binWidth"> should be an integer width</param>
-        /// <param name="min"></param>
-        /// <param name="max"></param>
-        /// <returns></returns>
+        /// <param name="min">the min value.</param>
+        /// <param name="max">the max value.</param>
         public static int[] Histo_FixedWidth(double[] data, double binWidth, double min, double max)
         {
             double range = max - min + 1;
@@ -258,14 +249,8 @@ namespace TowseyLibrary
 
         /// <summary>
         /// HISTOGRAM from an array of int
-        /// assume all values are postiive
+        /// assume all values are postiive.
         /// </summary>
-        /// <param name="data"></param>
-        /// <param name="binCount"></param>
-        /// <param name="binWidth"></param>
-        /// <param name="min"></param>
-        /// <param name="max"></param>
-        /// <returns></returns>
         public static int[] Histo(int[] data)
         {
             int length = data.Length;
@@ -286,12 +271,6 @@ namespace TowseyLibrary
         /// <summary>
         /// HISTOGRAM from an array of int
         /// </summary>
-        /// <param name="data"></param>
-        /// <param name="binCount"></param>
-        /// <param name="binWidth"></param>
-        /// <param name="min"></param>
-        /// <param name="max"></param>
-        /// <returns></returns>
         public static int[] Histo(int[] data, int binCount, out double binWidth, out int min, out int max)
         {
             int length = data.Length;
@@ -345,9 +324,7 @@ namespace TowseyLibrary
             for (int i = 0; i < windowCount; i++)
             {
                 double[] subsample = DataTools.Subarray(waveform, i * window, window);
-                double min;
-                double max;
-                DataTools.MinMax(subsample, out min, out max);
+                DataTools.MinMax(subsample, out var min, out var max);
                 amplitudeArray[i] = max - min;
             }
 
@@ -355,7 +332,7 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// Returns the bin ID that coincides with the passed percentile
+        /// Returns the bin ID that coincides with the passed percentile.
         /// </summary>
         public static int GetPercentileBin(int[] histogram, int percentile)
         {
@@ -364,7 +341,7 @@ namespace TowseyLibrary
                 throw new Exception("percentile must be < 100");
             }
 
-            double percentAsfraction = percentile / (double)100;
+            double percentAsfraction = percentile / 100D;
             int sum = histogram.Sum();
             int percentileSum = 0;
             for (int i = 0; i < histogram.Length; i++)
@@ -407,11 +384,9 @@ namespace TowseyLibrary
             return histo;
         }
 
-        public static void writeConciseHistogram(int[] data)
+        public static void WriteConciseHistogram(int[] data)
         {
-            int min;
-            int max;
-            DataTools.MinMax(data, out min, out max);
+            DataTools.MinMax(data, out int min, out int max);
             int[] histo = new int[max + 1];
             for (int i = 0; i < data.Length; i++)
             {
@@ -426,7 +401,7 @@ namespace TowseyLibrary
             LoggedConsole.WriteLine();
         }
 
-        public static void writeConcise2DHistogram(int[,] array, int max)
+        public static void WriteConcise2DHistogram(int[,] array, int max)
         {
             int[,] matrix = new int[max, max];
             for (int i = 0; i < array.Length; i++)
@@ -452,28 +427,29 @@ namespace TowseyLibrary
         {
             // calculate statistics for values in matrix
             double[] values = DataTools.Matrix2Array(matrix);
-            const bool DisplayHistogram = false;
-            double min, max, mode, SD;
-            DataTools.GetModeAndOneTailedStandardDeviation(values, DisplayHistogram, out min, out max, out mode, out SD);
+            DataTools.GetModeAndOneTailedStandardDeviation(values, out int[] histogram, out double min, out double max, out int modalBin, out double mode, out double sd);
 
             int width = 100;  // pixels
             int height = 100; // pixels
             int upperPercentileBin = 0;
 
             string title = "wpd";
-            int[] histogram = Histo(matrix, width);
-            Image image = GraphsAndCharts.DrawHistogram(title, histogram, upperPercentileBin,
-                        new Dictionary<string, double>()
-                            {
-                                { "min", min },
-                                { "max", max },
-                                { "mode", mode },
-                                { "sd", SD },
-                            },
-                        width,
-                        height);
+            var image = GraphsAndCharts.DrawHistogram(
+                title,
+                histogram,
+                upperPercentileBin,
+                new Dictionary<string, double>()
+                {
+                    { "min", min },
+                    { "max", max },
+                    { "modal", modalBin },
+                    { "mode", mode },
+                    { "sd", sd },
+                },
+                width,
+                height);
 
             image.Save(imagePath);
         }
-    } // class Histrogram
+    }
 }

@@ -20,6 +20,7 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms
     using global::AnalysisPrograms;
     using global::AudioAnalysisTools.Indices;
     using global::AudioAnalysisTools.LongDurationSpectrograms;
+    using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
@@ -38,8 +39,8 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms
             {
                 var matrix = new double[256, 60].Fill(indexProperties[key].DefaultValue);
                 indexSpectrograms.Add(key, matrix);
-
-                indexStatistics.Add(key, IndexDistributions.GetModeAndOneTailedStandardDeviation(matrix, 300, IndexDistributions.UpperPercentileDefault));
+                double[] array = DataTools.Matrix2Array(matrix);
+                indexStatistics.Add(key, IndexDistributions.GetModeAndOneTailedStandardDeviation(array, 300, IndexDistributions.UpperPercentileDefault));
             }
 
             var images = LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(

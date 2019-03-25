@@ -4523,51 +4523,54 @@ namespace TowseyLibrary
     return binCounts;
   }
 
-  // =============================================================================
+        // =============================================================================
 
-      /// <summary>
-      /// Returns the min, max, mode and one-sided standard deviation of an array of double values.
-      /// This method accomodates the possibility that the distribution of values is a truncated Gaussian or a skewed Gaussian.
-      /// Once the modal position has been determined, it is assumed that the Sd is to be determined from the long-tailed side.
-      /// i.e. the modal position is assumed to be the average of the underlying distribution.
-      /// This method is used to calculate the mean and SD of acoustic indices whose distributions are very skewed, e.g. temporal entropy and cover.
-      /// </summary>
-      /// <param name="values"></param>
-      /// <param name="min"></param>
-      /// <param name="max"></param>
-      /// <param name="mode"></param>
-      /// <param name="SD"></param>
-        public static void GetModeAndOneTailedStandardDeviation(double[] values, bool writeHistogram, out double min, out double max, out double mode, out double SD)
-      {
-          int binCount = 300;
-          double binWidth;
-          int[] histo = Histogram.Histo(values, binCount, out binWidth, out min, out max);
-          if (writeHistogram)
-            {
-                writeBarGraph(histo);
-            }
+        /// <summary>
+        /// This method is used to calculate the mean and SD of acoustic indices whose distributions are very skewed, e.g. temporal entropy and cover.
+        /// It returns the min, max, mode and one-sided standard deviation of an array of doubles.
+        /// NOTE: The mode is prevented from being in lowest two bins because we typically do not want the mode to be near the minimum value of the distribution.
+        /// This method accomodates the possibility that the distribution of index values is a truncated Gaussian or a skewed Gaussian.
+        /// Once the modal position has been determined, it is assumed that the Sd is to be determined from the long-tailed side.
+        /// i.e. the modal position is assumed to be the average of the underlying distribution.
+        /// </summary>
+        /// <param name="values">an array of values.</param>
+        /// <param name="histogram">histogram dervied from passed array.</param>
+        /// <param name="min">min value.</param>
+        /// <param name="max">max value in the array.</param>
+        /// <param name="modalBin">bin having modal value.</param>
+        /// <param name="mode">the value of the mode.</param>
+        /// <param name="SD">standard deviation of the distribution.</param>
+        public static void GetModeAndOneTailedStandardDeviation(double[] values, out int[] histogram, out double min, out double max, out int modalBin, out double mode, out double SD)
+        {
+            histogram = Histogram.Histo(values, binCount: 300, binWidth: out double binWidth, min: out min, max: out max);
+
+            // This next step is a hack for spectral acoustic indices.
+            // Set lowest two histogram bins to zero.
+            // We do not want a modal value in these bins when calculated bounds for LDFC spectrograms.
+            histogram[0] = 0;
+            histogram[1] = 0;
 
             // Calculate the SD on longest tail. Assume that the tail is Gaussian.
-          int indexOfMode, indexOfOneSD;
-          GetModeAndOneTailedStandardDeviation(histo, out indexOfMode, out indexOfOneSD);
-          mode = min + (indexOfMode * binWidth);
-          int delta = Math.Abs(indexOfOneSD - indexOfMode);
-          if (delta < 1)
+            GetModeAndOneTailedStandardDeviation(histogram, out int indexOfMode, out int indexOfOneSd);
+            mode = min + (indexOfMode * binWidth);
+            modalBin = indexOfMode;
+            int delta = Math.Abs(indexOfOneSd - indexOfMode);
+            if (delta < 1)
             {
                 delta = 1;
             }
 
-          SD = delta * binWidth;
+            SD = delta * binWidth;
 
-          // the below av and sd are just a check on the one-tailed calcualtion.
-          // double avDist, sdDist;
-          // NormalDist.AverageAndSD(values, out avDist, out sdDist);
-          // double[] avAndsd = new double[2];
-          // avAndsd[0] = avDist;
-          // avAndsd[1] = sdDist;
-          // Console.Write("Standard av & sd for data.");
-          // Console.WriteLine(NormalDist.formatAvAndSD(avAndsd, 3));
-      }
+              // the below av and sd are just a check on the one-tailed calcualtion.
+              // double avDist, sdDist;
+              // NormalDist.AverageAndSD(values, out avDist, out sdDist);
+              // double[] avAndsd = new double[2];
+              // avAndsd[0] = avDist;
+              // avAndsd[1] = sdDist;
+              // Console.Write("Standard av & sd for data.");
+              // Console.WriteLine(NormalDist.formatAvAndSD(avAndsd, 3));
+        }
 
   /// <summary>
   /// Assuming the passed histogram represents a distribution of values (derived from acoustic indices). which a signal is added to Gaussian noise,
@@ -4576,9 +4579,6 @@ namespace TowseyLibrary
       /// i.e. the modal position is assumed to be the average of the underlying distribution.
       /// This method is used to calculate the mean and SD of acoustic indices whose distrubtions are very skewed, e.g. temporal entropy and cover.
       /// </summary>
-  /// <param name="histo"></param>
-  /// <param name="indexOfMode"></param>
-  /// <param name="indexOfOneSD"></param>
         public static void GetModeAndOneTailedStandardDeviation(int[] histo, out int indexOfMode, out int indexOfOneSD)
   {
       // the below smoothing was added on 15th April 2015. It may or may not be helpful.
