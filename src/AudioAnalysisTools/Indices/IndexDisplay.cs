@@ -129,6 +129,7 @@ namespace AudioAnalysisTools.Indices
                     continue;
                 }
 
+                //string name = ip.Name;
                 double[] array = dictionaryOfSummaryIndices[key];
                 scaleLength = array.Length;
 

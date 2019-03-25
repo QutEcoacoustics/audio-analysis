@@ -72,7 +72,7 @@ namespace AudioAnalysisTools.Indices
         public static List<GapsAndJoins> DataIntegrityCheck(IEnumerable<SummaryIndexValues> summaryIndices, ConcatMode gapRendering)
         {
             // Integrity check 1: look for whether a recording minute exists
-            var errors = DataIntegrityCheckForNoRecording(summaryIndices, gapRendering);
+            var errors = DataIntegrityCheckRecordingGaps(summaryIndices, gapRendering);
 
             // Integrity check 2: look for whether there is join between two recording files
             errors.AddRange(DataIntegrityCheckForFileJoins(summaryIndices, gapRendering));
@@ -88,9 +88,9 @@ namespace AudioAnalysisTools.Indices
         /// <summary>
         /// Does three data integrity checks.
         /// </summary>
-        /// <param name="spectralIndices">a dictionary of spectral indices</param>
-        /// <param name="gapRendering">how to render the gap in image terms</param>
-        /// <returns>a list of erroneous segments</returns>
+        /// <param name="spectralIndices">a dictionary of spectral indices.</param>
+        /// <param name="gapRendering">how to render the gap in image terms.</param>
+        /// <returns>a list of erroneous segments.</returns>
         public static List<GapsAndJoins> DataIntegrityCheck(Dictionary<string, double[,]> spectralIndices, ConcatMode gapRendering)
         {
             var errors = DataIntegrityCheckSpectralIndices(spectralIndices, gapRendering);
@@ -98,11 +98,11 @@ namespace AudioAnalysisTools.Indices
         }
 
         /// <summary>
-        /// Writes a list of erroneous segment properties to file
+        /// Writes a list of erroneous segment properties to file.
         /// </summary>
-        /// <param name="errors">list of erroneous segments</param>
-        /// <param name="outputDirectory">directory in which json file to be written</param>
-        /// <param name="fileStem">name of json file</param>
+        /// <param name="errors">list of erroneous segments.</param>
+        /// <param name="outputDirectory">directory in which json file to be written.</param>
+        /// <param name="fileStem">name of json file.</param>
         public static void WriteErrorsToFile(List<GapsAndJoins> errors, DirectoryInfo outputDirectory, string fileStem)
         {
             // write info to file
@@ -118,53 +118,76 @@ namespace AudioAnalysisTools.Indices
         }
 
         /// <summary>
-        /// This method reads through a SUMMARY index array to make sure there was actually a signal to analyse.
-        /// If this occurs an gap/join event is flagged.
+        /// This method reads through a SUMMARY index array looking for gaps in the recording.
+        /// I initilly tried to detect these when the RankOrder index takes consecutive zero values.
+        /// However this does not work with recordings sampled one minute in N minutes.
+        /// So reverted to detecting the mising data flag which is when row.FileName == missingRow.
+        /// If this occurs a gap event is flagged.
         /// </summary>
         /// <param name="summaryIndices">array of summary indices.</param>
         /// <param name="gapRendering">how to render the gap in image terms.</param>
-        /// <returns>a list of erroneous segments</returns>
-        public static List<GapsAndJoins> DataIntegrityCheckForNoRecording(IEnumerable<SummaryIndexValues> summaryIndices, ConcatMode gapRendering)
+        /// <returns>a list of erroneous segments.</returns>
+        public static List<GapsAndJoins> DataIntegrityCheckRecordingGaps(IEnumerable<SummaryIndexValues> summaryIndices, ConcatMode gapRendering)
         {
             // init list of gaps and joins
             var gaps = new List<GapsAndJoins>();
 
-            bool isValidBlock = true;
+            // initialise starting conditions for loop
+            string missingRow = IndexMatrices.MissingRowString;
+            //int previousRank = -1;
             GapsAndJoins gap = null;
+            bool isGap = false;
+            int index = 0;
 
             // now loop through the rows/vectors of indices
-            int index = 0;
             foreach (var row in summaryIndices)
             {
-                // if this row is missing signal
-                if (row.FileName == IndexMatrices.MissingRowString)
+                //if (!isGap && (row.RankOrder == previousRank + 1))
+                //{
+                //    //everything OK
+                //    //continue;
+                //}
+
+                // if in gap and zeros continue then still in gap
+                //if (isGap && (row.RankOrder == 0 && previousRank == 0))
+                //{
+                //    //still in gap
+                //    //continue;
+                //}
+
+                //if (!isGap && (row.RankOrder == 0 && previousRank == 0))
+                if (!isGap && (row.FileName == missingRow))
                 {
-                    if (isValidBlock)
+                    // create gap instance
+                    isGap = true;
+                    gap = new GapsAndJoins
                     {
-                        isValidBlock = false;
-                        gap = new GapsAndJoins
-                            {
-                                StartPosition = index,
-                                GapDescription = gapDescriptionMissingData,
-                                GapRendering = gapRendering,
-                            };
-                    }
+                        StartPosition = index,
+                        GapDescription = gapDescriptionMissingData,
+                        GapRendering = gapRendering,
+                    };
                 }
-                else if (!isValidBlock && row.FileName != IndexMatrices.MissingRowString)
+
+                //if (isGap && (row.RankOrder == 1 && previousRank == 0))
+                if (isGap && (row.FileName != missingRow))
                 {
-                    // come to end of a bad patch
-                    isValidBlock = true;
+                    // come to end of a gap
+                    isGap = false;
                     gap.EndPosition = index - 1;
                     gaps.Add(gap);
                 }
 
+                //previousRank = row.RankOrder;
                 index++;
             }
 
-            // if not OK at end of the array, need to terminate the gap.
-            if (!isValidBlock)
+            // reached end of array
+            // if still have gap at end of the array, need to terminate it.
+            if (isGap)
             {
-                gaps[gaps.Count - 1].EndPosition = index - 1;
+                //gaps[gaps.Count - 1].EndPosition = index - 1;
+                gap.EndPosition = summaryIndices.Count() - 1;
+                gaps.Add(gap);
             }
 
             return gaps;
@@ -178,10 +201,9 @@ namespace AudioAnalysisTools.Indices
         /// <returns>a list of erroneous segments.</returns>
         public static List<GapsAndJoins> DataIntegrityCheckForFileJoins(IEnumerable<SummaryIndexValues> summaryIndices, ConcatMode gapRendering)
         {
-           // init list of gaps and joins
-            var gaps = new List<GapsAndJoins>();
-            var firstRow = summaryIndices.First();
-            string previousFileName = firstRow.FileName;
+            // init list of gaps and joins
+            var joins = new List<GapsAndJoins>();
+            string previousFileName = summaryIndices.First<SummaryIndexValues>().FileName;
 
             // now loop through the rows/vectors of indices
             int index = 0;
@@ -189,21 +211,22 @@ namespace AudioAnalysisTools.Indices
             {
                 if (row.FileName != previousFileName)
                 {
-                    var gap = new GapsAndJoins
-                            {
-                                StartPosition = index,
-                                GapDescription = gapDescriptionFileJoin,
-                                GapRendering = gapRendering,
-                                EndPosition = index + 1,
-                            };
-                    gaps.Add(gap);
+                    var fileJoin = new GapsAndJoins
+                    {
+                        StartPosition = index,
+                        GapDescription = gapDescriptionFileJoin,
+                        GapRendering = gapRendering,
+                        EndPosition = index, // this renders to one pixel width.
+                    };
+
+                    joins.Add(fileJoin);
                     previousFileName = row.FileName;
                 }
 
                 index++;
             }
 
-            return gaps;
+            return joins;
         }
 
         /// <summary>
@@ -400,7 +423,7 @@ namespace AudioAnalysisTools.Indices
 
         /// <summary>
         /// This method draws error segments on false-colour spectrograms and/or summary index plots.
-        /// It draws them in hierarchical order, highest level errors first.
+        /// This method draws the error segments in hierarchical order, highest level errors first.
         /// This way error due to missing recording is drawn last and overwrites other casading errors due to missing recording.
         /// </summary>
         /// <param name="bmp">The chromeless spectrogram to have segments drawn on it.</param>
@@ -500,15 +523,15 @@ namespace AudioAnalysisTools.Indices
                 // g.DrawLine(Pens.Black, 0, height, width, 0);
 
                 // Write description of the error cause.
-                var font = new Font("Arial", 9.0f, FontStyle.Bold);
+                var font = new Font("Arial", 8.0f, FontStyle.Bold);
                 if (textInVerticalOrientation)
                 {
                     var drawFormat = new StringFormat(StringFormatFlags.DirectionVertical);
-                    g.DrawString("     " + this.GapDescription, font, Brushes.Black, 2, 10, drawFormat);
+                    g.DrawString(" " + this.GapDescription, font, Brushes.Black, 2, 10, drawFormat);
                 }
                 else
                 {
-                    g.DrawString("     " + this.GapDescription, font, Brushes.Black, 2, fontVerticalPosition);
+                    g.DrawString(" " + this.GapDescription, font, Brushes.Black, 2, fontVerticalPosition);
                 }
             }
 

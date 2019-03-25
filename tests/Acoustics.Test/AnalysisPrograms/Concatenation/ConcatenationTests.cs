@@ -338,7 +338,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                 var actualImage = ImageTools.ReadImage2Bitmap(imagePath);
                 Assert.That.ImageIsSize(expectedWidth, 632, actualImage);
 
-                // target region for each image: 40,254, 20,20
+                // target region for each image: 40, 254, 20,20
                 switch (gapRendering)
                 {
                     case ConcatMode.TimedGaps:
