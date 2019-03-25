@@ -42,7 +42,7 @@ namespace AnalysisPrograms
     /// audiofilecheck - Writes information about audio files to a csv file.
     /// snr - Calls SnrAnalysis.Execute():  Calculates signal to noise ratio.
     /// audiocutter - Cuts audio into segments of desired length and format
-    /// createfoursonograms
+    /// createfoursonograms.
     /// </summary>
     // TODO: [OPENSOURCE] empty out this file
     public class Sandpit
@@ -62,7 +62,7 @@ namespace AnalysisPrograms
                 Log.WriteLine("# Start Time = " + tStart.ToString(CultureInfo.InvariantCulture));
 
                 //AnalyseFrogDataSet();
-                Audio2CsvOverOneFile();
+                //Audio2CsvOverOneFile();
                 //Audio2CsvOverMultipleFiles();
 
                 // used to get files from availae for Black rail and Least Bittern papers.
@@ -80,6 +80,7 @@ namespace AnalysisPrograms
                 //DrawLongDurationSpectrogram();
                 //DrawClusterSequence();
                 //DrawStandardSpectrograms();
+                Test_DrawFourSpectrograms();
 
                 //ExtractSpectralFeatures();
                 //HerveGlotinMethods();
@@ -106,7 +107,6 @@ namespace AnalysisPrograms
                 //TestNoiseReduction();
                 //Oscillations2014.TESTMETHOD_DrawOscillationSpectrogram();
                 //Oscillations2014.TESTMETHOD_GetSpectralIndex_Osc();
-                //Test_DrawFourSpectrograms();
 
                 Console.WriteLine("# Finished Sandpit Task!    Press any key to exit.");
                 return this.Ok();
@@ -324,8 +324,9 @@ namespace AnalysisPrograms
             //string outputPath = @"G:\SensorNetworks\Output\BradLaw\Pillaga24";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
 
-            string recordingPath = @"C:\Ecoacoustics\WavFiles\LizZnidersic\TasmanIsland2015_Unit2_Mez\SM304256_0+1_20151114_231652.wav";
-            string outputPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\24";
+            // Test on STANDARD 24-HOUR RECORDING
+            string recordingPath = @"C:\Ecoacoustics\WavFiles\LizZnidersic\TasmanIsland2015_Unit2_Mez\SM304256_0+1_20151114_131652.wav";
+            string outputPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\14";
             string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Acoustic.yml";
 
             // Ivan Campos recordings
@@ -513,8 +514,17 @@ namespace AnalysisPrograms
             AnalyseLongRecording.Execute(arguments);
         }
 
+        public static void Test_DrawFourSpectrograms()
+        {
+            var sourceRecording = @"C:\SensorNetworks\SoftwareTests\TestRecordings\BAC2_20071008-085040.wav".ToFileInfo();
+            var output = @"C:\SensorNetworks\SoftwareTests\TestFourSonograms".ToDirectoryInfo();
+            var configFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo();
+            //Audio2Sonogram.TESTMETHOD_DrawFourSpectrograms(sourceRecording, output, configFile);
+        }
+
         /// <summary>
-        /// Draws a standard spectrogram
+        /// Draws a standard spectrogram, w/wo noise removal & melscale/linear.
+        /// This worked Feb 2019.
         /// </summary>
         public static void DrawStandardSpectrograms()
         {
@@ -526,18 +536,18 @@ namespace AnalysisPrograms
                 SourceFileName = "BAC2_20071008-085040",
                 WindowSize = 1024,
                 WindowOverlap = 0.0,
-                DoMelScale = false,
+                DoMelScale = true,
                 MelBinCount = 256,
-                NoiseReductionType = NoiseReductionType.Median,
+                NoiseReductionType = NoiseReductionType.None,
                 NoiseReductionParameter = 0.0,
             };
 
-            //var amplSpectrogram = new AmplitudeSpectrogram(settings, recording);
-            //var dbSpectrogram = new DecibelSpectrogram(settings, recording);
-            //dbSpectrogram.DrawSpectrogram(@"C:\Ecoacoustics\WavFiles\TestRecordings\BAC\BAC2_20071008-085040_MelMedian.png");
+            var amplSpectrogram = new AmplitudeSpectrogram(settings, recording);
+            var dbSpectrogram = new DecibelSpectrogram(settings, recording);
+            dbSpectrogram.DrawSpectrogram(@"C:\Ecoacoustics\WavFiles\TestRecordings\BAC\2019Output\BAC2_20071008-085040_MelNoNoiseRemoval.png");
 
             var energySpectro = new EnergySpectrogram(settings, recording);
-            energySpectro.DrawLogPsd(@"C:\Ecoacoustics\WavFiles\TestRecordings\BAC\BAC2_20071008-085040_LogPSD.png");
+            energySpectro.DrawLogPsd(@"C:\Ecoacoustics\WavFiles\TestRecordings\BAC\2019Output\BAC2_20071008-085040_MelLogPSD_NoNoiseRemoval.png");
         }
 
         public static void DrawLongDurationSpectrogram()
@@ -694,7 +704,7 @@ namespace AnalysisPrograms
 
             // SET DEFAULT COLOUR MAPS
             string colorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
-            string colorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_RHZ;
+            string colorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_OSC;
 
             // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and EchoGaps.
             string gapRendering = "TimedGaps"; // the default
@@ -750,9 +760,9 @@ namespace AnalysisPrograms
             {
                 @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez",
             };
-            string directoryFilter = "0*"; // this is a directory filter to locate only the required files
+            string directoryFilter = @"Towsey.Acoustic"; // this is a directory filter to locate only the required files
             string opFileStem = "Testing";
-            string opPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Concat";
+            string opPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\Concat3";
             var falseColourSpgConfig = $"C:\\Work\\GitHub\\audio-analysis\\src\\AnalysisConfigFiles\\SpectrogramFalseColourConfig.yml";
             concatenateEverythingYouCanLayYourHandsOn = true;
 
@@ -1416,11 +1426,6 @@ namespace AnalysisPrograms
             FrequencyScale.TESTMETHOD_DrawFrequencyLinesOnImage();
         }
 
-        public static void Test_DrawFourSpectrograms()
-        {
-            Audio2Sonogram.TESTMETHOD_DrawFourSpectrograms();
-        }
-
         /// <summary>
                 /// Unit test of AnalyseLongRecording() using artificial signal
                 /// </summary>
@@ -1429,7 +1434,7 @@ namespace AnalysisPrograms
             int sampleRate = 22050;
             double duration = 420; // signal duration in seconds = 7 minutes
             int[] harmonics = {500, 1000, 2000, 4000, 8000};
-            var recording = DspFilters.GenerateTestRecording(sampleRate, duration, harmonics, WaveType.Consine);
+            var recording = DspFilters.GenerateTestRecording(sampleRate, duration, harmonics, WaveType.Cosine);
             var outputDirectory = @"C:\SensorNetworks\SoftwareTests\TestLongDurationRecordings";
             var recordingPath = Path.Combine(outputDirectory, "TemporaryRecording.wav");
             WavWriter.WriteWavFileViaFfmpeg(recordingPath.ToFileInfo(), recording.WavReader);

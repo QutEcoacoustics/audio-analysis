@@ -60,7 +60,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             int sampleRate = 22050;
             double duration = 420; // signal duration in seconds = 7 minutes
             int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
-            var recording = DspFilters.GenerateTestRecording(sampleRate, duration, harmonics, WaveType.Consine);
+            var recording = DspFilters.GenerateTestRecording(sampleRate, duration, harmonics, WaveType.Cosine);
             var recordingPath = this.outputDirectory.CombineFile("TemporaryRecording1.wav");
             WavWriter.WriteWavFileViaFfmpeg(recordingPath, recording.WavReader);
 
@@ -98,7 +98,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             var resultsDirectory = this.outputDirectory.Combine("Towsey.Acoustic");
             var listOfFiles = resultsDirectory.EnumerateFiles().ToArray();
 
-            Assert.AreEqual(38, listOfFiles.Length);
+            Assert.AreEqual(40, listOfFiles.Length);
 
             var csvCount = listOfFiles.Count(f => f.Name.EndsWith(".csv"));
             Assert.AreEqual(16, csvCount);
@@ -107,12 +107,12 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             Assert.AreEqual(2, jsonCount);
 
             var pngCount = listOfFiles.Count(f => f.Name.EndsWith(".png"));
-            Assert.AreEqual(20, pngCount);
+            Assert.AreEqual(22, pngCount);
 
             var twoMapsImagePath = resultsDirectory.CombineFile("TemporaryRecording1__2Maps.png");
             var twoMapsImage = ImageTools.ReadImage2Bitmap(twoMapsImagePath.FullName);
 
-            // image is 7 * 652
+            // image is 7 * 632
             Assert.AreEqual(7, twoMapsImage.Width);
             Assert.AreEqual(632, twoMapsImage.Height);
 
@@ -151,7 +151,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             int sampleRate = 64000;
             double duration = 420; // signal duration in seconds = 7 minutes
             int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
-            var recording = DspFilters.GenerateTestRecording(sampleRate, duration, harmonics, WaveType.Consine);
+            var recording = DspFilters.GenerateTestRecording(sampleRate, duration, harmonics, WaveType.Cosine);
             string recordingName = "TemporaryRecording2";
             var recordingPath = this.outputDirectory.CombineFile(recordingName + ".wav");
             WavWriter.WriteWavFileViaFfmpeg(recordingPath, recording.WavReader);
@@ -269,7 +269,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             // test number of images - should now be 23
             listOfFiles = resultsDirectory.EnumerateFiles().ToArray();
             pngCount = listOfFiles.Count(f => f.Name.EndsWith(".png"));
-            Assert.AreEqual(21, pngCount);
+            Assert.AreEqual(23, pngCount);
 
             var twoMapsImagePath = resultsDirectory.CombineFile(recordingName + "__2Maps.png");
             var twoMapsImage = ImageTools.ReadImage2Bitmap(twoMapsImagePath.FullName);
