@@ -1,4 +1,4 @@
-﻿// <copyright file="GraphsAndCharts.cs" company="QutEcoacoustics">
+// <copyright file="GraphsAndCharts.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -17,18 +17,18 @@ namespace TowseyLibrary
         {
             int sum = histogram.Sum();
             Pen pen1 = new Pen(Color.White);
-
-            // Pen pen2 = new Pen(Color.Red);
             var pen3 = new Pen(Color.Wheat);
             var pen4 = new Pen(Color.Purple);
             var brush = new SolidBrush(Color.Red);
             var stringFont = new Font("Arial", 9);
 
-            //Font stringFont = new Font("Tahoma", 9);
-            //SizeF stringSize = new SizeF();
-
-            //imageWidth = 300;
             int barWidth = imageWidth / histogram.Length;
+            if (barWidth < 1)
+            {
+                barWidth = 1;
+                imageWidth = histogram.Length;
+            }
+
             int upperBound = upperPercentileBin * barWidth;
 
             DataTools.getMaxIndex(histogram, out int modeBin);
@@ -38,19 +38,16 @@ namespace TowseyLibrary
             int grid2 = imageWidth / 2;
             int grid3 = imageWidth * 3 / 4;
 
-            Bitmap bmp = new Bitmap(imageWidth, height, PixelFormat.Format24bppRgb);
-            Graphics g = Graphics.FromImage(bmp);
+            var bmp = new Bitmap(imageWidth, height, PixelFormat.Format24bppRgb);
+            var g = Graphics.FromImage(bmp);
             g.Clear(Color.Black);
             g.DrawLine(pen3, grid1, height - 1, grid1, 0);
             g.DrawLine(pen3, grid2, height - 1, grid2, 0);
             g.DrawLine(pen3, grid3, height - 1, grid3, 0);
             g.DrawLine(pen1, 0, height - 1, imageWidth, height - 1);
 
-            // draw mode bin and upper percentile bound
-            g.DrawLine(pen4, modeBin, height - 1, modeBin, 0);
-            g.DrawLine(pen4, upperBound, height - 1, upperBound, 0);
-
-            g.DrawString(label, stringFont, Brushes.Wheat, new PointF(4, 3));
+            // draw upper percentile bound
+            g.DrawLine(pen4, upperBound, height - 1, upperBound, height / 3);
 
             if (statistics != null)
             {
@@ -69,15 +66,29 @@ namespace TowseyLibrary
                     }
 
                     g.DrawString(str, stringFont, Brushes.Wheat, new PointF(grid2, y));
-                } // for loop
-            } // f(statistics != null)
+                }
+            } // if(statistics != null)
 
+            // Multiply bin height by factor to use all of the y-axis range.
+            double maxProb = histogram[modeBin] / (double)sum;
+            double maxY = maxProb * (double)height;
+            double factor = height / maxY;
             for (int b = 0; b < histogram.Length; b++)
             {
                 int x = b * barWidth;
-                int y = (int)Math.Ceiling(histogram[b] * height * 2 / (double)sum);
-                g.FillRectangle(brush, x, height - y - 1, barWidth, y);
+                double prob = histogram[b] / (double)sum;
+                int y = (int)Math.Ceiling(prob * height * factor);
+                if (y > height)
+                {
+                    y = height;
+                }
+
+                g.FillRectangle(brush, x, height - y, barWidth, y);
             }
+
+            // draw label and modal bin
+            g.DrawString(label, stringFont, Brushes.Wheat, new PointF(4, 3));
+            g.DrawLine(pen4, modeBin, height - 1, modeBin, height / 3);
 
             return bmp;
         }
