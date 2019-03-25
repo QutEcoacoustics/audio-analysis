@@ -91,10 +91,11 @@ namespace Acoustics.Test.Shared.LoggingTests
             {
                 var log = new Logging(false, Level.Info, quietConsole: false);
                 delta--;
-            } while (delta > 0);
+            }
+            while (delta > 0);
 
             // wait for delete async task to fire
-            await Task.Delay(100);
+            await Task.Delay(1.Seconds());
 
             // get count
             files = Directory.GetFiles(logDirectory);
