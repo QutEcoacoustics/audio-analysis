@@ -94,7 +94,7 @@ ClippingIndex:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 1.0
+  NormMax: 5.0
   ProjectID: Acoustic Indices
   Units: "avClips/s"
   IncludeInComboIndex: false
@@ -613,7 +613,7 @@ DIF:
   Comment: "Spectrum of summed DIFFERENCES between consecutive FFT coeff's in the ampl spgram. This spgram not displayed. It is used as intermediate for subsequent calculation of ACI."
   DataType: double[]
   DefaultValue: 0.0
-  DoDisplay: true
+  DoDisplay: false
   NormMin: 0.0
   NormMax: 10.0
   CalculateNormMin: false
@@ -650,8 +650,8 @@ OSC:
   DataType: double[]
   DefaultValue: 0.0
   DoDisplay: true
-  NormMin: 0.0
-  NormMax: 10.0
+  NormMin: 0.1
+  NormMax: 5.0
   CalculateNormMin: true
   CalculateNormMax: true
   ProjectID: Acoustic Indices
@@ -661,7 +661,7 @@ SUM:
   Comment: "Spectrum of summed FFT coefficients derived from the ampl spgram. This spgram not displayed. It is used for intermediate calculations only."
   DataType: double[]
   DefaultValue: 0.0
-  DoDisplay: true
+  DoDisplay: false
   NormMin: 0.0
   NormMax: 10.0
   CalculateNormMin: false
@@ -687,7 +687,7 @@ RHZ:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.1
-  NormMax: 1.5
+  NormMax: 1.0
   CalculateNormMin: false
   CalculateNormMax: false
   ProjectID: Acoustic Indices
@@ -700,8 +700,8 @@ RVT:
   DoDisplay: true
   NormMin: 0.1
   NormMax: 0.4
-  CalculateNormMin: false
-  CalculateNormMax: false
+  CalculateNormMin: true
+  CalculateNormMax: true
   ProjectID: Acoustic Indices
   Units: "tracks/s"
 RPS:
@@ -712,8 +712,8 @@ RPS:
   DoDisplay: true
   NormMin: 0.0
   NormMax: 0.4
-  CalculateNormMin: false
-  CalculateNormMax: false
+  CalculateNormMin: true
+  CalculateNormMax: true
   ProjectID: Acoustic Indices
   Units: "tracks/s"
 RNG:
@@ -724,8 +724,8 @@ RNG:
   DoDisplay: true
   NormMin: 0.0
   NormMax: 0.4
-  CalculateNormMin: false
-  CalculateNormMax: false
+  CalculateNormMin: true
+  CalculateNormMax: true
   ProjectID: Acoustic Indices
   Units: "tracks/s"
 R3D:
@@ -736,8 +736,8 @@ R3D:
   DoDisplay: true
   NormMin: 0.15
   NormMax: 1.0
-  CalculateNormMin: false
-  CalculateNormMax: false
+  CalculateNormMin: true
+  CalculateNormMax: true
   ProjectID: Acoustic Indices
   Units: "tracks/s"
 SPT:

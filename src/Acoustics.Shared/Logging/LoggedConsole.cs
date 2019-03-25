@@ -1,4 +1,4 @@
-﻿// <copyright file="LoggedConsole.cs" company="QutEcoacoustics">
+// <copyright file="LoggedConsole.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -6,13 +6,12 @@
 namespace System
 {
     using System.IO;
-
+    using System.Text;
+    using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.Logging;
     using DotSpinners;
     using log4net;
-    using Text;
-    using Threading.Tasks;
 
     /// <summary>
     /// This class is designed to be an abstraction to the system console.
@@ -21,7 +20,7 @@ namespace System
     /// </summary>
     public static class LoggedConsole
     {
-        public static readonly ILog Log = LogManager.Exists(Logging.Cleanlogger);
+        public static readonly ILog Log = LogManager.Exists(Logging.CleanLogger);
 
         private static readonly TimeSpan PromptTimeout = TimeSpan.FromSeconds(60);
 
@@ -74,13 +73,14 @@ namespace System
             Log.Info(obj);
         }
 
-        public static void WriteError(string str)
-        {
-            Log.Error(str);
-        }
-
         public static void WriteErrorLine(string format, params object[] args)
         {
+            if (args.Length == 0)
+            {
+                Log.Error(format);
+                return;
+            }
+
             var str = string.Format(format, args);
             Log.Error(str);
         }

@@ -1,4 +1,4 @@
-﻿// <copyright file="SpectralTrack.cs" company="QutEcoacoustics">
+// <copyright file="SpectralTrack.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -472,7 +472,7 @@ namespace AudioAnalysisTools
                 lengths[i] = tracks[i].Length;
             }
 
-            Histogram.writeConciseHistogram(lengths);
+            Histogram.WriteConciseHistogram(lengths);
             int[] histo = Histogram.Histo_FixedWidth(lengths, 1, 0, 20);
             DataTools.writeBarGraph(histo);
         }

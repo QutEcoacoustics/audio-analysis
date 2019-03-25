@@ -6,7 +6,6 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.Globalization;
@@ -16,6 +15,7 @@ namespace AnalysisPrograms
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
+    using Acoustics.Tools.Wav;
     using AnalyseLongRecordings;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
@@ -23,9 +23,7 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.LongDurationSpectrograms;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-    using log4net.Util;
     using McMaster.Extensions.CommandLineUtils;
-    using Production;
     using Production.Arguments;
     using TowseyLibrary;
 
@@ -52,19 +50,19 @@ namespace AnalysisPrograms
         public const string CommandName = "Sandpit";
 
         [Command(
-            CommandName,
-            Description = "[UNMAINTAINED] Michael's personal experimental area.",
-            ShowInHelpText = false)]
+        CommandName,
+        Description = "[UNMAINTAINED] Michael's personal experimental area.",
+        ShowInHelpText = false)]
         public class Arguments : SubCommandBase
         {
             public override Task<int> Execute(CommandLineApplication app)
-            { 
+            {
                 var tStart = DateTime.Now;
                 Log.Verbosity = 1;
                 Log.WriteLine("# Start Time = " + tStart.ToString(CultureInfo.InvariantCulture));
 
                 //AnalyseFrogDataSet();
-                //Audio2CsvOverOneFile();
+                Audio2CsvOverOneFile();
                 //Audio2CsvOverMultipleFiles();
 
                 // used to get files from availae for Black rail and Least Bittern papers.
@@ -74,12 +72,14 @@ namespace AnalysisPrograms
                 //CodeToPlaceScoreTracksUnderSingleImage();
 
                 //ConcatenateIndexFilesAndSpectrograms();
+                //ConcatenateGreyScaleSpectrogramImages();
                 //ConcatenateMarineImages();
                 //ConcatenateImages();
                 //ConcatenateTwelveImages();
                 //CubeHelixDrawTestImage();
                 //DrawLongDurationSpectrogram();
                 //DrawClusterSequence();
+                //DrawStandardSpectrograms();
 
                 //ExtractSpectralFeatures();
                 //HerveGlotinMethods();
@@ -89,6 +89,7 @@ namespace AnalysisPrograms
                 //ResourcesForRheobatrachusSilusRecogniser();
                 //TestAnalyseLongRecordingUsingArtificialSignal();
                 //TestArbimonSegmentationAlgorithm();
+                //TestDrawHistogram();
                 //TestEigenValues();
                 //TestChannelIntegrity();
                 //TestDct();
@@ -103,8 +104,8 @@ namespace AnalysisPrograms
                 //TestTernaryPlots();
                 //TestDirectorySearchAndFileSearch();
                 //TestNoiseReduction();
-                Oscillations2014.TESTMETHOD_DrawOscillationSpectrogram();
-                Oscillations2014.TESTMETHOD_GetSpectralIndex_Osc();
+                //Oscillations2014.TESTMETHOD_DrawOscillationSpectrogram();
+                //Oscillations2014.TESTMETHOD_GetSpectralIndex_Osc();
                 //Test_DrawFourSpectrograms();
 
                 Console.WriteLine("# Finished Sandpit Task!    Press any key to exit.");
@@ -323,6 +324,10 @@ namespace AnalysisPrograms
             //string outputPath = @"G:\SensorNetworks\Output\BradLaw\Pillaga24";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
 
+            string recordingPath = @"C:\Ecoacoustics\WavFiles\LizZnidersic\TasmanIsland2015_Unit2_Mez\SM304256_0+1_20151114_231652.wav";
+            string outputPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\24";
+            string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Acoustic.yml";
+
             // Ivan Campos recordings
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Ivancampos\INCIPO01_20161031_024006_898.wav";
             //string outputPath = @"G:\SensorNetworks\Output\IvanCampos\17";
@@ -380,9 +385,15 @@ namespace AnalysisPrograms
 
             // SERF RECORDINGS FROM 19th June 2013
             // these are six hour recordings
-            string recordingPath = @"G:\Ecoacoustics\WavFiles\SERF\2013June19\SERF_20130619_064615_000.wav";
-            string outputPath = @"C:\Ecoacoustics\Output\SERF\SERFIndicesNew_2013June19";
-            string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Acoustic.yml";
+            //string recordingPath = @"G:\Ecoacoustics\WavFiles\SERF\2013June19\SERF_20130619_064615_000.wav";
+            //string outputPath = @"C:\Ecoacoustics\Output\SERF\SERFIndicesNew_2013June19";
+            //string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Acoustic.yml";
+
+          // USE 24-hour data or parts of from MEZ, TASMAn ISLAND, liz Znidersic
+            // these are six hour recordings
+            //string recordingPath = @"C:\Ecoacoustics\WavFiles\LizZnidersic\TasmanIsland2015_Unit2_Mez\SM304256_0+1_20151114_031652.wav";
+            //string outputPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\04";
+            //string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Acoustic.yml";
 
             // GROUND PARROT
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TestRecordings\groundParrot_Perigian_TEST.wav";
@@ -500,6 +511,33 @@ namespace AnalysisPrograms
             };
 
             AnalyseLongRecording.Execute(arguments);
+        }
+
+        /// <summary>
+        /// Draws a standard spectrogram
+        /// </summary>
+        public static void DrawStandardSpectrograms()
+        {
+            var audioFile = @"C:\Ecoacoustics\WavFiles\TestRecordings\BAC\BAC2_20071008-085040.wav";
+            var recording = new WavReader(audioFile);
+
+            var settings = new SpectrogramSettings()
+            {
+                SourceFileName = "BAC2_20071008-085040",
+                WindowSize = 1024,
+                WindowOverlap = 0.0,
+                DoMelScale = false,
+                MelBinCount = 256,
+                NoiseReductionType = NoiseReductionType.Median,
+                NoiseReductionParameter = 0.0,
+            };
+
+            //var amplSpectrogram = new AmplitudeSpectrogram(settings, recording);
+            //var dbSpectrogram = new DecibelSpectrogram(settings, recording);
+            //dbSpectrogram.DrawSpectrogram(@"C:\Ecoacoustics\WavFiles\TestRecordings\BAC\BAC2_20071008-085040_MelMedian.png");
+
+            var energySpectro = new EnergySpectrogram(settings, recording);
+            energySpectro.DrawLogPsd(@"C:\Ecoacoustics\WavFiles\TestRecordings\BAC\BAC2_20071008-085040_LogPSD.png");
         }
 
         public static void DrawLongDurationSpectrogram()
@@ -632,7 +670,7 @@ namespace AnalysisPrograms
         }
 
         /// <summary>
-        /// This action item = "concatenateIndexFiles"
+        /// This action item = "concatenateIndexFiles".
         /// </summary>
         public static void ConcatenateIndexFilesAndSpectrograms()
         {
@@ -656,7 +694,7 @@ namespace AnalysisPrograms
 
             // SET DEFAULT COLOUR MAPS
             string colorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
-            string colorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_R3D;
+            string colorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_RHZ;
 
             // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and EchoGaps.
             string gapRendering = "TimedGaps"; // the default
@@ -705,22 +743,17 @@ namespace AnalysisPrograms
             colorMap2 = "BGN-POW-CLS";
             // ########################## END of Yvonne's recordings of SM2 and SM4
             */
-
-            // ########################## CONCATENATION of MARINA SCARPELLI recordings from Brazil
-            // The drive: work = G; home = E
-            drive = "C";
-
-            // top level directory AVAILAE JOB #
+            /*
+            // ########################## CONCATENATION of 24-hour TEST  recordings from Liz Znidersic
+            // top level directory
             string[] dataDirs =
             {
-                $"{drive}:\\Ecoacoustics\\Collaborations\\MarinaScarpelli\\Indices",
+                @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez",
             };
-            string directoryFilter = "LEEC02_0_20161231_*.wav"; // this is a directory filter to locate only the required files
-            string opFileStem = "LEEC02_20161231_";
-            string opPath = $"{drive}:\\Ecoacoustics\\Collaborations\\MarinaScarpelli\\Concat";
-            var falseColourSpgConfig = $"{drive}:\\Work\\GitHub\\audio-analysis\\src\\AnalysisConfigFiles\\SpectrogramFalseColourConfig.yml";
-            FileInfo sunriseDatafile = null;
-
+            string directoryFilter = "0*"; // this is a directory filter to locate only the required files
+            string opFileStem = "Testing";
+            string opPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Concat";
+            var falseColourSpgConfig = $"C:\\Work\\GitHub\\audio-analysis\\src\\AnalysisConfigFiles\\SpectrogramFalseColourConfig.yml";
             concatenateEverythingYouCanLayYourHandsOn = true;
 
             // start and end dates INCLUSIVE
@@ -729,37 +762,89 @@ namespace AnalysisPrograms
 
             // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and EchoGaps.
             gapRendering = "TimedGaps";
-
-            // ########################## END of Pillaga Forest recordings
+            */
+            // ########################## END of 24-hour TEST recordings
 
             /*
-                        // ########################## CONCATENATION of Pillaga Forest recordings from Brad Law
-                        // The drive: work = G; home = E
-                        drive = "G";
+            // ########################## CONCATENATION of MARINA SCARPELLI recordings from Brazil
+            // The drive: work = G; home = E
+            /*
+            drive = "C";
 
-                        // top level directory AVAILAE JOB #181
-                        string[] dataDirs =
-                        {
-                            $"{drive}:\\Ecoacoustics\\Output\\BradLaw\\PillagaData",
-                        };
-                        string directoryFilter = "Pillaga*"; // this is a directory filter to locate only the required files
-                        string opFileStem = "PillagaForest20121125";
-                        string opPath = $"{drive}:\\Ecoacoustics\\Output\\BradLaw";
-                        var falseColourSpgConfig =
-                            $"{drive}:\\Ecoacoustics\\Output\\Bats\\config\\SpectrogramFalseColourConfig.yml";
-                        FileInfo sunriseDatafile = null;
+            // top level directory
+            string[] dataDirs =
+            {
+                $"{drive}:\\Ecoacoustics\\Collaborations\\MarinaScarpelli\\Indices",
+            };
+            string directoryFilter = "LEEC02_0_20161231_*.wav"; // this is a directory filter to locate only the required files
+            string opFileStem = "LEEC02_20161231_";
+            string opPath = $"{drive}:\\Ecoacoustics\\Collaborations\\MarinaScarpelli\\Concat";
+            var falseColourSpgConfig = $"{drive}:\\Work\\GitHub\\audio-analysis\\src\\AnalysisConfigFiles\\SpectrogramFalseColourConfig.yml";
+            concatenateEverythingYouCanLayYourHandsOn = true;
 
-                        concatenateEverythingYouCanLayYourHandsOn = true;
+            // start and end dates INCLUSIVE
+            dtoStart = new DateTimeOffset(2016, 12, 31, 0, 0, 0, TimeSpan.Zero);
+            dtoEnd = new DateTimeOffset(2016, 12, 31, 0, 0, 0, TimeSpan.Zero);
 
-                        // start and end dates INCLUSIVE
-                        dtoStart = new DateTimeOffset(2012, 08, 08, 0, 0, 0, TimeSpan.Zero);
-                        dtoEnd = new DateTimeOffset(2012, 08, 08, 0, 0, 0, TimeSpan.Zero);
+            // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and EchoGaps.
+            gapRendering = "TimedGaps";  */
 
-                        // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and EchoGaps.
-                        gapRendering = "EchoGaps";
+            // ######################### END OF CONCATENATION of MARINA SCARPELLI recordings from Brazil
 
-                        // ########################## END of Pillaga Forest recordings
-                        */
+            // ######################### START OF FIX ISSUE #170 concat crashes
+            // ######################### use data from availae
+
+            // top level directory AVAILAE JOB #
+            string[] dataDirs =
+            {
+                //@"Y:\Results\20180608-103353 - Tshering, Towsey.Indices, #216\Tshering\WBH_Walaytar\WBH_2018\Bermo",
+                @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez",
+            };
+
+            string directoryFilter = "0*"; // this is a directory filter to locate only the required files
+            string opFileStem = "TasmanIslandMez";
+            string opPath = @"C:\Ecoacoustics\Output\Test\DebugIssue170";
+
+            // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and EchoGaps.
+            gapRendering = "TimedGaps";
+            concatenateEverythingYouCanLayYourHandsOn = true;
+            var falseColourSpgConfig = $"C:\\Work\\GitHub\\audio-analysis\\src\\AnalysisConfigFiles\\SpectrogramFalseColourConfig.yml";
+
+            // start and end dates INCLUSIVE
+            //dtoStart = new DateTimeOffset(2016, 12, 31, 0, 0, 0, TimeSpan.Zero);
+            //dtoEnd = new DateTimeOffset(2016, 12, 31, 0, 0, 0, TimeSpan.Zero);
+
+            // ########################## END of FIX ISSUE #170 concat crashes
+
+            /*
+            // ########################## CONCATENATION of Pillaga Forest recordings from Brad Law
+            // The drive: work = G; home = E
+            drive = "G";
+
+            // top level directory AVAILAE JOB #181
+            string[] dataDirs =
+            {
+                $"{drive}:\\Ecoacoustics\\Output\\BradLaw\\PillagaData",
+            };
+            string directoryFilter = "Pillaga*"; // this is a directory filter to locate only the required files
+            string opFileStem = "PillagaForest20121125";
+            string opPath = $"{drive}:\\Ecoacoustics\\Output\\BradLaw";
+            var falseColourSpgConfig =
+                $"{drive}:\\Ecoacoustics\\Output\\Bats\\config\\SpectrogramFalseColourConfig.yml";
+            FileInfo sunriseDatafile = null;
+
+            concatenateEverythingYouCanLayYourHandsOn = true;
+
+            // start and end dates INCLUSIVE
+            dtoStart = new DateTimeOffset(2012, 08, 08, 0, 0, 0, TimeSpan.Zero);
+            dtoEnd = new DateTimeOffset(2012, 08, 08, 0, 0, 0, TimeSpan.Zero);
+
+            // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and EchoGaps.
+            gapRendering = "EchoGaps";
+
+            // ########################## END of Pillaga Forest recordings
+            */
+
             /*
             // ########################## CONCATENATION of Yvonne's BAT recordings
             // The drive: work = G; home = E
@@ -1047,6 +1132,56 @@ namespace AnalysisPrograms
             };
 
             ConcatenateIndexFiles.Execute(args);
+        }
+
+        /// <summary>
+        /// TODO Combine the grey scale spectrograms produced by AnalysisPrograms.exe
+        /// This method will be useful for comparing the response of different spectral indices to the same acoustic event.
+        /// Use this when you want best acoustic features for doing ML using spectral index features.
+        /// </summary>
+        public static void ConcatenateGreyScaleSpectrogramImages()
+        {
+
+            var ipDirInfo = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\04\Towsey.Acoustic");
+            var opDirInfo = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\04\Towsey.Acoustic");
+            var opFileName = "SM304256_0+1_20151114_031652";
+
+            //string[] keys = { "ACI", "BGN", "CVR", "ENT", "EVN", "OSC", "PMN", "R3D", "RHZ", "RNG", "RPS", "RVT", "SPT" };
+            // the following line gets all current spectral indices, including DIF and SUM which we will want to exclude.
+            var keys = SpectralIndexValues.Keys;
+
+            //Read list of images into List
+            var listOfImages = new List<Image>();
+
+            foreach (var key in keys)
+            {
+                if (key == "DIF" || key == "SUM")
+                {
+                    continue;
+                }
+
+                // construct the path
+                //var path = Path.Combine(ipDirInfo.FullName, opFileName + key + ".png");
+                var path = FilenameHelpers.AnalysisResultPath(ipDirInfo, opFileName, key, "png");
+                var indexImage = ImageTools.ReadImage2Bitmap(path);
+
+                listOfImages.Add(indexImage);
+            }
+
+            var opPath = FilenameHelpers.AnalysisResultPath(opDirInfo, opFileName, "KEYS", "png");
+
+            // check how wide combined image will be. If tracks are wider than 180 = 3 hours, then go vertical
+            int imageCount = listOfImages.Count;
+            if (listOfImages[0].Width * imageCount > 180 * imageCount)
+            {
+                var combinedImage = ImageTools.CombineImagesVertically(listOfImages);
+                combinedImage?.Save(opPath);
+            }
+            else
+            {
+                var combinedImage = ImageTools.CombineImagesInLine(listOfImages);
+                combinedImage?.Save(opPath);
+            }
         }
 
         /// <summary>
@@ -1360,6 +1495,314 @@ namespace AnalysisPrograms
             var image2 = GraphsAndCharts.DrawGraph("LD BGN SPECTRUM", normalisedIndex, 100);
             var ldsBgnSpectrumFile = outputDir.CombineFile("Spectrum2.png");
             image2.Save(ldsBgnSpectrumFile.FullName);
+        }
+
+        /// <summary>
+        /// Tests the drawing of a histogram of BGN values dervied from data located at: 
+        ///        Z:\tasmania_mez\output_zooming_indices\Towsey.Acoustic
+        /// This test is by way of attending to QUTEcoacoustics Issue #186
+        /// The distribution statistics are:
+        /// "Minimum": -110.74302631902833,
+        /// "Maximum": -44.00885043566803,
+        /// "Mode": -96.9512966364672,
+        /// "StandardDeviation": 4.0040505530016182,
+        /// "UpperPercentile": 98,
+        /// "UpperPercentileBin": 174,
+        /// "Count": 221181440.
+        /// </summary>
+        public static void TestDrawHistogram()
+        {
+            int[] distribution =
+            {
+                1, 2, 7, 8, 73, 83, 195, 432, 682,1644,2621,4655,7813,11935,17246,24803,33591,43249,54333,65208,75729,87135,96440,104096,110214,
+                121722,
+                128390,
+                138336,
+                147016,
+                156372,
+                163644,
+                166318,
+                164770,
+                163155,
+                158976,
+                155657,
+                155933,
+                156507,
+                158176,
+                149535,
+                131686,
+                103811,
+                81364,
+                71492,
+                77750,
+                102405,
+                141582,
+                174329,
+                203910,
+                239008,
+                286775,
+                356480,
+                475234,
+                639319,
+                881903,
+                1383086,
+                2448051,
+                4478415,
+                7651295,
+                11607067,
+                15415577,
+                17915490,
+                18405485,
+                16783249,
+                13824441,
+                10585914,
+                7907210,
+                6030484,
+                4794337,
+                3974758,
+                3357695,
+                2940875,
+                2620874,
+                2349632,
+                2122577,
+                1932630,
+                1769112,
+                1649037,
+                1547783,
+                1459096,
+                1379839,
+                1303302,
+                1218706,
+                1141774,
+                1065302,
+                989003,
+                915842,
+                849973,
+                792082,
+                751371,
+                705448,
+                673538,
+                640900,
+                609732,
+                590720,
+                570525,
+                554886,
+                542704,
+                525214,
+                511713,
+                504054,
+                489061,
+                482371,
+                477460,
+                469684,
+                465019,
+                464784,
+                463130,
+                471294,
+                472988,
+                477931,
+                487694,
+                490929,
+                504352,
+                506022,
+                514559,
+                524511,
+                532120,
+                539667,
+                549030,
+                550959,
+                549555,
+                543018,
+                533275,
+                528735,
+                511541,
+                505002,
+                503153,
+                494837,
+                488639,
+                479920,
+                468004,
+                458980,
+                452198,
+                439419,
+                427299,
+                419077,
+                412942,
+                402728,
+                392793,
+                380144,
+                371799,
+                363792,
+                355276,
+                346957,
+                338039,
+                328357,
+                324295,
+                316964,
+                305427,
+                303147,
+                296545,
+                293390,
+                282624,
+                274414,
+                268267,
+                258093,
+                252943,
+                247530,
+                238958,
+                232172,
+                226631,
+                219153,
+                211740,
+                206198,
+                201907,
+                194437,
+                189735,
+                187535,
+                182418,
+                177998,
+                171918,
+                164774,
+                162404,
+                158788,
+                154316,
+                150446,
+                146819,
+                144324,
+                143652,
+                142663,
+                140900,
+                138487,
+                135326,
+                135268,
+                131577,
+                130240,
+                130077,
+                129643,
+                124460,
+                125488,
+                122459,
+                120075,
+                117914,
+                116033,
+                112523,
+                109994,
+                103546,
+                101266,
+                97021,
+                92399,
+                87952,
+                82482,
+                78217,
+                73882,
+                68510,
+                65289,
+                60752,
+                57658,
+                53378,
+                50235,
+                47692,
+                43817,
+                40615,
+                38038,
+                32463,
+                29407,
+                26603,
+                24261,
+                21458,
+                17756,
+                15624,
+                13682,
+                11949,
+                9779,
+                9067,
+                7517,
+                6549,
+                6308,
+                5118,
+                4441,
+                3533,
+                3466,
+                2931,
+                2529,
+                1994,
+                2099,
+                1820,
+                1388,
+                1128,
+                1141,
+                1005,
+                809,
+                737,
+                675,
+                472,
+                522,
+                423,
+                515,
+                268,
+                286,
+                175,
+                178,
+                197,
+                180,
+                121,
+                138,
+                110,
+                104,
+                104,
+                80,
+                85,
+                50,
+                59,
+                102,
+                50,
+                39,
+                38,
+                30,
+                37,
+                24,
+                25,
+                21,
+                63,
+                19,
+                8,
+                9,
+                14,
+                18,
+                15,
+                11,
+                12,
+                10,
+                7,
+                66,6,4,3,1,4,2,2,4,2,3,1,1,3,1,51,
+            };
+
+            string label = "Test";
+            double min = -110.74302631902833;
+            double max = -44.00885043566803;
+            double mode = -96.9512966364672;
+            double sd = 4.0040505530016182;
+            // "UpperPercentile": 98,
+            int upperPercentileBin = 174;
+            double upperPercentileValue = -72.037;
+            //int count = 221181440;
+            int count = distribution.Sum();
+            var dict = new Dictionary<string, double>()
+            {
+                { "min", min },
+                { "max", max },
+                { "mode", mode },
+                { "sd", sd },
+                { "98%", upperPercentileValue },
+                { "count", count },
+            };
+            int imageWidth = 300;
+            int imageHeight = 100;
+            var dirPath = new DirectoryInfo("C:\\Temp");
+
+            var image = GraphsAndCharts.DrawHistogram(label, distribution, upperPercentileBin, dict, imageWidth, imageHeight);
+            var path = Path.Combine(dirPath.FullName, "name.png");
+            image.Save(path);
         }
 
         /// <summary>

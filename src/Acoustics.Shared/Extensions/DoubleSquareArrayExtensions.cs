@@ -221,18 +221,18 @@ namespace System
         /// <summary>
         /// returns an empty matrix with the same number of rows and columns of the input matrix.
         /// </summary>
-        public static double[,] EmptyCopy(this double[,] matrix)
+        public static T[,] EmptyCopy<T>(this T[,] matrix)
         {
-            return new double[matrix.GetLength(0), matrix.GetLength(1)];
+            return new T[matrix.GetLength(0), matrix.GetLength(1)];
         }
 
         /// <summary>
         /// retrieving a full column of a matrix
         /// columnIndex is the column we want to access
         /// </summary>
-        public static double[] GetColumn(this double[,] matrix, int columnIndex)
+        public static T[] GetColumn<T>(this T[,] matrix, int columnIndex)
         {
-            double[] column = new double[matrix.GetLength(0)];
+            T[] column = new T[matrix.GetLength(0)];
             for (int row = 0; row < matrix.GetLength(0); row++)
             {
                 column[row] = matrix[row, columnIndex];
@@ -245,9 +245,9 @@ namespace System
         /// retrieving a full row of a matrix
         /// rowIndex is the row we want to access
         /// </summary>
-        public static double[] GetRow(this double[,] matrix, int rowIndex)
+        public static T[] GetRow<T>(this T[,] matrix, int rowIndex)
         {
-            double[] row = new double[matrix.GetLength(1)];
+            T[] row = new T[matrix.GetLength(1)];
             for (int column = 0; column < matrix.GetLength(1); column++)
             {
                 row[column] = matrix[rowIndex, column];
@@ -270,7 +270,7 @@ namespace System
         /// adding a 2D-array to another 2D-array either by "column" or by "row"
         /// </summary>
 
-        public static void AddToArray(double[,] result, double[,] array, MergingDirection mergingDirection, int start = 0)
+        public static void AddToArray<T>(this T[,] result, T[,] array, MergingDirection mergingDirection, int start = 0)
         {
             for (int i = 0; i < array.GetLength(0); i++)
             {

@@ -1,4 +1,4 @@
-﻿// <copyright file="AudioCutter.cs" company="QutEcoacoustics">
+// <copyright file="AudioCutter.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -15,13 +15,19 @@ namespace AnalysisPrograms
     using Acoustics.Shared;
     using AnalysisBase;
     using AnalysisBase.Segment;
+    using AnalysisPrograms.Production;
+    using AnalysisPrograms.Production.Arguments;
+    using AnalysisPrograms.Production.Validation;
+    using AnalysisPrograms.SourcePreparers;
     using McMaster.Extensions.CommandLineUtils;
     using McMaster.Extensions.CommandLineUtils.Abstractions;
-    using Production;
-    using Production.Arguments;
-    using Production.Validation;
-    using SourcePreparers;
 
+    /// <summary>
+    /// Cuts a file into smaller segments.
+    /// </summary>
+    /// <remarks>
+    /// This cutter is useful when you want audio cut the same way AP.exe cuts it.
+    /// </remarks>
     public class AudioCutter
     {
         public const string CommandName = "AudioCutter";
@@ -74,21 +80,21 @@ namespace AnalysisPrograms
             public double? EndOffset { get; set; }
 
             [Option(
-                Description = "The minimum duration of a segmented audio file (in seconds, defaults to 5; must be within [0, 3600]).",
+                Description = "The minimum duration of a segmented audio file (in seconds, defaults to 5; must be within [1, 3600]).",
                 ShortName = "")]
             [InRange(1, 3600)]
             public double SegmentDurationMinimum { get; set; } = 5;
 
             [Option(
-                Description = "The duration of a segmented audio file (in seconds, defaults to 60; must be within [0, 3600]).",
+                Description = "The duration of a segmented audio file (in seconds, defaults to 60; must be within [1, 43200]).",
                 ShortName = "d")]
-            [InRange(1, 3600)]
+            [InRange(1, 12 * 3600)]
             public double SegmentDuration { get; set; } = 60;
 
             [Option(
-                Description = "The duration of overlap between segmented audio files (in seconds, defaults to 0).",
+                Description = "The duration of overlap between segmented audio files (in seconds, defaults to 0; must be within [0, 43200]).",
                 ShortName = "")]
-            [InRange(0, 3600)]
+            [InRange(0, 43200)]
             public double SegmentOverlap { get; set; } = 0;
 
             [Option(
@@ -273,7 +279,7 @@ namespace AnalysisPrograms
             }
             catch (IOException ioex)
             {
-                LoggedConsole.WriteError($"Failed to cut segment {itemNumber} of {itemCount}:" + ioex.Message);
+                LoggedConsole.WriteErrorLine($"Failed to cut segment {itemNumber} of {itemCount}:" + ioex.Message);
                 return double.NaN;
             }
 

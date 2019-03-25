@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="ConfigFileTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -38,7 +38,7 @@ namespace Acoustics.Test.Shared
         {
             // for the config dumping events
             knownConfigFile = PathHelper.ResolveConfigFile("Towsey.Acoustic.yml");
-            memoryAppender = Logging.MemoryAppender;
+            memoryAppender = TestSetup.TestLogging.MemoryAppender;
         }
 
         [TestInitialize]
@@ -246,7 +246,7 @@ namespace Acoustics.Test.Shared
                 Assert.AreEqual(untypedCount, messages.Count(x => x.RenderedMessage.Contains(" untyped ")));
             }
 
-            Logging.ModifyVerbosity(Level.All, quietConsole: true);
+            TestSetup.TestLogging.ModifyVerbosity(Level.All, quietConsole: true);
 
             // this should be a fresh read
             var configuration1 = ConfigFile.Deserialize<AcousticIndices.AcousticIndicesConfig>(knownConfigFile);
@@ -281,7 +281,7 @@ namespace Acoustics.Test.Shared
             Assert.AreEqual(60.0, configuration3.IndexCalculationDuration);
             Assert.AreEqual(60.0, configuration4.GetDouble(nameof(AcousticIndices.AcousticIndicesConfig.IndexCalculationDuration)));
 
-            Logging.ModifyVerbosity(Level.Info, quietConsole: true);
+            TestSetup.TestLogging.ModifyVerbosity(Level.Info, quietConsole: true);
         }
 
         [TestMethod]

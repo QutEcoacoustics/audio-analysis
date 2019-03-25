@@ -510,8 +510,8 @@
             if (expected.BitsPerSecond.HasValue && actual.BitsPerSecond.HasValue)
             {
                 // Sox only reports three decimal places and rounds other things
-                var actualBps = (int)((double)actual.BitsPerSecond.Value).RoundToSignficantDigits(3);
-                var expectedBps = (int)((double)expected.BitsPerSecond.Value).RoundToSignficantDigits(3);
+                var actualBps = (int)((double)actual.BitsPerSecond.Value).RoundToSignificantDigits(3);
+                var expectedBps = (int)((double)expected.BitsPerSecond.Value).RoundToSignificantDigits(3);
                 Assert.AreEqual(expectedBps, actualBps, 0);
             }
 
@@ -614,7 +614,7 @@
         {
             var fft = DSP_Frames.ExtractEnvelopeAndAmplSpectrogram(signal, wavReader.SampleRate, wavReader.Epsilon, 512, 0.0);
 
-            var histogram = SpectrogramTools.CalculateAvgSpectrumFromSpectrogram(fft.AmplitudeSpectrogram);
+            var histogram = SpectrogramTools.CalculateAvgSpectrumFromEnergySpectrogram(fft.AmplitudeSpectrogram);
 
             var max = histogram.Max();
             double threshold = max * 0.8;

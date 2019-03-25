@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="MainEntryUtilities.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -33,6 +33,7 @@ namespace AnalysisPrograms
     using Production;
     using Production.Arguments;
     using Production.Parsers;
+    using static System.Environment;
 
     public static partial class MainEntry
     {
@@ -88,6 +89,8 @@ namespace AnalysisPrograms
 
         public static bool IsDebuggerAttached => Debugger.IsAttached;
 
+        public static Logging Logging { get; private set; }
+
         /// <summary>
         /// Gets a value indicating whether or not the debugger should automatically attach.
         /// </summary>
@@ -141,7 +144,7 @@ namespace AnalysisPrograms
                 return;
             }
 #if DEBUG
-            if (!Debugger.IsAttached)
+            if (!Debugger.IsAttached && !IsMsTestRunningMe())
             {
                 if (options == DebugOptions.Prompt)
                 {
@@ -174,7 +177,7 @@ namespace AnalysisPrograms
                 {
                     if (options != DebugOptions.YesSilent)
                     {
-                        LoggedConsole.WriteLine("\t>>> Attach sucessful");
+                        LoggedConsole.WriteLine("\t>>> Attach successful");
                         LoggedConsole.WriteLine();
                     }
                 }
@@ -184,7 +187,7 @@ namespace AnalysisPrograms
 
         internal static void BeforeExecute(MainArgs main, CommandLineApplication application)
         {
-            // re-assign here... the application will be a sub-command here (which is tecnically a different CLA)
+            // re-assign here... the application will be a sub-command here (which is technically a different CLA)
             CommandLineApplication = application;
 
             AttachDebugger(main.DebugOption);
@@ -196,14 +199,45 @@ namespace AnalysisPrograms
             LoadNativeCode();
         }
 
-        internal static void Copyright()
+        /// <summary>
+        /// Checks to see whether we can load a DLL that we depend on from the GAC.
+        /// We have to check this early on or else we get some pretty hard to
+        /// diagnose errors (and also because our CLI parser depends on it).
+        /// </summary>
+        /// <returns>A message if there is a problem.</returns>
+        internal static string CheckForDataAnnotations()
         {
-            LoggedConsole.WriteLine($@"{Meta.Description} - version {BuildMetadata.VersionString} ({(InDEBUG ? "DEBUG" : "RELEASE")} build, {BuildMetadata.BuildDate})
-Git branch-version: {BuildMetadata.GitBranch}-{BuildMetadata.GitCommit}, DirtyBuild:{BuildMetadata.IsDirty}, CI:{BuildMetadata.CiBuild}
-Copyright {Meta.NowYear} {Meta.Organization}");
+            // https://github.com/QutEcoacoustics/audio-analysis/issues/225
+            try
+            {
+                Assembly.Load(
+                    "System.ComponentModel.DataAnnotations, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35");
+                return null;
+            }
+            catch (FileNotFoundException fnfex)
+            {
+                return $@"{fnfex.ToString()}
+!
+!
+!
+In cases where System.ComponentModel.DataAnnotations is not found we have
+previously found that the mono install is corrupt. Try installing mono again
+and make sure you install the `mono-complete` package.
+!
+!
+!";
+            }
         }
 
-        internal static void WarnIfDevleoperEntryUsed(string message = null)
+        internal static void Copyright()
+        {
+            LoggedConsole.WriteLine(
+                $@"{Meta.Description} - version {BuildMetadata.VersionString} ({(InDEBUG ? "DEBUG" : "RELEASE")} build, {BuildMetadata.BuildDate}){NewLine}" +
+                $@"Git branch-version: {BuildMetadata.GitBranch}-{BuildMetadata.GitCommit}, DirtyBuild:{BuildMetadata.IsDirty}, CI:{BuildMetadata.CiBuild}{NewLine}" +
+                $@"Copyright {Meta.NowYear} {Meta.Organization}");
+        }
+
+        internal static void WarnIfDeveloperEntryUsed(string message = null)
         {
             if (!InDEBUG)
 #pragma warning disable 162
@@ -211,7 +245,7 @@ Copyright {Meta.NowYear} {Meta.Organization}");
                 message = message == null ? string.Empty : "\n!    " + message;
                 Log.Warn($@"!
 !
-!    The entry point called is designed for use by devleopers and debuggers.
+!    The entry point called is designed for use by developers and debuggers.
 !    It is likely that this entry point does not do what you want and will fail.{message}
 !
 !");
@@ -232,6 +266,11 @@ Copyright {Meta.NowYear} {Meta.Organization}");
                 return;
             }
 
+            if (IsMsTestRunningMe())
+            {
+                return;
+            }
+
             // if Michael is debugging with visual studio, this will prevent the window closing.
             Process parentProcess = ProcessExtensions.ParentProcessUtilities.GetParentProcess();
             if (parentProcess.ProcessName == "devenv")
@@ -241,6 +280,16 @@ Copyright {Meta.NowYear} {Meta.Organization}");
             }
 #endif
         }
+
+#if DEBUG
+        internal static bool IsMsTestRunningMe()
+        {
+            // https://stackoverflow.com/questions/3167617/determine-if-code-is-running-as-part-of-a-unit-test
+            string testAssemblyName = "Microsoft.VisualStudio.TestPlatform.TestFramework";
+            return AppDomain.CurrentDomain.GetAssemblies()
+                .Any(a => a.FullName.StartsWith(testAssemblyName));
+        }
+#endif
 
         internal static void PrintUsage(string message, Usages usageStyle, string commandName = null)
         {
@@ -256,7 +305,7 @@ Copyright {Meta.NowYear} {Meta.Organization}");
             if (usageStyle == Usages.All)
             {
                 // print entire usage
-                root.ShowHelp();
+                root.ShowHelp(false);
             }
             else if (usageStyle == Usages.Single)
             {
@@ -281,7 +330,7 @@ Copyright {Meta.NowYear} {Meta.Organization}");
                     }
                 }
 
-                command.ShowHelp();
+                command.ShowHelp(false);
             }
             else if (usageStyle == Usages.ListAvailable)
             {
@@ -304,26 +353,37 @@ Copyright {Meta.NowYear} {Meta.Organization}");
             }
         }
 
-        private static void AttachExceptionHandler()
+        internal static CommandLineApplication CreateCommandLineApplication()
         {
-            Environment.ExitCode = ExceptionLookup.SpecialExceptionErrorLevel;
-
-            AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
-        }
-
-        private static CommandLineApplication CreateCommandLineApplication()
-        {
-            var console = PhysicalConsoleLogger.Default;
+            var console = new PhysicalConsoleLogger();
             var app = CommandLineApplication = new CommandLineApplication<MainArgs>(console);
-
+            app.UsePagerForHelpText = false;
+            app.ClusterOptions = false;
             app.HelpTextGenerator = new CustomHelpTextGenerator { EnvironmentOptions = EnvironmentOptions };
-            app.ValueParsers.Add(new DateTimeOffsetParser());
-            app.ValueParsers.Add(new TimeSpanParser());
-            app.ValueParsers.Add(new FileInfoParser());
-            app.ValueParsers.Add(new DirectoryInfoParser());
+            app.ValueParsers.AddOrReplace(new DateTimeOffsetParser());
+            app.ValueParsers.AddOrReplace(new TimeSpanParser());
+            app.ValueParsers.AddOrReplace(new FileInfoParser());
+            app.ValueParsers.AddOrReplace(new DirectoryInfoParser());
             app.Conventions.UseDefaultConventions();
 
             return app;
+        }
+
+        /// <summary>
+        /// Attaches an exception handler and also does a check
+        /// to see if necessary DLLs exist. WARNING: can quit process!.
+        /// </summary>
+        private static void PrepareForErrors()
+        {
+            ExitCode = ExceptionLookup.UnhandledExceptionErrorCode;
+
+            if (CheckForDataAnnotations() is string message)
+            {
+                Console.WriteLine(message);
+                Exit(ExceptionLookup.UnhandledExceptionErrorCode);
+            }
+
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
         }
 
         private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs unhandledExceptionEventArgs)
@@ -384,7 +444,7 @@ Copyright {Meta.NowYear} {Meta.Organization}");
                 PrintAggregateException(ex);
             }
 
-            int returnCode = style?.ErrorCode ?? ExceptionLookup.SpecialExceptionErrorLevel;
+            int returnCode = style?.ErrorCode ?? ExceptionLookup.UnhandledExceptionErrorCode;
 
             // finally return error level
             NoConsole.Log.Info("ERRORLEVEL: " + returnCode);
@@ -392,13 +452,13 @@ Copyright {Meta.NowYear} {Meta.Organization}");
             {
                 // no don't exit, we want the exception to be raised to Window's Exception handling
                 // this will allow the debugger to appropriately break on the right line
-                Environment.ExitCode = returnCode;
+                ExitCode = returnCode;
             }
             else
             {
                 // If debugger is not attached, we *do not* want to raise the error to the Windows level
                 // Everything has already been logged, just exit with appropriate errorlevel
-                Environment.Exit(returnCode);
+                Exit(returnCode);
             }
         }
 
@@ -428,8 +488,8 @@ Copyright {Meta.NowYear} {Meta.Organization}");
             var thisProcess = Process.GetCurrentProcess();
             var stats = new
             {
-                Platform = Environment.OSVersion.ToString(),
-                Environment.ProcessorCount,
+                Platform = OSVersion.ToString(),
+                ProcessorCount,
                 ExecutionTime = (DateTime.Now - thisProcess.StartTime).TotalSeconds,
                 PeakWorkingSet = thisProcess.PeakWorkingSet64,
             };
@@ -446,12 +506,12 @@ Copyright {Meta.NowYear} {Meta.Organization}");
 
         private static void ParseEnvirionemnt()
         {
-            ApPlainLogging = bool.TryParse(Environment.GetEnvironmentVariable(ApPlainLoggingKey), out var plainLogging) && plainLogging;
+            ApPlainLogging = bool.TryParse(GetEnvironmentVariable(ApPlainLoggingKey), out var plainLogging) && plainLogging;
 
             // default value is true
-            ApMetricRecording = !bool.TryParse(Environment.GetEnvironmentVariable(ApMetricsKey), out var parseMetrics) || parseMetrics;
+            ApMetricRecording = !bool.TryParse(GetEnvironmentVariable(ApMetricsKey), out var parseMetrics) || parseMetrics;
 
-            ApAutoAttach = bool.TryParse(Environment.GetEnvironmentVariable(ApAutoAttachKey), out var autoAttach) && autoAttach;
+            ApAutoAttach = bool.TryParse(GetEnvironmentVariable(ApAutoAttachKey), out var autoAttach) && autoAttach;
         }
 
         private static void PrintAggregateException(Exception ex, int depth = 0)

@@ -11,7 +11,7 @@ namespace AudioAnalysisTools.Indices
     using System.Linq;
     using System.Reflection;
     using AnalysisBase.ResultBases;
-    using AudioAnalysisTools.StandardSpectrograms;
+    using StandardSpectrograms;
     using log4net;
     using LongDurationSpectrograms;
     using TowseyLibrary;
@@ -73,12 +73,11 @@ namespace AudioAnalysisTools.Indices
                 dictionary,
                 titleText,
                 indexCalculationDuration,
-                recordingStartDate,
-                sunriseDataFile = null);
+                recordingStartDate);
         }
 
         /// <summary>
-        /// Converts summary indices to a tracks image
+        /// Converts summary indices to a tracks image, one track for each index.
         /// </summary>
         public static Bitmap DrawImageOfSummaryIndices(
             Dictionary<string, IndexProperties> listOfIndexProperties,
@@ -86,7 +85,6 @@ namespace AudioAnalysisTools.Indices
             string titleText,
             TimeSpan indexCalculationDuration,
             DateTimeOffset? recordingStartDate,
-            FileInfo sunriseDataFile = null,
             List<GapsAndJoins> errors = null,
             bool verbose = false)
         {
@@ -98,6 +96,7 @@ namespace AudioAnalysisTools.Indices
             var bitmapList = new List<Tuple<IndexProperties, Image>>(dictionaryOfSummaryIndices.Keys.Count);
 
             // accumulate the individual tracks in a List
+            var backgroundColour = Color.White;
             foreach (string key in dictionaryOfSummaryIndices.Keys)
             {
                 string correctKey = key;
@@ -133,13 +132,15 @@ namespace AudioAnalysisTools.Indices
                 //string name = ip.Name;
                 double[] array = dictionaryOfSummaryIndices[key];
                 scaleLength = array.Length;
-                Image bitmap = ip.GetPlotImage(array, errors);
 
+                // alternate rows have different colour to make tracks easier to read
+                backgroundColour = backgroundColour == Color.LightGray ? Color.White : Color.LightGray;
+                var bitmap = ip.GetPlotImage(array, backgroundColour, errors);
                 bitmapList.Add(Tuple.Create(ip, bitmap));
             }
 
             var listOfBitmaps = bitmapList
-                .OrderBy(tuple => tuple.Item1.Order)
+            //    .OrderBy(tuple => tuple.Item1.Order) // don't order because want to preserve alternating gray/white rows.
                 .Select(tuple => tuple.Item2)
                 .Where(b => b != null).ToList();
 
@@ -147,36 +148,33 @@ namespace AudioAnalysisTools.Indices
             int x_offset = 2;
             int graphWidth = x_offset + scaleLength;
             int imageWidth = x_offset + scaleLength + TrackEndPanelWidth;
-            //TimeSpan scaleDuration = TimeSpan.FromMinutes(scaleLength);
-            //int imageHt = trackHeight * (listOfBitmaps.Count + 4); //+3 for title and top and bottom time tracks
             Bitmap titleBmp = ImageTrack.DrawTitleTrack(imageWidth, trackHeight, titleText);
 
-            //Bitmap time1Bmp = ImageTrack.DrawTimeTrack(scaleDuration, TimeSpan.Zero, DrawSummaryIndices.TimeScale, graphWidth, TrackHeight, "Time (hours)");
             TimeSpan xAxisPixelDuration = indexCalculationDuration;
             TimeSpan fullDuration = TimeSpan.FromTicks(xAxisPixelDuration.Ticks * graphWidth);
             Bitmap timeBmp1 = ImageTrack.DrawTimeRelativeTrack(fullDuration, graphWidth, trackHeight);
             Bitmap timeBmp2 = timeBmp1;
-            //Bitmap suntrack = null;
             DateTimeOffset? dateTimeOffset = recordingStartDate;
             if (dateTimeOffset.HasValue)
             {
                 // draw extra time scale with absolute start time. AND THEN Do SOMETHING WITH IT.
                 timeBmp2 = ImageTrack.DrawTimeTrack(fullDuration, dateTimeOffset, graphWidth, trackHeight);
-                //suntrack = SunAndMoon.AddSunTrackToImage(scaleLength, dateTimeOffset, sunriseDataFile);
             }
 
             //draw the composite bitmap
-            var imageList = new List<Image>();
-            imageList.Add(titleBmp);
-            imageList.Add(timeBmp1);
-            for (int i = 0; i < listOfBitmaps.Count; i++)
+            var imageList = new List<Image>
             {
-                imageList.Add(listOfBitmaps[i]);
+                titleBmp,
+                timeBmp1,
+            };
+
+            foreach (var image in listOfBitmaps)
+            {
+                imageList.Add(image);
             }
 
             imageList.Add(timeBmp2);
-            //imageList.Add(suntrack);
-            Bitmap compositeBmp = (Bitmap)ImageTools.CombineImagesVertically(imageList);
+            var compositeBmp = (Bitmap)ImageTools.CombineImagesVertically(imageList);
             return compositeBmp;
         }
 

@@ -50,8 +50,6 @@ param(
 $ErrorActionPreference = "Stop"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-Import-Module "Microsoft.PowerShell.Archive" -Force
-
 $build = "Release"
 $type = $PsCmdlet.ParameterSetName
 $exact_version = $null
@@ -188,22 +186,36 @@ Write-Output "Downloading asset $asset_url"
 $downloaded_zip = "$destination/AP.zip"
 if ($PsCmdlet.ShouldProcess($asset_url, "Downloading asset")) {
     # use curl if available (faster)
-    $curl = Get-Command curl* -CommandType Application -TotalCount 1
+    $curl = Get-Command curl, curl.exe -CommandType Application  -ErrorAction SilentlyContinue | select -First 1
     if ($curl) {
         & $curl -L -o "$downloaded_zip" "$asset_url"
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "Failed dowloading $asset_url using $curl"
+        }
     }
     else {
         $asset_response = Invoke-WebRequest $asset_url -OutFile $downloaded_zip -PassThru
         if ($asset_response.StatusCode -ne 200) {
-            throw "failed downloading $asset_url"
+            throw "Failed downloading $asset_url"
         }
     }
 }
 
 # extract asset
 if ($PsCmdlet.ShouldProcess($downloaded_zip, "Extracting AP.exe zip")) {
-    Import-Module "Microsoft.PowerShell.Archive" -Force
-    Microsoft.PowerShell.Archive\Expand-Archive -LiteralPath $downloaded_zip -DestinationPath $destination -Force
+    if (Get-Command unzip -CommandType Application -ErrorAction SilentlyContinue) {
+        unzip -q -o $downloaded_zip -d $destination
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "Failed extracting $downloaded_zip using unzip"
+        }
+    }
+    else {
+        Import-Module "Microsoft.PowerShell.Archive" -Force
+        Microsoft.PowerShell.Archive\Expand-Archive -LiteralPath $downloaded_zip -DestinationPath $destination -Force
+        
+    }
     Remove-Item $downloaded_zip
 }
 
@@ -227,21 +239,31 @@ if ($IsWin) {
 }
 # TODO Unix/MacOs symlinking
 
+Write-Output "Checking environment has installed dependencies"
 $check_environment = $null
+$ErrorActionPreference = "Continue"
 if ($PsCmdlet.ShouldProcess("AnalysisPrograms.exe", "Checking the install")) {
-    if ($IsWin) {
-        . "$destination/AnalysisPrograms.exe" CheckEnvironment
-        $check_environment = $LASTEXITCODE
+    $command = "$destination/AnalysisPrograms.exe CheckEnvironment"
+    if (! $IsWin) {
+        
+        $command = "mono " + $command
+    }
+
+    if (! $IsWin -and $null -eq (Get-Command mono -CommandType Application -ErrorAction SilentlyContinue) ) {
+        Write-Error "Mono was not found on PATH. It must be isntalled for AP.exe to work"
+        $check_environment = -1
     }
     else {
-        mono "$destination/AnalysisPrograms.exe" CheckEnvironment
+        Invoke-Expression $command
         $check_environment = $LASTEXITCODE
     }
 
     if ($check_environment -ne 0) {
-        throw "Unable to run AP.exe. There is some problem with your setup."
+        Write-Error "Unable to run AP.exe. There is some problem with your setup." 
+        Write-Warning "You can run the environment check again by executing:`n`t$command"
     }
 }
+
 
 return [PSCustomObject]@{
     Type             = $type

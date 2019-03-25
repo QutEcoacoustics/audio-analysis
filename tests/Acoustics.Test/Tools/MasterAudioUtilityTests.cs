@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="MasterAudioUtilityTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -181,18 +181,18 @@ namespace Acoustics.Test.Tools
         }
 
         /// <summary>
-        /// The one is one.
+        /// The one is one tests our logging redirector is working.
         /// </summary>
         [TestMethod]
         public void OneIsOne()
         {
-            using (ConsoleRedirector cr = new ConsoleRedirector())
+            using (var cr = new ConsoleRedirector())
             {
                 Assert.IsFalse(cr.ToString().Contains("New text"));
 
                 /* call some method that writes "New text" to stdout */
                 Console.Write("New text");
-                Assert.IsTrue(cr.ToString().Contains("New text"));
+                Assert.IsTrue(cr.GetString().Contains("New text"));
             }
         }
 

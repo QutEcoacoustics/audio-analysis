@@ -52,6 +52,7 @@ namespace AnalysisPrograms.Production.Arguments
     [Subcommand(DummyAnalysis.CommandName, typeof(DummyAnalysis.Arguments))]
     [Subcommand(FileRenamer.CommandName, typeof(FileRenamer.Arguments))]
     [Subcommand(Sandpit.CommandName, typeof(Sandpit.Arguments))]
+    [Subcommand(MahnooshSandpit.CommandName, typeof(MahnooshSandpit.Arguments))]
     public class MainArgs
     {
         private async Task<int> OnExecuteAsync(CommandLineApplication app)
@@ -121,7 +122,7 @@ namespace AnalysisPrograms.Production.Arguments
         }
 
         [Option(
-            Description = "Set the log vebosity level. Valid values: None = 0, Error = 1, Warn = 2, Info = 3, Debug = 4, Trace = 5, Verbose = 6, All = 7",
+            Description = "Set the log verbosity level. Valid values: None = 0, Error = 1, Warn = 2, Info = 3, Debug = 4, Trace = 5, Verbose = 6, All = 7",
             Inherited = true,
             ShortName = null)]
         public LogVerbosity LogLevel
@@ -165,7 +166,7 @@ namespace AnalysisPrograms.Production.Arguments
         [Option(
             "-vv",
             Inherited = true,
-            Description = "Set the logging to very verbose. Equivalent to LogLevel = Trace = 4")]
+            Description = "Set the logging to very verbose. Equivalent to LogLevel = Trace = 5")]
         public bool VVerbose { get; set; }
 
         [Option(

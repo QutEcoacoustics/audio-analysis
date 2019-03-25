@@ -38,6 +38,8 @@ namespace AudioAnalysisTools.Indices
 
             public double Mode { get; set; }
 
+            public int ModalBin { get; set; }
+
             public double StandardDeviation { get; set; }
 
             public int UpperPercentile { get; set; }
@@ -107,8 +109,8 @@ namespace AudioAnalysisTools.Indices
             {
                 if (spectrogramMatrices.ContainsKey(key))
                 {
-                    var matrix = spectrogramMatrices[key];
-                    SpectralStats stats = GetModeAndOneTailedStandardDeviation(matrix, width, UpperPercentileDefault);
+                    double[] array = DataTools.Matrix2Array(spectrogramMatrices[key]);
+                    SpectralStats stats = GetModeAndOneTailedStandardDeviation(array, width, UpperPercentileDefault);
                     indexDistributionStatistics.Add(key, stats); // add index statistics
                     double value = stats.GetValueOfNthPercentile(UpperPercentileDefault);
 
@@ -141,29 +143,30 @@ namespace AudioAnalysisTools.Indices
             return indexDistributionStatistics;
         }
 
-        public static Image DrawImageOfDistribution(double[,] matrix, int width, int height, string label)
-        {
-            SpectralStats stats = GetModeAndOneTailedStandardDeviation(matrix, width, UpperPercentileDefault);
-            double value = stats.GetValueOfNthPercentile(UpperPercentileDefault);
+        //public static Image DrawImageOfDistribution(double[,] matrix, int width, int height, string label)
+        //{
+        //    double[] array = DataTools.Matrix2Array(matrix);
+        //    SpectralStats stats = GetModeAndOneTailedStandardDeviation(array, width, UpperPercentileDefault);
+        //    double value = stats.GetValueOfNthPercentile(UpperPercentileDefault);
 
-            var image =
-                GraphsAndCharts.DrawHistogram(
-                    label,
-                    stats.Distribution,
-                    stats.UpperPercentileBin,
-                    new Dictionary<string, double>()
-                    {
-                                { "min",  stats.Minimum },
-                                { "max",  stats.Maximum },
-                                { "mode", stats.Mode },
-                                { "sd",   stats.StandardDeviation },
-                                { UpperPercentileLabel,  value },
-                                { "count",  stats.Count },
-                    },
-                    width,
-                    height);
-            return image;
-        }
+        //    var image =
+        //        GraphsAndCharts.DrawHistogram(
+        //            label,
+        //            stats.Distribution,
+        //            stats.UpperPercentileBin,
+        //            new Dictionary<string, double>()
+        //            {
+        //                        { "min",  stats.Minimum },
+        //                        { "max",  stats.Maximum },
+        //                        { "mode", stats.Mode },
+        //                        { "sd",   stats.StandardDeviation },
+        //                        { UpperPercentileLabel,  value },
+        //                        { "count",  stats.Count },
+        //            },
+        //            width,
+        //            height);
+        //    return image;
+        //}
 
         public static Dictionary<string, SpectralStats> WriteSummaryIndexDistributionStatistics(Dictionary<string, double[]> summaryIndices, DirectoryInfo outputDirectory, string fileStem)
         {
@@ -215,42 +218,32 @@ namespace AudioAnalysisTools.Indices
 
         public static SpectralStats GetModeAndOneTailedStandardDeviation(double[,] matrix)
         {
-            int binCount = 100;
-            int upperPercentile = 0;
             double[] values = DataTools.Matrix2Array(matrix);
-            const bool displayHistogram = false;
-            double min, max, mode, sd;
-            DataTools.GetModeAndOneTailedStandardDeviation(values, displayHistogram, out min, out max, out mode, out sd);
-            int[] histogram = Histogram.Histo(matrix, binCount);
+            DataTools.GetModeAndOneTailedStandardDeviation(values, out var histogram, out var min, out var max, out var modalBin, out var mode, out var sd);
 
+            // writeBarGraph(histogram); // debug purposes
             return new SpectralStats()
             {
                 Minimum = min,
                 Maximum = max,
                 Mode = mode,
+                ModalBin = modalBin,
                 StandardDeviation = sd,
-                UpperPercentile = upperPercentile,
+                UpperPercentile = 0,
                 Distribution = histogram,
             };
         }
 
-        public static SpectralStats GetModeAndOneTailedStandardDeviation(double[,] matrix, int binCount, int upperPercentile)
-        {
-            double[] values = DataTools.Matrix2Array(matrix);
-            return GetModeAndOneTailedStandardDeviation(values, binCount, upperPercentile);
-        }
-
         public static SpectralStats GetModeAndOneTailedStandardDeviation(double[] values, int binCount, int upperPercentile)
         {
-            const bool displayHistogram = false;
-            double min, max, mode, sd;
-            DataTools.GetModeAndOneTailedStandardDeviation(values, displayHistogram, out min, out max, out mode, out sd);
-            int[] histogram = Histogram.Histo(values, binCount);
+            DataTools.GetModeAndOneTailedStandardDeviation(values, out var histogram, out var min, out var max, out var modalBin, out var mode, out var sd);
 
+            // writeBarGraph(histogram); // debug purposes
             return new SpectralStats()
             {
                 Minimum = min,
                 Maximum = max,
+                ModalBin = modalBin,
                 Mode = mode,
                 StandardDeviation = sd,
                 UpperPercentile = upperPercentile,

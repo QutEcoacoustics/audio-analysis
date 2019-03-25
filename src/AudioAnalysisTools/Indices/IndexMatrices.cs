@@ -18,10 +18,11 @@ namespace AudioAnalysisTools.Indices
     using Acoustics.Shared;
     using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Csv;
-    using log4net;
+    using DSP;
     using StandardSpectrograms;
+    using log4net;
+    using MoreLinq.Extensions;
     using TowseyLibrary;
-
     using Zio;
 
     public static class IndexMatrices
@@ -32,8 +33,8 @@ namespace AudioAnalysisTools.Indices
         /// <summary>
         /// All the passed files will be concatenated. Filtering needs to be done somewhere else.
         /// </summary>
-        /// <param name="files">array of file names</param>
-        /// <param name="indexCalcDuration">used to match rows of indices to elapsed time in file names</param>
+        /// <param name="files">array of file names.</param>
+        /// <param name="indexCalcDuration">used to match rows of indices to elapsed time in file names.</param>
         public static List<SummaryIndexValues> ConcatenateSummaryIndexFilesWithTimeCheck(FileInfo[] files, TimeSpan indexCalcDuration)
         {
             TimeSpan? offsetHint = new TimeSpan(10, 0, 0);
@@ -62,7 +63,6 @@ namespace AudioAnalysisTools.Indices
             var sourceFileNames = new HashSet<string>();
 
             // now loop through the files again to extract the indices
-            var missingRowCounter = 0;
             for (int i = 0; i < files.Length; i++)
             {
                 if (!files[i].Exists)
@@ -70,7 +70,6 @@ namespace AudioAnalysisTools.Indices
                     continue;
                 }
 
-                // Log.Debug("Reading of file started: " + files[i].FullName);
                 var rowsOfCsvFile = Csv.ReadFromCsv<SummaryIndexValues>(files[i], throwOnMissingField: false);
 
                 // check all rows have fileName set
@@ -154,8 +153,8 @@ namespace AudioAnalysisTools.Indices
 
         /// <summary>
         /// WARNING: THIS METHOD ONLY GETS FIXED LIST OF INDICES.
-        ///             Also it requires every index to be of type DOUBLE even when htis is not appropriate.
-        /// TODO: This needs to be generalized
+        ///             Also it requires every index to be of type DOUBLE even when this is not appropriate.
+        /// TODO: This needs to be generalized.
         /// </summary>
         public static Dictionary<string, double[]> GetDictionaryOfSummaryIndices(List<SummaryIndexValues> summaryIndices)
         {
@@ -227,7 +226,7 @@ namespace AudioAnalysisTools.Indices
         ///  i.e. check elapse time in file names against accumulated rows of indices.
         /// </summary>
         /// <param name="files">All the passed files will be concatenated. Filtering needs to be done somewhere else.</param>
-        /// <param name="indexCalcDuration">used to match rows of indices to elapsed time in file names</param>
+        /// <param name="indexCalcDuration">used to match rows of indices to elapsed time in file names.</param>
         /// <param name="key">this is used only in case need to write an error message. It identifies the key.</param>
         public static List<double[,]> ConcatenateSpectralIndexFilesWithTimeCheck(FileInfo[] files, TimeSpan indexCalcDuration, string key)
         {
@@ -309,9 +308,11 @@ namespace AudioAnalysisTools.Indices
                         {
                             for (int c = 0; c < columnCount; c++)
                             {
-                                // initialise with low decibel value
-                                // TODO: This should be set equal to a global constant somewhere. May need to change value to -150 dB.
-                                emptyMatrix[r, c] = -100.0;
+                                // initialise with zero signal decibel value
+                                emptyMatrix[r, c] = SNR.MinimumDbBoundForZeroSignal;
+
+                                // OR initialise with low decibel value for environmental noise
+                                //emptyMatrix[r, c] = SNR.MinimumDbBoundForEnvironmentalNoise;
                             }
                         }
                     }
@@ -357,7 +358,7 @@ namespace AudioAnalysisTools.Indices
         }
 
         /// <summary>
-        /// Returns a sorted list of file paths, sorted on file name.
+        /// Returns a unique, sorted, list of file paths, sorted on file name.
         /// IMPORTANT: Sorts on alphanumerics, NOT on date or time encoded in the file name.
         /// </summary>
         public static FileInfo[] GetFilesInDirectories(DirectoryInfo[] directories, string pattern)
@@ -378,14 +379,7 @@ namespace AudioAnalysisTools.Indices
                 fileList.AddRange(files);
             }
 
-            //if (fileList.Count == 0)
-            //{
-            //    // No need for this warning. It comes later.
-            //    LoggedConsole.WriteErrorLine($"No file names match pattern <{pattern}>. Returns empty list of files");
-            //}
-
-            FileInfo[] returnList = fileList.ToArray();
-            Array.Sort(returnList, (f1, f2) => f1.Name.CompareTo(f2.Name));
+            FileInfo[] returnList = fileList.DistinctBy(x => x.FullName).OrderBy(x => x.Name).ToArray();
 
             return returnList;
         }
@@ -454,7 +448,7 @@ namespace AudioAnalysisTools.Indices
         /// <summary>
         /// This method reads spectrogram csv files where the first row contains column names
         /// and the first column contains row/time names.
-        /// Note: no rotation of data is done!
+        /// Note: no rotation of data is done!.
         /// </summary>
         public static double[,] ReadSpectrogram(FileInfo csvFile, out int binCount)
         {
@@ -471,7 +465,7 @@ namespace AudioAnalysisTools.Indices
         /// <summary>
         /// Returns dictionary of spectral indices.
         /// Assumes both arrays of same length and keys correspond to file name.
-        /// TODO: Do this better one day!
+        /// TODO: Do this better one day!.
         /// </summary>
         public static Dictionary<string, double[,]> ReadSummaryIndexFiles(FileInfo[] files, string[] keys)
         {
@@ -479,8 +473,7 @@ namespace AudioAnalysisTools.Indices
             var dict = new Dictionary<string, double[,]>();
             for (int c = 0; c < count; c++)
             {
-                int freqBinCount;
-                double[,] matrix = ReadSpectrogram(files[c], out freqBinCount);
+                double[,] matrix = ReadSpectrogram(files[c], out var freqBinCount);
                 dict.Add(keys[c], matrix);
             }
 
@@ -500,7 +493,7 @@ namespace AudioAnalysisTools.Indices
                 .Where(x => x != null);
 
             // actual work done here
-            Stopwatch timer = Stopwatch.StartNew();
+            var timer = Stopwatch.StartNew();
 
             // ReSharper disable once PossibleInvalidOperationException
             var spectrogramMatrices = readData.ToDictionary(kvp => kvp.Value.Item1, kvp => kvp.Value.Item2);
@@ -527,10 +520,7 @@ namespace AudioAnalysisTools.Indices
                 double[,] matrix;
                 if (file.Exists)
                 {
-                    int freqBinCount;
-                    matrix = ReadSpectrogram(file, out freqBinCount, TwoDimensionalArray.Rotate90AntiClockWise);
-
-                    //matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
+                    matrix = ReadSpectrogram(file, out var freqBinCount, TwoDimensionalArray.Rotate90AntiClockWise);
                 }
                 else
                 {
@@ -552,9 +542,9 @@ namespace AudioAnalysisTools.Indices
         /// This method got more complicated in June 2016 when it was refactored to cope with recording blocks less than
         /// one minute long.
         /// </summary>
-        /// <param name="spectra">The spectra to compress as a dictionary of spectrogram matrices</param>
-        /// <param name="imageScale">The scale (time resolution) of the compressed output spectrogram</param>
-        /// <param name="dataScale">The scale (time resolution) of the input spectral indices<see cref="spectra"/></param>
+        /// <param name="spectra">The spectra to compress as a dictionary of spectrogram matrices.</param>
+        /// <param name="imageScale">The scale (time resolution) of the compressed output spectrogram.</param>
+        /// <param name="dataScale">The scale (time resolution) of the input spectral indices<see cref="spectra"/>.</param>
         /// <param name="roundingFunc">
         /// How fractional spectra should be dealt with.
         /// It should be one of or similar to <see cref="Math.Round(double)"/>,
@@ -715,24 +705,30 @@ namespace AudioAnalysisTools.Indices
             return compressedSpectra;
         }
 
-        public static Dictionary<string, double[,]> ReadSpectrogramCSVFiles(DirectoryInfo ipdir, string fileName, string indexKeys, out int freqBinCount)
+        public static Dictionary<string, double[,]> ReadSpectrogramCsvFiles(DirectoryInfo ipdir, string fileName, string indexKeys, out int freqBinCount)
         {
             string[] keys = indexKeys.Split('-');
-            return ReadSpectrogramCSVFiles(ipdir, fileName, keys, out freqBinCount);
+            return ReadSpectrogramCsvFiles(ipdir, fileName, keys, out freqBinCount);
         }
 
-        public static Dictionary<string, double[,]> ReadSpectrogramCSVFiles(DirectoryInfo ipdir, string fileName, string[] keys, out int freqBinCount)
+        /// <summary>
+        /// Reads a list of Spectrogram Csv Files.
+        /// </summary>
+        /// <param name="ipdir">input dir.</param>
+        /// <param name="fileName">the file name.</param>
+        /// <param name="keys">an array of keys.</param>
+        /// <param name="freqBinCount">number of freq bins.</param>
+        public static Dictionary<string, double[,]> ReadSpectrogramCsvFiles(DirectoryInfo ipdir, string fileName, string[] keys, out int freqBinCount)
         {
             var dict = new Dictionary<string, double[,]>();
             string warning = null;
-            freqBinCount = 256; // the default
+            freqBinCount = 256;
             for (int key = 0; key < keys.Length; key++)
             {
                 var file = new FileInfo(Path.Combine(ipdir.FullName, fileName + "." + keys[key] + ".csv"));
                 if (file.Exists)
                 {
-                    int binCount;
-                    double[,] matrix = ReadSpectrogram(file, out binCount);
+                    double[,] matrix = ReadSpectrogram(file, out var binCount);
                     matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
                     dict.Add(keys[key], matrix);
                     freqBinCount = binCount;
@@ -741,7 +737,7 @@ namespace AudioAnalysisTools.Indices
                 {
                     if (warning == null)
                     {
-                        warning = "\nWARNING: from method IndexMatrices.ReadSpectrogramCSVFiles()";
+                        warning = "\nWARNING: from method IndexMatrices.ReadSpectrogramCsvFiles()";
                     }
 
                     warning += $"\n      {keys[key]} File does not exist: {file.FullName}";
@@ -758,7 +754,7 @@ namespace AudioAnalysisTools.Indices
                 return dict;
             }
 
-            LoggedConsole.WriteLine("WARNING: from method IndexMatrices.ReadSpectrogramCSVFiles()");
+            LoggedConsole.WriteLine("WARNING: from method IndexMatrices.ReadSpectrogramCsvFiles()");
             LoggedConsole.WriteLine("         NO FILES were read from this directory: " + ipdir);
 
             return dict;

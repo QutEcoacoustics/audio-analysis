@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="AED.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -236,7 +236,7 @@ namespace AnalysisPrograms
 
         public static void Execute(Arguments arguments)
         {
-            MainEntry.WarnIfDevleoperEntryUsed();
+            MainEntry.WarnIfDeveloperEntryUsed();
 
             TowseyLibrary.Log.Verbosity = 1;
             string date = "# DATE AND TIME: " + DateTime.Now;
@@ -292,11 +292,7 @@ namespace AnalysisPrograms
 
             if (analysisSettings.AnalysisDataSaveBehavior)
             {
-                var unitTime = TimeSpan.FromMinutes(1.0);
-                analysisResults.SummaryIndices = this.ConvertEventsToSummaryIndices(analysisResults.Events, unitTime, analysisResults.SegmentAudioDuration, 0);
-
-                this.WriteSummaryIndicesFile(segmentSettings.SegmentSummaryIndicesFile, analysisResults.SummaryIndices);
-                analysisResults.SummaryIndicesFile = segmentSettings.SegmentSummaryIndicesFile;
+                // noop
             }
 
             // save image of sonograms
@@ -361,7 +357,7 @@ namespace AnalysisPrograms
 
         public override void WriteSummaryIndicesFile(FileInfo destination, IEnumerable<SummaryIndexBase> results)
         {
-            Csv.WriteToCsv(destination, results);
+            Csv.WriteToCsv(destination, results.Cast<EventIndex>());
         }
     }
 }

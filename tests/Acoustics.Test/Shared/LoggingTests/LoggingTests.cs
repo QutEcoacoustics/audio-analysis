@@ -6,13 +6,17 @@ namespace Acoustics.Test.Shared.LoggingTests
 {
     using System;
     using System.IO;
+    using System.Linq;
     using System.Reflection;
+    using System.Threading.Tasks;
+    using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Logging;
     using Fasterflect;
     using log4net;
     using log4net.Core;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using TestHelpers;
 
     [TestClass]
     [DoNotParallelize]
@@ -37,10 +41,10 @@ namespace Acoustics.Test.Shared.LoggingTests
         [DataRow(nameof(Level.All), 19)]
         public void TestVerbosityModifier(string targetVerbosity, int expectedMessageCount)
         {
-            lock (Logging.MemoryAppender)
+            lock (TestSetup.TestLogging.MemoryAppender)
             {
                 // clear the log
-                Logging.MemoryAppender.Clear();
+                TestSetup.TestLogging.MemoryAppender.Clear();
 
                 Level level = typeof(Level).TryGetFieldValue(targetVerbosity, Flags.AllMembers) as Level;
                 if (level == null)
@@ -50,20 +54,51 @@ namespace Acoustics.Test.Shared.LoggingTests
 
                 Assert.IsNotNull(level);
 
-                Logging.ModifyVerbosity(level, true);
+                TestSetup.TestLogging.ModifyVerbosity(level, true);
 
-                Logging.TestLogging();
+                TestSetup.TestLogging.TestLogging();
 
-                Assert.AreEqual(expectedMessageCount, Logging.MemoryAppender.GetEvents().Length);
+                Assert.AreEqual(expectedMessageCount, TestSetup.TestLogging.MemoryAppender.GetEvents().Length);
             }
         }
 
         [TestMethod]
-        public void InitializeCanOnlyBeCalledOnce()
+        public void TestLogFileIsCreated()
         {
-            Assert.ThrowsException<InvalidOperationException>(
-                () => Logging.Initialize(false, Level.Info, true));
+            var logging = new Logging(false, Level.Info, quietConsole: false);
+
+            var expectedPath = Path.Combine(LoggedConsole.LogFolder, logging.LogFileName);
+            Assert.That.PathExists(expectedPath);
+
+            StringAssert.StartsWith(logging.LogFileName, "log_20");
         }
 
+        [TestMethod]
+        public async Task TestLogFilesAreCleaned()
+        {
+            var logDirectory = LoggedConsole.LogFolder;
+
+            // get count
+            var files = Directory.GetFiles(logDirectory);
+            var oldCount = files.Length;
+
+            // it should allow up to 60 log files, before it cleans 10
+            var delta = 60 - oldCount + 1;
+
+            // "do" because we need to create a new log at least once for this test to trigger
+            // its cleaning logic
+            do
+            {
+                var log = new Logging(false, Level.Info, quietConsole: false);
+                delta--;
+            } while (delta > 0);
+
+            // wait for delete async task to fire
+            await Task.Delay(100);
+
+            // get count
+            files = Directory.GetFiles(logDirectory);
+            Assert.AreEqual(50, files.Length);
+        }
     }
 }

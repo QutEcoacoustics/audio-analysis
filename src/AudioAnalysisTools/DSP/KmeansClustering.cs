@@ -6,17 +6,10 @@ namespace AudioAnalysisTools.DSP
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
-    using System.IO;
     using System.Linq;
     using Accord.MachineLearning;
     using Accord.Math;
     using Accord.Math.Distances;
-    using Accord.Statistics.Kernels;
-    using Acoustics.Shared;
-    using Acoustics.Shared.Csv;
-    using CsvHelper;
-    using Zio;
 
     public static class KmeansClustering
     {
@@ -29,7 +22,7 @@ namespace AudioAnalysisTools.DSP
             public KMeansClusterCollection Clusters { get; set; }
         }
 
-        public static Output Clustering(double[,] patches, int numberOfClusters, string pathToCentroidFile)
+        public static Output Clustering(double[,] patches, int numberOfClusters)
         {
             // "Generator.Seed" sets a random seed for the framework's main internal number generator, which
             // gets a reference to the random number generator used internally by the Accord.NET classes and methods.
@@ -54,8 +47,6 @@ namespace AudioAnalysisTools.DSP
                 clusterIdSize.Add(clust.Index, clust.Proportion);
                 clusterIdCentroid.Add(clust.Index, clust.Centroid);
             }
-
-            Csv.WriteToCsv(pathToCentroidFile.ToFileInfo(), clusterIdCentroid);
 
             var output = new Output()
             {

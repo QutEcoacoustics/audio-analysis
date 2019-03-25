@@ -1,4 +1,4 @@
-﻿// <copyright file="LoggedConsoleTests.cs" company="QutEcoacoustics">
+// <copyright file="LoggedConsoleTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -14,6 +14,7 @@ namespace Acoustics.Test.Shared
     using Acoustics.Shared.Logging;
     using global::AnalysisPrograms;
     using global::AnalysisPrograms.Production.Arguments;
+    using log4net.Core;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
 
@@ -26,9 +27,9 @@ namespace Acoustics.Test.Shared
         [DoNotParallelize]
         public void UsesCleanlayout()
         {
-            Logging.MemoryAppender.Clear();
+            TestSetup.TestLogging.MemoryAppender.Clear();
             LoggedConsole.WriteLine("test message");
-            Assert.AreEqual("test message", Logging.MemoryAppender.GetEvents()[0].RenderedMessage);
+            Assert.AreEqual("test message", TestSetup.TestLogging.MemoryAppender.GetEvents()[0].RenderedMessage);
         }
 
         [TestMethod]
@@ -84,7 +85,7 @@ namespace Acoustics.Test.Shared
         [Timeout(5000)]
         public void PromptNonInteractive()
         {
-            MainEntry.SetLogVerbosity(LogVerbosity.Info, false);
+            TestSetup.TestLogging.ModifyVerbosity(Level.Info, false);
             using (var stringWriter = new StringWriter())
             {
                 Console.SetOut(stringWriter);
@@ -99,7 +100,7 @@ namespace Acoustics.Test.Shared
                 Assert.AreEqual(null, result);
             }
 
-            MainEntry.SetLogVerbosity(LogVerbosity.Warn, true);
+            TestSetup.TestLogging.ModifyVerbosity(Level.Warn, true);
         }
 
         [TestMethod]
