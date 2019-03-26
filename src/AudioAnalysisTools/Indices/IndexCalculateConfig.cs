@@ -6,20 +6,16 @@ namespace AudioAnalysisTools.Indices
 {
     using System;
     using Acoustics.Shared.ConfigFile;
-
-    using DSP;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.LongDurationSpectrograms;
     using Equ;
-
     using Fasterflect;
-
     using log4net;
-
     using Newtonsoft.Json;
-
     using YamlDotNet.Serialization;
 
     /// <summary>
-    /// CONFIG CLASS FOR the class IndexCalculate.cs
+    /// CONFIG CLASS FOR the class IndexCalculate.cs.
     /// </summary>
     public class IndexCalculateConfig : AnalyzerConfigIndexProperties, IEquatable<IndexCalculateConfig>, ICloneable
     {
@@ -60,7 +56,7 @@ namespace AudioAnalysisTools.Indices
 
         /// <summary>
         /// Initializes a new instance of the <see cref="IndexCalculateConfig"/> class.
-        /// CONSTRUCTOR
+        /// CONSTRUCTOR.
         /// </summary>
         public IndexCalculateConfig()
         {
@@ -84,7 +80,7 @@ namespace AudioAnalysisTools.Indices
         /// <summary>
         /// Gets or sets the Timespan (in seconds) over which summary and spectral indices are calculated
         /// Default=60.0
-        /// Units=seconds
+        /// Units=seconds.
         /// </summary>
         [YamlIgnore]
         [JsonIgnore]
@@ -122,7 +118,7 @@ namespace AudioAnalysisTools.Indices
         /// Ten seconds is considered a minimum interval to obtain a reliable estimate of BG noise.
         /// The  BG noise interval is not extended beyond start or end of recording segment.
         /// Consequently for a 60sec Index calculation duration, the  BG noise is calculated form the 60sec segment only.
-        /// Default=5 seconds
+        /// Default=5 seconds.
         /// </remarks>
         public double BgNoiseNeighborhood { get; set; }
 
@@ -130,26 +126,26 @@ namespace AudioAnalysisTools.Indices
         /// Gets or sets the FrameWidth - the number of samples to use per FFT window.
         /// FrameWidth is used WITHOUT overlap to calculate the spectral indices.
         /// Default value = 512.
-        /// Units=samples
+        /// Units=samples.
         /// </summary>
         public int FrameLength { get; set; }
 
         /// <summary>
         /// Gets or sets the LowFreqBound.
         /// Default value = 1000.
-        /// Units=Herz
+        /// Units=Herz.
         /// </summary>
         public int LowFreqBound { get; set; }
 
         /// <summary>
         /// Gets or sets the MidFreqBound.
         /// Default value = 8000.
-        /// Units=Herz
+        /// Units=Herz.
         /// </summary>
         public int MidFreqBound { get; set; }
 
         /// <summary>
-        /// Gets or sets frequency scale is Linear or OCtave
+        /// Gets or sets frequency scale is Linear or Octave.
         /// </summary>
         public FreqScaleType FrequencyScale
         {
@@ -185,17 +181,18 @@ namespace AudioAnalysisTools.Indices
         /// Gets or sets the number of Mel-scale filter banks to use.
         /// </summary>
         /// <remarks>
-        /// The default, 0, implies no operation
+        /// The default, 0, implies no operation.
         /// </remarks>
         public int MelScale { get; set; }
 
+        /*
         /// <summary>
         /// WARNING: This method does not incorporate all the parameters in the config.yml file.
         /// Only those that are likely to change.
         /// If you want to change a config parameter in the yml file make sure it appears in this method.
         /// </summary>
-        /// <param name="configuration">the Config config</param>
-        /// <param name="writeParameters">default = false</param>
+        /// <param name="configuration">the Config config.</param>
+        /// <param name="writeParameters">default = false.</param>
         [Obsolete("Incorporation of statically typed config should obviate need for this method")]
         public static IndexCalculateConfig GetConfig(Config configuration,  bool writeParameters = false)
         {
@@ -232,6 +229,7 @@ namespace AudioAnalysisTools.Indices
 
             return config;
         }
+        */
 
         public bool Equals(IndexCalculateConfig other)
         {
