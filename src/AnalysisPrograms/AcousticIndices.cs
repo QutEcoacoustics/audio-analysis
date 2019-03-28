@@ -12,7 +12,6 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
-    using System.Data;
     using System.Diagnostics;
     using System.Drawing;
     using System.Drawing.Imaging;
@@ -21,7 +20,6 @@ namespace AnalysisPrograms
     using System.Reflection;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
-    using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Csv;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
@@ -33,7 +31,6 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.TileImage;
     using AudioAnalysisTools.WavTools;
     using log4net;
-    using Production;
     using TowseyLibrary;
     using Zio;
 
@@ -75,6 +72,19 @@ namespace AnalysisPrograms
         [Serializable]
         public class AcousticIndicesConfig : IndexCalculateConfig
         {
+            private LdSpectrogramConfig ldfcsConfig = new LdSpectrogramConfig();
+
+            /// <summary>
+            /// Gets or sets the LDFC spectrogram configuration.
+            /// </summary>
+            public LdSpectrogramConfig LdSpectrogramConfig
+            {
+                get => this.ldfcsConfig;
+                protected set => this.ldfcsConfig = value;
+            }
+
+            public bool TileOutput { get; private set; } = false;
+
             public void Validate(TimeSpan defaultIndexCalculationDuration)
             {
                 SpectralIndexValues.CheckExistenceOfSpectralIndexValues(this.IndexProperties);
@@ -106,8 +116,6 @@ namespace AnalysisPrograms
                         + "ICD != 60.0 so the images won'tbe created");
                 }
             }
-
-            public bool TileOutput { get; private set; } = false;
         }
 
         public AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
@@ -263,7 +271,7 @@ namespace AnalysisPrograms
             sampleRate = acousticIndicesConfig.ResampleRate ?? sampleRate;
 
             // Gather settings for rendering false color spectrograms
-            var ldSpectrogramConfig = LdSpectrogramConfig.GetDefaultConfig();
+            var ldSpectrogramConfig = acousticIndicesConfig.LdSpectrogramConfig;
 
             string basename = Path.GetFileNameWithoutExtension(sourceAudio.Name);
 

@@ -101,5 +101,33 @@ IndexPropertiesConfig: './IndexPropertiesConfig.yml'
 # This value can sometimes be used to manage the FP/FN trade-off performance of a call recogniser.
 # Not always used however. 
 EventThreshold: 0.2
+
+# #############################################################################################################
+# The below parameters are used to configure drawing of the false-colour spectrograms
+# IMPORTANT NOTE: FC spectrograms are produced only IF the above IndexCalculationDuration := 60.0
+# Explanation of the FC configuration parameters is included below.
+LdSpectrogramConfig:
+    ColorMap1: "ACI-ENT-EVN"
+    ColorMap2: "BGN-PMN-SPT"
+
+    #EXPLANATION OF LDFC CONFIG PARAMETERS
+    # The ColourFilter parameter determines how much the low index values are emphasized or de-emphasized.
+    # The purpose is to make low intensity features stand out (emphasis) or become even less obvious (de-emphasis).
+    # This parameter applies a function that lies between y=x^-2 and y=x^2, i.e. between the square-root and the square.
+    # For an acoustic index value of X, newX = [(1/c - 1) * X^2 + X] * c, where c = the supplied filterCoeff.
+    #    When filterCoeff = 1.0, small values are maximally emphasized, i.e. y=sqrt(x).
+    #    When filterCoeff = 0.0, the matrix remains unchanged, that is, y=x.
+    #    When filterCoeff =-1.0, small values are maximally de-emphasized, i.e. y=x^2.
+    #    Generally usage suggests that a value of -0.25 is suitable. i.e. a slight de-emphasis.
+    ColourFilter: -0.25
+    
+    # minutes x-axis scale
+    XAxisTicIntervalSeconds: 3600
+
+    # Hertz y-axis scale
+    # Only three option work now: "Linear", "Mel"' "Linear125Octaves7Tones28Nyquist32000" work at present
+    # Future options will be: Linear62Octaves31Nyquist11025, Linear125Octaves30Nyquist11025, Octaves24Nyquist32000
+    FreqScale: "Linear"
+    YAxisTicInterval: 1000
 ...
 

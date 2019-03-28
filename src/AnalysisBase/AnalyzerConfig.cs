@@ -1,9 +1,10 @@
-﻿// <copyright file="AnalyzerConfig.cs" company="QutEcoacoustics">
+// <copyright file="AnalyzerConfig.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
 namespace AnalysisBase
 {
+    using System.IO;
     using Acoustics.Shared.ConfigFile;
 
     public class AnalyzerConfig
@@ -16,12 +17,12 @@ namespace AnalysisBase
         public double EventThreshold { get; set; } = EventThresholdDefault;
 
         /// <summary>
-        /// Gets or sets the length of audio block to process
+        /// Gets or sets the length of audio block to process.
         /// </summary>
         public double? SegmentDuration { get; set; }
 
         /// <summary>
-        /// Gets or sets the amount that each audio block should overlap
+        /// Gets or sets the amount that each audio block should overlap.
         /// </summary>
         public double? SegmentOverlap { get; set; }
 
@@ -45,7 +46,7 @@ namespace AnalysisBase
         public SaveBehavior SaveSonogramImages { get; set; } = SaveBehavior.Never;
 
         /// <summary>
-        /// Gets or sets a value indicating whether a file must have a date in the file name
+        /// Gets or sets a value indicating whether a file must have a date in the file name.
         /// </summary>
         /// <remarks>
         /// if true, an unambiguous date time must be provided in the source file's name.
@@ -55,7 +56,7 @@ namespace AnalysisBase
         ///     prefix_20140101T235959+1000.mp3
         ///     prefix_20140101T235959+Z.mp3
         ///     prefix_20140101-235959+1000.mp3
-        ///     prefix_20140101-235959+Z.mp3
+        ///     prefix_20140101-235959+Z.mp3.
         /// </remarks>
         public bool RequireDateInFilename { get; set; } = false;
     }

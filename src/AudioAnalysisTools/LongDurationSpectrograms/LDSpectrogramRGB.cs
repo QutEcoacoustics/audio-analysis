@@ -69,11 +69,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         // string[] keys = { "ACI", "ENT", "EVN", "BGN", "POW", "EVN" }; // the OLD default i.e. since July 2015
         // More recently (2018 onwards) other combinations have been used expecially for the blue channel index.
         // public static readonly string DefaultColorMap1 = "ACI, ENT, EVN";
-        // public static readonly string DefaultColorMap2 = "BGN, PMN, R3D";
+        // public static readonly string DefaultColorMap2 = "BGN, PMN, SPT";
 
         // the defaults
         public static readonly string DefaultColorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
-        public static readonly string DefaultColorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_R3D;
+        public static readonly string DefaultColorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_SPT;
 
         public static string[] GetArrayOfAvailableKeys()
         {
