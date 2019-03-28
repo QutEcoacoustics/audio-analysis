@@ -69,6 +69,16 @@ namespace AudioAnalysisTools.Indices
                 this.UpperPercentileBin = percentileBin;
                 double binWidth = (this.Maximum - this.Minimum) / length;
                 double value = this.Minimum + (binWidth * percentileBin);
+
+                // CVR (cover) and EVN (events/sec) have discrete, sparse distributions when calculating for zoomed tiles,
+                // and most values are in the zero bin.
+                // Therefore they return value = 0.0; This is a bug!
+                // To avoid this problem, set value = maximum when percentileBin = 0
+                if (percentileBin == 0)
+                {
+                    value = this.Maximum;
+                }
+
                 return value;
             }
         }

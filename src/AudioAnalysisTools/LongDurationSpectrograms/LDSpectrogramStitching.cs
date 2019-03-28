@@ -61,8 +61,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             //string dateString = String.Format("{0}{1:D2}{2:D2}", dto.Year, dto.Month, dto.Day);
             string searchPattern = "*" + site + "*";
 
+            var searchOption = SearchOption.AllDirectories;
+            //var searchOption = SearchOption.TopDirectoryOnly;
+
             return topLevelDataDirectories
-                .SelectMany(dir => dir.GetDirectories(searchPattern, SearchOption.AllDirectories))
+                .SelectMany(dir => dir.GetDirectories(searchPattern, searchOption))
                 .ToArray();
         }
 
