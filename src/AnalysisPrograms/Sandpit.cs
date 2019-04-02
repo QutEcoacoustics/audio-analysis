@@ -705,11 +705,6 @@ namespace AnalysisPrograms
             string gapRendering = "TimedGaps"; // the default
             bool concatenateEverythingYouCanLayYourHandsOn = false; // default is 24-hour blocks
 
-            // WARNING: Be careful about Search option. The default is all directories but in some of my work require TopDirectoryOnly.
-            // See LdSpectrogramStitching.GetSubDirectoriesForSiteData() lines 64 and 65.
-            // var searchOption = SearchOption.AllDirectories;
-            // var searchOption = SearchOption.TopDirectoryOnly;
-
             /*
             // ########################## CONCATENATION of Sarah Lowe's recordings
             // The drive: work = G; home = E
@@ -811,7 +806,7 @@ namespace AnalysisPrograms
                 @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez",
             };
 
-            string directoryFilter = "*"; // this is a directory filter to locate only the required files
+            string directoryFilter = "Mez*"; // this is a directory filter to locate only the required files
             string opFileStem = "TasmanIslandMez";
             string opPath = @"C:\Ecoacoustics\Output\Test\DebugIssue186";
 

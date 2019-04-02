@@ -202,7 +202,9 @@ namespace AnalysisPrograms
 
             // 1. PATTERN SEARCH FOR CORRECT SUBDIRECTORIES
             // Assumes that the required subdirectories have the given FILTER/SiteName somewhere in their path.
-            var subDirectories = LdSpectrogramStitching.GetSubDirectoriesForSiteData(inputDirs, arguments.DirectoryFilter);
+            var searchOption = SearchOption.AllDirectories;
+            //var searchOption = SearchOption.TopDirectoryOnly;
+            var subDirectories = LdSpectrogramStitching.GetSubDirectoriesForSiteData(inputDirs, arguments.DirectoryFilter, searchOption);
             if (subDirectories.Length == 0)
             {
                 LoggedConsole.WriteErrorLine("\n\n#WARNING from method ConcatenateIndexFiles.Execute():");
