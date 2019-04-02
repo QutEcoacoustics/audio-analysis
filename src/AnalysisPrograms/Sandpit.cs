@@ -74,7 +74,7 @@ namespace AnalysisPrograms
                 //CodeToPlaceScoreTracksUnderLdfcSpectrograms();
                 //CodeToPlaceScoreTracksUnderSingleImage();
 
-                //ConcatenateIndexFilesAndSpectrograms();
+                ConcatenateIndexFilesAndSpectrograms();
                 //ConcatenateGreyScaleSpectrogramImages();
                 //ConcatenateMarineImages();
                 //ConcatenateImages();
@@ -96,7 +96,7 @@ namespace AnalysisPrograms
                 //TestEigenValues();
                 //TestChannelIntegrity();
                 //TestDct();
-                Statistics.TestGetNthPercentileBin();
+                //Statistics.TestGetNthPercentileBin();
 
                 //TEST_FilterMovingAverage();
                 //TestImageProcessing();
@@ -704,6 +704,11 @@ namespace AnalysisPrograms
             // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and EchoGaps.
             string gapRendering = "TimedGaps"; // the default
             bool concatenateEverythingYouCanLayYourHandsOn = false; // default is 24-hour blocks
+
+            // WARNING: Be careful about Search option. The default is all directories but in some of my work require TopDirectoryOnly.
+            // See LdSpectrogramStitching.GetSubDirectoriesForSiteData() lines 64 and 65.
+            // var searchOption = SearchOption.AllDirectories;
+            // var searchOption = SearchOption.TopDirectoryOnly;
 
             /*
             // ########################## CONCATENATION of Sarah Lowe's recordings

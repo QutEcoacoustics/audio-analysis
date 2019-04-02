@@ -120,11 +120,8 @@ namespace AudioAnalysisTools.Indices
             this.DoDisplay = true;
             this.NormMin = 0.0;
             this.NormMax = 1.0;
-            this.CalculateNormMin = false;
-            this.CalculateNormMax = false;
+            this.CalculateNormBounds = false;
             this.Units = string.Empty;
-            this.IncludeInComboIndex = false;
-            this.ComboWeight = 0.0;
         }
 
         // ignored because we don't want to dump this info in ConfigFile log
@@ -147,7 +144,7 @@ namespace AudioAnalysisTools.Indices
 
         [YamlIgnore]
         [JsonIgnore]
-        //TODO: this information should really be encoded rather than inferred
+        // TODO: this information should really be encoded rather than inferred
         public bool IsSpectralIndex => this.DataType == "double[]";
 
         public double DefaultValue
@@ -181,20 +178,13 @@ namespace AudioAnalysisTools.Indices
 
         public double NormMin { get; set; }
 
-        public bool CalculateNormMin { get; set; }
-
         public double NormMax { get; set; }
 
-        public bool CalculateNormMax { get; set; }
+        public bool CalculateNormBounds { get; set; }
 
         // ignored because we don't want to dump this info in ConfigFile log
         [JsonIgnore]
         public string Units { get; set; }
-
-        // use these when calculated combination index.
-        public bool IncludeInComboIndex { get; set; }
-
-        public double ComboWeight { get; set; }
 
         public double NormaliseValue(double value) => DataTools.NormaliseInZeroOne(value, this.NormMin, this.NormMax);
 
