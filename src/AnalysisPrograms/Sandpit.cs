@@ -74,7 +74,7 @@ namespace AnalysisPrograms
                 //CodeToPlaceScoreTracksUnderLdfcSpectrograms();
                 //CodeToPlaceScoreTracksUnderSingleImage();
 
-                ConcatenateIndexFilesAndSpectrograms();
+                //ConcatenateIndexFilesAndSpectrograms();
                 //ConcatenateGreyScaleSpectrogramImages();
                 //ConcatenateMarineImages();
                 //ConcatenateImages();
@@ -96,6 +96,8 @@ namespace AnalysisPrograms
                 //TestEigenValues();
                 //TestChannelIntegrity();
                 //TestDct();
+                Statistics.TestGetNthPercentileBin();
+
                 //TEST_FilterMovingAverage();
                 //TestImageProcessing();
                 //TestMatrix3dClass();

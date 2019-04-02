@@ -50,36 +50,12 @@ namespace AudioAnalysisTools.Indices
 
             public int Count { get; set; }
 
-            public double GetValueOfNthPercentile(int percentile)
+            public void GetValueOfNthPercentile(int percentile, out int binId, out double value)
             {
-                int length = this.Distribution.Length;
-                double threshold = percentile / 100D;
-                double[] probs = DataTools.NormaliseArea(this.Distribution);
-                double[] cumProb = DataTools.ConvertProbabilityDistribution2CummulativeProbabilites(probs);
-                int percentileBin = 0;
-                for (int i = 0; i < length - 1; i++)
-                {
-                    if (cumProb[i] >= threshold)
-                    {
-                        percentileBin = i;
-                        break;
-                    }
-                }
-
-                this.UpperPercentileBin = percentileBin;
-                double binWidth = (this.Maximum - this.Minimum) / length;
-                double value = this.Minimum + (binWidth * percentileBin);
-
-                // CVR (cover) and EVN (events/sec) have discrete, sparse distributions when calculating for zoomed tiles,
-                // and most values are in the zero bin.
-                // Therefore they return value = 0.0; This is a bug!
-                // To avoid this problem, set value = maximum when percentileBin = 0
-                if (percentileBin == 0)
-                {
-                    value = this.Maximum;
-                }
-
-                return value;
+                binId = Statistics.GetNthPercentileBin(this.Distribution, percentile);
+                this.UpperPercentileBin = binId;
+                double binWidth = (this.Maximum - this.Minimum) / this.Distribution.Length;
+                value = this.Minimum + (binWidth * binId);
             }
         }
 
@@ -121,8 +97,18 @@ namespace AudioAnalysisTools.Indices
                 {
                     double[] array = DataTools.Matrix2Array(spectrogramMatrices[key]);
                     SpectralStats stats = GetModeAndOneTailedStandardDeviation(array, width, UpperPercentileDefault);
+                    stats.GetValueOfNthPercentile(UpperPercentileDefault, out int binId, out double value);
+                    stats.UpperPercentileBin = binId;
                     indexDistributionStatistics.Add(key, stats); // add index statistics
-                    double value = stats.GetValueOfNthPercentile(UpperPercentileDefault);
+
+                    // CVR (cover) and EVN (events/sec) have discrete, sparse distributions when calculating for zoomed tiles,
+                    // and most values are in the zero bin.
+                    // Therefore they return value = 0.0; This is a bug!
+                    // To avoid this problem, set value = maximum when percentileBin = 0
+                    if (binId == 0)
+                    {
+                        value = stats.Maximum;
+                    }
 
                     imageList.Add(
                         GraphsAndCharts.DrawHistogram(
@@ -143,10 +129,10 @@ namespace AudioAnalysisTools.Indices
                 }
             }
 
-            FileInfo statsFile = new FileInfo(GetSpectralStatsPath(outputDirectory, fileStem));
+            var statsFile = new FileInfo(GetSpectralStatsPath(outputDirectory, fileStem));
             Json.Serialise(statsFile, indexDistributionStatistics);
 
-            Image image3 = ImageTools.CombineImagesVertically(imageList.ToArray());
+            var image3 = ImageTools.CombineImagesVertically(imageList.ToArray());
             string imagePath = GetSpectralImagePath(outputDirectory, fileStem);
             image3.Save(imagePath);
 
@@ -194,8 +180,18 @@ namespace AudioAnalysisTools.Indices
                 {
                     double[] array = summaryIndices[key];
                     SpectralStats stats = GetModeAndOneTailedStandardDeviation(array, width, UpperPercentileDefault);
+                    stats.GetValueOfNthPercentile(UpperPercentileDefault, out int binId, out double value);
+                    stats.UpperPercentileBin = binId;
                     indexDistributionStatistics.Add(key, stats); // add index statistics
-                    double value = stats.GetValueOfNthPercentile(UpperPercentileDefault);
+
+                    // CVR (cover) and EVN (events/sec) have discrete, sparse distributions when calculating for zoomed tiles,
+                    // and most values are in the zero bin.
+                    // Therefore they return value = 0.0; This is a bug!
+                    // To avoid this problem, set value = maximum when percentileBin = 0
+                    if (binId == 0)
+                    {
+                        value = stats.Maximum;
+                    }
 
                     imageList.Add(
                         GraphsAndCharts.DrawHistogram(

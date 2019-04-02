@@ -496,7 +496,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
                 if (indexProperties.CalculateNormMax)
                 {
-                    maxBound = stats.GetValueOfNthPercentile(IndexDistributions.UpperPercentileDefault);
+                    stats.GetValueOfNthPercentile(IndexDistributions.UpperPercentileDefault, out int binId, out maxBound);
 
                     // correct for case where max bound = zero. This can happen where ICD is very short i.e. 0.1s.
                     if (maxBound < 0.0001)
