@@ -8,12 +8,39 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Drawing;
+    using System.Linq;
+    using Acoustics.Shared;
     using Acoustics.Shared.Contracts;
+    using Fasterflect;
     using Indices;
     using TowseyLibrary;
 
     public static class ZoomCommon
     {
+        public static (Dictionary<string, double[,]>, Dictionary<string, IndexProperties>) LoadSpectra(
+            AnalysisIoInputDirectory io,
+            string analysisTag,
+            string fileStem,
+            LdSpectrogramConfig config,
+            Dictionary<string, IndexProperties> indexProperties)
+        {
+            var keys = config.GetKeys().Distinct();
+
+            // add two necessary keys for zooming
+            keys = keys.ToList().Append("SUM");
+            keys = keys.ToList().Append("DIF");
+
+            var relevantIndexProperties = keys.ToDictionary(x => x, x => indexProperties[x]);
+
+            Dictionary<string, double[,]> spectra = IndexMatrices.ReadSpectralIndices(
+                io.InputBase,
+                fileStem,
+                analysisTag,
+                keys.ToArray());
+
+            return (spectra, relevantIndexProperties);
+        }
+
         public static Image DrawIndexSpectrogramCommon(
             LdSpectrogramConfig config,
             IndexGenerationData indexGenerationData,

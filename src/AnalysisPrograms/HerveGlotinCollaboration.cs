@@ -9,6 +9,7 @@ namespace AnalysisPrograms
     using System.Drawing;
     using System.IO;
     using System.Linq;
+    using AnalysisPrograms.Production;
     using AudioAnalysisTools;
     using AudioAnalysisTools.LongDurationSpectrograms;
     using AudioAnalysisTools.LongDurationSpectrograms.Zooming;
@@ -172,6 +173,10 @@ namespace AnalysisPrograms
                     LoggedConsole.WriteLine("# Output Directory            : " + zoomingArguments.Output);
 
                     var common = new ZoomParameters(zoomingArguments.SourceDirectory.ToDirectoryEntry(), zoomingArguments.SpectrogramZoomingConfig.ToFileEntry(), false);
+                    var io = FileSystemProvider.GetInputOutputFileSystems(
+                        zoomingArguments.SourceDirectory,
+                        FileSystemProvider.MakePath(zoomingArguments.Output, common.OriginalBasename, zoomingArguments.OutputFormat, "Tiles"))
+                        .EnsureInputIsDirectory();
 
                     // Create directory if not exists
                     if (!Directory.Exists(zoomingArguments.Output))
@@ -182,10 +187,11 @@ namespace AnalysisPrograms
                     ZoomFocusedSpectrograms.DrawStackOfZoomedSpectrograms(
                         zoomingArguments.SourceDirectory.ToDirectoryInfo(),
                         zoomingArguments.Output.ToDirectoryInfo(),
+                        io,
                         common,
+                        AcousticIndices.TowseyAcoustic,
                         TimeSpan.FromMinutes(focalMinute),
-                        imageWidth,
-                        AcousticIndices.TowseyAcoustic);
+                        imageWidth);
 
                     // DRAW THE VARIOUS IMAGES
                     string fileStem = fileName;

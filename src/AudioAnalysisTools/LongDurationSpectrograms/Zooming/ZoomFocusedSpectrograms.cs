@@ -35,31 +35,38 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using StandardSpectrograms;
     using TowseyLibrary;
     using Zooming;
+    using Zio;
+    using Zio.FileSystems;
 
     public static class ZoomFocusedSpectrograms
     {
-        public static void DrawStackOfZoomedSpectrograms(DirectoryInfo inputDirectory, DirectoryInfo outputDirectory, ZoomParameters common, TimeSpan focalTime, int imageWidth, string analysisType)
+        public static void DrawStackOfZoomedSpectrograms(
+            DirectoryInfo inputDirectory,
+            DirectoryInfo outputDirectory,
+            AnalysisIoInputDirectory io,
+            ZoomParameters common,
+            string analysisTag,
+            TimeSpan focalTime,
+            int imageWidth)
         {
             var zoomConfig = common.SpectrogramZoomingConfig;
             LdSpectrogramConfig ldsConfig = common.SpectrogramZoomingConfig.LdSpectrogramConfig;
 
-            var distributions = common.IndexDistributions;
-            var indexGeneration = common.IndexGenerationData;
-
+            //var distributions = common.IndexDistributions;
             string fileStem = common.OriginalBasename;
-
+            var indexGeneration = common.IndexGenerationData;
             TimeSpan dataScale = indexGeneration.IndexCalculationDuration;
 
             // ####################### DERIVE ZOOMED OUT SPECTROGRAMS FROM SPECTRAL INDICES
-
-            string[] keys = { "ACI", "BGN", "CVR", "DIF", "ENT", "EVN", "PMN", "PMN", "RHZ", "RVT", "RPS", "RNG", "SUM", "SPT" };
-            var indexProperties = InitialiseIndexProperties.FilterIndexPropertiesForSpectralOnly(zoomConfig.IndexProperties);
-            Dictionary<string, double[,]> spectra = IndexMatrices.ReadSpectralIndices(inputDirectory, fileStem, analysisType, keys);
+            //var indexGenerationData = common.IndexGenerationData;
+            var indexProperties = zoomConfig.IndexProperties;
+            var (spectra, filteredIndexProperties) = ZoomCommon.LoadSpectra(io, analysisTag, fileStem, zoomConfig.LdSpectrogramConfig, indexProperties);
 
             Stopwatch sw = Stopwatch.StartNew();
 
-            // standard scales in seconds per pixel.
-            double[] imageScales = { 60, 24, 12, 6, 2, 1, 0.6, 0.2 };
+            // Set the default time-scales in seconds per pixel.
+            // These were changed on 3rd April 2019 to better match those in the current zooming config file.
+            double[] imageScales = { 60, 30, 15, 7.5, 3.2, 1.6, 0.8, 0.4, 0.2 };
             if (zoomConfig.SpectralIndexScale != null)
             {
                 imageScales = zoomConfig.SpectralIndexScale;
@@ -71,7 +78,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             for (int i = 0; i < scaleCount; i++)
             {
                 var imageScale = TimeSpan.FromSeconds(imageScales[i]);
-                var image = DrawIndexSpectrogramAtScale(ldsConfig, indexGeneration, indexProperties, focalTime, dataScale, imageScale, imageWidth, spectra, fileStem);
+                var image = DrawIndexSpectrogramAtScale(ldsConfig, indexGeneration, filteredIndexProperties, focalTime, dataScale, imageScale, imageWidth, spectra, fileStem);
                 if (image != null)
                 {
                     imageList.Add(image);
@@ -84,6 +91,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             LoggedConsole.WriteLine("Finished spectrograms derived from spectral indices. Elapsed time = " + sw.Elapsed.TotalSeconds + " seconds");
 
             // ####################### DERIVE ZOOMED IN SPECTROGRAMS FROM STANDARD SPECTRAL FRAMES
+
+            /*
             int[] compressionFactor = { 8, 4, 2, 1 };
             int compressionCount = compressionFactor.Length;
             sw = Stopwatch.StartNew();
@@ -136,6 +145,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             sw.Stop();
             LoggedConsole.WriteLine("Finished spectrograms derived from standard frames. Elapsed time = " + sw.Elapsed.TotalSeconds + " seconds");
+            */
 
             // combine the images into a stack
             Image combinedImage = ImageTools.CombineImagesVertically(imageList);

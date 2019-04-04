@@ -17,6 +17,7 @@ namespace AnalysisPrograms
     using Acoustics.Shared.Csv;
     using Acoustics.Tools.Wav;
     using AnalyseLongRecordings;
+    using AnalysisPrograms.Draw.Zooming;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
@@ -36,7 +37,7 @@ namespace AnalysisPrograms
     /// audio2sonogram - Calls AnalysisPrograms.Audio2Sonogram.Main(): Produces a sonogram from an audio file - EITHER custom OR via SOX.Generates multiple spectrogram images and oscilllations info
     /// indicescsv2image - Calls DrawSummaryIndexTracks.Main(): Input csv file of summary indices. Outputs a tracks image.
     /// colourspectrogram - Calls DrawLongDurationSpectrograms.Execute():  Produces LD spectrograms from matrices of indices.
-    /// zoomingspectrograms - Calls DrawZoomingSpectrograms.Execute():  Produces LD spectrograms on different time scales.
+    /// drawzoomingspectrograms - Calls DrawZoomingSpectrograms.Execute():  Produces LD spectrograms on different time scales.
     /// differencespectrogram - Calls DifferenceSpectrogram.Execute():  Produces Long duration difference spectrograms
     ///
     /// audiofilecheck - Writes information about audio files to a csv file.
@@ -74,7 +75,7 @@ namespace AnalysisPrograms
                 //CodeToPlaceScoreTracksUnderLdfcSpectrograms();
                 //CodeToPlaceScoreTracksUnderSingleImage();
 
-                ConcatenateIndexFilesAndSpectrograms();
+                //ConcatenateIndexFilesAndSpectrograms();
                 //ConcatenateGreyScaleSpectrogramImages();
                 //ConcatenateMarineImages();
                 //ConcatenateImages();
@@ -83,6 +84,7 @@ namespace AnalysisPrograms
                 //DrawLongDurationSpectrogram();
                 //DrawClusterSequence();
                 //DrawStandardSpectrograms();
+                DrawZoomingSpectrogramPyramid();
 
                 //ExtractSpectralFeatures();
                 //HerveGlotinMethods();
@@ -612,19 +614,13 @@ namespace AnalysisPrograms
             //string opdir = @"C:\SensorNetworks\Output\QueenMaryUL\concatenated";
 
             // false-colour spectrograms
+            //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\Farmstay_ECLIPSE3_20121114_060001TEST\Indices\Towsey.Acoustic";
+            //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\Farmstay_ECLIPSE3_20121114_060001TEST\Spectrograms";
             //string ipFileName = "Farmstay_ECLIPSE3_20121114_060001TEST"; //exclude the analysis type from file name i.e. "Towsey.Acoustic.Indices"
             //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.60sppx.EclipseFarmstay";
             //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
             //string ipFileName = "Farmstay_ECLIPSE3_20121114-060001+1000_TEST"; //exclude the analysis type from file name i.e. "Towsey.Acoustic.Indices"
             //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.60sppx.EclipseFarmstay";
-            //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
-
-            //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\Farmstay_ECLIPSE3_20121114_060001TEST\Indices\Towsey.Acoustic";
-            //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\Farmstay_ECLIPSE3_20121114_060001TEST\Spectrograms";
-
-            // zoomable spectrograms
-            //string ipFileName = "TEST_TUITCE_20091215_220004"; //exclude the analysis type from file name i.e. "Towsey.Acoustic.Indices"
-            //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
             //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
 
             //2010 Oct 13th
@@ -672,6 +668,36 @@ namespace AnalysisPrograms
                 FalseColourSpectrogramConfig = spectrogramConfigFile,
             };
             DrawLongDurationSpectrograms.Execute(args);
+        }
+
+        /// <summary>
+        /// This action item = "DrawZoomingSpectrograms".
+        /// AnalysisPrograms.Draw.Zooming.DrawZoomingSpectrograms
+        /// AnalysisPrograms.Draw.Zooming.Arguments
+        /// Note: the path to the IndexPropertiesConfig is included in the SpectrogramZoomingConfig File.
+        ///       It should be @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml".
+        /// </summary>
+        public static void DrawZoomingSpectrogramPyramid()
+        {
+            //string ipFileName = "TEST_TUITCE_20091215_220004"; //exclude the analysis type from file name i.e. "Towsey.Acoustic.Indices"
+            //string ipdir = @"C:\Ecoacoustics\Output\FalseColourSpectrograms\SpectrogramFocalZoom\Towsey.Acoustic.200ms.EclipseFarmstayOLD";
+            //MAP "\\Sef-bigdata-10\d$\tasmania_mez\output_zooming_indices2019\Towsey.Acoustic" to Q drive
+            string ipdir = @"Q:\TasmaniaMez";
+            string opdir = @"C:\Ecoacoustics\Output\FalseColourSpectrograms\SpectrogramFocalZoom\TasmaniaMezTest";
+
+            // The default zooming LDFC spectrogram config file
+            //var spectrogramConfigFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramZoomingConfig.yml";
+            var zoomingConfigFile = @"C:\Ecoacoustics\Output\FalseColourSpectrograms\SpectrogramFocalZoom\SpectrogramZoomingConfig.yml";
+
+            var args = new DrawZoomingSpectrograms.Arguments
+            {
+                SourceDirectory = ipdir,
+                Output = opdir,
+                SpectrogramZoomingConfig = zoomingConfigFile,
+                ZoomAction = DrawZoomingSpectrograms.Arguments.ZoomActionType.Focused,
+                FocusMinute = 60,
+            };
+            DrawZoomingSpectrograms.Execute(args);
         }
 
         /// <summary>
