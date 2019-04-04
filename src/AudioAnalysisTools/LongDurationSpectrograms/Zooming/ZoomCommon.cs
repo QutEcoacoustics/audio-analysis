@@ -125,36 +125,49 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
             cs1.SetSpectralIndexProperties(indexProperties); // set the relevant dictionary of index properties
             cs1.LoadSpectrogramDictionary(spectralSelection);
 
-            var imageScaleInMsPerPixel = imageScale.TotalMilliseconds;
-            double blendWeight1 = 0.0;
-            double blendWeight2 = 1.0;
-
-            if (imageScaleInMsPerPixel > 15_000)
+            // set up piecewise linear function to determine colour weights
+            var logResolution = Math.Log(imageScale.TotalMilliseconds, 2);
+            double upperResolution = Math.Log(32768, 2);
+            double lowerResolution = Math.Log(256, 2);
+            double range = upperResolution - lowerResolution;
+            double blendWeight1;
+            if (logResolution >= upperResolution)
             {
                 blendWeight1 = 1.0;
-                blendWeight2 = 0.0;
             }
-            else if (imageScaleInMsPerPixel > 10_000)
+            else if (logResolution <= lowerResolution)
             {
-                blendWeight1 = 0.9;
-                blendWeight2 = 0.1;
+                blendWeight1 = 0.0;
             }
-            else if (imageScaleInMsPerPixel > 5000)
+            else
             {
-                blendWeight1 = 0.7;
-                blendWeight2 = 0.3;
+                blendWeight1 = (logResolution - lowerResolution) / range;
             }
-            else if (imageScaleInMsPerPixel > 1000)
-            {
-                blendWeight1 = 0.2;
-                blendWeight2 = 0.8;
-            }
-            else if (imageScaleInMsPerPixel > 500)
-            {
-                // > 0.5 seconds
-                blendWeight1 = 0.1;
-                blendWeight2 = 0.9;
-            }
+
+            double blendWeight2 = 1 - blendWeight1;
+
+            //else if (imageScaleInMsPerPixel > 2000)
+            //{
+            //    blendWeight1 = 0.7;
+            //    blendWeight2 = 0.3;
+            //}
+            //else if (imageScaleInMsPerPixel > 1000)
+            //{
+            //    blendWeight1 = 0.3;
+            //    blendWeight2 = 0.7;
+            //}
+            //else if (imageScaleInMsPerPixel > 500)
+            //{
+            //    // > 0.5 seconds
+            //    blendWeight1 = 0.2;
+            //    blendWeight2 = 0.8;
+            //}
+            //else if (imageScaleInMsPerPixel > 300)
+            //{
+            //    // > 0.5 seconds
+            //    blendWeight1 = 0.1;
+            //    blendWeight2 = 0.9;
+            //}
 
             var ldfcSpectrogram = cs1.DrawBlendedFalseColourSpectrogram(colorMap1, colorMap2, blendWeight1, blendWeight2);
             if (ldfcSpectrogram == null)

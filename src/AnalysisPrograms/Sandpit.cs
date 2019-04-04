@@ -13,6 +13,7 @@ namespace AnalysisPrograms
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
+    using Accord.Statistics.Kernels;
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
     using Acoustics.Tools.Wav;
@@ -27,6 +28,7 @@ namespace AnalysisPrograms
     using McMaster.Extensions.CommandLineUtils;
     using Production.Arguments;
     using TowseyLibrary;
+    using Log = TowseyLibrary.Log;
 
     /// <summary>
     /// Activity Code for this class:= sandpit
@@ -84,7 +86,7 @@ namespace AnalysisPrograms
                 //DrawLongDurationSpectrogram();
                 //DrawClusterSequence();
                 //DrawStandardSpectrograms();
-                DrawZoomingSpectrogramPyramid();
+                //DrawZoomingSpectrogramPyramid();
 
                 //ExtractSpectralFeatures();
                 //HerveGlotinMethods();
@@ -114,6 +116,7 @@ namespace AnalysisPrograms
                 //Oscillations2014.TESTMETHOD_DrawOscillationSpectrogram();
                 //Oscillations2014.TESTMETHOD_GetSpectralIndex_Osc();
                 //Test_DrawFourSpectrograms();
+                TestLinearFunction();
 
                 Console.WriteLine("# Finished Sandpit Task!    Press any key to exit.");
                 return this.Ok();
@@ -2924,5 +2927,56 @@ namespace AnalysisPrograms
                 }
             }
         } // end CodeToExtractFeatureVectorOfIndices()
+
+        /// <summary>
+        /// Test of linear function.
+        /// Used to test blending in ZoomCommon line 131.
+        /// </summary>
+        public static void TestLinearFunction()
+        {
+            // set up piecewise linear function to determine colour weights
+            //int imageScaleInMsPerPixel = 257;
+            int imageScaleInMsPerPixel = 16000;
+            //int imageScaleInMsPerPixel = 32760;
+            double blendWeight1;
+
+            /*
+            //Linear SCALE
+            int upperResolution = 30000;
+            int lowerResolution = 200;
+            if (imageScaleInMsPerPixel >= upperResolution)
+            {
+                blendWeight1 = 1.0;
+            }
+            else if (imageScaleInMsPerPixel <= lowerResolution)
+            {
+                blendWeight1 = 0.0;
+            }
+            else
+            {
+                blendWeight1 = (imageScaleInMsPerPixel - lowerResolution) / (double)upperResolution;
+            }
+            */
+
+            //LOG SCALE
+            var logResolution = Math.Log(imageScaleInMsPerPixel, 2);
+            double upperResolution = Math.Log(32768, 2);
+            double lowerResolution = Math.Log(256, 2);
+            double range = upperResolution - lowerResolution;
+            if (logResolution >= upperResolution)
+            {
+                blendWeight1 = 1.0;
+            }
+            else if (logResolution <= lowerResolution)
+            {
+                blendWeight1 = 0.0;
+            }
+            else
+            {
+                blendWeight1 = (logResolution - lowerResolution) / range;
+            }
+
+            double blendWeight2 = 1 - blendWeight1;
+        }
     }
 }
