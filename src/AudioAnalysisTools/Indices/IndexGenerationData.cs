@@ -7,18 +7,23 @@
 namespace AudioAnalysisTools.Indices
 {
     using System;
+    using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using Acoustics.Shared;
-    using LongDurationSpectrograms;
-
+    using AudioAnalysisTools.LongDurationSpectrograms;
+    using log4net;
+    using Newtonsoft.Json;
     using Zio;
 
     public class IndexGenerationData
     {
         public const string FileNameFragment = "IndexGenerationData";
 
+        private static readonly ILog Log = LogManager.GetLogger(nameof(IndexGenerationData));
+
         /// <summary>
-        /// Gets or sets the configuration options used to draw long duration spectrograms
+        /// Gets or sets the configuration options used to draw long duration spectrograms.
         /// </summary>
         public LdSpectrogramConfig LongDurationSpectrogramConfig { get; set; }
 
@@ -77,6 +82,9 @@ namespace AudioAnalysisTools.Indices
 
         public TimeSpan RecordingDuration { get; set; }
 
+        [JsonIgnore]
+        public FileInfo Source { get; private set; }
+
         /// <summary>
         /// Returns the index generation data from file in passed directory.
         /// </summary>
@@ -85,10 +93,24 @@ namespace AudioAnalysisTools.Indices
             return Json.Deserialize<IndexGenerationData>(FindFile(directory));
         }
 
+        public static IndexGenerationData Load(FileInfo info)
+        {
+            var indexGenerationData = Json.Deserialize<IndexGenerationData>(info);
+            indexGenerationData.Source = info;
+            return indexGenerationData;
+        }
+
         public static FileEntry FindFile(DirectoryEntry directory)
         {
             const string pattern = "*" + FileNameFragment + "*";
             return directory.EnumerateFiles(pattern).Single();
+        }
+
+        public static IEnumerable<FileInfo> FindAll(DirectoryInfo directory)
+        {
+            const string pattern = "*" + FileNameFragment + "*";
+
+            return directory.EnumerateFiles(pattern, SearchOption.AllDirectories);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="DateTimeAndTimeSpanExtensions.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -282,7 +282,7 @@ namespace System
         }
 
         /// <summary>
-        /// Multiplies a timespan by a scalar value
+        /// Multiplies a timespan by a scalar value.
         /// </summary>
         public static TimeSpan Multiply(this TimeSpan multiplicand, int multiplier)
         {
@@ -290,7 +290,7 @@ namespace System
         }
 
         /// <summary>
-        /// Divides a timespan by an scalar value
+        /// Divides a timespan by an scalar value.
         /// </summary>
         public static TimeSpan Divide(this TimeSpan dividend, int divisor)
         {
@@ -298,7 +298,7 @@ namespace System
         }
 
         /// <summary>
-        /// Multiplies a timespan by a double value
+        /// Multiplies a timespan by a double value.
         /// </summary>
         public static TimeSpan Multiply(this TimeSpan multiplicand, double multiplier)
         {
@@ -306,11 +306,19 @@ namespace System
         }
 
         /// <summary>
-        /// Divides a timespan by an scalar value
+        /// Divides a timespan by an scalar value.
         /// </summary>
         public static TimeSpan Divide(this TimeSpan dividend, double divisor)
         {
             return TimeSpan.FromTicks((long)(dividend.Ticks / divisor));
+        }
+
+        /// <summary>
+        /// Divides a timespan by an scalar value.
+        /// </summary>
+        public static double Divide(this TimeSpan dividend, TimeSpan divisor)
+        {
+            return dividend.Ticks / (double)divisor.Ticks;
         }
 
         // https://github.com/exceptionless/Exceptionless.DateTimeExtensions/blob/master/src/Exceptionless.DateTimeExtensions/DateTimeOffsetExtensions.cs#L222

@@ -9,11 +9,12 @@ namespace AnalysisPrograms.Production
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
     using System.IO;
-
+    using System.Linq;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
 
     using AnalysisBase;
+    using AnalysisPrograms.Production.Arguments;
     using McMaster.Extensions.CommandLineUtils;
 
     public static class ExceptionLookup
@@ -90,7 +91,11 @@ namespace AnalysisPrograms.Production
                 },
                 {
                     typeof(InvalidDataSetException),
-                    new ExceptionStyle() {ErrorCode = 106, PrintUsage = false }
+                    new ExceptionStyle() { ErrorCode = 106, PrintUsage = false }
+                },
+                {
+                    typeof(MissingDataException),
+                    new ExceptionStyle() { ErrorCode = 107, PrintUsage = false }
                 },
                 {
                     typeof(AnalysisOptionDevilException),
@@ -152,7 +157,8 @@ namespace AnalysisPrograms.Production
 
     public class CommandLineArgumentException : Exception
     {
-        public CommandLineArgumentException(string message) : base(message)
+        public CommandLineArgumentException(string message)
+            : base(message)
         {
         }
     }
@@ -180,6 +186,14 @@ namespace AnalysisPrograms.Production
     public class InvalidAudioChannelException : Exception
     {
         public InvalidAudioChannelException(string message)
+            : base(message)
+        {
+        }
+    }
+
+    public class MissingDataException : Exception
+    {
+        public MissingDataException(string message)
             : base(message)
         {
         }

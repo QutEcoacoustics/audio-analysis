@@ -1,4 +1,4 @@
-﻿// <copyright file="DictionaryExtensions.cs" company="QutEcoacoustics">
+// <copyright file="DictionaryExtensions.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // ReSharper disable once CheckNamespace
@@ -35,6 +35,15 @@ namespace System.Collections.Generic
             Contract.Requires<ArgumentNullException>(dictionary != null, "dictionary was null");
 
             return dictionary.Values.First();
+        }
+
+        public static void Deconstruct<TKey, TValue>(
+            this KeyValuePair<TKey, TValue> kvp,
+            out TKey key,
+            out TValue value)
+        {
+            key = kvp.Key;
+            value = kvp.Value;
         }
     }
 }

@@ -102,6 +102,54 @@ namespace Acoustics.Shared
         /// sorts a list of files by the date assumed to be encoded in their file names
         /// and then returns the list as a sorted dictionary with file DateTime as the keys.
         /// </summary>
+        /// <param name="files">The files to filter.</param>
+        /// <param name="offsetHint">If you know what timezone you should have, specify a hint to enable parsing of ambiguous dates.</param>
+        /// <returns>A sorted dictionary FileInfo objects mapped to parsed dates.</returns>
+        public static SortedDictionary<DateTimeOffset, T> FilterObjectsForDates<T>(IEnumerable<T> objects, Func<T, FileSystemInfo> pathSelector, Func<T, DateTimeOffset?> overrideSelector, TimeSpan? offsetHint = null)
+        {
+            var datesAndFiles = new SortedDictionary<DateTimeOffset, T>();
+            foreach (var @object in objects)
+            {
+                var date = overrideSelector?.Invoke(@object);
+
+                FileSystemInfo file = null;
+                if (date == null)
+                {
+                    file = pathSelector.Invoke(@object);
+                    if (FileNameContainsDateTime(file.Name, out var parsedDate, offsetHint))
+                    {
+                        date = parsedDate;
+                    }
+                }
+
+                if (date.NotNull())
+                {
+                    if (datesAndFiles.ContainsKey(date.Value))
+                    {
+                        if (file == null)
+                        {
+                            file = pathSelector.Invoke(@object);
+                        }
+
+                        string message =
+                            $"There was a duplicate date. File {file} with date {date,'r'} conflicts with existing file {datesAndFiles[date.Value]}";
+                        throw new InvalidDataSetException(message);
+                    }
+
+                    datesAndFiles.Add(date.Value, @object);
+                }
+            }
+
+            // use following lines to get first and last date from returned dictionary
+            //DateTimeOffset firstdate = datesAndFiles[datesAndFiles.Keys.First()];
+            //DateTimeOffset lastdate  = datesAndFiles[datesAndFiles.Keys.Last()];
+            return datesAndFiles;
+        }
+
+        /// <summary>
+        /// sorts a list of files by the date assumed to be encoded in their file names
+        /// and then returns the list as a sorted dictionary with file DateTime as the keys.
+        /// </summary>
         /// <param name="directories">The files to filter.</param>
         /// <param name="offsetHint">If you know what timezone you should have, specify a hint to enable parsing of ambiguous dates.</param>
         /// <returns>A sorted dictionary FileInfo objects mapped to parsed dates.</returns>
