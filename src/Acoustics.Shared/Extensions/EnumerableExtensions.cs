@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="EnumerableExtensions.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -16,7 +16,7 @@ namespace System
 
     public static class EnumerableExtensions
     {
-        [ContractAnnotation("items:null => true; items:notnull => false")]
+        [ContractAnnotation("items:null => true")]
         public static bool IsNullOrEmpty<T>(this IEnumerable<T> items)
         {
             return items == null || !items.Any();

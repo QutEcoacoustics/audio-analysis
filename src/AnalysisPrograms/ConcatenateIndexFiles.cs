@@ -173,7 +173,7 @@ namespace AnalysisPrograms
             Log.Warn(@"
 !
 !   THIS IS A BETA COMMAND.
-!   It generally works but only for very narrow scenarios. Your milage *will* vary.
+!   It generally works but only for very narrow scenarios. Your mileage *will* vary.
 !");
 
             if (arguments.InputDataDirectory != null)
@@ -205,10 +205,10 @@ namespace AnalysisPrograms
             var subDirectories = LdSpectrogramStitching.GetSubDirectoriesForSiteData(inputDirs, arguments.DirectoryFilter);
             if (subDirectories.Length == 0)
             {
-                LoggedConsole.WriteErrorLine("\n\n#WARNING from method ConcatenateIndexFiles.Execute():");
+                LoggedConsole.WriteErrorLine("\n\n#Error from method ConcatenateIndexFiles.Execute():");
                 LoggedConsole.WriteErrorLine("        Subdirectory Count with given filter = ZERO");
                 LoggedConsole.WriteErrorLine("        RETURNING EMPTY HANDED!");
-                return;
+                throw new MissingDataException("Could not find any sub directories from input directories:" + inputDirs.FormatList());
             }
 
             // 2. PATTERN SEARCH FOR SUMMARY INDEX FILES.
@@ -219,10 +219,10 @@ namespace AnalysisPrograms
 
             if (csvFiles.Length == 0)
             {
-                LoggedConsole.WriteErrorLine("\n\nWARNING from method ConcatenateIndexFiles.Execute():");
+                LoggedConsole.WriteErrorLine("\n\nError from method ConcatenateIndexFiles.Execute():");
                 LoggedConsole.WriteErrorLine("        No SUMMARY index files were found.");
                 LoggedConsole.WriteErrorLine("        RETURNING EMPTY HANDED!");
-                return;
+                throw new MissingDataException($"Could not find any files matching `{pattern}` in:" + subDirectories.FormatList());
             }
 
             // Sort the files by date and return as a dictionary: sortedDictionaryOfDatesAndFiles<DateTimeOffset, FileInfo>

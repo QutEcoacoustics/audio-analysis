@@ -34,6 +34,7 @@ namespace Acoustics.Shared
         public const string StandardDateFormatNoTimeZone = "yyyyMMdd-HHmmss";
         public const string StandardDateFormatUnderscore = "yyyyMMdd_HHmmsszzz";
         public const string StandardDateFormatSm2 = "yyyyMMdd_HHmmss";
+        public const string RenderedDateFormatShort = "yyyy-MM-dd HH:mm";
 
         private static readonly string ExecutingAssemblyPath =
             (Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly()).Location;

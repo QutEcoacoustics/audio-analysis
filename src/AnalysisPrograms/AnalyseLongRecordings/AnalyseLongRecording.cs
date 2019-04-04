@@ -31,7 +31,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
 
     public partial class AnalyseLongRecording
     {
-        private const string ImagefileExt = "png";
+        private const string ImageFileExt = "png";
 
         private static readonly ILog Log = LogManager.GetLogger(nameof(AnalyseLongRecording));
 
@@ -101,7 +101,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             }
 
             // 2. initialize the analyzer
-            // we're changing the way resolving config files works. Ideally, we'd like to use staticly typed config files
+            // we're changing the way resolving config files works. Ideally, we'd like to use statically typed config files
             // but we can't do that unless we know which type we have to load first! Currently analyzer to load is in
             // the config file so we can't know which analyzer we can use. Thus we will change to using the file name,
             // or an argument to resolve the analyzer to load.
@@ -328,7 +328,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
                             imageTitle,
                             timeScale,
                             fileSegment.TargetFileStartDate);
-                    var imagePath = FilenameHelpers.AnalysisResultPath(instanceOutputDirectory, basename, "SummaryIndices", ImagefileExt);
+                    var imagePath = FilenameHelpers.AnalysisResultPath(instanceOutputDirectory, basename, "SummaryIndices", ImageFileExt);
                     tracksImage.Save(imagePath);
                 }
             }
