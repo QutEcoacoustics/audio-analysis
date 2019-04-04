@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="DrawZoomingSpectrograms.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -58,7 +58,10 @@ namespace AnalysisPrograms.Draw.Zooming
 
             LoggedConsole.WriteLine("# File name of recording      : " + common.OriginalBasename);
 
-            // create file systems for reading input and writing output
+            // create file systems for reading input and writing output. It gets
+            //arguments.SourceDirectory.ToDirectoryInfo(),
+            //arguments.Output.ToDirectoryInfo(),
+
             var io = FileSystemProvider.GetInputOutputFileSystems(
                 arguments.SourceDirectory,
                 FileSystemProvider.MakePath(arguments.Output, common.OriginalBasename, arguments.OutputFormat, "Tiles"))
@@ -78,14 +81,14 @@ namespace AnalysisPrograms.Draw.Zooming
                         throw new ArgumentException("FocusMinute is null, cannot proceed");
                     }
 
-                    const int ImageWidth = 1500;
                     ZoomFocusedSpectrograms.DrawStackOfZoomedSpectrograms(
                         arguments.SourceDirectory.ToDirectoryInfo(),
                         arguments.Output.ToDirectoryInfo(),
+                        io,
                         common,
+                        AcousticIndices.TowseyAcoustic,
                         focalTime,
-                        ImageWidth,
-                        AcousticIndices.TowseyAcoustic);
+                        imageWidth: 1500);
                     break;
                 case Arguments.ZoomActionType.Tile:
                     // Create the super tiles for a full set of recordings

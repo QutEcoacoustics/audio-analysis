@@ -488,7 +488,7 @@ BGN:
   DefaultValue: -100.0
   DoDisplay: true
   # min = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20 = -80-20 = -100, 
-  # Usual value is -30. However -20 adds more contrast into BGN spectrogram
+  # Usual max value is -30.
   NormMin: -100.0
   NormMax: -30.0
   CalculateNormBounds: false
@@ -497,16 +497,15 @@ BGN:
 CVR:
   Name: spectralCVR
   Comment: "Freq bin COVER: Spectrum of the fraction of active elements in each freq bin where amplitude > threshold = 3 dB."
-  # IMPORTANT - sometimes this is expressed as a percentage rather than fraction. NEED TO CHECK!!
+  # IMPORTANT - This should be expressed as a fraction, not a percentage
   DataType: double[]
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 0.7
+  NormMax: 0.2
   CalculateNormBounds: true
   ProjectID: Acoustic Indices
   Units: ""
-#  ComboWeight: 0.0
 DIF:
   Name: spectralDIF
   Comment: "Spectrum of summed DIFFERENCES between consecutive FFT coeff's in the ampl spgram. This is NOT an acoustic index. It is used as intermediate for subsequent calculation of ACI."
@@ -569,7 +568,7 @@ PMN:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 5.5
+  NormMax: 15.0
   CalculateNormBounds: false
   ProjectID: Acoustic Indices
   Units: "dB"
