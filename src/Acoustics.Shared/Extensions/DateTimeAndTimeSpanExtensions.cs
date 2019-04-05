@@ -314,11 +314,19 @@ namespace System
         }
 
         /// <summary>
-        /// Divides a timespan by an scalar value.
+        /// Divides a timespan by an timespan and returns a scalar factor.
         /// </summary>
         public static double Divide(this TimeSpan dividend, TimeSpan divisor)
         {
             return dividend.Ticks / (double)divisor.Ticks;
+        }
+
+        /// <summary>
+        /// Divides a timespan by an timespan and the remainder.
+        /// </summary>
+        public static TimeSpan Modulo(this TimeSpan dividend, TimeSpan divisor)
+        {
+            return TimeSpan.FromTicks(dividend.Ticks % divisor.Ticks);
         }
 
         // https://github.com/exceptionless/Exceptionless.DateTimeExtensions/blob/master/src/Exceptionless.DateTimeExtensions/DateTimeOffsetExtensions.cs#L222
