@@ -84,7 +84,7 @@ namespace Acoustics.Shared
                     if (datesAndFiles.ContainsKey(parsedDate))
                     {
                         string message =
-                            $"There was a duplicate date. File {file} with date {parsedDate,'r'} conflicts with existing file {datesAndFiles[parsedDate]}";
+                            $"There was a duplicate date. File {file} with date {parsedDate:O} conflicts with existing file {datesAndFiles[parsedDate]}";
                         throw new InvalidDataSetException(message);
                     }
 
@@ -132,7 +132,7 @@ namespace Acoustics.Shared
                         }
 
                         string message =
-                            $"There was a duplicate date. File {file} with date {date,'r'} conflicts with existing file {datesAndFiles[date.Value]}";
+                            $"There was a duplicate date. File {file} with date {date:O} conflicts with existing file {datesAndFiles[date.Value]}";
                         throw new InvalidDataSetException(message);
                     }
 
