@@ -10,6 +10,7 @@
 // ReSharper disable once CheckNamespace
 namespace System
 {
+    using System.IO;
     using Collections.Generic;
     using Linq;
 
@@ -348,6 +349,63 @@ namespace System
             return date.AddTicks(halfIntervalTicks - ((date.Ticks + halfIntervalTicks) % roundingInterval.Ticks));
         }
 
+        /// <summary>
+        /// Round a date to a time of day.
+        /// </summary>
+        /// <remarks>
+        /// Unlike the other rounding methods (which accept an interval), this method
+        /// will only output values that are 24-hours apart so that values always align
+        /// to the supplied <paramref name="timeOfDay"/>.
+        /// </remarks>
+        /// <param name="date">The date to round.</param>
+        /// <param name="timeOfDay">The time of day to round to.</param>
+        /// <param name="direction">The behaviour of the rounding operation.</param>
+        /// <returns>A rounded date.</returns>
+        public static DateTimeOffset RoundToTimeOfDay(
+            this DateTimeOffset date,
+            TimeSpan timeOfDay,
+            RoundingDirection direction)
+        {
+            var time = date.TimeOfDay;
+            if (time == timeOfDay)
+            {
+                return date;
+            }
+
+            TimeSpan delta;
+            if (direction == RoundingDirection.AwayFromZero)
+            {
+                var roundDelta = timeOfDay.Subtract(time);
+                if (roundDelta.Absolute() < TimeSpan.FromHours(12))
+                {
+                    delta = timeOfDay;
+                }
+                else if (roundDelta < TimeSpan.Zero)
+                {
+                    delta = timeOfDay + TimeSpan.FromDays(1);
+                }
+                else
+                {
+                    delta = timeOfDay - TimeSpan.FromDays(1);
+                }
+            }
+            else if (direction == RoundingDirection.Ceiling)
+            {
+                delta = time < timeOfDay ? timeOfDay : timeOfDay + TimeSpan.FromDays(1);
+            }
+            else if (direction == RoundingDirection.Floor)
+            {
+                delta = time >= timeOfDay ? timeOfDay : timeOfDay - TimeSpan.FromDays(1);
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(direction));
+            }
+
+            var dayOf = new DateTimeOffset(date.Date.Add(delta), date.Offset);
+            return dayOf;
+        }
+
         public static TimeSpan Absolute(this TimeSpan span)
         {
             return span < TimeSpan.Zero ? new TimeSpan(span.Ticks * -1) : span;
@@ -361,6 +419,15 @@ namespace System
         public static TimeSpan Max(this TimeSpan t1, TimeSpan t2)
         {
             return t1 >= t2 ? t1 : t2;
+        }
+
+
+
+        public enum RoundingDirection
+        {
+            Floor,
+            Ceiling,
+            AwayFromZero,
         }
     }
 }

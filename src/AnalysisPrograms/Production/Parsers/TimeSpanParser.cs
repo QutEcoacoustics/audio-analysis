@@ -1,4 +1,4 @@
-﻿// <copyright file="TimeSpanParser.cs" company="QutEcoacoustics">
+// <copyright file="TimeSpanParser.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -22,7 +22,12 @@ namespace AnalysisPrograms.Production.Parsers
         {
             if (!TimeSpan.TryParse(value, out var result))
             {
-                throw new FormatException($"Invalid value specified for {argName}. '{value} is not a valid date time (with offset)");
+                if (value == "24:00" || value == "24:00:00")
+                {
+                    return TimeSpan.FromSeconds(86400);
+                }
+
+                throw new FormatException($"Invalid value specified for {argName}. '{value}' is not a valid time");
             }
 
             return result;

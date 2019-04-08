@@ -24,10 +24,11 @@ namespace Acoustics.Shared
         public const string DefaultTargetSampleRateKey = "DefaultTargetSampleRate";
 
         /// <summary>
-        /// Warning: do not use this format to print dates as strings - it will include a colon in the time zone offset :-(
+        /// Warning: do not use this format to print dates as strings - it will include a colon in the time zone offset :-(.
         /// </summary>
         public const string Iso8601FileCompatibleDateFormat = "yyyyMMddTHHmmsszzz";
         public const string Iso8601FileCompatibleDateFormatUtcWithFractionalSeconds = "yyyyMMddTHHmmss.FFF\\Z";
+        public const string Iso8601FormatNoFractionalSeconds = "yyyy-MM-ddTHH:mm:sszzz";
         public const string StandardDateFormatUtc = "yyyyMMdd-HHmmssZ";
         public const string StandardDateFormatUtcWithFractionalSeconds = "yyyyMMdd-HHmmss.FFFZ";
         public const string StandardDateFormat = "yyyyMMdd-HHmmsszzz";

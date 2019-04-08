@@ -302,6 +302,7 @@
     <Compile Include="RuntimesTests.cs" />
     <Compile Include="Shared\AppConfigHelperTests.cs" />
     <Compile Include="Shared\ConfigTests.cs" />
+    <Compile Include="Shared\Extensions\DateTimeAndTimeSpanExtensions.cs" />
     <Compile Include="Shared\LoggingTests\LoggingTests.cs" />
     <Compile Include="Shared\PathUtilsTests.cs" />
     <Compile Include="Shared\ProcessRunnerTests.cs" />
