@@ -158,6 +158,7 @@ namespace AnalysisPrograms.RibbonPlots
                 throw new MissingDataException("Could not find any ribbon files for any of the color maps. No ribbon plots were produced.");
             }
 
+            LoggedConsole.WriteSuccessLine("Completed");
             return ExceptionLookup.Ok;
         }
 
@@ -166,7 +167,7 @@ namespace AnalysisPrograms.RibbonPlots
             Dictionary<DateTimeOffset, FileInfo> ribbons,
             RibbonPlotStats stats)
         {
-            const int Padding = 5;
+            const int Padding = 2;
             const int HorizontalPadding = 10;
 
             // read random ribbon in to get height - assumes all ribbons are same height
@@ -180,7 +181,7 @@ namespace AnalysisPrograms.RibbonPlots
             }
 
             // get width of text
-            var scaledFont = new Font(SystemFonts.Find("Arial"), ribbonHeight);
+            var scaledFont = new Font(SystemFonts.Find("Arial"), ribbonHeight * 0.8f);
             int labelWidth = (int)Math.Ceiling(TextMeasurer.Measure(someRibbon.Key.ToString(AppConfigHelper.RenderedDateFormatShort), new RendererOptions(scaledFont)).Width);
 
             var finalHeight = Padding + ((Padding + ribbonHeight) * stats.Buckets);
@@ -192,22 +193,35 @@ namespace AnalysisPrograms.RibbonPlots
 
             // draw labels and voids
             Log.Debug("Rendering labels and backgrounds");
-            var day = stats.Start;
+
+            // draw 00:00 line
+            image.Mutate(context =>
+            {
+                var delta = stats.Start.RoundToTimeOfDay(TimeSpan.Zero, DateTimeAndTimeSpanExtensions.RoundingDirection.Ceiling) - stats.Start;
+                var left = ribbonLeft + (int)(delta.Modulo(RibbonPlotDomain).TotalSeconds / stats.First.IndexCalculationDuration.TotalSeconds).Round();
+                var top = Padding;
+                var bottom = Padding + ((Padding + ribbonHeight) * stats.Buckets);
+                context.DrawLines(
+                    new GraphicsOptions(false),
+                    Pens.Solid(NamedColors<Rgb24>.Red, 1),
+                    new PointF(left, top),
+                    new PointF(left, bottom));
+            });
+
+            var bucketDate = stats.Start;
             var textGraphics = new TextGraphicsOptions(true)
-                { HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top };
+                { HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center };
             var textColor = NamedColors<Rgb24>.Black;
             var voidColor = NamedColors<Rgb24>.Gray;
-            var firstOffset = stats.Start.Offset;
             for (var b = 0; b < stats.Buckets; b++)
             {
-
                 if (Log.IsVerboseEnabled())
                 {
-                    Log.Verbose($"Rendering bucket {day:O} label and void");
+                    Log.Verbose($"Rendering bucket {bucketDate:O} label and void");
                 }
 
                 // get label
-                var dateLabel = day.ToOffset(firstOffset).ToString(AppConfigHelper.RenderedDateFormatShort);
+                var dateLabel = bucketDate.ToString(AppConfigHelper.RenderedDateFormatShort);
 
                 image.Mutate(Operation);
 
@@ -216,12 +230,14 @@ namespace AnalysisPrograms.RibbonPlots
                     var y = Padding + ((Padding + ribbonHeight) * b);
 
                     // draw label
-                    context.DrawText(textGraphics, dateLabel, scaledFont, textColor, new Point(HorizontalPadding, y));
+                    context.DrawText(textGraphics, dateLabel, scaledFont, textColor, new Point(HorizontalPadding, y + (ribbonHeight / 2)));
 
                     // draw void
                     var @void = new RectangularPolygon(ribbonLeft, y, estimatedWidth, ribbonHeight);
                     context.Fill(voidColor, @void);
                 }
+
+                bucketDate = bucketDate.AddDays(1);
             }
 
             // copy images in
@@ -264,14 +280,15 @@ namespace AnalysisPrograms.RibbonPlots
                             Log.Verbose($"Rendering {date:O} in two parts, wrapped to next day");
                         }
 
-                        var split = estimatedWidth - (ribbonHorizontalOffset + ribbonWidth);
+                        var split = estimatedWidth - ribbonHorizontalOffset;
                         var crop = source.Clone((context) => context.Crop(new Rectangle(0, 0, split, source.Height)));
                         image.Mutate(x => x.DrawImage(crop, new Point(left, top), GraphicsOptions.Default));
 
                         // now draw the wrap around - starting from the left, which is start of new day
                         top += Padding + ribbonHeight;
                         left = ribbonLeft;
-                        var rest = source.Clone(context => context.Crop(new Rectangle(split, 0, source.Width, source.Height)));
+                        var rest = source.Clone(context =>
+                            context.Crop(new Rectangle(split, 0, ribbonWidth - split, source.Height)));
                         image.Mutate(x => x.DrawImage(rest, new Point(left, top), GraphicsOptions.Default));
                     }
                     else
@@ -293,8 +310,27 @@ namespace AnalysisPrograms.RibbonPlots
                 this.First = datedIndices[this.Min];
                 this.Max = datedIndices.Keys.Last();
                 this.Last = datedIndices[this.Max];
-                this.Start = this.Min.Floor(midnight);
-                this.End = (this.Max + this.Last.RecordingDuration).Ceiling(midnight);
+
+                var itsAllTheSame = midnight == TimeSpan.FromDays(1) ? TimeSpan.Zero : midnight;
+
+                this.Start = this.Min
+                    .RoundToTimeOfDay(itsAllTheSame, DateTimeAndTimeSpanExtensions.RoundingDirection.Floor);
+
+                if (this.Start.TimeOfDay != itsAllTheSame)
+                {
+                    throw new InvalidOperationException(
+                        $"Could not calculate start {this.Start:O} correctly for given midnight {midnight}");
+                }
+
+                this.End = (this.Max + this.Last.RecordingDuration)
+                    .RoundToTimeOfDay(itsAllTheSame, DateTimeAndTimeSpanExtensions.RoundingDirection.Ceiling);
+
+                if (this.End.TimeOfDay != itsAllTheSame)
+                {
+                    throw new InvalidOperationException(
+                        $"Could not calculate end {this.End:O} correctly for given midnight {midnight}");
+                }
+
                 this.Buckets = (int)Math.Ceiling((this.End - this.Start).Divide(TimeSpan.FromHours(24)));
             }
 
