@@ -8,6 +8,7 @@ namespace AnalysisPrograms.Production.Arguments
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using AnalyseLongRecordings;
+    using AnalysisPrograms.Draw.RibbonPlots;
     using Draw.Zooming;
     using EventStatistics;
     using McMaster.Extensions.CommandLineUtils;
@@ -36,7 +37,7 @@ namespace AnalysisPrograms.Production.Arguments
     [Subcommand(ConcatenateIndexFiles.CommandName, typeof(ConcatenateIndexFiles.Arguments))]
     [Subcommand(DrawLongDurationSpectrograms.CommandName, typeof(DrawLongDurationSpectrograms.Arguments))]
     [Subcommand(DrawZoomingSpectrograms.CommandName, typeof(DrawZoomingSpectrograms.Arguments))]
-    [Subcommand(RibbonPlots.RibbonPlot.CommandName, typeof(RibbonPlots.RibbonPlot.Arguments))]
+    [Subcommand(RibbonPlot.CommandName, typeof(RibbonPlot.Arguments))]
     [Subcommand(DrawEasyImage.CommandName, typeof(DrawEasyImage.Arguments))]
     [Subcommand(Audio2InputForConvCnn.CommandName, typeof(Audio2InputForConvCnn.Arguments))]
     [Subcommand(DifferenceSpectrogram.CommandName, typeof(DifferenceSpectrogram.Arguments))]

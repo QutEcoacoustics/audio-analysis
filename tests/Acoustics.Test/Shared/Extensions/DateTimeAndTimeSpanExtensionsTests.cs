@@ -16,7 +16,7 @@ namespace Acoustics.Test.Shared.Extensions
     using static System.DateTimeAndTimeSpanExtensions;
 
     [TestClass]
-    public class DateTimeAndTimeSpanExtensions
+    public class DateTimeAndTimeSpanExtensionsTests
     {
         [DataTestMethod]
         [DataRow("2019-04-08T11:30:00+10:00", RoundingDirection.AwayFromZero, "2019-04-08T11:30:00+10:00")]
@@ -44,6 +44,15 @@ namespace Acoustics.Test.Shared.Extensions
             var actual = testDate.RoundToTimeOfDay(new TimeSpan(11, 30, 0), direction);
 
             Assert.AreEqual(expectedDate, actual);
+        }
+
+        [TestMethod]
+        public void TestToIso8601SafeString()
+        {
+            var date = new DateTimeOffset(2019, 04, 12, 17, 3, 48, 0, TimeSpan.FromHours(10));
+
+            var actual = date.ToIso8601SafeString();
+            Assert.AreEqual("20190412T170348+1000", actual);
         }
     }
 }

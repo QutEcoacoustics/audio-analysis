@@ -11,6 +11,7 @@
 namespace System
 {
     using System.IO;
+    using Acoustics.Shared;
     using Collections.Generic;
     using Linq;
 
@@ -124,6 +125,19 @@ namespace System
         public static string ToTimeZoneString(this TimeSpan ts)
         {
             return (ts < TimeSpan.Zero ? "-" : string.Empty) + ts.ToString(@"mm\:ss");
+        }
+
+        /// <summary>
+        /// Formats a date in an ISO8601 format that is compact
+        /// and does not contain colons.
+        /// </summary>
+        /// <param name="date">The date to convert to a string.</param>
+        /// <returns>The resulting string.</returns>
+        public static string ToIso8601SafeString(this DateTimeOffset date)
+        {
+            return date
+                .ToString(AppConfigHelper.Iso8601FileCompatibleDateFormat)
+                .Replace(":", string.Empty);
         }
 
         /// <summary>
@@ -420,8 +434,6 @@ namespace System
         {
             return t1 >= t2 ? t1 : t2;
         }
-
-
 
         public enum RoundingDirection
         {

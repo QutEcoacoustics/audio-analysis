@@ -375,8 +375,8 @@
     <Compile Include="Recognizers\LitoriaOlong.cs" />
     <Compile Include="Recognizers\LitoriaFallax.cs" />
     <Compile Include="Recognizers\RhinellaMarina.cs" />
-    <Compile Include="RibbonPlots\RibbonPlot.Arguments.cs" />
-    <Compile Include="RibbonPlots\RibbonPlot.Entry.cs" />
+    <Compile Include="Draw\RibbonPlots\RibbonPlot.Arguments.cs" />
+    <Compile Include="Draw\RibbonPlots\RibbonPlot.Entry.cs" />
     <Compile Include="SourcePreparers\RemoteSourcePreparer.cs" />
     <Compile Include="SourcePreparers\LocalSourcePreparer.cs" />
     <Compile Include="SourcePreparers\RemoteSourcePreparerException.cs" />

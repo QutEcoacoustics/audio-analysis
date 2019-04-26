@@ -65,6 +65,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     public class LDSpectrogramRGB
     {
         public const string SpectralRibbonTag = ".SpectralRibbon";
+        public const int RibbonPlotHeight = 32;
 
         // Below is some history about how indices were assigned to the RGB channels to make long-duration false-colour spectrograms
         // string[] keys = { "ACI", "TEN", "CVR", "BGN", "AVG", "VAR" }; // the OLDEST default i.e. used in 2014
@@ -1583,9 +1584,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             //ribbon.Save(FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, colorMap2 + ".SummaryRibbon", "png"));
 
             // Spectrogram ribbons are very useful for viewing multiple days of recording.
-            var ribbon = cs1.GetSpectrogramRibbon(colorMap1, 32);
+            var ribbon = cs1.GetSpectrogramRibbon(colorMap1, RibbonPlotHeight);
             ribbon.Save(FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, colorMap1 + SpectralRibbonTag, "png"));
-            ribbon = cs1.GetSpectrogramRibbon(colorMap2, 32);
+            ribbon = cs1.GetSpectrogramRibbon(colorMap2, RibbonPlotHeight);
             ribbon.Save(FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, colorMap2 + SpectralRibbonTag, "png"));
 
             // only return images if chromeless

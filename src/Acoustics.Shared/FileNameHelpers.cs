@@ -1,4 +1,4 @@
-﻿// <copyright file="FileNameHelpers.cs" company="QutEcoacoustics">
+// <copyright file="FileNameHelpers.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -79,7 +79,18 @@ namespace Acoustics.Shared
 
             if (otherSegments.Length > 0)
             {
-                filename += otherSegments.Aggregate(string.Empty, (aggregate, item) => aggregate + SegmentSeparator + item);
+                string result = string.Empty;
+                foreach (var segment in otherSegments)
+                {
+                    if (segment.IsNullOrEmpty())
+                    {
+                        continue;;
+                    }
+
+                    result = result + SegmentSeparator + segment;
+                }
+
+                filename += result;
             }
 
             if (!string.IsNullOrWhiteSpace(newExtension))
