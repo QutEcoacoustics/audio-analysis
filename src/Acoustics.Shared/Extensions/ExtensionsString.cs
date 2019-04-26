@@ -1,4 +1,4 @@
-﻿// -----------------------------------------------------------------------
+// -----------------------------------------------------------------------
 // <copyright file="ExtensionsString.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -403,6 +403,17 @@ namespace System
         {
             string normalized = Regex.Replace(str, @"\r\n|\n\r|\n|\r", "\r\n");
             return normalized;
+        }
+
+        public static string FormatList(this IEnumerable<string> strings)
+        {
+            var builder = new StringBuilder("\n", 1000);
+            foreach (var value in strings)
+            {
+                builder.AppendFormat("\t- {0}\n", value);
+            }
+
+            return builder.ToString();
         }
     }
 }

@@ -118,6 +118,21 @@ namespace Acoustics.Test.TestHelpers
             }
         }
 
+        public static void AreEqual(this Assert assert, FileSystemInfo expected, FileSystemInfo actual)
+        {
+            Assert.AreEqual(expected.FullName, actual.FullName);
+        }
+
+        public static void AreEquivalent(this CollectionAssert assert, ICollection<FileSystemInfo> expected, ICollection<FileSystemInfo> actual)
+        {
+            CollectionAssert.AreEquivalent(expected.Select(FullName).ToList(), actual.Select(FullName).ToList());
+
+            string FullName(FileSystemInfo info)
+            {
+                return info.FullName;
+            }
+        }
+
         public static void DirectoryExists(this Assert assert, DirectoryInfo directory)
         {
             DirectoryExists(assert, directory.FullName);

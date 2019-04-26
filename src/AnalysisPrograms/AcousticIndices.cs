@@ -275,7 +275,7 @@ namespace AnalysisPrograms
 
             string basename = Path.GetFileNameWithoutExtension(sourceAudio.Name);
 
-            // output to disk (so other analysers can use the data,
+            // output to disk (so other analyzers can use the data,
             // only data - configuration settings that generated these indices
             // this data can then be used by post-process analyses
             /* NOTE: The value for FrameStep is used only when calculating a standard spectrogram

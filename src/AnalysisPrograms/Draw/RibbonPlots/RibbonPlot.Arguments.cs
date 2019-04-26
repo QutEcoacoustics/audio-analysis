@@ -2,7 +2,7 @@
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
-namespace AnalysisPrograms.RibbonPlots
+namespace AnalysisPrograms.Draw.RibbonPlots
 {
     using System;
     using System.IO;
@@ -27,8 +27,8 @@ namespace AnalysisPrograms.RibbonPlots
         {
             [Argument(
                 0,
-                Description = "One or more directories where that contain ribbon FCS files.")]
-            public DirectoryInfo[] SourceDirectories { get; set; }
+                Description = "One or more directories where that contain ribbon FCS files (index results).")]
+            public DirectoryInfo[] InputDirectories { get; set; }
 
             [Option(
                 CommandOptionType.SingleValue,
@@ -52,7 +52,7 @@ namespace AnalysisPrograms.RibbonPlots
 
             public override Task<int> Execute(CommandLineApplication app)
             {
-                return RibbonPlot.Execute(this);
+                return Draw.RibbonPlots.RibbonPlot.Execute(this);
             }
         }
     }

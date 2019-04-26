@@ -2,26 +2,22 @@
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
-namespace AnalysisPrograms.RibbonPlots
+namespace AnalysisPrograms.Draw.RibbonPlots
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Security.Cryptography;
-    using System.Text;
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using AnalysisPrograms.Production;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
     using log4net;
-    using log4net.Util;
     using SixLabors.Fonts;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using SixLabors.ImageSharp.Processing.Processors;
     using SixLabors.Primitives;
     using SixLabors.Shapes;
 
@@ -33,24 +29,24 @@ namespace AnalysisPrograms.RibbonPlots
         private static readonly TimeSpan RibbonPlotDomain = TimeSpan.FromHours(24);
         private static readonly ILog Log = LogManager.GetLogger(nameof(RibbonPlot));
 
-        public static async Task<int> Execute(Arguments arguments)
+        public static async Task<int> Execute(RibbonPlot.Arguments arguments)
         {
-            if (arguments.SourceDirectories.IsNullOrEmpty())
+            if (arguments.InputDirectories.IsNullOrEmpty())
             {
                 throw new CommandLineArgumentException(
-                    $"{nameof(arguments.SourceDirectories)} is null or empty - please provide at least one source directory");
+                    $"{nameof(arguments.InputDirectories)} is null or empty - please provide at least one source directory");
             }
 
-            var doNotExist = arguments.SourceDirectories.Where(x => !x.Exists);
+            var doNotExist = arguments.InputDirectories.Where(x => !x.Exists);
             if (doNotExist.Any())
             {
                 throw new CommandLineArgumentException(
-                    $"The following directories given to {nameof(arguments.SourceDirectories)} do not exist: " + doNotExist.FormatList());
+                    $"The following directories given to {nameof(arguments.InputDirectories)} do not exist: " + doNotExist.FormatList());
             }
 
             if (arguments.OutputDirectory == null)
             {
-                arguments.OutputDirectory = arguments.SourceDirectories.First();
+                arguments.OutputDirectory = arguments.InputDirectories.First();
                 Log.Warn(
                     $"{nameof(arguments.OutputDirectory)} was not provided and was automatically set to source directory {arguments.OutputDirectory}");
             }
@@ -69,11 +65,11 @@ namespace AnalysisPrograms.RibbonPlots
 
             LoggedConsole.Write("Begin scanning directories");
 
-            var allIndexFiles = arguments.SourceDirectories.SelectMany(IndexGenerationData.FindAll);
+            var allIndexFiles = arguments.InputDirectories.SelectMany(IndexGenerationData.FindAll);
 
             if (allIndexFiles.IsNullOrEmpty())
             {
-                throw new MissingDataException($"Could not find `{IndexGenerationData.FileNameFragment}` files in:" + arguments.SourceDirectories.FormatList());
+                throw new MissingDataException($"Could not find `{IndexGenerationData.FileNameFragment}` files in:" + arguments.InputDirectories.FormatList());
             }
 
             Log.Debug("Checking files have dates");
@@ -142,7 +138,14 @@ namespace AnalysisPrograms.RibbonPlots
                 var midnight = arguments.Midnight == RibbonPlotDomain
                     ? string.Empty
                     : "Midnight=" + arguments.Midnight.Value.ToString("hhmm");
-                var path = FilenameHelpers.AnalysisResultPath(arguments.OutputDirectory, arguments.OutputDirectory.Name, "RibbonPlot", "png", colorMap, midnight);
+                var path = FilenameHelpers.AnalysisResultPath(
+                    arguments.OutputDirectory,
+                    arguments.OutputDirectory.Name,
+                    "RibbonPlot",
+                    "png",
+                    colorMap,
+                    midnight);
+
                 using (var file = File.Create(path))
                 {
                     image.SaveAsPng(file);

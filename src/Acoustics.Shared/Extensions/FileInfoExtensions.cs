@@ -175,13 +175,7 @@ namespace System
 
         public static string FormatList(this IEnumerable<FileSystemInfo> infos)
         {
-            var builder = new StringBuilder("\n", 1000);
-            foreach (var info in infos)
-            {
-                builder.AppendFormat("\t- {0}\n", info.FullName);
-            }
-
-            return builder.ToString();
+            return infos.Select(x => x.FullName).FormatList();
         }
     }
 
