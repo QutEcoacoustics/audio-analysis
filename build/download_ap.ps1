@@ -18,6 +18,8 @@
 # The AP.exe build to download from AppVeyor. Must be the CI build number (e.g. "314").
 # .PARAMETER destination
 # Where to "install" AP.exe to. Defaults to "/AP" ("C:\AP" on Windows)
+# .PARAMETER github_api_token
+# Provide this token to avoid rate limiting by the GitHub API.
 # .EXAMPLE
 # C:\> ./download_ap.ps1
 # .EXAMPLE
@@ -45,7 +47,12 @@ param(
     [string]$ci_build_number,
 
     [Parameter()]
-    [string]$destination = "/AP"
+    [string]$destination = "/AP",
+
+    # GitHub API token used to bypass rate limiting
+    [Parameter()]
+    [string]
+    $github_api_token 
 )
 $ErrorActionPreference = "Stop"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -94,6 +101,7 @@ $script:oldWhatIfPreference = $WhatIfPreference
 try {
     $WhatIfPreference = $false
     if ($source -eq "github") {
+        $headers = if ($github_api_token)  { @{"Authorization" = "token $github_api_token"} } else { @{} }
         $github_url = "https://api.github.com/repos/QutEcoacoustics/audio-analysis/releases"
         if ($null -eq $exact_version) {
             if ($package -eq "Stable") {
@@ -111,7 +119,7 @@ try {
             $github_url += "/tags/v$exact_version"
         }
 
-        $response = Invoke-RestMethod -Method Get -Uri $github_url
+        $response = Invoke-RestMethod -Method Get -Uri $github_url -Headers $headers
         $response = $response | Select-Object -First 1
         $asset_url = $response.assets `
             | Where-Object { $_.name -like "$build*" } `
