@@ -1,6 +1,6 @@
 #!/usr/bin/pwsh
 
-#Requires -Version 5
+#Requires -Version 6
 
 # .SYNOPSIS
 # Downloads and "installs" (or updates) AP.exe
@@ -194,7 +194,7 @@ Write-Output "Downloading asset $asset_url"
 $downloaded_zip = "$destination/AP.zip"
 if ($PsCmdlet.ShouldProcess($asset_url, "Downloading asset")) {
     # use curl if available (faster)
-    $curl = Get-Command curl, curl.exe -CommandType Application  -ErrorAction SilentlyContinue | select -First 1
+    $curl = Get-Command curl, curl.exe -CommandType Application  -ErrorAction SilentlyContinue | Select-Object -First 1
     if ($curl) {
         & $curl -L -o "$downloaded_zip" "$asset_url"
 
@@ -238,7 +238,7 @@ if ($IsWin) {
         $paths = $paths | Where-Object { $_ }
         $paths += $destination
         $user_path = ($paths -join [IO.Path]::PathSeparator)
-        if ($PsCmdlet.ShouldProcess("PATH", "Adding $destionation to PATH")) {
+        if ($PsCmdlet.ShouldProcess("PATH", "Adding $destination to PATH")) {
             [Environment]::SetEnvironmentVariable("Path", $user_path, "User")
             # this change to so that the process env vars have access
             $env:Path += ([IO.Path]::PathSeparator + $destination)
