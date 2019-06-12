@@ -86,7 +86,7 @@ namespace AnalysisPrograms
                 //DrawLongDurationSpectrogram();
                 //DrawClusterSequence();
                 //DrawStandardSpectrograms();
-                //DrawZoomingSpectrogramPyramid();
+                DrawZoomingSpectrogramPyramid();
 
                 //ExtractSpectralFeatures();
                 //HerveGlotinMethods();
@@ -116,7 +116,7 @@ namespace AnalysisPrograms
                 //Oscillations2014.TESTMETHOD_DrawOscillationSpectrogram();
                 //Oscillations2014.TESTMETHOD_GetSpectralIndex_Osc();
                 //Test_DrawFourSpectrograms();
-                TestLinearFunction();
+                //TestLinearFunction();
 
                 Console.WriteLine("# Finished Sandpit Task!    Press any key to exit.");
                 return this.Ok();
@@ -334,9 +334,11 @@ namespace AnalysisPrograms
             //string outputPath = @"G:\SensorNetworks\Output\BradLaw\Pillaga24";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
 
-            string recordingPath = @"C:\Ecoacoustics\WavFiles\LizZnidersic\TasmanIsland2015_Unit2_Mez\SM304256_0+1_20151114_231652.wav";
-            string outputPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\24";
-            string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Acoustic.yml";
+            string recordingPath = @"C:\Ecoacoustics\WavFiles\LizZnidersic\TasmanIsland2015_Unit2_Mez\SM304256_0+1_20151114_211652.wav";
+            //string outputPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\22";
+            string outputPath = @"C:\Ecoacoustics\Output\Test\TestMezOneHourHiRes\22";
+            //string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Acoustic.yml";
+            string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Acoustic.Zooming.yml";
 
             // Ivan Campos recordings
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Ivancampos\INCIPO01_20161031_024006_898.wav";
@@ -685,11 +687,12 @@ namespace AnalysisPrograms
             //string ipFileName = "TEST_TUITCE_20091215_220004"; //exclude the analysis type from file name i.e. "Towsey.Acoustic.Indices"
             //string ipdir = @"C:\Ecoacoustics\Output\FalseColourSpectrograms\SpectrogramFocalZoom\Towsey.Acoustic.200ms.EclipseFarmstayOLD";
             //MAP "\\Sef-bigdata-10\d$\tasmania_mez\output_zooming_indices2019\Towsey.Acoustic" to Q drive
-            string ipdir = @"Q:\TasmaniaMez";
+            //string ipdir = @"Q:\TasmaniaMez";
+            string ipdir = @"C:\Ecoacoustics\Output\Test\TestMezOneHourHiRes\22\Towsey.Acoustic";
             string opdir = @"C:\Ecoacoustics\Output\FalseColourSpectrograms\SpectrogramFocalZoom\TasmaniaMezTest";
 
             // The default zooming LDFC spectrogram config file
-            //var spectrogramConfigFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\SpectrogramZoomingConfig.yml";
+            //var spectrogramConfigFile = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\SpectrogramZoomingConfig.yml";
             var zoomingConfigFile = @"C:\Ecoacoustics\Output\FalseColourSpectrograms\SpectrogramFocalZoom\SpectrogramZoomingConfig.yml";
 
             var args = new DrawZoomingSpectrograms.Arguments
@@ -698,7 +701,7 @@ namespace AnalysisPrograms
                 Output = opdir,
                 SpectrogramZoomingConfig = zoomingConfigFile,
                 ZoomAction = DrawZoomingSpectrograms.Arguments.ZoomActionType.Focused,
-                FocusMinute = 60,
+                FocusMinute = 30,
             };
             DrawZoomingSpectrograms.Execute(args);
         }

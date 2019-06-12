@@ -68,7 +68,7 @@ TileOutput: false
 #     prefix_20140101T235959+Z.mp3
 #     prefix_20140101-235959+1000.mp3
 #     prefix_20140101-235959+Z.mp3
-RequireDateInFilename: true
+RequireDateInFilename: false
 
 IndexPropertiesConfig: './IndexPropertiesConfig.Zooming.yml'
 EventThreshold: 0.2
