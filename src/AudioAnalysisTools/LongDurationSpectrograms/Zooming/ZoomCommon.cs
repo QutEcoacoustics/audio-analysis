@@ -6,12 +6,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Drawing;
     using System.Linq;
     using Acoustics.Shared;
     using Acoustics.Shared.Contracts;
-    using Fasterflect;
     using Indices;
     using TowseyLibrary;
 
@@ -30,6 +28,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
             keys = keys.ToList().Append("SUM");
             keys = keys.ToList().Append("DIF");
 
+            //add following matrix for possible subsequent BNG combination matrix.
+            string comboIndexID = "RHZ";
+            keys = keys.ToList().Append(comboIndexID);
+
             var relevantIndexProperties = keys.ToDictionary(x => x, x => indexProperties[x]);
 
             Dictionary<string, double[,]> spectra = IndexMatrices.ReadSpectralIndices(
@@ -37,6 +39,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
                 fileStem,
                 analysisTag,
                 keys.ToArray());
+
+            // Make a BNG COMBINATION Spectral matrix.
+            //var comboMatrix = MatrixTools.MaxOfTwoMatrices(spectra["BNG"], spectra["RHZ"]);
+            var comboMatrix = MatrixTools.AddMatricesWeightedSum(spectra["BGN"], 1.0, spectra[comboIndexID], 20.0);
+            spectra["BGN"] = comboMatrix;
 
             return (spectra, relevantIndexProperties);
         }

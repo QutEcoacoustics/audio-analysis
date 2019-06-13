@@ -90,6 +90,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             sw.Stop();
             LoggedConsole.WriteLine("Finished spectrograms derived from spectral indices. Elapsed time = " + sw.Elapsed.TotalSeconds + " seconds");
 
+            // NOTE: The following code is deprecated. It was originally developed to provide some intermediate steps between the hi-resolution false-colour spectrograms
+            // and the standard grey scale spectrograms.
             // ####################### DERIVE ZOOMED IN SPECTROGRAMS FROM STANDARD SPECTRAL FRAMES
 
             /*
