@@ -42,7 +42,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
 
             // Make a BNG COMBINATION Spectral matrix.
             //var comboMatrix = MatrixTools.MaxOfTwoMatrices(spectra["BNG"], spectra["RHZ"]);
-            var comboMatrix = MatrixTools.AddMatricesWeightedSum(spectra["BGN"], 1.0, spectra[comboIndexID], 20.0);
+            var comboMatrix = MatrixTools.AddMatricesWeightedSum(spectra["BGN"], 1.0, spectra[comboIndexID], 10.0);
             spectra["BGN"] = comboMatrix;
 
             return (spectra, relevantIndexProperties);

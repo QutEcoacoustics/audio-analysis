@@ -334,9 +334,9 @@ namespace AnalysisPrograms
             //string outputPath = @"G:\SensorNetworks\Output\BradLaw\Pillaga24";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
 
-            string recordingPath = @"C:\Ecoacoustics\WavFiles\LizZnidersic\TasmanIsland2015_Unit2_Mez\SM304256_0+1_20151114_211652.wav";
+            string recordingPath = @"C:\Ecoacoustics\WavFiles\LizZnidersic\TasmanIsland2015_Unit2_Mez\SM304256_0+1_20151114_191652+1000.wav";
             //string outputPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\22";
-            string outputPath = @"C:\Ecoacoustics\Output\Test\TestMezOneHourHiRes\22";
+            string outputPath = @"C:\Ecoacoustics\Output\Test\TestMezOneHourHiRes\20";
             //string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Acoustic.yml";
             string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Acoustic.Zooming.yml";
 
@@ -688,7 +688,7 @@ namespace AnalysisPrograms
             //string ipdir = @"C:\Ecoacoustics\Output\FalseColourSpectrograms\SpectrogramFocalZoom\Towsey.Acoustic.200ms.EclipseFarmstayOLD";
             //MAP "\\Sef-bigdata-10\d$\tasmania_mez\output_zooming_indices2019\Towsey.Acoustic" to Q drive
             //string ipdir = @"Q:\TasmaniaMez";
-            string ipdir = @"C:\Ecoacoustics\Output\Test\TestMezOneHourHiRes\22\Towsey.Acoustic";
+            string ipdir = @"C:\Ecoacoustics\Output\Test\TestMezOneHourHiRes\20\Towsey.Acoustic";
             string opdir = @"C:\Ecoacoustics\Output\FalseColourSpectrograms\SpectrogramFocalZoom\TasmaniaMezTest";
 
             // The default zooming LDFC spectrogram config file
