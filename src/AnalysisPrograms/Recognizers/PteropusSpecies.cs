@@ -46,7 +46,7 @@ namespace AnalysisPrograms.Recognizers
     /// </summary>
     internal class PteropusSpecies : RecognizerBase
     {
-        public override string Author => "Truskinger";
+        public override string Author => "Towsey";
 
         public override string SpeciesName => "PteropusSpecies";
 
@@ -81,18 +81,27 @@ namespace AnalysisPrograms.Recognizers
         /// <returns>recogniser results.</returns>
         public override RecognizerResults Recognize(AudioRecording audioRecording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
-            // Get a value from the config file - with a backup default
-            int minHz = configuration.GetIntOrNull(AnalysisKeys.MinHz) ?? 600;
-
-            // Get a value from the config file - with no default, throw an exception if value is not present
-            //int maxHz = ((int?)configuration[AnalysisKeys.MaxHz]).Value;
-
-            // Get a value from the config file - without a string accessor, as a double
-            double someExampleSettingA = configuration.GetDoubleOrNull("SomeExampleSettingA") ?? 0.0;
-
-            // common properties
+            // get the common properties
             string speciesName = configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
             string abbreviatedSpeciesName = configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+
+            RecognizerResults results = Gruntwork(audioRecording, configuration, outputDirectory, segmentStartOffset);
+
+            return results;
+        }
+
+        /// <summary>
+        /// THis method does the work.
+        /// </summary>
+        /// <param name="audioRecording">the recording.</param>
+        /// <param name="configuration">the config file.</param>
+        /// <param name="outputDirectory">where results are to be put.</param>
+        /// <param name="segmentStartOffset">where one segment is located in the total recording.</param>
+        /// <returns>a list of events.</returns>
+        internal static RecognizerResults Gruntwork(AudioRecording audioRecording, Config configuration, DirectoryInfo outputDirectory, TimeSpan segmentStartOffset)
+        {
+            // Get a value from the config file - without a string accessor, as a double
+            double someExampleSettingA = configuration.GetDoubleOrNull("SomeExampleSettingA") ?? 0.0;
 
             /*
              * Examples of using profiles
@@ -115,6 +124,27 @@ namespace AnalysisPrograms.Recognizers
 
             //######################
             //2.Convert each segment to a spectrogram.
+            double noiseReductionParameter = configuration.GetDoubleOrNull(AnalysisKeys.NoiseBgThreshold) ?? 0.1;
+
+            // make a spectrogram
+            var sonoConfig = new SonogramConfig
+            {
+                WindowSize = 512,
+                NoiseReductionType = NoiseReductionType.Standard,
+                NoiseReductionParameter = configuration.GetDoubleOrNull(AnalysisKeys.NoiseBgThreshold) ?? 0.0,
+            };
+            sonoConfig.WindowOverlap = 0.0;
+
+            // now construct the standard decibel spectrogram WITH noise removal, and look for LimConvex
+            // get frame parameters for the analysis
+            var sonogram = (BaseSonogram)new SpectrogramStandard(sonoConfig, audioRecording.WavReader);
+
+            var sonoImage = sonogram.GetImageFullyAnnotated("Test");
+            string imageFilename = "Test.png";
+            sonoImage.Save(Path.Combine(outputDirectory.FullName, imageFilename));
+
+            // get samples
+            var samples = audioRecording.WavReader.Samples;
 
             // Profile example: running the same algorithm on every profile with different settings (regional variation)
             /*
@@ -188,27 +218,9 @@ namespace AnalysisPrograms.Recognizers
             }
             */
 
-            // get samples
-            var samples = audioRecording.WavReader.Samples;
-
-            // make a spectrogram
-            var config = new SonogramConfig
-            {
-                NoiseReductionType = NoiseReductionType.Standard,
-                NoiseReductionParameter = configuration.GetDoubleOrNull(AnalysisKeys.NoiseBgThreshold) ?? 0.0,
-            };
-            var sonogram = (BaseSonogram)new SpectrogramStandard(config, audioRecording.WavReader);
 
             // get high resolution indices
 
-            // when the value is accessed, the indices are calculated
-            var indices = getSpectralIndexes.Value;
-
-            // check if the indices have been calculated - you shouldn't actually need this
-            if (getSpectralIndexes.IsValueCreated)
-            {
-                // then indices have been calculated before
-            }
 
             var foundEvents = new List<AcousticEvent>();
 
