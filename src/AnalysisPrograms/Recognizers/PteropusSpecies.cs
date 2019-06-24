@@ -28,6 +28,7 @@ namespace AnalysisPrograms.Recognizers
     using System.Linq;
     using System.Reflection;
     using System.Text;
+    using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Tools.Wav;
     using AnalysisBase;
@@ -81,10 +82,6 @@ namespace AnalysisPrograms.Recognizers
         /// <returns>recogniser results.</returns>
         public override RecognizerResults Recognize(AudioRecording audioRecording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
-            // get the common properties
-            string speciesName = configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
-            string abbreviatedSpeciesName = configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
-
             RecognizerResults results = Gruntwork(audioRecording, configuration, outputDirectory, segmentStartOffset);
 
             return results;
@@ -100,12 +97,19 @@ namespace AnalysisPrograms.Recognizers
         /// <returns>a list of events.</returns>
         internal static RecognizerResults Gruntwork(AudioRecording audioRecording, Config configuration, DirectoryInfo outputDirectory, TimeSpan segmentStartOffset)
         {
+            // get the common properties
+            string speciesName = configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
+            string abbreviatedSpeciesName = configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+            int minHz = configuration.GetIntOrNull(AnalysisKeys.MinHz) ?? 500;
+            int maxHz = configuration.GetIntOrNull(AnalysisKeys.MaxHz) ?? 8000;
+            double minDuration = configuration.GetIntOrNull(AnalysisKeys.MinDuration) ?? 0.1;
+            double maxDuration = configuration.GetIntOrNull(AnalysisKeys.MaxDuration) ?? 0.5;
+
             // Get a value from the config file - without a string accessor, as a double
-            double someExampleSettingA = configuration.GetDoubleOrNull("SomeExampleSettingA") ?? 0.0;
+            //double someExampleSettingA = configuration.GetDoubleOrNull("SomeExampleSettingA") ?? 0.0;
 
             /*
              * Examples of using profiles
-             */
 
             // Examples of the APIs available. You don't need all of these commands! Pick and choose.
             bool hasProfiles = ConfigFile.HasProfiles(configuration);
@@ -121,6 +125,7 @@ namespace AnalysisPrograms.Recognizers
             //                object currentProfile = profile.Profile;
             //                Log.Info(profile.Name + ": " + ((int)currentProfile.MinHz).ToString());
             //            }
+            */
 
             //######################
             //2.Convert each segment to a spectrogram.
@@ -139,7 +144,44 @@ namespace AnalysisPrograms.Recognizers
             // get frame parameters for the analysis
             var sonogram = (BaseSonogram)new SpectrogramStandard(sonoConfig, audioRecording.WavReader);
 
-            var sonoImage = sonogram.GetImageFullyAnnotated("Test");
+            var data = sonogram.Data;
+            var score = MatrixTools.GetRowAverages(data);
+            score = DataTools.NormaliseInZeroOne(score, 0, 12);
+            //var eventThreshold = 0.25; // equivalent to 3dB
+            var eventThreshold = 0.5; // equivalent to 6dB
+            var plot = new Plot(speciesName, score, eventThreshold);
+            var plots = new List<Plot> { plot };
+
+            //iii: CONVERT decibel SCORES TO ACOUSTIC EVENTS
+            var acousticEvents = AcousticEvent.ConvertScoreArray2Events(
+                score,
+                minHz,
+                maxHz,
+                sonogram.FramesPerSecond,
+                sonogram.FBinWidth,
+                eventThreshold,
+                minDuration,
+                maxDuration,
+                segmentStartOffset);
+
+            // ######################################################################
+            acousticEvents.ForEach(ae =>
+            {
+                ae.SpeciesName = speciesName;
+                ae.SegmentDurationSeconds = audioRecording.Duration.TotalSeconds;
+                ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
+                ae.Name = abbreviatedSpeciesName;
+            });
+
+            var sonoImage = SpectrogramTools.GetSonogramPlusCharts(sonogram, acousticEvents, plots, null);
+            //var sonoImage = sonogram.GetImageFullyAnnotated("Test");
+
+            //var opPath =
+            //    outputDirectory.Combine(
+            //        FilenameHelpers.AnalysisResultName(
+            //            Path.GetFileNameWithoutExtension(recording.BaseName), speciesName, "png", "DebugSpectrogram"));
+            //sonoImage.Save(opPath.FullName);
+
             string imageFilename = "Test.png";
             sonoImage.Save(Path.Combine(outputDirectory.FullName, imageFilename));
 
