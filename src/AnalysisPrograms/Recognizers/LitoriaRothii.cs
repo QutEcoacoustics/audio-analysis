@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="LitoriaRothii.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -223,7 +223,7 @@ namespace AnalysisPrograms.Recognizers
                 var lowPassPlot = new Plot("Low Pass", normalisedScores, normalisedThreshold);
 
                 var debugPlots = new List<Plot> { ampltdPlot, lowPassPlot, demeanedPlot, plot };
-                Image debugImage = DisplayDebugImage(sonogram, acousticEvents, debugPlots, null);
+                Image debugImage = SpectrogramTools.GetSonogramPlusCharts(sonogram, acousticEvents, debugPlots, null);
                 var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(recording.BaseName), this.Identifier, "png", "DebugSpectrogram"));
                 debugImage.Save(debugPath.FullName);
             }
@@ -235,38 +235,6 @@ namespace AnalysisPrograms.Recognizers
                 Plots = plots,
                 Events = acousticEvents,
             };
-        }
-
-        public static Image DisplayDebugImage(BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> scores, double[,] hits)
-        {
-            var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband: false, add1KHzLines: true, doMelScale: false));
-            image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-            if (scores != null)
-            {
-                foreach (var plot in scores)
-                {
-                    image.AddTrack(ImageTrack.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title)); //assumes data normalised in 0,1
-                }
-            }
-
-            if (hits != null)
-            {
-                image.OverlayRainbowTransparency(hits);
-            }
-
-            if (events.Count > 0)
-            {
-                // set colour for the events
-                foreach (AcousticEvent ev in events)
-                {
-                    ev.BorderColour = AcousticEvent.DefaultBorderColor;
-                    ev.ScoreColour = AcousticEvent.DefaultScoreColor;
-                }
-
-                image.AddEvents(events, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
-            }
-
-            return image.GetImage();
         }
     }
 }

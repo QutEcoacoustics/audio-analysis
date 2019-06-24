@@ -1,8 +1,6 @@
 ---
-# Should be in proper casing. The full real name of the species
 SpeciesName: Pteropus species
 CommonName: Flying Fox
-# Abbreviation of species name, format how you like
 AbbreviatedSpeciesName: PteropusSp
 
 #Proposed Approach:
@@ -26,8 +24,8 @@ Profiles:
   # The below settings are a template
   Standard: &STANDARD
     # min and max of the freq band to search
-    MinHz: 3000          
-    MaxHz: 5000
+    MinHz: 100          
+    MaxHz: 7000
     # duration of DCT in seconds 
     DctDuration: 0.15
     # minimum acceptable value of a DCT coefficient
@@ -38,7 +36,7 @@ Profiles:
     MaxOcilFreq: 140
     # Minimum and maximum duration for the length of a true call.
     MinDuration: 0.1
-    MaxDuration: 0.8
+    MaxDuration: 0.5
     # Event threshold - use this to determine FP / FN trade-off for events.
     EventThreshold: 0.30
   # This notation means the Groote profile has all of the settings that the Standard profile has,
