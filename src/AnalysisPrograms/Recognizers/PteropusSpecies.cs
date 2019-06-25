@@ -102,8 +102,15 @@ namespace AnalysisPrograms.Recognizers
             string abbreviatedSpeciesName = configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
             int minHz = configuration.GetIntOrNull(AnalysisKeys.MinHz) ?? 500;
             int maxHz = configuration.GetIntOrNull(AnalysisKeys.MaxHz) ?? 8000;
-            double minDuration = configuration.GetIntOrNull(AnalysisKeys.MinDuration) ?? 0.1;
-            double maxDuration = configuration.GetIntOrNull(AnalysisKeys.MaxDuration) ?? 0.5;
+
+            //double minDuration = configuration.GetIntOrNull(AnalysisKeys.MinDuration) ?? 0.1;
+            //double maxDuration = configuration.GetIntOrNull(AnalysisKeys.MaxDuration) ?? 0.5;
+            var neighbourhoodDuration = TimeSpan.FromSeconds(0.05);
+
+            double intensityNormalisationMax = 12.0; // decibels
+            double intensityThreshold = 9.0; // decibels
+            var eventThreshold = intensityThreshold / intensityNormalisationMax;
+
 
             // Get a value from the config file - without a string accessor, as a double
             //double someExampleSettingA = configuration.GetDoubleOrNull("SomeExampleSettingA") ?? 0.0;
@@ -129,7 +136,7 @@ namespace AnalysisPrograms.Recognizers
 
             //######################
             //2.Convert each segment to a spectrogram.
-            double noiseReductionParameter = configuration.GetDoubleOrNull(AnalysisKeys.NoiseBgThreshold) ?? 0.1;
+            //double noiseReductionParameter = configuration.GetDoubleOrNull(AnalysisKeys.NoiseBgThreshold) ?? 0.1;
 
             // make a spectrogram
             var sonoConfig = new SonogramConfig
@@ -143,26 +150,24 @@ namespace AnalysisPrograms.Recognizers
             // now construct the standard decibel spectrogram WITH noise removal, and look for LimConvex
             // get frame parameters for the analysis
             var sonogram = (BaseSonogram)new SpectrogramStandard(sonoConfig, audioRecording.WavReader);
+            var intensityArray = SNR.CalculateFreqBandAvIntensity(sonogram.Data, minHz, maxHz, sonogram.NyquistFrequency);
 
-            var data = sonogram.Data;
-            var score = MatrixTools.GetRowAverages(data);
-            score = DataTools.NormaliseInZeroOne(score, 0, 12);
-            //var eventThreshold = 0.25; // equivalent to 3dB
-            var eventThreshold = 0.5; // equivalent to 6dB
-            var plot = new Plot(speciesName, score, eventThreshold);
+            //var data = sonogram.Data;
+            //var intensityArray = MatrixTools.GetRowAverages(data);
+            intensityArray = DataTools.NormaliseInZeroOne(intensityArray, 0, 12);
+            var plot = new Plot(speciesName, intensityArray, eventThreshold);
             var plots = new List<Plot> { plot };
 
             //iii: CONVERT decibel SCORES TO ACOUSTIC EVENTS
-            var acousticEvents = AcousticEvent.ConvertScoreArray2Events(
-                score,
+            var acousticEvents = AcousticEvent.GetEventsAroundMaxima(
+                intensityArray,
+                segmentStartOffset,
                 minHz,
                 maxHz,
                 sonogram.FramesPerSecond,
                 sonogram.FBinWidth,
                 eventThreshold,
-                minDuration,
-                maxDuration,
-                segmentStartOffset);
+                neighbourhoodDuration);
 
             // ######################################################################
             acousticEvents.ForEach(ae =>
@@ -182,11 +187,11 @@ namespace AnalysisPrograms.Recognizers
             //            Path.GetFileNameWithoutExtension(recording.BaseName), speciesName, "png", "DebugSpectrogram"));
             //sonoImage.Save(opPath.FullName);
 
-            string imageFilename = "Test.png";
+            string imageFilename = audioRecording.BaseName + ".png";
             sonoImage.Save(Path.Combine(outputDirectory.FullName, imageFilename));
 
             // get samples
-            var samples = audioRecording.WavReader.Samples;
+            //var samples = audioRecording.WavReader.Samples;
 
             // Profile example: running the same algorithm on every profile with different settings (regional variation)
             /*
@@ -262,7 +267,7 @@ namespace AnalysisPrograms.Recognizers
 
 
             // get high resolution indices
-
+/*
 
             var foundEvents = new List<AcousticEvent>();
 
@@ -282,10 +287,10 @@ namespace AnalysisPrograms.Recognizers
             };
 
             foundEvents.Add(anEvent);
-
+*/
             return new RecognizerResults()
             {
-                Events = foundEvents,
+                Events = acousticEvents,
                 Hits = null,
                 ScoreTrack = null,
 

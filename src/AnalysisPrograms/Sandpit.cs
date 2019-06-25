@@ -277,7 +277,8 @@ namespace AnalysisPrograms
             //audio2csv  "C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h.mp3" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg" "C:\SensorNetworks\Output\Test1"
 
             // FLYING FOX RECORDINGS
-            string recordingPath = @"C:\Ecoacoustics\WavFiles\BradLawData\FlyingFox\20190127_Bellingen_Feeding_SM4.wav";
+            //string recordingPath = @"C:\Ecoacoustics\WavFiles\BradLawData\FlyingFox\20190127_Bellingen_Feeding_SM4.wav";
+            string recordingPath = @"C:\Ecoacoustics\WavFiles\BradLawData\FlyingFox\20190115_Bellingen_Feeding.wav";
             string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.PteropusSpecies.yml";
             string outputPath = @"C:\Ecoacoustics\Output\BradLaw\FlyingFox";
 
