@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="AcousticEvent.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -14,10 +14,12 @@ namespace AudioAnalysisTools
     using System.Collections.ObjectModel;
     using System.Drawing;
     using System.IO;
+    using System.Linq;
     using System.Text;
     using System.Text.RegularExpressions;
     using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Csv;
+    using AForge.Imaging.Filters;
     using AnalysisBase.ResultBases;
     using CsvHelper.Configuration;
     using DSP;
@@ -1097,13 +1099,70 @@ namespace AudioAnalysisTools
                         //obtain average intensity score.
                         double av = 0.0;
                         for (int n = startFrame; n <= i; n++)
-                    {
-                        av += values[n];
-                    }
+                        {
+                            av += values[n];
+                        }
 
                         ev.Score = av / (i - startFrame + 1);
                         events.Add(ev);
                     }
+            }
+
+            return events;
+        }
+
+        public static List<AcousticEvent> GetEventsAroundMaxima(
+            double[] values,
+            TimeSpan segmentStartOffset,
+            int minHz,
+            int maxHz,
+            double framesPerSec,
+            double freqBinWidth,
+            double thresholdValue,
+            TimeSpan nh)
+        {
+            int count = values.Length;
+            var events = new List<AcousticEvent>();
+            double frameOffset = 1 / framesPerSec; //frame offset in fractions of second
+
+            // every event will have duration of twice the buffer + 1
+            int frameBuffer = (int)Math.Ceiling(nh.TotalSeconds / frameOffset);
+            frameBuffer = Math.Max(frameBuffer, 1);
+            int eventLength = (2 * frameBuffer) + 1;
+
+            // every event has the same duration
+            double eventDuration = eventLength * frameOffset;
+
+            //int startFrame = 0;
+
+            // for all frames
+            for (int i = frameBuffer; i < count - frameBuffer; i++)
+            {
+                // skip if value below threshold
+                if (values[i] < thresholdValue)
+                {
+                    continue;
+                }
+
+                // get the neighbourhood
+                var nhArray = DataTools.Subarray(values, i - frameBuffer, eventLength);
+                int maxId = DataTools.GetMaxIndex(nhArray);
+
+                // if middle frame is a local maximum then have an event
+                if (maxId == frameBuffer)
+                {
+                    double startTime = (i - frameBuffer) * frameOffset; // time in seconds
+                    AcousticEvent ev = new AcousticEvent(segmentStartOffset, startTime, eventDuration, minHz, maxHz)
+                    {
+                        Name = "Event", //default name
+                    };
+
+                    ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
+
+                    //obtain average intensity score.
+                    ev.Score = nhArray.Average();
+                    events.Add(ev);
+                }
             }
 
             return events;
