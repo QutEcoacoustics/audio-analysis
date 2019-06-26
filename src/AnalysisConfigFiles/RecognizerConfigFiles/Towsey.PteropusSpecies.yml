@@ -68,7 +68,7 @@ SegmentOverlap: 0
 SaveIntermediateWavFiles: Never
 SaveIntermediateCsvFiles: false
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
-SaveSonogramImages: Never
+SaveSonogramImages: True
 # DisplayCsvImage is obsolete - ensure it remains set to: false
 DisplayCsvImage: false
 ## End section for AnalyzeLongRecording
