@@ -10,6 +10,8 @@ namespace AnalysisPrograms.Production
     using System.ComponentModel.DataAnnotations;
     using System.IO;
     using System.Linq;
+    using System.Reflection;
+    using System.Text;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
 
@@ -35,6 +37,39 @@ namespace AnalysisPrograms.Production
         public static int NoData => 10;
 
         internal static Dictionary<Type, ExceptionStyle> ErrorLevels => levels ?? (levels = CreateExceptionMap());
+
+        public static string FormatReflectionTypeLoadException(Exception exception)
+        {
+            if (exception == null || !(exception is ReflectionTypeLoadException error))
+            {
+                return null;
+            }
+
+            var message = new StringBuilder();
+            message.Append(
+                "System.Reflection.ReflectionTypeLoadException: Unable to load one or more of the requested types.\n");
+
+            foreach (var inner in error.LoaderExceptions)
+            {
+                message.AppendLine("\t- " + inner.Message);
+                if (inner is FileNotFoundException exFileNotFound)
+                {
+                    if (!string.IsNullOrEmpty(exFileNotFound.FusionLog))
+                    {
+                        message.AppendLine("Fusion Log:");
+                        message.AppendLine(exFileNotFound.FusionLog);
+                    }
+                }
+
+                message.AppendLine();
+            }
+
+            message.AppendLine(@"
+This error message likely means there is something wrong with your install of AP.exe or the required software needed to run AP.exe.
+Please report this problem as a bug");
+
+            return message.ToString();
+        }
 
         private static Dictionary<Type, ExceptionStyle> CreateExceptionMap()
         {
@@ -106,6 +141,15 @@ namespace AnalysisPrograms.Production
                     }
                 },
                 {
+                    typeof(ReflectionTypeLoadException),
+                    new ExceptionStyle()
+                    {
+                        ErrorCode = 189,
+                        PrintUsage = false,
+                        FormatMessage = FormatReflectionTypeLoadException,
+                    }
+                },
+                {
                     typeof(NoDeveloperMethodException),
                     new ExceptionStyle { ErrorCode = 199 }
                 },
@@ -152,6 +196,8 @@ namespace AnalysisPrograms.Production
             public bool Handle { get; set; }
 
             public bool PrintUsage { get; set; }
+
+            public Func<Exception, string> FormatMessage { get; set; }
         }
     }
 

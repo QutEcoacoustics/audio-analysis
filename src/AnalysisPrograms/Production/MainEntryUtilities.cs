@@ -416,21 +416,23 @@ and make sure you install the `mono-complete` package.
 
             found = found && style.Handle;
 
+            // format the message
+            string message = fatalMessage + (style?.FormatMessage?.Invoke(inner) ?? inner.Message);
+
             // if found, print message only if usage printing disabled
             if (found && !style.PrintUsage)
             {
                 // this branch prints the message, but the stack trace is only output in the log
-                NoConsole.Log.Fatal(fatalMessage, ex);
-                LoggedConsole.WriteFatalLine(fatalMessage + inner.Message);
+                NoConsole.Log.Fatal(message, ex);
+                LoggedConsole.WriteFatalLine(message);
             }
             else if (found && ex.GetType() != typeof(Exception))
             {
                 // this branch prints the message, and command usage, but the stack trace is only output in the log
-                NoConsole.Log.Fatal(fatalMessage, ex);
+                NoConsole.Log.Fatal(message, ex);
 
                 // the static CommandLineApplication is not set when CommandLineException is thrown
                 var command = inner is CommandParsingException exception ? exception.Command.Name : CommandLineApplication?.Name;
-                var message = fatalMessage + inner.Message;
                 PrintUsage(message, Usages.Single, command ?? string.Empty);
             }
             else

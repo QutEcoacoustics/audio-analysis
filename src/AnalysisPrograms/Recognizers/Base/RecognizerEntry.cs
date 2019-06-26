@@ -83,7 +83,7 @@ namespace AnalysisPrograms.Recognizers.Base
             LoggedConsole.WriteLine("# Output folder:       " + outputDirectory);
 
             // find an appropriate event IAnalyzer
-            IAnalyser2 recognizer = AnalyseLongRecording.FindAndCheckAnalyser<IEventRecognizer>(
+            IAnalyser2 recognizer = AnalyseLongRecording.FindAndCheckAnalyzer<IEventRecognizer>(
                 arguments.AnalysisIdentifier,
                 configFile.Name);
 
