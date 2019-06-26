@@ -1138,18 +1138,19 @@ namespace AudioAnalysisTools
             // for all frames
             for (int i = frameBuffer; i < count - frameBuffer; i++)
             {
-                // skip if value below threshold
-                if (values[i] < thresholdValue)
+                // get the neighbourhood
+                var nhArray = DataTools.Subarray(values, i - frameBuffer, eventLength);
+                double avValue = nhArray.Average();
+
+                // skip if average value over the neighbourhood below threshold
+                if (avValue < thresholdValue)
                 {
                     continue;
                 }
 
-                // get the neighbourhood
-                var nhArray = DataTools.Subarray(values, i - frameBuffer, eventLength);
+                // if local maximum just prior to middle frame AND average of values > threshold, THEN have an event
                 int maxId = DataTools.GetMaxIndex(nhArray);
-
-                // if middle frame is a local maximum then have an event
-                if (maxId == frameBuffer)
+                if (maxId == (frameBuffer - 2))
                 {
                     double startTime = (i - frameBuffer) * frameOffset; // time in seconds
                     AcousticEvent ev = new AcousticEvent(segmentStartOffset, startTime, eventDuration, minHz, maxHz)
@@ -1162,6 +1163,9 @@ namespace AudioAnalysisTools
                     //obtain average intensity score.
                     ev.Score = nhArray.Average();
                     events.Add(ev);
+
+                    // jump to end of event
+                    i += eventLength;
                 }
             }
 

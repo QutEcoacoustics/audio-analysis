@@ -103,36 +103,14 @@ namespace AnalysisPrograms.Recognizers
             int minHz = configuration.GetIntOrNull(AnalysisKeys.MinHz) ?? 500;
             int maxHz = configuration.GetIntOrNull(AnalysisKeys.MaxHz) ?? 8000;
 
+            //var samples = audioRecording.WavReader.Samples;
             //double minDuration = configuration.GetIntOrNull(AnalysisKeys.MinDuration) ?? 0.1;
             //double maxDuration = configuration.GetIntOrNull(AnalysisKeys.MaxDuration) ?? 0.5;
             var neighbourhoodDuration = TimeSpan.FromSeconds(0.05);
 
-            double intensityNormalisationMax = 12.0; // decibels
-            double intensityThreshold = 9.0; // decibels
-            var eventThreshold = intensityThreshold / intensityNormalisationMax;
-
-
-            // Get a value from the config file - without a string accessor, as a double
-            //double someExampleSettingA = configuration.GetDoubleOrNull("SomeExampleSettingA") ?? 0.0;
-
-            /*
-             * Examples of using profiles
-
-            // Examples of the APIs available. You don't need all of these commands! Pick and choose.
-            bool hasProfiles = ConfigFile.HasProfiles(configuration);
-
-            //Config profile = ConfigFile.GetProfile<Config, Aed.AedConfiguration>(configuration, "Groote");
-            Config profile2;
-
-            //bool success = ConfigFile.TryGetProfile(configuration, "FemaleRelease", out profile2);
-            //string[] profileNames = ConfigFile.GetProfileNames<Config>(configuration);
-            //            IEnumerable<(string Name, object Profile)> allProfiles = ConfigFile.GetAllProfiles<IProfile<object>>(configuration);
-            //            foreach (var profile in allProfiles)
-            //            {
-            //                object currentProfile = profile.Profile;
-            //                Log.Info(profile.Name + ": " + ((int)currentProfile.MinHz).ToString());
-            //            }
-            */
+            double decibelsIntensityThreshold = configuration.GetDoubleOrNull(AnalysisKeys.NoiseBgThreshold) ?? 12.0;
+            double intensityNormalisationMax = 3 * decibelsIntensityThreshold;
+            var eventThreshold = decibelsIntensityThreshold / intensityNormalisationMax;
 
             //######################
             //2.Convert each segment to a spectrogram.
@@ -154,7 +132,7 @@ namespace AnalysisPrograms.Recognizers
 
             //var data = sonogram.Data;
             //var intensityArray = MatrixTools.GetRowAverages(data);
-            intensityArray = DataTools.NormaliseInZeroOne(intensityArray, 0, 12);
+            intensityArray = DataTools.NormaliseInZeroOne(intensityArray, 0, intensityNormalisationMax);
             var plot = new Plot(speciesName, intensityArray, eventThreshold);
             var plots = new List<Plot> { plot };
 
@@ -178,64 +156,27 @@ namespace AnalysisPrograms.Recognizers
                 ae.Name = abbreviatedSpeciesName;
             });
 
-            var sonoImage = SpectrogramTools.GetSonogramPlusCharts(sonogram, acousticEvents, plots, null);
             //var sonoImage = sonogram.GetImageFullyAnnotated("Test");
+            var sonoImage = SpectrogramTools.GetSonogramPlusCharts(sonogram, acousticEvents, plots, null);
 
             //var opPath =
             //    outputDirectory.Combine(
             //        FilenameHelpers.AnalysisResultName(
             //            Path.GetFileNameWithoutExtension(recording.BaseName), speciesName, "png", "DebugSpectrogram"));
-            //sonoImage.Save(opPath.FullName);
-
             string imageFilename = audioRecording.BaseName + ".png";
             sonoImage.Save(Path.Combine(outputDirectory.FullName, imageFilename));
 
-            // get samples
-            //var samples = audioRecording.WavReader.Samples;
-
-            // Profile example: running the same algorithm on every profile with different settings (regional variation)
-            /*
-            List<AcousticEvent> allAcousticEvents = new List<AcousticEvent>();
-            Dictionary<string, Config> allProfiles = ConfigFile.GetAllProfiles(configuration);
-            foreach (var kvp in allProfiles)
+            return new RecognizerResults()
             {
-                string profileName = kvp.Key;
-                Log.Info($"Analyzing profile: {profileName}");
-                Config currentProfile = kvp.Value;
+                Events = acousticEvents,
+                Hits = null,
+                ScoreTrack = null,
+                Plots = plots,
+                Sonogram = sonogram,
+            };
+        }
 
-                // extract parameters
-                int minHz = (int)configuration[AnalysisKeys.MinHz];
-
-                // ...
-
-                // run the algorithm
-                List<AcousticEvent> acousticEvents;
-                Oscillations2012.Execute( All the correct parameters, minHz);
-
-                // augment the returned events
-                acousticEvents.ForEach(ae =>
-                {
-                    ae.SpeciesName = speciesName;
-                    ae.Profile = profileName;
-                    ae.AnalysisIdealSegmentDuration = recordingDuration;
-                    ae.Name = abbreviatedSpeciesName;
-                });
-
-                // add events found in this profile to the total list
-                allAcousticEvents.AddRange(acousticEvents);
-            }
-            */
-
-            // Profile example: running a different algorithm on different profiles
-            /*
-            bool hasProfiles = ConfigFile.HasProfiles(configuration);
-            if (hasProfiles)
-            {
-                // add resulting events from each algorithm into the combined event list
-                allAcousticEvents.AddRange(RunFemaleProfile(...all the arguments));
-                allAcousticEvents.AddRange(RunMaleProfile(...all the arguments));
-            }
-
+        /*
             // example method
             private static List<AcousticEvent> RunFemaleProfile(configuration, rest of arguments)
             {
@@ -264,39 +205,5 @@ namespace AnalysisPrograms.Recognizers
                 return acousticEvents;
             }
             */
-
-
-            // get high resolution indices
-/*
-
-            var foundEvents = new List<AcousticEvent>();
-
-            // some kind of loop where you scan through the audio
-
-            // 'find' a Flying Fox event - if you find an event, store the data in the AcousticEvent class
-            var anEvent = new AcousticEvent(
-                segmentStartOffset,
-                new Oblong(50, 50, 100, 100),
-                sonogram.NyquistFrequency,
-                sonogram.Configuration.FreqBinCount,
-                sonogram.FrameDuration,
-                sonogram.FrameStep,
-                sonogram.FrameCount)
-            {
-                Name = "Flying Fox",
-            };
-
-            foundEvents.Add(anEvent);
-*/
-            return new RecognizerResults()
-            {
-                Events = acousticEvents,
-                Hits = null,
-                ScoreTrack = null,
-
-                //Plots = null,
-                Sonogram = sonogram,
-            };
-        }
     }
 }
