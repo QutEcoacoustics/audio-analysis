@@ -315,17 +315,6 @@ namespace Acoustics.Test.Tools
                 TimeSpan.FromMilliseconds(0));
         }
 
-
-
-        /// <summary>
-        /// The test sox.
-        /// </summary>
-        [TestMethod]
-        public void TestSox()
-        {
-            TestHelper.GetAudioUtility().Info(PathHelper.GetTestAudioFile("TorresianCrow.wav"));
-        }
-
         /// <summary>
         /// The validates non existing exe paths.
         /// </summary>
