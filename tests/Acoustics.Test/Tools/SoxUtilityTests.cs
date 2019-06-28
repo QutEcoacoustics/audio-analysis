@@ -164,7 +164,7 @@ namespace Acoustics.Test.Tools
                         break;
                     case BandPassType.Bandpass:
 
-                        // bypass filter is centre + width hence numbers are different
+                        // bandpass filter is centre + width hence numbers are different
                         StringAssert.Contains(constructedArguments, "0.4566225");
                         StringAssert.Contains(constructedArguments, "0.665667");
                         break;
