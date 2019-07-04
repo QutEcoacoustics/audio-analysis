@@ -417,7 +417,7 @@ and make sure you install the `mono-complete` package.
             found = found && style.Handle;
 
             // format the message
-            string message = fatalMessage + (style?.FormatMessage?.Invoke(inner) ?? inner.Message);
+            string message = fatalMessage + (style?.FormatMessage?.Invoke(inner, Log.IsVerboseEnabled()) ?? inner.Message);
 
             // if found, print message only if usage printing disabled
             if (found && !style.PrintUsage)
@@ -506,7 +506,7 @@ and make sure you install the `mono-complete` package.
             SetLogVerbosity(arguments.LogLevel, arguments.QuietConsole);
         }
 
-        private static void ParseEnvirionemnt()
+        private static void ParseEnvironment()
         {
             ApPlainLogging = bool.TryParse(GetEnvironmentVariable(ApPlainLoggingKey), out var plainLogging) && plainLogging;
 
@@ -522,10 +522,8 @@ and make sure you install the `mono-complete` package.
 
             //innerExceptions = innerExceptions ?? new StringBuilder();
 
-            if (ex is AggregateException)
+            if (ex is AggregateException aex)
             {
-                var aex = (AggregateException)ex;
-
                 //innerExceptions.AppendLine("Writing detailed information about inner exceptions!");
 
                 foreach (var exception in aex.InnerExceptions)

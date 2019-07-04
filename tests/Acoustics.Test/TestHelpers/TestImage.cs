@@ -12,15 +12,15 @@ namespace Acoustics.Test.TestHelpers
 
     public class TestImage
     {
-        private static readonly Rgb24 DefaultBackground = NamedColors<Rgb24>.White;
+        private static readonly Rgb24 DefaultBackground = Color.White;
         private readonly Image<Rgb24> image;
-        private readonly List<Func<Point, IImageProcessingContext<Rgb24>, Point>> operations;
+        private readonly List<Func<Point, IImageProcessingContext, Point>> operations;
         private readonly Stack<(int Repeats, int startIndex)> loops = new Stack<(int Repeats, int startIndex)>();
 
         public TestImage(int width, int height, Rgb24? backgroundColor)
         {
             this.Cursor = new Point(0, 0);
-            this.operations = new List<Func<Point, IImageProcessingContext<Rgb24>, Point>>();
+            this.operations = new List<Func<Point, IImageProcessingContext, Point>>();
             this.image = new Image<Rgb24>(Configuration.Default, width, height, backgroundColor ?? DefaultBackground);
 
         }
@@ -29,7 +29,7 @@ namespace Acoustics.Test.TestHelpers
 
         public TestImage Fill(int width, int height, Rgb24 color)
         {
-            Point Action(Point cursor, IImageProcessingContext<Rgb24> context)
+            Point Action(Point cursor, IImageProcessingContext context)
             {
                 context.Fill(color, new Rectangle(this.Cursor, new Size(width, height)));
                 cursor.Offset(width, height);
@@ -42,7 +42,7 @@ namespace Acoustics.Test.TestHelpers
 
         public TestImage FillHorizontalSplit(int width, int height, params Rgb24[] colors)
         {
-            Point Action(Point cursor, IImageProcessingContext<Rgb24> context)
+            Point Action(Point cursor, IImageProcessingContext context)
             {
                 float segmentWidth = width / (float)colors.Length;
                 for (int i = 0; i < colors.Length; i++)
@@ -62,7 +62,7 @@ namespace Acoustics.Test.TestHelpers
 
         public TestImage Move(int x, int y)
         {
-            Point Action(Point cursor, IImageProcessingContext<Rgb24> context)
+            Point Action(Point cursor, IImageProcessingContext context)
             {
                 cursor.Offset(x, y);
                 return cursor;
@@ -74,7 +74,7 @@ namespace Acoustics.Test.TestHelpers
 
         public TestImage Move(Horizontal x, int y)
         {
-            Point Action(Point cursor, IImageProcessingContext<Rgb24> context)
+            Point Action(Point cursor, IImageProcessingContext context)
             {
                 switch (x)
                 {
@@ -97,7 +97,7 @@ namespace Acoustics.Test.TestHelpers
 
         public TestImage Move(int x, Vertical y)
         {
-            Point Action(Point cursor, IImageProcessingContext<Rgb24> context)
+            Point Action(Point cursor, IImageProcessingContext context)
             {
                 switch (y)
                 {
@@ -120,7 +120,7 @@ namespace Acoustics.Test.TestHelpers
 
         public TestImage Move(Edge edge)
         {
-            Point Action(Point cursor, IImageProcessingContext<Rgb24> context)
+            Point Action(Point cursor, IImageProcessingContext context)
             {
                 if (edge.HasFlag(Edge.Top))
                 {

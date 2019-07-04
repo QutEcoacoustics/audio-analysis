@@ -40,7 +40,7 @@ namespace AnalysisPrograms
             }
             catch (ReflectionTypeLoadException rtlex)
             {
-                errors.Add(ExceptionLookup.FormatReflectionTypeLoadException(rtlex));
+                errors.Add(ExceptionLookup.FormatReflectionTypeLoadException(rtlex, true));
             }
 
             // master audio utility checks for available executables

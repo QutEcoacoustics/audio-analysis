@@ -17,6 +17,7 @@ namespace AnalysisPrograms.Production
 
     using AnalysisBase;
     using AnalysisPrograms.Production.Arguments;
+    using log4net;
     using McMaster.Extensions.CommandLineUtils;
 
     public static class ExceptionLookup
@@ -38,7 +39,7 @@ namespace AnalysisPrograms.Production
 
         internal static Dictionary<Type, ExceptionStyle> ErrorLevels => levels ?? (levels = CreateExceptionMap());
 
-        public static string FormatReflectionTypeLoadException(Exception exception)
+        public static string FormatReflectionTypeLoadException(Exception exception, bool verbose = false)
         {
             if (exception == null || !(exception is ReflectionTypeLoadException error))
             {
@@ -47,21 +48,32 @@ namespace AnalysisPrograms.Production
 
             var message = new StringBuilder();
             message.Append(
-                "System.Reflection.ReflectionTypeLoadException: Unable to load one or more of the requested types.\n");
+                "System.Reflection.ReflectionTypeLoadException: Unable to load one or more of the requested types.");
 
             foreach (var inner in error.LoaderExceptions)
             {
-                message.AppendLine("\t- " + inner.Message);
-                if (inner is FileNotFoundException exFileNotFound)
+                message.AppendLine("\n\t- " + inner.Message);
+                if (!verbose)
                 {
-                    if (!string.IsNullOrEmpty(exFileNotFound.FusionLog))
-                    {
-                        message.AppendLine("Fusion Log:");
-                        message.AppendLine(exFileNotFound.FusionLog);
-                    }
+                    continue;
                 }
 
-                message.AppendLine();
+                string fusionLog = null;
+
+                switch (inner)
+                {
+                    case FileNotFoundException fnfex:
+                        fusionLog = fnfex.FusionLog;
+                        break;
+                    case FileLoadException flex:
+                        fusionLog = flex.FusionLog;
+                        break;
+                    default:
+                        continue;
+                }
+
+                message.Append("\n\t\tFusion Log:\n\t\t");
+                message.AppendLine(fusionLog);
             }
 
             message.AppendLine(@"
@@ -197,7 +209,7 @@ Please report this problem as a bug");
 
             public bool PrintUsage { get; set; }
 
-            public Func<Exception, string> FormatMessage { get; set; }
+            public Func<Exception, bool, string> FormatMessage { get; set; }
         }
     }
 
