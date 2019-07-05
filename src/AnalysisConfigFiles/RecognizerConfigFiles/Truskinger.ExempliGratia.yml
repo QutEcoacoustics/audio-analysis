@@ -13,15 +13,15 @@ Profiles:
   # The below settings are a template
   Standard: &STANDARD
     # min and max of the freq band to search
-    MinHz: 3000          
+    MinHz: 3000
     MaxHz: 5000
-    # duration of DCT in seconds 
+    # duration of DCT in seconds
     DctDuration: 0.15
     # minimum acceptable value of a DCT coefficient
     DctThreshold: 0.6
     # ignore oscillation rates below the min & above the max threshold
     # OSCILLATIONS PER SECOND
-    MinOcilFreq: 50        
+    MinOcilFreq: 50
     MaxOcilFreq: 140
     # Minimum and maximum duration for the length of a true call.
     MinDuration: 0.1
@@ -32,7 +32,7 @@ Profiles:
   # however, the MinHz and MaxHz properties have been overridden.
   Groote:
     <<: *STANDARD
-    MinHz: 4000          
+    MinHz: 4000
     MaxHz: 6000
   FemaleRelease:
     <<: *STANDARD
@@ -49,12 +49,13 @@ EventThreshold: 0.2
 ResampleRate: 22050
 
 ## Specifically for AnalyzeLongRecording
-# SegmentDuration: units=seconds;    
+# SegmentDuration: units=seconds;
 SegmentDuration: 60
 # SegmentOverlap: units=seconds;
 SegmentOverlap: 0
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
+# If `true` saves a data into a seperate file every `SegmentDuration` seconds. Accepts a boolean value: [false|true]
 SaveIntermediateCsvFiles: false
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveSonogramImages: Never

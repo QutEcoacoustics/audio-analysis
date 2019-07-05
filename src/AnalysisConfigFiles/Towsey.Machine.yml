@@ -1,11 +1,11 @@
 ---
 AnalysisName: Towsey.Machine
-#SegmentDuration: units=seconds,   SegmentOverlap=seconds        
+#SegmentDuration: units=seconds,   SegmentOverlap=seconds
 SegmentDuration: 60
 SegmentOverlap: 0
 
 # min and max of the freq band to search
-MinHz: 40          
+MinHz: 40
 MaxHz: 1000
 MinFormantGap: 50
 MaxFormantGap: 200
@@ -17,6 +17,7 @@ IntensityThreshold: 0.13
 
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
+# If `true` saves a data into a seperate file every `SegmentDuration` seconds. Accepts a boolean value: [false|true]
 SaveIntermediateCsvFiles: false
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveSonogramImages: Never

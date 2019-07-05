@@ -6,7 +6,7 @@ AbbreviatedSpeciesName: A.insignis
 SeverityOfNoiseRemoval: 2.0
 
 # min and max of the freq band to search
-MinHz: 280          
+MinHz: 280
 MaxHz: 500
 
 # Decibel threshold
@@ -29,12 +29,13 @@ EventThreshold: 0.30
 ResampleRate: 22050
 
 ## Specifically for AnalyzeLongRecording
-# SegmentDuration: units=seconds;    
+# SegmentDuration: units=seconds;
 SegmentDuration: 60
 # SegmentOverlap: units=seconds;
 SegmentOverlap: 5
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: WhenEventsDetected
+# If `true` saves a data into a seperate file every `SegmentDuration` seconds. Accepts a boolean value: [false|true]
 SaveIntermediateCsvFiles: false
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveSonogramImages: WhenEventsDetected

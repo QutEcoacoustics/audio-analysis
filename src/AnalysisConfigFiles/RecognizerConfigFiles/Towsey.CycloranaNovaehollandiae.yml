@@ -3,20 +3,20 @@ SpeciesName: Cyclorana novaehollandiae
 AbbreviatedSpeciesName: C.novae
 
 # min and max of the freq band to search
-MinHz: 400          
+MinHz: 400
 MaxHz: 600
-# duration of DCT in seconds 
+# duration of DCT in seconds
 DctDuration: 0.1
 # minimum acceptable value of a DCT coefficient
 DctThreshold: 0.45
 # ignore oscillation rates below the min & above the max threshold
 # OSCILLATIONS PER SECOND
-MinOcilFreq: 200        
+MinOcilFreq: 200
 MaxOcilFreq: 240
 # Minimum and maximum duration for the length of a true advertisement call.
 # As of 4 June 2015, the Code for Canetoad recogniser was changed to include recognition of release calls.
 # The min duration setting of 5 seconds should not be changed because it is boundary between advert calls ( >5s duration) and release calls (<5s duration).
-# The min duration for a release call will be set = to the DCT duration in the code. 
+# The min duration for a release call will be set = to the DCT duration in the code.
 MinDuration: 0.2
 MaxDuration: 0.3
 # Event threshold - use this to determine FP / FN trade-off for events.
@@ -32,12 +32,13 @@ ResampleRate: 22050
 FrameSize: 64
 
 ## Specifically for AnalyzeLongRecording
-# SegmentDuration: units=seconds;    
+# SegmentDuration: units=seconds;
 SegmentDuration: 60
 # SegmentOverlap: units=seconds;
 SegmentOverlap: 0
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
+# If `true` saves a data into a seperate file every `SegmentDuration` seconds. Accepts a boolean value: [false|true]
 SaveIntermediateCsvFiles: false
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveSonogramImages: Never

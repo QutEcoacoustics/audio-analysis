@@ -7,7 +7,7 @@ AbbreviatedSpeciesName: L.convex
 # User does not have control over the window size. This must be fixed by recognizer.
 
 ################################################################################
-# Noise reduction must be performed but can regulate severity by adjusting BgNoiseThreshold. 
+# Noise reduction must be performed but can regulate severity by adjusting BgNoiseThreshold.
 #   A value=0.1 seems to work well on test recording.
 #DoNoiseReduction: true
 BgNoiseThreshold: 0.1
@@ -18,7 +18,7 @@ BgNoiseThreshold: 0.1
 TopFrequency: 2100
 
 # Possible future additional parameter to control required call characteristics.
-# PeakGap: 470 
+# PeakGap: 470
 
 # Decibel threshold for the dominant peak: Use this to require a minimum decibel SNR value for a valid call.
 PeakThresholdDecibels: 6.0
@@ -28,6 +28,7 @@ EventThreshold: 0.6
 ################################################################################
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
+# If `true` saves a data into a seperate file every `SegmentDuration` seconds. Accepts a boolean value: [false|true]
 SaveIntermediateCsvFiles: false
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveSonogramImages: Never
