@@ -10,11 +10,14 @@ namespace AnalysisPrograms.Production
     using System.ComponentModel.DataAnnotations;
     using System.IO;
     using System.Linq;
+    using System.Reflection;
+    using System.Text;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
 
     using AnalysisBase;
     using AnalysisPrograms.Production.Arguments;
+    using log4net;
     using McMaster.Extensions.CommandLineUtils;
 
     public static class ExceptionLookup
@@ -35,6 +38,50 @@ namespace AnalysisPrograms.Production
         public static int NoData => 10;
 
         internal static Dictionary<Type, ExceptionStyle> ErrorLevels => levels ?? (levels = CreateExceptionMap());
+
+        public static string FormatReflectionTypeLoadException(Exception exception, bool verbose = false)
+        {
+            if (exception == null || !(exception is ReflectionTypeLoadException error))
+            {
+                return null;
+            }
+
+            var message = new StringBuilder();
+            message.Append(
+                "System.Reflection.ReflectionTypeLoadException: Unable to load one or more of the requested types.");
+
+            foreach (var inner in error.LoaderExceptions)
+            {
+                message.AppendLine("\n\t- " + inner.Message);
+                if (!verbose)
+                {
+                    continue;
+                }
+
+                string fusionLog = null;
+
+                switch (inner)
+                {
+                    case FileNotFoundException fnfex:
+                        fusionLog = fnfex.FusionLog;
+                        break;
+                    case FileLoadException flex:
+                        fusionLog = flex.FusionLog;
+                        break;
+                    default:
+                        continue;
+                }
+
+                message.Append("\n\t\tFusion Log:\n\t\t");
+                message.AppendLine(fusionLog);
+            }
+
+            message.AppendLine(@"
+This error message likely means there is something wrong with your install of AP.exe or the required software needed to run AP.exe.
+Please report this problem as a bug");
+
+            return message.ToString();
+        }
 
         private static Dictionary<Type, ExceptionStyle> CreateExceptionMap()
         {
@@ -106,6 +153,15 @@ namespace AnalysisPrograms.Production
                     }
                 },
                 {
+                    typeof(ReflectionTypeLoadException),
+                    new ExceptionStyle()
+                    {
+                        ErrorCode = 189,
+                        PrintUsage = false,
+                        FormatMessage = FormatReflectionTypeLoadException,
+                    }
+                },
+                {
                     typeof(NoDeveloperMethodException),
                     new ExceptionStyle { ErrorCode = 199 }
                 },
@@ -152,6 +208,8 @@ namespace AnalysisPrograms.Production
             public bool Handle { get; set; }
 
             public bool PrintUsage { get; set; }
+
+            public Func<Exception, bool, string> FormatMessage { get; set; }
         }
     }
 

@@ -14,6 +14,7 @@ namespace AnalysisPrograms
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Tools.Audio;
+    using AnalysisBase;
     using AnalysisPrograms.AnalyseLongRecordings;
     using AnalysisPrograms.Production;
     using AnalysisPrograms.Production.Arguments;
@@ -29,7 +30,18 @@ namespace AnalysisPrograms
         private int Execute(Arguments arguments)
         {
             var errors = new List<string>();
-            Log.Info("Checking required executables can be found");
+            Log.Info("Checking required executables and libraries can be found and loaded");
+
+            // this is an important call used in analyze long recordings.
+            // This call effectively check is we can load types and if files are present (I think)
+            try
+            {
+                AnalysisCoordinator.GetAnalyzers<IAnalyser2>(typeof(MainEntry).Assembly);
+            }
+            catch (ReflectionTypeLoadException rtlex)
+            {
+                errors.Add(ExceptionLookup.FormatReflectionTypeLoadException(rtlex, true));
+            }
 
             // master audio utility checks for available executables
             try

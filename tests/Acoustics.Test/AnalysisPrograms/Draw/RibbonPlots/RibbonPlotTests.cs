@@ -95,19 +95,19 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.RibbonPlots
             var image1 = Image.Load<Rgb24>(File.ReadAllBytes(plot1.FullName));
             Assert.That.ImageIsSize(1440 + Left + 10, Height, image1);
 
-            var expectedRibbons1 = new TestImage(1440 + 10, Height, NamedColors<Rgb24>.White)
+            var expectedRibbons1 = new TestImage(1440 + 10, Height, Color.White)
                 .Move(Horizontal.Left, 2)
-                .Fill(1, Height - 2, NamedColors<Rgb24>.Red)
+                .Fill(1, Height - 2, Color.Red)
                 .Move(Edge.TopLeft)
                 .Move(Horizontal.Left, 2)
                 .Repeat(6)
-                .Fill(1440, 32, NamedColors<Rgb24>.Red)
+                .Fill(1440, 32, Color.Red)
                 .Move(Horizontal.Left, 2)
                 .EndRepeat()
-                .Fill(1440, 32, NamedColors<Rgb24>.Gray)
+                .Fill(1440, 32, Color.Gray)
                 .Move(Horizontal.Left, 2)
                 .Repeat(5)
-                .Fill(1440, 32, NamedColors<Rgb24>.Red)
+                .Fill(1440, 32, Color.Red)
                 .Move(Horizontal.Left, 2)
                 .EndRepeat()
                 .Finish(this.outputDirectory.CombineFile("expectedRibbons1.png"));
@@ -118,17 +118,17 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.RibbonPlots
             var image2 = Image.Load<Rgb24>(File.ReadAllBytes(plot2.FullName));
             Assert.That.ImageIsSize(1440 + Left + 10, Height, image2);
 
-            var expectedRibbons2 = new TestImage(1440 + 10, Height, NamedColors<Rgb24>.White)
+            var expectedRibbons2 = new TestImage(1440 + 10, Height, Color.White)
                 .Move(Horizontal.Left, 2)
-                .Fill(1, Height - 2, NamedColors<Rgb24>.Red)
+                .Fill(1, Height - 2, Color.Red)
                 .Move(Edge.TopLeft)
                 .Move(Horizontal.Left, 2)
                 .Repeat(6)
-                .Fill(1440, 32, NamedColors<Rgb24>.Blue)
+                .Fill(1440, 32, Color.Blue)
                 .Move(Horizontal.Left, 2)
                 .EndRepeat()
                 .Repeat(6)
-                .Fill(1440, 32, NamedColors<Rgb24>.Gray)
+                .Fill(1440, 32, Color.Gray)
                 .Move(Horizontal.Left, 2)
                 .EndRepeat()
                 .Finish();
@@ -139,17 +139,17 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.RibbonPlots
             var image3 = Image.Load<Rgb24>(File.ReadAllBytes(plot3.FullName));
             Assert.That.ImageIsSize(1440 + Left + 10, Height, image3);
 
-            var expectedRibbons3 = new TestImage(1440 + 10, Height, NamedColors<Rgb24>.White)
+            var expectedRibbons3 = new TestImage(1440 + 10, Height, Color.White)
                 .Move(Horizontal.Left, 2)
-                .Fill(1, Height - 2, NamedColors<Rgb24>.Red)
+                .Fill(1, Height - 2, Color.Red)
                 .Move(Edge.TopLeft)
                 .Move(Horizontal.Left, 2)
                 .Repeat(7)
-                .Fill(1440, 32, NamedColors<Rgb24>.Gray)
+                .Fill(1440, 32, Color.Gray)
                 .Move(Horizontal.Left, 2)
                 .EndRepeat()
                 .Repeat(5)
-                .Fill(1440, 32, NamedColors<Rgb24>.Green)
+                .Fill(1440, 32, Color.Green)
                 .Move(Horizontal.Left, 2)
                 .EndRepeat()
                 .Finish(this.outputDirectory.CombineFile("expectedRibbons3.png"));
@@ -185,26 +185,26 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.RibbonPlots
             var image1 = Image.Load<Rgb24>(File.ReadAllBytes(plot1.FullName));
             Assert.That.ImageIsSize(1440 + Left + 10, Height, image1);
 
-            var expectedRibbons1 = new TestImage(1440 + 10, Height, NamedColors<Rgb24>.White)
+            var expectedRibbons1 = new TestImage(1440 + 10, Height, Color.White)
                 .Move(720, 2)
-                .Fill(1, Height - 2, NamedColors<Rgb24>.Red)
+                .Fill(1, Height - 2, Color.Red)
                 .Move(Edge.TopLeft)
                 .Move(Horizontal.Left, 2)
-                .FillHorizontalSplit(1440, 32, NamedColors<Rgb24>.Gray, NamedColors<Rgb24>.Red)
+                .FillHorizontalSplit(1440, 32, Color.Gray, Color.Red)
                 .Move(Horizontal.Left, 2)
                 .Repeat(5)
-                .Fill(1440, 32, NamedColors<Rgb24>.Red)
+                .Fill(1440, 32, Color.Red)
                 .Move(Horizontal.Left, 2)
                 .EndRepeat()
-                .FillHorizontalSplit(1440, 32, NamedColors<Rgb24>.Red, NamedColors<Rgb24>.Gray)
+                .FillHorizontalSplit(1440, 32, Color.Red, Color.Gray)
                 .Move(Horizontal.Left, 2)
-                .FillHorizontalSplit(1440, 32, NamedColors<Rgb24>.Gray, NamedColors<Rgb24>.Red)
+                .FillHorizontalSplit(1440, 32, Color.Gray, Color.Red)
                 .Move(Horizontal.Left, 2)
                 .Repeat(4)
-                .Fill(1440, 32, NamedColors<Rgb24>.Red)
+                .Fill(1440, 32, Color.Red)
                 .Move(Horizontal.Left, 2)
                 .EndRepeat()
-                .FillHorizontalSplit(1440, 32, NamedColors<Rgb24>.Red, NamedColors<Rgb24>.Gray)
+                .FillHorizontalSplit(1440, 32, Color.Red, Color.Gray)
                 .Finish(this.outputDirectory.CombineFile("expectedRibbons1.png"));
 
             Assert.That.ImageContainsExpected(expectedRibbons1, new Point(Left, 0), image1);
@@ -213,21 +213,21 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.RibbonPlots
             var image2 = Image.Load<Rgb24>(File.ReadAllBytes(plot2.FullName));
             Assert.That.ImageIsSize(1440 + Left + 10, Height, image2);
 
-            var expectedRibbons2 = new TestImage(1440 + 10, Height, NamedColors<Rgb24>.White)
+            var expectedRibbons2 = new TestImage(1440 + 10, Height, Color.White)
                 .Move(720, 2)
-                .Fill(1, Height - 2, NamedColors<Rgb24>.Red)
+                .Fill(1, Height - 2, Color.Red)
                 .Move(Edge.TopLeft)
                 .Move(Horizontal.Left, 2)
-                .FillHorizontalSplit(1440, 32, NamedColors<Rgb24>.Gray, NamedColors<Rgb24>.Blue)
+                .FillHorizontalSplit(1440, 32, Color.Gray, Color.Blue)
                 .Move(Horizontal.Left, 2)
                 .Repeat(5)
-                .Fill(1440, 32, NamedColors<Rgb24>.Blue)
+                .Fill(1440, 32, Color.Blue)
                 .Move(Horizontal.Left, 2)
                 .EndRepeat()
-                .FillHorizontalSplit(1440, 32, NamedColors<Rgb24>.Blue, NamedColors<Rgb24>.Gray)
+                .FillHorizontalSplit(1440, 32, Color.Blue, Color.Gray)
                 .Move(Horizontal.Left, 2)
                 .Repeat(6)
-                .Fill(1440, 32, NamedColors<Rgb24>.Gray)
+                .Fill(1440, 32, Color.Gray)
                 .Move(Horizontal.Left, 2)
                 .EndRepeat()
                 .Finish();
@@ -238,22 +238,22 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.RibbonPlots
             var image3 = Image.Load<Rgb24>(File.ReadAllBytes(plot3.FullName));
             Assert.That.ImageIsSize(1440 + Left + 10, Height, image3);
 
-            var expectedRibbons3 = new TestImage(1440 + 10, Height, NamedColors<Rgb24>.White)
+            var expectedRibbons3 = new TestImage(1440 + 10, Height, Color.White)
                 .Move(720, 2)
-                .Fill(1, Height - 2, NamedColors<Rgb24>.Red)
+                .Fill(1, Height - 2, Color.Red)
                 .Move(Edge.TopLeft)
                 .Move(Horizontal.Left, 2)
                 .Repeat(7)
-                .Fill(1440, 32, NamedColors<Rgb24>.Gray)
+                .Fill(1440, 32, Color.Gray)
                 .Move(Horizontal.Left, 2)
                 .EndRepeat()
-                .FillHorizontalSplit(1440, 32, NamedColors<Rgb24>.Gray, NamedColors<Rgb24>.Green)
+                .FillHorizontalSplit(1440, 32, Color.Gray, Color.Green)
                 .Move(Horizontal.Left, 2)
                 .Repeat(4)
-                .Fill(1440, 32, NamedColors<Rgb24>.Green)
+                .Fill(1440, 32, Color.Green)
                 .Move(Horizontal.Left, 2)
                 .EndRepeat()
-                .FillHorizontalSplit(1440, 32, NamedColors<Rgb24>.Green, NamedColors<Rgb24>.Gray)
+                .FillHorizontalSplit(1440, 32, Color.Green, Color.Gray)
                 .Finish();
 
             Assert.That.ImageContainsExpected(expectedRibbons3, new Point(Left, 0), image3);
@@ -265,18 +265,18 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.RibbonPlots
             var sourceDirectory = output.CreateSubdirectory("FakeIndices");
 
             var firstDate = new DateTimeOffset(2019, 4, 18, 0, 0, 0, TimeSpan.FromHours(10));
-            CreateDay(Increment(0), "ACI-ENT-EVN", "BGN-PMN-OSC", NamedColors<Rgb24>.Red, NamedColors<Rgb24>.Blue);
-            CreateDay(Increment(1), "ACI-ENT-EVN", "BGN-PMN-OSC", NamedColors<Rgb24>.Red, NamedColors<Rgb24>.Blue);
-            CreateDay(Increment(1), "ACI-ENT-EVN", "BGN-PMN-OSC", NamedColors<Rgb24>.Red, NamedColors<Rgb24>.Blue);
-            CreateDay(Increment(1), "ACI-ENT-EVN", "BGN-PMN-OSC", NamedColors<Rgb24>.Red, NamedColors<Rgb24>.Blue);
-            CreateDay(Increment(1), "ACI-ENT-EVN", "BGN-PMN-OSC", NamedColors<Rgb24>.Red, NamedColors<Rgb24>.Blue);
-            CreateDay(Increment(1), "ACI-ENT-EVN", "BGN-PMN-OSC", NamedColors<Rgb24>.Red, NamedColors<Rgb24>.Blue);
+            CreateDay(Increment(0), "ACI-ENT-EVN", "BGN-PMN-OSC", Color.Red, Color.Blue);
+            CreateDay(Increment(1), "ACI-ENT-EVN", "BGN-PMN-OSC", Color.Red, Color.Blue);
+            CreateDay(Increment(1), "ACI-ENT-EVN", "BGN-PMN-OSC", Color.Red, Color.Blue);
+            CreateDay(Increment(1), "ACI-ENT-EVN", "BGN-PMN-OSC", Color.Red, Color.Blue);
+            CreateDay(Increment(1), "ACI-ENT-EVN", "BGN-PMN-OSC", Color.Red, Color.Blue);
+            CreateDay(Increment(1), "ACI-ENT-EVN", "BGN-PMN-OSC", Color.Red, Color.Blue);
 
-            CreateDay(Increment(2), "ACI-ENT-EVN", "ENT-CVR-OSC", NamedColors<Rgb24>.Red, NamedColors<Rgb24>.Green);
-            CreateDay(Increment(1), "ACI-ENT-EVN", "ENT-CVR-OSC", NamedColors<Rgb24>.Red, NamedColors<Rgb24>.Green);
-            CreateDay(Increment(1), "ACI-ENT-EVN", "ENT-CVR-OSC", NamedColors<Rgb24>.Red, NamedColors<Rgb24>.Green);
-            CreateDay(Increment(1), "ACI-ENT-EVN", "ENT-CVR-OSC", NamedColors<Rgb24>.Red, NamedColors<Rgb24>.Green);
-            CreateDay(Increment(1), "ACI-ENT-EVN", "ENT-CVR-OSC", NamedColors<Rgb24>.Red, NamedColors<Rgb24>.Green);
+            CreateDay(Increment(2), "ACI-ENT-EVN", "ENT-CVR-OSC", Color.Red, Color.Green);
+            CreateDay(Increment(1), "ACI-ENT-EVN", "ENT-CVR-OSC", Color.Red, Color.Green);
+            CreateDay(Increment(1), "ACI-ENT-EVN", "ENT-CVR-OSC", Color.Red, Color.Green);
+            CreateDay(Increment(1), "ACI-ENT-EVN", "ENT-CVR-OSC", Color.Red, Color.Green);
+            CreateDay(Increment(1), "ACI-ENT-EVN", "ENT-CVR-OSC", Color.Red, Color.Green);
 
             return sourceDirectory;
 
