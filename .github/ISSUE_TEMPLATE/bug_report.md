@@ -19,28 +19,47 @@ A clear and concise description of what you expected to happen.
 
 <!-- Try to answer as many questions as possible -->
 
+### Instructions
+
 - [x] I have followed the [instructions for reporting a bug](https://github.com/QutEcoacoustics/audio-analysis/blob/master/docs/bug_report.md)
 
-- I have attached a log:
-<!-- Information about log files can be found here: https://github.com/QutEcoacoustics/audio-analysis/blob/master/docs/logs.md#log-files -->
+### I have attached a log:
+
+<!-- Information about log files can be found here: -->
+<!-- https://github.com/QutEcoacoustics/audio-analysis/blob/master/docs/logs.md#log-files -->
 <!-- 👇 Drag and drop the log into the empty line below -->
 
 <!-- 👆 -->
 
-- The **Operating system** I'm using:             <!-- e.g. Windows 10 Version 1809 -->  
+### The **Operating system** I'm using is:  
 
-- The version of **AnalysisPrograms.exe**:        <!-- e.g. 18.05.3.6 -->  
+<!-- e.g. Windows 10 Version 1809 -->  
 
-- **The data used can be found:**                 <!-- describe or provide the data relevant to this question -->
+### The version of **AnalysisPrograms.exe** I'm using is:
 
-- **The command I used:**
+<!-- e.g. 18.05.3.6 -->
+
+### The data used can be found:
+
+<!-- describe or provide the data relevant to this bug below -->
+<!-- If the data is sensitive or too large to easily be shared -->
+<!-- then describe the shape of it (size, duration, count, format, etc..) -->
+<!-- and we'll try to use simulated data. If we need more information -->
+<!-- then we'll contact you privately. -->
+
+<!-- 👇 Optinoally, drag and drop **SMALL** files into the empty line below-->
+
+<!-- 👆 -->
+
+### The command I used:
+
 <!-- 👇 Copy and paste the command you used in the empty line below -->
 ```
 
 ```
 <!-- 👆 -->
 
-- **The config file I used:**  <!-- Drag and drop the config here -->
+### The config file I used:
 <!-- 👇 Drag and drop the log into the empty line below -->
 
 <!-- 👆 -->
