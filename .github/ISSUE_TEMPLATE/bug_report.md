@@ -31,23 +31,27 @@ A clear and concise description of what you expected to happen.
 
 <!-- 👆 -->
 
-### The **Operating system** I'm using is:  
+### The **operating system** I'm using is:  
 
 <!-- e.g. Windows 10 Version 1809 -->  
+
 
 ### The version of **AnalysisPrograms.exe** I'm using is:
 
 <!-- e.g. 18.05.3.6 -->
 
+
 ### The data used can be found:
 
-<!-- describe or provide the data relevant to this bug below -->
+<!-- Describe or provide the data relevant to this bug below -->
 <!-- If the data is sensitive or too large to easily be shared -->
 <!-- then describe the shape of it (size, duration, count, format, etc..) -->
 <!-- and we'll try to use simulated data. If we need more information -->
 <!-- then we'll contact you privately. -->
 
-<!-- 👇 Optinoally, drag and drop **SMALL** files into the empty line below-->
+
+
+<!-- 👇 Optionally, drag and drop **SMALL** files into the empty line below-->
 
 <!-- 👆 -->
 
@@ -60,13 +64,17 @@ A clear and concise description of what you expected to happen.
 <!-- 👆 -->
 
 ### The config file I used:
+
 <!-- 👇 Drag and drop the log into the empty line below -->
 
 <!-- 👆 -->
 
 
 ## Screenshots
+
 <!-- If applicable, add screenshots to help explain your problem. Drag and drop into the space below. -->
 
+
 ## Additional Details
-Add any other context about the problem here.
+
+<!-- Add any other context about the problem here. -->
