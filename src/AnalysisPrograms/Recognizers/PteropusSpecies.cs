@@ -98,19 +98,18 @@ namespace AnalysisPrograms.Recognizers
         internal static RecognizerResults Gruntwork(AudioRecording audioRecording, Config configuration, DirectoryInfo outputDirectory, TimeSpan segmentStartOffset)
         {
             // get the common properties
-            string speciesName = configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
-            string abbreviatedSpeciesName = configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
-            int minHz = configuration.GetIntOrNull(AnalysisKeys.MinHz) ?? 500;
+            string speciesName = configuration[AnalysisKeys.SpeciesName] ?? "Pteropus species";
+            string abbreviatedSpeciesName = configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "Pteropus";
+            int minHz = configuration.GetIntOrNull(AnalysisKeys.MinHz) ?? 800;
             int maxHz = configuration.GetIntOrNull(AnalysisKeys.MaxHz) ?? 8000;
 
             //var samples = audioRecording.WavReader.Samples;
-            //double minDuration = configuration.GetIntOrNull(AnalysisKeys.MinDuration) ?? 0.1;
-            //double maxDuration = configuration.GetIntOrNull(AnalysisKeys.MaxDuration) ?? 0.5;
-            var neighbourhoodDuration = TimeSpan.FromSeconds(0.05);
+            double minDurationSeconds = configuration.GetIntOrNull(AnalysisKeys.MinDuration) ?? 0.2;
+            double maxDurationSeconds = configuration.GetIntOrNull(AnalysisKeys.MaxDuration) ?? 0.5;
+            var minTimeSpan = TimeSpan.FromSeconds(minDurationSeconds);
+            var maxTimeSpan = TimeSpan.FromSeconds(maxDurationSeconds);
 
-            double decibelsIntensityThreshold = configuration.GetDoubleOrNull(AnalysisKeys.NoiseBgThreshold) ?? 12.0;
-            double intensityNormalisationMax = 3 * decibelsIntensityThreshold;
-            var eventThreshold = decibelsIntensityThreshold / intensityNormalisationMax;
+            double decibelThreshold = configuration.GetDoubleOrNull(AnalysisKeys.NoiseBgThreshold) ?? 9.0;
 
             //######################
             //2.Convert each segment to a spectrogram.
@@ -128,24 +127,27 @@ namespace AnalysisPrograms.Recognizers
             // now construct the standard decibel spectrogram WITH noise removal, and look for LimConvex
             // get frame parameters for the analysis
             var sonogram = (BaseSonogram)new SpectrogramStandard(sonoConfig, audioRecording.WavReader);
-            var intensityArray = SNR.CalculateFreqBandAvIntensity(sonogram.Data, minHz, maxHz, sonogram.NyquistFrequency);
+            var decibelArray = SNR.CalculateFreqBandAvIntensity(sonogram.Data, minHz, maxHz, sonogram.NyquistFrequency);
 
-            //var data = sonogram.Data;
-            //var intensityArray = MatrixTools.GetRowAverages(data);
-            intensityArray = DataTools.NormaliseInZeroOne(intensityArray, 0, intensityNormalisationMax);
-            var plot = new Plot(speciesName, intensityArray, eventThreshold);
+            // prepare plots
+            double intensityNormalisationMax = 3 * decibelThreshold;
+            var eventThreshold = decibelThreshold / intensityNormalisationMax;
+            var normalisedIntensityArray = DataTools.NormaliseInZeroOne(decibelArray, 0, intensityNormalisationMax);
+            var plot = new Plot(speciesName, normalisedIntensityArray, eventThreshold);
             var plots = new List<Plot> { plot };
 
             //iii: CONVERT decibel SCORES TO ACOUSTIC EVENTS
             var acousticEvents = AcousticEvent.GetEventsAroundMaxima(
-                intensityArray,
+                decibelArray,
                 segmentStartOffset,
                 minHz,
                 maxHz,
+                decibelThreshold,
+                minTimeSpan,
+                maxTimeSpan,
                 sonogram.FramesPerSecond,
-                sonogram.FBinWidth,
-                eventThreshold,
-                neighbourhoodDuration);
+                sonogram.FBinWidth
+                );
 
             // ######################################################################
             acousticEvents.ForEach(ae =>
@@ -156,15 +158,17 @@ namespace AnalysisPrograms.Recognizers
                 ae.Name = abbreviatedSpeciesName;
             });
 
+            acousticEvents = FilterEventsForSpectralProfile(acousticEvents, sonogram.Data);
+
             //var sonoImage = sonogram.GetImageFullyAnnotated("Test");
-            var sonoImage = SpectrogramTools.GetSonogramPlusCharts(sonogram, acousticEvents, plots, null);
+            //var sonoImage = SpectrogramTools.GetSonogramPlusCharts(sonogram, acousticEvents, plots, null);
 
             //var opPath =
             //    outputDirectory.Combine(
             //        FilenameHelpers.AnalysisResultName(
             //            Path.GetFileNameWithoutExtension(recording.BaseName), speciesName, "png", "DebugSpectrogram"));
-            string imageFilename = audioRecording.BaseName + ".png";
-            sonoImage.Save(Path.Combine(outputDirectory.FullName, imageFilename));
+            //string imageFilename = audioRecording.BaseName + ".png";
+            //sonoImage.Save(Path.Combine(outputDirectory.FullName, imageFilename));
 
             return new RecognizerResults()
             {
@@ -174,6 +178,37 @@ namespace AnalysisPrograms.Recognizers
                 Plots = plots,
                 Sonogram = sonogram,
             };
+        }
+
+        /// <summary>
+        /// Remove events whose acoustic profile does not match that of a flying fox.
+        /// </summary>
+        /// <param name="events">unfiltered acoustic events.</param>
+        /// <param name="spectrogramData">matrix of spectrogram values</param>
+        /// <returns>filtered acoustic events.</returns>
+        private static List<AcousticEvent> FilterEventsForSpectralProfile(List<AcousticEvent> events, double[,] spectrogramData)
+        {
+            int colCount = spectrogramData.GetLength(1);
+            var filteredEvents = new List<AcousticEvent>();
+            foreach (AcousticEvent ae in events)
+            {
+                int startFrame = ae.Oblong.RowTop;
+                int endFrame = ae.Oblong.RowBottom;
+                var subMatrix = DataTools.Submatrix(spectrogramData, startFrame, 0, endFrame, colCount - 1);
+                var spectrum = MatrixTools.GetColumnAverages(subMatrix);
+
+                // do test to determine if event has spectrum matching a Flying fox.
+                // TODO write method to determine similarity of spectrum to a true flying fox spectrum.
+                // There should be little energy in 0-600 Hz band.
+                // There should three peaks at around 1.5 kHz, 3 kHz and 6 kHz.
+                bool goodMatch = true;
+                if (goodMatch)
+                {
+                    filteredEvents.Add(ae);
+                }
+            }
+
+            return filteredEvents;
         }
 
         /*

@@ -1111,62 +1111,102 @@ namespace AudioAnalysisTools
             return events;
         }
 
+        /// <summary>
+        /// Given a time series of acoustic amplitude (typically in decibels), this method finds events that match the passed constraints.
+        /// </summary>
+        /// <param name="values">an array of amplitude values, typically decibel values.</param>
+        /// <param name="segmentStartOffset">not sure what this is about!.</param>
+        /// <param name="minHz">minimum freq of event.</param>
+        /// <param name="maxHz">maximum freq of event.</param>
+        /// <param name="thresholdValue">event threshold in same units as the value array.</param>
+        /// <param name="minDuration">minimum duration of an event.</param>
+        /// <param name="maxDuration">maximum duration of an event.</param>
+        /// <param name="framesPerSec">the time scale - required for drawing events.</param>
+        /// <param name="freqBinWidth">the frequency scale - required for drawing events.</param>
+        /// <returns>an array of class AcousticEvent.</returns>
         public static List<AcousticEvent> GetEventsAroundMaxima(
             double[] values,
             TimeSpan segmentStartOffset,
             int minHz,
             int maxHz,
-            double framesPerSec,
-            double freqBinWidth,
             double thresholdValue,
-            TimeSpan nh)
+            TimeSpan minDuration,
+            TimeSpan maxDuration,
+            double framesPerSec,
+            double freqBinWidth)
         {
             int count = values.Length;
             var events = new List<AcousticEvent>();
             double frameOffset = 1 / framesPerSec; //frame offset in fractions of second
 
-            // every event will have duration of twice the buffer + 1
-            int frameBuffer = (int)Math.Ceiling(nh.TotalSeconds / frameOffset);
-            frameBuffer = Math.Max(frameBuffer, 1);
-            int eventLength = (2 * frameBuffer) + 1;
+            // convert min an max times durations to frames
+            int minFrames = (int)Math.Floor(minDuration.TotalSeconds * framesPerSec);
+            int maxFrames = (int)Math.Ceiling(maxDuration.TotalSeconds * framesPerSec);
 
-            // every event has the same duration
-            double eventDuration = eventLength * frameOffset;
+            // convert min an max Hertz durations to freq bins
+            int minBin = (int)Math.Round(minHz / freqBinWidth);
+            int maxBin = (int)Math.Round(maxHz / freqBinWidth);
 
-            //int startFrame = 0;
+            // tried smoothing but not advisable since event onset can be very sudden
+            //values = DataTools.filterMovingAverageOdd(values, 3);
+            int startFrame = 0;
+            int endFrame = 0;
 
             // for all frames
-            for (int i = frameBuffer; i < count - frameBuffer; i++)
+            for (int i = 1; i < count - minFrames; i++)
             {
-                // get the neighbourhood
-                var nhArray = DataTools.Subarray(values, i - frameBuffer, eventLength);
-                double avValue = nhArray.Average();
-
-                // skip if average value over the neighbourhood below threshold
-                if (avValue < thresholdValue)
+                // skip if value is below threshold
+                if (values[i] < thresholdValue)
                 {
                     continue;
                 }
 
-                // if local maximum just prior to middle frame AND average of values > threshold, THEN have an event
-                int maxId = DataTools.GetMaxIndex(nhArray);
-                if (maxId == (frameBuffer - 2))
+                // skip if value is not maximum
+                if (values[i] < values[i - 1] || values[i] < values[i + 1])
                 {
-                    double startTime = (i - frameBuffer) * frameOffset; // time in seconds
+                    continue;
+                }
+
+                int maxFrame = i;
+
+                // find start frame of current event
+                while (values[i] > thresholdValue)
+                {
+                    i--;
+                }
+
+                startFrame = i;
+
+                // find end frame of current event
+                i = maxFrame;
+                while (values[i] > thresholdValue)
+                {
+                    i++;
+                }
+
+                endFrame = i;
+
+                int frameDuration = endFrame - startFrame; // +1 ?????????????????
+                if (frameDuration >= minFrames && frameDuration <= maxFrames)
+                {
+                    double startTime = startFrame * frameOffset; // time in seconds
+                    double eventDuration = frameDuration * frameOffset; // time in seconds
                     AcousticEvent ev = new AcousticEvent(segmentStartOffset, startTime, eventDuration, minHz, maxHz)
                     {
                         Name = "Event", //default name
+                        FrameCount = frameDuration,
+                        Oblong = new Oblong(startFrame, minBin, endFrame, maxBin),
                     };
 
                     ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
 
-                    //obtain average intensity score.
-                    ev.Score = nhArray.Average();
+                    //obtain average intensity score. Note-first frame is not actually in the event.
+                    var subArray = DataTools.Subarray(values, startFrame + 1, frameDuration);
+                    ev.Score = subArray.Average();
                     events.Add(ev);
-
-                    // jump to end of event
-                    i += eventLength;
                 }
+
+                i++;
             }
 
             return events;
