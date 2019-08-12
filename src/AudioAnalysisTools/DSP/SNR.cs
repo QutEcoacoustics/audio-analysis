@@ -491,6 +491,8 @@ namespace AudioAnalysisTools.DSP
 
         /// <summary>
         /// Calculates the mean intensity in a freq band defined by its min and max freq.
+        /// THis method adds dB log values incorrectly but it is faster than doing many log conversions.
+        /// This method is used to find acoustic events and is accurate enough for the purpose.
         /// </summary>
         public static double[] CalculateFreqBandAvIntensity(double[,] sonogram, int minHz, int maxHz, int nyquist)
         {
