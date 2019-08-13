@@ -1172,10 +1172,15 @@ namespace AudioAnalysisTools
                 // find start frame of current event
                 while (values[i] > thresholdValue)
                 {
+                    if (i <= 0)
+                    {
+                        break;
+                    }
+
                     i--;
                 }
 
-                startFrame = i;
+                startFrame = i + 1;
 
                 // find end frame of current event
                 i = maxFrame;
@@ -1186,7 +1191,7 @@ namespace AudioAnalysisTools
 
                 endFrame = i;
 
-                int frameDuration = endFrame - startFrame; // +1 ?????????????????
+                int frameDuration = endFrame - startFrame + 1;
                 if (frameDuration >= minFrames && frameDuration <= maxFrames)
                 {
                     double startTime = startFrame * frameOffset; // time in seconds
