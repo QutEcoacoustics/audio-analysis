@@ -140,6 +140,7 @@
     <Compile Include="HoughTransform.cs" />
     <Compile Include="Matrix3D.cs" />
     <Compile Include="OtsuThresholder.cs" />
+    <Compile Include="PulseTrain.cs" />
     <Compile Include="StructureTensor.cs" />
     <Compile Include="TemporalMatrix.cs" />
     <Compile Include="TernaryPlots.cs" />

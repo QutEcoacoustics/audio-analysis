@@ -3,7 +3,7 @@
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
-//   This is a template recognizer for the Australian Flying Fox.
+//   This is a recognizer for the Australian Flying Fox.
 //   Since there are several species, this project is started using only the generic name for Flying Foxes.
 
 // Proposed algorithm has 8 steps
@@ -74,7 +74,7 @@ namespace AnalysisPrograms.Recognizers
         /// Do your analysis. This method is called once per segment (typically one-minute segments).
         /// </summary>
         /// <param name="audioRecording">one minute of audio recording.</param>
-        /// <param name="configuration">config file.</param>
+        /// <param name="genericConfig">config file that contains parameters used by all profiles.</param>
         /// <param name="segmentStartOffset">when recording starts.</param>
         /// <param name="getSpectralIndexes">not sure what this is.</param>
         /// <param name="outputDirectory">where the recogniser results can be found.</param>
@@ -122,18 +122,6 @@ namespace AnalysisPrograms.Recognizers
             {
                 log.Warn("Could not access Wingbeats configuration parameters");
             }
-
-            //RecognizerResults combinedResults = null;
-
-            //// combine the results
-            //return new RecognizerResults()
-            //{
-            //    Events = results1.Events.AddRange(results2.Events),
-            //    Hits = null,
-            //    ScoreTrack = null,
-            //    Plots = plots,
-            //    Sonogram = sonogram,
-            //};
 
             // combine the results
             if (results1 != null && results2 != null)
@@ -346,8 +334,6 @@ namespace AnalysisPrograms.Recognizers
             double dctThreshold = profile.GetDoubleOrNull("DctThreshold") ?? 0.5;
             double minOscilFreq = profile.GetDoubleOrNull("MinOscilFreq") ?? 4.0;
             double maxOscilFreq = profile.GetDoubleOrNull("MaxOscilFreq") ?? 6.0;
-            //var minTimeSpan = TimeSpan.FromSeconds(minDurationSeconds);
-            //var maxTimeSpan = TimeSpan.FromSeconds(maxDurationSeconds);
             double eventThreshold = profile.GetDoubleOrNull("EventThreshold") ?? 0.3;
 
             //######################
@@ -384,6 +370,32 @@ namespace AnalysisPrograms.Recognizers
                 out var acousticEvents,
                 out var hits,
                 segmentStartOffset);
+
+            /*
+            // Look for wing beats using pulse train detector
+            double pulsesPerSecond = 5.1;
+            var scores = PulseTrain.GetPulseTrainScore(decibelArray, pulsesPerSecond, sonogram.FramesPerSecond, 1.0);
+
+            //iii: CONVERT Pulse Train SCORES TO ACOUSTIC EVENTS
+            double pulseTrainThreshold = 0.5;
+            var minTimeSpan = TimeSpan.FromSeconds(minDurationSeconds);
+            var maxTimeSpan = TimeSpan.FromSeconds(maxDurationSeconds);
+            var acousticEvents = AcousticEvent.GetEventsAroundMaxima(
+                scores,
+                segmentStartOffset,
+                minHz,
+                maxHz,
+                pulseTrainThreshold,
+                minTimeSpan,
+                maxTimeSpan,
+                sonogram.FramesPerSecond,
+                sonogram.FBinWidth
+            );
+
+            double scoreThreshold = 0.5;
+            var normalisedScoreArray = DataTools.NormaliseInZeroOne(scores, 0, 1.0);
+            var plot2 = new Plot(speciesName + " Wingbeat Pulse-train Score", normalisedScoreArray, scoreThreshold);
+            */
 
             // prepare plots
             double decibelThreshold = 12.0;
