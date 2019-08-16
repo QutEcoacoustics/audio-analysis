@@ -43,7 +43,7 @@ namespace AnalysisPrograms.Recognizers
     using TowseyLibrary;
 
     /// <summary>
-    /// This is a template recognizer for species of Flying Fox, Pteropus species
+    /// This is a recognizer for species of Flying Fox, Pteropus species.
     /// </summary>
     internal class PteropusSpecies : RecognizerBase
     {
@@ -71,7 +71,7 @@ namespace AnalysisPrograms.Recognizers
         }
 
         /// <summary>
-        /// Do your analysis. This method is called once per segment (typically one-minute segments).
+        /// This method is called once per segment (typically one-minute segments).
         /// </summary>
         /// <param name="audioRecording">one minute of audio recording.</param>
         /// <param name="genericConfig">config file that contains parameters used by all profiles.</param>
@@ -257,12 +257,11 @@ namespace AnalysisPrograms.Recognizers
 
                 // get only the frames from centre of the acoustic event
                 var subMatrix = DataTools.Submatrix(spectrogramData, startFrame + 1, 0, startFrame + 4, maxBin);
-
                 var spectrum = MatrixTools.GetColumnAverages(subMatrix);
                 var normalisedSpectrum = DataTools.normalise(spectrum);
-                normalisedSpectrum = DataTools.filterMovingAverageOLD(normalisedSpectrum, 11);
+                normalisedSpectrum = DataTools.filterMovingAverageOdd(normalisedSpectrum, 11);
                 var maxId = DataTools.GetMaxIndex(normalisedSpectrum);
-                var maxHz = (int)Math.Ceiling(maxId * sonogram.FBinWidth);
+                var hzMax = (int)Math.Ceiling(maxId * sonogram.FBinWidth);
 
                 // Do TESTS to determine if event has spectrum matching a Flying fox.
 
@@ -300,7 +299,8 @@ namespace AnalysisPrograms.Recognizers
                     // draw DEBUG IMAGES
                     if (true)
                     {
-                        string name = "FF spectrum " + ae.SegmentStartSeconds + "s Frame" + startFrame + " maxHz" + maxHz;
+                        double startSecond = ae.EventStartSeconds - ae.SegmentStartSeconds;
+                        string name = "CallSpectrum " + (ae.SegmentStartSeconds / 60) + "m" + (int)Math.Floor(startSecond) + "s hzMax" + hzMax;
                         var bmp2 = GraphsAndCharts.DrawGraph(name, normalisedSpectrum, 100);
                         bmp2.Save(Path.Combine(@"C:\Ecoacoustics\Output\BradLaw\FlyingFox\Towsey.PteropusSpecies", name + ".png"));
                     }
@@ -413,6 +413,28 @@ namespace AnalysisPrograms.Recognizers
                 ae.SegmentDurationSeconds = audioRecording.Duration.TotalSeconds;
                 ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
                 ae.Name = abbreviatedSpeciesName;
+
+                // draw DEBUG IMAGES
+                if (true)
+                {
+                    double[,] spectrogramData = sonogram.Data;
+                    int maxBin = (int)Math.Round(8000 / sonogram.FBinWidth);
+                    double startSecond = ae.EventStartSeconds - ae.SegmentStartSeconds;
+                    int startFrame = (int)Math.Round(startSecond / sonogram.FrameStep);
+                    int frameLength = (int)Math.Round(ae.EventDurationSeconds / sonogram.FrameStep);
+                    int endFrame = startFrame + frameLength;
+
+                    // get only the frames from centre of the acoustic event
+                    var subMatrix = DataTools.Submatrix(spectrogramData, startFrame + 10, 0, endFrame - 10, maxBin);
+                    var spectrum = MatrixTools.GetColumnAverages(subMatrix);
+                    var normalisedSpectrum = DataTools.normalise(spectrum);
+                    normalisedSpectrum = DataTools.filterMovingAverageOdd(normalisedSpectrum, 11);
+                    var maxId = DataTools.GetMaxIndex(normalisedSpectrum);
+                    var hzMax = (int)Math.Ceiling(maxId * sonogram.FBinWidth);
+                    string name = "BeatSpectrum " + (ae.SegmentStartSeconds / 60) + "m" + (int)Math.Floor(startSecond) + "s hzMax" + hzMax;
+                    var bmp2 = GraphsAndCharts.DrawGraph(name, normalisedSpectrum, 100);
+                    bmp2.Save(Path.Combine(@"C:\Ecoacoustics\Output\BradLaw\FlyingFox\Towsey.PteropusSpecies", name + ".png"));
+                }
             });
 
             return new RecognizerResults()
