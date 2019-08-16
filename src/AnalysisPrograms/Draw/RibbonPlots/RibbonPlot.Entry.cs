@@ -101,7 +101,7 @@ namespace AnalysisPrograms.Draw.RibbonPlots
                     }
 
                     // try to find the associated ribbon
-                    var searchPattern = "*" + colorMap + LDSpectrogramRGB.SpectralRibbonTag + "*";
+                    var searchPattern = "*" + colorMap + LdSpectrogramRibbons.SpectralRibbonTag + "*";
                     if (Log.IsVerboseEnabled())
                     {
                         Log.Verbose($"Searching `{indexData.Source?.Directory}` with pattern `{searchPattern}`.");
