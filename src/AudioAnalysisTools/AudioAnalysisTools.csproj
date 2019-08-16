@@ -281,6 +281,7 @@
     <Compile Include="Indices\SummaryIndexValues.cs" />
     <Compile Include="Indices\InitialiseIndexProperties.cs" />
     <Compile Include="Indices\RainIndices.cs" />
+    <Compile Include="LongDurationSpectrograms\LdSpectrogramRibbons.cs" />
     <Compile Include="LongDurationSpectrograms\LDSpectrogramClusters.cs" />
     <Compile Include="LongDurationSpectrograms\TimeOffsetSingleLayerSuperTile.cs" />
     <Compile Include="LongDurationSpectrograms\Zooming\InvalidScaleException.cs" />
