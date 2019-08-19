@@ -1207,12 +1207,21 @@ namespace AnalysisPrograms
             //string[] colourKeys2 = { "BGN", "PMN", "XXX" };
             var image1 = Image.FromFile(path1.FullName);
             var image2 = Image.FromFile(path2.FullName);
+
+            // default time values are for complete image width.
             var matrix = LdSpectrogramRibbons.ReadSpectralIndicesFromTwoFalseColourSpectrogramRibbons(image1, image2);
+
+            //var startTime = TimeSpan.Zero;
+            //var duration = TimeSpan.FromMinutes(image1.Width);
+            var startTime = TimeSpan.FromHours(2);
+            var duration = TimeSpan.FromMinutes(60);
+            //var matrix = LdSpectrogramRibbons.ReadSpectralIndicesFromTwoFalseColourSpectrogramRibbons(image1, image2, startTime, duration);
 
             //MatrixTools.WriteMatrix2File(matrix, outputPath.FullName);
             Csv.WriteMatrixToCsv(outputPath, matrix);
-        }
 
+            // TODO: need to check that can recover ribbon image from reading this matrix.
+        }
 
         /// <summary>
         /// read a set of Spectral index files and extract values from frequency band
