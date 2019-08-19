@@ -320,10 +320,10 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.RibbonPlots
                     "json");
                 Json.Serialise(icdPath.ToFileInfo(), data);
 
-                var ribbon = new Image<Rgb24>(Configuration.Default, 1440, LDSpectrogramRGB.RibbonPlotHeight, color1);
-                ribbon.Save(FilenameHelpers.AnalysisResultPath(sourceDirectory, basename, colorMap1 + LDSpectrogramRGB.SpectralRibbonTag, "png"));
-                ribbon = new Image<Rgb24>(Configuration.Default, 1440, LDSpectrogramRGB.RibbonPlotHeight, color2);
-                ribbon.Save(FilenameHelpers.AnalysisResultPath(sourceDirectory, basename, colorMap2 + LDSpectrogramRGB.SpectralRibbonTag, "png"));
+                var ribbon = new Image<Rgb24>(Configuration.Default, 1440, LdSpectrogramRibbons.RibbonPlotHeight, color1);
+                ribbon.Save(FilenameHelpers.AnalysisResultPath(sourceDirectory, basename, colorMap1 + LdSpectrogramRibbons.SpectralRibbonTag, "png"));
+                ribbon = new Image<Rgb24>(Configuration.Default, 1440, LdSpectrogramRibbons.RibbonPlotHeight, color2);
+                ribbon.Save(FilenameHelpers.AnalysisResultPath(sourceDirectory, basename, colorMap2 + LdSpectrogramRibbons.SpectralRibbonTag, "png"));
             }
         }
     }
