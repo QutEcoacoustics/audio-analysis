@@ -1,5 +1,5 @@
 // --------------------------------------------------------------------------------------------------------------------
-// <copyright file="PteropusSpecies.cs" company="QutEcoacoustics">
+// <copyright file="LdSpectrogramRibbons.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
@@ -9,11 +9,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Data;
     using System.Drawing;
     using System.IO;
-    using Acoustics.Shared.Csv;
+    using System.Linq;
     using MoreLinq.Extensions;
     using TowseyLibrary;
 
@@ -23,19 +22,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public const int RibbonPlotHeight = 32;
 
         /// <summary>
-        /// Reads.
-        /// </summary>
-        public static void ReadSpectralIndicesFromTwoFalseColourSpectrogramRibbons()
-        {
-        }
-
-        /// <summary>
         /// Reads the entire length of spectral ribbon images into a matrix of spectral indices.
-        /// IMPORTANT: Assume that the two images both have a time scale, that is, one pixel = one minute AND
+        /// IMPORTANT: Assume that the two images both have the same time scale, that is, one pixel = one minute AND
         ///            ASSUME they have the same pixel width i.e. span the same number of minutes.
         /// </summary>
-        /// <param name="image1">spectrogram ribbon 1</param>
-        /// <param name="image2">spectrogram ribbon 2</param>
+        /// <param name="image1">spectrogram ribbon 1.</param>
+        /// <param name="image2">spectrogram ribbon 2.</param>
         /// <returns>matrix of normalised spectral indices corresponding to those used to construct the ribbon images.</returns>
         public static double[,] ReadSpectralIndicesFromTwoFalseColourSpectrogramRibbons(Image image1, Image image2)
         {
@@ -133,17 +125,17 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 endMinute = image.Width;
             }
 
-            var dataWidth = endMinute - startMinute + 1;
+            var dataWidth = endMinute - startMinute;
             var height = image.Height;
             var red = new double[dataWidth, height];
             var grn = new double[dataWidth, height];
             var blu = new double[dataWidth, height];
 
-            for (int w = startMinute; w < endMinute; w++)
+            for (int w = 0; w < dataWidth; w++)
             {
                 for (int h = 0; h < height; h++)
                 {
-                    var pixel = image.GetPixel(w, height - h - 1);
+                    var pixel = image.GetPixel(w + startMinute, height - h - 1);
                     red[w, h] = pixel.R / 255D;
                     grn[w, h] = pixel.G / 255D;
                     blu[w, h] = pixel.B / 255D;
@@ -161,7 +153,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
         /// <summary>
-        /// returns a Long Duration spectrogram of same image length as the full-scale LDspectrogram but the frequency scale reduced to the passed vlaue of height.
+        /// returns a Long Duration spectrogram of same image length as the full-scale LdSpectrogram but the frequency scale reduced to the passed vlaue of height.
         /// This produces a LD spectrogram "ribbon" which can be used in circumstances where the full image is not appropriate.
         /// Note that if the height passed is a power of 2, then the full frequency scale (also a power of 2 due to FFT) can be scaled down exactly.
         /// A height of 32 is quite good - small but still discriminates frequency bands.
