@@ -105,7 +105,7 @@ namespace AnalysisPrograms
                 //TestTernaryPlots();
                 //TestDirectorySearchAndFileSearch();
                 //TestNoiseReduction();
-                LdSpectrogramRibbons.ReadSpectralIndicesFromTwoFalseColourSpectrogramRibbons();
+                ReadSpectralIndicesFromTwoFalseColourSpectrogramRibbons();
                 //Oscillations2014.TESTMETHOD_DrawOscillationSpectrogram();
                 //Oscillations2014.TESTMETHOD_GetSpectralIndex_Osc();
 
@@ -1195,6 +1195,24 @@ namespace AnalysisPrograms
                 combinedImage?.Save(opPath);
             }
         }
+
+        public static void ReadSpectralIndicesFromTwoFalseColourSpectrogramRibbons()
+        {
+            var path1 = new FileInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\Concat5\Testing\2015-11-14\Testing__ACI-ENT-EVN.SpectralRibbon.png");
+            var path2 = new FileInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\Concat5\Testing\2015-11-14\Testing__BGN-PMN-SPT.SpectralRibbon.png");
+            var outputPath = new FileInfo(@"C:\Ecoacoustics\Output\Test\TestReadingOfRibbonFiles\Test.csv");
+
+            // Calling this method assumes that the ribbon spectrograms were composed using the following indicies forRGB
+            //string[] colourKeys1 = { "ACI", "ENT", "EVN" };
+            //string[] colourKeys2 = { "BGN", "PMN", "XXX" };
+            var image1 = Image.FromFile(path1.FullName);
+            var image2 = Image.FromFile(path2.FullName);
+            var matrix = LdSpectrogramRibbons.ReadSpectralIndicesFromTwoFalseColourSpectrogramRibbons(image1, image2);
+
+            //MatrixTools.WriteMatrix2File(matrix, outputPath.FullName);
+            Csv.WriteMatrixToCsv(outputPath, matrix);
+        }
+
 
         /// <summary>
         /// read a set of Spectral index files and extract values from frequency band

@@ -5,18 +5,16 @@
 // <summary>
 //   This class contains methods that work on spectral ribbons.
 
-using System;
-using System.Collections.Generic;
-using System.Drawing.Imaging;
-using System.Linq;
-using System.Text;
-
 namespace AudioAnalysisTools.LongDurationSpectrograms
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using System.Data;
     using System.Drawing;
     using System.IO;
     using Acoustics.Shared.Csv;
+    using MoreLinq.Extensions;
     using TowseyLibrary;
 
     public static class LdSpectrogramRibbons
@@ -29,20 +27,39 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         public static void ReadSpectralIndicesFromTwoFalseColourSpectrogramRibbons()
         {
-            var path1 = new FileInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\Concat5\Testing\2015-11-14\Testing__ACI-ENT-EVN.SpectralRibbon.png");
-            var path2 = new FileInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\Concat5\Testing\2015-11-14\Testing__BGN-PMN-SPT.SpectralRibbon.png");
-            var outputPath = new FileInfo(@"C:\Ecoacoustics\Output\Test\TestReadingOfRibbonFiles\Test.csv");
+        }
 
-            // THis method assumes that the ribbon spectrograms are composed using the following five indices for RGB
-            //string[] colourKeys1 = { "ACI", "ENT", "EVN" };
-            //string[] colourKeys2 = { "BGN", "PMN", "EVN" };
+        /// <summary>
+        /// Reads the entire length of spectral ribbon images into a matrix of spectral indices.
+        /// IMPORTANT: Assume that the two images both have a time scale, that is, one pixel = one minute AND
+        ///            ASSUME they have the same pixel width i.e. span the same number of minutes.
+        /// </summary>
+        /// <param name="image1">spectrogram ribbon 1</param>
+        /// <param name="image2">spectrogram ribbon 2</param>
+        /// <returns>matrix of normalised spectral indices corresponding to those used to construct the ribbon images.</returns>
+        public static double[,] ReadSpectralIndicesFromTwoFalseColourSpectrogramRibbons(Image image1, Image image2)
+        {
+            var startTime = TimeSpan.Zero;
+            var duration = TimeSpan.FromMinutes(image1.Width);
+            var matrix = ReadSpectralIndicesFromTwoFalseColourSpectrogramRibbons(image1, image2, startTime, duration);
+            return matrix;
+        }
 
-            var image1 = Image.FromFile(path1.FullName);
-            var matrixList1 = ReadSpectralIndicesFromFalseColourSpectrogram((Bitmap)image1);
+        /// <summary>
+        /// This method assumes that the ribbon spectrograms are composed using the following five indices for RGB
+        /// string[] colourKeys1 = { "ACI", "ENT", "EVN" };.
+        /// string[] colourKeys2 = { "BGN", "PMN", "EVN" };.
+        /// </summary>
+        public static double[,] ReadSpectralIndicesFromTwoFalseColourSpectrogramRibbons(Image image1, Image image2, TimeSpan startTime, TimeSpan duration)
+        {
+            //get start and end minutes
+            int startMinute = (int)startTime.TotalMinutes;
+            int minuteSpan = (int)duration.TotalMinutes;
+            int endMinute = startMinute + minuteSpan;
 
-            // read second image file
-            var image2 = Image.FromFile(path2.FullName);
-            var matrixList2 = ReadSpectralIndicesFromFalseColourSpectrogram((Bitmap)image2);
+            // get index matrices from the two images
+            var matrixList1 = ReadSpectralIndicesFromFalseColourSpectrogram((Bitmap)image1, startMinute, endMinute);
+            var matrixList2 = ReadSpectralIndicesFromFalseColourSpectrogram((Bitmap)image2, startMinute, endMinute);
 
             //set up the return Matrix containing 1440 rows and 5 x 32 indices
             var rowCount = matrixList1[0].GetLength((0));
@@ -93,24 +110,36 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 }
             }
 
-            //MatrixTools.WriteMatrix2File(matrix, outputPath.FullName);
-            Csv.WriteMatrixToCsv(outputPath, matrix);
+            return matrix;
         }
 
         /// <summary>
         /// Read in a false colour spectrogram ribbon and recover the normalised indices from the pixel values.
         /// </summary>
-        /// <param name="image">a false colour spectrogram ribbon</param>
+        /// <param name="image">a false colour spectrogram ribbon.</param>
+        /// <param name="startMinute">start reading from this row.</param>
+        /// <param name="endMinute">end reading from this row.</param>
         /// <returns>an array of three index matrices, from red, green, blue components of each pixel.</returns>
-        public static List<double[,]> ReadSpectralIndicesFromFalseColourSpectrogram(Bitmap image)
+        public static List<double[,]> ReadSpectralIndicesFromFalseColourSpectrogram(Bitmap image, int startMinute, int endMinute)
         {
-            var width = image.Width;
-            var height = image.Height;
-            var red = new double[width, height];
-            var grn = new double[width, height];
-            var blu = new double[width, height];
+            if (startMinute >= endMinute)
+            {
+                return null;
+            }
 
-            for (int w = 0; w < width; w++)
+            // do not go over end of image
+            if (endMinute > image.Width)
+            {
+                endMinute = image.Width;
+            }
+
+            var dataWidth = endMinute - startMinute + 1;
+            var height = image.Height;
+            var red = new double[dataWidth, height];
+            var grn = new double[dataWidth, height];
+            var blu = new double[dataWidth, height];
+
+            for (int w = startMinute; w < endMinute; w++)
             {
                 for (int h = 0; h < height; h++)
                 {
