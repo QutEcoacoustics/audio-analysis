@@ -62,13 +62,14 @@ We suggest that it is still a good default for most use cases:
 
 ## What effect does chunk size have on data?
 
-For acoustic event recognition, typically boundary effects are the only effect 
-that are affected by chunk-size choice.
-That is, if an acoustic event occurs is clipped
-by either the start or end of the chunk, and is now only a partial vocalization,
-a typical event recognizer may not detect it.
+For acoustic event recognition, typically only boundary effects are 
+affected by chunk-size choice.
+That is, if an acoustic event occurs and is clipped by
+by either the start or end of the one-minute chunk, then it is now only a "partial vocalisation".
+A typical event recognizer may not detect such "partial vocalisations".
 
-For acoustic indices, from a theoretical point of view, chunk-size has the same kinds of issues as the choice of FFT frame length in speech processing. Because an FFT
+For acoustic indices, from a theoretical point of view, chunk-size has the same
+kinds of issues as the choice of FFT frame length in speech processing. Because an FFT
 assumes signal stationarity, one chooses a frame length over which the spectral
 content in the signal of interest is approximately constant. In the case of
 acoustic indices, one chooses an index calculation duration which captures
