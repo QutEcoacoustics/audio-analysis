@@ -3,7 +3,11 @@
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
-//   This class contains methods that work on spectral ribbons.
+// This class contains methods that process false-colour spectrogram ribbons.
+// It was originally intended to contain methods for the analysis of Spectrogram ribbons as a quick way of beginning some trials on sound-scape analysis.
+// It was subsequently decided to adopt a different approach to sound-scape analysis.
+// As of August 2019, only one method is called from outside this class: GetSpectrogramRibbon().
+// </summary>
 
 namespace AudioAnalysisTools.LongDurationSpectrograms
 {
