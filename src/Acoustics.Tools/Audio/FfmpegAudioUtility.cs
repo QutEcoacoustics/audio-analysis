@@ -276,8 +276,8 @@ namespace Acoustics.Tools.Audio
                 if (delimiterIndex > 0)
                 {
                     // key=value
-                    var key = currentBlockName + " " + line.Substring(0, line.IndexOf('='));
-                    var value = line.Substring(line.IndexOf('=') + 1);
+                    var key = currentBlockName + " " + line.Substring(0, delimiterIndex);
+                    var value = line.Substring(delimiterIndex + 1);
                     result.RawData.Add(key.Trim(), value.Trim());
                 }
             }
