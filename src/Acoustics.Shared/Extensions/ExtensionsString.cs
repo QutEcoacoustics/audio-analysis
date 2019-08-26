@@ -405,6 +405,12 @@ namespace System
             return normalized;
         }
 
+        public static string[] SplitOnAnyNewLine(this string str)
+        {
+            string[] newLines = { "\r\n", "\n" };
+            return str.Split(newLines, StringSplitOptions.RemoveEmptyEntries);
+        }
+
         public static string FormatList(this IEnumerable<string> strings)
         {
             var builder = new StringBuilder("\n", 1000);

@@ -372,6 +372,7 @@
     <Compile Include="Tools\AudioUtilityWavpackTests.cs" />
     <Compile Include="Tools\AudioUtilityChannelSelection\AudioUtilityChannelTests.cs" />
     <Compile Include="Tools\AudioUtilityWavTests.cs" />
+    <Compile Include="Tools\FfmpegUtilityTests.cs" />
     <Compile Include="Tools\MasterAudioUtilityTests.cs" />
     <Compile Include="EnumerableExtensionsTests.cs" />
     <Compile Include="Tools\SoxUtilityTests.cs" />
