@@ -27,7 +27,7 @@ Profiles:
     MinHz: 800          
     MaxHz: 8000
     MinDuration: 0.15
-    MaxDuration: 0.5
+    MaxDuration: 0.8
     DecibelThreshold: 9.0
   Wingbeats:
     MinHz: 200          

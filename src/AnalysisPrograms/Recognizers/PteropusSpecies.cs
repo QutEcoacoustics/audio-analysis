@@ -276,7 +276,7 @@ namespace AnalysisPrograms.Recognizers
                 // 0.125  = 1/8.  i.e. test requires that energy in 0-1kHz band is less than average in all 8 kHz bands
                 // 0.0938 = 3/32. i.e. test requires that energy in 0-1kHz band is less than 3/4 average in all 8 kHz bands
                 // 0.0625 = 1/16. i.e. test requires that energy in 0-1kHz band is less than half average in all 8 kHz bands
-                bool passTest2 = !(energyRatio1 > 0.0938);
+                bool passTest2 = !(energyRatio1 > 0.1);
 
                 // Test 3: There should be little energy in 4-5 kHz band.
                 var subband4Khz = DataTools.Subarray(normalisedSpectrum, fourkHzBin, onekHzBin);
