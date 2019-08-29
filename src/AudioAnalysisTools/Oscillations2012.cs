@@ -1,4 +1,4 @@
-﻿// <copyright file="Oscillations2012.cs" company="QutEcoacoustics">
+// <copyright file="Oscillations2012.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -6,17 +6,17 @@ namespace AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
-    using DSP;
-    using StandardSpectrograms;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
     using TowseyLibrary;
 
     /// <summary>
     /// NOTE: 21st June 2012.
     ///
     /// This class contains methods to detect oscillations in a the sonogram of an audio signal.
-    /// The method Execute() returns all info about oscillaitons in the passed sonogram.
+    /// The method Execute() returns all info about oscillations in the passed sonogram.
     /// This method should be called in preference to those in the class OscillationAnalysis.
-    /// (The latter should be depracated.)
+    /// (The latter should be deprecated.)
     /// </summary>
     public static class Oscillations2012
     {
@@ -118,8 +118,7 @@ namespace AudioAnalysisTools
         /// <param name="dctThreshold">threshold - do not accept a DCT coefficient if its value is less than this threshold</param>
         /// <param name="minOscilFreq"></param>
         /// <returns></returns>
-        public static double[,] DetectOscillations(SpectrogramStandard sonogram, int minHz, int maxHz,
-                                                   double dctDuration, int minOscilFreq, int maxOscilFreq, double dctThreshold)
+        public static double[,] DetectOscillations(SpectrogramStandard sonogram, int minHz, int maxHz, double dctDuration, int minOscilFreq, int maxOscilFreq, double dctThreshold)
         {
             int minBin = (int)(minHz / sonogram.FBinWidth);
             int maxBin = (int)(maxHz / sonogram.FBinWidth);
@@ -150,7 +149,8 @@ namespace AudioAnalysisTools
             //string bmpPath = @"C:\SensorNetworks\Output\cosines.png";
             //ImageTools.DrawMatrix(cosines, bmpPath, true);
 
-            for (int c = minBin; c <= maxBin; c++) //traverse columns - skip DC column
+            //traverse columns - skip DC column
+            for (int c = minBin; c <= maxBin; c++)
             {
                 var dctArray = new double[dctLength];
 
@@ -316,7 +316,6 @@ namespace AudioAnalysisTools
                 }
             }
 
-            //return hits; //dctArray
             return dctScores;
         }
 
@@ -324,7 +323,6 @@ namespace AudioAnalysisTools
         /// Removes single lines of hits from Oscillation matrix.
         /// </summary>
         /// <param name="matrix">the Oscillation matrix</param>
-        /// <returns></returns>
         public static double[,] RemoveIsolatedOscillations(double[,] matrix)
         {
             int rows = matrix.GetLength(0);
@@ -351,14 +349,13 @@ namespace AudioAnalysisTools
         } //end method RemoveIsolatedOscillations()
 
         /// <summary>
-        /// Converts the hits derived from the oscilation detector into a score for each frame.
+        /// Converts the hits derived from the oscillation detector into a score for each frame.
         /// NOTE: The oscillation detector skips every second row, so score must be adjusted for this.
         /// </summary>
         /// <param name="hits">sonogram as matrix showing location of oscillation hits</param>
         /// <param name="minHz">lower freq bound of the acoustic event</param>
         /// <param name="maxHz">upper freq bound of the acoustic event</param>
         /// <param name="freqBinWidth">the freq scale required by AcousticEvent class</param>
-        /// <returns></returns>
         public static double[] GetOscillationScores(double[,] hits, int minHz, int maxHz, double freqBinWidth)
         {
             int rows = hits.GetLength(0);
@@ -401,7 +398,9 @@ namespace AudioAnalysisTools
             {
                 double freq = 0;
                 int count = 0;
-                for (int c = minBin; c <= maxBin; c++) //traverse columns in required band
+
+                //traverse columns in required band
+                for (int c = minBin; c <= maxBin; c++)
                 {
                     if (hits[r, c] > 0)
                     {
@@ -428,18 +427,18 @@ namespace AudioAnalysisTools
         /// <summary>
         /// Converts the Oscillation Detector score array to a list of AcousticEvents.
         /// </summary>
-        /// <param name="scores">the array of OD scores</param>
-        /// <param name="oscFreq"></param>
-        /// <param name="minHz">lower freq bound of the acoustic event</param>
-        /// <param name="maxHz">upper freq bound of the acoustic event</param>
-        /// <param name="framesPerSec">the time scale required by AcousticEvent class</param>
-        /// <param name="freqBinWidth">the freq scale required by AcousticEvent class</param>
-        /// <param name="maxScoreThreshold"></param>
-        /// <param name="minDurationThreshold"></param>
-        /// <param name="maxDurationThreshold"></param>
-        /// <param name="fileName">name of source file to be added to AcousticEvent class</param>
-        /// <param name="segmentStartOffset"></param>
-        /// <returns></returns>
+        /// <param name="scores">the array of OD scores.</param>
+        /// <param name="oscFreq">periodicity of oscillation.</param>
+        /// <param name="minHz">lower freq bound of the acoustic event.</param>
+        /// <param name="maxHz">upper freq bound of the acoustic event.</param>
+        /// <param name="framesPerSec">the time scale required by AcousticEvent class.</param>
+        /// <param name="freqBinWidth">the freq scale required by AcousticEvent class.</param>
+        /// <param name="maxScoreThreshold">threshold for max score.</param>
+        /// <param name="minDurationThreshold">min duration.</param>
+        /// <param name="maxDurationThreshold">max duration.</param>
+        /// <param name="fileName">name of source file to be added to AcousticEvent class.</param>
+        /// <param name="segmentStartOffset">absolute start time of the current one minute segment.</param>
+        /// <returns>a list of acoustic events.</returns>
         public static List<AcousticEvent> ConvertOscillationScores2Events(
             double[] scores,
             double[] oscFreq,
@@ -458,64 +457,75 @@ namespace AudioAnalysisTools
             double scoreThreshold = maxScoreThreshold;   //set this to the maximum threshold to start with
             int count = scores.Length;
 
-            //int minBin = (int)(minHz / freqBinWidth);
-            //int maxBin = (int)(maxHz / freqBinWidth);
-            //int binCount = maxBin - minBin + 1;
+            int minBin = (int)Math.Floor(minHz / freqBinWidth);
+            int maxBin = (int)Math.Ceiling(maxHz / freqBinWidth);
+            int binCount = maxBin - minBin + 1;
             var events = new List<AcousticEvent>();
             bool isHit = false;
             double frameOffset = 1 / framesPerSec;
             double startTime = 0.0;
             int startFrame = 0;
 
-            for (int i = 0; i < count; i++) //pass over all frames
+            //pass over all frames
+            for (int i = 0; i < count; i++)
             {
-                if (isHit == false && scores[i] >= scoreThreshold) //start of an event
+                //start of an event
+                if (isHit == false && scores[i] >= scoreThreshold)
                 {
                     isHit = true;
                     startTime = i * frameOffset;
                     startFrame = i;
                 }
                 else //check for the end of an event
-                    if (isHit && (scores[i] < scoreThreshold || i == count - 1)) //this is end of an event, so initialise it
+                    if (isHit && (scores[i] < scoreThreshold || i == count - 1))
                     {
+                        //this is end of an event, so initialise it
                         isHit = false;
 
                         //double endTime = i * frameOffset;
                         //double duration = endTime - startTime;
-                        double duration = (i - startFrame + 1) * frameOffset;
+                        int frameCount = i - startFrame + 1;
+                        double duration = frameCount * frameOffset;
                         if (duration < minDurationThreshold)
-                    {
-                        continue; //skip events with duration shorter than threshold
-                    }
+                        {
+                            //skip events with duration shorter than threshold
+                            continue;
+                        }
 
                         if (duration > maxDurationThreshold)
-                    {
-                        continue; //skip events with duration longer than threshold
-                    }
+                        {
+                            continue; //skip events with duration longer than threshold
+                        }
 
-                        var ev = new AcousticEvent(segmentStartOffset, startTime, duration, minHz, maxHz);
-                        ev.Name = "Oscillation"; //default name
+                        var ev = new AcousticEvent(segmentStartOffset, startTime, duration, minHz, maxHz)
+                        {
+                            FileName = fileName,
+                            Name = "Oscillation", //default name
+                            FreqBinCount = binCount,
+                            FrameCount = frameCount,
+                            Oblong = new Oblong(startFrame, minBin, startFrame + frameCount - 1, maxBin),
+                        };
 
-                        //ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
-                        ev.FileName = fileName;
+                        // calling this method assumes there is no frame overlap
+                        ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
 
                         //obtain average score.
                         double av = 0.0;
                         for (int n = startFrame; n <= i; n++)
-                    {
-                        av += scores[n];
-                    }
+                        {
+                            av += scores[n];
+                        }
 
-                        ev.Score = av / (i - startFrame + 1);
+                        ev.Score = av / frameCount;
 
                         //obtain oscillation freq.
                         av = 0.0;
                         for (int n = startFrame; n <= i; n++)
-                    {
-                        av += oscFreq[n];
-                    }
+                        {
+                            av += oscFreq[n];
+                        }
 
-                        ev.Score2 = av / (i - startFrame + 1);
+                        ev.Score2 = av / frameCount;
                         ev.Intensity = (int)ev.Score2; // store this info for later inclusion in csv file as Event Intensity
                         events.Add(ev);
                     }
@@ -533,10 +543,6 @@ namespace AudioAnalysisTools
         /// Calculates the optimal frame overlap for the given sample rate, frame width and max oscilation or pulse rate.
         /// Pulse rate is determined using a DCT and efficient use of the DCT requires that the dominant pulse sit somewhere 3.4 along the array of coefficients.
         /// </summary>
-        /// <param name="sr"></param>
-        /// <param name="frameWidth"></param>
-        /// <param name="maxOscilation"></param>
-        /// <returns></returns>
         public static double CalculateRequiredFrameOverlap(int sr, int frameWidth, double maxOscilation)
         {
             double optimumFrameRate = 3 * maxOscilation; //so that max oscillation sits in 3/4 along the array of DCT coefficients
@@ -551,5 +557,5 @@ namespace AudioAnalysisTools
             double overlap = (frameWidth - frameOffset) / (double)frameWidth;
             return overlap;
         }
-    }//end class
-} //AudioAnalysisTools
+    }
+}

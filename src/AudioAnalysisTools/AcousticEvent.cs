@@ -11,19 +11,16 @@ namespace AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
-    using System.Collections.ObjectModel;
     using System.Drawing;
     using System.IO;
     using System.Linq;
     using System.Text;
-    using System.Text.RegularExpressions;
     using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Csv;
-    using AForge.Imaging.Filters;
     using AnalysisBase.ResultBases;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
     using CsvHelper.Configuration;
-    using DSP;
-    using StandardSpectrograms;
     using TowseyLibrary;
 
     public class AcousticEvent : EventBase
@@ -113,8 +110,8 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        /// Gets or sets units = Hertz
-        /// Proxied to EventBase.MinHz
+        /// Gets or sets units = Hertz.
+        /// Proxied to EventBase.MinHz.
         /// </summary>
         public new double LowFrequencyHertz
         {
@@ -301,15 +298,12 @@ namespace AudioAnalysisTools
 
         public void SetTimeAndFreqScales(int samplingRate, int windowSize, int windowOffset)
         {
-            double frameDuration, frameOffset, framesPerSecond;
-            CalculateTimeScale(samplingRate, windowSize, windowOffset, out frameDuration, out frameOffset, out framesPerSecond);
+            CalculateTimeScale(samplingRate, windowSize, windowOffset, out var frameDuration, out var frameOffset, out var framesPerSecond);
             this.FrameDuration = frameDuration;    //frame duration in seconds
             this.FrameOffset = frameOffset;      //frame offset in seconds
             this.FramesPerSecond = framesPerSecond;  //inverse of the frame offset
 
-            int binCount;
-            double binWidth;
-            CalculateFreqScale(samplingRate, windowSize, out binCount, out binWidth);
+            CalculateFreqScale(samplingRate, windowSize, out var binCount, out var binWidth);
             this.FreqBinCount = binCount; //required for conversions to & from MEL scale
             this.FreqBinWidth = binWidth; //required for freq-binID conversions
 
@@ -319,11 +313,21 @@ namespace AudioAnalysisTools
             }
         }
 
+        /// <summary>
+        /// This method assumes that there is no frame overlap i.e. frame duration = frame offset.
+        /// </summary>
+        /// <param name="framesPerSec">frames per second assuming no overlap.</param>
+        /// <param name="freqBinWidth">Number of hertz per freq bin.</param>
         public void SetTimeAndFreqScales(double framesPerSec, double freqBinWidth)
         {
-            //this.FrameDuration = frameDuration;     //frame duration in seconds
-            this.FramesPerSecond = framesPerSec;      //inverse of the frame offset
-            this.FrameOffset = 1 / framesPerSec;      //frame offset in seconds
+            double frameOffset = 1 / framesPerSec;      //frame offset in seconds
+            this.SetTimeAndFreqScales(frameOffset, frameOffset, freqBinWidth);
+        }
+
+        public void SetTimeAndFreqScales(double frameOffset, double frameDuration, double freqBinWidth)
+        {
+            this.FramesPerSecond = 1 / frameOffset;   //inverse of the frame offset
+            this.FrameDuration = frameDuration;       //frame duration in seconds
 
             //this.FreqBinCount = binCount;           //required for conversions to & from MEL scale
             this.FreqBinWidth = freqBinWidth;         //required for freq-binID conversions
@@ -343,14 +347,10 @@ namespace AudioAnalysisTools
         public static Oblong ConvertEvent2Oblong(AcousticEvent ae)
         {
             // Translate time dimension = frames = matrix rows.
-            int topRow;
-            int bottomRow;
-            Time2RowIDs(ae.TimeStart, ae.EventDurationSeconds, ae.FrameOffset, out topRow, out bottomRow);
+            Time2RowIDs(ae.TimeStart, ae.EventDurationSeconds, ae.FrameOffset, out var topRow, out var bottomRow);
 
             //Translate freq dimension = freq bins = matrix columns.
-            int leftCol;
-            int rightCol;
-            Freq2BinIDs(ae.IsMelscale, (int)ae.LowFrequencyHertz, (int)ae.HighFrequencyHertz, ae.FreqBinCount, ae.FreqBinWidth, out leftCol, out rightCol);
+            Freq2BinIDs(ae.IsMelscale, (int)ae.LowFrequencyHertz, (int)ae.HighFrequencyHertz, ae.FreqBinCount, ae.FreqBinWidth, out var leftCol, out var rightCol);
 
             return new Oblong(topRow, leftCol, bottomRow, rightCol);
         }
@@ -934,15 +934,6 @@ namespace AudioAnalysisTools
         /// This method is similar to the one above except that it is assumed that all the events, both labelled and predicted
         /// come from the same recording.
         /// </summary>
-        /// <param name="results"></param>
-        /// <param name="labels"></param>
-        /// <param name="tp"></param>
-        /// <param name="fp"></param>
-        /// <param name="fn"></param>
-        /// <param name="precision"></param>
-        /// <param name="recall"></param>
-        /// <param name="accuracy"></param>
-        /// <param name="resultsText"></param>
         public static void CalculateAccuracyOnOneRecording(List<AcousticEvent> results, List<AcousticEvent> labels, out int tp, out int fp, out int fn,
                                          out double precision, out double recall, out double accuracy, out string resultsText)
         {
@@ -1041,8 +1032,6 @@ namespace AudioAnalysisTools
         /// <param name="scoreThreshold"></param>
         /// <param name="minDuration">duration of event must exceed this to count as an event</param>
         /// <param name="maxDuration"></param>
-        /// <param name="threshold">array value must exceed this dB threshold to count as an event</param>
-        /// <param name="fileName">name of source file to be added to AcousticEvent class</param>
         /// <returns>a list of acoustic events</returns>
         //public static List<AcousticEvent> ConvertIntensityArray2Events(double[] values, int minHz, int maxHz,
         //                                                       double framesPerSec, double freqBinWidth,
@@ -1079,7 +1068,7 @@ namespace AudioAnalysisTools
                     startFrame = i;
                 }
                 else //check for the end of an event
-                    if (isHit == true && values[i] <= scoreThreshold) //this is end of an event, so initialise it
+                    if (isHit && values[i] <= scoreThreshold) //this is end of an event, so initialise it
                     {
                         isHit = false;
                         double endTime = i * frameOffset;
@@ -1146,6 +1135,7 @@ namespace AudioAnalysisTools
             // convert min an max Hertz durations to freq bins
             int minBin = (int)Math.Round(minHz / freqBinWidth);
             int maxBin = (int)Math.Round(maxHz / freqBinWidth);
+            int binCount = maxBin - minBin + 1;
 
             // tried smoothing but not advisable since event onset can be very sudden
             //values = DataTools.filterMovingAverageOdd(values, 3);
@@ -1191,22 +1181,23 @@ namespace AudioAnalysisTools
 
                 endFrame = i;
 
-                int frameDuration = endFrame - startFrame + 1;
-                if (frameDuration >= minFrames && frameDuration <= maxFrames)
+                int frameCount = endFrame - startFrame + 1;
+                if (frameCount >= minFrames && frameCount <= maxFrames)
                 {
                     double startTime = startFrame * frameOffset; // time in seconds
-                    double eventDuration = frameDuration * frameOffset; // time in seconds
+                    double eventDuration = frameCount * frameOffset; // time in seconds
                     AcousticEvent ev = new AcousticEvent(segmentStartOffset, startTime, eventDuration, minHz, maxHz)
                     {
                         Name = "Event", //default name
-                        FrameCount = frameDuration,
+                        FrameCount = frameCount,
+                        FreqBinCount = binCount,
                         Oblong = new Oblong(startFrame, minBin, endFrame, maxBin),
                     };
 
                     ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
 
                     //obtain average intensity score. Note-first frame is not actually in the event.
-                    var subArray = DataTools.Subarray(values, startFrame + 1, frameDuration);
+                    var subArray = DataTools.Subarray(values, startFrame + 1, frameCount);
                     ev.Score = subArray.Average();
                     events.Add(ev);
                 }
@@ -1225,18 +1216,15 @@ namespace AudioAnalysisTools
         /// Some analysis techniques (e.g. OD) have their own methods for extracting events from score arrays.
         /// </summary>
         /// <param name="scores">the array of scores</param>
-        /// <param name="minHz">lower freq bound of the acoustic event</param>
-        /// <param name="maxHz">upper freq bound of the acoustic event</param>
-        /// <param name="framesPerSec">the time scale required by AcousticEvent class</param>
-        /// <param name="freqBinWidth">the freq scale required by AcousticEvent class</param>
-        /// <param name="scoreThreshold"></param>
-        /// <param name="minDuration">duration of event must exceed this to count as an event</param>
-        /// <param name="maxDuration">duration of event must be less than this to count as an event</param>
-        /// <param name="segmentStartOffset"></param>
-        /// <param name="threshold">score must exceed this threshold to count as an event</param>
-        /// <param name="fileName">name of source file to be added to AcousticEvent class</param>
-        /// <param name="callID">  name of the event to be added to AcousticEvent class</param>
-        /// <returns>a list of acoustic events</returns>
+        /// <param name="minHz">lower freq bound of the acoustic event.</param>
+        /// <param name="maxHz">upper freq bound of the acoustic event.</param>
+        /// <param name="framesPerSec">the time scale required by AcousticEvent class.</param>
+        /// <param name="freqBinWidth">the freq scale required by AcousticEvent class.</param>
+        /// <param name="scoreThreshold">threshold.</param>
+        /// <param name="minDuration">duration of event must exceed this to count as an event.</param>
+        /// <param name="maxDuration">duration of event must be less than this to count as an event.</param>
+        /// <param name="segmentStartOffset">offset.</param>
+        /// <returns>a list of acoustic events.</returns>
         public static List<AcousticEvent> ConvertScoreArray2Events(
             double[] scores,
             int minHz,
@@ -1250,23 +1238,26 @@ namespace AudioAnalysisTools
         {
             int count = scores.Length;
             var events = new List<AcousticEvent>();
-            double maxPossibleScore = 5 * scoreThreshold; // used to calcualte a normalised score bewteen 0 - 1.0
+            double maxPossibleScore = 5 * scoreThreshold; // used to calculate a normalised score between 0 - 1.0
             bool isHit = false;
             double frameOffset = 1 / framesPerSec; // frame offset in fractions of second
             double startTime = 0.0;
             int startFrame = 0;
 
-            for (int i = 0; i < count; i++) // pass over all frames
+            // pass over all frames
+            for (int i = 0; i < count; i++)
             {
-                if (isHit == false && scores[i] >= scoreThreshold) //start of an event
+                if (isHit == false && scores[i] >= scoreThreshold)
                 {
+                    //start of an event
                     isHit = true;
                     startTime = i * frameOffset;
                     startFrame = i;
                 }
                 else // check for the end of an event
-                if (isHit == true && scores[i] <= scoreThreshold) // this is end of an event, so initialise it
+                if (isHit && scores[i] <= scoreThreshold)
                 {
+                    // this is end of an event, so initialise it
                     isHit = false;
                     double endTime = i * frameOffset;
                     double duration = endTime - startTime;
@@ -1326,10 +1317,6 @@ namespace AudioAnalysisTools
         /// The events are required to have the passed name.
         /// The events are assumed to contain sufficient info about frame rate in order to populate the array.
         /// </summary>
-        /// <param name="events"></param>
-        /// <param name="arraySize"></param>
-        /// <param name="nameOfTargetEvent"></param>
-        /// <returns></returns>
         public static double[] ExtractScoreArrayFromEvents(List<AcousticEvent> events, int arraySize, string nameOfTargetEvent)
         {
             double[] scores = new double[arraySize];
@@ -1341,7 +1328,7 @@ namespace AudioAnalysisTools
             double windowOffset = events[0].FrameOffset;
             double frameRate = 1 / windowOffset; //frames per second
 
-            int count = events.Count;
+            //int count = events.Count;
             foreach ( AcousticEvent ae in events)
             {
                 if (!ae.Name.Equals(nameOfTargetEvent))
@@ -1359,7 +1346,7 @@ namespace AudioAnalysisTools
             }
 
             return scores;
-        } //end method
+        }
 
         //##############################################################################################################################################
 
@@ -1367,10 +1354,6 @@ namespace AudioAnalysisTools
         /// This method is used to do unit test on lists of events.
         /// First developed for frog recognizers - October 2016.
         /// </summary>
-        /// <param name="fileName"></param>
-        /// <param name="opDir"></param>
-        /// <param name="testName"></param>
-        /// <param name="events"></param>
         public static void TestToCompareEvents(string fileName, DirectoryInfo opDir, string testName, List<AcousticEvent> events)
         {
             var testDir = new DirectoryInfo(opDir + $"\\UnitTest_{testName}");
@@ -1385,7 +1368,7 @@ namespace AudioAnalysisTools
             var eventsFile = new FileInfo(eventsFilePath);
             Csv.WriteToCsv<EventBase>(eventsFile, events);
 
-            LoggedConsole.WriteLine($"# EVENTS TEST: Camparing List of {testName} events with those in benchmark file:");
+            LoggedConsole.WriteLine($"# EVENTS TEST: Comparing List of {testName} events with those in benchmark file:");
             var benchmarkFile = new FileInfo(benchmarkFilePath);
             if (!benchmarkFile.Exists)
             {

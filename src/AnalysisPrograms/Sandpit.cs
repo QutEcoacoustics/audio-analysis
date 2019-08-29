@@ -277,7 +277,8 @@ namespace AnalysisPrograms
 
             // FLYING FOX RECORDINGS
             //string recordingPath = @"C:\Ecoacoustics\WavFiles\BradLawData\FlyingFox\20190127_Bellingen_Feeding_SM4.wav";
-            string recordingPath = @"C:\Ecoacoustics\WavFiles\FlyingFox\20190115_Bellingen_Feeding.wav";
+            //string recordingPath = @"C:\Ecoacoustics\WavFiles\FlyingFox\20190115_Bellingen_Feeding.wav";
+            string recordingPath = @"C:\Ecoacoustics\WavFiles\FlyingFox\20190115_Bellingen_Feeding_minute6.wav";
             //string recordingPath = @"C:\Ecoacoustics\WavFiles\FlyingFox\20190121_2_Bellingen_Feeding.wav";
             //string recordingPath = @"C:\Ecoacoustics\WavFiles\FlyingFox\20190127_Bellingen_Feeding_SM4.wav";
             string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.PteropusSpecies.yml";

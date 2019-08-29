@@ -213,6 +213,7 @@ namespace AnalysisPrograms.Recognizers
             //iV add additional info to the acoustic events
             acousticEvents.ForEach(ae =>
             {
+                ae.FileName = audioRecording.BaseName;
                 ae.SpeciesName = speciesName;
                 ae.Name = abbreviatedSpeciesName + profileName;
                 ae.Profile = profileName;
@@ -401,13 +402,19 @@ namespace AnalysisPrograms.Recognizers
             var plots = new List<Plot> { plot1, plot2 };
 
             // ######################################################################
+
+            // add additional information about the recording and sonogram properties from which the event is derived.
             acousticEvents.ForEach(ae =>
             {
+                ae.FileName = audioRecording.BaseName;
                 ae.SpeciesName = speciesName;
                 ae.Name = abbreviatedSpeciesName + profileName;
                 ae.Profile = profileName;
                 ae.SegmentDurationSeconds = audioRecording.Duration.TotalSeconds;
                 ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
+                var frameOffset = sonogram.FrameStep;
+                var frameDuration = sonogram.FrameDuration;
+                ae.SetTimeAndFreqScales(frameOffset, frameDuration, sonogram.FBinWidth);
 
                 //UNCOMMENT following lines to get spectral profiles of the Wingbeat events.
                 /*    double[,] spectrogramData = sonogram.Data;
