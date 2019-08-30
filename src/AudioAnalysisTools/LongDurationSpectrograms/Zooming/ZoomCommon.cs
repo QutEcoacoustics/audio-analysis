@@ -40,10 +40,17 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
                 analysisTag,
                 keys.ToArray());
 
+            /*
+            // THE FOLLOWING IDEA TO MAKE A COMBINED MATRIX OF BGN and RHZ was rejected.
+            // Anthony was concerned that the BGN matrix alone was not conveying much information at high resolutions.
+            // The idea was to combine another matrix with the BGN matrix.
+            // I tried three combinations, BGN-RHZ, BGN-OSC and BGN-SPT. None of them appeard to provide additional useful information at high resolution.
+            // The problem is that at high resolution, i.e. approaching 0.1s for an analysis unit, there are not many orthogonal features in a single frequency bin.
             // Make a BNG COMBINATION Spectral matrix.
             //var comboMatrix = MatrixTools.MaxOfTwoMatrices(spectra["BNG"], spectra["RHZ"]);
             var comboMatrix = MatrixTools.AddMatricesWeightedSum(spectra["BGN"], 1.0, spectra[comboIndexID], 10.0);
             spectra["BGN"] = comboMatrix;
+            */
 
             return (spectra, relevantIndexProperties);
         }
