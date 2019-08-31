@@ -459,8 +459,8 @@ namespace AnalysisPrograms.Recognizers
                 WindowSize = 512,
                 NoiseReductionType = NoiseReductionType.Standard,
                 NoiseReductionParameter = configuration.GetDoubleOrNull(AnalysisKeys.NoiseBgThreshold) ?? 0.0,
+                WindowOverlap = 0.0,
             };
-            sonoConfig.WindowOverlap = 0.0;
 
             // now construct the standard decibel spectrogram WITH noise removal, and look for LimConvex
             // get frame parameters for the analysis
