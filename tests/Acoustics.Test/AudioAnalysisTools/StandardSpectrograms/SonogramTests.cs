@@ -88,7 +88,7 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
         [TestMethod]
         public void TestAmplitudeSonogram()
         {
-            var recording = new AudioRecording(PathHelper.ResolveAsset("Recordings", "20190115_Bellingen_Feeding_minute6_OneChannel.wav"));
+            var recording = new AudioRecording(PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav"));
 
             // specfied linear scale
             var freqScale = new FrequencyScale(nyquist: 11025, frameSize: 1024, hertzGridInterval: 1000);
