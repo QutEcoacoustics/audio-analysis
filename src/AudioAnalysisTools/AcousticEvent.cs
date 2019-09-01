@@ -356,6 +356,11 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
+        /// Should check that Oblong is not null before calling this method.
+        /// </summary>
+        public Rectangle GetEventAsRectangle() => new Rectangle(this.Oblong.ColumnLeft, this.Oblong.RowTop, this.Oblong.ColWidth, this.Oblong.RowWidth);
+
+        /// <summary>
         /// Sets the passed score and also a value normalised between a min and a max.
         /// </summary>
         public void SetScores(double score, double min, double max)
