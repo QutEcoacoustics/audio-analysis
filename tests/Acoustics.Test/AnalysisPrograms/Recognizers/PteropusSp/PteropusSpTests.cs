@@ -32,12 +32,12 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.PteropusSp
         public void Setup()
         {
             this.outputDirectory = PathHelper.GetTempDir();
-            this.audioRecording = new AudioRecording(PathHelper.ResolveAsset("Recordings", "20190115_Bellingen_Feeding_minute6.wav"));
+            this.audioRecording = new AudioRecording(PathHelper.ResolveAsset("Recordings", "20190115_Bellingen_Feeding_minute6_OneChannel22050.wav"));
             var sonoConfig = new SonogramConfig
             {
                 WindowSize = 512,
                 NoiseReductionType = NoiseReductionType.Standard,
-                NoiseReductionParameter = 0.0,
+                NoiseReductionParameter = 3.0,
                 WindowOverlap = 0.0,
             };
             this.sonogram = (BaseSonogram)new SpectrogramStandard(sonoConfig, this.audioRecording.WavReader);
@@ -52,18 +52,17 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.PteropusSp
         [TestMethod]
         public void TestGetWingBeatEvents()
         {
-
             //string speciesName = "Pteropus species";
             //string abbreviatedSpeciesName = "Pteropus";
+            int minHz = 200;
+            int maxHz = 2000;
             double minDurationSeconds = 1.0;
             double maxDurationSeconds = 10.0;
-            double dctDuration = 1.0;
+            double dctDuration = 0.8;
             double dctThreshold = 0.5;
             double minOscilFreq = 4.0;
             double maxOscilFreq = 6.0;
-            double eventThreshold = 0.3;
-            int minHz = 100;
-            int maxHz = 3000;
+            double eventThreshold = 0.6;
             TimeSpan segmentStartOffset = TimeSpan.Zero;
 
             // Look for wing beats using oscillation detector
@@ -83,15 +82,29 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.PteropusSp
                 out var hits,
                 segmentStartOffset);
 
-            //LoggedConsole.WriteLine($"Stats: Temporal entropy = {stats.TemporalEnergyDistribution:f4}");
-            //LoggedConsole.WriteLine($"Stats: Spectral entropy = {stats.SpectralEnergyDistribution:f4}");
-            //LoggedConsole.WriteLine($"Stats: Spectral centroid= {stats.SpectralCentroid}");
-            //LoggedConsole.WriteLine($"Stats: DominantFrequency= {stats.DominantFrequency}");
+            Assert.AreEqual(4, acousticEvents.Count);
 
-            //Assert.AreEqual(0.0, stats.TemporalEnergyDistribution, 1E-4);
+            Assert.AreEqual(4, acousticEvents[0].Oblong.ColumnLeft);
+            Assert.AreEqual(47, acousticEvents[0].Oblong.ColumnRight);
+            Assert.AreEqual(1280, acousticEvents[0].Oblong.RowTop);
+            Assert.AreEqual(1380, acousticEvents[0].Oblong.RowBottom);
+
+            Assert.AreEqual(4, acousticEvents[1].Oblong.ColumnLeft);
+            Assert.AreEqual(47, acousticEvents[1].Oblong.ColumnRight);
+            Assert.AreEqual(1762, acousticEvents[1].Oblong.RowTop);
+            Assert.AreEqual(1825, acousticEvents[1].Oblong.RowBottom);
+
+            Assert.AreEqual(4, acousticEvents[2].Oblong.ColumnLeft);
+            Assert.AreEqual(47, acousticEvents[2].Oblong.ColumnRight);
+            Assert.AreEqual(2083, acousticEvents[2].Oblong.RowTop);
+            Assert.AreEqual(2207, acousticEvents[2].Oblong.RowBottom);
+
+            Assert.AreEqual(4, acousticEvents[3].Oblong.ColumnLeft);
+            Assert.AreEqual(47, acousticEvents[3].Oblong.ColumnRight);
+            Assert.AreEqual(2334, acousticEvents[3].Oblong.RowTop);
+            Assert.AreEqual(2382, acousticEvents[3].Oblong.RowBottom);
+
             //Assert.AreEqual(0.6062, stats.SpectralEnergyDistribution, 1E-4);
-            //Assert.AreEqual(6687, stats.SpectralCentroid);
-            //Assert.AreEqual(8003, stats.DominantFrequency);
         }
 
         [TestMethod]
@@ -127,20 +140,48 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.PteropusSp
                 this.sonogram.FramesPerSecond,
                 this.sonogram.FBinWidth);
 
-            //LoggedConsole.WriteLine($"Stats: Temporal entropy = {stats.TemporalEnergyDistribution:f4}");
-            //LoggedConsole.WriteLine($"Stats: Spectral entropy = {stats.SpectralEnergyDistribution:f4}");
-            //LoggedConsole.WriteLine($"Stats: Spectral centroid= {stats.SpectralCentroid}");
-            //LoggedConsole.WriteLine($"Stats: DominantFrequency= {stats.DominantFrequency}");
+            Assert.AreEqual(8, acousticEvents.Count);
 
-            //Assert.AreEqual(0.0, stats.TemporalEnergyDistribution, 1E-4);
-            //Assert.AreEqual(0.6062, stats.SpectralEnergyDistribution, 1E-4);
-            //Assert.AreEqual(6687, stats.SpectralCentroid);
-            //Assert.AreEqual(8003, stats.DominantFrequency);
+            Assert.AreEqual(19, acousticEvents[0].Oblong.ColumnLeft);
+            Assert.AreEqual(186, acousticEvents[0].Oblong.ColumnRight);
+            Assert.AreEqual(1280, acousticEvents[0].Oblong.RowTop);
+            Assert.AreEqual(1380, acousticEvents[0].Oblong.RowBottom);
 
-            //Assert.AreEqual(1500, stats.LowFrequencyHertz);
-            //Assert.AreEqual(8500, stats.HighFrequencyHertz);
-            //Assert.AreEqual(28.Seconds() + segmentOffset, stats.EventStartSeconds.Seconds());
-            //Assert.AreEqual(32.Seconds() + segmentOffset, stats.EventEndSeconds.Seconds());
+            Assert.AreEqual(19, acousticEvents[1].Oblong.ColumnLeft);
+            Assert.AreEqual(186, acousticEvents[1].Oblong.ColumnRight);
+            Assert.AreEqual(1762, acousticEvents[1].Oblong.RowTop);
+            Assert.AreEqual(1825, acousticEvents[1].Oblong.RowBottom);
+
+            Assert.AreEqual(19, acousticEvents[2].Oblong.ColumnLeft);
+            Assert.AreEqual(186, acousticEvents[2].Oblong.ColumnRight);
+            Assert.AreEqual(2083, acousticEvents[2].Oblong.RowTop);
+            Assert.AreEqual(2207, acousticEvents[2].Oblong.RowBottom);
+
+            Assert.AreEqual(19, acousticEvents[3].Oblong.ColumnLeft);
+            Assert.AreEqual(186, acousticEvents[3].Oblong.ColumnRight);
+            Assert.AreEqual(2334, acousticEvents[3].Oblong.RowTop);
+            Assert.AreEqual(2382, acousticEvents[3].Oblong.RowBottom);
+
+            Assert.AreEqual(19, acousticEvents[4].Oblong.ColumnLeft);
+            Assert.AreEqual(186, acousticEvents[4].Oblong.ColumnRight);
+            Assert.AreEqual(1280, acousticEvents[4].Oblong.RowTop);
+            Assert.AreEqual(1380, acousticEvents[4].Oblong.RowBottom);
+
+            Assert.AreEqual(19, acousticEvents[5].Oblong.ColumnLeft);
+            Assert.AreEqual(186, acousticEvents[5].Oblong.ColumnRight);
+            Assert.AreEqual(1762, acousticEvents[5].Oblong.RowTop);
+            Assert.AreEqual(1825, acousticEvents[5].Oblong.RowBottom);
+
+            Assert.AreEqual(19, acousticEvents[6].Oblong.ColumnLeft);
+            Assert.AreEqual(186, acousticEvents[6].Oblong.ColumnRight);
+            Assert.AreEqual(2083, acousticEvents[6].Oblong.RowTop);
+            Assert.AreEqual(2207, acousticEvents[6].Oblong.RowBottom);
+
+            Assert.AreEqual(19, acousticEvents[7].Oblong.ColumnLeft);
+            Assert.AreEqual(186, acousticEvents[7].Oblong.ColumnRight);
+            Assert.AreEqual(2334, acousticEvents[7].Oblong.RowTop);
+            Assert.AreEqual(2382, acousticEvents[7].Oblong.RowBottom);
+
             //Assert.AreEqual(28.Seconds() + segmentOffset, stats.ResultStartSeconds.Seconds());
         }
     }
