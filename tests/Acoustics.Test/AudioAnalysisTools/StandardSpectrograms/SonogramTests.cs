@@ -4,15 +4,18 @@
 
 namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
 {
+    using System;
+    using System.Collections.Generic;
     using System.IO;
     using Acoustics.Shared;
-    using DSP;
+    using Acoustics.Test.AudioAnalysisTools.DSP;
+    using Acoustics.Test.TestHelpers;
     using global::AudioAnalysisTools;
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.StandardSpectrograms;
     using global::AudioAnalysisTools.WavTools;
+    using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
 
     /// <summary>
     /// Test methods for the various standard Sonograms or Spectrograms
@@ -28,6 +31,9 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
     {
         private const double AllowedDelta = 0.000001;
         private DirectoryInfo outputDirectory;
+        private AudioRecording recording;
+        private FrequencyScale freqScale;
+        private SonogramConfig sonoConfig;
 
         /*
         // You can use the following additional attributes as you write your tests:
@@ -53,12 +59,30 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
         public void Setup()
         {
             this.outputDirectory = PathHelper.GetTempDir();
+            this.recording = new AudioRecording(PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav"));
+
+            // specified linear scale
+            this.freqScale = new FrequencyScale(nyquist: 11025, frameSize: 1024, hertzGridInterval: 1000);
+
+            // set up the config for each spectrogram
+            this.sonoConfig = new SonogramConfig
+            {
+                WindowSize = this.freqScale.FinalBinCount * 2,
+                WindowOverlap = 0.2,
+                SourceFName = this.recording.BaseName,
+                NoiseReductionType = NoiseReductionType.None,
+                NoiseReductionParameter = 0.0,
+            };
         }
 
         [TestCleanup]
         public void Cleanup()
         {
             PathHelper.DeleteTempDir(this.outputDirectory);
+            this.recording.Dispose();
+
+            //this.freqScale.();
+            //this.sonoConfig.Dispose();
         }
 
         /// <summary>
@@ -88,23 +112,9 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
         [TestMethod]
         public void TestAmplitudeSonogram()
         {
-            var recording = new AudioRecording(PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav"));
-
-            // specfied linear scale
-            var freqScale = new FrequencyScale(nyquist: 11025, frameSize: 1024, hertzGridInterval: 1000);
-
-            var sonoConfig = new SonogramConfig
-            {
-                WindowSize = freqScale.FinalBinCount * 2,
-                WindowOverlap = 0.2,
-                SourceFName = recording.BaseName,
-                NoiseReductionType = NoiseReductionType.None,
-                NoiseReductionParameter = 0.0,
-            };
-
             // DO EQUALITY TEST on the AMPLITUDE SONGOGRAM DATA
             // Do not bother with the image because this is only an amplitude spectrogram.
-            var sonogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
+            var sonogram = new AmplitudeSonogram(this.sonoConfig, this.recording.WavReader);
             var expectedFile = PathHelper.ResolveAsset("StandardSonograms", "BAC2_20071008_AmplSonogramData.EXPECTED.bin");
 
             // run this once to generate expected test data
@@ -120,23 +130,9 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
         [TestMethod]
         public void TestDecibelSpectrogram()
         {
-            var recording = new AudioRecording(PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav"));
-
-            // specfied linear scale
-            var freqScale = new FrequencyScale(nyquist: 11025, frameSize: 1024, hertzGridInterval: 1000);
-
-            var sonoConfig = new SonogramConfig
-            {
-                WindowSize = freqScale.FinalBinCount * 2,
-                WindowOverlap = 0.2,
-                SourceFName = recording.BaseName,
-                NoiseReductionType = NoiseReductionType.None,
-                NoiseReductionParameter = 0.0,
-            };
-
             // DO EQUALITY TEST on the AMPLITUDE SONGOGRAM DATA
             // Do not bother with the image because this is only an amplitude spectrogram.
-            var sonogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
+            var sonogram = new AmplitudeSonogram(this.sonoConfig, this.recording.WavReader);
 
             // DO FILE EQUALITY TEST on the DECIBEL SONGOGRAM DATA
             // Do not bother with the image because this has been tested elsewhere.
@@ -157,28 +153,69 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
         [TestMethod]
         public void SonogramDecibelMethodsAreEquivalent()
         {
-            var recording = new AudioRecording(PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav"));
-
-            // specfied linear scale
-            var freqScale = new FrequencyScale(nyquist: 11025, frameSize: 1024, hertzGridInterval: 1000);
-
-            var sonoConfig = new SonogramConfig
-            {
-                WindowSize = freqScale.FinalBinCount * 2,
-                WindowOverlap = 0.2,
-                SourceFName = recording.BaseName,
-                NoiseReductionType = NoiseReductionType.None,
-                NoiseReductionParameter = 0.0,
-            };
-
             // Method 1
-            var sonogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
+            var sonogram = new AmplitudeSonogram(this.sonoConfig, this.recording.WavReader);
             var expectedDecibelSonogram = MFCCStuff.DecibelSpectra(sonogram.Data, sonogram.Configuration.WindowPower, sonogram.SampleRate, sonogram.Configuration.epsilon);
 
             // Method 2: make sure that the decibel spectrum is the same no matter which path we take to calculate it.
-            var actualDecibelSpectrogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
+            var actualDecibelSpectrogram = new SpectrogramStandard(this.sonoConfig, this.recording.WavReader);
 
             CollectionAssert.That.AreEqual(expectedDecibelSonogram, actualDecibelSpectrogram.Data, EnvelopeAndFftTests.Delta);
+        }
+
+        [TestMethod]
+        public void TestAnnotatedSonogramWithPlots()
+        {
+            // Make a decibel spectrogram
+            var actualDecibelSpectrogram = new SpectrogramStandard(this.sonoConfig, this.recording.WavReader);
+
+            // prepare normalisation bounds for three plots
+            double minDecibels = -100.0;
+            double maxDecibels = -50;
+
+            //double decibelThreshold = 12.5 dB above -100 dB;
+            var normThreshold = 0.25;
+
+            //plot 1
+            int minHz = 2000;
+            int maxHz = 3000;
+            var decibelArray = SNR.CalculateFreqBandAvIntensity(actualDecibelSpectrogram.Data, minHz, maxHz, actualDecibelSpectrogram.NyquistFrequency);
+            var normalisedIntensityArray = DataTools.NormaliseInZeroOne(decibelArray, minDecibels, maxDecibels);
+            var plot1 = new Plot("Intensity 2-3 kHz", normalisedIntensityArray, normThreshold);
+
+            //plot 2
+            minHz = 3000;
+            maxHz = 4000;
+            decibelArray = SNR.CalculateFreqBandAvIntensity(actualDecibelSpectrogram.Data, minHz, maxHz, actualDecibelSpectrogram.NyquistFrequency);
+            normalisedIntensityArray = DataTools.NormaliseInZeroOne(decibelArray, minDecibels, maxDecibels);
+            var plot2 = new Plot("Intensity 3-4 kHz", normalisedIntensityArray, normThreshold);
+
+            //plot 3
+            minHz = 4000;
+            maxHz = 5000;
+            decibelArray = SNR.CalculateFreqBandAvIntensity(actualDecibelSpectrogram.Data, minHz, maxHz, actualDecibelSpectrogram.NyquistFrequency);
+            normalisedIntensityArray = DataTools.NormaliseInZeroOne(decibelArray, minDecibels, maxDecibels);
+            var plot3 = new Plot("Intensity 4-5 kHz", normalisedIntensityArray, normThreshold);
+
+            // combine the plots
+            var plots = new List<Plot> { plot1, plot2, plot3 };
+
+            // create three events
+            var startOffset = TimeSpan.Zero;
+            var events = new List<AcousticEvent>
+            {
+                new AcousticEvent(startOffset, 10.0, 10.0, 2000, 3000),
+                new AcousticEvent(startOffset, 25.0, 10.0, 3000, 4000),
+                new AcousticEvent(startOffset, 40.0, 10.0, 4000, 5000),
+            };
+
+            var image = SpectrogramTools.GetSonogramPlusCharts(actualDecibelSpectrogram, events, plots, null);
+
+            // create the image for visual confirmation
+            image.Save(Path.Combine(this.outputDirectory.FullName, this.recording.BaseName + ".png"));
+
+            Assert.AreEqual(1621, image.Width);
+            Assert.AreEqual(647, image.Height);
         }
     }
 }
