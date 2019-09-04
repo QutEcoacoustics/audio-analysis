@@ -6,9 +6,15 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 {
     using System;
     using System.Collections.Generic;
+    using System.Drawing;
+    using System.Drawing.Drawing2D;
     using System.IO;
     using System.Linq;
+    using Acoustics.Shared;
     using Acoustics.Shared.Csv;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.LongDurationSpectrograms;
+    using AudioAnalysisTools.StandardSpectrograms;
     using TowseyLibrary;
 
     public class ContentDescription
@@ -26,6 +32,34 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         };
 
         public static string[] IndexNames { get; } = { "ACI", "ENT", "EVN", "BGN", "PMN" };
+
+        /// <summary>
+        /// Reads in all the index matrices whose keys are in the above array of IndexNames.
+        /// </summary>
+        /// <param name="dir">directory containing the index matrices.</param>
+        /// <param name="baseName">base name of the files.</param>
+        /// <returns>a Dictionary of matrices containing normalised index values.</returns>
+        public static Dictionary<string, double[,]> ReadIndexMatrices(DirectoryInfo dir, string baseName)
+        {
+            var dictionary = new Dictionary<string, double[,]>();
+
+            foreach (string key in IndexNames)
+            {
+                var indexBounds = IndexValueBounds[key];
+
+                // construct a path to the required matrix
+                var path = Path.Combine(dir.FullName, baseName + "__Towsey.Acoustic." + key + ".csv");
+
+                // read in the matrix
+                var indexMatrix = Csv.ReadMatrixFromCsv<double>(new FileInfo(path));
+
+                // normalise the matrix values
+                var normalisedMatrix = DataTools.NormaliseInZeroOne(indexMatrix, indexBounds[0], indexBounds[1]);
+                dictionary.Add(key, normalisedMatrix);
+            }
+
+            return dictionary;
+        }
 
         /// <summary>
         /// This method assumes that the start and end minute for reading from index matrices is first and last row respectively of matrices - assuming one minute per row.
@@ -96,6 +130,47 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             }
 
             return opMatrix;
+        }
+
+        public static void DrawNormalisedIndexMatrices(DirectoryInfo dir, string baseName, Dictionary<string, double[,]> dictionary)
+        {
+            var list = new List<Image>();
+            foreach (string key in IndexNames)
+            {
+                var bmp = ImageTools.DrawReversedMatrixWithoutNormalisation(dictionary[key]);
+
+                // need to rotate spectrogram to get correct orientation.
+                bmp.RotateFlip(RotateFlipType.Rotate270FlipNone);
+
+                // draw grid lines and add axis scales
+                var xAxisPixelDuration = TimeSpan.FromSeconds(60);
+                var fullDuration = TimeSpan.FromTicks(xAxisPixelDuration.Ticks * bmp.Width);
+                var freqScale = new FrequencyScale(11025, 512, 1000);
+                SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp, TimeSpan.Zero, fullDuration, xAxisPixelDuration, freqScale);
+                const int trackHeight = 20;
+                var recordingStartDate = default(DateTimeOffset);
+                var timeBmp = ImageTrack.DrawTimeTrack(fullDuration, recordingStartDate, bmp.Width, trackHeight);
+                var array = new Image[2];
+                array[0] = bmp;
+                array[1] = timeBmp;
+                var image = ImageTools.CombineImagesVertically(array);
+
+                // add a header to the spectrogram
+                var header = new Bitmap(image.Width, 20);
+                Graphics g = Graphics.FromImage(header);
+                g.Clear(Color.LightGray);
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+                g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                g.DrawString(key, new Font("Tahoma", 9), Brushes.Black, 4, 4);
+                list.Add(ImageTools.CombineImagesVertically(new List<Image>(new[] { header, image })));
+            }
+
+            // save the image - the directory for the path must exist
+            var path = Path.Combine(dir.FullName, baseName + "__Towsey.Acoustic.GreyScaleImages.png");
+            var indexImage = ImageTools.CombineImagesInLine(list);
+            indexImage?.Save(path);
+
         }
     }
 }

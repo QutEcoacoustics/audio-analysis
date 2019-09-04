@@ -18,6 +18,7 @@ namespace AnalysisPrograms
     using Acoustics.Tools.Wav;
     using AnalyseLongRecordings;
     using AudioAnalysisTools;
+    using AudioAnalysisTools.ContentDescriptionTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
@@ -60,6 +61,10 @@ namespace AnalysisPrograms
                 var tStart = DateTime.Now;
                 Log.Verbosity = 1;
                 Log.WriteLine("# Start Time = " + tStart.ToString(CultureInfo.InvariantCulture));
+
+                // CONTENT DESCRIPTION
+                //ReadSpectralIndicesFromTwoFalseColourSpectrogramRibbons();
+                ContentDescriptionDev();
 
                 //AnalyseFrogDataSet();
                 //Audio2CsvOverOneFile();
@@ -105,13 +110,23 @@ namespace AnalysisPrograms
                 //TestTernaryPlots();
                 //TestDirectorySearchAndFileSearch();
                 //TestNoiseReduction();
-                ReadSpectralIndicesFromTwoFalseColourSpectrogramRibbons();
                 //Oscillations2014.TESTMETHOD_DrawOscillationSpectrogram();
                 //Oscillations2014.TESTMETHOD_GetSpectralIndex_Osc();
 
                 Console.WriteLine("# Finished Sandpit Task!    Press any key to exit.");
                 return this.Ok();
             }
+        }
+
+        public static void ContentDescriptionDev()
+        {
+            var dir = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez02\Towsey.Acoustic");
+            string baseName = "SM304256_0+1_20151114_011652";
+            var dictionary = ContentDescription.ReadIndexMatrices(dir, baseName);
+
+            // Draw the index matrices for check/debug purposes
+            var dir1 = new DirectoryInfo(@"C:\Ecoacoustics\Output\ContentDescription");
+            ContentDescription.DrawNormalisedIndexMatrices(dir1, baseName, dictionary);
         }
 
         public static void DrawClusterSequence()

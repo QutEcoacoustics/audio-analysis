@@ -858,6 +858,28 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return bmp;
         }
 
+        /// <summary>
+        /// Assume calling method has done all the reality checks.
+        /// Assume the Index Calculation Duration = 60 seconds
+        /// </summary>
+        public static Image DrawGreyscaleSpectrogramOfIndex(string key, double[,] matrix)
+        {
+            var bmp = ImageTools.DrawReversedMatrixWithoutNormalisation(matrix);
+            var xAxisPixelDuration = TimeSpan.FromSeconds(60);
+            var fullDuration = TimeSpan.FromTicks(xAxisPixelDuration.Ticks * bmp.Width);
+            var freqScale = new FrequencyScale(11025, 512, 1000);
+
+            SpectrogramTools.DrawGridLinesOnImage((Bitmap)bmp, TimeSpan.Zero, fullDuration, xAxisPixelDuration, freqScale);
+            const int trackHeight = 20;
+            var recordingStartDate = default(DateTimeOffset);
+            var timeBmp = ImageTrack.DrawTimeTrack(fullDuration, recordingStartDate, bmp.Width, trackHeight);
+            var array = new Image[2];
+            array[0] = bmp;
+            array[1] = timeBmp;
+            var returnImage = ImageTools.CombineImagesVertically(array);
+            return returnImage;
+        }
+
         public static Image DrawTitleBarOfFalseColourSpectrogram(string title, int width)
         {
             var bmp = new Bitmap(width, SpectrogramConstants.HEIGHT_OF_TITLE_BAR);
