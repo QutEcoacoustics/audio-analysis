@@ -132,6 +132,14 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             return opMatrix;
         }
 
+        public static double[] AnalyseMinutes(Dictionary<string, double[,]> dictionary)
+        {
+            int rowCount = dictionary[ContentDescription.IndexNames[0]].GetLength(0);
+            int freqBinCount = dictionary[ContentDescription.IndexNames[0]].GetLength(1);
+            var scores = new double[rowCount];
+            return scores;
+        }
+
         public static void DrawNormalisedIndexMatrices(DirectoryInfo dir, string baseName, Dictionary<string, double[,]> dictionary)
         {
             var list = new List<Image>();
@@ -170,7 +178,45 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             var path = Path.Combine(dir.FullName, baseName + "__Towsey.Acoustic.GreyScaleImages.png");
             var indexImage = ImageTools.CombineImagesInLine(list);
             indexImage?.Save(path);
+        }
 
+        public static Image DrawLdfcSpectrogramWithContentScoreTracks(Image ldfcSpectrogram, List<Plot> contentScores)
+        {
+            int trackHeight = 30;
+            int width = ldfcSpectrogram.Width;
+            var imageList = new List<Image>
+            {
+                ldfcSpectrogram,
+            };
+
+            foreach (var plot in contentScores)
+            {
+                var track = new ImageTrack(TrackType.scoreArrayNamed, plot.data)
+                {
+                    Name = plot.title,
+                    ScoreMin = 0.0, // plot.data.Min(),
+                    ScoreMax = 1.0, // plot.data.Max(),
+                    Height = trackHeight,
+                    topOffset = 0,
+                    ScoreThreshold = plot.threshold,
+                };
+                var bmp = new Bitmap(width, trackHeight);
+                imageList.Add(track.DrawNamedScoreArrayTrack(bmp));
+            }
+
+            Image bmp3 = ImageTools.CombineImagesVertically(imageList);
+            return bmp3;
+        }
+
+        /// <summary>
+        /// used for experimental purposes.
+        /// </summary>
+        public static Plot GetRandomNumberArray(int length)
+        {
+            var rn = new RandomNumber();
+            var scores = RandomNumber.GetRandomVector(length, rn);
+            var plot = new Plot("Random numbers", scores, 0.25);
+            return plot;
         }
     }
 }

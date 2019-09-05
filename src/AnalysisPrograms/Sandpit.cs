@@ -125,8 +125,23 @@ namespace AnalysisPrograms
             var dictionary = ContentDescription.ReadIndexMatrices(dir, baseName);
 
             // Draw the index matrices for check/debug purposes
-            var dir1 = new DirectoryInfo(@"C:\Ecoacoustics\Output\ContentDescription");
-            ContentDescription.DrawNormalisedIndexMatrices(dir1, baseName, dictionary);
+            // var dir1 = new DirectoryInfo(@"C:\Ecoacoustics\Output\ContentDescription");
+            // ContentDescription.DrawNormalisedIndexMatrices(dir1, baseName, dictionary);
+
+            // get the rows and do something with them one by one.
+            var scores = ContentDescription.AnalyseMinutes(dictionary);
+
+            // Attach content description plots to LDFC spectrogram
+            var path = Path.Combine(@"C:\Ecoacoustics\Output\Test\Test24HourRecording", "Testing__2Maps.png");
+            var ldfcSpectrogram = Image.FromFile(path);
+            var contentScores = new List<Plot>
+            {
+                ContentDescription.GetRandomNumberArray(ldfcSpectrogram.Width),
+            };
+
+            var image = ContentDescription.DrawLdfcSpectrogramWithContentScoreTracks(ldfcSpectrogram, contentScores);
+            var path1 = Path.Combine(@"C:\Ecoacoustics\Output\ContentDescription", "Testing__2Maps.CONTENT.png");
+            image.Save(path1);
         }
 
         public static void DrawClusterSequence()
