@@ -136,8 +136,35 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         {
             int rowCount = dictionary[ContentDescription.IndexNames[0]].GetLength(0);
             int freqBinCount = dictionary[ContentDescription.IndexNames[0]].GetLength(1);
+
+            // over all rows assuming one minute per row.
+            for (int i = 0; i < rowCount; i++)
+            {
+                var oneMinuteOfIndices = GetIndicesForOneMinute(dictionary, i);
+
+                // now send indices to various content searches
+                var windScores = WindContent.GetStrongWindContent(oneMinuteOfIndices);
+            }
+
             var scores = new double[rowCount];
             return scores;
+        }
+
+        public static Dictionary<string, double[]> GetIndicesForOneMinute(Dictionary<string, double[,]> allIndices, int rowId)
+        {
+            var opIndices = new Dictionary<string, double[]>();
+
+            var keys = allIndices.Keys;
+            foreach (string key in keys)
+            {
+                var success = allIndices.TryGetValue(key, out double[,] matrix);
+                if (success)
+                {
+                    opIndices.Add(key, MatrixTools.GetRow(matrix, rowId));
+                }
+            }
+
+            return opIndices;
         }
 
         public static void DrawNormalisedIndexMatrices(DirectoryInfo dir, string baseName, Dictionary<string, double[,]> dictionary)

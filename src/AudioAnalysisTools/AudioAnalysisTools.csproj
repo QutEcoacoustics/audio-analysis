@@ -242,6 +242,7 @@
     <Compile Include="BirdClefExperiment1.cs" />
     <Compile Include="ChannelIntegrity.cs" />
     <Compile Include="ContentDescriptionTools\ContentDescription.cs" />
+    <Compile Include="ContentDescriptionTools\WindContent.cs" />
     <Compile Include="CrossCorrelation.cs" />
     <Compile Include="DSP\Clipping.cs" />
     <Compile Include="DSP\DSP_Filters.cs" />
