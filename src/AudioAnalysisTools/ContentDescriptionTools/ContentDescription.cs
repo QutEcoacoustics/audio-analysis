@@ -33,6 +33,31 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 
         public static string[] IndexNames { get; } = { "ACI", "ENT", "EVN", "BGN", "PMN" };
 
+        public static List<Plot> ContentDescriptionOfMultipleRecordingFiles(DirectoryInfo[] directories, string[] baseNames)
+        {
+            // init a list to collect description results
+            var completeListOfResults = new List<DescriptionResult>();
+
+            // cycle through the directories
+            for (int i = 0; i < directories.Length; i++)
+            {
+                // read the spectral indices for the current file
+                var dictionary = ContentDescription.ReadIndexMatrices(directories[i], baseNames[i]);
+
+                // Draw the index matrices for check/debug purposes
+                // var dir1 = new DirectoryInfo(@"C:\Ecoacoustics\Output\ContentDescription");
+                // ContentDescription.DrawNormalisedIndexMatrices(dir1, baseName, dictionary);
+
+                // get the rows and do something with them one by one.
+                var results = ContentDescription.AnalyseMinutes(dictionary, i * 60); // WARNING: HACK: ASSUME ONE HOUR FILES
+                completeListOfResults.AddRange(results);
+            }
+
+            var plotDict = ContentDescription.ConvertResultsToPlots(completeListOfResults, 1440, 0);
+            var contentPlots = ContentDescription.ConvertPlotDictionaryToPlotList(plotDict);
+            return contentPlots;
+        }
+
         /// <summary>
         /// Reads in all the index matrices whose keys are in the above array of IndexNames.
         /// </summary>
@@ -132,25 +157,32 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             return opMatrix;
         }
 
-        public static double[] AnalyseMinutes(Dictionary<string, double[,]> dictionary)
+        public static List<DescriptionResult> AnalyseMinutes(Dictionary<string, double[,]> dictionary, int elapsedMinutes)
         {
             int rowCount = dictionary[ContentDescription.IndexNames[0]].GetLength(0);
             int freqBinCount = dictionary[ContentDescription.IndexNames[0]].GetLength(1);
+            var results = new List<DescriptionResult>();
 
             // over all rows assuming one minute per row.
             for (int i = 0; i < rowCount; i++)
             {
                 var oneMinuteOfIndices = GetIndicesForOneMinute(dictionary, i);
+                var descriptionResult = new DescriptionResult(elapsedMinutes + i);
 
                 // now send indices to various content searches
-                var windScores = WindContent.GetStrongWindContent(oneMinuteOfIndices);
+                descriptionResult.AddDescription(WindContent.GetStrongWindContent(oneMinuteOfIndices));
+                descriptionResult.AddDescription(WindContent.GetLightWindContent(oneMinuteOfIndices));
+                descriptionResult.AddDescription(RainContent.GetStrongRainContent(oneMinuteOfIndices));
+                descriptionResult.AddDescription(RainContent.GetLightRainContent(oneMinuteOfIndices));
+
+                results.Add(descriptionResult);
             }
 
-            var scores = new double[rowCount];
-            return scores;
+            return results;
         }
 
-        public static Dictionary<string, double[]> GetIndicesForOneMinute(Dictionary<string, double[,]> allIndices, int rowId)
+        public static Dictionary<string, double[]> GetIndicesForOneMinute(Dictionary<string, double[,]> allIndices,
+            int rowId)
         {
             var opIndices = new Dictionary<string, double[]>();
 
@@ -165,6 +197,64 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             }
 
             return opIndices;
+        }
+
+        public static Dictionary<string, double[]> AverageIndicesOverMinutes(Dictionary<string, double[,]> allIndices, int startRowId, int endRowId)
+        {
+            var opIndices = new Dictionary<string, double[]>();
+
+            var keys = allIndices.Keys;
+            foreach (string key in keys)
+            {
+                var success = allIndices.TryGetValue(key, out double[,] matrix);
+                if (success)
+                {
+                    var colCount = matrix.GetLength(1);
+                    var subMatrix = MatrixTools.Submatrix(matrix, startRowId, 0, endRowId, colCount - 1);
+                    opIndices.Add(key, MatrixTools.GetColumnAverages(subMatrix));
+                }
+            }
+
+            return opIndices;
+        }
+
+        /// <summary>
+        /// Reduces a dictionary of vectors by a factor. It is assumed that the input vectors are a power of 2 in length i.e. FFT spectra.
+        /// It is assumed that the factor of reduction will also be a power of 2, typically 8 or 16.
+        /// </summary>
+        /// <returns>The dictionary of reduced vectors.</returns>
+        public static Dictionary<string, double[]> ReduceIndicesByFactor(Dictionary<string, double[]> indices, int factor)
+        {
+            var opIndices = new Dictionary<string, double[]>();
+
+            var keys = indices.Keys;
+            foreach (string key in keys)
+            {
+                var success = indices.TryGetValue(key, out double[] vector);
+                if (success)
+                {
+                    var opVector = DataTools.VectorReduceLength(vector, factor);
+                    opIndices.Add(key, opVector);
+                }
+            }
+
+            return opIndices;
+        }
+
+        public static double[] ConvertDictionaryToVector(Dictionary<string, double[]> dictionary)
+        {
+            var list = new List<double>();
+            var keys = dictionary.Keys;
+            foreach (string key in keys)
+            {
+                var success = dictionary.TryGetValue(key, out double[] indices);
+                if (success)
+                {
+                    list.AddRange(indices);
+                }
+            }
+
+            return list.ToArray();
         }
 
         public static void DrawNormalisedIndexMatrices(DirectoryInfo dir, string baseName, Dictionary<string, double[,]> dictionary)
@@ -205,6 +295,44 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             var path = Path.Combine(dir.FullName, baseName + "__Towsey.Acoustic.GreyScaleImages.png");
             var indexImage = ImageTools.CombineImagesInLine(list);
             indexImage?.Save(path);
+        }
+
+        public static Dictionary<string, Plot> ConvertResultsToPlots(List<DescriptionResult> results, int plotLength, int plotStart)
+        {
+            var plots = new Dictionary<string, Plot>();
+
+            foreach (DescriptionResult result in results)
+            {
+                var time = (int)Math.Round(result.StartTimeInCurrentRecordingFile.TotalMinutes);
+                var dict = result.GetDescriptionDictionary();
+                foreach (KeyValuePair<string, double> kvp in dict)
+                {
+                    var name = kvp.Key;
+                    var value = kvp.Value;
+
+                    if (!plots.ContainsKey(name))
+                    {
+                        var scores = new double[plotLength];
+                        var plot = new Plot(name, scores, 0.25);
+                        plots.Add(name, plot);
+                    }
+
+                    plots[name].data[plotStart + time] = value;
+                }
+            }
+
+            return plots;
+        }
+
+        public static List<Plot> ConvertPlotDictionaryToPlotList(Dictionary<string, Plot> dict)
+        {
+            var list = new List<Plot>();
+            foreach (KeyValuePair<string, Plot> kvp in dict)
+            {
+                list.Add(kvp.Value);
+            }
+
+            return list;
         }
 
         public static Image DrawLdfcSpectrogramWithContentScoreTracks(Image ldfcSpectrogram, List<Plot> contentScores)

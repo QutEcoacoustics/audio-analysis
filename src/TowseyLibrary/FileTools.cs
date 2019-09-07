@@ -317,6 +317,24 @@ namespace TowseyLibrary
             }// end finally
         }
 
+        public static void WriteDictionaryToFile(Dictionary<string, double[]> dictionary, string fPath)
+        {
+            var text = new StringBuilder();
+            foreach (KeyValuePair<string, double[]> kvp in dictionary)
+            {
+                text.Append(kvp);
+                var vector = kvp.Value;
+                for (int i = 0; i < vector.Length; i++)
+                {
+                    text.Append(string.Format(", {0:F3}", vector[i]));
+                }
+
+                text.Append("\n");
+            }
+
+            WriteTextFile(fPath, text.ToString());
+        }
+
         public static void Append2TextFile(string fPath, string line)
         {
             bool saveExistingFile = false;

@@ -120,27 +120,33 @@ namespace AnalysisPrograms
 
         public static void ContentDescriptionDev()
         {
-            var dir = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez02\Towsey.Acoustic");
-            string baseName = "SM304256_0+1_20151114_011652";
-            var dictionary = ContentDescription.ReadIndexMatrices(dir, baseName);
+            //var dir = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez02\Towsey.Acoustic");
 
-            // Draw the index matrices for check/debug purposes
-            // var dir1 = new DirectoryInfo(@"C:\Ecoacoustics\Output\ContentDescription");
-            // ContentDescription.DrawNormalisedIndexMatrices(dir1, baseName, dictionary);
+            DirectoryInfo[] directories =
+            {
+                new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez01\Towsey.Acoustic"),
+                new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez02\Towsey.Acoustic"),
+            };
 
-            // get the rows and do something with them one by one.
-            var scores = ContentDescription.AnalyseMinutes(dictionary);
+            string[] baseNames = { "SM304256_0+1_20151114_001652", "SM304256_0+1_20151114_011652" };
+
+            //PREPARE STRONG WIND TEMPLATE
+            //var path2 = Path.Combine(@"C:\Ecoacoustics\Output\ContentDescription", "StrongWindTemplate.csv");
+            //WindContent.WriteStrongWindTemplateToFile(dictionary, path2);
+
+            var contentPlots = ContentDescription.ContentDescriptionOfMultipleRecordingFiles(directories, baseNames);
 
             // Attach content description plots to LDFC spectrogram
             var path = Path.Combine(@"C:\Ecoacoustics\Output\Test\Test24HourRecording", "Testing__2Maps.png");
             var ldfcSpectrogram = Image.FromFile(path);
-            var contentScores = new List<Plot>
-            {
-                ContentDescription.GetRandomNumberArray(ldfcSpectrogram.Width),
-            };
 
-            var image = ContentDescription.DrawLdfcSpectrogramWithContentScoreTracks(ldfcSpectrogram, contentScores);
-            var path1 = Path.Combine(@"C:\Ecoacoustics\Output\ContentDescription", "Testing__2Maps.CONTENT.png");
+            //var contentScores = new List<Plot>
+            //{
+            //    ContentDescription.GetRandomNumberArray(ldfcSpectrogram.Width),
+            //};
+
+            var image = ContentDescription.DrawLdfcSpectrogramWithContentScoreTracks(ldfcSpectrogram, contentPlots);
+            var path1 = Path.Combine(@"C:\Ecoacoustics\Output\ContentDescription", "Testing__2Maps.CONTENT2.png");
             image.Save(path1);
         }
 
