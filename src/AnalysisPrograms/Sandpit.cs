@@ -120,19 +120,72 @@ namespace AnalysisPrograms
 
         public static void ContentDescriptionDev()
         {
-            //var dir = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez02\Towsey.Acoustic");
-
             DirectoryInfo[] directories =
             {
                 new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez01\Towsey.Acoustic"),
                 new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez02\Towsey.Acoustic"),
+                new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez03\Towsey.Acoustic"),
+                new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez04\Towsey.Acoustic"),
+                new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez05\Towsey.Acoustic"),
+                new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez06\Towsey.Acoustic"),
+                new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez07\Towsey.Acoustic"),
+                new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez08\Towsey.Acoustic"),
+                new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez09\Towsey.Acoustic"),
+                new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez10\Towsey.Acoustic"),
+                new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez11\Towsey.Acoustic"),
+                new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez12\Towsey.Acoustic"),
+                new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez13\Towsey.Acoustic"),
+                new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez14\Towsey.Acoustic"),
+                new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez15\Towsey.Acoustic"),
+                new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez16\Towsey.Acoustic"),
+                new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez17\Towsey.Acoustic"),
+                new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez18\Towsey.Acoustic"),
+                new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez19\Towsey.Acoustic"),
+                new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez20\Towsey.Acoustic"),
+                new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez21\Towsey.Acoustic"),
+                new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez22\Towsey.Acoustic"),
+                new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez23\Towsey.Acoustic"),
+                new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez24\Towsey.Acoustic"),
             };
 
-            string[] baseNames = { "SM304256_0+1_20151114_001652", "SM304256_0+1_20151114_011652" };
+            string[] baseNames = { "SM304256_0+1_20151114_001652",
+                "SM304256_0+1_20151114_011652",
+                "SM304256_0+1_20151114_021652",
+                "SM304256_0+1_20151114_031652",
+                "SM304256_0+1_20151114_041652",
+                "SM304256_0+1_20151114_051652",
+                "SM304256_0+1_20151114_061652",
+                "SM304256_0+1_20151114_071652",
+                "SM304256_0+1_20151114_081652",
+                "SM304256_0+1_20151114_091652",
+                "SM304256_0+1_20151114_101652",
+                "SM304256_0+1_20151114_111652",
+                "SM304256_0+1_20151114_121652",
+                "SM304256_0+1_20151114_131652",
+                "SM304256_0+1_20151114_141652",
+                "SM304256_0+1_20151114_151652",
+                "SM304256_0+1_20151114_161652",
+                "SM304256_0+1_20151114_171652",
+                "SM304256_0+1_20151114_181652",
+                "SM304256_0+1_20151114_191652",
+                "SM304256_0+1_20151114_201652",
+                "SM304256_0+1_20151114_211652",
+                "SM304256_0+1_20151114_221652",
+                "SM304256_0+1_20151114_231652",
+};
 
             //PREPARE STRONG WIND TEMPLATE
-            //var path2 = Path.Combine(@"C:\Ecoacoustics\Output\ContentDescription", "StrongWindTemplate.csv");
+            //var dir = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez02\Towsey.Acoustic");
+            //string baseName = "SM304256_0+1_20151114_011652";
+            //var path2 = Path.Combine(@"C:\Ecoacoustics\Output\ContentDescription", "StrongWindTemplate1.csv");
             //WindContent.WriteStrongWindTemplateToFile(dictionary, path2);
+
+            //PREPARE LIGHT RAIN TEMPLATE
+            //var dir = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez08\Towsey.Acoustic");
+            //string baseName = "SM304256_0+1_20151114_071652";
+            //var dictionary = ContentDescription.ReadIndexMatrices(dir, baseName);
+            //var path2 = Path.Combine(@"C:\Ecoacoustics\Output\ContentDescription", "LightRainTemplate1.csv");
+            //RainContent.WriteLightRainTemplateToFile(dictionary, path2);
 
             var contentPlots = ContentDescription.ContentDescriptionOfMultipleRecordingFiles(directories, baseNames);
 
@@ -146,7 +199,7 @@ namespace AnalysisPrograms
             //};
 
             var image = ContentDescription.DrawLdfcSpectrogramWithContentScoreTracks(ldfcSpectrogram, contentPlots);
-            var path1 = Path.Combine(@"C:\Ecoacoustics\Output\ContentDescription", "Testing__2Maps.CONTENT2.png");
+            var path1 = Path.Combine(@"C:\Ecoacoustics\Output\ContentDescription", "Testing__2Maps.CONTENT3.png");
             image.Save(path1);
         }
 

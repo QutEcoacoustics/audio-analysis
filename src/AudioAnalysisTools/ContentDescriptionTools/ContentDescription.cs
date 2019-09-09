@@ -39,6 +39,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             var completeListOfResults = new List<DescriptionResult>();
 
             // cycle through the directories
+            // WARNING: Assume one-hour duration for each recording
             for (int i = 0; i < directories.Length; i++)
             {
                 // read the spectral indices for the current file
@@ -55,6 +56,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 
             var plotDict = ContentDescription.ConvertResultsToPlots(completeListOfResults, 1440, 0);
             var contentPlots = ContentDescription.ConvertPlotDictionaryToPlotList(plotDict);
+            contentPlots = SubtractMeanPlusSd(contentPlots);
             return contentPlots;
         }
 
@@ -322,6 +324,41 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             }
 
             return plots;
+        }
+
+        public static List<Plot> SubtractMeanPlusSd(List<Plot> plots)
+        {
+            var opPlots = new List<Plot>();
+
+            // subtract average from each plot array
+            foreach (Plot plot in plots)
+            {
+                var scores = plot.data;
+                NormalDist.AverageAndSD(scores, out double average, out double sd);
+
+                // normalise the scores to z-scores
+                for (int i = 0; i < scores.Length; i++)
+                {
+                    // Convert scores to z-scores
+                    scores[i] = (scores[i] - average) / sd;
+                    if (scores[i] < 0.0)
+                    {
+                        scores[i] = 0.0;
+                    }
+
+                    if (scores[i] > 4.0)
+                    {
+                        scores[i] = 4.0;
+                    }
+
+                    // normalise full scale to 4 SDs.
+                    scores[i] /= 4.0;
+                }
+
+                opPlots.Add(plot);
+            }
+
+            return opPlots;
         }
 
         public static List<Plot> ConvertPlotDictionaryToPlotList(Dictionary<string, Plot> dict)
