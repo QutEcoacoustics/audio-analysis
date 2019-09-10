@@ -19,6 +19,7 @@ namespace AnalysisPrograms
     using AnalyseLongRecordings;
     using AudioAnalysisTools;
     using AudioAnalysisTools.ContentDescriptionTools;
+    using AudioAnalysisTools.ContentDescriptionTools.ContentTypes;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
@@ -175,16 +176,21 @@ namespace AnalysisPrograms
 };
 
             //PREPARE STRONG WIND TEMPLATE
-            //var dir = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez02\Towsey.Acoustic");
+            //var ipDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez02\Towsey.Acoustic");
             //string baseName = "SM304256_0+1_20151114_011652";
-            //var path2 = Path.Combine(@"C:\Ecoacoustics\Output\ContentDescription", "StrongWindTemplate1.csv");
-            //WindContent.WriteStrongWindTemplateToFile(dictionary, path2);
+            //var opDir = Path.Combine(@"C:\Ecoacoustics\Output\ContentDescription", "StrongWindTemplate1.csv");
+            //WindStrong1.WriteStrongWindTemplateToFile(dictionary, path2);
+
+            //PREPARE LIGHT WIND TEMPLATE
+            //var ipDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez03\Towsey.Acoustic");
+            //var opDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\ContentDescription");
+            //WindLight1.WriteTemplateToFile(ipDir, opDir);
 
             //PREPARE LIGHT RAIN TEMPLATE
-            //var dir = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez08\Towsey.Acoustic");
+            //var ipDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez08\Towsey.Acoustic");
             //string baseName = "SM304256_0+1_20151114_071652";
             //var dictionary = ContentDescription.ReadIndexMatrices(dir, baseName);
-            //var path2 = Path.Combine(@"C:\Ecoacoustics\Output\ContentDescription", "LightRainTemplate1.csv");
+            //var opDir = Path.Combine(@"C:\Ecoacoustics\Output\ContentDescription", "LightRainTemplate1.csv");
             //RainContent.WriteLightRainTemplateToFile(dictionary, path2);
 
             var contentPlots = ContentDescription.ContentDescriptionOfMultipleRecordingFiles(directories, baseNames);
@@ -198,8 +204,8 @@ namespace AnalysisPrograms
             //    ContentDescription.GetRandomNumberArray(ldfcSpectrogram.Width),
             //};
 
-            var image = ContentDescription.DrawLdfcSpectrogramWithContentScoreTracks(ldfcSpectrogram, contentPlots);
-            var path1 = Path.Combine(@"C:\Ecoacoustics\Output\ContentDescription", "Testing__2Maps.CONTENT3.png");
+            var image = ContentVisualization.DrawLdfcSpectrogramWithContentScoreTracks(ldfcSpectrogram, contentPlots);
+            var path1 = Path.Combine(@"C:\Ecoacoustics\Output\ContentDescription", "Testing__2Maps.CONTENT4.png");
             image.Save(path1);
         }
 

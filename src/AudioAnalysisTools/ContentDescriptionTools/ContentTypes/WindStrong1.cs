@@ -1,15 +1,16 @@
-// <copyright file="WindContent.cs" company="QutEcoacoustics">
+// <copyright file="WindStrong1.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
-namespace AudioAnalysisTools.ContentDescriptionTools
+namespace AudioAnalysisTools.ContentDescriptionTools.ContentTypes
 {
     using System;
     using System.Collections.Generic;
     using TowseyLibrary;
 
-    public static class WindContent
+    public class WindStrong1
     {
+        public const string Name = "StrongWind1";
         private const int ReductionFactor = 16;
 
         private static Dictionary<string, double[]> StrongWindTemplate = new Dictionary<string, double[]>
@@ -21,10 +22,8 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             ["PMN"] = new[] { 0.468, 0.507, 0.687, 0.743, 0.757, 0.751, 0.665, 0.478, 0.391, 0.317, 0.276, 0.367, 0.187, 0.109, 0.071, 0.096 },
         };
 
-        public static KeyValuePair<string, double> GetStrongWindContent(Dictionary<string, double[]> oneMinuteOfIndices)
+        public static KeyValuePair<string, double> GetContent(Dictionary<string, double[]> oneMinuteOfIndices)
         {
-            const string name = "StrongWind1";
-
             var reducedIndices = ContentDescription.ReduceIndicesByFactor(oneMinuteOfIndices, ReductionFactor);
             var oneMinuteVector = ContentDescription.ConvertDictionaryToVector(reducedIndices);
             var templateVector = ContentDescription.ConvertDictionaryToVector(StrongWindTemplate);
@@ -33,35 +32,24 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 
             //normalise the distance
             distance /= Math.Sqrt(templateVector.Length);
-
-            // get dummy data
-            //var rn = new RandomNumber(DateTime.Now.Second + (int)DateTime.Now.Ticks + 333);
-            //var distance = rn.GetDouble();
-
-            return new KeyValuePair<string, double>(name, 1 - distance);
+            return new KeyValuePair<string, double>(Name, 1 - distance);
         }
 
-        public static Dictionary<string, double[]> GetStrongWindTemplate(Dictionary<string, double[,]> dictionaryOfIndices)
+        //THESE ARE SPECIFIC BOUNDS FOR PREPARING THIS TEMPLATE
+        private const int StartRowId = 23;
+        private const int EndRowId = 27;
+
+        public static Dictionary<string, double[]> GetTemplate(Dictionary<string, double[,]> dictionaryOfIndices)
         {
-            var windIndices = ContentDescription.AverageIndicesOverMinutes(dictionaryOfIndices, 23, 27);
+            var windIndices = ContentDescription.AverageIndicesOverMinutes(dictionaryOfIndices, StartRowId, EndRowId);
             var reducedIndices = ContentDescription.ReduceIndicesByFactor(windIndices, ReductionFactor);
             return reducedIndices;
         }
 
-        public static void WriteStrongWindTemplateToFile(Dictionary<string, double[,]> dictionaryOfIndices, string path)
+        public static void WriteTemplateToFile(Dictionary<string, double[,]> dictionaryOfIndices, string path)
         {
-            var template = GetStrongWindTemplate(dictionaryOfIndices);
+            var template = GetTemplate(dictionaryOfIndices);
             FileTools.WriteDictionaryToFile(template, path);
-        }
-
-        // #######################################################################################################################
-
-        public static KeyValuePair<string, double> GetLightWindContent(Dictionary<string, double[]> oneMinuteOfIndices)
-        {
-            const string name = "LightWind1";
-            var rn = new RandomNumber(DateTime.Now.Second + DateTime.Now.Millisecond + 40);
-            var score = rn.GetDouble();
-            return new KeyValuePair<string, double>(name, score);
         }
     }
 }

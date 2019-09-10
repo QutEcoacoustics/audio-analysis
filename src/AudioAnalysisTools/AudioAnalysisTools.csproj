@@ -242,9 +242,14 @@
     <Compile Include="BirdClefExperiment1.cs" />
     <Compile Include="ChannelIntegrity.cs" />
     <Compile Include="ContentDescriptionTools\ContentDescription.cs" />
+    <Compile Include="ContentDescriptionTools\ContentTypes\BaseContentType.cs" />
+    <Compile Include="ContentDescriptionTools\ContentTypes\RainLight1.cs" />
+    <Compile Include="ContentDescriptionTools\ContentTypes\RainHeavy2.cs" />
+    <Compile Include="ContentDescriptionTools\ContentTypes\WindLight1.cs" />
+    <Compile Include="ContentDescriptionTools\ContentVisualization.cs" />
     <Compile Include="ContentDescriptionTools\DescriptionResult.cs" />
-    <Compile Include="ContentDescriptionTools\RainContent.cs" />
-    <Compile Include="ContentDescriptionTools\WindContent.cs" />
+    <Compile Include="ContentDescriptionTools\ContentTypes\RainHeavy1.cs" />
+    <Compile Include="ContentDescriptionTools\ContentTypes\WindStrong1.cs" />
     <Compile Include="CrossCorrelation.cs" />
     <Compile Include="DSP\Clipping.cs" />
     <Compile Include="DSP\DSP_Filters.cs" />

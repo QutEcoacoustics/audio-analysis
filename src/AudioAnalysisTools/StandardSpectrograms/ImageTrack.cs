@@ -310,8 +310,11 @@ namespace AudioAnalysisTools.StandardSpectrograms
         {
             this.DrawScoreArrayTrack(bmp);
             int length = bmp.Width;
-            var font = new Font("Tahoma", 8);
             Graphics g = Graphics.FromImage(bmp);
+
+            //var font = new Font("Tahoma", 8);
+            var family = new FontFamily("Arial");
+            var font = new Font(family, 10, FontStyle.Regular, GraphicsUnit.Pixel);
             g.DrawString(this.Name, font, Brushes.Red, new PointF(10, this.topOffset));
             g.DrawString(this.Name, font, Brushes.Red, new PointF(length / 2, this.topOffset));
             g.DrawString(this.Name, font, Brushes.Red, new PointF(length - 80, this.topOffset));
