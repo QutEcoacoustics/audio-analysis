@@ -209,6 +209,7 @@
     <Compile Include="Csv\Csv.cs" />
     <Compile Include="Csv\ISetPointConverter.cs" />
     <Compile Include="Debugging\AutoAttachVs.cs" />
+    <Compile Include="Extensions\EnumExtensions.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="ExpressionVisitor.cs" />
     <Compile Include="Extensions\ArrayExtensions.cs" />

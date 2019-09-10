@@ -10,29 +10,26 @@
 // ReSharper disable once CheckNamespace
 namespace AnalysisPrograms
 {
-    using Acoustics.Shared.Contracts;
-
-        #if DEBUG
-#endif
     using System;
     using System.Collections.Generic;
+    using System.Configuration;
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Reflection;
     using Acoustics.Shared;
+    using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Logging;
-    using log4net.Appender;
     using log4net.Core;
-    using log4net.Repository.Hierarchy;
 #if DEBUG
     using Acoustics.Shared.Debugging;
 #endif
+    using AnalysisPrograms.Production;
+    using AnalysisPrograms.Production.Arguments;
+    using AnalysisPrograms.Production.Parsers;
+    using Fasterflect;
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
-    using Production;
-    using Production.Arguments;
-    using Production.Parsers;
     using static System.Environment;
 
     public static partial class MainEntry
@@ -44,28 +41,33 @@ namespace AnalysisPrograms
         public const bool InDEBUG = false;
 #endif
 
+        public const string ApDefaultLogVerbosityKey = "AP_DEFAULT_LOG_VERBOSITY";
+        public const string ApPlainLoggingKey = "AP_PLAIN_LOGGING";
+        public const string ApMetricsKey = "AP_METRICS";
+        public const string ApAutoAttachKey = "AP_AUTO_ATTACH";
+
         public static readonly Dictionary<string, string> EnvironmentOptions =
             new Dictionary<string, string>
             {
                 {
                     ApPlainLoggingKey,
-                    "<true|false>\t Enable simpler logging - the default value is `false`"
+                    "<true|false>\tEnable simpler logging - the default value is `false`"
                 },
                 {
                     ApMetricsKey,
-                    "<true|false>\t (Not implemented) Enable or disable metrics - default value is `true`"
+                    "<true|false>\t(Not implemented) Enable or disable metrics - default value is `true`"
+                },
+                {
+                    ApDefaultLogVerbosityKey,
+                    $"<{typeof(LogVerbosity).PrintEnumOptions()}>\tSet the default log level"
                 },
 #if DEBUG
                 {
                     ApAutoAttachKey,
-                    "<true|false>\t Enable or disable auto attach for debugging - default value is `false`"
+                    "<true|false>\tEnable or disable auto attach for debugging - default value is `false`"
                 },
 #endif
             };
-
-        private const string ApPlainLoggingKey = "AP_PLAIN_LOGGING";
-        private const string ApMetricsKey = "AP_METRICS";
-        private const string ApAutoAttachKey = "AP_AUTO_ATTACH";
 
         internal enum Usages
         {
@@ -74,6 +76,13 @@ namespace AnalysisPrograms
             ListAvailable,
             NoAction,
         }
+
+        public static bool AppConfigOverridden { get; private set; }
+
+        /// <summary>
+        /// Gets the default log level set by an environment variable.
+        /// </summary>
+        public static LogVerbosity? ApDefaultLogVerbosity { get; private set; } = null;
 
         /// <summary>
         /// Gets a value indicating whether or not we should use simpler logging semantics. Usually means no color.
@@ -98,37 +107,7 @@ namespace AnalysisPrograms
 
         public static void SetLogVerbosity(LogVerbosity logVerbosity, bool quietConsole = false)
         {
-            Level modifiedLevel;
-            switch (logVerbosity)
-            {
-                case LogVerbosity.None:
-                    // we never turn the logger completely off - sometimes the logger just really needs to log something.
-                    modifiedLevel = LogExtensions.PromptLevel;
-                    break;
-                case LogVerbosity.Error:
-                    modifiedLevel = Level.Error;
-                    break;
-                case LogVerbosity.Warn:
-                    modifiedLevel = Level.Warn;
-                    break;
-                case LogVerbosity.Info:
-                    modifiedLevel = Level.Info;
-                    break;
-                case LogVerbosity.Debug:
-                    modifiedLevel = Level.Debug;
-                    break;
-                case LogVerbosity.Trace:
-                    modifiedLevel = Level.Trace;
-                    break;
-                case LogVerbosity.Verbose:
-                    modifiedLevel = Level.Verbose;
-                    break;
-                case LogVerbosity.All:
-                    modifiedLevel = Level.All;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            var modifiedLevel = VerbosityToLevel(logVerbosity);
 
             Logging.ModifyVerbosity(modifiedLevel, quietConsole);
             Log.Debug("Log level changed to: " + logVerbosity);
@@ -197,6 +176,71 @@ namespace AnalysisPrograms
             Log.Debug($"Metric reporting is {(ApMetricRecording ? "en" : "dis")}abled (but not yet functional).");
 
             LoadNativeCode();
+        }
+
+        /// <summary>
+        /// If AnalysisPrograms.exe is launched with a 8.3 short name then it
+        /// fails to find it's application config. .NET looks for a config named
+        /// the same name as the executable. Normally AnalysisPrograms.exe looks
+        /// for and finds AnalysisPrograms.exe.config. But if the program is launched
+        /// as ANALYS~1.EXE it tries to search for ANALYS~2.EXE.config which does not
+        /// exist.
+        /// <para>
+        /// This has shown to be an issue with R's system and system2 functions. They
+        /// translate the executable function using `Sys.which` which automatically
+        /// converts executable names to 8.3 short format on Windows.
+        /// </para>
+        /// <para>
+        /// This method checks if this is the case and overrides the setting for
+        /// checking where to find a config file.
+        /// </para>
+        /// </summary>
+        /// <returns><value>True</value> if modifications were made.</returns>
+        internal static bool CheckAndUpdateApplicationConfig()
+        {
+            // TODO: DOTNET CORE - we can expect most of this method to not work, it needs to
+            // tested again.
+            var executableName = Process.GetCurrentProcess().MainModule.ModuleName;
+            var expectedName = Assembly.GetAssembly(typeof(MainEntry)).ManifestModule.ScopeName;
+
+            Log.Verbose($"Executable name is {executableName} and expected name is {expectedName}");
+
+            if (expectedName != executableName)
+            {
+                var correctConfig = expectedName + ".config";
+                Log.Verbose($"Updating AppDomain APP_CONFIG_FILE to point to `{correctConfig}`");
+                AppDomain.CurrentDomain.SetData("APP_CONFIG_FILE", correctConfig);
+                AppDomain.CurrentDomain.SetupInformation.ConfigurationFile = correctConfig;
+                AppDomain.CurrentDomain.SetupInformation.ApplicationName = expectedName;
+                ResetConfigMechanism(AppDomain.CurrentDomain.SetupInformation);
+                return true;
+            }
+
+            return false;
+
+            void ResetConfigMechanism(AppDomainSetup setup)
+            {
+                // https://stackoverflow.com/a/6151688/224512
+                var bindingFlags = BindingFlags.NonPublic | BindingFlags.Static;
+                var mangerType = typeof(ConfigurationManager);
+
+                mangerType.SetFieldValue("s_initState", 0, bindingFlags);
+                mangerType.SetFieldValue("s_configSystem", null, bindingFlags);
+
+                typeof(ConfigurationManager)
+                    .Assembly
+                    .GetTypes()
+                    .First(x => x.FullName == "System.Configuration.ClientConfigPaths")
+                    .SetFieldValue("s_current", null, bindingFlags);
+
+                // finally force fusion to reload the current app domain
+                // https://referencesource.microsoft.com/#mscorlib/system/appdomain.cs,3515
+                var setupMethod = typeof(AppDomain)
+                    .GetMethod(
+                        "SetupFusionStore",
+                        BindingFlags.Instance | BindingFlags.NonPublic);
+                setupMethod.Invoke(AppDomain.CurrentDomain, new object[] { setup, null });
+            }
         }
 
         /// <summary>
@@ -377,6 +421,8 @@ and make sure you install the `mono-complete` package.
         {
             ExitCode = ExceptionLookup.UnhandledExceptionErrorCode;
 
+            AppConfigOverridden = CheckAndUpdateApplicationConfig();
+
             if (CheckForDataAnnotations() is string message)
             {
                 Console.WriteLine(message);
@@ -472,9 +518,9 @@ and make sure you install the `mono-complete` package.
         /// system. Thus instead we:
         /// - copy runtimes manually as a build step
         ///   (due to a mono bug, the folder to copy in is named `libruntimes`. See https://github.com/libgit2/libgit2sharp/issues/1170)
-        /// - map Dlls to their appropriate native DLLs in the dllmap entried in the App.config (which is used by the
+        /// - map Dlls to their appropriate native DLLs in the dllmap entry in the App.config (which is used by the
         ///   mono runtime
-        /// - and finally, call any intialization code that is needed here in this method.
+        /// - and finally, call any initialization code that is needed here in this method.
         /// </remarks>
         private static void LoadNativeCode()
         {
@@ -494,6 +540,7 @@ and make sure you install the `mono-complete` package.
                 ProcessorCount,
                 ExecutionTime = (DateTime.Now - thisProcess.StartTime).TotalSeconds,
                 PeakWorkingSet = thisProcess.PeakWorkingSet64,
+                AppConfigOverridden,
             };
 
             var statsString = "Programs stats:\n" + Json.SerializeToString(stats, prettyPrint: true);
@@ -508,6 +555,13 @@ and make sure you install the `mono-complete` package.
 
         private static void ParseEnvironment()
         {
+            var verbosityVariable = GetEnvironmentVariable(ApDefaultLogVerbosityKey);
+            if (verbosityVariable.IsNotWhitespace()
+                && Enum.TryParse(verbosityVariable, true, out LogVerbosity verbosity))
+            {
+                ApDefaultLogVerbosity = verbosity;
+            }
+
             ApPlainLogging = bool.TryParse(GetEnvironmentVariable(ApPlainLoggingKey), out var plainLogging) && plainLogging;
 
             // default value is true
@@ -537,6 +591,44 @@ and make sure you install the `mono-complete` package.
                     }
                 }
             }
+        }
+
+        private static Level VerbosityToLevel(LogVerbosity logVerbosity)
+        {
+            Level modifiedLevel;
+            switch (logVerbosity)
+            {
+                case LogVerbosity.None:
+
+                    // we never turn the logger completely off - sometimes the logger just really needs to log something.
+                    modifiedLevel = LogExtensions.PromptLevel;
+                    break;
+                case LogVerbosity.Error:
+                    modifiedLevel = Level.Error;
+                    break;
+                case LogVerbosity.Warn:
+                    modifiedLevel = Level.Warn;
+                    break;
+                case LogVerbosity.Info:
+                    modifiedLevel = Level.Info;
+                    break;
+                case LogVerbosity.Debug:
+                    modifiedLevel = Level.Debug;
+                    break;
+                case LogVerbosity.Trace:
+                    modifiedLevel = Level.Trace;
+                    break;
+                case LogVerbosity.Verbose:
+                    modifiedLevel = Level.Verbose;
+                    break;
+                case LogVerbosity.All:
+                    modifiedLevel = Level.All;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            return modifiedLevel;
         }
     }
 }
