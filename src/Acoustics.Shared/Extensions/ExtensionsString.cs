@@ -6,17 +6,160 @@
 
 namespace System
 {
-    using Collections.Generic;
-    using Diagnostics;
-    using Drawing;
-    using Globalization;
-    using Linq;
-    using Text;
-    using Text.RegularExpressions;
-    using Web;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Globalization;
+    using System.Linq;
+    using System.Text;
+    using System.Text.RegularExpressions;
 
     public static class ExtensionsString
     {
+        private static readonly char[] Delimiters = { ' ', '-', '_' };
+
+        public static string ToPascalCase(this string source)
+        {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            return SplitWorkOnTokens(
+                source,
+                '\0',
+                (s, i) => new[] { char.ToUpperInvariant(s) });
+        }
+
+        public static string ToCamelCase(this string source)
+        {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            return SplitWorkOnTokens(
+                source,
+                '\0',
+                (s, disableFrontDelimiter) =>
+                {
+                    if (disableFrontDelimiter)
+                    {
+                        return new[] { char.ToLowerInvariant(s) };
+                    }
+
+                    return new[] { char.ToUpperInvariant(s) };
+                });
+        }
+
+        public static string ToKebabCase(this string source)
+        {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            return SplitWorkOnTokens(
+                source,
+                '-',
+                (s, disableFrontDelimiter) =>
+                {
+                    if (disableFrontDelimiter)
+                    {
+                        return new[] { char.ToLowerInvariant(s) };
+                    }
+
+                    return new[] { '-', char.ToLowerInvariant(s) };
+                });
+        }
+
+        public static string ToSnakeCase(this string source)
+        {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            return SplitWorkOnTokens(
+                source,
+                '_',
+                (s, disableFrontDelimiter) =>
+                {
+                    if (disableFrontDelimiter)
+                    {
+                        return new[] { char.ToLowerInvariant(s) };
+                    }
+
+                    return new[] { '_', char.ToLowerInvariant(s) };
+                });
+        }
+
+        public static string ToTrainCase(this string source)
+        {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            return SplitWorkOnTokens(
+                source,
+                '-',
+                (s, disableFrontDelimiter) =>
+                {
+                    if (disableFrontDelimiter)
+                    {
+                        return new[] { char.ToUpperInvariant(s) };
+                    }
+
+                    return new[] { '-', char.ToUpperInvariant(s) };
+                });
+        }
+
+        private static string SplitWorkOnTokens(
+            string source,
+            char mainDelimiter,
+            Func<char, bool, char[]> newWordSymbolHandler)
+        {
+            var builder = new StringBuilder();
+
+            bool nextSymbolStartsNewWord = true;
+            bool disableFrontDelimiter = true;
+            for (var i = 0; i < source.Length; i++)
+            {
+                var symbol = source[i];
+                if (Delimiters.Contains(symbol))
+                {
+                    if (symbol == mainDelimiter)
+                    {
+                        builder.Append(symbol);
+                        disableFrontDelimiter = true;
+                    }
+
+                    nextSymbolStartsNewWord = true;
+                }
+                else if (!char.IsLetterOrDigit(symbol))
+                {
+                    builder.Append(symbol);
+                    disableFrontDelimiter = true;
+                    nextSymbolStartsNewWord = true;
+                }
+                else
+                {
+                    if (nextSymbolStartsNewWord || char.IsUpper(symbol))
+                    {
+                        builder.Append(newWordSymbolHandler(symbol, disableFrontDelimiter));
+                        disableFrontDelimiter = false;
+                        nextSymbolStartsNewWord = false;
+                    }
+                    else
+                    {
+                        builder.Append(symbol);
+                    }
+                }
+            }
+
+            return builder.ToString();
+        }
+
         /// <summary>
         /// Truncate a string to a desired length, specifying an ellipsis to add if the text is longer than length.
         /// </summary>
@@ -114,8 +257,7 @@ namespace System
         /// </returns>
         public static bool IsGuid(this string s)
         {
-            Guid value;
-            return s.TryParseGuidRegex(out value);
+            return s.TryParseGuidRegex(out _);
         }
 
         /// <summary>Convert comma separated list to List of string.
@@ -137,157 +279,15 @@ namespace System
             return strings.ToList();
         }
 
-        /// <summary>Convert comma separated list to List of Guid.
-        /// </summary>
-        /// <param name="list">
-        /// String to parse.
-        /// </param>
-        /// <returns>List of Guid.
-        /// </returns>
-        public static List<Guid> ParseGuidCommaSeparatedList(this string list)
-        {
-            if (string.IsNullOrEmpty(list))
-            {
-                return new List<Guid>();
-            }
-
-            var retVal = new List<Guid>();
-
-            foreach (var s in list.Split(',').Where(s => !string.IsNullOrEmpty(s)))
-            {
-                Guid outGuid;
-                if (s.TryParseGuidRegex(out outGuid))
-                {
-                    retVal.Add(outGuid);
-                }
-            }
-
-            return retVal;
-        }
-
-        /// <summary>Convert comma separated list to List of int.
-        /// </summary>
-        /// <param name="list">
-        /// String to parse.
-        /// </param>
-        /// <returns>List of int.
-        /// </returns>
-        public static List<int> ParseIntCommaSeparatedList(this string list)
-        {
-            if (string.IsNullOrEmpty(list))
-            {
-                return new List<int>();
-            }
-
-            var retVal = new List<int>();
-
-            foreach (var s in list.Split(',').Where(s => !string.IsNullOrEmpty(s)))
-            {
-                int sInt;
-                if (int.TryParse(s, out sInt))
-                {
-                    retVal.Add(sInt);
-                }
-            }
-
-            return retVal;
-        }
-
-        /// <summary>Convert comma separated list to List of long.
-        /// </summary>
-        /// <param name="list">
-        /// String to parse.
-        /// </param>
-        /// <returns>List of long.
-        /// </returns>
-        public static List<long> ParseLongCommaSeparatedList(this string list)
-        {
-            if (string.IsNullOrEmpty(list))
-            {
-                return new List<long>();
-            }
-
-            var retVal = new List<long>();
-
-            foreach (var s in list.Split(',').Where(s => !string.IsNullOrEmpty(s)))
-            {
-                long value;
-                if (long.TryParse(s, out value))
-                {
-                    retVal.Add(value);
-                }
-            }
-
-            return retVal;
-        }
-
-        /// <summary>Convert comma separated list to List of double.
-        /// </summary>
-        /// <param name="list">
-        /// String to parse.
-        /// </param>
-        /// <returns>List of double.
-        /// </returns>
-        public static List<double> ParseDoubleCommaSeparatedList(this string list)
-        {
-            if (string.IsNullOrEmpty(list))
-            {
-                return new List<double>();
-            }
-
-            var retVal = new List<double>();
-
-            foreach (var s in list.Split(',').Where(s => !string.IsNullOrEmpty(s)))
-            {
-                double value;
-                if (double.TryParse(s, out value))
-                {
-                    retVal.Add(value);
-                }
-            }
-
-            return retVal;
-        }
-
         /// <summary>
-        /// Check if a string can be parsed as a number.
+        /// Converts the String to UTF8 Byte array.
         /// </summary>
-        /// <param name="value">
-        /// The value.
-        /// </param>
-        /// <returns>
-        /// True if string can be parsed as a number, otherwise false.
-        /// </returns>
-        public static bool IsNumeric(this string value)
-        {
-            double d;
-            return double.TryParse(value, out d);
-        }
-
-        /// <summary>
-        /// Check if a string can be parsed as an integer.
-        /// </summary>
-        /// <param name="value">
-        /// The value.
-        /// </param>
-        /// <returns>
-        /// True if string can be parsed as an integer, otherwise false.
-        /// </returns>
-        public static bool IsInteger(this string value)
-        {
-            long l;
-            return long.TryParse(value, out l);
-        }
-
-        /// <summary>
-        /// Converts the String to UTF8 Byte array and is used in De serialization.
-        /// </summary>
-        /// <param name="pXmlString">Serialised object as xml string.</param>
+        /// <param name="string">The string to encode.</param>
         /// <returns>Xml string as byte array.</returns>
-        public static byte[] StringToUtf8ByteArray(this string pXmlString)
+        public static byte[] StringToUtf8ByteArray(this string @string)
         {
             UTF8Encoding encoding = new UTF8Encoding();
-            byte[] byteArray = encoding.GetBytes(pXmlString);
+            byte[] byteArray = encoding.GetBytes(@string);
             return byteArray;
         }
 
@@ -299,8 +299,6 @@ namespace System
         /// <param name="encoding">
         /// The encoding.
         /// </param>
-        /// <returns>
-        /// </returns>
         public static string ByteArrayToString(this byte[] bytes, Encoding encoding)
         {
             bytes = Encoding.Convert(encoding, Encoding.UTF8, bytes);
