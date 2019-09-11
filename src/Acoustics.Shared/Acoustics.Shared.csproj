@@ -209,6 +209,7 @@
     <Compile Include="Csv\Csv.cs" />
     <Compile Include="Csv\ISetPointConverter.cs" />
     <Compile Include="Debugging\AutoAttachVs.cs" />
+    <Compile Include="Extensions\EnumExtensions.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="ExpressionVisitor.cs" />
     <Compile Include="Extensions\ArrayExtensions.cs" />
@@ -230,7 +231,6 @@
     <Compile Include="Extensions\RangeExtensions.cs" />
     <Compile Include="Extensions\RectangleExtensions.cs" />
     <Compile Include="Extensions\ReflectionExtensions.cs" />
-    <Compile Include="Extensions\StringCaseExtensions.cs" />
     <Compile Include="Extensions\TaskExtensions.cs" />
     <Compile Include="Extensions\TupleExtensions.cs" />
     <Compile Include="Extensions\ZioExtensions.cs" />

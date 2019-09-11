@@ -336,6 +336,8 @@
     <Compile Include="Shared\AppConfigHelperTests.cs" />
     <Compile Include="Shared\ConfigTests.cs" />
     <Compile Include="Shared\Extensions\DateTimeAndTimeSpanExtensionsTests.cs" />
+    <Compile Include="Shared\Extensions\EnumExtensionsTests.cs" />
+    <Compile Include="Shared\Extensions\EnumerableExtensionsTests.cs" />
     <Compile Include="Shared\LoggingTests\LoggingTests.cs" />
     <Compile Include="Shared\PathUtilsTests.cs" />
     <Compile Include="Shared\ProcessRunnerTests.cs" />

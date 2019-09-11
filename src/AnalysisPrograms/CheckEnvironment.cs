@@ -6,6 +6,7 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -30,6 +31,7 @@ namespace AnalysisPrograms
         private int Execute(Arguments arguments)
         {
             var errors = new List<string>();
+
             Log.Info("Checking required executables and libraries can be found and loaded");
 
             // this is an important call used in analyze long recordings.
