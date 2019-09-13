@@ -6,14 +6,28 @@ namespace AudioAnalysisTools.ContentDescriptionTools.ContentTypes
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using TowseyLibrary;
 
     public class RainLight1
     {
+        //TEMPLATE DESCRIPTION
+        // Name of the template
         public const string Name = "LightRain1";
+
+        // The TEMPLATE PROVENANCE
+        // The source file name from which the indices are extracted.
+        private const string BaseName = "SM304256_0+1_20151114_071652";
+
+        //THESE ARE SPECIFIC ROW BOUNDS FOR PREPARING THIS TEMPLATE
+        // The freq bins will be averaged over the time period.
+        private const int StartRowId = 32;
+        private const int EndRowId = 36;
+
+        // Full array (256 freq bins) of spectral indices is reduced by the following factor by averaging.
         private const int ReductionFactor = 16;
 
-        private static Dictionary<string, double[]> LightRainTemplate = new Dictionary<string, double[]>
+        private static readonly Dictionary<string, double[]> LightRainTemplate = new Dictionary<string, double[]>
         {
             ["ACI"] = new[] { 0.076, 0.046, 0.167, 0.360, 0.426, 0.443, 0.545, 0.595, 0.564, 0.612, 0.659, 0.570, 0.542, 0.520, 0.485, 0.485 },
             ["ENT"] = new[] { 0.065, 0.061, 0.176, 0.289, 0.249, 0.255, 0.296, 0.292, 0.262, 0.386, 0.462, 0.262, 0.222, 0.243, 0.217, 0.205 },
@@ -39,24 +53,22 @@ namespace AudioAnalysisTools.ContentDescriptionTools.ContentTypes
             return new KeyValuePair<string, double>(Name, 1 - distance);
         }
 
-        //THESE ARE SPECIFIC BOUNDS FOR PREPARING THIS TEMPLATE
-        private const int StartRowId = 32;
-        private const int EndRowId = 36;
-
         /// <summary>
         /// string baseName = "SM304256_0+1_20151114_071652".
         /// </summary>
-        public static Dictionary<string, double[]> GetRainTemplate(Dictionary<string, double[,]> dictionaryOfIndices)
+        public static Dictionary<string, double[]> GetTemplate(DirectoryInfo dir)
         {
+            var dictionaryOfIndices = ContentDescription.ReadIndexMatrices(dir, BaseName);
             var windIndices = ContentDescription.AverageIndicesOverMinutes(dictionaryOfIndices, StartRowId, EndRowId);
             var reducedIndices = ContentDescription.ReduceIndicesByFactor(windIndices, ReductionFactor);
             return reducedIndices;
         }
 
-        public static void WriteLightRainTemplateToFile(Dictionary<string, double[,]> dictionaryOfIndices, string path)
+        public static void WriteTemplateToFile(DirectoryInfo ipDir, DirectoryInfo opDir)
         {
-            var template = GetRainTemplate(dictionaryOfIndices);
-            FileTools.WriteDictionaryToFile(template, path);
+            var template = GetTemplate(ipDir);
+            var opPath = Path.Combine(opDir.FullName, Name + "Template.csv");
+            FileTools.WriteDictionaryToFile(template, opPath);
         }
     }
 }

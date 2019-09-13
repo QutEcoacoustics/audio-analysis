@@ -1,36 +1,37 @@
-// <copyright file="WindStrong1.cs" company="QutEcoacoustics">
+// <copyright file="SilverEyeMezTasmanIs.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
 namespace AudioAnalysisTools.ContentDescriptionTools.ContentTypes
 {
+    using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using TowseyLibrary;
 
-    public abstract class BaseContentType
+    public class SilverEyeMezTasmanIs
     {
         //TEMPLATE DESCRIPTION
         // Name of the template
-        public const string Name = "UnknownContentType";
+        public const string Name = "SilverEyeMezTasmanIs";
 
         // The TEMPLATE PROVENANCE
         // The source file name from which the indices are extracted.
-        private const string BaseName = "BaseNameOfFile";
+        private const string BaseName = "SM304256_0+1_20151114_071652";
 
         //THESE ARE SPECIFIC ROW BOUNDS FOR PREPARING THIS TEMPLATE
         // The freq bins will be averaged over the time period.
-        private const int StartRowId = 0;
-        private const int EndRowId = 59;
+        private const int StartRowId = 6;
+        private const int EndRowId = 11;
 
         // Full array (256 freq bins) of spectral indices is reduced by the following factor by averaging.
         private const int ReductionFactor = 16;
 
         // Bandpass filter to be applied
         private const int FreqBinCount = 256 / ReductionFactor;
-        private const int BottomFreq = 0; //Hertz
-        private const int TopFreq = 11000; //Hertz
+        private const int BottomFreq = 3000; //Hertz
+        private const int TopFreq = 4000; //Hertz
 
         // Only want the interval 3-4 kHz for Silver-eye band.
         // After reducing 256 freq bins to 16, each bin has width 689Hz.
@@ -86,9 +87,5 @@ namespace AudioAnalysisTools.ContentDescriptionTools.ContentTypes
             var opPath = Path.Combine(opDir.FullName, Name + "Template.csv");
             FileTools.WriteDictionaryToFile(template, opPath);
         }
-
-        // get dummy data
-        //var rn = new RandomNumber(DateTime.Now.Second + (int)DateTime.Now.Ticks + 333);
-        //var distance = rn.GetDouble();
     }
 }

@@ -244,7 +244,8 @@
     <Compile Include="ContentDescriptionTools\ContentDescription.cs" />
     <Compile Include="ContentDescriptionTools\ContentTypes\BaseContentType.cs" />
     <Compile Include="ContentDescriptionTools\ContentTypes\RainLight1.cs" />
-    <Compile Include="ContentDescriptionTools\ContentTypes\RainHeavy2.cs" />
+    <Compile Include="ContentDescriptionTools\ContentTypes\BirdMorningChorus1.cs" />
+    <Compile Include="ContentDescriptionTools\ContentTypes\SilverEyeMezTasmanIs.cs" />
     <Compile Include="ContentDescriptionTools\ContentTypes\WindLight1.cs" />
     <Compile Include="ContentDescriptionTools\ContentVisualization.cs" />
     <Compile Include="ContentDescriptionTools\DescriptionResult.cs" />

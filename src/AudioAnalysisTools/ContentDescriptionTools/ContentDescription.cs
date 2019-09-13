@@ -6,20 +6,19 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
-    using System.Drawing.Drawing2D;
     using System.IO;
     using System.Linq;
-    using Acoustics.Shared;
     using Acoustics.Shared.Csv;
     using AudioAnalysisTools.ContentDescriptionTools.ContentTypes;
     using AudioAnalysisTools.DSP;
-    using AudioAnalysisTools.LongDurationSpectrograms;
-    using AudioAnalysisTools.StandardSpectrograms;
     using TowseyLibrary;
 
     public class ContentDescription
     {
+        // All the code base for content description assumes a sampling rate of 22050 (i.e. a Nyquist = 11025) and frame size = 512 (i.e. 256 frequency bins).
+        public const int Nyquist = 11025;
+        public const int FreqBinCount = 256;
+
         /// <summary>
         /// The following min and max bounds are same as those defined in the IndexPropertiesConfig.yml file as of August 2019.
         /// </summary>
@@ -44,20 +43,22 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             for (int i = 0; i < directories.Length; i++)
             {
                 // read the spectral indices for the current file
-                var dictionary = ContentDescription.ReadIndexMatrices(directories[i], baseNames[i]);
+                var dictionary = ReadIndexMatrices(directories[i], baseNames[i]);
 
                 // Draw the index matrices for check/debug purposes
                 // var dir1 = new DirectoryInfo(@"C:\Ecoacoustics\Output\ContentDescription");
                 // ContentDescription.DrawNormalisedIndexMatrices(dir1, baseName, dictionary);
 
                 // get the rows and do something with them one by one.
-                var results = ContentDescription.AnalyseMinutes(dictionary, i * 60); // WARNING: HACK: ASSUME ONE HOUR FILES
+                var results = AnalyseMinutes(dictionary, i * 60); // WARNING: HACK: ASSUME ONE HOUR FILES
                 completeListOfResults.AddRange(results);
             }
 
-            var plotDict = ContentDescription.ConvertResultsToPlots(completeListOfResults, 1440, 0);
-            var contentPlots = ContentDescription.ConvertPlotDictionaryToPlotList(plotDict);
+            var plotDict = ConvertResultsToPlots(completeListOfResults, 1440, 0);
+            var contentPlots = ConvertPlotDictionaryToPlotList(plotDict);
             contentPlots = SubtractMeanPlusSd(contentPlots);
+            //the following did not work as well.
+            //contentPlots = SubtractModeAndSd(contentPlots);
             return contentPlots;
         }
 
@@ -176,6 +177,8 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                 descriptionResult.AddDescription(WindStrong1.GetContent(oneMinuteOfIndices));
                 descriptionResult.AddDescription(WindLight1.GetContent(oneMinuteOfIndices));
                 descriptionResult.AddDescription(RainLight1.GetContent(oneMinuteOfIndices));
+                descriptionResult.AddDescription(BirdMorningChorus1.GetContent(oneMinuteOfIndices));
+                descriptionResult.AddDescription(SilverEyeMezTasmanIs.GetContent(oneMinuteOfIndices));
 
                 // yet to do following
                 //descriptionResult.AddDescription(RainHeavy1.GetContent(oneMinuteOfIndices));
@@ -246,6 +249,72 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             return opIndices;
         }
 
+        /// <summary>
+        /// Returns the bin bounds assuming that the full spectrum consists of the defaul value = 256.
+        /// </summary>
+        /// <param name="bottomFrequency">Units = Hertz.</param>
+        /// <param name="topFrequency">Hertz.</param>
+        public static int[] GetFreqBinBounds(int bottomFrequency, int topFrequency) => GetFreqBinBounds(bottomFrequency, topFrequency, FreqBinCount);
+
+        public static int[] GetFreqBinBounds(int bottomFrequency, int topFrequency, int binCount)
+        {
+            double binWidth = Nyquist / (double)binCount;
+            int bottomBin = (int)Math.Floor(bottomFrequency / binWidth);
+            int topBin = (int)Math.Ceiling(topFrequency / binWidth);
+            return new[] { bottomBin, topBin };
+        }
+
+        public static Dictionary<string, double[]> ApplyBandPass(Dictionary<string, double[]> indices, int bottomBin, int topBin)
+        {
+            int length = topBin - bottomBin + 1;
+            var opIndices = new Dictionary<string, double[]>();
+
+            var keys = indices.Keys;
+            foreach (string key in keys)
+            {
+                var success = indices.TryGetValue(key, out double[] vector);
+                if (success)
+                {
+                    var opVector = DataTools.Subarray(vector, bottomBin, length);
+                    opIndices.Add(key, opVector);
+                }
+            }
+
+            return opIndices;
+        }
+
+        /// <summary>
+        /// THis method assumes that the passed temp[late contains only one value for each key.
+        /// </summary>
+        /// <param name="templateDict"> Each kvp = string, double.</param>
+        /// <param name="oneMinuteIndices">the indices.</param>
+        /// <returns>A spectrum of similarity-distance scores.</returns>
+        public static double[] ScanSpectrumWithTemplate(Dictionary<string, double[]> templateDict, Dictionary<string, double[]> oneMinuteIndices)
+        {
+            int templateLength = templateDict.First().Value.Length;
+            if (templateLength != 1)
+            {
+                // Abandon ship!
+            }
+
+            int spectrumLength = oneMinuteIndices.First().Value.Length;
+            var templateVector = ConvertDictionaryToVector(templateDict);
+
+            // the score spectrum to be returned
+            var spectralScores = new double[spectrumLength];
+
+            // scan the spectrum of indices
+            for (int i = 0; i < spectrumLength; i++)
+            {
+                var binVector = GetFreqBinVector(oneMinuteIndices, i);
+                var distance = DataTools.EuclidianDistance(templateVector, binVector);
+                distance /= Math.Sqrt(templateVector.Length);
+                spectralScores[i] = 1 - distance;
+            }
+
+            return spectralScores;
+        }
+
         public static double[] ConvertDictionaryToVector(Dictionary<string, double[]> dictionary)
         {
             var list = new List<double>();
@@ -256,6 +325,22 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                 if (success)
                 {
                     list.AddRange(indices);
+                }
+            }
+
+            return list.ToArray();
+        }
+
+        public static double[] GetFreqBinVector(Dictionary<string, double[]> dictionary, int id)
+        {
+            var list = new List<double>();
+            var keys = dictionary.Keys;
+            foreach (string key in keys)
+            {
+                var success = dictionary.TryGetValue(key, out double[] indices);
+                if (success)
+                {
+                    list.Add(indices[id]);
                 }
             }
 
@@ -304,6 +389,47 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                 {
                     // Convert scores to z-scores
                     scores[i] = (scores[i] - average) / sd;
+                    if (scores[i] < 0.0)
+                    {
+                        scores[i] = 0.0;
+                    }
+
+                    if (scores[i] > 4.0)
+                    {
+                        scores[i] = 4.0;
+                    }
+
+                    // normalise full scale to 4 SDs.
+                    scores[i] /= 4.0;
+                }
+
+                opPlots.Add(plot);
+            }
+
+            return opPlots;
+        }
+
+        /// <summary>
+        /// THis method normalises a score array by subtracting the mode rather than the average of the array.
+        /// THis is because the noise is often not normally distributed but rather skewed.
+        /// </summary>
+        public static List<Plot> SubtractModeAndSd(List<Plot> plots)
+        {
+            var opPlots = new List<Plot>();
+
+            // subtract average from each plot array
+            foreach (Plot plot in plots)
+            {
+                var scores = plot.data;
+                var bgn = SNR.CalculateModalBackgroundNoiseInSignal(scores, 1.0);
+                var mode = bgn.NoiseMode;
+                var sd = bgn.NoiseSd;
+
+                // normalise the scores to z-scores
+                for (int i = 0; i < scores.Length; i++)
+                {
+                    // Convert scores to z-scores
+                    scores[i] = (scores[i] - mode) / sd;
                     if (scores[i] < 0.0)
                     {
                         scores[i] = 0.0;
