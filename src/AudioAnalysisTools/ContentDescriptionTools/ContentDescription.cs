@@ -137,7 +137,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             for (int i = 1; i < IndexNames.Length; i++)
             {
                 key = IndexNames[i];
-                var indexBounds = IndexValueBounds[key];
+                //var indexBounds = IndexValueBounds[key];
 
                 // construct a path to the required matrix
                 path = Path.Combine(dir.FullName, baseName + "__Towsey.Acoustic." + key + ".csv");
@@ -163,8 +163,8 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 
         public static List<DescriptionResult> AnalyseMinutes(Dictionary<string, double[,]> dictionary, int elapsedMinutes)
         {
-            int rowCount = dictionary[ContentDescription.IndexNames[0]].GetLength(0);
-            int freqBinCount = dictionary[ContentDescription.IndexNames[0]].GetLength(1);
+            int rowCount = dictionary[IndexNames[0]].GetLength(0);
+            //int freqBinCount = dictionary[ContentDescription.IndexNames[0]].GetLength(1);
             var results = new List<DescriptionResult>();
 
             // over all rows assuming one minute per row.
@@ -250,7 +250,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         }
 
         /// <summary>
-        /// Returns the bin bounds assuming that the full spectrum consists of the defaul value = 256.
+        /// Returns the bin bounds assuming that the full spectrum consists of the default value = 256.
         /// </summary>
         /// <param name="bottomFrequency">Units = Hertz.</param>
         /// <param name="topFrequency">Hertz.</param>
@@ -304,11 +304,15 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             var spectralScores = new double[spectrumLength];
 
             // scan the spectrum of indices
+            // does not appear to make any difference whether use Manhattan or Euclidean distance.
             for (int i = 0; i < spectrumLength; i++)
             {
                 var binVector = GetFreqBinVector(oneMinuteIndices, i);
-                var distance = DataTools.EuclidianDistance(templateVector, binVector);
-                distance /= Math.Sqrt(templateVector.Length);
+
+                //var distance = DataTools.EuclideanDistance(templateVector, binVector);
+                //distance /= Math.Sqrt(templateVector.Length);
+                var distance = DataTools.ManhattanDistance(templateVector, binVector);
+                distance /= (double)templateVector.Length;
                 spectralScores[i] = 1 - distance;
             }
 
@@ -347,6 +351,13 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             return list.ToArray();
         }
 
+        /// <summary>
+        /// Converts individual results to a dictionary of plots.
+        /// It is assumed that the data arrays have been processed in a way that 
+        /// </summary>
+        /// <param name="results">a list of results for each content type in every minute.</param>
+        /// <param name="plotLength">The plot length will the total number of minutes scanned, typically 1440 or one day.</param>
+        /// <param name="plotStart">time start.</param>
         public static Dictionary<string, Plot> ConvertResultsToPlots(List<DescriptionResult> results, int plotLength, int plotStart)
         {
             var plots = new Dictionary<string, Plot>();
@@ -363,7 +374,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                     if (!plots.ContainsKey(name))
                     {
                         var scores = new double[plotLength];
-                        var plot = new Plot(name, scores, 0.25);
+                        var plot = new Plot(name, scores, 0.25); // NOTE: The threshold can be changed later.
                         plots.Add(name, plot);
                     }
 
@@ -384,7 +395,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                 var scores = plot.data;
                 NormalDist.AverageAndSD(scores, out double average, out double sd);
 
-                // normalise the scores to z-scores
+                // normalize the scores to z-scores
                 for (int i = 0; i < scores.Length; i++)
                 {
                     // Convert scores to z-scores
@@ -399,10 +410,13 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                         scores[i] = 4.0;
                     }
 
-                    // normalise full scale to 4 SDs.
+                    // normalize full scale to 4 SDs.
                     scores[i] /= 4.0;
                 }
 
+                // when normalizing the scores this way the range of the plot will be 0 to 4 SD above the mean.
+                // Consequently we set the plot threshold to 0.5, which is two SDs or a p value = 5%.
+                plot.threshold = 0.5;
                 opPlots.Add(plot);
             }
 
@@ -410,7 +424,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         }
 
         /// <summary>
-        /// THis method normalises a score array by subtracting the mode rather than the average of the array.
+        /// THis method normalizes a score array by subtracting the mode rather than the average of the array.
         /// THis is because the noise is often not normally distributed but rather skewed.
         /// </summary>
         public static List<Plot> SubtractModeAndSd(List<Plot> plots)
@@ -418,14 +432,14 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             var opPlots = new List<Plot>();
 
             // subtract average from each plot array
-            foreach (Plot plot in plots)
+            foreach (var plot in plots)
             {
                 var scores = plot.data;
                 var bgn = SNR.CalculateModalBackgroundNoiseInSignal(scores, 1.0);
                 var mode = bgn.NoiseMode;
                 var sd = bgn.NoiseSd;
 
-                // normalise the scores to z-scores
+                // normalize the scores to z-scores
                 for (int i = 0; i < scores.Length; i++)
                 {
                     // Convert scores to z-scores
@@ -440,7 +454,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                         scores[i] = 4.0;
                     }
 
-                    // normalise full scale to 4 SDs.
+                    // normalize full scale to 4 SDs.
                     scores[i] /= 4.0;
                 }
 

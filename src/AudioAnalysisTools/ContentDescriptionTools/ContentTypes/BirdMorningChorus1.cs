@@ -55,7 +55,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools.ContentTypes
             var templateVector = ContentDescription.ConvertDictionaryToVector(BirdChorusTemplate);
 
             //Get Euclidian distance and normalize the distance
-            var distance = DataTools.EuclidianDistance(templateVector, oneMinuteVector);
+            var distance = DataTools.EuclideanDistance(templateVector, oneMinuteVector);
             distance /= Math.Sqrt(templateVector.Length);
 
             return new KeyValuePair<string, double>(Name, 1 - distance);

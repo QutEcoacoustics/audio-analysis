@@ -197,7 +197,7 @@ namespace TowseyLibrary
             {
                 double[] v1 = GetRandomVector(dimensions, rn);
                 double[] v2 = GetRandomVector(dimensions, rn);
-                distanceArray[i] = DataTools.EuclidianDistance(v1, v2);
+                distanceArray[i] = DataTools.EuclideanDistance(v1, v2);
             }
 
             double av, sd;

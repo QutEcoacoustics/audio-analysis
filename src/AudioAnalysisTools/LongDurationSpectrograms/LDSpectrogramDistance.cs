@@ -163,7 +163,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 cs1,
                 nyquist, herzInterval);
 
-            string outputFileName4 = inputFileName1 + ".EuclidianDistance.png";
+            string outputFileName4 = inputFileName1 + ".EuclideanDistance.png";
             Image deltaSp = DrawDistanceSpectrogram(cs1, cs2);
             Color[] colorArray = LDSpectrogramRGB.ColourChart2Array(GetDifferenceColourChart());
             titleBar = DrawTitleBarOfEuclidianDistanceSpectrogram(
@@ -289,7 +289,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     v2[1] = m2Grn[row, col];
                     v2[2] = m2Blu[row, col];
 
-                    d12Matrix[row, col] = DataTools.EuclidianDistance(v1, v2);
+                    d12Matrix[row, col] = DataTools.EuclideanDistance(v1, v2);
                     d11Matrix[row, col] = (v1[0] + v1[1] + v1[2]) / 3; // get average of the normalised values
                     d22Matrix[row, col] = (v2[0] + v2[1] + v2[2]) / 3;
 

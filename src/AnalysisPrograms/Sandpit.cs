@@ -208,7 +208,7 @@ namespace AnalysisPrograms
 
             //Write image + contentPlots to file.
             var image = ContentVisualization.DrawLdfcSpectrogramWithContentScoreTracks(ldfcSpectrogram, contentPlots);
-            var path1 = Path.Combine(@"C:\Ecoacoustics\Output\ContentDescription", "Testing_2Maps.CONTENT9.png");
+            var path1 = Path.Combine(@"C:\Ecoacoustics\Output\ContentDescription", "Testing_2Maps.CONTENT10.png");
             image.Save(path1);
         }
 

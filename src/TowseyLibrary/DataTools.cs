@@ -2892,12 +2892,9 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// Clculates Hamming distance for two vectors of doubles.
+        /// Calculates Hamming distance for two vectors of doubles.
         /// d[i] = 1 if((int)Math.Round(Math.Abs(v1[i] - v2[i])) == 1 )
         /// </summary>
-        /// <param name="v1"></param>
-        /// <param name="v2"></param>
-        /// <returns></returns>
         public static int HammingDistance(double[] v1, double[] v2)
         {
             // assume v1 and v2 have same dimensions
@@ -2917,10 +2914,7 @@ namespace TowseyLibrary
         /// <summary>
         /// returns EUCLIDIAN DISTANCE BETWEEN two matrices
         /// </summary>
-        /// <param name="template"></param>
-        /// <param name="signal"></param>
-        /// <returns></returns>
-        public double EuclidianDistance(double[,] m1, double[,] m2)
+        public double EuclideanDistance(double[,] m1, double[,] m2)
         {
             // check m1 and m2 have same dimensions
             int rows1 = m1.GetLength(0);
@@ -2937,7 +2931,7 @@ namespace TowseyLibrary
                 throw new Exception("Matrices have unequal column numbers.");
             }
 
-            // calculate euclidian distance
+            // calculate euclidean distance
             double sum = 0.0;
             for (int i = 0; i < rows1; i++)
             {
@@ -2949,15 +2943,12 @@ namespace TowseyLibrary
             }
 
             return Math.Sqrt(sum);
-        } // end
+        }
 
         /// <summary>
-        /// returns EUCLIDIAN DISTANCE BETWEEN two vectors
+        /// returns EUCLIDEAN DISTANCE BETWEEN two vectors.
         /// </summary>
-        /// <param name="template"></param>
-        /// <param name="signal"></param>
-        /// <returns></returns>
-        public static double EuclidianDistance(double[] v1, double[] v2)
+        public static double EuclideanDistance(double[] v1, double[] v2)
         {
             // check v1 and v2 have same length
             if (v1.Length != v2.Length)
@@ -2965,7 +2956,7 @@ namespace TowseyLibrary
                 throw new Exception("Vectors have unequal length.");
             }
 
-            // calculate euclidian distance
+            // calculate euclidean distance
             double sum = 0.0;
             for (int i = 0; i < v1.Length; i++)
             {
@@ -2974,15 +2965,12 @@ namespace TowseyLibrary
             }
 
             return Math.Sqrt(sum);
-        } // end
+        }
 
         /// <summary>
-        /// returns EUCLIDIAN DISTANCE BETWEEN two vectors
+        /// returns EUCLIDEAN DISTANCE BETWEEN two vectors of byte.
         /// </summary>
-        /// <param name="template"></param>
-        /// <param name="signal"></param>
-        /// <returns></returns>
-        public static double EuclidianDistance(byte[] v1, byte[] v2)
+        public static double EuclideanDistance(byte[] v1, byte[] v2)
         {
             // check v1 and v2 have same length
             if (v1.Length != v2.Length)
@@ -2990,16 +2978,37 @@ namespace TowseyLibrary
                 throw new Exception("Vectors have unequal length.");
             }
 
-            // calculate euclidian distance
+            // calculate euclidean distance
             double sum = 0.0;
             for (int i = 0; i < v1.Length; i++)
             {
-                    double v = v1[i] - v2[i];
-                    sum += v * v;
+                double v = v1[i] - v2[i];
+                sum += v * v;
             }
 
             return Math.Sqrt(sum);
-        } // end
+        }
+
+        /// <summary>
+        /// returns MANHATTAN DISTANCE BETWEEN two vectors.
+        /// </summary>
+        public static double ManhattanDistance(double[] v1, double[] v2)
+        {
+            // check v1 and v2 have same length
+            if (v1.Length != v2.Length)
+            {
+                throw new Exception("Vectors have unequal length.");
+            }
+
+            double sum = 0.0;
+            for (int i = 0; i < v1.Length; i++)
+            {
+                    double diff = Math.Abs(v1[i] - v2[i]);
+                    sum += diff;
+            }
+
+            return sum;
+        }
 
         public static double DotProduct(double[,] m1, double[,] m2)
         {

@@ -18,31 +18,32 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         public static Image DrawLdfcSpectrogramWithContentScoreTracks(Image ldfcSpectrogram, List<Plot> contentScores)
         {
             int trackHeight = 30;
-            int width = ldfcSpectrogram.Width;
-            var imageList = new List<Image>
-            {
-                ldfcSpectrogram,
-            };
+            //int width = ldfcSpectrogram.Width;
+            //var imageList = new List<Image>
+            //{
+            //    ldfcSpectrogram,
+            //};
 
-            foreach (var plot in contentScores)
+            var image = new Image_MultiTrack(ldfcSpectrogram);
+            if (contentScores != null)
             {
-                var track = new ImageTrack(TrackType.scoreArrayNamed, plot.data)
+                foreach (var plot in contentScores)
                 {
-                    Name = plot.title,
-                    ScoreMin = 0.0, // plot.data.Min(),
-                    ScoreMax = 1.0, // plot.data.Max(),
-                    Height = trackHeight,
-                    topOffset = 0,
-                    ScoreThreshold = plot.threshold,
-                };
-                var bmp = new Bitmap(width, trackHeight);
-                imageList.Add(track.DrawNamedScoreArrayTrack(bmp));
-                //var bmp = ImageTrack.DrawGrayScaleScoreTrack(plot.data, 0.0, 4.0, plot.threshold, plot.title);
-                //imageList.Add(bmp);
+                    var track = new ImageTrack(TrackType.scoreArrayNamed, plot.data)
+                    {
+                        Name = plot.title,
+                        ScoreMin = 0.0, // plot.data.Min(),
+                        ScoreMax = 1.0, // plot.data.Max(),
+                        Height = trackHeight,
+                        topOffset = 0,
+                        ScoreThreshold = plot.threshold,
+                    };
+
+                    image.AddTrack(ImageTrack.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title)); //assumes data normalised in 0,1
+                }
             }
 
-            Image bmp3 = ImageTools.CombineImagesVertically(imageList);
-            return bmp3;
+            return image.GetImage();
         }
 
         public static void DrawNormalisedIndexMatrices(DirectoryInfo dir, string baseName, Dictionary<string, double[,]> dictionary)

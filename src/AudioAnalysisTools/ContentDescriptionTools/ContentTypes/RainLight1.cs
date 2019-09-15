@@ -43,7 +43,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools.ContentTypes
             var templateVector = ContentDescription.ConvertDictionaryToVector(LightRainTemplate);
 
             //Get Euclidian distance and normalise the distance
-            var distance = DataTools.EuclidianDistance(templateVector, oneMinuteVector);
+            var distance = DataTools.EuclideanDistance(templateVector, oneMinuteVector);
             distance /= Math.Sqrt(templateVector.Length);
 
             // get dummy data
