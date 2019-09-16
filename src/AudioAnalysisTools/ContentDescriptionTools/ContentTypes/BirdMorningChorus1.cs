@@ -1,4 +1,4 @@
-// <copyright file="BirdMorningChorus1.cs" company="QutEcoacoustics">
+// <copyright file="BirdChorus1.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -13,11 +13,12 @@ namespace AudioAnalysisTools.ContentDescriptionTools.ContentTypes
     {
         //TEMPLATE DESCRIPTION
         // Name of the template
-        public const string Name = "BirdMorningChorus1";
+        public const string Name = "BirdChorus1";
 
         // The TEMPLATE PROVENANCE
         // The source file name from which the indices are extracted.
         private const string BaseName = "SM304256_0+1_20151114_041652";
+        private const string Location = "Mezzanine, Tasman Island";
 
         //THESE ARE SPECIFIC ROW BOUNDS FOR PREPARING THIS TEMPLATE
         // The freq bins will be averaged over the time period.
@@ -44,15 +45,15 @@ namespace AudioAnalysisTools.ContentDescriptionTools.ContentTypes
 
         public static KeyValuePair<string, double> GetContent(Dictionary<string, double[]> oneMinuteOfIndices)
         {
-            var reducedIndices = ContentDescription.ReduceIndicesByFactor(oneMinuteOfIndices, ReductionFactor);
+            var reducedIndices = DataProcessing.ReduceIndicesByFactor(oneMinuteOfIndices, ReductionFactor);
 
             // remove first two freq bins and last four freq bins
             int bottomBin = 2;
             int topBin = 11;
-            reducedIndices = ContentDescription.ApplyBandPass(reducedIndices, bottomBin, topBin);
+            reducedIndices = DataProcessing.ApplyBandPass(reducedIndices, bottomBin, topBin);
 
-            var oneMinuteVector = ContentDescription.ConvertDictionaryToVector(reducedIndices);
-            var templateVector = ContentDescription.ConvertDictionaryToVector(BirdChorusTemplate);
+            var oneMinuteVector = DataProcessing.ConvertDictionaryToVector(reducedIndices);
+            var templateVector = DataProcessing.ConvertDictionaryToVector(BirdChorusTemplate);
 
             //Get Euclidian distance and normalize the distance
             var distance = DataTools.EuclideanDistance(templateVector, oneMinuteVector);
@@ -63,9 +64,9 @@ namespace AudioAnalysisTools.ContentDescriptionTools.ContentTypes
 
         public static Dictionary<string, double[]> GetTemplate(DirectoryInfo dir)
         {
-            var dictionaryOfIndices = ContentDescription.ReadIndexMatrices(dir, BaseName);
-            var birdIndices = ContentDescription.AverageIndicesOverMinutes(dictionaryOfIndices, StartRowId, EndRowId);
-            var reducedIndices = ContentDescription.ReduceIndicesByFactor(birdIndices, ReductionFactor);
+            var dictionaryOfIndices = DataProcessing.ReadIndexMatrices(dir, BaseName);
+            var birdIndices = DataProcessing.AverageIndicesOverMinutes(dictionaryOfIndices, StartRowId, EndRowId);
+            var reducedIndices = DataProcessing.ReduceIndicesByFactor(birdIndices, ReductionFactor);
             return reducedIndices;
         }
 

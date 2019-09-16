@@ -13,7 +13,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools.ContentTypes
         public const string Name = "HeavyRain1";
         private const int ReductionFactor = 16;
 
-        private static Dictionary<string, double[]> StrongRainTemplate = new Dictionary<string, double[]>
+        private static readonly Dictionary<string, double[]> HeavyRainTemplate = new Dictionary<string, double[]>
         {
             ["ACI"] = new[] { 0.076, 0.046, 0.167, 0.360, 0.426, 0.443, 0.545, 0.595, 0.564, 0.612, 0.659, 0.570, 0.542, 0.520, 0.485, 0.485 },
             ["ENT"] = new[] { 0.065, 0.061, 0.176, 0.289, 0.249, 0.255, 0.296, 0.292, 0.262, 0.386, 0.462, 0.262, 0.222, 0.243, 0.217, 0.205 },
@@ -24,9 +24,9 @@ namespace AudioAnalysisTools.ContentDescriptionTools.ContentTypes
 
         public static KeyValuePair<string, double> GetRainContent(Dictionary<string, double[]> oneMinuteOfIndices)
         {
-            var reducedIndices = ContentDescription.ReduceIndicesByFactor(oneMinuteOfIndices, ReductionFactor);
-            var oneMinuteVector = ContentDescription.ConvertDictionaryToVector(reducedIndices);
-            var templateVector = ContentDescription.ConvertDictionaryToVector(StrongRainTemplate);
+            var reducedIndices = DataProcessing.ReduceIndicesByFactor(oneMinuteOfIndices, ReductionFactor);
+            var oneMinuteVector = DataProcessing.ConvertDictionaryToVector(reducedIndices);
+            var templateVector = DataProcessing.ConvertDictionaryToVector(HeavyRainTemplate);
 
             //Get Euclidian distance and normalise the distance
             var distance = DataTools.EuclideanDistance(templateVector, oneMinuteVector);
@@ -45,8 +45,8 @@ namespace AudioAnalysisTools.ContentDescriptionTools.ContentTypes
 
         public static Dictionary<string, double[]> GetTemplate(Dictionary<string, double[,]> dictionaryOfIndices)
         {
-            var windIndices = ContentDescription.AverageIndicesOverMinutes(dictionaryOfIndices, StartRowId, EndRowId);
-            var reducedIndices = ContentDescription.ReduceIndicesByFactor(windIndices, ReductionFactor);
+            var windIndices = DataProcessing.AverageIndicesOverMinutes(dictionaryOfIndices, StartRowId, EndRowId);
+            var reducedIndices = DataProcessing.ReduceIndicesByFactor(windIndices, ReductionFactor);
             return reducedIndices;
         }
 

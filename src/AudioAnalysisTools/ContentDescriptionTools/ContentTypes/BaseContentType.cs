@@ -1,4 +1,4 @@
-// <copyright file="WindStrong1.cs" company="QutEcoacoustics">
+// <copyright file="BaseContentType.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -6,7 +6,6 @@ namespace AudioAnalysisTools.ContentDescriptionTools.ContentTypes
 {
     using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
     using TowseyLibrary;
 
     public abstract class BaseContentType
@@ -38,7 +37,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools.ContentTypes
         // The all important template that is used to find an acoustic content type.
         // These are calculate, written to a csv file and then appropriate parts are copied into a dictionary declaration such as this.
         // The arrays will all be of same length but will vary from length = 1 to 16 or potentially 256.
-        private static readonly Dictionary<string, double[]> SilverEyeTemplate = new Dictionary<string, double[]>
+        private static readonly Dictionary<string, double[]> Template = new Dictionary<string, double[]>
         {
             ["ACI"] = new[] { 0.086, 0.043, 0.041, 0.023, 0.032, 0.027, 0.029, 0.031, 0.032, 0.032, 0.034, 0.069, 0.033, 0.024, 0.018, 0.018 },
             ["ENT"] = new[] { 0.124, 0.112, 0.146, 0.163, 0.157, 0.157, 0.143, 0.122, 0.113, 0.095, 0.087, 0.121, 0.075, 0.060, 0.054, 0.067 },
@@ -63,11 +62,11 @@ namespace AudioAnalysisTools.ContentDescriptionTools.ContentTypes
         /// </summary>
         public static Dictionary<string, double[]> GetTemplate(DirectoryInfo dir)
         {
-            var dictionaryOfIndices = ContentDescription.ReadIndexMatrices(dir, BaseName);
-            var birdIndices = ContentDescription.AverageIndicesOverMinutes(dictionaryOfIndices, StartRowId, EndRowId);
-            var reducedIndices = ContentDescription.ReduceIndicesByFactor(birdIndices, ReductionFactor);
-            var freqBinBounds = ContentDescription.GetFreqBinBounds(BottomFreq, TopFreq, FreqBinCount);
-            reducedIndices = ContentDescription.ApplyBandPass(reducedIndices, freqBinBounds[0], freqBinBounds[1]);
+            var dictionaryOfIndices = DataProcessing.ReadIndexMatrices(dir, BaseName);
+            var birdIndices = DataProcessing.AverageIndicesOverMinutes(dictionaryOfIndices, StartRowId, EndRowId);
+            var reducedIndices = DataProcessing.ReduceIndicesByFactor(birdIndices, ReductionFactor);
+            var freqBinBounds = DataProcessing.GetFreqBinBounds(BottomFreq, TopFreq, FreqBinCount);
+            reducedIndices = DataProcessing.ApplyBandPass(reducedIndices, freqBinBounds[0], freqBinBounds[1]);
             return reducedIndices;
         }
 

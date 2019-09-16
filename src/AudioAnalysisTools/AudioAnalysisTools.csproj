@@ -248,6 +248,7 @@
     <Compile Include="ContentDescriptionTools\ContentTypes\SilverEyeMezTasmanIs.cs" />
     <Compile Include="ContentDescriptionTools\ContentTypes\WindLight1.cs" />
     <Compile Include="ContentDescriptionTools\ContentVisualization.cs" />
+    <Compile Include="ContentDescriptionTools\DataProcessing.cs" />
     <Compile Include="ContentDescriptionTools\DescriptionResult.cs" />
     <Compile Include="ContentDescriptionTools\ContentTypes\RainHeavy1.cs" />
     <Compile Include="ContentDescriptionTools\ContentTypes\WindStrong1.cs" />

@@ -38,9 +38,9 @@ namespace AudioAnalysisTools.ContentDescriptionTools.ContentTypes
 
         public static KeyValuePair<string, double> GetContent(Dictionary<string, double[]> oneMinuteOfIndices)
         {
-            var reducedIndices = ContentDescription.ReduceIndicesByFactor(oneMinuteOfIndices, ReductionFactor);
-            var oneMinuteVector = ContentDescription.ConvertDictionaryToVector(reducedIndices);
-            var templateVector = ContentDescription.ConvertDictionaryToVector(LightRainTemplate);
+            var reducedIndices = DataProcessing.ReduceIndicesByFactor(oneMinuteOfIndices, ReductionFactor);
+            var oneMinuteVector = DataProcessing.ConvertDictionaryToVector(reducedIndices);
+            var templateVector = DataProcessing.ConvertDictionaryToVector(LightRainTemplate);
 
             //Get Euclidian distance and normalise the distance
             var distance = DataTools.EuclideanDistance(templateVector, oneMinuteVector);
@@ -58,9 +58,9 @@ namespace AudioAnalysisTools.ContentDescriptionTools.ContentTypes
         /// </summary>
         public static Dictionary<string, double[]> GetTemplate(DirectoryInfo dir)
         {
-            var dictionaryOfIndices = ContentDescription.ReadIndexMatrices(dir, BaseName);
-            var windIndices = ContentDescription.AverageIndicesOverMinutes(dictionaryOfIndices, StartRowId, EndRowId);
-            var reducedIndices = ContentDescription.ReduceIndicesByFactor(windIndices, ReductionFactor);
+            var dictionaryOfIndices = DataProcessing.ReadIndexMatrices(dir, BaseName);
+            var windIndices = DataProcessing.AverageIndicesOverMinutes(dictionaryOfIndices, StartRowId, EndRowId);
+            var reducedIndices = DataProcessing.ReduceIndicesByFactor(windIndices, ReductionFactor);
             return reducedIndices;
         }
 

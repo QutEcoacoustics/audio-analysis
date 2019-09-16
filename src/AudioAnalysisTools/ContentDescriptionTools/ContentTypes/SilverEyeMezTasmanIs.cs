@@ -4,7 +4,6 @@
 
 namespace AudioAnalysisTools.ContentDescriptionTools.ContentTypes
 {
-    using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
@@ -50,20 +49,19 @@ namespace AudioAnalysisTools.ContentDescriptionTools.ContentTypes
 
         public static KeyValuePair<string, double> GetContent(Dictionary<string, double[]> oneMinuteOfIndices)
         {
-            var reducedIndices = ContentDescription.ReduceIndicesByFactor(oneMinuteOfIndices, ReductionFactor);
+            var reducedIndices = DataProcessing.ReduceIndicesByFactor(oneMinuteOfIndices, ReductionFactor);
 
-            //var freqBinBounds = ContentDescription.GetFreqBinBounds(BottomFreq, TopFreq);
-            //reducedIndices = ContentDescription.ApplyBandPass(reducedIndices, freqBinBounds[0], freqBinBounds[1]);
-
-            var oneMinuteVector = ContentDescription.ConvertDictionaryToVector(reducedIndices);
-            var templateVector = ContentDescription.ConvertDictionaryToVector(SilverEyeTemplate);
+            //var freqBinBounds = DataProcessing.GetFreqBinBounds(BottomFreq, TopFreq);
+            //reducedIndices = DataProcessing.ApplyBandPass(reducedIndices, freqBinBounds[0], freqBinBounds[1]);
+            //var oneMinuteVector = DataProcessing.ConvertDictionaryToVector(reducedIndices);
+            //var templateVector = DataProcessing.ConvertDictionaryToVector(SilverEyeTemplate);
 
             //Get Euclidian distance and normalize the distance
             // Now pass the template up the full frequency spectrum to get a spectrum of scores.
-            var spectralScores = ContentDescription.ScanSpectrumWithTemplate(SilverEyeTemplate, reducedIndices);
+            var spectralScores = DataProcessing.ScanSpectrumWithTemplate(SilverEyeTemplate, reducedIndices);
 
             // Now check how much of spectral weight is in the correct freq band ie between 3-4 kHz.
-            var freqBinBounds = ContentDescription.GetFreqBinBounds(BottomFreq, TopFreq, FreqBinCount);
+            var freqBinBounds = DataProcessing.GetFreqBinBounds(BottomFreq, TopFreq, FreqBinCount);
             double callSum = DataTools.Subarray(spectralScores, freqBinBounds[0], freqBinBounds[1]).Sum();
             double totalSum = DataTools.Subarray(spectralScores, 1, spectralScores.Length - 3).Sum();
             double score = callSum / totalSum;
@@ -73,11 +71,11 @@ namespace AudioAnalysisTools.ContentDescriptionTools.ContentTypes
 
         public static Dictionary<string, double[]> GetTemplate(DirectoryInfo dir)
         {
-            var dictionaryOfIndices = ContentDescription.ReadIndexMatrices(dir, BaseName);
-            var birdIndices = ContentDescription.AverageIndicesOverMinutes(dictionaryOfIndices, StartRowId, EndRowId);
-            var reducedIndices = ContentDescription.ReduceIndicesByFactor(birdIndices, ReductionFactor);
-            var freqBinBounds = ContentDescription.GetFreqBinBounds(BottomFreq, TopFreq, FreqBinCount);
-            reducedIndices = ContentDescription.ApplyBandPass(reducedIndices, freqBinBounds[0], freqBinBounds[1]);
+            var dictionaryOfIndices = DataProcessing.ReadIndexMatrices(dir, BaseName);
+            var birdIndices = DataProcessing.AverageIndicesOverMinutes(dictionaryOfIndices, StartRowId, EndRowId);
+            var reducedIndices = DataProcessing.ReduceIndicesByFactor(birdIndices, ReductionFactor);
+            var freqBinBounds = DataProcessing.GetFreqBinBounds(BottomFreq, TopFreq, FreqBinCount);
+            reducedIndices = DataProcessing.ApplyBandPass(reducedIndices, freqBinBounds[0], freqBinBounds[1]);
             return reducedIndices;
         }
 
