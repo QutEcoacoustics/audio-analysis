@@ -17,33 +17,22 @@ namespace AudioAnalysisTools.ContentDescriptionTools
     {
         public static Image DrawLdfcSpectrogramWithContentScoreTracks(Image ldfcSpectrogram, List<Plot> contentScores)
         {
-            int trackHeight = 30;
-            //int width = ldfcSpectrogram.Width;
-            //var imageList = new List<Image>
-            //{
-            //    ldfcSpectrogram,
-            //};
+            int plotHeight = 30;
+            var imageList = new List<Image>
+            {
+                ldfcSpectrogram,
+            };
 
-            var image = new Image_MultiTrack(ldfcSpectrogram);
             if (contentScores != null)
             {
                 foreach (var plot in contentScores)
                 {
-                    var track = new ImageTrack(TrackType.scoreArrayNamed, plot.data)
-                    {
-                        Name = plot.title,
-                        ScoreMin = 0.0, // plot.data.Min(),
-                        ScoreMax = 1.0, // plot.data.Max(),
-                        Height = trackHeight,
-                        topOffset = 0,
-                        ScoreThreshold = plot.threshold,
-                    };
-
-                    image.AddTrack(ImageTrack.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title)); //assumes data normalised in 0,1
+                    var image = plot.DrawAnnotatedPlot(plotHeight);
+                    imageList.Add(image);
                 }
             }
 
-            return image.GetImage();
+            return ImageTools.CombineImagesVertically(imageList);
         }
 
         public static void DrawNormalisedIndexMatrices(DirectoryInfo dir, string baseName, Dictionary<string, double[,]> dictionary)

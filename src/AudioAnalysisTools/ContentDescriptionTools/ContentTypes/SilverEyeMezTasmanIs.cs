@@ -13,7 +13,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools.ContentTypes
     {
         //TEMPLATE DESCRIPTION
         // Name of the template
-        public const string Name = "SilverEyeMezTasmanIs";
+        public const string Name = "SilverEye_TasmanIs";
 
         // The TEMPLATE PROVENANCE
         // The source file name from which the indices are extracted.
