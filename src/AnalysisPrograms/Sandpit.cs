@@ -64,8 +64,8 @@ namespace AnalysisPrograms
                 Log.WriteLine("# Start Time = " + tStart.ToString(CultureInfo.InvariantCulture));
 
                 // CONTENT DESCRIPTION
-                //ReadSpectralIndicesFromTwoFalseColourSpectrogramRibbons();
-                ContentDescriptionDev();
+                //ContentDescriptionCreateTemplates();
+                ContentDescriptionApplyTemplates();
 
                 //AnalyseFrogDataSet();
                 //Audio2CsvOverOneFile();
@@ -119,7 +119,35 @@ namespace AnalysisPrograms
             }
         }
 
-        public static void ContentDescriptionDev()
+        public static void ContentDescriptionCreateTemplates()
+        {
+            //PREPARE STRONG WIND TEMPLATE
+            //var ipDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez02\Towsey.Acoustic");
+            //var opDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\ContentDescription");
+            //WindStrong1.WriteTemplateToFile(ipDir, opDir);
+
+            //PREPARE LIGHT WIND TEMPLATE
+            //var ipDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez03\Towsey.Acoustic");
+            //var opDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\ContentDescription");
+            //WindLight1.WriteTemplateToFile(ipDir, opDir);
+
+            //PREPARE LIGHT RAIN TEMPLATE
+            //var ipDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez08\Towsey.Acoustic");
+            //var opDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\ContentDescription");
+            //WindLight1.WriteTemplateToFile(ipDir, opDir);
+
+            //PREPARE BIRD MORNING CHORUS1 TEMPLATE
+            //var ipDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez05\Towsey.Acoustic");
+            //var opDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\ContentDescription");
+            //BirdMorningChorus1.WriteTemplateToFile(ipDir, opDir);
+
+            //PREPARE MEZZANINE-TASMAN ISLAND SILVER-EYE TEMPLATE
+            //var ipDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez08\Towsey.Acoustic");
+            //var opDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\ContentDescription");
+            //SilverEyeMezTasmanIs.WriteTemplateToFile(ipDir, opDir);
+        }
+
+        public static void ContentDescriptionApplyTemplates()
         {
             DirectoryInfo[] directories =
             {
@@ -149,7 +177,9 @@ namespace AnalysisPrograms
                 new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez24\Towsey.Acoustic"),
             };
 
-            string[] baseNames = { "SM304256_0+1_20151114_001652",
+            string[] baseNames =
+            {
+                "SM304256_0+1_20151114_001652",
                 "SM304256_0+1_20151114_011652",
                 "SM304256_0+1_20151114_021652",
                 "SM304256_0+1_20151114_031652",
@@ -173,34 +203,11 @@ namespace AnalysisPrograms
                 "SM304256_0+1_20151114_211652",
                 "SM304256_0+1_20151114_221652",
                 "SM304256_0+1_20151114_231652",
-};
+            };
 
-            //PREPARE STRONG WIND TEMPLATE
-            //var ipDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez02\Towsey.Acoustic");
-            //var opDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\ContentDescription");
-            //WindStrong1.WriteTemplateToFile(ipDir, opDir);
+            var templatesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\ContentDescriptionTemplates.yml");
 
-            //PREPARE LIGHT WIND TEMPLATE
-            //var ipDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez03\Towsey.Acoustic");
-            //var opDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\ContentDescription");
-            //WindLight1.WriteTemplateToFile(ipDir, opDir);
-
-            //PREPARE LIGHT RAIN TEMPLATE
-            //var ipDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez08\Towsey.Acoustic");
-            //var opDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\ContentDescription");
-            //WindLight1.WriteTemplateToFile(ipDir, opDir);
-
-            //PREPARE BIRD MORNING CHORUS1 TEMPLATE
-            //var ipDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez05\Towsey.Acoustic");
-            //var opDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\ContentDescription");
-            //BirdMorningChorus1.WriteTemplateToFile(ipDir, opDir);
-
-            //PREPARE MEZZANINE-TASMAN ISLAND SILVER-EYE TEMPLATE
-            //var ipDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez08\Towsey.Acoustic");
-            //var opDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\ContentDescription");
-            //SilverEyeMezTasmanIs.WriteTemplateToFile(ipDir, opDir);
-
-            var contentPlots = ContentDescription.ContentDescriptionOfMultipleRecordingFiles(directories, baseNames);
+            var contentPlots = ContentDescription.ContentDescriptionOfMultipleRecordingFiles(directories, baseNames, templatesConfig);
 
             // Attach content description plots to LDFC spectrogram
             var path = Path.Combine(@"C:\Ecoacoustics\Output\Test\Test24HourRecording", "Testing__2Maps.png");
@@ -208,7 +215,7 @@ namespace AnalysisPrograms
 
             //Write image + contentPlots to file.
             var image = ContentVisualization.DrawLdfcSpectrogramWithContentScoreTracks(ldfcSpectrogram, contentPlots);
-            var path1 = Path.Combine(@"C:\Ecoacoustics\Output\ContentDescription", "Testing_2Maps.CONTENT10.png");
+            var path1 = Path.Combine(@"C:\Ecoacoustics\Output\ContentDescription", "Testing_2Maps.CONTENTnew01.png");
             image.Save(path1);
         }
 

@@ -4,8 +4,11 @@
 
 namespace AudioAnalysisTools.ContentDescriptionTools
 {
+    using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.IO;
+    using Acoustics.Shared.ConfigFile;
     using AudioAnalysisTools.ContentDescriptionTools.ContentTypes;
     using TowseyLibrary;
 
@@ -29,8 +32,12 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 
         public static string[] IndexNames { get; } = { "ACI", "ENT", "EVN", "BGN", "PMN" };
 
-        public static List<Plot> ContentDescriptionOfMultipleRecordingFiles(DirectoryInfo[] directories, string[] baseNames)
+        public static List<Plot> ContentDescriptionOfMultipleRecordingFiles(DirectoryInfo[] directories, string[] baseNames, FileInfo templatesConfig)
         {
+            // Read in all content templates
+            var templateCollection = ConfigFile.Deserialize<TemplateCollection>(templatesConfig);
+            var templatesAsDictionary = DataProcessing.ExtractDictionaryOfTemplateDictionaries(templateCollection);
+
             // init a list to collect description results
             var completeListOfResults = new List<DescriptionResult>();
 
@@ -39,14 +46,14 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             for (int i = 0; i < directories.Length; i++)
             {
                 // read the spectral indices for the current file
-                var dictionary = DataProcessing.ReadIndexMatrices(directories[i], baseNames[i]);
+                var dictionaryOfRecordingIndices = DataProcessing.ReadIndexMatrices(directories[i], baseNames[i]);
 
                 // Draw the index matrices for check/debug purposes
                 // var dir1 = new DirectoryInfo(@"C:\Ecoacoustics\Output\ContentDescription");
                 // ContentDescription.DrawNormalisedIndexMatrices(dir1, baseName, dictionary);
 
                 // get the rows and do something with them one by one.
-                var results = AnalyseMinutes(dictionary, i * 60); // WARNING: HACK: ASSUME ONE HOUR FILES
+                var results = AnalyseMinutes(templateCollection, templatesAsDictionary, dictionaryOfRecordingIndices, i * 60); // WARNING: HACK: ASSUME ONE HOUR FILES
                 completeListOfResults.AddRange(results);
             }
 
@@ -59,29 +66,59 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             return contentPlots;
         }
 
-        public static List<DescriptionResult> AnalyseMinutes(Dictionary<string, double[,]> dictionary, int elapsedMinutes)
+        public static List<DescriptionResult> AnalyseMinutes(
+            TemplateCollection templateCollection,
+            Dictionary<string, Dictionary<string, double[]>> templatesAsDictionary,
+            Dictionary<string, double[,]> dictionaryOfRecordingIndices,
+            int elapsedMinutes)
         {
-            int rowCount = dictionary[IndexNames[0]].GetLength(0);
+            int rowCount = dictionaryOfRecordingIndices[IndexNames[0]].GetLength(0);
 
             //int freqBinCount = dictionary[ContentDescription.IndexNames[0]].GetLength(1);
+            var rn = new RandomNumber(DateTime.Now.Millisecond);
+
             var results = new List<DescriptionResult>();
 
             // over all rows assuming one minute per row.
             for (int i = 0; i < rowCount; i++)
             {
-                var oneMinuteOfIndices = DataProcessing.GetIndicesForOneMinute(dictionary, i);
+                var oneMinuteOfIndices = DataProcessing.GetIndicesForOneMinute(dictionaryOfRecordingIndices, i);
+
+                // initialise where the results will be stored.
                 var descriptionResult = new DescriptionResult(elapsedMinutes + i);
 
-                // now send indices to various content searches
-                descriptionResult.AddDescription(WindStrong1.GetContent(oneMinuteOfIndices));
-                descriptionResult.AddDescription(WindLight1.GetContent(oneMinuteOfIndices));
-                descriptionResult.AddDescription(RainLight1.GetContent(oneMinuteOfIndices));
-                descriptionResult.AddDescription(BirdMorningChorus1.GetContent(oneMinuteOfIndices));
-                descriptionResult.AddDescription(SilverEyeMezTasmanIs.GetContent(oneMinuteOfIndices));
+                // now subject the indices to various content searches
+                foreach (var kvp in templateCollection)
+                {
+                    var key = kvp.Key;
+                    var template = kvp.Value;
+                    var algorithmType = template.FeatureExtractionAlgorithm;
+                    var templateIndices = templatesAsDictionary[key];
+                    double score = 0.0;
 
-                // yet to do following
-                //descriptionResult.AddDescription(RainHeavy1.GetContent(oneMinuteOfIndices));
-                //descriptionResult.AddDescription(RainHeavy2.GetContent(oneMinuteOfIndices));
+                    switch (algorithmType)
+                    {
+                        case 1:
+                            score = ContentAlgorithms.GetContent1(oneMinuteOfIndices, template, templateIndices);
+                            break;
+                        case 2:
+                            score = ContentAlgorithms.GetContent1(oneMinuteOfIndices, template, templateIndices);
+                            break;
+                        default:
+                            //LoggedConsole.WriteWarnLine("Algorithm " + algorithmType + " does not exist.");
+                            score = rn.GetDouble();
+                            break;
+                    }
+
+                    var result = new KeyValuePair<string, double>(key, score);
+                    descriptionResult.AddDescription(result);
+
+                    //descriptionResult.AddDescription(WindStrong1.GetContent(oneMinuteOfIndices));
+                    //descriptionResult.AddDescription(WindLight1.GetContent(oneMinuteOfIndices));
+                    //descriptionResult.AddDescription(RainLight1.GetContent(oneMinuteOfIndices));
+                    //descriptionResult.AddDescription(BirdMorningChorus1.GetContent(oneMinuteOfIndices));
+                    //descriptionResult.AddDescription(SilverEyeMezTasmanIs.GetContent(oneMinuteOfIndices));
+                }
 
                 results.Add(descriptionResult);
             }

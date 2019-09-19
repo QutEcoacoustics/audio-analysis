@@ -241,6 +241,7 @@
     <Compile Include="ActivityAndCover.cs" />
     <Compile Include="BirdClefExperiment1.cs" />
     <Compile Include="ChannelIntegrity.cs" />
+    <Compile Include="ContentDescriptionTools\ContentAlgorithms.cs" />
     <Compile Include="ContentDescriptionTools\ContentDescription.cs" />
     <Compile Include="ContentDescriptionTools\ContentTypes\BaseContentType.cs" />
     <Compile Include="ContentDescriptionTools\ContentTypes\RainLight1.cs" />
@@ -252,6 +253,8 @@
     <Compile Include="ContentDescriptionTools\DescriptionResult.cs" />
     <Compile Include="ContentDescriptionTools\ContentTypes\RainHeavy1.cs" />
     <Compile Include="ContentDescriptionTools\ContentTypes\WindStrong1.cs" />
+    <Compile Include="ContentDescriptionTools\ContentTemplate.cs" />
+    <Compile Include="ContentDescriptionTools\TemplateCollection.cs" />
     <Compile Include="CrossCorrelation.cs" />
     <Compile Include="DSP\Clipping.cs" />
     <Compile Include="DSP\DSP_Filters.cs" />

@@ -1,0 +1,86 @@
+--- 
+RainLight1:
+  TemplateId: 0
+  Name: "Light Rain 1"
+  Status: "locked"
+  Template:
+    ACI: [0.076, 0.046, 0.167, 0.360, 0.426, 0.443, 0.545, 0.595, 0.564, 0.612, 0.659, 0.570, 0.542, 0.520, 0.485, 0.485]
+    ENT: [0.065, 0.061, 0.176, 0.289, 0.249, 0.255, 0.296, 0.292, 0.262, 0.386, 0.462, 0.262, 0.222, 0.243, 0.217, 0.205]
+    EVN: [0.136, 0.009, 0.022, 0.051, 0.072, 0.092, 0.109, 0.150, 0.175, 0.176, 0.193, 0.155, 0.171, 0.135, 0.109, 0.133]
+    BGN: [0.366, 0.249, 0.181, 0.148, 0.122, 0.111, 0.106, 0.105, 0.104, 0.111, 0.111, 0.111, 0.105, 0.100, 0.090, 0.048]
+    PMN: [0.182, 0.076, 0.243, 0.459, 0.470, 0.501, 0.592, 0.651, 0.625, 0.699, 0.792, 0.599, 0.572, 0.550, 0.490, 0.488]
+  FeatureExtractionAlgorithm: 1
+  StartMinute: 32
+  EndMinute: 36
+  TemporalReduction: "Average"
+  SpectralReductionFactor: 16
+  BandMinHz:
+  BandMaxHz:
+WindStrong1:
+  TemplateId: 01
+  Name: Strong Wind 1
+  Status: "locked"
+  Template:
+    ACI: [0.086, 0.043, 0.041, 0.023, 0.032, 0.027, 0.029, 0.031, 0.032, 0.032, 0.034, 0.069, 0.033, 0.024, 0.018, 0.018]
+    ENT: [0.124, 0.112, 0.146, 0.163, 0.157, 0.157, 0.143, 0.122, 0.113, 0.095, 0.087, 0.121, 0.075, 0.060, 0.054, 0.067]
+    EVN: [0.376, 0.440, 0.590, 0.621, 0.648, 0.621, 0.565, 0.363, 0.273, 0.191, 0.164, 0.221, 0.104, 0.040, 0.017, 0.032]
+    BGN: [0.472, 0.360, 0.273, 0.199, 0.156, 0.121, 0.096, 0.085, 0.075, 0.069, 0.064, 0.061, 0.060, 0.058, 0.054, 0.026]
+    PMN: [0.468, 0.507, 0.687, 0.743, 0.757, 0.751, 0.665, 0.478, 0.391, 0.317, 0.276, 0.367, 0.187, 0.109, 0.071, 0.096]
+  FeatureExtractionAlgorithm: 1
+  StartMinute: 2
+  EndMinute: 27
+  TemporalReduction: "Average"
+  SpectralReductionFactor: 16
+  BandMinHz:
+  BandMaxHz:
+WindLight1:
+  TemplateId: 02
+  Name: Light Wind 1
+  Status: "locked"
+  Template:
+    ACI: [0.072, 0.035, 0.015, 0.008, 0.008, 0.009, 0.016, 0.018, 0.017, 0.015, 0.020, 0.022, 0.029, 0.026, 0.027, 0.098]
+    ENT: [0.063, 0.069, 0.071, 0.059, 0.052, 0.051, 0.050, 0.050, 0.050, 0.050, 0.050, 0.052, 0.051, 0.050, 0.051, 0.058]
+    EVN: [0.160, 0.099, 0.077, 0.023, 0.009, 0.009, 0.005, 0.004, 0.003, 0.004, 0.003, 0.006, 0.002, 0.004, 0.003, 0.015]
+    BGN: [0.387, 0.257, 0.151, 0.094, 0.069, 0.055, 0.049, 0.045, 0.042, 0.041, 0.041, 0.042, 0.043, 0.044, 0.043, 0.017]
+    PMN: [0.228, 0.199, 0.179, 0.087, 0.065, 0.048, 0.042, 0.034, 0.035, 0.035, 0.036, 0.038, 0.038, 0.037, 0.044, 0.081]
+  FeatureExtractionAlgorithm: 1
+  StartMinute: 50
+  EndMinute: 53
+  TemporalReduction: "Average"
+  SpectralReductionFactor: 16
+  BandMinHz:
+  BandMaxHz:
+BirdChorus1:
+  TemplateId: 03
+  Name: Bird Chorus
+  Status: "locked"
+  Template:
+    ACI: [0.274, 0.366, 0.591, 0.820, 0.997, 0.975, 0.796, 0.846, 0.605, 0.260]
+    ENT: [0.293, 0.415, 0.804, 0.972, 0.910, 0.876, 0.923, 0.971, 0.840, 0.491]
+    EVN: [0.445, 0.691, 0.291, 0.266, 0.407, 0.417, 0.306, 0.321, 0.199, 0.091]
+    BGN: [0.140, 0.099, 0.072, 0.059, 0.055, 0.051, 0.048, 0.048, 0.045, 0.042]
+    PMN: [0.671, 0.967, 0.924, 0.998, 1.000, 1.000, 0.998, 1.000, 0.952, 0.633]
+  FeatureExtractionAlgorithm: 10
+  StartMinute: 22
+  EndMinute: 23
+  TemporalReduction: "Average"
+  SpectralReductionFactor: 16
+  BandMinHz: 2000
+  BandMaxHz: 8000
+SilverEye:
+  TemplateId: 04
+  Name: Silver Eye
+  Status: "locked"
+  Template:
+    ACI: [0.779]
+    ENT: [0.393]
+    EVN: [0.686]
+    BGN: [0.085]
+    PMN: [0.883]
+  FeatureExtractionAlgorithm: 10
+  StartMinute: 6
+  EndMinute: 11
+  TemporalReduction: "Average"
+  SpectralReductionFactor: 16
+  BandMinHz: 3000
+  BandMaxHz: 4000

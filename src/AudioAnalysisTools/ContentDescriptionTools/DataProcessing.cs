@@ -257,6 +257,39 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             return list.ToArray();
         }
 
+        public static Dictionary<string, Dictionary<string, double[]>> ExtractDictionaryOfTemplateDictionaries(TemplateCollection collection)
+        {
+            var opDictionary = new Dictionary<string, Dictionary<string, double[]>>();
+            var keys = collection.Keys;
+            foreach (string key in keys)
+            {
+                var template = collection[key];
+                var dictOfIndices = template.Template;
+                opDictionary.Add(key, dictOfIndices);
+            }
+
+            return opDictionary;
+        }
+
+        public static double[,] ConvertDictionaryOfIndicesToMatrix(Dictionary<string, double[]> dictionary)
+        {
+            var indexCount = ContentDescription.IndexNames.Length;
+
+            var colCount = dictionary.First().Value.Length;
+            var opMatrix = new double[indexCount, colCount];
+
+            for (int i = 0; i < indexCount; i++)
+            {
+                var success = dictionary.TryGetValue(ContentDescription.IndexNames[i], out double[] indices);
+                if (success)
+                {
+                    MatrixTools.SetRow(opMatrix, i, indices);
+                }
+            }
+
+            return opMatrix;
+        }
+
         public static double[] GetFreqBinVector(Dictionary<string, double[]> dictionary, int id)
         {
             var list = new List<double>();
