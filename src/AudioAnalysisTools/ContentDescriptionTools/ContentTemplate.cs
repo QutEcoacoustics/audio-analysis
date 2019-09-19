@@ -50,19 +50,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// </summary>
         public int BandMaxHz { get; set; }
 
-        public int FrameSize { get; set; }
-
-        //private int FreqBinCount = FrameSize / ContentTemplate.SpectralReductionFactor;
-
-        public double[] ACI { get; set; }
-
-        public double[] ENT { get; set; }
-
-        public double[] EVN { get; set; }
-
-        public double[] BGN { get; set; }
-
-        public double[] PMN { get; set; }
+        //public int FrameSize { get; set; }
 
         public Dictionary<string, double[]> Template { get; set; }
 
@@ -70,21 +58,10 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// Returns a cached set of configuration properties.
         /// WARNING CACHED!.
         /// </summary>
-        public static IndexPropertiesCollection GetIndexProperties(FileInfo configFile)
-        {
-            return ConfigFile.Deserialize<IndexPropertiesCollection>(configFile);
-        }
-
-        /// <summary>
-        /// THis method changes for each content type.
-        /// </summary>
-        /// <param name="oneMinuteOfIndices">the indices for this minute.</param>
-        /// <returns>A score value for the content in this one minute of recording.</returns>
-        public static KeyValuePair<string, double> GetContent(Dictionary<string, double[]> oneMinuteOfIndices)
-        {
-            double score = 0.0;
-            return new KeyValuePair<string, double>("Name", score);
-        }
+        //public static IndexPropertiesCollection GetIndexProperties(FileInfo configFile)
+        //{
+        //    return ConfigFile.Deserialize<IndexPropertiesCollection>(configFile);
+        //}
 
         /*
         /// <summary>
@@ -110,10 +87,5 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             FileTools.WriteDictionaryToFile(finalTemplate, opPath);
         }
         */
-
-        // The following random data was used to try some statistical experiments.
-        // get dummy data
-        //var rn = new RandomNumber(DateTime.Now.Second + (int)DateTime.Now.Ticks + 333);
-        //var distance = rn.GetDouble();
     }
 }

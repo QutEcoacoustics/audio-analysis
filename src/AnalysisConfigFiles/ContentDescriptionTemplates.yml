@@ -60,13 +60,13 @@ BirdChorus1:
     EVN: [0.445, 0.691, 0.291, 0.266, 0.407, 0.417, 0.306, 0.321, 0.199, 0.091]
     BGN: [0.140, 0.099, 0.072, 0.059, 0.055, 0.051, 0.048, 0.048, 0.045, 0.042]
     PMN: [0.671, 0.967, 0.924, 0.998, 1.000, 1.000, 0.998, 1.000, 0.952, 0.633]
-  FeatureExtractionAlgorithm: 10
+  FeatureExtractionAlgorithm: 2
   StartMinute: 22
   EndMinute: 23
   TemporalReduction: "Average"
   SpectralReductionFactor: 16
   BandMinHz: 2000
-  BandMaxHz: 8000
+  BandMaxHz: 7500
 SilverEye:
   TemplateId: 04
   Name: Silver Eye
@@ -77,7 +77,7 @@ SilverEye:
     EVN: [0.686]
     BGN: [0.085]
     PMN: [0.883]
-  FeatureExtractionAlgorithm: 10
+  FeatureExtractionAlgorithm: 3
   StartMinute: 6
   EndMinute: 11
   TemporalReduction: "Average"

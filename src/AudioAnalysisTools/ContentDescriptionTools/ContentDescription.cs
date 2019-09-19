@@ -74,8 +74,8 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         {
             int rowCount = dictionaryOfRecordingIndices[IndexNames[0]].GetLength(0);
 
-            //int freqBinCount = dictionary[ContentDescription.IndexNames[0]].GetLength(1);
-            var rn = new RandomNumber(DateTime.Now.Millisecond);
+            // Following line used where want to return a set of random scores for testing reasons.
+            //var rn = new RandomNumber(DateTime.Now.Millisecond);
 
             var results = new List<DescriptionResult>();
 
@@ -99,25 +99,24 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                     switch (algorithmType)
                     {
                         case 1:
-                            score = ContentAlgorithms.GetContent1(oneMinuteOfIndices, template, templateIndices);
+                            score = ContentAlgorithms.GetFullBandContent1(oneMinuteOfIndices, template, templateIndices);
                             break;
                         case 2:
-                            score = ContentAlgorithms.GetContent1(oneMinuteOfIndices, template, templateIndices);
+                            score = ContentAlgorithms.GetBroadbandContent1(oneMinuteOfIndices, template, templateIndices);
+                            break;
+                        case 3:
+                            score = ContentAlgorithms.GetNarrowBandContent1(oneMinuteOfIndices, template, templateIndices);
                             break;
                         default:
                             //LoggedConsole.WriteWarnLine("Algorithm " + algorithmType + " does not exist.");
-                            score = rn.GetDouble();
+                            //score = rn.GetDouble();
+                            score = (i % rowCount) / (double)rowCount;
                             break;
                     }
 
                     var result = new KeyValuePair<string, double>(key, score);
                     descriptionResult.AddDescription(result);
 
-                    //descriptionResult.AddDescription(WindStrong1.GetContent(oneMinuteOfIndices));
-                    //descriptionResult.AddDescription(WindLight1.GetContent(oneMinuteOfIndices));
-                    //descriptionResult.AddDescription(RainLight1.GetContent(oneMinuteOfIndices));
-                    //descriptionResult.AddDescription(BirdMorningChorus1.GetContent(oneMinuteOfIndices));
-                    //descriptionResult.AddDescription(SilverEyeMezTasmanIs.GetContent(oneMinuteOfIndices));
                 }
 
                 results.Add(descriptionResult);
