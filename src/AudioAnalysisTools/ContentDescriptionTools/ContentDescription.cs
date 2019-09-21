@@ -4,12 +4,9 @@
 
 namespace AudioAnalysisTools.ContentDescriptionTools
 {
-    using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.IO;
     using Acoustics.Shared.ConfigFile;
-    using AudioAnalysisTools.ContentDescriptionTools.ContentTypes;
     using TowseyLibrary;
 
     public class ContentDescription
@@ -32,28 +29,31 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 
         public static string[] IndexNames { get; } = { "ACI", "ENT", "EVN", "BGN", "PMN" };
 
-        public static List<Plot> ContentDescriptionOfMultipleRecordingFiles(DirectoryInfo[] directories, string[] baseNames, FileInfo templatesConfig)
+        public static List<Plot> ContentDescriptionOfMultipleRecordingFiles(FileInfo listOfIndexFiles, FileInfo templatesConfig)
         {
             // Read in all content templates
             var templateCollection = ConfigFile.Deserialize<TemplateCollection>(templatesConfig);
             var templatesAsDictionary = DataProcessing.ExtractDictionaryOfTemplateDictionaries(templateCollection);
+
+            // Read in list of paths to index files
+            var filePaths = FileTools.ReadTextFile(listOfIndexFiles.FullName);
 
             // init a list to collect description results
             var completeListOfResults = new List<DescriptionResult>();
 
             // cycle through the directories
             // WARNING: Assume one-hour duration for each recording
-            for (int i = 0; i < directories.Length; i++)
+            for (int i = 0; i < filePaths.Count; i++)
             {
                 // read the spectral indices for the current file
-                var dictionaryOfRecordingIndices = DataProcessing.ReadIndexMatrices(directories[i], baseNames[i]);
+                var dictionaryOfRecordingIndices = DataProcessing.ReadIndexMatrices(filePaths[i]);
 
                 // Draw the index matrices for check/debug purposes
                 // var dir1 = new DirectoryInfo(@"C:\Ecoacoustics\Output\ContentDescription");
                 // ContentDescription.DrawNormalisedIndexMatrices(dir1, baseName, dictionary);
 
                 // get the rows and do something with them one by one.
-                var results = AnalyseMinutes(templateCollection, templatesAsDictionary, dictionaryOfRecordingIndices, i * 60); // WARNING: HACK: ASSUME ONE HOUR FILES
+                var results = AnalyzeMinutes(templateCollection, templatesAsDictionary, dictionaryOfRecordingIndices, i * 60); // WARNING: HACK: ASSUME ONE HOUR FILES
                 completeListOfResults.AddRange(results);
             }
 
@@ -66,7 +66,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             return contentPlots;
         }
 
-        public static List<DescriptionResult> AnalyseMinutes(
+        public static List<DescriptionResult> AnalyzeMinutes(
             TemplateCollection templateCollection,
             Dictionary<string, Dictionary<string, double[]>> templatesAsDictionary,
             Dictionary<string, double[,]> dictionaryOfRecordingIndices,
@@ -94,7 +94,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                     var template = kvp.Value;
                     var algorithmType = template.FeatureExtractionAlgorithm;
                     var templateIndices = templatesAsDictionary[key];
-                    double score = 0.0;
+                    double score;
 
                     switch (algorithmType)
                     {

@@ -15,6 +15,24 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// This algorithm is used for full band width events such as a rain and wind.
         /// It calculates a content score based on a template match to what is in the full spectrum.
         /// </summary>
+        /// <param name="templateManifest">A description of the template which is to be created.</param>
+        /// <param name="templateIndices">The actual dictionary of template arrays.</param>
+        /// <returns>A new template.</returns>
+        public static Dictionary<string, double[]> CreateFullBandTemplate1(ContentTemplate templateManifest, Dictionary<string, double[,]> templateIndices)
+        {
+            var reductionFactor = templateManifest.SpectralReductionFactor;
+            var startRowId = templateManifest.StartRowId;
+            var endRowId = templateManifest.EndRowId;
+            var dictionaryOfVector = DataProcessing.AverageIndicesOverMinutes(templateIndices, startRowId, endRowId);
+            var reducedIndices = DataProcessing.ReduceIndicesByFactor(dictionaryOfVector, reductionFactor);
+
+            return reducedIndices;
+        }
+
+        /// <summary>
+        /// This algorithm is used for full band width events such as a rain and wind.
+        /// It calculates a content score based on a template match to what is in the full spectrum.
+        /// </summary>
         /// <param name="oneMinuteOfIndices">Derived from the source recording.</param>
         /// <param name="template">A previously prepared template.</param>
         /// <param name="templateIndices">The actual dictionary of template arrays.</param>
@@ -33,6 +51,31 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             return 1 - distance;
         }
 
+        // ###################################################################################
+
+        /// <summary>
+        /// This algorithm is used for broad band events such as a bird chorus.
+        /// It selects acoustic content over a band of several kHz and calculates a content score based on a template match to what is in the band.
+        /// </summary>
+        /// <param name="templateManifest">A previously prepared template.</param>
+        /// <param name="templateIndices">The actual dictionary of template arrays.</param>
+        /// <returns>A similarity score.</returns>
+        public static Dictionary<string, double[]> CreateBroadbandTemplate1(ContentTemplate templateManifest, Dictionary<string, double[,]> templateIndices)
+        {
+            var reductionFactor = templateManifest.SpectralReductionFactor;
+            var startRowId = templateManifest.StartRowId;
+            var endRowId = templateManifest.EndRowId;
+            var dictionaryOfVector = DataProcessing.AverageIndicesOverMinutes(templateIndices, startRowId, endRowId);
+            // remove first two freq bins and last four freq bins, i.e. bottomBin = 2 and topBin = 11;
+            int freqBinCount = ContentDescription.FreqBinCount / reductionFactor;
+            int bottomFreq = templateManifest.BandMinHz; //Hertz
+            int topFreq = templateManifest.BandMaxHz; //Hertz
+            var freqBinBounds = DataProcessing.GetFreqBinBounds(bottomFreq, topFreq, freqBinCount);
+            var reducedIndices = DataProcessing.ReduceIndicesByFactor(dictionaryOfVector, reductionFactor);
+            reducedIndices = DataProcessing.ApplyBandPass(reducedIndices, freqBinBounds[0], freqBinBounds[1]);
+            return reducedIndices;
+        }
+
         /// <summary>
         /// This algorithm is used for broad band events such as a bird chorus.
         /// It selects acoustic content over a band of several kHz and calculates a content score based on a template match to what is in the band.
@@ -43,13 +86,14 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// <returns>A similarity score.</returns>
         public static double GetBroadbandContent1(Dictionary<string, double[]> oneMinuteOfIndices, ContentTemplate template, Dictionary<string, double[]> templateIndices)
         {
-            // remove first two freq bins and last four freq bins, i.e. bottomBin = 2 and topBin = 11;
             var reductionFactor = template.SpectralReductionFactor;
             int freqBinCount = ContentDescription.FreqBinCount / reductionFactor;
             int bottomFreq = template.BandMinHz; //Hertz
             int topFreq = template.BandMaxHz; //Hertz
             var freqBinBounds = DataProcessing.GetFreqBinBounds(bottomFreq, topFreq, freqBinCount);
             var reducedIndices = DataProcessing.ReduceIndicesByFactor(oneMinuteOfIndices, reductionFactor);
+
+            // remove top freq bins and bottom freq bins;
             reducedIndices = DataProcessing.ApplyBandPass(reducedIndices, freqBinBounds[0], freqBinBounds[1]);
             var oneMinuteVector = DataProcessing.ConvertDictionaryToVector(reducedIndices);
             var templateVector = DataProcessing.ConvertDictionaryToVector(templateIndices);
@@ -60,6 +104,32 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             // Normalize the distance
             distance /= Math.Sqrt(templateVector.Length);
             return 1 - distance;
+        }
+
+        // ###################################################################################
+
+        /// <summary>
+        /// This algorithm is used for narrow band events such as an insect bird chorus or content due to narrow band calls of a single bird species.
+        /// It searches the full spectrum for a match to the template and then
+        ///  calculates how much of the match weight is in the correct narrow freq band.
+        /// </summary>
+        /// <param name="templateManifest">A previously prepared template.</param>
+        /// <param name="templateIndices">The actual dictionary of template arrays.</param>
+        /// <returns>A similarity score.</returns>
+        public static Dictionary<string, double[]> CreateNarrowBandTemplate1(ContentTemplate templateManifest, Dictionary<string, double[,]> templateIndices)
+        {
+            var reductionFactor = templateManifest.SpectralReductionFactor;
+            var startRowId = templateManifest.StartRowId;
+            var endRowId = templateManifest.EndRowId;
+            var dictionaryOfVector = DataProcessing.AverageIndicesOverMinutes(templateIndices, startRowId, endRowId);
+            // remove first two freq bins and last four freq bins, i.e. bottomBin = 2 and topBin = 11;
+            int freqBinCount = ContentDescription.FreqBinCount / reductionFactor;
+            int bottomFreq = templateManifest.BandMinHz; //Hertz
+            int topFreq = templateManifest.BandMaxHz; //Hertz
+            var freqBinBounds = DataProcessing.GetFreqBinBounds(bottomFreq, topFreq, freqBinCount);
+            var reducedIndices = DataProcessing.ReduceIndicesByFactor(dictionaryOfVector, reductionFactor);
+            reducedIndices = DataProcessing.ApplyBandPass(reducedIndices, freqBinBounds[0], freqBinBounds[1]);
+            return reducedIndices;
         }
 
         /// <summary>
@@ -89,5 +159,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             double score = callSum / totalSum;
             return score;
         }
+
+        // ###################################################################################
     }
 }

@@ -17,24 +17,19 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// <summary>
         /// Reads in all the index matrices whose keys are in the above array of IndexNames.
         /// </summary>
-        /// <param name="dir">directory containing the index matrices.</param>
-        /// <param name="baseName">base name of the files.</param>
+        /// <param name="filePath">Partial path to the index files.</param>
         /// <returns>a Dictionary of matrices containing normalised index values.</returns>
-        public static Dictionary<string, double[,]> ReadIndexMatrices(DirectoryInfo dir, string baseName)
+        public static Dictionary<string, double[,]> ReadIndexMatrices(string filePath)
         {
             var dictionary = new Dictionary<string, double[,]>();
 
             foreach (string key in ContentDescription.IndexNames)
             {
-                var indexBounds = ContentDescription.IndexValueBounds[key];
-
-                // construct a path to the required matrix
-                var path = Path.Combine(dir.FullName, baseName + "__Towsey.Acoustic." + key + ".csv");
-
-                // read in the matrix
-                var indexMatrix = Csv.ReadMatrixFromCsv<double>(new FileInfo(path));
+                // construct a path to the required matrix and read in the matrix
+                var indexMatrix = Csv.ReadMatrixFromCsv<double>(new FileInfo(filePath + key + ".csv"));
 
                 // normalize the matrix values
+                var indexBounds = ContentDescription.IndexValueBounds[key];
                 var normalisedMatrix = DataTools.NormaliseInZeroOne(indexMatrix, indexBounds[0], indexBounds[1]);
                 dictionary.Add(key, normalisedMatrix);
             }

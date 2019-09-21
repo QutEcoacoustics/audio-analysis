@@ -8,6 +8,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
     using System.IO;
     using Acoustics.Shared.ConfigFile;
     using AudioAnalysisTools.Indices;
+    using TowseyLibrary;
     using YamlDotNet.Serialization;
 
     public enum TemplateStatus
@@ -28,6 +29,10 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         public TemplateStatus Status { get; set; }
 
         public byte FeatureExtractionAlgorithm { get; set; }
+
+        public int StartRowId { get; set; }
+
+        public int EndRowId { get; set; }
 
         /// <summary>
         /// Gets or sets the factor by which a spectrum of index values is reduced.
@@ -55,37 +60,51 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         public Dictionary<string, double[]> Template { get; set; }
 
         /// <summary>
-        /// Returns a cached set of configuration properties.
-        /// WARNING CACHED!.
-        /// </summary>
-        //public static IndexPropertiesCollection GetIndexProperties(FileInfo configFile)
-        //{
-        //    return ConfigFile.Deserialize<IndexPropertiesCollection>(configFile);
-        //}
-
-        /*
-        /// <summary>
         /// THis method is the same for all Content Types but uses constants appropriate the template type.
         /// </summary>
-        public static Dictionary<string, double[]> GetTemplate(DirectoryInfo dir)
+        public static ContentTemplate CreateTemplate(string filePath, ContentTemplate templateManifest)
         {
-            var dictionaryOfIndices = DataProcessing.ReadIndexMatrices(dir, BaseName);
-            var birdIndices = DataProcessing.AverageIndicesOverMinutes(dictionaryOfIndices, StartRowId, EndRowId);
-            var reducedIndices = DataProcessing.ReduceIndicesByFactor(birdIndices, ReductionFactor);
-            var freqBinBounds = DataProcessing.GetFreqBinBounds(BottomFreq, TopFreq, FreqBinCount);
-            reducedIndices = DataProcessing.ApplyBandPass(reducedIndices, freqBinBounds[0], freqBinBounds[1]);
-            return reducedIndices;
+            // Read all indices from the complete recording
+            var dictionaryOfIndices = DataProcessing.ReadIndexMatrices(filePath);
+            var algorithmType = templateManifest.FeatureExtractionAlgorithm;
+            Dictionary<string, double[]> newTemplate;
+
+            switch (algorithmType)
+            {
+                case 1:
+                    newTemplate = ContentAlgorithms.CreateFullBandTemplate1(templateManifest, dictionaryOfIndices);
+                    templateManifest.Template = newTemplate;
+                    break;
+                case 2:
+                    newTemplate = ContentAlgorithms.CreateBroadbandTemplate1(templateManifest, dictionaryOfIndices);
+                    templateManifest.Template = newTemplate;
+                    break;
+                case 3:
+                    newTemplate = ContentAlgorithms.CreateNarrowBandTemplate1(templateManifest, dictionaryOfIndices);
+                    templateManifest.Template = newTemplate;
+                    break;
+                default:
+                    //LoggedConsole.WriteWarnLine("Algorithm " + algorithmType + " does not exist.");
+                    templateManifest.Template = null;
+                    break;
+            }
+
+            return templateManifest;
         }
 
         /// <summary>
         /// THis method is the same for all Content Types.
         /// </summary>
-        public static void WriteTemplateToFile(DirectoryInfo ipDir, DirectoryInfo opDir)
+        public static void WriteTemplateToFile(string filePath, ContentTemplate templateManifest, DirectoryInfo opDir)
         {
-            var finalTemplate = GetTemplate(ipDir);
-            var opPath = Path.Combine(opDir.FullName, Name + "Template.csv");
-            FileTools.WriteDictionaryToFile(finalTemplate, opPath);
+            var template = CreateTemplate(filePath, templateManifest);
+            var opPath = Path.Combine(opDir.FullName, templateManifest.Name + "Template.csv");
+            //FileTools.WriteDictionaryToFile(templateManifest, opPath);
         }
-        */
+
+        // The following random data was used to try some statistical experiments.
+        // get dummy data
+        //var rn = new RandomNumber(DateTime.Now.Second + (int)DateTime.Now.Ticks + 333);
+        //var distance = rn.GetDouble();
     }
 }

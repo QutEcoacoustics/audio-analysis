@@ -69,21 +69,21 @@ namespace AudioAnalysisTools.ContentDescriptionTools.ContentTypes
             return new KeyValuePair<string, double>(Name, score);
         }
 
-        public static Dictionary<string, double[]> GetTemplate(DirectoryInfo dir)
-        {
-            var dictionaryOfIndices = DataProcessing.ReadIndexMatrices(dir, BaseName);
-            var birdIndices = DataProcessing.AverageIndicesOverMinutes(dictionaryOfIndices, StartRowId, EndRowId);
-            var reducedIndices = DataProcessing.ReduceIndicesByFactor(birdIndices, ReductionFactor);
-            var freqBinBounds = DataProcessing.GetFreqBinBounds(BottomFreq, TopFreq, FreqBinCount);
-            reducedIndices = DataProcessing.ApplyBandPass(reducedIndices, freqBinBounds[0], freqBinBounds[1]);
-            return reducedIndices;
-        }
+        //public static Dictionary<string, double[]> GetTemplate(DirectoryInfo dir)
+        //{
+        //    var dictionaryOfIndices = DataProcessing.ReadIndexMatrices(dir, BaseName);
+        //    var birdIndices = DataProcessing.AverageIndicesOverMinutes(dictionaryOfIndices, StartRowId, EndRowId);
+        //    var reducedIndices = DataProcessing.ReduceIndicesByFactor(birdIndices, ReductionFactor);
+        //    var freqBinBounds = DataProcessing.GetFreqBinBounds(BottomFreq, TopFreq, FreqBinCount);
+        //    reducedIndices = DataProcessing.ApplyBandPass(reducedIndices, freqBinBounds[0], freqBinBounds[1]);
+        //    return reducedIndices;
+        //}
 
-        public static void WriteTemplateToFile(DirectoryInfo ipDir, DirectoryInfo opDir)
-        {
-            var template = GetTemplate(ipDir);
-            var opPath = Path.Combine(opDir.FullName, Name + "Template.csv");
-            FileTools.WriteDictionaryToFile(template, opPath);
-        }
+        //public static void WriteTemplateToFile(DirectoryInfo ipDir, DirectoryInfo opDir)
+        //{
+        //    var template = GetTemplate(ipDir);
+        //    var opPath = Path.Combine(opDir.FullName, Name + "Template.csv");
+        //    FileTools.WriteDictionaryToFile(template, opPath);
+        //}
     }
 }

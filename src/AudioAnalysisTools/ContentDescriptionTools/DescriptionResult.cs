@@ -1,11 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace AudioAnalysisTools.ContentDescriptionTools
 {
+    using System;
+    using System.Collections.Generic;
+
     /// <summary>
     /// This class holds the results of content description for a unit of recording, assumed to be one-minute.
     /// The results are held in a dictionary.

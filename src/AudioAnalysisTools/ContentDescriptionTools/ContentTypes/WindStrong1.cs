@@ -49,19 +49,19 @@ namespace AudioAnalysisTools.ContentDescriptionTools.ContentTypes
             return new KeyValuePair<string, double>(Name, 1 - distance);
         }
 
-        public static Dictionary<string, double[]> GetTemplate(DirectoryInfo dir)
-        {
-            var dictionaryOfIndices = DataProcessing.ReadIndexMatrices(dir, BaseName);
-            var windIndices = DataProcessing.AverageIndicesOverMinutes(dictionaryOfIndices, StartRowId, EndRowId);
-            var reducedIndices = DataProcessing.ReduceIndicesByFactor(windIndices, ReductionFactor);
-            return reducedIndices;
-        }
+        //public static Dictionary<string, double[]> GetTemplate(DirectoryInfo dir)
+        //{
+        //    var dictionaryOfIndices = DataProcessing.ReadIndexMatrices(dir, BaseName);
+        //    var windIndices = DataProcessing.AverageIndicesOverMinutes(dictionaryOfIndices, StartRowId, EndRowId);
+        //    var reducedIndices = DataProcessing.ReduceIndicesByFactor(windIndices, ReductionFactor);
+        //    return reducedIndices;
+        //}
 
-        public static void WriteTemplateToFile(DirectoryInfo ipDir, DirectoryInfo opDir)
-        {
-            var template = GetTemplate(ipDir);
-            var opPath = Path.Combine(opDir.FullName, Name + "Template.csv");
-            FileTools.WriteDictionaryToFile(template, opPath);
-        }
+        //public static void WriteTemplateToFile(DirectoryInfo ipDir, DirectoryInfo opDir)
+        //{
+        //    var template = GetTemplate(ipDir);
+        //    var opPath = Path.Combine(opDir.FullName, Name + "Template.csv");
+        //    FileTools.WriteDictionaryToFile(template, opPath);
+        //}
     }
 }
