@@ -10,7 +10,7 @@ RainLight1:
   Comment: "Detects light rain."
   SourceFileName: "SM304256_0+1_20151114_071652"
   # Status can be "locked", etc
-  Status: "locked"
+  TemplateStatus: "locked"
   RecordingLocation: "Mezzanine, Tasman Is, Tasmania"
   RecordingDateTime: "2015-11-14 07:16:52 +1100"
   FeatureExtractionAlgorithm: 1
@@ -21,15 +21,15 @@ RainLight1:
   #Spectral Processing
   SpectralReductionFactor: 16
   # Frequency band selection
-  BandMinHz:
-  BandMaxHz:
+  BandMinHz: null
+  BandMaxHz: null
 WindStrong1:
   TemplateId: 01
   Name: Strong Wind 1
   Comment: "Detects strong wind."
   SourceFileName: "SM304256_0+1_20151114_011652"
   # Status can be "locked", etc
-  Status: "locked"
+  TemplateStatus: "locked"
   RecordingLocation: "Mezzanine, Tasman Is, Tasmania"
   RecordingDateTime: "2015-11-14 01:16:52 +1100"
   FeatureExtractionAlgorithm: 1
@@ -48,7 +48,7 @@ WindLight1:
   Comment: "Detects light wind."
   SourceFileName: "SM304256_0+1_20151114_021652"
   # Status can be "locked", etc
-  Status: "locked"
+  TemplateStatus: "locked"
   RecordingLocation: "Mezzanine, Tasman Is, Tasmania"
   RecordingDateTime: "2015-11-14 02:16:52 +1100"
   # NOTE: Remove the ENT index before applying this template
@@ -68,7 +68,7 @@ BirdChorus1:
   Comment: "Detects chorus of bird song."
   SourceFileName: "SM304256_0+1_20151114_041652"
   # Status can be "locked", etc
-  Status: "locked"
+  TemplateStatus: "locked"
   RecordingLocation: "Mezzanine, Tasman Is, Tasmania"
   RecordingDateTime: "2015-11-14 04:16:52 +1100"
   # Only want the interval 2-8 kHz for bird morning chorus.
@@ -91,7 +91,7 @@ SilverEye:
   Comment: "Detects Silver Eye song in a Tasman Island recording."
   SourceFileName: "SM304256_0+1_20151114_071652"
   # Status can be "locked", etc
-  Status: "locked"
+  TemplateStatus: "locked"
   RecordingLocation: "Mezzanine, Tasman Is, Tasmania"
   RecordingDateTime: "2015-11-14 07:16:52 +1100"
   # Only want the interval 3-4 kHz for Silver-eye band.

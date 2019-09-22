@@ -64,8 +64,8 @@ namespace AnalysisPrograms
                 Log.WriteLine("# Start Time = " + tStart.ToString(CultureInfo.InvariantCulture));
 
                 // CONTENT DESCRIPTION
-                //ContentDescriptionCreateTemplates();
-                ContentDescriptionApplyTemplates();
+                ContentDescriptionCreateTemplates();
+                //ContentDescriptionApplyTemplates();
 
                 //AnalyseFrogDataSet();
                 //Audio2CsvOverOneFile();
@@ -121,6 +121,9 @@ namespace AnalysisPrograms
 
         public static void ContentDescriptionCreateTemplates()
         {
+            var templatesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\ContentDescriptionTemplates.yml");
+            TemplateCollection.CreateNewTemplatesManifest(templatesConfig);
+
             //PREPARE STRONG WIND TEMPLATE
             //var ipDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez02\Towsey.Acoustic");
             //var opDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\ContentDescription");
@@ -157,7 +160,7 @@ namespace AnalysisPrograms
             var path = Path.Combine(@"C:\Ecoacoustics\Output\Test\Test24HourRecording", "Testing__2Maps.png");
             var ldfcSpectrogram = Image.FromFile(path);
             var image = ContentVisualization.DrawLdfcSpectrogramWithContentScoreTracks(ldfcSpectrogram, contentPlots);
-            var path1 = Path.Combine(@"C:\Ecoacoustics\Output\ContentDescription", "Testing_2Maps.CONTENTnew02.png");
+            var path1 = Path.Combine(@"C:\Ecoacoustics\ContentDescription", "Testing_2Maps.CONTENTnew02.png");
             image.Save(path1);
         }
 

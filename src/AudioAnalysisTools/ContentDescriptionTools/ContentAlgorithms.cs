@@ -18,7 +18,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// <param name="templateManifest">A description of the template which is to be created.</param>
         /// <param name="templateIndices">The actual dictionary of template arrays.</param>
         /// <returns>A new template.</returns>
-        public static Dictionary<string, double[]> CreateFullBandTemplate1(ContentTemplate templateManifest, Dictionary<string, double[,]> templateIndices)
+        public static Dictionary<string, double[]> CreateFullBandTemplate1(TemplateManifest templateManifest, Dictionary<string, double[,]> templateIndices)
         {
             var reductionFactor = templateManifest.SpectralReductionFactor;
             var startRowId = templateManifest.StartRowId;
@@ -37,7 +37,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// <param name="template">A previously prepared template.</param>
         /// <param name="templateIndices">The actual dictionary of template arrays.</param>
         /// <returns>A similarity score.</returns>
-        public static double GetFullBandContent1(Dictionary<string, double[]> oneMinuteOfIndices, ContentTemplate template, Dictionary<string, double[]> templateIndices)
+        public static double GetFullBandContent1(Dictionary<string, double[]> oneMinuteOfIndices, TemplateManifest template, Dictionary<string, double[]> templateIndices)
         {
             var reductionFactor = template.SpectralReductionFactor;
             var reducedIndices = DataProcessing.ReduceIndicesByFactor(oneMinuteOfIndices, reductionFactor);
@@ -60,7 +60,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// <param name="templateManifest">A previously prepared template.</param>
         /// <param name="templateIndices">The actual dictionary of template arrays.</param>
         /// <returns>A similarity score.</returns>
-        public static Dictionary<string, double[]> CreateBroadbandTemplate1(ContentTemplate templateManifest, Dictionary<string, double[,]> templateIndices)
+        public static Dictionary<string, double[]> CreateBroadbandTemplate1(TemplateManifest templateManifest, Dictionary<string, double[,]> templateIndices)
         {
             var reductionFactor = templateManifest.SpectralReductionFactor;
             var startRowId = templateManifest.StartRowId;
@@ -84,7 +84,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// <param name="template">A previously prepared template.</param>
         /// <param name="templateIndices">The actual dictionary of template arrays.</param>
         /// <returns>A similarity score.</returns>
-        public static double GetBroadbandContent1(Dictionary<string, double[]> oneMinuteOfIndices, ContentTemplate template, Dictionary<string, double[]> templateIndices)
+        public static double GetBroadbandContent1(Dictionary<string, double[]> oneMinuteOfIndices, TemplateManifest template, Dictionary<string, double[]> templateIndices)
         {
             var reductionFactor = template.SpectralReductionFactor;
             int freqBinCount = ContentDescription.FreqBinCount / reductionFactor;
@@ -116,7 +116,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// <param name="templateManifest">A previously prepared template.</param>
         /// <param name="templateIndices">The actual dictionary of template arrays.</param>
         /// <returns>A similarity score.</returns>
-        public static Dictionary<string, double[]> CreateNarrowBandTemplate1(ContentTemplate templateManifest, Dictionary<string, double[,]> templateIndices)
+        public static Dictionary<string, double[]> CreateNarrowBandTemplate1(TemplateManifest templateManifest, Dictionary<string, double[,]> templateIndices)
         {
             var reductionFactor = templateManifest.SpectralReductionFactor;
             var startRowId = templateManifest.StartRowId;
@@ -141,7 +141,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// <param name="template">A previously prepared template.</param>
         /// <param name="templateIndices">The actual dictionary of template arrays.</param>
         /// <returns>A similarity score.</returns>
-        public static double GetNarrowBandContent1(Dictionary<string, double[]> oneMinuteOfIndices, ContentTemplate template, Dictionary<string, double[]> templateIndices)
+        public static double GetNarrowBandContent1(Dictionary<string, double[]> oneMinuteOfIndices, TemplateManifest template, Dictionary<string, double[]> templateIndices)
         {
             var reductionFactor = template.SpectralReductionFactor;
             var reducedIndices = DataProcessing.ReduceIndicesByFactor(oneMinuteOfIndices, reductionFactor);

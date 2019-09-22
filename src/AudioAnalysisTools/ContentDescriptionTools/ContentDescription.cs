@@ -13,6 +13,8 @@ namespace AudioAnalysisTools.ContentDescriptionTools
     {
         // All the code base for content description assumes a sampling rate of 22050 (i.e. a Nyquist = 11025) and frame size = 512 (i.e. 256 frequency bins).
         public const int Nyquist = 11025;
+
+        //public int FrameSize { get; set; }
         public const int FreqBinCount = 256;
 
         /// <summary>

@@ -252,7 +252,7 @@
     <Compile Include="ContentDescriptionTools\DescriptionResult.cs" />
     <Compile Include="ContentDescriptionTools\ContentTypes\RainHeavy1.cs" />
     <Compile Include="ContentDescriptionTools\ContentTypes\WindStrong1.cs" />
-    <Compile Include="ContentDescriptionTools\ContentTemplate.cs" />
+    <Compile Include="ContentDescriptionTools\TemplateManifest.cs" />
     <Compile Include="ContentDescriptionTools\TemplateCollection.cs" />
     <Compile Include="CrossCorrelation.cs" />
     <Compile Include="DSP\Clipping.cs" />

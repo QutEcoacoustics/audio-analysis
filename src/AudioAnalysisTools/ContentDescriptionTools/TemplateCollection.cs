@@ -1,36 +1,37 @@
-using System;
-using System.Collections.Generic;
+// <copyright file="TemplateCollection.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
 
 namespace AudioAnalysisTools.ContentDescriptionTools
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
-    using AnalysisBase;
-    //using Zio;
 
-    public class TemplateCollection : Dictionary<string, ContentTemplate>, IConfig
+    public class TemplateCollection : Dictionary<string, TemplateManifest>, IConfig
     {
-        static TemplateCollection()
+        public static void CreateNewTemplatesManifest(FileInfo manifestFile)
         {
-            ConfigFile.Defaults.Add(typeof(TemplateCollection), "ContentDescriptionTemplates.yml");
-        }
+            // Read in all template manifests
+            var templateCollection = ConfigFile.Deserialize<TemplateCollection>(manifestFile);
+            var oldFile = new FileInfo(Path.Combine(manifestFile.DirectoryName ?? throw new InvalidOperationException(), "ContentDescriptionTemplates.Backup.yml"));
+            Yaml.Serialize(oldFile, templateCollection);
 
-        public TemplateCollection()
-        {
-            void OnLoaded(IConfig config)
+            foreach (var manifest in templateCollection)
             {
-                int i = 0;
-                foreach (var kvp in this)
-                {
-                    // assign the key to the object for consistency
-                    kvp.Value.Name = kvp.Key;
+                var template = manifest.Value;
 
-                    // HACK: infer order of properties for visualization based on order of for-each
-                    kvp.Value.TemplateId = i;
-                    i++;
+                if (template.Status == TemplateStatus.Locked)
+                {
+                    continue;
                 }
+
+                template.MostRecentEdit = DateTime.Now;
             }
 
-            this.Loaded += OnLoaded;
+            Yaml.Serialize(manifestFile, templateCollection);
         }
 
         public event Action<IConfig> Loaded;
@@ -42,48 +43,29 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             this.Loaded?.Invoke(this);
         }
 
-    //    public static Dictionary<string, double[,]> GetTemplateMatrices(TemplateCollection templates)
-    //    {
-    //        // init dictionary of matrices
-    //        var opTemplate = new Dictionary<string, double[,]>();
+        //    public static Dictionary<string, double[,]> GetTemplateMatrices(TemplateCollection templates)
+        //    {
+        //        // init dictionary of matrices
+        //        var opTemplate = new Dictionary<string, double[,]>();
 
-    //        foreach (var template in templates)
-    //        {
-    //            var name = template.Key;
-    //            var templateData = template.Value;
-    //            var dataDict = templateData.Template;
+        //        foreach (var template in templates)
+        //        {
+        //            var name = template.Key;
+        //            var templateData = template.Value;
+        //            var dataDict = templateData.Template;
 
-    //            // init a matrix to contain template values
-    //            var matrix = new double[,];
-    //            foreach (var kvp in dataDict)
-    //            {
-    //                var array = kvp.Value;
-    //                matrix.AddRow();
-    //            }
+        //            // init a matrix to contain template values
+        //            var matrix = new double[,];
+        //            foreach (var kvp in dataDict)
+        //            {
+        //                var array = kvp.Value;
+        //                matrix.AddRow();
+        //            }
 
-    //            opTemplate.Add(name, matrix);
-    //        }
+        //            opTemplate.Add(name, matrix);
+        //        }
 
-    //        return opTemplate;
-    //    }
-    }
-
-    public abstract class TemplatesConfig : AnalyzerConfig
-    {
-        protected TemplatesConfig()
-        {
-            void OnLoaded(IConfig config)
-            {
-                //var indicesPropertiesConfig = Indices.IndexProperties.Find(this, this.ConfigPath);
-                this.TemplateConfig = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\ContentDescriptionTemplates.yml";
-                this.DictionaryOfTemplates = ConfigFile.Deserialize<TemplateCollection>(this.TemplateConfig);
-            }
-
-            this.Loaded += OnLoaded;
-        }
-
-        public string TemplateConfig { get; set; }
-
-        public TemplateCollection DictionaryOfTemplates { get; private set; }
+        //        return opTemplate;
+        //    }
     }
 }
