@@ -65,7 +65,7 @@ namespace AnalysisPrograms
 
                 // CONTENT DESCRIPTION
                 ContentDescriptionCreateTemplates();
-                //ContentDescriptionApplyTemplates();
+                ContentDescriptionApplyTemplates();
 
                 //AnalyseFrogDataSet();
                 //Audio2CsvOverOneFile();
@@ -123,6 +123,7 @@ namespace AnalysisPrograms
         {
             var templatesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\ContentDescriptionTemplates.yml");
             TemplateCollection.CreateNewTemplatesManifest(templatesConfig);
+            Console.WriteLine("# Finished creation of new manifest");
 
             //PREPARE STRONG WIND TEMPLATE
             //var ipDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez02\Towsey.Acoustic");
@@ -152,6 +153,8 @@ namespace AnalysisPrograms
 
         public static void ContentDescriptionApplyTemplates()
         {
+            Console.WriteLine("# Start application of content description templates");
+
             var templatesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\ContentDescriptionTemplates.yml");
             var listOfIndexFiles = new FileInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMezIndexFiles.txt");
             var contentPlots = ContentDescription.ContentDescriptionOfMultipleRecordingFiles(listOfIndexFiles, templatesConfig);

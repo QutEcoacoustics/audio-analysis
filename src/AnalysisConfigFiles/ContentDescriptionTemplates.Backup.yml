@@ -2,7 +2,7 @@ RainLight1:
   Name: Light Rain 1
   TemplateId: 0
   GeneralComment: Detects light rain.
-  StatusComment: Status options are Locked, Standard, None
+  StatusComment: Status options are Locked, Standard, CalculateTemplate
   Status: Locked
   MostRecentEdit: 2019-09-22T16:40:17.5005710+10:00
   TemplateSourceSubdirectory: C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez08\Towsey.Acoustic
@@ -16,7 +16,7 @@ RainLight1:
   SpectralReductionFactor: 16
   FreqBandComment: Full freq band is processed.
   BandMinHz: 0
-  BandMaxHz: 0
+  BandMaxHz: 11025
   Template:
     ACI:
     - 0.075999999999999998
@@ -106,22 +106,22 @@ RainLight1:
 WindStrong1:
   Name: Strong Wind 1
   TemplateId: 1
-  GeneralComment: 
-  StatusComment: 
+  GeneralComment: Detects strong wind.
+  StatusComment: Status options are Locked, Standard, CalculateTemplate
   Status: Locked
   MostRecentEdit: 2019-09-22T16:40:17.5005710+10:00
-  TemplateSourceSubdirectory: 
-  TemplateSourceFileName: FILENAME2
-  TemplateRecordingLocation: 
-  TemplateRecordingDateTime: 
+  TemplateSourceSubdirectory: C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez02\Towsey.Acoustic
+  TemplateSourceFileName: SM304256_0+1_20151114_011652
+  TemplateRecordingLocation: Mezzanine, Tasman Is, Tasmania
+  TemplateRecordingDateTime: 2015-11-14 01:16:52 +1100
   FeatureExtractionAlgorithm: 1
-  TemporalSelectionComment: 
-  StartRowId: 0
-  EndRowId: 0
+  TemporalSelectionComment: The selection is inclusive of start and end minutes.
+  StartRowId: 23
+  EndRowId: 27
   SpectralReductionFactor: 16
-  FreqBandComment: 
+  FreqBandComment: Full freq band is processed.
   BandMinHz: 0
-  BandMaxHz: 0
+  BandMaxHz: 11025
   Template:
     ACI:
     - 0.085999999999999993
@@ -211,22 +211,22 @@ WindStrong1:
 WindLight1:
   Name: Light Wind 1
   TemplateId: 2
-  GeneralComment: 
-  StatusComment: 
+  GeneralComment: Detects light wind. Not currently very effective.
+  StatusComment: Status options are Locked, Standard, CalculateTemplate
   Status: Locked
   MostRecentEdit: 2019-09-22T16:40:17.5005710+10:00
-  TemplateSourceSubdirectory: 
-  TemplateSourceFileName: FILENAME2
-  TemplateRecordingLocation: 
-  TemplateRecordingDateTime: 
+  TemplateSourceSubdirectory: C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez03\Towsey.Acoustic
+  TemplateSourceFileName: SM304256_0+1_20151114_021652
+  TemplateRecordingLocation: Mezzanine, Tasman Is, Tasmania
+  TemplateRecordingDateTime: 2015-11-14 02:16:52 +1100
   FeatureExtractionAlgorithm: 1
-  TemporalSelectionComment: 
-  StartRowId: 0
-  EndRowId: 0
+  TemporalSelectionComment: The selection is inclusive of start and end minutes.
+  StartRowId: 50
+  EndRowId: 53
   SpectralReductionFactor: 16
-  FreqBandComment: 
+  FreqBandComment: Full freq band is processed.
   BandMinHz: 0
-  BandMaxHz: 0
+  BandMaxHz: 11025
   Template:
     ACI:
     - 0.071999999999999995
@@ -316,20 +316,20 @@ WindLight1:
 BirdChorus1:
   Name: Bird Chorus
   TemplateId: 3
-  GeneralComment: 
-  StatusComment: 
+  GeneralComment: Detects a bird chorus or multiple calls.
+  StatusComment: Status options are Locked, Standard, CalculateTemplate
   Status: Locked
   MostRecentEdit: 2019-09-22T16:40:17.5005710+10:00
-  TemplateSourceSubdirectory: 
-  TemplateSourceFileName: FILENAME2
-  TemplateRecordingLocation: 
-  TemplateRecordingDateTime: 
+  TemplateSourceSubdirectory: C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez05\Towsey.Acoustic
+  TemplateSourceFileName: SM304256_0+1_20151114_041652
+  TemplateRecordingLocation: Mezzanine, Tasman Is, Tasmania
+  TemplateRecordingDateTime: 2015-11-14 04:16:52 +1100
   FeatureExtractionAlgorithm: 2
-  TemporalSelectionComment: 
-  StartRowId: 0
-  EndRowId: 0
+  TemporalSelectionComment: The selection is inclusive of start and end minutes.
+  StartRowId: 47
+  EndRowId: 53
   SpectralReductionFactor: 16
-  FreqBandComment: 
+  FreqBandComment: Restrict to the bird band, approx 2-8kHz.
   BandMinHz: 2000
   BandMaxHz: 7500
   Template:
@@ -391,20 +391,20 @@ BirdChorus1:
 SilverEye:
   Name: Silver Eye
   TemplateId: 4
-  GeneralComment: 
-  StatusComment: 
+  GeneralComment: Detects bird Silver Eye
+  StatusComment: Status options are Locked, Standard, CalculateTemplate
   Status: Locked
   MostRecentEdit: 2019-09-22T16:40:17.5005710+10:00
-  TemplateSourceSubdirectory: 
-  TemplateSourceFileName: FILENAME2
-  TemplateRecordingLocation: 
-  TemplateRecordingDateTime: 
+  TemplateSourceSubdirectory: C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez08\Towsey.Acoustic
+  TemplateSourceFileName: SM304256_0+1_20151114_071652
+  TemplateRecordingLocation: Mezzanine, Tasman Is, Tasmania
+  TemplateRecordingDateTime: 2015-11-14 07:16:52 +1100
   FeatureExtractionAlgorithm: 3
-  TemporalSelectionComment: 
-  StartRowId: 0
-  EndRowId: 0
+  TemporalSelectionComment: The selection is inclusive of start and end minutes.
+  StartRowId: 6
+  EndRowId: 11
   SpectralReductionFactor: 16
-  FreqBandComment: 
+  FreqBandComment: Restrict to Silver Eye band, approx 3-4kHz.
   BandMinHz: 3000
   BandMaxHz: 4000
   Template:
@@ -418,3 +418,83 @@ SilverEye:
     - 0.085000000000000006
     PMN:
     - 0.88300000000000001
+BirdChorus2:
+  Name: Bird Chorus
+  TemplateId: 5
+  GeneralComment: Detects a bird chorus or multiple calls.
+  StatusComment: Status options are Locked, Standard, CalculateTemplate
+  Status: CalculateTemplate
+  MostRecentEdit: 2019-09-23T10:43:35.5007124+10:00
+  TemplateSourceSubdirectory: C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez05\Towsey.Acoustic
+  TemplateSourceFileName: SM304256_0+1_20151114_041652
+  TemplateRecordingLocation: Mezzanine, Tasman Is, Tasmania
+  TemplateRecordingDateTime: 2015-11-14 04:16:52 +1100
+  FeatureExtractionAlgorithm: 2
+  TemporalSelectionComment: The selection is inclusive of start and end minutes.
+  StartRowId: 47
+  EndRowId: 53
+  SpectralReductionFactor: 16
+  FreqBandComment: Restrict to the bird band, approx 2-8kHz.
+  BandMinHz: 2000
+  BandMaxHz: 8000
+  Template:
+    ACI:
+    - 0.27384966454367221
+    - 0.36614928330973134
+    - 0.59104366460678792
+    - 0.81970544876052054
+    - 0.99710445141082582
+    - 0.97540948852343501
+    - 0.79617252756677825
+    - 0.84566976512632741
+    - 0.60492861041552626
+    - 0.26018033519455447
+    - 0.17789585514513395
+    ENT:
+    - 0.29327291031705127
+    - 0.41546063817219225
+    - 0.80365577399607213
+    - 0.97183802492334292
+    - 0.90980484120342286
+    - 0.87564590058882508
+    - 0.92264766422849687
+    - 0.97140275900747519
+    - 0.83978483937070703
+    - 0.4914592923153665
+    - 0.21254462972156352
+    EVN:
+    - 0.44457293805680764
+    - 0.69124829327229098
+    - 0.29055035750001967
+    - 0.26598737095589092
+    - 0.40729897687718908
+    - 0.41749633795763041
+    - 0.30640464881486634
+    - 0.32050975775460089
+    - 0.19858802454465291
+    - 0.091031916798392204
+    - 0.11868388498367653
+    BGN:
+    - 0.13991375928459709
+    - 0.098864240829662955
+    - 0.071928177058912052
+    - 0.059485431678589565
+    - 0.055366738496064133
+    - 0.050669699705280485
+    - 0.048360774671240309
+    - 0.04797640678130706
+    - 0.045443152510050183
+    - 0.042383639588382309
+    - 0.044266923057886813
+    PMN:
+    - 0.67148977209295424
+    - 0.96704226838137319
+    - 0.92434449906002358
+    - 0.99822982902367319
+    - 1
+    - 1
+    - 0.9975716484196131
+    - 1
+    - 0.95212829901768936
+    - 0.63315610420987467
+    - 0.3421855793382047

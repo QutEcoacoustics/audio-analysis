@@ -7,6 +7,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Xml.Schema;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
 
@@ -19,19 +20,56 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             var oldFile = new FileInfo(Path.Combine(manifestFile.DirectoryName ?? throw new InvalidOperationException(), "ContentDescriptionTemplates.Backup.yml"));
             Yaml.Serialize(oldFile, templateCollection);
 
-            foreach (var manifest in templateCollection)
+            foreach (var kvp in templateCollection)
             {
-                var template = manifest.Value;
+                var templateManifest = kvp.Value;
 
-                if (template.Status == TemplateStatus.Locked)
+                if (templateManifest.Status == TemplateStatus.Locked)
                 {
                     continue;
                 }
 
-                template.MostRecentEdit = DateTime.Now;
+                if (templateManifest.Status == TemplateStatus.CalculateTemplate)
+                {
+                    var newTemplate = CreateTemplate(templateManifest);
+                    templateManifest.Template = newTemplate;
+                }
+
+                templateManifest.MostRecentEdit = DateTime.Now;
             }
 
             Yaml.Serialize(manifestFile, templateCollection);
+        }
+
+        /// <summary>
+        /// THis method calculates new template based on passed manifest.
+        /// </summary>
+        public static Dictionary<string, double[]> CreateTemplate(TemplateManifest templateManifest)
+        {
+            // Read all indices from the complete recording. The path variable is a partial path requiring to be appended.
+            var path = new FileInfo(Path.Combine(templateManifest.TemplateSourceSubdirectory, templateManifest.TemplateSourceFileName));
+            var dictionaryOfIndices = DataProcessing.ReadIndexMatrices(path.FullName + ContentDescription.AnalysisString);
+            var algorithmType = templateManifest.FeatureExtractionAlgorithm;
+            Dictionary<string, double[]> newTemplate;
+
+            switch (algorithmType)
+            {
+                case 1:
+                    newTemplate = ContentAlgorithms.CreateFullBandTemplate1(templateManifest, dictionaryOfIndices);
+                    break;
+                case 2:
+                    newTemplate = ContentAlgorithms.CreateBroadbandTemplate1(templateManifest, dictionaryOfIndices);
+                    break;
+                case 3:
+                    newTemplate = ContentAlgorithms.CreateNarrowBandTemplate1(templateManifest, dictionaryOfIndices);
+                    break;
+                default:
+                    //LoggedConsole.WriteWarnLine("Algorithm " + algorithmType + " does not exist.");
+                    newTemplate = null;
+                    break;
+            }
+
+            return newTemplate;
         }
 
         public event Action<IConfig> Loaded;

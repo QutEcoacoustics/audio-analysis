@@ -9,7 +9,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 
     public enum TemplateStatus
     {
-        None,
+        CalculateTemplate,
         Standard,
         Locked,
     }
@@ -107,39 +107,6 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         public int BandMaxHz { get; set; }
 
         public Dictionary<string, double[]> Template { get; set; }
-
-        /// <summary>
-        /// THis method is the same for all Content Types but uses constants appropriate the template type.
-        /// </summary>
-        public static TemplateManifest CreateTemplate(string filePath, TemplateManifest templateManifest)
-        {
-            // Read all indices from the complete recording
-            var dictionaryOfIndices = DataProcessing.ReadIndexMatrices(filePath);
-            var algorithmType = templateManifest.FeatureExtractionAlgorithm;
-            Dictionary<string, double[]> newTemplate;
-
-            switch (algorithmType)
-            {
-                case 1:
-                    newTemplate = ContentAlgorithms.CreateFullBandTemplate1(templateManifest, dictionaryOfIndices);
-                    templateManifest.Template = newTemplate;
-                    break;
-                case 2:
-                    newTemplate = ContentAlgorithms.CreateBroadbandTemplate1(templateManifest, dictionaryOfIndices);
-                    templateManifest.Template = newTemplate;
-                    break;
-                case 3:
-                    newTemplate = ContentAlgorithms.CreateNarrowBandTemplate1(templateManifest, dictionaryOfIndices);
-                    templateManifest.Template = newTemplate;
-                    break;
-                default:
-                    //LoggedConsole.WriteWarnLine("Algorithm " + algorithmType + " does not exist.");
-                    templateManifest.Template = null;
-                    break;
-            }
-
-            return templateManifest;
-        }
 
         // The following random data was used to try some statistical experiments.
         // get dummy data

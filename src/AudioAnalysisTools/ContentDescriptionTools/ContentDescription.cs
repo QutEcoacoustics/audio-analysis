@@ -17,6 +17,8 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         //public int FrameSize { get; set; }
         public const int FreqBinCount = 256;
 
+        public const string AnalysisString = "__Towsey.Acoustic.";
+
         /// <summary>
         /// The following min and max bounds are same as those defined in the IndexPropertiesConfig.yml file as of August 2019.
         /// </summary>
