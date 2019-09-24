@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="RainIndices.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -22,8 +22,8 @@ namespace AudioAnalysisTools.Indices
 
     public static class RainIndices
     {
-        public const string header_rain = InitialiseIndexProperties.KeyRain;
-        public const string header_cicada = InitialiseIndexProperties.KeyCicada;
+        public const string header_rain = "Rain";
+        public const string header_cicada = "Cicadas";
         public const string header_negative = "none";
 
         /// <summary>

@@ -6,12 +6,14 @@ namespace Acoustics.Test.AnalysisPrograms
 {
     using System;
     using System.Collections.ObjectModel;
+    using System.Diagnostics;
     using System.Linq;
     using System.Threading.Tasks;
     using Accord.Math.Optimization;
     using Acoustics.Shared;
     using Acoustics.Test.TestHelpers;
     using global::AnalysisPrograms;
+    using global::AnalysisPrograms.Production.Arguments;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
@@ -108,6 +110,45 @@ namespace Acoustics.Test.AnalysisPrograms
             Assert.AreEqual("blah", parseResult.SelectedCommand.Options.Single(x => x.LongName == "file-stem-name").Value());
             Assert.AreEqual("foo.yml", parseResult.SelectedCommand.Options.Single(x => x.LongName == "false-colour-spectrogram-config").Value());
             Assert.IsFalse(parseResult.SelectedCommand.ClusterOptions);
+        }
+
+        [TestMethod]
+        public void HelpPagingIsDisabled()
+        {
+            var app = MainEntry.CreateCommandLineApplication();
+
+            Assert.IsFalse(app.UsePagerForHelpText);
+        }
+
+        [TestMethod]
+        public void TestConfigCanBeLoadedWithShortName()
+        {
+            const string shortName = "ANALYS~1.EXE";
+
+            Process process = new Process();
+            process.StartInfo = new ProcessStartInfo(shortName, $"{CheckEnvironment.CommandName} -n")
+            {
+                EnvironmentVariables =
+                {
+                    { MainEntry.ApDefaultLogVerbosityKey, LogVerbosity.All.ToString() },
+                },
+                WorkingDirectory = PathHelper.AnalysisProgramsBuild,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+            };
+            process.Start();
+            process.WaitForExit(milliseconds: 30_000);
+
+            var output = process.StandardOutput.ReadToEnd();
+
+            //Debug.WriteLine("Output:\n\n" + output + "\n\n");
+            //Debug.WriteLine("Error:\n\n" + process.StandardError.ReadToEnd() + "\n\n");
+
+            StringAssert.Contains(output, "Updating AppDomain APP_CONFIG_FILE to point to `AnalysisPrograms.exe.config`");
+            Assert.IsFalse(output.Contains("ReflectionTypeLoadException"),$"Output should not contain `ReflectionTypeLoadException`.");
+
+            Assert.AreEqual(0, process.ExitCode);
         }
 
         private void AssertContainsCopyright(ReadOnlyCollection<string> lines)

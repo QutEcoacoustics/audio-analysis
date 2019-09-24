@@ -24,21 +24,33 @@ namespace Acoustics.Shared
         public const string DefaultTargetSampleRateKey = "DefaultTargetSampleRate";
 
         /// <summary>
-        /// Warning: do not use this format to print dates as strings - it will include a colon in the time zone offset :-(
+        /// Warning: do not use this format to print dates as strings - it will include a colon in the time zone offset :-(.
         /// </summary>
         public const string Iso8601FileCompatibleDateFormat = "yyyyMMddTHHmmsszzz";
         public const string Iso8601FileCompatibleDateFormatUtcWithFractionalSeconds = "yyyyMMddTHHmmss.FFF\\Z";
+        public const string Iso8601FormatNoFractionalSeconds = "yyyy-MM-ddTHH:mm:sszzz";
         public const string StandardDateFormatUtc = "yyyyMMdd-HHmmssZ";
         public const string StandardDateFormatUtcWithFractionalSeconds = "yyyyMMdd-HHmmss.FFFZ";
         public const string StandardDateFormat = "yyyyMMdd-HHmmsszzz";
         public const string StandardDateFormatNoTimeZone = "yyyyMMdd-HHmmss";
         public const string StandardDateFormatUnderscore = "yyyyMMdd_HHmmsszzz";
         public const string StandardDateFormatSm2 = "yyyyMMdd_HHmmss";
+        public const string RenderedDateFormatShort = "yyyy-MM-dd HH:mm";
 
         private static readonly string ExecutingAssemblyPath =
             (Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly()).Location;
 
-        private static readonly IConfigurationSection SharedSettings;
+        private static readonly Lazy<IConfigurationSection> SharedSettings = new Lazy<IConfigurationSection>(() =>
+        {
+            var settings = AppConfiguration.Value.GetSection("appSettings");
+            if (!settings.AsEnumerable().Any())
+            {
+                throw new ConfigurationErrorsException("Could not read AP.Settings.json - no values were found in the config file");
+            }
+
+            return settings;
+        });
+
         private static readonly ILog Log = LogManager.GetLogger(nameof(AppConfigHelper));
         private static readonly bool IsLinuxValue;
         private static readonly bool IsWindowsValue;
@@ -46,21 +58,14 @@ namespace Acoustics.Shared
 
         static AppConfigHelper()
         {
-            AppConfiguration = new ConfigurationBuilder()
-                .AddJsonFile("AP.Settings.json")
-                .Build();
-
-            SharedSettings = AppConfiguration.GetSection("appSettings");
-            if (!SharedSettings.AsEnumerable().Any())
-            {
-                throw new ConfigurationErrorsException("Could not read AP.Settings.json - no values were found in the config file");
-            }
-
             IsMono = Type.GetType("Mono.Runtime") != null;
             CheckOs(ref IsWindowsValue, ref IsLinuxValue, ref IsMacOsXValue);
         }
 
-        public static IConfigurationRoot AppConfiguration { get; }
+        public static Lazy<IConfigurationRoot> AppConfiguration { get; } = new Lazy<IConfigurationRoot>(() =>
+            new ConfigurationBuilder()
+                .AddJsonFile("AP.Settings.json")
+                .Build());
 
         public static int DefaultTargetSampleRate => GetInt(DefaultTargetSampleRateKey);
 
@@ -166,7 +171,7 @@ namespace Acoustics.Shared
 
         public static string GetString(string key)
         {
-            var value = SharedSettings[key];
+            var value = SharedSettings.Value[key];
 
             if (string.IsNullOrEmpty(value))
             {
@@ -333,7 +338,7 @@ namespace Acoustics.Shared
                 key = appConfigKey;
             }
 
-            var path = SharedSettings[key];
+            var path = SharedSettings.Value[key];
 
             Log.Verbose($"Attempted to get exe path `{appConfigKey}`. Value: '{path}'");
 

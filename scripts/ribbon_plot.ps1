@@ -1,6 +1,8 @@
 # Creates a single image that shows ribbon plots stacked vertically
 # Anthony Truskinger 2018
 #
+# [2019] Deprecated: see DrawRibbonPlot command
+#
 # For each image file with the phrase "SpectralRibbon" in it's name
 #  found in a given directory it:
 # - Groups the image based on it's type (e.g. ACI-ENT-EVN)

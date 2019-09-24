@@ -158,7 +158,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             FileInfo indexPropertiesConfigFileInfo,
             DirectoryInfo opDir,
             SiteDescription siteDescription,
-            FileInfo sunriseDatafile = null,
+            FileInfo sunriseDatafile = null, // no longer supported
             List<GapsAndJoins> erroneousSegments = null, // info if have fatal errors i.e. no signal
             bool verbose = false)
         {
@@ -248,20 +248,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Json.Serialise(new FileInfo(path), arrayOfFileNames);
 
             return summaryIndices;
-        }
-
-        public static Dictionary<string, double[]> ConvertToDictionaryOfSummaryIndices(List<SummaryIndexValues> summaryIndices)
-        {
-            // Now add in derived indices i.e. NCDI etc
-            // Decided NOT to do this anymore
-            // dictionaryOfSummaryIndices = IndexMatrices.AddDerivedIndices(dictionaryOfSummaryIndices);
-
-            // Put SUMMARY indices into dictionary. TODO need to generalise the following method
-            // ################# WARNING: THIS METHOD ONLY GETS A "HARD CODED" LIST OF SUMMARY INDICES. See the method.
-            var dictionaryOfSummaryIndices = IndexMatrices.GetDictionaryOfSummaryIndices(summaryIndices);
-
-            // return the dictionary - it will be used later to produce an index tracks image.
-            return dictionaryOfSummaryIndices;
         }
 
         // ##############################################################################################################

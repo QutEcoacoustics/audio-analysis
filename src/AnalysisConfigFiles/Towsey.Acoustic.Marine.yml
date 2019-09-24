@@ -45,6 +45,7 @@ FrequencyScale: Octave
 # SAVE INTERMEDIARY FILES
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
+# If `true` saves a data into a seperate file every `SegmentDuration` seconds. Accepts a boolean value: [false|true]
 SaveIntermediateCsvFiles: false
 # One-minute spectrograms can be saved in any analysis task.
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
@@ -70,7 +71,7 @@ TileImageOutput: false
 #     prefix_20140101-235959+Z.mp3
 RequireDateInFilename: false
 
-IndexPropertiesConfig: './IndexPropertiesMarineConfig.yml'
+IndexPropertiesConfig: './IndexPropertiesConfigMarine.yml'
 EventThreshold: 0.2
 ...
 

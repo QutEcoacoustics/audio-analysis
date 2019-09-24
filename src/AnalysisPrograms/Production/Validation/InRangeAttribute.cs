@@ -1,4 +1,4 @@
-﻿// <copyright file="InRangeAttribute.cs" company="QutEcoacoustics">
+// <copyright file="InRangeAttribute.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -36,7 +36,7 @@ namespace AnalysisPrograms.Production.Validation
             {
                 if (!double.TryParse(str, out number))
                 {
-                    return new ValidationResult($"The number {number} for argument {validationContext.DisplayName} can not be parsed as a number.");
+                    return new ValidationResult($"The number {number} for argument {validationContext.DisplayName} can not be parsed as a number.", validationContext.MemberName.AsArray());
                 }
             }
             else if (value is double)
@@ -45,22 +45,22 @@ namespace AnalysisPrograms.Production.Validation
             }
             else
             {
-                return new ValidationResult($"The value {value} for argument {validationContext.DisplayName} can not be parsed as a number.");
+                return new ValidationResult($"The value {value} for argument {validationContext.DisplayName} can not be parsed as a number.", validationContext.MemberName.AsArray());
             }
 
             if (double.IsNaN(number))
             {
-                return new ValidationResult($"The number {number} for argument {validationContext.DisplayName} is not valid");
+                return new ValidationResult($"The number {number} for argument {validationContext.DisplayName} is not valid", validationContext.MemberName.AsArray());
             }
 
             if (number > this.max)
             {
-                return new ValidationResult($"The number {number} for argument {validationContext.DisplayName} is greater than allowed limit {this.max}");
+                return new ValidationResult($"The number {number} for argument {validationContext.DisplayName} is greater than allowed limit {this.max}", validationContext.MemberName.AsArray());
             }
 
             if (number < this.min)
             {
-                return new ValidationResult($"The number {number} for argument {validationContext.DisplayName} is less than allowed limit {this.min}");
+                return new ValidationResult($"The number {number} for argument {validationContext.DisplayName} is less than allowed limit {this.min}", validationContext.MemberName.AsArray());
             }
 
             return ValidationResult.Success;

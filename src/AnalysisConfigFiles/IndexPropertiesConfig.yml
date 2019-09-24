@@ -1,16 +1,17 @@
 --- 
-# WARNING!!! The keys used below MUST BE EXACTLY the SAME as those declared in the class InitialiseIndexProperties (starting at line 30).
-
-# the root object name maps to the Key property on the IndexProperties class
+# WARNING!!! The keys (i.e. root name of each object below) MUST BE EXACTLY the SAME as those 
+#            declared in the class InitialiseIndexProperties (starting at line 30).
+# The root object name maps to the Key property on the IndexProperties class
+# and to the members in the class SummaryIndexValues:SummaryIndexBase
  
-RankOrder: # AKA IndexCount
-  Name: Rank order of audio segment
-  Comment: "Rank of minute segment in temporal order from start of recording."
+RankOrder:
+  Name: Ordering of audio segments
+  Comment: "Ensures that audio segments are correctly ordered."
   DataType: int
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 100.0
+  NormMax: 240.0
   ProjectID: Acoustic Indices
   Units: ""
 StartOffset:
@@ -33,7 +34,7 @@ StartOffsetMinute:
   NormMax: 200.0
   ProjectID: Acoustic Indices
   Units: "min"
-StartOffsetSecond:
+ResultStartSeconds:
   Name: Segment start second
   Comment: "Total seconds from start of recording to start of this segment."
   DataType: int
@@ -43,16 +44,16 @@ StartOffsetSecond:
   NormMax: 200.0
   ProjectID: Acoustic Indices
   Units: "sec"
-SegmentDuration:
+SegmentDurationSeconds:
   Name: Time duration of audio segment
-  Comment: "Exact time span (total minutes) of this audio segment - typically 1.0 minutes."
+  Comment: "Time span of audio segment - typically 60 seconds."
   DataType: TimeSpan
   DefaultValue: 0.0
   DoDisplay: false
   NormMin: 0.0
   NormMax: 1.0
   ProjectID: Acoustic Indices
-  Units: "min"
+  Units: "s"
 HighAmplitudeIndex:
   Name: High Amplitude Index
   Comment: "Av number of samples/sec where abs. amplitude is within 10*epislon of the max signal value."
@@ -60,7 +61,7 @@ HighAmplitudeIndex:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 1.0
+  NormMax: 5.0
   ProjectID: Acoustic Indices
   Units: "av/s"
 ZeroSignal:
@@ -89,7 +90,6 @@ AvgSignalAmplitude:
   DataType: double
   DefaultValue: -80
   DoDisplay: true
-  # SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL = -80 dB
   # -50 dB is typical level for environmental BGN
   NormMin: -50.0
   NormMax: -10.0
@@ -156,6 +156,26 @@ AvgEventDuration:
   NormMax: 1000
   ProjectID: Acoustic Indices
   Units: "ms"
+#EventsTotal:
+#  Name: Event Count
+#  Comment: "The total count of acoustic events per minute of recording."
+#  DataType: double
+#  DefaultValue: 0.0
+#  DoDisplay: true
+#  NormMin: 0
+#  NormMax: 15.0
+#  ProjectID: Acoustic Indices
+#  Units: ""
+#EventsTotalThresholded:
+#  Name: Event Count
+#  Comment: "Count of acoustic events (wide range)"
+#  DataType: double
+#  DefaultValue: 0.0
+#  DoDisplay: false
+#  NormMin: 5
+#  NormMax: 25
+#  ProjectID: Acoustic Indices
+#  Units: ""
 HighFreqCover:
   Name: hf Cover
   Comment: "% hf Cover 4000 Hz to 8800 Hz"
@@ -261,7 +281,7 @@ EntropyOfCoVSpectrum:
   Comment: "1-H[CoV sp] is a measure of concentration of energy in the Coeff of Variance Spectrum."
   DataType: double
   DefaultValue: 0.0
-  DoDisplay: false
+  DoDisplay: true
   NormMin: 0.0
   NormMax: 1.0
   ProjectID: Acoustic Indices
@@ -276,16 +296,6 @@ ClusterCount:
   NormMax: 50
   ProjectID: Acoustic Indices
   Units: ""
-#AvgClusterDuration:
-#  Name: av Cluster Duration
-#  Comment: "Average duration in ms of the spectrum cluster sequences."
-#  DataType: TimeSpan
-#  DefaultValue: 0.0
-#  DoDisplay: true
-#  NormMin: 0
-#  NormMax: 250
-#  ProjectID: Acoustic Indices
-#  Units: "ms"
 ThreeGramCount:
   Name: 3-gram Count
   Comment: "Number of different tri-gram spectral cluster sequences."
@@ -326,16 +336,6 @@ SptDensity:
 #  NormMax: 2.0
 #  ProjectID: Acoustic Indices
 #  Units: "s"
-#RainIndex:
-#  Name: Rain Index
-#  Comment: "OBSOLETE! DEPRACATED! Rain score calculated every 10 sec and 6 values averaged over the minute."
-#  DataType: double
-#  DefaultValue: 0.0
-#  DoDisplay: false
-#  NormMin: 0
-#  NormMax: 1.0
-#  ProjectID: Acoustic Indices
-#  Units: ""
 #CicadaIndex:
 #  Name: Cicada Index
 #  Comment: "OBSOLETE! DEPRACATED! Cicada score calculated every 10 sec and 6 values averaged over the minute."
@@ -541,7 +541,7 @@ DIF:
   Comment: "Summed DIFFERENCES between consecutive FFT coeff's in the ampl spgram. This IS NOT an acoustic index. . It is used as intermediate for subsequent calculation of ACI."
   DataType: double[]
   DefaultValue: 0.0
-  DoDisplay: false
+  DoDisplay: true
   NormMin: 0.0
   NormMax: 10.0
   CalculateNormBounds: false
@@ -578,6 +578,11 @@ OSC:
   NormMin: 0.1
   NormMax: 5.0
   CalculateNormBounds: true
+  # Merge conflict values from https://github.com/QutEcoacoustics/audio-analysis/pull/233
+  #NormMin: 0.0
+  #NormMax: 10.0
+  #CalculateNormMin: true
+  #CalculateNormMax: true
   ProjectID: Acoustic Indices
   Units: ""
 SUM:
@@ -585,7 +590,7 @@ SUM:
   Comment: "Spectrum of summed FFT coefficients derived from the ampl spgram. This IS NOT an acoustic index. It is used for intermediate calculations only."
   DataType: double[]
   DefaultValue: 0.0
-  DoDisplay: false
+  DoDisplay: true
   NormMin: 0.0
   NormMax: 10.0
   CalculateNormBounds: false
@@ -611,6 +616,10 @@ RHZ:
   NormMin: 0.1
   NormMax: 1.0
   CalculateNormBounds: false
+  # Merge conflict values from https://github.com/QutEcoacoustics/audio-analysis/pull/233
+  #NormMax: 1.5
+  #CalculateNormMin: false
+  #alculateNormMax: false
   ProjectID: Acoustic Indices
   Units: "tracks/s"
 RVT:
@@ -622,6 +631,9 @@ RVT:
   NormMin: 0.1
   NormMax: 0.4
   CalculateNormBounds: true
+  # Merge conflict values from https://github.com/QutEcoacoustics/audio-analysis/pull/233
+  #CalculateNormMin: false
+  #CalculateNormMax: false
   ProjectID: Acoustic Indices
   Units: "tracks/s"
 RPS:
@@ -633,6 +645,9 @@ RPS:
   NormMin: 0.0
   NormMax: 0.4
   CalculateNormBounds: true
+  # Merge conflict values from https://github.com/QutEcoacoustics/audio-analysis/pull/233
+  #CalculateNormMin: false
+  #CalculateNormMax: false
   ProjectID: Acoustic Indices
   Units: "tracks/s"
 RNG:
@@ -644,6 +659,9 @@ RNG:
   NormMin: 0.0
   NormMax: 0.4
   CalculateNormBounds: true
+  # Merge conflict values from https://github.com/QutEcoacoustics/audio-analysis/pull/233
+  #CalculateNormMin: false
+  #CalculateNormMax: false
   ProjectID: Acoustic Indices
   Units: "tracks/s"
 R3D:
@@ -655,6 +673,9 @@ R3D:
   NormMin: 0.15
   NormMax: 1.0
   CalculateNormBounds: true
+  # Merge conflict values from https://github.com/QutEcoacoustics/audio-analysis/pull/233
+  #CalculateNormMin: false
+  #CalculateNormMax: false
   ProjectID: Acoustic Indices
   Units: "tracks/s"
 SPT:

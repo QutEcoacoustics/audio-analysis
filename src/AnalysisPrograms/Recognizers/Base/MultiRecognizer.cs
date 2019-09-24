@@ -141,7 +141,7 @@ namespace AnalysisPrograms.Recognizers.Base
             Log.Debug("Looking for recognizer and config files for " + name);
 
             // find an appropriate event recognizer
-            var recognizer = AnalyseLongRecording.FindAndCheckAnalyser<IEventRecognizer>(name, name + ".yml");
+            var recognizer = AnalyseLongRecording.FindAndCheckAnalyzer<IEventRecognizer>(name, name + ".yml");
 
             // load up the standard config file for this species
             var configurationFile = ConfigFile.Resolve(name + ".yml");

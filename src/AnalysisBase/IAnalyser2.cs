@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="IAnalyser2.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -95,8 +95,14 @@ namespace AnalysisBase
         List<FileInfo> WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results);
 
         /// <summary>
-        /// Allows Events to be rendered as Summary Indices
+        /// Allows Events to be rendered as Summary Indices.
         /// </summary>
+        /// <remarks>
+        /// This method used to be used on every segment but we are phasing out
+        /// segment-level results. Thus it is recommended it only be used at the end of the analysis
+        /// when the full result set (and when <paramref name="duration"/> equals the full recording length)
+        /// is available.
+        /// </remarks>
         /// <param name="events">The events to process.</param>
         /// <param name="unitTime">The unit time of the summary indices to produce.</param>
         /// <param name="duration">The duration of audio for the period analyzed that produced <c>events</c>.</param>

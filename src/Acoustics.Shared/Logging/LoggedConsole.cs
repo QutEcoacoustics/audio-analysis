@@ -1,4 +1,4 @@
-﻿// <copyright file="LoggedConsole.cs" company="QutEcoacoustics">
+// <copyright file="LoggedConsole.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -6,13 +6,12 @@
 namespace System
 {
     using System.IO;
-
+    using System.Text;
+    using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.Logging;
     using DotSpinners;
     using log4net;
-    using Text;
-    using Threading.Tasks;
 
     /// <summary>
     /// This class is designed to be an abstraction to the system console.

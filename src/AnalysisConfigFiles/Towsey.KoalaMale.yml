@@ -2,16 +2,16 @@
 AnalysisName: Towsey.KoalaMale
 SpeciesName: Phascolarctos_cinereus
 # min and max of the freq band to search
-MinHz: 250          
+MinHz: 250
 MaxHz: 800
-# duration of DCT in seconds 
+# duration of DCT in seconds
 # this cannot be too long because the oscillations are not constant.
 DctDuration: 0.30
 # minimum acceptable amplitude of a DCT coefficient
 DctThreshold: 0.5
 # ignore oscillation rates below the min & above the max threshold
 # OSCILLATIONS PER SECOND
-MinOcilFreq: 20        
+MinOcilFreq: 20
 MaxOcilFreq: 55
 # Minimum duration for the length of a true event (seconds).
 MinDuration: 0.5
@@ -22,6 +22,7 @@ EventThreshold: 0.2
 ################################################################################
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
+# If `true` saves a data into a seperate file every `SegmentDuration` seconds. Accepts a boolean value: [false|true]
 SaveIntermediateCsvFiles: false
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveSonogramImages: Never

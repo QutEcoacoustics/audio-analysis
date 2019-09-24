@@ -9,7 +9,7 @@ AbbreviatedSpeciesName: U.lithomoda
 # User does not have control over the window size. This must be fixed by recognizer.
 
 ################################################################################
-# Noise reduction must be performed but can regulate severity by adjusting BgNoiseThreshold. 
+# Noise reduction must be performed but can regulate severity by adjusting BgNoiseThreshold.
 #   A value=0.1 seems to work well on test recording.
 #DoNoiseReduction: true
 BgNoiseThreshold: 0.1
@@ -19,7 +19,7 @@ BgNoiseThreshold: 0.1
 # Set the gap here: should be in range 880 to 970
 DominantFrequency: 3000
 
-# Threshold Cosine-similarity to a in-line call template: Similarity must exceed this threshold. 
+# Threshold Cosine-similarity to a in-line call template: Similarity must exceed this threshold.
 EventSimilarityThreshold: 0.6
 # Decibel SNR threshold for the dominant peak: use this to determine FP / FN trade-off for events.
 EventDecibelThreshold: 20.0
@@ -28,6 +28,7 @@ EventDecibelThreshold: 20.0
 ################################################################################
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
+# If `true` saves a data into a seperate file every `SegmentDuration` seconds. Accepts a boolean value: [false|true]
 SaveIntermediateCsvFiles: false
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveSonogramImages: Never

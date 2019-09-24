@@ -1,4 +1,4 @@
-﻿// <copyright file="FfmpegAudioUtility.cs" company="QutEcoacoustics">
+// <copyright file="FfmpegAudioUtility.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -270,11 +270,14 @@ namespace Acoustics.Tools.Audio
                     // start of a block
                     currentBlockName = line.Trim('[', ']');
                 }
-                else
+
+                // make sure line actually has a delimiter (and at least one character for a key)
+                var delimiterIndex = line.IndexOf('=');
+                if (delimiterIndex > 0)
                 {
                     // key=value
-                    var key = currentBlockName + " " + line.Substring(0, line.IndexOf('='));
-                    var value = line.Substring(line.IndexOf('=') + 1);
+                    var key = currentBlockName + " " + line.Substring(0, delimiterIndex);
+                    var value = line.Substring(delimiterIndex + 1);
                     result.RawData.Add(key.Trim(), value.Trim());
                 }
             }

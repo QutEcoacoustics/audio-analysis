@@ -86,7 +86,10 @@ namespace AnalysisPrograms
                 //DrawLongDurationSpectrogram();
                 //DrawClusterSequence();
                 //DrawStandardSpectrograms();
-                DrawZoomingSpectrogramPyramid();
+                //DrawZoomingSpectrogramPyramid();
+
+                //Test_DrawFourSpectrograms();
+
 
                 //ExtractSpectralFeatures();
                 //HerveGlotinMethods();
@@ -113,6 +116,7 @@ namespace AnalysisPrograms
                 //TestTernaryPlots();
                 //TestDirectorySearchAndFileSearch();
                 //TestNoiseReduction();
+                //ReadSpectralIndicesFromTwoFalseColourSpectrogramRibbons();
                 //Oscillations2014.TESTMETHOD_DrawOscillationSpectrogram();
                 //Oscillations2014.TESTMETHOD_GetSpectralIndex_Osc();
                 //Test_DrawFourSpectrograms();
@@ -285,6 +289,14 @@ namespace AnalysisPrograms
             //FOR  MULTI-ANALYSER and CROWS
             //audio2csv  "C:\SensorNetworks\WavFiles\KoalaMale\SmallTestSet\DaguilarGoldCreek1_DM420157_0000m_00s__0059m_47s_49h.mp3" "C:\SensorNetworks\Software\AudioAnalysis\AnalysisConfigFiles\Towsey.MultiAnalyser.cfg" "C:\SensorNetworks\Output\Test1"
 
+            // FLYING FOX RECORDINGS
+            //string recordingPath = @"C:\Ecoacoustics\WavFiles\BradLawData\FlyingFox\20190127_Bellingen_Feeding_SM4.wav";
+            //string recordingPath = @"C:\Ecoacoustics\WavFiles\FlyingFox\20190115_Bellingen_Feeding.wav";
+            //string recordingPath = @"C:\Ecoacoustics\WavFiles\FlyingFox\20190121_2_Bellingen_Feeding.wav";
+            string recordingPath = @"C:\Ecoacoustics\WavFiles\FlyingFox\20190127_Bellingen_Feeding_SM4.wav";
+            string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.PteropusSpecies.yml";
+            string outputPath = @"C:\Ecoacoustics\Output\BradLaw\FlyingFox";
+
             // TSHERING DEMA BHUTAN RECORDINGS
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TsheringDema\WBH12HOURS-D_20160403_120000.wav";
             //    @"Y:\Tshering\WBH_Walaytar\201505 - second deployment\Site2_Waklaytar\24Hours WBH_28032016\WBH12HOURS-D_20160403_120000.wav";
@@ -299,7 +311,6 @@ namespace AnalysisPrograms
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Bhutan\SecondDeployment\WBH12HOURS-N_20160403_000000.wav";
             //string outputPath = @"C:\SensorNetworks\Output\TsheringDema";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
-
             // string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.ArdeaInsignis.yml";
 
             //MARINE
@@ -334,11 +345,19 @@ namespace AnalysisPrograms
             //string outputPath = @"G:\SensorNetworks\Output\BradLaw\Pillaga24";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
 
+
             string recordingPath = @"C:\Ecoacoustics\WavFiles\LizZnidersic\TasmanIsland2015_Unit2_Mez\SM304256_0+1_20151114_191652+1000.wav";
             //string outputPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\22";
             string outputPath = @"C:\Ecoacoustics\Output\Test\TestMezOneHourHiRes\20";
             //string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Acoustic.yml";
             string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Acoustic.Zooming.yml";
+
+            // Test on STANDARD 24-HOUR RECORDING
+            //string recordingPath = @"C:\Ecoacoustics\WavFiles\LizZnidersic\TasmanIsland2015_Unit2_Mez\SM304256_0+1_20151114_131652.wav";
+            //string outputPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\14";
+            //string outputPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\Delete";
+            //string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Acoustic.yml";
+
 
             // Ivan Campos recordings
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Ivancampos\INCIPO01_20161031_024006_898.wav";
@@ -525,8 +544,17 @@ namespace AnalysisPrograms
             AnalyseLongRecording.Execute(arguments);
         }
 
+        public static void Test_DrawFourSpectrograms()
+        {
+            var sourceRecording = @"C:\SensorNetworks\SoftwareTests\TestRecordings\BAC2_20071008-085040.wav".ToFileInfo();
+            var output = @"C:\SensorNetworks\SoftwareTests\TestFourSonograms".ToDirectoryInfo();
+            var configFile = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Sonogram.yml".ToFileInfo();
+            //Audio2Sonogram.TESTMETHOD_DrawFourSpectrograms(sourceRecording, output, configFile);
+        }
+
         /// <summary>
-        /// Draws a standard spectrogram
+        /// Draws a standard spectrogram, w/wo noise removal & melscale/linear.
+        /// This worked Feb 2019.
         /// </summary>
         public static void DrawStandardSpectrograms()
         {
@@ -538,18 +566,18 @@ namespace AnalysisPrograms
                 SourceFileName = "BAC2_20071008-085040",
                 WindowSize = 1024,
                 WindowOverlap = 0.0,
-                DoMelScale = false,
+                DoMelScale = true,
                 MelBinCount = 256,
-                NoiseReductionType = NoiseReductionType.Median,
+                NoiseReductionType = NoiseReductionType.None,
                 NoiseReductionParameter = 0.0,
             };
 
-            //var amplSpectrogram = new AmplitudeSpectrogram(settings, recording);
-            //var dbSpectrogram = new DecibelSpectrogram(settings, recording);
-            //dbSpectrogram.DrawSpectrogram(@"C:\Ecoacoustics\WavFiles\TestRecordings\BAC\BAC2_20071008-085040_MelMedian.png");
+            var amplSpectrogram = new AmplitudeSpectrogram(settings, recording);
+            var dbSpectrogram = new DecibelSpectrogram(settings, recording);
+            dbSpectrogram.DrawSpectrogram(@"C:\Ecoacoustics\WavFiles\TestRecordings\BAC\2019Output\BAC2_20071008-085040_MelNoNoiseRemoval.png");
 
             var energySpectro = new EnergySpectrogram(settings, recording);
-            energySpectro.DrawLogPsd(@"C:\Ecoacoustics\WavFiles\TestRecordings\BAC\BAC2_20071008-085040_LogPSD.png");
+            energySpectro.DrawLogPsd(@"C:\Ecoacoustics\WavFiles\TestRecordings\BAC\2019Output\BAC2_20071008-085040_MelLogPSD_NoNoiseRemoval.png");
         }
 
         public static void DrawLongDurationSpectrogram()
@@ -732,6 +760,8 @@ namespace AnalysisPrograms
             // SET DEFAULT COLOUR MAPS
             string colorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
             string colorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_CVR;
+            //string colorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_OSC;
+
 
             // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and EchoGaps.
             string gapRendering = "TimedGaps"; // the default
@@ -787,9 +817,9 @@ namespace AnalysisPrograms
             {
                 @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez",
             };
-            string directoryFilter = "0*"; // this is a directory filter to locate only the required files
+            string directoryFilter = @"Towsey.Acoustic"; // this is a directory filter to locate only the required files
             string opFileStem = "Testing";
-            string opPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Concat";
+            string opPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\Concat3";
             var falseColourSpgConfig = $"C:\\Work\\GitHub\\audio-analysis\\src\\AnalysisConfigFiles\\SpectrogramFalseColourConfig.yml";
             concatenateEverythingYouCanLayYourHandsOn = true;
 
@@ -1221,6 +1251,33 @@ namespace AnalysisPrograms
             }
         }
 
+        public static void ReadSpectralIndicesFromTwoFalseColourSpectrogramRibbons()
+        {
+            var path1 = new FileInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\Concat5\Testing\2015-11-14\Testing__ACI-ENT-EVN.SpectralRibbon.png");
+            var path2 = new FileInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\Concat5\Testing\2015-11-14\Testing__BGN-PMN-SPT.SpectralRibbon.png");
+            var outputPath = new FileInfo(@"C:\Ecoacoustics\Output\Test\TestReadingOfRibbonFiles\Test.csv");
+
+            // Calling this method assumes that the ribbon spectrograms were composed using the following indicies forRGB
+            //string[] colourKeys1 = { "ACI", "ENT", "EVN" };
+            //string[] colourKeys2 = { "BGN", "PMN", "XXX" };
+            var image1 = Image.FromFile(path1.FullName);
+            var image2 = Image.FromFile(path2.FullName);
+
+            // default time values are for complete image width.
+            var matrix = LdSpectrogramRibbons.ReadSpectralIndicesFromTwoFalseColourSpectrogramRibbons(image1, image2);
+
+            //var startTime = TimeSpan.Zero;
+            //var duration = TimeSpan.FromMinutes(image1.Width);
+            var startTime = TimeSpan.FromHours(2);
+            var duration = TimeSpan.FromMinutes(60);
+            //var matrix = LdSpectrogramRibbons.ReadSpectralIndicesFromTwoFalseColourSpectrogramRibbons(image1, image2, startTime, duration);
+
+            //MatrixTools.WriteMatrix2File(matrix, outputPath.FullName);
+            Csv.WriteMatrixToCsv(outputPath, matrix);
+
+            // TODO: need to check that can recover ribbon image from reading this matrix.
+        }
+
         /// <summary>
         /// read a set of Spectral index files and extract values from frequency band
         /// This work done for Liz Znidersic paper.
@@ -1453,11 +1510,6 @@ namespace AnalysisPrograms
             FrequencyScale.TESTMETHOD_DrawFrequencyLinesOnImage();
         }
 
-        public static void Test_DrawFourSpectrograms()
-        {
-            Audio2Sonogram.TESTMETHOD_DrawFourSpectrograms();
-        }
-
         /// <summary>
                 /// Unit test of AnalyseLongRecording() using artificial signal
                 /// </summary>
@@ -1466,7 +1518,7 @@ namespace AnalysisPrograms
             int sampleRate = 22050;
             double duration = 420; // signal duration in seconds = 7 minutes
             int[] harmonics = {500, 1000, 2000, 4000, 8000};
-            var recording = DspFilters.GenerateTestRecording(sampleRate, duration, harmonics, WaveType.Consine);
+            var recording = DspFilters.GenerateTestRecording(sampleRate, duration, harmonics, WaveType.Cosine);
             var outputDirectory = @"C:\SensorNetworks\SoftwareTests\TestLongDurationRecordings";
             var recordingPath = Path.Combine(outputDirectory, "TemporaryRecording.wav");
             WavWriter.WriteWavFileViaFfmpeg(recordingPath.ToFileInfo(), recording.WavReader);

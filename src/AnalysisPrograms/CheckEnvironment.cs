@@ -1,4 +1,4 @@
-﻿// <copyright file="CheckEnvironment.cs" company="QutEcoacoustics">
+// <copyright file="CheckEnvironment.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -6,16 +6,21 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.IO;
     using System.Linq;
     using System.Reflection;
     using System.Text;
+    using System.Text.RegularExpressions;
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Tools.Audio;
-    using AnalyseLongRecordings;
+    using AnalysisBase;
+    using AnalysisPrograms.AnalyseLongRecordings;
+    using AnalysisPrograms.Production;
+    using AnalysisPrograms.Production.Arguments;
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
-    using Production.Arguments;
 
     public class CheckEnvironment
     {
@@ -23,12 +28,37 @@ namespace AnalysisPrograms
 
         private static readonly ILog Log = LogManager.GetLogger(nameof(CheckEnvironment));
 
-        private void Execute(Arguments arguments)
+        private int Execute(Arguments arguments)
         {
-            Log.Info("Checking required executables can be found");
+            var errors = new List<string>();
 
-            // master audio utlility checks for available executables
-            var utility = new MasterAudioUtility();
+            Log.Info("Checking required executables and libraries can be found and loaded");
+
+            // this is an important call used in analyze long recordings.
+            // This call effectively check is we can load types and if files are present (I think)
+            try
+            {
+                AnalysisCoordinator.GetAnalyzers<IAnalyser2>(typeof(MainEntry).Assembly);
+            }
+            catch (ReflectionTypeLoadException rtlex)
+            {
+                errors.Add(ExceptionLookup.FormatReflectionTypeLoadException(rtlex, true));
+            }
+
+            // master audio utility checks for available executables
+            try
+            {
+                var utility = new MasterAudioUtility();
+            }
+            catch (Exception ex)
+            {
+                errors.Add(ex.Message);
+            }
+
+            if (MainEntry.CheckForDataAnnotations() is string message)
+            {
+                errors.Add(message);
+            }
 
             if (AppConfigHelper.IsMono)
             {
@@ -36,20 +66,44 @@ namespace AnalysisPrograms
                 if (type != null)
                 {
                     MethodInfo displayName = type.GetMethod("GetDisplayName", BindingFlags.NonPublic | BindingFlags.Static);
-                    if (displayName != null)
+
+                    if (displayName?.Invoke(null, null) is string name)
                     {
-                        var name = displayName.Invoke(null, null);
-                        Log.Info($"Mono version is {name}, we require at least Mono 5.5");
+                        var version = Regex.Match(name, @".*(\d+\.\d+\.\d+\.\d+).*").Groups[1].Value;
+                        Console.WriteLine(version);
+                        if (new Version(version) > new Version(5, 5))
+                        {
+                            Log.Success($"Your mono version {name} is greater than our required Mono version 5.5");
+                        }
+                        else
+                        {
+                            errors.Add($"Mono version is {name}, we require at least Mono 5.5");
+                        }
                     }
                     else
                     {
-                        Log.Warn("Could not check Mono version");
+                        errors.Add("Could not get Mono display name");
                     }
                 }
             }
 
             // don't have much more to check at the current time
-            Log.Success("Valid environment");
+            if (errors.Count == 0)
+            {
+                Log.Success("Valid environment");
+
+                return ExceptionLookup.Ok;
+            }
+            else
+            {
+                foreach (var error in errors)
+                {
+                    Log.Error(error);
+                }
+
+                // not using exception lookup on purpose - it's static constructor loads more types
+                return ExceptionLookup.UnhandledExceptionErrorCode;
+            }
         }
 
         [Command(
@@ -60,8 +114,7 @@ namespace AnalysisPrograms
             public override Task<int> Execute(CommandLineApplication app)
             {
                 var instance = new CheckEnvironment();
-                instance.Execute(this);
-                return this.Ok();
+                return Task.FromResult(instance.Execute(this));
             }
         }
 

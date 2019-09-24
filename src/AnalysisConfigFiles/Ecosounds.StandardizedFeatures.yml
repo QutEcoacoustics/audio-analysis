@@ -8,7 +8,7 @@ SegmentDuration: 60
 SegmentOverlap: 0
 
 # Bands array with 4 properties:
-# FftWindow. units=samples. Typical value=512. Overwrites FrameLength. 
+# FftWindow. units=samples. Typical value=512. Overwrites FrameLength.
 # MelScale. units=frequencybins. Overwrites FrequencyScale. Whether frequency is rescaled.
 # Filter. units=?. Whether some filter will be applied. Not implemented yet.
 # Bandwidth. units=fraction. Selects band from amplitude spectrogram. Bandwidth 0.0 - 1.0 equals complete ampliude spectrogram
@@ -16,19 +16,19 @@ Bands:
   - FftWindow: 1024
     MelScale: ~
     Filter: None
-    Bandwidth: 
+    Bandwidth:
       Min: 0.0
       Max: 1.0
   - FftWindow: 512
     MelScale: 200
     Filter: None
-    Bandwidth: 
+    Bandwidth:
       Min: 0.33
       Max: 0.66
   - FftWindow: 1024
     MelScale: 200
     Filter: None
-    Bandwidth: 
+    Bandwidth:
       Min: 0.33
       Max: 0.66
 
@@ -64,6 +64,7 @@ FrequencyScale: Linear
 # SAVE INTERMEDIARY FILES
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
+# If `true` saves a data into a seperate file every `SegmentDuration` seconds. Accepts a boolean value: [false|true]
 SaveIntermediateCsvFiles: false
 # One-minute spectrograms can be saved in any analysis task.
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]

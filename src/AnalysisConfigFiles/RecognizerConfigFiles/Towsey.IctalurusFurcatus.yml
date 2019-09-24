@@ -6,15 +6,15 @@ AbbreviatedSpeciesName: I.furcatus
 # cat fish produces "stridulatory sounds" by rubbing the base of the pectoral spine against the pectoral girdle...
 
 # min and max of the freq band to search
-MinHz: 3500          
+MinHz: 3500
 MaxHz: 4500
-# duration of DCT in seconds 
+# duration of DCT in seconds
 DctDuration: 0.2
 # minimum acceptable value of a DCT coefficient
 DctThreshold: 0.6
 # ignore oscillation rates below the min & above the max threshold
 # OSCILLATIONS PER SECOND
-MinOcilFreq: 40        
+MinOcilFreq: 40
 MaxOcilFreq: 60
 # Minimum and maximum duration for the length of a true call.
 MinDuration: 0.1
@@ -31,12 +31,13 @@ EventThreshold: 0.30
 # ResampleRate: 22050
 
 ## Specifically for AnalyzeLongRecording
-# SegmentDuration: units=seconds;    
+# SegmentDuration: units=seconds;
 SegmentDuration: 60
 # SegmentOverlap: units=seconds;
 SegmentOverlap: 0
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
+# If `true` saves a data into a seperate file every `SegmentDuration` seconds. Accepts a boolean value: [false|true]
 SaveIntermediateCsvFiles: false
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveSonogramImages: Never

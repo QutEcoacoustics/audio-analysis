@@ -3,17 +3,17 @@ SpeciesName: Litoria olongburensis
 AbbreviatedSpeciesName: L.olong
 
 # min and max of the freq band to search
-MinHz: 2000          
+MinHz: 2000
 MaxHz: 3500
-# duration of DCT in seconds 
-# want one that contains 5 oscillations 
+# duration of DCT in seconds
+# want one that contains 5 oscillations
 DctDuration: 0.2
 # minimum acceptable value of a DCT coefficient
 DctThreshold: 0.6
 # ignore oscillation rates below the min & above the max threshold
 # OSCILLATIONS PER SECOND
 
-MinOcilFreq: 22      
+MinOcilFreq: 22
 MaxOcilFreq: 53
 # Minimum and maximum duration for the length of a true call.
 MinDuration: 0.25
@@ -34,12 +34,13 @@ FrameSize: 64
 ResampleRate: 22050
 
 ## Specifically for AnalyzeLongRecording
-# SegmentDuration: units=seconds;    
+# SegmentDuration: units=seconds;
 SegmentDuration: 60
 # SegmentOverlap: units=seconds;
 SegmentOverlap: 0
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
+# If `true` saves a data into a seperate file every `SegmentDuration` seconds. Accepts a boolean value: [false|true]
 SaveIntermediateCsvFiles: false
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveSonogramImages: Never

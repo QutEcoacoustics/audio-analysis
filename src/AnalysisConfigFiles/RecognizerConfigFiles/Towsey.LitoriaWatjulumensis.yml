@@ -20,20 +20,21 @@ Profiles:
         MaxDuration: 0.8
         # Threshold for oscillation intensity found by DCT
         IntensityThreshold: 0.4
-        EventThreshold: 0.4 
-    Tink:    
+        EventThreshold: 0.4
+    Tink:
         #<<: *Standard
         MinDuration: 0.01
         MaxDuration: 0.03
         EventThreshold: 0.4
 
 ## Specifically for AnalyzeLongRecording
-# SegmentDuration: units=seconds;    
+# SegmentDuration: units=seconds;
 SegmentDuration: 60
 # SegmentOverlap: units=seconds;
 SegmentOverlap: 0
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
+# If `true` saves a data into a seperate file every `SegmentDuration` seconds. Accepts a boolean value: [false|true]
 SaveIntermediateCsvFiles: false
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveSonogramImages: Never

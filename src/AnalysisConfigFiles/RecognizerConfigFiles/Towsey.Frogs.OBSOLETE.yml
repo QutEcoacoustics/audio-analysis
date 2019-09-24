@@ -4,7 +4,7 @@ DisplayColumns: Frog
 # FROG_DATA_FILE=FrogDataAndCompilationFile.csv
 FROG_DATA_FILE: CompilationOf31FrogSpeciesForCurramoreSE-QLD.csv
 
-#SegmentDuration: units=seconds,   SegmentOverlap=seconds        
+#SegmentDuration: units=seconds,   SegmentOverlap=seconds
 SegmentDuration: 60
 SegmentOverlap: 0
 MinPeriod: 0.01
@@ -16,9 +16,10 @@ IntensityThreshold: 0.22
 #use this threshold if obtaining max value over a period
 #IntensityThreshold: 0.1
 #######################################
-# save sonograms and other files 
+# save sonograms and other files
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
+# If `true` saves a data into a seperate file every `SegmentDuration` seconds. Accepts a boolean value: [false|true]
 SaveIntermediateCsvFiles: false
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveSonogramImages: Never

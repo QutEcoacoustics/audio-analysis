@@ -172,6 +172,11 @@ namespace System
         {
             return Path.GetFileNameWithoutExtension(file.Name);
         }
+
+        public static string FormatList(this IEnumerable<FileSystemInfo> infos)
+        {
+            return infos.Select(x => x.FullName).FormatList();
+        }
     }
 
     public class FileInfoNameComparer : IComparer<FileInfo>, IEqualityComparer<FileInfo>

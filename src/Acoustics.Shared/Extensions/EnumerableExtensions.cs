@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="EnumerableExtensions.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -7,16 +7,18 @@
 // ReSharper disable once CheckNamespace
 namespace System
 {
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.Contracts;
-    using Collections.Generic;
     using JetBrains.Annotations;
-    using Linq;
-    using Threading.Tasks;
 
     public static class EnumerableExtensions
     {
-        [ContractAnnotation("items:null => true; items:notnull => false")]
+        [ContractAnnotation("items:null => true")]
         public static bool IsNullOrEmpty<T>(this IEnumerable<T> items)
         {
             return items == null || !items.Any();
@@ -310,6 +312,21 @@ namespace System
             }
 
             yield return newItem;
+        }
+
+        public static string Join(this IEnumerable items, string delimiter = " ") => Join(items.Cast<object>(), delimiter);
+
+        public static string Join<T>(this IEnumerable<T> items, string delimiter = " ")
+        {
+            var result = new StringBuilder();
+            foreach (var item in items)
+            {
+                result.Append(item);
+                result.Append(delimiter);
+            }
+
+            // return one delimiter length less because we always add a delimiter on the end
+            return result.ToString(0, result.Length - delimiter.Length);
         }
     }
 }

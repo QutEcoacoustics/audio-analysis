@@ -3,16 +3,16 @@ SpeciesName: Litoria pallida
 AbbreviatedSpeciesName: L.pallida
 
 # min and max of the freq band to search
-MinHz: 1500          
+MinHz: 1500
 MaxHz: 4000
-# duration of DCT in seconds 
+# duration of DCT in seconds
 # short events require short DCT duration
 DctDuration: 0.3
 # minimum acceptable value of a DCT coefficient  # default = 0.6
-DctThreshold: 0.5  
+DctThreshold: 0.5
 # ignore oscillation rates below the min & above the max threshold
 # OSCILLATIONS PER SECOND
-MinOcilFreq: 200        
+MinOcilFreq: 200
 MaxOcilFreq: 210
 # Minimum and maximum duration in seconds for the length of a true call.
 MinDuration: 0.370
@@ -30,12 +30,13 @@ FrameSize: 128
 ResampleRate: 22050
 
 ## Specifically for AnalyzeLongRecording
-# SegmentDuration: units=seconds;    
+# SegmentDuration: units=seconds;
 SegmentDuration: 60
 # SegmentOverlap: units=seconds;
 SegmentOverlap: 0
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
+# If `true` saves a data into a seperate file every `SegmentDuration` seconds. Accepts a boolean value: [false|true]
 SaveIntermediateCsvFiles: false
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveSonogramImages: Never

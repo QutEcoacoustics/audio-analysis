@@ -12,15 +12,16 @@ namespace log4net
 {
     using System;
     using log4net;
+    using log4net.Core;
 
     public static class LogExtensions
     {
         // equivalent to NOTICE
-        public static readonly Core.Level SuccessLevel = new Core.Level(50_000, "SUCCESS");
+        public static readonly Level SuccessLevel = new Level(50_000, "SUCCESS");
 
         // Higher than all other levels, but lower than OFF.
         // In interactive scenarios we need to be sure that the user sees the message.
-        public static readonly Core.Level PromptLevel = new Core.Level(150_000, "PROMPT");
+        public static readonly Level PromptLevel = new Level(150_000, "PROMPT");
 
         /// <summary>
         /// Log a message object with the <see cref="F:LogExtensions.PromptLevel"/> level.
@@ -80,7 +81,7 @@ namespace log4net
         /// </remarks>
         public static void Verbose(this ILog log, object message)
         {
-            log.Logger.Log(null, log4net.Core.Level.Verbose, message, null);
+            log.Logger.Log(null, Level.Verbose, message, null);
         }
 
         /// <summary>
@@ -95,7 +96,7 @@ namespace log4net
         public static void Verbose(this ILog log, string format, params object[] args)
         {
             var message = args.Length > 0 ? string.Format(format, args) : format;
-            log.Logger.Log(null, log4net.Core.Level.Verbose, message, null);
+            log.Logger.Log(null, Level.Verbose, message, null);
         }
 
         /// <summary>
@@ -114,7 +115,7 @@ namespace log4net
         /// </remarks>
         public static void Verbose(this ILog log, object message, Exception exception)
         {
-            log.Logger.Log(null, log4net.Core.Level.Verbose, message, exception);
+            log.Logger.Log(null, Level.Verbose, message, exception);
         }
 
         /// <summary>
@@ -124,7 +125,7 @@ namespace log4net
         /// <returns>True if the Verbose logging level is enabled</returns>
         public static bool IsVerboseEnabled(this ILog log)
         {
-            return log.Logger.IsEnabledFor(log4net.Core.Level.Verbose);
+            return log.Logger.IsEnabledFor(Level.Verbose);
         }
 
         /// <summary>
@@ -142,7 +143,7 @@ namespace log4net
         /// </remarks>
         public static void Trace(this ILog log, object message)
         {
-            log.Logger.Log(null, log4net.Core.Level.Trace, message, null);
+            log.Logger.Log(null, Level.Trace, message, null);
         }
 
         /// <summary>
@@ -157,7 +158,7 @@ namespace log4net
         public static void Trace(this ILog log, string format, params object[] args)
         {
             var message = args.Length > 0 ? string.Format(format, args) : format;
-            log.Logger.Log(null, log4net.Core.Level.Trace, message, null);
+            log.Logger.Log(null, Level.Trace, message, null);
         }
 
         /// <summary>
@@ -176,7 +177,7 @@ namespace log4net
         /// <seealso cref="M:Trace(object)"/><seealso cref="P:log4net.ILog.IsTraceEnabled"/>
         public static void Trace(this ILog log, object message, Exception exception)
         {
-            log.Logger.Log(null, log4net.Core.Level.Trace, message, exception);
+            log.Logger.Log(null, Level.Trace, message, exception);
         }
     }
 }

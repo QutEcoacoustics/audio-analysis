@@ -49,7 +49,7 @@ The following additional dependencies are required for Unix machines:
 - sox
 - shntool
 - mp3splt
-- libav-tools
+- libav-tools (on some distros only, not needed in Ubuntu 18)
 - [Optional] [PowerShell](https://docs.microsoft.com/en-us/powershell/scripting/setup/installing-powershell-core-on-linux?view=powershell-6)
 
 Note all AP.exe commands must be prefixed with `mono ` to be used on Linux.

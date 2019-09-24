@@ -1,4 +1,4 @@
-﻿namespace Acoustics.Test.TestHelpers
+namespace Acoustics.Test.TestHelpers
 {
     using System;
     using System.Collections.Generic;
@@ -261,7 +261,19 @@
                             //BitsPerSample = 16,
                         }
                 },
-            };
+                {
+                    "20190401T000000+1000_REC [19.21440152.8811].flac",
+                    new AudioUtilityInfo()
+                    {
+                        Duration = TimeSpan.FromSeconds(60.0),
+                        SampleRate = 22050,
+                        ChannelCount = 1,
+                        BitsPerSecond = 170 * 8,
+                        MediaType = MediaTypes.MediaTypeFlacAudio,
+                        BitsPerSample = 16,
+                    }
+                },
+        };
 
         /// <summary>
         /// Tests that an exception is thrown, and that it is of

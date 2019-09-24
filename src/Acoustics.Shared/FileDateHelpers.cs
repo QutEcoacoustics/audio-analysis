@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="FileDateHelpers.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -27,13 +27,13 @@ namespace Acoustics.Shared
         {
                 "yyyyMMdd[-|T|_]HHmmss (if timezone offset hint provided)",
                 "yyyyMMdd[-|T|_]HHmmssZ",
-            };
+        };
 
         private static readonly string[] AcceptedFormatsTimeZone =
         {
                 "yyyyMMdd[-|T|_]HHmmss[+|-]HH",
                 "yyyyMMdd[-|T|_]HHmmss[+|-]HHmm",
-            };
+        };
 
         internal static readonly DateVariants[] PossibleFormats =
             {
@@ -79,10 +79,64 @@ namespace Acoustics.Shared
             var datesAndFiles = new SortedDictionary<DateTimeOffset, FileInfo>();
             foreach (var file in files)
             {
-                DateTimeOffset parsedDate;
-                if (FileNameContainsDateTime(file.Name, out parsedDate, offsetHint))
+                if (FileNameContainsDateTime(file.Name, out var parsedDate, offsetHint))
                 {
+                    if (datesAndFiles.ContainsKey(parsedDate))
+                    {
+                        string message =
+                            $"There was a duplicate date. File {file} with date {parsedDate:O} conflicts with existing file {datesAndFiles[parsedDate]}";
+                        throw new InvalidDataSetException(message);
+                    }
+
                     datesAndFiles.Add(parsedDate, file);
+                }
+            }
+
+            // use following lines to get first and last date from returned dictionary
+            //DateTimeOffset firstdate = datesAndFiles[datesAndFiles.Keys.First()];
+            //DateTimeOffset lastdate  = datesAndFiles[datesAndFiles.Keys.Last()];
+            return datesAndFiles;
+        }
+
+        /// <summary>
+        /// sorts a list of files by the date assumed to be encoded in their file names
+        /// and then returns the list as a sorted dictionary with file DateTime as the keys.
+        /// </summary>
+        /// <param name="files">The files to filter.</param>
+        /// <param name="offsetHint">If you know what timezone you should have, specify a hint to enable parsing of ambiguous dates.</param>
+        /// <returns>A sorted dictionary FileInfo objects mapped to parsed dates.</returns>
+        public static SortedDictionary<DateTimeOffset, T> FilterObjectsForDates<T>(IEnumerable<T> objects, Func<T, FileSystemInfo> pathSelector, Func<T, DateTimeOffset?> overrideSelector, TimeSpan? offsetHint = null)
+        {
+            var datesAndFiles = new SortedDictionary<DateTimeOffset, T>();
+            foreach (var @object in objects)
+            {
+                var date = overrideSelector?.Invoke(@object);
+
+                FileSystemInfo file = null;
+                if (date == null)
+                {
+                    file = pathSelector.Invoke(@object);
+                    if (FileNameContainsDateTime(file.Name, out var parsedDate, offsetHint))
+                    {
+                        date = parsedDate;
+                    }
+                }
+
+                if (date.NotNull())
+                {
+                    if (datesAndFiles.ContainsKey(date.Value))
+                    {
+                        if (file == null)
+                        {
+                            file = pathSelector.Invoke(@object);
+                        }
+
+                        string message =
+                            $"There was a duplicate date. File {file} with date {date:O} conflicts with existing file {datesAndFiles[date.Value]}";
+                        throw new InvalidDataSetException(message);
+                    }
+
+                    datesAndFiles.Add(date.Value, @object);
                 }
             }
 

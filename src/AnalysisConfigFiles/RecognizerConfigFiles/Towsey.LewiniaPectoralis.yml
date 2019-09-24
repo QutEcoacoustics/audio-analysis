@@ -7,7 +7,7 @@ AbbreviatedSpeciesName: L.pect
 # (1) the Kek-kek which is a contact calls
 # (2) the gallop - dominant freq around 270 Hz - paired spikes - no one knows why it gallops
 # (3) the meow - stacked harmonics - dominant freq around 2kHz - breeding/recruitment call
-# (4) the fart - closely stacked harmonics - dominant around 250 hz. Unknown function - possibly breeding season when kek-kek calls decline. 
+# (4) the fart - closely stacked harmonics - dominant around 250 hz. Unknown function - possibly breeding season when kek-kek calls decline.
 
 Profiles:
     Standard: &Standard
@@ -16,7 +16,7 @@ Profiles:
         LowerFreqBandTop: 2900
         LowerFreqBandBottom: 2600
         MinPeriod: 0.18
-        # max period increased from 0.25 to 0.36 to accommodate longer period in Tasmania data. 
+        # max period increased from 0.25 to 0.36 to accommodate longer period in Tasmania data.
         MaxPeriod: 0.36
         MinDuration: 2
         MaxDuration: 15
@@ -36,12 +36,13 @@ ResampleRate: 22050
 #WindowSize:
 
 ## Specifically for AnalyzeLongRecording
-#SegmentDuration: units=seconds,   SegmentOverlap=seconds        
+#SegmentDuration: units=seconds,   SegmentOverlap=seconds
 SegmentDuration: 60
 SegmentOverlap: 0
 
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: WhenEventsDetected
+# If `true` saves a data into a seperate file every `SegmentDuration` seconds. Accepts a boolean value: [false|true]
 SaveIntermediateCsvFiles: false
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveSonogramImages: WhenEventsDetected

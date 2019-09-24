@@ -31,7 +31,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
 
     public partial class AnalyseLongRecording
     {
-        private const string ImagefileExt = "png";
+        private const string ImageFileExt = "png";
 
         private static readonly ILog Log = LogManager.GetLogger(nameof(AnalyseLongRecording));
 
@@ -101,12 +101,12 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             }
 
             // 2. initialize the analyzer
-            // we're changing the way resolving config files works. Ideally, we'd like to use staticly typed config files
+            // we're changing the way resolving config files works. Ideally, we'd like to use statically typed config files
             // but we can't do that unless we know which type we have to load first! Currently analyzer to load is in
             // the config file so we can't know which analyzer we can use. Thus we will change to using the file name,
             // or an argument to resolve the analyzer to load.
             // Get analysis name:
-            IAnalyser2 analyzer = FindAndCheckAnalyser<IAnalyser2>(arguments.AnalysisIdentifier, configFile.Name);
+            IAnalyser2 analyzer = FindAndCheckAnalyzer<IAnalyser2>(arguments.AnalysisIdentifier, configFile.Name);
 
             // 2. get the analysis config
             AnalyzerConfig configuration = analyzer.ParseConfig(configFile);
@@ -328,7 +328,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
                             imageTitle,
                             timeScale,
                             fileSegment.TargetFileStartDate);
-                    var imagePath = FilenameHelpers.AnalysisResultPath(instanceOutputDirectory, basename, "SummaryIndices", ImagefileExt);
+                    var imagePath = FilenameHelpers.AnalysisResultPath(instanceOutputDirectory, basename, "SummaryIndices", ImageFileExt);
                     tracksImage.Save(imagePath);
                 }
             }
@@ -351,7 +351,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             Log.Success($"Analysis Complete.\nSource={sourceAudio.Name}\nOutput={instanceOutputDirectory.FullName}");
         }
 
-        public static T FindAndCheckAnalyser<T>(string analysisIdentifier, string partialIdentifier)
+        public static T FindAndCheckAnalyzer<T>(string analysisIdentifier, string partialIdentifier)
             where T : class, IAnalyser2
         {
             string searchName;
@@ -369,44 +369,44 @@ namespace AnalysisPrograms.AnalyseLongRecordings
                     fragments.Length >= 2,
                     $"We need at least two segments to search for an analyzer, supplied name `{partialIdentifier}` is insufficient.");
 
-                // assume indentifier (e.g. "Towsey.Acoustic") in first two segments
+                // assume identifier (e.g. "Towsey.Acoustic") in first two segments
                 searchName = fragments[0] + "." + fragments[1];
                 Log.Debug($"Searching for partial analysis identifier name. `{searchName}` extracted from `{partialIdentifier}`");
             }
 
-            var analysers = AnalysisCoordinator.GetAnalyzers<T>(typeof(MainEntry).Assembly).ToList();
-            T analyser = analysers.FirstOrDefault(a => a.Identifier == searchName);
-            if (analyser == null)
+            var analyzers = AnalysisCoordinator.GetAnalyzers<T>(typeof(MainEntry).Assembly).ToList();
+            T analyzer = analyzers.FirstOrDefault(a => a.Identifier == searchName);
+            if (analyzer == null)
             {
                 var error = $"We can not determine what analysis you want to run. We tried to search for \"{searchName}\"";
                 LoggedConsole.WriteErrorLine(error);
-                var knownAnalyzers = analysers.Aggregate(string.Empty, (a, i) => a + $"  {i.Identifier}\n");
-                LoggedConsole.WriteLine("Available analysers are:\n" + knownAnalyzers);
+                var knownAnalyzers = analyzers.Aggregate(string.Empty, (a, i) => a + $"  {i.Identifier}\n");
+                LoggedConsole.WriteLine("Available analyzers are:\n" + knownAnalyzers);
 
                 throw new ValidationException($"Cannot find an IAnalyser2 with the name `{searchName}`");
             }
 
-            Log.Info($"Using analyzer {analyser.Identifier}");
+            Log.Info($"Using analyzer {analyzer.Identifier}");
 
-            return analyser;
+            return analyzer;
         }
 
         /// <summary>
-        /// Generic organization of resources after a run
+        /// Generic organization of resources after a run.
         /// </summary>
         private static void Cleanup(Arguments args, FileInfo configFile)
         {
-            if (args.WhenExitCopyConfig)
+            if (args.WhenExitCopyConfig && args.Config.NotNull())
             {
                 configFile.CopyTo(Path.Combine(args.Output.FullName, Path.GetFileName(args.Config)), true);
             }
 
-            if (args.WhenExitCopyLog)
+            if (args.WhenExitCopyLog && MainEntry.Logging.LogFileName.NotNull())
             {
                 var logDirectory = LoggedConsole.LogFolder;
-                var logFile = Path.Combine(logDirectory, "log.txt");
+                var logFile = Path.Combine(logDirectory, MainEntry.Logging.LogFileName);
 
-                File.Copy(logFile, Path.Combine(args.Output.FullName, "log.txt"), true);
+                File.Copy(logFile, Path.Combine(args.Output.FullName, MainEntry.Logging.LogFileName), true);
             }
         }
     }

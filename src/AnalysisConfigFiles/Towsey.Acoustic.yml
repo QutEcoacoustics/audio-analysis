@@ -12,7 +12,7 @@
 
 #SegmentDuration: units=seconds;
 # Long duration recordings are cut into short segments for more efficient processing. Default segment length = 60 seconds.
-# WARNING: You should not change this property!!  
+# WARNING: You should not change this property!!
 SegmentDuration: 60
 
 #SegmentOverlap: units=seconds;
@@ -49,7 +49,7 @@ FrameLength: 512
 # It is often useful to define three frequency bands, low, middle and high.
 # Six of the summary indices are calculated for the mid-band only.
 # This is useful to avoid low frequency anthropogenic noise and to target bird species which mostly sing in the 1-8 khz band.
-# The lower and upper bound of the mid-frequency band are set by LowFreqBound and HighFreqBound respectively. 
+# The lower and upper bound of the mid-frequency band are set by LowFreqBound and HighFreqBound respectively.
 # Default values in code are LowFreqBound=1000Hz & MidFreqBound=8000
 LowFreqBound: 1000
 MidFreqBound: 8000
@@ -63,7 +63,8 @@ FrequencyScale: Linear
 # SAVE INTERMEDIARY FILES
 # Available options (case-sensitive): [false/Never | true/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
-# A boolean: [false|true]
+# If `true` saves a data into a seperate file every `SegmentDuration` seconds. Accepts a boolean value: [false|true]
+# If `true` saves a data into a seperate file every `SegmentDuration` seconds. Accepts a boolean value: [false|true]
 SaveIntermediateCsvFiles: false
 
 # SAVE INTERMEDIARY ONE-MINUTE (standard scale) SPECTROGRAMS
@@ -99,7 +100,35 @@ IndexPropertiesConfig: './IndexPropertiesConfig.yml'
 
 # EventThreshold: min value=0.0; max value=1.0.
 # This value can sometimes be used to manage the FP/FN trade-off performance of a call recogniser.
-# Not always used however. 
+# Not always used however.
 EventThreshold: 0.2
+
+# #############################################################################################################
+# The below parameters are used to configure drawing of the false-colour spectrograms
+# IMPORTANT NOTE: FC spectrograms are produced only IF the above IndexCalculationDuration := 60.0
+# Explanation of the FC configuration parameters is included below.
+LdSpectrogramConfig:
+    ColorMap1: "ACI-ENT-EVN"
+    ColorMap2: "BGN-PMN-SPT"
+
+    #EXPLANATION OF LDFC CONFIG PARAMETERS
+    # The ColourFilter parameter determines how much the low index values are emphasized or de-emphasized.
+    # The purpose is to make low intensity features stand out (emphasis) or become even less obvious (de-emphasis).
+    # This parameter applies a function that lies between y=x^-2 and y=x^2, i.e. between the square-root and the square.
+    # For an acoustic index value of X, newX = [(1/c - 1) * X^2 + X] * c, where c = the supplied filterCoeff.
+    #    When filterCoeff = 1.0, small values are maximally emphasized, i.e. y=sqrt(x).
+    #    When filterCoeff = 0.0, the matrix remains unchanged, that is, y=x.
+    #    When filterCoeff =-1.0, small values are maximally de-emphasized, i.e. y=x^2.
+    #    Generally usage suggests that a value of -0.25 is suitable. i.e. a slight de-emphasis.
+    ColourFilter: -0.25
+
+    # minutes x-axis scale
+    XAxisTicIntervalSeconds: 3600
+
+    # Hertz y-axis scale
+    # Only three option work now: "Linear", "Mel"' "Linear125Octaves7Tones28Nyquist32000" work at present
+    # Future options will be: Linear62Octaves31Nyquist11025, Linear125Octaves30Nyquist11025, Octaves24Nyquist32000
+    FreqScale: "Linear"
+    YAxisTicInterval: 1000
 ...
 

@@ -21,6 +21,7 @@ namespace AudioAnalysisTools.Indices
     using DSP;
     using StandardSpectrograms;
     using log4net;
+    using MoreLinq.Extensions;
     using TowseyLibrary;
     using Zio;
 
@@ -148,35 +149,6 @@ namespace AudioAnalysisTools.Indices
             //}
 
             return summaryIndices;
-        }
-
-        /// <summary>
-        /// WARNING: THIS METHOD ONLY GETS FIXED LIST OF INDICES.
-        ///             Also it requires every index to be of type DOUBLE even when this is not appropriate.
-        /// TODO: This needs to be generalized.
-        /// </summary>
-        public static Dictionary<string, double[]> GetDictionaryOfSummaryIndices(List<SummaryIndexValues> summaryIndices)
-        {
-            var dictionary = new Dictionary<string, double[]>
-            {
-                { GapsAndJoins.KeyZeroSignal, summaryIndices.Select(x => x.ZeroSignal).ToArray() },
-                { "ClippingIndex", summaryIndices.Select(x => x.ClippingIndex).ToArray() },
-                { "BackgroundNoise", summaryIndices.Select(x => x.BackgroundNoise).ToArray() },
-                { "Snr", summaryIndices.Select(x => x.Snr).ToArray() },
-                { "EventsPerSecond", summaryIndices.Select(x => x.EventsPerSecond).ToArray() },
-                { "Activity", summaryIndices.Select(x => x.Activity).ToArray() },
-                { "HighFreqCover", summaryIndices.Select(x => x.HighFreqCover).ToArray() },
-                { "MidFreqCover", summaryIndices.Select(x => x.MidFreqCover).ToArray() },
-                { "LowFreqCover", summaryIndices.Select(x => x.LowFreqCover).ToArray() },
-                { "TemporalEntropy", summaryIndices.Select(x => x.TemporalEntropy).ToArray() },
-                { "EntropyOfAverageSpectrum", summaryIndices.Select(x => x.EntropyOfAverageSpectrum).ToArray() },
-                { "EntropyOfPeaksSpectrum", summaryIndices.Select(x => x.EntropyOfPeaksSpectrum).ToArray() },
-                { "AcousticComplexity", summaryIndices.Select(x => x.AcousticComplexity).ToArray() },
-                { "ClusterCount", summaryIndices.Select(x => x.ClusterCount).ToArray() },
-                { "ThreeGramCount", summaryIndices.Select(x => x.ThreeGramCount).ToArray() },
-            };
-
-            return dictionary;
         }
 
         public static Dictionary<string, double[,]> GetSpectralIndexFilesAndConcatenate(
@@ -357,7 +329,7 @@ namespace AudioAnalysisTools.Indices
         }
 
         /// <summary>
-        /// Returns a sorted list of file paths, sorted on file name.
+        /// Returns a unique, sorted, list of file paths, sorted on file name.
         /// IMPORTANT: Sorts on alphanumerics, NOT on date or time encoded in the file name.
         /// </summary>
         public static FileInfo[] GetFilesInDirectories(DirectoryInfo[] directories, string pattern)
@@ -378,14 +350,7 @@ namespace AudioAnalysisTools.Indices
                 fileList.AddRange(files);
             }
 
-            //if (fileList.Count == 0)
-            //{
-            //    // No need for this warning. It comes later.
-            //    LoggedConsole.WriteErrorLine($"No file names match pattern <{pattern}>. Returns empty list of files");
-            //}
-
-            FileInfo[] returnList = fileList.ToArray();
-            Array.Sort(returnList, (f1, f2) => f1.Name.CompareTo(f2.Name));
+            FileInfo[] returnList = fileList.DistinctBy(x => x.FullName).OrderBy(x => x.Name).ToArray();
 
             return returnList;
         }

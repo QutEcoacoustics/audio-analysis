@@ -79,7 +79,6 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
 
             Assert.AreEqual(0.6793287, summaryIndices.AcousticComplexity, AllowedDelta);
             Assert.AreEqual(0.484520, summaryIndices.Activity, AllowedDelta);
-            Assert.AreEqual(0.000000, summaryIndices.AvgEntropySpectrum, AllowedDelta);
             Assert.AreEqual(-30.946519, summaryIndices.AvgSignalAmplitude, AllowedDelta);
             Assert.AreEqual(11.533420, summaryIndices.AvgSnrOfActiveFrames, AllowedDelta);
             Assert.AreEqual(-39.740775, summaryIndices.BackgroundNoise, AllowedDelta);
@@ -88,7 +87,6 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             Assert.AreEqual(0.301929, summaryIndices.EntropyOfCoVSpectrum, AllowedDelta);
             Assert.AreEqual(0.260999, summaryIndices.EntropyOfPeaksSpectrum, AllowedDelta);
             Assert.AreEqual(0.522080, summaryIndices.EntropyOfVarianceSpectrum, AllowedDelta);
-            Assert.AreEqual(0.0, summaryIndices.EntropyPeaks, AllowedDelta);
             Assert.AreEqual(2.0, summaryIndices.EventsPerSecond, AllowedDelta);
             Assert.AreEqual(0.140306, summaryIndices.HighFreqCover, AllowedDelta);
             Assert.AreEqual(0.137873, summaryIndices.MidFreqCover, AllowedDelta);

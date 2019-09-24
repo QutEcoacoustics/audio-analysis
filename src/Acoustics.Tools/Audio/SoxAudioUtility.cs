@@ -188,15 +188,16 @@ namespace Acoustics.Tools.Audio
             var trim = string.Empty;
             if (request.OffsetStart.HasValue && !request.OffsetEnd.HasValue)
             {
-                trim = "trim " + request.OffsetStart.Value.TotalSeconds;
+                trim = "trim " + request.OffsetStart.Value.TotalSeconds.ToString(CultureInfo.InvariantCulture);
             }
             else if (!request.OffsetStart.HasValue && request.OffsetEnd.HasValue)
             {
-                trim = "trim 0 " + request.OffsetEnd.Value.TotalSeconds;
+                trim = "trim 0 " + request.OffsetEnd.Value.TotalSeconds.ToString(CultureInfo.InvariantCulture);
             }
             else if (request.OffsetStart.HasValue && request.OffsetEnd.HasValue)
             {
-                trim = "trim " + request.OffsetStart.Value.TotalSeconds + " " + (request.OffsetEnd.Value.TotalSeconds - request.OffsetStart.Value.TotalSeconds);
+                var delta = request.OffsetEnd.Value.TotalSeconds - request.OffsetStart.Value.TotalSeconds;
+                trim = FormattableString.Invariant($"trim {request.OffsetStart.Value.TotalSeconds} {delta}");
             }
 
             var bandpass = string.Empty;
@@ -205,19 +206,20 @@ namespace Acoustics.Tools.Audio
                 switch (request.BandPassType)
                 {
                     case BandPassType.Sinc:
-                        bandpass += "sinc {0}k-{1}k".Format(request.BandpassLow.Value / 1000, request.BandpassHigh.Value / 1000);
+                        bandpass += FormattableString.Invariant(
+                            $"sinc {request.BandpassLow.Value / 1000}k-{request.BandpassHigh.Value / 1000}k");
                         break;
                     case BandPassType.Bandpass:
                         double width = request.BandpassHigh.Value - request.BandpassLow.Value;
-                        var center = width / 2.0;
-                        bandpass += "bandpass {0}k width{k}".Format(center / 1000, width / 1000);
+                        var center = request.BandpassLow.Value + (width / 2.0);
+                        bandpass += FormattableString.Invariant(
+                            $"bandpass { center / 1000 }k { width / 1000 }k");
                         break;
                     case BandPassType.None:
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
             }
-
 
             // example
             // remix down to 1 channel, medium resample quality using steep filter with target sample rate of 11025hz

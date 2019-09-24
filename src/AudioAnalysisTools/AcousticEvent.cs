@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="AcousticEvent.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -14,10 +14,12 @@ namespace AudioAnalysisTools
     using System.Collections.ObjectModel;
     using System.Drawing;
     using System.IO;
+    using System.Linq;
     using System.Text;
     using System.Text.RegularExpressions;
     using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Csv;
+    using AForge.Imaging.Filters;
     using AnalysisBase.ResultBases;
     using CsvHelper.Configuration;
     using DSP;
@@ -1097,13 +1099,119 @@ namespace AudioAnalysisTools
                         //obtain average intensity score.
                         double av = 0.0;
                         for (int n = startFrame; n <= i; n++)
-                    {
-                        av += values[n];
-                    }
+                        {
+                            av += values[n];
+                        }
 
                         ev.Score = av / (i - startFrame + 1);
                         events.Add(ev);
                     }
+            }
+
+            return events;
+        }
+
+        /// <summary>
+        /// Given a time series of acoustic amplitude (typically in decibels), this method finds events that match the passed constraints.
+        /// </summary>
+        /// <param name="values">an array of amplitude values, typically decibel values.</param>
+        /// <param name="segmentStartOffset">not sure what this is about!.</param>
+        /// <param name="minHz">minimum freq of event.</param>
+        /// <param name="maxHz">maximum freq of event.</param>
+        /// <param name="thresholdValue">event threshold in same units as the value array.</param>
+        /// <param name="minDuration">minimum duration of an event.</param>
+        /// <param name="maxDuration">maximum duration of an event.</param>
+        /// <param name="framesPerSec">the time scale - required for drawing events.</param>
+        /// <param name="freqBinWidth">the frequency scale - required for drawing events.</param>
+        /// <returns>an array of class AcousticEvent.</returns>
+        public static List<AcousticEvent> GetEventsAroundMaxima(
+            double[] values,
+            TimeSpan segmentStartOffset,
+            int minHz,
+            int maxHz,
+            double thresholdValue,
+            TimeSpan minDuration,
+            TimeSpan maxDuration,
+            double framesPerSec,
+            double freqBinWidth)
+        {
+            int count = values.Length;
+            var events = new List<AcousticEvent>();
+            double frameOffset = 1 / framesPerSec; //frame offset in fractions of second
+
+            // convert min an max times durations to frames
+            int minFrames = (int)Math.Floor(minDuration.TotalSeconds * framesPerSec);
+            int maxFrames = (int)Math.Ceiling(maxDuration.TotalSeconds * framesPerSec);
+
+            // convert min an max Hertz durations to freq bins
+            int minBin = (int)Math.Round(minHz / freqBinWidth);
+            int maxBin = (int)Math.Round(maxHz / freqBinWidth);
+
+            // tried smoothing but not advisable since event onset can be very sudden
+            //values = DataTools.filterMovingAverageOdd(values, 3);
+            int startFrame = 0;
+            int endFrame = 0;
+
+            // for all frames
+            for (int i = 1; i < count - minFrames; i++)
+            {
+                // skip if value is below threshold
+                if (values[i] < thresholdValue)
+                {
+                    continue;
+                }
+
+                // skip if value is not maximum
+                if (values[i] < values[i - 1] || values[i] < values[i + 1])
+                {
+                    continue;
+                }
+
+                int maxFrame = i;
+
+                // find start frame of current event
+                while (values[i] > thresholdValue)
+                {
+                    if (i <= 0)
+                    {
+                        break;
+                    }
+
+                    i--;
+                }
+
+                startFrame = i + 1;
+
+                // find end frame of current event
+                i = maxFrame;
+                while (values[i] > thresholdValue)
+                {
+                    i++;
+                }
+
+                endFrame = i;
+
+                int frameDuration = endFrame - startFrame + 1;
+                if (frameDuration >= minFrames && frameDuration <= maxFrames)
+                {
+                    double startTime = startFrame * frameOffset; // time in seconds
+                    double eventDuration = frameDuration * frameOffset; // time in seconds
+                    AcousticEvent ev = new AcousticEvent(segmentStartOffset, startTime, eventDuration, minHz, maxHz)
+                    {
+                        Name = "Event", //default name
+                        FrameCount = frameDuration,
+                        Oblong = new Oblong(startFrame, minBin, endFrame, maxBin),
+                    };
+
+                    ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
+
+                    //obtain average intensity score. Note-first frame is not actually in the event.
+                    var subArray = DataTools.Subarray(values, startFrame + 1, frameDuration);
+                    ev.Score = subArray.Average();
+                    events.Add(ev);
+                }
+
+                i++;
             }
 
             return events;

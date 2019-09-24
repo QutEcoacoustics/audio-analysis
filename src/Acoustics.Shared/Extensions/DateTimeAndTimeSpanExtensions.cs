@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="DateTimeAndTimeSpanExtensions.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -10,6 +10,8 @@
 // ReSharper disable once CheckNamespace
 namespace System
 {
+    using System.IO;
+    using Acoustics.Shared;
     using Collections.Generic;
     using Linq;
 
@@ -123,6 +125,19 @@ namespace System
         public static string ToTimeZoneString(this TimeSpan ts)
         {
             return (ts < TimeSpan.Zero ? "-" : string.Empty) + ts.ToString(@"mm\:ss");
+        }
+
+        /// <summary>
+        /// Formats a date in an ISO8601 format that is compact
+        /// and does not contain colons.
+        /// </summary>
+        /// <param name="date">The date to convert to a string.</param>
+        /// <returns>The resulting string.</returns>
+        public static string ToIso8601SafeString(this DateTimeOffset date)
+        {
+            return date
+                .ToString(AppConfigHelper.Iso8601FileCompatibleDateFormat)
+                .Replace(":", string.Empty);
         }
 
         /// <summary>
@@ -282,7 +297,7 @@ namespace System
         }
 
         /// <summary>
-        /// Multiplies a timespan by a scalar value
+        /// Multiplies a timespan by a scalar value.
         /// </summary>
         public static TimeSpan Multiply(this TimeSpan multiplicand, int multiplier)
         {
@@ -290,7 +305,7 @@ namespace System
         }
 
         /// <summary>
-        /// Divides a timespan by an scalar value
+        /// Divides a timespan by an scalar value.
         /// </summary>
         public static TimeSpan Divide(this TimeSpan dividend, int divisor)
         {
@@ -298,7 +313,7 @@ namespace System
         }
 
         /// <summary>
-        /// Multiplies a timespan by a double value
+        /// Multiplies a timespan by a double value.
         /// </summary>
         public static TimeSpan Multiply(this TimeSpan multiplicand, double multiplier)
         {
@@ -306,11 +321,27 @@ namespace System
         }
 
         /// <summary>
-        /// Divides a timespan by an scalar value
+        /// Divides a timespan by an scalar value.
         /// </summary>
         public static TimeSpan Divide(this TimeSpan dividend, double divisor)
         {
             return TimeSpan.FromTicks((long)(dividend.Ticks / divisor));
+        }
+
+        /// <summary>
+        /// Divides a timespan by an timespan and returns a scalar factor.
+        /// </summary>
+        public static double Divide(this TimeSpan dividend, TimeSpan divisor)
+        {
+            return dividend.Ticks / (double)divisor.Ticks;
+        }
+
+        /// <summary>
+        /// Divides a timespan by an timespan and the remainder.
+        /// </summary>
+        public static TimeSpan Modulo(this TimeSpan dividend, TimeSpan divisor)
+        {
+            return TimeSpan.FromTicks(dividend.Ticks % divisor.Ticks);
         }
 
         // https://github.com/exceptionless/Exceptionless.DateTimeExtensions/blob/master/src/Exceptionless.DateTimeExtensions/DateTimeOffsetExtensions.cs#L222
@@ -332,6 +363,63 @@ namespace System
             return date.AddTicks(halfIntervalTicks - ((date.Ticks + halfIntervalTicks) % roundingInterval.Ticks));
         }
 
+        /// <summary>
+        /// Round a date to a time of day.
+        /// </summary>
+        /// <remarks>
+        /// Unlike the other rounding methods (which accept an interval), this method
+        /// will only output values that are 24-hours apart so that values always align
+        /// to the supplied <paramref name="timeOfDay"/>.
+        /// </remarks>
+        /// <param name="date">The date to round.</param>
+        /// <param name="timeOfDay">The time of day to round to.</param>
+        /// <param name="direction">The behaviour of the rounding operation.</param>
+        /// <returns>A rounded date.</returns>
+        public static DateTimeOffset RoundToTimeOfDay(
+            this DateTimeOffset date,
+            TimeSpan timeOfDay,
+            RoundingDirection direction)
+        {
+            var time = date.TimeOfDay;
+            if (time == timeOfDay)
+            {
+                return date;
+            }
+
+            TimeSpan delta;
+            if (direction == RoundingDirection.AwayFromZero)
+            {
+                var roundDelta = timeOfDay.Subtract(time);
+                if (roundDelta.Absolute() < TimeSpan.FromHours(12))
+                {
+                    delta = timeOfDay;
+                }
+                else if (roundDelta < TimeSpan.Zero)
+                {
+                    delta = timeOfDay + TimeSpan.FromDays(1);
+                }
+                else
+                {
+                    delta = timeOfDay - TimeSpan.FromDays(1);
+                }
+            }
+            else if (direction == RoundingDirection.Ceiling)
+            {
+                delta = time < timeOfDay ? timeOfDay : timeOfDay + TimeSpan.FromDays(1);
+            }
+            else if (direction == RoundingDirection.Floor)
+            {
+                delta = time >= timeOfDay ? timeOfDay : timeOfDay - TimeSpan.FromDays(1);
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(direction));
+            }
+
+            var dayOf = new DateTimeOffset(date.Date.Add(delta), date.Offset);
+            return dayOf;
+        }
+
         public static TimeSpan Absolute(this TimeSpan span)
         {
             return span < TimeSpan.Zero ? new TimeSpan(span.Ticks * -1) : span;
@@ -345,6 +433,13 @@ namespace System
         public static TimeSpan Max(this TimeSpan t1, TimeSpan t2)
         {
             return t1 >= t2 ? t1 : t2;
+        }
+
+        public enum RoundingDirection
+        {
+            Floor,
+            Ceiling,
+            AwayFromZero,
         }
     }
 }

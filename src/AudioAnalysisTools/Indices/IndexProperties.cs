@@ -306,7 +306,7 @@ namespace AudioAnalysisTools.Indices
         }
 
         /// <summary>
-        /// Locate and IndexPropertiesConfig.yml file from the IndexPropertiesConfig key in a config file.
+        /// Locate an IndexPropertiesConfig.yml file from the IndexPropertiesConfig key in a config file.
         /// </summary>
         public static FileEntry Find(IIndexPropertyReferenceConfiguration configuration, string originalConfigpath, bool allowDefault = false)
         {
