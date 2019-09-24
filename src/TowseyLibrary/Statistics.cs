@@ -1,11 +1,10 @@
-﻿// <copyright file="Statistics.cs" company="QutEcoacoustics">
+// <copyright file="Statistics.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
 namespace TowseyLibrary
 {
     using System;
-    using System.Collections.Generic;
     using System.Text;
 
     /// <summary>
@@ -21,51 +20,68 @@ namespace TowseyLibrary
             return median;
         }
 
+        public static int GetNthPercentileBin(int[] distribution, int percentile)
+        {
+            int length = distribution.Length;
+            double threshold = percentile / 100D;
+            double[] probs = DataTools.NormaliseArea(distribution);
+            double[] cumProb = DataTools.ConvertProbabilityDistribution2CummulativeProbabilites(probs);
+            int percentileBin = 0;
+            for (int i = 0; i < length; i++)
+            {
+                if (cumProb[i] >= threshold)
+                {
+                    percentileBin = i;
+                    break;
+                }
+            }
+
+            return percentileBin;
+        }
+
         /// <summary>
         /// Analyses an array of events or hits, represented by a binary of matrix.
         /// Assumes a Poisson distribution
         /// Returns an array of Z-scores indicating the probability at any time or frame that the number of hits occuring
         /// in the window centred on that point could have occured by chance.
         /// </summary>
-        /// <param name="hits"></param>
-        /// <param name="window"></param>
-        /// <param name="thresholdZ"></param>
-        /// <param name="thresholdCount"></param>
-        /// <returns></returns>
         public static void AnalyseClustersOfHits(int[] hits, int window, double thresholdZ, int thresholdCount,
                                                 out double[] zScores, out double expectedHits, out double sd)
         {
             int frameCount = hits.Length;
             int hitCount = DataTools.CountPositives(hits);
-
             expectedHits = (double)hitCount * window / frameCount;
-            sd = Math.Sqrt(expectedHits); //assume Poisson Distribution
 
-            //LoggedConsole.WriteLine("hitCount="+hitCount+"  expectedHits = " + expectedHits + "+/-" + sd+"  thresholdSum="+thresholdSum);
-            int offset = (int)(window * 0.5); //assign score to position in window
+            // assume Poisson Distribution
+            sd = Math.Sqrt(expectedHits);
+
+            // LoggedConsole.WriteLine("hitCount="+hitCount+"  expectedHits = " + expectedHits + "+/-" + sd+"  thresholdSum="+thresholdSum);
+            int offset = (int)(window * 0.5); // assign score to position in window
             int sum = 0;
             for (int i = 0; i < window; i++)
             {
+                // set up the song window
                 if (hits[i] > 0)
                 {
-                    sum++;  //set up the song window
+                    sum++;
                 }
             }
 
-            //now calculate z-scores for the number of syllable hits in a window
+            // now calculate z-scores for the number of syllable hits in a window
             zScores = new double[frameCount];
             for (int i = window; i < frameCount; i++)
             {
                 if (sum < thresholdCount)
                 {
-                    zScores[i - offset] = -10.0;  //not enough hits to constitute a cluster - set ascore to neg value
+                    // not enough hits to constitute a cluster - set ascore to neg value
+                    zScores[i - offset] = -10.0;
                 }
                 else
                 {
                     zScores[i - offset] = (sum - expectedHits) / sd;
                 }
 
-                sum = sum - hits[i - window] + hits[i]; //move the songwindow
+                sum = sum - hits[i - window] + hits[i]; // move the songwindow
             }
         }
 
@@ -127,8 +143,8 @@ namespace TowseyLibrary
             double v2 = sd2 * sd2;
             int df = count1 + count2 - 2;
             double v = (((count1 - 1) * v1) + ((count2 - 1) * v2)) / df;
-            double SEsquared = v * (count1 + count2) / (count1 * count2);
-            double t = (m1 - m2) / Math.Sqrt(SEsquared);
+            double seSquared = v * (count1 + count2) / (count1 * count2);
+            double t = (m1 - m2) / Math.Sqrt(seSquared);
             return t;
         }
 
@@ -179,8 +195,7 @@ namespace TowseyLibrary
             return p;
         }
 
-        public static double[] bayesBoundary(int countC1, double meanC1, double sdC1,
-                               int countC2, double meanC2, double sdC2)
+        public static double[] bayesBoundary(int countC1, double meanC1, double sdC1, int countC2, double meanC2, double sdC2)
         {
             double lnRatio = Math.Log(countC1 / (double)countC2);
             double sqrMean1 = meanC1 * meanC1;
@@ -206,11 +221,11 @@ namespace TowseyLibrary
             }
 
             double sqrt = Math.Sqrt((B * B) - (4 * A * C));
-            double Q = -0.5 * (B + (signB * sqrt));
+            double q = -0.5 * (B + (signB * sqrt));
 
             double[] roots = new double[2];
-            roots[0] = Q / A;
-            roots[1] = C / Q;
+            roots[0] = q / A;
+            roots[1] = C / q;
             return roots;
         }
 
@@ -222,10 +237,10 @@ namespace TowseyLibrary
                 distribution[i] = 1 / (double)(i + 1);
             }
 
-            //for (int i = 0; i < length; i++) distribution[i] = 1 / (double)((i + 1) * (i + 1));
-            //double sum = 0;
-            //for (int i = 0; i < length; i++) sum += distribution[i];
-            //Console.WriteLine("pre-sum = {0:f3}", sum);
+            // for (int i = 0; i < length; i++) distribution[i] = 1 / (double)((i + 1) * (i + 1));
+            // double sum = 0;
+            // for (int i = 0; i < length; i++) sum += distribution[i];
+            // Console.WriteLine("pre-sum = {0:f3}", sum);
             distribution = DataTools.Normalise2Probabilites(distribution);
             return distribution;
         }
@@ -238,9 +253,9 @@ namespace TowseyLibrary
                 distribution[i] = i * i;
             }
 
-            //double sum = 0;
-            //for (int i = 0; i < length; i++) sum += distribution[i];
-            //Console.WriteLine("pre-sum = {0:f3}", sum);
+            // double sum = 0;
+            // for (int i = 0; i < length; i++) sum += distribution[i];
+            // Console.WriteLine("pre-sum = {0:f3}", sum);
             distribution = DataTools.Normalise2Probabilites(distribution);
             distribution = DataTools.reverseArray(distribution);
             return distribution;
@@ -250,7 +265,7 @@ namespace TowseyLibrary
         {
             double[] distribution = CreateInverseProbabilityDistribution(distributionlength);
 
-            //double[] distribution = Statistics.CreateQuadraticProbabilityDistribution(distributionlength);
+            // double[] distribution = Statistics.CreateQuadraticProbabilityDistribution(distributionlength);
             // double sum = distribution.Sum();
             // Console.WriteLine("post-sum = {0:f3}", sum);
             distribution = DataTools.ConvertProbabilityDistribution2CummulativeProbabilites(distribution);
@@ -263,106 +278,28 @@ namespace TowseyLibrary
             // int lowerIndex = 0;
             // int upperIndex = 99;
             // int location = DataTools.WhichSideOfCentre(distribution, refValue, lowerIndex, upperIndex);
-            // Console.WriteLine("location = " + location);
-
             int[] samples = DataTools.SampleArrayRandomlyWithoutReplacementUsingProbabilityDistribution(distribution, sampleCount, seed);
-
-            //for (int i = 0; i < sampleCount; i++) Console.WriteLine("s"+i+ "    " + samples[i]);
             Tuple<int[], int[]> tuple = DataTools.SortArray(samples);
             int[] sortedSamples = tuple.Item2;
             return Tuple.Create(samples, sortedSamples);
         }
 
-        public static void main(string[] args)
+        /// <summary>
+        /// This method is a test for ensuring correct bin ID is chosen for some degenerate cases.
+        /// </summary>
+        public static void TestGetNthPercentileBin()
         {
-            /*
-                int   countC1  = 4000000;
-                    double meanC1  = -8.7;
-                    double sdC1    =  4.6;
-                    int    countC2 = 4000;
-                    double meanC2  =  8.0;
-                    double sdC2    =  2.7;
-                double bb[] = bayesBoundary(countC1, meanC1, sdC1, countC2, meanC2, sdC2);
-                LoggedConsole.WriteLine("boundary 1="+bb[0]+"  boundary 2="+bb[1]);
-            */
+            int[] distribution = new int[100];
+            // distribution[0] = 1;
+            // distribution[99] = 1;
 
-            /*
-                double[] roots = NormalDist.quadraticRoots(6, -13, 6);
-                    LoggedConsole.WriteLine("root1="+roots[0]+"  root2="+roots[1]);
-            */
+            for(int i = 0; i < 100; i++)
+            {
+                // distribution[i] = 0;
+                distribution[i] = 1;
+            }
 
-            //calculating the t-statistic.
-            double av1 = 16.78;
-            double sd1 = 0.6788;
-            int count1 = 50;
-            double av2 = 17.00;
-            double sd2 = 0.782;
-            int count2 = 50;
-            double t = tStatistic(av1, sd1, count1, av2, sd2, count2);
-            LoggedConsole.WriteLine("t=" + t);
-            int df = count1 + count2 - 2;
-            LoggedConsole.WriteLine("alpha=" + tStatisticAlpha(Math.Abs(t), df));
-
-            //calculate a lot of t-statistics taken from two files.
-            /*    String dir = "D:\\Bioinformatics\\Data\\Chlamydia_trachomatis\\TSSpredictionsSarahEML2\\";
-            //    String f1  = dir+"earlyGenesPostVirgilTStats.txt";
-                String f1  = dir+"middleGenesPostVirgilTStats.txt";
-                String f2  = dir+"allGenesPostVirgilTStats.txt";
-                String op  = dir+"earlyGenesPostVirgilTStatsOutput.txt";
-                int count1 = 28;
-                int count2 = 798;
-                Vector v1 = FileUtilities.ReadFile2Vector(f1);
-                Vector v2 = FileUtilities.ReadFile2Vector(f2);
-                BufferedWriter bw = FileUtilities.getBufferedWriter(op);
-                for(int i=0;i<1000;i++)
-                { String line1av = (String)v1.get(i);
-                  String line2av = (String)v2.get(i);
-                  if(line1av.startsWith("#")) continue;
-                  if(line2av.startsWith("#")) continue;
-                  i++;
-                  String line1sd = (String)v1.get(i);
-                  String line2sd = (String)v2.get(i);
-
-                  //get the values
-                  String[] av1array = line1av.split(" +");
-                  String[] av2array = line2av.split(" +");
-                  String[] sd1array = line1sd.split(" +");
-                  String[] sd2array = line2sd.split(" +");
-
-                  String title = av1array[0];
-                  LoggedConsole.WriteLine(line1av);
-                  LoggedConsole.WriteLine(line2av);
-                  for(int n=1;n<av1array.mapLength;n++)
-                  {
-                    double m1  = Double.parseDouble(av1array[n]);
-                    double sd1 = Double.parseDouble(sd1array[n]);
-                    double m2  = Double.parseDouble(av2array[n]);
-                    double sd2 = Double.parseDouble(sd2array[n]);
-                    LoggedConsole.WriteLine(tStatistic(m1,sd1,count1,m2,sd2,count2));
-                    try{
-                      bw.write(title+" "+m1+" "+m2+" "+tStatistic(m1,sd1,count1,m2,sd2,count2));
-                    } catch(Exception e)
-                    {
-                      LoggedConsole.WriteLine(e);
-                    }
-                  }
-
-                  if((i+1)>=v1.size()) break;
-                }
-            */
-
-            /*
-                int   countC1  = 4000000;
-                    double meanC1  = -8.7;
-                    double sdC1    =  4.6;
-                    int    countC2 = 4000;
-                    double meanC2  =  8.0;
-                    double sdC2    =  2.7;
-                double bb[] = bayesBoundary(countC1, meanC1, sdC1, countC2, meanC2, sdC2);
-                LoggedConsole.WriteLine("boundary 1="+bb[0]+"  boundary 2="+bb[1]);
-            */
-
-            LoggedConsole.WriteLine("FINISHED");
-        }//end MAIN()
-    }//end class
+            var binId = GetNthPercentileBin(distribution, 98);
+        }
+    }
 }

@@ -146,6 +146,16 @@ EventsPerSecond:
   NormMax: 5.0
   ProjectID: Acoustic Indices
   Units: ""
+AvgEventDuration:
+  Name: Av Event Duration
+  Comment: "Av duration in ms of the events in an audio segment."
+  DataType: TimeSpan
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 1000
+  ProjectID: Acoustic Indices
+  Units: "ms"
 #EventsTotal:
 #  Name: Event Count
 #  Comment: "The total count of acoustic events per minute of recording."
@@ -214,6 +224,16 @@ TemporalEntropy:
   DoDisplay: true
   NormMin: 0.0
   NormMax: 0.5
+  ProjectID: Acoustic Indices
+  Units: ""
+SqrtTempEntropy:
+  Name: Sqrt(1-H[t])
+  Comment: "Sqrt(1-Ht) is an attempt to obtain more even distribution of Ht values. NormMax = sqrt(0.5)"
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 0.7
   ProjectID: Acoustic Indices
   Units: ""
 LogTempEntropy:
@@ -296,7 +316,37 @@ SptDensity:
   NormMax: 10.0
   ProjectID: Acoustic Indices
   Units: ""
-Ndsi:
+#SptPerSecond:
+#  Name: av Tracks/Sec
+#  Comment: "Average number of spectral tracks per second."
+#  DataType: double
+#  DefaultValue: 0.0
+#  DoDisplay: true
+#  NormMin: 0
+#  NormMax: 50
+#  ProjectID: Acoustic Indices
+#  Units: ""
+#AvgSptDuration:
+#  Name: av Track Duration
+#  Comment: "Average duration of a spectral track."
+#  DataType: TimeSpan
+#  DefaultValue: 0.0
+#  DoDisplay: true
+#  NormMin: 0.25
+#  NormMax: 2.0
+#  ProjectID: Acoustic Indices
+#  Units: "s"
+#CicadaIndex:
+#  Name: Cicada Index
+#  Comment: "OBSOLETE! DEPRACATED! Cicada score calculated every 10 sec and 6 values averaged over the minute."
+#  DataType: double
+#  DefaultValue: 0.0
+#  DoDisplay: false
+#  NormMin: 0
+#  NormMax: 1.0
+#  ProjectID: Acoustic Indices
+#  Units: ""
+NDSI:
   Name: NDSI
   Comment: "Normalised Difference Soundscape Index) calculated from PSD - originated from Stuart Gage."
   DataType: double
@@ -306,26 +356,136 @@ Ndsi:
   NormMax: 1.0
   ProjectID: Acoustic Indices
   Units: ""
-#NDSI-LM:
-#  Name: NDSI-LM
-#  Comment: "Normalised Difference Soundscape Index) ratio of Mid/Low freq bands."
-#  DataType: double
-#  DefaultValue: 0.0
-#  DoDisplay: false
-#  NormMin: -1.0
-#  NormMax: 1.0
-#  ProjectID: Acoustic Indices
-#  Units: ""
-#NDSI-MH:
-#  Name: NDSI-MH
-#  Comment: "Normalised Difference Soundscape Index)  ratio of High/Mid freq bands."
-#  DataType: double
-#  DefaultValue: 0.0
-#  DoDisplay: false
-#  NormMin: -1.0
-#  NormMax: 1.0
-# ProjectID: Acoustic Indices
-#  Units: ""
+NDSI-LM:
+  Name: NDSI-LM
+  Comment: "Normalised Difference Soundscape Index) ratio of Mid/Low freq bands."
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: false
+  NormMin: -1.0
+  NormMax: 1.0
+  ProjectID: Acoustic Indices
+  Units: ""
+NDSI-MH:
+  Name: NDSI-MH
+  Comment: "Normalised Difference Soundscape Index)  ratio of High/Mid freq bands."
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: false
+  NormMin: -1.0
+  NormMax: 1.0
+  ProjectID: Acoustic Indices
+  Units: ""
+EventsTotal:
+  Name: Event Count
+  Comment: "The total count of acoustic events per minute of recording."
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0
+  NormMax: 15.0
+  ProjectID: Acoustic Indices
+  Units: ""
+EventsTotalThresholded:
+  Name: Event Count
+  Comment: "Count of acoustic events (wide range)"
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: false
+  NormMin: 5
+  NormMax: 25
+  ProjectID: Acoustic Indices
+  Units: ""
+ZeroCrossingFractionLeft:
+  Name: Zero Crossing Fraction Left
+  Comment: ""
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 1.0
+  ProjectID: Channel Integrity
+  Units: ""
+ZeroCrossingFractionRight:
+  Name: Zero Crossing Fraction Right
+  Comment: ""
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 1.0
+  ProjectID: Channel Integrity
+  Units: ""
+ChannelSimilarity:
+  Name: Channel Similarity
+  Comment: "similarityIndex = (min*min)/(max*max), where min=min of two channels and max = max of the two. Summed over all freq bins"
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 1.0
+  ProjectID: Channel Integrity
+  Units: ""
+ChannelDiffDecibels:
+  Name: Channel Difference in decibels
+  Comment: "decibelIndex = dBmax-dBmin, where dBmin=min of two channels and dBmax = max of the two. Summed over all freq bins"
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: -8.0
+  NormMax: 8.0
+  ProjectID: Channel Integrity
+  Units: "decibels"
+AverageDecibelBias:
+  Name: Average Channel Bias in decibels
+  Comment: "avDecibelBias += (dbLeft-dbRight). Summed over all freq bins"
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: -8.0
+  NormMax: 8.0
+  ProjectID: Channel Integrity
+  Units: "decibels"
+MedianDecibelBias:
+  Name: Median Channel Bias in decibels
+  Comment: "medianDecibelBias += (medianOfLeftSpectrum-medianOfRightSpectrum). Summed over all freq bins"
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: -0.2
+  NormMax: 0.2
+  ProjectID: Channel Integrity
+  Units: "decibels"
+LowFreqDecibelBias:
+  Name: Low Freq Channel dB Bias
+  Comment: "lowFreqDbBias += (dbLeft-dbRight). Summed over low freq bins, 0-2kHz"
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: -10.0
+  NormMax: 10.0
+  ProjectID: Channel Integrity
+  Units: "decibels"
+MidFreqDecibelBias:
+  Name: Mid-Freq Channel dB Bias
+  Comment: "midFreqDbBias += (dbLeft-dbRight). Summed over mid freq bins, 2-7kHz"
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: -10.0
+  NormMax: 10.0
+  ProjectID: Channel Integrity
+  Units: "decibels"
+HighFreqDecibelBias:
+  Name: High Freq Channel dB Bias
+  Comment: "highFreqDbBias += (dbLeft-dbRight). Summed over high freq bins, 7khz-nyquist"
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: -5.0
+  NormMax: 5.0
+  ProjectID: Channel Integrity
+  Units: "decibels"
 FileName:
   Name: File Name
   Comment: "FILLER TO STOP WARNING MESSAGE! File Name"
@@ -334,10 +494,10 @@ FileName:
   DoDisplay: false
   ProjectID: Acoustic Indices
   Units: ""
-# ADD THE SUMMARY INDICES ABOVE HERE
+# ADD NEW SUMMARY INDICES ABOVE HERE
 # ====================================================================================================================================
 # ====================================================================================================================================
-# ADD THE SPECTRAL INDICES BELOW HERE
+# ADD NEW SPECTRAL INDICES BELOW HERE
 
 # IMPORTANT:  SPECTRAL INDCIES MUST BE OF TYPE Double[]
 ACI:
@@ -348,8 +508,7 @@ ACI:
   DoDisplay: true
   NormMin: 0.4
   NormMax: 0.7
-  CalculateNormMin: true
-  CalculateNormMax: false
+  CalculateNormBounds: false
   ProjectID: Acoustic Indices
   Units: ""
 BGN:
@@ -359,11 +518,10 @@ BGN:
   DefaultValue: -100.0
   DoDisplay: true
   # min = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20 = -80-20 = -100, 
-  # Usual value is -30. However -20 adds more contrast into BGN spectrogram
+  # Usual max value is around -30 to -40.
   NormMin: -100.0
   NormMax: -30.0
-  CalculateNormMin: true
-  CalculateNormMax: false
+  CalculateNormBounds: false
   ProjectID: Acoustic Indices
   Units: "dB"
 CVR:
@@ -374,22 +532,19 @@ CVR:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 0.7
-  CalculateNormMin: true
-  CalculateNormMax: false
+  NormMax: 0.2
+  CalculateNormBounds: false
   ProjectID: Acoustic Indices
   Units: ""
-#  ComboWeight: 0.0
 DIF:
   Name: spectralDIF
-  Comment: "Spectrum of summed DIFFERENCES between consecutive FFT coeff's in the ampl spgram. This spgram not displayed. It is used as intermediate for subsequent calculation of ACI."
+  Comment: "Summed DIFFERENCES between consecutive FFT coeff's in the ampl spgram. This IS NOT an acoustic index. . It is used as intermediate for subsequent calculation of ACI."
   DataType: double[]
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
   NormMax: 10.0
-  CalculateNormMin: false
-  CalculateNormMax: false
+  CalculateNormBounds: false
   ProjectID: Acoustic Indices
   Units: ""
 ENT:
@@ -400,8 +555,7 @@ ENT:
   DoDisplay: true
   NormMin: 0.0
   NormMax: 0.6
-  CalculateNormMin: true
-  CalculateNormMax: false
+  CalculateNormBounds: false
   ProjectID: Acoustic Indices
   Units: ""
 EVN:
@@ -412,8 +566,7 @@ EVN:
   DoDisplay: true
   NormMin: 0.0
   NormMax: 2.0
-  CalculateNormMin: true
-  CalculateNormMax: false
+  CalculateNormBounds: false
   ProjectID: Acoustic Indices
   Units: "events/s"
 OSC:
@@ -422,22 +575,25 @@ OSC:
   DataType: double[]
   DefaultValue: 0.0
   DoDisplay: true
-  NormMin: 0.0
-  NormMax: 10.0
-  CalculateNormMin: true
-  CalculateNormMax: true
+  NormMin: 0.1
+  NormMax: 5.0
+  CalculateNormBounds: true
+  # Merge conflict values from https://github.com/QutEcoacoustics/audio-analysis/pull/233
+  #NormMin: 0.0
+  #NormMax: 10.0
+  #CalculateNormMin: true
+  #CalculateNormMax: true
   ProjectID: Acoustic Indices
   Units: ""
 SUM:
   Name: spectralSUM
-  Comment: "Spectrum of summed FFT coefficients derived from the ampl spgram. This spgram not displayed. It is used for intermediate calculations only."
+  Comment: "Spectrum of summed FFT coefficients derived from the ampl spgram. This IS NOT an acoustic index. It is used for intermediate calculations only."
   DataType: double[]
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
   NormMax: 10.0
-  CalculateNormMin: false
-  CalculateNormMax: false
+  CalculateNormBounds: false
   ProjectID: Acoustic Indices
   Units: ""
 PMN:
@@ -447,9 +603,8 @@ PMN:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 5.5
-  CalculateNormMin: true
-  CalculateNormMax: false
+  NormMax: 15.0
+  CalculateNormBounds: false
   ProjectID: Acoustic Indices
   Units: "dB"
 RHZ:
@@ -459,9 +614,12 @@ RHZ:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.1
-  NormMax: 1.5
-  CalculateNormMin: false
-  CalculateNormMax: false
+  NormMax: 1.0
+  CalculateNormBounds: false
+  # Merge conflict values from https://github.com/QutEcoacoustics/audio-analysis/pull/233
+  #NormMax: 1.5
+  #CalculateNormMin: false
+  #alculateNormMax: false
   ProjectID: Acoustic Indices
   Units: "tracks/s"
 RVT:
@@ -472,8 +630,10 @@ RVT:
   DoDisplay: true
   NormMin: 0.1
   NormMax: 0.4
-  CalculateNormMin: false
-  CalculateNormMax: false
+  CalculateNormBounds: true
+  # Merge conflict values from https://github.com/QutEcoacoustics/audio-analysis/pull/233
+  #CalculateNormMin: false
+  #CalculateNormMax: false
   ProjectID: Acoustic Indices
   Units: "tracks/s"
 RPS:
@@ -484,8 +644,10 @@ RPS:
   DoDisplay: true
   NormMin: 0.0
   NormMax: 0.4
-  CalculateNormMin: false
-  CalculateNormMax: false
+  CalculateNormBounds: true
+  # Merge conflict values from https://github.com/QutEcoacoustics/audio-analysis/pull/233
+  #CalculateNormMin: false
+  #CalculateNormMax: false
   ProjectID: Acoustic Indices
   Units: "tracks/s"
 RNG:
@@ -496,8 +658,10 @@ RNG:
   DoDisplay: true
   NormMin: 0.0
   NormMax: 0.4
-  CalculateNormMin: false
-  CalculateNormMax: false
+  CalculateNormBounds: true
+  # Merge conflict values from https://github.com/QutEcoacoustics/audio-analysis/pull/233
+  #CalculateNormMin: false
+  #CalculateNormMax: false
   ProjectID: Acoustic Indices
   Units: "tracks/s"
 R3D:
@@ -508,8 +672,10 @@ R3D:
   DoDisplay: true
   NormMin: 0.15
   NormMax: 1.0
-  CalculateNormMin: false
-  CalculateNormMax: false
+  CalculateNormBounds: true
+  # Merge conflict values from https://github.com/QutEcoacoustics/audio-analysis/pull/233
+  #CalculateNormMin: false
+  #CalculateNormMax: false
   ProjectID: Acoustic Indices
   Units: "tracks/s"
 SPT:
@@ -520,7 +686,6 @@ SPT:
   DoDisplay: true
   NormMin: 0.05
   NormMax: 0.5
-  CalculateNormMin: false
-  CalculateNormMax: false
+  CalculateNormBounds: false
   ProjectID: Acoustic Indices
   Units: "tracks/s"

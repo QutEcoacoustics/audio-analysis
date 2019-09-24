@@ -89,8 +89,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
                 yUnitScale: 1.0,
                 unitHeight: namingPattern.TileHeight);
 
-            // TODO: this loads all spectra, even ones we don't need...
-            var (spectra, filteredIndexProperties) = LoadSpectra(io, analysisTag, fileStem, indexProperties);
+            var (spectra, filteredIndexProperties) = ZoomCommon.LoadSpectra(io, analysisTag, fileStem, zoomConfig.LdSpectrogramConfig, indexProperties);
 
             // false color index tiles
             GenerateIndexSpectrogramTiles(
@@ -327,24 +326,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
             Log.Info(
                 $"Tiling using {namingPattern.GetType().Name}, Tile Width: {namingPattern.TileWidth}, Height: {namingPattern.TileHeight}");
             return (namingPattern, padding);
-        }
-
-        private static (Dictionary<string, double[,]>, Dictionary<string, IndexProperties>) LoadSpectra(
-            AnalysisIoInputDirectory io,
-            string analysisTag,
-            string fileStem,
-            Dictionary<string, IndexProperties> indexProperties)
-        {
-            indexProperties = InitialiseIndexProperties.FilterIndexPropertiesForSpectralOnly(indexProperties);
-            string[] keys = indexProperties.Keys.ToArray();
-
-            Dictionary<string, double[,]> spectra = IndexMatrices.ReadSpectralIndices(
-                io.InputBase,
-                fileStem,
-                analysisTag,
-                keys);
-
-            return (spectra, indexProperties);
         }
 
         public static DateTimeOffset GetPreviousTileBoundary(int tileWidth, double scale, DateTimeOffset recordingStartDate)

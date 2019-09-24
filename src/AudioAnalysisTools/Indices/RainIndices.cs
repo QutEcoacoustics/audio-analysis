@@ -183,7 +183,7 @@ namespace AudioAnalysisTools.Indices
             }
 
             // iv: CALCULATE Acoustic Complexity Index on the AMPLITUDE SPECTRUM
-            var aciArray = AcousticComplexityIndex.CalculateACI(midbandSpectrogram);
+            var aciArray = AcousticComplexityIndex.CalculateAci(midbandSpectrogram);
             rainIndices.ACI = aciArray.Average();
 
             //v: remove background noise from the spectrogram

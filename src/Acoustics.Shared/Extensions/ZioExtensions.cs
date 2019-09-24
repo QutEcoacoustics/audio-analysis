@@ -1,4 +1,4 @@
-﻿// <copyright file="ZioExtensions.cs" company="QutEcoacoustics">
+// <copyright file="ZioExtensions.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -62,6 +62,16 @@ namespace Zio
                 $"To convert the path {file} back to a physical filesystem, it must be from a physical file system");
 
             return new FileInfo(file.Path.ToOsPath());
+        }
+
+        public static DirectoryInfo ToDirectoryInfo(this DirectoryEntry directory)
+        {
+            Contract.Requires(directory != null);
+            Contract.Requires(
+                directory.FileSystem is PhysicalFileSystem,
+                $"To convert the path {directory} back to a physical filesystem, it must be from a physical file system");
+
+            return new DirectoryInfo(directory.Path.ToOsPath());
         }
 
         public static DirectoryEntry Combine(this DirectoryEntry directoryInfo, params string[] str)

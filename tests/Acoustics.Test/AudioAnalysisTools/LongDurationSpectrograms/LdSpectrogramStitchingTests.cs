@@ -1,4 +1,4 @@
-﻿// <copyright file="LdSpectrogramStitching.cs" company="QutEcoacoustics">
+// <copyright file="LdSpectrogramStitching.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -42,8 +42,7 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms
             });
 
             var expected = test.Where(d => d.FullName.Contains(@"\b\")).ToArray();
-
-            var actual = LdSpectrogramStitching.GetSubDirectoriesForSiteData(expected, "b");
+            var actual = LdSpectrogramStitching.GetSubDirectoriesForSiteData(expected, "b", SearchOption.AllDirectories);
 
             CollectionAssert.AreEqual(expected, actual);
         }
