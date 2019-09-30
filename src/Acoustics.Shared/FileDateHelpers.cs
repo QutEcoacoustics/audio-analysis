@@ -23,6 +23,11 @@ namespace Acoustics.Shared
 
     public class FileDateHelpers
     {
+        public static readonly DateTimeOffset UnixEpoch =
+            new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
+
+        private const string AudioMothKey = "AudioMoth";
+
         private static readonly string[] AcceptedFormatsNoTimeZone =
         {
                 "yyyyMMdd[-|T|_]HHmmss (if timezone offset hint provided)",
@@ -63,6 +68,14 @@ namespace Acoustics.Shared
                     "HHmm-ddMMyyyy",
                     parseTimeZone: false,
                     Array.Empty<string>()),
+
+                // AudioMoth V1 format
+                // 5BFA3A06.WAV
+                new DateVariants(
+                    "^(?<date>[0-9A-F]{8}).WAV$",
+                    parseFormat: AudioMothKey,
+                    parseTimeZone: true,
+                    acceptedFormats: Array.Empty<string>()),
             };
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
@@ -155,11 +168,15 @@ namespace Acoustics.Shared
         /// <returns>A sorted dictionary FileInfo objects mapped to parsed dates.</returns>
         public static SortedDictionary<DateTimeOffset, DirectoryInfo> FilterDirectoriesForDates(IEnumerable<DirectoryInfo> directories, TimeSpan? offsetHint = null)
         {
+            if (directories == null)
+            {
+                throw new ArgumentNullException(nameof(directories));
+            }
+
             var datesAndDirs = new SortedDictionary<DateTimeOffset, DirectoryInfo>();
             foreach (var dir in directories)
             {
-                DateTimeOffset parsedDate;
-                if (FileNameContainsDateTime(dir.Name, out parsedDate, offsetHint))
+                if (FileNameContainsDateTime(dir.Name, out var parsedDate, offsetHint))
                 {
                     datesAndDirs.Add(parsedDate, dir);
                 }
@@ -189,7 +206,7 @@ namespace Acoustics.Shared
                 }
             }
 
-            parsedDate = new DateTimeOffset();
+            parsedDate = default;
             return false;
         }
 
@@ -200,7 +217,7 @@ namespace Acoustics.Shared
             TimeSpan? offsetHint)
         {
             var match = Regex.Match(filename, format.Regex);
-            fileDate = new DateTimeOffset();
+            fileDate = default;
             var successful = match.Success;
 
             if (!successful)
@@ -210,71 +227,96 @@ namespace Acoustics.Shared
 
             var stringDate = match.Groups["date"].Value;
 
-            var separator = match.Groups["separator"].Value;
-
-            // Normalize the separator
-            stringDate = stringDate.Replace(separator, "-");
-
-            if (format.ParseTimeZone)
+            if (format.ParseFormat == AudioMothKey)
             {
-                var offsetText = match.Groups["offset"].Value;
+                successful = ParseAudioMothV1Date(stringDate, out fileDate);
+            }
+            else
+            {
+                var separator = match.Groups["separator"].Value;
 
-                if (offsetText.Equals("Z", StringComparison.InvariantCultureIgnoreCase))
+                // Normalize the separator
+                stringDate = stringDate.Replace(separator, "-");
+
+                if (format.ParseTimeZone)
                 {
-                    var parseFormat = format.ParseFormat.Replace("zzz", "Z");
+                    var offsetText = match.Groups["offset"].Value;
 
-                    successful = DateTimeOffset.TryParseExact(
-                        stringDate,
-                        parseFormat,
-                        CultureInfo.InvariantCulture,
-                        DateTimeStyles.AssumeUniversal,
-                        out fileDate);
+                    if (offsetText.Equals("Z", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        var parseFormat = format.ParseFormat.Replace("zzz", "Z");
+
+                        successful = DateTimeOffset.TryParseExact(
+                            stringDate,
+                            parseFormat,
+                            CultureInfo.InvariantCulture,
+                            DateTimeStyles.AssumeUniversal,
+                            out fileDate);
+                    }
+                    else if (offsetText.Length == 5)
+                    {
+                        // e.g. +1000
+                        successful = DateTimeOffset.TryParseExact(
+                            stringDate,
+                            format.ParseFormat,
+                            CultureInfo.InvariantCulture,
+                            DateTimeStyles.None,
+                            out fileDate);
+                    }
+                    else
+                    {
+                        successful = DateTimeOffset.TryParseExact(
+                            stringDate,
+                            format.ParseFormat.Replace("zzz", "zz"),
+                            CultureInfo.InvariantCulture,
+                            DateTimeStyles.None,
+                            out fileDate);
+                    }
                 }
-                else if (offsetText.Length == 5)
+                else
                 {
-                    // e.g. +1000
-                    successful = DateTimeOffset.TryParseExact(
+                    successful = DateTime.TryParseExact(
                         stringDate,
                         format.ParseFormat,
                         CultureInfo.InvariantCulture,
                         DateTimeStyles.None,
-                        out fileDate);
-                }
-                else
-                {
-                    successful = DateTimeOffset.TryParseExact(
-                        stringDate,
-                        format.ParseFormat.Replace("zzz", "zz"),
-                        CultureInfo.InvariantCulture,
-                        DateTimeStyles.None,
-                        out fileDate);
-                }
-            }
-            else
-            {
-                DateTime dateWithoutTimeZone;
-                successful = DateTime.TryParseExact(
-                    stringDate,
-                    format.ParseFormat,
-                    CultureInfo.InvariantCulture,
-                    DateTimeStyles.None,
-                    out dateWithoutTimeZone);
+                        out var dateWithoutTimeZone);
 
-                if (successful)
-                {
-                    if (offsetHint == null)
+                    if (successful)
                     {
-                        Log.Warn($"File date `{stringDate}` is amibiguous. The date is understood but no timezone offset could be found and a timezone offset hint was not provided.");
-                        return false;
-                    }
-                    else
-                    {
-                        fileDate = new DateTimeOffset(dateWithoutTimeZone, offsetHint.Value);
+                        if (offsetHint == null)
+                        {
+                            Log.Warn(
+                                $"File date `{stringDate}` is ambiguous. The date is understood but no timezone offset could be found and a timezone offset hint was not provided.");
+                            return false;
+                        }
+                        else
+                        {
+                            fileDate = new DateTimeOffset(dateWithoutTimeZone, offsetHint.Value);
+                        }
                     }
                 }
             }
 
             return successful;
+        }
+
+        private static bool ParseAudioMothV1Date(string text, out DateTimeOffset date)
+        {
+            var successful = long.TryParse(
+                text,
+                NumberStyles.AllowHexSpecifier,
+                CultureInfo.InvariantCulture,
+                out var secondsSinceEpoch);
+
+            if (successful)
+            {
+                date = UnixEpoch.AddSeconds(secondsSinceEpoch);
+                return true;
+            }
+
+            date = default;
+            return false;
         }
 
         internal class DateVariants

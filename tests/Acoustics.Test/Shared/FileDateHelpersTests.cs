@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="FileDateHelpersTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -92,7 +92,7 @@ namespace Acoustics.Test
             }
         }
 
-        private Dictionary<string, DateTimeOffset> validFormats = new Dictionary<string, DateTimeOffset>
+        private readonly Dictionary<string, DateTimeOffset> validFormats = new Dictionary<string, DateTimeOffset>
             {
                 ["sdncv*_-T&^%34jd_20140301_085031+0630blah_T-suffix.mp3"] = Parse("2014-03-01T08:50:31.000+06:30"),
                 ["sdncv*_-T&^%34jd_20140301_085031-0630blah_T-suffix.mp3"] = Parse("2014-03-01T08:50:31.000-06:30"),
@@ -101,6 +101,7 @@ namespace Acoustics.Test
                 ["blah_T-suffix20140301-085031Z:dncv*_-T&^%34jd.ext"] = Parse("2014-03-01T08:50:31.000+00:00"),
                 ["SERF_20130314_000021Z_000.wav"] = Parse("2013-03-14T00:00:21.000+00:00"),
                 ["20150727T133138Z.wav"] = Parse("2015-07-27T13:31:38.000+00:00"),
+                ["5BFA3A06.WAV"] = Parse("2018-11-25T05:58:30.000+00:00"),
             };
 
         [TestMethod]
@@ -118,7 +119,7 @@ namespace Acoustics.Test
             }
         }
 
-        private Dictionary<string, DateTimeOffset> validFormatsWithOffsetHint = new Dictionary<string, DateTimeOffset>
+        private readonly Dictionary<string, DateTimeOffset> validFormatsWithOffsetHint = new Dictionary<string, DateTimeOffset>
             {
                 ["sdncv*_-T&^%34jd_20140301_085031blah_T-suffix.mp3"] = Parse("2014-03-01T08:50:31.000+06:30"),
                 ["sdncv*_-T&^%34jd_20140301T085031blah_T-suffix.mp3"] = Parse("2014-03-01T08:50:31.000+06:30"),
@@ -159,7 +160,7 @@ namespace Acoustics.Test
                 @"Y:\2015Sept20\Woondum3\20150917-064553Z.wav", @"Y:\2015Sept20\Woondum3\20150917_133143+1000.wav",
                 @"Y:\2015Sept20\Woondum3\20150917_201733+1000.wav", @"Y:\2015Aug2\GympieNP\20150801_000004+1000.wav",
 
-            @"Y:\2015Aug2\GympieNP\20150801-064555.wav", @"Y:\2015Aug2\GympieNP\20150801_133148+1000.wav", @"Y:\2015Aug2\GympieNP\20150801-064555+1000.wav",
+                @"Y:\2015Aug2\GympieNP\20150801-064555.wav", @"Y:\2015Aug2\GympieNP\20150801_133148+1000.wav", @"Y:\2015Aug2\GympieNP\20150801-064555+1000.wav",
                 @"Y:\2015Aug2\GympieNP\20150801-201742+1000.wav", @"Y:\2015Aug2\GympieNP\20150802-000006Z.wav",
                 @"Y:\2015Aug2\GympieNP\20150802-064559+1000.wav", @"Y:\2015Sept20\Woondum3\20150919_000006+1000.wav",
                 @"Y:\2015Sept20\Woondum3\20150919_064557+1000.wav", @"Y:\2015Sept20\Woondum3\20150919-133149+1000.wav",
