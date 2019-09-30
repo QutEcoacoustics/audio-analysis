@@ -71,8 +71,11 @@ namespace Acoustics.Shared
 
                 // AudioMoth V1 format
                 // 5BFA3A06.WAV
+                // This pattern will recognize dates between 2012-07-13 and 2021-01-14.
+                // We've restricted the date format to have a leading '5' character so that we can disambiguate between this pattern
+                // and other patterns.
                 new DateVariants(
-                    "^(?<date>[0-9A-F]{8}).WAV$",
+                    "^(?<date>5[0-9A-F]{7}).*",
                     parseFormat: AudioMothKey,
                     parseTimeZone: true,
                     acceptedFormats: Array.Empty<string>()),

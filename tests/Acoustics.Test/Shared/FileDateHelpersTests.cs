@@ -102,6 +102,7 @@ namespace Acoustics.Test
                 ["SERF_20130314_000021Z_000.wav"] = Parse("2013-03-14T00:00:21.000+00:00"),
                 ["20150727T133138Z.wav"] = Parse("2015-07-27T13:31:38.000+00:00"),
                 ["5BFA3A06.WAV"] = Parse("2018-11-25T05:58:30.000+00:00"),
+                ["5BFA3A06__blahblahblahresults.WAV"] = Parse("2018-11-25T05:58:30.000+00:00"),
             };
 
         [TestMethod]
