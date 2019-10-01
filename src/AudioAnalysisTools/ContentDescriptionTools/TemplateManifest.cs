@@ -6,19 +6,125 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
+    using Acoustics.Shared;
 
     public enum TemplateStatus
     {
         CalculateTemplate,
-        Standard,
+        Edit,
         Locked,
+        Ignore,
     }
 
     public class TemplateManifest
     {
+        public static void CreateNewFileOfTemplateDefinitions(FileInfo manifestFile, FileInfo templateDefinitions)
+        {
+            // Read in all template manifests
+            var manifests = Yaml.Deserialize<TemplateManifest[]>(manifestFile);
+
+            var newTemplateList = new List<TemplateManifest>();
+
+            foreach (var templateManifest in manifests)
+            {
+                if (templateManifest.Status == TemplateStatus.Locked)
+                {
+                    newTemplateList.Add(templateManifest);
+                    continue;
+                }
+
+                var newTemplate = CreateNewTemplateFromManifest(templateManifest);
+                newTemplate.MostRecentEdit = DateTime.Now;
+
+                if (templateManifest.Status == TemplateStatus.CalculateTemplate)
+                {
+                    var templateDict = CreateTemplate(templateManifest);
+                    newTemplate.Template = templateDict;
+                }
+
+                newTemplateList.Add(newTemplate);
+            }
+
+            var templatesFilePath = Path.Combine(manifestFile.DirectoryName ?? throw new InvalidOperationException(), "TemplateDefinitions.yml");
+
+            // Save the previous templates file
+            string backupTemplatesFilePath = Path.Combine(manifestFile.DirectoryName, "TemplateDefinitions.Backup.yml");
+            if (File.Exists(backupTemplatesFilePath))
+            {
+                File.Delete(backupTemplatesFilePath);
+            }
+
+            //Now copy the file first
+            File.Copy(templatesFilePath, backupTemplatesFilePath, true);
+
+            //Now Rename the File
+            //File.Move(NewFilePath, Path.Combine(NewFileLocation, "File.txt"));
+
+            // No need to move the backup because serializing over-writes the current templates file.
+            var templatesFile = new FileInfo(templatesFilePath);
+            Yaml.Serialize(templatesFile, newTemplateList.ToArray());
+        }
+
+        /// <summary>
+        /// THis method calculates new template based on passed manifest.
+        /// </summary>
+        public static Dictionary<string, double[]> CreateTemplate(TemplateManifest templateManifest)
+        {
+            // Get the template provenance. Assume array contains only one element.
+            var provenanceArray = templateManifest.Provenance;
+            var provenance = provenanceArray[0];
+            var sourceDirectory = provenance.Directory;
+            var baseName = provenance.Basename;
+
+            // Read all indices from the complete recording. The path variable is a partial path requiring to be appended.
+            var path = Path.Combine(sourceDirectory, baseName + ContentDescription.AnalysisString);
+            var dictionaryOfIndices = DataProcessing.ReadIndexMatrices(path);
+            var algorithmType = templateManifest.FeatureExtractionAlgorithm;
+            Dictionary<string, double[]> newTemplate;
+
+            switch (algorithmType)
+            {
+                case 1:
+                    newTemplate = ContentAlgorithms.CreateFullBandTemplate1(templateManifest, dictionaryOfIndices);
+                    break;
+                case 2:
+                    newTemplate = ContentAlgorithms.CreateBroadbandTemplate1(templateManifest, dictionaryOfIndices);
+                    break;
+                case 3:
+                    newTemplate = ContentAlgorithms.CreateNarrowBandTemplate1(templateManifest, dictionaryOfIndices);
+                    break;
+                default:
+                    //LoggedConsole.WriteWarnLine("Algorithm " + algorithmType + " does not exist.");
+                    newTemplate = null;
+                    break;
+            }
+
+            return newTemplate;
+        }
+
+        public static TemplateManifest CreateNewTemplateFromManifest(TemplateManifest templateManifest)
+        {
+            var newTemplate = new TemplateManifest
+            {
+                Name = templateManifest.Name,
+                TemplateId = templateManifest.TemplateId,
+                Status = templateManifest.Status,
+                FeatureExtractionAlgorithm = templateManifest.FeatureExtractionAlgorithm,
+                SpectralReductionFactor = templateManifest.SpectralReductionFactor,
+                BandMinHz = templateManifest.BandMinHz,
+                BandMaxHz = templateManifest.BandMaxHz,
+            };
+            return newTemplate;
+        }
+
         //TEMPLATE DESCRIPTION
         // Name of the template
         public string Name { get; set; }
+
+        //TEMPLATE DESCRIPTION
+        // Name of the template
+        public string Description { get; set; }
 
         public int TemplateId { get; set; }
 
@@ -29,12 +135,6 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         public string GeneralComment { get; set; }
 
         /// <summary>
-        /// Gets or sets a comment about the status.
-        /// e.g. "Locked, Standard, None".
-        /// </summary>
-        public string StatusComment { get; set; }
-
-        /// <summary>
         /// Gets or sets the template manifest status.
         /// Status can be "locked", etc.
         /// </summary>
@@ -42,43 +142,8 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 
         public DateTime MostRecentEdit { get; set; }
 
-        //TEMPLATE PROVENANCE
-
-        /// <summary>
-        /// Gets or sets the template source directory".
-        /// </summary>
-        public string TemplateSourceSubdirectory { get; set; }
-
-        /// <summary>
-        /// Gets or sets the template source file name".
-        /// </summary>
-        public string TemplateSourceFileName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the template Recording Location".
-        /// </summary>
-        public string TemplateRecordingLocation { get; set; }
-
-        /// <summary>
-        /// Gets or sets the template Recording DateTime".
-        /// </summary>
-        public string TemplateRecordingDateTime { get; set; }
-
         //ALGORITHMIC PARAMETERS ASSOCIATED WITH TEMPLATE
         public byte FeatureExtractionAlgorithm { get; set; }
-
-        /// <summary>
-        /// Gets or sets the temporal Selection - the minutes are inclusive".
-        /// </summary>
-        public string TemporalSelectionComment { get; set; }
-
-        /// <summary>
-        /// Gets or sets the first minute (or matrix row assuming one-minute per row) of the selected indices.
-        /// The rows/minutes are inclusive.
-        /// </summary>
-        public int StartRowId { get; set; }
-
-        public int EndRowId { get; set; }
 
         /// <summary>
         /// Gets or sets the factor by which a spectrum of index values is reduced.
@@ -86,11 +151,6 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// This is to reduce correlation and computation.
         /// </summary>
         public int SpectralReductionFactor { get; set; }
-
-        /// <summary>
-        /// Gets or sets the FreqBand Comment.
-        /// </summary>
-        public string FreqBandComment { get; set; }
 
         /// <summary>
         /// Gets or sets the bottom freq of bandpass filter.
@@ -108,9 +168,47 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 
         public Dictionary<string, double[]> Template { get; set; }
 
+        public TemplateProvenance[] Provenance { get; set; }
+
         // The following random data was used to try some statistical experiments.
         // get dummy data
         //var rn = new RandomNumber(DateTime.Now.Second + (int)DateTime.Now.Ticks + 333);
         //var distance = rn.GetDouble();
+    }
+
+    /// <summary>
+    /// This class holds info about provenance of a recording used to construct a template.
+    /// </summary>
+    public class TemplateProvenance
+    {
+        //TEMPLATE PROVENANCE
+
+        /// <summary>
+        /// Gets or sets the directory containing the source index files".
+        /// </summary>
+        public string Directory { get; set; }
+
+        /// <summary>
+        /// Gets or sets the basename for the source index files".
+        /// </summary>
+        public string Basename { get; set; }
+
+        /// <summary>
+        /// Gets or sets the template Recording Location".
+        /// </summary>
+        public string Location { get; set; }
+
+        /// <summary>
+        /// Gets or sets the template Recording DateTime".
+        /// </summary>
+        public string DateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the first minute (or matrix row assuming one-minute per row) of the selected indices.
+        /// The rows/minutes are inclusive.
+        /// </summary>
+        public int StartOffset { get; set; }
+
+        public int EndOffset { get; set; }
     }
 }

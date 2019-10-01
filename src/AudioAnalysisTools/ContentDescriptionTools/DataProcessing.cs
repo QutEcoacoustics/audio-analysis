@@ -22,11 +22,13 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         public static Dictionary<string, double[,]> ReadIndexMatrices(string filePath)
         {
             var dictionary = new Dictionary<string, double[,]>();
+            var dir = Path.GetDirectoryName(filePath) ?? throw new ArgumentNullException(nameof(filePath) + " does not exist.");
+            var baseName = Path.GetFileNameWithoutExtension(filePath) + ".";
 
             foreach (string key in ContentDescription.IndexNames)
             {
                 // construct a path to the required matrix and read in the matrix
-                var indexMatrix = Csv.ReadMatrixFromCsv<double>(new FileInfo(filePath + key + ".csv"));
+                var indexMatrix = Csv.ReadMatrixFromCsv<double>(new FileInfo(Path.Combine(dir, baseName + key + ".csv")));
 
                 // normalize the matrix values
                 var indexBounds = ContentDescription.IndexValueBounds[key];
@@ -252,15 +254,14 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             return list.ToArray();
         }
 
-        public static Dictionary<string, Dictionary<string, double[]>> ExtractDictionaryOfTemplateDictionaries(TemplateCollection collection)
+        public static Dictionary<string, Dictionary<string, double[]>> ExtractDictionaryOfTemplateDictionaries(TemplateManifest[] templates)
         {
             var opDictionary = new Dictionary<string, Dictionary<string, double[]>>();
-            var keys = collection.Keys;
-            foreach (string key in keys)
+            foreach (TemplateManifest template in templates)
             {
-                var template = collection[key];
+                var name = template.Name;
                 var dictOfIndices = template.Template;
-                opDictionary.Add(key, dictOfIndices);
+                opDictionary.Add(name, dictOfIndices);
             }
 
             return opDictionary;

@@ -114,15 +114,17 @@ namespace AnalysisPrograms
                 //Oscillations2014.TESTMETHOD_DrawOscillationSpectrogram();
                 //Oscillations2014.TESTMETHOD_GetSpectralIndex_Osc();
 
-                Console.WriteLine("# Finished Sandpit Task!    Press any key to exit.");
+                Console.WriteLine("# Finished Sandpit Task!    Press <enter> key to exit.");
+                Console.ReadLine();
                 return this.Ok();
             }
         }
 
         public static void ContentDescriptionCreateTemplates()
         {
-            var templatesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\ContentDescriptionTemplates.yml");
-            TemplateCollection.CreateNewTemplatesManifest(templatesConfig);
+            var templateManifests = new FileInfo(@"C:\Ecoacoustics\ContentDescription\ContentDescriptionTemplateManifests.yml");
+            var templateDefinitions = new FileInfo(@"C:\Ecoacoustics\ContentDescription\TemplateDefinitions.yml");
+            TemplateManifest.CreateNewFileOfTemplateDefinitions(templateManifests, templateDefinitions);
             Console.WriteLine("# Finished creation of new manifest");
 
             //PREPARE STRONG WIND TEMPLATE
@@ -153,18 +155,19 @@ namespace AnalysisPrograms
 
         public static void ContentDescriptionApplyTemplates()
         {
-            Console.WriteLine("# Start application of content description templates");
+            Console.WriteLine("# Start scanning with content description templates");
 
-            var templatesConfig = new FileInfo(@"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\ContentDescriptionTemplates.yml");
+            var templatesFile = new FileInfo(@"C:\Ecoacoustics\ContentDescription\TemplateDefinitions.yml");
             var listOfIndexFiles = new FileInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMezIndexFiles.txt");
-            var contentPlots = ContentDescription.ContentDescriptionOfMultipleRecordingFiles(listOfIndexFiles, templatesConfig);
+            var contentPlots = ContentDescription.ContentDescriptionOfMultipleRecordingFiles(listOfIndexFiles, templatesFile);
 
             // Attach content description plots to LDFC spectrogram and write to file
             var path = Path.Combine(@"C:\Ecoacoustics\Output\Test\Test24HourRecording", "Testing__2Maps.png");
             var ldfcSpectrogram = Image.FromFile(path);
             var image = ContentVisualization.DrawLdfcSpectrogramWithContentScoreTracks(ldfcSpectrogram, contentPlots);
-            var path1 = Path.Combine(@"C:\Ecoacoustics\ContentDescription", "Testing_2Maps.CONTENTnew02.png");
+            var path1 = Path.Combine(@"C:\Ecoacoustics\ContentDescription", "Testing_2Maps.CONTENTnew04.png");
             image.Save(path1);
+            Console.WriteLine("# Finished scanning recording with content description templates");
         }
 
         public static void DrawClusterSequence()

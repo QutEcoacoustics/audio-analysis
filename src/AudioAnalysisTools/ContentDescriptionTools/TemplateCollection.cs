@@ -13,65 +13,6 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 
     public class TemplateCollection : Dictionary<string, TemplateManifest>, IConfig
     {
-        public static void CreateNewTemplatesManifest(FileInfo manifestFile)
-        {
-            // Read in all template manifests
-            var templateCollection = ConfigFile.Deserialize<TemplateCollection>(manifestFile);
-            var oldFile = new FileInfo(Path.Combine(manifestFile.DirectoryName ?? throw new InvalidOperationException(), "ContentDescriptionTemplates.Backup.yml"));
-            Yaml.Serialize(oldFile, templateCollection);
-
-            foreach (var kvp in templateCollection)
-            {
-                var templateManifest = kvp.Value;
-
-                if (templateManifest.Status == TemplateStatus.Locked)
-                {
-                    continue;
-                }
-
-                if (templateManifest.Status == TemplateStatus.CalculateTemplate)
-                {
-                    var newTemplate = CreateTemplate(templateManifest);
-                    templateManifest.Template = newTemplate;
-                }
-
-                templateManifest.MostRecentEdit = DateTime.Now;
-            }
-
-            Yaml.Serialize(manifestFile, templateCollection);
-        }
-
-        /// <summary>
-        /// THis method calculates new template based on passed manifest.
-        /// </summary>
-        public static Dictionary<string, double[]> CreateTemplate(TemplateManifest templateManifest)
-        {
-            // Read all indices from the complete recording. The path variable is a partial path requiring to be appended.
-            var path = new FileInfo(Path.Combine(templateManifest.TemplateSourceSubdirectory, templateManifest.TemplateSourceFileName));
-            var dictionaryOfIndices = DataProcessing.ReadIndexMatrices(path.FullName + ContentDescription.AnalysisString);
-            var algorithmType = templateManifest.FeatureExtractionAlgorithm;
-            Dictionary<string, double[]> newTemplate;
-
-            switch (algorithmType)
-            {
-                case 1:
-                    newTemplate = ContentAlgorithms.CreateFullBandTemplate1(templateManifest, dictionaryOfIndices);
-                    break;
-                case 2:
-                    newTemplate = ContentAlgorithms.CreateBroadbandTemplate1(templateManifest, dictionaryOfIndices);
-                    break;
-                case 3:
-                    newTemplate = ContentAlgorithms.CreateNarrowBandTemplate1(templateManifest, dictionaryOfIndices);
-                    break;
-                default:
-                    //LoggedConsole.WriteWarnLine("Algorithm " + algorithmType + " does not exist.");
-                    newTemplate = null;
-                    break;
-            }
-
-            return newTemplate;
-        }
-
         public event Action<IConfig> Loaded;
 
         public string ConfigPath { get; set; }

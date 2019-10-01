@@ -15,14 +15,18 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// This algorithm is used for full band width events such as a rain and wind.
         /// It calculates a content score based on a template match to what is in the full spectrum.
         /// </summary>
-        /// <param name="templateManifest">A description of the template which is to be created.</param>
+        /// <param name="manifest">A description of the template which is to be created.</param>
         /// <param name="templateIndices">The actual dictionary of template arrays.</param>
         /// <returns>A new template.</returns>
-        public static Dictionary<string, double[]> CreateFullBandTemplate1(TemplateManifest templateManifest, Dictionary<string, double[,]> templateIndices)
+        public static Dictionary<string, double[]> CreateFullBandTemplate1(TemplateManifest manifest, Dictionary<string, double[,]> templateIndices)
         {
-            var reductionFactor = templateManifest.SpectralReductionFactor;
-            var startRowId = templateManifest.StartRowId;
-            var endRowId = templateManifest.EndRowId;
+            // Get the template provenance. Assume array contains only one element.
+            var provenanceArray = manifest.Provenance;
+            var provenance = provenanceArray[0];
+            var startRowId = provenance.StartOffset;
+            var endRowId = provenance.EndOffset;
+
+            var reductionFactor = manifest.SpectralReductionFactor;
             var dictionaryOfVector = DataProcessing.AverageIndicesOverMinutes(templateIndices, startRowId, endRowId);
             var reducedIndices = DataProcessing.ReduceIndicesByFactor(dictionaryOfVector, reductionFactor);
 
@@ -57,19 +61,24 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// This algorithm is used for broad band events such as a bird chorus.
         /// It selects acoustic content over a band of several kHz and calculates a content score based on a template match to what is in the band.
         /// </summary>
-        /// <param name="templateManifest">A previously prepared template.</param>
+        /// <param name="manifest">A previously prepared template.</param>
         /// <param name="templateIndices">The actual dictionary of template arrays.</param>
         /// <returns>A similarity score.</returns>
-        public static Dictionary<string, double[]> CreateBroadbandTemplate1(TemplateManifest templateManifest, Dictionary<string, double[,]> templateIndices)
+        public static Dictionary<string, double[]> CreateBroadbandTemplate1(TemplateManifest manifest, Dictionary<string, double[,]> templateIndices)
         {
-            var reductionFactor = templateManifest.SpectralReductionFactor;
-            var startRowId = templateManifest.StartRowId;
-            var endRowId = templateManifest.EndRowId;
+            // Get the template provenance. Assume array contains only one element.
+            var provenanceArray = manifest.Provenance;
+            var provenance = provenanceArray[0];
+            var startRowId = provenance.StartOffset;
+            var endRowId = provenance.EndOffset;
+
+            var reductionFactor = manifest.SpectralReductionFactor;
             var dictionaryOfVector = DataProcessing.AverageIndicesOverMinutes(templateIndices, startRowId, endRowId);
+
             // remove first two freq bins and last four freq bins, i.e. bottomBin = 2 and topBin = 11;
             int freqBinCount = ContentDescription.FreqBinCount / reductionFactor;
-            int bottomFreq = templateManifest.BandMinHz; //Hertz
-            int topFreq = templateManifest.BandMaxHz; //Hertz
+            int bottomFreq = manifest.BandMinHz; //Hertz
+            int topFreq = manifest.BandMaxHz; //Hertz
             var freqBinBounds = DataProcessing.GetFreqBinBounds(bottomFreq, topFreq, freqBinCount);
             var reducedIndices = DataProcessing.ReduceIndicesByFactor(dictionaryOfVector, reductionFactor);
             reducedIndices = DataProcessing.ApplyBandPass(reducedIndices, freqBinBounds[0], freqBinBounds[1]);
@@ -113,19 +122,24 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// It searches the full spectrum for a match to the template and then
         ///  calculates how much of the match weight is in the correct narrow freq band.
         /// </summary>
-        /// <param name="templateManifest">A previously prepared template.</param>
+        /// <param name="manifest">A previously prepared template.</param>
         /// <param name="templateIndices">The actual dictionary of template arrays.</param>
         /// <returns>A similarity score.</returns>
-        public static Dictionary<string, double[]> CreateNarrowBandTemplate1(TemplateManifest templateManifest, Dictionary<string, double[,]> templateIndices)
+        public static Dictionary<string, double[]> CreateNarrowBandTemplate1(TemplateManifest manifest, Dictionary<string, double[,]> templateIndices)
         {
-            var reductionFactor = templateManifest.SpectralReductionFactor;
-            var startRowId = templateManifest.StartRowId;
-            var endRowId = templateManifest.EndRowId;
+            // Get the template provenance. Assume array contains only one element.
+            var provenanceArray = manifest.Provenance;
+            var provenance = provenanceArray[0];
+            var startRowId = provenance.StartOffset;
+            var endRowId = provenance.EndOffset;
+
+            var reductionFactor = manifest.SpectralReductionFactor;
             var dictionaryOfVector = DataProcessing.AverageIndicesOverMinutes(templateIndices, startRowId, endRowId);
+
             // remove first two freq bins and last four freq bins, i.e. bottomBin = 2 and topBin = 11;
             int freqBinCount = ContentDescription.FreqBinCount / reductionFactor;
-            int bottomFreq = templateManifest.BandMinHz; //Hertz
-            int topFreq = templateManifest.BandMaxHz; //Hertz
+            int bottomFreq = manifest.BandMinHz; //Hertz
+            int topFreq = manifest.BandMaxHz; //Hertz
             var freqBinBounds = DataProcessing.GetFreqBinBounds(bottomFreq, topFreq, freqBinCount);
             var reducedIndices = DataProcessing.ReduceIndicesByFactor(dictionaryOfVector, reductionFactor);
             reducedIndices = DataProcessing.ApplyBandPass(reducedIndices, freqBinBounds[0], freqBinBounds[1]);

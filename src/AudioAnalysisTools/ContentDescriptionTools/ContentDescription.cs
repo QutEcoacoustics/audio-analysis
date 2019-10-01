@@ -6,7 +6,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 {
     using System.Collections.Generic;
     using System.IO;
-    using Acoustics.Shared.ConfigFile;
+    using Acoustics.Shared;
     using TowseyLibrary;
 
     public class ContentDescription
@@ -33,11 +33,12 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 
         public static string[] IndexNames { get; } = { "ACI", "ENT", "EVN", "BGN", "PMN" };
 
-        public static List<Plot> ContentDescriptionOfMultipleRecordingFiles(FileInfo listOfIndexFiles, FileInfo templatesConfig)
+        public static List<Plot> ContentDescriptionOfMultipleRecordingFiles(FileInfo listOfIndexFiles, FileInfo templatesFile)
         {
-            // Read in all content templates
-            var templateCollection = ConfigFile.Deserialize<TemplateCollection>(templatesConfig);
-            var templatesAsDictionary = DataProcessing.ExtractDictionaryOfTemplateDictionaries(templateCollection);
+            // Read in all template manifests
+            var templates = Yaml.Deserialize<TemplateManifest[]>(templatesFile);
+            //var templateCollection = ConfigFile.Deserialize<TemplateCollection>(templatesFile);
+            var templatesAsDictionary = DataProcessing.ExtractDictionaryOfTemplateDictionaries(templates);
 
             // Read in list of paths to index files
             var filePaths = FileTools.ReadTextFile(listOfIndexFiles.FullName);
@@ -57,7 +58,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                 // ContentDescription.DrawNormalisedIndexMatrices(dir1, baseName, dictionary);
 
                 // get the rows and do something with them one by one.
-                var results = AnalyzeMinutes(templateCollection, templatesAsDictionary, dictionaryOfRecordingIndices, i * 60); // WARNING: HACK: ASSUME ONE HOUR FILES
+                var results = AnalyzeMinutes(templates, templatesAsDictionary, dictionaryOfRecordingIndices, i * 60); // WARNING: HACK: ASSUME ONE HOUR FILES
                 completeListOfResults.AddRange(results);
             }
 
@@ -71,7 +72,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         }
 
         public static List<DescriptionResult> AnalyzeMinutes(
-            TemplateCollection templateCollection,
+            TemplateManifest[] templates,
             Dictionary<string, Dictionary<string, double[]>> templatesAsDictionary,
             Dictionary<string, double[,]> dictionaryOfRecordingIndices,
             int elapsedMinutes)
@@ -92,12 +93,10 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                 var descriptionResult = new DescriptionResult(elapsedMinutes + i);
 
                 // now subject the indices to various content searches
-                foreach (var kvp in templateCollection)
+                foreach (var template in templates)
                 {
-                    var key = kvp.Key;
-                    var template = kvp.Value;
                     var algorithmType = template.FeatureExtractionAlgorithm;
-                    var templateIndices = templatesAsDictionary[key];
+                    var templateIndices = templatesAsDictionary[template.Name];
                     double score;
 
                     switch (algorithmType)
@@ -118,9 +117,8 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                             break;
                     }
 
-                    var result = new KeyValuePair<string, double>(key, score);
+                    var result = new KeyValuePair<string, double>(template.Name, score);
                     descriptionResult.AddDescription(result);
-
                 }
 
                 results.Add(descriptionResult);
