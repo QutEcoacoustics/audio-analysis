@@ -15,6 +15,22 @@ namespace AudioAnalysisTools.ContentDescriptionTools
     public static class DataProcessing
     {
         /// <summary>
+        /// Converts an array of templates to dictionary.
+        /// </summary>
+        /// <param name="array">An array of templates.</param>
+        /// <returns>A dictionary of templates.</returns>
+        public static Dictionary<string, TemplateManifest> ConvertTemplateArrayToDictionary(TemplateManifest[] array)
+        {
+            var dictionary = new Dictionary<string, TemplateManifest>();
+            foreach (var template in array)
+            {
+                dictionary.Add(template.Name, template);
+            }
+
+            return dictionary;
+        }
+
+        /// <summary>
         /// Reads in all the index matrices whose keys are in the above array of IndexNames.
         /// </summary>
         /// <param name="filePath">Partial path to the index files.</param>

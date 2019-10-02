@@ -123,41 +123,16 @@ namespace AnalysisPrograms
         public static void ContentDescriptionCreateTemplates()
         {
             var templateManifests = new FileInfo(@"C:\Ecoacoustics\ContentDescription\ContentDescriptionTemplateManifests.yml");
-            var templateDefinitions = new FileInfo(@"C:\Ecoacoustics\ContentDescription\TemplateDefinitions.yml");
+            var templateDefinitions = new FileInfo(@"C:\Ecoacoustics\ContentDescription\TemplateDefinitions.json");
             TemplateManifest.CreateNewFileOfTemplateDefinitions(templateManifests, templateDefinitions);
             Console.WriteLine("# Finished creation of new manifest");
-
-            //PREPARE STRONG WIND TEMPLATE
-            //var ipDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez02\Towsey.Acoustic");
-            //var opDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\ContentDescription");
-            //WindStrong1.WriteTemplateToFile(ipDir, opDir);
-
-            //PREPARE LIGHT WIND TEMPLATE
-            //var ipDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez03\Towsey.Acoustic");
-            //var opDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\ContentDescription");
-            //WindLight1.WriteTemplateToFile(ipDir, opDir);
-
-            //PREPARE LIGHT RAIN TEMPLATE
-            //var ipDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez08\Towsey.Acoustic");
-            //var opDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\ContentDescription");
-            //WindLight1.WriteTemplateToFile(ipDir, opDir);
-
-            //PREPARE BIRD MORNING CHORUS1 TEMPLATE
-            //var ipDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez05\Towsey.Acoustic");
-            //var opDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\ContentDescription");
-            //BirdMorningChorus1.WriteTemplateToFile(ipDir, opDir);
-
-            //PREPARE MEZZANINE-TASMAN ISLAND SILVER-EYE TEMPLATE
-            //var ipDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\Mez08\Towsey.Acoustic");
-            //var opDir = new DirectoryInfo(@"C:\Ecoacoustics\Output\ContentDescription");
-            //SilverEyeMezTasmanIs.WriteTemplateToFile(ipDir, opDir);
         }
 
         public static void ContentDescriptionApplyTemplates()
         {
             Console.WriteLine("# Start scanning with content description templates");
 
-            var templatesFile = new FileInfo(@"C:\Ecoacoustics\ContentDescription\TemplateDefinitions.yml");
+            var templatesFile = new FileInfo(@"C:\Ecoacoustics\ContentDescription\TemplateDefinitions.json");
             var listOfIndexFiles = new FileInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMezIndexFiles.txt");
             var contentPlots = ContentDescription.ContentDescriptionOfMultipleRecordingFiles(listOfIndexFiles, templatesFile);
 
@@ -165,7 +140,7 @@ namespace AnalysisPrograms
             var path = Path.Combine(@"C:\Ecoacoustics\Output\Test\Test24HourRecording", "Testing__2Maps.png");
             var ldfcSpectrogram = Image.FromFile(path);
             var image = ContentVisualization.DrawLdfcSpectrogramWithContentScoreTracks(ldfcSpectrogram, contentPlots);
-            var path1 = Path.Combine(@"C:\Ecoacoustics\ContentDescription", "Testing_2Maps.CONTENTnew04.png");
+            var path1 = Path.Combine(@"C:\Ecoacoustics\ContentDescription", "Testing_2Maps.CONTENTnew05.png");
             image.Save(path1);
             Console.WriteLine("# Finished scanning recording with content description templates");
         }

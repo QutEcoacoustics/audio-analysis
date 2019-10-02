@@ -8,48 +8,83 @@ namespace AudioAnalysisTools.ContentDescriptionTools
     using System.Collections.Generic;
     using System.IO;
     using Acoustics.Shared;
+    using Newtonsoft.Json;
 
-    public enum TemplateStatus
+    public enum EditStatus
     {
         CalculateTemplate,
         Edit,
-        Locked,
+        Copy,
+        Ignore,
+    }
+
+    public enum UseStatus
+    {
+        Use,
         Ignore,
     }
 
     public class TemplateManifest
     {
-        public static void CreateNewFileOfTemplateDefinitions(FileInfo manifestFile, FileInfo templateDefinitions)
+        public static void CreateNewFileOfTemplateDefinitions(FileInfo manifestFile, FileInfo templateDefinitionsFile)
         {
             // Read in all template manifests
             var manifests = Yaml.Deserialize<TemplateManifest[]>(manifestFile);
 
+            // Read current template definitions and convert to dictionary
+            var arrayOfTemplates = Json.Deserialize<TemplateManifest[]>(templateDefinitionsFile);
+            var dictionaryOfCurrentTemplates = DataProcessing.ConvertTemplateArrayToDictionary(arrayOfTemplates);
+
+            // init a new template list for output.
             var newTemplateList = new List<TemplateManifest>();
 
+            // cycle through all the manifests
             foreach (var templateManifest in manifests)
             {
-                if (templateManifest.Status == TemplateStatus.Locked)
+                var name = templateManifest.Name;
+                if (!dictionaryOfCurrentTemplates.ContainsKey(name))
                 {
-                    newTemplateList.Add(templateManifest);
+                    // the current manifest is not an existing template - therefore make it.
+                    var newTemplate = CreateNewTemplateFromManifest(templateManifest);
+                    var templateDict = CreateTemplateDeftn(templateManifest);
+                    newTemplate.Template = templateDict;
+                    newTemplate.MostRecentEdit = DateTime.Now;
+                    newTemplateList.Add(newTemplate);
                     continue;
                 }
 
-                var newTemplate = CreateNewTemplateFromManifest(templateManifest);
-                newTemplate.MostRecentEdit = DateTime.Now;
-
-                if (templateManifest.Status == TemplateStatus.CalculateTemplate)
+                if (templateManifest.EditStatus == EditStatus.Copy)
                 {
-                    var templateDict = CreateTemplate(templateManifest);
-                    newTemplate.Template = templateDict;
+                    // add existing template unchanged.
+                    var existingTemplate = dictionaryOfCurrentTemplates[name];
+                    newTemplateList.Add(existingTemplate);
+                    continue;
                 }
 
-                newTemplateList.Add(newTemplate);
+                if (templateManifest.EditStatus == EditStatus.Ignore)
+                {
+                    // add existing template unchanged except change UseStatus to Ignore.
+                    var existingTemplate = dictionaryOfCurrentTemplates[name];
+                    existingTemplate.UseStatus = UseStatus.Ignore;
+                    newTemplateList.Add(existingTemplate);
+                    continue;
+                }
+
+                if (templateManifest.EditStatus == EditStatus.CalculateTemplate)
+                {
+                    // add existing template but recalculate the template definition
+                    var existingTemplate = dictionaryOfCurrentTemplates[name];
+                    existingTemplate.UseStatus = UseStatus.Use;
+                    var templateDict = CreateTemplateDeftn(templateManifest);
+                    existingTemplate.Template = templateDict;
+                    newTemplateList.Add(existingTemplate);
+                }
             }
 
-            var templatesFilePath = Path.Combine(manifestFile.DirectoryName ?? throw new InvalidOperationException(), "TemplateDefinitions.yml");
+            var templatesFilePath = Path.Combine(manifestFile.DirectoryName ?? throw new InvalidOperationException(), "TemplateDefinitions.json");
 
             // Save the previous templates file
-            string backupTemplatesFilePath = Path.Combine(manifestFile.DirectoryName, "TemplateDefinitions.Backup.yml");
+            string backupTemplatesFilePath = Path.Combine(manifestFile.DirectoryName, "TemplateDefinitions.Backup.json");
             if (File.Exists(backupTemplatesFilePath))
             {
                 File.Delete(backupTemplatesFilePath);
@@ -63,13 +98,15 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 
             // No need to move the backup because serializing over-writes the current templates file.
             var templatesFile = new FileInfo(templatesFilePath);
-            Yaml.Serialize(templatesFile, newTemplateList.ToArray());
+
+            //Yaml.Serialize(templatesFile, newTemplateList.ToArray());
+            Json.Serialise(templatesFile, newTemplateList.ToArray());
         }
 
         /// <summary>
         /// THis method calculates new template based on passed manifest.
         /// </summary>
-        public static Dictionary<string, double[]> CreateTemplate(TemplateManifest templateManifest)
+        public static Dictionary<string, double[]> CreateTemplateDeftn(TemplateManifest templateManifest)
         {
             // Get the template provenance. Assume array contains only one element.
             var provenanceArray = templateManifest.Provenance;
@@ -81,26 +118,26 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             var path = Path.Combine(sourceDirectory, baseName + ContentDescription.AnalysisString);
             var dictionaryOfIndices = DataProcessing.ReadIndexMatrices(path);
             var algorithmType = templateManifest.FeatureExtractionAlgorithm;
-            Dictionary<string, double[]> newTemplate;
+            Dictionary<string, double[]> newTemplateDeftn;
 
             switch (algorithmType)
             {
                 case 1:
-                    newTemplate = ContentAlgorithms.CreateFullBandTemplate1(templateManifest, dictionaryOfIndices);
+                    newTemplateDeftn = ContentAlgorithms.CreateFullBandTemplate1(templateManifest, dictionaryOfIndices);
                     break;
                 case 2:
-                    newTemplate = ContentAlgorithms.CreateBroadbandTemplate1(templateManifest, dictionaryOfIndices);
+                    newTemplateDeftn = ContentAlgorithms.CreateBroadbandTemplate1(templateManifest, dictionaryOfIndices);
                     break;
                 case 3:
-                    newTemplate = ContentAlgorithms.CreateNarrowBandTemplate1(templateManifest, dictionaryOfIndices);
+                    newTemplateDeftn = ContentAlgorithms.CreateNarrowBandTemplate1(templateManifest, dictionaryOfIndices);
                     break;
                 default:
                     //LoggedConsole.WriteWarnLine("Algorithm " + algorithmType + " does not exist.");
-                    newTemplate = null;
+                    newTemplateDeftn = null;
                     break;
             }
 
-            return newTemplate;
+            return newTemplateDeftn;
         }
 
         public static TemplateManifest CreateNewTemplateFromManifest(TemplateManifest templateManifest)
@@ -109,11 +146,13 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             {
                 Name = templateManifest.Name,
                 TemplateId = templateManifest.TemplateId,
-                Status = templateManifest.Status,
+                EditStatus = templateManifest.EditStatus,
+                UseStatus = templateManifest.UseStatus,
                 FeatureExtractionAlgorithm = templateManifest.FeatureExtractionAlgorithm,
                 SpectralReductionFactor = templateManifest.SpectralReductionFactor,
                 BandMinHz = templateManifest.BandMinHz,
                 BandMaxHz = templateManifest.BandMaxHz,
+                Provenance = null,
             };
             return newTemplate;
         }
@@ -135,10 +174,16 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         public string GeneralComment { get; set; }
 
         /// <summary>
-        /// Gets or sets the template manifest status.
-        /// Status can be "locked", etc.
+        /// Gets or sets the template edit status.
+        /// EditStatus can be "locked", etc.
         /// </summary>
-        public TemplateStatus Status { get; set; }
+        public EditStatus EditStatus { get; set; }
+
+        /// <summary>
+        /// Gets or sets the template manifest status.
+        /// UseStatus can be "use" or "ignore".
+        /// </summary>
+        public UseStatus UseStatus { get; set; }
 
         public DateTime MostRecentEdit { get; set; }
 

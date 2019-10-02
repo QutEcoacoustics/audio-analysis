@@ -36,8 +36,8 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         public static List<Plot> ContentDescriptionOfMultipleRecordingFiles(FileInfo listOfIndexFiles, FileInfo templatesFile)
         {
             // Read in all template manifests
-            var templates = Yaml.Deserialize<TemplateManifest[]>(templatesFile);
-            //var templateCollection = ConfigFile.Deserialize<TemplateCollection>(templatesFile);
+            //var templates = Yaml.Deserialize<TemplateManifest[]>(templatesFile);
+            var templates = Json.Deserialize<TemplateManifest[]>(templatesFile);
             var templatesAsDictionary = DataProcessing.ExtractDictionaryOfTemplateDictionaries(templates);
 
             // Read in list of paths to index files
