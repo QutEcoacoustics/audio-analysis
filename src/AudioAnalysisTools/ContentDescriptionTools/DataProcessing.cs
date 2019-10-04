@@ -219,31 +219,27 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         }
 
         /// <summary>
-        /// THis method assumes that the passed temp[late contains only one value for each key.
+        /// THis method assumes that the passed template contains only one value for each key.
         /// </summary>
         /// <param name="templateDict"> Each kvp = string, double.</param>
         /// <param name="oneMinuteIndices">the indices.</param>
         /// <returns>A spectrum of similarity-distance scores.</returns>
         public static double[] ScanSpectrumWithTemplate(Dictionary<string, double[]> templateDict, Dictionary<string, double[]> oneMinuteIndices)
         {
-            int templateLength = templateDict.First().Value.Length;
-            if (templateLength != 1)
-            {
-                // Abandon ship!
-            }
-
-            int spectrumLength = oneMinuteIndices.First().Value.Length;
-            var templateVector = ConvertDictionaryToVector(templateDict);
+            // convert the template dictionary to an array of averaged values
+            var dictionaryOfIndexAverages = DataProcessing.AverageIndicesInDictionary(templateDict);
+            var templateVector = ConvertDictionaryToVector(dictionaryOfIndexAverages);
 
             // the score spectrum to be returned
+            int spectrumLength = oneMinuteIndices.First().Value.Length;
             var spectralScores = new double[spectrumLength];
 
             // scan the spectrum of indices
-            // does not appear to make any difference whether use Manhattan or Euclidean distance.
             for (int i = 0; i < spectrumLength; i++)
             {
                 var binVector = GetFreqBinVector(oneMinuteIndices, i);
 
+                // does not appear to make any difference whether use Manhattan or Euclidean distance.
                 //var distance = DataTools.EuclideanDistance(templateVector, binVector);
                 //distance /= Math.Sqrt(templateVector.Length);
                 var distance = DataTools.ManhattanDistance(templateVector, binVector);
@@ -252,6 +248,18 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             }
 
             return spectralScores;
+        }
+
+        public static Dictionary<string, double> AverageIndicesInDictionary(Dictionary<string, double[]> dictionary)
+        {
+            var dictionaryOfIndexAverages = new Dictionary<string, double>();
+            foreach (var kvp in dictionary)
+            {
+                var array = dictionary[kvp.Key];
+                dictionaryOfIndexAverages.Add(kvp.Key, array.Average());
+            }
+
+            return dictionaryOfIndexAverages;
         }
 
         public static double[] ConvertDictionaryToVector(Dictionary<string, double[]> dictionary)
@@ -264,6 +272,22 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                 if (success)
                 {
                     list.AddRange(indices);
+                }
+            }
+
+            return list.ToArray();
+        }
+
+        public static double[] ConvertDictionaryToVector(Dictionary<string, double> dictionary)
+        {
+            var list = new List<double>();
+            var keys = dictionary.Keys;
+            foreach (string key in keys)
+            {
+                var success = dictionary.TryGetValue(key, out double index);
+                if (success)
+                {
+                    list.Add(index);
                 }
             }
 

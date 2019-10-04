@@ -26,9 +26,8 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             var startRowId = provenance.StartOffset;
             var endRowId = provenance.EndOffset;
 
-            var reductionFactor = manifest.SpectralReductionFactor;
             var dictionaryOfVector = DataProcessing.AverageIndicesOverMinutes(templateIndices, startRowId, endRowId);
-            var reducedIndices = DataProcessing.ReduceIndicesByFactor(dictionaryOfVector, reductionFactor);
+            var reducedIndices = DataProcessing.ReduceIndicesByFactor(dictionaryOfVector, manifest.SpectralReductionFactor);
 
             return reducedIndices;
         }
@@ -43,8 +42,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// <returns>A similarity score.</returns>
         public static double GetFullBandContent1(Dictionary<string, double[]> oneMinuteOfIndices, TemplateManifest template, Dictionary<string, double[]> templateIndices)
         {
-            var reductionFactor = template.SpectralReductionFactor;
-            var reducedIndices = DataProcessing.ReduceIndicesByFactor(oneMinuteOfIndices, reductionFactor);
+            var reducedIndices = DataProcessing.ReduceIndicesByFactor(oneMinuteOfIndices, template.SpectralReductionFactor);
             var oneMinuteVector = DataProcessing.ConvertDictionaryToVector(reducedIndices);
             var templateVector = DataProcessing.ConvertDictionaryToVector(templateIndices);
 

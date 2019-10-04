@@ -13,6 +13,29 @@ namespace TowseyLibrary
 
     public static class GraphsAndCharts
     {
+        public static List<Image> DrawPlotDistributions(List<Plot> plots)
+        {
+            int imageWidth = 100;
+            int height = 100;
+            var imageList = new List<Image>();
+
+            foreach (var plot in plots)
+            {
+                DataTools.GetModeAndOneTailedStandardDeviation(plot.data, out int[] histogram, out double min, out double max, out int modalBin, out double mode, out double sd);
+                var statistics = new Dictionary<string, double>
+                {
+                    { "min", min },
+                    { "max", max },
+                    { "mode", mode },
+                    { "sd", sd },
+                };
+                var image = DrawHistogram(plot.title, histogram,  95, statistics, imageWidth,  height);
+                imageList.Add(image);
+            }
+
+            return imageList;
+        }
+
         public static Image DrawHistogram(string label, int[] histogram, int upperPercentileBin, Dictionary<string, double> statistics, int imageWidth, int height)
         {
             int sum = histogram.Sum();
@@ -181,7 +204,7 @@ namespace TowseyLibrary
         public static void DrawGraph(double[] rawdata, string label, FileInfo file)
         {
             var normalisedIndex = DataTools.normalise(rawdata);
-            var image2 = GraphsAndCharts.DrawGraph(label, normalisedIndex, 100);
+            var image2 = DrawGraph(label, normalisedIndex, 100);
             image2.Save(file.FullName);
         }
 

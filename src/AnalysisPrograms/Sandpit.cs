@@ -136,12 +136,17 @@ namespace AnalysisPrograms
             var listOfIndexFiles = new FileInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMezIndexFiles.txt");
             var contentPlots = ContentDescription.ContentDescriptionOfMultipleRecordingFiles(listOfIndexFiles, templatesFile);
 
+            var images = GraphsAndCharts.DrawPlotDistributions(contentPlots);
+            var plotsImage = ImageTools.CombineImagesVertically(images);
+            var path1 = Path.Combine(@"C:\Ecoacoustics\ContentDescription", "ScoreDistributions.png");
+            plotsImage.Save(path1);
+
             // Attach content description plots to LDFC spectrogram and write to file
             var path = Path.Combine(@"C:\Ecoacoustics\Output\Test\Test24HourRecording", "Testing__2Maps.png");
             var ldfcSpectrogram = Image.FromFile(path);
             var image = ContentVisualization.DrawLdfcSpectrogramWithContentScoreTracks(ldfcSpectrogram, contentPlots);
-            var path1 = Path.Combine(@"C:\Ecoacoustics\ContentDescription", "Testing_2Maps.CONTENTnew05.png");
-            image.Save(path1);
+            var path2 = Path.Combine(@"C:\Ecoacoustics\ContentDescription", "Testing_2Maps.CONTENTnew05.png");
+            image.Save(path2);
             Console.WriteLine("# Finished scanning recording with content description templates");
         }
 

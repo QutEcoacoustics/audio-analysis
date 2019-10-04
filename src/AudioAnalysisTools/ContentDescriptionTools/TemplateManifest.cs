@@ -8,19 +8,11 @@ namespace AudioAnalysisTools.ContentDescriptionTools
     using System.Collections.Generic;
     using System.IO;
     using Acoustics.Shared;
-    using Newtonsoft.Json;
 
     public enum EditStatus
     {
-        CalculateTemplate,
         Edit,
         Copy,
-        Ignore,
-    }
-
-    public enum UseStatus
-    {
-        Use,
         Ignore,
     }
 
@@ -39,44 +31,50 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             var newTemplateList = new List<TemplateManifest>();
 
             // cycle through all the manifests
-            foreach (var templateManifest in manifests)
+            for (var i = 0; i < manifests.Length; i++)
             {
-                var name = templateManifest.Name;
+                var manifest = manifests[i];
+                var name = manifest.Name;
                 if (!dictionaryOfCurrentTemplates.ContainsKey(name))
                 {
                     // the current manifest is not an existing template - therefore make it.
-                    var newTemplate = CreateNewTemplateFromManifest(templateManifest);
-                    var templateDict = CreateTemplateDeftn(templateManifest);
-                    newTemplate.Template = templateDict;
+                    var newTemplate = CreateNewTemplateFromManifest(manifest);
+                    newTemplate.TemplateId = i;
+                    newTemplate.Template = CreateTemplateDeftn(manifest);
                     newTemplate.MostRecentEdit = DateTime.Now;
                     newTemplateList.Add(newTemplate);
                     continue;
                 }
 
-                if (templateManifest.EditStatus == EditStatus.Copy)
+                if (manifest.EditStatus == EditStatus.Edit)
                 {
-                    // add existing template unchanged.
+                    // edit an existing template but use the manifest.
+                    var newTemplate = CreateNewTemplateFromManifest(manifest);
+                    newTemplate.TemplateId = i;
+                    newTemplate.Template = CreateTemplateDeftn(manifest);
+                    newTemplate.MostRecentEdit = DateTime.Now;
+                    newTemplateList.Add(newTemplate);
+                    continue;
+                }
+
+                if (manifest.EditStatus == EditStatus.Copy)
+                {
+                    // add existing template unchanged except for Id.
                     var existingTemplate = dictionaryOfCurrentTemplates[name];
+                    existingTemplate.TemplateId = i;
+                    existingTemplate.UseStatus = true;
+                    existingTemplate.Provenance = null;
                     newTemplateList.Add(existingTemplate);
                     continue;
                 }
 
-                if (templateManifest.EditStatus == EditStatus.Ignore)
+                if (manifest.EditStatus == EditStatus.Ignore)
                 {
                     // add existing template unchanged except change UseStatus to Ignore.
                     var existingTemplate = dictionaryOfCurrentTemplates[name];
-                    existingTemplate.UseStatus = UseStatus.Ignore;
-                    newTemplateList.Add(existingTemplate);
-                    continue;
-                }
-
-                if (templateManifest.EditStatus == EditStatus.CalculateTemplate)
-                {
-                    // add existing template but recalculate the template definition
-                    var existingTemplate = dictionaryOfCurrentTemplates[name];
-                    existingTemplate.UseStatus = UseStatus.Use;
-                    var templateDict = CreateTemplateDeftn(templateManifest);
-                    existingTemplate.Template = templateDict;
+                    existingTemplate.TemplateId = i;
+                    existingTemplate.Provenance = null;
+                    existingTemplate.UseStatus = false;
                     newTemplateList.Add(existingTemplate);
                 }
             }
@@ -146,14 +144,19 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             {
                 Name = templateManifest.Name,
                 TemplateId = templateManifest.TemplateId,
-                EditStatus = templateManifest.EditStatus,
-                UseStatus = templateManifest.UseStatus,
                 FeatureExtractionAlgorithm = templateManifest.FeatureExtractionAlgorithm,
                 SpectralReductionFactor = templateManifest.SpectralReductionFactor,
                 BandMinHz = templateManifest.BandMinHz,
                 BandMaxHz = templateManifest.BandMaxHz,
+                UseStatus = true,
                 Provenance = null,
             };
+
+            if (templateManifest.EditStatus == EditStatus.Ignore)
+            {
+                newTemplate.UseStatus = false;
+            }
+
             return newTemplate;
         }
 
@@ -180,10 +183,10 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         public EditStatus EditStatus { get; set; }
 
         /// <summary>
-        /// Gets or sets the template manifest status.
-        /// UseStatus can be "use" or "ignore".
+        /// Gets or sets a value indicating whether to use the template or not.
+        /// UseStatus can be true or false.
         /// </summary>
-        public UseStatus UseStatus { get; set; }
+        public bool UseStatus { get; set; }
 
         public DateTime MostRecentEdit { get; set; }
 

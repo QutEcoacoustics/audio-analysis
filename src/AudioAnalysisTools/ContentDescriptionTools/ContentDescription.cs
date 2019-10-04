@@ -64,10 +64,10 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 
             var plotDict = DataProcessing.ConvertResultsToPlots(completeListOfResults, 1440, 0);
             var contentPlots = DataProcessing.ConvertPlotDictionaryToPlotList(plotDict);
-            contentPlots = DataProcessing.SubtractMeanPlusSd(contentPlots);
+            //contentPlots = DataProcessing.SubtractMeanPlusSd(contentPlots);
 
             //the following did not work as well.
-            //contentPlots = SubtractModeAndSd(contentPlots);
+            contentPlots = DataProcessing.SubtractModeAndSd(contentPlots);
             return contentPlots;
         }
 
@@ -95,6 +95,11 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                 // now subject the indices to various content searches
                 foreach (var template in templates)
                 {
+                    if (template.UseStatus == false)
+                    {
+                        continue;
+                    }
+
                     var algorithmType = template.FeatureExtractionAlgorithm;
                     var templateIndices = templatesAsDictionary[template.Name];
                     double score;
