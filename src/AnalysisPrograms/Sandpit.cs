@@ -145,7 +145,7 @@ namespace AnalysisPrograms
             var path = Path.Combine(@"C:\Ecoacoustics\Output\Test\Test24HourRecording", "Testing__2Maps.png");
             var ldfcSpectrogram = Image.FromFile(path);
             var image = ContentVisualization.DrawLdfcSpectrogramWithContentScoreTracks(ldfcSpectrogram, contentPlots);
-            var path2 = Path.Combine(@"C:\Ecoacoustics\ContentDescription", "Testing_2Maps.CONTENTnew05.png");
+            var path2 = Path.Combine(@"C:\Ecoacoustics\ContentDescription", "Testing_2Maps.CONTENTnew06.png");
             image.Save(path2);
             Console.WriteLine("# Finished scanning recording with content description templates");
         }

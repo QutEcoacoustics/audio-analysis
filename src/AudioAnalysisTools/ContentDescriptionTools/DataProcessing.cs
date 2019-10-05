@@ -227,7 +227,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         public static double[] ScanSpectrumWithTemplate(Dictionary<string, double[]> templateDict, Dictionary<string, double[]> oneMinuteIndices)
         {
             // convert the template dictionary to an array of averaged values
-            var dictionaryOfIndexAverages = DataProcessing.AverageIndicesInDictionary(templateDict);
+            var dictionaryOfIndexAverages = AverageIndicesInDictionary(templateDict);
             var templateVector = ConvertDictionaryToVector(dictionaryOfIndexAverages);
 
             // the score spectrum to be returned
@@ -449,6 +449,45 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                     scores[i] /= 4.0;
                 }
 
+                opPlots.Add(plot);
+            }
+
+            return opPlots;
+        }
+
+        public static List<Plot> PercentileThresholding(List<Plot> plots, int percentile)
+        {
+            var opPlots = new List<Plot>();
+
+            // subtract average from each plot array
+            foreach (Plot plot in plots)
+            {
+                var scores = plot.data;
+                var threshold = Statistics.GetPercentileValue(scores, percentile);
+                //NormalDist.AverageAndSD(scores, out double average, out double sd);
+
+                // normalize the scores to z-scores
+                for (int i = 0; i < scores.Length; i++)
+                {
+                    // Normalize scores relative to threshold
+                    scores[i] = (scores[i] - threshold) / (1 - threshold);
+                    if (scores[i] < 0.0)
+                    {
+                        scores[i] = 0.0;
+                    }
+
+                    if (scores[i] > 4.0)
+                    {
+                        scores[i] = 4.0;
+                    }
+
+                    //normalize full scale to 4 SDs.
+                    //scores[i] /= 4.0;
+                }
+
+                // when normalizing the scores this way the range of the plot will be 0 to 4 SD above the mean.
+                // Consequently we set the plot threshold to 0.5, which is two SDs or a p value = 5%.
+                plot.threshold = 0.5;
                 opPlots.Add(plot);
             }
 

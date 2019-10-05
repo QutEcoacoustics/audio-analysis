@@ -1,4 +1,4 @@
-﻿// <copyright file="Statistics.cs" company="QutEcoacoustics">
+// <copyright file="Statistics.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -19,6 +19,15 @@ namespace TowseyLibrary
             Tuple<int[], double[]> tuple = DataTools.SortArray(v);
             double median = tuple.Item2[v.Length / 2];
             return median;
+        }
+
+        public static double GetPercentileValue(double[] v, int percentile)
+        {
+            Tuple<int[], double[]> tuple = DataTools.SortArray(v);
+            var fraction = percentile / 100.0;
+            var percentileBin = (int)Math.Round(v.Length * fraction);
+            double percentileValue = tuple.Item2[percentileBin];
+            return percentileValue;
         }
 
         /// <summary>
