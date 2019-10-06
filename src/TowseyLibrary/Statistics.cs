@@ -5,7 +5,6 @@
 namespace TowseyLibrary
 {
     using System;
-    using System.Collections.Generic;
     using System.Text;
 
     /// <summary>
@@ -21,27 +20,26 @@ namespace TowseyLibrary
             return median;
         }
 
+        /// <summary>
+        /// NOTE: The sort routine sorts in descending order.
+        /// Therefore the percentile value has to be reversed.
+        /// </summary>
         public static double GetPercentileValue(double[] v, int percentile)
         {
             Tuple<int[], double[]> tuple = DataTools.SortArray(v);
-            var fraction = percentile / 100.0;
+            var fraction = (100 - percentile) / 100.0;
             var percentileBin = (int)Math.Round(v.Length * fraction);
             double percentileValue = tuple.Item2[percentileBin];
             return percentileValue;
         }
 
         /// <summary>
-        /// Analyses an array of events or hits, represented by a binary of matrix.
+        /// Analyzes an array of events or hits, represented by a binary of matrix.
         /// Assumes a Poisson distribution
         /// Returns an array of Z-scores indicating the probability at any time or frame that the number of hits occuring
-        /// in the window centred on that point could have occured by chance.
+        /// in the window centered on that point could have occured by chance.
         /// </summary>
-        /// <param name="hits"></param>
-        /// <param name="window"></param>
-        /// <param name="thresholdZ"></param>
-        /// <param name="thresholdCount"></param>
-        /// <returns></returns>
-        public static void AnalyseClustersOfHits(int[] hits, int window, double thresholdZ, int thresholdCount,
+        public static void AnalyzeClustersOfHits(int[] hits, int window, double thresholdZ, int thresholdCount,
                                                 out double[] zScores, out double expectedHits, out double sd)
         {
             int frameCount = hits.Length;

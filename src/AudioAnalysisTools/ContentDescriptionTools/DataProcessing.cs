@@ -344,7 +344,6 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 
         /// <summary>
         /// Converts individual results to a dictionary of plots.
-        /// It is assumed that the data arrays have been processed in a way that 
         /// </summary>
         /// <param name="results">a list of results for each content type in every minute.</param>
         /// <param name="plotLength">The plot length will the total number of minutes scanned, typically 1440 or one day.</param>
@@ -417,6 +416,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// <summary>
         /// THis method normalizes a score array by subtracting the mode rather than the average of the array.
         /// THis is because the noise is often not normally distributed but rather skewed.
+        /// However, did not work well.
         /// </summary>
         public static List<Plot> SubtractModeAndSd(List<Plot> plots)
         {
@@ -455,39 +455,33 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             return opPlots;
         }
 
+        /// <summary>
+        /// Subtract the percentile value from the scores and normalize the remaining values in 0,1.
+        /// </summary>
         public static List<Plot> PercentileThresholding(List<Plot> plots, int percentile)
         {
             var opPlots = new List<Plot>();
 
             // subtract average from each plot array
-            foreach (Plot plot in plots)
+            foreach (var plot in plots)
             {
                 var scores = plot.data;
                 var threshold = Statistics.GetPercentileValue(scores, percentile);
-                //NormalDist.AverageAndSD(scores, out double average, out double sd);
 
-                // normalize the scores to z-scores
+                // normalize the scores - first subtract the percentile threshold
                 for (int i = 0; i < scores.Length; i++)
                 {
                     // Normalize scores relative to threshold
-                    scores[i] = (scores[i] - threshold) / (1 - threshold);
+                    scores[i] = scores[i] - threshold;
                     if (scores[i] < 0.0)
                     {
                         scores[i] = 0.0;
                     }
-
-                    if (scores[i] > 4.0)
-                    {
-                        scores[i] = 4.0;
-                    }
-
-                    //normalize full scale to 4 SDs.
-                    //scores[i] /= 4.0;
                 }
 
-                // when normalizing the scores this way the range of the plot will be 0 to 4 SD above the mean.
-                // Consequently we set the plot threshold to 0.5, which is two SDs or a p value = 5%.
-                plot.threshold = 0.5;
+                scores = DataTools.NormaliseByScalingMaxValueToOne(scores);
+                plot.data = scores;
+                plot.threshold = 0.25;
                 opPlots.Add(plot);
             }
 
@@ -515,6 +509,5 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             var plot = new Plot("Random numbers", scores, 0.25);
             return plot;
         }
-
     }
 }

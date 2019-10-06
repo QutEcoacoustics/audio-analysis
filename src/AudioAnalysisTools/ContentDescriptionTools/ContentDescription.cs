@@ -64,11 +64,15 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 
             var plotDict = DataProcessing.ConvertResultsToPlots(completeListOfResults, 1440, 0);
             var contentPlots = DataProcessing.ConvertPlotDictionaryToPlotList(plotDict);
-            contentPlots = DataProcessing.SubtractMeanPlusSd(contentPlots);
+
+            // convert scores to z-scores
+            //contentPlots = DataProcessing.SubtractMeanPlusSd(contentPlots);
 
             //the following did not work as well.
             //contentPlots = DataProcessing.SubtractModeAndSd(contentPlots);
-            //contentPlots = DataProcessing.PercentileThresholding(contentPlots, 80);
+
+            // Use percentile thresholding followed by normalize in 0,1.
+            contentPlots = DataProcessing.PercentileThresholding(contentPlots, 80);
             return contentPlots;
         }
 
