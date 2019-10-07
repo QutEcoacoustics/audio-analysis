@@ -89,11 +89,11 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// Returns a subarray of the passed array of any type
+        /// Returns a subarray of the passed array of any type.
         /// </summary>
         /// <param name="array">an array of any type</param>
-        /// <param name="start">the first element of the subarray</param>
-        /// <param name="length">number of elements in subarray</param>
+        /// <param name="start">the first element of the subarray.</param>
+        /// <param name="length">number of elements in subarray.</param>
         public static T[] Subarray<T>(T[] array, int start, int length)
         {
             int end = start + length - 1;
@@ -1434,11 +1434,8 @@ namespace TowseyLibrary
     }
 
     /// <summary>
-    /// returns a list containing integer index of every peak > threshold
+    /// returns a list containing integer index of every peak > threshold.
     /// </summary>
-    /// <param name="array"></param>
-    /// <param name="count"></param>
-    /// <param name="sum"></param>
         public static List<int> PeakLocations(double[] array, double threshold)
     {
         int L = array.Length;
@@ -1447,9 +1444,9 @@ namespace TowseyLibrary
         for (int i = 1; i < L - 1; i++) // iterate through array
         {
             if (array[i] < threshold)
-                {
-                    continue;
-                }
+            {
+                continue;
+            }
 
             if (array[i] > array[i - 1] && array[i] > array[i + 1])
             {
@@ -1460,30 +1457,27 @@ namespace TowseyLibrary
         return locations;
     }
 
-    /// <summary>
-    /// returns an array showing values at the peaks
-    /// </summary>
-    /// <param name="array"></param>
-    /// <param name="count"></param>
-    /// <param name="sum"></param>
+        /// <summary>
+        /// returns an array showing values at the peaks.
+        /// </summary>
         public static double[] GetPeakValues(double[] array)
-    {
-        int L = array.Length;
-        var values = new double[L];
-
-        for (int i = 1; i < L - 1; i++) // iterate through array
         {
-            if (array[i] > array[i - 1] && array[i] > array[i + 1])
+            var values = new double[array.Length];
+
+            // iterate through array
+            for (int i = 1; i < array.Length - 1; i++)
             {
-                values[i] = array[i];
+                if (array[i] > array[i - 1] && array[i] > array[i + 1])
+                {
+                    values[i] = array[i];
+                }
             }
+
+            return values;
         }
 
-        return values;
-    }
-
     // returns the locations of peaks ranked from highest value to lowest valued peak
-        public static int[] GetOrderedPeakLocations(double[] peakValues, int count)
+    public static int[] GetOrderedPeakLocations(double[] peakValues, int count)
     {
         var peakLocations = new List<int>();
         for (int i = 0; i < count; i++)
@@ -1499,17 +1493,15 @@ namespace TowseyLibrary
     // =============================================================================
 
         /// <summary>
-        /// returns a list of gaps between 1s in a binary array
+        /// returns a list of gaps between 1s in a binary array.
         /// </summary>
-        /// <param name="peakLocations">a binary array</param>
-        /// <returns></returns>
         public static List<int> GapLengths(double[] binaryArray)
         {
-            int L = binaryArray.Length;
             var gaps = new List<int>();
             int prev = 0;
 
-            for (int i = 1; i < L; i++) // iterate through array
+            // iterate through array
+            for (int i = 1; i < binaryArray.Length; i++)
             {
                 if (binaryArray[i] == 1.0 && prev > 0)
                 {
@@ -1526,17 +1518,15 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// returns a list of gaps between the trues in a boolean array
+        /// returns a list of gaps between the trues in a boolean array.
         /// </summary>
-        /// <param name="peakLocations">a binary array</param>
-        /// <returns></returns>
         public static List<int> GapLengths(bool[] binaryArray)
         {
-            int L = binaryArray.Length;
             var gaps = new List<int>();
             int prev = 0;
 
-            for (int i = 1; i < L; i++) // iterate through array
+            // iterate through array
+            for (int i = 1; i < binaryArray.Length; i++)
             {
                 if (binaryArray[i] && prev > 0)
                 {
@@ -1553,80 +1543,79 @@ namespace TowseyLibrary
         }
 
 // =============================================================================
+//public static double[] counts2RF(int[] counts)
+//  {
+//        int L = counts.Length;
+//        double[] rf = new double[L];
 
-        public static double[] counts2RF(int[] counts)
-  {
-        int L = counts.Length;
-        double[] rf = new double[L];
+//    // get the sum
+//        int sum = 0;
+//        for (int i = 0; i < L; i++) // iterate through array
+//        {
+//            sum += counts[i];
+//        }
 
-    // get the sum
-        int sum = 0;
-        for (int i = 0; i < L; i++) // iterate through array
-    {
-        sum += counts[i];
-    }
+//        for (int i = 0; i < L; i++) // iterate through array
+//        {
+//            rf[i] = counts[i] / (double)sum;
+//        }
 
-        for (int i = 0; i < L; i++) // iterate through array
-            {
-                rf[i] = counts[i] / (double)sum;
-            }
+//        // check total sums to 1.0;
+//        double p = 0.0;
+//        for (int i = 0; i < L; i++)
+//        {
+//            p += rf[i];
+//        }
 
-            // check total sums to 1.0;
-        double p = 0.0;
-        for (int i = 0; i < L; i++)
-            {
-                p += rf[i];
-            }
+//        if (p > 1.00001)
+//        {
+//            LoggedConsole.WriteLine("WARNING:DataUtilities.counts2RF() total prob=" + p);
+//        }
 
-        if (p > 1.00001)
-            {
-                LoggedConsole.WriteLine("WARNING:DataUtilities.counts2RF() total prob=" + p);
-            }
+//        if (p < 0.99999)
+//        {
+//            LoggedConsole.WriteLine("WARNING:DataUtilities.counts2RF() total prob=" + p);
+//        }
 
-        if (p < 0.99999)
-            {
-                LoggedConsole.WriteLine("WARNING:DataUtilities.counts2RF() total prob=" + p);
-            }
+//        return rf;
+//  }
 
-        return rf;
-  }
+  //      public static double[] values2RF(double[] values)
+  //{
+  //      int length = values.Length;
+  //      double[] rf = new double[length];
 
-        public static double[] values2RF(double[] values)
-  {
-        int length = values.Length;
-        double[] rf = new double[length];
+  //  // get the sum
+  //      double sum = 0;
+  //      for (int i = 0; i < length; i++) // iterate through array
+  //  {
+  //      sum += values[i];
+  //  }
 
-    // get the sum
-        double sum = 0;
-        for (int i = 0; i < length; i++) // iterate through array
-    {
-        sum += values[i];
-    }
+  //      for (int i = 0; i < length; i++) // iterate through array
+  //          {
+  //              rf[i] = values[i] / sum;
+  //          }
 
-        for (int i = 0; i < length; i++) // iterate through array
-            {
-                rf[i] = values[i] / sum;
-            }
+  //          // check total sums to 1.0;
+  //      double p = 0.0;
+  //      for (int i = 0; i < length; i++)
+  //          {
+  //              p += rf[i];
+  //          }
 
-            // check total sums to 1.0;
-        double p = 0.0;
-        for (int i = 0; i < length; i++)
-            {
-                p += rf[i];
-            }
+  //      if (p > 1.00001)
+  //          {
+  //              LoggedConsole.WriteLine("WARNING:DataUtilities.counts2RF() total prob=" + p);
+  //          }
 
-        if (p > 1.00001)
-            {
-                LoggedConsole.WriteLine("WARNING:DataUtilities.counts2RF() total prob=" + p);
-            }
+  //      if (p < 0.99999)
+  //          {
+  //              LoggedConsole.WriteLine("WARNING:DataUtilities.counts2RF() total prob=" + p);
+  //          }
 
-        if (p < 0.99999)
-            {
-                LoggedConsole.WriteLine("WARNING:DataUtilities.counts2RF() total prob=" + p);
-            }
-
-        return rf;
-  }
+  //      return rf;
+  //}
 
 // =============================================================================
 
