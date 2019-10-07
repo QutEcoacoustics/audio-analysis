@@ -13,10 +13,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
     {
         // All the code base for content description assumes a sampling rate of 22050 (i.e. a Nyquist = 11025) and frame size = 512 (i.e. 256 frequency bins).
         public const int Nyquist = 11025;
-
-        //public int FrameSize { get; set; }
         public const int FreqBinCount = 256;
-
         public const string AnalysisString = "__Towsey.Acoustic.";
 
         /// <summary>
@@ -47,7 +44,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             var completeListOfResults = new List<DescriptionResult>();
 
             // cycle through the directories
-            // WARNING: Assume one-hour duration for each recording
+            // TODO  WARNING: Assume one-hour duration for each recording
             for (int i = 0; i < filePaths.Count; i++)
             {
                 // read the spectral indices for the current file
@@ -58,7 +55,8 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                 // ContentDescription.DrawNormalisedIndexMatrices(dir1, baseName, dictionary);
 
                 // get the rows and do something with them one by one.
-                var results = AnalyzeMinutes(templates, templatesAsDictionary, dictionaryOfRecordingIndices, i * 60); // WARNING: HACK: ASSUME ONE HOUR FILES
+                // TODO WARNING: HACK: ASSUME ONE HOUR FILES - must fix this.
+                var results = AnalyzeMinutes(templates, templatesAsDictionary, dictionaryOfRecordingIndices, i * 60);
                 completeListOfResults.AddRange(results);
             }
 
@@ -72,7 +70,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             //contentPlots = DataProcessing.SubtractModeAndSd(contentPlots);
 
             // Use percentile thresholding followed by normalize in 0,1.
-            contentPlots = DataProcessing.PercentileThresholding(contentPlots, 80);
+            contentPlots = DataProcessing.PercentileThresholding(contentPlots, 90);
             return contentPlots;
         }
 
@@ -127,7 +125,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                             break;
                     }
 
-                    var result = new KeyValuePair<string, double>(template.Name, score);
+                    var result = new KeyValuePair<string, double>(template.Description, score);
                     descriptionResult.AddDescription(result);
                 }
 

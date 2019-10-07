@@ -40,7 +40,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                     // the current manifest is not an existing template - therefore make it.
                     var newTemplate = CreateNewTemplateFromManifest(manifest);
                     newTemplate.TemplateId = i;
-                    newTemplate.Template = CreateTemplateDeftn(manifest);
+                    newTemplate.Template = CreateTemplateDefinition(manifest);
                     newTemplate.MostRecentEdit = DateTime.Now;
                     newTemplateList.Add(newTemplate);
                     continue;
@@ -51,7 +51,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                     // edit an existing template but use the manifest.
                     var newTemplate = CreateNewTemplateFromManifest(manifest);
                     newTemplate.TemplateId = i;
-                    newTemplate.Template = CreateTemplateDeftn(manifest);
+                    newTemplate.Template = CreateTemplateDefinition(manifest);
                     newTemplate.MostRecentEdit = DateTime.Now;
                     newTemplateList.Add(newTemplate);
                     continue;
@@ -104,7 +104,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// <summary>
         /// THis method calculates new template based on passed manifest.
         /// </summary>
-        public static Dictionary<string, double[]> CreateTemplateDeftn(TemplateManifest templateManifest)
+        public static Dictionary<string, double[]> CreateTemplateDefinition(TemplateManifest templateManifest)
         {
             // Get the template provenance. Assume array contains only one element.
             var provenanceArray = templateManifest.Provenance;
@@ -143,6 +143,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             var newTemplate = new TemplateManifest
             {
                 Name = templateManifest.Name,
+                Description = templateManifest.Description,
                 TemplateId = templateManifest.TemplateId,
                 FeatureExtractionAlgorithm = templateManifest.FeatureExtractionAlgorithm,
                 SpectralReductionFactor = templateManifest.SpectralReductionFactor,

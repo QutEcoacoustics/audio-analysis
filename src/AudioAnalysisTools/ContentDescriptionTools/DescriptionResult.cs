@@ -11,10 +11,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
     {
         private readonly Dictionary<string, double> descriptionDictionary = new Dictionary<string, double>();
 
-        public DescriptionResult(int startTimeInMinutes)
-        {
-            this.StartTimeInCurrentRecordingFile = TimeSpan.FromMinutes(startTimeInMinutes);
-        }
+        public DescriptionResult(int startTimeInMinutes) => this.StartTimeInCurrentRecordingFile = TimeSpan.FromMinutes(startTimeInMinutes);
 
         public TimeSpan StartTimeInCurrentRecordingFile { get; set; }
 
