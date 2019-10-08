@@ -64,11 +64,11 @@ namespace AnalysisPrograms
                 Log.WriteLine("# Start Time = " + tStart.ToString(CultureInfo.InvariantCulture));
 
                 // CONTENT DESCRIPTION
-                ContentDescriptionCreateTemplates();
-                ContentDescriptionApplyTemplates();
+                //ContentDescriptionCreateTemplates();
+                //ContentDescriptionApplyTemplates();
 
                 //AnalyseFrogDataSet();
-                //Audio2CsvOverOneFile();
+                Audio2CsvOverOneFile();
                 //Audio2CsvOverMultipleFiles();
 
                 // used to get files from availae for Black rail and Least Bittern papers.
@@ -134,7 +134,7 @@ namespace AnalysisPrograms
 
             var templatesFile = new FileInfo(@"C:\Ecoacoustics\ContentDescription\TemplateDefinitions.json");
             var listOfIndexFiles = new FileInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMezIndexFiles.txt");
-            var contentPlots = ContentDescription.ContentDescriptionOfMultipleRecordingFiles(listOfIndexFiles, templatesFile);
+            var contentPlots = AudioAnalysisTools.ContentDescriptionTools.ContentDescription.ContentDescriptionOfMultipleRecordingFiles(listOfIndexFiles, templatesFile);
 
             var images = GraphsAndCharts.DrawPlotDistributions(contentPlots);
             var plotsImage = ImageTools.CombineImagesVertically(images);
@@ -362,10 +362,16 @@ namespace AnalysisPrograms
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
 
             // Test on STANDARD 24-HOUR RECORDING
-            string recordingPath = @"C:\Ecoacoustics\WavFiles\LizZnidersic\TasmanIsland2015_Unit2_Mez\SM304256_0+1_20151114_131652.wav";
+            //string recordingPath = @"C:\Ecoacoustics\WavFiles\LizZnidersic\TasmanIsland2015_Unit2_Mez\SM304256_0+1_20151114_131652+1000.wav";
             //string outputPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\14";
-            string outputPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\Delete";
-            string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Acoustic.yml";
+            //string outputPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\Delete";
+            //string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Acoustic.yml";
+
+            // Test on Content Description
+            string recordingPath = @"C:\Ecoacoustics\WavFiles\LizZnidersic\TasmanIsland2015_Unit2_Mez\SM304256_0+1_20151114_131652+1000.wav";
+            //string outputPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\14";
+            string outputPath = @"C:\Ecoacoustics\ContentDescription\TestOfSixIndices";
+            string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.ContentDescription.yml";
 
             // Ivan Campos recordings
             //string recordingPath = @"G:\SensorNetworks\WavFiles\Ivancampos\INCIPO01_20161031_024006_898.wav";
@@ -428,7 +434,7 @@ namespace AnalysisPrograms
             //string outputPath = @"C:\Ecoacoustics\Output\SERF\SERFIndicesNew_2013June19";
             //string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Acoustic.yml";
 
-          // USE 24-hour data or parts of from MEZ, TASMAn ISLAND, liz Znidersic
+            // USE 24-hour data or parts of from MEZ, TASMAn ISLAND, liz Znidersic
             // these are six hour recordings
             //string recordingPath = @"C:\Ecoacoustics\WavFiles\LizZnidersic\TasmanIsland2015_Unit2_Mez\SM304256_0+1_20151114_031652.wav";
             //string outputPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\04";
