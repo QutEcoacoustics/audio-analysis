@@ -125,8 +125,8 @@ namespace AnalysisPrograms
             int sampleRateOfOriginalAudioFile,
             IndexCalculateConfig config)
         {
-            //TODO: SET UP NEW class CalculateSizIndices.cs.
-            var resultsForSixIndices = IndexCalculate.Analysis(
+            //TODO: SET UP NEW class IndexCalculateSixOnly.cs.
+            var resultsForSixIndices = IndexCalculateSixOnly.Analysis(
                 recording,
                 segmentStartOffset,
                 null, //indexProperties,

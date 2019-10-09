@@ -282,6 +282,7 @@
     <Compile Include="EventStatistics\EventStatisticsCalculate.cs" />
     <Compile Include="FrommoltProject.cs" />
     <Compile Include="Indices\GapsAndJoins.cs" />
+    <Compile Include="Indices\IndexCalculateSixOnly.cs" />
     <Compile Include="Indices\IndexCalculate.cs" />
     <Compile Include="Indices\IndexCalculateConfig.cs" />
     <Compile Include="Indices\IndexDistributions.cs" />
