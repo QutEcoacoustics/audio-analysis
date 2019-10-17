@@ -6,12 +6,16 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Drawing;
     using System.IO;
     using System.Reflection;
     using Acoustics.Shared;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
+    using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
+    using AudioAnalysisTools.LongDurationSpectrograms;
     using AudioAnalysisTools.WavTools;
     using log4net;
 
@@ -43,98 +47,41 @@ namespace AnalysisPrograms
             AnalysisTargetSampleRate = ResampleRate,
         };
 
-        //public override void BeforeAnalyze(AnalysisSettings analysisSettings)
-        //{
-        //    var configuration = (AcousticIndices.AcousticIndicesConfig)analysisSettings.Configuration;
-
-        //    configuration.Validate(analysisSettings.AnalysisMaxSegmentDuration.Value);
-
-        //    analysisSettings.AnalysisAnalyzerSpecificConfiguration = configuration;
-        //}
-
-        //public static DescriptionResult Analysis(FileInfo segmentOfSourceFile, IDictionary<string, string> configDict, TimeSpan segmentStartOffset)
-        //{
-        //    var results = new DescriptionResult((int)Math.Floor(segmentStartOffset.TotalMinutes));
-        //    return results;
-        //}
-
         /// <summary>
-        /// THis method calls others to do the work!.
+        /// This method calls others to do the work!.
         /// TODO: SIMPLIFY THIS METHOD.
         /// </summary>
         public override AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
         {
             //var acousticIndicesConfiguration = (AcousticIndices.AcousticIndicesConfig)analysisSettings.AnalysisAnalyzerSpecificConfiguration;
             //var indexCalculationDuration = acousticIndicesConfiguration.IndexCalculationDuration.Seconds();
+            var indexProperties = IndexCalculateSixOnly.GetIndexProperties();
 
             var config = new IndexCalculateConfig();
             var indexCalculationDuration = TimeSpan.FromSeconds(60);
 
             var audioFile = segmentSettings.SegmentAudioFile;
             var recording = new AudioRecording(audioFile.FullName);
-            //var outputDirectory = segmentSettings.SegmentOutputDirectory;
+            var outputDirectory = segmentSettings.SegmentOutputDirectory;
 
-            // calculate indices for each one minute recording segment
-            IndexCalculateResult segmentResults = CalculateIndicesInOneMinuteSegmentOfRecording(
+            var segmentResults = IndexCalculateSixOnly.Analysis(
                 recording,
                 segmentSettings.SegmentStartOffset,
-                //segmentSettings.AnalysisIdealSegmentDuration,
-                indexCalculationDuration,
-                //acousticIndicesConfiguration.IndexProperties,
+                indexProperties,
                 segmentSettings.Segment.SourceMetadata.SampleRate,
+                indexCalculationDuration,
                 config);
 
-            //var trackScores = new List<Plot>(segmentResults.Length);
-            //var tracks = new List<SpectralTrack>(segmentResults.Length);
+            segmentResults.SpectralIndexValues.FileName = segmentSettings.Segment.SourceMetadata.Identifier;
 
             var analysisResults = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration)
             {
                 AnalysisIdentifier = this.Identifier,
                 SpectralIndices = new SpectralIndexBase[1],
             };
-            segmentResults.SpectralIndexValues.FileName = segmentSettings.Segment.SourceMetadata.Identifier;
             analysisResults.SpectralIndices[0] = segmentResults.SpectralIndexValues;
 
-            /*
-            for (int i = 0; i < subsegmentResults.Length; i++)
-            {
-                var indexCalculateResult = segmentResults[i];
-                indexCalculateResult.SpectralIndexValues.FileName = segmentSettings.Segment.SourceMetadata.Identifier;
-
-                //analysisResults.SummaryIndices[i] = indexCalculateResult.SummaryIndexValues;
-                analysisResults.SpectralIndices[i] = indexCalculateResult.SpectralIndexValues;
-                //trackScores.AddRange(indexCalculateResult.TrackScores);
-                //if (indexCalculateResult.Tracks != null)
-                //{
-                //    tracks.AddRange(indexCalculateResult.Tracks);
-                //}
-            }
-            */
-
             return analysisResults;
-        }
-
-        /// <summary>
-        /// TODO: REWRITE THIS METHOD.
-        /// </summary>
-        public static IndexCalculateResult CalculateIndicesInOneMinuteSegmentOfRecording(
-            AudioRecording recording,
-            TimeSpan segmentStartOffset,
-            TimeSpan indexCalculationDuration,
-            //Dictionary<string, IndexProperties> indexProperties,
-            int sampleRateOfOriginalAudioFile,
-            IndexCalculateConfig config)
-        {
-            //TODO: SET UP NEW class IndexCalculateSixOnly.cs.
-            var resultsForSixIndices = IndexCalculateSixOnly.Analysis(
-                recording,
-                segmentStartOffset,
-                null, //indexProperties,
-                sampleRateOfOriginalAudioFile,
-                segmentStartOffset,
-                config);
-
-            return resultsForSixIndices;
         }
 
         public override void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results)
@@ -154,6 +101,83 @@ namespace AnalysisPrograms
         public override void SummariseResults(AnalysisSettings settings, FileSegment inputFileSegment,
             EventBase[] events, SummaryIndexBase[] indices, SpectralIndexBase[] spectralIndices, AnalysisResult2[] results)
         {
+            var acousticIndicesConfig = (AcousticIndices.AcousticIndicesConfig)settings.AnalysisAnalyzerSpecificConfiguration;
+
+            var sourceAudio = inputFileSegment.Source;
+            var resultsDirectory = AnalysisCoordinator.GetNamedDirectory(settings.AnalysisOutputDirectory, this);
+            bool tileOutput = acousticIndicesConfig.TileOutput;
+
+            var frameWidth = acousticIndicesConfig.FrameLength;
+            int sampleRate = AppConfigHelper.DefaultTargetSampleRate;
+            sampleRate = acousticIndicesConfig.ResampleRate ?? sampleRate;
+
+            // Gather settings for rendering false color spectrograms
+            var ldSpectrogramConfig = acousticIndicesConfig.LdSpectrogramConfig;
+
+            string basename = Path.GetFileNameWithoutExtension(sourceAudio.Name);
+
+            // output to disk (so other analyzers can use the data,
+            // only data - configuration settings that generated these indices
+            // this data can then be used by post-process analyses
+            /* NOTE: The value for FrameStep is used only when calculating a standard spectrogram
+             * FrameStep is NOT used when calculating Summary and Spectral indices.
+             */
+            var indexConfigData = new IndexGenerationData()
+            {
+                RecordingExtension = inputFileSegment.Source.Extension,
+                RecordingBasename = basename,
+                RecordingStartDate = inputFileSegment.TargetFileStartDate,
+                RecordingDuration = inputFileSegment.TargetFileDuration.Value,
+                SampleRateOriginal = inputFileSegment.TargetFileSampleRate.Value,
+                SampleRateResampled = sampleRate,
+                FrameLength = frameWidth,
+                FrameStep = settings.Configuration.GetIntOrNull(AnalysisKeys.FrameStep) ?? frameWidth,
+                IndexCalculationDuration = acousticIndicesConfig.IndexCalculationDurationTimeSpan,
+                BgNoiseNeighbourhood = acousticIndicesConfig.BgNoiseBuffer,
+                AnalysisStartOffset = inputFileSegment.SegmentStartOffset ?? TimeSpan.Zero,
+                MaximumSegmentDuration = settings.AnalysisMaxSegmentDuration,
+                BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF,
+                LongDurationSpectrogramConfig = ldSpectrogramConfig,
+            };
+            var icdPath = FilenameHelpers.AnalysisResultPath(
+                resultsDirectory,
+                basename,
+                IndexGenerationData.FileNameFragment,
+                "json");
+            Json.Serialise(icdPath.ToFileInfo(), indexConfigData);
+
+            // gather spectra to form spectrograms.  Assume same spectra in all analyzer results
+            // this is the most efficient way to do this
+            // gather up numbers and strings store in memory, write to disk one time
+            // this method also AUTOMATICALLY SORTS because it uses array indexing
+            var dictionaryOfSpectra = spectralIndices.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.Rotate90ClockWise);
+
+            // Calculate the index distribution statistics and write to a json file. Also save as png image
+            var indexDistributions = IndexDistributions.WriteSpectralIndexDistributionStatistics(dictionaryOfSpectra, resultsDirectory, basename);
+
+            // HACK: do not render false color spectrograms unless IndexCalculationDuration = 60.0 (the normal resolution)
+            if (acousticIndicesConfig.IndexCalculationDurationTimeSpan != 60.0.Seconds())
+            {
+                Log.Warn("False color spectrograms were not rendered");
+            }
+            else
+            {
+                FileInfo indicesPropertiesConfig = acousticIndicesConfig.IndexPropertiesConfig.ToFileInfo();
+
+                // Actually draw false color / long duration spectrograms
+                Tuple<Image, string>[] images =
+                    LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
+                        inputDirectory: resultsDirectory,
+                        outputDirectory: resultsDirectory,
+                        ldSpectrogramConfig: ldSpectrogramConfig,
+                        indexPropertiesConfigPath: indicesPropertiesConfig,
+                        indexGenerationData: indexConfigData,
+                        basename: basename,
+                        analysisType: this.Identifier,
+                        indexSpectrograms: dictionaryOfSpectra,
+                        indexStatistics: indexDistributions,
+                        imageChrome: (!tileOutput).ToImageChrome());
+            }
         }
     }
 }
