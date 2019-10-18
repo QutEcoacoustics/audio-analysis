@@ -73,6 +73,7 @@ namespace AudioAnalysisTools.Indices
             // initialize a result object in which to store SummaryIndexValues and SpectralIndexValues etc.
             int freqBinCount = frameSize / 2;
             var result = new IndexCalculateResult(freqBinCount, indexProperties, indexCalculationDuration, subsegmentOffsetTimeSpan, config);
+
             //result.SummaryIndexValues = null;
             SpectralIndexValues spectralIndices = result.SpectralIndexValues;
 
@@ -113,9 +114,6 @@ namespace AudioAnalysisTools.Indices
             spectralIndices.OSC = DataTools.VectorDoubleLengthByAverageInterpolation(spectralIndexShort);
 
             // (C) ################################## EXTRACT SPECTRAL INDICES FROM THE AMPLITUDE SPECTROGRAM ##################################
-
-            // i: CALCULATE SPECTRUM OF THE SUM OF FREQ BIN AMPLITUDES - used for later calculation of ACI
-            spectralIndices.SUM = MatrixTools.SumColumns(amplitudeSpectrogram);
 
             // IFF there has been UP-SAMPLING, calculate bin of the original audio nyquist. this will be less than SR/2.
             // original sample rate can be anything 11.0-44.1 kHz.
