@@ -6,18 +6,16 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Drawing;
-    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Reflection;
     using Acoustics.Shared;
-    using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
     using AudioAnalysisTools;
+    using AudioAnalysisTools.ContentDescriptionTools;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
     using AudioAnalysisTools.WavTools;
@@ -69,7 +67,7 @@ namespace AnalysisPrograms
         [Serializable]
         public class CdConfig : IndexCalculateConfig
         {
-            private LdSpectrogramConfig ldfcsConfig = new LdSpectrogramConfig();
+            //private LdSpectrogramConfig ldfcsConfig = new LdSpectrogramConfig();
 
             /// <summary>
             /// Gets or sets the LDFC spectrogram configuration.
@@ -83,16 +81,14 @@ namespace AnalysisPrograms
         public override AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
         {
             //var cdConfiguration = (IndexCalculateConfig)analysisSettings.AnalysisAnalyzerSpecificConfiguration;
-            var cdConfiguration = analysisSettings.AnalysisAnalyzerSpecificConfiguration;
+            //var cdConfiguration = analysisSettings.AnalysisAnalyzerSpecificConfiguration;
             //var indexCalculationDuration = cdConfiguration.IndexCalculationDuration.Seconds();
+            //var outputDirectory = segmentSettings.SegmentOutputDirectory;
             var indexProperties = IndexCalculateSixOnly.GetIndexProperties();
-
             var config = new IndexCalculateConfig();
-            var indexCalculationDuration = TimeSpan.FromSeconds(60);
-
+            var indexCalculationDuration = TimeSpan.FromSeconds(60); //default value for content description
             var audioFile = segmentSettings.SegmentAudioFile;
             var recording = new AudioRecording(audioFile.FullName);
-            var outputDirectory = segmentSettings.SegmentOutputDirectory;
 
             var segmentResults = IndexCalculateSixOnly.Analysis(
                 recording,
@@ -155,28 +151,17 @@ namespace AnalysisPrograms
             //var cdConfig = (CdConfig)settings.AnalysisAnalyzerSpecificConfiguration;
 
             var sourceAudio = inputFileSegment.Source;
-            var resultsDirectory = AnalysisCoordinator.GetNamedDirectory(settings.AnalysisOutputDirectory, this);
-            //var frameWidth = cdConfig.FrameLength;
-            var frameWidth = 512;
-            int sampleRate = 22050;
-
-            //int sampleRate = AppConfigHelper.DefaultTargetSampleRate;
-            //sampleRate = cdConfig.ResampleRate ?? sampleRate;
-
-            // Gather settings for rendering false color spectrograms
-            //var ldSpectrogramConfig = cdConfig.LdSpectrogramConfig;
-            var ldSpectrogramConfig = new LdSpectrogramConfig();
-
             string basename = Path.GetFileNameWithoutExtension(sourceAudio.Name);
+            var resultsDirectory = AnalysisCoordinator.GetNamedDirectory(settings.AnalysisOutputDirectory, this);
+            var frameWidth = 512; //default value which should not be changed
+            frameWidth = settings.Configuration.GetIntOrNull(AnalysisKeys.FrameLength) ?? frameWidth;
+            var frameStep = frameWidth;
+            int sampleRate = 22050; //default value which should not be changed
+            sampleRate = settings.Configuration.GetIntOrNull(AnalysisKeys.ResampleRate) ?? sampleRate;
 
-            var indexCalculationDurationTimeSpan = TimeSpan.FromSeconds(60);
-            var bgNoiseBuffer = TimeSpan.FromSeconds(5);
-            // output to disk (so other analyzers can use the data,
+            // output to disk so other analyzers can use the data,
             // only data - configuration settings that generated these indices
             // this data can then be used by post-process analyses
-            /* NOTE: The value for FrameStep is used only when calculating a standard spectrogram
-             * FrameStep is NOT used when calculating Spectral indices.
-             */
             var indexConfigData = new IndexGenerationData()
             {
                 RecordingExtension = inputFileSegment.Source.Extension,
@@ -186,15 +171,13 @@ namespace AnalysisPrograms
                 SampleRateOriginal = inputFileSegment.TargetFileSampleRate.Value,
                 SampleRateResampled = sampleRate,
                 FrameLength = frameWidth,
-                FrameStep = settings.Configuration.GetIntOrNull(AnalysisKeys.FrameStep) ?? frameWidth,
-                //IndexCalculationDuration = cdConfig.IndexCalculationDurationTimeSpan,
-                //BgNoiseNeighbourhood = cdConfig.BgNoiseBuffer,
-                IndexCalculationDuration = indexCalculationDurationTimeSpan,
-                BgNoiseNeighbourhood = bgNoiseBuffer,
+                FrameStep = frameStep,
+                IndexCalculationDuration = TimeSpan.FromSeconds(60), // default value for content description
+                BgNoiseNeighbourhood = TimeSpan.FromSeconds(5), // default value for content description
                 AnalysisStartOffset = inputFileSegment.SegmentStartOffset ?? TimeSpan.Zero,
                 MaximumSegmentDuration = settings.AnalysisMaxSegmentDuration,
                 BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF,
-                LongDurationSpectrogramConfig = ldSpectrogramConfig,
+                LongDurationSpectrogramConfig = new LdSpectrogramConfig(),
             };
             var icdPath = FilenameHelpers.AnalysisResultPath(
                 resultsDirectory,
@@ -212,50 +195,51 @@ namespace AnalysisPrograms
             // Calculate the index distribution statistics and write to a json file. Also save as png image
             var indexDistributions = IndexDistributions.WriteSpectralIndexDistributionStatistics(dictionaryOfSpectra, resultsDirectory, basename);
 
-            // Draw ldfc spectrograms
-            Tuple<Image, string>[] images =
+            // Draw ldfc spectrograms and return path to 2maps image.
+            string ldfcSpectrogramPath =
                 DrawSpectrogramsFromSpectralIndices(
-                inputDirectory: resultsDirectory,
                 outputDirectory: resultsDirectory,
-                ldSpectrogramConfig: ldSpectrogramConfig,
                 indexGenerationData: indexConfigData,
                 basename: basename,
-                analysisType: this.Identifier,
-                indexSpectrograms: dictionaryOfSpectra,
-                imageChrome: true.ToImageChrome());
+                indexSpectrograms: dictionaryOfSpectra);
+
+            // now get the content description for each minute.
+            //FileInfo templatesFile = settings.ConfigFile; //TODO TODO TODO TODO
+            FileInfo templatesFile = new FileInfo(@"C:\Ecoacoustics\ContentDescription\TemplateDefinitions.json");
+            var contentPlots = GetContentDescription(spectralIndices, templatesFile);
+            //TODO TODO TODO TODO
+            string directoryPath = @"C:\Ecoacoustics\ContentDescription\TestOfSixIndices\Towsey.ContentDescription";
+            var images = GraphsAndCharts.DrawPlotDistributions(contentPlots);
+            var plotsImage = ImageTools.CombineImagesVertically(images);
+            var path1 = Path.Combine(directoryPath, "ScoreDistributions.png");
+            plotsImage.Save(path1);
+
+            //TODO TODO TODO TODO
+            // Attach content description plots to LDFC spectrogram and write to file
+            var ldfcSpectrogram = Image.FromFile(ldfcSpectrogramPath);
+            var image = ContentVisualization.DrawLdfcSpectrogramWithContentScoreTracks(ldfcSpectrogram, contentPlots);
+            var path2 = Path.Combine(directoryPath, "Testing_2Maps.CONTENTnew08.png");
+            image.Save(path2);
         }
 
         /// <summary>
-        /// This IS THE MAJOR STATIC METHOD FOR CREATING LD SPECTROGRAMS
-        /// IT CAN BE COPIED AND APPROPRIATELY MODIFIED BY ANY USER FOR THEIR OWN PURPOSE.
-        /// WARNING: Make sure the parameters in the CONFIG file are consistent with the CSV files.
+        /// This is cut down version of the method of same name in LDSpectrogramRGB.cs.
         /// </summary>
-        /// <param name="inputDirectory">inputDirectory</param>
-        /// <param name="outputDirectory">outputDirectory</param>
-        /// <param name="ldSpectrogramConfig">config for drawing FCSs</param>
-        /// <param name="indexGenerationData">indexGenerationData</param>
-        /// <param name="basename">stem name of the original recording</param>
-        /// <param name="analysisType">will usually be "Towsey.Acoustic"</param>
-        /// <param name="indexSpectrograms">Optional spectra to pass in. If specified the spectra will not be loaded from disk! </param>
-        /// <param name="imageChrome">If true, this method generates and returns separate chromeless images used for tiling website images.</param>
-        public static Tuple<Image, string>[] DrawSpectrogramsFromSpectralIndices(
-            DirectoryInfo inputDirectory,
+        /// <param name="outputDirectory">outputDirectory.</param>
+        /// <param name="indexGenerationData">indexGenerationData.</param>
+        /// <param name="basename">stem name of the original recording.</param>
+        /// <param name="indexSpectrograms">Optional spectra to pass in. If specified the spectra will not be loaded from disk!.</param>
+        private static string DrawSpectrogramsFromSpectralIndices(
             DirectoryInfo outputDirectory,
-            LdSpectrogramConfig ldSpectrogramConfig,
-            //FileInfo indexPropertiesConfigPath,
             IndexGenerationData indexGenerationData,
             string basename,
-            string analysisType,
-            Dictionary<string, double[,]> indexSpectrograms = null,
-            ImageChrome imageChrome = ImageChrome.With)
+            Dictionary<string, double[,]> indexSpectrograms = null)
         {
-            var config = ldSpectrogramConfig;
-
-            // These parameters manipulate the colour map and appearance of the false-colour spectrogram
             string colorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
-            string colorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_EVN;
+            string colorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_OSC;
 
-            // Set ColourFilter: Must lie between +/-1. A good value is -0.25
+            // Set Color Filter: Must lie between +/-1. A good value is -0.25
+            var config = new LdSpectrogramConfig();
             if (config.ColourFilter == null)
             {
                 config.ColourFilter = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
@@ -279,13 +263,11 @@ namespace AnalysisPrograms
 
             // following line is debug purposes only
             //cs.StartOffset = cs.StartOffset + TimeSpan.FromMinutes(15);
-
             var indexProperties = IndexCalculateSixOnly.GetIndexProperties();
             cs1.SetSpectralIndexProperties(indexProperties);
 
             // Load the Index Spectrograms into a Dictionary
             cs1.LoadSpectrogramDictionary(indexSpectrograms);
-
             if (cs1.GetCountOfSpectrogramMatrices() == 0)
             {
                 Log.Error("No spectrogram matrices in the dictionary. Spectrogram files do not exist?");
@@ -296,19 +278,67 @@ namespace AnalysisPrograms
             var keys = indexProperties.Keys.ToArray();
             cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem, keys);
 
-            // create two false-colour spectrogram images
+            // create two false-color spectrogram images
             var image1NoChrome = cs1.DrawFalseColourSpectrogramChromeless(cs1.ColorMode, colorMap1);
             var image2NoChrome = cs1.DrawFalseColourSpectrogramChromeless(cs1.ColorMode, colorMap2);
             var spacer = new Bitmap(image1NoChrome.Width, 10);
-            var imageList = new[] { image1NoChrome, spacer, image2NoChrome };
+            var imageList = new[] { image1NoChrome, spacer, image2NoChrome, spacer};
             Image image3 = ImageTools.CombineImagesVertically(imageList);
             var outputPath = FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, "2Maps", "png");
             image3.Save(outputPath);
+            return outputPath;
+        }
 
-            // only return images if chromeless
-            return imageChrome == ImageChrome.Without
-                       ? new[] { Tuple.Create(image1NoChrome, colorMap1), Tuple.Create(image2NoChrome, colorMap2) }
-                       : null;
+        /// <summary>
+        /// Calculate the content description for each minute.
+        /// </summary>
+        /// <param name="spectralIndices">set of spectral indices for each minute.</param>
+        /// <param name="templatesFile">json file containing description of templates.</param>
+        public static List<Plot> GetContentDescription(SpectralIndexBase[] spectralIndices, FileInfo templatesFile)
+        {
+            // Read in the content description templates
+            var templates = Json.Deserialize<TemplateManifest[]>(templatesFile);
+            var templatesAsDictionary = DataProcessing.ExtractDictionaryOfTemplateDictionaries(templates);
+            //TODO need to get start time of recording as Minute of the Day
+            var elapsedTimeAtStartOfRecording = 0; //TODO TODO TODO
+
+            // create dictionary of index vectors
+            var results = new List<DescriptionResult>();
+
+            int length = spectralIndices.Length;
+
+            //loop over all minutes in the recording
+            for (int i = 0; i < length; i++)
+            {
+                var oneMinuteOfIndices = spectralIndices[i];
+
+                // Transfer acoustic indices to dictionary
+                var indicesDictionary = IndexCalculateSixOnly.ConvertIndicesToDictionary(oneMinuteOfIndices);
+
+                //TODO TODO Remove next line and change the template manifest to indicate what indices are to be used.
+                indicesDictionary.Remove("OSC");
+
+                // scan templates over one minute of indices
+                var resultsForOneMinute = AudioAnalysisTools.ContentDescriptionTools.ContentDescription.AnalyzeOneMinute(
+                    templates,
+                    templatesAsDictionary,
+                    indicesDictionary,
+                    elapsedTimeAtStartOfRecording + i);
+                results.Add(resultsForOneMinute);
+            }
+
+            var plotDict = DataProcessing.ConvertResultsToPlots(results, 1440, 0);
+            var contentPlots = DataProcessing.ConvertPlotDictionaryToPlotList(plotDict);
+
+            // convert scores to z-scores
+            //contentPlots = DataProcessing.SubtractMeanPlusSd(contentPlots);
+
+            //the following did not work as well.
+            //contentPlots = DataProcessing.SubtractModeAndSd(contentPlots);
+
+            // Use percentile thresholding followed by normalize in 0,1.
+            contentPlots = DataProcessing.PercentileThresholding(contentPlots, 90);
+            return contentPlots;
         }
     }
 }

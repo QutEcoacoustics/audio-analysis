@@ -4,6 +4,7 @@
 
 namespace AudioAnalysisTools.ContentDescriptionTools
 {
+    using System;
     using System.Collections.Generic;
     using System.IO;
     using Acoustics.Shared;
@@ -25,10 +26,11 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             ["ENT"] = new[] { 0.0, 0.6 },
             ["EVN"] = new[] { 0.0, 2.0 },
             ["BGN"] = new[] { -100.0, -30.0 },
+            ["OSC"] = new[] { 0.0, 10.0 },
             ["PMN"] = new[] { 0.0, 5.5 },
         };
 
-        public static string[] IndexNames { get; } = { "ACI", "ENT", "EVN", "BGN", "PMN" };
+        public static string[] IndexNames { get; } = { "ACI", "ENT", "EVN", "BGN", "OSC", "PMN" };
 
         public static List<Plot> ContentDescriptionOfMultipleRecordingFiles(FileInfo listOfIndexFiles, FileInfo templatesFile)
         {
@@ -85,54 +87,68 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             // Following line used where want to return a set of random scores for testing reasons.
             //var rn = new RandomNumber(DateTime.Now.Millisecond);
 
+            // initialise where the results will be stored.
             var results = new List<DescriptionResult>();
 
             // over all rows assuming one minute per row.
             for (int i = 0; i < rowCount; i++)
             {
+                // now subject the indices, minute by minute, to various content searches
                 var oneMinuteOfIndices = DataProcessing.GetIndicesForOneMinute(dictionaryOfRecordingIndices, i);
-
-                // initialise where the results will be stored.
-                var descriptionResult = new DescriptionResult(elapsedMinutes + i);
-
-                // now subject the indices to various content searches
-                foreach (var template in templates)
-                {
-                    if (template.UseStatus == false)
-                    {
-                        continue;
-                    }
-
-                    var algorithmType = template.FeatureExtractionAlgorithm;
-                    var templateIndices = templatesAsDictionary[template.Name];
-                    double score;
-
-                    switch (algorithmType)
-                    {
-                        case 1:
-                            score = ContentAlgorithms.GetFullBandContent1(oneMinuteOfIndices, template, templateIndices);
-                            break;
-                        case 2:
-                            score = ContentAlgorithms.GetBroadbandContent1(oneMinuteOfIndices, template, templateIndices);
-                            break;
-                        case 3:
-                            score = ContentAlgorithms.GetNarrowBandContent1(oneMinuteOfIndices, template, templateIndices);
-                            break;
-                        default:
-                            //LoggedConsole.WriteWarnLine("Algorithm " + algorithmType + " does not exist.");
-                            //score = rn.GetDouble();
-                            score = (i % rowCount) / (double)rowCount;
-                            break;
-                    }
-
-                    var result = new KeyValuePair<string, double>(template.Description, score);
-                    descriptionResult.AddDescription(result);
-                }
-
+                var descriptionResult = AnalyzeOneMinute(
+                    templates,
+                    templatesAsDictionary,
+                    oneMinuteOfIndices,
+                    elapsedMinutes + i);
                 results.Add(descriptionResult);
             }
 
             return results;
+        }
+
+        public static DescriptionResult AnalyzeOneMinute(
+            TemplateManifest[] templates,
+            Dictionary<string, Dictionary<string, double[]>> templatesAsDictionary,
+            Dictionary<string, double[]> oneMinuteOfIndices,
+            int elapsedMinutes)
+        {
+            // initialise where the results will be stored.
+            var descriptionResult = new DescriptionResult(elapsedMinutes);
+
+            // now subject the indices to various content searches
+            foreach (var template in templates)
+            {
+                if (template.UseStatus == false)
+                {
+                    continue;
+                }
+
+                var algorithmType = template.FeatureExtractionAlgorithm;
+                var templateIndices = templatesAsDictionary[template.Name];
+                double score;
+
+                switch (algorithmType)
+                {
+                    case 1:
+                        score = ContentAlgorithms.GetFullBandContent1(oneMinuteOfIndices, template, templateIndices);
+                        break;
+                    case 2:
+                        score = ContentAlgorithms.GetBroadbandContent1(oneMinuteOfIndices, template, templateIndices);
+                        break;
+                    case 3:
+                        score = ContentAlgorithms.GetNarrowBandContent1(oneMinuteOfIndices, template, templateIndices);
+                        break;
+                    default:
+                        LoggedConsole.WriteWarnLine("Algorithm " + algorithmType + " does not exist.");
+                        score = 0.0;
+                        break;
+                }
+
+                var result = new KeyValuePair<string, double>(template.Description, score);
+                descriptionResult.AddDescription(result);
+            }
+
+            return descriptionResult;
         }
     }
 }

@@ -2,6 +2,7 @@
 # Summary: Calculates an acoustic signature for each minute of recording.
 #          An acoustic signature is a vector, ecah element of which is derived from a ContentDescription template.
 #
+AnalysisName: ContentDescription
 #SegmentDuration: units=seconds;
 # Long duration recordings are cut into short segments for more efficient processing. Default segment length = 60 seconds.
 # WARNING: You should not change this property!!
