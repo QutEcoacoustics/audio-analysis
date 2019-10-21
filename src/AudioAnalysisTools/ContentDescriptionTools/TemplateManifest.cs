@@ -113,7 +113,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             var baseName = provenance.Basename;
 
             // Read all indices from the complete recording. The path variable is a partial path requiring to be appended.
-            var path = Path.Combine(sourceDirectory, baseName + ContentDescription.AnalysisString);
+            var path = Path.Combine(sourceDirectory, baseName + ContentSignatures.AnalysisString);
             var dictionaryOfIndices = DataProcessing.ReadIndexMatrices(path);
             var algorithmType = templateManifest.FeatureExtractionAlgorithm;
             Dictionary<string, double[]> newTemplateDeftn;

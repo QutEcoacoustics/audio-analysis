@@ -41,13 +41,13 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             var dir = Path.GetDirectoryName(filePath) ?? throw new ArgumentNullException(nameof(filePath) + " does not exist.");
             var baseName = Path.GetFileNameWithoutExtension(filePath) + ".";
 
-            foreach (string key in ContentDescription.IndexNames)
+            foreach (string key in ContentSignatures.IndexNames)
             {
                 // construct a path to the required matrix and read in the matrix
                 var indexMatrix = Csv.ReadMatrixFromCsv<double>(new FileInfo(Path.Combine(dir, baseName + key + ".csv")));
 
                 // normalize the matrix values
-                var indexBounds = ContentDescription.IndexValueBounds[key];
+                var indexBounds = ContentSignatures.IndexValueBounds[key];
                 var normalisedMatrix = DataTools.NormaliseInZeroOne(indexMatrix, indexBounds[0], indexBounds[1]);
                 dictionary.Add(key, normalisedMatrix);
             }
@@ -82,7 +82,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             // obtain a matrix to see what size data we are dealing with
             // assume all matrices have the same dimensions.
             // construct a path to the required matrix
-            var key = ContentDescription.IndexNames[0];
+            var key = ContentSignatures.IndexNames[0];
             var path = Path.Combine(dir.FullName, baseName + "__Towsey.Acoustic." + key + ".csv");
 
             // read in the matrix and get its dimensions
@@ -96,12 +96,12 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 
             // set up the return Matrix
             // indexCount will be number of indices X number of frequency bins
-            var indexCount = ContentDescription.IndexNames.Length * colCount;
+            var indexCount = ContentSignatures.IndexNames.Length * colCount;
             var opMatrix = new double[minuteSpan, indexCount];
 
-            for (int i = 1; i < ContentDescription.IndexNames.Length; i++)
+            for (int i = 1; i < ContentSignatures.IndexNames.Length; i++)
             {
-                key = ContentDescription.IndexNames[i];
+                key = ContentSignatures.IndexNames[i];
 
                 // construct a path to the required matrix
                 path = Path.Combine(dir.FullName, baseName + "__Towsey.Acoustic." + key + ".csv");
@@ -189,11 +189,11 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// </summary>
         /// <param name="bottomFrequency">Units = Hertz.</param>
         /// <param name="topFrequency">Hertz.</param>
-        public static int[] GetFreqBinBounds(int bottomFrequency, int topFrequency) => GetFreqBinBounds(bottomFrequency, topFrequency, ContentDescription.FreqBinCount);
+        public static int[] GetFreqBinBounds(int bottomFrequency, int topFrequency) => GetFreqBinBounds(bottomFrequency, topFrequency, ContentSignatures.FreqBinCount);
 
         public static int[] GetFreqBinBounds(int bottomFrequency, int topFrequency, int binCount)
         {
-            double binWidth = ContentDescription.Nyquist / (double)binCount;
+            double binWidth = ContentSignatures.Nyquist / (double)binCount;
             int bottomBin = (int)Math.Floor(bottomFrequency / binWidth);
             int topBin = (int)Math.Ceiling(topFrequency / binWidth);
             return new[] { bottomBin, topBin };
@@ -309,14 +309,14 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 
         public static double[,] ConvertDictionaryOfIndicesToMatrix(Dictionary<string, double[]> dictionary)
         {
-            var indexCount = ContentDescription.IndexNames.Length;
+            var indexCount = ContentSignatures.IndexNames.Length;
 
             var colCount = dictionary.First().Value.Length;
             var opMatrix = new double[indexCount, colCount];
 
             for (int i = 0; i < indexCount; i++)
             {
-                var success = dictionary.TryGetValue(ContentDescription.IndexNames[i], out double[] indices);
+                var success = dictionary.TryGetValue(ContentSignatures.IndexNames[i], out double[] indices);
                 if (success)
                 {
                     MatrixTools.SetRow(opMatrix, i, indices);
@@ -340,6 +340,39 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             }
 
             return list.ToArray();
+        }
+
+        /// <summary>
+        /// Converts individual results to a dictionary of plots.
+        /// </summary>
+        /// <param name="results">a list of results for each content type in every minute.</param>
+        /// <param name="arrayLength">The plot length will the total number of minutes scanned, typically 1440 or one day.</param>
+        /// <param name="arrayStart">time start.</param>
+        public static Dictionary<string, double[]> ConvertResultsToArrays(List<DescriptionResult> results, int arrayLength, int arrayStart)
+        {
+            var arrays = new Dictionary<string, double[]>();
+
+            foreach (DescriptionResult result in results)
+            {
+                var time = (int)Math.Round(result.StartTimeInCurrentRecordingFile.TotalMinutes);
+                var dict = result.GetDescriptionDictionary();
+                foreach (KeyValuePair<string, double> kvp in dict)
+                {
+                    var name = kvp.Key;
+                    var value = kvp.Value;
+
+                    if (!arrays.ContainsKey(name))
+                    {
+                        var scores = new double[arrayLength];
+                        arrays.Add(name, scores);
+                    }
+
+                    var scoreArray = arrays[name];
+                    scoreArray[arrayStart + time] = value;
+                }
+            }
+
+            return arrays;
         }
 
         /// <summary>

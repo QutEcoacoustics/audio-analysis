@@ -1,4 +1,4 @@
-﻿// <copyright file="Config.cs" company="QutEcoacoustics">
+// <copyright file="Config.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -8,7 +8,7 @@ namespace Acoustics.Shared.ConfigFile
     using System.Collections.Generic;
     using System.Globalization;
     using System.Reflection;
-    using Contracts;
+    using Acoustics.Shared.Contracts;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Serialization;
 

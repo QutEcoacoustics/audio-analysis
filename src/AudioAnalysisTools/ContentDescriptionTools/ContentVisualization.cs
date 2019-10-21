@@ -38,7 +38,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         public static void DrawNormalisedIndexMatrices(DirectoryInfo dir, string baseName, Dictionary<string, double[,]> dictionary)
         {
             var list = new List<Image>();
-            foreach (string key in ContentDescription.IndexNames)
+            foreach (string key in ContentSignatures.IndexNames)
             {
                 var bmp = ImageTools.DrawReversedMatrixWithoutNormalisation(dictionary[key]);
 

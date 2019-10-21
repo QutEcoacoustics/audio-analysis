@@ -24,6 +24,8 @@ namespace AudioAnalysisTools.Indices
 
     /// <summary>
     /// THis class calculates only six major indices.
+    /// WARNING: DO NOT USE Frame Overlap when calculating acoustic indices.
+    ///          It yields ACI, BGN, POW and EVN results that are significantly different from the default.
     /// </summary>
     public class IndexCalculateSixOnly
     {
@@ -35,20 +37,14 @@ namespace AudioAnalysisTools.Indices
         /// <param name="recording"> an audio recording. IMPORTANT NOTE: This is a one minute segment of the larger total recording.</param>
         /// <param name="segmentOffsetTimeSpan">
         /// The start time of the required segment relative to start of SOURCE audio recording.</param>
-        /// <param name="indexProperties">info about index value distributions. Used when drawing false-color spectrograms. </param>
         /// <param name="sampleRateOfOriginalAudioFile"> That is, prior to being resample to the default of 22050.</param>
-        /// <param name="segmentStartOffset"> Time elapsed from absolute start of total recording and start of the passed recording segment i.e. line37. </param>
-        /// <param name="config"> Config variable containing info about the configuration for index calculation</param>
-        /// <param name="returnSonogramInfo"> boolean with default value = false </param>
+        /// <param name="returnSonogramInfo"> boolean with default value = false.</param>
         /// <returns> An IndexCalculateResult.</returns>
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Reviewed. Suppression is OK here.")]
         public static IndexCalculateResult Analysis(
             AudioRecording recording,
             TimeSpan segmentOffsetTimeSpan,
-            Dictionary<string, IndexProperties> indexProperties,
             int sampleRateOfOriginalAudioFile,
-            TimeSpan segmentStartOffset,
-            IndexCalculateConfig config,
             bool returnSonogramInfo = false)
         {
             // returnSonogramInfo = true; // if debugging
@@ -56,23 +52,20 @@ namespace AudioAnalysisTools.Indices
             int sampleRate = recording.WavReader.SampleRate;
 
             //var segmentDuration = TimeSpan.FromSeconds(recording.WavReader.Time.TotalSeconds);
-            var indexCalculationDuration = config.IndexCalculationDurationTimeSpan;
+            var indexCalculationDuration = TimeSpan.FromSeconds(ContentSignatures.IndexCalculationDurationInSeconds);
 
             // Get FRAME parameters for the calculation of Acoustic Indices
-            //WARNING: DO NOT USE Frame Overlap when calculating acoustic indices.
-            //         It yields ACI, BGN, POW and EVN results that are significantly different from the default.
-            int frameSize = config.FrameLength;
+            int frameSize = ContentSignatures.FrameSize;
             int frameStep = frameSize; // that is, windowOverlap = zero
 
             double frameStepDuration = frameStep / (double)sampleRate; // fraction of a second
             var frameStepTimeSpan = TimeSpan.FromTicks((long)(frameStepDuration * TimeSpan.TicksPerSecond));
 
-            int midFreqBound = config.MidFreqBound;
-            int lowFreqBound = config.LowFreqBound;
-
             // INITIALISE a RESULTS STRUCTURE TO return
             // initialize a result object in which to store SummaryIndexValues and SpectralIndexValues etc.
+            var config = new IndexCalculateConfig(); // sets some default values
             int freqBinCount = frameSize / 2;
+            var indexProperties = GetIndexProperties();
             var result = new IndexCalculateResult(freqBinCount, indexProperties, indexCalculationDuration, segmentOffsetTimeSpan, config);
 
             //result.SummaryIndexValues = null;
@@ -87,21 +80,9 @@ namespace AudioAnalysisTools.Indices
             // ################################## NOW GET THE AMPLITUDE SPECTROGRAM
 
             // EXTRACT ENVELOPE and SPECTROGRAM FROM RECORDING SEGMENT
-            var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFfts(recording, frameSize, frameStep);
-
-            // Select band according to min and max bandwidth
-            int minBand = (int)(dspOutput1.AmplitudeSpectrogram.GetLength(1) * config.MinBandWidth);
-            int maxBand = (int)(dspOutput1.AmplitudeSpectrogram.GetLength(1) * config.MaxBandWidth) - 1;
-
-            dspOutput1.AmplitudeSpectrogram = MatrixTools.Submatrix(
-                dspOutput1.AmplitudeSpectrogram,
-                0,
-                minBand,
-                dspOutput1.AmplitudeSpectrogram.GetLength(0) - 1,
-                maxBand);
-
             // Note that the amplitude spectrogram has had the DC bin removed. i.e. has only 256 columns.
-            double[,] amplitudeSpectrogram = dspOutput1.AmplitudeSpectrogram; // get amplitude spectrogram.
+            var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFfts(recording, frameSize, frameStep);
+            var amplitudeSpectrogram = dspOutput1.AmplitudeSpectrogram;
 
             // (B) ################################## EXTRACT OSC SPECTRAL INDEX DIRECTLY FROM THE RECORDING ##################################
             // Get the oscillation spectral index OSC separately from signal because need a different frame size etc.
@@ -111,7 +92,7 @@ namespace AudioAnalysisTools.Indices
             var sensitivity = Oscillations2014.DefaultSensitivityThreshold;
             var spectralIndexShort = Oscillations2014.GetSpectralIndex_Osc(recording, frameLength, sampleLength, sensitivity);
 
-            // double length of the vector because want to work with 256 element vector for LDFC purposes
+            // double length of the vector because want to work with 256 element vector for spectrogram purposes
             spectralIndices.OSC = DataTools.VectorDoubleLengthByAverageInterpolation(spectralIndexShort);
 
             // (C) ################################## EXTRACT SPECTRAL INDICES FROM THE AMPLITUDE SPECTROGRAM ##################################
@@ -139,19 +120,6 @@ namespace AudioAnalysisTools.Indices
 
             spectralIndices.ENT = temporalEntropySpectrum;
 
-            // iv: remove background noise from the amplitude spectrogram
-            //     First calculate the noise profile from the amplitude spectrogram
-            double[] spectralAmplitudeBgn = NoiseProfile.CalculateBackgroundNoise(dspOutput1.AmplitudeSpectrogram);
-            amplitudeSpectrogram = SNR.TruncateBgNoiseFromSpectrogram(amplitudeSpectrogram, spectralAmplitudeBgn);
-
-            // AMPLITUDE THRESHOLD for smoothing background, nhThreshold, assumes background noise ranges around -40dB.
-            // This value corresponds to approximately 6dB above background.
-            amplitudeSpectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(amplitudeSpectrogram, nhThreshold: 0.015);
-            ////ImageTools.DrawMatrix(spectrogramData, @"C:\SensorNetworks\WavFiles\Crows\image.png", false);
-            ////DataTools.writeBarGraph(modalValues);
-
-            result.AmplitudeSpectrogram = amplitudeSpectrogram;
-
             // (C) ################################## EXTRACT SPECTRAL INDICES FROM THE DECIBEL SPECTROGRAM ##################################
 
             // i: Convert amplitude spectrogram to decibels and calculate the dB background noise profile
@@ -176,6 +144,8 @@ namespace AudioAnalysisTools.Indices
 
             // Calculate lower and upper boundary bin ids.
             // Boundary between low & mid frequency bands is to avoid low freq bins containing anthropogenic noise. These biased index values away from bio-phony.
+            int midFreqBound = config.MidFreqBound;
+            int lowFreqBound = config.LowFreqBound;
             int lowerBinBound = (int)Math.Ceiling(lowFreqBound / dspOutput1.FreqBinWidth);
             int middleBinBound = (int)Math.Ceiling(midFreqBound / dspOutput1.FreqBinWidth);
             var spActivity = ActivityAndCover.CalculateSpectralEvents(decibelSpectrogram, dBThreshold, frameStepTimeSpan, lowerBinBound, middleBinBound);
@@ -185,14 +155,14 @@ namespace AudioAnalysisTools.Indices
 
             result.TrackScores = null;
             return result;
-        } // end Calculation of Six Spectral Indices
+        } // end calculation of Six Spectral Indices
 
         public static Dictionary<string, IndexProperties> GetIndexProperties()
         {
             var indexPropertiesDictionary = new Dictionary<string, IndexProperties>();
-            foreach (var kvp in ContentDescription.IndexValueBounds)
+            foreach (var kvp in ContentSignatures.IndexValueBounds)
             {
-                var indexBounds = ContentDescription.IndexValueBounds[kvp.Key];
+                var indexBounds = ContentSignatures.IndexValueBounds[kvp.Key];
                 var indexProperties = new IndexProperties
                 {
                     Name = kvp.Key,
@@ -218,15 +188,15 @@ namespace AudioAnalysisTools.Indices
             var aciArray = (double[])indexSet.GetPropertyValue("ACI");
             dictionary.Add("ACI", aciArray);
             var entArray = (double[])indexSet.GetPropertyValue("ENT");
-            dictionary.Add("ENT", aciArray);
+            dictionary.Add("ENT", entArray);
             var evnArray = (double[])indexSet.GetPropertyValue("EVN");
-            dictionary.Add("EVN", aciArray);
+            dictionary.Add("EVN", evnArray);
             var bgnArray = (double[])indexSet.GetPropertyValue("BGN");
-            dictionary.Add("BGN", aciArray);
+            dictionary.Add("BGN", bgnArray);
             var pmnArray = (double[])indexSet.GetPropertyValue("PMN");
-            dictionary.Add("PMN", aciArray);
+            dictionary.Add("PMN", pmnArray);
             var oscArray = (double[])indexSet.GetPropertyValue("OSC");
-            dictionary.Add("OSC", aciArray);
+            dictionary.Add("OSC", oscArray);
             return dictionary;
         }
 

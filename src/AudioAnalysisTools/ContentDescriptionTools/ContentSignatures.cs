@@ -10,12 +10,19 @@ namespace AudioAnalysisTools.ContentDescriptionTools
     using Acoustics.Shared;
     using TowseyLibrary;
 
-    public class ContentDescription
+    public class ContentSignatures
     {
         // All the code base for content description assumes a sampling rate of 22050 (i.e. a Nyquist = 11025) and frame size = 512 (i.e. 256 frequency bins).
+        public const int SampleRate = 22050;
         public const int Nyquist = 11025;
-        public const int FreqBinCount = 256;
+        public const int FrameSize = 512;
+        public const int FreqBinCount = FrameSize / 2;
+        public const int IndexCalculationDurationInSeconds = 60; //default seconds value for content description
+
         public const string AnalysisString = "__Towsey.Acoustic.";
+
+        //TODO TODO TODO TODO GET FILE NAME FROM CONFIG.YML FILE
+        public const string TemplatesFileName = "Towsey.TemplateDefinitions.json";
 
         /// <summary>
         /// The following min and max bounds are same as those defined in the IndexPropertiesConfig.yml file as of August 2019.
@@ -30,8 +37,17 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             ["PMN"] = new[] { 0.0, 5.5 },
         };
 
-        public static string[] IndexNames { get; } = { "ACI", "ENT", "EVN", "BGN", "OSC", "PMN" };
+        public static string[] IndexNames { get; } = { "ACI", "ENT", "EVN", "BGN", "PMN", "OSC" };
 
+        /// <summary>
+        /// Cycles through a set of acoustic indices in the order listed and calculates one acoustic signature for each minute of recording.
+        /// WARNING!!!! It is assumed that the indices are listed in temporal order of the original recordings and that the original recordings were continuous.
+        ///             This means the returned plots contain scores over consecutive minutes.
+        ///             Alternatively could read recording minute from its file name.
+        /// </summary>
+        /// <param name="listOfIndexFiles">A text file, each line being the path to the acoustic indices derived from one recording.</param>
+        /// <param name="templatesFile">A json file containing an array of acoustic templates.</param>
+        /// <returns>A list of plots - each plot is the minute by minute scores for a single template.</returns>
         public static List<Plot> ContentDescriptionOfMultipleRecordingFiles(FileInfo listOfIndexFiles, FileInfo templatesFile)
         {
             // Read in all template manifests
@@ -45,8 +61,10 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             // init a list to collect description results
             var completeListOfResults = new List<DescriptionResult>();
 
+            //init a minute index
+            int elapsedMinutes = 0;
+
             // cycle through the directories
-            // TODO  WARNING: Assume one-hour duration for each recording
             for (int i = 0; i < filePaths.Count; i++)
             {
                 // read the spectral indices for the current file
@@ -57,9 +75,12 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                 // ContentDescription.DrawNormalisedIndexMatrices(dir1, baseName, dictionary);
 
                 // get the rows and do something with them one by one.
-                // TODO WARNING: HACK: ASSUME ONE HOUR FILES - must fix this.
-                var results = AnalyzeMinutes(templates, templatesAsDictionary, dictionaryOfRecordingIndices, i * 60);
+                var results = AnalyzeMinutes(templates, templatesAsDictionary, dictionaryOfRecordingIndices, elapsedMinutes);
                 completeListOfResults.AddRange(results);
+
+                // calculate the elapsed minutes in this recording
+                var matrix = dictionaryOfRecordingIndices["ENT"];
+                elapsedMinutes += matrix.GetLength(0);
             }
 
             var plotDict = DataProcessing.ConvertResultsToPlots(completeListOfResults, 1440, 0);
@@ -80,12 +101,9 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             TemplateManifest[] templates,
             Dictionary<string, Dictionary<string, double[]>> templatesAsDictionary,
             Dictionary<string, double[,]> dictionaryOfRecordingIndices,
-            int elapsedMinutes)
+            int elapsedMinutesAtStart)
         {
             int rowCount = dictionaryOfRecordingIndices[IndexNames[0]].GetLength(0);
-
-            // Following line used where want to return a set of random scores for testing reasons.
-            //var rn = new RandomNumber(DateTime.Now.Millisecond);
 
             // initialise where the results will be stored.
             var results = new List<DescriptionResult>();
@@ -99,7 +117,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                     templates,
                     templatesAsDictionary,
                     oneMinuteOfIndices,
-                    elapsedMinutes + i);
+                    elapsedMinutesAtStart + i);
                 results.Add(descriptionResult);
             }
 
@@ -110,10 +128,10 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             TemplateManifest[] templates,
             Dictionary<string, Dictionary<string, double[]>> templatesAsDictionary,
             Dictionary<string, double[]> oneMinuteOfIndices,
-            int elapsedMinutes)
+            int minuteId)
         {
             // initialise where the results will be stored.
-            var descriptionResult = new DescriptionResult(elapsedMinutes);
+            var descriptionResult = new DescriptionResult(minuteId);
 
             // now subject the indices to various content searches
             foreach (var template in templates)
@@ -126,6 +144,9 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                 var algorithmType = template.FeatureExtractionAlgorithm;
                 var templateIndices = templatesAsDictionary[template.Name];
                 double score;
+
+                // Following line used where want to return a set of random scores for testing reasons.
+                //var score = new RandomNumber(DateTime.Now.Millisecond);
 
                 switch (algorithmType)
                 {

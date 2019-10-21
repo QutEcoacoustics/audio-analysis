@@ -134,7 +134,7 @@ namespace AnalysisPrograms
 
             var templatesFile = new FileInfo(@"C:\Ecoacoustics\ContentDescription\TemplateDefinitions.json");
             var listOfIndexFiles = new FileInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMezIndexFiles.txt");
-            var contentPlots = AudioAnalysisTools.ContentDescriptionTools.ContentDescription.ContentDescriptionOfMultipleRecordingFiles(listOfIndexFiles, templatesFile);
+            var contentPlots = AudioAnalysisTools.ContentDescriptionTools.ContentSignatures.ContentDescriptionOfMultipleRecordingFiles(listOfIndexFiles, templatesFile);
 
             var images = GraphsAndCharts.DrawPlotDistributions(contentPlots);
             var plotsImage = ImageTools.CombineImagesVertically(images);

@@ -42,6 +42,9 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// <returns>A similarity score.</returns>
         public static double GetFullBandContent1(Dictionary<string, double[]> oneMinuteOfIndices, TemplateManifest template, Dictionary<string, double[]> templateIndices)
         {
+            //TODO TODO Remove next line and change the template manifest to indicate what indices are to be used.
+            oneMinuteOfIndices.Remove("OSC");
+
             var reducedIndices = DataProcessing.ReduceIndicesByFactor(oneMinuteOfIndices, template.SpectralReductionFactor);
             var oneMinuteVector = DataProcessing.ConvertDictionaryToVector(reducedIndices);
             var templateVector = DataProcessing.ConvertDictionaryToVector(templateIndices);
@@ -74,7 +77,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             var dictionaryOfVector = DataProcessing.AverageIndicesOverMinutes(templateIndices, startRowId, endRowId);
 
             // remove first two freq bins and last four freq bins, i.e. bottomBin = 2 and topBin = 11;
-            int freqBinCount = ContentDescription.FreqBinCount / reductionFactor;
+            int freqBinCount = ContentSignatures.FreqBinCount / reductionFactor;
             int bottomFreq = manifest.BandMinHz; //Hertz
             int topFreq = manifest.BandMaxHz; //Hertz
             var freqBinBounds = DataProcessing.GetFreqBinBounds(bottomFreq, topFreq, freqBinCount);
@@ -93,8 +96,11 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// <returns>A similarity score.</returns>
         public static double GetBroadbandContent1(Dictionary<string, double[]> oneMinuteOfIndices, TemplateManifest template, Dictionary<string, double[]> templateIndices)
         {
+            //TODO TODO Remove next line and change the template manifest to indicate what indices are to be used.
+            oneMinuteOfIndices.Remove("OSC");
+
             var reductionFactor = template.SpectralReductionFactor;
-            int freqBinCount = ContentDescription.FreqBinCount / reductionFactor;
+            int freqBinCount = ContentSignatures.FreqBinCount / reductionFactor;
             int bottomFreq = template.BandMinHz; //Hertz
             int topFreq = template.BandMaxHz; //Hertz
             var freqBinBounds = DataProcessing.GetFreqBinBounds(bottomFreq, topFreq, freqBinCount);
@@ -135,7 +141,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             var dictionaryOfVector = DataProcessing.AverageIndicesOverMinutes(templateIndices, startRowId, endRowId);
 
             // remove first two freq bins and last four freq bins, i.e. bottomBin = 2 and topBin = 11;
-            int freqBinCount = ContentDescription.FreqBinCount / reductionFactor;
+            int freqBinCount = ContentSignatures.FreqBinCount / reductionFactor;
             int bottomFreq = manifest.BandMinHz; //Hertz
             int topFreq = manifest.BandMaxHz; //Hertz
             var freqBinBounds = DataProcessing.GetFreqBinBounds(bottomFreq, topFreq, freqBinCount);
@@ -155,6 +161,9 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// <returns>A similarity score.</returns>
         public static double GetNarrowBandContent1(Dictionary<string, double[]> oneMinuteOfIndices, TemplateManifest template, Dictionary<string, double[]> templateIndices)
         {
+            //TODO TODO Remove next line and change the template manifest to indicate what indices are to be used.
+            oneMinuteOfIndices.Remove("OSC");
+
             var reductionFactor = template.SpectralReductionFactor;
             var reducedIndices = DataProcessing.ReduceIndicesByFactor(oneMinuteOfIndices, reductionFactor);
 
@@ -162,7 +171,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             var spectralScores = DataProcessing.ScanSpectrumWithTemplate(templateIndices, reducedIndices);
 
             // Now check how much of spectral weight is in the correct freq band ie between 3-4 kHz.
-            int freqBinCount = ContentDescription.FreqBinCount / reductionFactor;
+            int freqBinCount = ContentSignatures.FreqBinCount / reductionFactor;
             int bottomFreq = template.BandMinHz; //Hertz
             int topFreq = template.BandMaxHz; //Hertz
             var freqBinBounds = DataProcessing.GetFreqBinBounds(bottomFreq, topFreq, freqBinCount);
