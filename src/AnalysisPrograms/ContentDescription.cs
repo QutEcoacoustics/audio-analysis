@@ -10,13 +10,11 @@ namespace AnalysisPrograms
     using System.IO;
     using System.Linq;
     using System.Reflection;
-    using Accord;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-    using AudioAnalysisTools;
     using AudioAnalysisTools.ContentDescriptionTools;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
@@ -201,13 +199,18 @@ namespace AnalysisPrograms
 
             // now get the content description for each minute.
             //TODO TODO TODO TODO GET FILE NAME FROM CONFIG.YML FILE
-            var path1 = Path.Combine(configDirectory, ContentSignatures.TemplatesFileName);
-            var templatesFile = new FileInfo(path1);
-            var contentPlots = GetContentDescription(spectralIndices, templatesFile, startTimeOffset);
+            var templatesFile = new FileInfo(Path.Combine(configDirectory, ContentSignatures.TemplatesFileName));
+            var contentDictionary = GetContentDescription(spectralIndices, templatesFile, startTimeOffset);
+
+            // Write the results to a csv file
+            var filePath = Path.Combine(resultsDirectory.FullName, "AcousticSignatures.csv");
+            FileTools.WriteDictionaryAsCsvFile(contentDictionary, filePath);
+
+            // prepare graphical plots of the acoustic signatures.
+            var contentPlots = GetPlots(contentDictionary);
             var images = GraphsAndCharts.DrawPlotDistributions(contentPlots);
             var plotsImage = ImageTools.CombineImagesVertically(images);
-            var path2 = Path.Combine(resultsDirectory.FullName, "DistributionsOfContentScores.png");
-            plotsImage.Save(path2);
+            plotsImage.Save(Path.Combine(resultsDirectory.FullName, "DistributionsOfContentScores.png"));
 
             // Attach content description plots to LDFC spectrogram and write to file
             var ldfcSpectrogram = Image.FromFile(ldfcSpectrogramPath);
@@ -222,7 +225,10 @@ namespace AnalysisPrograms
         /// <param name="spectralIndices">set of spectral indices for each minute.</param>
         /// <param name="templatesFile">json file containing description of templates.</param>
         /// <param name="elapsedTimeAtStartOfRecording">minute Id for start of recording.</param>
-        public static List<Plot> GetContentDescription(SpectralIndexBase[] spectralIndices, FileInfo templatesFile, TimeSpan elapsedTimeAtStartOfRecording)
+        public static Dictionary<string, double[]> GetContentDescription(
+            SpectralIndexBase[] spectralIndices,
+            FileInfo templatesFile,
+            TimeSpan elapsedTimeAtStartOfRecording)
         {
             // Read in the content description templates
             var templates = Json.Deserialize<TemplateManifest[]>(templatesFile);
@@ -242,6 +248,15 @@ namespace AnalysisPrograms
                 // Transfer acoustic indices to dictionary
                 var indicesDictionary = IndexCalculateSixOnly.ConvertIndicesToDictionary(oneMinuteOfIndices);
 
+                // normalize the index values
+                foreach (string key in ContentSignatures.IndexNames)
+                {
+                    var indexBounds = ContentSignatures.IndexValueBounds[key];
+                    var indexArray = indicesDictionary[key];
+                    var normalisedVector = DataTools.NormaliseInZeroOne(indexArray, indexBounds[0], indexBounds[1]);
+                    indicesDictionary[key] = normalisedVector;
+                }
+
                 // scan templates over one minute of indices
                 var resultsForOneMinute = ContentSignatures.AnalyzeOneMinute(
                     templates,
@@ -251,14 +266,21 @@ namespace AnalysisPrograms
                 results.Add(resultsForOneMinute);
             }
 
-            // Write the results to file
-            // TODO TODO
-            var dictionaryOfScores = DataProcessing.ConvertResultsToArrays(results, length, startMinuteId);
-            var fileName = "zzz";
-            //DataProcessing.WriteScoresToFile(fileName);
-
+            // convert results to dictionary of score arrays
             // TODO TODO fix the below plotLength and start.
-            var plotDict = DataProcessing.ConvertResultsToPlots(results, 1440, 0);
+            var dictionaryOfScores = DataProcessing.ConvertResultsToDictionaryOfArrays(results, length, startMinuteId);
+            return dictionaryOfScores;
+        }
+
+        /// <summary>
+        /// Produce plots for graphical display.
+        /// NOTE: The threshold can be changed later.
+        /// </summary>
+        /// <returns>A list of graphical plots.</returns>
+        private static List<Plot> GetPlots(Dictionary<string, double[]> contentDictionary)
+        {
+            double threshold = 0.25;
+            var plotDict = DataProcessing.ConvertArraysToPlots(contentDictionary, threshold);
             var contentPlots = DataProcessing.ConvertPlotDictionaryToPlotList(plotDict);
 
             // convert scores to z-scores

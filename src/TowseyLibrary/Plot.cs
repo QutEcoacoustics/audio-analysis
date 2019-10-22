@@ -137,11 +137,19 @@ namespace TowseyLibrary
             // var font = new Font(family, 10, FontStyle.Regular, GraphicsUnit.Pixel);
             var font = new Font("Tahoma", 9);
             var g = Graphics.FromImage(image);
-            g.DrawString(this.title, font, Brushes.Red, new PointF(10, 0));
+            g.DrawString(this.title, font, Brushes.Red, new PointF(8, 0));
 
-            // ReSharper disable once PossibleLossOfFraction
-            g.DrawString(this.title, font, Brushes.Red, new PointF(length / 2, 0));
-            g.DrawString(this.title, font, Brushes.Red, new PointF(length - 80, 0));
+            if (this.data.Length > 500)
+            {
+                g.DrawString(this.title, font, Brushes.Red, new PointF(length - 80, 0));
+            }
+
+            if (this.data.Length > 1200)
+            {
+                // ReSharper disable once PossibleLossOfFraction
+                g.DrawString(this.title, font, Brushes.Red, new PointF(length / 2, 0));
+            }
+
             return image;
         }
 

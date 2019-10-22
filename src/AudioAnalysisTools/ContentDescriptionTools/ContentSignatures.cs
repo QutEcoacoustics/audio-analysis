@@ -21,7 +21,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 
         public const string AnalysisString = "__Towsey.Acoustic.";
 
-        //TODO TODO TODO TODO GET FILE NAME FROM CONFIG.YML FILE
+        //TODO TODO  GET FILE NAME FROM CONFIG.YML FILE
         public const string TemplatesFileName = "Towsey.TemplateDefinitions.json";
 
         /// <summary>
@@ -50,8 +50,11 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// <returns>A list of plots - each plot is the minute by minute scores for a single template.</returns>
         public static List<Plot> ContentDescriptionOfMultipleRecordingFiles(FileInfo listOfIndexFiles, FileInfo templatesFile)
         {
-            // Read in all template manifests
-            //var templates = Yaml.Deserialize<TemplateManifest[]>(templatesFile);
+            // total length in minutes of all the recordings
+            const int totalMinutesDurationOverAllRecordings = 1440;
+            const int startMinute = 0;
+
+            // Read in all the prepared templates
             var templates = Json.Deserialize<TemplateManifest[]>(templatesFile);
             var templatesAsDictionary = DataProcessing.ExtractDictionaryOfTemplateDictionaries(templates);
 
@@ -67,7 +70,8 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             // cycle through the directories
             for (int i = 0; i < filePaths.Count; i++)
             {
-                // read the spectral indices for the current file
+                // read the spectral indices for the current file.
+                //IMPORTANT: This method returns normalised index values
                 var dictionaryOfRecordingIndices = DataProcessing.ReadIndexMatrices(filePaths[i]);
 
                 // Draw the index matrices for check/debug purposes
@@ -79,11 +83,11 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                 completeListOfResults.AddRange(results);
 
                 // calculate the elapsed minutes in this recording
-                var matrix = dictionaryOfRecordingIndices["ENT"];
+                var matrix = dictionaryOfRecordingIndices.FirstValue();
                 elapsedMinutes += matrix.GetLength(0);
             }
 
-            var plotDict = DataProcessing.ConvertResultsToPlots(completeListOfResults, 1440, 0);
+            var plotDict = DataProcessing.ConvertResultsToPlots(completeListOfResults, totalMinutesDurationOverAllRecordings, startMinute);
             var contentPlots = DataProcessing.ConvertPlotDictionaryToPlotList(plotDict);
 
             // convert scores to z-scores
@@ -124,6 +128,14 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             return results;
         }
 
+        /// <summary>
+        /// IMPORTANT: The indices passed in the dictionary "oneMinuteOfIndices" must be normalised.
+        /// </summary>
+        /// <param name="templates">The templates read from json file.</param>
+        /// <param name="templatesAsDictionary">The numerical pasrt of each template.</param>
+        /// <param name="oneMinuteOfIndices">The normalised values of the indices derived from one minute of recording.</param>
+        /// <param name="minuteId">The minute ID, i.e. its temporal position.</param>
+        /// <returns>A single instance of a DescriptionResult.</returns>
         public static DescriptionResult AnalyzeOneMinute(
             TemplateManifest[] templates,
             Dictionary<string, Dictionary<string, double[]>> templatesAsDictionary,

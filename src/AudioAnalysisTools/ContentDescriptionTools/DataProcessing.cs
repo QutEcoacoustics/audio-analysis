@@ -32,6 +32,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 
         /// <summary>
         /// Reads in all the index matrices whose keys are in the above array of IndexNames.
+        /// Returns normalised values.
         /// </summary>
         /// <param name="filePath">Partial path to the index files.</param>
         /// <returns>a Dictionary of matrices containing normalised index values.</returns>
@@ -346,13 +347,13 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// Converts individual results to a dictionary of plots.
         /// </summary>
         /// <param name="results">a list of results for each content type in every minute.</param>
-        /// <param name="arrayLength">The plot length will the total number of minutes scanned, typically 1440 or one day.</param>
+        /// <param name="arrayLength">The plot length will the total number of minutes scanned, typically 1440 for one day.</param>
         /// <param name="arrayStart">time start.</param>
-        public static Dictionary<string, double[]> ConvertResultsToArrays(List<DescriptionResult> results, int arrayLength, int arrayStart)
+        public static Dictionary<string, double[]> ConvertResultsToDictionaryOfArrays(List<DescriptionResult> results, int arrayLength, int arrayStart)
         {
             var arrays = new Dictionary<string, double[]>();
 
-            foreach (DescriptionResult result in results)
+            foreach (var result in results)
             {
                 var time = (int)Math.Round(result.StartTimeInCurrentRecordingFile.TotalMinutes);
                 var dict = result.GetDescriptionDictionary();
@@ -383,26 +384,30 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// <param name="plotStart">time start.</param>
         public static Dictionary<string, Plot> ConvertResultsToPlots(List<DescriptionResult> results, int plotLength, int plotStart)
         {
+            var dictOfArrays = ConvertResultsToDictionaryOfArrays(results, plotLength, plotStart);
             var plots = new Dictionary<string, Plot>();
 
-            foreach (DescriptionResult result in results)
+            foreach (var kvp in dictOfArrays)
             {
-                var time = (int)Math.Round(result.StartTimeInCurrentRecordingFile.TotalMinutes);
-                var dict = result.GetDescriptionDictionary();
-                foreach (KeyValuePair<string, double> kvp in dict)
-                {
-                    var name = kvp.Key;
-                    var value = kvp.Value;
+                var name = kvp.Key;
+                var value = kvp.Value;
+                var plot = new Plot(name, value, 0.25); // NOTE: The threshold can be changed later.
+                plots.Add(name, plot);
+            }
 
-                    if (!plots.ContainsKey(name))
-                    {
-                        var scores = new double[plotLength];
-                        var plot = new Plot(name, scores, 0.25); // NOTE: The threshold can be changed later.
-                        plots.Add(name, plot);
-                    }
+            return plots;
+        }
 
-                    plots[name].data[plotStart + time] = value;
-                }
+        public static Dictionary<string, Plot> ConvertArraysToPlots(Dictionary<string, double[]> dictOfArrays, double threshold)
+        {
+            var plots = new Dictionary<string, Plot>();
+
+            foreach (var kvp in dictOfArrays)
+            {
+                var name = kvp.Key;
+                var value = kvp.Value;
+                var plot = new Plot(name, value, threshold);
+                plots.Add(name, plot);
             }
 
             return plots;
