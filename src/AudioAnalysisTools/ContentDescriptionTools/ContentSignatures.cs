@@ -18,11 +18,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         public const int FrameSize = 512;
         public const int FreqBinCount = FrameSize / 2;
         public const int IndexCalculationDurationInSeconds = 60; //default seconds value for content description
-
         public const string AnalysisString = "__Towsey.Acoustic.";
-
-        //TODO TODO  GET FILE NAME FROM CONFIG.YML FILE
-        public const string TemplatesFileName = "Towsey.TemplateDefinitions.json";
 
         /// <summary>
         /// The following min and max bounds are same as those defined in the IndexPropertiesConfig.yml file as of August 2019.
@@ -39,10 +35,13 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 
         public static string[] IndexNames { get; } = { "ACI", "ENT", "EVN", "BGN", "PMN", "OSC" };
 
+        // Following array is used to remove unwanted selectors.
+        public static string[] UnusedIndexNames { get; } = { "CVR", "DIF", "RHZ", "RVT", "RPS", "RNG", "R3D", "SPT", "SUM" };
+
         /// <summary>
         /// Cycles through a set of acoustic indices in the order listed and calculates one acoustic signature for each minute of recording.
         /// WARNING!!!! It is assumed that the indices are listed in temporal order of the original recordings and that the original recordings were continuous.
-        ///             This means the returned plots contain scores over consecutive minutes.
+        ///             When these conditions satisfied, the returned plots contain scores over consecutive minutes.
         ///             Alternatively could read recording minute from its file name.
         /// </summary>
         /// <param name="listOfIndexFiles">A text file, each line being the path to the acoustic indices derived from one recording.</param>

@@ -163,6 +163,21 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         }
 
         /// <summary>
+        /// Not all templates will use the same indices.
+        /// This method returns a dictionary of the required indices only.
+        /// </summary>
+        public static Dictionary<string, double[]> GetRequiredIndices(Dictionary<string, double[]> oneMinuteOfIndices, string[] keys)
+        {
+            var requiredIndices = new Dictionary<string, double[]>();
+            foreach (var key in keys)
+            {
+                requiredIndices.Add(key, oneMinuteOfIndices[key]);
+            }
+
+            return requiredIndices;
+        }
+
+        /// <summary>
         /// Reduces a dictionary of vectors by a factor. It is assumed that the input vectors are a power of 2 in length i.e. FFT spectra.
         /// It is assumed that the factor of reduction will also be a power of 2, typically 8 or 16.
         /// </summary>
@@ -308,6 +323,9 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             return opDictionary;
         }
 
+        /// <summary>
+        /// THis method can be used for debugging purposes.
+        /// </summary>
         public static double[,] ConvertDictionaryOfIndicesToMatrix(Dictionary<string, double[]> dictionary)
         {
             var indexCount = ContentSignatures.IndexNames.Length;
@@ -413,6 +431,9 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             return plots;
         }
 
+        /// <summary>
+        /// A score normalization option.
+        /// </summary>
         public static List<Plot> SubtractMeanPlusSd(List<Plot> plots)
         {
             var opPlots = new List<Plot>();
@@ -452,8 +473,8 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         }
 
         /// <summary>
-        /// THis method normalizes a score array by subtracting the mode rather than the average of the array.
-        /// THis is because the noise is often not normally distributed but rather skewed.
+        /// This method normalizes a score array by subtracting the mode rather than the average of the array.
+        /// This is because the noise is often not normally distributed but rather skewed.
         /// However, did not work well.
         /// </summary>
         public static List<Plot> SubtractModeAndSd(List<Plot> plots)

@@ -15,6 +15,8 @@ namespace AnalysisPrograms
     using Acoustics.Shared.Csv;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
+    using AnalysisPrograms.Recognizers;
+    using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools.ContentDescriptionTools;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
@@ -52,13 +54,13 @@ namespace AnalysisPrograms
         {
         }
 
-        public AnalyzerConfig ParseConfig(FileInfo file)
+        public override AnalyzerConfig ParseConfig(FileInfo file)
         {
             return ConfigFile.Deserialize<CdConfig>(file);
         }
 
         [Serializable]
-        public class CdConfig : IndexCalculateConfig
+        public class CdConfig : AnalyzerConfig
         {
             public string TemplatesList { get; protected set; }
 
@@ -78,6 +80,7 @@ namespace AnalysisPrograms
             var audioFile = segmentSettings.SegmentAudioFile;
             var recording = new AudioRecording(audioFile.FullName);
 
+            // Calculate six spectral indices.
             var segmentResults = IndexCalculateSixOnly.Analysis(
                 recording,
                 segmentSettings.SegmentStartOffset,
@@ -90,8 +93,9 @@ namespace AnalysisPrograms
                 AnalysisIdentifier = this.Identifier,
                 SpectralIndices = new SpectralIndexBase[1],
             };
-            analysisResults.SpectralIndices[0] = segmentResults.SpectralIndexValues;
 
+            //Transfer the spectral index results to AnalysisResults
+            analysisResults.SpectralIndices[0] = segmentResults.SpectralIndexValues;
             return analysisResults;
         }
 
@@ -105,21 +109,14 @@ namespace AnalysisPrograms
 
         public override List<FileInfo> WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
         {
+            //get selectors and removed unwanted because these indices were never calculated.
             var selectors = results.First().GetSelectors();
-
-            //remove the following selectors because these indices were never calculated.
-            selectors.Remove("CVR");
-            selectors.Remove("DIF");
-            selectors.Remove("RHZ");
-            selectors.Remove("RVT");
-            selectors.Remove("RPS");
-            selectors.Remove("RNG");
-            selectors.Remove("R3D");
-            selectors.Remove("SPT");
-            selectors.Remove("SUM");
+            foreach (var indexName in ContentSignatures.UnusedIndexNames)
+            {
+                selectors.Remove(indexName);
+            }
 
             var spectralIndexFiles = new List<FileInfo>(selectors.Count);
-
             foreach (var kvp in selectors)
             {
                 // write spectrogram to disk as CSV file
@@ -141,6 +138,9 @@ namespace AnalysisPrograms
         {
             // below is example of how to access values in ContentDescription config file.
             //sampleRate = analysisSettings.Configuration.GetIntOrNull(AnalysisKeys.ResampleRate) ?? sampleRate;
+            var cdConfiguration = (CdConfig)analysisSettings.Configuration;
+            var templatesFileName = cdConfiguration.TemplatesList;
+            var ldSpectrogramConfig = cdConfiguration.LdSpectrogramConfig;
 
             var cdConfigFile = analysisSettings.ConfigFile;
             var configDirectory = cdConfigFile.DirectoryName;
@@ -170,7 +170,8 @@ namespace AnalysisPrograms
                 AnalysisStartOffset = inputFileSegment.SegmentStartOffset ?? TimeSpan.Zero,
                 MaximumSegmentDuration = analysisSettings.AnalysisMaxSegmentDuration,
                 BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF,
-                LongDurationSpectrogramConfig = new LdSpectrogramConfig(),
+                //LongDurationSpectrogramConfig = new LdSpectrogramConfig(),
+                LongDurationSpectrogramConfig = ldSpectrogramConfig,
             };
             var icdPath = FilenameHelpers.AnalysisResultPath(
                 resultsDirectory,
@@ -199,7 +200,7 @@ namespace AnalysisPrograms
 
             // now get the content description for each minute.
             //TODO TODO TODO TODO GET FILE NAME FROM CONFIG.YML FILE
-            var templatesFile = new FileInfo(Path.Combine(configDirectory, ContentSignatures.TemplatesFileName));
+            var templatesFile = new FileInfo(Path.Combine(configDirectory, templatesFileName));
             var contentDictionary = GetContentDescription(spectralIndices, templatesFile, startTimeOffset);
 
             // Write the results to a csv file
@@ -267,7 +268,6 @@ namespace AnalysisPrograms
             }
 
             // convert results to dictionary of score arrays
-            // TODO TODO fix the below plotLength and start.
             var dictionaryOfScores = DataProcessing.ConvertResultsToDictionaryOfArrays(results, length, startMinuteId);
             return dictionaryOfScores;
         }
@@ -310,10 +310,11 @@ namespace AnalysisPrograms
             string colorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
             string colorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_OSC;
 
-            // Set Color Filter: Must lie between +/-1. A good value is -0.25
+            //LdSpectrogramConfig config is accessible through Settings.
             var config = new LdSpectrogramConfig();
             if (config.ColourFilter == null)
             {
+                // Set Color Filter: Must lie between +/-1. A good value is -0.25
                 config.ColourFilter = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
             }
 
@@ -333,8 +334,6 @@ namespace AnalysisPrograms
                 }
             }
 
-            // following line is debug purposes only
-            //cs.StartOffset = cs.StartOffset + TimeSpan.FromMinutes(15);
             var indexProperties = IndexCalculateSixOnly.GetIndexProperties();
             cs1.SetSpectralIndexProperties(indexProperties);
 

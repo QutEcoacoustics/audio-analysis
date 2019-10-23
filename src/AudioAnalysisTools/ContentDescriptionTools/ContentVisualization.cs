@@ -35,6 +35,9 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             return ImageTools.CombineImagesVertically(imageList);
         }
 
+        /// <summary>
+        /// Can be used for visual checking and debugging purposes.
+        /// </summary>
         public static void DrawNormalisedIndexMatrices(DirectoryInfo dir, string baseName, Dictionary<string, double[,]> dictionary)
         {
             var list = new List<Image>();
