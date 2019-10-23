@@ -15,8 +15,6 @@ namespace AnalysisPrograms
     using Acoustics.Shared.Csv;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-    using AnalysisPrograms.Recognizers;
-    using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools.ContentDescriptionTools;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
@@ -54,17 +52,12 @@ namespace AnalysisPrograms
         {
         }
 
-        public override AnalyzerConfig ParseConfig(FileInfo file)
-        {
-            return ConfigFile.Deserialize<CdConfig>(file);
-        }
+        public override AnalyzerConfig ParseConfig(FileInfo file) => ConfigFile.Deserialize<CdConfig>(file);
 
         [Serializable]
         public class CdConfig : AnalyzerConfig
         {
             public string TemplatesList { get; protected set; }
-
-            //private LdSpectrogramConfig ldfcsConfig = new LdSpectrogramConfig();
 
             /// <summary>
             /// Gets or sets the LDFC spectrogram configuration.
@@ -110,7 +103,8 @@ namespace AnalysisPrograms
         public override List<FileInfo> WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
         {
             //get selectors and removed unwanted because these indices were never calculated.
-            var selectors = results.First().GetSelectors();
+            var spectralIndexBases = results.ToList();
+            var selectors = spectralIndexBases.First().GetSelectors();
             foreach (var indexName in ContentSignatures.UnusedIndexNames)
             {
                 selectors.Remove(indexName);
@@ -122,7 +116,7 @@ namespace AnalysisPrograms
                 // write spectrogram to disk as CSV file
                 var filename = FilenameHelpers.AnalysisResultPath(destination, fileNameBase, TowseyAcoustic + "." + kvp.Key, "csv").ToFileInfo();
                 spectralIndexFiles.Add(filename);
-                Csv.WriteMatrixToCsv(filename, results, kvp.Value);
+                Csv.WriteMatrixToCsv(filename, spectralIndexBases, kvp.Value);
             }
 
             return spectralIndexFiles;
@@ -139,22 +133,29 @@ namespace AnalysisPrograms
             // below is example of how to access values in ContentDescription config file.
             //sampleRate = analysisSettings.Configuration.GetIntOrNull(AnalysisKeys.ResampleRate) ?? sampleRate;
             var cdConfiguration = (CdConfig)analysisSettings.Configuration;
-            var templatesFileName = cdConfiguration.TemplatesList;
             var ldSpectrogramConfig = cdConfiguration.LdSpectrogramConfig;
-
             var cdConfigFile = analysisSettings.ConfigFile;
-            var configDirectory = cdConfigFile.DirectoryName;
+            var configDirectory = cdConfigFile.DirectoryName ?? throw new ArgumentNullException(nameof(cdConfigFile), "Null value");
             var sourceAudio = inputFileSegment.Source;
             string basename = Path.GetFileNameWithoutExtension(sourceAudio.Name);
             var resultsDirectory = AnalysisCoordinator.GetNamedDirectory(analysisSettings.AnalysisOutputDirectory, this);
 
-            // TODO TODO TODO Get the startTimeOffset from the analysis settings.
-            // inputFileSegment.SegmentStartOffset
+            // check for null values - this was recommended by ReSharper!
+            if (inputFileSegment.TargetFileDuration == null || inputFileSegment.TargetFileSampleRate == null)
+            {
+                throw new NullReferenceException();
+            }
+
+            // set the start time for the current recording segment. Default is zero.
             var startTimeOffset = TimeSpan.Zero;
+            if (inputFileSegment.SegmentStartOffset != null)
+            {
+                startTimeOffset = (TimeSpan)inputFileSegment.SegmentStartOffset;
+            }
 
             // output config data to disk so other analyzers can use the data,
             // Should contain data only - i.e. the configuration settings that generated these indices
-            // this data can then be used by post-process analyses.
+            // this data can then be used by later analysis processes.
             var indexConfigData = new IndexGenerationData()
             {
                 RecordingExtension = inputFileSegment.Source.Extension,
@@ -170,7 +171,6 @@ namespace AnalysisPrograms
                 AnalysisStartOffset = inputFileSegment.SegmentStartOffset ?? TimeSpan.Zero,
                 MaximumSegmentDuration = analysisSettings.AnalysisMaxSegmentDuration,
                 BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF,
-                //LongDurationSpectrogramConfig = new LdSpectrogramConfig(),
                 LongDurationSpectrogramConfig = ldSpectrogramConfig,
             };
             var icdPath = FilenameHelpers.AnalysisResultPath(
@@ -193,13 +193,14 @@ namespace AnalysisPrograms
             // Draw ldfc spectrograms and return path to 2maps image.
             string ldfcSpectrogramPath =
                 DrawSpectrogramsFromSpectralIndices(
-                outputDirectory: resultsDirectory,
-                indexGenerationData: indexConfigData,
-                basename: basename,
-                indexSpectrograms: dictionaryOfSpectra);
+                    ldSpectrogramConfig,
+                    outputDirectory: resultsDirectory,
+                    indexGenerationData: indexConfigData,
+                    basename: basename,
+                    indexSpectrograms: dictionaryOfSpectra);
 
             // now get the content description for each minute.
-            //TODO TODO TODO TODO GET FILE NAME FROM CONFIG.YML FILE
+            var templatesFileName = cdConfiguration.TemplatesList;
             var templatesFile = new FileInfo(Path.Combine(configDirectory, templatesFileName));
             var contentDictionary = GetContentDescription(spectralIndices, templatesFile, startTimeOffset);
 
@@ -226,7 +227,7 @@ namespace AnalysisPrograms
         /// <param name="spectralIndices">set of spectral indices for each minute.</param>
         /// <param name="templatesFile">json file containing description of templates.</param>
         /// <param name="elapsedTimeAtStartOfRecording">minute Id for start of recording.</param>
-        public static Dictionary<string, double[]> GetContentDescription(
+        private static Dictionary<string, double[]> GetContentDescription(
             SpectralIndexBase[] spectralIndices,
             FileInfo templatesFile,
             TimeSpan elapsedTimeAtStartOfRecording)
@@ -297,28 +298,22 @@ namespace AnalysisPrograms
         /// <summary>
         /// This is cut down version of the method of same name in LDSpectrogramRGB.cs.
         /// </summary>
+        /// <param name="ldSpectrogramConfig">config for ldfc spectrogram.</param>
         /// <param name="outputDirectory">outputDirectory.</param>
         /// <param name="indexGenerationData">indexGenerationData.</param>
         /// <param name="basename">stem name of the original recording.</param>
         /// <param name="indexSpectrograms">Optional spectra to pass in. If specified the spectra will not be loaded from disk!.</param>
         private static string DrawSpectrogramsFromSpectralIndices(
+            LdSpectrogramConfig ldSpectrogramConfig,
             DirectoryInfo outputDirectory,
             IndexGenerationData indexGenerationData,
             string basename,
             Dictionary<string, double[,]> indexSpectrograms = null)
         {
-            string colorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
-            string colorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_OSC;
+            string colorMap1 = ldSpectrogramConfig.ColorMap1; // SpectrogramConstants.RGBMap_ACI_ENT_EVN;
+            string colorMap2 = ldSpectrogramConfig.ColorMap2; // SpectrogramConstants.RGBMap_BGN_PMN_OSC;
 
-            //LdSpectrogramConfig config is accessible through Settings.
-            var config = new LdSpectrogramConfig();
-            if (config.ColourFilter == null)
-            {
-                // Set Color Filter: Must lie between +/-1. A good value is -0.25
-                config.ColourFilter = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
-            }
-
-            var cs1 = new LDSpectrogramRGB(config, indexGenerationData, colorMap1);
+            var cs1 = new LDSpectrogramRGB(ldSpectrogramConfig, indexGenerationData, colorMap1);
             string fileStem = basename;
             cs1.FileName = fileStem;
 

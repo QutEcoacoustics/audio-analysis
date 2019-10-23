@@ -368,11 +368,11 @@ namespace AnalysisPrograms
             //string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Acoustic.yml";
 
             // Test on Content Description
-            string recordingPath = @"C:\Ecoacoustics\WavFiles\FlyingFox\20190115_Bellingen_Feeding.wav";
-            //string recordingPath = @"C:\Ecoacoustics\WavFiles\LizZnidersic\TasmanIsland2015_Unit2_Mez\SM304256_0+1_20151114_131652+1000.wav";
+            //string recordingPath = @"C:\Ecoacoustics\WavFiles\FlyingFox\20190115_Bellingen_Feeding.wav";
+            string recordingPath = @"C:\Ecoacoustics\WavFiles\LizZnidersic\TasmanIsland2015_Unit2_Mez\SM304256_0+1_20151114_131652+1000.wav";
             //string outputPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\14";
-            //string outputPath = @"C:\Ecoacoustics\ContentDescription\Test6IndicesMez13";
-            string outputPath = @"C:\Ecoacoustics\ContentDescription\FlyingFox";
+            string outputPath = @"C:\Ecoacoustics\ContentDescription\Test6IndicesMez13";
+            //string outputPath = @"C:\Ecoacoustics\ContentDescription\FlyingFox";
             string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.ContentDescription.yml";
 
             // Ivan Campos recordings
