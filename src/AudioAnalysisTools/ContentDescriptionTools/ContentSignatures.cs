@@ -47,10 +47,9 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// <param name="listOfIndexFiles">A text file, each line being the path to the acoustic indices derived from one recording.</param>
         /// <param name="templatesFile">A json file containing an array of acoustic templates.</param>
         /// <returns>A list of plots - each plot is the minute by minute scores for a single template.</returns>
-        public static List<Plot> ContentDescriptionOfMultipleRecordingFiles(FileInfo listOfIndexFiles, FileInfo templatesFile)
+        public static Dictionary<string, double[]> ContentDescriptionOfMultipleRecordingFiles(FileInfo listOfIndexFiles, FileInfo templatesFile)
         {
-            // total length in minutes of all the recordings
-            const int totalMinutesDurationOverAllRecordings = 1440;
+            // ASSUMPTION: 
             const int startMinute = 0;
 
             // Read in all the prepared templates
@@ -86,18 +85,9 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                 elapsedMinutes += matrix.GetLength(0);
             }
 
-            var plotDict = DataProcessing.ConvertResultsToPlots(completeListOfResults, totalMinutesDurationOverAllRecordings, startMinute);
-            var contentPlots = DataProcessing.ConvertPlotDictionaryToPlotList(plotDict);
-
-            // convert scores to z-scores
-            //contentPlots = DataProcessing.SubtractMeanPlusSd(contentPlots);
-
-            //the following did not work as well.
-            //contentPlots = DataProcessing.SubtractModeAndSd(contentPlots);
-
-            // Use percentile thresholding followed by normalize in 0,1.
-            contentPlots = DataProcessing.PercentileThresholding(contentPlots, 90);
-            return contentPlots;
+            // convert completeListOfResults to dictionary of score arrays
+            var contentDictionary = DataProcessing.ConvertResultsToDictionaryOfArrays(completeListOfResults, elapsedMinutes, startMinute);
+            return contentDictionary;
         }
 
         public static List<DescriptionResult> AnalyzeMinutes(
@@ -131,7 +121,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// IMPORTANT: The indices passed in the dictionary "oneMinuteOfIndices" must be normalised.
         /// </summary>
         /// <param name="templates">The templates read from json file.</param>
-        /// <param name="templatesAsDictionary">The numerical pasrt of each template.</param>
+        /// <param name="templatesAsDictionary">The numerical part of each template.</param>
         /// <param name="oneMinuteOfIndices">The normalised values of the indices derived from one minute of recording.</param>
         /// <param name="minuteId">The minute ID, i.e. its temporal position.</param>
         /// <returns>A single instance of a DescriptionResult.</returns>
@@ -181,6 +171,23 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             }
 
             return descriptionResult;
+        }
+
+        public static List<Plot> GetPlots(Dictionary<string, double[]> contentDictionary)
+        {
+            double threshold = 0.25;
+            var plotDict = DataProcessing.ConvertArraysToPlots(contentDictionary, threshold);
+            var contentPlots = DataProcessing.ConvertPlotDictionaryToPlotList(plotDict);
+
+            // convert scores to z-scores
+            //contentPlots = DataProcessing.SubtractMeanPlusSd(contentPlots);
+
+            //the following did not work as well.
+            //contentPlots = DataProcessing.SubtractModeAndSd(contentPlots);
+
+            // Use percentile thresholding followed by normalize in 0,1.
+            contentPlots = DataProcessing.PercentileThresholding(contentPlots, 90);
+            return contentPlots;
         }
     }
 }

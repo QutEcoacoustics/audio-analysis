@@ -79,10 +79,11 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                 }
             }
 
-            var templatesFilePath = Path.Combine(manifestFile.DirectoryName ?? throw new InvalidOperationException(), "TemplateDefinitions.json");
+            var templatesFileName = templateDefinitionsFile.Name;
+            var templatesFilePath = Path.Combine(manifestFile.DirectoryName ?? throw new InvalidOperationException(), templatesFileName);
 
             // Save the previous templates file
-            string backupTemplatesFilePath = Path.Combine(manifestFile.DirectoryName, "TemplateDefinitions.Backup.json");
+            string backupTemplatesFilePath = Path.Combine(manifestFile.DirectoryName, templatesFileName + ".Backup.json");
             if (File.Exists(backupTemplatesFilePath))
             {
                 File.Delete(backupTemplatesFilePath);

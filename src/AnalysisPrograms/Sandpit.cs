@@ -64,11 +64,11 @@ namespace AnalysisPrograms
                 Log.WriteLine("# Start Time = " + tStart.ToString(CultureInfo.InvariantCulture));
 
                 // CONTENT DESCRIPTION
-                //ContentDescriptionCreateTemplates();
-                //ContentDescriptionApplyTemplates();
+                ContentDescriptionCreateTemplates();
+                ContentDescriptionApplyTemplates();
 
                 //AnalyseFrogDataSet();
-                Audio2CsvOverOneFile();
+                //Audio2CsvOverOneFile();
                 //Audio2CsvOverMultipleFiles();
 
                 // used to get files from availae for Black rail and Least Bittern papers.
@@ -123,7 +123,7 @@ namespace AnalysisPrograms
         public static void ContentDescriptionCreateTemplates()
         {
             var templateManifests = new FileInfo(@"C:\Ecoacoustics\ContentDescription\ContentDescriptionTemplateManifests.yml");
-            var templateDefinitions = new FileInfo(@"C:\Ecoacoustics\ContentDescription\TemplateDefinitions.json");
+            var templateDefinitions = new FileInfo(@"C:\Ecoacoustics\ContentDescription\Towsey.TemplateDefinitions.json");
             TemplateManifest.CreateNewFileOfTemplateDefinitions(templateManifests, templateDefinitions);
             Console.WriteLine("# Finished creation of new manifest");
         }
@@ -132,20 +132,29 @@ namespace AnalysisPrograms
         {
             Console.WriteLine("# Start scanning with content description templates");
 
-            var templatesFile = new FileInfo(@"C:\Ecoacoustics\ContentDescription\TemplateDefinitions.json");
-            var listOfIndexFiles = new FileInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMezIndexFiles.txt");
-            var contentPlots = AudioAnalysisTools.ContentDescriptionTools.ContentSignatures.ContentDescriptionOfMultipleRecordingFiles(listOfIndexFiles, templatesFile);
+            var templatesFile = new FileInfo(@"C:\Ecoacoustics\ContentDescription\Towsey.TemplateDefinitions.json");
+            var listOfIndexFiles = new FileInfo(Path.Combine(@"C:\Ecoacoustics\Output\Test\Test24HourRecording", "TasmanIslandMezIndexFiles.txt"));
+            var dataDirectory = @"C:\Ecoacoustics\Output\Test\Test24HourRecording";
+            var outputDirectory = @"C:\Ecoacoustics\ContentDescription";
 
+            var contentDictionary = ContentSignatures.ContentDescriptionOfMultipleRecordingFiles(listOfIndexFiles, templatesFile);
+
+            // Write the results to a csv file
+            var filePath = Path.Combine(outputDirectory, "AcousticSignatures.csv");
+            FileTools.WriteDictionaryAsCsvFile(contentDictionary, filePath);
+
+            // get content description plots and use to examine score distributions.
+            var contentPlots = ContentSignatures.GetPlots(contentDictionary);
             var images = GraphsAndCharts.DrawPlotDistributions(contentPlots);
             var plotsImage = ImageTools.CombineImagesVertically(images);
-            var path1 = Path.Combine(@"C:\Ecoacoustics\ContentDescription", "ScoreDistributions.png");
+            var path1 = Path.Combine(outputDirectory, "ScoreDistributions.png");
             plotsImage.Save(path1);
 
-            // Attach content description plots to LDFC spectrogram and write to file
-            var path = Path.Combine(@"C:\Ecoacoustics\Output\Test\Test24HourRecording", "Testing__2Maps.png");
+            // Attach plots to LDFC spectrogram and write to file
+            var path = Path.Combine(dataDirectory, "Testing__2Maps.png");
             var ldfcSpectrogram = Image.FromFile(path);
             var image = ContentVisualization.DrawLdfcSpectrogramWithContentScoreTracks(ldfcSpectrogram, contentPlots);
-            var path2 = Path.Combine(@"C:\Ecoacoustics\ContentDescription", "Testing_2Maps.CONTENTnew07.png");
+            var path2 = Path.Combine(outputDirectory, "Testing_2Maps.CONTENTnew07.png");
             image.Save(path2);
             Console.WriteLine("# Finished scanning recording with content description templates");
         }
