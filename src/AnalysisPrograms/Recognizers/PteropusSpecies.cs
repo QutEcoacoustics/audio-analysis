@@ -185,7 +185,7 @@ namespace AnalysisPrograms.Recognizers
             };
             sonoConfig.WindowOverlap = 0.0;
 
-            // now construct the standard decibel spectrogram WITH noise removal, and look for LimConvex
+            // now construct the standard decibel spectrogram WITH noise removal
             // get frame parameters for the analysis
             var sonogram = (BaseSonogram)new SpectrogramStandard(sonoConfig, audioRecording.WavReader);
             */
@@ -349,7 +349,9 @@ namespace AnalysisPrograms.Recognizers
             var decibelArray = SNR.CalculateFreqBandAvIntensity(sonogram.Data, minHz, maxHz, sonogram.NyquistFrequency);
 
             // Look for wing beats using oscillation detector
-            Oscillations2012.Execute(
+            int scoreSmoothingWindow = 11; // sets a default that was good for Cane toad
+            //Oscillations2012.Execute(
+            Oscillations2019.Execute(
                 (SpectrogramStandard)sonogram,
                 minHz,
                 maxHz,
@@ -360,9 +362,10 @@ namespace AnalysisPrograms.Recognizers
                 eventThreshold,
                 minDurationSeconds,
                 maxDurationSeconds,
+                scoreSmoothingWindow,
                 out var scores,
                 out var acousticEvents,
-                out var hits,
+                //out var hits,
                 segmentStartOffset);
 
             /*
@@ -397,8 +400,8 @@ namespace AnalysisPrograms.Recognizers
             double intensityNormalisationMax = 3 * decibelThreshold;
             var normThreshold = decibelThreshold / intensityNormalisationMax;
             var normalisedIntensityArray = DataTools.NormaliseInZeroOne(decibelArray, 0, intensityNormalisationMax);
-            var plot1 = new Plot(speciesName + " Wingbeat band", normalisedIntensityArray, normThreshold);
-            var plot2 = new Plot(speciesName + " Wingbeat Osc Score", scores, eventThreshold);
+            var plot1 = new Plot(speciesName + " Wing-beat band", normalisedIntensityArray, normThreshold);
+            var plot2 = new Plot(speciesName + " Wing-beat Osc Score", scores, eventThreshold);
             var plots = new List<Plot> { plot1, plot2 };
 
             // ######################################################################
@@ -462,7 +465,7 @@ namespace AnalysisPrograms.Recognizers
                 WindowOverlap = 0.0,
             };
 
-            // now construct the standard decibel spectrogram WITH noise removal, and look for LimConvex
+            // now construct the standard decibel spectrogram WITH noise removal
             // get frame parameters for the analysis
             var sonogram = (BaseSonogram)new SpectrogramStandard(sonoConfig, audioRecording.WavReader);
             return sonogram;
