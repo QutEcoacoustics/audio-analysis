@@ -193,7 +193,7 @@ namespace AnalysisPrograms.Recognizers
             double dctThreshold = recognizerConfig.DctThreshold;
             double minOscRate = 1 / recognizerConfig.MaxPeriod;
             double maxOscRate = 1 / recognizerConfig.MinPeriod;
-            Oscillations2019.DetectOscillations(croakScoreArray, framesPerSecond, dctDuration, minOscRate, maxOscRate, dctThreshold, out double[] dctScores, out double[] oscFreq);
+            Oscillations2019.DetectOscillations(croakScoreArray, framesPerSecond, decibelThreshold, dctDuration, minOscRate, maxOscRate, dctThreshold, out double[] dctScores, out double[] oscFreq);
 
             // ######################################################################
             // ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER

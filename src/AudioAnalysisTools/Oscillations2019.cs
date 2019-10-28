@@ -5,7 +5,6 @@
 namespace AudioAnalysisTools
 {
     using System;
-    using System.CodeDom;
     using System.Collections.Generic;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
@@ -23,6 +22,7 @@ namespace AudioAnalysisTools
             SpectrogramStandard sonogram,
             int minHz,
             int maxHz,
+            double decibelThreshold,
             double dctDuration,
             int minOscFreq,
             int maxOscFreq,
@@ -41,9 +41,26 @@ namespace AudioAnalysisTools
             // extract array of decibel values, frame averaged over required frequency band
             var decibelArray = SNR.CalculateFreqBandAvIntensity(sonogram.Data, minHz, maxHz, sonogram.NyquistFrequency);
 
+            // if first value is negative dB, this means noise removal was not done.
+            // Do noise removal now
+            //if (decibelArray[0] < 0.0)
+            //{
+            //    NoiseRemovalModal.CalculateNoiseUsingLamelsAlgorithm(decibelArray, out double _, out double _, out double noiseMode, out double _);
+            //    decibelArray = SNR.SubtractAndTruncate2Zero(decibelArray, noiseMode);
+            //}
+
             //DETECT OSCILLATIONS
             var framesPerSecond = sonogram.FramesPerSecond;
-            DetectOscillations(decibelArray, framesPerSecond, dctDuration, minOscFreq, maxOscFreq, dctThreshold, out dctScores, out var oscFreq);
+            DetectOscillations(
+                decibelArray,
+                framesPerSecond,
+                decibelThreshold,
+                dctDuration,
+                minOscFreq,
+                maxOscFreq,
+                dctThreshold,
+                out dctScores,
+                out var oscFreq);
 
             // smooth the scores - window=11 has been the DEFAULT. Now letting user set this.
             dctScores = DataTools.filterMovingAverage(dctScores, smoothingWindow);
@@ -68,6 +85,7 @@ namespace AudioAnalysisTools
         /// </summary>
         /// <param name="ipArray">an array of decibel values.</param>
         /// <param name="framesPerSecond">the frame rate.</param>
+        /// <param name="decibelThreshold">Ignore frames below this threshold.</param>
         /// <param name="dctDuration">Duration in seconds of the required DCT.</param>
         /// <param name="minOscFreq">minimum oscillation frequency.</param>
         /// <param name="maxOscFreq">maximum oscillation frequency.</param>
@@ -77,6 +95,7 @@ namespace AudioAnalysisTools
         public static void DetectOscillations(
             double[] ipArray,
             double framesPerSecond,
+            double decibelThreshold,
             double dctDuration,
             double minOscFreq,
             double maxOscFreq,
@@ -87,9 +106,6 @@ namespace AudioAnalysisTools
             int dctLength = (int)Math.Round(framesPerSecond * dctDuration);
             int minIndex = (int)(minOscFreq * dctDuration * 2); //multiply by 2 because index = Pi and not 2Pi
             int maxIndex = (int)(maxOscFreq * dctDuration * 2); //multiply by 2 because index = Pi and not 2Pi
-            double dbThreshold = 6;
-            //double midOscFreq = minOscFreq + ((maxOscFreq - minOscFreq) / 2);
-
             if (maxIndex > dctLength)
             {
                 LoggedConsole.WriteWarnLine("MaxIndex > DCT length. Therefore set maxIndex = DCT length.");
@@ -98,7 +114,7 @@ namespace AudioAnalysisTools
 
             int length = ipArray.Length;
             dctScores = new double[length];
-            oscFreq = new double[length]; //TODO  TODO
+            oscFreq = new double[length];
 
             //set up the cosine coefficients
             double[,] cosines = MFCCStuff.Cosines(dctLength, dctLength);
@@ -116,7 +132,7 @@ namespace AudioAnalysisTools
                 }
 
                 // only stop if current location is a peak
-                if (ipArray[r] < dbThreshold)
+                if (ipArray[r] < decibelThreshold)
                 {
                     continue;
                 }

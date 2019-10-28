@@ -39,7 +39,6 @@ namespace AnalysisPrograms.Recognizers
     using System.IO;
     using System.Linq;
     using System.Reflection;
-    using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools;
@@ -55,13 +54,16 @@ namespace AnalysisPrograms.Recognizers
     /// </summary>
     internal class PteropusSpecies : RecognizerBase
     {
+        private static readonly ILog PteropusLog = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
+        // The default window for Pteropus sp. Need to be fixed for accurately detecting wing beat oscillations.
+        private static readonly int DefaultWindow = 512;
+
         public override string Author => "Towsey";
 
         public override string SpeciesName => "PteropusSpecies";
 
         public override string Description => "[ALPHA] Detects acoustic events for species of Flying Fox, Pteropus species";
-
-        private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         /*
         /// <summary>
@@ -87,9 +89,9 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="genericConfig">config file that contains parameters used by all profiles.</param>
         /// <param name="segmentStartOffset">when recording starts.</param>
         /// <param name="getSpectralIndexes">not sure what this is.</param>
-        /// <param name="outputDirectory">where the recogniser results can be found.</param>
+        /// <param name="outputDirectory">where the recognizer results can be found.</param>
         /// <param name="imageWidth"> assuming ????.</param>
-        /// <returns>recogniser results.</returns>
+        /// <returns>recognizer results.</returns>
         public override RecognizerResults Recognize(AudioRecording audioRecording, Config genericConfig, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
             if (ConfigFile.HasProfiles(genericConfig))
@@ -102,34 +104,34 @@ namespace AnalysisPrograms.Recognizers
                     message = message + (s + ", ");
                 }
 
-                log.Debug(message);
+                PteropusLog.Debug(message);
             }
             else
             {
-                log.Warn("No configuration profiles found. Two profiles expected for the Flying Fox recogniser.");
+                PteropusLog.Warn("No configuration profiles found. Two profiles expected for the Flying Fox recogniser.");
             }
 
             var territorialResults = new RecognizerResults();
 
-            if (ConfigFile.TryGetProfile(genericConfig, "Territorial", out var profile1))
+            if (ConfigFile.TryGetProfile(genericConfig, "Territorial", out var _))
             {
                 territorialResults = TerritorialCall(audioRecording, genericConfig, "Territorial", segmentStartOffset);
-                log.Debug("Territory event count = " + territorialResults.Events.Count);
+                PteropusLog.Debug("Territory event count = " + territorialResults.Events.Count);
             }
             else
             {
-                log.Warn("Could not access Territorial configuration parameters");
+                PteropusLog.Warn("Could not access Territorial configuration parameters");
             }
 
             var wingbeatResults = new RecognizerResults();
-            if (ConfigFile.TryGetProfile(genericConfig, "Wingbeats", out var profile2))
+            if (ConfigFile.TryGetProfile(genericConfig, "Wingbeats", out var _))
             {
                 wingbeatResults = WingBeats(audioRecording, genericConfig, "Wingbeats", segmentStartOffset);
-                log.Debug("Wingbeat event count = " + wingbeatResults.Events.Count);
+                PteropusLog.Debug("Wingbeat event count = " + wingbeatResults.Events.Count);
             }
             else
             {
-                log.Warn("Could not access Wingbeats configuration parameters");
+                PteropusLog.Warn("Could not access Wingbeats configuration parameters");
             }
 
             // combine the results i.e. add wing-beat events to the list of territorial call events.
@@ -171,24 +173,8 @@ namespace AnalysisPrograms.Recognizers
             var maxTimeSpan = TimeSpan.FromSeconds(maxDurationSeconds);
 
             //######################
-            //2. Don't use samples in this recogniser.
-            //var samples = audioRecording.WavReader.Samples;
-            //Instead, convert each segment to a spectrogram.
+            //2. Convert each segment to a spectrogram.
             var sonogram = GetSonogram(configuration, audioRecording);
-            /*
-            // make a spectrogram
-            var sonoConfig = new SonogramConfig
-            {
-                WindowSize = 512,
-                NoiseReductionType = NoiseReductionType.Standard,
-                NoiseReductionParameter = configuration.GetDoubleOrNull(AnalysisKeys.NoiseBgThreshold) ?? 0.0,
-            };
-            sonoConfig.WindowOverlap = 0.0;
-
-            // now construct the standard decibel spectrogram WITH noise removal
-            // get frame parameters for the analysis
-            var sonogram = (BaseSonogram)new SpectrogramStandard(sonoConfig, audioRecording.WavReader);
-            */
             var decibelArray = SNR.CalculateFreqBandAvIntensity(sonogram.Data, minHz, maxHz, sonogram.NyquistFrequency);
 
             // prepare plots
@@ -242,7 +228,7 @@ namespace AnalysisPrograms.Recognizers
         private static List<AcousticEvent> FilterEventsForSpectralProfile(List<AcousticEvent> events, BaseSonogram sonogram)
         {
             double[,] spectrogramData = sonogram.Data;
-            int colCount = spectrogramData.GetLength(1);
+            //int colCount = spectrogramData.GetLength(1);
 
             // The following freq bins are used to demarcate freq bands for spectral tests below.
             // The hertz values are hard coded but could be included in the config.yml file.
@@ -254,7 +240,7 @@ namespace AnalysisPrograms.Recognizers
             foreach (AcousticEvent ae in events)
             {
                 int startFrame = ae.Oblong.RowTop;
-                int endFrame = ae.Oblong.RowBottom;
+                //int endFrame = ae.Oblong.RowBottom;
 
                 // get all the frames of the acoustic event
                 //var subMatrix = DataTools.Submatrix(spectrogramData, startFrame, 0, endFrame, colCount - 1);
@@ -265,10 +251,9 @@ namespace AnalysisPrograms.Recognizers
                 var normalisedSpectrum = DataTools.normalise(spectrum);
                 normalisedSpectrum = DataTools.filterMovingAverageOdd(normalisedSpectrum, 11);
                 var maxId = DataTools.GetMaxIndex(normalisedSpectrum);
-                var hzMax = (int)Math.Ceiling(maxId * sonogram.FBinWidth);
+                //var hzMax = (int)Math.Ceiling(maxId * sonogram.FBinWidth);
 
                 // Do TESTS to determine if event has spectrum matching a Flying fox.
-
                 // Test 1: Spectral maximum should be below 4 kHz.
                 bool passTest1 = maxId < fourKiloHzBin;
 
@@ -334,15 +319,16 @@ namespace AnalysisPrograms.Recognizers
             int maxHz = profile.GetIntOrNull(AnalysisKeys.MaxHz) ?? 3000;
             double minDurationSeconds = profile.GetDoubleOrNull(AnalysisKeys.MinDuration) ?? 1.0;
             double maxDurationSeconds = profile.GetDoubleOrNull(AnalysisKeys.MaxDuration) ?? 10.0;
+            double decibelThreshold = profile.GetDoubleOrNull("DecibelThreshold") ?? 6.0;
             double dctDuration = profile.GetDoubleOrNull("DctDuration") ?? 1.0;
             double dctThreshold = profile.GetDoubleOrNull("DctThreshold") ?? 0.5;
-            double minOscilFreq = profile.GetDoubleOrNull("MinOscilFreq") ?? 4.0;
-            double maxOscilFreq = profile.GetDoubleOrNull("MaxOscilFreq") ?? 6.0;
+            double minOscFreq = profile.GetDoubleOrNull("MinOscilFreq") ?? 4.0;
+            double maxOscFreq = profile.GetDoubleOrNull("MaxOscilFreq") ?? 6.0;
             double eventThreshold = profile.GetDoubleOrNull("EventThreshold") ?? 0.3;
 
             //######################
 
-            //2. Don't use samples in this recogniser.
+            //2. Don't use samples in this recognizer.
             //var samples = audioRecording.WavReader.Samples;
             //Instead, convert each segment to a spectrogram.
             var sonogram = GetSonogram(configuration, audioRecording);
@@ -355,9 +341,10 @@ namespace AnalysisPrograms.Recognizers
                 (SpectrogramStandard)sonogram,
                 minHz,
                 maxHz,
+                decibelThreshold,
                 dctDuration,
-                (int)Math.Floor(minOscilFreq),
-                (int)Math.Floor(maxOscilFreq),
+                (int)Math.Floor(minOscFreq),
+                (int)Math.Floor(maxOscFreq),
                 dctThreshold,
                 eventThreshold,
                 minDurationSeconds,
@@ -396,7 +383,6 @@ namespace AnalysisPrograms.Recognizers
             */
 
             // prepare plots
-            double decibelThreshold = 12.0;
             double intensityNormalisationMax = 3 * decibelThreshold;
             var normThreshold = decibelThreshold / intensityNormalisationMax;
             var normalisedIntensityArray = DataTools.NormaliseInZeroOne(decibelArray, 0, intensityNormalisationMax);
@@ -459,7 +445,7 @@ namespace AnalysisPrograms.Recognizers
         {
             var sonoConfig = new SonogramConfig
             {
-                WindowSize = 512,
+                WindowSize = DefaultWindow,
                 NoiseReductionType = NoiseReductionType.Standard,
                 NoiseReductionParameter = configuration.GetDoubleOrNull(AnalysisKeys.NoiseBgThreshold) ?? 0.0,
                 WindowOverlap = 0.0,

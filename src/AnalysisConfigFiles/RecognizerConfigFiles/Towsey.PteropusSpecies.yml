@@ -32,8 +32,9 @@ Profiles:
   Wingbeats:
     MinHz: 200          
     MaxHz: 2000
+    DecibelThreshold: 6.0
     # duration of DCT in seconds 
-    DctDuration: 0.8
+    DctDuration: 0.5
     # minimum acceptable value of a DCT coefficient
     DctThreshold: 0.5
     # ignore oscillation rates below the min & above the max threshold
@@ -46,7 +47,7 @@ Profiles:
     MinDuration: 1.0
     MaxDuration: 10.0
     # Event threshold - use this to determine FP / FN trade-off for events.
-    EventThreshold: 0.60
+    EventThreshold: 0.5
   #Agonist:
   # This notation means the Groote profile has all of the settings that the Standard profile has,
   # however, the MinHz and MaxHz properties have been overridden.
