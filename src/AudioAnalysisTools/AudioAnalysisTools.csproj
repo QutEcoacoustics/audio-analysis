@@ -243,14 +243,9 @@
     <Compile Include="ChannelIntegrity.cs" />
     <Compile Include="ContentDescriptionTools\ContentAlgorithms.cs" />
     <Compile Include="ContentDescriptionTools\ContentSignatures.cs" />
-    <Compile Include="ContentDescriptionTools\ContentTypes\RainLight1.cs" />
-    <Compile Include="ContentDescriptionTools\ContentTypes\BirdMorningChorus1.cs" />
-    <Compile Include="ContentDescriptionTools\ContentTypes\SilverEyeMezTasmanIs.cs" />
-    <Compile Include="ContentDescriptionTools\ContentTypes\WindLight1.cs" />
     <Compile Include="ContentDescriptionTools\ContentVisualization.cs" />
     <Compile Include="ContentDescriptionTools\DataProcessing.cs" />
     <Compile Include="ContentDescriptionTools\DescriptionResult.cs" />
-    <Compile Include="ContentDescriptionTools\ContentTypes\WindStrong1.cs" />
     <Compile Include="ContentDescriptionTools\TemplateManifest.cs" />
     <Compile Include="ContentDescriptionTools\TemplateCollection.cs" />
     <Compile Include="CrossCorrelation.cs" />
