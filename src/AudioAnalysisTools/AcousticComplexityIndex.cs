@@ -39,11 +39,11 @@ namespace AudioAnalysisTools
                 }
             }
 
-            // LDFC spectrograms that include the ACI index show a red line in top most freq bin.
-            // For some reason, the ACI values in the topmost freq bin sit around 0.8 which is double the value one would expect.
-            // Divide this value by 2 in order to bring it down to expected level.
-            // This is a hack! The issue needs further investigation - one day! Possibly due to problem in the passed amplitude spectrogram.
-            aciArray[freqBinCount - 1] /= 2;
+            // LDFC spectrograms that include the ACI index show a red line in top most freq bin, due to high aci values.
+            // Therefore set aci value in top bin to same as the bin below.
+            // This is a quick fix. The issue requires further investigation - for another day!
+            // Possibly due to problem in the passed amplitude spectrogram.
+            aciArray[freqBinCount - 1] = aciArray[freqBinCount - 2];
 
             //DataTools.writeBarGraph(aciArray);
             return aciArray;
