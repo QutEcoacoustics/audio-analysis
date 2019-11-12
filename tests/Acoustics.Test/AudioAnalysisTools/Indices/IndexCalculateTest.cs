@@ -140,7 +140,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             // ACI
             var expectedSpectrumFile = new FileInfo(resourcesDir + "\\ACI.bin");
 
-            // Binary.Serialize(expectedSpectrumFile, spectralIndices.ACI);
+            //Binary.Serialize(expectedSpectrumFile, spectralIndices.ACI);
             var expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.ACI, AllowedDelta);
 
