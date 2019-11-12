@@ -9,11 +9,23 @@ namespace AudioAnalysisTools.ContentDescriptionTools
     using System.IO;
     using Acoustics.Shared;
 
+    /// <summary>
+    /// Templates are initially defined manually in a yml file. Each template in a yml file is called a "manifest".
+    /// The array of manifests in a yml file is used to calculate an array of "working templates" in a json file.
+    /// The json file is generated automatically from the information provided in the manifests.yml file.
+    /// A  template manifest contains the "provenance" of the template (i.e. the detail of the recordings and locaitons of recording files used to make the working template.
+    /// It also contains the information required to calculate the template definition.
+    /// The core of a working template is its definition which stored as a dictionary of spectral indices.
+    /// The working template also contains information required to scan new recordings with the demplate definition.
+    ///
+    /// Each template manifest in a yml file contains an EditStatus field which describes what to with the manifest.
+    /// There are there options as described below.
+    /// </summary>
     public enum EditStatus
     {
-        Edit,
-        Copy,
-        Ignore,
+        Edit,   // This option edits an existing working template in the json file. The template definition is (re)calculated.
+        Copy,   // This option keeps an existing working template unchanged except for its template Id. Template Ids are assigned in order they appear in the yml file.
+        Ignore, // This option keeps an existing working template unchanged except changes its UseStatus boolean field to FALSE.
     }
 
     public class TemplateManifest
@@ -48,7 +60,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 
                 if (manifest.EditStatus == EditStatus.Edit)
                 {
-                    // edit an existing template but use the manifest.
+                    // This option edits an existing working template in the json file. The template definition is (re)calculated.
                     var newTemplate = CreateNewTemplateFromManifest(manifest);
                     newTemplate.TemplateId = i;
                     newTemplate.Template = CreateTemplateDefinition(manifest);
@@ -59,7 +71,8 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 
                 if (manifest.EditStatus == EditStatus.Copy)
                 {
-                    // add existing template unchanged except for Id.
+                    // This option keeps an existing working template unchanged except for its template Id.
+                    // Template ids are assigned in order they appear in the yml file.
                     var existingTemplate = dictionaryOfCurrentTemplates[name];
                     existingTemplate.TemplateId = i;
                     existingTemplate.UseStatus = true;
@@ -70,7 +83,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 
                 if (manifest.EditStatus == EditStatus.Ignore)
                 {
-                    // add existing template unchanged except change UseStatus to Ignore.
+                    // This option keeps an existing working template unchanged except changes its UseStatus boolean field to FALSE.
                     var existingTemplate = dictionaryOfCurrentTemplates[name];
                     existingTemplate.TemplateId = i;
                     existingTemplate.Provenance = null;
