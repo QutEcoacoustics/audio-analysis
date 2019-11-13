@@ -22,6 +22,14 @@ namespace AnalysisPrograms
     using log4net;
     using TowseyLibrary;
 
+    /// <summary>
+    /// This class is derived from AbstractStrongAnalyser.
+    /// It is equivalent to AnalyseLongRecording.cs or a SpeciesRecognizer.cs.
+    /// To call this class, the first argument on the commandline must be 'audio2csv'.
+    /// Given a one-minute recording segment, the ContentDescription.Analyze() method calls AudioAnalysisTools.Indices.IndexCalculateSixOnly.Analysis().
+    /// This calculates six spectral indices, ACI, ENT, EVN, BGN, PMN, OSC. This set of 6x256 acoustic features is used for content description.
+    /// The content description methods are called from ContentDescription.SummariseResults() method.
+    /// </summary>
     public class ContentDescription : AbstractStrongAnalyser
     {
         public const string AnalysisName = "ContentDescription";

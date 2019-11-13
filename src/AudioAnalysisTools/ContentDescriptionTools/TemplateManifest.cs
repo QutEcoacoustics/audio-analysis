@@ -11,23 +11,31 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 
     /// <summary>
     /// Templates are initially defined manually in a yml file. Each template in a yml file is called a "manifest".
-    /// The array of manifests in a yml file is used to calculate an array of "working templates" in a json file.
+    /// The array of manifests in a yml file is used to calculate an array of "functional templates" in a json file.
     /// The json file is generated automatically from the information provided in the manifests.yml file.
-    /// A  template manifest contains the "provenance" of the template (i.e. the detail of the recordings and locaitons of recording files used to make the working template.
+    /// A  template manifest contains the "provenance" of the template (i.e. details of the recordings, source locations etc used to make the functional template.
     /// It also contains the information required to calculate the template definition.
-    /// The core of a working template is its definition which stored as a dictionary of spectral indices.
-    /// The working template also contains information required to scan new recordings with the demplate definition.
+    /// The core of a functional template is its definition, which is stored as a dictionary of spectral indices.
+    /// The functional template also contains information required to scan new recordings with the template definition.
     ///
     /// Each template manifest in a yml file contains an EditStatus field which describes what to with the manifest.
     /// There are there options as described below.
     /// </summary>
     public enum EditStatus
     {
-        Edit,   // This option edits an existing working template in the json file. The template definition is (re)calculated.
-        Copy,   // This option keeps an existing working template unchanged except for its template Id. Template Ids are assigned in order they appear in the yml file.
-        Ignore, // This option keeps an existing working template unchanged except changes its UseStatus boolean field to FALSE.
+        Edit,   // This option edits an existing functional template in the json file. The template definition is (re)calculated.
+        Copy,   // This option keeps an existing functional template unchanged except for its template Id. Template Ids are assigned in order they appear in the yml file.
+        Ignore, // This option keeps an existing functional template unchanged except changes its UseStatus boolean field to FALSE.
     }
 
+    /// <summary>
+    /// This is base class for both template manifests and functional templates.
+    /// Most of the fields and properties are common to both manifests and functional templates.
+    /// Manifests contain the template provenance. This does not appear in the functional template because provenance includes path data.
+    /// TODO Set up inheritance from base class so that there is separate class for manifests and functional templates.
+    ///
+    /// This class also contains methods to create new or edit existing functional templates based on info in the manifests.
+    /// </summary>
     public class TemplateManifest
     {
         public static void CreateNewFileOfTemplateDefinitions(FileInfo manifestFile, FileInfo templateDefinitionsFile)
@@ -60,7 +68,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 
                 if (manifest.EditStatus == EditStatus.Edit)
                 {
-                    // This option edits an existing working template in the json file. The template definition is (re)calculated.
+                    // This option edits an existing functional template in the json file. The template definition is (re)calculated.
                     var newTemplate = CreateNewTemplateFromManifest(manifest);
                     newTemplate.TemplateId = i;
                     newTemplate.Template = CreateTemplateDefinition(manifest);
@@ -71,7 +79,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 
                 if (manifest.EditStatus == EditStatus.Copy)
                 {
-                    // This option keeps an existing working template unchanged except for its template Id.
+                    // This option keeps an existing functional template unchanged except for its template Id.
                     // Template ids are assigned in order they appear in the yml file.
                     var existingTemplate = dictionaryOfCurrentTemplates[name];
                     existingTemplate.TemplateId = i;
@@ -83,7 +91,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 
                 if (manifest.EditStatus == EditStatus.Ignore)
                 {
-                    // This option keeps an existing working template unchanged except changes its UseStatus boolean field to FALSE.
+                    // This option keeps an existing functional template unchanged except changes its UseStatus boolean field to FALSE.
                     var existingTemplate = dictionaryOfCurrentTemplates[name];
                     existingTemplate.TemplateId = i;
                     existingTemplate.Provenance = null;
