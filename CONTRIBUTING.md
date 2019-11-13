@@ -30,7 +30,7 @@ The required software for developing new code (not running the program) includes
 
 - A Windows OS (we're working on making this Linux compatible)
 - Visual Studio 2019
-  - If you're at a university you can software from https://azureforeducation.microsoft.com/devtools
+  - If you're at a university that has an Office365 Subscription you can download software from https://azureforeducation.microsoft.com/devtools
   - The [community edition](https://visualstudio.microsoft.com/vs/) of Visual Studio should work fine and is totally free
 - [Optional] Resharper Ulitmate (Academic License)
   - Install these plugins (_ReSharper_ menu > _Extension Manager_)
