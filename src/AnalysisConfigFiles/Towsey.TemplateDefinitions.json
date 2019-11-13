@@ -1,16 +1,18 @@
 [
   {
-    "Name": "RainLight1",
-    "Description": "Light Rain 1",
-    "TemplateId": 0,
-    "GeneralComment": null,
-    "EditStatus": 0,
+	"Manifest": {
+	    "Name": "RainLight1",
+		"Description": "Light Rain 1",
+		"GeneralComment": null,
+	    "FeatureExtractionAlgorithm": 1,
+		"SpectralReductionFactor": 16,
+		"BandMinHz": 0,
+		"BandMaxHz": 11025,
+		"Provenance": null,
+		"EditStatus": 0
+	},
     "UseStatus": true,
     "MostRecentEdit": "2019-10-07T09:55:01.984003+10:00",
-    "FeatureExtractionAlgorithm": 1,
-    "SpectralReductionFactor": 16,
-    "BandMinHz": 0,
-    "BandMaxHz": 11025,
     "Template": {
       "ACI": [
         0.0763665364901301,
@@ -103,20 +105,21 @@
         0.48769134492197114
       ]
     },
-    "Provenance": null
   },
   {
-    "Name": "WindStrong1",
-    "Description": "Strong Wind 1",
-    "TemplateId": 1,
-    "GeneralComment": null,
-    "EditStatus": 0,
+	"Manifest": {
+	    "Name": "WindStrong1",
+		"Description": "Strong Wind 1",
+		"GeneralComment": null,
+	    "FeatureExtractionAlgorithm": 1,
+		"SpectralReductionFactor": 16,
+		"BandMinHz": 0,
+		"BandMaxHz": 11025,
+		"Provenance": null,
+		"EditStatus": 0
+	},
     "UseStatus": true,
     "MostRecentEdit": "2019-10-07T09:55:02.0621217+10:00",
-    "FeatureExtractionAlgorithm": 1,
-    "SpectralReductionFactor": 16,
-    "BandMinHz": 0,
-    "BandMaxHz": 11025,
     "Template": {
       "ACI": [
         0.086405114541666619,
@@ -209,20 +212,22 @@
         0.0961778157888627
       ]
     },
-    "Provenance": null
   },
   {
-    "Name": "WindLight1",
-    "Description": "Light Wind 1",
-    "TemplateId": 2,
-    "GeneralComment": null,
-    "EditStatus": 0,
+  {
+	"Manifest": {
+	    "Name": "WindLight1",
+		"Description": "Light Wind 1",
+		"GeneralComment": null,
+	    "FeatureExtractionAlgorithm": 1,
+		"SpectralReductionFactor": 16,
+		"BandMinHz": 0,
+		"BandMaxHz": 11025,
+		"Provenance": null,
+		"EditStatus": 0
+	},
     "UseStatus": true,
     "MostRecentEdit": "2019-10-07T09:55:02.1311316+10:00",
-    "FeatureExtractionAlgorithm": 1,
-    "SpectralReductionFactor": 16,
-    "BandMinHz": 0,
-    "BandMaxHz": 11025,
     "Template": {
       "ACI": [
         0.0717271398100646,
@@ -315,20 +320,21 @@
         0.081469150898561757
       ]
     },
-    "Provenance": null
   },
   {
-    "Name": "BirdChorus1",
-    "Description": "Bird Chorus 1",
-    "TemplateId": 3,
-    "GeneralComment": null,
-    "EditStatus": 0,
+	"Manifest": {
+	    "Name": "BirdChorus1",
+		"Description": "Bird Chorus 1",
+		"GeneralComment": null,
+	    "FeatureExtractionAlgorithm": 2,
+		"SpectralReductionFactor": 16,
+		"BandMinHz": 2000,
+		"BandMaxHz": 7500,
+		"Provenance": null,
+		"EditStatus": 0
+	},
     "UseStatus": true,
     "MostRecentEdit": "2019-10-07T09:55:02.2313888+10:00",
-    "FeatureExtractionAlgorithm": 2,
-    "SpectralReductionFactor": 16,
-    "BandMinHz": 2000,
-    "BandMaxHz": 7500,
     "Template": {
       "ACI": [
         0.27384966454367221,
@@ -391,20 +397,21 @@
         0.63315610420987467
       ]
     },
-    "Provenance": null
   },
   {
-    "Name": "BirdChorus2",
-    "Description": "Bird Chorus 2",
-    "TemplateId": 4,
-    "GeneralComment": null,
-    "EditStatus": 0,
+	"Manifest": {
+	    "Name": "BirdChorus2",
+		"Description": "Bird Chorus 2",
+		"GeneralComment": null,
+	    "FeatureExtractionAlgorithm": 2,
+		"SpectralReductionFactor": 16,
+		"BandMinHz": 2000,
+		"BandMaxHz": 8000,
+		"Provenance": null,
+		"EditStatus": 0
+	},
     "UseStatus": false,
     "MostRecentEdit": "2019-10-07T09:55:02.3003991+10:00",
-    "FeatureExtractionAlgorithm": 2,
-    "SpectralReductionFactor": 16,
-    "BandMinHz": 2000,
-    "BandMaxHz": 8000,
     "Template": {
       "ACI": [
         0.27384966454367221,
@@ -472,20 +479,21 @@
         0.3421855793382047
       ]
     },
-    "Provenance": null
   },
   {
-    "Name": "NHH",
-    "Description": "New Holland Honeyeater",
-    "TemplateId": 5,
-    "GeneralComment": null,
-    "EditStatus": 0,
+	"Manifest": {
+	    "Name": "NHH",
+		"Description": "New Holland Honeyeater",
+		"GeneralComment": null,
+	    "FeatureExtractionAlgorithm": 3,
+		"SpectralReductionFactor": 16,
+		"BandMinHz": 3000,
+		"BandMaxHz": 4000,
+		"Provenance": null,
+		"EditStatus": 0
+	},
     "UseStatus": true,
     "MostRecentEdit": "2019-10-07T09:55:02.3694005+10:00",
-    "FeatureExtractionAlgorithm": 3,
-    "SpectralReductionFactor": 16,
-    "BandMinHz": 3000,
-    "BandMaxHz": 4000,
     "Template": {
       "ACI": [
         0.68989941152793854,
@@ -513,6 +521,5 @@
         0.45798462457345035
       ]
     },
-    "Provenance": null
   }
 ]
