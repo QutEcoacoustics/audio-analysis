@@ -7,6 +7,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using Acoustics.Shared;
     using TowseyLibrary;
 
@@ -62,12 +63,13 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// <returns>A list of plots - each plot is the minute by minute scores for a single template.</returns>
         public static List<Plot> ContentDescriptionOfMultipleRecordingFiles(FileInfo listOfIndexFiles, FileInfo templatesFile)
         {
+            // TODO: inline this method into AnalysisPrograms.ContentDescription.UseModel.Analyse
             // total length in minutes of all the recordings
             const int totalMinutesDurationOverAllRecordings = 1440;
             const int startMinute = 0;
 
             // Read in all the prepared templates
-            var templates = Json.Deserialize<TemplateManifest[]>(templatesFile);
+            var templates = Json.Deserialize<FunctionalTemplate[]>(templatesFile);
             var templatesAsDictionary = DataProcessing.ExtractDictionaryOfTemplateDictionaries(templates);
 
             // Read in list of paths to index files
@@ -114,7 +116,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         }
 
         public static List<DescriptionResult> AnalyzeMinutes(
-            TemplateManifest[] templates,
+            FunctionalTemplate[] templates,
             Dictionary<string, Dictionary<string, double[]>> templatesAsDictionary,
             Dictionary<string, double[,]> dictionaryOfRecordingIndices,
             int elapsedMinutesAtStart)
@@ -149,7 +151,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// <param name="minuteId">The minute ID, i.e. its temporal position.</param>
         /// <returns>A single instance of a DescriptionResult.</returns>
         public static DescriptionResult AnalyzeOneMinute(
-            TemplateManifest[] templates,
+            FunctionalTemplate[] templates,
             Dictionary<string, Dictionary<string, double[]>> templatesAsDictionary,
             Dictionary<string, double[]> oneMinuteOfIndices,
             int minuteId)
@@ -165,8 +167,8 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                     continue;
                 }
 
-                var algorithmType = template.FeatureExtractionAlgorithm;
-                var templateIndices = templatesAsDictionary[template.Name];
+                var algorithmType = template.Manifest.FeatureExtractionAlgorithm;
+                var templateIndices = templatesAsDictionary[template.Manifest.Name];
                 double score;
 
                 // Following line used where want to return a set of random scores for testing reasons.
@@ -175,13 +177,13 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                 switch (algorithmType)
                 {
                     case 1:
-                        score = ContentAlgorithms.GetFullBandContent1(oneMinuteOfIndices, template, templateIndices);
+                        score = ContentAlgorithms.GetFullBandContent1(oneMinuteOfIndices, template.Manifest, templateIndices);
                         break;
                     case 2:
-                        score = ContentAlgorithms.GetBroadbandContent1(oneMinuteOfIndices, template, templateIndices);
+                        score = ContentAlgorithms.GetBroadbandContent1(oneMinuteOfIndices, template.Manifest, templateIndices);
                         break;
                     case 3:
-                        score = ContentAlgorithms.GetNarrowBandContent1(oneMinuteOfIndices, template, templateIndices);
+                        score = ContentAlgorithms.GetNarrowBandContent1(oneMinuteOfIndices, template.Manifest, templateIndices);
                         break;
                     default:
                         LoggedConsole.WriteWarnLine("Algorithm " + algorithmType + " does not exist.");
@@ -189,7 +191,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                         break;
                 }
 
-                var result = new KeyValuePair<string, double>(template.Description, score);
+                var result = new KeyValuePair<string, double>(template.Manifest.Description, score);
                 descriptionResult.AddDescription(result);
             }
 

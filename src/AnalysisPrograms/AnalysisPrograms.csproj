@@ -313,6 +313,7 @@
     <Compile Include="AudioCutter.cs" />
     <Compile Include="AudioFileCheck.cs" />
     <Compile Include="CheckEnvironment.cs" />
+    <Compile Include="ContentDescription\BuildModel.cs" />
     <Compile Include="Draw\Zooming\DrawZoomingSpectrograms.Arguments.cs" />
     <Compile Include="EventStatistics\EventStatisticsEntry.Arguments.cs" />
     <Compile Include="EventStatistics\EventStatisticsAnalysis.cs" />

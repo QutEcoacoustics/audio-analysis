@@ -310,12 +310,12 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             return list.ToArray();
         }
 
-        public static Dictionary<string, Dictionary<string, double[]>> ExtractDictionaryOfTemplateDictionaries(TemplateManifest[] templates)
+        public static Dictionary<string, Dictionary<string, double[]>> ExtractDictionaryOfTemplateDictionaries(FunctionalTemplate[] templates)
         {
             var opDictionary = new Dictionary<string, Dictionary<string, double[]>>();
-            foreach (TemplateManifest template in templates)
+            foreach (FunctionalTemplate template in templates)
             {
-                var name = template.Name;
+                var name = template.Manifest.Name;
                 var dictOfIndices = template.Template;
                 opDictionary.Add(name, dictOfIndices);
             }

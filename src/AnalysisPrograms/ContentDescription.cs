@@ -2,7 +2,7 @@
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
-namespace AnalysisPrograms
+namespace AnalysisPrograms.ContentDescription
 {
     using System;
     using System.Collections.Generic;
@@ -24,35 +24,31 @@ namespace AnalysisPrograms
 
     /// <summary>
     /// This class is derived from AbstractStrongAnalyser.
-    /// It is equivalent to AnalyseLongRecording.cs or a SpeciesRecognizer.cs.
+    /// It is equivalent to AnalyseLongRecording.cs or a species recognizer.
     /// To call this class, the first argument on the commandline must be 'audio2csv'.
     /// Given a one-minute recording segment, the ContentDescription.Analyze() method calls AudioAnalysisTools.Indices.IndexCalculateSixOnly.Analysis().
     /// This calculates six spectral indices, ACI, ENT, EVN, BGN, PMN, OSC. This set of 6x256 acoustic features is used for content description.
     /// The content description methods are called from ContentDescription.SummariseResults() method.
     /// </summary>
-    public class ContentDescription : AbstractStrongAnalyser
+    public class UseModel : AbstractStrongAnalyser
     {
         public const string AnalysisName = "ContentDescription";
 
         // TASK IDENTIFIERS
         //public const string TaskAnalyze = AnalysisName;
         //public const string TaskLoadCsv = "loadCsv";
-        public const string TowseyAcoustic = "Towsey." + AnalysisName;
+        public const string TowseyContentDescription = "Towsey." + AnalysisName;
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         public override string DisplayName => "Content Description";
 
-        public override string Identifier => TowseyAcoustic;
+        public override string Identifier => TowseyContentDescription;
 
         public override string Description => "[BETA] Generates six spectral indices for Content Description.";
 
         public override AnalysisSettings DefaultSettings => new AnalysisSettings
         {
-            AnalysisMaxSegmentDuration = TimeSpan.FromMinutes(1),
-            AnalysisMinSegmentDuration = TimeSpan.FromSeconds(30),
-            SegmentMediaType = MediaTypes.MediaTypeWav,
-            SegmentOverlapDuration = TimeSpan.Zero,
             AnalysisTargetSampleRate = ContentSignatures.SampleRate,
         };
 
@@ -89,23 +85,35 @@ namespace AnalysisPrograms
 
             segmentResults.SpectralIndexValues.FileName = segmentSettings.Segment.SourceMetadata.Identifier;
 
+            // TODO: calculate description results here
+            DescriptionResult description = null; // e.g. GetContentDescription();
+
             var analysisResults = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration)
             {
                 AnalysisIdentifier = this.Identifier,
-                SpectralIndices = new SpectralIndexBase[1],
+                SpectralIndices = new SpectralIndexBase[]
+                {
+                    // Transfer the spectral index results to AnalysisResults
+                    // TODO: consider not returning this value if it is not needed in summarize
+                    segmentResults.SpectralIndexValues,
+                },
+                MiscellaneousResults =
+                {
+                    { nameof(DescriptionResult), description },
+                },
             };
 
-            //Transfer the spectral index results to AnalysisResults
-            analysisResults.SpectralIndices[0] = segmentResults.SpectralIndexValues;
             return analysisResults;
         }
 
         public override void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results)
         {
+            throw new NotImplementedException("Content Description should not produce events");
         }
 
         public override void WriteSummaryIndicesFile(FileInfo destination, IEnumerable<SummaryIndexBase> results)
         {
+            throw new NotImplementedException("Content Description should not produce summary indices");
         }
 
         public override List<FileInfo> WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results)
@@ -113,6 +121,8 @@ namespace AnalysisPrograms
             //get selectors and removed unwanted because these indices were never calculated.
             var spectralIndexBases = results.ToList();
             var selectors = spectralIndexBases.First().GetSelectors();
+
+            // TODO: REMOVE unused index filter with new Spectral Indices child class
             foreach (var indexName in ContentSignatures.UnusedIndexNames)
             {
                 selectors.Remove(indexName);
@@ -122,7 +132,7 @@ namespace AnalysisPrograms
             foreach (var kvp in selectors)
             {
                 // write spectrogram to disk as CSV file
-                var filename = FilenameHelpers.AnalysisResultPath(destination, fileNameBase, TowseyAcoustic + "." + kvp.Key, "csv").ToFileInfo();
+                var filename = FilenameHelpers.AnalysisResultPath(destination, fileNameBase, TowseyContentDescription + "." + kvp.Key, "csv").ToFileInfo();
                 spectralIndexFiles.Add(filename);
                 Csv.WriteMatrixToCsv(filename, spectralIndexBases, kvp.Value);
             }
@@ -210,11 +220,16 @@ namespace AnalysisPrograms
             // now get the content description for each minute.
             var templatesFileName = cdConfiguration.TemplatesList;
             var templatesFile = new FileInfo(Path.Combine(configDirectory, templatesFileName));
+
             var contentDictionary = GetContentDescription(spectralIndices, templatesFile, startTimeOffset);
+            // TODO: use this when calculating content description results in the Analyze method
+            //var allContentDescriptionResults = results.Select(x => (DescriptionResult)x.MiscellaneousResults[nameof(DescriptionResult)]);
 
             // Write the results to a csv file
             var filePath = Path.Combine(resultsDirectory.FullName, "AcousticSignatures.csv");
             FileTools.WriteDictionaryAsCsvFile(contentDictionary, filePath);
+            // TODO: use this when calculating content description results in the Analyze method
+            //Csv.WriteToCsv(filePath, allContentDescriptionResults);
 
             // prepare graphical plots of the acoustic signatures.
             var contentPlots = GetPlots(contentDictionary);
@@ -234,14 +249,14 @@ namespace AnalysisPrograms
         /// </summary>
         /// <param name="spectralIndices">set of spectral indices for each minute.</param>
         /// <param name="templatesFile">json file containing description of templates.</param>
-        /// <param name="elapsedTimeAtStartOfRecording">minute Id for start of recording.</param>
+        /// <param name="elapsedTimeAtStartOfRecording">Offset into the recording where recording begun (may not be a whole or round minute).</param>
         private static Dictionary<string, double[]> GetContentDescription(
             SpectralIndexBase[] spectralIndices,
             FileInfo templatesFile,
             TimeSpan elapsedTimeAtStartOfRecording)
         {
             // Read in the content description templates
-            var templates = Json.Deserialize<TemplateManifest[]>(templatesFile);
+            var templates = Json.Deserialize<FunctionalTemplate[]>(templatesFile);
             var templatesAsDictionary = DataProcessing.ExtractDictionaryOfTemplateDictionaries(templates);
             var startMinuteId = (int)Math.Round(elapsedTimeAtStartOfRecording.TotalMinutes);
 
