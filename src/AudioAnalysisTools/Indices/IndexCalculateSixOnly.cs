@@ -67,6 +67,7 @@ namespace AudioAnalysisTools.Indices
             int freqBinCount = frameSize / 2;
             var indexProperties = GetIndexProperties();
             var result = new IndexCalculateResult(freqBinCount, indexProperties, indexCalculationDuration, segmentOffsetTimeSpan, config);
+            //var result = new SpectralIndexValuesforContentDescription();
 
             //result.SummaryIndexValues = null;
             SpectralIndexValues spectralIndices = result.SpectralIndexValues;
