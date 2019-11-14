@@ -13,10 +13,12 @@ namespace AnalysisPrograms
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
+    using Accord.Statistics.Kernels;
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
     using Acoustics.Tools.Wav;
     using AnalyseLongRecordings;
+    using AnalysisPrograms.Draw.Zooming;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
@@ -26,6 +28,7 @@ namespace AnalysisPrograms
     using McMaster.Extensions.CommandLineUtils;
     using Production.Arguments;
     using TowseyLibrary;
+    using Log = TowseyLibrary.Log;
 
     /// <summary>
     /// Activity Code for this class:= sandpit
@@ -36,13 +39,16 @@ namespace AnalysisPrograms
     /// audio2sonogram - Calls AnalysisPrograms.Audio2Sonogram.Main(): Produces a sonogram from an audio file - EITHER custom OR via SOX.Generates multiple spectrogram images and oscilllations info
     /// indicescsv2image - Calls DrawSummaryIndexTracks.Main(): Input csv file of summary indices. Outputs a tracks image.
     /// colourspectrogram - Calls DrawLongDurationSpectrograms.Execute():  Produces LD spectrograms from matrices of indices.
-    /// zoomingspectrograms - Calls DrawZoomingSpectrograms.Execute():  Produces LD spectrograms on different time scales.
+    /// drawzoomingspectrograms - Calls DrawZoomingSpectrograms.Execute():  Produces LD spectrograms on different time scales.
     /// differencespectrogram - Calls DifferenceSpectrogram.Execute():  Produces Long duration difference spectrograms
     ///
     /// audiofilecheck - Writes information about audio files to a csv file.
     /// snr - Calls SnrAnalysis.Execute():  Calculates signal to noise ratio.
     /// audiocutter - Cuts audio into segments of desired length and format
     /// createfoursonograms.
+    ///
+    /// NOTE: In March 2019, several config files were removed because no longer used or relevant.
+    /// Therefore many of the config paths below will no longer be valid.
     /// </summary>
     // TODO: [OPENSOURCE] empty out this file
     public class Sandpit
@@ -62,7 +68,7 @@ namespace AnalysisPrograms
                 Log.WriteLine("# Start Time = " + tStart.ToString(CultureInfo.InvariantCulture));
 
                 //AnalyseFrogDataSet();
-                Audio2CsvOverOneFile();
+                //Audio2CsvOverOneFile();
                 //Audio2CsvOverMultipleFiles();
 
                 // used to get files from availae for Black rail and Least Bittern papers.
@@ -80,7 +86,10 @@ namespace AnalysisPrograms
                 //DrawLongDurationSpectrogram();
                 //DrawClusterSequence();
                 //DrawStandardSpectrograms();
+                //DrawZoomingSpectrogramPyramid();
+
                 //Test_DrawFourSpectrograms();
+
 
                 //ExtractSpectralFeatures();
                 //HerveGlotinMethods();
@@ -94,6 +103,8 @@ namespace AnalysisPrograms
                 //TestEigenValues();
                 //TestChannelIntegrity();
                 //TestDct();
+                //Statistics.TestGetNthPercentileBin();
+
                 //TEST_FilterMovingAverage();
                 //TestImageProcessing();
                 //TestMatrix3dClass();
@@ -105,8 +116,11 @@ namespace AnalysisPrograms
                 //TestTernaryPlots();
                 //TestDirectorySearchAndFileSearch();
                 //TestNoiseReduction();
+                //ReadSpectralIndicesFromTwoFalseColourSpectrogramRibbons();
                 //Oscillations2014.TESTMETHOD_DrawOscillationSpectrogram();
                 //Oscillations2014.TESTMETHOD_GetSpectralIndex_Osc();
+                //Test_DrawFourSpectrograms();
+                //TestLinearFunction();
 
                 Console.WriteLine("# Finished Sandpit Task!    Press any key to exit.");
                 return this.Ok();
@@ -333,6 +347,13 @@ namespace AnalysisPrograms
             //string recordingPath = @"G:\SensorNetworks\WavFiles\BradLaw\PillagaForestSite18a\PILLIGA_20121125_233900.wav";
             //string outputPath = @"G:\SensorNetworks\Output\BradLaw\Pillaga24";
             //string configPath = @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.yml";
+
+
+            //string recordingPath = @"C:\Ecoacoustics\WavFiles\LizZnidersic\TasmanIsland2015_Unit2_Mez\SM304256_0+1_20151114_191652+1000.wav";
+            //string outputPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\22";
+            //string outputPath = @"C:\Ecoacoustics\Output\Test\TestMezOneHourHiRes\20";
+            //string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Acoustic.yml";
+            //string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Acoustic.Zooming.yml";
 
             // Test on STANDARD 24-HOUR RECORDING
             //string recordingPath = @"C:\Ecoacoustics\WavFiles\LizZnidersic\TasmanIsland2015_Unit2_Mez\SM304256_0+1_20151114_131652.wav";
@@ -628,19 +649,13 @@ namespace AnalysisPrograms
             //string opdir = @"C:\SensorNetworks\Output\QueenMaryUL\concatenated";
 
             // false-colour spectrograms
+            //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\Farmstay_ECLIPSE3_20121114_060001TEST\Indices\Towsey.Acoustic";
+            //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\Farmstay_ECLIPSE3_20121114_060001TEST\Spectrograms";
             //string ipFileName = "Farmstay_ECLIPSE3_20121114_060001TEST"; //exclude the analysis type from file name i.e. "Towsey.Acoustic.Indices"
             //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.60sppx.EclipseFarmstay";
             //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
             //string ipFileName = "Farmstay_ECLIPSE3_20121114-060001+1000_TEST"; //exclude the analysis type from file name i.e. "Towsey.Acoustic.Indices"
             //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic.60sppx.EclipseFarmstay";
-            //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
-
-            //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\Farmstay_ECLIPSE3_20121114_060001TEST\Indices\Towsey.Acoustic";
-            //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\Farmstay_ECLIPSE3_20121114_060001TEST\Spectrograms";
-
-            // zoomable spectrograms
-            //string ipFileName = "TEST_TUITCE_20091215_220004"; //exclude the analysis type from file name i.e. "Towsey.Acoustic.Indices"
-            //string ipdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
             //string opdir = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\Towsey.Acoustic";
 
             //2010 Oct 13th
@@ -691,6 +706,37 @@ namespace AnalysisPrograms
         }
 
         /// <summary>
+        /// This action item = "DrawZoomingSpectrograms".
+        /// AnalysisPrograms.Draw.Zooming.DrawZoomingSpectrograms
+        /// AnalysisPrograms.Draw.Zooming.Arguments
+        /// Note: the path to the IndexPropertiesConfig is included in the SpectrogramZoomingConfig File.
+        ///       It should be @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\IndexPropertiesConfig.yml".
+        /// </summary>
+        public static void DrawZoomingSpectrogramPyramid()
+        {
+            //string ipFileName = "TEST_TUITCE_20091215_220004"; //exclude the analysis type from file name i.e. "Towsey.Acoustic.Indices"
+            //string ipdir = @"C:\Ecoacoustics\Output\FalseColourSpectrograms\SpectrogramFocalZoom\Towsey.Acoustic.200ms.EclipseFarmstayOLD";
+            //MAP "\\Sef-bigdata-10\d$\tasmania_mez\output_zooming_indices2019\Towsey.Acoustic" to Q drive
+            //string ipdir = @"Q:\TasmaniaMez";
+            string ipdir = @"C:\Ecoacoustics\Output\Test\TestMezOneHourHiRes\20\Towsey.Acoustic";
+            string opdir = @"C:\Ecoacoustics\Output\FalseColourSpectrograms\SpectrogramFocalZoom\TasmaniaMezTest";
+
+            // The default zooming LDFC spectrogram config file
+            //var spectrogramConfigFile = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\SpectrogramZoomingConfig.yml";
+            var zoomingConfigFile = @"C:\Ecoacoustics\Output\FalseColourSpectrograms\SpectrogramFocalZoom\SpectrogramZoomingConfig.yml";
+
+            var args = new DrawZoomingSpectrograms.Arguments
+            {
+                SourceDirectory = ipdir,
+                Output = opdir,
+                SpectrogramZoomingConfig = zoomingConfigFile,
+                ZoomAction = DrawZoomingSpectrograms.Arguments.ZoomActionType.Focused,
+                FocusMinute = 30,
+            };
+            DrawZoomingSpectrograms.Execute(args);
+        }
+
+        /// <summary>
         /// This action item = "concatenateIndexFiles".
         /// </summary>
         public static void ConcatenateIndexFilesAndSpectrograms()
@@ -715,7 +761,9 @@ namespace AnalysisPrograms
 
             // SET DEFAULT COLOUR MAPS
             string colorMap1 = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
-            string colorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_OSC;
+            string colorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_CVR;
+            //string colorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_OSC;
+
 
             // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and EchoGaps.
             string gapRendering = "TimedGaps"; // the default
@@ -822,9 +870,9 @@ namespace AnalysisPrograms
                 @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez",
             };
 
-            string directoryFilter = "0*"; // this is a directory filter to locate only the required files
+            string directoryFilter = "Mez*"; // this is a directory filter to locate only the required files
             string opFileStem = "TasmanIslandMez";
-            string opPath = @"C:\Ecoacoustics\Output\Test\DebugIssue170";
+            string opPath = @"C:\Ecoacoustics\Output\Test\DebugIssue186";
 
             // there are three options for rendering of gaps/missing data: NoGaps, TimedGaps and EchoGaps.
             gapRendering = "TimedGaps";
@@ -1203,6 +1251,33 @@ namespace AnalysisPrograms
                 var combinedImage = ImageTools.CombineImagesInLine(listOfImages);
                 combinedImage?.Save(opPath);
             }
+        }
+
+        public static void ReadSpectralIndicesFromTwoFalseColourSpectrogramRibbons()
+        {
+            var path1 = new FileInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\Concat5\Testing\2015-11-14\Testing__ACI-ENT-EVN.SpectralRibbon.png");
+            var path2 = new FileInfo(@"C:\Ecoacoustics\Output\Test\Test24HourRecording\Concat5\Testing\2015-11-14\Testing__BGN-PMN-SPT.SpectralRibbon.png");
+            var outputPath = new FileInfo(@"C:\Ecoacoustics\Output\Test\TestReadingOfRibbonFiles\Test.csv");
+
+            // Calling this method assumes that the ribbon spectrograms were composed using the following indicies forRGB
+            //string[] colourKeys1 = { "ACI", "ENT", "EVN" };
+            //string[] colourKeys2 = { "BGN", "PMN", "XXX" };
+            var image1 = Image.FromFile(path1.FullName);
+            var image2 = Image.FromFile(path2.FullName);
+
+            // default time values are for complete image width.
+            var matrix = LdSpectrogramRibbons.ReadSpectralIndicesFromTwoFalseColourSpectrogramRibbons(image1, image2);
+
+            //var startTime = TimeSpan.Zero;
+            //var duration = TimeSpan.FromMinutes(image1.Width);
+            var startTime = TimeSpan.FromHours(2);
+            var duration = TimeSpan.FromMinutes(60);
+            //var matrix = LdSpectrogramRibbons.ReadSpectralIndicesFromTwoFalseColourSpectrogramRibbons(image1, image2, startTime, duration);
+
+            //MatrixTools.WriteMatrix2File(matrix, outputPath.FullName);
+            Csv.WriteMatrixToCsv(outputPath, matrix);
+
+            // TODO: need to check that can recover ribbon image from reading this matrix.
         }
 
         /// <summary>
@@ -2909,5 +2984,56 @@ namespace AnalysisPrograms
                 }
             }
         } // end CodeToExtractFeatureVectorOfIndices()
+
+        /// <summary>
+        /// Test of linear function.
+        /// Used to test blending in ZoomCommon line 131.
+        /// </summary>
+        public static void TestLinearFunction()
+        {
+            // set up piecewise linear function to determine colour weights
+            //int imageScaleInMsPerPixel = 257;
+            int imageScaleInMsPerPixel = 16000;
+            //int imageScaleInMsPerPixel = 32760;
+            double blendWeight1;
+
+            /*
+            //Linear SCALE
+            int upperResolution = 30000;
+            int lowerResolution = 200;
+            if (imageScaleInMsPerPixel >= upperResolution)
+            {
+                blendWeight1 = 1.0;
+            }
+            else if (imageScaleInMsPerPixel <= lowerResolution)
+            {
+                blendWeight1 = 0.0;
+            }
+            else
+            {
+                blendWeight1 = (imageScaleInMsPerPixel - lowerResolution) / (double)upperResolution;
+            }
+            */
+
+            //LOG SCALE
+            var logResolution = Math.Log(imageScaleInMsPerPixel, 2);
+            double upperResolution = Math.Log(32768, 2);
+            double lowerResolution = Math.Log(256, 2);
+            double range = upperResolution - lowerResolution;
+            if (logResolution >= upperResolution)
+            {
+                blendWeight1 = 1.0;
+            }
+            else if (logResolution <= lowerResolution)
+            {
+                blendWeight1 = 0.0;
+            }
+            else
+            {
+                blendWeight1 = (logResolution - lowerResolution) / range;
+            }
+
+            double blendWeight2 = 1 - blendWeight1;
+        }
     }
 }

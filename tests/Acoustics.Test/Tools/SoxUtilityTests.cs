@@ -9,7 +9,9 @@
 namespace Acoustics.Test.Tools
 {
     using System;
+    using System.Globalization;
     using System.IO;
+    using System.Threading;
     using Acoustics.Shared;
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
@@ -102,7 +104,6 @@ namespace Acoustics.Test.Tools
                 repeats[r] = reader.Samples;
 
                 File.Delete(output.FullName);
-
             }
 
             for (int i = 1; i < repeats.Length; i++)
@@ -118,7 +119,64 @@ namespace Acoustics.Test.Tools
 
                 CollectionAssert.AreEqual(repeats[0], repeats[i], $"Repeat {i} was not identical to repeat 0. Total delta: {totalDifference}");
             }
+        }
 
+        [DataTestMethod]
+        [DataRow("en-AU", BandPassType.Bandpass)]
+        [DataRow("de-DE", BandPassType.Bandpass)]
+        [DataRow("it-it", BandPassType.Bandpass)]
+        [DataRow("es-AR", BandPassType.Bandpass)]
+        [DataRow("en-AU", BandPassType.Sinc)]
+        [DataRow("de-DE", BandPassType.Sinc)]
+        [DataRow("it-it", BandPassType.Sinc)]
+        [DataRow("es-AR", BandPassType.Sinc)]
+        public void SoxCanSegmentWithDifferentLocales(string culture, BandPassType bandPassType)
+        {
+            var originalCulture = Thread.CurrentThread.CurrentCulture;
+            Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
+            try
+            {
+                var util = new LeakySoxAudioUtility(PathHelper.GetExe(AppConfigHelper.SoxExe));
+
+                var source = TestHelper.GetAudioFile("CaneToad_Gympie_44100.wav");
+
+                // intentionally testing that commas aren't included in the
+                // constructed commands for numbers as a decimal separator
+                var constructedArguments = util.GetConstructedModifyArguments(source, TempFileHelper.NewTempFile(), new AudioUtilityRequest()
+                {
+                    OffsetStart = 123.456.Seconds(),
+                    OffsetEnd = 789.123.Seconds(),
+                    BandpassHigh = 789.456,
+                    BandpassLow = 123.789,
+                    BandPassType = bandPassType,
+                });
+
+                StringAssert.Contains(constructedArguments, "123.456");
+
+                // end is specified as a duration
+                StringAssert.Contains(constructedArguments, "665.667");
+
+                switch (bandPassType)
+                {
+                    case BandPassType.Sinc:
+                        StringAssert.Contains(constructedArguments, "0.123789");
+                        StringAssert.Contains(constructedArguments, "0.789456");
+                        break;
+                    case BandPassType.Bandpass:
+
+                        // bandpass filter is centre + width hence numbers are different
+                        StringAssert.Contains(constructedArguments, "0.4566225");
+                        StringAssert.Contains(constructedArguments, "0.665667");
+                        break;
+                    case BandPassType.None:
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(bandPassType), bandPassType, null);
+                }
+            }
+            finally
+            {
+                Thread.CurrentThread.CurrentCulture = originalCulture;
+            }
         }
     }
 }

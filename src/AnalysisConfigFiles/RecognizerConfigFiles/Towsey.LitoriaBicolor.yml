@@ -18,7 +18,7 @@ DecibelThreshold: 6.0
 
 # ignore oscillation rates below the min & above the max threshold
 # OSCILLATIONS PER SECOND Default=8-15
-#MinOcilFreq: 35        
+#MinOcilFreq: 35
 #MaxOcilFreq: 250
 
 FrameSize: 512
@@ -32,12 +32,13 @@ FrameSize: 512
 ResampleRate: 22050
 
 ## Specifically for AnalyzeLongRecording
-# SegmentDuration: units=seconds;    
+# SegmentDuration: units=seconds;
 SegmentDuration: 60
 # SegmentOverlap: units=seconds;
 SegmentOverlap: 0
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
+# If `true` saves a data into a seperate file every `SegmentDuration` seconds. Accepts a boolean value: [false|true]
 SaveIntermediateCsvFiles: false
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveSonogramImages: Never

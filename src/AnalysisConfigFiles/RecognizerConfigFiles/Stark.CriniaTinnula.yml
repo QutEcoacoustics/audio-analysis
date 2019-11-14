@@ -3,9 +3,9 @@ SpeciesName: Crinia tinnula
 AbbreviatedSpeciesName: C.tinnula
 
 # min and max of the freq band to search
-MinHz: 3000          
+MinHz: 3000
 MaxHz: 6000
-# duration of DCT in seconds 
+# duration of DCT in seconds
 
 # Event threshold - use this to determine FP / FN trade-off for events.
 EventThreshold: 0.30
@@ -13,9 +13,9 @@ EventThreshold: 0.30
 Profiles:
     Standard: &Standard
         # min and max of the freq band to search
-        MinHz: 3500          
+        MinHz: 3500
         MaxHz: 6000
-        # duration of DCT in seconds 
+        # duration of DCT in seconds
         DctDuration: 0.15
         # minimum acceptable value of a DCT coefficient
         DctThreshold: 0.6
@@ -29,22 +29,22 @@ Profiles:
         # Event threshold - use this to determine FP / FN trade-off for events.
         EventThreshold: 0.30
     HighFrequency:
-        # Debra wrote this for high oscillation rate calls in Aura 
+        # Debra wrote this for high oscillation rate calls in Aura
         <<: *Standard
-        MinHz: 3800          
+        MinHz: 3800
         MaxHz: 5100
         DctDuration: 0.15
         DctThreshold: 0.45
-        MinOcilFreq: 100       
+        MinOcilFreq: 100
         MaxOcilFreq: 150
         MinDuration: 0.04
         MaxDuration: 0.8
-    LowFrequency: 
+    LowFrequency:
         # Debra wrote this for low oscillation rate calls in Aura
         <<: *Standard
-        MinHz: 3800          
+        MinHz: 3800
         MaxHz: 5100
-        MinOcilFreq: 45        
+        MinOcilFreq: 45
         MaxOcilFreq: 60
         MinDuration: 0.04
 
@@ -57,12 +57,13 @@ Profiles:
 ResampleRate: 22050
 
 ## Specifically for AnalyzeLongRecording
-# SegmentDuration: units=seconds;    
+# SegmentDuration: units=seconds;
 SegmentDuration: 60
 # SegmentOverlap: units=seconds;
 SegmentOverlap: 0
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
+# If `true` saves a data into a seperate file every `SegmentDuration` seconds. Accepts a boolean value: [false|true]
 SaveIntermediateCsvFiles: false
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveSonogramImages: Never

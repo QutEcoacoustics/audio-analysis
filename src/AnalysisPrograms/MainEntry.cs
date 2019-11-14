@@ -27,12 +27,15 @@ namespace AnalysisPrograms
 
         public static async Task<int> Main(string[] args)
         {
-            ParseEnvirionemnt();
+            ParseEnvironment();
 
             // Uses an env var to  attach debugger before argument parsing
             AttachDebugger(ApAutoAttach ? DebugOptions.YesSilent : DebugOptions.No);
 
-            Logging = new Logging(colorConsole: !ApPlainLogging, Level.Info, quietConsole: false);
+            Logging = new Logging(
+                colorConsole: !ApPlainLogging,
+                VerbosityToLevel(ApDefaultLogVerbosity ?? LogVerbosity.Info),
+                quietConsole: false);
 
             Copyright();
 

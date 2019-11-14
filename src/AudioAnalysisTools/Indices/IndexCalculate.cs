@@ -337,7 +337,7 @@ namespace AudioAnalysisTools.Indices
             // ii: CALCULATE THE ACOUSTIC COMPLEXITY INDEX
             spectralIndices.DIF = AcousticComplexityIndex.SumOfAmplitudeDifferences(amplitudeSpectrogram);
 
-            double[] aciSpectrum = AcousticComplexityIndex.CalculateACI(amplitudeSpectrogram);
+            double[] aciSpectrum = AcousticComplexityIndex.CalculateAci(amplitudeSpectrogram);
             spectralIndices.ACI = aciSpectrum;
 
             // remove low freq band of ACI spectrum and store average ACI value

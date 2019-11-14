@@ -39,6 +39,8 @@ namespace AnalysisPrograms.Recognizers
     using System.IO;
     using System.Linq;
     using System.Reflection;
+
+    using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools;
@@ -58,7 +60,7 @@ namespace AnalysisPrograms.Recognizers
 
         // The default window for Pteropus sp. Need to be fixed for accurately detecting wing beat oscillations.
         private static readonly int DefaultWindow = 512;
-
+        
         public override string Author => "Towsey";
 
         public override string SpeciesName => "PteropusSpecies";
@@ -169,6 +171,7 @@ namespace AnalysisPrograms.Recognizers
             double minDurationSeconds = profile.GetDoubleOrNull(AnalysisKeys.MinDuration) ?? 0.15;
             double maxDurationSeconds = profile.GetDoubleOrNull(AnalysisKeys.MaxDuration) ?? 0.5;
             double decibelThreshold = profile.GetDoubleOrNull(AnalysisKeys.DecibelThreshold) ?? 9.0;
+
             var minTimeSpan = TimeSpan.FromSeconds(minDurationSeconds);
             var maxTimeSpan = TimeSpan.FromSeconds(maxDurationSeconds);
 

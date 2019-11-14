@@ -17,6 +17,7 @@ namespace AudioAnalysisTools
     using System.Text;
     using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Csv;
+    using AForge.Imaging.Filters;
     using AnalysisBase.ResultBases;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;

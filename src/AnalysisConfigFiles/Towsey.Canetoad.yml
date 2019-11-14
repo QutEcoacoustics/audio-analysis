@@ -4,20 +4,20 @@
 SpeciesName: Rhinella_marina
 AbbreviatedSpeciesName: R.marina
 # min and max of the freq band to search
-MinHz: 400          
+MinHz: 400
 MaxHz: 900
-# duration of DCT in seconds 
+# duration of DCT in seconds
 DctDuration: 0.75
 # minimum acceptable value of a DCT coefficient
 DctThreshold: 0.45
 # ignore oscillation rates below the min & above the max threshold
 # OSCILLATIONS PER SECOND
-MinOcilFreq: 7        
+MinOcilFreq: 7
 MaxOcilFreq: 20
 # Minimum and maximum duration for the length of a true advertisement call.
 # As of 4 June 2015, the Code for Canetoad recogniser was changed to include recognition of release calls.
 # The min duration setting of 5 seconds should not be changed because it is boundary between advert calls ( >5s duration) and release calls (<5s duration).
-# The min duration for a release call will be set = to the DCT duration in the code. 
+# The min duration for a release call will be set = to the DCT duration in the code.
 MinDuration: 5.0
 MaxDuration: 30.0
 # Event threshold - use this to determine FP / FN trade-off for events.
@@ -27,6 +27,7 @@ DoNoiseReduction: false
 #BgNoiseThreshold: 3.0
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
+# If `true` saves a data into a seperate file every `SegmentDuration` seconds. Accepts a boolean value: [false|true]
 SaveIntermediateCsvFiles: false
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveSonogramImages: Never

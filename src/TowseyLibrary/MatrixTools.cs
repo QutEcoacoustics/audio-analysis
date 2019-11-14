@@ -976,8 +976,8 @@ namespace TowseyLibrary
 
         public static void WriteMatrix2File(double[,] matrix, string fPath)
         {
-            int rowCount = matrix.GetLength(0); //height
-            int colCount = matrix.GetLength(1); //width
+            int rowCount = matrix.GetLength(0); // height
+            int colCount = matrix.GetLength(1); // width
             for (int i = 0; i < rowCount; i++)
             {
                 for (int j = 0; j < colCount; j++)
@@ -994,91 +994,107 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// ADD matrix m2 to matrix m1
+        /// ADD matrix m2 to matrix m1.
         /// </summary>
         public static double[,] AddMatrices(double[,] m1, double[,] m2)
-          {
-              if (m1 == null)
-                    {
-                        return m2;
-                    }
+        {
+            if ((m1 == null) || (m2 == null))
+            {
+                return null;
+            }
 
-              if (m2 == null)
-                    {
-                        return m1;
-                    }
+            int m1Rows = m1.GetLength(0);
+            int m1Cols = m1.GetLength(1);
+            int m2Rows = m2.GetLength(0);
+            int m2Cols = m2.GetLength(1);
+            if (m1Rows != m2Rows)
+            {
+                throw new Exception("ERROR! Matrix dims must be same for matrix addition.");
+            }
 
-              int m1Rows = m1.GetLength(0);
-              int m1Cols = m1.GetLength(1);
-              int m2Rows = m2.GetLength(0);
-              int m2Cols = m2.GetLength(1);
-              if (m1Rows != m2Rows)
+            if (m1Cols != m2Cols)
+            {
+                throw new Exception("ERROR! Matrix dims must be same for matrix addition.");
+            }
+
+            double[,] newMatrix = (double[,])m1.Clone();
+            for (int i = 0; i < m1Rows; i++)
+            {
+                for (int j = 0; j < m1Cols; j++)
                 {
-                    throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
+                    newMatrix[i, j] = m1[i, j] + m2[i, j];
                 }
+            }
 
-              if (m1Cols != m2Cols)
+            return newMatrix;
+        }
+
+        /// <summary>
+        /// Create a matrix whose values are the max of two passed matrices, m1 and m2.
+        /// </summary>
+        public static double[,] MaxOfTwoMatrices(double[,] m1, double[,] m2)
+        {
+            if ((m1 == null) || (m2 == null))
+            {
+                return null;
+            }
+
+            int m1Rows = m1.GetLength(0);
+            int m1Cols = m1.GetLength(1);
+            int m2Rows = m2.GetLength(0);
+            int m2Cols = m2.GetLength(1);
+            if (m1Rows != m2Rows || m1Cols != m2Cols)
+            {
+                throw new Exception("ERROR! Matrix dimensions must be same.");
+            }
+
+            double[,] newMatrix = new double[m1Rows, m1Cols];
+            for (int i = 0; i < m1Rows; i++)
+            {
+                for (int j = 0; j < m1Cols; j++)
                 {
-                    throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
+                    newMatrix[i, j] = Math.Max(m1[i, j], m2[i, j]);
                 }
+            }
 
-              double[,] newMatrix = (double[,])m1.Clone();
-              for (int i = 0; i < m1Rows; i++)
-              {
-                  for (int j = 0; j < m1Cols; j++)
-                  {
-                      newMatrix[i, j] = m1[i, j] + m2[i, j];
-                  }
-              }
+            return newMatrix;
+        }
 
-              return newMatrix;
-          }
-
-          /// <summary>
-          /// adds two matrices using weighted sum
-          /// Typically expected that that w1 + w2 = 0 and both matrices are normalised.
-          /// </summary>
+        /// <summary>
+        /// Adds two matrices using weighted sum.
+        /// Typically expected that that w1 + w2 = 0 and both matrices are normalised.
+        /// </summary>
         public static double[,] AddMatricesWeightedSum(double[,] m1, double w1, double[,] m2, double w2)
-          {
-              if (m1 == null)
-                    {
-                        return m2;
-                    }
+        {
+            if ((m1 == null) || (m2 == null))
+            {
+                return null;
+            }
 
-              if (m2 == null)
-                    {
-                        return m1;
-                    }
+            int m1Rows = m1.GetLength(0);
+            int m1Cols = m1.GetLength(1);
+            int m2Rows = m2.GetLength(0);
+            int m2Cols = m2.GetLength(1);
+            if (m1Rows != m2Rows || m1Cols != m2Cols)
+            {
+                throw new Exception("ERROR! Matrix dimensions must be same.");
+            }
 
-              int m1Rows = m1.GetLength(0);
-              int m1Cols = m1.GetLength(1);
-              int m2Rows = m2.GetLength(0);
-              int m2Cols = m2.GetLength(1);
-              if (m1Rows != m2Rows)
-                    {
-                        throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
-                    }
+            double[,] newMatrix = new double[m1Rows, m1Cols];
+            for (int i = 0; i < m1Rows; i++)
+            {
+                for (int j = 0; j < m1Cols; j++)
+                {
+                    newMatrix[i, j] = (w1 * m1[i, j]) + (w2 * m2[i, j]);
+                }
+            }
 
-              if (m1Cols != m2Cols)
-                    {
-                        throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
-                    }
+            return newMatrix;
+        }
 
-              double[,] newMatrix = new double[m1Rows, m1Cols];
-              for (int i = 0; i < m1Rows; i++)
-              {
-                  for (int j = 0; j < m1Cols; j++)
-                  {
-                      newMatrix[i, j] = (w1 * m1[i, j]) + (w2 * m2[i, j]);
-                  }
-              }
-
-              return newMatrix;
-          }
-
-          /// <summary>
-          /// DIVIDE matrix m1 by factor
-          /// </summary>
+        /// <summary>
+        /// DIVIDE matrix m1 by factor.
+        /// </summary>
         public static double[,] DivideMatrix(double[,] m1, double factor)
         {
             if (m1 == null)
@@ -1101,24 +1117,24 @@ namespace TowseyLibrary
             return newMatrix;
         }
 
-  /// <summary>
-  /// Subtract matrix m2 from matrix m1
-  /// </summary>
+        /// <summary>
+        /// Subtract matrix m2 from matrix m1.
+        /// </summary>
         public static double[,] SubtractMatrices(double[,] m1, double[,] m2)
-          {
+        {
               int m1Rows = m1.GetLength(0);
               int m1Cols = m1.GetLength(1);
               int m2Rows = m2.GetLength(0);
               int m2Cols = m2.GetLength(1);
               if (m1Rows != m2Rows)
-                {
-                    throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
-                }
+              {
+                  throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
+              }
 
               if (m1Cols != m2Cols)
-                {
-                    throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
-                }
+              {
+                  throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
+              }
 
               double[,] newMatrix = (double[,])m1.Clone();
               for (int i = 0; i < m1Rows; i++)

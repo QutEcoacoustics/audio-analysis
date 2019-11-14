@@ -32,7 +32,7 @@ namespace Acoustics.Test.TestHelpers
             Assert.AreEqual(expectedHeight, actualImage.Height, "Expected image height did not match actual image height");
         }
 
-        public static void PixelIsColor(this Assert assert, System.Drawing.Point pixel, Color expectedColor, Bitmap actualImage)
+        public static void PixelIsColor(this Assert assert, System.Drawing.Point pixel, System.Drawing.Color expectedColor, Bitmap actualImage)
         {
             var actualColor = actualImage.GetPixel(pixel.X, pixel.Y);
             Assert.AreEqual(expectedColor, actualColor, $"Expected color at pixel {pixel} did not match actual color");
@@ -50,7 +50,7 @@ namespace Acoustics.Test.TestHelpers
         /// <param name="expectedColor">The single color you expect the region to have</param>
         /// <param name="actualImage">The image to test</param>
         /// <param name="tolerance">The tolerance allowed for each color channel</param>
-        public static void ImageRegionIsColor(this Assert assert, System.Drawing.Rectangle region, Color expectedColor, Bitmap actualImage, double tolerance = 0.0)
+        public static void ImageRegionIsColor(this Assert assert, System.Drawing.Rectangle region, System.Drawing.Color expectedColor, Bitmap actualImage, double tolerance = 0.0)
         {
             var width = region.Width;
             var area = region.Area();
@@ -110,7 +110,7 @@ namespace Acoustics.Test.TestHelpers
         public static void ImageRegionHasColors(
             this Assert assert,
             System.Drawing.Rectangle region,
-            Dictionary<Color, double> expectedColors,
+            Dictionary<System.Drawing.Color, double> expectedColors,
             Bitmap actualImage,
             double tolerance = 0.0)
         {
@@ -178,7 +178,7 @@ namespace Acoustics.Test.TestHelpers
             this Assert assert,
             Bitmap actualImage,
             double allowedError = 0.1,
-            Dictionary<Color, double> colorHistogram = null,
+            Dictionary<System.Drawing.Color, double> colorHistogram = null,
             string message = "")
         {
             colorHistogram = colorHistogram ?? ImageTools.GetColorHistogramNormalized(actualImage);

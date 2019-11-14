@@ -24,7 +24,6 @@ namespace TowseyLibrary
     public static class PulseTrain
     {
         /*
-
         /// <summary>
         /// This method creates a template to recognise two pulses that are possibly part of a pulse train.
         /// The template is designed to detect pulse trains of at least 2 pulses!

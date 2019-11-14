@@ -7,12 +7,14 @@
 // ReSharper disable once CheckNamespace
 namespace System
 {
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.Contracts;
-    using Collections.Generic;
     using JetBrains.Annotations;
-    using Linq;
-    using Threading.Tasks;
 
     public static class EnumerableExtensions
     {
@@ -310,6 +312,21 @@ namespace System
             }
 
             yield return newItem;
+        }
+
+        public static string Join(this IEnumerable items, string delimiter = " ") => Join(items.Cast<object>(), delimiter);
+
+        public static string Join<T>(this IEnumerable<T> items, string delimiter = " ")
+        {
+            var result = new StringBuilder();
+            foreach (var item in items)
+            {
+                result.Append(item);
+                result.Append(delimiter);
+            }
+
+            // return one delimiter length less because we always add a delimiter on the end
+            return result.ToString(0, result.Length - delimiter.Length);
         }
     }
 }

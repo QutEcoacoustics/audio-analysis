@@ -1,10 +1,10 @@
 ---
 AnalysisName: Towsey.Crow
-#SegmentDuration: units=seconds,   SegmentOverlap=seconds        
+#SegmentDuration: units=seconds,   SegmentOverlap=seconds
 SegmentDuration: 60
 SegmentOverlap: 0
 
-MinHz: 1000          
+MinHz: 1000
 CallDuration: 0.3
 DecibelThreshold: 1.5
 IntensityThreshold: 0.15
@@ -16,6 +16,7 @@ EventThreshold: 0.2
 
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
+# If `true` saves a data into a seperate file every `SegmentDuration` seconds. Accepts a boolean value: [false|true]
 SaveIntermediateCsvFiles: false
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveSonogramImages: Never

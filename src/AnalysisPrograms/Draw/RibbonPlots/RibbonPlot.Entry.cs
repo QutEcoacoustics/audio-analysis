@@ -101,7 +101,7 @@ namespace AnalysisPrograms.Draw.RibbonPlots
                     }
 
                     // try to find the associated ribbon
-                    var searchPattern = "*" + colorMap + LDSpectrogramRGB.SpectralRibbonTag + "*";
+                    var searchPattern = "*" + colorMap + LdSpectrogramRibbons.SpectralRibbonTag + "*";
                     if (Log.IsVerboseEnabled())
                     {
                         Log.Verbose($"Searching `{indexData.Source?.Directory}` with pattern `{searchPattern}`.");
@@ -192,7 +192,7 @@ namespace AnalysisPrograms.Draw.RibbonPlots
             var finalWidth = ribbonLeft + estimatedWidth + HorizontalPadding;
 
             // create a new image!
-            var image = new Image<Rgb24>(Configuration.Default, finalWidth, finalHeight, NamedColors<Rgb24>.White);
+            var image = new Image<Rgb24>(Configuration.Default, finalWidth, finalHeight, Color.White);
 
             // draw labels and voids
             Log.Debug("Rendering labels and backgrounds");
@@ -206,7 +206,7 @@ namespace AnalysisPrograms.Draw.RibbonPlots
                 var bottom = Padding + ((Padding + ribbonHeight) * stats.Buckets);
                 context.DrawLines(
                     new GraphicsOptions(false),
-                    Pens.Solid(NamedColors<Rgb24>.Red, 1),
+                    Pens.Solid(Color.Red, 1),
                     new PointF(left, top),
                     new PointF(left, bottom));
             });
@@ -214,8 +214,8 @@ namespace AnalysisPrograms.Draw.RibbonPlots
             var bucketDate = stats.Start;
             var textGraphics = new TextGraphicsOptions(true)
                 { HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center };
-            var textColor = NamedColors<Rgb24>.Black;
-            var voidColor = NamedColors<Rgb24>.Gray;
+            var textColor = Color.Black;
+            var voidColor = Color.Gray;
             for (var b = 0; b < stats.Buckets; b++)
             {
                 if (Log.IsVerboseEnabled())
@@ -228,7 +228,7 @@ namespace AnalysisPrograms.Draw.RibbonPlots
 
                 image.Mutate(Operation);
 
-                void Operation(IImageProcessingContext<Rgb24> context)
+                void Operation(IImageProcessingContext context)
                 {
                     var y = Padding + ((Padding + ribbonHeight) * b);
 

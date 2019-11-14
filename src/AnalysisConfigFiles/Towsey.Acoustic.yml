@@ -12,7 +12,7 @@
 
 #SegmentDuration: units=seconds;
 # Long duration recordings are cut into short segments for more efficient processing. Default segment length = 60 seconds.
-# WARNING: You should not change this property!!  
+# WARNING: You should not change this property!!
 SegmentDuration: 60
 
 #SegmentOverlap: units=seconds;
@@ -49,7 +49,7 @@ FrameLength: 512
 # It is often useful to define three frequency bands, low, middle and high.
 # Six of the summary indices are calculated for the mid-band only.
 # This is useful to avoid low frequency anthropogenic noise and to target bird species which mostly sing in the 1-8 khz band.
-# The lower and upper bound of the mid-frequency band are set by LowFreqBound and HighFreqBound respectively. 
+# The lower and upper bound of the mid-frequency band are set by LowFreqBound and HighFreqBound respectively.
 # Default values in code are LowFreqBound=1000Hz & MidFreqBound=8000
 LowFreqBound: 1000
 MidFreqBound: 8000
@@ -63,7 +63,8 @@ FrequencyScale: Linear
 # SAVE INTERMEDIARY FILES
 # Available options (case-sensitive): [false/Never | true/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
-# A boolean: [false|true]
+# If `true` saves a data into a seperate file every `SegmentDuration` seconds. Accepts a boolean value: [false|true]
+# If `true` saves a data into a seperate file every `SegmentDuration` seconds. Accepts a boolean value: [false|true]
 SaveIntermediateCsvFiles: false
 
 # SAVE INTERMEDIARY ONE-MINUTE (standard scale) SPECTROGRAMS
@@ -99,7 +100,7 @@ IndexPropertiesConfig: './IndexPropertiesConfig.yml'
 
 # EventThreshold: min value=0.0; max value=1.0.
 # This value can sometimes be used to manage the FP/FN trade-off performance of a call recogniser.
-# Not always used however. 
+# Not always used however.
 EventThreshold: 0.2
 
 # #############################################################################################################
@@ -120,7 +121,7 @@ LdSpectrogramConfig:
     #    When filterCoeff =-1.0, small values are maximally de-emphasized, i.e. y=x^2.
     #    Generally usage suggests that a value of -0.25 is suitable. i.e. a slight de-emphasis.
     ColourFilter: -0.25
-    
+
     # minutes x-axis scale
     XAxisTicIntervalSeconds: 3600
 

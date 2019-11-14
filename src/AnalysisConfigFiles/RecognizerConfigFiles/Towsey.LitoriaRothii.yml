@@ -6,21 +6,21 @@ AbbreviatedSpeciesName: L.rothi
 SeverityOfNoiseRemoval: 1.0
 
 # min and max of the freq band to search
-MinHz: 1200          
+MinHz: 1200
 MaxHz: 2200
 
-# User should not change the three below parameters: 
+# User should not change the three below parameters:
 # ResampleRate is fixed = 22050 Hz
 # Frame Size is fixed = 256
 # Frame overlap is fixed = 0.0
 # Duration of DCT is also calculated automatically
 
 # minimum acceptable value of a DCT coefficient  # default = 0.4
-DctThreshold: 0.4  
+DctThreshold: 0.4
 
 # OSCILLATIONS PER SECOND
 # ignore oscillation rates below the min & above the max threshold
-MinOcilFreq: 10        
+MinOcilFreq: 10
 MaxOcilFreq: 30
 
 # Minimum and maximum duration in seconds for the length of a true call.
@@ -35,12 +35,13 @@ EventThreshold: 0.3
 
 
 ## Specifically for AnalyzeLongRecording
-# SegmentDuration: units=seconds;    
+# SegmentDuration: units=seconds;
 SegmentDuration: 60
 # SegmentOverlap: units=seconds;
 SegmentOverlap: 0
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
+# If `true` saves a data into a seperate file every `SegmentDuration` seconds. Accepts a boolean value: [false|true]
 SaveIntermediateCsvFiles: false
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveSonogramImages: Never
