@@ -328,6 +328,7 @@ namespace AudioAnalysisTools
         {
             this.FramesPerSecond = 1 / frameOffset;   //inverse of the frame offset
             this.FrameDuration = frameDuration;       //frame duration in seconds
+            this.FrameOffset = frameOffset;       //frame duration in seconds
 
             //this.FreqBinCount = binCount;           //required for conversions to & from MEL scale
             this.FreqBinWidth = freqBinWidth;         //required for freq-binID conversions

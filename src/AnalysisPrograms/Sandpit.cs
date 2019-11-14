@@ -277,13 +277,14 @@ namespace AnalysisPrograms
 
             // FLYING FOX RECORDINGS
             //string recordingPath = @"C:\Ecoacoustics\WavFiles\BradLawData\FlyingFox\20190127_Bellingen_Feeding_SM4.wav";
-            string recordingPath = @"C:\Ecoacoustics\WavFiles\FlyingFox\20190115_Bellingen_Feeding.wav";
+            string recordingPath = @"D:\Ecoacoustics\WavFiles\FlyingFox\20190115_Bellingen_Feeding.wav";
             //string recordingPath = @"C:\Ecoacoustics\WavFiles\FlyingFox\20190115_Bellingen_Feeding_minute6.wav";
             //string recordingPath = @"C:\Ecoacoustics\WavFiles\FlyingFox\20190115_Bellingen_Feeding_minute6_OneChannel22050.wav";
             //string recordingPath = @"C:\Ecoacoustics\WavFiles\FlyingFox\20190121_2_Bellingen_Feeding.wav";
             //string recordingPath = @"C:\Ecoacoustics\WavFiles\FlyingFox\20190127_Bellingen_Feeding_SM4.wav";
             string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\RecognizerConfigFiles\Towsey.PteropusSpecies.yml";
-            string outputPath = @"C:\Ecoacoustics\Output\BradLaw\FlyingFox";
+            //string outputPath = @"C:\Ecoacoustics\Output\BradLaw\FlyingFox";
+            string outputPath = @"C:\Ecoacoustics\FlyingFox";
 
             // TSHERING DEMA BHUTAN RECORDINGS
             //string recordingPath = @"C:\SensorNetworks\WavFiles\TsheringDema\WBH12HOURS-D_20160403_120000.wav";
@@ -400,7 +401,7 @@ namespace AnalysisPrograms
             //string outputPath = @"C:\Ecoacoustics\Output\SERF\SERFIndicesNew_2013June19";
             //string configPath = @"C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\Towsey.Acoustic.yml";
 
-          // USE 24-hour data or parts of from MEZ, TASMAn ISLAND, liz Znidersic
+            // USE 24-hour data or parts of from MEZ, TASMAn ISLAND, liz Znidersic
             // these are six hour recordings
             //string recordingPath = @"C:\Ecoacoustics\WavFiles\LizZnidersic\TasmanIsland2015_Unit2_Mez\SM304256_0+1_20151114_031652.wav";
             //string outputPath = @"C:\Ecoacoustics\Output\Test\Test24HourRecording\TasmanIslandMez\04";

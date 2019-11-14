@@ -335,10 +335,10 @@ namespace AnalysisPrograms.Recognizers
             var decibelArray = SNR.CalculateFreqBandAvIntensity(sonogram.Data, minHz, maxHz, sonogram.NyquistFrequency);
 
             // Look for wing beats using oscillation detector
+            /*
             int scoreSmoothingWindow = 11; // sets a default that was good for Cane toad
-            //Oscillations2012.Execute(
             Oscillations2019.Execute(
-                (SpectrogramStandard)sonogram,
+            (SpectrogramStandard)sonogram,
                 minHz,
                 maxHz,
                 decibelThreshold,
@@ -354,33 +354,23 @@ namespace AnalysisPrograms.Recognizers
                 out var acousticEvents,
                 //out var hits,
                 segmentStartOffset);
-
-            /*
-             * //NOTE: The following was an experiment which was discontinued!
-            // Look for wing beats using pulse train detector
-            double pulsesPerSecond = 5.1;
-            var scores = PulseTrain.GetPulseTrainScore(decibelArray, pulsesPerSecond, sonogram.FramesPerSecond, 1.0);
-
-            //iii: CONVERT Pulse Train SCORES TO ACOUSTIC EVENTS
-            double pulseTrainThreshold = 0.5;
-            var minTimeSpan = TimeSpan.FromSeconds(minDurationSeconds);
-            var maxTimeSpan = TimeSpan.FromSeconds(maxDurationSeconds);
-            var acousticEvents = AcousticEvent.GetEventsAroundMaxima(
-                scores,
-                segmentStartOffset,
+*/
+            Oscillations2012.Execute(
+                (SpectrogramStandard)sonogram,
                 minHz,
                 maxHz,
-                pulseTrainThreshold,
-                minTimeSpan,
-                maxTimeSpan,
-                sonogram.FramesPerSecond,
-                sonogram.FBinWidth
-            );
-
-            double scoreThreshold = 0.5;
-            var normalisedScoreArray = DataTools.NormaliseInZeroOne(scores, 0, 1.0);
-            var plot2 = new Plot(speciesName + " Wingbeat Pulse-train Score", normalisedScoreArray, scoreThreshold);
-            */
+                //decibelThreshold,
+                dctDuration,
+                (int)Math.Floor(minOscFreq),
+                (int)Math.Floor(maxOscFreq),
+                dctThreshold,
+                eventThreshold,
+                minDurationSeconds,
+                maxDurationSeconds,
+                out var scores,
+                out var acousticEvents,
+                out var hits,
+                segmentStartOffset);
 
             // prepare plots
             double intensityNormalisationMax = 3 * decibelThreshold;

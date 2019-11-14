@@ -402,10 +402,10 @@ namespace AudioAnalysisTools
                     var ev = new AcousticEvent(segmentStartOffset, startTime, duration, minHz, maxHz)
                     {
                         Name = "Oscillation", //default name
-
-                        //ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
                         FileName = fileName,
                     };
+
+                    ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
 
                     //obtain average score.
                     double av = 0.0;
