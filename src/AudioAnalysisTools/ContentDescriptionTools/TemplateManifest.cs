@@ -25,7 +25,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
     public enum EditStatus
     {
         Edit,   // This option edits an existing functional template in the json file. The template definition is (re)calculated.
-        Copy,   // This option keeps an existing functional template unchanged except for its template Id. Template Ids are assigned in order they appear in the yml file.
+        Copy,   // This option keeps an existing functional template unchanged.
         Ignore, // This option keeps an existing functional template unchanged except changes its UseStatus boolean field to FALSE.
     }
 
@@ -60,7 +60,6 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                 {
                     // the current manifest is not an existing template - therefore make it.
                     var newTemplate = CreateNewTemplateFromManifest(manifest);
-                    newTemplate.TemplateId = i;
                     newTemplate.Template = CreateTemplateDefinition(manifest);
                     newTemplate.MostRecentEdit = DateTime.Now;
                     newTemplateList.Add(newTemplate);
@@ -71,7 +70,6 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                 {
                     // This option edits an existing functional template in the json file. The template definition is (re)calculated.
                     var newTemplate = CreateNewTemplateFromManifest(manifest);
-                    newTemplate.TemplateId = i;
                     newTemplate.Template = CreateTemplateDefinition(manifest);
                     newTemplate.MostRecentEdit = DateTime.Now;
                     newTemplateList.Add(newTemplate);
@@ -82,10 +80,8 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                 {
                     // TODO: intentionally broken. FunctionalTemplates should be immutable. If they need to change create a new one (could be a copy, but it would have a version or edit date etc...).
                     throw new NotImplementedException();
-                    // This option keeps an existing functional template unchanged except for its template Id.
-                    // Template ids are assigned in order they appear in the yml file.
+                    // This option keeps an existing functional template unchanged.
                     //var existingTemplate = dictionaryOfCurrentTemplates[name];
-                    //existingTemplate.TemplateId = i;
                     //existingTemplate.UseStatus = true;
                     //existingTemplate.Provenance = null;
                     //newTemplateList.Add(existingTemplate);
@@ -99,7 +95,6 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                     throw new NotImplementedException();
                     // This option keeps an existing functional template unchanged except changes its UseStatus boolean field to FALSE.
                     //var existingTemplate = dictionaryOfCurrentTemplates[name];
-                    //existingTemplate.TemplateId = i;
                     //existingTemplate.Provenance = null;
                     //existingTemplate.UseStatus = false;
                     //newTemplateList.Add(existingTemplate);
@@ -280,9 +275,6 @@ namespace AudioAnalysisTools.ContentDescriptionTools
     public class FunctionalTemplate
     {
         public TemplateManifest Manifest { get; set; }
-
-        // TODO: I'd suggest removing this concept. Integer based IDs are brittle.
-        public int TemplateId { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether to use the template or not.

@@ -302,7 +302,7 @@
     <Compile Include="..\AssemblyMetadata.cs">
       <Link>AssemblyMetadata.cs</Link>
     </Compile>
-    <Compile Include="ContentDescription.cs" />
+    <Compile Include="ContentDescription\ContentDescription.cs" />
     <Compile Include="AcousticWorkbench.Orchestration\EventMetadataResolver.cs" />
     <Compile Include="AcousticWorkbench.Orchestration\RemoteSegment.cs" />
     <Compile Include="AED.cs" />

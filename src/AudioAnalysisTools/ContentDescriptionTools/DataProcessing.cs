@@ -361,12 +361,19 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             return list.ToArray();
         }
 
+        public static Dictionary<string, double[]> ConvertResultsToDictionaryOfArrays(List<DescriptionResult> results)
+        {
+            int arrayLength = results.Count;
+            int arrayStart = 0;
+            return ConvertResultsToDictionaryOfArrays(results, arrayLength, arrayStart);
+        }
+
         /// <summary>
-        /// Converts individual results to a dictionary of plots.
-        /// </summary>
-        /// <param name="results">a list of results for each content type in every minute.</param>
-        /// <param name="arrayLength">The plot length will the total number of minutes scanned, typically 1440 for one day.</param>
-        /// <param name="arrayStart">time start.</param>
+         /// Converts individual results to a dictionary of plots.
+         /// </summary>
+         /// <param name="results">a list of results for each content type in every minute.</param>
+         /// <param name="arrayLength">The plot length will the total number of minutes scanned, typically 1440 for one day.</param>
+         /// <param name="arrayStart">time start.</param>
         public static Dictionary<string, double[]> ConvertResultsToDictionaryOfArrays(List<DescriptionResult> results, int arrayLength, int arrayStart)
         {
             var arrays = new Dictionary<string, double[]>();
