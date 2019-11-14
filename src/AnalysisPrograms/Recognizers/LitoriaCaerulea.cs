@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="LitoriaCaerulea.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -193,7 +193,7 @@ namespace AnalysisPrograms.Recognizers
             double dctThreshold = recognizerConfig.DctThreshold;
             double minOscRate = 1 / recognizerConfig.MaxPeriod;
             double maxOscRate = 1 / recognizerConfig.MinPeriod;
-            var dctScores = Oscillations2012.DetectOscillations(croakScoreArray, framesPerSecond, dctDuration, minOscRate, maxOscRate, dctThreshold);
+            Oscillations2019.DetectOscillations(croakScoreArray, framesPerSecond, decibelThreshold, dctDuration, minOscRate, maxOscRate, dctThreshold, out double[] dctScores, out double[] oscFreq);
 
             // ######################################################################
             // ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER

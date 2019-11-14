@@ -6,7 +6,6 @@
 //  This class contains methods to recognise pulse trains.
 // It is an alternative to using the Oscillations class.
 
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,8 +17,13 @@ namespace TowseyLibrary
     using Acoustics.Shared.ConfigFile;
     using MathNet.Numerics.LinearAlgebra.Solvers;
 
+    /// <summary>
+    /// This class was an attempt to detect pulse trains as an alternative to using the Oscillation recognition methods.
+    /// It did not work effectively so discontinued the idea and have commented out the three methods.
+    /// </summary>
     public static class PulseTrain
     {
+        /*
         /// <summary>
         /// This method creates a template to recognise two pulses that are possibly part of a pulse train.
         /// The template is designed to detect pulse trains of at least 2 pulses!
@@ -157,5 +161,6 @@ namespace TowseyLibrary
 
             return scores;
         }
+        */
     }
 }

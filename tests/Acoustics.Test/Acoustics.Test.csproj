@@ -307,6 +307,7 @@
     <Compile Include="AnalysisPrograms\Draw\Zooming\DrawZoomingTests.cs" />
     <Compile Include="AnalysisPrograms\MainEntryTests.cs" />
     <Compile Include="AnalysisPrograms\Production\FileSystemProviderTests.cs" />
+    <Compile Include="AnalysisPrograms\Recognizers\PteropusSp\PteropusSpTests.cs" />
     <Compile Include="AnalysisPrograms\SourcePreparers\RemoteSourcePreparerTests.cs" />
     <Compile Include="AnalysisPrograms\SourcePreparers\LocalSourcePreparerTests.cs" />
     <Compile Include="ArrayExtensionsTests.cs" />
