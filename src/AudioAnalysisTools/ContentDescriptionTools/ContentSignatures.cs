@@ -1,4 +1,4 @@
-// <copyright file="ContentDescription.cs" company="QutEcoacoustics">
+// <copyright file="ContentSignatures.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -7,9 +7,16 @@ namespace AudioAnalysisTools.ContentDescriptionTools
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using Acoustics.Shared;
     using TowseyLibrary;
 
+    /// <summary>
+    /// This class contains methods which use functional templates to scan one or multiple files to obtain a content description.
+    /// For consistency between recordings many parameters such as sample rate, frame size etc, must be declared as constants.
+    /// In addition, the absolute values in the template description dictionary must be normalised using the fixed set of normalisation bounds in IndexValueBounds.
+    /// Note that each functional template uses one of a small number of algorithms to calculate a similarity value.
+    /// </summary>
     public class ContentSignatures
     {
         // All the code base for content description assumes a sampling rate of 22050 (i.e. a Nyquist = 11025) and frame size = 512 (i.e. 256 frequency bins).
@@ -33,9 +40,16 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             ["PMN"] = new[] { 0.0, 5.5 },
         };
 
+        /// <summary>
+        /// Gets an array of six spectral indices that are calculated.
+        /// </summary>
         public static string[] IndexNames { get; } = { "ACI", "ENT", "EVN", "BGN", "PMN", "OSC" };
 
-        // Following array is used to remove unwanted selectors.
+        /// <summary>
+        /// Gets an array containing names of spectral indices that are not wanted. They are used to remove unwanted selectors.
+        /// This is a temporary arrangement to utilize existing code.
+        /// TODO Eventually separate out template results so do not have to use the AnalysisResult2 class.
+        /// </summary>
         public static string[] UnusedIndexNames { get; } = { "CVR", "DIF", "RHZ", "RVT", "RPS", "RNG", "R3D", "SPT", "SUM" };
 
         /// <summary>
@@ -49,11 +63,13 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// <returns>A list of plots - each plot is the minute by minute scores for a single template.</returns>
         public static Dictionary<string, double[]> ContentDescriptionOfMultipleRecordingFiles(FileInfo listOfIndexFiles, FileInfo templatesFile)
         {
-            // ASSUMPTION: 
+            // TODO: inline this method into AnalysisPrograms.ContentDescription.UseModel.Analyse
+            // ASSUMPTION: total length in minutes of all the recordings
+            const int totalMinutesDurationOverAllRecordings = 1440;
             const int startMinute = 0;
 
             // Read in all the prepared templates
-            var templates = Json.Deserialize<TemplateManifest[]>(templatesFile);
+            var templates = Json.Deserialize<FunctionalTemplate[]>(templatesFile);
             var templatesAsDictionary = DataProcessing.ExtractDictionaryOfTemplateDictionaries(templates);
 
             // Read in list of paths to index files
@@ -91,7 +107,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         }
 
         public static List<DescriptionResult> AnalyzeMinutes(
-            TemplateManifest[] templates,
+            FunctionalTemplate[] templates,
             Dictionary<string, Dictionary<string, double[]>> templatesAsDictionary,
             Dictionary<string, double[,]> dictionaryOfRecordingIndices,
             int elapsedMinutesAtStart)
@@ -126,7 +142,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// <param name="minuteId">The minute ID, i.e. its temporal position.</param>
         /// <returns>A single instance of a DescriptionResult.</returns>
         public static DescriptionResult AnalyzeOneMinute(
-            TemplateManifest[] templates,
+            FunctionalTemplate[] templates,
             Dictionary<string, Dictionary<string, double[]>> templatesAsDictionary,
             Dictionary<string, double[]> oneMinuteOfIndices,
             int minuteId)
@@ -142,8 +158,8 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                     continue;
                 }
 
-                var algorithmType = template.FeatureExtractionAlgorithm;
-                var templateIndices = templatesAsDictionary[template.Name];
+                var algorithmType = template.Manifest.FeatureExtractionAlgorithm;
+                var templateIndices = templatesAsDictionary[template.Manifest.Name];
                 double score;
 
                 // Following line used where want to return a set of random scores for testing reasons.
@@ -152,13 +168,13 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                 switch (algorithmType)
                 {
                     case 1:
-                        score = ContentAlgorithms.GetFullBandContent1(oneMinuteOfIndices, template, templateIndices);
+                        score = ContentAlgorithms.GetFullBandContent1(oneMinuteOfIndices, template.Manifest, templateIndices);
                         break;
                     case 2:
-                        score = ContentAlgorithms.GetBroadbandContent1(oneMinuteOfIndices, template, templateIndices);
+                        score = ContentAlgorithms.GetBroadbandContent1(oneMinuteOfIndices, template.Manifest, templateIndices);
                         break;
                     case 3:
-                        score = ContentAlgorithms.GetNarrowBandContent1(oneMinuteOfIndices, template, templateIndices);
+                        score = ContentAlgorithms.GetNarrowBandContent1(oneMinuteOfIndices, template.Manifest, templateIndices);
                         break;
                     default:
                         LoggedConsole.WriteWarnLine("Algorithm " + algorithmType + " does not exist.");
@@ -166,7 +182,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                         break;
                 }
 
-                var result = new KeyValuePair<string, double>(template.Description, score);
+                var result = new KeyValuePair<string, double>(template.Manifest.Description, score);
                 descriptionResult.AddDescription(result);
             }
 

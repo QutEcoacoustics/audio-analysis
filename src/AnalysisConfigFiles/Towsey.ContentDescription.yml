@@ -25,8 +25,8 @@ AnalysisName: ContentDescription
 # SAVE INTERMEDIARY FILES
 # Available options (case-sensitive): [false/Never | true/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
-# If `true` saves a data into a seperate file every `SegmentDuration` seconds. Accepts a boolean value: [false|true]
-# If `true` saves a data into a seperate file every `SegmentDuration` seconds. Accepts a boolean value: [false|true]
+# If `true` saves a data into a separate file every `SegmentDuration` seconds. Accepts a boolean value: [false|true]
+# If `true` saves a data into a separate file every `SegmentDuration` seconds. Accepts a boolean value: [false|true]
 SaveIntermediateCsvFiles: false
 
 # SAVE INTERMEDIARY ONE-MINUTE (standard scale) SPECTROGRAMS
@@ -50,7 +50,7 @@ RequireDateInFilename: false
 TemplatesList: 'Towsey.TemplateDefinitions.json'
 
 # #############################################################################################################
-# The below parameters are used to configure drawing of the false-colour spectrograms
+# The below parameters are used to configure drawing of the false-color spectrograms
 LdSpectrogramConfig:
     ColorMap1: "ACI-ENT-EVN"
     ColorMap2: "BGN-PMN-OSC"

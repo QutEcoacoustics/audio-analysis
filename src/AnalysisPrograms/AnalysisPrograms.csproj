@@ -302,7 +302,7 @@
     <Compile Include="..\AssemblyMetadata.cs">
       <Link>AssemblyMetadata.cs</Link>
     </Compile>
-    <Compile Include="ContentDescription.cs" />
+    <Compile Include="ContentDescription\ContentDescription.cs" />
     <Compile Include="AcousticWorkbench.Orchestration\EventMetadataResolver.cs" />
     <Compile Include="AcousticWorkbench.Orchestration\RemoteSegment.cs" />
     <Compile Include="AED.cs" />
@@ -313,6 +313,7 @@
     <Compile Include="AudioCutter.cs" />
     <Compile Include="AudioFileCheck.cs" />
     <Compile Include="CheckEnvironment.cs" />
+    <Compile Include="ContentDescription\BuildModel.cs" />
     <Compile Include="Draw\Zooming\DrawZoomingSpectrograms.Arguments.cs" />
     <Compile Include="EventStatistics\EventStatisticsEntry.Arguments.cs" />
     <Compile Include="EventStatistics\EventStatisticsAnalysis.cs" />
