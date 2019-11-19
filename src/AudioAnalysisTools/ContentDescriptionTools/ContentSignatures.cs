@@ -153,11 +153,6 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             // now subject the indices to various content searches
             foreach (var template in templates)
             {
-                if (template.UseStatus == false)
-                {
-                    continue;
-                }
-
                 var algorithmType = template.Manifest.FeatureExtractionAlgorithm;
                 var templateIndices = templatesAsDictionary[template.Manifest.Name];
                 double score;

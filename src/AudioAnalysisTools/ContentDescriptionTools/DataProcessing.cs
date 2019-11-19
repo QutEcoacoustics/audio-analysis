@@ -19,12 +19,12 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// </summary>
         /// <param name="array">An array of templates.</param>
         /// <returns>A dictionary of templates.</returns>
-        public static Dictionary<string, TemplateManifest> ConvertTemplateArrayToDictionary(TemplateManifest[] array)
+        public static Dictionary<string, FunctionalTemplate> ConvertArrayOfFunctionalTemplatesToDictionary(FunctionalTemplate[] array)
         {
-            var dictionary = new Dictionary<string, TemplateManifest>();
+            var dictionary = new Dictionary<string, FunctionalTemplate>();
             foreach (var template in array)
             {
-                dictionary.Add(template.Name, template);
+                dictionary.Add(template.Manifest.Name, template);
             }
 
             return dictionary;

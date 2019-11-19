@@ -1,4 +1,4 @@
-// <copyright file="ContentDescription.cs" company="QutEcoacoustics">
+// <copyright file="UseModel.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -28,7 +28,7 @@ namespace AnalysisPrograms.ContentDescription
     /// To call this class, the first argument on the commandline must be 'audio2csv'.
     /// Given a one-minute recording segment, the ContentDescription.Analyze() method calls AudioAnalysisTools.Indices.IndexCalculateSixOnly.Analysis().
     /// This calculates six spectral indices, ACI, ENT, EVN, BGN, PMN, OSC. This set of 6x256 acoustic features is used for content description.
-    /// The content description methods are called from ContentDescription.SummariseResults() method.
+    /// The content description methods are called from UseModel.SummariseResults() method.
     /// </summary>
     public class UseModel : AbstractStrongAnalyser
     {
@@ -52,9 +52,9 @@ namespace AnalysisPrograms.ContentDescription
             AnalysisTargetSampleRate = ContentSignatures.SampleRate,
         };
 
-        private FunctionalTemplate[] functionalTemplates = null;
+        private FunctionalTemplate[] functionalTemplates;
 
-        private Dictionary<string, Dictionary<string, double[]>> templatesAsDictionary = null;
+        private Dictionary<string, Dictionary<string, double[]>> templatesAsDictionary;
 
         public override void BeforeAnalyze(AnalysisSettings analysisSettings)
         {
@@ -94,11 +94,7 @@ namespace AnalysisPrograms.ContentDescription
         public override AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
         {
             // set the start time for the current recording segment. Default is zero.
-            var elapsedTimeAtStartOfRecording = TimeSpan.Zero;
-            if (segmentSettings.SegmentStartOffset != null)
-            {
-                elapsedTimeAtStartOfRecording = (TimeSpan)segmentSettings.SegmentStartOffset;
-            }
+            var elapsedTimeAtStartOfRecording = segmentSettings.SegmentStartOffset;
 
             var startMinuteId = (int)Math.Round(elapsedTimeAtStartOfRecording.TotalMinutes);
 
@@ -114,7 +110,7 @@ namespace AnalysisPrograms.ContentDescription
             segmentResults.SpectralIndexValues.FileName = segmentSettings.Segment.SourceMetadata.Identifier;
 
             // DO THE CONTENT DESCRIPTION FOR ONE MINUTE HERE
-            // First get acoustic indices for one minute, convert to Dictionary and normalise the values.
+            // First get acoustic indices for one minute, convert to Dictionary and normalize the values.
             var indicesDictionary = IndexCalculateSixOnly.ConvertIndicesToDictionary(segmentResults.SpectralIndexValues);
             foreach (string key in ContentSignatures.IndexNames)
             {
@@ -196,8 +192,9 @@ namespace AnalysisPrograms.ContentDescription
             //sampleRate = analysisSettings.Configuration.GetIntOrNull(AnalysisKeys.ResampleRate) ?? sampleRate;
             var cdConfiguration = (CdConfig)analysisSettings.Configuration;
             var ldSpectrogramConfig = cdConfiguration.LdSpectrogramConfig;
-            var cdConfigFile = analysisSettings.ConfigFile;
-            var configDirectory = cdConfigFile.DirectoryName ?? throw new ArgumentNullException(nameof(cdConfigFile), "Null value");
+
+            //var cdConfigFile = analysisSettings.ConfigFile;
+            //var configDirectory = cdConfigFile.DirectoryName ?? throw new ArgumentNullException(nameof(cdConfigFile), "Null value");
             var sourceAudio = inputFileSegment.Source;
             string basename = Path.GetFileNameWithoutExtension(sourceAudio.Name);
             var resultsDirectory = AnalysisCoordinator.GetNamedDirectory(analysisSettings.AnalysisOutputDirectory, this);
@@ -275,6 +272,7 @@ namespace AnalysisPrograms.ContentDescription
             image.Save(path3);
         }
 
+        /*
         /// <summary>
         /// NOTE: THIS METHOD SHOULD EVENTUALLY BE DELETED. NO LONGER CALLED.
         /// Calculate the content description for each minute.
@@ -327,6 +325,7 @@ namespace AnalysisPrograms.ContentDescription
             var dictionaryOfScores = DataProcessing.ConvertResultsToDictionaryOfArrays(results, length, startMinuteId);
             return dictionaryOfScores;
         }
+        */
 
         /// <summary>
         /// Produce plots for graphical display.

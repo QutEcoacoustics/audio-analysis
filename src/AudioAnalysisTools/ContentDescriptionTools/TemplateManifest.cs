@@ -7,8 +7,6 @@ namespace AudioAnalysisTools.ContentDescriptionTools
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using Accord.IO;
-    using Acoustics.Shared;
 
     /// <summary>
     /// Templates are initially defined manually in a YAML file. Each template in a YAML file is called a "manifest".
@@ -20,112 +18,25 @@ namespace AudioAnalysisTools.ContentDescriptionTools
     /// The functional template also contains information required to scan new recordings with the template definition.
     ///
     /// Each template manifest in a yml file contains an EditStatus field which describes what to with the manifest.
-    /// There are there options as described below.
+    /// There are three options as described below.
     /// </summary>
     public enum EditStatus
     {
         Edit,   // This option edits an existing functional template in the json file. The template definition is (re)calculated.
         Copy,   // This option keeps an existing functional template unchanged.
-        Ignore, // This option keeps an existing functional template unchanged except changes its UseStatus boolean field to FALSE.
+        Ignore, // This option ignores the manifest, i.e. does not transfer it to the array of functional templates.
     }
 
     /// <summary>
     /// This is base class for both template manifests and functional templates.
     /// Most of the fields and properties are common to both manifests and functional templates.
     /// Manifests contain the template provenance. This does not appear in the functional template because provenance includes path data.
-    /// TODO Set up inheritance from base class so that there is separate class for manifests and functional templates.
-    ///
     /// This class also contains methods to create new or edit existing functional templates based on info in the manifests.
     /// </summary>
     public class TemplateManifest
     {
-        public static void CreateNewFileOfTemplateDefinitions(FileInfo manifestFile, FileInfo templateDefinitionsFile)
-        {
-            // Read in all template manifests
-            var manifests = Yaml.Deserialize<TemplateManifest[]>(manifestFile);
-
-            // Read current template definitions and convert to dictionary
-            var arrayOfTemplates = Json.Deserialize<TemplateManifest[]>(templateDefinitionsFile);
-            var dictionaryOfCurrentTemplates = DataProcessing.ConvertTemplateArrayToDictionary(arrayOfTemplates);
-
-            // init a new template list for output.
-            var newTemplateList = new List<FunctionalTemplate>();
-
-            // cycle through all the manifests
-            for (var i = 0; i < manifests.Length; i++)
-            {
-                var manifest = manifests[i];
-                var name = manifest.Name;
-                if (!dictionaryOfCurrentTemplates.ContainsKey(name))
-                {
-                    // the current manifest is not an existing template - therefore make it.
-                    var newTemplate = CreateNewTemplateFromManifest(manifest);
-                    newTemplate.Template = CreateTemplateDefinition(manifest);
-                    newTemplate.MostRecentEdit = DateTime.Now;
-                    newTemplateList.Add(newTemplate);
-                    continue;
-                }
-
-                if (manifest.EditStatus == EditStatus.Edit)
-                {
-                    // This option edits an existing functional template in the json file. The template definition is (re)calculated.
-                    var newTemplate = CreateNewTemplateFromManifest(manifest);
-                    newTemplate.Template = CreateTemplateDefinition(manifest);
-                    newTemplate.MostRecentEdit = DateTime.Now;
-                    newTemplateList.Add(newTemplate);
-                    continue;
-                }
-
-                if (manifest.EditStatus == EditStatus.Copy)
-                {
-                    // TODO: intentionally broken. FunctionalTemplates should be immutable. If they need to change create a new one (could be a copy, but it would have a version or edit date etc...).
-                    throw new NotImplementedException();
-                    // This option keeps an existing functional template unchanged.
-                    //var existingTemplate = dictionaryOfCurrentTemplates[name];
-                    //existingTemplate.UseStatus = true;
-                    //existingTemplate.Provenance = null;
-                    //newTemplateList.Add(existingTemplate);
-                    //continue;
-                }
-
-                if (manifest.EditStatus == EditStatus.Ignore)
-                {
-                    // TODO: intentionally broken. FunctionalTemplates should be immutable. If they need to change create a new one (could be a copy, but it would have a version or edit date etc...).
-                    // TODO: Per the comment above, if they're regenerated, there's no need to ignore some
-                    throw new NotImplementedException();
-                    // This option keeps an existing functional template unchanged except changes its UseStatus boolean field to FALSE.
-                    //var existingTemplate = dictionaryOfCurrentTemplates[name];
-                    //existingTemplate.Provenance = null;
-                    //existingTemplate.UseStatus = false;
-                    //newTemplateList.Add(existingTemplate);
-                }
-            }
-
-            var templatesFileName = templateDefinitionsFile.Name;
-            var templatesFilePath = Path.Combine(manifestFile.DirectoryName ?? throw new InvalidOperationException(), templatesFileName);
-
-            // Save the previous templates file
-            string backupTemplatesFilePath = Path.Combine(manifestFile.DirectoryName, templatesFileName + ".Backup.json");
-            if (File.Exists(backupTemplatesFilePath))
-            {
-                File.Delete(backupTemplatesFilePath);
-            }
-
-            //Now copy the file first
-            File.Copy(templatesFilePath, backupTemplatesFilePath, true);
-
-            //Now Rename the File
-            //File.Move(NewFilePath, Path.Combine(NewFileLocation, "File.txt"));
-
-            // No need to move the backup because serializing over-writes the current templates file.
-            var templatesFile = new FileInfo(templatesFilePath);
-
-            //Yaml.Serialize(templatesFile, newTemplateList.ToArray());
-            Json.Serialise(templatesFile, newTemplateList.ToArray());
-        }
-
         /// <summary>
-        /// THis method calculates new template based on passed manifest.
+        /// This method calculates new template based on passed manifest.
         /// </summary>
         public static Dictionary<string, double[]> CreateTemplateDefinition(TemplateManifest templateManifest)
         {
@@ -139,44 +50,26 @@ namespace AudioAnalysisTools.ContentDescriptionTools
             var path = Path.Combine(sourceDirectory, baseName + ContentSignatures.AnalysisString);
             var dictionaryOfIndices = DataProcessing.ReadIndexMatrices(path);
             var algorithmType = templateManifest.FeatureExtractionAlgorithm;
-            Dictionary<string, double[]> newTemplateDeftn;
+            Dictionary<string, double[]> newTemplateDefinition;
 
             switch (algorithmType)
             {
                 case 1:
-                    newTemplateDeftn = ContentAlgorithms.CreateFullBandTemplate1(templateManifest, dictionaryOfIndices);
+                    newTemplateDefinition = ContentAlgorithms.CreateFullBandTemplate1(templateManifest, dictionaryOfIndices);
                     break;
                 case 2:
-                    newTemplateDeftn = ContentAlgorithms.CreateBroadbandTemplate1(templateManifest, dictionaryOfIndices);
+                    newTemplateDefinition = ContentAlgorithms.CreateBroadbandTemplate1(templateManifest, dictionaryOfIndices);
                     break;
                 case 3:
-                    newTemplateDeftn = ContentAlgorithms.CreateNarrowBandTemplate1(templateManifest, dictionaryOfIndices);
+                    newTemplateDefinition = ContentAlgorithms.CreateNarrowBandTemplate1(templateManifest, dictionaryOfIndices);
                     break;
                 default:
                     //LoggedConsole.WriteWarnLine("Algorithm " + algorithmType + " does not exist.");
-                    newTemplateDeftn = null;
+                    newTemplateDefinition = null;
                     break;
             }
 
-            return newTemplateDeftn;
-        }
-
-        public static FunctionalTemplate CreateNewTemplateFromManifest(TemplateManifest templateManifest)
-        {
-            var newTemplate = new FunctionalTemplate()
-            {
-                // TODO: is clone actually needed here?
-                //       I chose clone because it mirrors the functionality that *was* here - i.e. a refactor
-                Manifest = templateManifest.DeepClone(),
-                UseStatus = true,
-            };
-
-            if (templateManifest.EditStatus == EditStatus.Ignore)
-            {
-                newTemplate.UseStatus = false;
-            }
-
-            return newTemplate;
+            return newTemplateDefinition;
         }
 
         //TEMPLATE DESCRIPTION
@@ -198,7 +91,6 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// EditStatus can be "locked", etc.
         /// </summary>
         public EditStatus EditStatus { get; set; }
-
 
         //ALGORITHMIC PARAMETERS ASSOCIATED WITH TEMPLATE
         public byte FeatureExtractionAlgorithm { get; set; }
@@ -224,14 +116,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// </summary>
         public int BandMaxHz { get; set; }
 
-
-
         public SourceAudioProvenance[] Provenance { get; set; }
-
-        // The following random data was used to try some statistical experiments.
-        // get dummy data
-        //var rn = new RandomNumber(DateTime.Now.Second + (int)DateTime.Now.Ticks + 333);
-        //var distance = rn.GetDouble();
     }
 
     /// <summary>
@@ -239,11 +124,13 @@ namespace AudioAnalysisTools.ContentDescriptionTools
     /// </summary>
     public class SourceAudioProvenance
     {
+        /*
         // TODO: use this property as the source audio for which indices will be calculated from
         /// <summary>
         /// Gets or sets the template Recording Location.
         /// </summary>
         public string Path { get; set; }
+        */
 
         // TODO: remove when calculating indices directly from audio segments
         /// <summary>
@@ -275,13 +162,14 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 
     public class FunctionalTemplate
     {
-        public TemplateManifest Manifest { get; set; }
-
         /// <summary>
-        /// Gets or sets a value indicating whether to use the template or not.
-        /// UseStatus can be true or false.
+        /// Initializes a new instance of the <see cref="FunctionalTemplate"/> class.
+        /// CONSTRUCTOR must initialise the info from the Manifest.
         /// </summary>
-        public bool UseStatus { get; set; }
+        /// <param name="templateManifest">The template manifest.</param>
+        public FunctionalTemplate(TemplateManifest templateManifest) => this.Manifest = templateManifest;
+
+        public TemplateManifest Manifest { get; set; }
 
         /// <summary>
         /// Gets or sets the date the functional template was created.

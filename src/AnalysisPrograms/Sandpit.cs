@@ -16,7 +16,8 @@ namespace AnalysisPrograms
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
     using Acoustics.Tools.Wav;
-    using AnalyseLongRecordings;
+    using AnalysisPrograms.AnalyseLongRecordings;
+    using AnalysisPrograms.ContentDescription;
     using AudioAnalysisTools;
     using AudioAnalysisTools.ContentDescriptionTools;
     using AudioAnalysisTools.DSP;
@@ -25,7 +26,7 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using McMaster.Extensions.CommandLineUtils;
-    using Production.Arguments;
+    using AnalysisPrograms.Production.Arguments;
     using TowseyLibrary;
 
     /// <summary>
@@ -121,9 +122,17 @@ namespace AnalysisPrograms
 
         public static void ContentDescriptionCreateTemplates()
         {
-            var templateManifests = new FileInfo(@"C:\Ecoacoustics\ContentDescription\ContentDescriptionTemplateManifests.yml");
-            var templateDefinitions = new FileInfo(@"C:\Ecoacoustics\ContentDescription\Towsey.TemplateDefinitions.json");
-            TemplateManifest.CreateNewFileOfTemplateDefinitions(templateManifests, templateDefinitions);
+            /* COMMAND LINE FOR BUILDING CONTENT DEFINITIONS MODEL OF TEMPLATES
+             * .\AnalysisPrograms.exe BuildContentDescriptionModel "C:\Ecoacoustics\ContentDescription\ContentDescriptionTemplateManifests.yml" "C:\Ecoacoustics\ContentDescription\Towsey.TemplateDefinitions.json"
+             */
+            var templateManifestsPath = @"C:\Ecoacoustics\ContentDescription\ContentDescriptionTemplateManifests.yml";
+            var templateDefinitionsPath = @"C:\Ecoacoustics\ContentDescription\Towsey.TemplateDefinitions.json";
+            var arguments = new BuildModel.Arguments
+            {
+                TemplateManifest = templateManifestsPath.ToFileInfo(),
+                TemplateDefinitions = templateDefinitionsPath.ToFileInfo(),
+            };
+            BuildModel.Execute(arguments);
             Console.WriteLine("# Finished creation of new manifest");
         }
 
