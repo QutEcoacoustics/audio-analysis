@@ -268,7 +268,7 @@ namespace AnalysisPrograms.ContentDescription
             // Attach content description plots to LDFC spectrogram and write to file
             var ldfcSpectrogram = Image.FromFile(ldfcSpectrogramPath);
             var image = ContentVisualization.DrawLdfcSpectrogramWithContentScoreTracks(ldfcSpectrogram, contentPlots);
-            var path3 = Path.Combine(resultsDirectory.FullName, basename + ".CONTENTnew07.png");
+            var path3 = Path.Combine(resultsDirectory.FullName, basename + ".ContentDescription.png");
             image.Save(path3);
         }
 
