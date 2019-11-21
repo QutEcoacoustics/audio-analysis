@@ -64,8 +64,6 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         public static Dictionary<string, double[]> ContentDescriptionOfMultipleRecordingFiles(FileInfo listOfIndexFiles, FileInfo templatesFile)
         {
             // TODO: inline this method into AnalysisPrograms.ContentDescription.UseModel.Analyse
-            // ASSUMPTION: total length in minutes of all the recordings
-            const int totalMinutesDurationOverAllRecordings = 1440;
             const int startMinute = 0;
 
             // Read in all the prepared templates
