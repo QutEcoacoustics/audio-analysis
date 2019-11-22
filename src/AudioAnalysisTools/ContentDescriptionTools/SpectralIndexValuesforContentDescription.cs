@@ -1,4 +1,4 @@
-// <copyright file="SpectralIndexValuesforContentDescription.cs" company="QutEcoacoustics">
+// <copyright file="SpectralIndexValuesForContentDescription.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -19,110 +19,26 @@ namespace AudioAnalysisTools.Indices
     /// Purpose of this class is to avoid using the class IndexCalculateResult for returning results from IndexCalculateSixOnly.Analysis();
     /// This class is stripped down to just the required six spectral indices.
     /// </summary>
-    public class SpectralIndexValuesforContentDescription : ResultBase
+    public class SpectralIndexValuesForContentDescription : SpectralIndexBase
     {
-        //static SpectralIndexValuesforContentDescription()
-        //{
-        //    var getters = ReflectionExtensions.GetGetters<SpectralIndexValues, double[]>();
+        // Static constructors are called implicitly when the type is first used.
+        // Do NOT delete even if it has 0 references.
+        static SpectralIndexValuesForContentDescription()
+        {
+            var result = MakeSelectors<SpectralIndexValuesForContentDescription>();
+            CachedSelectors = result.CachedSelectors;
+            CachedSetters = result.CachedSetters;
+            Keys = result.Keys;
+        }
 
-        //    CachedSelectors = new Dictionary<string, Func<SpectralIndexBase, double[]>>(getters.Count);
-        //    foreach (var keyValuePair in getters)
-        //    {
-        //        // var key = keyValuePair.Key;
-        //        var selector = keyValuePair.Value;
-
-        //        CachedSelectors.Add(
-        //            keyValuePair.Key,
-        //            spectrumBase => selector((SpectralIndexValues)spectrumBase));
-        //    }
-
-        //    Keys = CachedSelectors.Keys.ToArray();
-
-        //    var setters = ReflectionExtensions.GetSetters<SpectralIndexValues, double[]>();
-
-        //    CachedSetters = new Dictionary<string, Action<SpectralIndexValues, double[]>>(getters.Count);
-        //    foreach (var keyValuePair in setters)
-        //    {
-        //        // var key = keyValuePair.Key;
-        //        var setter = keyValuePair.Value;
-
-        //        CachedSetters.Add(
-        //            keyValuePair.Key,
-        //            (spectrumBase, value) => setter(spectrumBase, value));
-        //    }
-        //}
-
-        public SpectralIndexValuesforContentDescription()
+        public SpectralIndexValuesForContentDescription()
         {
             // empty constructor important!
         }
 
-        //public SpectralIndexValuesforContentDescription(int spectrumLength, Dictionary<string, IndexProperties> indexProperties, IndexCalculateConfig configuration)
-        //{
-        //    foreach (var cachedSetter in CachedSetters)
-        //    {
-        //        var defaultValue = 0.0;
-
-        //        if (indexProperties.ContainsKey(cachedSetter.Key))
-        //        {
-        //            var indexProperty = indexProperties[cachedSetter.Key];
-        //            if (indexProperty.IsSpectralIndex)
-        //            {
-        //                defaultValue = indexProperty.DefaultValue;
-        //            }
-        //        }
-
-        //        double[] initArray = new double[spectrumLength].FastFill(defaultValue);
-
-        //        // WARNING: Potential throw site
-        //        // No need to give following warning because should call CheckExistenceOfSpectralIndexValues() method before entering loop.
-        //        // This prevents multiple warnings through loop.
-        //        //this.SetPropertyValue(cachedSetter.Key, initArray);
-
-        //        cachedSetter.Value(this, initArray);
-        //    }
-
-        //    this.Configuration = configuration;
-        //}
-
-        /// <summary>
-        /// Imports a dictionary of spectra.
-        /// Assumes `CheckExistenceOfSpectralIndexValues` has already been called.
-        /// Assumes frequency component is in fist index (i.e. frequency is rows) and time in second index (time is columns).
-        /// </summary>
-        /// <param name="dictionaryOfSpectra">
-        /// The dictionary to convert to spectral index base
-        /// </param>
-        public static SpectralIndexValues[] ImportFromDictionary(Dictionary<string, double[,]> dictionaryOfSpectra)
-        {
-            return dictionaryOfSpectra.FromTwoDimensionalArray(CachedSetters, TwoDimensionalArray.Rotate90AntiClockWise);
-        }
-
-        /// <summary>
-        /// Used to check that the keys in the indexProperties dictionary correspond to Properties in the SpectralIndexValues class.
-        /// Call this method before entering a loop because do not want the error message at every iteration through loop.
-        /// </summary>
-        public static void CheckExistenceOfSpectralIndexValues(Dictionary<string, IndexProperties> indexProperties)
-        {
-            foreach (var kvp in indexProperties)
-            {
-                if (!kvp.Value.IsSpectralIndex)
-                {
-                    continue;
-                }
-
-                var success = CachedSelectors.ContainsKey(kvp.Key);
-                if (!success)
-                {
-                    LoggedConsole.WriteWarnLine(
-                        "### WARNING: The PROPERTY <" + kvp.Key + "> does not exist in the SpectralIndexValues class!");
-                }
-            }
-        }
-
         public static Dictionary<string, Func<SpectralIndexBase, double[]>> CachedSelectors { get; }
 
-        public static Dictionary<string, Action<SpectralIndexValues, double[]>> CachedSetters { get; }
+        public static Dictionary<string, Action<SpectralIndexValuesForContentDescription, double[]>> CachedSetters { get; }
 
         public static string[] Keys { get; }
 
@@ -141,15 +57,7 @@ namespace AudioAnalysisTools.Indices
             var combinedImage = ImageTools.CombineImagesVertically(images.ToArray());
             return combinedImage;
         }
-
-        /// <summary>
-        /// Gets the configuration used to generate these results.
-        /// </summary>
-        /// <remarks>
-        /// This property was added when we started generating lots of results that used
-        /// different parameters - we needed a way to disambiguate them.
-        /// </remarks>
-        public IndexCalculateConfig Configuration { get; }
+        
 
         // 1:
         public double[] ACI { get; set; }
@@ -175,9 +83,6 @@ namespace AudioAnalysisTools.Indices
         /// </summary>
         public double[] PMN { get; set; }
 
-        //public override Dictionary<string, Func<SpectralIndexBase, double[]>> GetSelectors()
-        //{
-        //    return CachedSelectors;
-        //}
+        public override Dictionary<string, Func<SpectralIndexBase, double[]>> GetSelectors() => CachedSelectors;
     }
 }

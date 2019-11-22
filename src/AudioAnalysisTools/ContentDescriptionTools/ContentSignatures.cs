@@ -7,14 +7,14 @@ namespace AudioAnalysisTools.ContentDescriptionTools
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
     using Acoustics.Shared;
+    using AudioAnalysisTools.Indices;
     using TowseyLibrary;
 
     /// <summary>
     /// This class contains methods which use functional templates to scan one or multiple files to obtain a content description.
     /// For consistency between recordings many parameters such as sample rate, frame size etc, must be declared as constants.
-    /// In addition, the absolute values in the template description dictionary must be normalised using the fixed set of normalisation bounds in IndexValueBounds.
+    /// In addition, the absolute values in the template description dictionary must be normalised using the fixed set of normalization bounds in IndexValueBounds.
     /// Note that each functional template uses one of a small number of algorithms to calculate a similarity value.
     /// </summary>
     public class ContentSignatures
@@ -43,12 +43,13 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// <summary>
         /// Gets an array of six spectral indices that are calculated.
         /// </summary>
-        public static string[] IndexNames { get; } = { "ACI", "ENT", "EVN", "BGN", "PMN", "OSC" };
+        public static string[] IndexNames { get; } = SpectralIndexValuesForContentDescription.Keys;
 
         /// <summary>
         /// Gets an array containing names of spectral indices that are not wanted. They are used to remove unwanted selectors.
         /// This is a temporary arrangement to utilize existing code.
         /// TODO Eventually separate out template results so do not have to use the AnalysisResult2 class.
+        /// ToDO: this should now be deleteable
         /// </summary>
         public static string[] UnusedIndexNames { get; } = { "CVR", "DIF", "RHZ", "RVT", "RPS", "RNG", "R3D", "SPT", "SUM" };
 

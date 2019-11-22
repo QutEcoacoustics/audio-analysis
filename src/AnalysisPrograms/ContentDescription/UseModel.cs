@@ -26,9 +26,9 @@ namespace AnalysisPrograms.ContentDescription
     /// This class is derived from AbstractStrongAnalyser.
     /// It is equivalent to AnalyseLongRecording.cs or a species recognizer.
     /// To call this class, the first argument on the commandline must be 'audio2csv'.
-    /// Given a one-minute recording segment, the ContentDescription.Analyze() method calls AudioAnalysisTools.Indices.IndexCalculateSixOnly.Analysis().
+    /// Given a one-minute recording segment, the UseModel.Analyze() method calls AudioAnalysisTools.Indices.IndexCalculateSixOnly.Analysis().
     /// This calculates six spectral indices, ACI, ENT, EVN, BGN, PMN, OSC. This set of 6x256 acoustic features is used for content description.
-    /// The content description methods are called from UseModel.SummariseResults() method.
+    /// The content description methods are called from UseModel.Analyze() method.
     /// </summary>
     public class UseModel : AbstractStrongAnalyser
     {
@@ -41,6 +41,10 @@ namespace AnalysisPrograms.ContentDescription
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
+        private FunctionalTemplate[] functionalTemplates;
+
+        private Dictionary<string, Dictionary<string, double[]>> templatesAsDictionary;
+
         public override string DisplayName => "Content Description";
 
         public override string Identifier => TowseyContentDescription;
@@ -51,10 +55,6 @@ namespace AnalysisPrograms.ContentDescription
         {
             AnalysisTargetSampleRate = ContentSignatures.SampleRate,
         };
-
-        private FunctionalTemplate[] functionalTemplates;
-
-        private Dictionary<string, Dictionary<string, double[]>> templatesAsDictionary;
 
         public override void BeforeAnalyze(AnalysisSettings analysisSettings)
         {
@@ -107,11 +107,10 @@ namespace AnalysisPrograms.ContentDescription
                 segmentSettings.SegmentStartOffset,
                 segmentSettings.Segment.SourceMetadata.SampleRate);
 
-            segmentResults.SpectralIndexValues.FileName = segmentSettings.Segment.SourceMetadata.Identifier;
-
             // DO THE CONTENT DESCRIPTION FOR ONE MINUTE HERE
             // First get acoustic indices for one minute, convert to Dictionary and normalize the values.
-            var indicesDictionary = IndexCalculateSixOnly.ConvertIndicesToDictionary(segmentResults.SpectralIndexValues);
+            var indicesDictionary = segmentResults.AsArray().ToTwoDimensionalArray(SpectralIndexValuesForContentDescription.CachedSelectors);
+            //var indicesDictionary = IndexCalculateSixOnly.ConvertIndicesToDictionary(segmentResults);
             foreach (string key in ContentSignatures.IndexNames)
             {
                 var indexBounds = ContentSignatures.IndexValueBounds[key];
@@ -124,7 +123,7 @@ namespace AnalysisPrograms.ContentDescription
             var descriptionResultForOneMinute = ContentSignatures.AnalyzeOneMinute(
                 this.functionalTemplates,
                 this.templatesAsDictionary,
-                indicesDictionary,
+                indicesDictionary.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.GetRow(0)), // this line converts dictionary of one-row matrices to dictionary of arrays.
                 startMinuteId);
 
             // set up the analysis results to return
@@ -135,7 +134,7 @@ namespace AnalysisPrograms.ContentDescription
                 {
                     // Transfer the spectral index results to AnalysisResults
                     // TODO: consider not returning this value if it is not needed in summarize
-                    segmentResults.SpectralIndexValues,
+                    segmentResults,
                 },
                 MiscellaneousResults =
                 {
@@ -254,10 +253,10 @@ namespace AnalysisPrograms.ContentDescription
 
             // Write the results to a csv file
             var filePath = Path.Combine(resultsDirectory.FullName, "AcousticSignatures.csv");
-            FileTools.WriteDictionaryAsCsvFile(contentDictionary, filePath);
 
             // TODO: fix this so it writes header and a column of content description values.
             //Csv.WriteToCsv(new FileInfo(filePath), contentDictionary);
+            FileTools.WriteDictionaryAsCsvFile(contentDictionary, filePath);
 
             // prepare graphical plots of the acoustic signatures.
             var contentPlots = GetPlots(contentDictionary);
@@ -271,61 +270,6 @@ namespace AnalysisPrograms.ContentDescription
             var path3 = Path.Combine(resultsDirectory.FullName, basename + ".ContentDescription.png");
             image.Save(path3);
         }
-
-        /*
-        /// <summary>
-        /// NOTE: THIS METHOD SHOULD EVENTUALLY BE DELETED. NO LONGER CALLED.
-        /// Calculate the content description for each minute.
-        /// </summary>
-        /// <param name="spectralIndices">set of spectral indices for each minute.</param>
-        /// <param name="templatesFile">json file containing description of templates.</param>
-        /// <param name="elapsedTimeAtStartOfRecording">Offset into the recording where recording begun (may not be a whole or round minute).</param>
-        private static Dictionary<string, double[]> GetContentDescription(
-            SpectralIndexBase[] spectralIndices,
-            FileInfo templatesFile,
-            TimeSpan elapsedTimeAtStartOfRecording)
-        {
-            // Read in the content description templates
-            var templates = Json.Deserialize<FunctionalTemplate[]>(templatesFile);
-            var templatesAsDictionary = DataProcessing.ExtractDictionaryOfTemplateDictionaries(templates);
-            var startMinuteId = (int)Math.Round(elapsedTimeAtStartOfRecording.TotalMinutes);
-
-            // create dictionary of index vectors
-            var results = new List<DescriptionResult>();
-
-            int length = spectralIndices.Length;
-
-            //loop over all minutes in the recording
-            for (int i = 0; i < length; i++)
-            {
-                var oneMinuteOfIndices = spectralIndices[i];
-
-                // Transfer acoustic indices to dictionary
-                var indicesDictionary = IndexCalculateSixOnly.ConvertIndicesToDictionary(oneMinuteOfIndices);
-
-                // normalize the index values
-                foreach (string key in ContentSignatures.IndexNames)
-                {
-                    var indexBounds = ContentSignatures.IndexValueBounds[key];
-                    var indexArray = indicesDictionary[key];
-                    var normalisedVector = DataTools.NormaliseInZeroOne(indexArray, indexBounds[0], indexBounds[1]);
-                    indicesDictionary[key] = normalisedVector;
-                }
-
-                // scan templates over one minute of indices
-                var resultsForOneMinute = ContentSignatures.AnalyzeOneMinute(
-                    templates,
-                    templatesAsDictionary,
-                    indicesDictionary,
-                    startMinuteId + i);
-                results.Add(resultsForOneMinute);
-            }
-
-            // convert results to dictionary of score arrays
-            var dictionaryOfScores = DataProcessing.ConvertResultsToDictionaryOfArrays(results, length, startMinuteId);
-            return dictionaryOfScores;
-        }
-        */
 
         /// <summary>
         /// Produce plots for graphical display.

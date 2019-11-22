@@ -15,35 +15,14 @@ namespace AudioAnalysisTools.Indices
 
     public class SpectralIndexValues : SpectralIndexBase
     {
+        // Static constructors are called implicitly when the type is first used.
+        // Do NOT delete even if it has 0 references.
         static SpectralIndexValues()
         {
-            var getters = ReflectionExtensions.GetGetters<SpectralIndexValues, double[]>();
-
-            CachedSelectors = new Dictionary<string, Func<SpectralIndexBase, double[]>>(getters.Count);
-            foreach (var keyValuePair in getters)
-            {
-                // var key = keyValuePair.Key;
-                var selector = keyValuePair.Value;
-
-                CachedSelectors.Add(
-                    keyValuePair.Key,
-                    spectrumBase => selector((SpectralIndexValues)spectrumBase));
-            }
-
-            Keys = CachedSelectors.Keys.ToArray();
-
-            var setters = ReflectionExtensions.GetSetters<SpectralIndexValues, double[]>();
-
-            CachedSetters = new Dictionary<string, Action<SpectralIndexValues, double[]>>(getters.Count);
-            foreach (var keyValuePair in setters)
-            {
-                // var key = keyValuePair.Key;
-                var setter = keyValuePair.Value;
-
-                CachedSetters.Add(
-                    keyValuePair.Key,
-                    (spectrumBase, value) => setter(spectrumBase, value));
-            }
+            var result = MakeSelectors<SpectralIndexValues>();
+            CachedSelectors = result.CachedSelectors;
+            CachedSetters = result.CachedSetters;
+            Keys = result.Keys;
         }
 
         public SpectralIndexValues()
@@ -196,9 +175,6 @@ namespace AudioAnalysisTools.Indices
 
         public double[] SUM { get; set; }
 
-        public override Dictionary<string, Func<SpectralIndexBase, double[]>> GetSelectors()
-        {
-            return CachedSelectors;
-        }
+        public override Dictionary<string, Func<SpectralIndexBase, double[]>> GetSelectors() => CachedSelectors;
     }
 }

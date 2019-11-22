@@ -41,7 +41,8 @@ namespace AudioAnalysisTools.Indices
         /// <param name="returnSonogramInfo"> boolean with default value = false.</param>
         /// <returns> An IndexCalculateResult.</returns>
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Reviewed. Suppression is OK here.")]
-        public static IndexCalculateResult Analysis(
+        //////public static IndexCalculateResult Analysis(
+        public static SpectralIndexValuesForContentDescription Analysis(
             AudioRecording recording,
             TimeSpan segmentOffsetTimeSpan,
             int sampleRateOfOriginalAudioFile,
@@ -66,16 +67,16 @@ namespace AudioAnalysisTools.Indices
             var config = new IndexCalculateConfig(); // sets some default values
             int freqBinCount = frameSize / 2;
             var indexProperties = GetIndexProperties();
-            var result = new IndexCalculateResult(freqBinCount, indexProperties, indexCalculationDuration, segmentOffsetTimeSpan, config);
-            //var result = new SpectralIndexValuesforContentDescription();
+            ////////var result = new IndexCalculateResult(freqBinCount, indexProperties, indexCalculationDuration, segmentOffsetTimeSpan, config);
+            var spectralIndices = new SpectralIndexValuesForContentDescription();
 
-            //result.SummaryIndexValues = null;
-            SpectralIndexValues spectralIndices = result.SpectralIndexValues;
+            ///////result.SummaryIndexValues = null;
+            ///////SpectralIndexValues spectralIndices = result.SpectralIndexValues;
 
             // set up default spectrogram to return
-            result.Sg = returnSonogramInfo ? GetSonogram(recording, windowSize: 1024) : null;
-            result.Hits = null;
-            result.TrackScores = new List<Plot>();
+            ///////result.Sg = returnSonogramInfo ? GetSonogram(recording, windowSize: 1024) : null;
+            ///////result.Hits = null;
+            ///////result.TrackScores = new List<Plot>();
 
             // ################################## FINISHED SET-UP
             // ################################## NOW GET THE AMPLITUDE SPECTROGRAM
@@ -154,8 +155,9 @@ namespace AudioAnalysisTools.Indices
             //spectralIndices.CVR = spActivity.CoverSpectrum;
             spectralIndices.EVN = spActivity.EventSpectrum;
 
-            result.TrackScores = null;
-            return result;
+            ///////result.TrackScores = null;
+            ///////return result;
+            return spectralIndices;
         } // end calculation of Six Spectral Indices
 
         public static Dictionary<string, IndexProperties> GetIndexProperties()
@@ -183,7 +185,7 @@ namespace AudioAnalysisTools.Indices
         /// Transfers the required six indices from SpectralIndexBase to a dictionary.
         /// IMPORTANT NOTE: THis method needs to be updated if there is a change to the indices used for content description.
         /// </summary>
-        public static Dictionary<string, double[]> ConvertIndicesToDictionary(SpectralIndexBase indexSet)
+        /*public static Dictionary<string, double[]> ConvertIndicesToDictionary(SpectralIndexBase indexSet)
         {
             var dictionary = new Dictionary<string, double[]>();
             var aciArray = (double[])indexSet.GetPropertyValue("ACI");
@@ -199,7 +201,7 @@ namespace AudioAnalysisTools.Indices
             var oscArray = (double[])indexSet.GetPropertyValue("OSC");
             dictionary.Add("OSC", oscArray);
             return dictionary;
-        }
+        }*/
 
         private static SpectrogramStandard GetSonogram(AudioRecording recording, int windowSize)
         {
