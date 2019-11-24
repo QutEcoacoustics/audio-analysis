@@ -4,7 +4,7 @@
 # It should NOT contain dynamic data (like file names or analysis types)
 
 ColorMap1: "ACI-ENT-EVN"
-ColorMap2: "BGN-PMN-R3D"
+ColorMap2: "BGN-PMN-CVR"
 
 # The ColourFilter parameter determines how much the low index values are emphasized or de-emphasized.
 # The purpose is to make low intensity features stand out (emphasis) or become even less obvious (de-emphasis).

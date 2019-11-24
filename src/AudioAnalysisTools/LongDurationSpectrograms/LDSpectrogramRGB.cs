@@ -920,7 +920,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     {
                         r += 0.5 * (b - r);
                         g += 0.5 * (b - g);
-                        b += 0.2;
+                        b += 0.1;
 
                         // check for values over 1.0
                         //g = Math.Min(1.0, g);
