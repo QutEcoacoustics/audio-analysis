@@ -897,8 +897,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             int cols = redM.GetLength(1); //number
             var bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
 
-            //const int maxRgbValue = 255;
-
             for (int row = 0; row < rows; row++)
             {
                 for (int column = 0; column < cols; column++)
@@ -916,15 +914,16 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     }
 
                     // enhance blue color - it is difficult to see on a black background
-                    // This is a hack - there should be a principled way to do this!
-                    // The effect is to create a more visible cyan colour.
+                    // There should be a principled way to do this!
+                    // The intention is to create a more visible light blue color.
                     if (r < 0.1 && g < 0.1 && b > 0.1)
                     {
-                        g += 0.7 * b;
+                        r += 0.5 * (b - r);
+                        g += 0.5 * (b - g);
                         b += 0.2;
 
                         // check for values over 1.0
-                        g = Math.Min(1.0, g);
+                        //g = Math.Min(1.0, g);
                         b = Math.Min(1.0, b);
                     }
 
