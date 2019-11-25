@@ -53,9 +53,9 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
 
             // do some basic checks that the indices were generated
             var listOfFiles = ResultsDirectory.EnumerateFiles().ToArray();
-            Assert.AreEqual(20, listOfFiles.Length);
+            Assert.AreEqual(19, listOfFiles.Length);
             var csvCount = listOfFiles.Count(f => f.Name.EndsWith(".csv"));
-            Assert.AreEqual(16, csvCount);
+            Assert.AreEqual(15, csvCount);
             var jsonCount = listOfFiles.Count(f => f.Name.EndsWith(".json"));
             Assert.AreEqual(2, jsonCount);
             var pngCount = listOfFiles.Count(f => f.Name.EndsWith(".png"));
