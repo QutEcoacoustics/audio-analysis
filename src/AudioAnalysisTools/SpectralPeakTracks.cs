@@ -366,7 +366,7 @@ namespace AudioAnalysisTools
         } // LocalPeaks()
 
         /// <summary>
-        /// CALCULATEs SPECTRAL PEAK TRACKS: spectralIndices.SPT, RHZ, RVT, RPS, RNG, R3D,
+        /// CALCULATEs SPECTRAL PEAK TRACKS: spectralIndices.SPT, RHZ, RVT, RPS, RNG
         /// This method is only called from IndexCalulate.analysis() when the IndexCalculation Duration is less than 10 seconds,
         /// because need to recalculate background noise etc.
         /// Otherwise the constructor of this class is called: sptInfo = new SpectralPeakTracks(decibelSpectrogram, peakThreshold);

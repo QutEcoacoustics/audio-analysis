@@ -63,8 +63,8 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms.Zooming
             var config = new LdSpectrogramConfig()
             {
                 // same color map to reduce memory stress for test
-                ColorMap1 = SpectrogramConstants.RGBMap_BGN_PMN_R3D,
-                ColorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_R3D,
+                ColorMap1 = SpectrogramConstants.RGBMap_BGN_PMN_EVN,
+                ColorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_EVN,
             };
 
             var generationData = new IndexGenerationData()

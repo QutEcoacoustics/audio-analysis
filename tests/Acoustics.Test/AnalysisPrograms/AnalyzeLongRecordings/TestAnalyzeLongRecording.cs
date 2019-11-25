@@ -98,7 +98,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             var resultsDirectory = this.outputDirectory.Combine("Towsey.Acoustic");
             var listOfFiles = resultsDirectory.EnumerateFiles().ToArray();
 
-            Assert.AreEqual(40, listOfFiles.Length);
+            Assert.AreEqual(38, listOfFiles.Length);
 
             var csvCount = listOfFiles.Count(f => f.Name.EndsWith(".csv"));
             Assert.AreEqual(16, csvCount);
@@ -207,7 +207,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             var resultsDirectory = this.outputDirectory.Combine("Towsey.Acoustic");
             var listOfFiles = resultsDirectory.EnumerateFiles().ToArray();
 
-            Assert.AreEqual(20, listOfFiles.Length);
+            Assert.AreEqual(19, listOfFiles.Length);
 
             var csvCount = listOfFiles.Count(f => f.Name.EndsWith(".csv"));
             Assert.AreEqual(16, csvCount);
