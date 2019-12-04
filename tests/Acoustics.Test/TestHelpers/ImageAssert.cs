@@ -40,7 +40,7 @@ namespace Acoustics.Test.TestHelpers
 
         /// <summary>
         /// Check whether a region in an image matches an expected color.
-        /// Does a simplisitic average on each color channel and includes and inbuilt tolerance parameter.
+        /// Does a simplistic average on each color channel and includes and inbuilt tolerance parameter.
         /// A repeating pattern can fool this test.
         /// </summary>
         /// <example>
@@ -103,10 +103,6 @@ namespace Acoustics.Test.TestHelpers
         ///            };
         /// ImageAssert.ImageRegionHasColors(new Rectangle(0, 24, 210, 3),  expectedColors, actualImage1, 0.07);
         /// </example>
-        /// <param name="region"></param>
-        /// <param name="expectedColors"></param>
-        /// <param name="actualImage"></param>
-        /// <param name="tolerance"></param>
         public static void ImageRegionHasColors(
             this Assert assert,
             System.Drawing.Rectangle region,
@@ -200,7 +196,7 @@ namespace Acoustics.Test.TestHelpers
 
         public static void ImageRegionIsColor(this Assert assert, SixLabors.Primitives.Rectangle region, Rgb24 expectedColor, Image<Rgb24> actualImage, double tolerance = 0.0)
         {
-            var width = region.Width;
+            //var width = region.Width;
             var area = region.Width * region.Height;
 
             var red = new int[area];
