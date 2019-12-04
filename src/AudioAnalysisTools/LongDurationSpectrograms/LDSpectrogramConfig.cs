@@ -28,6 +28,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             this.ColorMap1 = LDSpectrogramRGB.DefaultColorMap1;
             this.ColorMap2 = LDSpectrogramRGB.DefaultColorMap2;
             this.ColourFilter = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
+            this.BlueEnhanceParameter = 0.0;
             this.XAxisTicInterval = SpectrogramConstants.X_AXIS_TIC_INTERVAL;
             this.FreqScale = "Linear";
             this.YAxisTicInterval = 1000;
@@ -41,21 +42,27 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public string FreqScale { get; set; }
 
         /// <summary>
-        /// Gets or sets parameter to manipulate the colour map and appearance of the false-colour spectrogram.
+        /// Gets or sets parameter to manipulate the color map and appearance of the false-colour spectrogram.
         /// </summary>
         public string ColorMap1 { get; set; }
 
         /// <summary>
         /// Gets or sets parameter to manipulate the colour map and appearance of the false-colour spectrogram
-        /// Pass two colour maps because two maps convey more information.
+        /// Pass two color maps because two maps convey more information.
         /// </summary>
         public string ColorMap2 { get; set; }
 
         /// <summary>
-        /// Gets or sets value of the colour filter.
+        /// Gets or sets value of the color filter.
         /// Its value must be less than 1.0. Good value is 0.75.
         /// </summary>
         public double? ColourFilter { get; set; }
+
+        /// <summary>
+        /// Gets or sets value of the blue enhancement parameter.
+        /// Its value must be in 0.0 to 1.0. Current suggested value is 0.5.
+        /// </summary>
+        public double? BlueEnhanceParameter { get; set; }
 
         /// <summary>
         /// Gets or sets the default XAxisTicInterval.
@@ -119,13 +126,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
         /// <summary>
-        /// Gets a default config for long-duration false-colour spectrograms.
+        /// Gets a default config for long-duration false-color spectrograms.
+        /// But allows caller to substitute custom color maps.
         /// </summary>
-        public static LdSpectrogramConfig GetDefaultConfig(string colourMap1, string colourMap2)
+        public static LdSpectrogramConfig GetDefaultConfig(string colorMap1, string colorMap2)
         {
             var ldSpectrogramConfig = GetDefaultConfig();
-            ldSpectrogramConfig.ColorMap1 = colourMap1;
-            ldSpectrogramConfig.ColorMap2 = colourMap2;
+            ldSpectrogramConfig.ColorMap1 = colorMap1;
+            ldSpectrogramConfig.ColorMap2 = colorMap2;
             return ldSpectrogramConfig;
         }
 
@@ -164,9 +172,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return keys;
         }
 
-        public string[] GetKeys()
-        {
-            return GetKeys(this.ColorMap1, this.ColorMap2);
-        }
+        public string[] GetKeys() => GetKeys(this.ColorMap1, this.ColorMap2);
     }
 }

@@ -3,19 +3,19 @@
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
-//   This class generates false-colour spectrograms of long duration audio recordings.
+//   This class generates false-color spectrograms of long duration audio recordings.
 //   Important properties are:
-//   1) the colour map which maps three acoutic indices to RGB.
+//   1) the color map which maps three acoustic indices to RGB.
 //   2) The scale of the x and y axes which are determined by the sample rate, frame size etc.
-//   In order to create false colour spectrograms, copy the following method:
-//                                           public static void DrawFalseColourSpectrograms(LDSpectrogramConfig configuration)
+//   In order to create false-color spectrograms, copy the following method:
+//                                           public static void DrawFalseColorSpectrograms(LDSpectrogramConfig configuration)
 //   All the arguments can be passed through a config file.
 //   Create the config file through an instance of the class LDSpectrogramConfig and then call config.WritConfigToYAML(FileInfo path).
 //   Then pass that path to the above static method.
 //
 //  Activity Codes for other tasks to do with spectrograms and audio files:
 //
-// audio2csv - Calls AnalyseLongRecording.Execute(): Outputs acoustic indices and LD false-colour spectrograms.
+// audio2csv - Calls AnalyseLongRecording.Execute(): Outputs acoustic indices and LD false-color spectrograms.
 // audio2sonogram - Calls AnalysisPrograms.Audio2Sonogram.Main(): Produces a sonogram from an audio file - EITHER custom OR via SOX.Generates multiple spectrogram images and oscilllations info
 // indicescsv2image - Calls DrawSummaryIndexTracks.Main(): Input csv file of summary indices. Outputs a tracks image.
 // colourspectrogram - Calls DrawLongDurationSpectrograms.Execute():  Produces LD spectrograms from matrices of indices.
@@ -44,21 +44,21 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using System.Reflection;
     using Acoustics.Shared;
     using AnalysisBase.ResultBases;
-    using DSP;
-    using Indices;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.Indices;
+    using AudioAnalysisTools.StandardSpectrograms;
     using log4net;
-    using StandardSpectrograms;
     using TowseyLibrary;
 
     /// <summary>
-    /// This class generates false-colour spectrograms of long duration audio recordings.
+    /// This class generates false-color spectrograms of long duration audio recordings.
     /// Important properties are:
-    /// 1) the colour map which maps three acoutic indices to RGB.
-    /// 2) The scale of the x and y axes which are dtermined by the sample rate, frame size etc.
-    /// In order to create false colour spectrograms, copy the method
-    ///         public static void DrawFalseColourSpectrograms(LDSpectrogramConfig configuration)
+    /// 1) the color map which maps three acoustic indices to RGB.
+    /// 2) The scale of the x and y axes which are determined by the sample rate, frame size etc.
+    /// In order to create false color spectrograms, copy the method
+    ///         public static void DrawFalseColorSpectrograms(LDSpectrogramConfig configuration)
     /// All the arguments can be passed through a config file.
-    /// Create the config file throu an instance of the class LDSpectrogramConfig
+    /// Create the config file through an instance of the class LDSpectrogramConfig
     /// and then call config.WritConfigToYAML(FileInfo path).
     /// Then pass that path to the above static method.
     /// </summary>
@@ -81,7 +81,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // Since May 2017, all the likely available matrices are incorporated into a dictionary. Note the new names for PMN and R3D, previously POW and HPN respectively.
             // Note 1: This default array will be subsequently over-written by the indices in the IndexPropertiesConfig file if one is available.
             // Note 1: RHZ, SPT and CVR are correlated with POW and do not add much. CLS is not particularly useful. Currently using R3D
-            // Decmeber 2018: Now all spectral indices are always used in drawing images
+            // December 2018: Now all spectral indices are always used in drawing images.
             return SpectralIndexValues.Keys;
         }
 
@@ -120,20 +120,20 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// Initializes a new instance of the <see cref="LDSpectrogramRGB"/> class.
         /// CONSTRUCTOR.
         /// </summary>
-        public LDSpectrogramRGB(TimeSpan xScale, int sampleRate, string colourMap)
+        public LDSpectrogramRGB(TimeSpan xScale, int sampleRate, string colorMap)
         {
             this.ColorMode = "NEGATIVE"; // the default
             this.BackgroundFilter = SpectrogramConstants.BACKGROUND_FILTER_COEFF; // default BackgroundFilter value
             this.SampleRate = sampleRate;
 
-            // assume default linear Herz scale
+            // assume default linear Hertz scale
             this.FrameWidth = SpectrogramConstants.FRAME_LENGTH;
             this.FreqScale = new FrequencyScale(nyquist: this.SampleRate / 2, frameSize: this.FrameWidth, hertzGridInterval: 1000);
 
             // set the X and Y axis scales for the spectrograms
             this.XTicInterval = xScale;
             this.SampleRate = sampleRate;
-            this.ColorMap = colourMap;
+            this.ColorMap = colorMap;
             this.StartOffset = SpectrogramConstants.MINUTE_OFFSET;
 
             // IMPORTANT NOTE: If an IndexPropertiesConfig file is available, these default keys are later over-written in the method
@@ -145,21 +145,21 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <summary>
         /// Initializes a new instance of the <see cref="LDSpectrogramRGB"/> class.
         /// CONSTRUCTOR
-        /// WARNING: Ths will create a linear herz scale spectrogram.
+        /// WARNING: Ths will create a linear Hertz scale spectrogram.
         /// </summary>
         /// <param name="minuteOffset">minute of day at which the spectrogram starts.</param>
         /// <param name="xScale">time scale : pixels per hour.</param>
         /// <param name="sampleRate">recording sample rate which also determines scale of Y-axis.</param>
         /// <param name="frameWidth">frame size - which also determines scale of Y-axis.</param>
-        /// <param name="colourMap">acoustic indices used to assign  the three colour mapping.</param>
-        public LDSpectrogramRGB(TimeSpan minuteOffset, TimeSpan xScale, int sampleRate, int frameWidth, string colourMap)
-            : this(xScale, sampleRate, colourMap)
+        /// <param name="colorMap">acoustic indices used to assign  the three color mapping.</param>
+        public LDSpectrogramRGB(TimeSpan minuteOffset, TimeSpan xScale, int sampleRate, int frameWidth, string colorMap)
+            : this(xScale, sampleRate, colorMap)
         {
             this.StartOffset = minuteOffset;
             this.FrameWidth = frameWidth;
         }
 
-        public LDSpectrogramRGB(LdSpectrogramConfig config, IndexGenerationData indexGenerationData, string colourMap)
+        public LDSpectrogramRGB(LdSpectrogramConfig config, IndexGenerationData indexGenerationData, string colorMap)
         {
             this.SampleRate = indexGenerationData.SampleRateResampled;
             this.FrameWidth = indexGenerationData.FrameLength;
@@ -176,7 +176,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             this.IndexCalculationDuration = indexGenerationData.IndexCalculationDuration;
             this.XTicInterval = config.XAxisTicInterval;
 
-            // the Herz scale
+            // the Hertz scale
             int nyquist = indexGenerationData.SampleRateResampled / 2;
             int yAxisTicInterval = config.YAxisTicInterval;
 
@@ -218,7 +218,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
 
             this.ColorMode = "NEGATIVE"; // the default
-            this.ColorMap = colourMap;
+            this.ColorMap = colorMap;
         }
 
         public string[] SpectrogramKeys { get; private set; }
@@ -238,12 +238,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public double? Longitude { get; set; }
 
         /// <summary>
-        /// Gets or sets the time at which the current LDspectrogram starts.
+        /// Gets or sets the time at which the current LDFC spectrogram starts.
         /// </summary>
         public TimeSpan StartOffset { get; set; }
 
         /// <summary>
-        /// Gets or sets the temporal duration of one subsegment interval for which indices are calculated.
+        /// Gets or sets the temporal duration of one sub-segment interval for which indices are calculated.
         /// </summary>
         public TimeSpan IndexCalculationDuration { get; set; }
 
@@ -284,7 +284,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public string ColorMap { get; set; }
 
         /// <summary>
-        /// Gets or sets pOSITIVE or NEGATIVE.
+        /// Gets or sets POSITIVE or NEGATIVE.
         /// </summary>
         public string ColorMode { get; set; }
 
@@ -497,7 +497,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     }
 
                     // NOW CALCULATE THE MAX BOUND
-                    stats.GetValueOfNthPercentile(IndexDistributions.UpperPercentileDefault, out int binId, out maxBound);
+                    stats.GetValueOfNthPercentile(IndexDistributions.UpperPercentileDefault, out int _, out maxBound);
 
                     // correct for case where max bound = zero. This can happen where ICD is very short i.e. 0.1s.
                     if (maxBound < 0.0001)
@@ -604,12 +604,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return returnImage;
         }
 
-        public void DrawNegativeFalseColourSpectrogram(DirectoryInfo outputDirectory, string outputFileName)
+        public void DrawNegativeFalseColorSpectrogram(DirectoryInfo outputDirectory, string outputFileName, double blueEnhanceParameter)
         {
-            var bmpNeg = this.DrawFalseColourSpectrogramChromeless("NEGATIVE", this.ColorMap);
+            var bmpNeg = this.DrawFalseColorSpectrogramChromeless("NEGATIVE", this.ColorMap, blueEnhanceParameter);
             if (bmpNeg == null)
             {
-                LoggedConsole.WriteLine("WARNING: From method ColourSpectrogram.DrawNegativeFalseColourSpectrograms()");
+                LoggedConsole.WriteLine("WARNING: From method ColorSpectrogram.DrawNegativeFalseColorSpectrograms()");
                 LoggedConsole.WriteLine("         Null image returned");
                 return;
             }
@@ -634,24 +634,24 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// Chromeless means WITHOUT all the trimmings, such as title bar axis labels, grid lines etc.
         /// However it does add in notated error segments.
         /// </summary>
-        public Image DrawFalseColourSpectrogramChromeless(string colorMode, string colorMap)
+        public Image DrawFalseColorSpectrogramChromeless(string colorMode, string colorMap, double blueEnhanceParameter)
         {
             if (!this.ContainsMatrixForKeys(colorMap))
             {
-                LoggedConsole.WriteLine("WARNING: From method ColourSpectrogram.DrawFalseColourSpectrogram()");
-                LoggedConsole.WriteLine("         No matrices are available for the passed colour map.");
+                LoggedConsole.WriteLine("WARNING: From method ColourSpectrogram.DrawFalseColorSpectrogram()");
+                LoggedConsole.WriteLine("         No matrices are available for the passed color map.");
                 return null;
             }
 
             string[] rgbMap = colorMap.Split('-');
 
-            // NormaliseMatrixValues spectrogram values and de-emphasize the low background values
+            // NormalizeMatrixValues spectrogram values and de-emphasize the low background values
             var redMatrix = this.GetNormalisedSpectrogramMatrix(rgbMap[0]);
             var grnMatrix = this.GetNormalisedSpectrogramMatrix(rgbMap[1]);
             var bluMatrix = this.GetNormalisedSpectrogramMatrix(rgbMap[2]);
-            bool doReverseColour = colorMode.StartsWith("POS");
+            bool doReverseColor = colorMode.StartsWith("POS");
 
-            var bmp = DrawRgbColourMatrix(redMatrix, grnMatrix, bluMatrix, doReverseColour);
+            var bmp = DrawRgbColorMatrix(redMatrix, grnMatrix, bluMatrix, doReverseColor, blueEnhanceParameter);
 
             if (bmp == null)
             {
@@ -692,7 +692,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             matrix2 = this.GetNormalisedSpectrogramMatrix(rgbMap2[2]);
             var bluMatrix = MatrixTools.AddMatricesWeightedSum(matrix1, blendWt1, matrix2, blendWt2);
 
-            var bmp = DrawRgbColourMatrix(redMatrix, grnMatrix, bluMatrix, false);
+            var blueEnhanceParameter = 0.0;
+            var bmp = DrawRgbColorMatrix(redMatrix, grnMatrix, bluMatrix, false, blueEnhanceParameter);
             return bmp;
         }
 
@@ -787,12 +788,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
         /// <summary>
-        /// Frames a false-colourspectrogram.
+        /// Frames a false-color spectrogram.
         /// Creates the title bar and the time scale. Also adds frequency grid lines to the image.
-        /// Note that the 'nyquist' and 'hertzGridInterval' arguments are used ONLY if the cs.Freqscale field==null.
+        /// Note that the 'nyquist' and 'hertzGridInterval' arguments are used ONLY if the cs.FreqScale field==null.
         /// Also note that in this case, the frequency scale will be linear.
         /// </summary>
-        public static Image FrameLDSpectrogram(Image bmp1, Image titleBar, LDSpectrogramRGB cs, int nyquist, int herzInterval)
+        public static Image FrameLDSpectrogram(Image bmp1, Image titleBar, LDSpectrogramRGB cs, int nyquist, int hertzInterval)
         {
             var xAxisPixelDuration = cs.IndexCalculationDuration;
             var fullDuration = TimeSpan.FromTicks(xAxisPixelDuration.Ticks * bmp1.Width);
@@ -803,7 +804,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             DateTimeOffset? dateTimeOffset = cs.RecordingStartDate;
             if (dateTimeOffset.HasValue)
             {
-                // draw extra time scale with absolute start time. AND THEN Do SOMETHING WITH IT.
+                // draw extra time scale with absolute start time. AND THEN DO SOMETHING WITH IT.
                 timeBmp2 = ImageTrack.DrawTimeTrack(fullDuration, cs.RecordingStartDate, bmp1.Width, trackHeight);
             }
 
@@ -811,7 +812,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             {
                 // WARNING: The following will create a linear frequency scale.
                 int frameSize = bmp1.Height;
-                var freqScale = new FrequencyScale(nyquist, frameSize, herzInterval);
+                var freqScale = new FrequencyScale(nyquist, frameSize, hertzInterval);
                 cs.FreqScale = freqScale;
             }
 
@@ -845,8 +846,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
 
             g.DrawLine(new Pen(Color.Gray), 0, 0, width, 0); //draw upper boundary
-
-            // g.DrawLine(pen, duration + 1, 0, trackWidth, 0);
             return bmp;
         }
 
@@ -866,11 +865,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             x += stringSize.ToSize().Width + 300;
 
             //g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X, 3));
-
-            // Draw colour chart on title bar. Discontinued this because not helpful.
-            //var colourChart = LDSpectrogramRGB.DrawColourScale(width, SpectrogramConstants.HEIGHT_OF_TITLE_BAR - 2);
-            //g.DrawImage(colourChart, X, 1);
-
             var text = $"SCALE:(time x kHz)        {Meta.OrganizationTag}";
             stringSize = g.MeasureString(text, stringFont);
             int x2 = width - stringSize.ToSize().Width - 2;
@@ -886,12 +880,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         /// <summary>
         /// This method assumes that all the passed matrices are normalised and of the same dimensions.
-        /// The method implements a hack to enhance the blue colour because the human eye is less sensitive to blue.
+        /// The method implements a hack to enhance the blue color because the human eye is less sensitive to blue.
         /// If there is a problem with one or more of the three rgb values, a gray pixel is substituted not a black pixel.
-        /// Black is a frequent colour in LDFC spectrograms, but gray is highly unlikely,
+        /// Black is a frequent color in LDFC spectrograms, but gray is highly unlikely,
         /// and therefore its presence stands out as indicating an error in one or more of the rgb values.
         /// </summary>
-        public static Image DrawRgbColourMatrix(double[,] redM, double[,] grnM, double[,] bluM, bool doReverseColour)
+        public static Image DrawRgbColorMatrix(double[,] redM, double[,] grnM, double[,] bluM, bool doReverseColor, double blueEnhanceParameter)
         {
             int rows = redM.GetLength(0); //number of rows
             int cols = redM.GetLength(1); //number
@@ -913,13 +907,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                         b = 0.5;
                     }
 
-                    // enhance blue color - it is difficult to see on a black background
+                    // Enhance blue color where it is difficult to see on a black background
                     // There should be a principled way to do this!
                     // The intention is to create a more visible light blue color.
-                    if (r < 0.1 && g < 0.1 && b > 0.1)
+                    if (r < 0.1 && g < 0.1 && b > 0.1 && blueEnhanceParameter > 0.0)
                     {
-                        r += 0.5 * (b - r);
-                        g += 0.5 * (b - g);
+                        r += blueEnhanceParameter * (b - r);
+                        g += blueEnhanceParameter * (b - g);
                         b += 0.1;
 
                         // check for values over 1.0
@@ -927,7 +921,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                         b = Math.Min(1.0, b);
                     }
 
-                    if (doReverseColour)
+                    if (doReverseColor)
                     {
                         r = 1 - r;
                         g = 1 - g;
@@ -949,7 +943,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// A technique to derive a spectrogram from four different indices
         /// same as above method but multiply index value by the amplitude value instead of squaring the value.
         /// </summary>
-        public static Image DrawFourColourSpectrogram(double[,] redM, double[,] grnM, double[,] bluM, double[,] greM, bool doReverseColour)
+        public static Image DrawFourColorSpectrogram(double[,] redM, double[,] grnM, double[,] bluM, double[,] greM, bool doReverseColor)
         {
             // assume all matrices are normalised and of the same dimensions
             int rows = redM.GetLength(0); //number of rows
@@ -967,7 +961,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     var d1 = redM[row, column] * gv;
                     var d2 = grnM[row, column] * gv;
                     var d3 = bluM[row, column] * gv;
-                    if (doReverseColour)
+                    if (doReverseColor)
                     {
                         d1 = 1 - d1;
                         d2 = 1 - d2;
@@ -977,8 +971,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     var v1 = Convert.ToInt32(Math.Max(0, d1 * maxRgbValue));
                     var v2 = Convert.ToInt32(Math.Max(0, d2 * maxRgbValue));
                     var v3 = Convert.ToInt32(Math.Max(0, d3 * maxRgbValue));
-                    Color colour = Color.FromArgb(v1, v2, v3);
-                    bmp.SetPixel(column, row, colour);
+                    var color = Color.FromArgb(v1, v2, v3);
+                    bmp.SetPixel(column, row, color);
                 }
             }
 
@@ -1001,8 +995,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
         /// <summary>
-        /// Returns an image of an array of colour patches.
-        /// It shows the three primary colours and pairwise combinations.
+        /// Returns an image of an array of color patches.
+        /// It shows the three primary colors and pairwise combinations.
         /// </summary>
         public static Image DrawColourScale(int maxScaleLength, int ht)
         {
@@ -1104,11 +1098,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             var config = ldSpectrogramConfig;
 
-            // These parameters manipulate the colour map and appearance of the false-colour spectrogram
+            // These parameters manipulate the color map and appearance of the false-color spectrogram
             string colorMap1 = config.ColorMap1 ?? DefaultColorMap1;   // assigns indices to RGB
             string colorMap2 = config.ColorMap2 ?? DefaultColorMap2;   // assigns indices to RGB
+            var blueEnhanceParameter = config.BlueEnhanceParameter ?? 0.0;
 
-            // Set ColourFilter: Must lie between +/-1. A good value is -0.25
+            // Set ColorFilter: Must lie between +/-1. A good value is -0.25
             if (config.ColourFilter == null)
             {
                 config.ColourFilter = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
@@ -1137,9 +1132,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     cs1.StartOffset = dto.TimeOfDay + cs1.StartOffset;
                 }
             }
-
-            // following line is debug purposes only
-            //cs.StartOffset = cs.StartOffset + TimeSpan.FromMinutes(15);
 
             // Get and set the dictionary of index properties
             Dictionary<string, IndexProperties> dictIp = IndexProperties.GetIndexProperties(indexPropertiesConfigPath);
@@ -1189,21 +1181,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             cs1.IndexStats = indexStatistics;
 
             // draw gray scale spectrogram for each index.
-            //string[] keys = colorMap1.Split('-');
-            //cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem, keys);
-            //keys = colorMap2.Split('-');
-            // draw all available gray scale index spectrograms.
             var keys = SpectralIndexValues.Keys;
             cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem, keys);
 
-            //    //string[] keys = this.SpectrogramKeys;
-            //cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem, keys);
-            //}
-            //keys = colorMap2.Split('-');
-            //cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem, keys);
-
-            // create and save first false-colour spectrogram image
-            var image1NoChrome = cs1.DrawFalseColourSpectrogramChromeless(cs1.ColorMode, colorMap1);
+            // create and save first false-color spectrogram image
+            var image1NoChrome = cs1.DrawFalseColorSpectrogramChromeless(cs1.ColorMode, colorMap1, blueEnhanceParameter);
             Image image1 = null;
             if (image1NoChrome == null)
             {
@@ -1216,8 +1198,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 image1.Save(outputPath1);
             }
 
-            // create and save second false-colour spectrogram image
-            var image2NoChrome = cs1.DrawFalseColourSpectrogramChromeless(cs1.ColorMode, colorMap2);
+            // create and save second false-color spectrogram image
+            var image2NoChrome = cs1.DrawFalseColorSpectrogramChromeless(cs1.ColorMode, colorMap2, blueEnhanceParameter);
             Image image2 = null;
             if (image2NoChrome == null)
             {
