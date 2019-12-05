@@ -73,13 +73,11 @@ namespace AudioAnalysisTools.Indices
 
         //public const string KeYspectralAci = "ACI";
         //public const string KeySpectralBgn = "BGN";
-        //public const string KeYspectralCls = "CLS";
         //public const string KeYspectralCvr = "CVR";
         //public const string KeYspectralEnt = "ENT";
         //public const string KeYspectralEvn = "EVN";
         //public const string KeySpectralOsc = "OSC";
         //public const string KeySpectralPmn = "PMN";
-        //public const string KeySpectralR3D = "R3D";
         //public const string KeySpectralRhz = "RHZ";
         //public const string KeySpectralRng = "RNG";
         //public const string KeySpectralRps = "RPS";

@@ -78,10 +78,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public static string[] GetArrayOfAvailableKeys()
         {
             // Before May 2017, only the required six spectral indices were incorporated in a dictionary of spectral matrices.
-            // Since May 2017, all the likely available matrices are incorporated into a dictionary. Note the new names for PMN and R3D, previously POW and HPN respectively.
-            // Note 1: This default array will be subsequently over-written by the indices in the IndexPropertiesConfig file if one is available.
-            // Note 1: RHZ, SPT and CVR are correlated with POW and do not add much. CLS is not particularly useful. Currently using R3D
-            // December 2018: Now all spectral indices are always used in drawing images.
+            // Since May 2017, all the likely available matrices are incorporated into a dictionary. Note the new name for PMN, previously POW.
+            // Note: RHZ, SPT and CVR tend to be correlated with PMN and do not add much.
             return SpectralIndexValues.Keys;
         }
 

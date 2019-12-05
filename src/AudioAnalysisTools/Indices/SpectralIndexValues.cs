@@ -163,31 +163,29 @@ namespace AudioAnalysisTools.Indices
 
         /// <summary>
         /// Gets or sets the oscillation spectral index index. Created October 2018.
+        /// 6.
         /// </summary>
         public double[] OSC { get; set; }
 
-        // 8: Sum of Spectral Ridges in Horizontal, postive and neg slope directions (RHZ+RPS+RNG)
-        public double[] R3D { get; set; }
-
         /// <summary>
         /// Gets or sets PMN = Power Minus Noise.
-        /// PMN is measured in decibels but should replace POW as the average decibel spectrogram.
+        /// 7: PMN is measured in decibels but should replace POW as the average decibel spectrogram.
         /// </summary>
         public double[] PMN { get; set; }
 
-        // 9: Spectral Ridges Horizontal
+        // 8: Spectral Ridges Horizontal
         public double[] RHZ { get; set; }
 
-        // 10: Spectral Ridges Vertical
+        // 9: Spectral Ridges Vertical
         public double[] RVT { get; set; }
 
-        // 11: Spectral Ridges Positive slope
+        // 10: Spectral Ridges Positive slope
         public double[] RPS { get; set; }
 
-        // 12: Spectral Ridges Negative Slope
+        // 11: Spectral Ridges Negative Slope
         public double[] RNG { get; set; }
 
-        // 13: Spectral Peak Tracks
+        // 12: Spectral Peak Tracks
         public double[] SPT { get; set; }
 
         // This property only calculated for ACI when zooming

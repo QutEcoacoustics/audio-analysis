@@ -196,7 +196,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 FalseColourSpectrogramConfig = spectrogramConfig.FullName,
                 IndexPropertiesConfig = ipConfig.FullName,
                 ColourMap1 = "BGN-DMN-EVN",
-                ColourMap2 = "R3D-RVT-SPT", //R3D replaces PHN as new derived index
+                ColourMap2 = "RHZ-RVT-SPT", //R3D replaces PHN as new derived index
                 TemporalScale = hiResTimeScale,
             };
 

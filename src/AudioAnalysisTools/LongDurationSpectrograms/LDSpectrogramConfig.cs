@@ -118,7 +118,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         /// <summary>
         /// NOTE: As of August 2015, we are using EVN (event count) in both spectrograms because CVR (cover) is too highly correlated with POW.
-        /// NOTE: As of May 2017, PMN replaces POW and we are using R3D in spectrogram2 because it is less correlated with PMN.
+        /// NOTE: As of May 2017, PMN replaces POW.
         /// </summary>
         public static LdSpectrogramConfig GetDefaultConfig()
         {

@@ -616,17 +616,6 @@ RNG:
   CalculateNormBounds: false
   ProjectID: Acoustic Indices
   Units: "tracks/s"
-R3D:
-  Name: spectralR3D
-  Comment: "Spectrum of max value of horizontal, positive and negative slope ridges per sec."
-  DataType: double[]
-  DefaultValue: 0.0
-  DoDisplay: true
-  NormMin: 0.15
-  NormMax: 1.0
-  CalculateNormBounds: false
-  ProjectID: Acoustic Indices
-  Units: "tracks/s"
 SPT:
   Name: spectralSPT
   Comment: "Spectrum of average number of spectral Peak Tracks per second within each freq bin."
