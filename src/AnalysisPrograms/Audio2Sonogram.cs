@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="Audio2Sonogram.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -22,9 +22,11 @@ namespace AnalysisPrograms
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
-    using Acoustics.Tools.Wav;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
+    using AnalysisPrograms.Production;
+    using AnalysisPrograms.Production.Arguments;
+    using AnalysisPrograms.Production.Validation;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
@@ -32,14 +34,10 @@ namespace AnalysisPrograms
     using log4net;
     using MathNet.Numerics;
     using McMaster.Extensions.CommandLineUtils;
-    using Production;
-    using Production.Arguments;
-    using Production.Validation;
     using TowseyLibrary;
 
     /// <summary>
-    /// 3. Produces a sonogram from an audio file - EITHER custom OR via SOX
-    /// Signed off: Michael Towsey 31st July 2012
+    /// Produces standard greyscale spectrograms of various types from a wav audio file - EITHER custom OR via SOX.
     /// </summary>
     public class Audio2Sonogram
     {
@@ -88,7 +86,7 @@ namespace AnalysisPrograms
 
             var offsetsProvided = arguments.StartOffset.HasValue && arguments.EndOffset.HasValue;
 
-            // set default offsets - only use defaults if not provided in argments list
+            // set default offsets - only use defaults if not provided in arguments list
             TimeSpan? startOffset = null;
             TimeSpan? endOffset = null;
             if (offsetsProvided)
@@ -142,10 +140,6 @@ namespace AnalysisPrograms
                 [AnalysisKeys.AddAxes] = (configuration.GetBoolOrNull(AnalysisKeys.AddAxes) ?? true).ToString(),
                 [AnalysisKeys.AddSegmentationTrack] = (configuration.GetBoolOrNull(AnalysisKeys.AddSegmentationTrack) ?? true).ToString(),
             };
-
-            // # REDUCTION FACTORS for freq and time dimensions
-            // #TimeReductionFactor: 1
-            // #FreqReductionFactor: 1
 
             bool makeSoxSonogram = configuration.GetBoolOrNull(AnalysisKeys.MakeSoxSonogram) ?? false;
             configDict[AnalysisKeys.SonogramTitle] = configuration[AnalysisKeys.SonogramTitle] ?? "Sonogram";
