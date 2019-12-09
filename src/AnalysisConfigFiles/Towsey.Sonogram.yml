@@ -27,9 +27,11 @@ FrameStep: 441
 Waveform: true
 PowerSpectrogram: true
 DecibelSpectrogram: true
-PowerSpectrogram_NoiseReduced: true
-PowerSpectrogram_Annotated: true
+DecibelSpectrogram_NoiseReduced: true
+DecibelSpectrogram_Annotated: true
 AmplitudeSpectrogram_LocalContrastNormalisation: true
+SoxSpectrogram: true
+Experimental: true
 
 #NOISE REDUCTION PARAMETERS
 DoNoiseReduction: true

@@ -110,63 +110,16 @@ namespace AnalysisPrograms
             int resampleRate = Convert.ToInt32(configDict[AnalysisKeys.ResampleRate]);
             var tempAudioSegment = AudioRecording.CreateTemporaryAudioFile(sourceRecording, output, resampleRate);
 
-            // init the image stack
-            var list = new List<Image>();
-
-            // 4: GET 4 sonogram images
+            // 4: GENERATE SPECTROGRAM images
             string sourceName = configDict[ConfigKeys.Recording.Key_RecordingFileName];
             sourceName = Path.GetFileNameWithoutExtension(sourceName);
             var result = GenerateSpectrogramImages(tempAudioSegment, configDict);
-            var outputImageFile = new FileInfo(Path.Combine(output.FullName, sourceName + ".FourSpectrograms.png"));
 
-            // calculate the data arrays and amplitude matrix.
-
-            var recordingSegment = new AudioRecording(sourceRecording.FullName);
-            var sonoConfig = new SonogramConfig(configDict); // default values config
-
-            // disable noise removal
-            sonoConfig.NoiseReductionType = NoiseReductionType.None;
-
-            //bool dataOnly = analysisSettings.AnalysisDataSaveBehavior;
-            bool dataOnly = false;
-            if (dataOnly)
-            {
-                Log.Warn("Noise removal disabled!");
-
-                var sonogram1 = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
-                result.DecibelSpectrogram = sonogram1;
-            }
-
-            // IMAGE 1) draw amplitude spectrogram
-            // disable noise removal for first two spectrograms
-            var disabledNoiseReductionType = sonoConfig.NoiseReductionType;
-            sonoConfig.NoiseReductionType = NoiseReductionType.None;
-
-            BaseSonogram sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
-
-            // remove the DC bin if it has not already been removed.
-            // Assume test of divisible by 2 is good enough.
-            int binCount = sonogram.Data.GetLength(1);
-            if (!binCount.IsEven())
-            {
-                sonogram.Data = MatrixTools.Submatrix(sonogram.Data, 0, 1, sonogram.FrameCount - 1, binCount - 1);
-            }
-
-            //save spectrogram data at this point - prior to noise reduction
-            var spectrogramDataBeforeNoiseReduction = sonogram.Data;
-
-
-
-            //if (makeSoxSonogram)
-            //{
-            //    var soxFile = new FileInfo(Path.Combine(output.FullName, sourceName + "SOX.png"));
-            //    SpectrogramTools.MakeSonogramWithSox(sourceRecording, configDict, path2SoxSpectrogram);
-            //    result.Path2SoxImage = path2SoxSpectrogram;
-            //}
-
+            // 5: Save the image
+            var outputImageFile = new FileInfo(Path.Combine(output.FullName, sourceName + ".Spectrograms.png"));
             result.CompositeImage.Save(outputImageFile.FullName, ImageFormat.Png);
 
-            //LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
+            //LoggedConsole.WriteLine("\n##### MAIN METHOD: FINISHED FILE ###################################################\n");
         }
 
         private static Dictionary<string, string> GetConfigDictionary(FileInfo configFile, bool writeParameters)
@@ -226,9 +179,35 @@ namespace AnalysisPrograms
             // init the image stack
             var list = new List<Image>();
 
-            // IMAGE 1) draw amplitude spectrogram
             var recordingSegment = new AudioRecording(sourceRecording.FullName);
             var sonoConfig = new SonogramConfig(configDict); // default values config
+            int frameSize = int.Parse(configDict["FrameLength"]);
+            int frameStep = int.Parse(configDict["FrameStep"]);
+
+            // EXTRACT ENVELOPE and SPECTROGRAM FROM RECORDING SEGMENT
+            var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFfts(recordingSegment, frameSize, frameStep);
+
+            // IMAGE 1) draw the WAVEFORM
+            if (configDict["Waveform"] == "true")
+            {
+                var minValues = dspOutput1.Envelope;
+                var maxValues = dspOutput1.Envelope;
+                var waveformImage = GetWaveformImage(minValues, maxValues);
+                list.Add(waveformImage);
+            }
+
+            // IMAGE 2) draw power spectrogram
+
+            /*
+            Waveform: true
+            PowerSpectrogram: true
+            DecibelSpectrogram: true
+            DecibelSpectrogram_NoiseReduced: true
+            DecibelSpectrogram_Annotated: true
+            AmplitudeSpectrogram_LocalContrastNormalisation: true
+            SoxSpectrogram: true
+            Experimental: true
+            */
 
             // disable noise removal for first two spectrograms
             var disabledNoiseReductionType = sonoConfig.NoiseReductionType;
@@ -328,15 +307,44 @@ namespace AnalysisPrograms
             list.Add(image);
 
             // 5) TODO: ONE OF THESE YEARS FIX UP THE CEPTRAL SONOGRAM
-            ////SpectrogramCepstral cepgram = new SpectrogramCepstral((AmplitudeSonogram)amplitudeSpg);
-            ////var mti3 = SpectrogramTools.Sonogram2MultiTrackImage(sonogram, configDict);
-            ////var image3 = mti3.GetImage();
-            ////image3.Save(fiImage.FullName + "3", ImageFormat.Png);
+            //SpectrogramCepstral cepgram = new SpectrogramCepstral((AmplitudeSonogram)amplitudeSpg);
+            //var mti3 = SpectrogramTools.Sonogram2MultiTrackImage(sonogram, configDict);
+            //var image3 = mti3.GetImage();
+            //image3.Save(fiImage.FullName + "3", ImageFormat.Png);
+            //
+
+            // 6) SOX SPECTROGRAM
+            //if (analysisSettings.Configuration.GetBool(AnalysisKeys.MakeSoxSonogram))
+            //{
+            //    Log.Warn("SoX spectrogram generation config variable found (and set to true) but is ignored when running as an IAnalyzer");
+            //    var soxFile = new FileInfo(Path.Combine(output.FullName, sourceName + "SOX.png"));
+            //    SpectrogramTools.MakeSonogramWithSox(sourceRecording, configDict, path2SoxSpectrogram);
+            //    result.Path2SoxImage = path2SoxSpectrogram;
+            //}
 
             // 6) COMBINE THE SPECTROGRAM IMAGES
             result.CompositeImage = ImageTools.CombineImagesVertically(list);
 
             return result;
+        }
+
+        public static Image GetWaveformImage(double[] minValues, double[] maxValues)
+        {
+            var imageHeight = 100;
+            var range = imageHeight / 2;
+            var imageWidth = minValues.Length;
+            var image = new Bitmap(imageWidth, imageHeight);
+            var canvas = Graphics.FromImage(image);
+            var pen = new Pen(Color.Lime);
+
+            for (var i = 0; i < imageWidth; i++)
+            {
+                var y1 = range + (int)Math.Ceiling(minValues[i] * range);
+                var y2 = range - (int)Math.Ceiling(maxValues[i] * range);
+                canvas.DrawLine(pen, i, y1, i, y2);
+            }
+
+            return image;
         }
 
         /*
@@ -403,9 +411,9 @@ namespace AnalysisPrograms
         // Four spectrogram image
         public Image CompositeImage { get; set; }
 
-        public FileInfo FreqOscillationImage { get; set; }
+        //public FileInfo FreqOscillationImage { get; set; }
 
-        public FileInfo FreqOscillationData { get; set; }
+        //public FileInfo FreqOscillationData { get; set; }
     }
 
     /// <summary>
@@ -456,11 +464,6 @@ namespace AnalysisPrograms
             var analysisResult = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration);
 
             bool saveCsv = analysisSettings.AnalysisDataSaveBehavior;
-
-            if (analysisSettings.Configuration.GetBool(AnalysisKeys.MakeSoxSonogram))
-            {
-                Log.Warn("SoX spectrogram generation config variable found (and set to true) but is ignored when running as an IAnalyzer");
-            }
 
             // Generate Multiple Spectrograms
             var configurationDictionary = new Dictionary<string, string>(analysisSettings.Configuration.ToDictionary())
