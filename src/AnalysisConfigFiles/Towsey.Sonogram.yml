@@ -25,11 +25,12 @@ FrameLength: 512
 FrameStep: 441
 
 Waveform: true
-PowerSpectrogram: true
 DecibelSpectrogram: true
 DecibelSpectrogram_NoiseReduced: true
-DecibelSpectrogram_Annotated: true
-AmplitudeSpectrogram_LocalContrastNormalisation: true
+DecibelSpectrogram_Ridges: true
+CepstralSpectrogram: true
+DifferenceSpectrogram: true
+AmplitudeSpectrogram_LocalContrastNormalization: true
 SoxSpectrogram: true
 Experimental: true
 
@@ -37,18 +38,11 @@ Experimental: true
 DoNoiseReduction: true
 NoiseReductionType: Standard
 BgNoiseThreshold: 3.0
+
+# Local Contrast Normalisation parameters
 LcnContrastLevel: 0.4
 
 AddAxes: true
-AddSegmentationTrack: true
-VOCAL_GAP: 0.1
-MIN_VOCAL_DURATION: 0.1
-
-MakeSoxSonogram: false
-SonogramTitle: Sonogram
-SonogramComment: "Sonogram produced using SOX"
-#SonogramColored: false
-SonogramQuantisation: 128
 
 # IAnalyzer options
 # Save chunked files

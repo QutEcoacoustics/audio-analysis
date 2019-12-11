@@ -27,6 +27,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             : base(config, amplitudeSpectrogram)
         {
             this.Configuration = config;
+            this.Duration = config.Duration;
             this.FrameCount = amplitudeSpectrogram.GetLength(0);
             this.Data = amplitudeSpectrogram;
             this.Make(this.Data);

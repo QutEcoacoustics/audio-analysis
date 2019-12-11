@@ -1,4 +1,4 @@
-﻿// <copyright file="ImageTrack.cs" company="QutEcoacoustics">
+// <copyright file="ImageTrack.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -353,7 +353,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     continue;
                 }
 
-                double max = -double.MaxValue;
+                double max = -Double.MaxValue;
                 int location = 0;
                 for (int x = start; x < end; x++) //find max value in subsample
                 {
@@ -732,7 +732,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             {
                 int start = w * subSample;
                 int end = (w + 1) * subSample;
-                double max = -double.MaxValue;
+                double max = -Double.MaxValue;
                 int location = 0;
                 for (int x = start; x < end; x++)
                 {
@@ -1224,7 +1224,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     string timeStr = "0000";
                     if (xAxisPixelDurationInMilliseconds <= 1000)
                     {
-                        timeStr = string.Format("{0}", roundedTimeSpan);
+                        timeStr = String.Format("{0}", roundedTimeSpan);
                     }
                     else
                     if (roundedTimeSpan.Hours == 0.0 && roundedTimeSpan.Minutes == 0.0)
@@ -1238,12 +1238,12 @@ namespace AudioAnalysisTools.StandardSpectrograms
                         if (startDate.Year > 2000)
                         {
                             DateTime today = startDate + roundedTimeSpan;
-                            timeStr = string.Format("{0}", today.ToShortDateString());
+                            timeStr = String.Format("{0}", today.ToShortDateString());
                         }
                     }
                     else
                     {
-                        timeStr = string.Format("{0:d2}{1:d2}h", roundedTimeSpan.Hours, roundedTimeSpan.Minutes);
+                        timeStr = String.Format("{0:d2}{1:d2}h", roundedTimeSpan.Hours, roundedTimeSpan.Minutes);
                     }
 
                     g.DrawString(timeStr, stringFont, Brushes.White, new PointF(tickPosition, 3)); //draw time
@@ -1349,15 +1349,15 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     TimeSpan elapsedTimeSpan = TimeSpan.FromMilliseconds(xAxisPixelDurationInMilliseconds * tickPosition);
                     if (xAxisPixelDurationInMilliseconds <= 1000)
                     {
-                        time = string.Format("{0}", elapsedTimeSpan);
+                        time = String.Format("{0}", elapsedTimeSpan);
                     }
                     else if (xAxisPixelDurationInMilliseconds < 60000)
                     {
-                        time = string.Format("{0:d2}{1:d2}", elapsedTimeSpan.Hours, elapsedTimeSpan.Minutes);
+                        time = String.Format("{0:d2}{1:d2}", elapsedTimeSpan.Hours, elapsedTimeSpan.Minutes);
                     }
                     else
                     {
-                        time = string.Format("{0:f0}", elapsedTimeSpan.TotalHours);
+                        time = String.Format("{0:f0}", elapsedTimeSpan.TotalHours);
                     }
 
                     g.DrawString(time, stringFont, Brushes.White, new PointF(tickPosition, 2)); //draw time
@@ -1469,7 +1469,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         }
 
         /// <summary>
-        /// returns array of bytes that is the gray scale colour to use.
+        /// returns array of bytes that is the gray scale color to use.
         /// </summary>
         public static byte[] GetXaxisTicLocations(int width, TimeSpan timeSpan)
         {
@@ -1512,14 +1512,16 @@ namespace AudioAnalysisTools.StandardSpectrograms
             return ba; //byte array
         }
 
+        /// <summary>
+        /// Draws time track with labels to indicate hh:mm:ss.
+        /// </summary>
         public static Bitmap DrawTimeTrack(TimeSpan duration, int width)
         {
             int height = HeightOfTimeScale;
             Pen blackPen = new Pen(Color.Black);
             Pen grayPen = new Pen(Color.DarkGray);
-            var bgBrush = new SolidBrush(Color.FromArgb(240, 240, 240));
 
-            DateTime start = new DateTime(0);
+            //DateTime start = new DateTime(0);
             double secondsPerPixel = duration.TotalSeconds / width;
 
             byte[] hScale = GetXaxisTicLocations(width, duration);
@@ -1529,7 +1531,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             using (Graphics g = Graphics.FromImage(bmp))
             {
-                g.FillRectangle(bgBrush, 0, 0, width, height);
+                g.Clear(Color.White);
 
                 // mark the tics
                 for (int x = 0; x < width; x++)
@@ -1539,13 +1541,15 @@ namespace AudioAnalysisTools.StandardSpectrograms
                         continue;
                     }
 
-                    if (hScale[x] == 1) // minor tic
+                    // minor tic
+                    if (hScale[x] == 1)
                     {
                         g.DrawLine(grayPen, x, 0, x, height - 1);
                     }
                     else
                     {
-                        if (hScale[x] == 2) // major tic
+                        // major tic
+                        if (hScale[x] == 2)
                         {
                             g.DrawLine(blackPen, x, 0, x, height - 1);
                         }
@@ -1584,5 +1588,49 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             return bmp;
         }
-    }// end  class ImageTrack
+
+        /// <summary>
+        /// This time track is labeled to be convenient for time durations around 1-20 minutes.
+        /// </summary>
+        public static Bitmap DrawShortTimeTrack(TimeSpan offsetMinute, TimeSpan xAxisPixelDuration, TimeSpan xAxisTicInterval, TimeSpan labelInterval, int trackWidth, string title)
+        {
+            int trackHeight = HeightOfTimeScale;
+            var bmp = new Bitmap(trackWidth, trackHeight);
+            var g = Graphics.FromImage(bmp);
+            g.Clear(Color.White);
+
+            double elapsedTime = offsetMinute.TotalSeconds;
+            double pixelDuration = xAxisPixelDuration.TotalSeconds;
+            int labelSecondsInterval = (int)labelInterval.TotalSeconds;
+            var blackPen = new Pen(Color.Black);
+            var stringFont = new Font("Arial", 8);
+
+            // for columns, draw in second lines
+            double xInterval = (int)(xAxisTicInterval.TotalMilliseconds / xAxisPixelDuration.TotalMilliseconds);
+
+            // for pixels in the line
+            for (int x = 1; x < trackWidth; x++)
+            {
+                elapsedTime += pixelDuration;
+                if (x % xInterval <= pixelDuration)
+                {
+                    g.DrawLine(blackPen, x, 0, x, trackHeight);
+                    int totalSeconds = (int)Math.Round(elapsedTime);
+                    if (totalSeconds % labelSecondsInterval == 0)
+                    {
+                        int minutes = totalSeconds / 60;
+                        int seconds = totalSeconds % 60;
+                        string time = $"{minutes}m{seconds}s";
+                        g.DrawString(time, stringFont, Brushes.Black, new PointF(x + 1, 1)); //draw time
+                    }
+                }
+            }
+
+            g.DrawLine(blackPen, 0, 0, trackWidth, 0); //draw upper boundary
+            g.DrawLine(blackPen, 0, trackHeight - 1, trackWidth, trackHeight - 1); //draw lower boundary
+            g.DrawLine(blackPen, trackWidth, 0, trackWidth, trackHeight - 1); //draw right end boundary
+            g.DrawString(title, stringFont, Brushes.Black, new PointF(1, 1));
+            return bmp;
+        }
+    }
 }
