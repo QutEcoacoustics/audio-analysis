@@ -284,8 +284,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             var titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
             var timeBmp = ImageTrack.DrawTimeTrack(this.Duration, image.Width);
-            //var list = new List<Image> { titleBar, timeBmp, image, timeBmp };
-            var list = new List<Image> { titleBar, image, timeBmp };
+            var list = new List<Image> { titleBar, timeBmp, image, timeBmp };
             var compositeImage = ImageTools.CombineImagesVertically(list);
             return compositeImage;
         }
@@ -718,6 +717,24 @@ namespace AudioAnalysisTools.StandardSpectrograms
         }
 
         /// <summary>
+        /// This method draws only top and bottom time scales and adds the title bar.
+        /// It does NOT include the frequency grid lines.
+        /// </summary>
+        public static Image FrameSonogram(
+            Image sonogramImage,
+            Image titleBar,
+            TimeSpan minuteOffset,
+            TimeSpan xAxisTicInterval,
+            TimeSpan xAxisPixelDuration,
+            TimeSpan labelInterval)
+        {
+            int imageWidth = sonogramImage.Width;
+            var timeBmp = ImageTrack.DrawShortTimeTrack(minuteOffset, xAxisPixelDuration, xAxisTicInterval, labelInterval, imageWidth, "Seconds");
+            Image[] imageArray = { titleBar, timeBmp, sonogramImage, timeBmp };
+            return ImageTools.CombineImagesVertically(imageArray);
+        }
+
+        /// <summary>
         /// This method assumes that the height of the passed sonogram image is half of the original frame size.
         /// This assumption allows the frequency scale grid lines to be placed at the correct intervals.
         /// </summary>
@@ -741,7 +758,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             int imageWidth = sonogramImage.Width;
             var timeBmp = ImageTrack.DrawShortTimeTrack(minuteOffset, xAxisPixelDuration, xAxisTicInterval, labelInterval, imageWidth, "Seconds");
-            Image[] imageArray = { titleBar, sonogramImage, timeBmp };
+            Image[] imageArray = { titleBar, timeBmp, sonogramImage, timeBmp };
             return ImageTools.CombineImagesVertically(imageArray);
         }
 
