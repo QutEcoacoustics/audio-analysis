@@ -797,26 +797,22 @@ namespace AnalysisPrograms
             var outputDirectory = segmentSettings.SegmentOutputDirectory;
 
             var analysisResult = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration);
-            Config configuration = ConfigFile.Deserialize(analysisSettings.ConfigFile);
 
             bool saveCsv = analysisSettings.AnalysisDataSaveBehavior;
 
-            if (configuration.GetBoolOrNull(AnalysisKeys.MakeSoxSonogram) == true)
-            {
-                Log.Warn("SoX spectrogram generation config variable found (and set to true) but is ignored when running as an IAnalyzer");
-            }
+            //Config configuration = ConfigFile.Deserialize(analysisSettings.ConfigFile);
+            //if (configuration.GetBoolOrNull(AnalysisKeys.MakeSoxSonogram) == true)
+            //{
+            //    Log.Warn("SoX spectrogram generation config variable found (and set to true) but is ignored when running as an IAnalyzer");
+            //}
 
             // generate spectrogram
-            var configurationDictionary = new Dictionary<string, string>(configuration.ToDictionary());
-            configurationDictionary[ConfigKeys.Recording.Key_RecordingCallName] = audioFile.FullName;
-            configurationDictionary[ConfigKeys.Recording.Key_RecordingFileName] = audioFile.Name;
+            //var configurationDictionary = new Dictionary<string, string>(configuration.ToDictionary());
+            //configurationDictionary[ConfigKeys.Recording.Key_RecordingCallName] = audioFile.FullName;
+            //configurationDictionary[ConfigKeys.Recording.Key_RecordingFileName] = audioFile.Name;
             //var soxImage = new FileInfo(Path.Combine(segmentSettings.SegmentOutputDirectory.FullName, audioFile.Name + ".SOX.png"));
-
-            var spectrogramResult = Audio2Sonogram.GenerateSpectrogramImages(
-                audioFile,
-                //soxImage,
-                configurationDictionary);
-                //dataOnly: analysisSettings.AnalysisImageSaveBehavior.ShouldSave());
+            var configInfo = ConfigFile.Deserialize<AnalyzerConfig>(analysisSettings.ConfigFile);
+            var spectrogramResult = Audio2Sonogram.GenerateSpectrogramImages(audioFile, configInfo);
 
             // this analysis produces no results!
             // but we still print images (that is the point)

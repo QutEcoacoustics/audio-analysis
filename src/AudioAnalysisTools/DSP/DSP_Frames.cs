@@ -257,6 +257,8 @@ namespace AudioAnalysisTools.DSP
                     // Get absolute signal average in current frame
                     double absValue = Math.Abs(signal[x]);
                     total += absValue;
+
+                    // Get the maximum absolute signal value in current frame
                     if (absValue > maxAbsValue)
                     {
                         maxAbsValue = absValue;
