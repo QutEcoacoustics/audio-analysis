@@ -530,6 +530,7 @@ namespace AnalysisPrograms
             //var soxImage = new FileInfo(Path.Combine(segmentSettings.SegmentOutputDirectory.FullName, audioFile.Name + ".SOX.png"));
 
             // generate spectrogram
+            // TODO the following may need to be checked since change of method signature in December 2019.
             var configInfo = ConfigFile.Deserialize<AnalyzerConfig>(analysisSettings.ConfigFile);
             var spectrogramResult = Audio2Sonogram.GenerateSpectrogramImages(audioFile, configInfo);
 

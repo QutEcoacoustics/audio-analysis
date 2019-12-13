@@ -795,18 +795,11 @@ namespace AnalysisPrograms
             var audioFile = segmentSettings.SegmentAudioFile;
             var recording = new AudioRecording(audioFile.FullName);
             var outputDirectory = segmentSettings.SegmentOutputDirectory;
-
+            bool saveCsv = analysisSettings.AnalysisDataSaveBehavior;
             var analysisResult = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration);
 
-            bool saveCsv = analysisSettings.AnalysisDataSaveBehavior;
-
-            //Config configuration = ConfigFile.Deserialize(analysisSettings.ConfigFile);
-            //if (configuration.GetBoolOrNull(AnalysisKeys.MakeSoxSonogram) == true)
-            //{
-            //    Log.Warn("SoX spectrogram generation config variable found (and set to true) but is ignored when running as an IAnalyzer");
-            //}
-
             // generate spectrogram
+            // TODO the following may need to be checked since change of method signature in December 2019.
             //var configurationDictionary = new Dictionary<string, string>(configuration.ToDictionary());
             //configurationDictionary[ConfigKeys.Recording.Key_RecordingCallName] = audioFile.FullName;
             //configurationDictionary[ConfigKeys.Recording.Key_RecordingFileName] = audioFile.Name;
@@ -814,8 +807,7 @@ namespace AnalysisPrograms
             var configInfo = ConfigFile.Deserialize<AnalyzerConfig>(analysisSettings.ConfigFile);
             var spectrogramResult = Audio2Sonogram.GenerateSpectrogramImages(audioFile, configInfo);
 
-            // this analysis produces no results!
-            // but we still print images (that is the point)
+            // this analysis produces no results! But we still print images (that is the point)
             if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave(analysisResult.Events.Length))
             {
                 Debug.Assert(segmentSettings.SegmentImageFile.Exists);
