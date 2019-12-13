@@ -378,7 +378,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             T analyzer = analyzers.FirstOrDefault(a => a.Identifier == searchName);
             if (analyzer == null)
             {
-                var error = $"We can not determine what analysis you want to run. We tried to search for \"{searchName}\"";
+                var error = $"We cannot determine what analysis you want to run. We tried to search for \"{searchName}\"";
                 LoggedConsole.WriteErrorLine(error);
                 var knownAnalyzers = analyzers.Aggregate(string.Empty, (a, i) => a + $"  {i.Identifier}\n");
                 LoggedConsole.WriteLine("Available analyzers are:\n" + knownAnalyzers);

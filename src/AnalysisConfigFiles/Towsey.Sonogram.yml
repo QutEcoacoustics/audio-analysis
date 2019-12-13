@@ -31,13 +31,12 @@ DecibelSpectrogram_Ridges: true
 CepstralSpectrogram: true
 DifferenceSpectrogram: true
 AmplitudeSpectrogram_LocalContrastNormalization: true
-SoxSpectrogram: true
 Experimental: true
 
 #NOISE REDUCTION PARAMETERS
 DoNoiseReduction: true
 NoiseReductionType: Standard
-BgNoiseThreshold: 3.0
+BgNoiseThreshold: 2.0
 
 # Local Contrast Normalisation parameters
 LcnContrastLevel: 0.4

@@ -91,6 +91,11 @@ namespace AudioAnalysisTools.StandardSpectrograms
         public double[] DecibelsNormalised { get; set; }
 
         /// <summary>
+        /// Noise profile in decibels
+        /// </summary>
+        public double[] ModalNoiseProfile { get; set; }
+
+        /// <summary>
         /// Gets or sets decibel reference with which to NormaliseMatrixValues the dB values for MFCCs
         /// </summary>
         public double DecibelReference { get; protected set; }
@@ -707,7 +712,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             var labelInterval = TimeSpan.FromSeconds(5);
             var nyquist = sampleRate / 2;
             int hertzInterval = 1000;
-            if (image.Height < 512)
+            if (image.Height < 200)
             {
                 hertzInterval = 2000;
             }
