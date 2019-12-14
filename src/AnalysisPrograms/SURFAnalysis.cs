@@ -512,6 +512,7 @@ namespace AnalysisPrograms
         {
             var audioFile = segmentSettings.SegmentAudioFile;
             var recording = new AudioRecording(audioFile.FullName);
+            var sourceRecordingName = recording.BaseName;
             var outputDirectory = segmentSettings.SegmentOutputDirectory;
 
             var analysisResult = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration);
@@ -532,7 +533,7 @@ namespace AnalysisPrograms
             // generate spectrogram
             // TODO the following may need to be checked since change of method signature in December 2019.
             var configInfo = ConfigFile.Deserialize<AnalyzerConfig>(analysisSettings.ConfigFile);
-            var spectrogramResult = Audio2Sonogram.GenerateSpectrogramImages(audioFile, configInfo);
+            var spectrogramResult = Audio2Sonogram.GenerateSpectrogramImages(audioFile, configInfo, sourceRecordingName);
 
             // this analysis produces no results!
             // but we still print images (that is the point)

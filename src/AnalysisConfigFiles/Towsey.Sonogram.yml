@@ -27,7 +27,6 @@ FrameStep: 441
 Waveform: true
 DecibelSpectrogram: true
 DecibelSpectrogram_NoiseReduced: true
-DecibelSpectrogram_Ridges: true
 CepstralSpectrogram: true
 DifferenceSpectrogram: true
 AmplitudeSpectrogram_LocalContrastNormalization: true

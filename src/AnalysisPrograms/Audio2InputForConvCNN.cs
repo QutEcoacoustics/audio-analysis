@@ -794,6 +794,7 @@ namespace AnalysisPrograms
         {
             var audioFile = segmentSettings.SegmentAudioFile;
             var recording = new AudioRecording(audioFile.FullName);
+            var sourceRecordingName = recording.BaseName;
             var outputDirectory = segmentSettings.SegmentOutputDirectory;
             bool saveCsv = analysisSettings.AnalysisDataSaveBehavior;
             var analysisResult = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration);
@@ -805,7 +806,7 @@ namespace AnalysisPrograms
             //configurationDictionary[ConfigKeys.Recording.Key_RecordingFileName] = audioFile.Name;
             //var soxImage = new FileInfo(Path.Combine(segmentSettings.SegmentOutputDirectory.FullName, audioFile.Name + ".SOX.png"));
             var configInfo = ConfigFile.Deserialize<AnalyzerConfig>(analysisSettings.ConfigFile);
-            var spectrogramResult = Audio2Sonogram.GenerateSpectrogramImages(audioFile, configInfo);
+            var spectrogramResult = Audio2Sonogram.GenerateSpectrogramImages(audioFile, configInfo, sourceRecordingName);
 
             // this analysis produces no results! But we still print images (that is the point)
             if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave(analysisResult.Events.Length))
