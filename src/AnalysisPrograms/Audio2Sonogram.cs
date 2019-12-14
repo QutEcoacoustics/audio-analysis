@@ -226,7 +226,7 @@ namespace AnalysisPrograms
                     // IMAGE 5) draw difference spectrogram
                     if (doDifferenceSpectrogram)
                     {
-                        double threshold = 3.0;
+                        double threshold = 4.0;
                         var image6 = GetDifferenceSpectrogram(dbSpectrogramData, threshold);
                         image6 = BaseSonogram.GetImageAnnotatedWithLinearHertzScale(image6, sampleRate, frameStep, $"DECIBEL DIFFERENCE SPECTROGRAM ({sourceRecordingName})");
                         list.Add(image6);
@@ -315,17 +315,30 @@ namespace AnalysisPrograms
                 {
                     var dx = spectrogramData[r, c] - spectrogramData[r - 1, c];
                     var dy = spectrogramData[r, c] - spectrogramData[r, c - 1];
-                    var dd = spectrogramData[r, c] - spectrogramData[r - 1, c - 1];
+                    var dpd = spectrogramData[r, c] - spectrogramData[r - 1, c - 1];
+
+                    //var dy2 = spectrogramData[r, c] - spectrogramData[r, c + 1];
+                    //var dnd = spectrogramData[r, c] - spectrogramData[r - 1, c + 1];
                     dM[r, c] = dx;
                     if (dy > dx)
                     {
                         dM[r, c] = dy;
                     }
 
-                    if (dd > dy)
+                    if (dpd > dy)
                     {
-                        dM[r, c] = dd;
+                        dM[r, c] = dpd;
                     }
+
+                    //if (dnd > dpd)
+                    //{
+                    //    dM[r, c] = dnd;
+                    //}
+
+                    //if (dy2 > dpd)
+                    //{
+                    //    dM[r, c] = dy2;
+                    //}
 
                     if (dM[r, c] < threshold)
                     {

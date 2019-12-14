@@ -24,13 +24,13 @@ FrameLength: 512
 # Following frame step yields 50 frames/s which can make some subsequent operations a bit easier.
 FrameStep: 441
 
-Waveform: false
-DecibelSpectrogram: false
-DecibelSpectrogram_NoiseReduced: false
-CepstralSpectrogram: false
-DifferenceSpectrogram: false
+Waveform: true
+DecibelSpectrogram: true
+DecibelSpectrogram_NoiseReduced: true
+CepstralSpectrogram: true
+DifferenceSpectrogram: true
 AmplitudeSpectrogram_LocalContrastNormalization: true
-Experimental: false
+Experimental: true
 
 #NOISE REDUCTION PARAMETERS
 DoNoiseReduction: true
