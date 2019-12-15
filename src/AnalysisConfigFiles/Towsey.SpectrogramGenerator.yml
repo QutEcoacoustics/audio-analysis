@@ -32,13 +32,20 @@ DifferenceSpectrogram: true
 AmplitudeSpectrogram_LocalContrastNormalization: true
 Experimental: true
 
-#NOISE REDUCTION PARAMETERS
-DoNoiseReduction: true
-NoiseReductionType: Standard
-BgNoiseThreshold: 2.0
+# WAVE-FORM PARAMETERS
+WaveformHeight: 100
 
-# Local Contrast Normalisation parameters
-LcnContrastLevel: 0.4
+# NOISE REDUCTION PARAMETERS
+# NoiseReductionType: Standard  # use the standard by defulat.
+BgNoiseThreshold: 3.0
+
+# DIFFERENCE SPECTROGRAM - PARAMETER (in decibels)
+DifferenceThreshold: 3.0 
+
+# LOCAL CONTRAST NORMALISATION PARAMETERS
+NeighbourhoodSeconds: 1.0
+LcnContrastLevel: 0.2
+
 
 AddAxes: true
 
