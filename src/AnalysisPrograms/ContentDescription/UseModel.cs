@@ -136,11 +136,15 @@ namespace AnalysisPrograms.ContentDescription
                     // TODO: consider not returning this value if it is not needed in summarize
                     segmentResults,
                 },
+
                 MiscellaneousResults =
                 {
                     { nameof(DescriptionResult), descriptionResultForOneMinute },
                 },
             };
+
+            analysisResults.SpectralIndices[0].ResultStartSeconds = segmentSettings.SegmentStartOffset.TotalSeconds;
+            //spectralIndexBase.ResultStartSeconds >= result.SegmentStartOffset.TotalSeconds,
 
             return analysisResults;
         }
