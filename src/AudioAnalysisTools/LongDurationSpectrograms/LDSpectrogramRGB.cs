@@ -78,10 +78,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public static string[] GetArrayOfAvailableKeys()
         {
             // Before May 2017, only the required six spectral indices were incorporated in a dictionary of spectral matrices.
-            // Since May 2017, all the likely available matrices are incorporated into a dictionary. Note the new names for PMN and R3D, previously POW and HPN respectively.
+            // Since May 2017, all the likely available matrices are incorporated into a dictionary. Note the new name for PMN, previously POW.
             // Note 1: This default array will be subsequently over-written by the indices in the IndexPropertiesConfig file if one is available.
-            // Note 1: RHZ, SPT and CVR are correlated with POW and do not add much. CLS is not particularly useful. Currently using R3D
-            // Decmeber 2018: Now all spectral indices are always used in drawing images
+            // Note 1: RHZ, SPT and CVR are correlated with PMN and do not add much.
+            // December 2018: Now all spectral indices are always used in drawing images
             return SpectralIndexValues.Keys;
         }
 
@@ -103,7 +103,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LDSpectrogramRGB"/> class.
-        /// No Arguments CONSTRUCTOR
+        /// No Arguments CONSTRUCTOR.
         /// </summary>
         public LDSpectrogramRGB()
         {
@@ -118,7 +118,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LDSpectrogramRGB"/> class.
-        /// CONSTRUCTOR
+        /// CONSTRUCTOR.
         /// </summary>
         public LDSpectrogramRGB(TimeSpan xScale, int sampleRate, string colourMap)
         {
@@ -145,10 +145,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <summary>
         /// Initializes a new instance of the <see cref="LDSpectrogramRGB"/> class.
         /// CONSTRUCTOR
-        /// WARNING: Ths will create a linear herz scale spectrogram
+        /// WARNING: Ths will create a linear herz scale spectrogram.
         /// </summary>
-        /// <param name="minuteOffset">minute of day at which the spectrogram starts</param>
-        /// <param name="xScale">time scale : pixels per hour</param>
+        /// <param name="minuteOffset">minute of day at which the spectrogram starts.</param>
+        /// <param name="xScale">time scale : pixels per hour.</param>
         /// <param name="sampleRate">recording sample rate which also determines scale of Y-axis.</param>
         /// <param name="frameWidth">frame size - which also determines scale of Y-axis.</param>
         /// <param name="colourMap">acoustic indices used to assign  the three colour mapping.</param>
@@ -227,7 +227,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         /// <summary>
         /// Gets or sets the date and time at which the current LDspectrogram starts
-        /// This can be used to correctly
+        /// This can be used to correctly.
         /// </summary>
         public DateTimeOffset RecordingStartDate { get; set; }
 
@@ -243,7 +243,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public TimeSpan StartOffset { get; set; }
 
         /// <summary>
-        /// Gets or sets the temporal duration of one subsegment interval for which indices are calculated
+        /// Gets or sets the temporal duration of one subsegment interval for which indices are calculated.
         /// </summary>
         public TimeSpan IndexCalculationDuration { get; set; }
 
@@ -264,7 +264,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         public FrequencyScale FreqScale { get; set; }
 
-        public int YInterval // mark 1 kHz intervals
+        /// <summary>
+        /// Gets the 1 kHz intervals.
+        /// </summary>
+        public int GetYinterval
         {
             get
             {
@@ -281,7 +284,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public string ColorMap { get; set; }
 
         /// <summary>
-        /// Gets or sets pOSITIVE or NEGATIVE
+        /// Gets or sets pOSITIVE or NEGATIVE.
         /// </summary>
         public string ColorMode { get; set; }
 
@@ -300,7 +303,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <summary>
         /// Gets or sets a file from which can be obtained information about sunrise and sunset times for the recording site.
         /// The csv file needs to be in the correct format and typically should contain 365 lines.
-        /// Have not attempted to deal with leap years!
+        /// Have not attempted to deal with leap years!.
         /// </summary>
         [Obsolete]
         public FileInfo SunriseDataFile { get; set; }
@@ -340,8 +343,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 var file = new FileInfo(path);
                 if (File.Exists(path))
                 {
-                    int freqBinCount;
-                    double[,] matrix = IndexMatrices.ReadSpectrogram(file, out freqBinCount);
+                    double[,] matrix = IndexMatrices.ReadSpectrogram(file, out var freqBinCount);
                     matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
                     this.SpectrogramMatrices.Add(this.SpectrogramKeys[i], matrix);
                     this.FrameWidth = freqBinCount * 2;
@@ -421,7 +423,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
         /// <summary>
-        /// Call this method to access a spectrogram matrix
+        /// Call this method to access a spectrogram matrix.
         /// </summary>
         public double[,] GetMatrix(string key)
         {
@@ -469,8 +471,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             {
                 // get the stats for this key
                 var stats = this.IndexStats[key];
-                if (indexProperties.CalculateNormMin)
+                if (indexProperties.CalculateNormBounds)
                 {
+                    // FIRST CALCULATE THE MIN BOUND
                     // By default the minimum bound is set slightly below the modal value of the index.
                     minBound = stats.Mode - (stats.StandardDeviation * 0.1);
 
@@ -492,11 +495,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     {
                         minBound = indexProperties.NormMin;
                     }
-                }
 
-                if (indexProperties.CalculateNormMax)
-                {
-                    maxBound = stats.GetValueOfNthPercentile(IndexDistributions.UpperPercentileDefault);
+                    // NOW CALCULATE THE MAX BOUND
+                    stats.GetValueOfNthPercentile(IndexDistributions.UpperPercentileDefault, out int binId, out maxBound);
 
                     // correct for case where max bound = zero. This can happen where ICD is very short i.e. 0.1s.
                     if (maxBound < 0.0001)
@@ -525,7 +526,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
         /// <summary>
-        /// draws only those spectrograms in the passed array of keys
+        /// draws only those spectrograms in the passed array of keys.
         /// </summary>
         public void DrawGreyScaleSpectrograms(DirectoryInfo opdir, string opFileName, string[] keys)
         {
@@ -580,7 +581,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         }
 
         /// <summary>
-        /// Assume calling method has done all the reality checks </summary>
+        /// Assume calling method has done all the reality checks.</summary>
         public Image DrawGreyscaleSpectrogramOfIndex(string key)
         {
             var matrix = this.GetNormalisedSpectrogramMatrix(key);
@@ -799,15 +800,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             int trackHeight = 18;
             Bitmap timeBmp1 = ImageTrack.DrawTimeRelativeTrack(fullDuration, bmp1.Width, trackHeight);
             Bitmap timeBmp2 = (Bitmap)timeBmp1.Clone();
-            Bitmap suntrack = null;
-
             DateTimeOffset? dateTimeOffset = cs.RecordingStartDate;
             if (dateTimeOffset.HasValue)
             {
                 // draw extra time scale with absolute start time. AND THEN Do SOMETHING WITH IT.
                 timeBmp2 = ImageTrack.DrawTimeTrack(fullDuration, cs.RecordingStartDate, bmp1.Width, trackHeight);
-
-                //suntrack = SunAndMoon.AddSunTrackToImage(bmp1.Width, dateTimeOffset, cs.SunriseDataFile);
             }
 
             if (cs.FreqScale == null)
@@ -822,11 +819,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // draw the composite bitmap
             var imageList = new List<Image> { titleBar, timeBmp1, bmp1, timeBmp2 };
-            //if (suntrack != null)
-            //{
-            //    imageList.Add(suntrack);
-            //}
-
             var compositeBmp = (Bitmap)ImageTools.CombineImagesVertically(imageList);
             return compositeBmp;
         }
@@ -925,7 +917,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             int rows = redM.GetLength(0); //number of rows
             int cols = redM.GetLength(1); //number
-
             var bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
 
             //const int maxRgbValue = 255;
@@ -979,7 +970,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         /// <summary>
         /// A technique to derive a spectrogram from four different indices
-        /// same as above method but multiply index value by the amplitude value instead of squaring the value
+        /// same as above method but multiply index value by the amplitude value instead of squaring the value.
         /// </summary>
         public static Image DrawFourColourSpectrogram(double[,] redM, double[,] grnM, double[,] bluM, double[,] greM, bool doReverseColour)
         {
@@ -1061,41 +1052,41 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Color c = Color.FromArgb(250, 15, 250);
             gr2.Clear(c);
             int x = 0;
-            gr.DrawImage(colorBmp, x, 0); //dra
+            gr.DrawImage(colorBmp, x, 0);
             c = Color.FromArgb(250, 15, 15);
             gr2.Clear(c);
             x += offset;
-            gr.DrawImage(colorBmp, x, 0); //dra
+            gr.DrawImage(colorBmp, x, 0);
 
             //yellow
             c = Color.FromArgb(250, 250, 15);
             gr2.Clear(c);
             x += offset;
-            gr.DrawImage(colorBmp, x, 0); //dra
+            gr.DrawImage(colorBmp, x, 0);
 
             //green
             c = Color.FromArgb(15, 250, 15);
             gr2.Clear(c);
             x += offset;
-            gr.DrawImage(colorBmp, x, 0); //dra
+            gr.DrawImage(colorBmp, x, 0);
 
             // pale blue
             c = Color.FromArgb(15, 250, 250);
             gr2.Clear(c);
             x += offset;
-            gr.DrawImage(colorBmp, x, 0); //dra
+            gr.DrawImage(colorBmp, x, 0);
 
             // blue
             c = Color.FromArgb(15, 15, 250);
             gr2.Clear(c);
             x += offset;
-            gr.DrawImage(colorBmp, x, 0); //dra
+            gr.DrawImage(colorBmp, x, 0);
 
             // purple
             c = Color.FromArgb(250, 15, 250);
             gr2.Clear(c);
             x += offset;
-            gr.DrawImage(colorBmp, x, 0); //dra
+            gr.DrawImage(colorBmp, x, 0);
             return colorScale;
         }
 
@@ -1104,16 +1095,16 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// IT CAN BE COPIED AND APPROPRIATELY MODIFIED BY ANY USER FOR THEIR OWN PURPOSE.
         /// WARNING: Make sure the parameters in the CONFIG file are consistent with the CSV files.
         /// </summary>
-        /// <param name="inputDirectory">inputDirectory</param>
-        /// <param name="outputDirectory">outputDirectory</param>
-        /// <param name="ldSpectrogramConfig">config for drawing FCSs</param>
+        /// <param name="inputDirectory">inputDirectory.</param>
+        /// <param name="outputDirectory">outputDirectory.</param>
+        /// <param name="ldSpectrogramConfig">config for drawing FCSs.</param>
         /// <param name="indexPropertiesConfigPath">The indices Config Path. </param>
-        /// <param name="indexGenerationData">indexGenerationData</param>
-        /// <param name="basename">stem name of the original recording</param>
-        /// <param name="analysisType">will usually be "Towsey.Acoustic"</param>
-        /// <param name="indexSpectrograms">Optional spectra to pass in. If specified the spectra will not be loaded from disk! </param>
-        /// <param name="summaryIndices">an array of summary index results</param>
-        /// <param name="indexStatistics">Info about the distributions of the spectral statistics</param>
+        /// <param name="indexGenerationData">indexGenerationData.</param>
+        /// <param name="basename">stem name of the original recording.</param>
+        /// <param name="analysisType">will usually be "Towsey.Acoustic".</param>
+        /// <param name="indexSpectrograms">Optional spectra to pass in. If specified the spectra will not be loaded from disk.</param>
+        /// <param name="summaryIndices">an array of summary index results.</param>
+        /// <param name="indexStatistics">Info about the distributions of the spectral statistics.</param>
         /// <param name="siteDescription">Optionally specify details about the site where the audio was recorded.</param>
         /// <param name="sunriseDataFile">This is only available for locations near Brisbane, Austalia.</param>
         /// <param name="segmentErrors">Note that these segment errors were derived from previous analysis of the summary indices.</param>
@@ -1156,7 +1147,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             cs1.SiteName = siteDescription?.SiteName;
             cs1.Latitude = siteDescription?.Latitude;
             cs1.Longitude = siteDescription?.Longitude;
-            //cs1.SunriseDataFile = sunriseDataFile;
             cs1.ErroneousSegments = segmentErrors;
 
             // calculate start time by combining DatetimeOffset with minute offset.

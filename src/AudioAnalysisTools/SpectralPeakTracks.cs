@@ -1,4 +1,4 @@
-﻿// <copyright file="SpectralPeakTracks.cs" company="QutEcoacoustics">
+// <copyright file="SpectralPeakTracks.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -16,7 +16,7 @@ namespace AudioAnalysisTools
     /// </summary>
     public class SpectralPeakTracks
     {
-        private static readonly string[] RidgeKeys = { "SPT", "RVT", "RHZ", "RPS", "RNG", "R3D" };
+        private static readonly string[] RidgeKeys = { "SPT", "RVT", "RHZ", "RPS", "RNG" };
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SpectralPeakTracks"/> class.
@@ -31,7 +31,6 @@ namespace AudioAnalysisTools
             // It was changed while in Toulon to the following line which does not require a threshold.
             // this.GetRidgeSpectraVersion1(dBSpectrogram, ridgeThreshold: 4.0);
             this.GetRidgeSpectraVersion2(dBSpectrogram);
-            this.CalculateCombinationOfThreeDirections();
         }
 
         public double[,] Peaks { get; private set; }
@@ -68,11 +67,6 @@ namespace AudioAnalysisTools
         /// gets spectrum of negative slope ridges
         /// </summary>
         public double[] RngSpectrum { get; private set; }
-
-        /// <summary>
-        /// gets three directions ridge value
-        /// </summary>
-        public double[] R3DSpectrum { get; private set; }
 
         public static string[] GetDefaultRidgeKeys()
         {
@@ -324,23 +318,6 @@ namespace AudioAnalysisTools
             //this.AvTrackDuration = TimeSpan.FromSeconds(avFramesPerTrack / framesPerSecond);
         }
 
-        /// <summary>
-        /// Calculates the max of the Horizontal, positive and negative slope ridges.
-        /// Could alternatively calculate the sum of the Horizontal, positive and negative slope ridges.
-        /// </summary>
-        public void CalculateCombinationOfThreeDirections()
-        {
-            this.R3DSpectrum = new double[this.RhzSpectrum.Length];
-            for (int i = 0; i < this.RhzSpectrum.Length; i++)
-            {
-                var array = new[] { this.RhzSpectrum[i], this.RpsSpectrum[i], this.RngSpectrum[i] };
-                this.R3DSpectrum[i] = array.Max();
-
-                // alternatively, sum the indices
-                //this.R3DSpectrum[i] = this.RhzSpectrum[i] + this.RpsSpectrum[i] + this.RngSpectrum[i];
-            }
-        }
-
         // ################################### STATIC METHODS BELOW HERE ########################################
 
         /// <summary>
@@ -389,7 +366,7 @@ namespace AudioAnalysisTools
         } // LocalPeaks()
 
         /// <summary>
-        /// CALCULATEs SPECTRAL PEAK TRACKS: spectralIndices.SPT, RHZ, RVT, RPS, RNG, R3D,
+        /// CALCULATEs SPECTRAL PEAK TRACKS: spectralIndices.SPT, RHZ, RVT, RPS, RNG
         /// This method is only called from IndexCalulate.analysis() when the IndexCalculation Duration is less than 10 seconds,
         /// because need to recalculate background noise etc.
         /// Otherwise the constructor of this class is called: sptInfo = new SpectralPeakTracks(decibelSpectrogram, peakThreshold);

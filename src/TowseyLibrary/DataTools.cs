@@ -3285,10 +3285,11 @@ namespace TowseyLibrary
 
         /// <summary>
         /// normalizes the passed array between 0,1.
-        /// Ensures all values are positive
+        /// Ensures all values are positive.
+        /// WARNING: Where the min = max (e.g. a uniform distribution),
+        ///          this method will return an array of NaN.
+        ///          The calling method needs to check for this.
         /// </summary>
-        /// <param name="v"></param>
-        /// <returns></returns>
         public static double[] normalise(int[] v)
         {
             // find min an max
@@ -3452,23 +3453,31 @@ namespace TowseyLibrary
 
         /// <summary>
         /// Normalizes an array so that the sum of its values (area under curve) = 1.0
-        /// Use to express data as probability funciton.
+        /// Use to express data as probability function.
+        /// WARNING: This method will NOT work where have a uniform distribution of negative values.
         /// </summary>
-        /// <param name="v"></param>
-        /// <returns></returns>
         public static double[] NormaliseArea(int[] array)
         {
+            int length = array.Length;
             double[] v = normalise(array); // ensures all values in 0,1
-            double sum = 0;
-            for (int i = 0; i < v.Length; i++)
-            {
-                sum += v[i];
-            }
+            double sum = v.Sum();
+            double[] ret = new double[length];
 
-            double[] ret = new double[v.Length];
-            for (int i = 0; i < v.Length; i++)
+            // Check for case of uniform distribution or where normalise(array) has returned NaN values.
+            if (double.IsNaN(sum))
             {
-                ret[i] = v[i] / sum;
+                var arraySum = array.Sum();
+                for (int i = 0; i < length; i++)
+                {
+                    ret[i] = array[i] / (double)arraySum;
+                }
+            }
+            else
+            {
+                for (int i = 0; i < length; i++)
+                {
+                    ret[i] = v[i] / sum;
+                }
             }
 
             return ret;
@@ -3477,22 +3486,19 @@ namespace TowseyLibrary
         /// <summary>
         /// Normalizes an array so that the sum of its values (area under curve) = 1.0
         /// Use to express data as probability function.
-        /// NB: ONLY USE THIS METHOD IF ARRAY CONTAINS NEGATIVE VALUES
+        /// WARNING: ONLY USE THIS METHOD IF ARRAY CONTAINS NEGATIVE VALUES
         /// First of all normalises array into [0,1]
-        /// This is rather dodgy!
+        /// WARNING: This method will NOT work where have a uniform distribution of negative values.
         /// </summary>
-        /// <param name="v"></param>
-        /// <returns></returns>
         public static double[] NormaliseArea(double[] data)
         {
-            double[] v = normalise(data); // ensures all values in 0,1
+            double[] v = normalise(data); // ensures all values in 0, 1
             double sum = 0.0;
             for (int i = 0; i < v.Length; i++)
             {
                 sum += v[i];
             }
 
-            // Console.WriteLine("Area={0:f4}",sum);
             if (sum == 0.0)
             {
                 return data;
@@ -3511,8 +3517,6 @@ namespace TowseyLibrary
         /// normalises an array of doubles to probabilities that sum to one.
         /// assumes that values in the data vector are >= zero.
         /// </summary>
-        /// <param name="data"></param>
-        /// <returns></returns>
         public static double[] Normalise2Probabilites(double[] data)
         {
             int length = data.Length;

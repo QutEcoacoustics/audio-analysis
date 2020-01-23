@@ -13,12 +13,13 @@ namespace AnalysisPrograms
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
-    using Acoustics.Shared;
-    using Acoustics.Shared.Csv;
+    using Accord.Statistics.Kernels;
     using Acoustics.Tools.Wav;
     using AnalysisPrograms.AnalyseLongRecordings;
     using AnalysisPrograms.ContentDescription;
     using AnalysisPrograms.Production.Arguments;
+    using AnalyseLongRecordings;
+    using AnalysisPrograms.Draw.Zooming;
     using AudioAnalysisTools;
     using AudioAnalysisTools.ContentDescriptionTools;
     using AudioAnalysisTools.DSP;
@@ -28,6 +29,7 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.WavTools;
     using McMaster.Extensions.CommandLineUtils;
     using TowseyLibrary;
+    using Log = TowseyLibrary.Log;
 
     /// <summary>
     /// Activity Code for this class:= sandpit
@@ -37,7 +39,7 @@ namespace AnalysisPrograms
     /// audio2sonogram - Calls AnalysisPrograms.Audio2Sonogram.Main(): Produces a sonogram from an audio file - EITHER custom OR via SOX.Generates multiple spectrogram images and oscilllations info
     /// indicescsv2image - Calls DrawSummaryIndexTracks.Main(): Input csv file of summary indices. Outputs a tracks image.
     /// colourspectrogram - Calls DrawLongDurationSpectrograms.Execute():  Produces LD spectrograms from matrices of indices.
-    /// zoomingspectrograms - Calls DrawZoomingSpectrograms.Execute():  Produces LD spectrograms on different time scales.
+    /// drawzoomingspectrograms - Calls DrawZoomingSpectrograms.Execute():  Produces LD spectrograms on different time scales.
     /// differencespectrogram - Calls DifferenceSpectrogram.Execute():  Produces Long duration difference spectrograms
     ///
     /// audiofilecheck - Writes information about audio files to a csv file.
@@ -84,7 +86,10 @@ namespace AnalysisPrograms
                 //DrawLongDurationSpectrogram();
                 //DrawClusterSequence();
                 //DrawStandardSpectrograms();
+                //DrawZoomingSpectrogramPyramid();
+
                 //Test_DrawFourSpectrograms();
+
 
                 //ExtractSpectralFeatures();
                 //HerveGlotinMethods();
@@ -98,6 +103,8 @@ namespace AnalysisPrograms
                 //TestEigenValues();
                 //TestChannelIntegrity();
                 //TestDct();
+                //Statistics.TestGetNthPercentileBin();
+
                 //TEST_FilterMovingAverage();
                 //TestImageProcessing();
                 //TestMatrix3dClass();
@@ -109,8 +116,11 @@ namespace AnalysisPrograms
                 //TestTernaryPlots();
                 //TestDirectorySearchAndFileSearch();
                 //TestNoiseReduction();
+                //ReadSpectralIndicesFromTwoFalseColourSpectrogramRibbons();
                 //Oscillations2014.TESTMETHOD_DrawOscillationSpectrogram();
                 //Oscillations2014.TESTMETHOD_GetSpectralIndex_Osc();
+                //Test_DrawFourSpectrograms();
+                //TestLinearFunction();
 
                 Console.WriteLine("# Finished Sandpit Task!    Press <enter> key to exit.");
                 Console.ReadLine();

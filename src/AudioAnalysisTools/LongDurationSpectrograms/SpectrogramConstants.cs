@@ -20,16 +20,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         public const string RGBMap_ACI_ENT_PMN = "ACI-ENT-PMN"; //R-G-B
         public const string RGBMap_ACI_ENT_CVR = "ACI-ENT-CVR"; //R-G-B
-        public const string RGBMap_ACI_ENT_CLS = "ACI-ENT-CLS"; //R-G-B
         public const string RGBMap_ACI_ENT_EVN = "ACI-ENT-EVN"; //R-G-B
         public const string RGBMap_ACI_ENT_SPT = "ACI-ENT-SPT"; //R-G-B
 
         // A second set of RGB mappings based on BGN and PMN.
         public const string RGBMap_BGN_PMN_EVN = "BGN-PMN-EVN"; //R-G-B
         public const string RGBMap_BGN_PMN_SPT = "BGN-PMN-SPT"; //R-G-B
-        public const string RGBMap_BGN_PMN_CLS = "BGN-PMN-CLS"; //R-G-B
         public const string RGBMap_BGN_PMN_OSC = "BGN-PMN-OSC";
-        public const string RGBMap_BGN_PMN_R3D = "BGN-PMN-R3D";
         public const string RGBMap_BGN_PMN_RHZ = "BGN-PMN-RHZ";
         public const string RGBMap_BGN_PMN_CVR = "BGN-PMN-CVR"; //R-G-B
 

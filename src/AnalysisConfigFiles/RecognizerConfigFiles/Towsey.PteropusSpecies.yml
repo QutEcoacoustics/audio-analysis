@@ -1,0 +1,79 @@
+---
+SpeciesName: Pteropus sp.
+CommonName: Flying Fox
+AbbreviatedSpeciesName: PteropusSp
+
+#Proposed Approach:
+#1. Assume that a long recording has been broken into one-minute segments.
+#2. Convert each one-minute segment to a spectrogram.
+#3. Obtain a noise profile for each segment. This is to be used later to remove insect chorusing.
+#4. Scan the one-minute waveform and select "spike maxima" whose amplitude exceeds a decibel threshold, D.
+#5. Extract a single frame (say 512 samples) centred on each spike and convert to a spike spectrum.
+#6. Subtract the noise profile from the spike spectrum.
+#7. Smooth the remaining spectrum.
+#8. Look for evenly spaced harmonics in the smoothed spectrum.
+#    Typically the lowest harmonic will lie between 1200 Hz and 3000 Hz and the higher ones evenly spaced.
+#    This is the tricky bit due to variability but may work to use spectrum auto-correlation.
+
+# Common settings
+BgNoiseThreshold: 3.0
+
+# Each of these profiles will be analyzed
+Profiles:
+  #Standard: &STANDARD
+  #EventThreshold: 0.2
+  Territorial:
+    # min and max of the freq band to search
+    MinHz: 800          
+    MaxHz: 8000
+    MinDuration: 0.15
+    MaxDuration: 0.8
+    DecibelThreshold: 9.0
+  Wingbeats:
+    MinHz: 200          
+    MaxHz: 2000
+    DecibelThreshold: 6.0
+    # duration of DCT in seconds 
+    DctDuration: 0.5
+    # minimum acceptable value of a DCT coefficient
+    DctThreshold: 0.5
+    # ignore oscillation rates below the min & above the max threshold
+    # A sample of four wingbeats yielded an average of 5.1 +/-0.5 beats/s.
+    # 95% confidence interval (2 SDs) is therefore approx 4-6 beats/s.    
+    # OSCILLATIONS PER SECOND
+    MinOscilFreq: 4        
+    MaxOscilFreq: 6
+    # Minimum and maximum duration for the length of a true call.
+    MinDuration: 1.0
+    MaxDuration: 10.0
+    # Event threshold - use this to determine FP / FN trade-off for events.
+    EventThreshold: 0.5
+  #Agonist:
+  # This notation means the Groote profile has all of the settings that the Standard profile has,
+  # however, the MinHz and MaxHz properties have been overridden.
+  #  <<: *STANDARD
+  #  DctDuration: 0.3
+
+# Resample rate must be 2 X the desired Nyquist
+ResampleRate: 22050
+
+## Specifically for AnalyzeLongRecording
+# SegmentDuration: units=seconds;    
+SegmentDuration: 60
+# SegmentOverlap: units=seconds;
+SegmentOverlap: 0
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveIntermediateWavFiles: Never
+SaveIntermediateCsvFiles: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+# "True" is useful when debugging but "WhenEventsDetected" is required for operational use.
+# SaveSonogramImages: True
+SaveSonogramImages: WhenEventsDetected
+# DisplayCsvImage is obsolete - ensure it remains set to: false
+DisplayCsvImage: false
+## End section for AnalyzeLongRecording
+
+# Other config files to reference
+
+HighResolutionIndicesConfig: "../Towsey.Acoustic.HiResIndicesForRecognisers.yml"
+...

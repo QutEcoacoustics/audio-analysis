@@ -98,16 +98,16 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             var resultsDirectory = this.outputDirectory.Combine("Towsey.Acoustic");
             var listOfFiles = resultsDirectory.EnumerateFiles().ToArray();
 
-            Assert.AreEqual(40, listOfFiles.Length);
+            Assert.AreEqual(38, listOfFiles.Length);
 
             var csvCount = listOfFiles.Count(f => f.Name.EndsWith(".csv"));
-            Assert.AreEqual(16, csvCount);
+            Assert.AreEqual(15, csvCount);
 
             var jsonCount = listOfFiles.Count(f => f.Name.EndsWith(".json"));
             Assert.AreEqual(2, jsonCount);
 
             var pngCount = listOfFiles.Count(f => f.Name.EndsWith(".png"));
-            Assert.AreEqual(22, pngCount);
+            Assert.AreEqual(21, pngCount);
 
             var twoMapsImagePath = resultsDirectory.CombineFile("TemporaryRecording1__2Maps.png");
             var twoMapsImage = ImageTools.ReadImage2Bitmap(twoMapsImagePath.FullName);
@@ -207,10 +207,10 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             var resultsDirectory = this.outputDirectory.Combine("Towsey.Acoustic");
             var listOfFiles = resultsDirectory.EnumerateFiles().ToArray();
 
-            Assert.AreEqual(20, listOfFiles.Length);
+            Assert.AreEqual(19, listOfFiles.Length);
 
             var csvCount = listOfFiles.Count(f => f.Name.EndsWith(".csv"));
-            Assert.AreEqual(16, csvCount);
+            Assert.AreEqual(15, csvCount);
 
             var jsonCount = listOfFiles.Count(f => f.Name.EndsWith(".json"));
             Assert.AreEqual(2, jsonCount);
@@ -269,7 +269,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             // test number of images - should now be 23
             listOfFiles = resultsDirectory.EnumerateFiles().ToArray();
             pngCount = listOfFiles.Count(f => f.Name.EndsWith(".png"));
-            Assert.AreEqual(23, pngCount);
+            Assert.AreEqual(22, pngCount);
 
             var twoMapsImagePath = resultsDirectory.CombineFile(recordingName + "__2Maps.png");
             var twoMapsImage = ImageTools.ReadImage2Bitmap(twoMapsImagePath.FullName);

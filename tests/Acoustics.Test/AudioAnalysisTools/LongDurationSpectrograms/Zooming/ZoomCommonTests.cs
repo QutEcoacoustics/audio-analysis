@@ -26,7 +26,7 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms.Zooming
 
         /// <summary>
         /// This test is designed to ensure that images are produced at the correct length.
-        /// We had a beviour where they were being trimmed by a whole pixel at the end of
+        /// We had a behaviour where they were being trimmed by a whole pixel at the end of
         /// recordings that didn't wholly fill a minute. At very low scales this is acceptable, but
         /// at high scales just because 1/6th of a pixel's worth of data is absent does not mean
         /// that we shouldn't render the other 5/6ths of the pixel. And if we don't, it creates
@@ -63,8 +63,8 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms.Zooming
             var config = new LdSpectrogramConfig()
             {
                 // same color map to reduce memory stress for test
-                ColorMap1 = SpectrogramConstants.RGBMap_BGN_PMN_R3D,
-                ColorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_R3D,
+                ColorMap1 = SpectrogramConstants.RGBMap_BGN_PMN_EVN,
+                ColorMap2 = SpectrogramConstants.RGBMap_BGN_PMN_EVN,
             };
 
             var generationData = new IndexGenerationData()

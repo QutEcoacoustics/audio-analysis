@@ -8,7 +8,7 @@
 #
 #
 
-AnalysisName: Towsey.Acoustic
+#AnalysisName: Towsey.Acoustic
 #SegmentDuration: units=seconds;
 SegmentDuration: 60
 #SegmentOverlap: units=seconds;
@@ -65,10 +65,10 @@ TileOutput: false
 # if true, an exception will be thrown if no such date is found
 # if false, and a valid date is still found in file name, it will still be parsed
 # supports formats like:
-#     prefix_20140101T235959+1000.mp3
-#     prefix_20140101T235959+Z.mp3
-#     prefix_20140101-235959+1000.mp3
-#     prefix_20140101-235959+Z.mp3
+#     prefix_20140101T235959+1000.wav
+#     prefix_20140101T235959Z.wav
+#     prefix_20140101-235959+1000.wav
+#     prefix_20140101_235959Z.wav
 RequireDateInFilename: true
 
 IndexPropertiesConfig: './IndexPropertiesConfig.Zooming.yml'

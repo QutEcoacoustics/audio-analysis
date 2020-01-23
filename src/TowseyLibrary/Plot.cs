@@ -149,7 +149,6 @@ namespace TowseyLibrary
                 // ReSharper disable once PossibleLossOfFraction
                 g.DrawString(this.title, font, Brushes.Red, new PointF(length / 2, 0));
             }
-
             return image;
         }
 

@@ -1,20 +1,35 @@
 ---
 AnalysisName: Towsey.SpectrogramGenerator
-#SegmentDuration: units=seconds,   SegmentOverlap=seconds
+
+# Generate multiple standard-scale spectrogram images and oscillations info
+
+# Usage: AnalysisPrograms.exe Audio2Sonogram [arguments] [options]
+#Arguments:
+#  Source: The source audio file to operate on
+#  Config  The path to this config file. If not found it will attempt to use a default config file of the same name.
+#  Output  A directory to write output
+
+#Following segmentation parameters are default and should usually not be changed. Units are seconds.
 SegmentDuration: 60
 SegmentOverlap: 0
 
-ResampleRate: 22050
-#FRAME LENGTH in samples - must be power of 2
-FrameLength: 512
-
-#Frame Overlap as fraction: default=0.0
-FrameOverlap: 0.25
-
 #Resample rate must be 2 X the desired Nyquist.
-# WARNING: Default SR used to be the SR of the recording. NOW DEFAULT = 22050.
+ResampleRate: 22050
+# WARNING: The default SR = 22050.
 # IF you want to keep the recording SR AND it is NOT 22050, THEN you must set the ResampleRate value here
 # ResampleRate: 20000
+
+#FRAME LENGTH in samples - must be power of 2
+FrameLength: 512
+# Following frame step yields 50 frames/s which can make some subsequent operations a bit easier.
+FrameStep: 441
+
+Waveform: true
+PowerSpectrogram: true
+DecibelSpectrogram: true
+PowerSpectrogram_NoiseReduced: true
+PowerSpectrogram_Annotated: true
+AmplitudeSpectrogram_LocalContrastNormalisation: true
 
 #NOISE REDUCTION PARAMETERS
 DoNoiseReduction: true
@@ -22,15 +37,10 @@ NoiseReductionType: Standard
 BgNoiseThreshold: 3.0
 LcnContrastLevel: 0.4
 
-
 AddAxes: true
 AddSegmentationTrack: true
 VOCAL_GAP: 0.1
 MIN_VOCAL_DURATION: 0.1
-
-# REDUCTION FACTORS for freq and time dimensions
-#TimeReductionFactor: 1
-#FreqReductionFactor: 1
 
 MakeSoxSonogram: false
 SonogramTitle: Sonogram

@@ -19,7 +19,6 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.RibbonPlots
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
-    using SixLabors.Primitives;
 
     [TestClass]
     public class RibbonPlotTests : OutputDirectoryTest

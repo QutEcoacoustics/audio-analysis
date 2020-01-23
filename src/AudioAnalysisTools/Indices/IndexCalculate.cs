@@ -337,7 +337,7 @@ namespace AudioAnalysisTools.Indices
             // ii: CALCULATE THE ACOUSTIC COMPLEXITY INDEX
             spectralIndices.DIF = AcousticComplexityIndex.SumOfAmplitudeDifferences(amplitudeSpectrogram);
 
-            double[] aciSpectrum = AcousticComplexityIndex.CalculateACI(amplitudeSpectrogram);
+            double[] aciSpectrum = AcousticComplexityIndex.CalculateAci(amplitudeSpectrogram);
             spectralIndices.ACI = aciSpectrum;
 
             // remove low freq band of ACI spectrum and store average ACI value
@@ -438,13 +438,6 @@ namespace AudioAnalysisTools.Indices
             spectralIndices.RVT = sptInfo.RvtSpectrum;
             spectralIndices.RPS = sptInfo.RpsSpectrum;
             spectralIndices.RNG = sptInfo.RngSpectrum;
-            spectralIndices.R3D = sptInfo.R3DSpectrum;
-
-            //images for debugging
-            //ImageTools.DrawMatrix(dspOutput3.amplitudeSpectrogram, @"C:\SensorNetworks\Output\BAC\HiResRidge\dspOutput3.amplitudeSpectrogram.png");
-            //ImageTools.DrawMatrix(ridgeSpectrogram,                @"C:\SensorNetworks\Output\BAC\HiResRidge\ridgeSpectrogram.png");
-            //ImageTools.DrawMatrix(sptInfo.RvtSpectrum,             @"C:\SensorNetworks\Output\BAC\HiResRidge\ridgeSpectrum.png");
-
             summaryIndices.SptDensity = sptInfo.TrackDensity;
 
             // these are two other indices that I tried but they do not seem to add anything of interest.
