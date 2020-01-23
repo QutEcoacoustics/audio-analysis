@@ -239,6 +239,14 @@
     <Compile Include="ActivityAndCover.cs" />
     <Compile Include="BirdClefExperiment1.cs" />
     <Compile Include="ChannelIntegrity.cs" />
+    <Compile Include="ContentDescriptionTools\ContentAlgorithms.cs" />
+    <Compile Include="ContentDescriptionTools\ContentSignatures.cs" />
+    <Compile Include="ContentDescriptionTools\ContentVisualization.cs" />
+    <Compile Include="ContentDescriptionTools\DataProcessing.cs" />
+    <Compile Include="ContentDescriptionTools\DescriptionResult.cs" />
+    <Compile Include="ContentDescriptionTools\SpectralIndexValuesForContentDescription.cs" />
+    <Compile Include="ContentDescriptionTools\TemplateManifest.cs" />
+    <Compile Include="ContentDescriptionTools\TemplateCollection.cs" />
     <Compile Include="CrossCorrelation.cs" />
     <Compile Include="DSP\Clipping.cs" />
     <Compile Include="DSP\DSP_Filters.cs" />
@@ -268,6 +276,7 @@
     <Compile Include="EventStatistics\EventStatisticsCalculate.cs" />
     <Compile Include="FrommoltProject.cs" />
     <Compile Include="Indices\GapsAndJoins.cs" />
+    <Compile Include="Indices\IndexCalculateSixOnly.cs" />
     <Compile Include="Indices\IndexCalculate.cs" />
     <Compile Include="Indices\IndexCalculateConfig.cs" />
     <Compile Include="Indices\IndexDistributions.cs" />

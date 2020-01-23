@@ -15,16 +15,19 @@ namespace AnalysisPrograms
     using System.Threading.Tasks;
     using Accord.Statistics.Kernels;
     using Acoustics.Tools.Wav;
+    using AnalysisPrograms.AnalyseLongRecordings;
+    using AnalysisPrograms.ContentDescription;
+    using AnalysisPrograms.Production.Arguments;
     using AnalyseLongRecordings;
     using AnalysisPrograms.Draw.Zooming;
     using AudioAnalysisTools;
+    using AudioAnalysisTools.ContentDescriptionTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using McMaster.Extensions.CommandLineUtils;
-    using Production.Arguments;
     using TowseyLibrary;
     using Log = TowseyLibrary.Log;
 
@@ -32,7 +35,6 @@ namespace AnalysisPrograms
     /// Activity Code for this class:= sandpit
     ///
     /// Activity Codes for other tasks to do with spectrograms and audio files:
-    ///
     /// audio2csv - Calls AnalyseLongRecording.Execute(): Outputs acoustic indices and LD false-colour spectrograms.
     /// audio2sonogram - Calls AnalysisPrograms.Audio2Sonogram.Main(): Produces a sonogram from an audio file - EITHER custom OR via SOX.Generates multiple spectrogram images and oscilllations info
     /// indicescsv2image - Calls DrawSummaryIndexTracks.Main(): Input csv file of summary indices. Outputs a tracks image.
@@ -60,6 +62,10 @@ namespace AnalysisPrograms
                 var tStart = DateTime.Now;
                 Log.Verbosity = 1;
                 Log.WriteLine("# Start Time = " + tStart.ToString(CultureInfo.InvariantCulture));
+
+                // CONTENT DESCRIPTION
+                //ContentDescriptionCreateTemplates();
+                //ContentDescriptionApplyTemplates();
 
                 //AnalyseFrogDataSet();
                 //Audio2CsvOverOneFile();
@@ -116,7 +122,8 @@ namespace AnalysisPrograms
                 //Test_DrawFourSpectrograms();
                 //TestLinearFunction();
 
-                Console.WriteLine("# Finished Sandpit Task!    Press any key to exit.");
+                Console.WriteLine("# Finished Sandpit Task!    Press <enter> key to exit.");
+                Console.ReadLine();
                 return this.Ok();
             }
         }

@@ -317,6 +317,56 @@ namespace TowseyLibrary
             }// end finally
         }
 
+        public static void WriteDictionaryToFile(Dictionary<string, double[]> dictionary, string fPath)
+        {
+            var text = new StringBuilder();
+            foreach (KeyValuePair<string, double[]> kvp in dictionary)
+            {
+                text.Append(kvp);
+                var vector = kvp.Value;
+                for (int i = 0; i < vector.Length; i++)
+                {
+                    text.Append(string.Format(", {0:F3}", vector[i]));
+                }
+
+                text.Append("\n");
+            }
+
+            WriteTextFile(fPath, text.ToString());
+        }
+
+        /// <summary>
+        /// Write a dictionary of arrays as a csv file where dictionary keys are column headers and the
+        /// arrays are the column entries.
+        /// WARNING: Assume that all arrays are of the same size!.
+        /// </summary>
+        /// <param name="dictionary">a dictionary of arrays of double.</param>
+        /// <param name="fPath">The file path.</param>
+        public static void WriteDictionaryAsCsvFile(Dictionary<string, double[]> dictionary, string fPath)
+        {
+            var kvp1 = dictionary.First();
+            var arrayLength = kvp1.Value.Length;
+
+            // set up an array of lines with first line for headers
+            var lines = new string[arrayLength + 1];
+
+            // now build up the lines
+            foreach (KeyValuePair<string, double[]> kvp in dictionary)
+            {
+                // add in the header
+                lines[0] += kvp.Key + ",";
+
+                // now add in values
+                var array = kvp.Value;
+                for (int i = 0; i < array.Length; i++)
+                {
+                    lines[i + 1] += $"{array[i]:F3}, ";
+                }
+            }
+
+            WriteTextFile(fPath, lines);
+        }
+
         public static void Append2TextFile(string fPath, string line)
         {
             bool saveExistingFile = false;

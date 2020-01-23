@@ -27,7 +27,7 @@ namespace AnalysisBase
         public double? SegmentOverlap { get; set; }
 
         /// <summary>
-        /// Gets or sets the default sample rate to reencode all input audio as.
+        /// Gets or sets the default sample rate to re-encode all input audio as.
         /// </summary>
         /// <remarks>
         /// ResampleRate must be 2 X the desired Nyquist.
@@ -49,14 +49,15 @@ namespace AnalysisBase
         /// Gets or sets a value indicating whether a file must have a date in the file name.
         /// </summary>
         /// <remarks>
-        /// if true, an unambiguous date time must be provided in the source file's name.
-        /// if true, an exception will be thrown if no such date is found
-        /// if false, and a valid date is still found in file name, it will still be parsed
-        /// supports formats like:
-        ///     prefix_20140101T235959+1000.mp3
-        ///     prefix_20140101T235959+Z.mp3
-        ///     prefix_20140101-235959+1000.mp3
-        ///     prefix_20140101-235959+Z.mp3.
+        /// If true, an unambiguous date-time must be provided in the source file's name.
+        /// If true, an exception will be thrown if no such date is found.
+        /// If false, and a valid date is still found in file name, it will still be parsed.
+        /// Supports formats like:
+        ///      prefix_20140101T235959+1000.wav,  where +1000 is in this case the time-zone offset for Brisbane.
+        ///      prefix_20140101T235959+Z.wav,     where +Z is the zero time-zone offset.
+        ///      prefix_20140101-235959+1000.wav
+        ///      prefix_20140101-235959+Z.wav
+        /// For more info on dates, see "dates.md" at https://github.com/QutEcoacoustics/audio-analysis/tree/master/docs.
         /// </remarks>
         public bool RequireDateInFilename { get; set; } = false;
     }

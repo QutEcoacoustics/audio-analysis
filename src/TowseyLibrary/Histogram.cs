@@ -12,8 +12,7 @@ namespace TowseyLibrary
     {
         public static int[] Histo(double[] data, int binCount)
         {
-            double max;
-            DataTools.MinMax(data, out var min, out max);
+            DataTools.MinMax(data, out var min, out double max);
             double range = max - min;
             int[] bins = new int[binCount];
 
@@ -59,7 +58,7 @@ namespace TowseyLibrary
                 return bins;
             }
 
-            int NaN_COUNT = 0;
+            int nanCount = 0;
             binWidth = range / binCount;
             for (int i = 0; i < data.Length; i++)
             {
@@ -67,7 +66,7 @@ namespace TowseyLibrary
                 int id = 0;
                 if (double.IsNaN(value))
                 {
-                    NaN_COUNT++;
+                    nanCount++;
                 }
                 else
                 {
@@ -82,9 +81,9 @@ namespace TowseyLibrary
                 bins[id]++;
             }
 
-            if (NaN_COUNT > 0)
+            if (nanCount > 0)
             {
-                string msg = string.Format("#### WARNING from Histogram.Histo():  {0}/{1} values were NaN", NaN_COUNT, data.Length);
+                string msg = string.Format("#### WARNING from Histogram.Histo():  {0}/{1} values were NaN", nanCount, data.Length);
                 LoggedConsole.WriteErrorLine(msg);
             }
 
@@ -218,7 +217,7 @@ namespace TowseyLibrary
         /// Width is determined by user supplied min and max.
         /// </summary>
         /// <param name="data">the data.</param>
-        /// <param name="binWidth"> should be an integer width</param>
+        /// <param name="binWidth"> should be an integer width.</param>
         /// <param name="min">the min value.</param>
         /// <param name="max">the max value.</param>
         public static int[] Histo_FixedWidth(double[] data, double binWidth, double min, double max)
@@ -248,15 +247,13 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// HISTOGRAM from an array of int
-        /// assume all values are postiive.
+        /// HISTOGRAM from an array of int.
+        /// It assumes all values are positive.
         /// </summary>
         public static int[] Histo(int[] data)
         {
             int length = data.Length;
-            int min = int.MaxValue;
-            int max = -int.MaxValue;
-            DataTools.MinMax(data, out min, out max);
+            DataTools.MinMax(data, out int min, out int max);
 
             int[] histo = new int[max + 1];
 
@@ -269,7 +266,7 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// HISTOGRAM from an array of int
+        /// HISTOGRAM from an array of int.
         /// </summary>
         public static int[] Histo(int[] data, int binCount, out double binWidth, out int min, out int max)
         {
@@ -295,7 +292,7 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        ///  make histogram of integers where each bin has unit width
+        ///  make histogram of integers where each bin has unit width.
         /// </summary>
         public static int[] Histo(int[] data, out int min, out int max)
         {

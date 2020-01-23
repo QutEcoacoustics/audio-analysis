@@ -1,0 +1,62 @@
+---
+# Summary: Calculates an acoustic signature for each minute of recording.
+#          An acoustic signature is a vector, ecah element of which is derived from a ContentDescription template.
+#
+AnalysisName: ContentDescription
+
+# The following parameters have been commented because they must not be changed for Content Description.
+#All units=seconds;
+#SegmentDuration: 60
+#SegmentOverlap: 0
+#IndexCalculationDuration: 60.0
+#BgNoiseNeighborhood: 5
+
+# By default, all recordings are down-sampled or up-sampled to 22050 Hz.
+#ResampleRate: 22050
+#FrameLength: 512
+#FrameStep: 512
+#FrequencyScale: Linear
+
+# Defining three frequency bands.
+#LowFreqBound: 1000
+#MidFreqBound: 8000
+#HighFreqBound: 11000
+
+# SAVE INTERMEDIARY FILES
+# Available options (case-sensitive): [false/Never | true/Always | WhenEventsDetected]
+SaveIntermediateWavFiles: Never
+# If `true` saves a data into a separate file every `SegmentDuration` seconds. Accepts a boolean value: [false|true]
+# If `true` saves a data into a separate file every `SegmentDuration` seconds. Accepts a boolean value: [false|true]
+SaveIntermediateCsvFiles: false
+
+# SAVE INTERMEDIARY ONE-MINUTE (standard scale) SPECTROGRAMS
+# One-minute spectrograms can be saved in any analysis task.
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveSonogramImages: Never
+
+# RequireDateInFilename:
+# If true, an unambiguous date-time must be provided in the source file's name.
+# If true, an exception will be thrown if no such date is found
+# If false, and a valid date is still found in file name, it will still be parsed
+# supports formats like:
+#     prefix_20140101T235959+1000.wav,  where +1000 is the time-zone offset for Brisbane.
+#     prefix_20140101T235959+Z.wav,     where +Z is the zero time-zone offset.
+#     prefix_20140101-235959+1000.wav
+#     prefix_20140101-235959+Z.wav
+# For more info on dates, see <dates.md> at https://github.com/QutEcoacoustics/audio-analysis/tree/master/docs
+RequireDateInFilename: false
+
+#IndexPropertiesConfig: './IndexPropertiesConfig.yml'
+TemplatesList: 'Towsey.TemplateDefinitions.json'
+
+# #############################################################################################################
+# The below parameters are used to configure drawing of the false-color spectrograms
+LdSpectrogramConfig:
+    ColorMap1: "ACI-ENT-EVN"
+    ColorMap2: "BGN-PMN-OSC"
+    ColourFilter: -0.25
+    XAxisTicIntervalSeconds: 3600
+    FreqScale: "Linear"
+    YAxisTicInterval: 1000
+...
+

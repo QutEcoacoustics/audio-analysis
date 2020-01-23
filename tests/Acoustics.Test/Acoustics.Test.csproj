@@ -311,6 +311,8 @@
     <Compile Include="AnalysisPrograms\SourcePreparers\RemoteSourcePreparerTests.cs" />
     <Compile Include="AnalysisPrograms\SourcePreparers\LocalSourcePreparerTests.cs" />
     <Compile Include="ArrayExtensionsTests.cs" />
+    <Compile Include="AudioAnalysisTools\ContentDescriptionTools\ContentDescriptionTest.cs" />
+    <Compile Include="AudioAnalysisTools\ContentDescriptionTools\DataProcessingTest.cs" />
     <Compile Include="AudioAnalysisTools\DSP\EnvelopeAndFftTests.cs" />
     <Compile Include="AudioAnalysisTools\DSP\FrequencyScaleTests.cs" />
     <Compile Include="AudioAnalysisTools\DSP\KmeansClusteringTests.cs" />
@@ -450,6 +452,7 @@
     <Analyzer Include="..\..\packages\StyleCop.Analyzers.Unstable.1.1.1.61\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll" />
     <Analyzer Include="..\..\packages\StyleCop.Analyzers.Unstable.1.1.1.61\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>

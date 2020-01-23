@@ -1,4 +1,4 @@
-﻿// <copyright file="ImageTrack.cs" company="QutEcoacoustics">
+// <copyright file="ImageTrack.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -6,7 +6,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 {
     using System;
     using System.Drawing;
-
+    using System.Linq;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.WavTools;
 
@@ -310,8 +310,11 @@ namespace AudioAnalysisTools.StandardSpectrograms
         {
             this.DrawScoreArrayTrack(bmp);
             int length = bmp.Width;
-            var font = new Font("Tahoma", 8);
             Graphics g = Graphics.FromImage(bmp);
+
+            //var font = new Font("Tahoma", 8);
+            var family = new FontFamily("Arial");
+            var font = new Font(family, 10, FontStyle.Regular, GraphicsUnit.Pixel);
             g.DrawString(this.Name, font, Brushes.Red, new PointF(10, this.topOffset));
             g.DrawString(this.Name, font, Brushes.Red, new PointF(length / 2, this.topOffset));
             g.DrawString(this.Name, font, Brushes.Red, new PointF(length - 80, this.topOffset));
@@ -323,7 +326,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// </summary>
         public Bitmap DrawScoreArrayTrack(Bitmap bmp)
         {
-            //LoggedConsole.WriteLine("DRAW SCORE TRACK: image ht=" + bmp.Height + "  topOffset = " + topOffset + "   botOffset =" + bottomOffset);
+            // LoggedConsole.WriteLine("DRAW SCORE TRACK: image ht=" + bmp.Height + "  topOffset = " + this.topOffset + "   bottomOffset =" + this.bottomOffset);
             if (this.doubleData == null)
             {
                 return bmp;
@@ -353,19 +356,21 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     continue;
                 }
 
-                double max = -double.MaxValue;
                 int location = 0;
-                for (int x = start; x < end; x++) //find max value in subsample
+
+                //find max value in sub-sample - if there is a sub-sample
+                double subsampleMax = -double.MaxValue;
+                for (int x = start; x < end; x++)
                 {
-                    if (max < this.doubleData[x])
+                    if (subsampleMax < this.doubleData[x])
                     {
-                        max = this.doubleData[x];
+                        subsampleMax = this.doubleData[x];
                     }
 
                     location = x;
                 }
 
-                double fraction = (max - this.scoreMin) / range;
+                double fraction = (subsampleMax - this.scoreMin) / range;
                 int id = this.Height - 1 - (int)(this.Height * fraction);
                 if (id < 0)
                 {
@@ -377,10 +382,10 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 }
 
                 //paint white and leave a black vertical histogram bar
-                for (int z = 0; z < id; z++)
-                {
-                    bmp.SetPixel(w, this.topOffset + z, gray); // background
-                }
+                //for (int z = 0; z < id; z++)
+                //{
+                //    bmp.SetPixel(w, this.topOffset + z, gray); // background
+                //}
 
                 for (int z = id; z < this.height; z++)
                 {
