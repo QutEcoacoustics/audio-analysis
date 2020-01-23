@@ -370,7 +370,7 @@ FileName:
 # ADD NEW SPECTRAL INDICES BELOW HERE
 
 # IMPORTANT:  SPECTRAL INDCIES MUST BE OF TYPE Double[]
-# When CalculateNormMin: and CalculateNormMax: are set true, the normalisation bounds
+# When CalculateNormBounds: are set true, the normalisation bounds
 #  for colour display will be calculated according to the distribution values in the 
 #   /Towsey.Acoustic/xxxxxxxxx_SpectralIndexStatistics.json File. 
 #   The norm min set = MODE - (0.1*SD) of the distribution

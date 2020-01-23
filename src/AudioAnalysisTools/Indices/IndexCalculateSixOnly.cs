@@ -111,7 +111,7 @@ namespace AudioAnalysisTools.Indices
             }
 
             // ii: CALCULATE THE ACOUSTIC COMPLEXITY INDEX
-            spectralIndices.ACI = AcousticComplexityIndex.CalculateACI(amplitudeSpectrogram);
+            spectralIndices.ACI = AcousticComplexityIndex.CalculateAci(amplitudeSpectrogram);
 
             // iii: CALCULATE the H(t) or Temporal ENTROPY Spectrum and then reverse the values i.e. calculate 1-Ht for energy concentration
             double[] temporalEntropySpectrum = AcousticEntropy.CalculateTemporalEntropySpectrum(amplitudeSpectrogram);
@@ -169,8 +169,7 @@ namespace AudioAnalysisTools.Indices
                 var indexProperties = new IndexProperties
                 {
                     Name = kvp.Key,
-                    CalculateNormMin = false,
-                    CalculateNormMax = false,
+                    CalculateNormBounds = false,
                     NormMin = indexBounds[0],
                     NormMax = indexBounds[1],
                     Comment = "Is an acoustic index",

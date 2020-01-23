@@ -236,7 +236,7 @@ namespace AnalysisPrograms.ContentDescription
             Json.Serialise(icdPath.ToFileInfo(), indexConfigData);
 
             // gather spectra to form spectrograms.  Assume same spectra in all analyzer results
-            var dictionaryOfSpectra = spectralIndices.ToTwoDimensionalArray(SpectralIndexValues.CachedSelectors, TwoDimensionalArray.Rotate90ClockWise);
+            var dictionaryOfSpectra = spectralIndices.ToTwoDimensionalArray(SpectralIndexValuesForContentDescription.CachedSelectors, TwoDimensionalArray.Rotate90ClockWise);
 
             // Calculate the index distribution statistics and write to a json file. Also save as png image
             // The following method returns var indexDistributions =, but we have no use for them.
