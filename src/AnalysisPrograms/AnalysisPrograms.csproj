@@ -362,6 +362,7 @@
     <Compile Include="Recognizers\LitoriaWatjulumensis.cs" />
     <Compile Include="Recognizers\LitoriaBicolor.cs" />
     <Compile Include="Recognizers\PezoporusOccidentalis.cs" />
+    <Compile Include="Recognizers\GenericRecognizers.cs" />
     <Compile Include="Recognizers\PteropusSpecies.cs" />
     <Compile Include="Recognizers\UperoleiaLithomoda.cs" />
     <Compile Include="Recognizers\PlatyplectrumOrnatum.cs" />
