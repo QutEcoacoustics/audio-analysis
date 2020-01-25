@@ -355,6 +355,9 @@
     <Compile Include="Recognizers\Base\RecognizerEntry.cs" />
     <Compile Include="Recognizers\Base\RecognizerResults.cs" />
     <Compile Include="Recognizers\CriniaTinnula_OBSOLETE.cs" />
+    <Compile Include="Recognizers\GenericBlobRecognizer.cs" />
+    <Compile Include="Recognizers\GenericOscillationRecognizer.cs" />
+    <Compile Include="Recognizers\GenericWhistleRecognizer.cs" />
     <Compile Include="Recognizers\IctalurusFurcatus.cs" />
     <Compile Include="Recognizers\LewiniaPectoralis.cs" />
     <Compile Include="Recognizers\LitoriaNasuta.cs" />

@@ -1,5 +1,5 @@
 ---
-SpeciesName: Test Species.
+SpeciesName: GenericRecognizers
 CommonName: Generic Test
 AbbreviatedSpeciesName: TestSp
 
@@ -10,32 +10,20 @@ SegmentDuration: 60
 # SegmentOverlap: units=seconds;
 SegmentOverlap: 0
 
-#Proposed Approach:
-#1. Assume that a long recording has been broken into one-minute segments.
-#2. Convert each one-minute segment to a spectrogram.
-#3. Obtain a noise profile for each segment. This is to be used later to remove insect chorusing.
-#4. Scan the one-minute waveform and select "spike maxima" whose amplitude exceeds a decibel threshold, D.
-#5. Extract a single frame (say 512 samples) centred on each spike and convert to a spike spectrum.
-#6. Subtract the noise profile from the spike spectrum.
-#7. Smooth the remaining spectrum.
-#8. Look for evenly spaced harmonics in the smoothed spectrum.
-#    Typically the lowest harmonic will lie between 1200 Hz and 3000 Hz and the higher ones evenly spaced.
-#    This is the tricky bit due to variability but may work to use spectrum auto-correlation.
-
 # Each of these profiles will be analyzed
 Profiles:
-  #Standard: &STANDARD
-  #EventThreshold: 0.2
-  # Common settings
-  #BgNoiseThreshold: 3.0
-  Territorial:
-    # min and max of the freq band to search
-#    MinHz: 800          
-#    MaxHz: 8000
-#    MinDuration: 0.15
-#    MaxDuration: 0.8
-#    DecibelThreshold: 9.0
-  Wingbeats:
+    Territorial:
+        Algorithm: BlobRecognizer
+        Parameters:
+            # min and max of the freq band to search
+            MinHz: 800          
+            MaxHz: 8000
+            MinDuration: 0.15
+            MaxDuration: 0.8
+            DecibelThreshold: 9.0
+    Wingbeats:
+        Algorithm: OscillationRecognizer
+        Parameters:
 #    MinHz: 200          
 #    MaxHz: 2000
 #    DecibelThreshold: 6.0
@@ -60,6 +48,14 @@ Profiles:
   #  <<: *STANDARD
   #  DctDuration: 0.3
 
+
+  #Standard: &STANDARD
+  #EventThreshold: 0.2
+  # Common settings
+  #BgNoiseThreshold: 3.0
+
+
+
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
 SaveIntermediateCsvFiles: false
@@ -73,5 +69,5 @@ DisplayCsvImage: false
 
 # Other config files to reference
 
-#HighResolutionIndicesConfig: "../Towsey.Acoustic.HiResIndicesForRecognisers.yml"
+HighResolutionIndicesConfig: "../Towsey.Acoustic.HiResIndicesForRecognisers.yml"
 ...
