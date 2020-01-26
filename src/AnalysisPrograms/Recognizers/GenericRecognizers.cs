@@ -93,12 +93,14 @@ namespace AnalysisPrograms.Recognizers
                     RecognizerResults results = new RecognizerResults();
 
                     var algorithmName = profile.GetString("Algorithm");
-                    //var parameters = profile.GetString("Parameters");
+                    var parameters = profile.GetString("Parameters");
 
                     switch (algorithmName)
                     {
                         case "BlobRecognizer":
                             GrLog.Info("    Use algorithm One: " + algorithmName);
+                           // var blobConfig = genericConfig.ToDictionary<string, string>();
+
                             results = GenericBlobRecognizer.BlobRecognizer(audioRecording, genericConfig, name, segmentStartOffset);
                             GrLog.Debug(name + " event count = " + results.Events.Count);
                             break;
