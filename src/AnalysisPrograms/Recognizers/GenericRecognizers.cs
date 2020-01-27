@@ -9,14 +9,17 @@ namespace AnalysisPrograms.Recognizers
 {
     using System;
     using System.Collections.Generic;
+    using System.Configuration;
     using System.IO;
     using System.Linq;
     using System.Reflection;
     using Acoustics.Shared.ConfigFile;
+    using AnalysisBase;
     using AnalysisPrograms.Recognizers;
     using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
+    using AudioAnalysisTools.RecognizerTools;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using global::Recognizers;
@@ -26,26 +29,27 @@ namespace AnalysisPrograms.Recognizers
     /// <summary>
     /// This class calls recognizers for generic syllable types.
     /// </summary>
-    internal class GenericRecognizers : RecognizerBase
+    public class GenericRecognizer : RecognizerBase
     {
-        private static readonly ILog GrLog = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        public class GenericRecognizerConfig : RecognizerConfig, INamedProfiles<object>
+        {
+            public Dictionary<string, object> Profiles { get; set; }
+        }
+
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         public override string Author => "Ecosounds";
 
-        public override string SpeciesName => "GenericRecognizers";
+        public override string SpeciesName => "GenericRecognizer";
 
         public override string Description => "[ALPHA] Detects generic acoustic events";
 
-        /// <summary>
-        /// This method is called once per segment (typically one-minute segments).
-        /// </summary>
-        /// <param name="audioRecording">one minute of audio recording.</param>
-        /// <param name="genericConfig">config file that contains parameters used by all profiles.</param>
-        /// <param name="segmentStartOffset">when recording starts.</param>
-        /// <param name="getSpectralIndexes">not sure what this is.</param>
-        /// <param name="outputDirectory">where the recognizer results can be found.</param>
-        /// <param name="imageWidth"> assuming ????.</param>
-        /// <returns>recognizer results.</returns>
+        public override AnalyzerConfig ParseConfig(FileInfo file)
+        {
+            return ConfigFile.Deserialize<GenericRecognizerConfig>(file);
+        }
+
+        /// <inheritdoc/>
         public override RecognizerResults Recognize(
             AudioRecording audioRecording,
             Config genericConfig,
@@ -54,25 +58,17 @@ namespace AnalysisPrograms.Recognizers
             DirectoryInfo outputDirectory,
             int? imageWidth)
         {
-            string[] profileNames = null;
+            var configuration = (GenericRecognizerConfig)genericConfig;
 
-            if (ConfigFile.HasProfiles(genericConfig))
+            if (configuration.Profiles.NotNull() && configuration.Profiles.Count == 0)
             {
-                profileNames = ConfigFile.GetProfileNames(genericConfig);
-                int count = profileNames.Length;
-                var message = $"Found {count} analysis profile(s): ";
-                foreach (string s in profileNames)
-                {
-                    message = message + (s + ", ");
-                }
+                throw new ConfigFileException(
+                    "The generic recognizer needs at least one profile set. 0 were found.");
+            }
 
-                GrLog.Debug(message);
-                Console.WriteLine(message);
-            }
-            else
-            {
-                GrLog.Warn("No configured profiles found.");
-            }
+            int count = configuration.Profiles.Count;
+            var message = $"Found {count} analysis profile(s): " + configuration.Profiles.Keys.Join(", ");
+            Log.Info(message);
 
             var profileResults = new RecognizerResults()
             {
@@ -84,48 +80,47 @@ namespace AnalysisPrograms.Recognizers
             };
 
             // Now process each of the profiles
-            foreach (string name in profileNames)
+            foreach (var (profileName, profileConfig) in configuration.Profiles)
             {
-                GrLog.Info("Processing profile: " + name);
+                Log.Info("Processing profile: " + profileName);
 
-                if (ConfigFile.TryGetProfile(genericConfig, name, out var profile))
+                switch (profileConfig)
                 {
-                    RecognizerResults results = new RecognizerResults();
+                    case GenericBlobRecognizer.BlobParameters bp:
+                        Log.Debug("Using the blob algorithm... ");
+                        throw new NotImplementedException();
+                        // var blobConfig = genericConfig.ToDictionary<string, string>();
 
-                    var algorithmName = profile.GetString("Algorithm");
-                    var parameters = profile.GetString("Parameters");
-
-                    switch (algorithmName)
-                    {
-                        case "BlobRecognizer":
-                            GrLog.Info("    Use algorithm One: " + algorithmName);
-                           // var blobConfig = genericConfig.ToDictionary<string, string>();
-
-                            results = GenericBlobRecognizer.BlobRecognizer(audioRecording, genericConfig, name, segmentStartOffset);
-                            GrLog.Debug(name + " event count = " + results.Events.Count);
-                            break;
-                        case "OscillationRecognizer":
-                            GrLog.Info("    Use algorithm Two: " + algorithmName);
-                            results = GenericOscillationRecognizer.OscillationRecognizer(audioRecording, genericConfig, name, segmentStartOffset);
-                            GrLog.Debug(name + " event count = " + results.Events.Count);
-                            break;
-                        default:
-                            GrLog.Info("    WARNING: Algorithm Name not recognised: " + algorithmName);
-                            break;
-                    }
-
-                    // combine the results i.e. add the events list of call events.
-                    //NOTE: The returned territorialResults and wingbeatResults will never be null.
-                    profileResults.Events.AddRange(results.Events);
-                    profileResults.Plots.AddRange(results.Plots);
-                    profileResults.Sonogram = results.Sonogram;
-                    GrLog.Debug(name + " event count = " + profileResults.Events.Count);
+                        results = GenericBlobRecognizer.BlobRecognizer(audioRecording, genericConfig, name,
+                            segmentStartOffset);
+                        Log.Debug(name + " event count = " + results.Events.Count);
+                        break;
+                    case GenericOscillationRecognizer.OscillationParameters op:
+                        throw new NotImplementedException();
+                        Log.Debug("Using the oscillation algorithm... ");
+                        results = GenericOscillationRecognizer.OscillationRecognizer(audioRecording, genericConfig,
+                            name, segmentStartOffset);
+                        Log.Debug(name + " event count = " + results.Events.Count);
+                        break;
+                    case GenericWhistleRecognizer.WhistleParameters wp:
+                        throw new NotImplementedException();
+                        break;
+                    case AedParameters ap:
+                        Log.Debug("Using the AED algorithm... ");
+                        throw new NotImplementedException();
+                        break;
+                    default:
+                        throw new ConfigFileException($"The algorithm parameters in profile {profileName}");
+                        break;
                 }
-                else
-                {
-                    GrLog.Warn("Could not access " + name + " configuration parameters");
-                }
-            } // end of profiles
+
+                // combine the results i.e. add the events list of call events.
+                //NOTE: The returned territorialResults and wingbeatResults will never be null.
+                profileResults.Events.AddRange(results.Events);
+                profileResults.Plots.AddRange(results.Plots);
+                profileResults.Sonogram = results.Sonogram;
+                Log.Debug(name + " event count = " + profileResults.Events.Count);
+            }
 
             //UNCOMMENT following line if you want special debug spectrogram, i.e. with special plots.
             //  NOTE: Standard spectrograms are produced by setting SaveSonogramImages: "True" or "WhenEventsDetected"
@@ -133,16 +128,6 @@ namespace AnalysisPrograms.Recognizers
             //SaveDebugSpectrogram(territorialResults, genericConfig, outputDirectory, audioRecording.BaseName);
 
             return profileResults;
-        }
-
-       /// <summary>
-        /// THis method can be modified if want to do something non-standard with the output spectrogram.
-        /// </summary>
-        internal static void SaveDebugSpectrogram(RecognizerResults results, Config genericConfig, DirectoryInfo outputDirectory, string baseName)
-        {
-            //var image = sonogram.GetImageFullyAnnotated("Test");
-            var image = SpectrogramTools.GetSonogramPlusCharts(results.Sonogram, results.Events, results.Plots, null);
-            image.Save(Path.Combine(outputDirectory.FullName, baseName + ".profile.png"));
         }
 
         /*

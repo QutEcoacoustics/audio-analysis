@@ -12,7 +12,7 @@ namespace AudioAnalysisTools.RecognizerTools
 
     public class GenericWhistleRecognizer
     {
-        public class WhistleConfig
+        public class WhistleParameters
         {
             /// <summary>
             /// Gets or sets the frame or Window size, i.e. number of signal samples. Must be power of 2. Typically 512.

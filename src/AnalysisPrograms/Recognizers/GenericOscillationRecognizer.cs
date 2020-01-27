@@ -16,7 +16,7 @@ namespace Recognizers
 
     public class GenericOscillationRecognizer
     {
-        public class OscillationConfig
+        public class OscillationParameters
         {
             /// <summary>
             /// Gets or sets the frame or Window size, i.e. number of signal samples. Must be power of 2. Typically 512.
@@ -32,23 +32,23 @@ namespace Recognizers
             /// <summary>
             /// Gets or sets the bottom bound of the rectangle. Units are Hertz.
             /// </summary>
-            public int MinHz { get; set; }
+            public int MinHertz { get; set; }
 
             /// <summary>
             /// Gets or sets the the top bound of the rectangle. Units are Hertz.
             /// </summary>
-            public int MaxHz { get; set; }
+            public int MaxHertz { get; set; }
 
             /// <summary>
             /// Gets or sets the buffer (bandwidth of silence) below the blob rectangle. Units are Hertz.
             /// </summary>
-            public int BottomHzBuffer { get; set; }
+            public int BottomHertzBuffer { get; set; }
 
             /// <summary>
             /// Gets or sets the buffer (bandwidth of silence) above the blob rectangle. Units are Hertz.
             /// Quite often this will be set to zero Herz because upper bounds variable, depending on distance of the source.
             /// </summary>
-            public int TopHzBuffer { get; set; }
+            public int TopHertzzBuffer { get; set; }
 
             /// <summary>
             /// Gets or sets the minimum allowed duration of the acoustic event. Units are seconds.
