@@ -310,7 +310,6 @@
     <Compile Include="LongDurationSpectrograms\Zooming\ZoomFocusedSpectrograms.cs" />
     <Compile Include="Oscillations2014.cs" />
     <Compile Include="Oscillations2019.cs" />
-    <Compile Include="RecognizerTools.cs" />
     <Compile Include="RidgeDetection.cs" />
     <Compile Include="SiteDescription.cs" />
     <Compile Include="StandardSpectrograms\AmplitudeSpectrogram.cs" />

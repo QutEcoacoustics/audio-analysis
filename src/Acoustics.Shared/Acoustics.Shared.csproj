@@ -208,7 +208,8 @@
     <Compile Include="ConfigFile\ConfigFile.Profiles.cs" />
     <Compile Include="ConfigFile\ConfigFileException.cs" />
     <Compile Include="ConfigFile\IConfig.cs" />
-    <Compile Include="ConfigFile\IProfile.cs" />
+    <Compile Include="ConfigFile\INamedProfiles.cs" />
+    <Compile Include="ConfigFile\IProfiles.cs" />
     <Compile Include="Contracts\Contract.cs" />
     <Compile Include="Csv\CsvExtensions.cs" />
     <Compile Include="Csv\Csv.cs" />

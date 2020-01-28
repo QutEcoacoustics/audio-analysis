@@ -1,10 +1,3 @@
-// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="GenericRecognizers.cs" company="QutEcoacoustics">
-// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
-// </copyright>
-// <summary>
-
-
 namespace AnalysisPrograms.Recognizers
 {
     using System;
@@ -12,6 +5,7 @@ namespace AnalysisPrograms.Recognizers
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using AnalysisBase;
     using AnalysisPrograms.Recognizers.Base;
@@ -28,19 +22,18 @@ namespace AnalysisPrograms.Recognizers
     /// </summary>
     public class GenericRecognizer : RecognizerBase
     {
-        public class GenericRecognizerConfig : RecognizerConfig, INamedProfiles<object>
-        {
-            public Dictionary<string, object> Profiles { get; set; }
-        }
-
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
+        /// <inheritdoc />
         public override string Author => "Ecosounds";
 
+        /// <inheritdoc />
         public override string SpeciesName => "GenericRecognizer";
 
-        public override string Description => "[ALPHA] Detects generic acoustic events";
+        /// <inheritdoc />
+        public override string Description => "[ALPHA] Finds acoustic events with generic component detection algorithms";
 
+        /// <inheritdoc />
         public override AnalyzerConfig ParseConfig(FileInfo file)
         {
             return ConfigFile.Deserialize<GenericRecognizerConfig>(file);
@@ -113,7 +106,7 @@ namespace AnalysisPrograms.Recognizers
                     if (profileConfig is BlobParameters || profileConfig is OscillationParameters)
                     {
                         sonogram = new SpectrogramStandard(
-                            this.ParametersToSonogramConfig(parameters),
+                            ParametersToSonogramConfig(parameters),
                             audioRecording.WavReader);
 
                         var decibelArray = SNR.CalculateFreqBandAvIntensity(
@@ -241,7 +234,7 @@ namespace AnalysisPrograms.Recognizers
         }
         */
 
-        private SonogramConfig ParametersToSonogramConfig(CommonParameters common)
+        private static SonogramConfig ParametersToSonogramConfig(CommonParameters common)
         {
             const int DefaultWindow = 512;
 
@@ -253,115 +246,21 @@ namespace AnalysisPrograms.Recognizers
                 NoiseReductionParameter = common.BgNoiseThreshold ?? 0.0,
             };
         }
-    }
 
-    public class CommonParameters
-    {
-        public string ComponentName { get; set; }
-
-        public string SpeciesName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the frame or Window size, i.e. number of signal samples. Must be power of 2. Typically 512.
-        /// </summary>
-        public int? FrameSize { get; set; }
-
-        /// <summary>
-        /// Gets or sets the frame or Window step i.e. before start of next frame.
-        /// The overlap can be any number of samples but less than the frame length/size.
-        /// </summary>
-        public int? FrameStep { get; set; }
-
-        public double? BgNoiseThreshold { get; set; }
-
-        /// <summary>
-        /// Gets or sets the bottom bound of the rectangle. Units are Hertz.
-        /// </summary>
-        public int MinHertz { get; set; }
-
-        /// <summary>
-        /// Gets or sets the the top bound of the rectangle. Units are Hertz.
-        /// </summary>
-        public int MaxHertz { get; set; }
-
-        /// <summary>
-        /// Gets or sets the buffer (bandwidth of silence) below the component rectangle. Units are Hertz.
-        /// </summary>
-        public int BottomHertzBuffer { get; set; }
-
-        /// <summary>
-        /// Gets or sets the buffer (bandwidth of silence) above the component rectangle. Units are Hertz.
-        /// Quite often this will be set to <value>null</value> which indicates as upper bounds variable,
-        /// depending on distance of the source.
-        /// </summary>
-        public int? TopHertzBuffer { get; set; }
-
-        /// <summary>
-        /// Gets or sets the minimum allowed duration of the component. Units are seconds.
-        /// </summary>
-        public double MinDuration { get; set; } = 1.0;
-
-        /// <summary>
-        /// Gets or sets the maximum allowed duration of the component. Units are seconds.
-        /// </summary>
-        public double MaxDuration { get; set; } = 10.0;
-
-        /// <summary>
-        /// Gets or sets the threshold of "loudness" of a component. Units are decibels.
-        /// </summary>
-        public double DecibelThreshold { get; set; } = 6;
-    }
-
-    public class DctParameters : CommonParameters
-    {
-
-        /// <summary>
-        /// Gets or sets the time duration (in seconds) of a Discrete Cosine Transform.
-        /// </summary>
-        public double DctDuration { get; set; } = 1.0;
-
-        /// <summary>
-        /// Gets or sets the minimum acceptable value of a DCT coefficient.
-        /// </summary>
-        public double DctThreshold { get; set; } = 0.5;
-
-        /// <summary>
-        /// Gets or sets the minimum OSCILLATIONS PER SECOND
-        /// Ignore oscillation rates below the min & above the max threshold.
-        /// </summary>
-        public int MinOscillationFrequency { get; set; } = 6;
-
-        /// <summary>
-        /// Gets or sets the maximum OSCILLATIONS PER SECOND
-        /// Ignore oscillation rates below the min & above the max threshold.
-        /// </summary>
-        public int MaxOscillationFrequency { get; set; } = 4;
-
-        /// <summary>
-        /// Gets or sets the Event threshold - use this to determine FP / FN trade-off for events.
-        /// </summary>
-        public double EventThreshold { get; set; } = 0.3;
-    }
-
-    /// <summary>
-    /// 
-    /// The following parameters worked well on a ten minute recording containing 14-16 calls.
-    /// Note: if you lower the dB threshold, you need to increase maxDurationSeconds
-    /// </summary>
-    public class BlobParameters : CommonParameters
-    {
-        public BlobParameters()
+        /// <inheritdoc cref="RecognizerConfig"/> />
+        public class GenericRecognizerConfig : RecognizerConfig, INamedProfiles<object>
         {
-            this.MinHertz = 800;
-            this.MaxHertz = 8000;
+            static GenericRecognizerConfig()
+            {
+                // for a new algorithm to work, it must be registered here
+                Yaml.AddTagMapping<BlobParameters>();
+                Yaml.AddTagMapping<OscillationParameters>();
+                Yaml.AddTagMapping<WhistleParameters>();
+                Yaml.AddTagMapping<Aed.AedConfiguration>("AedParameters");
+            }
+
+            /// <inheritdoc />
+            public Dictionary<string, object> Profiles { get; set; }
         }
-    }
-
-    public class OscillationParameters : DctParameters
-    {
-    }
-
-    public class WhistleParameters : DctParameters
-    {
     }
 }

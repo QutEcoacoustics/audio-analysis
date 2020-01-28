@@ -1,0 +1,65 @@
+Profiles:
+  TestAed: !AedParameters
+    IntensityThreshold: 0
+    SmallAreaThreshold: 0
+    BandpassMinimum: 
+    BandpassMaximum: 
+    NoiseReductionType: None
+    BgNoiseThreshold: 0
+    ResampleRate: 0
+    IncludeHitElementsInOutput: false
+    ConfigPath: 
+    GenericConfig: 
+  TestOscillation: !OscillationParameters
+    DctDuration: 1
+    DctThreshold: 0.5
+    MinOscillationFrequency: 6
+    MaxOscillationFrequency: 4
+    EventThreshold: 0.29999999999999999
+    ComponentName: 
+    SpeciesName: 
+    FrameSize: 
+    FrameStep: 
+    BgNoiseThreshold: 
+    MinHertz: 0
+    MaxHertz: 0
+    BottomHertzBuffer: 0
+    TopHertzBuffer: 
+    MinDuration: 1
+    MaxDuration: 10
+    DecibelThreshold: 6
+  TestBlob: !BlobParameters
+    ComponentName: 
+    SpeciesName: 
+    FrameSize: 
+    FrameStep: 
+    BgNoiseThreshold: 
+    MinHertz: 800
+    MaxHertz: 8000
+    BottomHertzBuffer: 0
+    TopHertzBuffer: 
+    MinDuration: 1
+    MaxDuration: 10
+    DecibelThreshold: 6
+  TestWhistle: !WhistleParameters
+    ComponentName: 
+    SpeciesName: 
+    FrameSize: 
+    FrameStep: 
+    BgNoiseThreshold: 
+    MinHertz: 0
+    MaxHertz: 0
+    BottomHertzBuffer: 0
+    TopHertzBuffer: 
+    MinDuration: 1
+    MaxDuration: 10
+    DecibelThreshold: 6
+HighResolutionIndicesConfig: 
+EventThreshold: 0.2
+SegmentDuration: 60
+SegmentOverlap: 0
+ResampleRate: 22050
+SaveIntermediateWavFiles: False
+SaveIntermediateCsvFiles: false
+SaveSonogramImages: False
+RequireDateInFilename: false
