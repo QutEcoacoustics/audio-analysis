@@ -4,6 +4,7 @@
 
 namespace AnalysisBase
 {
+    using System;
     using System.IO;
     using Acoustics.Shared.ConfigFile;
 
@@ -12,6 +13,7 @@ namespace AnalysisBase
     {
         public const double EventThresholdDefault = 0.2;
 
+        [Obsolete("The AnalysisName property is no longer used")]
         public string AnalysisName { get; set; }
 
         public double EventThreshold { get; set; } = EventThresholdDefault;

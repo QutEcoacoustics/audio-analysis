@@ -15,28 +15,6 @@ namespace AudioAnalysisTools
 
     public static class RecognizerTools
     {
-        // The default window for Generic recognizers.
-        private static readonly int DefaultWindow = 512;
-
-        /// <summary>
-        /// returns a base sonogram type from which spectrogram images are prepared.
-        /// </summary>
-        public static BaseSonogram GetSonogram(Config configuration, AudioRecording audioRecording)
-        {
-            var sonoConfig = new SonogramConfig
-            {
-                WindowSize = DefaultWindow,
-                NoiseReductionType = NoiseReductionType.Standard,
-                NoiseReductionParameter = configuration.GetDoubleOrNull(AnalysisKeys.NoiseBgThreshold) ?? 0.0,
-                WindowOverlap = 0.0,
-            };
-
-            // now construct the standard decibel spectrogram WITH noise removal
-            // get frame parameters for the analysis
-            var sonogram = (BaseSonogram)new SpectrogramStandard(sonoConfig, audioRecording.WavReader);
-            return sonogram;
-        }
-
         /// <summary>
         /// Remove events whose acoustic profile does not match that of a flying fox.
         /// </summary>
@@ -87,7 +65,7 @@ namespace AudioAnalysisTools
                 // 0.0938 = 3/32. i.e. test requires that energy in 0-1kHz band is less than 3/4 average in all 8 kHz bands
                 // 0.0625 = 1/16. i.e. test requires that energy in 0-1kHz band is less than half average in all 8 kHz bands
                 bool passTest2 = !(energyRatio1 > 0.1);
-
+                
                 // Test 3: There should be little energy in 4-5 kHz band.
                 var subband4Khz = DataTools.Subarray(normalisedSpectrum, fourKiloHzBin, oneKiloHzBin);
                 double bandArea2 = subband4Khz.Sum();
