@@ -885,8 +885,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         public static Image DrawRgbColorMatrix(double[,] redM, double[,] grnM, double[,] bluM, bool doReverseColor, double blueEnhanceParameter)
         {
-            int rows = redM.GetLength(0); //number of rows
-            int cols = redM.GetLength(1); //number
+            int rows = redM.GetLength(0);
+            int cols = redM.GetLength(1);
             var bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
 
             for (int row = 0; row < rows; row++)
@@ -905,12 +905,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                         b = 0.5;
                     }
 
-                    // Enhance blue color where it is difficult to see on a black background
-                    // There should be a principled way to do this!
-                    // The intention is to create a more visible light blue color.
+                    // Enhance blue color where it is difficult to see on a black background.
+                    // Go for a more visible pale cyan color.
                     if (r < 0.1 && g < 0.1 && b > 0.1 && blueEnhanceParameter > 0.0)
                     {
-                        r += blueEnhanceParameter * (b - r);
+                        r += blueEnhanceParameter * 0.5 * (b - r);
                         g += blueEnhanceParameter * (b - g);
                         b += 0.1;
 
@@ -931,7 +930,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     var v3 = b.ScaleUnitToByte();
                     var color = Color.FromArgb(v1, v2, v3);
                     bmp.SetPixel(column, row, color);
-                } //end all columns
+                }
             }
 
             return bmp;
@@ -944,8 +943,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public static Image DrawFourColorSpectrogram(double[,] redM, double[,] grnM, double[,] bluM, double[,] greM, bool doReverseColor)
         {
             // assume all matrices are normalised and of the same dimensions
-            int rows = redM.GetLength(0); //number of rows
-            int cols = redM.GetLength(1); //number
+            int rows = redM.GetLength(0);
+            int cols = redM.GetLength(1);
 
             var bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
             int maxRgbValue = 255;
