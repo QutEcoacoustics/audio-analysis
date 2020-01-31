@@ -5,6 +5,7 @@ namespace AnalysisPrograms.Recognizers
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using System.Runtime.CompilerServices;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using AnalysisBase;
@@ -36,6 +37,7 @@ namespace AnalysisPrograms.Recognizers
         /// <inheritdoc />
         public override AnalyzerConfig ParseConfig(FileInfo file)
         {
+            RuntimeHelpers.RunClassConstructor(typeof(GenericRecognizerConfig).TypeHandle);
             return ConfigFile.Deserialize<GenericRecognizerConfig>(file);
         }
 
