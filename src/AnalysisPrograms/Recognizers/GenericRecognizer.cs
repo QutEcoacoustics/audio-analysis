@@ -241,12 +241,14 @@ namespace AnalysisPrograms.Recognizers
 
         private static SonogramConfig ParametersToSonogramConfig(CommonParameters common)
         {
-            const int DefaultWindow = 512;
+            int window = common.FrameSize ?? 512;
+            int step = common.FrameStep ?? 512;
+            double overlap = (window - step) / (double)window;
 
             return new SonogramConfig()
             {
-                WindowSize = common.FrameSize ?? DefaultWindow,
-                WindowOverlap = common.FrameStep / (common.FrameSize ?? DefaultWindow) ?? 0.0,
+                WindowSize = window,
+                WindowOverlap = overlap,
                 NoiseReductionType = NoiseReductionType.Standard,
                 NoiseReductionParameter = common.BgNoiseThreshold ?? 0.0,
             };
