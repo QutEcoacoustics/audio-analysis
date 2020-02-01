@@ -268,6 +268,7 @@
     <Compile Include="Validation.cs" />
     <Compile Include="ValidationExtensions.cs" />
     <Compile Include="Yaml.cs" />
+    <Compile Include="YamlTypeTagAttribute.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0">

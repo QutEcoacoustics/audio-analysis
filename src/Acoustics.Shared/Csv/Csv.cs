@@ -43,23 +43,9 @@ namespace Acoustics.Shared.Csv
             RegisterAnalysisProgramsTypeConverters();
 
             // Find all of our custom class maps
-            var type = typeof(CsvClassMap);
-
-            bool OurCodePredicate(Assembly a)
-            {
-                var assemblyCompanyAttribute = (AssemblyCompanyAttribute)a.GetCustomAttributes(typeof(AssemblyCompanyAttribute), false).FirstOrDefault();
-                return assemblyCompanyAttribute != null && assemblyCompanyAttribute.Company.Contains("QUT");
-            }
-
-            var classMapTypes =
-                AppDomain.CurrentDomain.GetAssemblies()
-                         .Where(OurCodePredicate)
-                         .SelectMany(s => s.GetTypes())
-                         .Where(type.IsAssignableFrom);
-
             // initialize and store
             var classMaps = new List<CsvClassMap>(10);
-            foreach (var classMapType in classMapTypes)
+            foreach (var classMapType in Meta.GetTypesFromQutAssemblies<CsvClassMap>())
             {
                 var instance = classMapType.CreateInstance() as CsvClassMap;
                 classMaps.Add(instance);

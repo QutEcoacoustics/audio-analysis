@@ -61,6 +61,7 @@ namespace AnalysisPrograms
             }
         }
 
+        [YamlTypeTag(typeof(AedConfiguration), "AedParameters")]
         public class AedConfiguration : Config
         {
             public AedConfiguration()
