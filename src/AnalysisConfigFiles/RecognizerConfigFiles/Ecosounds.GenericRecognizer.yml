@@ -12,15 +12,16 @@ Profiles:
     Territorial: !BlobParameters
         FrameSize: 512
         FrameStep: 512
+        BgNoiseThreshold: 6.0
         # min and max of the freq band to search
-        MinHz: 800          
-        MaxHz: 8000
-        BottomHzBuffer: 400
-        TopHzBuffer: 0
+        MinHertz: 800          
+        MaxHertz: 8000
+        BottomHertzBuffer: 400
+        TopHertzBuffer: 0
         MinDuration: 0.15
         MaxDuration: 0.8
         DecibelThreshold: 9.0
-        ComponentName: 
+        ComponentName: Blob 
         SpeciesName: PteropusSp
     Wingbeats: !OscillationParameters
         FrameSize: 512
@@ -36,14 +37,14 @@ Profiles:
         # A sample of four wingbeats yielded an average of 5.1 +/-0.5 beats/s.
         # 95% confidence interval (2 SDs) is therefore approx 4-6 beats/s.    
         # OSCILLATIONS PER SECOND
-        MinOscilFreq: 4        
-        MaxOscilFreq: 6
+        MinOscillationFrequency: 4        
+        MaxOscillationFrequency: 6
         # Minimum and maximum duration for the length of a true call.
         MinDuration: 1.0
         MaxDuration: 10.0
         # Event threshold - use this to determine FP / FN trade-off for events.
         EventThreshold: 0.5
-        ComponentName: 
+        ComponentName: Oscillation
         SpeciesName: PteropusSp
 
 

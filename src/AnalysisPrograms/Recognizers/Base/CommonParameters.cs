@@ -57,7 +57,7 @@ namespace AnalysisPrograms.Recognizers.Base
         /// Quite often this will be set to <value>null</value> which indicates as upper bounds variable,
         /// depending on distance of the source.
         /// </summary>
-        public int? TopHertzBuffer { get; set; }
+        public int TopHertzBuffer { get; set; }
 
         /// <summary>
         /// Gets or sets the minimum allowed duration of the component. Units are seconds.

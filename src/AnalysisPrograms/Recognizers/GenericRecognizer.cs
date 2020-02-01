@@ -111,20 +111,22 @@ namespace AnalysisPrograms.Recognizers
                             ParametersToSonogramConfig(parameters),
                             audioRecording.WavReader);
 
-                        var decibelArray = SNR.CalculateFreqBandAvIntensity(
+                        //get the array of intensity values minus intensity in side/buffer bands.
+                        //i.e. require silence in side-bands. Otherwise might simply be getting part of a broader band acoustic event.
+                        var decibelArray = SNR.CalculateFreqBandAvIntensityMinusBufferIntensity(
                             sonogram.Data,
                             parameters.MinHertz,
                             parameters.MaxHertz,
+                            parameters.BottomHertzBuffer,
+                            parameters.TopHertzBuffer,
                             sonogram.NyquistFrequency);
 
                         // prepare plots
                         // AT: magic number `3`?
                         double intensityNormalizationMax = 3 * parameters.DecibelThreshold;
                         var eventThreshold = parameters.DecibelThreshold / intensityNormalizationMax;
-                        var normalisedIntensityArray =
-                            DataTools.NormaliseInZeroOne(decibelArray, 0, intensityNormalizationMax);
-                        var plot = new Plot($"{profileName} ({algorithmName}:Intensity)", normalisedIntensityArray,
-                            eventThreshold);
+                        var normalisedIntensityArray = DataTools.NormaliseInZeroOne(decibelArray, 0, intensityNormalizationMax);
+                        var plot = new Plot($"{profileName} ({algorithmName}:Intensity)", normalisedIntensityArray, eventThreshold);
                         plots.Add(plot);
 
                         if (profileConfig is OscillationParameters op)
@@ -238,12 +240,12 @@ namespace AnalysisPrograms.Recognizers
 
         private static SonogramConfig ParametersToSonogramConfig(CommonParameters common)
         {
-            const int DefaultWindow = 512;
-
             return new SonogramConfig()
             {
-                WindowSize = common.FrameSize ?? DefaultWindow,
-                WindowOverlap = common.FrameStep / (common.FrameSize ?? DefaultWindow) ?? 0.0,
+                WindowSize = (int)common.FrameSize,
+                WindowStep = (int)common.FrameStep,
+
+                //WindowOverlap = (WindowSize - WindowStep) / (double)WindowSize,
                 NoiseReductionType = NoiseReductionType.Standard,
                 NoiseReductionParameter = common.BgNoiseThreshold ?? 0.0,
             };
