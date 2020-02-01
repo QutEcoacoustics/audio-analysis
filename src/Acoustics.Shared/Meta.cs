@@ -1,4 +1,4 @@
-﻿// <copyright file="Meta.cs" company="QutEcoacoustics">
+// <copyright file="Meta.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -7,6 +7,7 @@ namespace Acoustics.Shared
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
     using System.Text;
 
     public static class Meta
@@ -28,5 +29,34 @@ namespace Acoustics.Shared
         public static string OrganizationTag => CopyrightSymbol + " " + NowYear + " " + Organization;
 
         public static string Repository { get; } = "https://github.com/QutBioacoustics/audio-analysis";
+
+        private static readonly Assembly[] OurAssemblies =
+            AppDomain.CurrentDomain
+                .GetAssemblies()
+                .Where(OurCodePredicate)
+                .ToArray();
+
+        public static IEnumerable<TypeInfo> GetTypesFromQutAssemblies<T>()
+        {
+            return OurAssemblies.SelectMany(x => x.DefinedTypes.Where(typeof(T).IsAssignableFrom));
+        }
+
+        public static IEnumerable<T> GetAttributesFromQutAssemblies<T>()
+            where T : Attribute
+        {
+            var result = OurAssemblies
+                .SelectMany(a => a.DefinedTypes)
+                .SelectMany(t => t.GetCustomAttributes(typeof(T)))
+                .Cast<T>();
+            return result;
+        }
+
+        private static bool OurCodePredicate(Assembly a)
+        {
+            var assemblyCompanyAttribute =
+                (AssemblyCompanyAttribute)a.GetCustomAttributes(typeof(AssemblyCompanyAttribute), false)
+                    .FirstOrDefault();
+            return assemblyCompanyAttribute != null && assemblyCompanyAttribute.Company.Contains("QUT");
+        }
     }
 }

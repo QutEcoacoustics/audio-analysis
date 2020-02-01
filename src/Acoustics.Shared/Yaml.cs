@@ -23,34 +23,19 @@ namespace Acoustics.Shared
     {
         private static readonly Dictionary<string, Type> TagMappings = new Dictionary<string, Type>();
 
+        static Yaml()
+        {
+            // find all YAML tags
+            foreach (var tag in Meta.GetAttributesFromQutAssemblies<YamlTypeTagAttribute>())
+            {
+                TagMappings.Add(tag.Name, tag.Type);
+            }
+        }
+
         internal static IDeserializer Deserializer => new DeserializerBuilder()
             .IgnoreUnmatchedProperties()
             .WithTagMappings(TagMappings)
             .Build();
-
-        /// <summary>
-        /// Registers a type and a tag name that will be emitted in a YAML document when
-        /// serializing, and will allow for unambiguous parsing when deserializing.
-        /// </summary>
-        /// <typeparam name="T">The type to register.</typeparam>
-        /// <param name="name">The tag name to use.</param>
-        public static void AddTagMapping<T>(string name = null)
-        {
-            // yml type tags must be prefixed with an "!" character.
-            if (name == null)
-            {
-                name = "!" + typeof(T).Name;
-            }
-            else
-            {
-                if (name[0] != '!')
-                {
-                    name = "!" + name;
-                }
-            }
-
-            TagMappings.Add(name, typeof(T));
-        }
 
         public static T Deserialize<T>(FileInfo file)
         {
@@ -59,10 +44,8 @@ namespace Acoustics.Shared
 
         public static T Deserialize<T>(FileEntry file)
         {
-            using (var stream = file.OpenText())
-            {
-                return Deserialize<T>(stream);
-            }
+            using var stream = file.OpenText();
+            return Deserialize<T>(stream);
         }
 
         public static T Deserialize<T>(TextReader stream)
@@ -76,15 +59,13 @@ namespace Acoustics.Shared
 
         public static void Serialize<T>([NotNull] FileInfo file, [CanBeNull] T obj)
         {
-            using (var stream = file.CreateText())
-            {
-                var serializer = new SerializerBuilder()
-                    .EmitDefaults()
-                    .WithTagMappings(TagMappings)
-                    .Build();
+            using var stream = file.CreateText();
+            var serializer = new SerializerBuilder()
+                .EmitDefaults()
+                .WithTagMappings(TagMappings)
+                .Build();
 
-                serializer.Serialize(stream, obj);
-            }
+            serializer.Serialize(stream, obj);
         }
 
         internal static (object, T) LoadAndDeserialize<T>(string path)

@@ -1,3 +1,7 @@
+// <copyright file="GenericRecognizer.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
 namespace AnalysisPrograms.Recognizers
 {
     using System;
@@ -6,7 +10,6 @@ namespace AnalysisPrograms.Recognizers
     using System.Linq;
     using System.Reflection;
     using System.Runtime.CompilerServices;
-    using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using AnalysisBase;
     using AnalysisPrograms.Recognizers.Base;
@@ -254,15 +257,6 @@ namespace AnalysisPrograms.Recognizers
         /// <inheritdoc cref="RecognizerConfig"/> />
         public class GenericRecognizerConfig : RecognizerConfig, INamedProfiles<object>
         {
-            static GenericRecognizerConfig()
-            {
-                // for a new algorithm to work, it must be registered here
-                Yaml.AddTagMapping<BlobParameters>();
-                Yaml.AddTagMapping<OscillationParameters>();
-                Yaml.AddTagMapping<WhistleParameters>();
-                Yaml.AddTagMapping<Aed.AedConfiguration>("AedParameters");
-            }
-
             /// <inheritdoc />
             public Dictionary<string, object> Profiles { get; set; }
         }
