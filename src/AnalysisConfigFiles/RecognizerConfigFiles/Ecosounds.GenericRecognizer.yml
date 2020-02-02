@@ -26,8 +26,8 @@ Profiles:
     Wingbeats: !OscillationParameters
         FrameSize: 512
         FrameStep: 512
-        MinHz: 200          
-        MaxHz: 2000
+        MinHertz: 200          
+        MaxHertz: 2000
         DecibelThreshold: 6.0
         # duration of DCT in seconds 
         DctDuration: 0.5

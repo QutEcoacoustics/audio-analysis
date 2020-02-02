@@ -489,7 +489,7 @@ BGN:
   DoDisplay: true
   # min = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20 = -80-20 = -100, 
   # Usual max value is -30.
-  NormMin: -100.0
+  NormMin: -85.0
   NormMax: -30.0
   CalculateNormBounds: false
   ProjectID: Acoustic Indices
