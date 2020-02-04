@@ -16,7 +16,7 @@ Profiles:
         # min and max of the freq band to search
         MinHertz: 800          
         MaxHertz: 8000
-        BottomHertzBuffer: 400
+        BottomHertzBuffer: 0
         TopHertzBuffer: 0
         MinDuration: 0.15
         MaxDuration: 0.8
@@ -63,8 +63,8 @@ SaveIntermediateWavFiles: Never
 SaveIntermediateCsvFiles: false
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 # "True" is useful when debugging but "WhenEventsDetected" is required for operational use.
-# SaveSonogramImages: True
-SaveSonogramImages: WhenEventsDetected
+SaveSonogramImages: True
+#SaveSonogramImages: WhenEventsDetected
 # DisplayCsvImage is obsolete - ensure it remains set to: false
 DisplayCsvImage: false
 ## End section for AnalyzeLongRecording

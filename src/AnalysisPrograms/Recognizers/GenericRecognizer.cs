@@ -94,43 +94,26 @@ namespace AnalysisPrograms.Recognizers
                         algorithmName = "Oscillation";
                         break;
                     case WhistleParameters _:
-                        throw new NotImplementedException("The whistle algorithm has not been implemented yet");
+                        algorithmName = "Whistle";
+                        break;
+                    case HarmonicParameters _:
+                        throw new NotImplementedException("The harmonic algorithm has not been implemented yet");
                         break;
                     case Aed.AedConfiguration _:
                         algorithmName = "AED";
                         break;
                     default:
                         var allowedAlgorithms =
-                            $"{nameof(BlobParameters)}, {nameof(OscillationParameters)}, {nameof(WhistleParameters)}, {nameof(Aed.AedConfiguration)}";
+                            $"{nameof(BlobParameters)}, {nameof(OscillationParameters)}, {nameof(WhistleParameters)}, {nameof(HarmonicParameters)}, {nameof(Aed.AedConfiguration)}";
                         throw new ConfigFileException($"The algorithm type in profile {profileName} is not recognized. It must be one of {allowedAlgorithms}");
                 }
 
                 Log.Debug($"Using the {algorithmName} algorithm... ");
                 if (profileConfig is CommonParameters parameters)
                 {
-                    if (profileConfig is BlobParameters || profileConfig is OscillationParameters)
+                    if (profileConfig is BlobParameters || profileConfig is OscillationParameters || profileConfig is WhistleParameters || profileConfig is HarmonicParameters)
                     {
-                        sonogram = new SpectrogramStandard(
-                            ParametersToSonogramConfig(parameters),
-                            audioRecording.WavReader);
-
-                        //get the array of intensity values minus intensity in side/buffer bands.
-                        //i.e. require silence in side-bands. Otherwise might simply be getting part of a broader band acoustic event.
-                        var decibelArray = SNR.CalculateFreqBandAvIntensityMinusBufferIntensity(
-                            sonogram.Data,
-                            parameters.MinHertz,
-                            parameters.MaxHertz,
-                            parameters.BottomHertzBuffer,
-                            parameters.TopHertzBuffer,
-                            sonogram.NyquistFrequency);
-
-                        // prepare plots
-                        // AT: magic number `3`?
-                        double intensityNormalizationMax = 3 * parameters.DecibelThreshold;
-                        var eventThreshold = parameters.DecibelThreshold / intensityNormalizationMax;
-                        var normalisedIntensityArray = DataTools.NormaliseInZeroOne(decibelArray, 0, intensityNormalizationMax);
-                        var plot = new Plot($"{profileName} ({algorithmName}:Intensity)", normalisedIntensityArray, eventThreshold);
-                        plots.Add(plot);
+                        sonogram = new SpectrogramStandard(ParametersToSonogramConfig(parameters), audioRecording.WavReader);
 
                         if (profileConfig is OscillationParameters op)
                         {
@@ -138,8 +121,6 @@ namespace AnalysisPrograms.Recognizers
                                 sonogram,
                                 op.MinHertz,
                                 op.MaxHertz,
-
-                                //op.DecibelThreshold,
                                 op.DctDuration,
                                 op.MinOscillationFrequency,
                                 op.MaxOscillationFrequency,
@@ -159,7 +140,26 @@ namespace AnalysisPrograms.Recognizers
                         }
                         else if (profileConfig is BlobParameters bp)
                         {
-                            // iii: CONVERT decibel SCORES TO ACOUSTIC EVENTS
+                            //get the array of intensity values minus intensity in side/buffer bands.
+                            //i.e. require silence in side-bands. Otherwise might simply be getting part of a broader band acoustic event.
+                            var decibelArray = SNR.CalculateFreqBandAvIntensityMinusBufferIntensity(
+                                sonogram.Data,
+                                parameters.MinHertz,
+                                parameters.MaxHertz,
+                                parameters.BottomHertzBuffer,
+                                parameters.TopHertzBuffer,
+                                sonogram.NyquistFrequency);
+
+                            // prepare plot of resultant blob decibel array.
+                            // to obtain more useful display, set the maximum display value to be 3x threshold value.
+                            double intensityNormalizationMax = 3 * parameters.DecibelThreshold;
+                            var eventThreshold = parameters.DecibelThreshold / intensityNormalizationMax;
+                            var normalisedIntensityArray = DataTools.NormaliseInZeroOne(decibelArray, 0, intensityNormalizationMax);
+                            var plot = new Plot($"{profileName} ({algorithmName}:db Intensity)", normalisedIntensityArray, eventThreshold);
+                            plots.Add(plot);
+
+                            // iii: CONVERT blob decibel SCORES TO ACOUSTIC EVENTS.
+                            // Note: This method does NOT do prior smoothing of the dB array.
                             acousticEvents = AcousticEvent.GetEventsAroundMaxima(
                                 decibelArray,
                                 segmentStartOffset,
@@ -171,6 +171,39 @@ namespace AnalysisPrograms.Recognizers
                                 sonogram.FramesPerSecond,
                                 sonogram.FBinWidth);
                         }
+                        else if (profileConfig is WhistleParameters wp)
+                        {
+                            double[] decibelArray;
+                            //get the array of intensity values minus intensity in side/buffer bands.
+                            (acousticEvents, decibelArray) = WhistleParameters.GetWhistles(
+                                sonogram,
+                                parameters.MinHertz,
+                                parameters.MaxHertz,
+                                sonogram.NyquistFrequency,
+                                wp.DecibelThreshold,
+                                wp.MinDuration,
+                                wp.MaxDuration);
+
+                            // prepare plot of resultant whistle decibel array.
+                            // to obtain more useful display, set the maximum display value to be 3x threshold value.
+                            double intensityNormalizationMax = 3 * parameters.DecibelThreshold;
+                            var eventThreshold = parameters.DecibelThreshold / intensityNormalizationMax;
+                            var normalisedIntensityArray = DataTools.NormaliseInZeroOne(decibelArray, 0, intensityNormalizationMax);
+                            var plot = new Plot($"{profileName} ({algorithmName}:dB Intensity)", normalisedIntensityArray, eventThreshold);
+                            plots.Add(plot);
+
+                            //// iii: CONVERT whistle decibel scores TO ACOUSTIC EVENTS
+                            //acousticEvents = AcousticEvent.GetEventsAroundMaxima(
+                            //    decibelArray,
+                            //    segmentStartOffset,
+                            //    wp.MinHertz,
+                            //    wp.MaxHertz,
+                            //    wp.DecibelThreshold,
+                            //    wp.MinDuration.Seconds(),
+                            //    wp.MaxDuration.Seconds(),
+                            //    sonogram.FramesPerSecond,
+                            //    sonogram.FBinWidth);
+                        }
                         else
                         {
                             throw new InvalidOperationException();
@@ -180,9 +213,6 @@ namespace AnalysisPrograms.Recognizers
                     {
                         throw new InvalidOperationException();
                     }
-
-                    // AT: disabled - the current method definition does not make sense
-                    //acousticEvents = RecognizerTools.FilterEventsForSpectralProfile(acousticEvents, sonogram);
 
                     //iV add additional info to the acoustic events
                     acousticEvents.ForEach(ae =>

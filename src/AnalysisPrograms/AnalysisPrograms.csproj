@@ -358,6 +358,7 @@
     <Compile Include="Recognizers\Base\RecognizerBase.cs" />
     <Compile Include="Recognizers\Base\RecognizerEntry.cs" />
     <Compile Include="Recognizers\Base\RecognizerResults.cs" />
+    <Compile Include="Recognizers\Base\HarmonicParameters.cs" />
     <Compile Include="Recognizers\CriniaTinnula_OBSOLETE.cs" />
     <Compile Include="Recognizers\GenericRecognizer.cs" />
     <Compile Include="Recognizers\IctalurusFurcatus.cs" />

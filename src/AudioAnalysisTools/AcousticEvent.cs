@@ -1283,10 +1283,13 @@ namespace AudioAnalysisTools
                     }
 
                     av /= i - startFrame + 1;
-                    if (av < scoreThreshold)
-                    {
-                        continue; //skip events whose score is < the threshold
-                    }
+
+                    //NOTE av cannot be < threhsold because event started and ended based on threhsold.
+                    //     Therefore remove the following condition on 04/02/2020
+                    //if (av < scoreThreshold)
+                    //{
+                    //    continue; //skip events whose score is < the threshold
+                    //}
 
                     AcousticEvent ev = new AcousticEvent(segmentStartOffset, startTime, duration, minHz, maxHz);
 
