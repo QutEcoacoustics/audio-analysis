@@ -40,38 +40,38 @@ namespace AnalysisPrograms.Recognizers.Base
         /// <summary>
         /// Gets or sets the bottom bound of the rectangle. Units are Hertz.
         /// </summary>
-        public int MinHertz { get; set; }
+        public int? MinHertz { get; set; }
 
         /// <summary>
         /// Gets or sets the the top bound of the rectangle. Units are Hertz.
         /// </summary>
-        public int MaxHertz { get; set; }
+        public int? MaxHertz { get; set; }
 
         /// <summary>
         /// Gets or sets the buffer (bandwidth of silence) below the component rectangle. Units are Hertz.
         /// </summary>
-        public int BottomHertzBuffer { get; set; }
+        public int? BottomHertzBuffer { get; set; }
 
         /// <summary>
         /// Gets or sets the buffer (bandwidth of silence) above the component rectangle. Units are Hertz.
         /// Quite often this will be set to <value>null</value> which indicates as upper bounds variable,
         /// depending on distance of the source.
         /// </summary>
-        public int TopHertzBuffer { get; set; }
+        public int? TopHertzBuffer { get; set; }
 
         /// <summary>
         /// Gets or sets the minimum allowed duration of the component. Units are seconds.
         /// </summary>
-        public double MinDuration { get; set; } = 1.0;
+        public double? MinDuration { get; set; } = 1.0;
 
         /// <summary>
         /// Gets or sets the maximum allowed duration of the component. Units are seconds.
         /// </summary>
-        public double MaxDuration { get; set; } = 10.0;
+        public double? MaxDuration { get; set; } = 10.0;
 
         /// <summary>
         /// Gets or sets the threshold of "loudness" of a component. Units are decibels.
         /// </summary>
-        public double DecibelThreshold { get; set; } = 6;
+        public double? DecibelThreshold { get; set; } = 6;
     }
 }

@@ -41,7 +41,45 @@ namespace AnalysisPrograms.Recognizers
         public override AnalyzerConfig ParseConfig(FileInfo file)
         {
             RuntimeHelpers.RunClassConstructor(typeof(GenericRecognizerConfig).TypeHandle);
-            return ConfigFile.Deserialize<GenericRecognizerConfig>(file);
+            var result = ConfigFile.Deserialize<GenericRecognizerConfig>(file);
+
+            // validation of configs can be done here
+            // sanity check the algorithm
+            string algorithmName;
+            foreach (var (profileName, profile) in result.Profiles)
+            {
+                if (profile is CommonParameters c)
+                {
+                    c.MinHertz.ConfigNotNull(nameof(c.MinHertz), file);
+                    c.MaxHertz.ConfigNotNull(nameof(c.MaxHertz), file);
+                }
+
+                switch (profile)
+                {
+                    case BlobParameters _:
+                        algorithmName = "Blob";
+                        break;
+                    case OscillationParameters _:
+                        algorithmName = "Oscillation";
+                        break;
+                    case WhistleParameters _:
+                        algorithmName = "Whistle";
+                        break;
+                    case HarmonicParameters _:
+                        algorithmName = "Harmonics";
+                        //throw new NotImplementedException("The harmonic algorithm has not been implemented yet");
+                        break;
+                    case Aed.AedConfiguration _:
+                        algorithmName = "AED";
+                        break;
+                    default:
+                        var allowedAlgorithms =
+                            $"{nameof(BlobParameters)}, {nameof(OscillationParameters)}, {nameof(WhistleParameters)}, {nameof(HarmonicParameters)}, {nameof(Aed.AedConfiguration)}";
+                        throw new ConfigFileException($"The algorithm type in profile {profileName} is not recognized. It must be one of {allowedAlgorithms}");
+                }
+            }
+
+            return result;
         }
 
         /// <inheritdoc/>
@@ -83,32 +121,8 @@ namespace AnalysisPrograms.Recognizers
                 var plots = new List<Plot>();
                 SpectrogramStandard sonogram;
 
-                // sanity check the algorithm
-                string algorithmName;
-                switch (profileConfig)
-                {
-                    case BlobParameters _:
-                        algorithmName = "Blob";
-                        break;
-                    case OscillationParameters _:
-                        algorithmName = "Oscillation";
-                        break;
-                    case WhistleParameters _:
-                        algorithmName = "Whistle";
-                        break;
-                    case HarmonicParameters _:
-                        throw new NotImplementedException("The harmonic algorithm has not been implemented yet");
-                        break;
-                    case Aed.AedConfiguration _:
-                        algorithmName = "AED";
-                        break;
-                    default:
-                        var allowedAlgorithms =
-                            $"{nameof(BlobParameters)}, {nameof(OscillationParameters)}, {nameof(WhistleParameters)}, {nameof(HarmonicParameters)}, {nameof(Aed.AedConfiguration)}";
-                        throw new ConfigFileException($"The algorithm type in profile {profileName} is not recognized. It must be one of {allowedAlgorithms}");
-                }
 
-                Log.Debug($"Using the {algorithmName} algorithm... ");
+                Log.Debug($"Using the {profileName} algorithm... ");
                 if (profileConfig is CommonParameters parameters)
                 {
                     if (profileConfig is BlobParameters || profileConfig is OscillationParameters || profileConfig is WhistleParameters || profileConfig is HarmonicParameters)
@@ -119,24 +133,23 @@ namespace AnalysisPrograms.Recognizers
                         {
                             Oscillations2012.Execute(
                                 sonogram,
-                                op.MinHertz,
-                                op.MaxHertz,
+                                op.MinHertz.Value,
+                                op.MaxHertz.Value,
                                 op.DctDuration,
                                 op.MinOscillationFrequency,
                                 op.MaxOscillationFrequency,
                                 op.DctThreshold,
                                 op.EventThreshold,
-                                op.MinDuration,
-                                op.MaxDuration,
+                                op.MinDuration.Value,
+                                op.MaxDuration.Value,
                                 out var scores,
                                 out acousticEvents,
                                 out var hits,
                                 segmentStartOffset);
 
-                            plots.Add(new Plot(
-                                $"{profileName} ({algorithmName}:OscillationScore)",
-                                scores,
-                                op.EventThreshold));
+                            //plots.Add(new Plot($"{profileName} (:OscillationScore)", scores, op.EventThreshold));
+                            var plot = PreparePlot(scores, $"{profileName} (:OscillationScore)", op.EventThreshold);
+                            plots.Add(plot);
                         }
                         else if (profileConfig is BlobParameters bp)
                         {
@@ -144,18 +157,14 @@ namespace AnalysisPrograms.Recognizers
                             //i.e. require silence in side-bands. Otherwise might simply be getting part of a broader band acoustic event.
                             var decibelArray = SNR.CalculateFreqBandAvIntensityMinusBufferIntensity(
                                 sonogram.Data,
-                                parameters.MinHertz,
-                                parameters.MaxHertz,
-                                parameters.BottomHertzBuffer,
-                                parameters.TopHertzBuffer,
+                                bp.MinHertz.Value,
+                                bp.MaxHertz.Value,
+                                bp.BottomHertzBuffer.Value,
+                                bp.TopHertzBuffer.Value,
                                 sonogram.NyquistFrequency);
 
                             // prepare plot of resultant blob decibel array.
-                            // to obtain more useful display, set the maximum display value to be 3x threshold value.
-                            double intensityNormalizationMax = 3 * parameters.DecibelThreshold;
-                            var eventThreshold = parameters.DecibelThreshold / intensityNormalizationMax;
-                            var normalisedIntensityArray = DataTools.NormaliseInZeroOne(decibelArray, 0, intensityNormalizationMax);
-                            var plot = new Plot($"{profileName} ({algorithmName}:db Intensity)", normalisedIntensityArray, eventThreshold);
+                            var plot = PreparePlot(decibelArray, $"{profileName} (Blob:db Intensity)", bp.DecibelThreshold.Value);
                             plots.Add(plot);
 
                             // iii: CONVERT blob decibel SCORES TO ACOUSTIC EVENTS.
@@ -163,46 +172,47 @@ namespace AnalysisPrograms.Recognizers
                             acousticEvents = AcousticEvent.GetEventsAroundMaxima(
                                 decibelArray,
                                 segmentStartOffset,
-                                bp.MinHertz,
-                                bp.MaxHertz,
-                                bp.DecibelThreshold,
-                                bp.MinDuration.Seconds(),
-                                bp.MaxDuration.Seconds(),
+                                bp.MinHertz.Value,
+                                bp.MaxHertz.Value,
+                                bp.DecibelThreshold.Value,
+                                TimeSpan.FromSeconds(bp.MinDuration.Value),
+                                TimeSpan.FromSeconds(bp.MaxDuration.Value),
                                 sonogram.FramesPerSecond,
                                 sonogram.FBinWidth);
                         }
                         else if (profileConfig is WhistleParameters wp)
                         {
-                            double[] decibelArray;
                             //get the array of intensity values minus intensity in side/buffer bands.
+                            double[] decibelArray;
                             (acousticEvents, decibelArray) = WhistleParameters.GetWhistles(
                                 sonogram,
-                                parameters.MinHertz,
-                                parameters.MaxHertz,
+                                wp.MinHertz.Value,
+                                wp.MaxHertz.Value,
                                 sonogram.NyquistFrequency,
-                                wp.DecibelThreshold,
-                                wp.MinDuration,
-                                wp.MaxDuration);
+                                wp.DecibelThreshold.Value,
+                                wp.MinDuration.Value,
+                                wp.MaxDuration.Value,
+                                segmentStartOffset);
 
-                            // prepare plot of resultant whistle decibel array.
-                            // to obtain more useful display, set the maximum display value to be 3x threshold value.
-                            double intensityNormalizationMax = 3 * parameters.DecibelThreshold;
-                            var eventThreshold = parameters.DecibelThreshold / intensityNormalizationMax;
-                            var normalisedIntensityArray = DataTools.NormaliseInZeroOne(decibelArray, 0, intensityNormalizationMax);
-                            var plot = new Plot($"{profileName} ({algorithmName}:dB Intensity)", normalisedIntensityArray, eventThreshold);
+                            var plot = PreparePlot(decibelArray, $"{profileName} (Whistle:dB Intensity)", wp.DecibelThreshold.Value);
                             plots.Add(plot);
+                        }
+                        else if (profileConfig is HarmonicParameters hp)
+                        {
+                            //get the array of intensity values minus intensity in side/buffer bands.
+                            double[] scoreArray;
+                            (acousticEvents, scoreArray) = HarmonicParameters.GetSyllablesWithHarmonics(
+                                sonogram,
+                                hp.MinHertz.Value,
+                                hp.MaxHertz.Value,
+                                sonogram.NyquistFrequency,
+                                hp.DecibelThreshold.Value,
+                                hp.MinDuration.Value,
+                                hp.MaxDuration.Value,
+                                segmentStartOffset);
 
-                            //// iii: CONVERT whistle decibel scores TO ACOUSTIC EVENTS
-                            //acousticEvents = AcousticEvent.GetEventsAroundMaxima(
-                            //    decibelArray,
-                            //    segmentStartOffset,
-                            //    wp.MinHertz,
-                            //    wp.MaxHertz,
-                            //    wp.DecibelThreshold,
-                            //    wp.MinDuration.Seconds(),
-                            //    wp.MaxDuration.Seconds(),
-                            //    sonogram.FramesPerSecond,
-                            //    sonogram.FBinWidth);
+                            var plot = PreparePlot(scoreArray, $"{profileName} (Harmonics:dB Intensity)", hp.DecibelThreshold.Value);
+                            plots.Add(plot);
                         }
                         else
                         {
@@ -282,6 +292,23 @@ namespace AnalysisPrograms.Recognizers
                 NoiseReductionType = NoiseReductionType.Standard,
                 NoiseReductionParameter = common.BgNoiseThreshold ?? 0.0,
             };
+        }
+
+        /// <summary>
+        /// Prepares a plot of an array of score values.
+        /// To obtain a more useful display, the maximum display value is set to 3 times the threshold value.
+        /// </summary>
+        /// <param name="array">an array of double.</param>
+        /// <param name="title">to accompany the plot.</param>
+        /// <param name="threshold">A threshold value to be drawn on the plot.</param>
+        /// <returns>the plot.</returns>
+        private static Plot PreparePlot(double[] array, string title, double threshold)
+        {
+            double intensityNormalizationMax = 3 * threshold;
+            var eventThreshold = threshold / intensityNormalizationMax;
+            var normalisedIntensityArray = DataTools.NormaliseInZeroOne(array, 0, intensityNormalizationMax);
+            var plot = new Plot(title, normalisedIntensityArray, eventThreshold);
+            return plot;
         }
 
         /// <inheritdoc cref="RecognizerConfig"/> />

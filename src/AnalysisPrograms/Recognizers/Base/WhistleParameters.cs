@@ -1,31 +1,36 @@
-// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="WhistleParameters.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
-// <summary>
-
-using Acoustics.Shared;
-using AudioAnalysisTools;
-using AudioAnalysisTools.StandardSpectrograms;
-using System;
-using System.Collections.Generic;
-using TowseyLibrary;
 
 namespace AnalysisPrograms.Recognizers.Base
 {
+    using System;
+    using System.Collections.Generic;
+    using Acoustics.Shared;
+    using AudioAnalysisTools;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using TowseyLibrary;
+
     /// <summary>
     /// Parameters needed from a config file to detect whistle components.
     /// </summary>
     [YamlTypeTag(typeof(WhistleParameters))]
     public class WhistleParameters : CommonParameters
     {
-
         /// <summary>
         /// Calculates the mean intensity in a freq band defined by its min and max freq.
         /// THis method averages dB log values incorrectly but it is faster than doing many log conversions.
         /// This method is used to find acoustic events and is accurate enough for the purpose.
         /// </summary>
-        public static (List<AcousticEvent>, double[]) GetWhistles(SpectrogramStandard sonogram, int minHz, int maxHz, int nyquist, double decibelThreshold, double minDuration, double maxDuration)
+        public static (List<AcousticEvent>, double[]) GetWhistles(
+            SpectrogramStandard sonogram,
+            int minHz,
+            int maxHz,
+            int nyquist,
+            double decibelThreshold,
+            double minDuration,
+            double maxDuration,
+            TimeSpan segmentStartOffset)
         {
             var sonogramData = sonogram.Data;
             int frameCount = sonogramData.GetLength(0);
@@ -44,7 +49,7 @@ namespace AnalysisPrograms.Recognizers.Base
             var combinedIntensityArray = new double[frameCount];
 
             // for all frequency bins
-            for (int bin = minBin; bin < maxBin; bin++)
+            for (int bin = minBin; bin < maxBin - 1; bin++)
             {
                 // set up an intensity array for the frequency bin.
                 double[] intensity = new double[frameCount];
@@ -54,9 +59,9 @@ namespace AnalysisPrograms.Recognizers.Base
                     // for all time frames in this frequency bin
                     for (int t = 0; t < frameCount; t++)
                     {
+                        var bandIntensity = (sonogramData[t, bin] + sonogramData[t, bin + 1]) / 2.0;
                         var sideBandIntensity = ((0.5 * sonogramData[t, bin + 2]) + sonogramData[t, bin + 3]) / (double)2.0;
-                        intensity[t] = sonogramData[t, bin] - sideBandIntensity;
-                        //LoggedConsole.WriteLine($"t{t}  bin{bin}   intensity = {sonogramData[t, bin]} minus {sideBandIntensity}");
+                        intensity[t] = bandIntensity - sideBandIntensity;
                         intensity[t] = Math.Max(0.0, intensity[t]);
                     }
                 }
@@ -65,8 +70,9 @@ namespace AnalysisPrograms.Recognizers.Base
                     // for all time frames in this frequency bin
                     for (int t = 0; t < frameCount; t++)
                     {
+                        var bandIntensity = (sonogramData[t, bin] + sonogramData[t, bin + 1]) / 2.0;
                         var sideBandIntensity = ((0.5 * sonogramData[t, bin + 2]) + sonogramData[t, bin + 3] + (0.5 * sonogramData[t, bin - 2]) + sonogramData[t, bin - 3]) / (double)4.0;
-                        intensity[t] = sonogramData[t, bin] - sideBandIntensity;
+                        intensity[t] = bandIntensity - sideBandIntensity;
                         intensity[t] = Math.Max(0.0, intensity[t]);
                     }
                 }
@@ -74,14 +80,16 @@ namespace AnalysisPrograms.Recognizers.Base
                 // smooth the decibel array to allow for brief gaps.
                 intensity = DataTools.filterMovingAverageOdd(intensity, 5);
 
+                //calculate the Hertz bounds of the acoustic events for these freq bins
+                int bottomHzBound = (int)Math.Floor(sonogram.FBinWidth * (bin - 1));
+                int topHzBound = (int)Math.Ceiling(sonogram.FBinWidth * (bin + 2));
+
                 //extract the events based on length and threshhold.
                 // Note: This method does NOT do prior smoothing of the dB array.
-                // TODO check next line
-                var segmentStartOffset = TimeSpan.Zero;
                 var acousticEvents = AcousticEvent.ConvertScoreArray2Events(
                     intensity,
-                    minHz,
-                    maxHz,
+                    bottomHzBound,
+                    topHzBound,
                     sonogram.FramesPerSecond,
                     sonogram.FBinWidth,
                     decibelThreshold,
@@ -99,6 +107,9 @@ namespace AnalysisPrograms.Recognizers.Base
                 // combine events
                 events.AddRange(acousticEvents);
             } //end for all freq bins
+
+            // combine adjacent acoustic events
+            //events = AcousticEvent.CombineOverlappingEvents(events);
 
             return (events, combinedIntensityArray);
         }

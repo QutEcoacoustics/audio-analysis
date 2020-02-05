@@ -446,7 +446,7 @@ namespace AnalysisBase
             {
                 Contract.Ensures(
                     eventBase.ResultStartSeconds >= result.SegmentStartOffset.TotalSeconds,
-                    "Every event detected by this analysis should be found within the bounds of the segment analyzed");
+                    "Every event should be found within the bounds of the current segment. This error occurs when segmentStartOffset is not set correctly.");
 
                 // ReSharper disable CompareOfFloatsByEqualityOperator
                 Contract.Ensures(
