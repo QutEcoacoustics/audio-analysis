@@ -45,7 +45,7 @@ namespace AudioAnalysisTools.Indices
 
         public const double DefaultBgNoiseNeighborhood = 5;
 
-        private static readonly ILog Log = LogManager.GetLogger(nameof(IndexCalculateConfig));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(IndexCalculateConfig));
 
         // Make sure the comparer is static, so that the equality operations are only generated once
         private static readonly MemberwiseEqualityComparer<IndexCalculateConfig> Comparer =

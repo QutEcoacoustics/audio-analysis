@@ -1,4 +1,4 @@
-﻿// <copyright file="LDSpectrogramClusters.cs" company="QutEcoacoustics">
+// <copyright file="LDSpectrogramClusters.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -208,7 +208,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             TimeSpan minuteOffset = TimeSpan.Zero; // assume recordings start at midnight
             double backgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
             string colorMap = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
-            string title = string.Format("SOM CLUSTERS of ACOUSTIC INDICES: recording {0}", fileStem);
+            string title = $"SOM CLUSTERS of ACOUSTIC INDICES: recording {fileStem}";
             TimeSpan indexCalculationDuration = TimeSpan.FromSeconds(60); // seconds
             TimeSpan xTicInterval = TimeSpan.FromMinutes(60); // 60 minutes or one hour.
             int trackheight = 20;
@@ -363,7 +363,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             //string fileStem = "SW_14Oct";
             string opFileName = fileStem + ".SOM27AcousticClusters.png";
-            string title = string.Format("SOM CLUSTERS of ACOUSTIC INDICES: recording {0}", fileStem);
+            string title = $"SOM CLUSTERS of ACOUSTIC INDICES: recording {fileStem}";
 
             int clusterCount = 27;  // from Yvonne's method
             List<Pen> pens = ImageTools.GetColorPalette(clusterCount);

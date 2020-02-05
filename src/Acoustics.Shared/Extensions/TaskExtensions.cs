@@ -1,4 +1,4 @@
-﻿// <copyright file="TaskExtensions.cs" company="QutEcoacoustics">
+// <copyright file="TaskExtensions.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -20,7 +20,7 @@ namespace System.Threading.Tasks
                 delay = delay.Multiply(10);
             }
 
-            await TaskEx.WhenAny(task, TaskEx.Delay(delay));
+            await Task.WhenAny(task, Task.Delay(delay));
 
             if (!task.IsCompleted)
             {

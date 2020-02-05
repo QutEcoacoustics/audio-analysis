@@ -11,10 +11,11 @@ namespace Acoustics.Shared
 {
     using System;
     using System.Collections.Generic;
-    using System.Configuration;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using System.Runtime.InteropServices;
     using ConfigFile;
     using log4net;
     using Microsoft.Extensions.Configuration;
@@ -45,13 +46,13 @@ namespace Acoustics.Shared
             var settings = AppConfiguration.Value.GetSection("appSettings");
             if (!settings.AsEnumerable().Any())
             {
-                throw new ConfigurationErrorsException("Could not read AP.Settings.json - no values were found in the config file");
+                throw new ConfigFileException("Could not read AP.Settings.json - no values were found in the config file");
             }
 
             return settings;
         });
 
-        private static readonly ILog Log = LogManager.GetLogger(nameof(AppConfigHelper));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(AppConfigHelper));
         private static readonly bool IsLinuxValue;
         private static readonly bool IsWindowsValue;
         private static readonly bool IsMacOsXValue;
@@ -163,11 +164,35 @@ namespace Acoustics.Shared
 
         public static bool IsMono { get; }
 
-        public static bool IsLinux => IsLinuxValue;
+        public static bool IsLinux
+        {
+            get
+            {
+                // TODO: remove when tested
+                Debug.Assert(IsLinuxValue == RuntimeInformation.IsOSPlatform(OSPlatform.Linux));
+                return RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+            }
+        }
 
-        public static bool IsWindows => IsWindowsValue;
+        public static bool IsWindows
+        {
+            get
+            {
+                // TODO: remove when tested
+                Debug.Assert(IsWindowsValue == RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
+                return RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+            }
+        }
 
-        public static bool IsMacOsX => IsMacOsXValue;
+        public static bool IsMacOsX
+        {
+            get
+            {
+                // TODO: remove when tested
+                Debug.Assert(IsMacOsXValue == RuntimeInformation.IsOSPlatform(OSPlatform.OSX));
+                return RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+            }
+        }
 
         public static string GetString(string key)
         {
@@ -175,7 +200,7 @@ namespace Acoustics.Shared
 
             if (string.IsNullOrEmpty(value))
             {
-                throw new ConfigurationErrorsException("Could not find appSettings key or it did not have a value: " + key);
+                throw new ConfigFileException("Could not find appSettings key or it did not have a value: " + key);
             }
 
             return value;
@@ -190,7 +215,7 @@ namespace Acoustics.Shared
                 return valueParsed;
             }
 
-            throw new ConfigurationErrorsException(
+            throw new ConfigFileException(
                 "Key " + key + " exists but could not be converted to a bool: " + value);
         }
 
@@ -203,7 +228,7 @@ namespace Acoustics.Shared
                 return valueParsed;
             }
 
-            throw new ConfigurationErrorsException(
+            throw new ConfigFileException(
                 "Key " + key + " exists but could not be converted to a int: " + value);
         }
 
@@ -216,7 +241,7 @@ namespace Acoustics.Shared
                 return valueParsed;
             }
 
-            throw new ConfigurationErrorsException(
+            throw new ConfigFileException(
                 "Key " + key + " exists but could not be converted to a double: " + value);
         }
 
@@ -283,7 +308,7 @@ namespace Acoustics.Shared
                 return valueParsed;
             }
 
-            throw new ConfigurationErrorsException(
+            throw new ConfigFileException(
                 "Key " + key + " exists but could not be converted to a long: " + value);
         }
 

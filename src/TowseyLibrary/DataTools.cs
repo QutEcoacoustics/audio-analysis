@@ -5147,7 +5147,7 @@ namespace TowseyLibrary
   {
       int mins = (int)Math.Floor(seconds / 60);
       double remainder = seconds % 60;
-      string str = string.Format("{0}m {1:f3}s", mins, remainder);
+      string str = $"{mins}m {remainder:f3}s";
       return str;
   }
 

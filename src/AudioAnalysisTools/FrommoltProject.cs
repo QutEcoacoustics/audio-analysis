@@ -41,7 +41,7 @@ namespace AudioAnalysisTools
             {
                 LoggedConsole.WriteLine("\n# Start date = " + startDate.ToString());
                 LoggedConsole.WriteLine("# End   date = " + endDate.ToString());
-                LoggedConsole.WriteLine(string.Format("# Elapsed time = {0:f1} hours", dayCount * 24));
+                LoggedConsole.WriteLine($"# Elapsed time = {dayCount * 24:f1} hours");
                 LoggedConsole.WriteLine("# Day  count = " + dayCount + " (inclusive of start and end days)");
                 LoggedConsole.WriteLine("# Time Zone  = " + timeSpanOffsetHint.ToString());
             }
@@ -72,7 +72,7 @@ namespace AudioAnalysisTools
             // loop over days
             for (int d = 0; d < dayCount; d++)
             {
-                Console.WriteLine(string.Format("Day {0} of {1} days", d, dayCount));
+                Console.WriteLine($"Day {d} of {dayCount} days");
                 var thisday = ((DateTimeOffset)startDate).AddDays(d);
                 string date = thisday.ToString(format);
 
@@ -137,7 +137,7 @@ namespace AudioAnalysisTools
                 var imageList = new List<Image>();
 
                 //   Monitoring_Rosin_20120329T000000 + 0200_.merged.wav.channel_0__2Maps.png;
-                string fileMatch = string.Format(@"0000+0200_.merged.wav.channel_{0}__{1}", channel, fileSuffix);
+                string fileMatch = $@"0000+0200_.merged.wav.channel_{channel}__{fileSuffix}";
 
                 foreach (FileInfo imageFile in imageFiles)
                 {
@@ -155,7 +155,7 @@ namespace AudioAnalysisTools
                 imageList.Add(spacerImage);
                 Image concatImage = ImageTools.CombineImagesInLine(imageList);
                 g = Graphics.FromImage(concatImage);
-                string chn = string.Format("ch{0}", channel + 1);
+                string chn = $"ch{channel + 1}";
                 g.DrawString(chn, stringFont, brush, new PointF(2, 40));
 
                 fourChannelList.Add(concatImage);

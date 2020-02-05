@@ -29,7 +29,7 @@ namespace AnalysisPrograms.SourcePreparers
     public class RemoteSourcePreparer : ISourcePreparer
     {
         private static readonly double[] RetryDelay = { 0.1, 0.5, 5.0 };
-        private static readonly ILog Log = LogManager.GetLogger(nameof(RemoteSourcePreparer));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(RemoteSourcePreparer));
         private readonly ConcurrentBag<long> recievedSizeTracker = new ConcurrentBag<long>();
         private readonly bool allowSegmentcutting;
         private readonly MediaService mediaService;

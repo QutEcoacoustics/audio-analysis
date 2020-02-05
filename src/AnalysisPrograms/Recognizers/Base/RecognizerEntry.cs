@@ -54,7 +54,7 @@ namespace AnalysisPrograms.Recognizers.Base
             }
         }
 
-        private static readonly ILog Log = LogManager.GetLogger(nameof(RecognizerEntry));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(RecognizerEntry));
 
         /// <summary>
         /// This entrypoint should be used for testing short files (less than 2 minutes)

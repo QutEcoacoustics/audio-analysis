@@ -1,109 +1,30 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{80BC795A-A987-45AB-B29B-76CF190384BA}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>AnalysisBase</RootNamespace>
-    <AssemblyName>AnalysisBase</AssemblyName>
-    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
-    <RestorePackages>true</RestorePackages>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AssemblyTitle>AnalysisBase</AssemblyTitle>
+    <Company>QUT</Company>
+    <Product>AnalysisBase</Product>
+    <Copyright>Copyright ©  2012</Copyright>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>..\..\style.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Net" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="AnalysisCoordinator.cs" />
-    <Compile Include="AnalysisResult.cs" />
-    <Compile Include="AnalysisResult2.cs" />
-    <Compile Include="AnalysisSettings.cs" />
-    <Compile Include="AnalyzerConfig.cs" />
-    <Compile Include="AudioRecordingTooShortException.cs" />
-    <Compile Include="Extensions\ModifiedInfoExtensions.cs" />
-    <Compile Include="FileSegment.cs" />
-    <Compile Include="IAnalyser2.cs" />
-    <Compile Include="AbstractStrongAnalyser.cs" />
-    <Compile Include="ISourcePreparer.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ResultBases\EventBase.cs" />
-    <Compile Include="ResultBases\EventIndex.cs" />
-    <Compile Include="ResultBases\SummaryIndexBase.cs" />
-    <Compile Include="ResultBases\ResultBase.cs" />
-    <Compile Include="ResultBases\SpectralIndexBase.cs" />
-    <Compile Include="SaveBehavior.cs" />
-    <Compile Include="SegmentSplitException.cs" />
-    <Compile Include="Segment\InvalidSegmentException.cs" />
-    <Compile Include="Segment\ISegment.cs" />
-    <Compile Include="Segment\ISourceMetadata.cs" />
-    <Compile Include="Segment\SourceMetadata.cs" />
-    <Compile Include="SegmentSettings.cs" />
-    <Compile Include="TimeAlignment.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Acoustics.Shared\Acoustics.Shared.csproj">
-      <Project>{EF04F5A8-D4BD-4CD1-BFC2-F6AD2D9C7927}</Project>
-      <Name>Acoustics.Shared</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Acoustics.Tools\Acoustics.Tools.csproj">
-      <Project>{0338570E-5A77-4A2E-8E17-7955C36AE1F7}</Project>
-      <Name>Acoustics.Tools</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\Acoustics.Shared\Acoustics.Shared.csproj" />
+    <ProjectReference Include="..\Acoustics.Tools\Acoustics.Tools.csproj" />
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="..\..\stylecop.json">
       <Link>stylecop.json</Link>
     </AdditionalFiles>
-    <None Include="app.config" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!--
-  <UsingTask AssemblyFile="$(SolutionDir)..\Extra Assemblies\Gendarme\GendarmeMsBuild.dll" TaskName="GendarmeMsBuild.Gendarme"/>
-  <Target Name="AfterBuild">
-      <Gendarme 
-		Assemblies="$(TargetPath)" IntegrateWithVisualStudio="True" 
-		OutputXmlFilename="$(SolutionDir)\AnalysisBase.Gendarme.xml"
-		GendarmeExeFilename="$(SolutionDir)..\Extra Assemblies\Gendarme\Runner\gendarme.exe"/>
-  </Target>
-  -->
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  <ItemGroup>
+    <Compile Remove="ProgressReporter.cs" />
+  </ItemGroup>
 </Project>

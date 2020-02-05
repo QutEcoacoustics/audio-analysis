@@ -1,4 +1,4 @@
-﻿// <copyright file="LDSpectrogramTStatistic.cs" company="QutEcoacoustics">
+// <copyright file="LDSpectrogramTStatistic.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -229,7 +229,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             int nyquist = cs1.SampleRate / 2;
             int herzInterval = 1000;
 
-            string title = string.Format("{0} SPECTROGRAM for: {1}.      (scale:hours x kHz)", key, cs1.FileName);
+            string title = $"{key} SPECTROGRAM for: {cs1.FileName}.      (scale:hours x kHz)";
             var titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image1.Width);
             image1 = LDSpectrogramRGB.FrameLDSpectrogram(image1, titleBar, cs1, nyquist, herzInterval);
 

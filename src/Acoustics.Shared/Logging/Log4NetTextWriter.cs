@@ -28,7 +28,7 @@ namespace Acoustics.Shared.Logging
         public Log4NetTextWriter(TextWriter baseStream, ILog log = null, Mode mode = Mode.Out)
         {
             this.baseStream = baseStream;
-            log = log ?? NoConsole.Log;
+            log ??= NoConsole.Log;
             if (mode == Mode.Error)
             {
                 this.logCall = log.Error;

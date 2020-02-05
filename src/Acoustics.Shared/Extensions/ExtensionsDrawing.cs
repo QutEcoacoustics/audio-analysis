@@ -1,15 +1,19 @@
-﻿// <copyright file="ExtensionsDrawing.cs" company="QutEcoacoustics">
+// <copyright file="ExtensionsDrawing.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
 // ReSharper disable once CheckNamespace
-namespace System.Drawing
+namespace System
 {
     using Globalization;
-    using Imaging;
     using IO;
     using System.Text.RegularExpressions;
     using Acoustics.Shared;
+    using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.ColorSpaces;
+    using SixLabors.ImageSharp.Formats;
+    using SixLabors.ImageSharp.PixelFormats;
+    using SixLabors.ImageSharp.Processing;
 
     /// <summary>
     /// Image extension methods.
@@ -38,7 +42,7 @@ namespace System.Drawing
         /// <returns>
         /// Byte array representing image.
         /// </returns>
-        public static byte[] ToByteArray(this Image image, ImageFormat imageFormat)
+        public static byte[] ToByteArray(this Image image, IImageEncoder imageFormat)
         {
             if (image == null)
             {
@@ -68,28 +72,8 @@ namespace System.Drawing
         /// <returns>
         /// Cropped image.
         /// </returns>
-        /// <remarks>
-        /// Use Graphics.DrawImage() to copy the selection portion of the source image.
-        /// You'll need the overload that takes a source and a destination Rectangle.
-        /// Create the Graphics instance from Graphics.FromImage() on a new bitmap that
-        /// has the same size as the rectangle.
-        /// from: http://stackoverflow.com/questions/2405261/how-to-clip-a-rectangle-from-a-tiff.
-        /// </remarks>
-        public static Bitmap Crop(this Image source, Rectangle crop)
-        {
-            if (source == null)
-            {
-                return null;
-            }
-
-            var bmp = new Bitmap(crop.Width, crop.Height);
-            using (var gr = Graphics.FromImage(bmp))
-            {
-                gr.DrawImage(source, new Rectangle(0, 0, bmp.Width, bmp.Height), crop, GraphicsUnit.Pixel);
-            }
-
-            return bmp;
-        }
+        [Obsolete("This shim only exists for compatibility. Not needed when ImageSharp replaced System.Drawing")]
+        public static Image Crop(this Image source, Rectangle crop) => source.Clone(x => x.Crop(crop));
 
         /// <summary>
         /// The to hex string.
@@ -105,20 +89,8 @@ namespace System.Drawing
         /// </returns>
         public static string ToHexString(this Color color, bool includeAlpha)
         {
-            ////Contract.Ensures(Contract.Result<string>().Length == 9 || Contract.Result<string>().Length == 7);
-
-            string result = "#";
-
-            if (includeAlpha)
-            {
-                result += color.A.ToString("X2");
-            }
-
-            result += color.R.ToString("X2");
-            result += color.G.ToString("X2");
-            result += color.B.ToString("X2");
-
-            return result;
+            var result = $"#{color.ToHex()}";
+            return includeAlpha ? result : result[0..6];
         }
 
         /// <summary>
@@ -150,37 +122,11 @@ namespace System.Drawing
             var sourceRectangle = new Rectangle(
                 0, 0, sourceImage.Width, sourceImage.Height - amountToRemove);
 
-            var returnImage = new Bitmap(
-                width.HasValue ? width.Value : sourceImage.Width,
-                height.HasValue ? height.Value : sourceImage.Height - amountToRemove);
+            var returnSize =  new Size(
+                width ?? sourceImage.Width,
+                height ?? sourceImage.Height - amountToRemove);
 
-            var destRectangle = new Rectangle(0, 0, returnImage.Width, returnImage.Height);
-
-            try
-            {
-                using (var graphics = Graphics.FromImage(returnImage))
-                {
-                    graphics.DrawImage(sourceImage, destRectangle, sourceRectangle, GraphicsUnit.Pixel);
-
-                    //GraphicsSegmented.Draw(graphics, sourceImage, returnImage.Height, returnImage.Width);
-                }
-            }
-            catch (ArgumentException ex)
-            {
-                if (ex.Message.Contains("Parameter is not valid"))
-                {
-                    throw new ImageTooLargeForGraphicsException(
-                        returnImage == null ? default(int?) : returnImage.Width,
-                        returnImage == null ? new int?() : returnImage.Height,
-                        null,
-                        "Graphics error drawing spectrogram.",
-                        ex);
-                }
-
-                throw;
-            }
-
-            return returnImage;
+            return sourceImage.Clone(x => x.Crop(sourceRectangle).Resize(returnSize));
         }
 
         /// <summary>
@@ -197,7 +143,7 @@ namespace System.Drawing
             Image image;
             using (var ms = new MemoryStream(bytes))
             {
-                image = Image.FromStream(ms);
+                image = Image.Load(ms);
             }
 
             return image;
@@ -205,8 +151,8 @@ namespace System.Drawing
 
         /// <summary>
         /// Supports 4 formats:
-        /// #AARRGGBB
-        /// AARRGGBB
+        /// #RRGGBBAA
+        /// RRGGBBAA
         /// #RRGGBB
         /// RRGGBB.
         /// </summary>
@@ -236,27 +182,33 @@ namespace System.Drawing
             uint total = uint.Parse(color, NumberStyles.HexNumber);
             byte[] parts = BitConverter.GetBytes(total);
 
-            if (parts.Length == 4)
+            if (color.Length != 8 || color.Length != 6)
             {
-                return Drawing.Color.FromArgb(parts[3], parts[2], parts[1], parts[0]);
+                throw new NotSupportedException("Cannot parse color.");
             }
 
-            return Drawing.Color.FromArgb(255, parts[2], parts[1], parts[0]);
+            var r = byte.Parse(color[0..1], NumberStyles.AllowHexSpecifier);
+            var g = byte.Parse(color[2..3], NumberStyles.AllowHexSpecifier);
+            var b = byte.Parse(color[4..5], NumberStyles.AllowHexSpecifier);
+
+            var a = color.Length == 8 ? byte.Parse(color[6..7], NumberStyles.AllowHexSpecifier) : (byte)255;
+            return Color.FromRgba(r, g, b, a);
         }
 
-        public static Color Color(int red, int green, int blue)
+        public static Color Gray(byte tone)
         {
-            return System.Drawing.Color.FromArgb(red, green, blue);
+            return Color.FromRgb(tone, tone, tone);
         }
 
-        public static Color Color(int alpha, int red, int green, int blue)
+        public static void DrawImage(this Image destination, Image source, Rectangle destinationRectangle, Rectangle sourceRectangle)
         {
-            return Drawing.Color.FromArgb(alpha, red, green, blue);
-        }
-
-        public static Color Gray(int tone)
-        {
-            return Drawing.Color.FromArgb(tone, tone, tone);
+            destination.Mutate(
+                d => d.DrawImage(
+                    source.Clone(
+                            s => s.Crop(sourceRectangle)
+                                .Resize(destinationRectangle.Size)),
+                    destinationRectangle.Location,
+                    1.0f));
         }
     }
 }

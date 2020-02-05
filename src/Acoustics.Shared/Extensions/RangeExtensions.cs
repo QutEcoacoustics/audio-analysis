@@ -176,7 +176,7 @@ namespace Acoustics.Shared
         public static Range<T> AsRangeFromZero<T>(this T maximum, Topology topology = Topology.Default)
             where T : struct, IComparable<T>
         {
-            return new Range<T>(default(T), maximum, topology);
+            return new Range<T>(default, maximum, topology);
         }
     }
 }

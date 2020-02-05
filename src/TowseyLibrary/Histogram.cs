@@ -83,7 +83,7 @@ namespace TowseyLibrary
 
             if (nanCount > 0)
             {
-                string msg = string.Format("#### WARNING from Histogram.Histo():  {0}/{1} values were NaN", nanCount, data.Length);
+                string msg = $"#### WARNING from Histogram.Histo():  {nanCount}/{data.Length} values were NaN";
                 LoggedConsole.WriteErrorLine(msg);
             }
 

@@ -1,4 +1,4 @@
-﻿namespace Acoustics.Tools.Audio
+namespace Acoustics.Tools.Audio
 {
     using System;
     using System.Collections.Generic;
@@ -189,7 +189,7 @@
         /// </returns>
         protected override string ConstructInfoArgs(FileInfo source)
         {
-            string args = string.Format(" -s \"{0}\" ", source.FullName);
+            string args = $" -s \"{source.FullName}\" ";
             return args;
         }
 

@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="Oblong.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -8,14 +8,15 @@ namespace TowseyLibrary
     using System;
     using System.Collections;
     using System.Collections.Generic;
-    using System.Drawing;
-    using System.Drawing.Imaging;
 
     using CsvHelper.Configuration;
+    using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.PixelFormats;
+    using SixLabors.ImageSharp.Processing;
 
     public class Oblong
     {
-        public sealed class OblongClassMap : CsvClassMap<Oblong>
+        public sealed class OblongClassMap : ClassMap<Oblong>
         {
             public OblongClassMap()
             {
@@ -694,7 +695,7 @@ namespace TowseyLibrary
 
             int rows = matrix.GetLength(0); // number of rows
             int cols = matrix.GetLength(1); // number
-            var bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
+            var bmp = new Image<Rgb24>(cols, rows);
 
             foreach (Oblong shape in shapes)
             {
@@ -713,29 +714,29 @@ namespace TowseyLibrary
                 // bmp.SetPixel(c, r, colour);
                 for (int r = shape.RowTop; r <= shape.RowBottom; r++)
                 {
-                    bmp.SetPixel(shape.ColumnLeft, r, colour);
+                    bmp[shape.ColumnLeft, r] = colour;
                 }
 
                 for (int r = shape.RowTop; r <= shape.RowBottom; r++)
                 {
-                    bmp.SetPixel(shape.ColumnRight, r, colour);
+                    bmp[shape.ColumnRight, r] = colour;
                 }
 
                 for (int c = shape.ColumnLeft; c <= shape.ColumnRight; c++)
                 {
-                    bmp.SetPixel(c, shape.RowTop, colour);
+                    bmp[c, shape.RowTop] = colour;
                 }
 
                 for (int c = shape.ColumnLeft; c <= shape.ColumnRight; c++)
                 {
-                    bmp.SetPixel(c, shape.RowBottom, colour);
+                    bmp[c, shape.RowBottom] = colour;
                 }
 
                 // bmp.SetPixel(c, r, colour);
                 // RowTop += shape.RowWidth;
             }
 
-            bmp.RotateFlip(RotateFlipType.Rotate270FlipNone);
+            bmp.Mutate(x => x.Rotate(RotateMode.Rotate270));
             bmp.Save(opPath);
         }
 

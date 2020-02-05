@@ -90,7 +90,7 @@ namespace TowseyLibrary
 
         public static string TimeStamp2FileName(DateTime datetime)
         {
-            string name = string.Format("{0}{1:D2}{2:D2}_{3:D2}{4:D2}", datetime.Year, datetime.Month, datetime.Day, datetime.Hour, datetime.Minute);
+            string name = $"{datetime.Year}{datetime.Month:D2}{datetime.Day:D2}_{datetime.Hour:D2}{datetime.Minute:D2}";
             return name;
         }
 
@@ -326,7 +326,7 @@ namespace TowseyLibrary
                 var vector = kvp.Value;
                 for (int i = 0; i < vector.Length; i++)
                 {
-                    text.Append(string.Format(", {0:F3}", vector[i]));
+                    text.Append($", {vector[i]:F3}");
                 }
 
                 text.Append("\n");
@@ -403,7 +403,7 @@ namespace TowseyLibrary
             {
                 for (int i = 0; i < array.Length; i++)
                 {
-                    newList.Add(string.Format("{0}", array[i]));
+                    newList.Add($"{array[i]}");
                 }
 
                 WriteTextFile(fPath, newList);

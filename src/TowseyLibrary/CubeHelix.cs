@@ -5,8 +5,8 @@
 namespace TowseyLibrary
 {
     using System;
-    using System.Drawing;
-    using ColorMine.ColorSpaces;
+    using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.ColorSpaces;
 
     public class CubeHelix
         {

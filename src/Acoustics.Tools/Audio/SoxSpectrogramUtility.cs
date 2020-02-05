@@ -1,11 +1,14 @@
-﻿namespace Acoustics.Tools.Audio
+namespace Acoustics.Tools.Audio
 {
     using System;
     using System.Diagnostics;
-    using System.Drawing;
     using System.IO;
 
     using Shared;
+    using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.Advanced;
+    using SixLabors.ImageSharp.PixelFormats;
+    using SixLabors.ImageSharp.Processing;
 
     /// <summary>
     /// Spectrogram utility that uses sox.exe to generate spectrograms.
@@ -80,7 +83,8 @@
         /// <param name="request">
         /// The spectrogram request.
         /// </param>
-        public void Create(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, SpectrogramRequest request)
+        public void Create(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType,
+            SpectrogramRequest request)
         {
             this.ValidateMimeTypeExtension(source, sourceMimeType, output, outputMimeType);
 
@@ -90,7 +94,10 @@
             var wavFile = TempFileHelper.NewTempFile(this.TemporaryFilesDirectory, MediaTypes.ExtWav);
             var originalSoxFile = TempFileHelper.NewTempFile(this.TemporaryFilesDirectory, MediaTypes.ExtPng);
 
-            var audioUtilRequest = new AudioUtilityRequest { OffsetStart = request.Start, OffsetEnd = request.End, MixDownToMono = true, TargetSampleRate = 22050 };
+            var audioUtilRequest = new AudioUtilityRequest
+            {
+                OffsetStart = request.Start, OffsetEnd = request.End, MixDownToMono = true, TargetSampleRate = 22050
+            };
 
             this.audioUtility.Modify(source, sourceMimeType, wavFile, MediaTypes.MediaTypeWav, audioUtilRequest);
 
@@ -121,44 +128,46 @@
             wavFile.Delete();
 
             // modify the original image to match the request
-            using (var sourceImage = Image.FromFile(originalSoxFile.FullName))
+            using (var sourceImage = Image.Load(originalSoxFile.FullName))
             {
                 // remove 1px from top, bottom (DC value) and left
                 var sourceRectangle = new Rectangle(1, 1, sourceImage.Width - 1, sourceImage.Height - 2);
 
-                using (var requestedImage = new Bitmap(
-                    request.IsCalculatedWidthAvailable ? request.CalculatedWidth : sourceRectangle.Width,
-                    request.Height.HasValue ? request.Height.Value : sourceRectangle.Height))
-                using (var graphics = Graphics.FromImage(requestedImage))
+                var width = request.IsCalculatedWidthAvailable ? request.CalculatedWidth : sourceRectangle.Width;
+                using var requestedImage = new Image<Rgb24>(
+                    width,
+                    request.Height ?? sourceRectangle.Height);
+
+
+                var destRectangle = new Rectangle(0, 0, requestedImage.Width, requestedImage.Height);
+                requestedImage.DrawImage(sourceImage, destRectangle, sourceRectangle);
+
+                var format = MediaTypes.GetImageFormat(MediaTypes.GetExtension(outputMimeType));
+                var encoder = requestedImage.GetConfiguration().ImageFormatsManager.FindEncoder(format);
+
+                if (this.Log.IsDebugEnabled)
                 {
-                    var destRectangle = new Rectangle(0, 0, requestedImage.Width, requestedImage.Height);
-                    graphics.DrawImage(sourceImage, destRectangle, sourceRectangle, GraphicsUnit.Pixel);
+                    var stopwatch = new Stopwatch();
+                    stopwatch.Start();
 
-                    var format = MediaTypes.GetImageFormat(MediaTypes.GetExtension(outputMimeType));
+                    requestedImage.Save(output.FullName, encoder);
 
-                    if (this.Log.IsDebugEnabled)
-                    {
-                        var stopwatch = new Stopwatch();
-                        stopwatch.Start();
+                    stopwatch.Stop();
 
-                        requestedImage.Save(output.FullName, format);
+                    this.Log.DebugFormat(
+                        "Saved spectrogram for {0} to {1}. Took {2} ({3}ms).",
+                        source.Name,
+                        output.Name,
+                        stopwatch.Elapsed.Humanise(),
+                        stopwatch.Elapsed.TotalMilliseconds);
 
-                        stopwatch.Stop();
-
-                        this.Log.DebugFormat(
-                            "Saved spectrogram for {0} to {1}. Took {2} ({3}ms).",
-                            source.Name,
-                            output.Name,
-                            stopwatch.Elapsed.Humanise(),
-                            stopwatch.Elapsed.TotalMilliseconds);
-
-                        this.Log.Debug("Output " + this.BuildFileDebuggingOutput(output));
-                    }
-                    else
-                    {
-                        requestedImage.Save(output.FullName, format);
-                    }
+                    this.Log.Debug("Output " + this.BuildFileDebuggingOutput(output));
                 }
+                else
+                {
+                    requestedImage.Save(output.FullName, encoder);
+                }
+
             }
 
             originalSoxFile.Delete();

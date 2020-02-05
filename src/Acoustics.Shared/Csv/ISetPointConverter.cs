@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="ISetPointConverter.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -15,6 +15,8 @@ namespace Acoustics.Shared.Csv
     using System.Linq;
     using System.Text;
     using Contracts;
+    using CsvHelper;
+    using CsvHelper.Configuration;
     using CsvHelper.TypeConversion;
 
     public class CsvSetPointConverter : ITypeConverter
@@ -22,7 +24,7 @@ namespace Acoustics.Shared.Csv
         public const string InnerFieldDelimiter = "*";
         public const string InnerItemDelimiter = ";";
 
-        public string ConvertToString(TypeConverterOptions options, object value)
+        public string ConvertToString(object value, IWriterRow row, MemberMapData memberMapData)
         {
             Contract.Requires(value == null || value is ISet<Point>);
 
@@ -42,16 +44,16 @@ namespace Acoustics.Shared.Csv
 
             foreach (var point in set)
             {
-                sb.Append(point.X.ToString(options.CultureInfo.NumberFormat));
+                sb.Append(point.X.ToString(row.Configuration.CultureInfo.NumberFormat));
                 sb.Append(InnerFieldDelimiter);
-                sb.Append(point.Y.ToString(options.CultureInfo.NumberFormat));
+                sb.Append(point.Y.ToString(row.Configuration.CultureInfo.NumberFormat));
                 sb.Append(InnerItemDelimiter);
             }
 
             return sb.ToString();
         }
 
-        public object ConvertFromString(TypeConverterOptions options, string text)
+        public object ConvertFromString(string text, IReaderRow row, MemberMapData memberMapData)
         {
             if (string.IsNullOrWhiteSpace(text))
             {
@@ -65,22 +67,12 @@ namespace Acoustics.Shared.Csv
             var result = new HashSet<Point>();
             for (int i = 0; i < items.Length; i += 2)
             {
-                var a = int.Parse(items[i], options.NumberStyle.GetValueOrDefault());
-                var b = int.Parse(items[i + 1], options.NumberStyle.GetValueOrDefault());
+                var a = int.Parse(items[i], row.Configuration.CultureInfo.NumberFormat);
+                var b = int.Parse(items[i + 1], row.Configuration.CultureInfo.NumberFormat);
                 result.Add(new Point(a, b));
             }
 
             return result;
-        }
-
-        public bool CanConvertFrom(Type type)
-        {
-            return type == typeof(string);
-        }
-
-        public bool CanConvertTo(Type type)
-        {
-            return type == typeof(string);
         }
     }
 }

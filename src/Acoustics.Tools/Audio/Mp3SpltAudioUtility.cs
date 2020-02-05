@@ -1,4 +1,4 @@
-﻿namespace Acoustics.Tools.Audio
+namespace Acoustics.Tools.Audio
 {
     using System;
     using System.Collections.Generic;
@@ -134,7 +134,7 @@
             // input file
             sb.Append("  \"" + source.FullName.TrimEnd('\\', '"').Replace("\"", string.Empty) + "\" ");
 
-            TimeSpan calcStart = request.OffsetStart.HasValue ? request.OffsetStart.Value : TimeSpan.Zero;
+            TimeSpan calcStart = request.OffsetStart ?? TimeSpan.Zero;
 
             // only segments, does not touch sample rate or channels
             // must have a start if end is specified
@@ -429,14 +429,8 @@ Hundredths (optional): Must be between 0 and 99. Use them for higher precision.
 
             const string SecondTwoDigits = "ss";
 
-            var beginEnd = string.Format(
-                " {0}.{1}.{2:00} {3}.{4}.{5:00} ",
-                Math.Floor(startTs.TotalMinutes),
-                startTs.ToString(SecondTwoDigits),
-                startTs.Milliseconds / 10,
-                Math.Floor(endTs.TotalMinutes),
-                endTs.ToString(SecondTwoDigits),
-                endTs.Milliseconds / 10);
+            var beginEnd =
+                $" {Math.Floor(startTs.TotalMinutes)}.{startTs.ToString(SecondTwoDigits)}.{startTs.Milliseconds / 10:00} {Math.Floor(endTs.TotalMinutes)}.{endTs.ToString(SecondTwoDigits)}.{endTs.Milliseconds / 10:00} ";
 
             var fileName = Path.GetFileNameWithoutExtension(tempFilePath);
 
@@ -594,28 +588,19 @@ Hundredths (optional): Must be between 0 and 99. Use them for higher precision.
         {
             try
             {
-                const string Mp3SpltPathKey = "PathToMp3Splt";
+                var pathToMp3Split = AppConfigHelper.Mp3SpltExe;
 
-                var pathToMp3Split = ConfigurationManager.AppSettings.AllKeys.Contains(Mp3SpltPathKey)
-                                         ? ConfigurationManager.AppSettings[Mp3SpltPathKey]
-                                         : string.Empty;
 
-                const string ConversionfolderKey = "ConversionFolder";
-
-                var conversionPath = ConfigurationManager.AppSettings.AllKeys.Contains(ConversionfolderKey)
-                                         ? ConfigurationManager.AppSettings[ConversionfolderKey]
-                                         : string.Empty;
 
                 var mimeType = MediaTypes.GetMediaType(Path.GetExtension(audioFile));
 
                 if (mimeType == MediaTypes.MediaTypeMp3 && requestMimeType == MediaTypes.MediaTypeMp3 &&
-                    !string.IsNullOrEmpty(pathToMp3Split) && File.Exists(pathToMp3Split) &&
-                    !string.IsNullOrEmpty(conversionPath) && Directory.Exists(conversionPath))
+                    !string.IsNullOrEmpty(pathToMp3Split) && File.Exists(pathToMp3Split))
                 {
                     var tempFile = TempFileHelper.NewTempFile(this.TemporaryFilesDirectory, MediaTypes.ExtMp3);
 
                     var segmentedFile = this.SingleSegment(
-                        tempFile.FullName, start.HasValue ? start.Value : 0, end.HasValue ? end.Value : long.MaxValue);
+                        tempFile.FullName, start ?? 0, end ?? long.MaxValue);
 
                     byte[] bytes = File.ReadAllBytes(segmentedFile);
 

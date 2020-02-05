@@ -26,6 +26,7 @@ namespace Acoustics.Shared.Csv
     using log4net;
 
     using Zio;
+    using MissingFieldException = CsvHelper.MissingFieldException;
 
     /// <summary>
     /// Generic methods for reading and writing Csv file.
@@ -35,32 +36,30 @@ namespace Acoustics.Shared.Csv
     public static class Csv
     {
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly TypeConverterCache ConverterCache = new TypeConverterCache();
+        private static readonly TypeConverterOptionsCache ConverterOptions = new TypeConverterOptionsCache();
 
-        public static ReadOnlyCollection<CsvClassMap> ClassMapsToRegister { get; }
+        public static ReadOnlyCollection<ClassMap> ClassMapsToRegister { get; }
 
         static Csv()
         {
-            RegisterAnalysisProgramsTypeConverters();
+            // Registers CsvHelper type converters that can allow serialization of complex types.
+            ConverterCache.AddConverter<ISet<Point>>(new CsvSetPointConverter());
+
+            // ensure dates are always formatted as ISO8601 dates - note: R cannot by default parse proper ISO8601 dates
+            ConverterOptions.AddOptions<DateTimeOffset>(new TypeConverterOptions() { DateTimeStyle = DateTimeStyles.RoundtripKind });
+            ConverterOptions.AddOptions<DateTime>(new TypeConverterOptions() { DateTimeStyle = DateTimeStyles.RoundtripKind });
 
             // Find all of our custom class maps
             // initialize and store
-            var classMaps = new List<CsvClassMap>(10);
-            foreach (var classMapType in Meta.GetTypesFromQutAssemblies<CsvClassMap>())
+            var classMaps = new List<ClassMap>(10);
+            foreach (var classMapType in Meta.GetTypesFromQutAssemblies<ClassMap>())
             {
-                var instance = classMapType.CreateInstance() as CsvClassMap;
+                var instance = Activator.CreateInstance(classMapType) as ClassMap;
                 classMaps.Add(instance);
             }
 
-            ClassMapsToRegister = new ReadOnlyCollection<CsvClassMap>(classMaps);
-        }
-
-        /// <summary>
-        /// Registers CsvHelper type converters that can allow serialization of complex types.
-        /// </summary>
-        public static void RegisterAnalysisProgramsTypeConverters()
-        {
-            // This is a manually maintained method
-            TypeConverterFactory.AddConverter<ISet<Point>>(new CsvSetPointConverter());
+            ClassMapsToRegister = new ReadOnlyCollection<ClassMap>(classMaps);
         }
 
         public static CsvConfiguration DefaultConfiguration
@@ -68,22 +67,20 @@ namespace Acoustics.Shared.Csv
             get
             {
                 // change the defaults here if you want
-                var settings = new CsvConfiguration()
+                // ensure we always use InvariantCulture - only reliable way to serialize data
+                // Additionally R can parse invariant representations of Double.Infinity and
+                // Double.NaN (whereas it can't in other cultures).
+                var settings = new CsvConfiguration(CultureInfo.InvariantCulture)
                 {
                     HasHeaderRecord = true,
 
-                    // acoustic workbench outputs faulty data with padded headers
-                    TrimHeaders = true,
+                    // acoustic workbench used to output faulty data with padded headers
+                    PrepareHeaderForMatch = (x, i) => x.Trim(),
 
-                    // ensure we always use InvariantCulture - only reliable way to serialize data
-                    // Additionally R can parse invariant representations of Double.Infinity and
-                    // Double.NaN (whereas it can't in other cultures).
                     CultureInfo = CultureInfo.InvariantCulture,
+                    TypeConverterCache = ConverterCache,
+                    TypeConverterOptionsCache = ConverterOptions,
                 };
-
-                // ensure dates are always formatted as ISO8601 dates - note: R cannot by default parse proper ISO8601 dates
-                TypeConverterOptionsFactory.AddOptions<DateTimeOffset>(new TypeConverterOptions() { Format = "O" });
-                TypeConverterOptionsFactory.AddOptions<DateTime>(new TypeConverterOptions() { Format = "O" });
 
                 foreach (var classMap in ClassMapsToRegister)
                 {
@@ -154,7 +151,7 @@ namespace Acoustics.Shared.Csv
             try
             {
                 var configuration = DefaultConfiguration;
-                configuration.WillThrowOnMissingField = false;
+                configuration.MissingFieldFound = null;
                 var reader = new CsvReader(stream, configuration);
 
                 IEnumerable<T> results = reader.GetRecords<T>();
@@ -165,20 +162,24 @@ namespace Acoustics.Shared.Csv
 
                 return readFromCsv;
             }
-            catch (CsvTypeConverterException ctce)
+            catch (TypeConverterException tce)
             {
-                Log.Debug($"Error doing type conversion - dictionary contains {ctce.Data.Count} entries");
+                Log.Debug($"Error doing type conversion - dictionary contains {tce.Data.Count} entries. The error was: `{tce.Message}`");
 
-                // The CsvHelper exception messages are particularly unhelpful... let us fix this
-                if (ctce.Data.Count > 0)
-                {
-                    var parserData = ctce.Data.ToDictDebugString();
-                    var newMessage = ctce.Message + Environment.NewLine + parserData;
-
-                    throw new CsvTypeConverterException(newMessage, ctce);
-                }
+                // The following should no longer be needed since the type converter exception is much more detailed.
+                // // The CsvHelper exception messages are particularly unhelpful... let us fix this
+                // if (tce.Data.Count > 0)
+                // {
+                //     var parserData = tce.Data.ToDictDebugString();
+                //     var newMessage = tce.Message + Environment.NewLine + parserData;
+                //
+                //     throw new CsvTypeConverterException(newMessage, tce);
+                // }
+                //
+                // throw;
 
                 throw;
+
             }
         }
 
@@ -216,22 +217,22 @@ namespace Acoustics.Shared.Csv
             out int columnCount)
         {
             // read header
-            if (!reader.Read())
+            if (!reader.ReadHeader())
             {
                 rowCount = 0;
                 columnCount = 0;
                 return new List<T[]>();
             }
 
-            var headers = reader.FieldHeaders;
+            var headers = reader.Context.HeaderRecord;
             if (includeRowIndex && headers[0] != "Index")
             {
-                throw new CsvHelperException("Expected an index header and there was none");
+                throw new CsvHelperException(reader.Context,"Expected an index header and there was none");
             }
 
             if (!includeRowIndex && headers[0] == "Index")
             {
-                throw new CsvHelperException("Did not expect an index header and there was one");
+                throw new CsvHelperException(reader.Context, "Did not expect an index header and there was one");
             }
 
             var rowIndex = includeRowIndex ? 1 : 0;
@@ -259,9 +260,7 @@ namespace Acoustics.Shared.Csv
         private static T[,] DecodeMatrix<T>(this CsvReader reader, TwoDimensionalArray dimensionality,
             bool includeRowIndex)
         {
-            int rowCount;
-            int columnCount;
-            var csvRows = DecodeMatrix<T>(reader, includeRowIndex, out rowCount, out columnCount);
+            var csvRows = DecodeMatrix<T>(reader, includeRowIndex, out var rowCount, out var columnCount);
 
             var result = dimensionality == TwoDimensionalArray.None
                 ? new T[rowCount, columnCount]
@@ -357,9 +356,7 @@ namespace Acoustics.Shared.Csv
             {
                 var reader = new CsvReader(stream, DefaultConfiguration);
 
-                int rowCount;
-                int columnCount;
-                matrix = reader.DecodeMatrix<T>(true, out rowCount, out columnCount);
+                matrix = reader.DecodeMatrix<T>(true, out var rowCount, out var columnCount);
             }
 
             return matrix;

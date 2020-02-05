@@ -39,8 +39,7 @@ namespace Acoustics.Shared
                 return timeSpan.Humanise();
             }
 
-            var formattable = arg as IFormattable;
-            if (formattable != null)
+            if (arg is IFormattable formattable)
             {
                 return formattable.ToString(format, formatProvider);
             }
@@ -115,8 +114,7 @@ namespace Acoustics.Shared
                 return dateTime.ToString(format);
             }
 
-            var formattable = arg as IFormattable;
-            if (formattable != null)
+            if (arg is IFormattable formattable)
             {
                 return formattable.ToString(format, formatProvider);
             }
@@ -147,8 +145,7 @@ namespace Acoustics.Shared
                 return bytes.ToByteDisplay();
             }
 
-            var formattable = arg as IFormattable;
-            if (formattable != null)
+            if (arg is IFormattable formattable)
             {
                 return formattable.ToString(format, formatProvider);
             }

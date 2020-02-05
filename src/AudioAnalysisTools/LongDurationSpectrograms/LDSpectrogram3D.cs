@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="LDSpectrogram3D.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -178,7 +178,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
                 // 3. Read a data slice from the data table files
                 List<string> data;
-                var outputFileName = string.Format("{0}.csv", fileStem);
+                var outputFileName = $"{fileStem}.csv";
                 var path = Path.Combine(opDir.FullName, outputFileName);
                 if (File.Exists(path))
                 {
@@ -213,7 +213,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 image = Frame3DSpectrogram(image, key, arrayId, year, colorMap, xInterval, nyquistFreq, sliceId, sunriseSetData);
 
                 // 7. save the image
-                outputFileName = string.Format("{0}.png", fileStem);
+                outputFileName = $"{fileStem}.png";
                 path = Path.Combine(opDir.FullName, outputFileName);
                 image.Save(path);
             } // end loop through slices
@@ -310,7 +310,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             //Font stringFont = new Font("Tahoma", 9);
 
             DateTime theDate = new DateTime(year, 1, 1).AddDays(dayOfYear - 1);
-            string dateString = string.Format("{0} {1} {2:d2}", year, DataTools.MonthNames[theDate.Month - 1], theDate.Day);
+            string dateString = $"{year} {DataTools.MonthNames[theDate.Month - 1]} {theDate.Day:d2}";
             g.DrawString(dateString, stringFont, Brushes.Wheat, new PointF(10, 3));
 
             TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(60);
@@ -449,7 +449,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Font stringFont = new Font("Arial", 12);
 
             TimeSpan time = TimeSpan.FromMinutes(minuteOfDay);
-            string str = string.Format("Time = {0}h:{1}m", time.Hours, time.Minutes);
+            string str = $"Time = {time.Hours}h:{time.Minutes}m";
             g.DrawString(str, stringFont, Brushes.Wheat, new PointF(10, 7));
 
             int binCount = 512;

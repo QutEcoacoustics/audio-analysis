@@ -54,7 +54,7 @@ namespace AnalysisPrograms.EventStatistics
             return Json.SerializeToString(this);
         }
 
-        public sealed class ImportedEventNameClassMap : CsvClassMap<ImportedEvent>
+        public sealed class ImportedEventNameClassMap : ClassMap<ImportedEvent>
         {
             private static readonly PropertyInfo[] Properties = typeof(ImportedEvent).GetProperties();
 

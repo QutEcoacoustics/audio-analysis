@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="AnalysisSettings.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -21,9 +21,8 @@ namespace AnalysisBase
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Contracts;
 
-    using Force.DeepCloner;
-
     using log4net;
+    using ObjectCloner.Extensions;
 
     /// <summary>
     /// The analysis settings for processing one audio file.
@@ -46,7 +45,7 @@ namespace AnalysisBase
     public class AnalysisSettings : ICloneable
     {
         [NonSerialized]
-        private static readonly ILog Log = LogManager.GetLogger(nameof(AnalysisSettings));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(AnalysisSettings));
 
         [NonSerialized]
         private static int instanceCounter = 0;

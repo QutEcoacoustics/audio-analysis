@@ -10,7 +10,7 @@ namespace System
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.Logging;
-    using DotSpinners;
+    using DustInTheWind.ConsoleTools.Spinners;
     using log4net;
 
     /// <summary>
@@ -20,7 +20,7 @@ namespace System
     /// </summary>
     public static class LoggedConsole
     {
-        public static readonly ILog Log = LogManager.Exists(Logging.CleanLogger);
+        public static readonly ILog Log = LogManager.Exists(Logging.RootNamespace, Logging.CleanLogger);
 
         private static readonly TimeSpan PromptTimeout = TimeSpan.FromSeconds(60);
 
@@ -111,21 +111,30 @@ namespace System
             Log.Prompt(message ?? "Waiting...");
             if (IsInteractive)
             {
-                var spinner = new DotSpinner(task);
-                spinner.Start();
+
+                var spinner = new Spinner
+                {
+                    EnsureBeginOfLine = true
+                };
+                spinner.Display();
+                task.ContinueWith(x => spinner.Dispose(), TaskContinuationOptions.None);
             }
         }
 
         public static async Task<T> WriteWaitingLineAndWait<T>(Task<T> task, string message = null)
         {
             Log.Prompt(message ?? "Waiting...");
-            if (IsInteractive)
+            if (!IsInteractive)
             {
-                var spinner = new DotSpinner(task);
-                spinner.Start();
+                return await task;
             }
 
-            return await task;
+            using var spinner = new Spinner { EnsureBeginOfLine = true };
+            spinner.Display();
+            var result = await task;
+            spinner.Dispose();
+
+            return result;
         }
 
         public static string Prompt(string prompt, bool forPassword = false, TimeSpan? timeout = null)

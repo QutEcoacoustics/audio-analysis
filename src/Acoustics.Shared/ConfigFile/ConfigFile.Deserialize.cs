@@ -8,9 +8,9 @@ namespace Acoustics.Shared.ConfigFile
     using System.Collections.Generic;
     using System.IO;
     using Contracts;
-    using Force.DeepCloner;
     using log4net;
     using Newtonsoft.Json;
+    using ObjectCloner.Extensions;
 
     public static partial class ConfigFile
     {

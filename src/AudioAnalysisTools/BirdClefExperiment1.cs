@@ -1,4 +1,4 @@
-﻿// <copyright file="BirdClefExperiment1.cs" company="QutEcoacoustics">
+// <copyright file="BirdClefExperiment1.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -213,7 +213,7 @@ namespace AudioAnalysisTools
 
                 foreach (string key in keyArray)
                 {
-                    string name = string.Format("{0}_Species{1:d2}.{2}.csv", fileID[j], speciesLabel, key);
+                    string name = $"{fileID[j]}_Species{speciesLabel:d2}.{key}.csv";
                     FileInfo file = new FileInfo(Path.Combine(arguments.InputDataDirectory.FullName, name));
 
                     if (file.Exists)
@@ -403,13 +403,13 @@ namespace AudioAnalysisTools
 
                     vector = DataTools.Normalise2Probabilites(vector);
                     vector = DataTools.filterMovingAverage(vector, 3);
-                    string label = string.Format("{0} {1} ({2})", r + 1, key, output.InstanceNumbersPerSpecies[r]);
+                    string label = $"{r + 1} {key} ({output.InstanceNumbersPerSpecies[r]})";
                     Image image = GraphsAndCharts.DrawGraph(label, vector, output.ReducedSpectralLength, imageHeight, scalingFactor);
                     images.Add(image);
                 }
 
                 Image combinedImage = ImageTools.CombineImagesVertically(images);
-                string outputFileName = string.Format("Species{0}.SpectralFeatures.png", r + 1);
+                string outputFileName = $"Species{r + 1}.SpectralFeatures.png";
                 string path = Path.Combine(arguments.OutputDirectory.FullName, outputFileName);
                 combinedImage.Save(path);
             } // loop through 50 species
@@ -573,7 +573,7 @@ namespace AudioAnalysisTools
             {
                 var colSum = MatrixTools.SumColumn(output.RankOrderMatrix, rank);
                 double acc = 100 * colSum / (double)instanceCount;
-                string str = string.Format("{0}   % Acc = {1:f2}", rank, acc);
+                string str = $"{rank}   % Acc = {acc:f2}";
                 LoggedConsole.WriteLine(str);
             }
         }

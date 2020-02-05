@@ -25,7 +25,7 @@ namespace AnalysisPrograms.EventStatistics
 
     public partial class EventStatisticsEntry
     {
-        private static readonly ILog Log = LogManager.GetLogger(nameof(EventStatisticsAnalysis));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(EventStatisticsAnalysis));
 
         public static async Task<int> ExecuteAsync(Arguments arguments)
         {

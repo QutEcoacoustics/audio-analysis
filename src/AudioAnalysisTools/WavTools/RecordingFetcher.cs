@@ -1,4 +1,4 @@
-﻿// <copyright file="RecordingFetcher.cs" company="QutEcoacoustics">
+// <copyright file="RecordingFetcher.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -27,7 +27,7 @@ namespace AudioAnalysisTools.WavTools
 
             ParseFilename(filename, out sensorName, out recordingName, out extension);
 
-            string uriString = string.Format("{0}/{1}/{2}.{3}", SERVER, sensorName, recordingName, extension);
+            string uriString = $"{SERVER}/{sensorName}/{recordingName}.{extension}";
 
             return new Uri(uriString);
         }

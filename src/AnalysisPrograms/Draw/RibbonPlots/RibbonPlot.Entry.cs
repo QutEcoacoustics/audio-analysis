@@ -31,7 +31,7 @@ namespace AnalysisPrograms.Draw.RibbonPlots
     public partial class RibbonPlot
     {
         private static readonly TimeSpan RibbonPlotDomain = TimeSpan.FromHours(24);
-        private static readonly ILog Log = LogManager.GetLogger(nameof(RibbonPlot));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(RibbonPlot));
 
         public static async Task<int> Execute(RibbonPlot.Arguments arguments)
         {

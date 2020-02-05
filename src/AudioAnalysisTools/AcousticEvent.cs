@@ -11,26 +11,25 @@ namespace AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
     using System.IO;
     using System.Linq;
     using System.Text;
     using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Csv;
-    using AForge.Imaging.Filters;
     using AnalysisBase.ResultBases;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using CsvHelper.Configuration;
+    using SixLabors.ImageSharp;
     using TowseyLibrary;
 
     public class AcousticEvent : EventBase
     {
-        public static readonly Color DefaultBorderColor = Color.FromArgb(255, Color.Crimson);
+        public static readonly Color DefaultBorderColor = Color.Crimson;
 
-        public static readonly Color DefaultScoreColor = Color.FromArgb(255, Color.Lime);
+        public static readonly Color DefaultScoreColor = Color.Lime;
 
-        public sealed class AcousticEventClassMap : CsvClassMap<AcousticEvent>
+        public sealed class AcousticEventClassMap : ClassMap<AcousticEvent>
         {
             public static readonly string[] IgnoredProperties =
                 {
@@ -51,12 +50,12 @@ namespace AudioAnalysisTools
 
             public AcousticEventClassMap()
             {
-                this.AutoMap();
+                this.AutoMap(Csv.DefaultConfiguration);
 
                 foreach (var ignoredProperty in IgnoredProperties)
                 {
-                    var index = this.PropertyMaps.IndexOf(pm => pm.Data.Property.Name == ignoredProperty);
-                    this.PropertyMaps.RemoveAt(index);
+                    var index = this.ParameterMaps.IndexOf(pm => pm.Data.Name == ignoredProperty);
+                    this.ParameterMaps.RemoveAt(index);
                 }
 
                 this.Map(m => m.EventStartSeconds).Index(0);
@@ -67,7 +66,7 @@ namespace AudioAnalysisTools
                 this.References<Oblong.OblongClassMap>(m => m.Oblong);
 
                 // Make sure HitElements is always in the last column!
-                this.PropertyMap<AcousticEvent>(m => m.HitElements).Index(1000);
+                this.Map(m => m.HitElements).Index(1000);
             }
         }
 
@@ -118,7 +117,7 @@ namespace AudioAnalysisTools
         {
             get
             {
-                return base.LowFrequencyHertz ?? default(double);
+                return base.LowFrequencyHertz ?? default;
             }
 
             set
@@ -231,7 +230,7 @@ namespace AudioAnalysisTools
         {
             this.BorderColour = DefaultBorderColor;
             this.ScoreColour = DefaultScoreColor;
-            this.HitColour = Color.FromArgb(128, this.BorderColour);
+            this.HitColour = this.BorderColour.WithAlpha(0.5f);
             this.IsMelscale = false;
         }
 
@@ -691,16 +690,8 @@ namespace AudioAnalysisTools
                 sb.AppendLine(line);
                 foreach (AcousticEvent ae in eventList)
                 {
-                    line = string.Format(
-                        "{0}\t{1,8:f3}\t{2,8:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}",
-                        ae.Name,
-                        ae.TimeStart,
-                        ae.TimeEnd,
-                        ae.LowFrequencyHertz,
-                        ae.HighFrequencyHertz,
-                        ae.Score,
-                        ae.Score2,
-                        ae.FileName);
+                    line =
+                        $"{ae.Name}\t{ae.TimeStart,8:f3}\t{ae.TimeEnd,8:f3}\t{ae.LowFrequencyHertz}\t{ae.HighFrequencyHertz}\t{ae.Score:f2}\t{ae.Score2:f1}\t{ae.FileName}";
                     sb.AppendLine(line);
                 }
             }
@@ -883,13 +874,15 @@ namespace AudioAnalysisTools
                 if (overlapLabelEvent == null)
                 {
                     fp++;
-                    line = string.Format("False POSITIVE: {0,4} {1,15} {2,6:f1} ...{3,6:f1} {4,7:f1} {5,7:f1}\t{6,10:f2}", count, ae.Name, ae.TimeStart, end, ae.Score, ae.Score2, ae.EventDurationSeconds);
+                    line =
+                        $"False POSITIVE: {count,4} {ae.Name,15} {ae.TimeStart,6:f1} ...{end,6:f1} {ae.Score,7:f1} {ae.Score2,7:f1}\t{ae.EventDurationSeconds,10:f2}";
                 }
                 else
                 {
                     tp++;
                     overlapLabelEvent.Tag = true; //tag because later need to determine fn
-                    line = string.Format("True  POSITIVE: {0,4} {1,15} {2,6:f1} ...{3,6:f1} {4,7:f1} {5,7:f1}\t{6,10:f2}", count, ae.Name, ae.TimeStart, end, ae.Score, ae.Score2, ae.EventDurationSeconds);
+                    line =
+                        $"True  POSITIVE: {count,4} {ae.Name,15} {ae.TimeStart,6:f1} ...{end,6:f1} {ae.Score,7:f1} {ae.Score2,7:f1}\t{ae.EventDurationSeconds,10:f2}";
                 }
 
                 if (previousSourceFile != ae.FileName)
@@ -1011,13 +1004,15 @@ namespace AudioAnalysisTools
                 if (overlapLabelEvent == null)
                 {
                     fp++;
-                    line = string.Format("False POSITIVE: {0,4} {1,15} {2,6:f1} ...{3,6:f1} {4,7:f1} {5,7:f1}\t{6,10:f2}", count, ae.Name, ae.TimeStart, end, ae.Score, ae.Score2, ae.EventDurationSeconds);
+                    line =
+                        $"False POSITIVE: {count,4} {ae.Name,15} {ae.TimeStart,6:f1} ...{end,6:f1} {ae.Score,7:f1} {ae.Score2,7:f1}\t{ae.EventDurationSeconds,10:f2}";
                 }
                 else
                 {
                     tp++;
                     overlapLabelEvent.Tag = true; //tag because later need to determine fn
-                    line = string.Format("True  POSITIVE: {0,4} {1,15} {2,6:f1} ...{3,6:f1} {4,7:f1} {5,7:f1}\t{6,10:f2}", count, ae.Name, ae.TimeStart, end, ae.Score, ae.Score2, ae.EventDurationSeconds);
+                    line =
+                        $"True  POSITIVE: {count,4} {ae.Name,15} {ae.TimeStart,6:f1} ...{end,6:f1} {ae.Score,7:f1} {ae.Score2,7:f1}\t{ae.EventDurationSeconds,10:f2}";
                 }
 
                 sb.Append(line + "\t" + ae.FileName + "\n");

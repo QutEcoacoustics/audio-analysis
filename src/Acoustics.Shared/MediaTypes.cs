@@ -11,6 +11,7 @@ namespace Acoustics.Shared
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
+    using SixLabors.ImageSharp.Formats;
 
     /// <summary>
     /// The media type ext group.
@@ -843,51 +844,9 @@ namespace Acoustics.Shared
         /// </param>
         /// <returns>
         /// </returns>
-        public static ImageFormat GetImageFormat(string extension)
+        public static IImageFormat GetImageFormat(string extension)
         {
-            ImageFormat format;
-
-            switch (CanonicaliseExtension(extension))
-            {
-                     case ExtBmp:
-                     format = ImageFormat.Bmp;
-                     break;
-
-                    // case MediaTypes.ExtEmf:
-                    // format = ImageFormat.Emf;
-                    // break;
-                    // case MediaTypes.ExtExif:
-                    // format = ImageFormat.Exif;
-                    // break;
-                     case ExtGif:
-                     format = ImageFormat.Gif;
-                     break;
-                     case ExtIco:
-                     format = ImageFormat.Icon;
-                     break;
-                     case ExtJpeg:
-                     format = ImageFormat.Jpeg;
-                     break;
-
-                    // case MediaTypes.ExtBmp:
-                    // format = ImageFormat.MemoryBmp;
-                    // break;
-                     case ExtPng:
-                     format = ImageFormat.Png;
-                     break;
-                     case ExtTiff:
-                     format = ImageFormat.Tiff;
-                     break;
-
-                    // case MediaTypes.ExtWmf:
-                    // format = ImageFormat.Wmf;
-                    // break;
-                     default:
-                     format = ImageFormat.Jpeg;
-                     break;
-            }
-
-            return format;
+            return SixLabors.ImageSharp.Configuration.Default.ImageFormatsManager.FindFormatByFileExtension(extension);
         }
 
         /// <summary>

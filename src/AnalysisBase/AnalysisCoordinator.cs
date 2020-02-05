@@ -47,7 +47,7 @@ namespace AnalysisBase
 
         private const int TaskTimeoutSeconds = 240;
 
-        private static readonly ILog Log = LogManager.GetLogger(nameof(AnalysisCoordinator));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(AnalysisCoordinator));
 
         private readonly SaveBehavior saveIntermediateWavFiles;
 

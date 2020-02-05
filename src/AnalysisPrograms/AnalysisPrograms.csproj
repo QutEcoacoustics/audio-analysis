@@ -1,244 +1,81 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{EC323929-0160-46BC-A04B-B4A66D02E757}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>AnalysisPrograms</RootNamespace>
-    <AssemblyName>AnalysisPrograms</AssemblyName>
-    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <StartupObject>AnalysisPrograms.MainEntry</StartupObject>
     <TargetZone>LocalIntranet</TargetZone>
     <GenerateManifests>false</GenerateManifests>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <OldToolsVersion>3.5</OldToolsVersion>
+    <FileUpgradeFlags />
     <UpgradeBackupLocation />
     <IsWebBootstrapper>false</IsWebBootstrapper>
-    <TargetFrameworkProfile />
-    <RestorePackages>true</RestorePackages>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <AssemblyTitle>Meta.Name</AssemblyTitle>
+    <Company>Meta.GroupName</Company>
+    <Product>Meta.Name</Product>
+    <Description>Meta.Description</Description>
+    <CodeAnalysisRuleSet>..\..\style.ruleset</CodeAnalysisRuleSet>
+    <LangVersion>latest</LangVersion>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <BuildDependsOn>$(BuildDependsOn);AfterBuildMigrated</BuildDependsOn>
+    <PreBuildEvent />
+    <PostBuildEvent />
+    <PreBuildEvent />
+    <PostBuildEvent />
+    <PreBuildEvent />
+    <PostBuildEvent />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
     <RunCodeAnalysis>false</RunCodeAnalysis>
-    <CodeAnalysisRuleSet>..\..\style.ruleset</CodeAnalysisRuleSet>
     <UseVSHostingProcess>true</UseVSHostingProcess>
-    <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>..\..\style.ruleset</CodeAnalysisRuleSet>
-    <DocumentationFile>bin\Release\AnalysisPrograms.XML</DocumentationFile>
-    <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>latest</LangVersion>
+    <DocumentationFile>bin\$(Configuration)\AnalysisPrograms.XML</DocumentationFile>
   </PropertyGroup>
+  <PropertyGroup>
+    <PreBuildEvent />
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent />
+  </PropertyGroup>
+  <Import Project="..\AP.VersionBuild.targets" />
+  <Import Project="..\AP.CopyFiles.targets" />
+  <Target Name="BeforeBuildMigrated" BeforeTargets="PreBuildEvent" />
+  <Target Name="AfterBuildMigrated" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets'))" />
+    <Error Condition="!Exists('..\..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets'))" />
+    <Error Condition="!Exists('..\..\packages\SQLitePCLRaw.lib.e_sqlite3.linux.1.1.9\build\net35\SQLitePCLRaw.lib.e_sqlite3.linux.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SQLitePCLRaw.lib.e_sqlite3.linux.1.1.9\build\net35\SQLitePCLRaw.lib.e_sqlite3.linux.targets'))" />
+    <Error Condition="!Exists('..\..\packages\SQLitePCLRaw.lib.e_sqlite3.osx.1.1.9\build\net35\SQLitePCLRaw.lib.e_sqlite3.osx.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SQLitePCLRaw.lib.e_sqlite3.osx.1.1.9\build\net35\SQLitePCLRaw.lib.e_sqlite3.osx.targets'))" />
+    <Error Condition="!Exists('..\..\packages\SQLitePCLRaw.lib.e_sqlite3.v110_xp.1.1.9\build\net35\SQLitePCLRaw.lib.e_sqlite3.v110_xp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SQLitePCLRaw.lib.e_sqlite3.v110_xp.1.1.9\build\net35\SQLitePCLRaw.lib.e_sqlite3.v110_xp.targets'))" />
+  </Target>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
-    <Reference Include="System.Core">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data.Linq">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Data.Linq" />
     <Reference Include="System.Net" />
     <Reference Include="System.Net.Http.WebRequest" />
-    <Reference Include="System.Numerics" />
     <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Extensions" />
-    <Reference Include="System.Xml.Linq">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data.DataSetExtensions">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
+    <Reference Include="System.Data.DataSetExtensions" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\AssemblyMetadata.cs">
-      <Link>AssemblyMetadata.cs</Link>
-    </Compile>
-    <Compile Include="ContentDescription\UseModel.cs" />
-    <Compile Include="AcousticWorkbench.Orchestration\EventMetadataResolver.cs" />
-    <Compile Include="AcousticWorkbench.Orchestration\RemoteSegment.cs" />
-    <Compile Include="AED.cs" />
-    <Compile Include="AnalyseLongRecordings\AnalyseLongRecording.cs" />
-    <Compile Include="AnalyseLongRecordings\AnalyseLongRecordings.Arguments.cs" />
-    <Compile Include="AnalysesAvailable.cs" />
-    <Compile Include="Audio2Sonogram.cs" />
-    <Compile Include="AudioCutter.cs" />
-    <Compile Include="AudioFileCheck.cs" />
-    <Compile Include="CheckEnvironment.cs" />
-    <Compile Include="ContentDescription\BuildModel.cs" />
-    <Compile Include="Draw\Zooming\DrawZoomingSpectrograms.Arguments.cs" />
-    <Compile Include="EventStatistics\EventStatisticsEntry.Arguments.cs" />
-    <Compile Include="EventStatistics\EventStatisticsAnalysis.cs" />
-    <Compile Include="EventStatistics\EventStatisticsEntry.cs" />
-    <Compile Include="EventStatistics\ImportedEvent.cs" />
-    <Compile Include="Audio2InputForConvCNN.cs" />
-    <Compile Include="ChannelIntegrity.cs" />
-    <Compile Include="DrawEasyImage.cs" />
-    <Compile Include="ConcatenateIndexFiles.cs" />
-    <Compile Include="Draw\Zooming\DrawZoomingSpectrograms.cs" />
-    <Compile Include="HerveGlotinCollaboration.cs" />
-    <Compile Include="MahnooshSandpit.cs" />
-    <Compile Include="Production\Arguments\DebugOptions.cs" />
-    <Compile Include="Production\Arguments\HelpArgs.cs" />
-    <Compile Include="Production\Arguments\ListArgs.cs" />
-    <Compile Include="Production\Arguments\LogVerbosity.cs" />
-    <Compile Include="Production\Arguments\MainArgs.cs" />
-    <Compile Include="Production\Arguments\SourceAndConfigArguments.cs" />
-    <Compile Include="Production\Arguments\SourceArguments.cs" />
-    <Compile Include="Production\Arguments\SourceConfigOutputDirArguments.cs" />
-    <Compile Include="Production\Arguments\SubCommandBase.cs" />
-    <Compile Include="Production\CommandLineApplicationExtensions.cs" />
-    <Compile Include="Production\CustomHelpTextGenerator.cs" />
-    <Compile Include="Production\FileSystemProvider.cs" />
-    <Compile Include="Production\Parsers\FileInfoParser.cs" />
-    <Compile Include="Production\Parsers\DirectoryInfoParser.cs" />
-    <Compile Include="Production\Parsers\TimeSpanParser.cs" />
-    <Compile Include="Production\Parsers\DateTimeOffsetParser.cs" />
-    <Compile Include="Production\PhysicalConsoleLogger.cs" />
-    <Compile Include="Production\Validation\DirectoryExistsOrCreateAttribute.cs" />
-    <Compile Include="Production\Validation\ExistingFileAttribute.cs" />
-    <Compile Include="Production\Validation\InRangeAttribute.cs" />
-    <Compile Include="Production\Validation\NotExistingFileAttribute.cs" />
-    <Compile Include="Recognizers\Base\BlobParameters.cs" />
-    <Compile Include="Recognizers\Base\CommonParameters.cs" />
-    <Compile Include="Recognizers\Base\DctParameters.cs" />
-    <Compile Include="Recognizers\Base\IEventRecognizer.cs" />
-    <Compile Include="Recognizers\Base\MultiRecognizer.cs" />
-    <Compile Include="Recognizers\Base\OscillationParameters.cs" />
-    <Compile Include="Recognizers\Base\RecognizerBase.cs" />
-    <Compile Include="Recognizers\Base\RecognizerEntry.cs" />
-    <Compile Include="Recognizers\Base\RecognizerResults.cs" />
-    <Compile Include="Recognizers\Base\HarmonicParameters.cs" />
-    <Compile Include="Recognizers\CriniaTinnula_OBSOLETE.cs" />
-    <Compile Include="Recognizers\GenericRecognizer.cs" />
-    <Compile Include="Recognizers\IctalurusFurcatus.cs" />
-    <Compile Include="Recognizers\LewiniaPectoralis.cs" />
-    <Compile Include="Recognizers\LitoriaNasuta.cs" />
-    <Compile Include="Recognizers\LitoriaFreycineti.cs" />
-    <Compile Include="Recognizers\LitoriaWatjulumensis.cs" />
-    <Compile Include="Recognizers\LitoriaBicolor.cs" />
-    <Compile Include="Recognizers\PezoporusOccidentalis.cs" />
-    <Compile Include="Recognizers\Base\WhistleParameters.cs" />
-    <Compile Include="Recognizers\PteropusSpecies.cs" />
-    <Compile Include="Recognizers\UperoleiaLithomoda.cs" />
-    <Compile Include="Recognizers\PlatyplectrumOrnatum.cs" />
-    <Compile Include="Recognizers\LimnodynastesConvex.cs" />
-    <Compile Include="Recognizers\ExempliGratia.cs" />
-    <Compile Include="Recognizers\CycloranaNovaehollandiae.cs" />
-    <Compile Include="Recognizers\ArdeaInsignis.cs" />
-    <Compile Include="Recognizers\Tinnula_TRY.cs" />
-    <Compile Include="Recognizers\CriniaRemota.cs" />
-    <Compile Include="Recognizers\LitoriaCaerulea.cs" />
-    <Compile Include="Recognizers\UperoleiaInundata.cs" />
-    <Compile Include="Recognizers\LitoriaPallida.cs" />
-    <Compile Include="Recognizers\LitoriaRubella.cs" />
-    <Compile Include="Recognizers\UperoleiaMimula.cs" />
-    <Compile Include="Recognizers\LitoriaNasutaOLD.cs" />
-    <Compile Include="Recognizers\LitoriaRothii.cs" />
-    <Compile Include="Recognizers\LitoriaOlong.cs" />
-    <Compile Include="Recognizers\LitoriaFallax.cs" />
-    <Compile Include="Recognizers\RhinellaMarina.cs" />
-    <Compile Include="Draw\RibbonPlots\RibbonPlot.Arguments.cs" />
-    <Compile Include="Draw\RibbonPlots\RibbonPlot.Entry.cs" />
-    <Compile Include="SourcePreparers\RemoteSourcePreparer.cs" />
-    <Compile Include="SourcePreparers\LocalSourcePreparer.cs" />
-    <Compile Include="SourcePreparers\RemoteSourcePreparerException.cs" />
-    <Compile Include="SpectralPeakTracking\SpectralPeakTrackingConfig.cs" />
-    <Compile Include="SpectralPeakTracking\SpectralPeakTrackingEntry.cs" />
-    <Compile Include="StandardizedFeatures\StandardizedFeatureExtractionConfig.cs" />
-    <Compile Include="StandardizedFeatures\StandardizedFeatureExtraction.cs" />
-    <Compile Include="SURFAnalysis.cs" />
-    <Compile Include="OscillationsGeneric.cs" />
-    <Compile Include="DifferenceSpectrogram.cs" />
-    <Compile Include="DrawLongDurationSpectrograms.cs" />
-    <Compile Include="DummyAnalysis.cs" />
-    <Compile Include="EPR.cs" />
-    <Compile Include="FileRenamer.cs" />
-    <Compile Include="GroundParrotRecogniser.cs" />
-    <Compile Include="Production\Validation\OneOfThese.cs" />
-    <Compile Include="Production\Arguments\AnalyserArguments.cs" />
-    <Compile Include="Production\MainEntryUtilities.cs" />
-    <Compile Include="Production\Exceptions.cs" />
-    <Compile Include="Crow.cs" />
-    <Compile Include="Human1.cs" />
-    <Compile Include="DrawSummaryIndexTracks.cs" />
-    <Compile Include="KoalaMale.cs" />
-    <Compile Include="LSKiwi3.cs" />
-    <Compile Include="LSKiwiHelper.cs" />
-    <Compile Include="LSKiwiROC.cs" />
-    <Compile Include="OscillationRecogniser.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="PlanesTrainsAndAutomobiles.cs" />
-    <Compile Include="RheobatrachusSilus.cs" />
-    <Compile Include="Sandpit.cs" />
-    <Compile Include="SpeciesAccumulationCurve.cs" />
-    <Compile Include="AcousticIndices.cs" />
-    <Compile Include="MainEntry.cs" />
-    <Compile Include="Create4Sonograms.cs" />
-    <Compile Include="Segment.cs" />
-    <Compile Include="SnrAnalysis.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Spt.cs" />
+    <Compile Include="..\AssemblyMetadata.cs" Link="AssemblyMetadata.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Acoustics.Shared\Acoustics.Shared.csproj">
-      <Project>{EF04F5A8-D4BD-4CD1-BFC2-F6AD2D9C7927}</Project>
-      <Name>Acoustics.Shared</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Acoustics.Tools\Acoustics.Tools.csproj">
-      <Project>{0338570E-5A77-4A2E-8E17-7955C36AE1F7}</Project>
-      <Name>Acoustics.Tools</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\AcousticWorkbench\AcousticWorkbench.csproj">
-      <Project>{e92afa1b-b089-4cc3-b765-3b4cff84e294}</Project>
-      <Name>AcousticWorkbench</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\AED\AED.fsproj">
-      <Project>{D5DFD3D5-EF64-4F5B-867F-192DAA7594FC}</Project>
-      <Name>AED</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\AnalysisBase\AnalysisBase.csproj">
-      <Project>{80BC795A-A987-45AB-B29B-76CF190384BA}</Project>
-      <Name>AnalysisBase</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\AudioAnalysisTools\AudioAnalysisTools.csproj">
-      <Project>{86855cbc-7243-492a-a500-2de36cc7c825}</Project>
-      <Name>AudioAnalysisTools</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\TowseyLibrary\TowseyLibrary.csproj">
-      <Project>{7c6831fd-f60c-4f7b-8e6a-35e850174411}</Project>
-      <Name>TowseyLibrary</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\Acoustics.Shared\Acoustics.Shared.csproj" />
+    <ProjectReference Include="..\Acoustics.Tools\Acoustics.Tools.csproj" />
+    <ProjectReference Include="..\AcousticWorkbench\AcousticWorkbench.csproj" />
+    <ProjectReference Include="..\AED\AED.fsproj" />
+    <ProjectReference Include="..\AnalysisBase\AnalysisBase.csproj" />
+    <ProjectReference Include="..\AudioAnalysisTools\AudioAnalysisTools.csproj" />
+    <ProjectReference Include="..\TowseyLibrary\TowseyLibrary.csproj" />
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="..\..\stylecop.json">
@@ -252,61 +89,25 @@
       <Link>AP.Settings.json</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="App.config">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="SQLitePCLRaw.provider.e_sqlite3.dll.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <SubType>Designer</SubType>
-    </None>
   </ItemGroup>
   <ItemGroup>
-    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
-      <Visible>False</Visible>
-      <ProductName>Windows Installer 3.1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
+    <Compile Remove="AcousticFeatures.cs" />
+    <Compile Remove="CanetoadOld_OBSOLETE.cs" />
+    <Compile Remove="FeltTemplates_Use.cs" />
+    <Compile Remove="FeltTemplate_Create.cs" />
+    <Compile Remove="FeltTemplate_Edit.cs" />
+    <Compile Remove="FindEventsLikeThis.cs" />
+    <Compile Remove="FrogRibit_OBSOLETE.cs" />
+    <Compile Remove="Frogs_OBSOLETE.cs" />
+    <Compile Remove="GratingDetection_OBSOLETE.cs" />
+    <Compile Remove="LewinsRail3OBSOLETE.cs" />
+    <Compile Remove="LimnodynastesConvex_OBSOLETE.cs" />
+    <Compile Remove="LitoriaFallax_OBSOLETE.cs" />
+    <Compile Remove="LSKiwi1.cs" />
+    <Compile Remove="LSKiwi2.cs" />
+    <Compile Remove="Rain_OBSOLETE.cs" />
+    <Compile Remove="SPR_OBSOLETE.cs" />
+    <Compile Remove="XiesAnalysis.cs" />
+    <Compile Remove="Recognizers\LitoriaBicolorOLD.cs" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
-  <PropertyGroup>
-    <PreBuildEvent>
-    </PreBuildEvent>
-  </PropertyGroup>
-  <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
-  </PropertyGroup>
-  <Import Project="..\AP.VersionBuild.targets" />
-  <Import Project="..\AP.CopyFiles.targets" />
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets'))" />
-    <Error Condition="!Exists('..\..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MSBuildTasks.1.5.0.235\build\MSBuildTasks.targets'))" />
-    <Error Condition="!Exists('..\..\packages\SQLitePCLRaw.lib.e_sqlite3.linux.1.1.9\build\net35\SQLitePCLRaw.lib.e_sqlite3.linux.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SQLitePCLRaw.lib.e_sqlite3.linux.1.1.9\build\net35\SQLitePCLRaw.lib.e_sqlite3.linux.targets'))" />
-    <Error Condition="!Exists('..\..\packages\SQLitePCLRaw.lib.e_sqlite3.osx.1.1.9\build\net35\SQLitePCLRaw.lib.e_sqlite3.osx.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SQLitePCLRaw.lib.e_sqlite3.osx.1.1.9\build\net35\SQLitePCLRaw.lib.e_sqlite3.osx.targets'))" />
-    <Error Condition="!Exists('..\..\packages\SQLitePCLRaw.lib.e_sqlite3.v110_xp.1.1.9\build\net35\SQLitePCLRaw.lib.e_sqlite3.v110_xp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SQLitePCLRaw.lib.e_sqlite3.v110_xp.1.1.9\build\net35\SQLitePCLRaw.lib.e_sqlite3.v110_xp.targets'))" />
-  </Target>
 </Project>

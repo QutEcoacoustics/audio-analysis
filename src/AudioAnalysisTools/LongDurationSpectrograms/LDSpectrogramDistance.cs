@@ -115,10 +115,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             int hertzInterval = 1000;
 
             string title =
-                string.Format(
-                    "FALSE COLOUR SPECTROGRAM: {0}.      (scale:hours x kHz)       (color: R-G-B={1})",
-                    inputFileName1,
-                    cs1.ColorMode);
+                $"FALSE COLOUR SPECTROGRAM: {inputFileName1}.      (scale:hours x kHz)       (colour: R-G-B={cs1.ColorMode})";
             Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, spg1Image.Width);
             spg1Image = LDSpectrogramRGB.FrameLDSpectrogram(
                 spg1Image,
@@ -145,10 +142,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 return;
             }
 
-            title = string.Format(
-                "FALSE COLOUR SPECTROGRAM: {0}.      (scale:hours x kHz)       (colour: R-G-B={1})",
-                inputFileName2,
-                cs2.ColorMode);
+            title =
+                $"FALSE COLOUR SPECTROGRAM: {inputFileName2}.      (scale:hours x kHz)       (colour: R-G-B={cs2.ColorMode})";
             titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, spg2Image.Width);
             spg2Image = LDSpectrogramRGB.FrameLDSpectrogram(
                 spg2Image,

@@ -159,7 +159,7 @@ namespace AudioAnalysisTools.Indices
             }
 
             List<string> lines = new List<string>();
-            string linestart = string.Format("{0},{1}", year, thisDayOfYear);
+            string linestart = $"{year},{thisDayOfYear}";
 
             //int minutesInThisMatrix = 2;
             // number of minutes = number of columns in matrix
@@ -180,7 +180,7 @@ namespace AudioAnalysisTools.Indices
 
                         // do not need more than 6 decimal places for values which will ultimately transformed to colour bytes.
                         // cuts file size from 12.2 MB to 7.4 MB
-                        string str = string.Format(",{0:F6}", matrix[bin, min]);
+                        string str = $",{matrix[bin, min]:F6}";
                         line.Append(str);
                     }
 

@@ -278,7 +278,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 herzInterval = config.YAxisTicInterval;
             }
 
-            string title = string.Format("SCALE={0}s/px.  Duration={1} ",  imageScale.TotalSeconds, spectrogramDuration);
+            string title = $"SCALE={imageScale.TotalSeconds}s/px.  Duration={spectrogramDuration} ";
 
             //add chrome
             // NEXT LINE USED ONLY IF WANT ABSOLUTE TIME

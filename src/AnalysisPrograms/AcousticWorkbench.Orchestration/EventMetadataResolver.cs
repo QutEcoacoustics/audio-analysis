@@ -22,7 +22,7 @@ namespace AnalysisPrograms.AcousticWorkbench.Orchestration
 
     public class EventMetadataResolver
     {
-        private static readonly ILog Log = LogManager.GetLogger(nameof(EventMetadataResolver));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(EventMetadataResolver));
         private readonly AudioRecordingService audioRecordingService;
         private readonly AcousticEventService acousticEventService;
         private readonly int maxDegreeOfParallelism;

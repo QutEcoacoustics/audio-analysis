@@ -1,4 +1,4 @@
-﻿// <copyright file="SpectrogramSettings.cs" company="QutEcoacoustics">
+// <copyright file="SpectrogramSettings.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -61,7 +61,7 @@ namespace AudioAnalysisTools.DSP
             Dictionary<string, List<double[,]>> randomPatchLists = new Dictionary<string, List<double[,]>>();
             for (int i = 0; i < numFreqBand; i++)
             {
-                randomPatchLists.Add(string.Format("randomPatch{0}", i.ToString()), new List<double[,]>());
+                randomPatchLists.Add($"randomPatch{i.ToString()}", new List<double[,]>());
             }
 
             List<double[,]> randomPatches = new List<double[,]>();
@@ -243,8 +243,8 @@ namespace AudioAnalysisTools.DSP
             Dictionary<string, List<double[,]>> sequentialPatchLists = new Dictionary<string, List<double[,]>>();
             for (int i = 0; i < numFreqBand; i++)
             {
-                randomPatchLists.Add(string.Format("randomPatch{0}", i.ToString()), new List<double[,]>());
-                sequentialPatchLists.Add(string.Format("sequentialPatch{0}", i.ToString()), new List<double[,]>());
+                randomPatchLists.Add($"randomPatch{i.ToString()}", new List<double[,]>());
+                sequentialPatchLists.Add($"sequentialPatch{i.ToString()}", new List<double[,]>());
             }
 
             List<double[,]> randomPatches = new List<double[,]>();

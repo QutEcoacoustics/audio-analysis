@@ -1,21 +1,9 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{86855CBC-7243-492A-A500-2DE36CC7C825}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>AudioAnalysisTools</RootNamespace>
-    <AssemblyName>AudioAnalysisTools</AssemblyName>
-    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <CodeContractsAssemblyMode>0</CodeContractsAssemblyMode>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <OldToolsVersion>3.5</OldToolsVersion>
+    <FileUpgradeFlags />
     <UpgradeBackupLocation />
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
@@ -32,262 +20,55 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <TargetFrameworkProfile />
-    <RestorePackages>true</RestorePackages>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
     <CodeAnalysisRuleSet>..\..\style.ruleset</CodeAnalysisRuleSet>
+    <AssemblyTitle>AudioAnalysisTools</AssemblyTitle>
+    <Company>QUT</Company>
+    <Product>AudioAnalysisTools</Product>
+    <Copyright>Copyright © QUT 2010</Copyright>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <PostBuildEvent />
+    <PostBuildEvent />
+    <PostBuildEvent />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>..\..\style.ruleset</CodeAnalysisRuleSet>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
-    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent />
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.configuration" />
-    <Reference Include="System.Core">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data.Linq">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Data.Linq" />
     <Reference Include="System.Net" />
     <Reference Include="System.Net.Http.WebRequest" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Xml.Linq">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data.DataSetExtensions">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
+    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="YamlDotNet.Dynamic, Version=3.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Extra Assemblies\YamlDotNet\YamlDotNet.Dynamic.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AcousticComplexityIndex.cs" />
-    <Compile Include="AcousticEntropy.cs" />
-    <Compile Include="AcousticEvent.cs" />
-    <Compile Include="ActivityAndCover.cs" />
-    <Compile Include="BirdClefExperiment1.cs" />
-    <Compile Include="ChannelIntegrity.cs" />
-    <Compile Include="ContentDescriptionTools\ContentAlgorithms.cs" />
-    <Compile Include="ContentDescriptionTools\ContentSignatures.cs" />
-    <Compile Include="ContentDescriptionTools\ContentVisualization.cs" />
-    <Compile Include="ContentDescriptionTools\DataProcessing.cs" />
-    <Compile Include="ContentDescriptionTools\DescriptionResult.cs" />
-    <Compile Include="ContentDescriptionTools\SpectralIndexValuesForContentDescription.cs" />
-    <Compile Include="ContentDescriptionTools\TemplateManifest.cs" />
-    <Compile Include="ContentDescriptionTools\TemplateCollection.cs" />
-    <Compile Include="CrossCorrelation.cs" />
-    <Compile Include="DSP\Clipping.cs" />
-    <Compile Include="DSP\DSP_Filters.cs" />
-    <Compile Include="DSP\DSP_Frames.cs" />
-    <Compile Include="DSP\DSP_IIRFilter.cs" />
-    <Compile Include="DSP\FeatureExtraction.cs" />
-    <Compile Include="DSP\FeatureLearning.cs" />
-    <Compile Include="DSP\FeatureLearningSettings.cs" />
-    <Compile Include="DSP\FFT2D.cs" />
-    <Compile Include="DSP\FrequencyScale.cs" />
-    <Compile Include="DSP\KmeansClustering.cs" />
-    <Compile Include="DSP\LocalContrastNormalisation.cs" />
-    <Compile Include="DSP\NoiseProfile.cs" />
-    <Compile Include="DSP\NoiseRemoval_Briggs.cs" />
-    <Compile Include="DSP\NoiseRemovalModal.cs" />
-    <Compile Include="DSP\OctaveFreqScale.cs" />
-    <Compile Include="DSP\PatchSampling.cs" />
-    <Compile Include="DSP\PcaWhitening.cs" />
-    <Compile Include="DSP\PowerSpectralDensity.cs" />
-    <Compile Include="DSP\SNR.cs" />
-    <Compile Include="DSP\MFCCStuff.cs" />
-    <Compile Include="DSP\WaveType.cs" />
-    <Compile Include="DSP\WavInfo.cs" />
-    <Compile Include="DSP\WavWriter.cs" />
-    <Compile Include="EventStatistics\EventStatistics.cs" />
-    <Compile Include="EventStatistics\EventStatisticsConfiguration.cs" />
-    <Compile Include="EventStatistics\EventStatisticsCalculate.cs" />
-    <Compile Include="FrommoltProject.cs" />
-    <Compile Include="Indices\GapsAndJoins.cs" />
-    <Compile Include="Indices\IndexCalculateSixOnly.cs" />
-    <Compile Include="Indices\IndexCalculate.cs" />
-    <Compile Include="Indices\IndexCalculateConfig.cs" />
-    <Compile Include="Indices\IndexDistributions.cs" />
-    <Compile Include="Indices\IndexGenerationData.cs" />
-    <Compile Include="Indices\IndexMatrices.cs" />
-    <Compile Include="Indices\IndexProperties.cs" />
-    <Compile Include="Indices\SpectralIndexValues.cs" />
-    <Compile Include="Indices\SpectralIndicesToAndFromTable.cs" />
-    <Compile Include="Indices\SummaryIndexValues.cs" />
-    <Compile Include="Indices\InitialiseIndexProperties.cs" />
-    <Compile Include="Indices\RainIndices.cs" />
-    <Compile Include="LongDurationSpectrograms\LdSpectrogramRibbons.cs" />
-    <Compile Include="LongDurationSpectrograms\LDSpectrogramClusters.cs" />
-    <Compile Include="LongDurationSpectrograms\TimeOffsetSingleLayerSuperTile.cs" />
-    <Compile Include="LongDurationSpectrograms\Zooming\InvalidScaleException.cs" />
-    <Compile Include="LongDurationSpectrograms\Zooming\SpectrogramZoomingConfig.cs" />
-    <Compile Include="LongDurationSpectrograms\Zooming\ZoomCommon.cs" />
-    <Compile Include="LongDurationSpectrograms\Zooming\ZoomParameters.cs" />
-    <Compile Include="LongDurationSpectrograms\Zooming\ZoomTiledSpectrograms.cs" />
-    <Compile Include="LongDurationSpectrograms\LDSpectrogram3D.cs" />
-    <Compile Include="LongDurationSpectrograms\LDSpectrogramConfig.cs" />
-    <Compile Include="LongDurationSpectrograms\LDSpectrogramDiscreteColour.cs" />
-    <Compile Include="LongDurationSpectrograms\LDSpectrogramStitching.cs" />
-    <Compile Include="LongDurationSpectrograms\LDSpectrogramTStatistic.cs" />
-    <Compile Include="LongDurationSpectrograms\LDSpectrogramRGB.cs" />
-    <Compile Include="ConfigurationClasses.cs" />
-    <Compile Include="Indices\IndexDisplay.cs" />
-    <Compile Include="FindMatchingEvents.cs" />
-    <Compile Include="HarmonicAnalysis.cs" />
-    <Compile Include="AnalysisKeys.cs" />
-    <Compile Include="LongDurationSpectrograms\Zooming\ZoomFocusedSpectrograms.cs" />
-    <Compile Include="Oscillations2014.cs" />
-    <Compile Include="Oscillations2019.cs" />
-    <Compile Include="RidgeDetection.cs" />
-    <Compile Include="SiteDescription.cs" />
-    <Compile Include="StandardSpectrograms\AmplitudeSpectrogram.cs" />
-    <Compile Include="StandardSpectrograms\AmplitudeSonogram.cs" />
-    <Compile Include="StandardSpectrograms\EnergySpectrogram.cs" />
-    <Compile Include="StandardSpectrograms\DecibelSpectrogram.cs" />
-    <Compile Include="StandardSpectrograms\SpectrogramSettings.cs" />
-    <Compile Include="SpectralPeakTracking2018.cs" />
-    <Compile Include="SunAndMoon.cs" />
-    <Compile Include="SURFFeatures.cs" />
-    <Compile Include="TileImage\AbsoluteDateTilingProfile.cs" />
-    <Compile Include="TileImage\DuplicateTileException.cs" />
-    <Compile Include="TileImage\ImageComponent.cs" />
-    <Compile Include="TileImage\ISuperTile.cs" />
-    <Compile Include="TileImage\Layer.cs" />
-    <Compile Include="TileImage\PanoJsTilingProfile.cs" />
-    <Compile Include="TileImage\DefaultSuperTile.cs" />
-    <Compile Include="TileImage\TileBias.cs" />
-    <Compile Include="TileImage\TilingProfile.cs" />
-    <Compile Include="TileImage\Tiler.cs" />
-    <Compile Include="WavTools\AudioRecording.cs" />
-    <Compile Include="WavTools\RecordingFetcher.cs" />
-    <Compile Include="WavTools\WavChooser.cs" />
-    <Compile Include="WavTools\WavReader.cs" />
-    <Compile Include="PointOfInterest.cs" />
-    <Compile Include="StandardSpectrograms\SpectrogramCepstral.cs" />
-    <Compile Include="StandardSpectrograms\SpectrogramSobelEdge.cs" />
-    <Compile Include="StandardSpectrograms\SpectrogramStandard.cs" />
-    <Compile Include="LongDurationSpectrograms\SpectrogramConstants.cs" />
-    <Compile Include="LongDurationSpectrograms\LDSpectrogramDifference.cs" />
-    <Compile Include="LongDurationSpectrograms\LDSpectrogramDistance.cs" />
-    <Compile Include="StandardSpectrograms\SpectrogramTools.cs" />
-    <Compile Include="NeuralNets\ART.cs" />
-    <Compile Include="NeuralNets\ART_2A.cs" />
-    <Compile Include="NeuralNets\BinaryCluster.cs" />
-    <Compile Include="NeuralNets\Cluster.cs" />
-    <Compile Include="NeuralNets\FuzzyART.cs" />
-    <Compile Include="NeuralNets\VQ.cs" />
-    <Compile Include="Oscillations2010.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Oscillations2012.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SignalToImage.cs" />
-    <Compile Include="StandardSpectrograms\BaseSonogram.cs" />
-    <Compile Include="StandardSpectrograms\BaseSonogramConfig.cs" />
-    <Compile Include="StandardSpectrograms\BaseSonogramDrawImage.cs" />
-    <Compile Include="StandardSpectrograms\Image_MultiTrack.cs" />
-    <Compile Include="StandardSpectrograms\ImageTrack.cs" />
-    <Compile Include="SpectralClustering.cs" />
-    <Compile Include="SpectralTrack.cs" />
-    <Compile Include="SpectralPeakTracks.cs" />
-    <Compile Include="SprTools.cs" />
-    <Compile Include="ResultsTools.cs">
-      <SubType>Code</SubType>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Acoustics.Shared\Acoustics.Shared.csproj">
-      <Project>{EF04F5A8-D4BD-4CD1-BFC2-F6AD2D9C7927}</Project>
-      <Name>Acoustics.Shared</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Acoustics.Tools\Acoustics.Tools.csproj">
-      <Project>{0338570E-5A77-4A2E-8E17-7955C36AE1F7}</Project>
-      <Name>Acoustics.Tools</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Acoustics.Unsafe\Acoustics.Unsafe.csproj">
-      <Project>{cb44fcc9-e533-4bb6-85a5-efb204c60a4f}</Project>
-      <Name>Acoustics.Unsafe</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\AcousticWorkbench\AcousticWorkbench.csproj">
-      <Project>{e92afa1b-b089-4cc3-b765-3b4cff84e294}</Project>
-      <Name>AcousticWorkbench</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\AnalysisBase\AnalysisBase.csproj">
-      <Project>{80BC795A-A987-45AB-B29B-76CF190384BA}</Project>
-      <Name>AnalysisBase</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\TowseyLibrary\TowseyLibrary.csproj">
-      <Project>{7c6831fd-f60c-4f7b-8e6a-35e850174411}</Project>
-      <Name>TowseyLibrary</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
-      <Visible>False</Visible>
-      <ProductName>Windows Installer 3.1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
+    <ProjectReference Include="..\Acoustics.Shared\Acoustics.Shared.csproj" />
+    <ProjectReference Include="..\Acoustics.Tools\Acoustics.Tools.csproj" />
+    <ProjectReference Include="..\Acoustics.Unsafe\Acoustics.Unsafe.csproj" />
+    <ProjectReference Include="..\AcousticWorkbench\AcousticWorkbench.csproj" />
+    <ProjectReference Include="..\AnalysisBase\AnalysisBase.csproj" />
+    <ProjectReference Include="..\TowseyLibrary\TowseyLibrary.csproj" />
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="..\..\stylecop.json">
       <Link>stylecop.json</Link>
     </AdditionalFiles>
-    <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
-    <WCFMetadata Include="Connected Services\" />
+    <Compile Remove="HMMSettings.cs" />
+    <Compile Remove="SpectrogramConstants.cs" />
+    <Compile Remove="DSP\AudioSegmentationOBSOLETE.cs" />
   </ItemGroup>
-  <ItemGroup />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
-  <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
-  </PropertyGroup>
 </Project>

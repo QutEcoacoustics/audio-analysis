@@ -16,6 +16,9 @@ namespace Zio
     using Acoustics.Shared.Contracts;
 
     using FileSystems;
+    using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.Formats;
+    using SixLabors.ImageSharp.Formats.Png;
 
     public static class ZioExtensions
     {
@@ -121,24 +124,22 @@ namespace Zio
             return FileSystem;
         }
 
-        public static void Save(this System.Drawing.Bitmap bitmap, IFileSystem fileSystem, UPath path)
+        public static void Save(this Image bitmap, IFileSystem fileSystem, UPath path)
         {
             var extension = path.GetExtensionWithDot();
 
-            ImageFormat format;
+            IImageEncoder format;
             switch (extension)
             {
                 case ".png":
-                    format = ImageFormat.Png;
+                    format = new PngEncoder();
                     break;
                 default:
                     throw new NotSupportedException();
             }
 
-            using (var fileStream = fileSystem.CreateFile(path))
-            {
-                bitmap.Save(fileStream, format);
-            }
+            using var fileStream = fileSystem.CreateFile(path);
+            bitmap.Save(fileStream, format);
         }
 
         public static StreamReader OpenText(this IFileSystem fileSystem, UPath path)

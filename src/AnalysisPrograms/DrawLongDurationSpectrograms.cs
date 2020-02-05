@@ -63,7 +63,7 @@ namespace AnalysisPrograms
     /// </summary>
     public static class DrawLongDurationSpectrograms
     {
-        private static readonly ILog Log = LogManager.GetLogger(nameof(DrawLongDurationSpectrograms));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(DrawLongDurationSpectrograms));
 
         public const string CommandName = "DrawLongDurationSpectrograms";
 

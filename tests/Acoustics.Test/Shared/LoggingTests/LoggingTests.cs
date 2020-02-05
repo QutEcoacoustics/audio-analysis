@@ -46,8 +46,7 @@ namespace Acoustics.Test.Shared.LoggingTests
                 // clear the log
                 TestSetup.TestLogging.MemoryAppender.Clear();
 
-                Level level = typeof(Level).TryGetFieldValue(targetVerbosity, Flags.AllMembers) as Level;
-                if (level == null)
+                if (!(typeof(Level).TryGetFieldValue(targetVerbosity, Flags.AllMembers) is Level level))
                 {
                     level = typeof(LogExtensions).TryGetFieldValue(targetVerbosity, Flags.AllMembers) as Level;
                 }

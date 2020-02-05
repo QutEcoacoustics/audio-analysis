@@ -20,7 +20,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
 
     public class ZoomParameters
     {
-        private static readonly ILog Log = LogManager.GetLogger(nameof(ZoomParameters));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(ZoomParameters));
 
         public ZoomParameters(DirectoryEntry inputDirectory, FileEntry config, bool omitBasename)
         {

@@ -1,4 +1,0 @@
-This is a test File.
-It has four lines.
-It should produce four
-lines of output.

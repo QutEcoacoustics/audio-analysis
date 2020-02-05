@@ -22,7 +22,7 @@ namespace System
 
     public static class FileInfoExtensions
     {
-        private static readonly ILog Log = LogManager.GetLogger(nameof(FileInfoExtensions));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(FileInfoExtensions));
 
         public static void CreateParentDirectories(this FileInfo file)
         {

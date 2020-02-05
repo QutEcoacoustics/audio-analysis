@@ -27,7 +27,7 @@ namespace Acoustics.Shared.ConfigFile
 
         public static readonly Dictionary<Type, string> Defaults = new Dictionary<Type, string>();
 
-        private static readonly ILog Log = LogManager.GetLogger(nameof(ConfigFolder));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(ConfigFile));
         private static string defaultConfigFolder = Path.Combine(AppConfigHelper.ExecutingAssemblyDirectory, "ConfigFiles");
 
         public static string ConfigFolder

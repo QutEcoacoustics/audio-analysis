@@ -1,4 +1,4 @@
-﻿// <copyright file="ExtensionsXml.cs" company="QutEcoacoustics">
+// <copyright file="ExtensionsXml.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -114,7 +114,7 @@ namespace System.Xml.Linq
                 string name = e.Name.LocalName;
 
                 // If the element is the root, no index is required
-                return index == -1 ? "/" + name : string.Format("/{0}[{1}]", name, index.ToString());
+                return index == -1 ? "/" + name : $"/{name}[{index.ToString()}]";
             };
 
             var ancestors = from e in element.Ancestors()

@@ -25,7 +25,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
     public static class ZoomTiledSpectrograms
     {
         private const double XNominalUnitScale = 60.0;
-        private static readonly ILog Log = LogManager.GetLogger(nameof(ZoomTiledSpectrograms));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(ZoomTiledSpectrograms));
 
         /// <summary>
         /// THIS IS ENTRY METHOD FOR TILING SPECTROGRAMS.

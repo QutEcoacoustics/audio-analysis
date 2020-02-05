@@ -61,7 +61,7 @@ namespace Acoustics.Shared
         {
             using var stream = file.CreateText();
             var serializer = new SerializerBuilder()
-                .EmitDefaults()
+                .ConfigureDefaultValuesHandling(DefaultValuesHandling.Preserve)
                 .WithTagMappings(TagMappings)
                 .Build();
 

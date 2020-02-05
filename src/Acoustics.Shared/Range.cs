@@ -91,7 +91,7 @@ namespace Acoustics.Shared
 
         public bool IsEmpty => this.Minimum.Equals(this.Maximum);
 
-        public bool IsDefault => this.Equals(default(Range<T>));
+        public bool IsDefault => this.Equals(default);
 
         public bool IsMinimumInclusive => this.Topology == Topology.LeftClosedRightOpen || this.Topology == Topology.Closed;
 
@@ -166,7 +166,7 @@ namespace Acoustics.Shared
                 return true;
             }
 
-            union = default(Range<T>);
+            union = default;
             return false;
         }
 

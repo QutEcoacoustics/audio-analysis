@@ -22,7 +22,7 @@ namespace AnalysisPrograms.EventStatistics
 
     public class EventStatisticsAnalysis : AbstractStrongAnalyser
     {
-        private static readonly ILog Log = LogManager.GetLogger(nameof(EventStatisticsAnalysis));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(EventStatisticsAnalysis));
 
         public override string DisplayName { get; } = "Event statistics calculation";
 

@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="AutoAttachVs.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -32,9 +32,11 @@ namespace Acoustics.Shared.Debugging
     public static class VisualStudioAttacher
     {
         [DllImport("ole32.dll")]
+        // ReSharper disable once IdentifierTypo
         public static extern int CreateBindCtx(int reserved, out IBindCtx ppbc);
 
         [DllImport("ole32.dll")]
+        // ReSharper disable once IdentifierTypo
         public static extern int GetRunningObjectTable(int reserved, out IRunningObjectTable prot);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
@@ -45,8 +47,7 @@ namespace Acoustics.Shared.Debugging
 
         public static string GetSolutionForVisualStudio(Process visualStudioProcess)
         {
-            _DTE visualStudioInstance;
-            if (TryGetVsInstance(visualStudioProcess.Id, out visualStudioInstance))
+            if (TryGetVsInstance(visualStudioProcess.Id, out var visualStudioInstance))
             {
                 try
                 {
@@ -66,8 +67,7 @@ namespace Acoustics.Shared.Debugging
 
             foreach (Process visualStudio in visualStudios)
             {
-                _DTE visualStudioInstance;
-                if (TryGetVsInstance(visualStudio.Id, out visualStudioInstance))
+                if (TryGetVsInstance(visualStudio.Id, out var visualStudioInstance))
                 {
                     try
                     {
@@ -102,9 +102,7 @@ namespace Acoustics.Shared.Debugging
         /// </exception>
         public static void AttachVisualStudioToProcess(Process visualStudioProcess, Process applicationProcess)
         {
-            _DTE visualStudioInstance;
-
-            if (TryGetVsInstance(visualStudioProcess.Id, out visualStudioInstance))
+            if (TryGetVsInstance(visualStudioProcess.Id, out var visualStudioInstance))
             {
                 // Find the process you want the VS instance to attach to...
                 DTEProcess processToAttachTo =
@@ -165,8 +163,7 @@ namespace Acoustics.Shared.Debugging
 
             foreach (Process visualStudio in visualStudios)
             {
-                _DTE visualStudioInstance;
-                if (TryGetVsInstance(visualStudio.Id, out visualStudioInstance))
+                if (TryGetVsInstance(visualStudio.Id, out var visualStudioInstance))
                 {
                     try
                     {
@@ -202,24 +199,19 @@ namespace Acoustics.Shared.Debugging
         private static bool TryGetVsInstance(int processId, out _DTE instance)
         {
             IntPtr numFetched = IntPtr.Zero;
-            IRunningObjectTable runningObjectTable;
-            IEnumMoniker monikerEnumerator;
             IMoniker[] monikers = new IMoniker[1];
 
-            GetRunningObjectTable(0, out runningObjectTable);
-            runningObjectTable.EnumRunning(out monikerEnumerator);
+            GetRunningObjectTable(0, out var runningObjectTable);
+            runningObjectTable.EnumRunning(out var monikerEnumerator);
             monikerEnumerator.Reset();
 
             while (monikerEnumerator.Next(1, monikers, numFetched) == 0)
             {
-                IBindCtx ctx;
-                CreateBindCtx(0, out ctx);
+                CreateBindCtx(0, out var ctx);
 
-                string runningObjectName;
-                monikers[0].GetDisplayName(ctx, null, out runningObjectName);
+                monikers[0].GetDisplayName(ctx, null, out var runningObjectName);
 
-                object runningObjectVal;
-                runningObjectTable.GetObject(monikers[0], out runningObjectVal);
+                runningObjectTable.GetObject(monikers[0], out var runningObjectVal);
 
                 if (runningObjectVal is _DTE && runningObjectName.StartsWith("!VisualStudio"))
                 {

@@ -230,7 +230,7 @@ namespace System
         public static IEnumerable<T[]> WindowedOrDefault<T>(
             this IEnumerable<T> list,
             int windowSize,
-            T defaultValue = default(T))
+            T defaultValue = default)
         {
             Contract.Requires(windowSize >= 0);
             Contract.Requires(list != null);
@@ -300,18 +300,6 @@ namespace System
             }
 
             return true;
-        }
-
-        public static IEnumerable<T> Append<T>(this IEnumerable<T> items, T newItem)
-        {
-            Contract.RequiresNotNull(items, nameof(items));
-
-            foreach (var item in items)
-            {
-                yield return item;
-            }
-
-            yield return newItem;
         }
 
         public static string Join(this IEnumerable items, string delimiter = " ") => Join(items.Cast<object>(), delimiter);

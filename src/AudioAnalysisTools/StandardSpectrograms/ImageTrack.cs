@@ -1229,7 +1229,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     string timeStr = "0000";
                     if (xAxisPixelDurationInMilliseconds <= 1000)
                     {
-                        timeStr = String.Format("{0}", roundedTimeSpan);
+                        timeStr = $"{roundedTimeSpan}";
                     }
                     else
                     if (roundedTimeSpan.Hours == 0.0 && roundedTimeSpan.Minutes == 0.0)
@@ -1243,12 +1243,12 @@ namespace AudioAnalysisTools.StandardSpectrograms
                         if (startDate.Year > 2000)
                         {
                             DateTime today = startDate + roundedTimeSpan;
-                            timeStr = String.Format("{0}", today.ToShortDateString());
+                            timeStr = $"{today.ToShortDateString()}";
                         }
                     }
                     else
                     {
-                        timeStr = String.Format("{0:d2}{1:d2}h", roundedTimeSpan.Hours, roundedTimeSpan.Minutes);
+                        timeStr = $"{roundedTimeSpan.Hours:d2}{roundedTimeSpan.Minutes:d2}h";
                     }
 
                     g.DrawString(timeStr, stringFont, Brushes.White, new PointF(tickPosition, 3)); //draw time
@@ -1354,6 +1354,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     TimeSpan elapsedTimeSpan = TimeSpan.FromMilliseconds(xAxisPixelDurationInMilliseconds * tickPosition);
                     if (xAxisPixelDurationInMilliseconds <= 1000)
                     {
+<<<<<<< HEAD
                         time = String.Format("{0}", elapsedTimeSpan);
                     }
                     else if (xAxisPixelDurationInMilliseconds < 60000)
@@ -1363,6 +1364,17 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     else
                     {
                         time = String.Format("{0:f0}", elapsedTimeSpan.TotalHours);
+=======
+                        time = $"{elapsedTimeSpan}";
+                    }
+                    else if (xAxisPixelDurationInMilliseconds < 60000)
+                    {
+                        time = $"{elapsedTimeSpan.Hours:d2}{elapsedTimeSpan.Minutes:d2}";
+                    }
+                    else
+                    {
+                        time = $"{elapsedTimeSpan.TotalHours:f0}";
+>>>>>>> Fixing .NET Core incompatibilities
                     }
 
                     g.DrawString(time, stringFont, Brushes.White, new PointF(tickPosition, 2)); //draw time

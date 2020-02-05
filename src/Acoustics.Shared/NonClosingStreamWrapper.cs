@@ -1,4 +1,4 @@
-﻿// <copyright file="NonClosingStreamWrapper.cs" company="QutEcoacoustics">
+// <copyright file="NonClosingStreamWrapper.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -143,16 +143,6 @@ namespace Acoustics.Shared
             }
 
             this.closed = true;
-        }
-
-        /// <summary>
-        /// Throws a NotSupportedException.
-        /// </summary>
-        /// <param name="requestedType">The Type of the object that the new ObjRef will reference.</param>
-        /// <returns>n/a</returns>
-        public override ObjRef CreateObjRef(Type requestedType)
-        {
-            throw new NotSupportedException();
         }
 
         /// <summary>

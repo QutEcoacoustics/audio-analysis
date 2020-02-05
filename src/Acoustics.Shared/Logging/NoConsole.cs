@@ -18,7 +18,7 @@ namespace System
         {
             // this must be initialized in the static constructor otherwise we run into
             // order of execution conflicts with logger initialization
-            Log = LogManager.Exists(Logging.LogFileOnly);
+            Log = LogManager.Exists(Logging.RootNamespace, Logging.LogFileOnly);
         }
 
         public static ILog Log { get; }

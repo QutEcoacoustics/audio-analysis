@@ -33,7 +33,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
     {
         private const string ImageFileExt = "png";
 
-        private static readonly ILog Log = LogManager.GetLogger(nameof(AnalyseLongRecording));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(AnalyseLongRecording));
 
         /// <summary>
         /// 2. Analyses long audio recording (mp3 or wav) as per passed config file. Outputs an events.csv file AND an

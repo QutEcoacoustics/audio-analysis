@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="MasterAudioUtility.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -548,7 +548,8 @@ namespace Acoustics.Tools.Audio
             // source file
             if (info.SourceFile != null && extra.SourceFile != null && info.SourceFile != extra.SourceFile)
             {
-                throw new InvalidOperationException(string.Format("Source files must be the same: {0} != {1}.", info.SourceFile, extra.SourceFile));
+                throw new InvalidOperationException(
+                    $"Source files must be the same: {info.SourceFile} != {extra.SourceFile}.");
             }
             if (info.SourceFile != null)
             {

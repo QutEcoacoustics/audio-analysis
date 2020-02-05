@@ -1,20 +1,7 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{EF04F5A8-D4BD-4CD1-BFC2-F6AD2D9C7927}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Acoustics.Shared</RootNamespace>
-    <AssemblyName>Acoustics.Shared</AssemblyName>
-    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\EcoSounds\</SolutionDir>
-    <TargetFrameworkProfile />
-    <RestorePackages>true</RestorePackages>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -30,169 +17,47 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <CodeContractsAssemblyMode>1</CodeContractsAssemblyMode>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <AssemblyTitle>Acoustics.Shared</AssemblyTitle>
+    <Company>QUT</Company>
+    <Product>Acoustics.Shared</Product>
+    <Copyright>Copyright © QUT 2012</Copyright>
+    <LangVersion>latest</LangVersion>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>..\..\style.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>latest</LangVersion>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="envdte, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\PublicAssemblies\envdte.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
       <EmbedInteropTypes>True</EmbedInteropTypes>
-      <HintPath>..\..\..\..\..\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\PublicAssemblies\envdte.dll</HintPath>
     </Reference>
     <Reference Include="envdte100, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\PublicAssemblies\envdte100.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
       <EmbedInteropTypes>True</EmbedInteropTypes>
-      <HintPath>..\..\..\..\..\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\PublicAssemblies\envdte100.dll</HintPath>
     </Reference>
     <Reference Include="envdte80, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\PublicAssemblies\envdte80.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
       <EmbedInteropTypes>True</EmbedInteropTypes>
-      <HintPath>..\..\..\..\..\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\PublicAssemblies\envdte80.dll</HintPath>
     </Reference>
     <Reference Include="envdte90, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\PublicAssemblies\envdte90.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
       <EmbedInteropTypes>True</EmbedInteropTypes>
-      <HintPath>..\..\..\..\..\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\PublicAssemblies\envdte90.dll</HintPath>
     </Reference>
     <Reference Include="envdte90a, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\PublicAssemblies\envdte90a.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
       <EmbedInteropTypes>True</EmbedInteropTypes>
-      <HintPath>..\..\..\..\..\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\PublicAssemblies\envdte90a.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System" />
-    <Reference Include="System.configuration" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Data.Linq" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.IO.Compression" />
-    <Reference Include="System.Net" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="AnalysisIo.cs" />
-    <Compile Include="AppConfigHelper.cs" />
-    <Compile Include="Base58.cs" />
-    <Compile Include="Binary.cs" />
-    <Compile Include="CalcSunTimes.cs" />
-    <Compile Include="ConfigFile\Config.cs" />
-    <Compile Include="ConfigFile\ConfigFile.cs" />
-    <Compile Include="ConfigFile\ConfigFile.Deserialize.cs" />
-    <Compile Include="ConfigFile\ConfigFile.Profiles.cs" />
-    <Compile Include="ConfigFile\ConfigFileException.cs" />
-    <Compile Include="ConfigFile\IConfig.cs" />
-    <Compile Include="ConfigFile\INamedProfiles.cs" />
-    <Compile Include="ConfigFile\IProfiles.cs" />
-    <Compile Include="Contracts\Contract.cs" />
-    <Compile Include="Csv\CsvExtensions.cs" />
-    <Compile Include="Csv\Csv.cs" />
-    <Compile Include="Csv\ISetPointConverter.cs" />
-    <Compile Include="Debugging\AutoAttachVs.cs" />
-    <Compile Include="Extensions\ConfigFileExtensions.cs" />
-    <Compile Include="Extensions\EnumExtensions.cs" />
-    <Compile Include="Enums.cs" />
-    <Compile Include="ExpressionVisitor.cs" />
-    <Compile Include="Extensions\ArrayExtensions.cs" />
-    <Compile Include="Extensions\DictionaryExtensions.cs" />
-    <Compile Include="Extensions\DoubleExtensions.cs" />
-    <Compile Include="Extensions\DoubleSquareArrayExtensions.cs" />
-    <Compile Include="Extensions\EnumerableExtensions.cs" />
-    <Compile Include="Extensions\ExceptionsExtensions.cs" />
-    <Compile Include="Extensions\DateTimeAndTimeSpanExtensions.cs" />
-    <Compile Include="Extensions\ExtensionsDrawing.cs" />
-    <Compile Include="Extensions\ExtensionsString.cs" />
-    <Compile Include="Extensions\ExtensionsSystem.cs" />
-    <Compile Include="Extensions\ExtensionsIO.cs" />
-    <Compile Include="Extensions\ExtensionsXml.cs" />
-    <Compile Include="Extensions\FileInfoExtensions.cs" />
-    <Compile Include="Extensions\MathExtensions.cs" />
-    <Compile Include="Extensions\ObjectExtensions.cs" />
-    <Compile Include="Extensions\RandomExtensions.cs" />
-    <Compile Include="Extensions\RangeExtensions.cs" />
-    <Compile Include="Extensions\RectangleExtensions.cs" />
-    <Compile Include="Extensions\ReflectionExtensions.cs" />
-    <Compile Include="Extensions\TaskExtensions.cs" />
-    <Compile Include="Extensions\TupleExtensions.cs" />
-    <Compile Include="Extensions\ZioExtensions.cs" />
-    <Compile Include="FileDateHelpers.cs" />
-    <Compile Include="FileNameHelpers.cs" />
-    <Compile Include="Formatters.cs" />
-    <Compile Include="GraphicsSegmented.cs" />
-    <Compile Include="ImageTooLargeForGraphicsException.cs" />
-    <Compile Include="InvalidDataSetException.cs" />
-    <Compile Include="Json.cs" />
-    <Compile Include="Logging\Log4NetTextWriter.cs" />
-    <Compile Include="Logging\LoggedConsole.cs" />
-    <Compile Include="Logging\LogExtensions.cs" />
-    <Compile Include="Csv\MatrixMapper.cs" />
-    <Compile Include="Logging\Logging.cs" />
-    <Compile Include="Logging\NoConsole.cs" />
-    <Compile Include="MediaTypes.cs" />
-    <Compile Include="Meta.cs" />
-    <Compile Include="NonClosingStreamWrapper.cs" />
-    <Compile Include="Orderer.cs" />
-    <Compile Include="PathUtils.cs" />
-    <Compile Include="Plugins.cs" />
-    <Compile Include="ProcessRunner.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="PropertyComparer.cs" />
-    <Compile Include="Range.cs" />
-    <Compile Include="StatDescriptive.cs" />
-    <Compile Include="TempFileHelper.cs" />
-    <Compile Include="Validation.cs" />
-    <Compile Include="ValidationExtensions.cs" />
-    <Compile Include="Yaml.cs" />
-    <Compile Include="YamlTypeTagAttribute.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include=".NETFramework,Version=v4.0">
-      <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4 %28x86 and x64%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
-      <Visible>False</Visible>
-      <ProductName>Windows Installer 3.1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="..\..\stylecop.json">
@@ -202,14 +67,26 @@
       <Link>AP.Settings.json</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="app.config" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  <ItemGroup>
+    <PackageReference Include="ConsoleTools" Version="0.5.3" />
+    <PackageReference Include="CsvHelper" Version="14.0.0" />
+    <PackageReference Include="fasterflect.reflect" Version="3.1.0" />
+    <PackageReference Include="JetBrains.Annotations" Version="2019.1.3" />
+    <PackageReference Include="log4net" Version="2.0.8" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+    <PackageReference Include="Microsoft.DotNet.Analyzers.Compatibility" Version="0.2.12-alpha">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="ObjectCloner" Version="2.2.2" />
+    <PackageReference Include="ObjectCloner.Extensions" Version="2.0.1" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-unstable0632" />
+    <PackageReference Include="YamlDotNet" Version="8.1.0" />
+    <PackageReference Include="Zio" Version="0.7.6" />
+    <PackageReference Include="Zio.FileSystems.Community.SqliteFileSystem" Version="1.0.0" />
+  </ItemGroup>
 </Project>

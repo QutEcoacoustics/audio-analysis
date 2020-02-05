@@ -1,4 +1,4 @@
-﻿// <copyright file="ExpressionVisitor.cs" company="QutEcoacoustics">
+// <copyright file="ExpressionVisitor.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -165,7 +165,7 @@ namespace BTR.Core.Linq
                 case ExpressionType.ListInit:
                     return this.VisitListInit((ListInitExpression)exp);
                 default:
-                    throw new Exception(string.Format("Unhandled expression type: '{0}'", exp.NodeType));
+                    throw new Exception($"Unhandled expression type: '{exp.NodeType}'");
             }
         }
 
@@ -180,7 +180,7 @@ namespace BTR.Core.Linq
                 case MemberBindingType.ListBinding:
                     return this.VisitMemberListBinding((MemberListBinding)binding);
                 default:
-                    throw new Exception(string.Format("Unhandled binding type '{0}'", binding.BindingType));
+                    throw new Exception($"Unhandled binding type '{binding.BindingType}'");
             }
         }
 

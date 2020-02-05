@@ -155,7 +155,7 @@ namespace AudioAnalysisTools.EventStatistics
             return this.CompareTo(obj as ResultBase);
         }
 
-        public sealed class EventStatisticsClassMap : CsvClassMap<EventStatistics>
+        public sealed class EventStatisticsClassMap : ClassMap<EventStatistics>
         {
             public EventStatisticsClassMap()
             {

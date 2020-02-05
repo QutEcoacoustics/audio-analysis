@@ -114,7 +114,7 @@ namespace AudioAnalysisTools.Indices
             this.Key = "NOT SET";
             this.Name = string.Empty;
             this.DataType = "double";
-            this.DefaultValue = default(double);
+            this.DefaultValue = default;
             this.ProjectId = "NOT SET";
             this.Comment = "Relax - everything is OK";
             this.DoDisplay = true;

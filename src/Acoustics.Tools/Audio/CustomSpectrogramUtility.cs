@@ -1,16 +1,16 @@
-﻿using Acoustics.Unsafe;
-using MathNet.Numerics.IntegralTransforms;
-
 namespace Acoustics.Tools.Audio
 {
     using System;
     using System.Diagnostics;
-    using System.Drawing;
-    using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
 
+    using MathNet.Numerics.IntegralTransforms;
     using Shared;
+    using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.Advanced;
+    using SixLabors.ImageSharp.Formats;
+    using SixLabors.ImageSharp.PixelFormats;
     using Wav;
 
     /// <summary>
@@ -87,7 +87,8 @@ namespace Acoustics.Tools.Audio
         /// <param name="request">
         /// The spectrogram request.
         /// </param>
-        public void Create(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType, SpectrogramRequest request)
+        public void Create(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType,
+            SpectrogramRequest request)
         {
             this.ValidateMimeTypeExtension(source, sourceMimeType, output, outputMimeType);
 
@@ -103,7 +104,7 @@ namespace Acoustics.Tools.Audio
 
             this.audioUtility.Modify(source, sourceMimeType, tempFile, MediaTypes.MediaTypeWav, audioUtilRequest);
 
-            Bitmap sourceImage;
+            Image sourceImage;
 
             if (this.Log.IsDebugEnabled)
             {
@@ -133,39 +134,39 @@ namespace Acoustics.Tools.Audio
                 // remove 1px from bottom (DC value)
                 var sourceRectangle = new Rectangle(0, 0, sourceImage.Width, sourceImage.Height - 1);
 
-                using (var requestedImage = new Bitmap(
-                        request.IsCalculatedWidthAvailable ? request.CalculatedWidth : sourceRectangle.Width,
-                        request.Height.HasValue ? request.Height.Value : sourceRectangle.Height))
-                using (var graphics = Graphics.FromImage(requestedImage))
+                using var requestedImage = new Image<Rgb24>(
+                    request.IsCalculatedWidthAvailable ? request.CalculatedWidth : sourceRectangle.Width,
+                    request.Height ?? sourceRectangle.Height);
+
+                var destRectangle = new Rectangle(0, 0, requestedImage.Width, requestedImage.Height);
+                requestedImage.DrawImage(sourceImage, destRectangle, sourceRectangle);
+
+                var format = MediaTypes.GetImageFormat(MediaTypes.GetExtension(outputMimeType));
+                var encoder = requestedImage.GetConfiguration().ImageFormatsManager.FindEncoder(format);
+
+                if (this.Log.IsDebugEnabled)
                 {
-                    var destRectangle = new Rectangle(0, 0, requestedImage.Width, requestedImage.Height);
-                    graphics.DrawImage(sourceImage, destRectangle, sourceRectangle, GraphicsUnit.Pixel);
+                    var stopwatch = new Stopwatch();
+                    stopwatch.Start();
 
-                    var format = MediaTypes.GetImageFormat(MediaTypes.GetExtension(outputMimeType));
+                    requestedImage.Save(output.FullName, encoder);
 
-                    if (this.Log.IsDebugEnabled)
-                    {
-                        var stopwatch = new Stopwatch();
-                        stopwatch.Start();
+                    stopwatch.Stop();
 
-                        requestedImage.Save(output.FullName, format);
+                    this.Log.DebugFormat(
+                        "Saved spectrogram for {0} to {1}. Took {2} ({3}ms).",
+                        source.Name,
+                        output.Name,
+                        stopwatch.Elapsed.Humanise(),
+                        stopwatch.Elapsed.TotalMilliseconds);
 
-                        stopwatch.Stop();
-
-                        this.Log.DebugFormat(
-                            "Saved spectrogram for {0} to {1}. Took {2} ({3}ms).",
-                            source.Name,
-                            output.Name,
-                            stopwatch.Elapsed.Humanise(),
-                            stopwatch.Elapsed.TotalMilliseconds);
-
-                        this.Log.Debug("Output " + this.BuildFileDebuggingOutput(output));
-                    }
-                    else
-                    {
-                        requestedImage.Save(output.FullName, format);
-                    }
+                    this.Log.Debug("Output " + this.BuildFileDebuggingOutput(output));
                 }
+                else
+                {
+                    requestedImage.Save(output.FullName, encoder);
+                }
+
             }
 
             tempFile.Delete();
@@ -180,11 +181,11 @@ namespace Acoustics.Tools.Audio
         /// <returns>
         /// Spectrogram image.
         /// </returns>
-        private static Bitmap Spectrogram(byte[] bytes)
+        private static Image Spectrogram(byte[] bytes)
         {
             IWavReader wavReader = new WavStreamReader(bytes);
 
-            return new Bitmap(GetSpectrogram(wavReader, 1));
+            return GetSpectrogram(wavReader, 1);
         }
 
         /// <summary>
@@ -871,11 +872,18 @@ namespace Acoustics.Tools.Audio
         {
             // Number of spectra in sonogram
             int width = data.GetLength(0);
-            int fftBins = data.GetLength(1);
+            int height = data.GetLength(1);
 
-            var bmp = UnsafeImage.GetImage(data, fftBins, width);
+            var image = new Image<Rgb24>(width, height);
+            for (int i = 0; i < data.Length; i++)
+            {
+                var x = i % width;
+                var y = i / height;
+                var p = data[x, y].ScaleUnitToByte();
+                image[x, y] = new Rgb24(p, p, p);
+            }
 
-            return bmp;
+            return image;
         }
 
     }

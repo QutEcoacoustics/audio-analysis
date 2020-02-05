@@ -114,9 +114,8 @@ namespace AudioAnalysisTools
                 // audiorecording.ConvertSampleRate22kHz(); // THIS METHOD CALL IS OBSOLETE
                 if (audiorecording.SampleRate != 22050)
                 {
-                    var msg = string.Format(
-                        "Must be able to convert audio to 22050hz. Audio has sample rate of {0}.",
-                        audiorecording.SampleRate);
+                    var msg =
+                        $"Must be able to convert audio to 22050hz. Audio has sample rate of {audiorecording.SampleRate}.";
 
                     throw new NotSupportedException(msg);
                 }

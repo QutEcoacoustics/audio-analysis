@@ -1,4 +1,4 @@
-﻿// <copyright file="AnalysisIo.cs" company="QutEcoacoustics">
+// <copyright file="AnalysisIo.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -6,6 +6,7 @@ namespace Acoustics.Shared
 {
     using System;
     using System.Collections.Generic;
+    using System.IO.Enumeration;
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
@@ -13,6 +14,7 @@ namespace Acoustics.Shared
     using Acoustics.Shared.Contracts;
 
     using Zio;
+    using FileSystemEntry = Zio.FileSystemEntry;
 
     public class AnalysisIo
     {

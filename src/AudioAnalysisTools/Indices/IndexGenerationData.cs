@@ -20,7 +20,7 @@ namespace AudioAnalysisTools.Indices
     {
         public const string FileNameFragment = "IndexGenerationData";
 
-        private static readonly ILog Log = LogManager.GetLogger(nameof(IndexGenerationData));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(IndexGenerationData));
 
         /// <summary>
         /// Gets or sets the configuration options used to draw long duration spectrograms.

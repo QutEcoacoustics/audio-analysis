@@ -1,4 +1,4 @@
-﻿// <copyright file="TempFileHelper.cs" company="QutEcoacoustics">
+// <copyright file="TempFileHelper.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -20,20 +20,7 @@ namespace Acoustics.Shared
         /// </summary>
         public static DirectoryInfo TempDir(bool ensureNew = false)
         {
-            var tempDirString = "TempDir";
-            var tempDirSet = ConfigurationManager.AppSettings.AllKeys.Any(i => i == tempDirString);
-
-            var tempDir = string.Empty;
-
-            if (tempDirSet)
-            {
-                tempDir = ConfigurationManager.AppSettings["TempDir"];
-            }
-
-            if (string.IsNullOrEmpty(tempDir))
-            {
-                tempDir = Path.GetTempPath();
-            }
+            var tempDir = Path.GetTempPath();
 
             if (ensureNew)
             {

@@ -21,7 +21,7 @@ namespace AnalysisPrograms.Draw.Zooming
     /// </summary>
     public static partial class DrawZoomingSpectrograms
     {
-        private static readonly ILog Log = LogManager.GetLogger(nameof(DrawZoomingSpectrograms));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(DrawZoomingSpectrograms));
 
         public static void Execute(Arguments arguments)
         {

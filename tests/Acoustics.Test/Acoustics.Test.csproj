@@ -1,242 +1,33 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>
-    </ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{99B8FFB6-3C32-4F26-A1DF-F9B8A8FC0C05}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Acoustics.Test</RootNamespace>
-    <AssemblyName>Acoustics.Test</AssemblyName>
-    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
+    <ProductVersion />
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <RestorePackages>true</RestorePackages>
-    <TargetFrameworkProfile />
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <AssemblyTitle>Acoustics.Test</AssemblyTitle>
+    <Product>Acoustics.Test</Product>
+    <Copyright>Copyright ©  2012</Copyright>
+    <CodeAnalysisRuleSet>..\..\style.ruleset</CodeAnalysisRuleSet>
+    <LangVersion>latest</LangVersion>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <BuildDependsOn>$(BuildDependsOn);AfterBuildMigrated</BuildDependsOn>
+    <PostBuildEvent />
+    <PostBuildEvent />
+    <PostBuildEvent />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>..\..\style.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>..\..\style.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>false</Prefer32Bit>
-    <LangVersion>latest</LangVersion>
   </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System" />
-    <Reference Include="System.ComponentModel.Composition" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Core">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.IO.Compression.FileSystem" />
-    <Reference Include="System.Net" />
-    <Reference Include="System.Net.Http.WebRequest" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Threading.Tasks">
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Web.Extensions" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Xml.Linq" />
-  </ItemGroup>
-  <ItemGroup>
-    <CodeAnalysisDependentAssemblyPaths Condition=" '$(VS100COMNTOOLS)' != '' " Include="$(VS100COMNTOOLS)..\IDE\PrivateAssemblies">
-      <Visible>False</Visible>
-    </CodeAnalysisDependentAssemblyPaths>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="AnalysisPrograms\AcousticWorkbench.Orchestration\RemoteSegmentTests.cs" />
-    <Compile Include="AcousticWorkbench\ApiTests.cs" />
-    <Compile Include="AcousticWorkbench\AuthenticationServiceTests.cs" />
-    <Compile Include="AnalysisBase\AnalysisCoordinatorTests.cs" />
-    <Compile Include="AnalysisBase\SegmentSettingsTests.cs" />
-    <Compile Include="AnalysisBase\AnalysisSettingsTests.cs" />
-    <Compile Include="AnalysisBase\FileSegmentTests.cs" />
-    <Compile Include="AnalysisPrograms\AcousticWorkbench.Orchestration\EventMetadataResolverTests.cs" />
-    <Compile Include="AnalysisPrograms\AnalyzeLongRecordings\TestAnalyzeLongRecording.cs" />
-    <Compile Include="AnalysisPrograms\Concatenation\ConcatenationTests.cs" />
-    <Compile Include="AnalysisPrograms\Draw\RibbonPlots\RibbonPlotTests.cs" />
-    <Compile Include="AnalysisPrograms\Draw\Zooming\DrawZoomingTests.cs" />
-    <Compile Include="AnalysisPrograms\MainEntryTests.cs" />
-    <Compile Include="AnalysisPrograms\Production\FileSystemProviderTests.cs" />
-    <Compile Include="AnalysisPrograms\Recognizers\GenericRecognizer\GenericRecognizerTests.cs" />
-    <Compile Include="AnalysisPrograms\Recognizers\PteropusSp\PteropusSpTests.cs" />
-    <Compile Include="AnalysisPrograms\SourcePreparers\RemoteSourcePreparerTests.cs" />
-    <Compile Include="AnalysisPrograms\SourcePreparers\LocalSourcePreparerTests.cs" />
-    <Compile Include="ArrayExtensionsTests.cs" />
-    <Compile Include="AudioAnalysisTools\ContentDescriptionTools\ContentDescriptionTest.cs" />
-    <Compile Include="AudioAnalysisTools\ContentDescriptionTools\DataProcessingTest.cs" />
-    <Compile Include="AudioAnalysisTools\DSP\EnvelopeAndFftTests.cs" />
-    <Compile Include="AudioAnalysisTools\DSP\FrequencyScaleTests.cs" />
-    <Compile Include="AudioAnalysisTools\DSP\KmeansClusteringTests.cs" />
-    <Compile Include="AudioAnalysisTools\DSP\NoiseRemovalTests.cs" />
-    <Compile Include="AudioAnalysisTools\DSP\PcaWhiteningTests.cs" />
-    <Compile Include="AudioAnalysisTools\DSP\UnsupervisedFeatureLearningTest.cs" />
-    <Compile Include="AudioAnalysisTools\EventStatistics\EventStatisticsCalculateTests.cs" />
-    <Compile Include="AudioAnalysisTools\Indices\ClusterIndexTest.cs" />
-    <Compile Include="AudioAnalysisTools\Indices\IndexCalculateTest.cs" />
-    <Compile Include="AudioAnalysisTools\Indices\IndexMatricesTests.cs" />
-    <Compile Include="AudioAnalysisTools\LongDurationSpectrograms\LdSpectrogramConfigTests.cs" />
-    <Compile Include="AudioAnalysisTools\LongDurationSpectrograms\LDSpectrogramRGBTests.cs" />
-    <Compile Include="AudioAnalysisTools\LongDurationSpectrograms\LdSpectrogramStitchingTests.cs" />
-    <Compile Include="AudioAnalysisTools\LongDurationSpectrograms\Zooming\ZoomCommonTests.cs" />
-    <Compile Include="AudioAnalysisTools\Oscillations2014\OscillationTests.cs" />
-    <Compile Include="AudioAnalysisTools\SpectralPeakTracking2018Tests.cs" />
-    <Compile Include="AudioAnalysisTools\StandardSpectrograms\SonogramTests.cs" />
-    <Compile Include="AudioAnalysisTools\TileImage\AbsoluteDateTimeTilerTests.cs" />
-    <Compile Include="AudioAnalysisTools\TileImage\TilerTests.cs" />
-    <Compile Include="AudioAnalysisTools\LongDurationSpectrograms\Zooming\ZoomTiledSpectrogramTests.cs" />
-    <Compile Include="DotNetVersionTests.cs" />
-    <Compile Include="RuntimesTests.cs" />
-    <Compile Include="Shared\AppConfigHelperTests.cs" />
-    <Compile Include="Shared\ConfigTests.cs" />
-    <Compile Include="Shared\Extensions\DateTimeAndTimeSpanExtensionsTests.cs" />
-    <Compile Include="Shared\Extensions\EnumExtensionsTests.cs" />
-    <Compile Include="Shared\Extensions\EnumerableExtensionsTests.cs" />
-    <Compile Include="Shared\LoggingTests\LoggingTests.cs" />
-    <Compile Include="Shared\PathUtilsTests.cs" />
-    <Compile Include="Shared\ProcessRunnerTests.cs" />
-    <Compile Include="Shared\RangeTests.cs" />
-    <Compile Include="TestHelpers\Factories\AudioRecordingFactory.cs" />
-    <Compile Include="TestHelpers\ImageHelpers.cs" />
-    <Compile Include="TestHelpers\LeakyFfmpegAudioUtility.cs" />
-    <Compile Include="TestHelpers\LeakySoxAudioUtility.cs" />
-    <Compile Include="TestHelpers\TestImage.cs" />
-    <Compile Include="TestHelpers\TestSetup.cs" />
-    <Compile Include="Tools\AudioFilePreparerTests.cs" />
-    <Compile Include="Shared\FileDateHelpersTests.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Shared\BinaryTests.cs" />
-    <Compile Include="Shared\CsvTests.cs" />
-    <Compile Include="Shared\ConfigFileTests.cs" />
-    <Compile Include="InfiniteTextStreamTests.cs" />
-    <Compile Include="TestHelpers\InfiniteTextStream.cs" />
-    <Compile Include="Shared\JsonTests.cs" />
-    <Compile Include="Shared\LoggedConsoleTests.cs" />
-    <Compile Include="Shared\YamlTests.cs" />
-    <Compile Include="TestHelpers\Assertions.cs" />
-    <Compile Include="TestHelpers\ConsoleRedirector.cs" />
-    <Compile Include="TestHelpers\DummyAnalyzer.cs" />
-    <Compile Include="TestHelpers\DummySourcePreparer.cs" />
-    <Compile Include="TestHelpers\OutputDirectoryTest.cs" />
-    <Compile Include="TestHelpers\Random.cs" />
-    <Compile Include="TestHelpers\TestHelper.cs" />
-    <Compile Include="TestHelpers\PathHelper.cs" />
-    <Compile Include="TestHelpers\FileEqualityHelpers.cs" />
-    <Compile Include="Tools\AudioUtilityInfoTests.cs" />
-    <Compile Include="Tools\AudioUtilityMp3Tests.cs" />
-    <Compile Include="Tools\AudioUtilityFfmpegPcmRawTests.cs" />
-    <Compile Include="Tools\AudioUtilityWavpackTests.cs" />
-    <Compile Include="Tools\AudioUtilityChannelSelection\AudioUtilityChannelTests.cs" />
-    <Compile Include="Tools\AudioUtilityWavTests.cs" />
-    <Compile Include="Tools\FfmpegUtilityTests.cs" />
-    <Compile Include="Tools\MasterAudioUtilityTests.cs" />
-    <Compile Include="EnumerableExtensionsTests.cs" />
-    <Compile Include="Tools\SoxUtilityTests.cs" />
-    <Compile Include="Tools\WavReaderTests.cs" />
-    <Compile Include="TowseyLibrary\DataToolsTests.cs" />
-    <Content Include="ExampleTestTemplate.cs.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <AdditionalFiles Include="..\..\stylecop.json">
-      <Link>stylecop.json</Link>
-    </AdditionalFiles>
-    <Compile Include="AnalysisPrograms\AudioCutterTests.cs" />
-    <None Include=".runsettings" />
-    <None Include="App.config">
-      <SubType>Designer</SubType>
-    </None>
-    <Compile Include="TestHelpers\ImageAssert.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\AnalysisBase\AnalysisBase.csproj">
-      <Project>{80bc795a-a987-45ab-b29b-76cf190384ba}</Project>
-      <Name>AnalysisBase</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\AnalysisPrograms\AnalysisPrograms.csproj">
-      <Project>{EC323929-0160-46BC-A04B-B4A66D02E757}</Project>
-      <Name>AnalysisPrograms</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\AudioAnalysisTools\AudioAnalysisTools.csproj">
-      <Project>{86855CBC-7243-492A-A500-2DE36CC7C825}</Project>
-      <Name>AudioAnalysisTools</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\TowseyLibrary\TowseyLibrary.csproj">
-      <Project>{7C6831FD-F60C-4F7B-8E6A-35E850174411}</Project>
-      <Name>TowseyLibrary</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Acoustics.Shared\Acoustics.Shared.csproj">
-      <Project>{ef04f5a8-d4bd-4cd1-bfc2-f6ad2d9c7927}</Project>
-      <Name>Acoustics.Shared</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Acoustics.Tools\Acoustics.Tools.csproj">
-      <Project>{0338570E-5A77-4A2E-8E17-7955C36AE1F7}</Project>
-      <Name>Acoustics.Tools</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\AcousticWorkbench\AcousticWorkbench.csproj">
-      <Project>{E92AFA1B-B089-4CC3-B765-3B4CFF84E294}</Project>
-      <Name>AcousticWorkbench</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include=".NETFramework,Version=v4.0">
-      <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4 %28x86 and x64%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
-      <Visible>False</Visible>
-      <ProductName>Windows Installer 3.1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup />
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent />
   </PropertyGroup>
   <Target Name="AfterClean">
     <Message Text="[AfterClean]: Deleting all extra files in $(TargetDir) (Unit tests don't clean up after themselves very well!)" Importance="High" />
     <RemoveDir Directories="$(TargetDir);" />
   </Target>
-  <Target Name="AfterBuild">
+  <Target Name="AfterBuildMigrated">
     <!-- Copy our audio tools from lib to build dir -->
     <Message Text="[AfterBuild]: Scanning for lib files and config files" Importance="High" />
     <ItemGroup>
@@ -257,11 +48,43 @@
     <Error Condition="!Exists('..\..\packages\SQLitePCLRaw.lib.e_sqlite3.osx.1.1.9\build\net35\SQLitePCLRaw.lib.e_sqlite3.osx.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SQLitePCLRaw.lib.e_sqlite3.osx.1.1.9\build\net35\SQLitePCLRaw.lib.e_sqlite3.osx.targets'))" />
     <Error Condition="!Exists('..\..\packages\SQLitePCLRaw.lib.e_sqlite3.v110_xp.1.1.9\build\net35\SQLitePCLRaw.lib.e_sqlite3.v110_xp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SQLitePCLRaw.lib.e_sqlite3.v110_xp.1.1.9\build\net35\SQLitePCLRaw.lib.e_sqlite3.v110_xp.targets'))" />
   </Target>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0-preview-20200203-01" />
+    <PackageReference Include="MSTest.TestAdapter" Version="2.1.0" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.1.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Net" />
+    <Reference Include="System.Net.Http.WebRequest" />
+    <Reference Include="System.Threading.Tasks">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.Extensions" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="ExampleTestTemplate.cs.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <AdditionalFiles Include="..\..\stylecop.json">
+      <Link>stylecop.json</Link>
+    </AdditionalFiles>
+    <None Include=".runsettings" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\AnalysisBase\AnalysisBase.csproj" />
+    <ProjectReference Include="..\..\src\AnalysisPrograms\AnalysisPrograms.csproj" />
+    <ProjectReference Include="..\..\src\AudioAnalysisTools\AudioAnalysisTools.csproj" />
+    <ProjectReference Include="..\..\src\TowseyLibrary\TowseyLibrary.csproj" />
+    <ProjectReference Include="..\..\src\Acoustics.Shared\Acoustics.Shared.csproj" />
+    <ProjectReference Include="..\..\src\Acoustics.Tools\Acoustics.Tools.csproj" />
+    <ProjectReference Include="..\..\src\AcousticWorkbench\AcousticWorkbench.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="ConcatenationTests.cs" />
+  </ItemGroup>
 </Project>

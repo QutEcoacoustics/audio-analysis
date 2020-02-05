@@ -99,7 +99,7 @@ namespace AudioAnalysisTools.Indices
             {
                 // do not process spectral indices properties
                 // don't bother with slow reflection if the default is 0.0
-                if (kvp.Value.IsSpectralIndex || kvp.Value.DefaultValue == default(double))
+                if (kvp.Value.IsSpectralIndex || kvp.Value.DefaultValue == default)
                 {
                     continue;
                 }

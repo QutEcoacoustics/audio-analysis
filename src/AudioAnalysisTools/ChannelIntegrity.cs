@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="ChannelIntegrity.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -79,11 +79,11 @@ namespace AudioAnalysisTools
             double zeroCrossingFractionR;
             ZeroCrossingIndex(channelL, channelR, out zeroCrossingFractionL, out zeroCrossingFractionR);
 
-            Console.WriteLine(string.Format("Zero crossings: L={0:f3}   R={1:f3}", zeroCrossingFractionL, zeroCrossingFractionR));
-            Console.WriteLine(string.Format("Similarity Index: SimIndex={0:f3}   SimIndexdB={1:f3}   avBiasdB={2:f3}   medianBiasdB={3:f3}",
-                                                similarityIndex, similarityIndexDecibel, avDecibelBias, medianDecibelBias));
-            Console.WriteLine(string.Format("dB Bias Index: low band={0:f3}   mid band={1:f3}   high band={2:f3}",
-                                                lowDecibelBias, midDecibelBias, hiDecibelBias));
+            Console.WriteLine($"Zero crossings: L={zeroCrossingFractionL:f3}   R={zeroCrossingFractionR:f3}");
+            Console.WriteLine(
+                $"Similarity Index: SimIndex={similarityIndex:f3}   SimIndexdB={similarityIndexDecibel:f3}   avBiasdB={avDecibelBias:f3}   medianBiasdB={medianDecibelBias:f3}");
+            Console.WriteLine(
+                $"dB Bias Index: low band={lowDecibelBias:f3}   mid band={midDecibelBias:f3}   high band={hiDecibelBias:f3}");
         }
 
         public static void SeparateChannels(

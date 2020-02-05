@@ -28,7 +28,7 @@ namespace AnalysisPrograms.StandardizedFeatures
     {
         public override string Description => "Performs a standardized feature extraction for ML tasks identifying faunal vocalisations.";
 
-        private static readonly ILog Log = LogManager.GetLogger(nameof(StandardizedFeatureExtraction));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(StandardizedFeatureExtraction));
 
         public override void BeforeAnalyze(AnalysisSettings analysisSettings)
         {

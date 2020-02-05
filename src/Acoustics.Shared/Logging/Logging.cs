@@ -8,6 +8,8 @@ namespace Acoustics.Shared.Logging
     using System.Collections.Generic;
     using System.Globalization;
     using System.IO;
+    using System.Reflection;
+    using System.Runtime.CompilerServices;
     using System.Text;
     using System.Threading.Tasks;
     using Acoustics.Shared.Contracts;
@@ -21,6 +23,7 @@ namespace Acoustics.Shared.Logging
 
     public class Logging
     {
+        public const string RootNamespace = Meta.Name;
         public const string CleanLogger = "CleanLogger";
         public const string LogFileOnly = "LogFileOnly";
         private const string LogPrefix = "log_";
@@ -62,9 +65,9 @@ namespace Acoustics.Shared.Logging
             Level defaultLevel,
             bool quietConsole)
         {
-            LogManager.ResetConfiguration();
+            LogManager.ResetConfiguration(RootNamespace);
 
-            this.repository = (Hierarchy)LogManager.GetRepository();
+            this.repository = (Hierarchy)LogManager.GetRepository(RootNamespace);
 
             this.repository.LevelMap.Add(LogExtensions.PromptLevel);
             this.repository.LevelMap.Add(LogExtensions.SuccessLevel);
@@ -226,7 +229,7 @@ namespace Acoustics.Shared.Logging
 
         public void TestLogging()
         {
-            var log = LogManager.GetLogger(nameof(Logging));
+            var log = LogManager.GetLogger(typeof(Logging));
 
             log.Prompt("Log test PROMPT");
             log.Fatal("Log test FATAL");

@@ -23,7 +23,7 @@ namespace AnalysisPrograms
     /// </summary>
     public static partial class MainEntry
     {
-        private static readonly ILog Log = LogManager.GetLogger(nameof(MainEntry));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(MainEntry));
 
         public static async Task<int> Main(string[] args)
         {

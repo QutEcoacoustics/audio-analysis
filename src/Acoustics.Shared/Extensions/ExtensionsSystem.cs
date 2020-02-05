@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="ExtensionsSystem.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -9,11 +9,10 @@
 
 namespace System
 {
+    using Acoustics.Shared;
     using Collections.Generic;
     using Collections.Specialized;
     using ComponentModel;
-    using Data;
-    using Data.Linq;
     using Diagnostics;
     using IO;
     using Linq;
@@ -167,10 +166,8 @@ namespace System
             var enumString = value.ToString();
             var enumType = value.GetType();
             var enumFieldInfo = enumType.GetField(enumString);
-            var attributes =
-                enumFieldInfo.GetCustomAttributes(typeof(DescriptionAttribute), false) as DescriptionAttribute[];
 
-            if (attributes != null && attributes.Length > 0)
+            if (enumFieldInfo.GetCustomAttributes(typeof(DescriptionAttribute), false) is DescriptionAttribute[] attributes && attributes.Length > 0)
             {
                 var description = new StringBuilder();
 
@@ -202,53 +199,26 @@ namespace System
 
             if (byteCount >= 1099511627776)
             {
-                size = string.Format("{0:##.#}", byteCount / 1099511627776F) + " tb";
+                size = $"{byteCount / 1099511627776F:##.#}" + " tb";
             }
             else if (byteCount >= 1073741824)
             {
-                size = string.Format("{0:##.#}", byteCount / 1073741824F) + " gb";
+                size = $"{byteCount / 1073741824F:##.#}" + " gb";
             }
             else if (byteCount >= 1048576)
             {
-                size = string.Format("{0:##.#}", byteCount / 1048576F) + " mb";
+                size = $"{byteCount / 1048576F:##.#}" + " mb";
             }
             else if (byteCount >= 1024)
             {
-                size = string.Format("{0:##.#}", byteCount / 1024F) + " kb";
+                size = $"{byteCount / 1024F:##.#}" + " kb";
             }
             else if (byteCount >= 1)
             {
-                size = string.Format("{0:##.#}", (float)byteCount) + " b";
+                size = $"{(float)byteCount:##.#}" + " b";
             }
 
             return size;
-        }
-
-        /// <summary>Serialised object as Binary.
-        /// </summary>
-        /// <param name="linqBinary">
-        /// The linq binary.
-        /// </param>
-        /// <returns>Deserialised object.
-        /// </returns>
-        public static object BinaryDeserialize(this Binary linqBinary)
-        {
-            return linqBinary.ToArray().BinaryDeserialize();
-        }
-
-        /// <summary>Serialised object as Binary.
-        /// </summary>
-        /// <param name="linqBinary">
-        /// The linq binary.
-        /// </param>
-        /// <param name="binder">
-        /// The binder.
-        /// </param>
-        /// <returns>Deserialised object.
-        /// </returns>
-        public static object BinaryDeserialize(this Binary linqBinary, SerializationBinder binder)
-        {
-            return linqBinary.ToArray().BinaryDeserialize(binder);
         }
 
         /// <summary>
@@ -330,11 +300,6 @@ namespace System
             throw new ArgumentOutOfRangeException();
         }
 
-        public static IEnumerable<T> Prepend<T>(this IEnumerable<T> items, T item)
-        {
-            return new[] { item }.Concat(items);
-        }
-
         public static void AddRange<T>(this IList<T> list, IEnumerable<T> values)
         {
             if (values != null)
@@ -407,7 +372,7 @@ namespace System
 
         public static TResult MaxOrDefault<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> selector)
         {
-            return source.MaxOrDefault(selector, default(TResult));
+            return source.MaxOrDefault(selector, default);
         }
 
         public static TResult MaxOrDefault<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> selector, TResult defaultValue)
@@ -427,7 +392,7 @@ namespace System
 
         public static TResult MinOrDefault<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> selector)
         {
-            return source.MinOrDefault(selector, default(TResult));
+            return source.MinOrDefault(selector, default);
         }
 
         public static TResult MinOrDefault<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> selector, TResult defaultValue)
@@ -521,8 +486,7 @@ namespace System
             public static Process GetParentProcess(IntPtr handle)
             {
                 ParentProcessUtilities pbi = new ParentProcessUtilities();
-                int returnLength;
-                int status = NtQueryInformationProcess(handle, 0, ref pbi, Marshal.SizeOf(pbi), out returnLength);
+                int status = NtQueryInformationProcess(handle, 0, ref pbi, Marshal.SizeOf(pbi), out var returnLength);
                 if (status != 0)
                 {
                     throw new Win32Exception(status);

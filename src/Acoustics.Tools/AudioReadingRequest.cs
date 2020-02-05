@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="AudioReadingRequest.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -85,14 +85,8 @@ namespace Acoustics.Tools
         {
             var duration = (this.End - this.Start).Duration();
 
-            var segment = string.Format(
-                "Request starts at {0} ({1}ms) and finishes at {2} ({3}ms) ({4} - {5}ms).",
-                this.Start.Humanise(),
-                this.Start.TotalMilliseconds,
-                this.End.Humanise(),
-                this.End.TotalMilliseconds,
-                duration.Humanise(),
-                duration.TotalMilliseconds);
+            var segment =
+                $"Request starts at {this.Start.Humanise()} ({this.Start.TotalMilliseconds}ms) and finishes at {this.End.Humanise()} ({this.End.TotalMilliseconds}ms) ({duration.Humanise()} - {duration.TotalMilliseconds}ms).";
 
             var mediaType = string.IsNullOrWhiteSpace(this.MediaType)
                                 ? string.Empty

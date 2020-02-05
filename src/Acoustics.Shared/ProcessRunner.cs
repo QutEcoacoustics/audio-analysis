@@ -1,4 +1,4 @@
-﻿// <copyright file="ProcessRunner.cs" company="QutEcoacoustics">
+// <copyright file="ProcessRunner.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -22,7 +22,7 @@ namespace Acoustics.Shared
     /// </summary>
     public class ProcessRunner : IDisposable
     {
-        private static readonly ILog Log = LogManager.GetLogger(nameof(ProcessRunner));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(ProcessRunner));
         private static long instanceCounter = 0;
 
         private readonly long instanceId = Interlocked.Increment(ref instanceCounter);
@@ -434,16 +434,8 @@ namespace Acoustics.Shared
                 return;
             }
 
-            this.failedRuns.Add(string.Format(
-                "[{0} UTC] {1} with args {2} running in {3}. Waited for {4:c}. Process had{5} already terminated after timeout.\n\nStdout: {6}\n\nStderr: {7}",
-                DateTime.UtcNow.ToString("s", System.Globalization.CultureInfo.InvariantCulture),
-                this.ExecutableFile.Name,
-                arguments,
-                workingDirectory,
-                TimeSpan.FromMilliseconds(this.WaitForExitMilliseconds),
-                exited ? string.Empty : " not",
-                this.StandardOutput,
-                this.ErrorOutput));
+            this.failedRuns.Add(
+                $"[{DateTime.UtcNow.ToString("s", System.Globalization.CultureInfo.InvariantCulture)} UTC] {this.ExecutableFile.Name} with args {arguments} running in {workingDirectory}. Waited for {TimeSpan.FromMilliseconds(this.WaitForExitMilliseconds):c}. Process had{(exited ? string.Empty : " not")} already terminated after timeout.\n\nStdout: {this.StandardOutput}\n\nStderr: {this.ErrorOutput}");
 
             if (this.MaxRetries > 0 && retryCount < this.MaxRetries)
             {

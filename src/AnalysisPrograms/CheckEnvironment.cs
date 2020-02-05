@@ -26,7 +26,7 @@ namespace AnalysisPrograms
     {
         public const string CommandName = "CheckEnvironment";
 
-        private static readonly ILog Log = LogManager.GetLogger(nameof(CheckEnvironment));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(CheckEnvironment));
 
         private int Execute(Arguments arguments)
         {

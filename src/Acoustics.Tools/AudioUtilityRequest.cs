@@ -1,4 +1,4 @@
-﻿// <copyright file="AudioUtilityRequest.cs" company="QutEcoacoustics">
+// <copyright file="AudioUtilityRequest.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -230,13 +230,8 @@ namespace Acoustics.Tools
                 duration = "unknown";
             }
 
-            var segment = string.Format(
-                "Request starts at {0} ({1}ms) and finishes at {2} ({3}) ({4}).",
-                this.OffsetStart.HasValue ? this.OffsetStart.Value.Humanise() : "beginning",
-                this.OffsetStart?.TotalMilliseconds ?? 0,
-                this.OffsetEnd.HasValue ? this.OffsetEnd.Value.Humanise() : "end",
-                this.OffsetEnd.HasValue ? this.OffsetEnd.Value.TotalMilliseconds.ToString(CultureInfo.InvariantCulture) + "ms" : "unknown",
-                duration);
+            var segment =
+                $"Request starts at {(this.OffsetStart.HasValue ? this.OffsetStart.Value.Humanise() : "beginning")} ({this.OffsetStart?.TotalMilliseconds ?? 0}ms) and finishes at {(this.OffsetEnd.HasValue ? this.OffsetEnd.Value.Humanise() : "end")} ({(this.OffsetEnd.HasValue ? this.OffsetEnd.Value.TotalMilliseconds.ToString(CultureInfo.InvariantCulture) + "ms" : "unknown")}) ({duration}).";
 
             string channels = string.Empty;
             if (this.Channels.NotNull())
@@ -307,10 +302,8 @@ namespace Acoustics.Tools
 
                 if (this.BandpassLow.Value > this.BandpassHigh.Value)
                 {
-                    var msg = string.Format(
-                        "Start ({0}) must be equal or less than End ({1}).",
-                        this.BandpassLow.Value,
-                        this.BandpassHigh.Value);
+                    var msg =
+                        $"Start ({this.BandpassLow.Value}) must be equal or less than End ({this.BandpassHigh.Value}).";
 
                     if (throwExceptions)
                     {

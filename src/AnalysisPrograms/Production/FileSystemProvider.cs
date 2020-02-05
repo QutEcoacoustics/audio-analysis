@@ -32,7 +32,7 @@ namespace AnalysisPrograms.Production
 
         public static readonly string[] AllFormats = { SqlitePattern };
 
-        private static readonly ILog Log = LogManager.GetLogger(nameof(FileSystemProvider));
+        private static readonly ILog Log = LogManager.GetLogger(typeof(FileSystemProvider));
 
         public enum Options
         {

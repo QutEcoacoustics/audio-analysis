@@ -1,20 +1,8 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{0338570E-5A77-4A2E-8E17-7955C36AE1F7}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Acoustics.Tools</RootNamespace>
-    <AssemblyName>Acoustics.Tools</AssemblyName>
-    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\EcoSounds\</SolutionDir>
-    <TargetFrameworkProfile />
-    <RestorePackages>true</RestorePackages>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -31,125 +19,30 @@
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <CodeContractsAssemblyMode>1</CodeContractsAssemblyMode>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <AssemblyTitle>Acoustics.Tools</AssemblyTitle>
+    <Company>QUT</Company>
+    <Product>Acoustics.Tools</Product>
+    <Copyright>Copyright © QUT 2012</Copyright>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <CodeAnalysisRuleSet>..\..\style.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.configuration" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Net" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="AudioFilePreparer.cs" />
-    <Compile Include="AudioReadingRequest.cs" />
-    <Compile Include="AudioUtilityInfo.cs" />
-    <Compile Include="AudioUtilityRequest.cs" />
-    <Compile Include="Audio\AbstractAudioUtility.cs" />
-    <Compile Include="Audio\AbstractSpectrogramUtility.cs" />
-    <Compile Include="Audio\AbstractUtility.cs" />
-    <Compile Include="Audio\AudioUtilityException.cs" />
-    <Compile Include="Audio\BitDepthOperationNotImplemented.cs" />
-    <Compile Include="Audio\ChannelNotAvailableException.cs" />
-    <Compile Include="Audio\ChannelSelectionOperationNotImplemented.cs" />
-    <Compile Include="Audio\CustomSpectrogramUtility.cs" />
-    <Compile Include="Audio\FfmpegRawPcmAudioUtility.cs" />
-    <Compile Include="Audio\ISpectrogramUtility.cs" />
-    <Compile Include="Audio\MasterAudioUtility.cs" />
-    <Compile Include="Audio\FfmpegAudioUtility.cs" />
-    <Compile Include="Audio\IAudioUtility.cs" />
-    <Compile Include="Audio\Mp3SpltAudioUtility.cs" />
-    <Compile Include="Audio\ShntoolAudioUtility.cs" />
-    <Compile Include="Audio\SoxAudioUtility.cs" />
-    <Compile Include="Audio\SoxSpectrogramUtility.cs" />
-    <Compile Include="Audio\WavPackAudioUtility.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SpectrogramRequest.cs" />
-    <Compile Include="Wav\IWavReader.cs" />
-    <Compile Include="Wav\WavAudioInfo.cs" />
-    <Compile Include="Wav\WavChunk.cs" />
-    <Compile Include="Wav\WavReader.cs" />
-    <Compile Include="Wav\WavStreamReader.cs" />
-    <Compile Include="Wav\WavUtils.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Acoustics.Shared\Acoustics.Shared.csproj">
-      <Project>{EF04F5A8-D4BD-4CD1-BFC2-F6AD2D9C7927}</Project>
-      <Name>Acoustics.Shared</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Acoustics.Unsafe\Acoustics.Unsafe.csproj">
-      <Project>{cb44fcc9-e533-4bb6-85a5-efb204c60a4f}</Project>
-      <Name>Acoustics.Unsafe</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\AcousticWorkbench\AcousticWorkbench.csproj">
-      <Project>{e92afa1b-b089-4cc3-b765-3b4cff84e294}</Project>
-      <Name>AcousticWorkbench</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\Acoustics.Shared\Acoustics.Shared.csproj" />
+    <ProjectReference Include="..\Acoustics.Unsafe\Acoustics.Unsafe.csproj" />
+    <ProjectReference Include="..\AcousticWorkbench\AcousticWorkbench.csproj" />
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="..\..\stylecop.json">
       <Link>stylecop.json</Link>
     </AdditionalFiles>
-    <None Include="App.config">
-      <SubType>Designer</SubType>
-    </None>
   </ItemGroup>
   <ItemGroup>
-    <BootstrapperPackage Include=".NETFramework,Version=v4.0">
-      <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4 %28x86 and x64%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
-      <Visible>False</Visible>
-      <ProductName>Windows Installer 3.1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
+    <PackageReference Include="MathNet.Numerics" Version="4.9.0" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

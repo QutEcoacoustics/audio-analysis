@@ -1,4 +1,4 @@
-﻿// ReSharper disable once CheckNamespace
+// ReSharper disable once CheckNamespace
 // --------------------------------------------------------------------------------------------------------------------
 // <copyright file="ReflectionExtensions.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
@@ -42,27 +42,23 @@ namespace System
             this Type type,
             Expression<Func<TSource, TProperty>> propertyLambda)
         {
-            var member = propertyLambda.Body as MemberExpression;
-            if (member == null)
+            if (!(propertyLambda.Body is MemberExpression member))
             {
                 throw new ArgumentException(
-                    string.Format("Expression '{0}' refers to a method, not a property.", propertyLambda.ToString()));
+                    $"Expression '{propertyLambda.ToString()}' refers to a method, not a property.");
             }
 
             var propInfo = member.Member as PropertyInfo;
             if (propInfo == null)
             {
                 throw new ArgumentException(
-                    string.Format("Expression '{0}' refers to a field, not a property.", propertyLambda.ToString()));
+                    $"Expression '{propertyLambda.ToString()}' refers to a field, not a property.");
             }
 
             if (type != propInfo.ReflectedType && !type.IsSubclassOf(propInfo.ReflectedType))
             {
                 throw new ArgumentException(
-                    string.Format(
-                        "Expresion '{0}' refers to a property that is not from type {1}.",
-                        propertyLambda.ToString(),
-                        type));
+                    $"Expresion '{propertyLambda.ToString()}' refers to a property that is not from type {type}.");
             }
 
             return propInfo;
@@ -80,7 +76,7 @@ namespace System
             var property = member as PropertyInfo;
             if (property == null)
             {
-                throw new Exception(string.Format("'{0}' is not a property.", member.Name));
+                throw new Exception($"'{member.Name}' is not a property.");
             }
 
             return property;
@@ -111,7 +107,7 @@ namespace System
 
             if (memberExpression == null)
             {
-                throw new ArgumentException("Not a member access", "expression");
+                throw new ArgumentException("Not a member access", nameof(expression));
             }
 
             return memberExpression;
@@ -218,7 +214,7 @@ namespace System
             }
             else
             {
-                return default(T);
+                return default;
             }
         }
     }
