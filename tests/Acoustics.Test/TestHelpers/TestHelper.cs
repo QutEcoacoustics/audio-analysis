@@ -14,7 +14,6 @@ namespace Acoustics.Test.TestHelpers
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.StandardSpectrograms;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using MSTestExtensions;
     using static System.Environment;
 
     /// <summary>
@@ -657,20 +656,20 @@ namespace Acoustics.Test.TestHelpers
                 }
             }
 
-            BaseTest.Assert.IsTrue(isOk);
+            Assert.IsTrue(isOk);
         }
 
         public static void WavReaderAssertions(WavReader reader, AudioUtilityInfo info)
         {
-            BaseTest.Assert.AreEqual(info.ChannelCount.Value, reader.Channels);
+            Assert.AreEqual(info.ChannelCount.Value, reader.Channels);
             if (info.BitsPerSample.HasValue)
             {
-                BaseTest.Assert.AreEqual(info.BitsPerSample.Value, reader.BitsPerSample);
+                Assert.AreEqual(info.BitsPerSample.Value, reader.BitsPerSample);
             }
 
-            BaseTest.Assert.AreEqual(info.SampleRate.Value, reader.SampleRate);
-            BaseTest.Assert.AreEqual(info.Duration.Value.TotalMilliseconds, reader.Time.TotalMilliseconds, 150);
-            BaseTest.Assert.AreEqual(
+            Assert.AreEqual(info.SampleRate.Value, reader.SampleRate);
+            Assert.AreEqual(info.Duration.Value.TotalMilliseconds, reader.Time.TotalMilliseconds, 150);
+            Assert.AreEqual(
                 (int)(info.Duration.Value.TotalSeconds * info.SampleRate.Value),
                 reader.BlockCount,
                 100);

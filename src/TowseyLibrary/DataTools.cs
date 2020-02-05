@@ -12,7 +12,7 @@ namespace TowseyLibrary
 
     public class DataTools
     {
-        private static string testDir = @"D:\SensorNetworks\Software\TowseyLib\TestResources\";
+        private static readonly string testDir = @"D:\SensorNetworks\Software\TowseyLib\TestResources\";
 
         private static void Main()
         {
@@ -617,9 +617,7 @@ namespace TowseyLibrary
         /// </summary>
         public static double[] Vector_NormRange(double[] v)
         {
-            double min;
-            double max;
-            MinMax(v, out min, out max);
+            MinMax(v, out var min, out var max);
             double range = max - min;
 
             double[] Vnorm = new double[v.Length];
@@ -1056,9 +1054,7 @@ namespace TowseyLibrary
 
             // if (minPercentile < 0.0) throw new ArgumentException("minPercentile must be at least 0.0");
             // if (maxPercentile > 1.0) throw new ArgumentException("maxPercentile must be at most 1.0");
-            double min;
-            double max;
-            MinMax(matrix, out min, out max);
+            MinMax(matrix, out var min, out var max);
             if (max <= min)
             {
                 throw new ArgumentException("max=" + max + " must be > min=" + min);
@@ -1258,8 +1254,7 @@ namespace TowseyLibrary
         {
             int length = data.Length;
             int[] peaks = new int[2];
-            double min, max;
-            MinMax(data, out min, out max);
+            MinMax(data, out var min, out var max);
             double range = max - min;
             double lowThreshold = min + (range * severity);      // must be 10% of max.
             double topThreshold = min + (range * (1 - severity)); // must be 90% of max.
@@ -1780,9 +1775,7 @@ namespace TowseyLibrary
         public static void writeBarGraph(double[] data)
   {
       LoggedConsole.WriteLine("BAR GRAPH OF DOUBLES DATA");
-      double min;
-      double max;
-      MinMax(data, out min, out max);
+      MinMax(data, out var min, out var max);
       if (max < 10.0)
       {
           min = 0;
@@ -1801,9 +1794,7 @@ namespace TowseyLibrary
 
         public static void writeBarGraph(int[] data)
   {
-    int min;
-    int max;
-    MinMax(data, out min, out max);
+      MinMax(data, out var min, out var max);
     int sf = 1;  // scaling factor for graphing bars
     if (max > 80)
             {
@@ -2749,9 +2740,7 @@ namespace TowseyLibrary
         {
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
-            double av;
-            double sd;
-            NormalDist.AverageAndSD(m, out av, out sd);
+            NormalDist.AverageAndSD(m, out var av, out var sd);
 
             double[,] ret = new double[rows, cols];
 
@@ -2774,9 +2763,7 @@ namespace TowseyLibrary
         public static double[] DiffFromMean(double[] V)
         {
             int L = V.Length;
-            double av;
-            double sd;
-            NormalDist.AverageAndSD(V, out av, out sd);
+            NormalDist.AverageAndSD(V, out var av, out var sd);
 
             double[] returnV = new double[L];
 
@@ -2796,9 +2783,7 @@ namespace TowseyLibrary
         public static double[] Vector2Zscores(double[] V)
         {
             int L = V.Length;
-            double av;
-            double sd;
-            NormalDist.AverageAndSD(V, out av, out sd);
+            NormalDist.AverageAndSD(V, out var av, out var sd);
 
             double[] returnV = new double[L];
 
@@ -3702,9 +3687,7 @@ namespace TowseyLibrary
   // NormaliseMatrixValues and compress/bound the values
         public static double[,] Clip(double[,] m, double minPercentile, double maxPercentile)
   {
-      double minCut;
-      double maxCut;
-      PercentileCutoffs(m, minPercentile, maxPercentile, out minCut, out maxCut);
+      PercentileCutoffs(m, minPercentile, maxPercentile, out var minCut, out var maxCut);
       return BoundMatrix(m, minCut, maxCut);
   }
 
@@ -4233,9 +4216,7 @@ namespace TowseyLibrary
 
         public static void WriteMinMaxOfArray(double[] data)
   {
-      double min;
-      double max;
-      MinMax(data, out min, out max);
+      MinMax(data, out var min, out var max);
       LoggedConsole.WriteLine("Array Min={0:F5}  Array Max={1:F5}", min, max);
   }
 
@@ -4256,9 +4237,7 @@ namespace TowseyLibrary
 
         public static void WriteMinMaxOfArray(string arrayname, double[] data)
   {
-      double min;
-      double max;
-      MinMax(data, out min, out max);
+      MinMax(data, out var min, out var max);
       LoggedConsole.WriteLine(arrayname + ":  Min={0:F5}  Max={1:F5}", min, max);
   }
 
@@ -4424,8 +4403,7 @@ namespace TowseyLibrary
 
     for (int i = 0; i < data.Length; i++)
     {
-        int maxIndex;
-        getMaxIndex(dataCopy, out maxIndex);
+        getMaxIndex(dataCopy, out var maxIndex);
         order[i] = maxIndex;
         dataCopy[maxIndex] = -double.MaxValue;
     }
@@ -5136,8 +5114,7 @@ namespace TowseyLibrary
           }
       }
 
-      double mean, sd;
-      NormalDist.AverageAndSD(periods.ToArray(), out mean, out sd);
+      NormalDist.AverageAndSD(periods.ToArray(), out var mean, out var sd);
       return Tuple.Create(mean, sd, peakCount);
   }
 

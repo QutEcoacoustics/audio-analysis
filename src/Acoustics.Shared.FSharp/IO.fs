@@ -35,7 +35,7 @@ namespace MQUTeR.FSharp.Shared
 
         let mutable fName:string = null;
         //let tempMessages = new ResizeArray<string>()
-        let log4Net = LogManager.GetLogger("FSharpLog");
+        let log4Net = LogManager.GetLogger("FSharpLog", "IO");
         (*
         let create file =
             let lfi = new FileInfo(file)

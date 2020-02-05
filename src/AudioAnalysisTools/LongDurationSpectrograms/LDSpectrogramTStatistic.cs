@@ -6,12 +6,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.Drawing.Imaging;
     using System.IO;
 
     using Acoustics.Shared.ConfigFile;
-
+    using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
 
     public static class LdSpectrogramTStatistic
@@ -261,17 +261,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             //image3 = ColourSpectrogram.FrameSpectrogram(image3, titleBar, minOffset, cs2.X_interval, cs2.Y_interval);
 
             //draw a difference spectrogram derived from by thresholding a t-statistic matrix
-            Image image4 = DrawDifferenceSpectrogramDerivedFromSingleTStatistic(key, cs1, cs2, tStatThreshold, ColourGain);
+            var image4 = DrawDifferenceSpectrogramDerivedFromSingleTStatistic(key, cs1, cs2, tStatThreshold, ColourGain);
             title = string.Format("{0} DIFFERENCE SPECTROGRAM (thresholded by t-statistic={3}) for: {1} - {2}.      (scale:hours x kHz)", key, cs1.FileName, cs2.FileName, tStatThreshold);
             titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image2.Width);
             image4 = LDSpectrogramRGB.FrameLDSpectrogram(image4, titleBar, cs2, nyquist, herzInterval);
 
-            Image[] opArray = new Image[3];
-            opArray[0] = image1;
-            opArray[1] = image2;
-            opArray[2] = image4;
-
-            var combinedImage = ImageTools.CombineImagesVertically(opArray);
+            var combinedImage = ImageTools.CombineImagesVertically(image1, image2, image4);
             return combinedImage;
         }
 
@@ -290,7 +285,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             int rows = tStatMatrix.GetLength(0); //number of rows
             int cols = tStatMatrix.GetLength(1); //number
-            var bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
+            var bmp = new Image<Rgb24>(cols, rows);
             for (int row = 0; row < rows; row++)
             {
                 for (int col = 0; col < cols; col++)
@@ -331,7 +326,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                             }
                         }
 
-                        bmp.SetPixel(col, row, colour);
+                        bmp[col, row] = colour;
                     }
                     else // if (tStat < 0)
                     {
@@ -364,7 +359,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                             }
                         }
 
-                        bmp.SetPixel(col, row, colour);
+                        bmp[col, row] = colour;
                     }
                 }
             }
@@ -372,7 +367,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return bmp;
         }
 
-        public static Image DrawDifferenceSpectrogramDerivedFromSingleTStatistic(string key, LDSpectrogramRGB cs1, LDSpectrogramRGB cs2, double tStatThreshold, double colourGain)
+        public static Image<Rgb24> DrawDifferenceSpectrogramDerivedFromSingleTStatistic(string key, LDSpectrogramRGB cs1, LDSpectrogramRGB cs2, double tStatThreshold, double colourGain)
         {
             double[,] m1 = cs1.GetNormalisedSpectrogramMatrix(key); //the TEN matrix is subtracted from 1.
             double[,] m2 = cs2.GetNormalisedSpectrogramMatrix(key);
@@ -380,12 +375,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             return DrawDifferenceSpectrogramDerivedFromSingleTStatistic(key, m1, m2, tStatM, tStatThreshold, colourGain);
         }
 
-        public static Image DrawDifferenceSpectrogramDerivedFromSingleTStatistic(string key, double[,] m1, double[,] m2, double[,] tStatM, double tStatThreshold, double colourGain)
+        public static Image<Rgb24> DrawDifferenceSpectrogramDerivedFromSingleTStatistic(string key, double[,] m1, double[,] m2, double[,] tStatM, double tStatThreshold, double colourGain)
         {
             int rows = m1.GetLength(0); //number of rows
             int cols = m2.GetLength(1); //number
 
-            Bitmap image = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
+            Image<Rgb24> image = new Image<Rgb24>(cols, rows);
             int maxRgbValue = 255;
 
             for (int row = 0; row < rows; row++)
@@ -409,12 +404,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     if (diff >= 0)
                     {
                         var ipos = value;
-                        image.SetPixel(column, row, Color.FromArgb(ipos, 0, 0));
+                        image[column, row] = Color.FromRgb((byte)ipos, 0, 0);
                     }
                     else
                     {
                         var ineg = value;
-                        image.SetPixel(column, row, Color.FromArgb(0, ineg, 0));
+                        image[column, row] = Color.FromRgb(0, (byte)ineg, 0);
                     }
                 }
             }
@@ -456,8 +451,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             int rows = m1.GetLength(0); //number of rows
             int cols = m1.GetLength(1); //number
 
-            var spg1Image = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
-            var spg2Image = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
+            var spg1Image = new Image<Rgb24>(cols, rows);
+            var spg2Image = new Image<Rgb24>(cols, rows);
             int maxRgbValue = 255;
 
             for (int row = 0; row < rows; row++)
@@ -468,15 +463,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     var dG = m2[row, column] * colourGain;
                     var dB = m3[row, column] * colourGain;
 
-                    var iR1 = 0;
-                    var iR2 = 0;
-                    var iG1 = 0;
-                    var iG2 = 0;
-                    var iB1 = 0;
-                    var iB2 = 0;
+                    byte iR1 = 0;
+                    byte iR2 = 0;
+                    byte iG1 = 0;
+                    byte iG2 = 0;
+                    byte iB1 = 0;
+                    byte iB2 = 0;
 
-                    var value = Convert.ToInt32(Math.Abs(dR) * maxRgbValue);
-                    value = Math.Min(maxRgbValue, value);
+                    var value = Convert.ToByte(Math.Abs(dR) * maxRgbValue);
+                    value = (byte)Math.Min(maxRgbValue, value);
                     if (dR > 0.0)
                     {
                         iR1 = value;
@@ -486,8 +481,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                         iR2 = value;
                     }
 
-                    value = Convert.ToInt32(Math.Abs(dG) * maxRgbValue);
-                    value = Math.Min(maxRgbValue, value);
+                    value = Convert.ToByte(Math.Abs(dG) * maxRgbValue);
+                    value = (byte)Math.Min(maxRgbValue, value);
                     if (dG > 0.0)
                     {
                         iG1 = value;
@@ -497,8 +492,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                         iG2 = value;
                     }
 
-                    value = Convert.ToInt32(Math.Abs(dB) * maxRgbValue);
-                    value = Math.Min(maxRgbValue, value);
+                    value = Convert.ToByte(Math.Abs(dB) * maxRgbValue);
+                    value = (byte)Math.Min(maxRgbValue, value);
                     if (dB > 0.0)
                     {
                         iB1 = value;
@@ -508,14 +503,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                         iB2 = value;
                     }
 
-                    var colour1 = Color.FromArgb(iR1, iG1, iB1);
-                    var colour2 = Color.FromArgb(iR2, iG2, iB2);
-                    spg1Image.SetPixel(column, row, colour1);
-                    spg2Image.SetPixel(column, row, colour2);
+                    var colour1 = Color.FromRgb(iR1, iG1, iB1);
+                    var colour2 = Color.FromRgb(iR2, iG2, iB2);
+                    spg1Image[column, row] = colour1;
+                    spg2Image[column, row] = colour2;
                 }
             }
 
-            Image[] images = new Image[2];
+            var images = new Image<Rgb24>[2];
             int nyquist = cs1.SampleRate / 2;
             int herzInterval = 1000;
 

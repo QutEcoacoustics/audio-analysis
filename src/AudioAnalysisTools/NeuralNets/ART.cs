@@ -65,15 +65,15 @@ namespace NeuralNets
         public static int maxClassNo = 2;
 
         private const int noARTVersions = 7;
-        private string[] versionNames = { "ART-1", "ART-2v1F&S", "ART-2v2", "ART-2a", "fuzzy-ART", "ARTMAP-2a", "fuzyARTMAP" };
-        private string[] taskNames = { "TRAIN net", "TEST net", "TRN&TEST" };
+        private readonly string[] versionNames = { "ART-1", "ART-2v1F&S", "ART-2v2", "ART-2a", "fuzzy-ART", "ARTMAP-2a", "fuzyARTMAP" };
+        private readonly string[] taskNames = { "TRAIN net", "TEST net", "TRN&TEST" };
 
         //string[] paramNames   = {"alpha", "beta", "c", "d"/*F2 output*/,
         //                            "Rho",    //vigilance param*/
         //                            "Theta",  //threshold for contrast enhancing
         //                            "Add1", "RhoStar"
         //                        };
-        private string[,] paramNames =
+        private readonly string[,] paramNames =
   {
     {
         "A1",    "B1",    "C1",    "D1", " rho ",     "L", " add1", " add2",

@@ -10,12 +10,12 @@ namespace TowseyLibrary
 
     public class NormalDist
     {
-        private double av;        //mean of the data
-        private double sd;        //SD of the data
-        private double[,] bins;   //histogram of distribution over 16 bins about the mean
-        private int totalCount;   //number of samples
-        private double min;       //min and max of data
-        private double max;
+        private readonly double av;        //mean of the data
+        private readonly double sd;        //SD of the data
+        private readonly double[,] bins;   //histogram of distribution over 16 bins about the mean
+        private readonly int totalCount;   //number of samples
+        private readonly double min;       //min and max of data
+        private readonly double max;
 
         /// <summary>
         /// CONSTRUCTOR for integer data
@@ -24,9 +24,7 @@ namespace TowseyLibrary
         public NormalDist(int[] data)
         {
             this.totalCount = data.Length;
-            double average;
-            double stdev;
-            AverageAndSD(data, out average, out stdev);
+            AverageAndSD(data, out var average, out var stdev);
             this.av = average;
             this.sd = stdev;
 
@@ -49,9 +47,7 @@ namespace TowseyLibrary
         public NormalDist(double[] data)
         {
             this.totalCount = data.Length;
-            double average;
-            double stdev;
-            AverageAndSD(data, out average, out stdev);
+            AverageAndSD(data, out var average, out var stdev);
             this.av = average;
             this.sd = stdev;
             this.bins = get16binDistribution(data, average, stdev);
@@ -112,9 +108,7 @@ namespace TowseyLibrary
             int length = scores.Length;
             double[] zs = new double[length];
 
-            double av;
-            double sd;
-            AverageAndSD(scores, out av, out sd);
+            AverageAndSD(scores, out var av, out var sd);
 
             for (int i = 0; i < length; i++)
             {
@@ -188,8 +182,7 @@ namespace TowseyLibrary
          */
         public static void AverageAndSD(double[] data, out double av, out double sd)
         {
-            double var;
-            AverageAndVariance(data, out av, out var);
+            AverageAndVariance(data, out av, out var var);
             sd = Math.Sqrt(var);
         }
 
@@ -268,12 +261,11 @@ namespace TowseyLibrary
             int L = data.Length;
             int halfwindow = window / 2;
             double[] variances = new double[L];
-            double av, variance;
 
             for (int i = 0; i <= L - window; i++)
             {
                 double[] subV = DataTools.Subarray(data, i, window);
-                AverageAndVariance(subV, out av, out variance);
+                AverageAndVariance(subV, out var av, out var variance);
                 variances[i + halfwindow] = variance;
             }
 
@@ -289,9 +281,7 @@ namespace TowseyLibrary
 
         public static double[] Normalise(double[] data)
         {
-            double av;
-            double sd;
-            AverageAndSD(data, out av, out sd);
+            AverageAndSD(data, out var av, out var sd);
             double[] ndata = new double[data.Length];
             for (int i = 0; i < data.Length; i++)
             {
@@ -778,9 +768,7 @@ namespace TowseyLibrary
 
         public static void writeBinDistribution(int[] data, int binWidth)
   {
-    int min;
-    int max;
-    DataTools.MinMax(data, out min, out max);
+      DataTools.MinMax(data, out var min, out var max);
     int length = max / binWidth;
 
     int[] counts = new int[length + 1];
@@ -800,12 +788,8 @@ namespace TowseyLibrary
 
         public static void writeScoreDistribution(double[] scores)
     {
-        double min;
-        double max;
-        DataTools.MinMax(scores, out min, out max);
-        double av;
-        double sd;
-        AverageAndSD(scores, out av, out sd);
+        DataTools.MinMax(scores, out var min, out var max);
+        AverageAndSD(scores, out var av, out var sd);
 
         double[,] histo = get16binDistribution(scores, av, sd);
         LoggedConsole.WriteLine(" ===== SCORE STATISTICS =====");
@@ -817,12 +801,8 @@ namespace TowseyLibrary
 
         public static void writeScoreDistribution(int[] scores)
     {
-        double av;
-        double sd;
-        AverageAndSD(scores, out av, out sd);
-        int min;
-        int max;
-        DataTools.MinMax(scores, out min, out max);
+        AverageAndSD(scores, out var av, out var sd);
+        DataTools.MinMax(scores, out var min, out var max);
         double[,] histo = get16binDistribution(scores, av, sd);
         LoggedConsole.WriteLine(" ===== SCORE STATISTICS =====");
         LoggedConsole.WriteLine("Average =" + av + "+/-" + sd);
@@ -833,12 +813,8 @@ namespace TowseyLibrary
 
         public static void writeScoreStatistics(double[] scores)
     {
-        double av;
-        double sd;
-        AverageAndSD(scores, out av, out sd);
-        double min;
-        double max;
-        DataTools.MinMax(scores, out min, out max);
+        AverageAndSD(scores, out var av, out var sd);
+        DataTools.MinMax(scores, out var min, out var max);
 
         //double[,] histo = NormalDist.get16binDistribution(scores, av, sd);
         LoggedConsole.WriteLine(" ===== SCORE STATISTICS =====");

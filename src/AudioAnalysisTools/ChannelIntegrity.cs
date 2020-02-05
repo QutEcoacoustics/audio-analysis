@@ -57,27 +57,15 @@ namespace AudioAnalysisTools
         {
             FileInfo ipFile = arguments.Source;
 
-            double[] channelL;
-            double[] channelR;
-            double epsilon;
-            SeparateChannels(arguments, ipFile, out channelL, out channelR, out epsilon);
+            SeparateChannels(arguments, ipFile, out var channelL, out var channelR, out var epsilon);
 
-            double similarityIndex;
-            double similarityIndexDecibel;
-            double avDecibelBias;
-            double medianDecibelBias;
-            double lowDecibelBias;
-            double midDecibelBias;
-            double hiDecibelBias;
-            SimilarityIndex(channelL, channelR, epsilon, arguments.SamplingRate, out similarityIndex, out similarityIndexDecibel,
-                                                                                 out avDecibelBias, out medianDecibelBias,
-                                                                                 out lowDecibelBias, out midDecibelBias, out hiDecibelBias);
+            SimilarityIndex(channelL, channelR, epsilon, arguments.SamplingRate, out var similarityIndex, out var similarityIndexDecibel,
+                                                                                 out var avDecibelBias, out var medianDecibelBias,
+                                                                                 out var lowDecibelBias, out var midDecibelBias, out var hiDecibelBias);
 
             //double similarityIndex = SimilarityIndex2(channelL, channelR, epsilon, arguments.SamplingRate);
 
-            double zeroCrossingFractionL;
-            double zeroCrossingFractionR;
-            ZeroCrossingIndex(channelL, channelR, out zeroCrossingFractionL, out zeroCrossingFractionR);
+            ZeroCrossingIndex(channelL, channelR, out var zeroCrossingFractionL, out var zeroCrossingFractionR);
 
             Console.WriteLine($"Zero crossings: L={zeroCrossingFractionL:f3}   R={zeroCrossingFractionR:f3}");
             Console.WriteLine(
@@ -255,12 +243,8 @@ namespace AudioAnalysisTools
         /// <param name="samplesR"></param>
         public static void ChannelMeanAndSD(double[] samplesL, double[] samplesR)
         {
-            double mean1;
-            double stde1;
-            NormalDist.AverageAndSD(samplesL, out mean1, out stde1);
-            double mean2;
-            double stde2;
-            NormalDist.AverageAndSD(samplesR, out mean2, out stde2);
+            NormalDist.AverageAndSD(samplesL, out var mean1, out var stde1);
+            NormalDist.AverageAndSD(samplesR, out var mean2, out var stde2);
             double t = Statistics.tStatistic(mean1, stde1, samplesL.Length, mean2, stde2, samplesR.Length);
             string stats = Statistics.tStatisticAndSignificance(mean1, stde1, samplesL.Length, mean2, stde2, samplesR.Length);
             Console.WriteLine(stats);

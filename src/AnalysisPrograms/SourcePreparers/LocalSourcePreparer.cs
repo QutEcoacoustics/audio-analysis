@@ -66,7 +66,7 @@ namespace AnalysisPrograms.SourcePreparers
             TimeSpan endOffset,
             int targetSampleRateHz)
         {
-            return await TaskEx.Run(() =>
+            return await Task.Run(() =>
             {
                 FileInfo sourceFileInfo = source.ToFileInfo();
 
@@ -269,7 +269,7 @@ namespace AnalysisPrograms.SourcePreparers
                 if ((newEnd - newStart) < minimumDuration)
                 {
                     Log.Warn(
-                        $"Omitting short segment {newStart}–{newEnd} because it is less than the minimum {minimumDuration}");
+                        $"Omitting short segment {newStart}â€“{newEnd} because it is less than the minimum {minimumDuration}");
                     newSegment = null;
                     return false;
                 }
@@ -313,7 +313,7 @@ namespace AnalysisPrograms.SourcePreparers
             int[] channelSelection,
             bool? mixDownToMono)
         {
-            return await TaskEx.Run(() =>
+            return await Task.Run(() =>
             {
                 if (!(source is FileSegment segment))
                 {

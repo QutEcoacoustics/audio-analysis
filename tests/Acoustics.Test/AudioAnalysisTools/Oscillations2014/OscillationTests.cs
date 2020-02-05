@@ -11,6 +11,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Oscillations2014
     using global::AudioAnalysisTools.WavTools;
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using SixLabors.ImageSharp;
     using TestHelpers;
 
     /// <summary>
@@ -90,7 +91,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Oscillations2014
                     // 1: save image of oscillation spectrogram
                     string imageName = stem + ".EXPECTED.png";
                     string imagePath = Path.Combine(PathHelper.ResolveAssetPath("Oscillations2014"), imageName);
-                    tuple.Item1.Save(imagePath, ImageFormat.Png);
+                    tuple.Item1.Save(imagePath);
 
                     // 2: Save matrix of oscillation data stored in freqOscilMatrix1
                     //Csv.WriteMatrixToCsv(expectedMatrixFile, tuple.Item2);
@@ -147,14 +148,14 @@ namespace Acoustics.Test.AudioAnalysisTools.Oscillations2014
                     // no need to do tests on this image but it is useful to visualise output
                     var expectedVectorImage = ImageTools.DrawVectorInColour(DataTools.reverseArray(spectralIndex), cellWidth: 10);
                     var expectedImagePath = PathHelper.ResolveAsset("Oscillations2014", stem + ".png");
-                    expectedVectorImage.Save(expectedImagePath.FullName, ImageFormat.Png);
+                    expectedVectorImage.Save(expectedImagePath.FullName);
                 }
 
                 // 6. Get the vector as image and save as image file
                 // no need to do tests on this image but it is useful to compare with expected visual output
                 var currentVectorImage = ImageTools.DrawVectorInColour(DataTools.reverseArray(spectralIndex), cellWidth: 10);
                 var currentImagePath = Path.Combine(this.outputDirectory.FullName, stem + ".png");
-                currentVectorImage.Save(currentImagePath, ImageFormat.Png);
+                currentVectorImage.Save(currentImagePath);
 
                 // 7. Run test. Compare vectors
                 // TODO  this test fails when using CSV reader because the reader cuts out first element/line of the vector

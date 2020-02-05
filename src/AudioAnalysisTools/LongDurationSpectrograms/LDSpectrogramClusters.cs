@@ -6,12 +6,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using System.Text;
     using Acoustics.Shared;
     using Indices;
+    using SixLabors.ImageSharp.PixelFormats;
+    using SixLabors.ImageSharp.Processing;
+    using SixLabors.Primitives;
     using TowseyLibrary;
 
     /// <summary>
@@ -191,13 +194,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             int clusterCount = 27;  // from fuzzy c-clustering
             int nodeCount = 100; // from the 10x10 SOM
             List<Pen> pens = ImageTools.GetColorPalette(clusterCount);
-            Pen whitePen = new Pen(Color.White);
-            Pen blackPen = new Pen(Color.Black);
+            Pen whitePen = new Pen(Color.White, 1);
+            Pen blackPen = new Pen(Color.Black, 1);
 
             //SizeF stringSize = new SizeF();
-            Font stringFont = new Font("Arial", 12, FontStyle.Bold);
+            var stringFont = Drawing.Arial12Bold;
 
-            //Font stringFont = new Font("Tahoma", 9);
+            //Font stringFont = Drawing.Tahoma9;
 
             // ###############################################################
             // VERY IMPORTANT:  MUST MAKE SURE THE BELOW ARE CONSISTENT WITH THE DATA !!!!!!!!!!!!!!!!!!!!
@@ -232,15 +235,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
 
             Console.WriteLine("Reading file: " + fi.Name);
-            Bitmap ipImage = ImageTools.ReadImage2Bitmap(fi.FullName);
+            Image<Rgb24> ipImage = Image.Load<Rgb24>(fi.FullName);
             int imageWidth = ipImage.Width;
             int imageHt = ipImage.Height;
 
-            //init the output image
-            Image opImage = new Bitmap(imageWidth, imageHt);
-            Graphics gr = Graphics.FromImage(opImage);
-            gr.Clear(Color.Black);
-
+            // init the output image
+            var opImage = Drawing.NewImage(imageWidth, imageHt, Color.Black);
+            
             // construct cluster histogram
             for (int lineNumber = 0; lineNumber < lineCount; lineNumber++)
             {
@@ -261,10 +262,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 int sortID = sortOrder[id];
 
                 // create node array to store column images for this cluster
-                List<Bitmap>[] nodeArray = new List<Bitmap>[nodeCount];
+                List<Image<Rgb24>>[] nodeArray = new List<Image<Rgb24>>[nodeCount];
                 for (int n = 0; n < nodeCount; n++)
                 {
-                    nodeArray[n] = new List<Bitmap>();
+                    nodeArray[n] = new List<Image<Rgb24>>();
                 }
 
                 Console.WriteLine("Reading CLUSTER: " + (sortID + 1) + "  Label=" + clusterLabel[sortID]);
@@ -284,12 +285,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     {
                         // get image column
                         Rectangle rectangle = new Rectangle(lineNumber, 0, 1, imageHt);
-                        Bitmap column = ipImage.Clone(rectangle, ipImage.PixelFormat);
+                        Image<Rgb24> column = ipImage.Clone(x => x.Crop(rectangle));
 
                         nodeArray[nodeID].Add(column);
                     }
                 }
 
+                
                 // cycle through the nodes and get the column images.
                 // the purpose is to draw the column images in order of node number
                 for (int n = 0; n < nodeCount; n++)
@@ -300,14 +302,17 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                         continue;
                     }
 
-                    for (int i = 0; i < imageCount; i++)
+                    opImage.Mutate(gr =>
                     {
-                        Bitmap column = nodeArray[n][i];
-                        gr.DrawImage(column, opColumn, 0);
-                        gr.DrawLine(pens[id], opColumn, trackheight, opColumn, trackheight + trackheight);
-                        gr.DrawLine(pens[id], opColumn, imageHt - trackheight, opColumn, imageHt);
-                        opColumn++;
-                    }
+                        for (int i = 0; i < imageCount; i++)
+                        {
+                            Image<Rgb24> column = nodeArray[n][i];
+                            gr.DrawImage(column, new Point(opColumn, 0), 1);
+                            gr.DrawLine(pens[id], opColumn, trackheight, opColumn, trackheight + trackheight);
+                            gr.DrawLine(pens[id], opColumn, imageHt - trackheight, opColumn, imageHt);
+                            opColumn++;
+                        }
+                    });
 
                     //gr.DrawLine(blackPen, opColumn - 1, imageHt - trackheight, opColumn - 1, imageHt - 10);
                 }
@@ -320,28 +325,34 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     break;
                 }
 
-                gr.DrawLine(whitePen, opColumn - 1, 0, opColumn - 1, imageHt - trackheight - 1);
-                gr.DrawLine(blackPen, opColumn - 1, imageHt - trackheight, opColumn - 1, imageHt);
-                gr.DrawLine(blackPen, opColumn - 1, imageHt - trackheight, opColumn - 1, imageHt);
+                opImage.Mutate(gr =>
+                {
+                    gr.DrawLine(whitePen, opColumn - 1, 0, opColumn - 1, imageHt - trackheight - 1);
+                    gr.DrawLine(blackPen, opColumn - 1, imageHt - trackheight, opColumn - 1, imageHt);
+                    gr.DrawLine(blackPen, opColumn - 1, imageHt - trackheight, opColumn - 1, imageHt);
 
-                int location = opColumn - ((opColumn - clusterStartColumn) / 2);
-                gr.DrawString(clusterLabel[sortID], stringFont, Brushes.Black, new PointF(location - 10, imageHt - 19));
+                    int location = opColumn - ((opColumn - clusterStartColumn) / 2);
+                    gr.DrawText(clusterLabel[sortID], stringFont, Color.Black, new PointF(location - 10, imageHt - 19));
+                });
             }
 
-            ////Draw the title bar
-            Image titleBar = DrawTitleBarOfClusterSpectrogram(title, imageWidth);
-            gr.DrawImage(titleBar, 0, 0);
-            ////Draw the x-axis time scale bar
-            //int trackHeight = 20;
-            //TimeSpan fullDuration = TimeSpan.FromTicks(indexCalculationDuration.Ticks * imageWidth);
-            //Bitmap timeBmp = ImageTrack.DrawTimeTrack(fullDuration, TimeSpan.Zero, imageWidth, trackHeight);
+            opImage.Mutate(gr =>
+            {
+                ////Draw the title bar
+                Image titleBar = DrawTitleBarOfClusterSpectrogram(title, imageWidth);
+                gr.DrawImage(titleBar, 0, 0);
+                ////Draw the x-axis time scale bar
+                //int trackHeight = 20;
+                //TimeSpan fullDuration = TimeSpan.FromTicks(indexCalculationDuration.Ticks * imageWidth);
+                //Image<Rgb24> timeBmp = ImageTrack.DrawTimeTrack(fullDuration, TimeSpan.Zero, imageWidth, trackHeight);
 
-            //spgmImage = LDSpectrogramRGB.FrameLDSpectrogram(spgmImage, titleBar, minuteOffset, indexCalculationDuration, xTicInterval, nyquist, herzInterval);
-            //Graphics gr = Graphics.FromImage(spgmImage);
-            ////gr.Clear(Color.Black);
-            //gr.DrawImage(titleBar, 0, 0); //draw in the top spectrogram
-            //gr.DrawImage(timeBmp, 0, 20); //draw in the top spectrogram
-            //gr.DrawImage(timeBmp, 0, imageHeight - 20); //draw in the top spectrogram
+                //spgmImage = LDSpectrogramRGB.FrameLDSpectrogram(spgmImage, titleBar, minuteOffset, indexCalculationDuration, xTicInterval, nyquist, herzInterval);
+                //Graphics gr = Graphics.FromImage(spgmImage);
+                ////gr.Clear(Color.Black);
+                //gr.DrawImage(titleBar, 0, 0); //draw in the top spectrogram
+                //gr.DrawImage(timeBmp, 0, 20); //draw in the top spectrogram
+                //gr.DrawImage(timeBmp, 0, imageHeight - 20); //draw in the top spectrogram
+            });
 
             opImage.Save(Path.Combine(opDir, opFileName));
         }
@@ -367,13 +378,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             int clusterCount = 27;  // from Yvonne's method
             List<Pen> pens = ImageTools.GetColorPalette(clusterCount);
-            Pen whitePen = new Pen(Color.White);
-            Pen blackPen = new Pen(Color.Black);
+            Pen whitePen = new Pen(Color.White, 1);
+            Pen blackPen = new Pen(Color.Black, 1);
 
             //SizeF stringSize = new SizeF();
-            Font stringFont = new Font("Arial", 12, FontStyle.Bold);
+            var stringFont = Drawing.Arial12Bold;
 
-            //Font stringFont = new Font("Tahoma", 9);
+            //Font stringFont = Drawing.Tahoma9;
 
             // assignment of cluster numbers to cluster LABEL
             string[] clusterLabel = { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "a" };
@@ -420,87 +431,90 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
 
             Console.WriteLine("Reading file: " + fi.Name);
-            Bitmap ipImage = ImageTools.ReadImage2Bitmap(fi.FullName);
+            Image<Rgb24> ipImage =Image.Load<Rgb24>(fi.FullName);
             int imageWidth = ipImage.Width;
             int imageHt = ipImage.Height;
 
             //init the output image
             int opImageWidth = imageWidth + (2 * clusterCount);
-            Image opImage = new Bitmap(opImageWidth, imageHt);
-            Graphics gr = Graphics.FromImage(opImage);
-            gr.Clear(Color.Black);
+            var opImage = Drawing.NewImage(opImageWidth, imageHt, Color.Black);
 
             // this loop re
-            int opColumnNumber = 0;
-            int clusterStartColumn = 0;
-            for (int id = 0; id < clusterCount; id++)
+            opImage.Mutate(gr =>
             {
-                int sortID = sortOrder[id];
-
-                Console.WriteLine("Reading CLUSTER: " + (sortID + 1) + "  Label=" + clusterLabel[sortID]);
-                int[] minutesArray = clusterArrays[sortID].ToArray();
-                clusterStartColumn = opColumnNumber;
-
-                // read through the entire list of minutes
-                for (int m = 0; m < minutesArray.Length; m++)
+                int opColumnNumber = 0;
+                int clusterStartColumn = 0;
+                for (int id = 0; id < clusterCount; id++)
                 {
-                    // get image column
-                    Rectangle rectangle = new Rectangle(minutesArray[m] - 1, 0, 1, imageHt);
-                    Bitmap column = ipImage.Clone(rectangle, ipImage.PixelFormat);
-                    gr.DrawImage(column, opColumnNumber, 0);
+                    int sortID = sortOrder[id];
+
+                    Console.WriteLine("Reading CLUSTER: " + (sortID + 1) + "  Label=" + clusterLabel[sortID]);
+                    int[] minutesArray = clusterArrays[sortID].ToArray();
+                    clusterStartColumn = opColumnNumber;
+
+                    // read through the entire list of minutes
+                    for (int m = 0; m < minutesArray.Length; m++)
+                    {
+                        // get image column
+                        Rectangle rectangle = new Rectangle(minutesArray[m] - 1, 0, 1, imageHt);
+                        Image<Rgb24> column = ipImage.Clone(x =>x.Crop(rectangle));
+                        gr.DrawImage(column, new Point(opColumnNumber, 0), 1);
+                        opColumnNumber++;
+                    }
+
+                    // draw in separators
+                    gr.DrawLine(whitePen, opColumnNumber, 0, opColumnNumber, imageHt - 1);
                     opColumnNumber++;
+                    gr.DrawLine(whitePen, opColumnNumber, 0, opColumnNumber, imageHt - 1);
+                    opColumnNumber++;
+
+                    // draw Cluster ID at bottom of the image
+                    if (minutesArray.Length > 3)
+                    {
+                        Image<Rgb24> clusterIDImage = new Image<Rgb24>(minutesArray.Length,
+                            SpectrogramConstants.HEIGHT_OF_TITLE_BAR - 6);
+                        clusterIDImage.Mutate(g2 => { g2.Clear(Color.Black); });
+                        gr.DrawImage(clusterIDImage, new Point(clusterStartColumn, imageHt - 19), 1);
+                        int location = opColumnNumber - ((opColumnNumber - clusterStartColumn) / 2);
+                        gr.DrawText(clusterLabel[sortID], stringFont, Color.White, new PointF(location - 10, imageHt - 19));
+                    }
                 }
 
-                // draw in separators
-                gr.DrawLine(whitePen, opColumnNumber, 0, opColumnNumber, imageHt - 1);
-                opColumnNumber++;
-                gr.DrawLine(whitePen, opColumnNumber, 0, opColumnNumber, imageHt - 1);
-                opColumnNumber++;
-
-                // draw Cluster ID at bottom of the image
-                if (minutesArray.Length > 3)
-                {
-                    Bitmap clusterIDImage = new Bitmap(minutesArray.Length, SpectrogramConstants.HEIGHT_OF_TITLE_BAR - 6);
-                    Graphics g2 = Graphics.FromImage(clusterIDImage);
-                    g2.Clear(Color.Black);
-                    gr.DrawImage(clusterIDImage, clusterStartColumn, imageHt - 19);
-                    int location = opColumnNumber - ((opColumnNumber - clusterStartColumn) / 2);
-                    gr.DrawString(clusterLabel[sortID], stringFont, Brushes.White, new PointF(location - 10, imageHt - 19));
-                }
-            }
-
-            //Draw the title bar
-            Image titleBar = DrawTitleBarOfClusterSpectrogram(title, opImageWidth - 2);
-            gr.DrawImage(titleBar, 1, 0);
+                //Draw the title bar
+                Image titleBar = DrawTitleBarOfClusterSpectrogram(title, opImageWidth - 2);
+                gr.DrawImage(titleBar, new Point(1, 0), 1);
+            });
             opImage.Save(Path.Combine(opDir, opFileName));
         }
 
         public static Image DrawTitleBarOfClusterSpectrogram(string title, int width)
         {
-            Bitmap bmp = new Bitmap(width, SpectrogramConstants.HEIGHT_OF_TITLE_BAR - 3);
-            Graphics g = Graphics.FromImage(bmp);
-            g.Clear(Color.Black);
-            Pen pen = new Pen(Color.White);
-            Font stringFont = new Font("Arial", 12, FontStyle.Bold);
+            var bmp = Drawing.NewImage(width, SpectrogramConstants.HEIGHT_OF_TITLE_BAR - 3, Color.Black);
+            
+            Pen pen = new Pen(Color.White, 1);
+            var stringFont = Drawing.Arial12Bold;
 
-            //Font stringFont = new Font("Tahoma", 9);
-            SizeF stringSize = new SizeF();
-
-            int X = 4;
-            g.DrawString(title, stringFont, Brushes.Wheat, new PointF(X, 3));
-
-            stringSize = g.MeasureString(title, stringFont);
-            X += stringSize.ToSize().Width + 70;
-
-            string text = Meta.OrganizationTag;
-            stringSize = g.MeasureString(text, stringFont);
-            int X2 = width - stringSize.ToSize().Width - 2;
-            if (X2 > X)
+            bmp.Mutate(g =>
             {
-                g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X2, 3));
-            }
+                SizeF stringSize = new SizeF();
 
-            g.DrawLine(new Pen(Color.Gray), 0, 0, width, 0); //draw upper boundary
+                int X = 4;
+                g.DrawText(title, stringFont, Color.Wheat, new PointF(X, 3));
+
+                stringSize = g.MeasureString(title, stringFont);
+                X += stringSize.ToSize().Width + 70;
+
+                string text = Meta.OrganizationTag;
+                stringSize = g.MeasureString(text, stringFont);
+                int X2 = width - stringSize.ToSize().Width - 2;
+                if (X2 > X)
+                {
+                    g.DrawText(text, stringFont, Color.Wheat, new PointF(X2, 3));
+                }
+
+                g.DrawLine(new Pen(Color.Gray, 1), 0, 0, width, 0); //draw upper boundary
+            });
+
             return bmp;
         }
     }

@@ -17,6 +17,8 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
     using global::AudioAnalysisTools.LongDurationSpectrograms;
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.PixelFormats;
     using TestHelpers;
     using TowseyLibrary;
 
@@ -79,7 +81,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
             var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM", freqScale.GridLineLocations);
             var outputImagePath = this.outputDirectory.CombineFile("Signal1_LinearFreqScale.png");
-            image.Save(outputImagePath.FullName, ImageFormat.Png);
+            image.Save(outputImagePath.FullName);
             */
 
             var configPath = PathHelper.ResolveConfigFile("Towsey.Acoustic.yml");
@@ -110,7 +112,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             Assert.AreEqual(21, pngCount);
 
             var twoMapsImagePath = resultsDirectory.CombineFile("TemporaryRecording1__2Maps.png");
-            var twoMapsImage = ImageTools.ReadImage2Bitmap(twoMapsImagePath.FullName);
+            var twoMapsImage = Image.Load<Rgb24>(twoMapsImagePath.FullName);
 
             // image is 7 * 632
             Assert.AreEqual(7, twoMapsImage.Width);
@@ -166,7 +168,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             var sonogram = OctaveFreqScale.ConvertRecordingToOctaveScaleSonogram(recording, fst);
             var sonogramImage = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM", freqScale.GridLineLocations);
             var outputImagePath = this.outputDirectory.CombineFile("SignalSpectrogram_OctaveFreqScale.png");
-            sonogramImage.Save(outputImagePath.FullName, ImageFormat.Png);
+            sonogramImage.Save(outputImagePath.FullName);
             */
 
             // Now need to rewrite the config file with new parameter settings
@@ -272,7 +274,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             Assert.AreEqual(22, pngCount);
 
             var twoMapsImagePath = resultsDirectory.CombineFile(recordingName + "__2Maps.png");
-            var twoMapsImage = ImageTools.ReadImage2Bitmap(twoMapsImagePath.FullName);
+            var twoMapsImage = Image.Load<Rgb24>(twoMapsImagePath.FullName);
 
             // image is (7*4) * 652
             Assert.AreEqual(28, twoMapsImage.Width);

@@ -1,6 +1,8 @@
-﻿module QutSensors.AudioAnalysis.AED.Matlab
+module QutSensors.AudioAnalysis.AED.Matlab
 
 open Util
+open Microsoft.FSharp.Math
+open Microsoft.FSharp
 
 (* This is one particular variation of the Matlab hist function, from the help:
     N = HIST(Y,X), where X is a vector, returns the distribution of Y among bins with centers

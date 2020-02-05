@@ -21,9 +21,9 @@ namespace AudioAnalysisTools.Indices
     using DSP;
     using StandardSpectrograms;
     using log4net;
-    using MoreLinq.Extensions;
     using TowseyLibrary;
     using Zio;
+    using MoreLinq;
 
     public static class IndexMatrices
     {
@@ -215,8 +215,7 @@ namespace AudioAnalysisTools.Indices
                     continue;
                 }
 
-                DateTimeOffset startDto;
-                if (!FileDateHelpers.FileNameContainsDateTime(file.Name, out startDto, offsetHint))
+                if (!FileDateHelpers.FileNameContainsDateTime(file.Name, out var startDto, offsetHint))
                 {
                     LoggedConsole.WriteWarnLine($"WARNING: {key} Concatenation Time Check: INVALID DateTime in File Name {file.Name}");
                 }
@@ -267,9 +266,9 @@ namespace AudioAnalysisTools.Indices
                     string str1 = $"{key} Concatenation: Elapsed Time Mismatch ERROR in csvFile {i + 1}/{files.Length}: {accumulatedRowMinutes} accumulatedRowMinutes != {elapsedMinutesInFileNames} elapsedMinutesInFileNames";
                     LoggedConsole.WriteWarnLine(str1);
 
-                    int scalingfactor = (int)Math.Round(60.0 / indexCalcDuration.TotalSeconds);
+                    int scalingFactor = (int)Math.Round(60.0 / indexCalcDuration.TotalSeconds);
                     int minutesToAdd = elapsedMinutesInFileNames - accumulatedRowMinutes;
-                    int rows2Add = minutesToAdd * scalingfactor;
+                    int rows2Add = minutesToAdd * scalingFactor;
 
                     int columnCount = matrices[0].GetLength(1);
                     var emptyMatrix = new double[rows2Add, columnCount];

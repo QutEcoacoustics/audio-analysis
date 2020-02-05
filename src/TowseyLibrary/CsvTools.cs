@@ -429,8 +429,7 @@ namespace TowseyLibrary
                 words = lines[r].Split(',');
                 for (int c = 0; c < columnCount; c++)
                 {
-                    double d;
-                    var parsed = double.TryParse(words[c], out d);
+                    var parsed = double.TryParse(words[c], out var d);
 
                     if (parsed)
                     {
@@ -438,8 +437,7 @@ namespace TowseyLibrary
                     }
                     else
                     {
-                        TimeSpan ts;
-                        parsed = TimeSpan.TryParse(words[c], out ts);
+                        parsed = TimeSpan.TryParse(words[c], out var ts);
                         if (parsed)
                         {
                             values[c][r - 1] = ts.TotalSeconds;
@@ -503,8 +501,7 @@ namespace TowseyLibrary
                 }
                 else
                 {
-                    double value;
-                    array[i - 1] = double.TryParse(words[colNumber], out value) ? value : 0.0;
+                    array[i - 1] = double.TryParse(words[colNumber], out var value) ? value : 0.0;
                 }
             }
 

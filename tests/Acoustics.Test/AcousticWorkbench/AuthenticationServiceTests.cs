@@ -1,4 +1,4 @@
-﻿// <copyright file="AuthenticationServiceTests.cs" company="QutEcoacoustics">
+// <copyright file="AuthenticationServiceTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -14,7 +14,7 @@ namespace Acoustics.Test.AcousticWorkbench
         [TestMethod]
         public void TestMethod1()
         {
-            var task = TaskEx.Delay(1.5.Seconds());
+            var task = Task.Delay(1.5.Seconds());
 
             task.Wait(60.Seconds());
         }

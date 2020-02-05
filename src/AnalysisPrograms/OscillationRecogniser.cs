@@ -1,4 +1,4 @@
-﻿// <copyright file="OscillationRecogniser.cs" company="QutEcoacoustics">
+// <copyright file="OscillationRecogniser.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // default options for dev
@@ -183,14 +183,9 @@ namespace AnalysisPrograms
 
             //iii: DETECT OSCILLATIONS
             bool normaliseDCT = true;
-            List<AcousticEvent> predictedEvents;  //predefinition of results event list
-            double[] scores;                      //predefinition of score array
-            double[,] hits;                       //predefinition of hits matrix - to superimpose on sonogram image
-            double[] segments;                    //predefinition of segmentation of recording
-            TimeSpan analysisTime;                //predefinition of Time duration taken to do analysis on this file
             Oscillations2010.Execute((SpectrogramStandard)sonogram, doSegmentation, minHz, maxHz, dctDuration, dctThreshold, normaliseDCT,
                                          minOscilFreq, maxOscilFreq, eventThreshold, minDuration, maxDuration,
-                                         out scores, out predictedEvents, out hits, out segments, out analysisTime);
+                                         out var scores, out var predictedEvents, out var hits, out var segments, out var analysisTime);
 
             return Tuple.Create(sonogram, hits, scores, predictedEvents, segments, analysisTime);
         }//end CaneToadRecogniser
@@ -204,7 +199,7 @@ namespace AnalysisPrograms
 
             //double maxScore = 50.0; //assumed max posisble oscillations per second
 
-            using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines, doMelScale: false))
+            using (var img = sonogram.GetImage(doHighlightSubband, add1kHzLines, doMelScale: false))
             using (Image_MultiTrack image = new Image_MultiTrack(img))
             {
                 //img.Save(@"C:\SensorNetworks\WavFiles\temp1\testimage1.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
@@ -216,8 +211,7 @@ namespace AnalysisPrograms
                 //image.AddSuperimposedMatrix(hits, maxScore);
                 if (intensity != null)
                 {
-                    double min, max;
-                    DataTools.MinMax(intensity, out min, out max);
+                    DataTools.MinMax(intensity, out var min, out var max);
                     double threshold_norm = eventThreshold / max; //min = 0.0;
                     intensity = DataTools.normalise(intensity);
                     image.AddTrack(ImageTrack.GetScoreTrack(intensity, 0.0, 1.0, eventThreshold));

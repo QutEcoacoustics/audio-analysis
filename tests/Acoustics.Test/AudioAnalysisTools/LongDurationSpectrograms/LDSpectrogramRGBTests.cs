@@ -7,7 +7,7 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
@@ -22,6 +22,8 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms
     using global::AudioAnalysisTools.LongDurationSpectrograms;
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using SixLabors.ImageSharp.PixelFormats;
+    using SixLabors.Primitives;
 
     [TestClass]
     public class LDSpectrogramRGBTests : OutputDirectoryTest
@@ -71,7 +73,7 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms
             foreach (var (image, key) in images)
             {
                 Assert.That.ImageIsSize(60, 256, image);
-                Assert.That.ImageRegionIsColor(Rectangle.FromLTRB(0, 0, 60, 256), Color.Black, (Bitmap)image);
+                Assert.That.ImageRegionIsColor(Rectangle.FromLTRB(0, 0, 60, 256), Color.Black, (Image<Rgb24>)image);
             }
         }
 
@@ -96,11 +98,10 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms
             grnM[3, 3] = 0.01;
             bluM[3, 3] = 0.11;
 
-            var blueEnhanceParameter = 0.0;
-            var image = (Bitmap)LDSpectrogramRGB.DrawRgbColorMatrix(redM, grnM, bluM, doReverseColor: true, blueEnhanceParameter);
+            var image = (Image<Rgb24>)LDSpectrogramRGB.DrawRgbColourMatrix(redM, grnM, bluM, doReverseColour: true);
 
-            Assert.That.PixelIsColor(new Point(1, 1), Color.FromArgb(128, 128, 128), image);
-            Assert.That.PixelIsColor(new Point(2, 2), Color.FromArgb(128, 128, 128), image);
+            Assert.That.PixelIsColor(new Point(1, 1), Color.FromRgb(128, 128, 128), image);
+            Assert.That.PixelIsColor(new Point(2, 2), Color.FromRgb(128, 128, 128), image);
 
             // empty values are rendered as white because of `doReverseColour`
             Assert.That.ImageRegionIsColor(Rectangle.FromLTRB(0,0, 1,5), Color.FromArgb(255, 255, 255), image);

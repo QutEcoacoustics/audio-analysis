@@ -6,7 +6,7 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms.Zooming
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.Text;
 
     using Acoustics.Test.TestHelpers;
@@ -16,6 +16,8 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms.Zooming
     using global::AudioAnalysisTools.LongDurationSpectrograms.Zooming;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using SixLabors.ImageSharp.PixelFormats;
+    using SixLabors.Primitives;
 
     [TestClass]
     public class ZoomCommonTests
@@ -105,7 +107,7 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms.Zooming
             var lastWidth = expectedWidth - (numberOfTiles * ImageWidth);
             Assert.That.ImageIsSize(lastWidth, 256, image);
 
-            Bitmap bitmap = (Bitmap)image;
+            Image<Rgb24> bitmap = (Image<Rgb24>)image;
 
             // test output for debugging
             //image.Save("./" + renderScale + ".png");

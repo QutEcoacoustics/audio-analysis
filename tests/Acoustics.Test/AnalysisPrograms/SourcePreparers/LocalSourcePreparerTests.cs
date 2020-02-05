@@ -1,4 +1,4 @@
-﻿namespace Acoustics.Test.AnalysisPrograms.SourcePreparers
+namespace Acoustics.Test.AnalysisPrograms.SourcePreparers
 {
     using System;
     using System.IO;
@@ -9,11 +9,10 @@
     using global::AnalysisBase.Segment;
     using global::AnalysisPrograms.SourcePreparers;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using MSTestExtensions;
     using TestHelpers;
 
     [TestClass]
-    public class LocalSourcePreparerTests : BaseTest
+    public class LocalSourcePreparerTests
     {
         private readonly FileInfo sourceFile = TestHelper.GetAudioFile("4min test.mp3");
         private LocalSourcePreparer preparer;
@@ -150,7 +149,7 @@
         public void AbsoluteTimeAlignmentFailsWithoutDate()
         {
             var source = TestHelper.AudioDetails[this.sourceFile.Name];
-            Assert.Throws<InvalidFileDateException>(
+            Assert.ThrowsException<InvalidFileDateException>(
                 () =>
                     {
                         var fileSegment = new FileSegment(this.sourceFile, TimeAlignment.TrimBoth);

@@ -11,7 +11,7 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
@@ -150,7 +150,7 @@ namespace AnalysisPrograms
 
             Log.Debug("EPR start");
 
-            IEnumerable<Tuple<Util.Rectangle<double, double>, double>> eprRects =
+            var eprRects =
                 EventPatternRecog.DetectGroundParrots(events, eprNormalisedMinScore);
             Log.Debug("EPR finished");
 
@@ -214,7 +214,7 @@ namespace AnalysisPrograms
             BaseSonogram sonogram = result.Item1;
             string imagePath = Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(wavFilePath) + ".png");
             var image = Aed.DrawSonogram(sonogram, eprEvents);
-            image.Save(imagePath, ImageFormat.Png);
+            image.Save(imagePath);
 
             //ProcessingTypes.SaveAeCsv(eprEvents, outputFolder, wavFilePath);
 
@@ -285,21 +285,9 @@ namespace AnalysisPrograms
         private const string EcosoundsGroundParrotIdentifier = "Ecosounds.GroundParrot";
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        public override string DisplayName
-        {
-            get
-            {
-                return "Ground Parrot Recognizer";
-            }
-        }
+        public override string DisplayName => "Ground Parrot Recognizer";
 
-        public override string Identifier
-        {
-            get
-            {
-                return EcosoundsGroundParrotIdentifier;
-            }
-        }
+        public override string Identifier => EcosoundsGroundParrotIdentifier;
 
         public override AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)
         {
@@ -338,7 +326,7 @@ namespace AnalysisPrograms
             if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave(analysisResults.Events.Length))
             {
                 Image image = Aed.DrawSonogram(sonogram, results.Item2);
-                image.Save(segmentSettings.SegmentImageFile.FullName, ImageFormat.Png);
+                image.Save(segmentSettings.SegmentImageFile.FullName);
                 analysisResults.ImageFile = segmentSettings.SegmentImageFile;
             }
 

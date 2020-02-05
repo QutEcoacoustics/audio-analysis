@@ -10,7 +10,7 @@ namespace AnalysisPrograms.Recognizers
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -147,9 +147,6 @@ namespace AnalysisPrograms.Recognizers
             // This window is used to smooth the score array before extracting events.
             // A short window (e.g. 3) preserves sharper score edges to define events but also keeps noise.
             int scoreSmoothingWindow = 13;
-            double[] scores; // predefinition of score array
-            List<AcousticEvent> acousticEvents;
-            double[,] hits;
             Oscillations2012.Execute(
                 (SpectrogramStandard)sonogram,
                 minHz,
@@ -162,9 +159,9 @@ namespace AnalysisPrograms.Recognizers
                 minDuration,
                 maxDuration,
                 scoreSmoothingWindow,
-                out scores,
-                out acousticEvents,
-                out hits,
+                out var scores,
+                out var acousticEvents,
+                out var hits,
                 segmentStartOffset);
 
             acousticEvents.ForEach(ae =>

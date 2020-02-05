@@ -4,7 +4,8 @@
 
 namespace AudioAnalysisTools.TileImage
 {
-    using System.Drawing;
+    using SixLabors.ImageSharp;
+    using SixLabors.Primitives;
 
     public class ImageComponent
     {

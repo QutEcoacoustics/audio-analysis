@@ -1,4 +1,4 @@
-﻿namespace Acoustics.Test.AnalysisPrograms.SourcePreparers
+namespace Acoustics.Test.AnalysisPrograms.SourcePreparers
 {
     using System;
     using System.Linq;
@@ -11,7 +11,6 @@
     using global::AnalysisPrograms.AcousticWorkbench.Orchestration;
     using global::AnalysisPrograms.SourcePreparers;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using MSTestExtensions;
     using TestHelpers;
     using TestHelpers.Factories;
 

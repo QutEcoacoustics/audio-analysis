@@ -1,4 +1,4 @@
-﻿// <copyright file="Segment.cs" company="QutEcoacoustics">
+// <copyright file="Segment.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -124,8 +124,7 @@ namespace AnalysisPrograms
 
             //draw images of sonograms
             string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath.Name) + ".png";
-            double min, max;
-            DataTools.MinMax(intensity, out min, out max);
+            DataTools.MinMax(intensity, out var min, out var max);
             double threshold_norm = dBThreshold / max; //min = 0.0;
             intensity = DataTools.normalise(intensity);
             if (DRAW_SONOGRAMS == 2)
@@ -181,7 +180,7 @@ namespace AnalysisPrograms
 
             //double maxScore = 50.0; //assumed max posisble oscillations per second
 
-            using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines, doMelScale: false))
+            using (var img = sonogram.GetImage(doHighlightSubband, add1kHzLines, doMelScale: false))
             using (Image_MultiTrack image = new Image_MultiTrack(img))
             {
                 //img.Save(@"C:\SensorNetworks\WavFiles\temp1\testimage1.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);

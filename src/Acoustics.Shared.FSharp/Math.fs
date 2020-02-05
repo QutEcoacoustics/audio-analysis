@@ -1,4 +1,4 @@
-﻿namespace MQUTeR.FSharp.Shared
+namespace MQUTeR.FSharp.Shared
 
 
     open Accord.Statistics
@@ -10,7 +10,7 @@
 
     module Maths =
         
-        let inline square x = pown x (1G + 1G)
+        let inline square x = pown x (LanguagePrimitives.GenericOne  + LanguagePrimitives.GenericOne)
 
         let distFloat (q:float) p = (q - p)
         
@@ -41,9 +41,9 @@
             a / b
 
         module Array =
-            open NumericLiteralG
 
-            let inline sum xs = Array.fold (+) 0G xs
+
+            let inline sum xs = Array.fold (+) LanguagePrimitives.GenericZero xs
 
             let inline mean (xs: 'a array) : 'a = 
                 let s = sum xs 
@@ -54,8 +54,8 @@
 
             let inline add_by f (a) n = a + (f n) 
 
-            let inline sum_by f xs = Array.fold (add_by f) 0G xs
-            let inline sum_by2 f xs ys = Array.fold2 (fun state a b -> (f a b) + state) 0G xs ys
+            let inline sum_by f xs = Array.fold (add_by f) LanguagePrimitives.GenericZero xs
+            let inline sum_by2 f xs ys = Array.fold2 (fun state a b -> (f a b) + state) LanguagePrimitives.GenericZero xs ys
 
             let inline mean_by f xs = 
                 let s = sum_by f xs 

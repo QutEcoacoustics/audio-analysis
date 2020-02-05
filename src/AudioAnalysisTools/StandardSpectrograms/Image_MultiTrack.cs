@@ -1,4 +1,4 @@
-﻿// <copyright file="Image_MultiTrack.cs" company="QutEcoacoustics">
+// <copyright file="Image_MultiTrack.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -6,23 +6,21 @@ namespace AudioAnalysisTools.StandardSpectrograms
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.Drawing.Imaging;
 
     using Acoustics.Shared;
-
+    using SixLabors.ImageSharp.PixelFormats;
+    using SixLabors.ImageSharp.Processing;
     using TowseyLibrary;
 
     public class Image_MultiTrack : IDisposable
     {
-        public Image SonogramImage { get; private set; }
+        public Image<Rgb24> SonogramImage { get; private set; }
 
-        private List<ImageTrack> tracks = new List<ImageTrack>();
+        private readonly List<ImageTrack> tracks = new List<ImageTrack>();
 
-        public IEnumerable<ImageTrack> Tracks
-        {
-            get { return this.tracks; }
-        }
+        public IEnumerable<ImageTrack> Tracks => this.tracks;
 
         public IEnumerable<AcousticEvent> eventList { get; set; }
 
@@ -50,7 +48,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// Initializes a new instance of the <see cref="Image_MultiTrack"/> class.
         /// CONSTRUCTOR
         /// </summary>
-        public Image_MultiTrack(Image image)
+        public Image_MultiTrack(Image<Rgb24> image)
         {
             this.SonogramImage = image;
             this.Points = new List<PointOfInterest>();
@@ -145,7 +143,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 return;
             }
 
-            image.Save(path, ImageFormat.Png);
+            image.Save(path);
         }
 
         /// <summary>
@@ -154,40 +152,39 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// This means it cannot handle recording sonograms longer than 2 minutes.
         /// Therefore call a recursive method to draw the image.
         /// </summary>
-        public Image GetImage()
+        public Image<Rgba32> GetImage()
         {
             // Calculate total height of the bmp
             var height = this.CalculateImageHeight();
 
             // set up a new image having the correct dimensions
-            var imageToReturn = new Bitmap(this.SonogramImage.Width, height, PixelFormat.Format32bppArgb);
+            var imageToReturn = new Image<Rgba32>(this.SonogramImage.Width, height);
 
             // need to do this before get Graphics because cannot PutPixels into Graphics object.
             if (this.SuperimposedRedTransparency != null)
             {
-                this.SonogramImage = this.OverlayRedTransparency((Bitmap)this.SonogramImage);
+                this.SonogramImage = this.OverlayRedTransparency((Image<Rgb24>)this.SonogramImage);
             }
 
             if (this.SuperimposedMatrix != null)
             {
-                this.SonogramImage = this.OverlayMatrix((Bitmap)this.SonogramImage);
+                this.SonogramImage = this.OverlayMatrix((Image<Rgb24>)this.SonogramImage);
             }
 
             // create new graphics canvas and add in the sonogram image
-            using (var g = Graphics.FromImage(imageToReturn))
+            imageToReturn.Mutate(g =>
             {
-                ////g.DrawImage(this.SonoImage, 0, 0);          // WARNING ### THIS CALL DID NOT WORK THEREFORE
-                GraphicsSegmented.Draw(g, this.SonogramImage);  // USE THIS CALL INSTEAD.
+                g.DrawImage(this.SonogramImage, 1f);
 
                 // draw events first because their rectangles can cover other features
                 if (this.eventList != null)
                 {
-                    var hitImage = new Bitmap(imageToReturn.Width, height, PixelFormat.Format32bppArgb);
+                    var hitImage = new Image<Rgba32>(imageToReturn.Width, height);
 
                     //hitImage.MakeTransparent();
                     foreach (AcousticEvent e in this.eventList)
                     {
-                        e.DrawEvent(g, hitImage, this.framesPerSecond, this.freqBinWidth, this.SonogramImage.Height);
+                        e.DrawEvent(hitImage, this.framesPerSecond, this.freqBinWidth, this.SonogramImage.Height);
                     }
 
                     g.DrawImage(hitImage, 0, 0);
@@ -222,14 +219,14 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
                 if (this.SuperimposedRainbowTransparency != null)
                 {
-                    this.OverlayRainbowTransparency(g, (Bitmap)this.SonogramImage);
+                    this.OverlayRainbowTransparency(g, (Image<Rgb24>)this.SonogramImage);
                 }
 
                 if (this.SuperimposedDiscreteColorMatrix != null)
                 {
-                    this.OverlayDiscreteColorMatrix(g, (Bitmap)this.SonogramImage);
+                    this.OverlayDiscreteColorMatrix(g);
                 }
-            }
+            });
 
             // now add tracks to the image
             int offset = this.SonogramImage.Height;
@@ -237,7 +234,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             {
                 track.topOffset = offset;
                 track.bottomOffset = offset + track.Height - 1;
-                track.DrawTrack(imageToReturn);
+                track.DrawTrack(imageToReturn.CloneAs<Rgb24>());
                 offset += track.Height;
             }
 
@@ -255,10 +252,10 @@ namespace AudioAnalysisTools.StandardSpectrograms
             return totalHeight;
         }
 
-        public void DrawFreqHits(Graphics g)
+        public void DrawFreqHits(IImageProcessingContext g)
         {
             int L = this.FreqHits.Length;
-            Pen p1 = new Pen(Color.Red);
+            Pen p1 = new Pen(Color.Red, 1);
 
             for (int x = 0; x < L; x++)
             {
@@ -272,7 +269,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 //g.DrawRectangle(p1, x, y, x + 1, y + 1);
                 g.DrawLine(p1, x, y, x, y + 1);
 
-                // g.DrawString(e.Name, new Font("Tahoma", 6), Brushes.Black, new PointF(x, y - 1));
+                // g.DrawText(e.Name, Drawing.Tahoma6, Color.Black, new PointF(x, y - 1));
             }
         }
 
@@ -280,7 +277,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// superimposes a matrix of scores on top of a sonogram.
         /// Only draws lines on every second row so that the underling sonogram can be discerned
         /// </summary>
-        public void OverlayMatrix(Graphics g)
+        public void OverlayMatrix(IImageProcessingContext g)
         {
             //int paletteSize = 256;
             var pens = ImageTools.GetRedGradientPalette(); //size = 256
@@ -316,9 +313,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// superimposes a matrix of scores on top of a sonogram.
         /// Only draws lines on every second row so that the underling sonogram can be discerned
         /// </summary>
-        public Bitmap OverlayMatrix(Bitmap bmp)
+        public Image<Rgb24> OverlayMatrix(Image<Rgb24> bmp)
         {
-            Bitmap newBmp = (Bitmap)bmp.Clone();
+            Image<Rgb24> newBmp = (Image<Rgb24>)bmp.Clone();
 
             //int paletteSize = 256;
             var pens = ImageTools.GetRedGradientPalette(); //size = 256
@@ -342,8 +339,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     //int penID = (int)(paletteSize * normScore);
                     //if (penID >= paletteSize) penID = paletteSize - 1;
                     //g.DrawLine(pens[penID], r, imageHt - c, r + 1, imageHt - c);
-                    //g.DrawLine(new Pen(Color.Red), r, imageHt - c, r + 1, imageHt - c);
-                    newBmp.SetPixel(r, imageHt - c, Color.Red);
+                    //g.DrawLine(new Pen(Color.Red, 1), r, imageHt - c, r + 1, imageHt - c);
+                    newBmp[r, imageHt - c] = Color.Red;
                 }
             }
 
@@ -353,9 +350,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// <summary>
         /// superimposes a matrix of scores on top of a sonogram.
         /// </summary>
-        public Bitmap OverlayRedTransparency(Bitmap bmp)
+        public Image<Rgb24> OverlayRedTransparency(Image<Rgb24> bmp)
         {
-            Bitmap newBmp = (Bitmap)bmp.Clone();
+            Image<Rgb24> newBmp = (Image<Rgb24>)bmp.Clone();
             int rows = this.SuperimposedRedTransparency.GetLength(0);
             int cols = this.SuperimposedRedTransparency.GetLength(1);
             int imageHt = this.SonogramImage.Height - 1; //subtract 1 because indices start at zero
@@ -370,13 +367,13 @@ namespace AudioAnalysisTools.StandardSpectrograms
                         continue;
                     }
 
-                    Color pixel = bmp.GetPixel(r, imageHt - c);
+                    var pixel = bmp[r, imageHt - c];
                     if (pixel.R == 255)
                     {
                         continue; // white
                     }
 
-                    newBmp.SetPixel(r, imageHt - c, Color.FromArgb(255, pixel.G, pixel.B));
+                    newBmp[r, imageHt - c] = Color.FromRgb(255, pixel.G, pixel.B);
                 }
             }
 
@@ -387,7 +384,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// superimposes a matrix of scores on top of a sonogram. USES RAINBOW PALLETTE
         /// ASSUME MATRIX NORMALIZED IN [0,1]
         /// </summary>
-        public void OverlayRainbowTransparency(Graphics g, Bitmap bmp)
+        public void OverlayRainbowTransparency(IImageProcessingContext g, Image<Rgb24> bmp)
         {
             Color[] palette = { Color.Crimson, Color.Red, Color.Orange, Color.Yellow, Color.Lime, Color.Green, Color.Blue, Color.Indigo, Color.Violet, Color.Purple };
             int rows = this.SuperimposedRainbowTransparency.GetLength(0);
@@ -405,7 +402,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                         continue; //nothing to show
                     }
 
-                    Color pixel = bmp.GetPixel(r, imageHt - c);
+                    var pixel = bmp[r, imageHt - c];
                     if (pixel.R > 250)
                     {
                         continue; //by-pass white
@@ -417,12 +414,12 @@ namespace AudioAnalysisTools.StandardSpectrograms
                         index = 9;
                     }
 
-                    var newColor = palette[index];
+                    var newColor = palette[index].ToPixel<Rgb24>();
                     double factor = pixel.R / (255 * 1.2);  // 1.2 is a color intensity adjustment
-                    int red = (int)Math.Floor(newColor.R + ((255 - newColor.R) * factor));
-                    int grn = (int)Math.Floor(newColor.G + ((255 - newColor.G) * factor));
-                    int blu = (int)Math.Floor(newColor.B + ((255 - newColor.B) * factor));
-                    g.DrawLine(new Pen(Color.FromArgb(red, grn, blu)), r, imageHt - c, r + 1, imageHt - c);
+                    var red = (byte)Math.Floor(newColor.R + ((255 - newColor.R) * factor));
+                    var grn = (byte)Math.Floor(newColor.G + ((255 - newColor.G) * factor));
+                    var blu = (byte)Math.Floor(newColor.B + ((255 - newColor.B) * factor));
+                    g.DrawLine(new Pen(Color.FromRgb(red, grn, blu), 1), r, imageHt - c, r + 1, imageHt - c);
                     c++; //every second column
                 }
             }
@@ -432,12 +429,11 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// superimposes a matrix of scores on top of a sonogram. USES RAINBOW PALLETTE
         /// ASSUME MATRIX consists of integers >=0;
         /// </summary>
-        private void OverlayDiscreteColorMatrix(Graphics g, Bitmap bmp)
+        private void OverlayDiscreteColorMatrix(IImageProcessingContext g)
         {
             int rows = this.SuperimposedDiscreteColorMatrix.GetLength(0);
             int cols = this.SuperimposedDiscreteColorMatrix.GetLength(1);
-            int min, max;
-            MatrixTools.MinMax(this.SuperimposedDiscreteColorMatrix, out min, out max);
+            MatrixTools.MinMax(this.SuperimposedDiscreteColorMatrix, out var min, out var max);
             int palleteLength = ImageTools.DarkColors.Length;
 
             //Color[] palette = { Color.Crimson, Color.Red, Color.Orange, Color.Yellow, Color.Lime, Color.Green, Color.Blue, Color.Indigo, Color.Violet, Color.Purple };
@@ -468,8 +464,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     //int red = (int)Math.Floor(newColor.R + ((255 - newColor.R) * factor));
                     //int grn = (int)Math.Floor(newColor.G + ((255 - newColor.G) * factor));
                     //int blu = (int)Math.Floor(newColor.B + ((255 - newColor.B) * factor));
-                    //g.DrawLine(new Pen(Color.FromArgb(red, grn, blu)), r, imageHt - c, r + 1, imageHt - c);
-                    g.DrawLine(new Pen(newColor), r, imageHt - c, r + 1, imageHt - c);
+                    //g.DrawLine(new Pen(Color.FromRgb(red, grn, blu)), r, imageHt - c, r + 1, imageHt - c);
+                    g.DrawLine(new Pen(newColor, 1), r, imageHt - c, r + 1, imageHt - c);
                 }
             }
         } //OverlayDiscreteColorMatrix()

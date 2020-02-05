@@ -137,8 +137,7 @@ namespace AudioAnalysisTools.Indices
             }
 
             // reads all known files spectral indices
-            int freqBinCount;
-            Dictionary<string, double[,]> dict = IndexMatrices.ReadSpectrogramCsvFiles(targetDirInfo, targetFileName, spectrogramKeys, out freqBinCount);
+            Dictionary<string, double[,]> dict = IndexMatrices.ReadSpectrogramCsvFiles(targetDirInfo, targetFileName, spectrogramKeys, out var freqBinCount);
 
             if (dict.Count() == 0)
             {
@@ -206,8 +205,7 @@ namespace AudioAnalysisTools.Indices
             // set up dictionary of matrices
             var dict = new Dictionary<string, double[,]>();
 
-            double min, max;
-            DataTools.MinMax(columns[2], out min, out max);
+            DataTools.MinMax(columns[2], out var min, out var max);
             int minMinute = (int)min;
             int maxMinute = (int)max;
             DataTools.MinMax(columns[3], out min, out max);

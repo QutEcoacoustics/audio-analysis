@@ -1,4 +1,4 @@
-﻿// <copyright file="LocalContrastNormalisation.cs" company="QutEcoacoustics">
+// <copyright file="LocalContrastNormalisation.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -70,8 +70,7 @@ namespace AudioAnalysisTools.DSP
                     int c2 = c1 + fieldSize - 1;
                     subMatrix = MatrixTools.Submatrix(framedM, r1, c1, r2, c2);
                     double[] V = MatrixTools.Matrix2Array(subMatrix);
-                    double av, variance;
-                    NormalDist.AverageAndVariance(V, out av, out variance);
+                    NormalDist.AverageAndVariance(V, out var av, out var variance);
 
                     double numerator = inputM[r1, c1];
 

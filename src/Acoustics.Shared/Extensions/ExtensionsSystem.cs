@@ -224,13 +224,7 @@ namespace System
         /// <summary>
         /// Gets ExecutingDirectory.
         /// </summary>
-        public static string ExecutingDirectory
-        {
-            get
-            {
-                return Path.GetDirectoryName(Reflection.Assembly.GetExecutingAssembly().Location);
-            }
-        }
+        public static string ExecutingDirectory => Path.GetDirectoryName(Reflection.Assembly.GetExecutingAssembly().Location);
 
         /// <summary>
         /// Check if a dictionary has a value for a key.

@@ -1,4 +1,4 @@
-﻿// <copyright file="PcaWhiteningTest.cs" company="QutEcoacoustics">
+// <copyright file="PcaWhiteningTest.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -11,6 +11,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
     using global::AudioAnalysisTools.StandardSpectrograms;
     using global::AudioAnalysisTools.WavTools;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using SixLabors.ImageSharp;
     using TestHelpers;
 
     [TestClass]
@@ -133,7 +134,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             double[,] reconstructedSpec = PcaWhitening.ReconstructSpectrogram(projectionMatrix, sequentialPatchMatrix, eigenVectors, numComponents);
             sonogram.Data = PatchSampling.ConvertPatches(reconstructedSpec, patchWidth, patchHeight, columns);
             var reconstructedSpecImage = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "RECONSTRUCTEDSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-            reconstructedSpecImage.Save(outputImagePath, ImageFormat.Png);
+            reconstructedSpecImage.Save(outputImagePath);
 
             // DO UNIT TESTING
             Assert.AreEqual(spectrogram.Data.GetLength(0), sonogram.Data.GetLength(0));

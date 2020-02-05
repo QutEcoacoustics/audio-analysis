@@ -1,4 +1,4 @@
-﻿// <copyright file="TernaryPlots.cs" company="QutEcoacoustics">
+// <copyright file="TernaryPlots.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -6,10 +6,14 @@ namespace TowseyLibrary
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using System.Text;
+    using Acoustics.Shared;
+    using SixLabors.Fonts;
+    using SixLabors.ImageSharp.Processing;
+    using SixLabors.Primitives;
 
     public static class TernaryPlots
     {
@@ -105,26 +109,27 @@ namespace TowseyLibrary
             double[,] norm1 = DataTools.normalise(histo1);
             double[,] norm2 = DataTools.normalise(histo2);
             double[,] norm3 = DataTools.normalise(histo3);
-
-            Font stringFont = new Font("Arial", 12, FontStyle.Bold);
+            var stringFont = Drawing.Arial12;
 
             //Image bmp = ImageTools.DrawMatrixWithoutNormalisationGreenScale(norm);
-            Image bmp = ImageTools.DrawRGBMatrix(norm1, norm2, norm3); // RGB
-            Graphics g = Graphics.FromImage(bmp);
-            int halfWidth = scale / 2;
+            var bmp = ImageTools.DrawRGBMatrix(norm1, norm2, norm3); // RGB
+            bmp.Mutate(g =>
+            {
+                int halfWidth = scale / 2;
 
-            // draw plot outline
-            g.DrawLine(new Pen(Color.White), 0, scale, halfWidth, scale - height);
-            g.DrawLine(new Pen(Color.White), scale, scale, halfWidth, scale - height);
+                // draw plot outline
+                g.DrawLine(new Pen(Color.White, 1), 0, scale, halfWidth, scale - height);
+                g.DrawLine(new Pen(Color.White, 1), scale, scale, halfWidth, scale - height);
 
-            //label vertices
-            g.DrawString(keys[0], stringFont, Brushes.Wheat, new PointF(halfWidth - 15, scale - height - 15));
-            g.DrawString(keys[1], stringFont, Brushes.Wheat, new PointF(0, scale - 20));
-            g.DrawString(keys[2], stringFont, Brushes.Wheat, new PointF(scale - 40, scale - 20));
+                //label vertices
+                g.DrawText(keys[0], stringFont, Color.Wheat, new PointF(halfWidth - 15, scale - height - 15));
+                g.DrawText(keys[1], stringFont, Color.Wheat, new PointF(0, scale - 20));
+                g.DrawText(keys[2], stringFont, Color.Wheat, new PointF(scale - 40, scale - 20));
 
-            // draw label
-            string label = label1 + label2;
-            g.DrawString(label, stringFont, Brushes.Wheat, new PointF(30, scale - height - 40));
+                // draw label
+                string label = label1 + label2;
+                g.DrawText(label, stringFont, Color.Wheat, new PointF(30, scale - height - 40));
+            });
             return bmp;
         }
     }

@@ -27,7 +27,7 @@ namespace AnalysisPrograms
     using AnalysisPrograms.Production;
     using AnalysisPrograms.Production.Arguments;
     using AnalysisPrograms.Production.Parsers;
-    using Fasterflect;
+    
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
     using static System.Environment;
@@ -212,42 +212,7 @@ namespace AnalysisPrograms
 
             Log.Verbose($"Executable name is {executableName} and expected name is {expectedName}");
 
-            if (expectedName != executableName)
-            {
-                var correctConfig = expectedName + ".config";
-                Log.Verbose($"Updating AppDomain APP_CONFIG_FILE to point to `{correctConfig}`");
-                AppDomain.CurrentDomain.SetData("APP_CONFIG_FILE", correctConfig);
-                AppDomain.CurrentDomain.SetupInformation.ConfigurationFile = correctConfig;
-                AppDomain.CurrentDomain.SetupInformation.ApplicationName = expectedName;
-                ResetConfigMechanism(AppDomain.CurrentDomain.SetupInformation);
-                return true;
-            }
-
             return false;
-
-            void ResetConfigMechanism(AppDomainSetup setup)
-            {
-                // https://stackoverflow.com/a/6151688/224512
-                var bindingFlags = BindingFlags.NonPublic | BindingFlags.Static;
-                var mangerType = typeof(ConfigurationManager);
-
-                mangerType.SetFieldValue("s_initState", 0, bindingFlags);
-                mangerType.SetFieldValue("s_configSystem", null, bindingFlags);
-
-                typeof(ConfigurationManager)
-                    .Assembly
-                    .GetTypes()
-                    .First(x => x.FullName == "System.Configuration.ClientConfigPaths")
-                    .SetFieldValue("s_current", null, bindingFlags);
-
-                // finally force fusion to reload the current app domain
-                // https://referencesource.microsoft.com/#mscorlib/system/appdomain.cs,3515
-                var setupMethod = typeof(AppDomain)
-                    .GetMethod(
-                        "SetupFusionStore",
-                        BindingFlags.Instance | BindingFlags.NonPublic);
-                setupMethod.Invoke(AppDomain.CurrentDomain, new object[] { setup, null });
-            }
         }
 
         /// <summary>

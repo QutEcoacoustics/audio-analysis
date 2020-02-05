@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="IctalurusFurcatus.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -11,7 +11,7 @@ namespace AnalysisPrograms.Recognizers
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -26,6 +26,7 @@ namespace AnalysisPrograms.Recognizers
     using AudioAnalysisTools.WavTools;
     using Base;
     using log4net;
+    using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
 
     /// <summary>
@@ -117,8 +118,7 @@ namespace AnalysisPrograms.Recognizers
             {
                 // high pass filter
                 int windowLength = 71;
-                double[] highPassFilteredSignal;
-                DSP_IIRFilter.ApplyMovingAvHighPassFilter(samples, windowLength, out highPassFilteredSignal);
+                DSP_IIRFilter.ApplyMovingAvHighPassFilter(samples, windowLength, out var highPassFilteredSignal);
 
                 //DSP_IIRFilter filter2 = new DSP_IIRFilter("Chebyshev_Highpass_400");
                 //int order2 = filter2.order;
@@ -142,12 +142,8 @@ namespace AnalysisPrograms.Recognizers
             }
 
             // calculate an amplitude threshold that is above Nth percentile of amplitudes in the subsample
-            int[] histogramOfAmplitudes;
-            double minAmplitude;
-            double maxAmplitude;
-            double binWidth;
             int window = 66;
-            Histogram.GetHistogramOfWaveAmplitudes(bandPassFilteredSignal, window, out histogramOfAmplitudes, out minAmplitude, out maxAmplitude, out binWidth);
+            Histogram.GetHistogramOfWaveAmplitudes(bandPassFilteredSignal, window, out var histogramOfAmplitudes, out var minAmplitude, out var maxAmplitude, out var binWidth);
             int percentileBin = Histogram.GetPercentileBin(histogramOfAmplitudes, percentile);
 
             double amplitudeThreshold = (percentileBin + 1) * binWidth;
@@ -215,17 +211,17 @@ namespace AnalysisPrograms.Recognizers
 
                     double[] scores1 = AnalyseWaveformAtLocation(subsample, amplitudeThreshold, scoreThreshold);
                     string title1 = $"scores={fishCall.Timehms}";
-                    Image bmp1 = GraphsAndCharts.DrawGraph(title1, scores1, subsample.Length, 300, 1);
+                    var bmp1 = GraphsAndCharts.DrawGraph(title1, scores1, subsample.Length, 300, 1);
 
                     //bmp1.Save(path1.FullName);
 
                     string title2 = $"tStart={fishCall.Timehms}";
-                    Image bmp2 = GraphsAndCharts.DrawWaveform(title2, subsample, 1);
+                    var bmp2 = GraphsAndCharts.DrawWaveform(title2, subsample, 1);
                     var path1 = subSamplesDirectory.CombineFile($"scoresForTestSubsample_{fishCall.TimeSeconds}secs.png");
 
                     //var path2 = subSamplesDirectory.CombineFile($@"testSubsample_{times[t]}secs.wav.png");
-                    Image[] imageList = { bmp2, bmp1 };
-                    Image bmp3 = ImageTools.CombineImagesVertically(imageList);
+                    Image<Rgb24>[] imageList = { bmp2, bmp1 };
+                    var bmp3 = ImageTools.CombineImagesVertically(imageList);
                     bmp3.Save(path1.FullName);
 
                     //write wave form to txt file for later work in XLS
@@ -444,8 +440,7 @@ namespace AnalysisPrograms.Recognizers
                 }
 
                 double[] subsampleWav = DataTools.Subarray(signal, i, templateLength);
-                double min, max;
-                DataTools.MinMax(subsampleWav, out min, out max);
+                DataTools.MinMax(subsampleWav, out var min, out var max);
                 if (max - min < amplitudeThreshold)
                 {
                     continue;

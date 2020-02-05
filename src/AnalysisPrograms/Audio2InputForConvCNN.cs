@@ -13,7 +13,7 @@ namespace AnalysisPrograms
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.Drawing.Imaging;
     using System.IO;
     using System.Reflection;
@@ -34,6 +34,7 @@ namespace AnalysisPrograms
     using McMaster.Extensions.CommandLineUtils;
     using Production;
     using Production.Arguments;
+    using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
 
     /// <summary>
@@ -642,7 +643,7 @@ namespace AnalysisPrograms
             var result = new AudioToSonogramResult();
 
             // init the image stack
-            var list = new List<Image>();
+            var list = new List<Image<Rgb24>>();
 
             // 1) draw amplitude spectrogram
             var recordingSegment = new AudioRecording(sourceRecording.FullName);
@@ -685,7 +686,7 @@ namespace AnalysisPrograms
             image = sonogram.GetImageAnnotatedWithLinearHerzScale(image, "AMPLITUDE SPECTROGRAM + LCN + ridge detection");
             list.Add(image);
 
-            Image envelopeImage = ImageTrack.DrawWaveEnvelopeTrack(recordingSegment, image.Width);
+            var envelopeImage = ImageTrack.DrawWaveEnvelopeTrack(recordingSegment, image.Width);
             list.Add(envelopeImage);
 
             // 3) now draw the standard decibel spectrogram
@@ -701,7 +702,7 @@ namespace AnalysisPrograms
             image = sonogram.GetImageFullyAnnotated("DECIBEL SPECTROGRAM");
             list.Add(image);
 
-            Image segmentationImage = ImageTrack.DrawSegmentationTrack(
+            var segmentationImage = ImageTrack.DrawSegmentationTrack(
                 sonogram,
                 EndpointDetectionConfiguration.K1Threshold,
                 EndpointDetectionConfiguration.K2Threshold,
@@ -740,7 +741,7 @@ namespace AnalysisPrograms
             // 6) COMBINE THE SPECTROGRAM IMAGES
             Image compositeImage = ImageTools.CombineImagesVertically(list);
             FileInfo outputImage = new FileInfo(Path.Combine(outputDirectory.FullName, sourceName + ".5spectro.png"));
-            compositeImage.Save(outputImage.FullName, ImageFormat.Png);
+            compositeImage.Save(outputImage.FullName);
             result.SpectrogramFile = outputImage;
 
             // 7) Generate the FREQUENCY x OSCILLATIONS Graphs and csv data

@@ -1,7 +1,6 @@
-﻿namespace System.Reflection
+namespace System.Reflection
     open System
     open Microsoft.FSharp.Reflection
-    open Microsoft.FSharp.Metadata
     open Microsoft.FSharp.Quotations
     open System.Reflection
 

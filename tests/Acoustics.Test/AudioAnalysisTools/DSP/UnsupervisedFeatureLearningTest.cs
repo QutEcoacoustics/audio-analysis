@@ -6,12 +6,13 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
     using Accord.MachineLearning;
     using Accord.Math;
+    using Acoustics.Shared;
     using Acoustics.Shared.Csv;
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.StandardSpectrograms;
@@ -19,6 +20,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using NeuralNets;
+    using SixLabors.ImageSharp.PixelFormats;
     using TestHelpers;
 
     [TestClass]
@@ -82,17 +84,17 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             // DO DRAW SPECTROGRAM
             var image4 = sonogram3.GetImageFullyAnnotated(sonogram3.GetImage(), "MELSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-            image4.Save(outputMelImagePath, ImageFormat.Png);
+            image4.Save(outputMelImagePath);
 
             // Do RMS normalization
             sonogram3.Data = SNR.RmsNormalization(sonogram3.Data);
             var image5 = sonogram3.GetImageFullyAnnotated(sonogram3.GetImage(), "NORMALISEDMELSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-            image5.Save(outputNormMelImagePath, ImageFormat.Png);
+            image5.Save(outputNormMelImagePath);
 
             // NOISE REDUCTION
             sonogram3.Data = PcaWhitening.NoiseReduction(sonogram3.Data);
             var image6 = sonogram3.GetImageFullyAnnotated(sonogram3.GetImage(), "NOISEREDUCEDMELSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-            image6.Save(outputNoiseReducedMelImagePath, ImageFormat.Png);
+            image6.Save(outputNoiseReducedMelImagePath);
 
             //testing
             */
@@ -258,8 +260,8 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
                 var outputClusteringImage = Path.Combine(resultDir, "ClustersWithGrid" + i.ToString() + ".bmp");
 
-                // Image bmp = ImageTools.ReadImage2Bitmap(filename);
-                FrequencyScale.DrawFrequencyLinesOnImage((Bitmap)clusterImage, freqScale, includeLabels: false);
+                // Image bmp = Image.Load<Rgb24>(filename);
+                FrequencyScale.DrawFrequencyLinesOnImage((Image<Rgb24>)clusterImage, freqScale, includeLabels: false);
                 clusterImage.Save(outputClusteringImage);
             }
 
@@ -276,19 +278,19 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             // DO DRAW SPECTROGRAM
             var image = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "MELSPECTROGRAM: " + fst.ToString(),
                 freqScale.GridLineLocations);
-            image.Save(outputMelImagePath, ImageFormat.Png);
+            image.Save(outputMelImagePath);
 
             // Do RMS normalization
             sonogram2.Data = SNR.RmsNormalization(sonogram2.Data);
             var image2 = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(),
                 "NORMALISEDMELSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-            image2.Save(outputNormMelImagePath, ImageFormat.Png);
+            image2.Save(outputNormMelImagePath);
 
             // NOISE REDUCTION
             sonogram2.Data = PcaWhitening.NoiseReduction(sonogram2.Data);
             var image3 = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(),
                 "NOISEREDUCEDMELSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-            image3.Save(outputNoiseReducedMelImagePath, ImageFormat.Png);
+            image3.Save(outputNoiseReducedMelImagePath);
 
             // check whether the full band spectrogram is needed or a matrix with arbitrary freq bins
             if (minFreqBin != 1 || maxFreqBin != finalBinCount)
@@ -488,7 +490,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             // DO DRAW SPECTROGRAM
             var reconstructedSpecImage = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "RECONSTRUCTEDSPECTROGRAM: " + freqScale.ScaleType.ToString(), freqScale.GridLineLocations);
-            reconstructedSpecImage.Save(outputReSpecImagePath, ImageFormat.Png);
+            reconstructedSpecImage.Save(outputReSpecImagePath);
             */
         }
 
@@ -606,14 +608,14 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             var logPsd = MatrixTools.Matrix2LogValues(psdMatrix);
             Csv.WriteMatrixToCsv(new FileInfo(@"C:\Users\kholghim\Mahnoosh\Liz\PowerSpectrumDensity\logPsd.csv"), logPsd);
 
-            Image image = DecibelSpectrogram.DrawSpectrogramAnnotated(logPsd, settings, attributes);
-            image.Save(resultPsdPath, ImageFormat.Bmp);
+            var image = DecibelSpectrogram.DrawSpectrogramAnnotated(logPsd, settings, attributes);
+            image.Save(resultPsdPath);
 
             var noiseReducedLogPsd = PcaWhitening.NoiseReduction(logPsd); //SNR.NoiseReduce_Standard(logPsd); //SNR.NoiseReduce_Mean(logPsd, 0.0);//SNR.NoiseReduce_Median(logPsd, 0.0); //
             Csv.WriteMatrixToCsv(new FileInfo(@"C:\Users\kholghim\Mahnoosh\Liz\PowerSpectrumDensity\logPsd_NoiseReduced.csv"), logPsd);
 
-            Image image2 = DecibelSpectrogram.DrawSpectrogramAnnotated(noiseReducedLogPsd, settings, attributes);
-            image2.Save(resultNoiseReducedPsdPath, ImageFormat.Bmp);
+            var image2 = DecibelSpectrogram.DrawSpectrogramAnnotated(noiseReducedLogPsd, settings, attributes);
+            image2.Save(resultNoiseReducedPsdPath);
 
             //ImageTools.DrawMatrix(psd.ToArray().ToMatrix(), resultPath);
             //ImageTools.DrawReversedMatrix(psd.ToArray().ToMatrix(), resultPath);
@@ -690,8 +692,8 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             //var image = SpectrogramTools.GetImage(logSonogramData, nyquist, settings.DoMelScale);
             //var specImage = SpectrogramTools.GetImageFullyAnnotated(image, "MELSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations, sonogram.Attributes.Duration);
 
-            //specImage.Save(outputMelScaImagePath, ImageFormat.Png);
-            //specImage.Save(outputAmpSpecImagePath, ImageFormat.Png);
+            //specImage.Save(outputMelScaImagePath);
+            //specImage.Save(outputAmpSpecImagePath);
 
             // DO RMS NORMALIZATION
             //sonogram.Data = SNR.RmsNormalization(sonogram.Data);
@@ -700,14 +702,14 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             //dbSpectrogram.DrawSpectrogram(outputNormalizedImagePath);
             //var image2 = SpectrogramTools.GetImage(dbSpectrogram.Data, nyquist, settings.DoMelScale);
             //var normImage = SpectrogramTools.GetImageFullyAnnotated(image2, "NORMALIZEDSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations, sonogram.Attributes.Duration);
-            //normImage.Save(outputNormalizedImagePath, ImageFormat.Png);
+            //normImage.Save(outputNormalizedImagePath);
 
             // DO NOISE REDUCTION
             sonogram.Data = PcaWhitening.NoiseReduction(sonogram.Data);
             //dbSpectrogram.DrawSpectrogram(outputNoiseReducedImagePath);
             //var image3 = SpectrogramTools.GetImage(dbSpectrogram.Data, nyquist, settings.DoMelScale);
             //var noiseReducedImage = SpectrogramTools.GetImageFullyAnnotated(image3, "NOISEREDUCEDSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations, sonogram.Attributes.Duration);
-            //noiseReducedImage.Save(outputNoiseReducedImagePath, ImageFormat.Png);
+            //noiseReducedImage.Save(outputNoiseReducedImagePath);
             Image image2 = DecibelSpectrogram.DrawSpectrogramAnnotated(sonogram.Data, settings, attributes);
             //image2.Save(outputNoiseReducedImagePath, ImageFormat.Bmp);
 
@@ -732,23 +734,23 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             amplitudeSpectrogram.Configuration.WindowSize = freqScale.WindowSize;
 
             var image = amplitudeSpectrogram.GetImageFullyAnnotated(amplitudeSpectrogram.GetImage(), "AmplitudeSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-            image.Save(outputAmpSpecImagePath, ImageFormat.Png);
+            image.Save(outputAmpSpecImagePath);
 
             // DO RMS NORMALIZATION
             amplitudeSpectrogram.Data = SNR.RmsNormalization(amplitudeSpectrogram.Data);
             var normImage = amplitudeSpectrogram.GetImageFullyAnnotated(amplitudeSpectrogram.GetImage(), "NORMAmplitudeSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-            normImage.Save(outputNormAmpImagePath, ImageFormat.Png);
+            normImage.Save(outputNormAmpImagePath);
 
             // CONVERT NORMALIZED AMPLITUDE SPECTROGRAM TO dB SPECTROGRAM
             var sonogram = new SpectrogramStandard(amplitudeSpectrogram);
             var standImage = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "LinearScaleSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-            standImage.Save(outputLinScaImagePath, ImageFormat.Png);
+            standImage.Save(outputLinScaImagePath);
 
             // DO NOISE REDUCTION
             sonogram.Data = PcaWhitening.NoiseReduction(sonogram.Data);
             //SNR.NoiseReduce_Standard(sonogram.Data);
             var noiseReducedImage = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "NOISEREDUCEDSPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-            noiseReducedImage.Save(outputNoiseReducedImagePath, ImageFormat.Png);
+            noiseReducedImage.Save(outputNoiseReducedImagePath);
             */
         }
     }

@@ -1,4 +1,4 @@
-﻿// <copyright file="WaveletPacketDecomposition.cs" company="QutEcoacoustics">
+// <copyright file="WaveletPacketDecomposition.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -22,7 +22,7 @@ namespace TowseyLibrary
 
         public int NumberOfLevels { get; private set; }
 
-        private List<BinVector> listOfBinVectors;
+        private readonly List<BinVector> listOfBinVectors;
 
         /// <summary>
         /// Assume the signal is power of 2 in length
@@ -264,8 +264,7 @@ namespace TowseyLibrary
         public static double CalculateUniversalThreshold(int n, double[] coefficients)
         {
             double factor = Math.Sqrt(2 * Math.Log10(n));
-            double av, sd;
-            NormalDist.AverageAndSD(coefficients, out av, out sd);
+            NormalDist.AverageAndSD(coefficients, out var av, out var sd);
             return factor * sd;
         }
 

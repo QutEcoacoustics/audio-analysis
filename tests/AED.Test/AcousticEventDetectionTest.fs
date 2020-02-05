@@ -1,4 +1,4 @@
-﻿module AcousticEventDetectionTest
+module AcousticEventDetectionTest
 
 open QutSensors.AudioAnalysis.AED.AcousticEventDetection
 open QutSensors.AudioAnalysis.AED.GetAcousticEvents
@@ -7,6 +7,8 @@ open Common
 open FsCheckArbs
 open Xunit
 open QutSensors.AudioAnalysis.AED.Util
+open Microsoft.FSharp
+open Microsoft.FSharp.Math
 
 let sleDefaults = QutSensors.AudioAnalysis.AED.Default.largeAreaHorizontal
 

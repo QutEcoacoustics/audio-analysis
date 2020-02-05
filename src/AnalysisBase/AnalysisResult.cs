@@ -25,79 +25,37 @@
         /// <summary>
         /// Gets AnalysisIdentifierString.
         /// </summary>
-        public static string AnalysisIdentifierString
-        {
-            get
-            {
-                return "AnalysisResult.analysisId";
-            }
-        }
+        public static string AnalysisIdentifierString => "AnalysisResult.analysisId";
 
         /// <summary>
         /// Gets ScoreString.
         /// </summary>
-        public static string ScoreString
-        {
-            get
-            {
-                return "AnalysisResult.score";
-            }
-        }
+        public static string ScoreString => "AnalysisResult.score";
 
         /// <summary>
         /// Gets AdditionalInfoString.
         /// </summary>
-        public static string AdditionalInfoString
-        {
-            get
-            {
-                return "AnalysisResult.additionalInfo";
-            }
-        }
+        public static string AdditionalInfoString => "AnalysisResult.additionalInfo";
 
         /// <summary>
         /// Gets MinOffsetMsString.
         /// </summary>
-        public static string MinOffsetMsString
-        {
-            get
-            {
-                return "AnalysisResult.minOffsetMs";
-            }
-        }
+        public static string MinOffsetMsString => "AnalysisResult.minOffsetMs";
 
         /// <summary>
         /// Gets MaxOffsetMsString.
         /// </summary>
-        public static string MaxOffsetMsString
-        {
-            get
-            {
-                return "AnalysisResult.maxOffsetMs";
-            }
-        }
+        public static string MaxOffsetMsString => "AnalysisResult.maxOffsetMs";
 
         /// <summary>
         /// Gets MinFrequencyHzString.
         /// </summary>
-        public static string MinFrequencyHzString
-        {
-            get
-            {
-                return "AnalysisResult.minFrequencyHz";
-            }
-        }
+        public static string MinFrequencyHzString => "AnalysisResult.minFrequencyHz";
 
         /// <summary>
         /// Gets MaxFrequencyHzString.
         /// </summary>
-        public static string MaxFrequencyHzString
-        {
-            get
-            {
-                return "AnalysisResult.maxFrequencyHz";
-            }
-        }
+        public static string MaxFrequencyHzString => "AnalysisResult.maxFrequencyHz";
 
         /// <summary>
         /// Gets or sets Analysis Identifier.

@@ -1,6 +1,8 @@
-﻿module QutSensors.AudioAnalysis.AED.GetAcousticEvents
+module QutSensors.AudioAnalysis.AED.GetAcousticEvents
 
 open Util
+open Microsoft.FSharp.Math
+open Microsoft.FSharp
 
 /// Spiders from an anchor. Returns all points that are connected.
 /// xs: anchors to check (recursive function multiplies with this list)

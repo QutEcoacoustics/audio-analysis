@@ -156,24 +156,12 @@ namespace Acoustics.Tools.Audio
         /// <summary>
         /// Gets the valid source media types.
         /// </summary>
-        protected override IEnumerable<string> ValidSourceMediaTypes
-        {
-            get
-            {
-                return null;
-            }
-        }
+        protected override IEnumerable<string> ValidSourceMediaTypes => null;
 
         /// <summary>
         /// Gets the invalid source media types.
         /// </summary>
-        protected override IEnumerable<string> InvalidSourceMediaTypes
-        {
-            get
-            {
-                return null;
-            }
-        }
+        protected override IEnumerable<string> InvalidSourceMediaTypes => null;
 
         /// <summary>
         /// Gets the valid output media types.

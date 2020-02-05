@@ -18,7 +18,7 @@ namespace AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
@@ -46,7 +46,7 @@ namespace AudioAnalysisTools
         // used to remove weight vectors which have fewer than the threshold number of hits i.e. sets a minimum cluster size
         public const int DefaultHitThreshold = 3;
 
-        private static bool verbose = false;
+        private static readonly bool verbose = false;
 
         /// <summary>
         /// First convert spectrogram to Binary using threshold. An amplitude threshold of 0.03 = -30 dB.   An amplitude threhold of 0.05 = -26dB.
@@ -173,8 +173,7 @@ namespace AudioAnalysisTools
                 }
             }
 
-            double av2, sd2;
-            NormalDist.AverageAndSD(hitDurations, out av2, out sd2);
+            NormalDist.AverageAndSD(hitDurations, out var av2, out var sd2);
 
             int ngramValue = 3; // length of character n-grams
             Dictionary<string, int> nGrams = TextUtilities.ConvertIntegerArray2NgramCount(clusterHits2, ngramValue);
@@ -339,12 +338,9 @@ namespace AudioAnalysisTools
         /// </summary>
         public static void OutputClusterAndWeightInfo(int[] clusters, List<double[]> wts, string imagePath)
         {
-            int maxIndex;
-            DataTools.getMaxIndex(clusters, out maxIndex);
+            DataTools.getMaxIndex(clusters, out var maxIndex);
             int binCount = clusters[maxIndex] + 1;
-            double binWidth;
-            int min, max;
-            int[] histo = Histogram.Histo(clusters, binCount, out binWidth, out min, out max);
+            int[] histo = Histogram.Histo(clusters, binCount, out var binWidth, out var min, out var max);
             LoggedConsole.WriteLine("Sum = " + histo.Sum());
             DataTools.writeArray(histo);
             DataTools.writeBarGraph(histo);
@@ -616,7 +612,7 @@ namespace AudioAnalysisTools
         public static void SaveAndViewSpectrogramImage(Image image, string opDir, string fName, string imageViewer)
         {
             string imagePath = Path.Combine(opDir, fName);
-            image.Save(imagePath, ImageFormat.Png);
+            image.Save(imagePath);
             var fiImage = new FileInfo(imagePath);
             if (fiImage.Exists)
             {

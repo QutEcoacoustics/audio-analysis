@@ -14,6 +14,12 @@ namespace System
     using SixLabors.ImageSharp.Formats;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
+    using SixLabors.Primitives;
+    using SixLabors.Shapes;
+    using Path = SixLabors.Shapes.Path;
+    using PointF = SixLabors.Primitives.PointF;
+    using Rectangle = SixLabors.Primitives.Rectangle;
+    using Size = SixLabors.Primitives.Size;
 
     /// <summary>
     /// Image extension methods.
@@ -73,7 +79,8 @@ namespace System
         /// Cropped image.
         /// </returns>
         [Obsolete("This shim only exists for compatibility. Not needed when ImageSharp replaced System.Drawing")]
-        public static Image Crop(this Image source, Rectangle crop) => source.Clone(x => x.Crop(crop));
+        public static Image<T> Crop<T>(this Image<T> source, Rectangle crop)
+            where T : struct, IPixel<T> => source.Clone(x => x.Crop(crop));
 
         /// <summary>
         /// The to hex string.
@@ -122,7 +129,7 @@ namespace System
             var sourceRectangle = new Rectangle(
                 0, 0, sourceImage.Width, sourceImage.Height - amountToRemove);
 
-            var returnSize =  new Size(
+            var returnSize = new Size(
                 width ?? sourceImage.Width,
                 height ?? sourceImage.Height - amountToRemove);
 
@@ -200,15 +207,85 @@ namespace System
             return Color.FromRgb(tone, tone, tone);
         }
 
-        public static void DrawImage(this Image destination, Image source, Rectangle destinationRectangle, Rectangle sourceRectangle)
+        public static void DrawImage(this Image destination, Image source, Rectangle destinationRectangle,
+            Rectangle sourceRectangle)
         {
             destination.Mutate(
                 d => d.DrawImage(
                     source.Clone(
-                            s => s.Crop(sourceRectangle)
-                                .Resize(destinationRectangle.Size)),
+                        s => s.Crop(sourceRectangle)
+                            .Resize(destinationRectangle.Size)),
                     destinationRectangle.Location,
                     1.0f));
+        }
+
+        public static void DrawLine(this IImageProcessingContext context, Pen pen, int x1, int y1, int x2, int y2)
+        {
+            context.DrawLines(pen, new PointF(x1, y1), new PointF(x2, y2));
+
+        }
+
+        public static void DrawRectangle(this IImageProcessingContext context, Pen pen, int x1, int y1, int x2, int y2)
+        {
+            var r = RectangleF.FromLTRB(x1, y1, x2, y2);
+            context.Draw(pen, r);
+
+        }
+
+        public static void FillRectangle(this IImageProcessingContext context, IBrush brush, int x1, int y1, int x2, int y2)
+        {
+            var r = RectangleF.FromLTRB(x1, y1, x2, y2);
+            context.Fill(brush, r);
+
+        }
+
+        public static void Clear(this IImageProcessingContext context, Color color)
+        {
+            context.Fill(color);
+        }
+
+        public static int Area(this Rectangle rectangle)
+        {
+            return rectangle.Width * rectangle.Height;
+        }
+
+        /// <summary>
+        ///       Returns the Hue-Saturation-Lightness (HSL) lightness
+        ///       for this <see cref='System.Drawing.Color'/> .
+        /// </summary>
+        /// <remarks>
+        /// Implementation from https://referencesource.microsoft.com/#System.Drawing/commonui/System/Drawing/Color.cs,23adaaa39209cc1f
+        /// </remarks>
+        public static float GetBrightness(this Rgb24 pixel)
+        {
+            float r = (float)pixel.R / 255.0f;
+            float g = (float)pixel.G / 255.0f;
+            float b = (float)pixel.B / 255.0f;
+
+            var max = r;
+            var min = r;
+
+            if (g > max)
+            {
+                max = g;
+            }
+
+            if (b > max)
+            {
+                max = b;
+            }
+
+            if (g < min)
+            {
+                min = g;
+            }
+
+            if (b < min)
+            {
+                min = b;
+            }
+
+            return (max + min) / 2;
         }
     }
 }

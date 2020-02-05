@@ -13,7 +13,7 @@ namespace AnalysisPrograms
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
@@ -31,6 +31,7 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.TileImage;
     using AudioAnalysisTools.WavTools;
     using log4net;
+    using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
     using Zio;
 
@@ -72,16 +73,10 @@ namespace AnalysisPrograms
         [Serializable]
         public class AcousticIndicesConfig : IndexCalculateConfig
         {
-            private LdSpectrogramConfig ldfcsConfig = new LdSpectrogramConfig();
-
             /// <summary>
             /// Gets or sets the LDFC spectrogram configuration.
             /// </summary>
-            public LdSpectrogramConfig LdSpectrogramConfig
-            {
-                get => this.ldfcsConfig;
-                protected set => this.ldfcsConfig = value;
-            }
+            public LdSpectrogramConfig LdSpectrogramConfig { get; protected set; } = new LdSpectrogramConfig();
 
             public bool TileOutput { get; private set; } = false;
 
@@ -207,7 +202,7 @@ namespace AnalysisPrograms
 
                     // NOTE: hits (SPT in this case) is intentionally not supported
                     var image = DrawSonogram(sonogram, null, trackScores, tracks);
-                    image.Save(imagePath, ImageFormat.Png);
+                    image.Save(imagePath);
                     analysisResults.ImageFile = new FileInfo(imagePath);
                 }
 
@@ -324,7 +319,7 @@ namespace AnalysisPrograms
                 FileInfo indicesPropertiesConfig = acousticIndicesConfig.IndexPropertiesConfig.ToFileInfo();
 
                 // Actually draw false color / long duration spectrograms
-                Tuple<Image, string>[] images =
+                Tuple<Image<Rgb24>, string>[] images =
                     LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
                         inputDirectory: resultsDirectory,
                         outputDirectory: resultsDirectory,
@@ -351,7 +346,7 @@ namespace AnalysisPrograms
             }
         }
 
-        private static void TileOutput(DirectoryInfo outputDirectory, string fileStem, string analysisTag, FileSegment fileSegment, Image image)
+        private static void TileOutput(DirectoryInfo outputDirectory, string fileStem, string analysisTag, FileSegment fileSegment, Image<Rgb24> image)
         {
             const int TileHeight = 256;
             const int TileWidth = 60;
@@ -392,7 +387,7 @@ namespace AnalysisPrograms
                 padding,
                 SpectrogramType.Index,
                 scale,
-                image,
+                image.CloneAs<Rgba32>(),
                 fileSegment.SegmentStartOffset ?? TimeSpan.Zero);
 
             tiler.Tile(tile);

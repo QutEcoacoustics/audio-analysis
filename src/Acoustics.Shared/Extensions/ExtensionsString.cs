@@ -7,7 +7,7 @@
 namespace System
 {
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.Globalization;
     using System.Linq;
     using System.Text;
@@ -340,30 +340,30 @@ namespace System
             switch (hex.Length)
             {
                 case 3:
-                    color = Color.FromArgb(
-                        int.Parse(hex.Substring(0, 1), NumberStyles.HexNumber),
-                        int.Parse(hex.Substring(1, 1), NumberStyles.HexNumber),
-                        int.Parse(hex.Substring(2, 1), NumberStyles.HexNumber));
+                    color = Color.FromRgb(
+                        byte.Parse(hex.Substring(0, 1), NumberStyles.HexNumber),
+                        byte.Parse(hex.Substring(1, 1), NumberStyles.HexNumber),
+                        byte.Parse(hex.Substring(2, 1), NumberStyles.HexNumber));
                     break;
                 case 4:
-                    color = Color.FromArgb(
-                        int.Parse(hex.Substring(0, 1), NumberStyles.HexNumber),
-                        int.Parse(hex.Substring(1, 1), NumberStyles.HexNumber),
-                        int.Parse(hex.Substring(2, 1), NumberStyles.HexNumber),
-                        int.Parse(hex.Substring(3, 1), NumberStyles.HexNumber));
+                    color = Color.FromRgba(
+                        byte.Parse(hex.Substring(1, 1), NumberStyles.HexNumber),
+                        byte.Parse(hex.Substring(2, 1), NumberStyles.HexNumber),
+                        byte.Parse(hex.Substring(3, 1), NumberStyles.HexNumber),
+                        byte.Parse(hex.Substring(0, 1), NumberStyles.HexNumber));
                     break;
                 case 6:
-                    color = Color.FromArgb(
-                        int.Parse(hex.Substring(0, 2), NumberStyles.HexNumber),
-                        int.Parse(hex.Substring(2, 2), NumberStyles.HexNumber),
-                        int.Parse(hex.Substring(4, 2), NumberStyles.HexNumber));
+                    color = Color.FromRgb(
+                        byte.Parse(hex.Substring(0, 2), NumberStyles.HexNumber),
+                        byte.Parse(hex.Substring(2, 2), NumberStyles.HexNumber),
+                        byte.Parse(hex.Substring(4, 2), NumberStyles.HexNumber));
                     break;
                 case 8:
-                    color = Color.FromArgb(
-                        int.Parse(hex.Substring(0, 2), NumberStyles.HexNumber),
-                        int.Parse(hex.Substring(2, 2), NumberStyles.HexNumber),
-                        int.Parse(hex.Substring(4, 2), NumberStyles.HexNumber),
-                        int.Parse(hex.Substring(6, 2), NumberStyles.HexNumber));
+                    color = Color.FromRgba(
+                        byte.Parse(hex.Substring(2, 2), NumberStyles.HexNumber),
+                        byte.Parse(hex.Substring(4, 2), NumberStyles.HexNumber),
+                        byte.Parse(hex.Substring(6, 2), NumberStyles.HexNumber),
+                        byte.Parse(hex.Substring(0, 2), NumberStyles.HexNumber));
                     break;
                 default:
                     throw new FormatException("The color format was not recognized");

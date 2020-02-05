@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="Tinnula_TRY.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -10,7 +10,7 @@ namespace AnalysisPrograms.Recognizers
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -27,6 +27,7 @@ namespace AnalysisPrograms.Recognizers
     using AudioAnalysisTools.WavTools;
     using Base;
     using log4net;
+    using SixLabors.Primitives;
     using TowseyLibrary;
 
     /// <summary>
@@ -75,7 +76,7 @@ namespace AnalysisPrograms.Recognizers
         /// <returns></returns>
         public override RecognizerResults Recognize(AudioRecording audioRecording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
-            RecognizerResults results = Gruntwork(audioRecording, configuration, outputDirectory, segmentStartOffset);
+            RecognizerResults results = this.Gruntwork(audioRecording, configuration, outputDirectory, segmentStartOffset);
 
             return results;
         }
@@ -181,9 +182,8 @@ namespace AnalysisPrograms.Recognizers
             var highPassFilteredSignal = DspFilters.SubtractBaseline(amplitudeArray, 7);
 
             // We now have a list of potential hits for C. tinnula. This needs to be filtered.
-            double[] prunedScores;
             var startEnds = new List<Point>();
-            Plot.FindStartsAndEndsOfScoreEvents(highPassFilteredSignal, eventThresholdDb, minFrameWidth, maxFrameWidth, out prunedScores, out startEnds);
+            Plot.FindStartsAndEndsOfScoreEvents(highPassFilteredSignal, eventThresholdDb, minFrameWidth, maxFrameWidth, out var prunedScores, out startEnds);
 
             // High pass Filter
 
@@ -253,9 +253,7 @@ namespace AnalysisPrograms.Recognizers
             if (displayDebugImage)
             {
                 // display a variety of debug score arrays
-                double[] normalisedScores;
-                double normalisedThreshold;
-                DataTools.Normalise(amplitudeArray, eventThresholdDb, out normalisedScores, out normalisedThreshold);
+                DataTools.Normalise(amplitudeArray, eventThresholdDb, out var normalisedScores, out var normalisedThreshold);
                 var ampltdPlot = new Plot("Average amplitude", normalisedScores, normalisedThreshold);
 
                 DataTools.Normalise(highPassFilteredSignal, eventThresholdDb, out normalisedScores, out normalisedThreshold);

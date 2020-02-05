@@ -1,4 +1,4 @@
-﻿// <copyright file="AnalysisCoordinatorTests.cs" company="QutEcoacoustics">
+// <copyright file="AnalysisCoordinatorTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -15,11 +15,10 @@ namespace Acoustics.Test.AnalysisBase
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.Contracts;
-    using Fasterflect;
+    using FastMember;
     using global::AnalysisBase;
     using global::AnalysisBase.Segment;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using SmartFormat;
     using TestHelpers;
 
     [TestClass]
@@ -902,7 +901,9 @@ namespace Acoustics.Test.AnalysisBase
             settings.AnalysisMaxSegmentDuration = 60.Seconds();
             settings.AnalysisOutputDirectory = this.AnalysisOutput;
             settings.AnalysisTempDirectory = temp;
-            settings.SetFieldValue("fallbackTempDirectory", this.FallbackTemp.FullName);
+
+            var accessor = ObjectAccessor.Create(settings, true);
+            accessor["fallbackTempDirectory"] = this.FallbackTemp.FullName;
 
             var task = Task.Run(() =>
             {
@@ -966,12 +967,12 @@ namespace Acoustics.Test.AnalysisBase
         {
             foreach (var file in state.ShouldExist)
             {
-                Assert.That.PathExists(Smart.Format(file, paths), $"(stage: {stage}, pre-templated string: \"{file}\")");
+                Assert.That.PathExists(file, $"(stage: {stage}, pre-templated string: \"{file}\")");
             }
 
             foreach (var file in state.ShouldNotExist)
             {
-                Assert.That.PathNotExists(Smart.Format(file, paths), $"(stage: {stage}, pre-templated string: \"{file}\")");
+                Assert.That.PathNotExists(file, $"(stage: {stage}, pre-templated string: \"{file}\")");
             }
         }
     }

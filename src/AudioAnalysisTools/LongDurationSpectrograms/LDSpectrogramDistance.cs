@@ -7,12 +7,20 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.Drawing.Imaging;
     using System.IO;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
+<<<<<<< HEAD
     using AudioAnalysisTools.Indices;
+=======
+
+    using Indices;
+    using SixLabors.ImageSharp.PixelFormats;
+    using SixLabors.ImageSharp.Processing;
+    using SixLabors.Primitives;
+>>>>>>> Converting to .NET Core and ImageSharp
     using TowseyLibrary;
 
     public static class LDSpectrogramDistance
@@ -104,7 +112,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             cs1.DrawNegativeFalseColorSpectrogram(outputDirectory, outputFileName1, blueEnhanceParameter);
             string imagePath = Path.Combine(outputDirectory.FullName, outputFileName1 + ".COLNEG.png");
-            Image spg1Image = ImageTools.ReadImage2Bitmap(imagePath);
+            var spg1Image = Image.Load<Rgb24>(imagePath);
             if (spg1Image == null)
             {
                 LoggedConsole.WriteLine("SPECTROGRAM IMAGE DOES NOT EXIST: {0}", imagePath);
@@ -116,7 +124,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             string title =
                 $"FALSE COLOUR SPECTROGRAM: {inputFileName1}.      (scale:hours x kHz)       (colour: R-G-B={cs1.ColorMode})";
-            Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, spg1Image.Width);
+            var titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, spg1Image.Width);
             spg1Image = LDSpectrogramRGB.FrameLDSpectrogram(
                 spg1Image,
                 titleBar,
@@ -135,7 +143,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // cs2.DrawGreyScaleSpectrograms(opdir, opFileName2);
             cs2.DrawNegativeFalseColorSpectrogram(outputDirectory, outputFileName2, blueEnhanceParameter);
             imagePath = Path.Combine(outputDirectory.FullName, outputFileName2 + ".COLNEG.png");
-            Image spg2Image = ImageTools.ReadImage2Bitmap(imagePath);
+            var spg2Image = Image.Load<Rgb24>(imagePath);
             if (spg2Image == null)
             {
                 LoggedConsole.WriteLine("SPECTROGRAM IMAGE DOES NOT EXIST: {0}", imagePath);
@@ -153,7 +161,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 hertzInterval);
 
             string outputFileName4 = inputFileName1 + ".EuclideanDistance.png";
-            Image deltaSp = DrawDistanceSpectrogram(cs1, cs2);
+            var deltaSp = DrawDistanceSpectrogram(cs1, cs2);
             Color[] colorArray = LDSpectrogramRGB.ColourChart2Array(GetDifferenceColourChart());
             titleBar = DrawTitleBarOfEuclidianDistanceSpectrogram(
                 inputFileName1.Name,
@@ -165,15 +173,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             deltaSp.Save(Path.Combine(outputDirectory.FullName, outputFileName4));
 
             string outputFileName5 = inputFileName1 + ".2SpectrogramsAndDistance.png";
-            var images = new Image[3];
-            images[0] = spg1Image;
-            images[1] = spg2Image;
-            images[2] = deltaSp;
-            Image combinedImage = ImageTools.CombineImagesVertically(images);
+
+            var combinedImage = ImageTools.CombineImagesVertically(spg1Image, spg2Image, deltaSp);
             combinedImage.Save(Path.Combine(outputDirectory.FullName, outputFileName5));
         }
 
-        public static Image DrawDistanceSpectrogram(LDSpectrogramRGB cs1, LDSpectrogramRGB cs2)
+        public static Image<Rgb24> DrawDistanceSpectrogram(LDSpectrogramRGB cs1, LDSpectrogramRGB cs2)
         {
             string[] keys = cs1.ColorMap.Split('-');
 
@@ -293,8 +298,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
 
             double[] array = DataTools.Matrix2Array(d12Matrix);
-            double avDist, sdDist;
-            NormalDist.AverageAndSD(array, out avDist, out sdDist);
+            NormalDist.AverageAndSD(array, out var avDist, out var sdDist);
             for (int row = 0; row < rows; row++)
             {
                 for (int col = 0; col < cols; col++)
@@ -307,7 +311,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Dictionary<string, Color> colourChart = GetDifferenceColourChart();
             Color colour;
 
-            var bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
+            var bmp = new Image<Rgb24>(cols, rows);
 
             for (int row = 0; row < rows; row++)
             {
@@ -348,7 +352,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                     else
                                     {
                                         // v = Convert.ToInt32(zScore * MaxRGBValue);
-                                        // colour = Color.FromArgb(v, 0, v);
+                                        // colour = Color.FromRgb(v, 0, v);
                                         colour = colourChart["+NotSig"];
                                     }
                                 }
@@ -356,7 +360,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                         }
 
  // if() else
-                        bmp.SetPixel(col, row, colour);
+                        bmp[col, row] = colour;
                     }
                     else
                     {
@@ -392,7 +396,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                     {
                                         // v = Convert.ToInt32(zScore * MaxRGBValue);
                                         // if()
-                                        // colour = Color.FromArgb(0, v, v);
+                                        // colour = Color.FromRgb(0, v, v);
                                         colour = colourChart["-NotSig"];
                                     }
                                 }
@@ -400,7 +404,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                         }
 
  // if() else
-                        bmp.SetPixel(col, row, colour);
+                        bmp[col, row] = colour;
                     }
                 }
 
@@ -414,7 +418,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
  // DrawDistanceSpectrogram()
 
-        public static Image DrawTitleBarOfEuclidianDistanceSpectrogram(
+        public static Image<Rgb24> DrawTitleBarOfEuclidianDistanceSpectrogram(
             string name1,
             string name2,
             Color[] colorArray,
@@ -423,43 +427,45 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             Image colorChart = ImageTools.DrawColourChart(width, height, colorArray);
 
-            var bmp = new Bitmap(width, height);
-            Graphics g = Graphics.FromImage(bmp);
-            g.Clear(Color.Black);
-            var pen = new Pen(Color.White);
-            var stringFont = new Font("Arial", 9);
+            var bmp = Drawing.NewImage(width, height, Color.Black);
 
-            // Font stringFont = new Font("Tahoma", 9);
+            var pen = new Pen(Color.White, 1);
+            var stringFont = Drawing.Arial9;
+
+            // Font stringFont = Drawing.Tahoma9;
             var stringSize = new SizeF();
 
-            string text = string.Format("EUCLIDEAN DISTANCE SPECTROGRAM (scale:hours x kHz)");
-            int X = 4;
-            g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X, 3));
-
-            stringSize = g.MeasureString(text, stringFont);
-            X += stringSize.ToSize().Width + 70;
-            text = name1 + "  +99.9%conf";
-            g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X, 3));
-
-            stringSize = g.MeasureString(text, stringFont);
-            X += stringSize.ToSize().Width + 1;
-            g.DrawImage(colorChart, X, 1);
-
-            X += colorChart.Width;
-            text = "-99.9%conf   " + name2;
-            g.DrawString(text, stringFont, Brushes.Wheat, new PointF(X, 3));
-            stringSize = g.MeasureString(text, stringFont);
-            X += stringSize.ToSize().Width + 1; // distance to end of string
-
-            text = Meta.OrganizationTag;
-            stringSize = g.MeasureString(text, stringFont);
-            int x2 = width - stringSize.ToSize().Width - 2;
-            if (x2 > X)
+            bmp.Mutate(g =>
             {
-                g.DrawString(text, stringFont, Brushes.Wheat, new PointF(x2, 3));
-            }
+                string text = string.Format("EUCLIDEAN DISTANCE SPECTROGRAM (scale:hours x kHz)");
+                int X = 4;
+                g.DrawText(text, stringFont, Color.Wheat, new PointF(X, 3));
 
-            g.DrawLine(new Pen(Color.Gray), 0, 0, width, 0); // draw upper boundary
+                stringSize = g.MeasureString(text, stringFont);
+                X += stringSize.ToSize().Width + 70;
+                text = name1 + "  +99.9%conf";
+                g.DrawText(text, stringFont, Color.Wheat, new PointF(X, 3));
+
+                stringSize = g.MeasureString(text, stringFont);
+                X += stringSize.ToSize().Width + 1;
+                g.DrawImage(colorChart, new Point(X, 1), 1);
+
+                X += colorChart.Width;
+                text = "-99.9%conf   " + name2;
+                g.DrawText(text, stringFont, Color.Wheat, new PointF(X, 3));
+                stringSize = g.MeasureString(text, stringFont);
+                X += stringSize.ToSize().Width + 1; // distance to end of string
+
+                text = Meta.OrganizationTag;
+                stringSize = g.MeasureString(text, stringFont);
+                int x2 = width - stringSize.ToSize().Width - 2;
+                if (x2 > X)
+                {
+                    g.DrawText(text, stringFont, Color.Wheat, new PointF(x2, 3));
+                }
+
+                g.DrawLine(new Pen(Color.Gray, 1), 0, 0, width, 0); // draw upper boundary
+            });
 
             // g.DrawLine(pen, duration + 1, 0, trackWidth, 0);
             return bmp;
@@ -468,17 +474,17 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public static Dictionary<string, Color> GetDifferenceColourChart()
         {
             var colorChart = new Dictionary<string, Color>();
-            colorChart.Add("+99.9%", Color.FromArgb(255, 190, 20));
-            colorChart.Add("+99.0%", Color.FromArgb(240, 50, 30)); // +99% conf
-            colorChart.Add("+95.0%", Color.FromArgb(200, 30, 15)); // +95% conf
-            colorChart.Add("+NotSig", Color.FromArgb(50, 5, 5)); // + not significant
+            colorChart.Add("+99.9%", Color.FromRgb(255, 190, 20));
+            colorChart.Add("+99.0%", Color.FromRgb(240, 50, 30)); // +99% conf
+            colorChart.Add("+95.0%", Color.FromRgb(200, 30, 15)); // +95% conf
+            colorChart.Add("+NotSig", Color.FromRgb(50, 5, 5)); // + not significant
             colorChart.Add("NoValue", Color.Black);
 
             // no value
-            colorChart.Add("-99.9%", Color.FromArgb(20, 255, 230));
-            colorChart.Add("-99.0%", Color.FromArgb(30, 240, 50)); // +99% conf
-            colorChart.Add("-95.0%", Color.FromArgb(15, 200, 30)); // +95% conf
-            colorChart.Add("-NotSig", Color.FromArgb(10, 50, 20)); // + not significant
+            colorChart.Add("-99.9%", Color.FromRgb(20, 255, 230));
+            colorChart.Add("-99.0%", Color.FromRgb(30, 240, 50)); // +99% conf
+            colorChart.Add("-95.0%", Color.FromRgb(15, 200, 30)); // +95% conf
+            colorChart.Add("-NotSig", Color.FromRgb(10, 50, 20)); // + not significant
             return colorChart;
         }
     }

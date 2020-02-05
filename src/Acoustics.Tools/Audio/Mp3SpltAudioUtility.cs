@@ -53,46 +53,22 @@ namespace Acoustics.Tools.Audio
         /// <summary>
         /// Gets the valid source media types.
         /// </summary>
-        protected override IEnumerable<string> ValidSourceMediaTypes
-        {
-            get
-            {
-                return new[] { MediaTypes.MediaTypeMp3 };
-            }
-        }
+        protected override IEnumerable<string> ValidSourceMediaTypes => new[] { MediaTypes.MediaTypeMp3 };
 
         /// <summary>
         /// Gets the invalid source media types.
         /// </summary>
-        protected override IEnumerable<string> InvalidSourceMediaTypes
-        {
-            get
-            {
-                return null;
-            }
-        }
+        protected override IEnumerable<string> InvalidSourceMediaTypes => null;
 
         /// <summary>
         /// Gets the valid output media types.
         /// </summary>
-        protected override IEnumerable<string> ValidOutputMediaTypes
-        {
-            get
-            {
-                return new[] { MediaTypes.MediaTypeMp3 };
-            }
-        }
+        protected override IEnumerable<string> ValidOutputMediaTypes => new[] { MediaTypes.MediaTypeMp3 };
 
         /// <summary>
         /// Gets the invalid output media types.
         /// </summary>
-        protected override IEnumerable<string> InvalidOutputMediaTypes
-        {
-            get
-            {
-                return null;
-            }
-        }
+        protected override IEnumerable<string> InvalidOutputMediaTypes => null;
 
         /// <summary>
         /// The construct modify args.

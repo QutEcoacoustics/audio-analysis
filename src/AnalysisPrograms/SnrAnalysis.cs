@@ -1,4 +1,4 @@
-﻿// <copyright file="SnrAnalysis.cs" company="QutEcoacoustics">
+// <copyright file="SnrAnalysis.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -6,7 +6,7 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using System.Text;
@@ -22,6 +22,7 @@ namespace AnalysisPrograms
     using McMaster.Extensions.CommandLineUtils;
     using Production;
     using Production.Arguments;
+    using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
 
     public class SnrAnalysis
@@ -194,7 +195,7 @@ namespace AnalysisPrograms
             int nyquist = recording.SampleRate / 2;
             int hzInterval = 1000;
 
-            Image image1 = DrawSonogram(deciBelSpectrogram, wavDuration, X_AxisInterval, stepDuration, nyquist, hzInterval);
+            var image1 = DrawSonogram(deciBelSpectrogram, wavDuration, X_AxisInterval, stepDuration, nyquist, hzInterval);
 
             // (G) ################################## Calculate modal background noise spectrum in decibels
             //double SD_COUNT = -0.5; // number of SDs above the mean for noise removal
@@ -218,7 +219,7 @@ namespace AnalysisPrograms
                 binaryThreshold);
 
             string title = "TITLE";
-            Image image2 = NoiseRemoval_Briggs.DrawSonogram(
+            var image2 = NoiseRemoval_Briggs.DrawSonogram(
                 m,
                 wavDuration,
                 X_AxisInterval,
@@ -243,10 +244,7 @@ namespace AnalysisPrograms
             //double[,] noiseReducedSpectrogram1 = SNR.TruncateBgNoiseFromSpectrogram(deciBelSpectrogram, dBProfile.noiseThresholds);
             //Image image2 = DrawSonogram(noiseReducedSpectrogram1, wavDuration, X_AxisInterval, stepDuration, Y_AxisInterval);
 
-            Image[] array = new Image[2];
-            array[0] = image1;
-            array[1] = image2;
-            Image combinedImage = ImageTools.CombineImagesVertically(array);
+            var combinedImage = ImageTools.CombineImagesVertically(image1, image2);
 
             string imagePath = Path.Combine(outputDir.FullName, fileNameWithoutExtension + ".png");
             combinedImage.Save(imagePath);
@@ -256,7 +254,7 @@ namespace AnalysisPrograms
             Log.WriteLine("# Finished recording:- " + input.Name);
         }
 
-        private static Image DrawSonogram(
+        private static Image<Rgb24> DrawSonogram(
             double[,] data,
             TimeSpan recordingDuration,
             TimeSpan xInterval,
@@ -264,7 +262,7 @@ namespace AnalysisPrograms
             int nyquist,
             int hzInterval)
         {
-            Image image = ImageTools.GetMatrixImage(data);
+            var image = ImageTools.GetMatrixImage(data);
             string title = string.Format("TITLE");
             var titleBar = BaseSonogram.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
             var minuteOffset = TimeSpan.Zero;

@@ -11,11 +11,11 @@ namespace TowseyLibrary
 
     public class Matrix3D
     {
-        private string[] dimNames = new string[3];
-        private int Xdim = 0;
-        private int Ydim = 0;
-        private int Zdim = 0;
-        private float[,,] array3D;
+        private readonly string[] dimNames = new string[3];
+        private readonly int Xdim = 0;
+        private readonly int Ydim = 0;
+        private readonly int Zdim = 0;
+        private readonly float[,,] array3D;
 
         public Matrix3D(int _Xdim, int _Ydim, int _Zdim)
         {

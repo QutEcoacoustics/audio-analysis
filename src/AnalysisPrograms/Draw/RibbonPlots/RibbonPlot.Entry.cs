@@ -20,10 +20,6 @@ namespace AnalysisPrograms.Draw.RibbonPlots
     using SixLabors.ImageSharp.Processing;
     using SixLabors.Primitives;
     using SixLabors.Shapes;
-    using Point = SixLabors.ImageSharp.Point;
-    using PointF = SixLabors.ImageSharp.PointF;
-    using Rectangle = SixLabors.ImageSharp.Rectangle;
-    using RectangularPolygon = SixLabors.ImageSharp.RectangularPolygon;
 
     /// <summary>
     /// Draws ribbon plots from ribbon FCS images.
@@ -188,7 +184,7 @@ namespace AnalysisPrograms.Draw.RibbonPlots
             }
 
             // get width of text
-            var scaledFont = new Font(SystemFonts.Find("Arial"), ribbonHeight * 0.8f);
+            var scaledFont = Drawing.GetArial(ribbonHeight * 0.8f);
             int labelWidth = (int)Math.Ceiling(TextMeasurer.Measure(someRibbon.Key.ToString(AppConfigHelper.RenderedDateFormatShort), new RendererOptions(scaledFont)).Width);
 
             var finalHeight = Padding + ((Padding + ribbonHeight) * stats.Buckets);

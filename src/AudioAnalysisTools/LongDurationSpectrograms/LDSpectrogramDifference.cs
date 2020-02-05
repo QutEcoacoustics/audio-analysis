@@ -1,16 +1,16 @@
-﻿// <copyright file="LDSpectrogramDifference.cs" company="QutEcoacoustics">
+// <copyright file="LDSpectrogramDifference.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
 namespace AudioAnalysisTools.LongDurationSpectrograms
 {
     using System;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.Drawing.Imaging;
     using System.IO;
 
     using Acoustics.Shared.ConfigFile;
-
+    using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
 
     public static class LdSpectrogramDifference
@@ -97,7 +97,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             //Draw positive difference spectrograms in one image.
             double colourGain = 2.0;
-            Image[] images = DrawPositiveDifferenceSpectrograms(cs1, cs2, colourGain);
+            Image<Rgb24>[] images = DrawPositiveDifferenceSpectrograms(cs1, cs2, colourGain);
 
             int nyquist = cs1.SampleRate / 2;
             int herzInterval = 1000;
@@ -129,7 +129,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             int rows = tgtRedM.GetLength(0); //number of rows
             int cols = tgtRedM.GetLength(1); //number
 
-            Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
+            Image<Rgb24> bmp = new Image<Rgb24>(cols, rows);
 
             int maxRGBValue = 255;
             for (int row = 0; row < rows; row++)
@@ -150,15 +150,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     i3 = Math.Max(0, i3);
                     i3 = Math.Min(maxRGBValue, i3);
 
-                    //Color colour = Color.FromArgb(i1, i2, i3);
-                    bmp.SetPixel(column, row, Color.FromArgb(i1, i2, i3));
+                    //Color colour = Color.FromRgb(i1, i2, i3);
+                    bmp[column, row] = Color.FromRgb((byte)i1, (byte)i2, (byte)i3);
                 }
             }
 
             return bmp;
         }
 
-        public static Image[] DrawPositiveDifferenceSpectrograms(LDSpectrogramRGB target, LDSpectrogramRGB reference, double colourGain)
+        public static Image<Rgb24>[] DrawPositiveDifferenceSpectrograms(LDSpectrogramRGB target, LDSpectrogramRGB reference, double colourGain)
         {
             string[] keys = target.ColorMap.Split('-');
 
@@ -174,8 +174,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             int rows = tgtRedM.GetLength(0); //number of rows
             int cols = tgtRedM.GetLength(1); //number
 
-            var spg1Image = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
-            var spg2Image = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
+            var spg1Image = new Image<Rgb24>(cols, rows);
+            var spg2Image = new Image<Rgb24>(cols, rows);
             int maxRgbValue = 255;
 
             for (int row = 0; row < rows; row++)
@@ -226,17 +226,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                         iB2 = value;
                     }
 
-                    var colour1 = Color.FromArgb(iR1, iG1, iB1);
-                    var colour2 = Color.FromArgb(iR2, iG2, iB2);
-                    spg1Image.SetPixel(column, row, colour1);
-                    spg2Image.SetPixel(column, row, colour2);
+                    var colour1 = Color.FromRgb((byte)iR1, (byte)iG1, (byte)iB1);
+                    var colour2 = Color.FromRgb((byte)iR2, (byte)iG2, (byte)iB2);
+                    spg1Image[column, row] = colour1;
+                    spg2Image[column, row] = colour2;
                 }
             }
 
-            Image[] images = new Image[2];
-            images[0] = spg1Image;
-            images[1] = spg2Image;
-            return images;
+            return new []{ spg1Image, spg2Image};
         }
     }
 }

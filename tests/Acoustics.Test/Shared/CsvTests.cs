@@ -20,7 +20,7 @@ namespace Acoustics.Test.Shared
     using Acoustics.Shared.Csv;
     using CsvHelper;
     using CsvHelper.TypeConversion;
-    using Fasterflect;
+    
     using global::AnalysisBase.ResultBases;
     using global::AnalysisPrograms.EventStatistics;
     using global::AudioAnalysisTools;
@@ -53,10 +53,6 @@ namespace Acoustics.Test.Shared
 
             AcousticEvent aev = new AcousticEvent();
             ImportedEvent iev = new ImportedEvent();
-
-            var configuration = Csv.DefaultConfiguration;
-            IDictionary csvMaps = (IDictionary)configuration.Maps.GetFieldValue("data");
-            Debug.WriteLine("initializing static types" + aev + iev + csvMaps.Count);
         }
 
         [TestInitialize]
@@ -258,7 +254,7 @@ namespace Acoustics.Test.Shared
 
             Assert.IsNull(data);
             Assert.IsNotNull(actual);
-            Assert.IsInstanceOfType(actual, typeof(CsvTypeConverterException));
+            Assert.IsInstanceOfType(actual, typeof(TypeConverterException));
             Assert.IsNotNull(actual.InnerException);
             StringAssert.Contains(actual.Message, "Row");
             StringAssert.Contains(actual.Message, "Field Name");
@@ -277,7 +273,7 @@ namespace Acoustics.Test.Shared
             string[] headers = null;
             var result = Csv.ReadFromCsv<CsvTestClass>(file, false, (reader) =>
             {
-                headers = reader.FieldHeaders;
+                headers = reader.Context.HeaderRecord;
             });
 
             var expected = new[] { "SomeNumber", "SomeTimeSpan", "A", "B", "C", "D" };

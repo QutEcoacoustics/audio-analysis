@@ -7,9 +7,10 @@ namespace TowseyLibrary
     using System;
     using System.Collections;
     using System.Collections.Generic;
-    using System.Drawing;
     using System.IO;
     using Acoustics.Shared;
+    using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.PixelFormats;
 
     /// <summary>
     /// Go to following link for info on Otsu threshold
@@ -42,11 +43,11 @@ namespace TowseyLibrary
             LoggedConsole.WriteLine();
 
             // Load Source image
-            Image srcImage = null;
+            Image<Rgb24> srcImage = null;
 
             try
             {
-                srcImage = ImageTools.ReadImage2Bitmap(arguments.InputImageFile.FullName);
+                srcImage = (Image<Rgb24>)Image.Load(arguments.InputImageFile.FullName);
             }
             catch (IOException ioE)
             {
@@ -59,7 +60,7 @@ namespace TowseyLibrary
             /*
 
             // Get raw image data
-            byte[,] M = ConvertColourImageToGreyScaleMatrix((Bitmap)srcImage);
+            byte[,] M = ConvertColourImageToGreyScaleMatrix((Image<Rgb24>)srcImage);
 
             // Sanity check image
             if ((width * height) != (M.GetLength(0) * M.GetLength(1)))
@@ -68,7 +69,7 @@ namespace TowseyLibrary
                 Environment.Exit(1);
             }
 
-            // Output Image info
+            // Output Image<Rgb24> info
             //Console.WriteLine("Loaded image: '%s', width: %d, height: %d, num bytes: %d\n", filename, width, height, srcData.Length);
 
             byte[] vector = DataTools.Matrix2Array(M);
@@ -81,20 +82,17 @@ namespace TowseyLibrary
             byte[,] opByteMatrix = DataTools.Array2Matrix(outputArray, width, height);
             */
 
-            byte[,] matrix = ConvertColourImageToGreyScaleMatrix((Bitmap)srcImage);
+            byte[,] matrix = ConvertColourImageToGreyScaleMatrix((Image<Rgb24>)srcImage);
             double[,] ipMatrix = MatrixTools.ConvertMatrixOfByte2Double(matrix);
 
-            byte[,] opByteMatrix;
-            Image histoImage;
-            double threshold;
-            GetGlobalOtsuThreshold(ipMatrix, out opByteMatrix, out threshold, out histoImage);
+            GetGlobalOtsuThreshold(ipMatrix, out var opByteMatrix, out var threshold, out var histoImage);
             Console.WriteLine("Threshold: {0}", threshold);
 
-            Image opImage = ConvertMatrixToGreyScaleImage(opByteMatrix);
+            Image<Rgb24> opImage = ConvertMatrixToGreyScaleImage(opByteMatrix);
 
-            Image[] imageArray = { srcImage, opImage, histoImage };
+            Image<Rgb24>[] imageArray = { srcImage, opImage, histoImage };
 
-            Image images = ImageTools.CombineImagesVertically(imageArray);
+            var images = ImageTools.CombineImagesVertically(imageArray);
 
             images.Save(arguments.OutputFileName.FullName);
         }
@@ -286,7 +284,7 @@ namespace TowseyLibrary
 
         // ================================================= STATIC METHODS =====================================================
 
-        public static byte[,] ConvertColourImageToGreyScaleMatrix(Bitmap image)
+        public static byte[,] ConvertColourImageToGreyScaleMatrix(Image<Rgb24> image)
         {
             int width = image.Width;
             int height = image.Height;
@@ -295,7 +293,7 @@ namespace TowseyLibrary
             {
                 for (int c = 0; c < width; c++)
                 {
-                    Color color = image.GetPixel(c, r);
+                    var color = image[c, r];
 
                    // alpha = imData.data[i + 3];
                    // https://en.wikipedia.org/wiki/Grayscale
@@ -307,50 +305,50 @@ namespace TowseyLibrary
             return m;
         }
 
-        public static Bitmap ConvertMatrixToGreyScaleImage(byte[,] M)
+        public static Image<Rgb24> ConvertMatrixToGreyScaleImage(byte[,] M)
         {
             int width = M.GetLength(1);
             int height = M.GetLength(0);
-            Bitmap image = new Bitmap(width, height);
+            var image = new Image<Rgb24>(width, height);
             for (int r = 0; r < height; r++)
             {
                 for (int c = 0; c < width; c++)
                 {
-                    Color color = Color.FromArgb(M[r, c], M[r, c], M[r, c]);
-                    image.SetPixel(c, r, color);
+                    Color color = Color.FromRgb(M[r, c], M[r, c], M[r, c]);
+                    image[c, r] = color;
                 }
             }
 
             return image;
         }
 
-        public static Bitmap ConvertMatrixToReversedGreyScaleImage(byte[,] M)
+        public static Image<Rgb24> ConvertMatrixToReversedGreyScaleImage(byte[,] M)
         {
             int width = M.GetLength(1);
             int height = M.GetLength(0);
-            Bitmap image = new Bitmap(width, height);
+            var image = new Image<Rgb24>(width, height);
             for (int r = 0; r < height; r++)
             {
                 for (int c = 0; c < width; c++)
                 {
-                    int value = 255 - M[r, c];
+                    var value = (byte)(255 - M[r, c]);
 
-                    //Color color = Color.FromArgb(value, value, value);
-                    image.SetPixel(c, r, Color.FromArgb(value, value, value));
+                    //Color color = Color.FromRgb(value, value, value);
+                    image[c, r] = Color.FromRgb(value, value, value);
                 }
             }
 
             return image;
         }
 
-        private static Image CreateHistogramFrame(OtsuThresholder thresholder, int width, int height)
+        private static Image<Rgb24> CreateHistogramFrame(OtsuThresholder thresholder, int width, int height)
     {
         width = 256; // histogram is one byte width.
 
         int[] histData = thresholder.GetHistData();
         int max = thresholder.getMaxLevelValue();
         int threshold = thresholder.getThreshold();
-        var image = new Bitmap(width, height);
+        var image = new Image<Rgb24>(width, height);
 
         for (int col = 0; col < width; col++)
         {
@@ -361,14 +359,14 @@ namespace TowseyLibrary
             {
                 for (int i = 0; i < height; i++)
                     {
-                        image.SetPixel(col, i, Color.Red);
+                        image[col, i] = Color.Red;
                     }
                 }
             else
             {
                 for (int i = 1; i <= val; i++)
                     {
-                        image.SetPixel(col, height - i, Color.Black);
+                        image[col, height - i] = Color.Black;
                     }
 
                     //histPlotData[ptr] = (byte)((val < i) ? (byte)255 : 0);
@@ -376,7 +374,7 @@ namespace TowseyLibrary
 
             for (int i = 0; i < height; i++)
                 {
-                    image.SetPixel(0, i, Color.Gray);
+                    image[0, i] = Color.Gray;
                 }
             }
 
@@ -389,41 +387,37 @@ namespace TowseyLibrary
             int height = matrix.GetLength(0);
 
             byte[] vector = DataTools.Matrix2Array(matrix);
-            byte[] outputArray;
 
             // Create Otsu Thresholder
             OtsuThresholder thresholder = new OtsuThresholder();
-            threshold = thresholder.CalculateThreshold(vector, out outputArray);
+            threshold = thresholder.CalculateThreshold(vector, out var outputArray);
             m2 = DataTools.Array2Matrix(outputArray, width, height);
         }
 
-        public static void GetOtsuThreshold(byte[,] matrix, out byte[,] m2, out int threshold, out Image histogramImage)
+        public static void GetOtsuThreshold(byte[,] matrix, out byte[,] m2, out int threshold, out Image<Rgb24> histogramImage)
         {
             int width = matrix.GetLength(1);
             int height = matrix.GetLength(0);
 
             byte[] vector = DataTools.Matrix2Array(matrix);
-            byte[] outputArray;
 
             // Create Otsu Thresholder
             OtsuThresholder thresholder = new OtsuThresholder();
-            threshold = thresholder.CalculateThreshold(vector, out outputArray);
+            threshold = thresholder.CalculateThreshold(vector, out var outputArray);
             m2 = DataTools.Array2Matrix(outputArray, width, height);
             histogramImage = CreateHistogramFrame(thresholder, height, 256);
         }
 
-        public static void GetGlobalOtsuThreshold(double[,] inputMatrix, out byte[,] opByteMatrix, out double opThreshold, out Image histogramImage)
+        public static void GetGlobalOtsuThreshold(double[,] inputMatrix, out byte[,] opByteMatrix, out double opThreshold, out Image<Rgb24> histogramImage)
         {
             if (inputMatrix == null)
             {
                 throw new ArgumentNullException(nameof(inputMatrix));
             }
 
-            double min, max;
-            var normMatrix = MatrixTools.NormaliseInZeroOne(inputMatrix, out min, out max);
+            var normMatrix = MatrixTools.NormaliseInZeroOne(inputMatrix, out var min, out var max);
             var byteMatrix = MatrixTools.ConvertMatrixOfDouble2Byte(normMatrix);
-            int threshold;
-            GetOtsuThreshold(byteMatrix, out opByteMatrix, out threshold, out histogramImage);
+            GetOtsuThreshold(byteMatrix, out opByteMatrix, out var threshold, out histogramImage);
             opThreshold = threshold / (double)byte.MaxValue;
             opThreshold = min + (opThreshold * (max - min));
         }
@@ -458,8 +452,7 @@ namespace TowseyLibrary
                     // debug check for min and max - make sure it worked
                     int[] bd = DataTools.GetByteDistribution(localMatrix);
 
-                    byte minIntensity, maxIntensity;
-                    int[] histo = Histogram.Histo(localMatrix, out minIntensity, out maxIntensity);
+                    int[] histo = Histogram.Histo(localMatrix, out var minIntensity, out var maxIntensity);
                     int lowerBinBound = Histogram.GetPercentileBin(histo, minPercentileBound);
                     int upperBinBound = Histogram.GetPercentileBin(histo, maxPercentileBound);
                     int range = upperBinBound - lowerBinBound;
@@ -519,7 +512,7 @@ namespace TowseyLibrary
                 var aedConfiguration = new Aed.AedConfiguration
                 {
                     //AedEventColor = Color.Red;
-                    //AedHitColor = Color.FromArgb(128, AedEventColor),
+                    //AedHitColor = Color.FromRgb(128, AedEventColor),
                     // This stops AED Wiener filter and noise removal.
                     NoiseReductionType = noiseReductionType,
                     IntensityThreshold = 20.0,
@@ -528,7 +521,7 @@ namespace TowseyLibrary
 
                 double[] thresholdLevels = { 20.0 };
                 //double[] thresholdLevels = {30.0, 25.0, 20.0, 15.0, 10.0, 5.0};
-                var imageList = new List<Image>();
+                var imageList = new List<Image<Rgb24>>();
 
                 foreach (double th in thresholdLevels)
                 {
@@ -550,9 +543,9 @@ namespace TowseyLibrary
                     // get image of global thresholded data matrix
                     byte[,] opByteMatrix;
                     double opGlobalThreshold;
-                    Image histogramImage;
+                    Image<Rgb24> histogramImage;
                     OtsuThresholder.GetGlobalOtsuThreshold(sonogram.Data, out opByteMatrix, out opGlobalThreshold, out histogramImage);
-                    Image opImageGlobal = OtsuThresholder.ConvertMatrixToReversedGreyScaleImage(opByteMatrix);
+                    Image<Rgb24> opImageGlobal = OtsuThresholder.ConvertMatrixToReversedGreyScaleImage(opByteMatrix);
                     opImageGlobal.RotateFlip(RotateFlipType.Rotate270FlipNone);
 
                     // get image of local thresholded data matrix
@@ -562,12 +555,12 @@ namespace TowseyLibrary
                     // debug check for min and max - make sure it worked
                     int[] bd = DataTools.GetByteDistribution(opByteMatrix);
 
-                    //Image opImageLocal = OtsuThresholder.ConvertMatrixToGreyScaleImage(opByteMatrix);
-                    Image opImageLocal = OtsuThresholder.ConvertMatrixToReversedGreyScaleImage(opByteMatrix);
+                    //Image<Rgb24> opImageLocal = OtsuThresholder.ConvertMatrixToGreyScaleImage(opByteMatrix);
+                    Image<Rgb24> opImageLocal = OtsuThresholder.ConvertMatrixToReversedGreyScaleImage(opByteMatrix);
                     opImageLocal.RotateFlip(RotateFlipType.Rotate270FlipNone);
 
-                    Image[] imageArray = { srcImage, opImageGlobal, opImageLocal };
-                    Image images = ImageTools.CombineImagesVertically(imageArray);
+                    Image<Rgb24>[] imageArray = { srcImage, opImageGlobal, opImageLocal };
+                    Image<Rgb24> images = ImageTools.CombineImagesVertically(imageArray);
                     var opPath = FilenameHelpers.AnalysisResultPath(outputDirectory, recording.BaseName, "ThresholdExperiment", "png");
                     images.Save(opPath);
 

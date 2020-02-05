@@ -7,6 +7,7 @@ namespace TowseyLibrary
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using SixLabors.ImageSharp;
 
     public static class Histogram
     {

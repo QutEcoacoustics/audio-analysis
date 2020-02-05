@@ -161,9 +161,6 @@ namespace AnalysisPrograms.Recognizers
             double minDurationOfAdvertCall = minDuration; // this boundary duration should = 5.0 seconds as of 4 June 2015.
 
             //double minDurationOfReleaseCall = 1.0;
-            double[] scores; // predefinition of score array
-            List<AcousticEvent> events;
-            double[,] hits;
             Oscillations2012.Execute(
                 (SpectrogramStandard)sonogram,
                 minHz,
@@ -175,9 +172,9 @@ namespace AnalysisPrograms.Recognizers
                 eventThreshold,
                 minDurationOfAdvertCall,
                 maxDuration,
-                out scores,
-                out events,
-                out hits,
+                out var scores,
+                out var events,
+                out var hits,
                 segmentStartOffset);
 
             // DEBUG: Following line used to search for where indeterminism creeps into the event detection

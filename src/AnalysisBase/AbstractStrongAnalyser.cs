@@ -32,13 +32,7 @@ namespace AnalysisBase
         public virtual string Description => "YOU SHOULD OVERRIDE THIS!";
 
         /// <inheritdoc/>
-        public virtual AnalysisSettings DefaultSettings
-        {
-            get
-            {
-                return new AnalysisSettings();
-            }
-        }
+        public virtual AnalysisSettings DefaultSettings => new AnalysisSettings();
 
         /// <inheritdoc cref="IAnalyser2.ParseConfig"/>
         public virtual AnalyzerConfig ParseConfig(FileInfo file)

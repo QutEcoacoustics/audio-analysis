@@ -15,7 +15,7 @@ namespace AnalysisPrograms.Recognizers
     using System.Collections.Generic;
     using System.Diagnostics;
     //using Acoustics.Shared.Csv;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.IO;
     using System.Reflection;
     using Acoustics.Shared;
@@ -286,10 +286,7 @@ namespace AnalysisPrograms.Recognizers
                 {
                     // Look for oscillations in the difference array
                     double[] differenceArray = DataTools.Subarray(differenceScores, i, dctLength);
-                    double oscilFreq;
-                    double period;
-                    double intensity;
-                    Oscillations2014.GetOscillationUsingDct(differenceArray, framesPerSecond, cosines, out oscilFreq, out period, out intensity);
+                    Oscillations2014.GetOscillationUsingDct(differenceArray, framesPerSecond, cosines, out var oscilFreq, out var period, out var intensity);
 
                     bool periodWithinBounds = period > minPeriod && period < maxPeriod;
 
@@ -372,9 +369,7 @@ namespace AnalysisPrograms.Recognizers
             if (returnDebugImage)
             {
                 // display a variety of debug score arrays
-                double[] normalisedScores;
-                double normalisedThreshold;
-                DataTools.Normalise(amplitudeScores, lwConfig.DecibelThreshold, out normalisedScores, out normalisedThreshold);
+                DataTools.Normalise(amplitudeScores, lwConfig.DecibelThreshold, out var normalisedScores, out var normalisedThreshold);
                 var sumDiffPlot = new Plot("Sum Minus Difference", normalisedScores, normalisedThreshold);
                 DataTools.Normalise(differenceScores, lwConfig.DecibelThreshold, out normalisedScores, out normalisedThreshold);
                 var differencePlot = new Plot("Baseline Removed", normalisedScores, normalisedThreshold);
@@ -467,8 +462,7 @@ namespace AnalysisPrograms.Recognizers
             }
 
             // Config profile = ConfigFile.GetProfile(configuration, "Trill");
-            Config trillProfile;
-            bool success = ConfigFile.TryGetProfile(configuration, "Trill", out trillProfile);
+            bool success = ConfigFile.TryGetProfile(configuration, "Trill", out var trillProfile);
             if (!success)
             {
                 throw new ConfigFileException($"The Config file for {this.SpeciesName} must contain a \"Trill\" profile.");
@@ -493,8 +487,7 @@ namespace AnalysisPrograms.Recognizers
             //double dctThreshold = (double)configuration.GetDouble(AnalysisKeys.DctThreshold);
 
             LoggedConsole.WriteLine($"Analyzing profile: {this.ProfileNames[1]}");
-            Config tinkProfile;
-            success = ConfigFile.TryGetProfile(configuration, "Tink", out tinkProfile);
+            success = ConfigFile.TryGetProfile(configuration, "Tink", out var tinkProfile);
             if (!success)
             {
                 throw new ConfigFileException($"The Config file for {this.SpeciesName} must contain a \"Tink\" profile.");

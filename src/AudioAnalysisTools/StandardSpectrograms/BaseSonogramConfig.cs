@@ -39,10 +39,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         private int sampleRate = 0;
 
-        private string windowFunction = WindowFunctions.HAMMING.ToString();
-
-        private int smoothingWindow = 3;
-
         /// <summary>
         /// Gets or sets the channel to extract from the WavReader
         /// </summary>
@@ -61,15 +57,10 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         public int NyquistFreq { get; private set; }
 
-        public string WindowFunction
-        {
-            get { return this.windowFunction; } set { this.windowFunction = value; }
-        }
+        public string WindowFunction { get; set; } = WindowFunctions.HAMMING.ToString();
 
-        public int NPointSmoothFFT
-        {
-            get { return this.smoothingWindow; } set { this.smoothingWindow = value; }
-        } // Number of points to smooth FFT spectra
+        public int NPointSmoothFFT { get; set; } // Number of points to smooth FFT spectra
+= 3; // Number of points to smooth FFT spectra
 
         public double epsilon { get; set; } //small value to prevent log of zero value
 
@@ -95,10 +86,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// <summary>
         /// For linear frequency scale assume that the freq bin count = half the frame size.
         /// </summary>
-        public int FreqBinCount
-        {
-            get { return this.WindowSize / 2; }
-        } // other half is phase info
+        public int FreqBinCount => this.WindowSize / 2;  // other half is phase info
 
         public bool DoMelScale { get; set; }
 
@@ -111,21 +99,12 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         public int DeltaT { get; set; }
 
-        private bool saveSonogramImage = false;
+        public bool SaveSonogramImage { get; set; } = false;
 
-        public bool SaveSonogramImage
-        {
-            get { return this.saveSonogramImage; } set { this.saveSonogramImage = value; }
-        }
+        private readonly SonogramConfig config;
+        private readonly Acoustics.Tools.Wav.WavReader wavReader;
 
-        private string imageDir = null;
-        private SonogramConfig config;
-        private Acoustics.Tools.Wav.WavReader wavReader;
-
-        public string ImageDir
-        {
-            get { return this.imageDir; } set { this.imageDir = value; }
-        }
+        public string ImageDir { get; set; } = null;
 
         public static SonogramConfig Load(string configFile)
         {

@@ -9,7 +9,7 @@ namespace AnalysisPrograms
     using System;
     using System.Collections.Generic;
     using System.Data;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
@@ -63,44 +63,20 @@ namespace AnalysisPrograms
 
         public override string Description => "[BETA/EXPERIMENTAL] Recogniser for male koalla bellow. Detects inhalation oscillations.";
 
-        public string DefaultConfiguration
-        {
-            get
-            {
-                return string.Empty;
-            }
-        }
+        public string DefaultConfiguration => string.Empty;
 
-        public override AnalysisSettings DefaultSettings
+        public override AnalysisSettings DefaultSettings => new AnalysisSettings
         {
-            get
-            {
-                return new AnalysisSettings
-                           {
-                               AnalysisMaxSegmentDuration = TimeSpan.FromMinutes(1),
-                               AnalysisMinSegmentDuration = TimeSpan.FromSeconds(30),
-                               SegmentMediaType = MediaTypes.MediaTypeWav,
-                               SegmentOverlapDuration = TimeSpan.Zero,
-                               AnalysisTargetSampleRate = ResampleRate,
-                           };
-            }
-        }
+            AnalysisMaxSegmentDuration = TimeSpan.FromMinutes(1),
+            AnalysisMinSegmentDuration = TimeSpan.FromSeconds(30),
+            SegmentMediaType = MediaTypes.MediaTypeWav,
+            SegmentOverlapDuration = TimeSpan.Zero,
+            AnalysisTargetSampleRate = ResampleRate,
+        };
 
-        public override string DisplayName
-        {
-            get
-            {
-                return "Koala Male";
-            }
-        }
+        public override string DisplayName => "Koala Male";
 
-        public override string Identifier
-        {
-            get
-            {
-                return "Towsey." + AnalysisName;
-            }
-        }
+        public override string Identifier => "Towsey." + AnalysisName;
 
         public static KoalaMaleResults Analysis(FileInfo segmentOfSourceFile, IDictionary<string, string> configDict, TimeSpan segmentStartOffset)
         {
@@ -188,9 +164,6 @@ namespace AnalysisPrograms
             // ######################################################################
             // ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
             // predefinition of score array
-            double[] scores;
-            List<AcousticEvent> events;
-            double[,] hits;
             Oscillations2012.Execute(
                 (SpectrogramStandard)sonogram,
                 minHz,
@@ -202,9 +175,9 @@ namespace AnalysisPrograms
                 eventThreshold,
                 minDuration,
                 maxDuration,
-                out scores,
-                out events,
-                out hits,
+                out var scores,
+                out var events,
+                out var hits,
                 segmentStartOffset);
 
             // remove isolated koala events - this is to remove false positive identifications
@@ -339,7 +312,7 @@ namespace AnalysisPrograms
                 string imagePath = segmentSettings.SegmentImageFile.FullName;
                 const double EventThreshold = 0.1;
                 Image image = DrawSonogram(sonogram, hits, scores, results.Events, EventThreshold);
-                image.Save(imagePath, ImageFormat.Png);
+                image.Save(imagePath);
                 analysisResults.ImageFile = segmentSettings.SegmentImageFile;
             }
 

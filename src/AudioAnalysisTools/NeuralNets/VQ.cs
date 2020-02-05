@@ -28,7 +28,7 @@ namespace NeuralNets
 
         public double minError { get; private set; }
 
-        private RandomNumber rn;
+        private readonly RandomNumber rn;
 
         public VQ(Cluster cluster, int codeSize)
         {

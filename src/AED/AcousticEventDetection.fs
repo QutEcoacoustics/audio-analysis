@@ -1,12 +1,14 @@
-﻿module QutSensors.AudioAnalysis.AED.AcousticEventDetection
+module QutSensors.AudioAnalysis.AED.AcousticEventDetection
 
+open Microsoft.FSharp.Math
 open GetAcousticEvents
 open Matlab
 open TowseyLibrary
 open Util
 open Option
 open Default
-open System.Drawing
+open Microsoft.FSharp
+open SixLabors.Primitives
 
 let frequencyToPixels rndFunc maxPixels maxFreq freq = int (rndFunc (((float maxPixels) * freq) / maxFreq))
 

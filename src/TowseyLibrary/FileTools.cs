@@ -14,7 +14,7 @@ namespace TowseyLibrary
 
     public static class FileTools
     {
-        private static string testDir = @"D:\SensorNetworks\Software\TowseyLib\TestResources\";
+        private static readonly string testDir = @"D:\SensorNetworks\Software\TowseyLib\TestResources\";
 
         private static void Main()
         {

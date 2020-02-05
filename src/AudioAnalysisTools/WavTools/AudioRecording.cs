@@ -1,22 +1,22 @@
-﻿// <copyright file="AudioRecording.cs" company="QutEcoacoustics">
+// <copyright file="AudioRecording.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
 namespace AudioAnalysisTools.WavTools
 {
     using System;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.Drawing.Imaging;
     using System.IO;
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
     using Acoustics.Tools.Wav;
     using DSP;
+    using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
 
     public class AudioRecording : IDisposable
     {
-        private readonly WavReader wavReader;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AudioRecording"/> class.
@@ -26,7 +26,7 @@ namespace AudioAnalysisTools.WavTools
         /// </summary>
         public AudioRecording(WavReader wavReader)
         {
-            this.wavReader = wavReader;
+            this.WavReader = wavReader;
         }
 
         public AudioRecording(FileInfo audioFile)
@@ -46,7 +46,7 @@ namespace AudioAnalysisTools.WavTools
             this.Bytes = bytes;
             if (this.Bytes != null)
             {
-                this.wavReader = new WavReader(bytes);
+                this.WavReader = new WavReader(bytes);
             }
         }
 
@@ -60,7 +60,7 @@ namespace AudioAnalysisTools.WavTools
         {
             this.FilePath = path;
             this.BaseName = Path.GetFileNameWithoutExtension(path);
-            this.wavReader = new WavReader(path);
+            this.WavReader = new WavReader(path);
         }
 
         /// <summary>
@@ -76,7 +76,7 @@ namespace AudioAnalysisTools.WavTools
             this.Bytes = bytes;
             if (this.Bytes != null)
             {
-                this.wavReader = new WavReader(bytes);
+                this.WavReader = new WavReader(bytes);
             }
         }
 
@@ -93,9 +93,9 @@ namespace AudioAnalysisTools.WavTools
         {
             get
             {
-                if (this.wavReader != null)
+                if (this.WavReader != null)
                 {
-                    return this.wavReader.SampleRate;
+                    return this.WavReader.SampleRate;
                 }
 
                 return -int.MaxValue;
@@ -106,9 +106,9 @@ namespace AudioAnalysisTools.WavTools
         {
             get
             {
-                if (this.wavReader != null)
+                if (this.WavReader != null)
                 {
-                    return this.wavReader.SampleRate / 2;
+                    return this.WavReader.SampleRate / 2;
                 }
 
                 return -int.MaxValue;
@@ -119,9 +119,9 @@ namespace AudioAnalysisTools.WavTools
         {
             get
             {
-                if (this.wavReader != null)
+                if (this.WavReader != null)
                 {
-                    return this.wavReader.BitsPerSample;
+                    return this.WavReader.BitsPerSample;
                 }
 
                 return -int.MaxValue;
@@ -132,9 +132,9 @@ namespace AudioAnalysisTools.WavTools
         {
             get
             {
-                if (this.wavReader != null)
+                if (this.WavReader != null)
                 {
-                    return this.wavReader.Epsilon;
+                    return this.WavReader.Epsilon;
                 }
 
                 return -double.MaxValue;
@@ -146,7 +146,7 @@ namespace AudioAnalysisTools.WavTools
         /// Audio must be in wav format.
         /// Use MasterAudioUtility to convert or segment the audio first.
         /// </summary>
-        public WavReader WavReader => this.wavReader;
+        public WavReader WavReader { get; }
 
         /// <summary>
         /// Gets returns Time Span of the recording
@@ -156,9 +156,8 @@ namespace AudioAnalysisTools.WavTools
         public static AudioRecording Filter_IIR(AudioRecording audio, string filterName)
         {
             DSP_IIRFilter filter = new DSP_IIRFilter(filterName);
-            double[] output;
-            filter.ApplyIIRFilter(audio.wavReader.Samples, out output);
-            int channels = audio.wavReader.Channels;
+            filter.ApplyIIRFilter(audio.WavReader.Samples, out var output);
+            int channels = audio.WavReader.Channels;
             int bitsPerSample = audio.BitsPerSample;
             int sampleRate = audio.SampleRate;
             WavReader wr = new WavReader(output, channels, bitsPerSample, sampleRate);
@@ -233,57 +232,57 @@ namespace AudioAnalysisTools.WavTools
             return wfDecibels;
         }
 
-        public Image GetWaveForm(int imageWidth, int imageHeight)
+        public Image<Rgb24> GetWaveForm(int imageWidth, int imageHeight)
         {
             double[,] envelope = this.GetWaveForm(imageWidth);
             int halfHeight = imageHeight / 2;
-            Color c = Color.FromArgb(10, 200, 255);
+            Color c = Color.FromRgb(10, 200, 255);
 
             //set up min, max, range for normalising of dB values
-            Bitmap bmp = new Bitmap(imageWidth, imageHeight, PixelFormat.Format24bppRgb);
+            Image<Rgb24> bmp = new Image<Rgb24>(imageWidth, imageHeight);
             for (int w = 0; w < imageWidth; w++)
             {
                 int minId = halfHeight + (int)Math.Round(envelope[0, w] * halfHeight);
                 int maxId = halfHeight + (int)Math.Round(envelope[1, w] * halfHeight);
                 for (int z = minId; z < maxId; z++)
                 {
-                    bmp.SetPixel(w, imageHeight - z - 1, c);
+                    bmp[w, imageHeight - z - 1] = c;
                 }
 
-                bmp.SetPixel(w, halfHeight, c); //set zero line in case it was missed
+                bmp[w, halfHeight] = c; //set zero line in case it was missed
 
                 //mark clipping in red
                 if (envelope[0, w] < -0.99)
                 {
-                    bmp.SetPixel(w, imageHeight - 1, Color.OrangeRed);
-                    bmp.SetPixel(w, imageHeight - 2, Color.OrangeRed);
-                    bmp.SetPixel(w, imageHeight - 3, Color.OrangeRed);
+                    bmp[w, imageHeight - 1] = Color.OrangeRed;
+                    bmp[w, imageHeight - 2] = Color.OrangeRed;
+                    bmp[w, imageHeight - 3] = Color.OrangeRed;
                 }
 
                 if (envelope[1, w] > 0.99)
                 {
-                    bmp.SetPixel(w, 0, Color.OrangeRed);
-                    bmp.SetPixel(w, 1, Color.OrangeRed);
-                    bmp.SetPixel(w, 2, Color.OrangeRed);
+                    bmp[w, 0] = Color.OrangeRed;
+                    bmp[w, 1] = Color.OrangeRed;
+                    bmp[w, 2] = Color.OrangeRed;
                 }
             }
 
             return bmp;
         }
 
-        public Image GetWaveFormInDecibels(int imageWidth, int imageHeight, double dBMin)
+        public Image<Rgb24> GetWaveFormInDecibels(int imageWidth, int imageHeight, double dBMin)
         {
             double[,] envelope = this.GetWaveFormDecibels(imageWidth, dBMin);
 
             //envelope values should all lie in [-40.0, 0.0].
             double slope = -(1 / dBMin);
             int halfHeight = imageHeight / 2;
-            Color c = Color.FromArgb(0x6F, 0xa1, 0xdc);
-            Color b = Color.FromArgb(0xd8, 0xeb, 0xff);
+            Color c = Color.FromRgb(0x6F, 0xa1, 0xdc);
+            Color b = Color.FromRgb(0xd8, 0xeb, 0xff);
 
             //set up min, max, range for normalising of dB values
 
-            Bitmap bmp = new Bitmap(imageWidth, imageHeight, PixelFormat.Format24bppRgb);
+            Image<Rgb24> bmp = new Image<Rgb24>(imageWidth, imageHeight);
 
             for (int w = 0; w < imageWidth; w++)
             {
@@ -296,32 +295,32 @@ namespace AudioAnalysisTools.WavTools
                 {
                     if (z >= minId && z < maxId)
                     {
-                        bmp.SetPixel(w, imageHeight - z - 1, c);
+                        bmp[w, imageHeight - z - 1] = c;
                     }
                     else
                     {
-                        bmp.SetPixel(w, imageHeight - z - 1, b);
+                        bmp[w, imageHeight - z - 1] = b;
                     }
                 }
 
                 //LoggedConsole.WriteLine(envelope[0, w] + " >> " + maxLinear);
                 //Console.ReadLine();
 
-                bmp.SetPixel(w, halfHeight, c); //set zero line in case it was missed
+                bmp[w, halfHeight] = c; //set zero line in case it was missed
 
                 //mark clipping in red
                 if (minLinear < -0.99)
                 {
-                    bmp.SetPixel(w, imageHeight - 1, Color.OrangeRed);
-                    bmp.SetPixel(w, imageHeight - 2, Color.OrangeRed);
-                    bmp.SetPixel(w, imageHeight - 3, Color.OrangeRed);
+                    bmp[w, imageHeight - 1] = Color.OrangeRed;
+                    bmp[w, imageHeight - 2] = Color.OrangeRed;
+                    bmp[w, imageHeight - 3] = Color.OrangeRed;
                 }
 
                 if (maxLinear > 0.99)
                 {
-                    bmp.SetPixel(w, 0, Color.OrangeRed);
-                    bmp.SetPixel(w, 1, Color.OrangeRed);
-                    bmp.SetPixel(w, 2, Color.OrangeRed);
+                    bmp[w, 0] = Color.OrangeRed;
+                    bmp[w, 1] = Color.OrangeRed;
+                    bmp[w, 2] = Color.OrangeRed;
                 }
             }
 
@@ -330,7 +329,7 @@ namespace AudioAnalysisTools.WavTools
 
         public void Dispose()
         {
-            this.wavReader.Dispose();
+            this.WavReader.Dispose();
         }
 
         //########################################################################################################################################################################

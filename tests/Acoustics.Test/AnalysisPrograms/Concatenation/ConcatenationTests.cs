@@ -5,7 +5,7 @@
 namespace Acoustics.Test.AnalysisPrograms.Concatenation
 {
     using System;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.IO;
     using System.IO.Compression;
     using System.Linq;
@@ -16,6 +16,8 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
     using global::AudioAnalysisTools.LongDurationSpectrograms;
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using SixLabors.ImageSharp.PixelFormats;
+    using SixLabors.Primitives;
 
     /// <summary>
     /// Test methods for the various Frequency Scales
@@ -101,11 +103,11 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             Assert.That.FileExists(outputDataDir.CombineFile(prefix + "Towsey.Acoustic.Indices.csv"));
             Assert.That.FileNotExists(outputDataDir.CombineFile(prefix + "SummaryIndex.csv"));
 
-            var actualImage = ImageTools.ReadImage2Bitmap(imageFileInfo.FullName);
+            var actualImage = Image.Load<Rgb24>(imageFileInfo.FullName);
             Assert.That.ImageIsSize(722, 632, actualImage);
-            Assert.That.PixelIsColor(new Point(100, 100), Color.FromArgb(211, 211, 211), actualImage);
-            Assert.That.PixelIsColor(new Point(200, 125), Color.FromArgb(60, 44, 203), actualImage);
-            Assert.That.PixelIsColor(new Point(675, 600), Color.FromArgb(255, 105, 180), actualImage);
+            Assert.That.PixelIsColor(new Point(100, 100), Color.FromRgb(211, 211, 211), actualImage);
+            Assert.That.PixelIsColor(new Point(200, 125), Color.FromRgb(60, 44, 203), actualImage);
+            Assert.That.PixelIsColor(new Point(675, 600), Color.FromRgb(255, 105, 180), actualImage);
         }
 
         /// <summary>
@@ -156,12 +158,12 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             Assert.That.FileExists(outputDataDir.CombineFile(prefix + "Towsey.Acoustic.Indices.csv"));
             Assert.That.FileNotExists(outputDataDir.CombineFile(prefix + "SummaryIndex.csv"));
 
-            var actualImage = ImageTools.ReadImage2Bitmap(imageFileInfo.FullName);
+            var actualImage = Image.Load<Rgb24>(imageFileInfo.FullName);
 
             // we expect only the second half (past midnight) of the image to be rendered
             Assert.That.ImageIsSize(512, 632, actualImage);
-            Assert.That.PixelIsColor(new Point(105, 154), Color.FromArgb(34, 30, 126), actualImage);
-            Assert.That.PixelIsColor(new Point(100, 160), Color.FromArgb(8, 28, 64), actualImage);
+            Assert.That.PixelIsColor(new Point(105, 154), Color.FromRgb(34, 30, 126), actualImage);
+            Assert.That.PixelIsColor(new Point(100, 160), Color.FromRgb(8, 28, 64), actualImage);
         }
 
         /// <summary>
@@ -214,10 +216,10 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             Assert.That.FileExists(outputDataDir1.CombineFile(prefix1 + "Towsey.Acoustic.Indices.csv"));
             Assert.That.FileNotExists(outputDataDir1.CombineFile(prefix1 + "SummaryIndex.csv"));
 
-            var actualImage1 = ImageTools.ReadImage2Bitmap(image1FileInfo.FullName);
+            var actualImage1 = Image.Load<Rgb24>(image1FileInfo.FullName);
             Assert.That.ImageIsSize(210, 632, actualImage1);
-            Assert.That.PixelIsColor(new Point(100, 100), Color.FromArgb(211, 211, 211), actualImage1);
-            Assert.That.PixelIsColor(new Point(50, 50), Color.FromArgb(86, 27, 8), actualImage1);
+            Assert.That.PixelIsColor(new Point(100, 100), Color.FromRgb(211, 211, 211), actualImage1);
+            Assert.That.PixelIsColor(new Point(50, 50), Color.FromRgb(86, 27, 8), actualImage1);
 
             // IMAGE 2: Compare image files - check that image exists and dimensions are correct
             var dateString2 = "20160726";
@@ -230,10 +232,10 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             Assert.That.FileExists(outputDataDir2.CombineFile(prefix2 + "Towsey.Acoustic.Indices.csv"));
             Assert.That.FileNotExists(outputDataDir2.CombineFile(prefix2 + "SummaryIndex.csv"));
 
-            var actualImage2 = ImageTools.ReadImage2Bitmap(image2FileInfo.FullName);
+            var actualImage2 = Image.Load<Rgb24>(image2FileInfo.FullName);
             Assert.That.ImageIsSize(512, 632, actualImage2);
-            Assert.That.PixelIsColor(new Point(50, 124), Color.FromArgb(70, 37, 255), actualImage2);
-            Assert.That.PixelIsColor(new Point(460, 600), Color.FromArgb(255, 105, 180), actualImage2);
+            Assert.That.PixelIsColor(new Point(50, 124), Color.FromRgb(70, 37, 255), actualImage2);
+            Assert.That.PixelIsColor(new Point(460, 600), Color.FromRgb(255, 105, 180), actualImage2);
         }
 
         /// <summary>
@@ -335,7 +337,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                 var imagePath = prefix + "2Maps.png";
                 Assert.That.FileExists(imagePath);
 
-                var actualImage = ImageTools.ReadImage2Bitmap(imagePath);
+                var actualImage = Image.Load<Rgb24>(imagePath);
                 Assert.That.ImageIsSize(expectedWidth, 632, actualImage);
 
                 // target region for each image: 40, 254, 20,20

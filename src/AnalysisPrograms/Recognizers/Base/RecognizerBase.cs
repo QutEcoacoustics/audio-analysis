@@ -11,7 +11,7 @@ namespace AnalysisPrograms.Recognizers.Base
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
@@ -25,6 +25,7 @@ namespace AnalysisPrograms.Recognizers.Base
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
+    using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
 
     public abstract class RecognizerBase : AbstractStrongAnalyser, IEventRecognizer
@@ -148,7 +149,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 var plots = results.Plots ?? new List<Plot>();
 
                 Image image = this.DrawSonogram(sonogram, hits, plots, predictedEvents, EventThreshold);
-                image.Save(imagePath, ImageFormat.Png);
+                image.Save(imagePath);
                 analysisResults.ImageFile = segmentSettings.SegmentImageFile;
 
                 // draw a fancy high res index image
@@ -170,7 +171,7 @@ namespace AnalysisPrograms.Recognizers.Base
         private void DrawLongDurationSpectrogram(
             DirectoryInfo outputDirectory,
             string fileStem,
-            Image scoreTrack,
+            Image<Rgb24> scoreTrack,
             IndexCalculateResult[] indexResults,
             AcousticIndices.AcousticIndicesConfig acousticIndicesConfig)
         {
@@ -217,7 +218,7 @@ namespace AnalysisPrograms.Recognizers.Base
             } // if (saveRidgeSpectrograms)
 
             // 2. DRAW the aggregated GREY-SCALE SPECTROGRAMS of SPECTRAL INDICES
-            Image opImage;
+            Image<Rgb24> opImage;
             bool saveGrayScaleSpectrograms = acousticIndicesConfig.GetBoolOrNull("SaveGrayScaleSpectrograms") ?? false;
             if (saveGrayScaleSpectrograms)
             {
@@ -231,7 +232,7 @@ namespace AnalysisPrograms.Recognizers.Base
             if (saveTwoMapsSpectrograms)
             {
                 opImage = DrawLongDurationSpectrograms.DrawFalseColourSpectrograms(ldfcSpectrogramArguments, fileStem, dictionaryOfSpectra);
-                var opImages = new List<Image> { opImage, scoreTrack };
+                var opImages = new [] { opImage, scoreTrack };
                 opImage = ImageTools.CombineImagesVertically(opImages);
                 var fileName = FilenameHelpers.AnalysisResultPath(output, fileStem, "TwoMaps", ".png");
                 opImage.Save(fileName);
@@ -421,7 +422,7 @@ namespace AnalysisPrograms.Recognizers.Base
             return new Lazy<IndexCalculateResult[]>(Callback, LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
-        public static Image DrawDebugImage(BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> scores, double[,] hits)
+        public static Image<Rgb24> DrawDebugImage(BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> scores, double[,] hits)
         {
             const bool doHighlightSubband = false;
             const bool add1KHzLines = true;
@@ -452,7 +453,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 image.AddEvents(events, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
             }
 
-            return image.GetImage();
+            return image.GetImage().CloneAs<Rgb24>();
         }
     }
 }

@@ -14,13 +14,18 @@ namespace AudioAnalysisTools
     using System.IO;
     using System.Linq;
     using System.Text;
+    using Acoustics.Shared;
     using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Csv;
     using AnalysisBase.ResultBases;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using CsvHelper.Configuration;
+    using SixLabors.Fonts;
     using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.PixelFormats;
+    using SixLabors.ImageSharp.Processing;
+    using SixLabors.Primitives;
     using TowseyLibrary;
 
     public class AcousticEvent : EventBase
@@ -129,13 +134,7 @@ namespace AudioAnalysisTools
         /// <summary>Gets or sets units = Hertz</summary>
         public double HighFrequencyHertz { get; set; }
 
-        public double Bandwidth
-        {
-            get
-            {
-                return this.HighFrequencyHertz - this.LowFrequencyHertz + 1;
-            }
-        }
+        public double Bandwidth => this.HighFrequencyHertz - this.LowFrequencyHertz + 1;
 
         public bool IsMelscale { get; set; }
 
@@ -388,21 +387,20 @@ namespace AudioAnalysisTools
         /// Draws an event on the image. Uses the fields already set on the audio event to determine correct placement.
         /// Fields requireed to be set include: `FramesPerSecond`, `FreqBinWidth`.
         /// </summary>
-        public void DrawEvent(Bitmap sonogram)
+        public void DrawEvent(Image<Rgba32> sonogram)
         {
-            Graphics g = Graphics.FromImage(sonogram);
-            this.DrawEvent(g, sonogram, this.FramesPerSecond, this.FreqBinWidth, sonogram.Height);
+            this.DrawEvent(sonogram, this.FramesPerSecond, this.FreqBinWidth, sonogram.Height);
         }
 
         /// <summary>
         /// Draws an event on the image. Allows for custom specification of variables.
         /// </summary>
-        public void DrawEvent(Graphics g, Bitmap imageToReturn, double framesPerSecond, double freqBinWidth, int sonogramHeight)
+        public void DrawEvent(Image<Rgba32> imageToReturn, double framesPerSecond, double freqBinWidth, int sonogramHeight)
         {
             Contract.Requires(this.BorderColour != null);
             Contract.Requires(this.HitElements == null || (this.HitElements != null && this.HitColour != null));
-            var borderPen = new Pen(this.BorderColour);
-            var scorePen = new Pen(this.ScoreColour);
+            var borderPen = new Pen(this.BorderColour, 1);
+            var scorePen = new Pen(this.ScoreColour, 1);
 
             // calculate top and bottom freq bins
             int minFreqBin = (int)Math.Round(this.LowFrequencyHertz / freqBinWidth);
@@ -426,13 +424,13 @@ namespace AudioAnalysisTools
             }
 
             // 14-Feb-12 - Anthony - changed default brush so border would actually render with color
-            g.DrawRectangle(borderPen, t1, y, tWidth, height);
+            imageToReturn.Mutate(g => g.DrawRectangle(borderPen, t1, y, tWidth, height));
 
             if (this.HitElements != null)
             {
                 foreach (var hitElement in this.HitElements)
                 {
-                    imageToReturn.SetPixel(hitElement.X, sonogramHeight - hitElement.Y, this.HitColour.Value);
+                    imageToReturn[hitElement.X, sonogramHeight - hitElement.Y] = this.HitColour.Value;
                 }
             }
 
@@ -441,20 +439,23 @@ namespace AudioAnalysisTools
             int y1 = y + height;
             int y2 = y1 - scoreHt;
 
-            //g.DrawLine(scorePen, t1 + 1, y1, t1 + 1, y2);
-            //g.DrawLine(scorePen, t1 + 2, y1, t1 + 2, y2);
-            g.DrawLine(scorePen, t1, y1, t1, y2);
-            g.DrawString(this.Name, new Font("Tahoma", 6), Brushes.Black, new PointF(t1, y - 1));
+            imageToReturn.Mutate(g =>
+            {
+                //g.DrawLine(scorePen, t1 + 1, y1, t1 + 1, y2);
+                //g.DrawLine(scorePen, t1 + 2, y1, t1 + 2, y2);
+                g.DrawLine(scorePen, t1, y1, t1, y2);
+                g.DrawText(this.Name, Drawing.Tahoma6, Color.Black, new PointF(t1, y - 1));
 
-            // ################ draw quality: this is hack for Michael. Please keep this - Oct 2016
-            //g.DrawString($"{this.Quality}", new Font("Tahoma", 6), Brushes.Black, new PointF(t1, y - 10));
+                // ################ draw quality: this is hack for Michael. Please keep this - Oct 2016
+                //g.DrawText($"{this.Quality}", Drawing.Tahoma6, Color.Black, new PointF(t1, y - 10));
+            });
         }
 
         /// <summary>
         /// Passed point is relative to top-left corner of the Acoustic Event.
         /// Oblong needs to be set for this method to work
         /// </summary>
-        public void DrawPoint(Bitmap bmp, Point point, Color colour)
+        public void DrawPoint(Image<Rgb24> bmp, Point point, Color colour)
         {
             if (bmp == null)
             {
@@ -470,7 +471,7 @@ namespace AudioAnalysisTools
                 row = bmp.Height - 1;
             }
 
-            bmp.SetPixel(col, row, colour);
+            bmp[col, row] = colour;
         }
 
         /// <summary>

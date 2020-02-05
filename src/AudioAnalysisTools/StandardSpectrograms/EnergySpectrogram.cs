@@ -51,7 +51,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             GraphsAndCharts.DrawGraph(psd, "Title", new FileInfo(path));
 
             //GraphsAndCharts.DrawGraph("Title", psd, width, height, 4 new FileInfo(path));
-            //image.Save(path, ImageFormat.Png);
+            //image.Save(path);
         }
 
         public void DrawLogPsd(string path)
@@ -62,7 +62,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             GraphsAndCharts.DrawGraph(logPsd, "log PSD", new FileInfo(path));
 
             //GraphsAndCharts.DrawGraph("Title", psd, width, height, 4 new FileInfo(path));
-            //image.Save(path, ImageFormat.Png);
+            //image.Save(path);
         }
 
         public double[] GetLogPsd()

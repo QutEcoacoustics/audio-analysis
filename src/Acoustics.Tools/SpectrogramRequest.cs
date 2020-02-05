@@ -46,13 +46,7 @@ namespace Acoustics.Tools
         /// <summary>
         /// Gets a value indicating whether the Calculated Width is Available.
         /// </summary>
-        public bool IsCalculatedWidthAvailable
-        {
-            get
-            {
-                return this.Width.HasValue || this.PixelsPerMillisecond.HasValue;
-            }
-        }
+        public bool IsCalculatedWidthAvailable => this.Width.HasValue || this.PixelsPerMillisecond.HasValue;
 
         /// <summary>
         /// Gets CalculatedWidth.

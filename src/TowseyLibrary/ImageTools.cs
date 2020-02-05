@@ -7,14 +7,22 @@ namespace TowseyLibrary
     using System;
     using System.Collections;
     using System.Collections.Generic;
-    using System.Drawing;
-    using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
+    using Acoustics.Shared;
     using Acoustics.Shared.Extensions;
     using AForge.Imaging.Filters;
-    using ColorMine.ColorSpaces;
     using MathNet.Numerics.LinearAlgebra;
+    using SixLabors.Fonts;
+    using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.ColorSpaces;
+    using SixLabors.ImageSharp.ColorSpaces.Conversion;
+    using SixLabors.ImageSharp.PixelFormats;
+    using SixLabors.ImageSharp.Primitives;
+    using SixLabors.ImageSharp.Processing;
+    using SixLabors.ImageSharp.Processing.Processors.Convolution;
+    using SixLabors.Primitives;
+
 
     public enum Kernal
     {
@@ -45,7 +53,7 @@ namespace TowseyLibrary
     {
 
         // this is a list of predefined colors in the Color class.
-        private static string[] ColorNames = new[]
+        private static readonly string[] ColorNames = new[]
         {
             "AliceBlue", "AntiqueWhite", "Aqua", "Aquamarine", "Azure", "Beige", "Bisque", "Black", "BlanchedAlmond", "Blue", "BlueViolet",
             "Brown", "BurlyWood", "CadetBlue", "Chartreuse", "Chocolate", "Coral", "CornflowerBlue", "Cornsilk", "Crimson", "Cyan",
@@ -64,7 +72,7 @@ namespace TowseyLibrary
             "Thistle", "Tomato", /*"Transparent",*/"Turquoise", "Violet", "Wheat", "White", "WhiteSmoke", "Yellow", "YellowGreen",
         };
 
-        public static Color[] Colors =
+        public static readonly Color[] Colors =
         {
             Color.AliceBlue, Color.AntiqueWhite, Color.Aqua, Color.Aquamarine, Color.Azure, Color.Beige, Color.Bisque, Color.Black,
             Color.BlanchedAlmond, Color.Blue, Color.BlueViolet, Color.Brown, Color.BurlyWood, Color.CadetBlue, Color.Chartreuse,
@@ -113,7 +121,7 @@ namespace TowseyLibrary
                              /*Color.Yellow,*/ Color.YellowGreen,
         };
 
-        private static double[,] lowPassKernal =
+        private static readonly double[,] lowPassKernal =
         {
         {
             0.1, 0.1, 0.1,
@@ -126,7 +134,7 @@ namespace TowseyLibrary
                                             },
         };
 
-        private static double[,] highPassKernal1 =
+        private static readonly double[,] highPassKernal1 =
         {
         {
             -1.0, -1.0, -1.0,
@@ -139,7 +147,7 @@ namespace TowseyLibrary
         },
     };
 
-        private static double[,] highPassKernal2 =
+        private static readonly double[,] highPassKernal2 =
         {
         {
             -0.3, -0.3, -0.3, -0.3, -0.3,
@@ -158,7 +166,7 @@ namespace TowseyLibrary
                                             },
         };
 
-        private static double[,] vertLineKernal =
+        private static readonly double[,] vertLineKernal =
         {
         {
             -0.5, 1.0, -0.5,
@@ -171,7 +179,7 @@ namespace TowseyLibrary
         },
     };
 
-        private static double[,] horiLineKernal3 =
+        private static readonly double[,] horiLineKernal3 =
         {
         {
             -0.5, -0.5, -0.5,
@@ -184,7 +192,7 @@ namespace TowseyLibrary
         },
     };
 
-        private static double[,] horiLineKernal5 =
+        private static readonly double[,] horiLineKernal5 =
         {
         {
             -0.5, -0.5, -0.5, -0.5, -0.5,
@@ -197,7 +205,7 @@ namespace TowseyLibrary
         },
     };
 
-        private static double[,] diagLineKernal1 =
+        private static readonly double[,] diagLineKernal1 =
         {
         {
             2.0, -1.0, -1.0,
@@ -210,7 +218,7 @@ namespace TowseyLibrary
         },
     };
 
-        private static double[,] diagLineKernal2 =
+        private static readonly double[,] diagLineKernal2 =
         {
         {
             -1.0, -1.0, 2.0,
@@ -223,7 +231,7 @@ namespace TowseyLibrary
         },
     };
 
-        private static double[,] Laplace1Kernal =
+        private static readonly double[,] Laplace1Kernal =
         {
         {
             0.0, -1.0, 0.0,
@@ -236,7 +244,7 @@ namespace TowseyLibrary
         },
     };
 
-        private static double[,] Laplace2Kernal =
+        private static readonly double[,] Laplace2Kernal =
         {
         {
             -1.0, -1.0, -1.0,
@@ -249,7 +257,7 @@ namespace TowseyLibrary
         },
     };
 
-        private static double[,] Laplace3Kernal =
+        private static readonly double[,] Laplace3Kernal =
         {
         {
             1.0, -2.0, 1.0,
@@ -262,7 +270,7 @@ namespace TowseyLibrary
         },
     };
 
-        private static double[,] Laplace4Kernal =
+        private static readonly double[,] Laplace4Kernal =
         {
         {
             -1.0, -1.0, -1.0,
@@ -275,7 +283,7 @@ namespace TowseyLibrary
         },
     }; //subtracts original
 
-        private static double[,] grid2 =
+        private static readonly double[,] grid2 =
         {
         {
             -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5,
@@ -296,7 +304,7 @@ namespace TowseyLibrary
         //static double[,] grid2Wave =      { { -0.5, 1.0, -1.5, 2.0, -1.5, 1.0, -0.5},
         //                                    { -0.5, 1.0, -1.5, 2.0, -1.5, 1.0, -0.5},
         //                                    { -0.5, 1.0, -1.5, 2.0, -1.5, 1.0, -0.5}};
-        private static double[,] grid3 =
+        private static readonly double[,] grid3 =
         {
         {
             -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5,
@@ -321,7 +329,7 @@ namespace TowseyLibrary
                                             },
         };
 
-        private static double[,] grid4 =
+        private static readonly double[,] grid4 =
         {
         {
             -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375,
@@ -346,7 +354,7 @@ namespace TowseyLibrary
                                             },
         };
 
-        private static double[,] grid2Wave =
+        private static readonly double[,] grid2Wave =
         {
         {
             -0.5, -0.5, -0.5,
@@ -371,7 +379,7 @@ namespace TowseyLibrary
                                             },
         };
 
-        private static double[,] grid3Wave =
+        private static readonly double[,] grid3Wave =
         {
         {
             -0.5, -0.5, -0.5,
@@ -428,39 +436,35 @@ namespace TowseyLibrary
                                             },
         };
 
-        public static Bitmap ReadImage2Bitmap(string fileName)
+        public static Image<Rgb24> ReadImage2Image(string fileName)
         {
             if (!File.Exists(fileName))
             {
                 return null;
             }
 
-            return (Bitmap)Image.FromFile(fileName);
+            return Image.Load<Rgb24>(fileName);
         }
 
-        public static void WriteBitmap2File(Bitmap binaryBmp, string opPath)
+        public static void WriteImage2File(Image binaryBmp, string opPath)
         {
             binaryBmp.Save(opPath);
         }
 
-        public static Bitmap ApplyInvert(Bitmap bitmapImage)
+        public static Image ApplyInvert(Image<Rgb24> ImageImage)
         {
-            byte A, R, G, B;
-            Color pixelColor;
-            Bitmap returnImage = new Bitmap(bitmapImage);
+            Image<Rgb24> returnImage = ImageImage.CloneAs<Rgb24>();
 
-            for (int y = 0; y < bitmapImage.Height; y++)
+            for (int y = 0; y < ImageImage.Height; y++)
             {
-                for (int x = 0; x < bitmapImage.Width; x++)
+                for (int x = 0; x < ImageImage.Width; x++)
                 {
-                    pixelColor = bitmapImage.GetPixel(x, y);
+                    var pixelColor = ImageImage[x, y];
 
-                    //A = (byte)(255 - pixelColor.A);
-                    A = pixelColor.A;
-                    R = (byte)(255 - pixelColor.R);
-                    G = (byte)(255 - pixelColor.G);
-                    B = (byte)(255 - pixelColor.B);
-                    returnImage.SetPixel(x, y, Color.FromArgb(A, R, G, B));
+                    var R = (byte)(255 - pixelColor.R);
+                    var G = (byte)(255 - pixelColor.G);
+                    var B = (byte)(255 - pixelColor.B);
+                    returnImage[x, y] = new Rgb24(R, G, B);
                 }
             }
 
@@ -471,17 +475,17 @@ namespace TowseyLibrary
         /// reads the intensity of a grey scale image into a matrix of double.
         /// Assumes gray scale is 0-255 and that color.R = color.G = color.B.
         /// </summary>
-        public static double[,] GreyScaleImage2Matrix(Bitmap bitmap)
+        public static double[,] GreyScaleImage2Matrix(Image<Rgb24> Image)
         {
-            int height = bitmap.Height; //height
-            int width = bitmap.Width;   //width
+            int height = Image.Height; //height
+            int width = Image.Width;   //width
 
             var matrix = new double[height, width];
             for (int r = 0; r < height; r++)
             {
                 for (int c = 0; c < width; c++)
                 {
-                    Color color = bitmap.GetPixel(c, r);
+                    var color = Image[c, r];
 
                     //double value = (255 - color.R) / (double)255;
                     //if (value > 0.0) LoggedConsole.WriteLine(value);
@@ -491,19 +495,6 @@ namespace TowseyLibrary
 
             return matrix;
         }
-
-        public static Color GetPixel(Point position)
-        {
-            using (var bitmap = new Bitmap(1, 1))
-            {
-                using (var graphics = Graphics.FromImage(bitmap))
-                {
-                    graphics.CopyFromScreen(position, new Point(0, 0), new Size(1, 1));
-                }
-
-                return bitmap.GetPixel(0, 0);
-            }
-        } //GetPixel(Point position)
 
         public static double[,] Convolve(double[,] matrix, Kernal name)
         {
@@ -679,9 +670,7 @@ namespace TowseyLibrary
                 noiseScores[n] = sum / kRows;
             }
 
-            double noiseAv;
-            double noiseSd;
-            NormalDist.AverageAndSD(noiseScores, out noiseAv, out noiseSd);
+            NormalDist.AverageAndSD(noiseScores, out var noiseAv, out var noiseSd);
             LoggedConsole.WriteLine("noiseAv=" + noiseAv + "   noiseSd=" + noiseSd);
 
             double[,] newMatrix = new double[mRows, mCols]; //init new matrix to return
@@ -908,13 +897,13 @@ namespace TowseyLibrary
             //string path = @"C:\SensorNetworks\Output\LewinsRail\BAC1_20071008-081607_0min.png";
             string path = @"C:\SensorNetworks\Output\LewinsRail\BAC2_20071008-085040_0min.png";
             FileInfo file = new FileInfo(path);
-            Bitmap sourceImage = ReadImage2Bitmap(file.FullName);
+            Image<Rgb24> sourceImage = ReadImage2Image(file.FullName);
             ApplyInvert(sourceImage);
             byte lowThreshold = 0;
             byte highThreshold = 30;
-            Bitmap bmp2 = CannyEdgeDetection(sourceImage, lowThreshold, highThreshold);
+            Image bmp2 = CannyEdgeDetection(sourceImage, lowThreshold, highThreshold);
             string path1 = @"C:\SensorNetworks\Output\LewinsRail\Canny.png";
-            bmp2.Save(path1, ImageFormat.Png);
+            bmp2.Save(path1);
         }
 
         /// <summary>
@@ -928,28 +917,14 @@ namespace TowseyLibrary
         /// </summary>
         /// <param name="bmp"></param>
         /// <returns></returns>
-        public static Bitmap CannyEdgeDetection(Bitmap bmp, byte lowThreshold, byte highThreshold)
+        public static Image CannyEdgeDetection(Image<Rgb24> bmp, byte lowThreshold, byte highThreshold)
         {
-            //Bitmap image = (Bitmap)bmp.Clone();
-            //convert image to gray scale
-            //Bitmap gsImage = Grayscale.CommonAlgorithms.BT709.Apply(image);
-            Bitmap gsImage = (Bitmap)bmp.Clone();
 
-            //this filter converts standard pixel format to indexed as used by the hough transform
-            var filter1 = Grayscale.CommonAlgorithms.BT709;
-            gsImage = filter1.Apply(gsImage);
+            // this filter converts standard pixel format to indexed as used by the hough transform
+            // blur the result
 
-            var filter2 = new GaussianBlur();
-            filter2.Size = 3;
-            filter2.Sigma = 2;
-
-            //filter2.Threshold = 1;
-            filter2.Apply(gsImage);
-
-            CannyEdgeDetector cannyFilter = new CannyEdgeDetector();
-            cannyFilter.LowThreshold = lowThreshold;
-            cannyFilter.HighThreshold = highThreshold;
-            Bitmap edge = cannyFilter.Apply(gsImage);
+            CannyEdgeDetector cannyFilter = new CannyEdgeDetector(lowThreshold, highThreshold, 2f, 3);
+            Image edge = cannyFilter.Apply(bmp);
             return edge;
         }
 
@@ -1014,9 +989,7 @@ namespace TowseyLibrary
                     double DivideDEF_avBelow = (grid[g] + grid[h] + grid[i]) / 3;
                     double DivideDEF_avAbove = (grid[a] + grid[b] + grid[c]) / 3;
                     differences[3] = Math.Abs(DivideDEF_avAbove - DivideDEF_avBelow);
-                    double gridMin;
-                    double gridMax;
-                    DataTools.MinMax(differences, out gridMin, out gridMax);
+                    DataTools.MinMax(differences, out var gridMin, out var gridMax);
 
                     newMatrix[y, x] = gridMax;
                     if (min > gridMin)
@@ -1132,9 +1105,7 @@ namespace TowseyLibrary
                         differences[3] = 0.0;
                     }
 
-                    double diffMin;
-                    double diffMax;
-                    DataTools.MinMax(differences, out diffMin, out diffMax);
+                    DataTools.MinMax(differences, out var diffMin, out var diffMax);
 
                     newMatrix[y, x] = diffMax;
                     if (min > diffMin)
@@ -1234,8 +1205,7 @@ namespace TowseyLibrary
 
             //ridge magnitude having slope=2Pi/8;
             ridgeMagnitudes[2, 1] = MatrixTools.SumPositiveDiagonal(m) / cols;
-            double upperAv, lowerAv;
-            MatrixTools.AverageValuesInTriangleAboveAndBelowPositiveDiagonal(m, out upperAv, out lowerAv);
+            MatrixTools.AverageValuesInTriangleAboveAndBelowPositiveDiagonal(m, out var upperAv, out var lowerAv);
             ridgeMagnitudes[2, 0] = upperAv;
             ridgeMagnitudes[2, 2] = lowerAv;
 
@@ -1298,9 +1268,7 @@ namespace TowseyLibrary
                 differences[i] /= 2; // want average of both differences because easier to select an appropiate decibel threshold for ridge magnitude.
             }
 
-            int indexMin, indexMax;
-            double diffMin, diffMax;
-            DataTools.MinMax(differences, out indexMin, out indexMax, out diffMin, out diffMax);
+            DataTools.MinMax(differences, out var indexMin, out var indexMax, out var diffMin, out var diffMax);
 
             //double threshold = min + (max - min) / 4; //threshold is 1/5th of range above min
             double threshold = 0; // dB
@@ -1336,9 +1304,7 @@ namespace TowseyLibrary
                 return;
             }
 
-            int indexMin, indexMax;
-            double diffMin, diffMax;
-            DataTools.MinMax(ridgeMagnitudes, out indexMin, out indexMax, out diffMin, out diffMax);
+            DataTools.MinMax(ridgeMagnitudes, out var indexMin, out var indexMax, out var diffMin, out var diffMax);
 
             double threshold = 0; // dB
             isRidge = ridgeMagnitudes[indexMax] > threshold;
@@ -1549,9 +1515,7 @@ namespace TowseyLibrary
             ridgeMagnitudes[2] = MatrixTools.DotProduct(ridgeDir2Mask, m);
             ridgeMagnitudes[3] = MatrixTools.DotProduct(ridgeDir3Mask, m);
 
-            int indexMin, indexMax;
-            double diffMin, diffMax;
-            DataTools.MinMax(ridgeMagnitudes, out indexMin, out indexMax, out diffMin, out diffMax);
+            DataTools.MinMax(ridgeMagnitudes, out var indexMin, out var indexMax, out var diffMin, out var diffMax);
 
             // dB
             double threshold = 0;
@@ -1733,9 +1697,7 @@ namespace TowseyLibrary
             cornerMagnitudes[6] = MatrixTools.DotProduct(ridgeDir6Mask, m);
             cornerMagnitudes[7] = MatrixTools.DotProduct(ridgeDir7Mask, m);
 
-            int indexMin, indexMax;
-            double diffMin, diffMax;
-            DataTools.MinMax(cornerMagnitudes, out indexMin, out indexMax, out diffMin, out diffMax);
+            DataTools.MinMax(cornerMagnitudes, out var indexMin, out var indexMax, out var diffMin, out var diffMax);
 
             // dB
             double threshold = 0;
@@ -1887,14 +1849,10 @@ namespace TowseyLibrary
         {
             int binCount = 50;
             int count = M.GetLength(0) * M.GetLength(1);
-            double binWidth;
-            double min;
-            double max;
-            int[] powerHisto = Histogram.Histo(M, binCount, out binWidth, out min, out max);
+            int[] powerHisto = Histogram.Histo(M, binCount, out var binWidth, out var min, out var max);
             powerHisto[binCount - 1] = 0; //just in case it is the max ????????????????????????????????????? !!!!!!!!!!!!!!!
             double[] smooth = DataTools.filterMovingAverage(powerHisto, 3);
-            int maxindex;
-            DataTools.getMaxIndex(smooth, out maxindex);
+            DataTools.getMaxIndex(smooth, out var maxindex);
 
             //calculate threshold for upper percentile
             int clipCount = (int)(upperCut * count);
@@ -1935,9 +1893,7 @@ namespace TowseyLibrary
             double[,] tmpM = new double[height, ncbbc];
             double[,] outM = new double[height, width];
             double[,] thresholdSubatrix = DataTools.Submatrix(matrix, 0, 0, height - 1, bandWidth);
-            double lowerThreshold;
-            double upperThreshold;
-            PercentileThresholds(thresholdSubatrix, lowerPercentile, upperPercentile, out lowerThreshold, out upperThreshold);
+            PercentileThresholds(thresholdSubatrix, lowerPercentile, upperPercentile, out var lowerThreshold, out var upperThreshold);
 
             for (int col = 0; col < width; col++)
             {
@@ -2029,9 +1985,7 @@ namespace TowseyLibrary
                         }
                     }
 
-                    double av;
-                    double sd;
-                    NormalDist.AverageAndSD(values, out av, out sd);
+                    NormalDist.AverageAndSD(values, out var av, out var sd);
                     if (sd < 0.0001)
                     {
                         sd = 0.0001;
@@ -2073,9 +2027,7 @@ namespace TowseyLibrary
                     subMatrix = DataTools.Submatrix(matrix, 0, start, height - 1, stop);
                 }
 
-                double av;
-                double sd;
-                NormalDist.AverageAndSD(subMatrix, out av, out sd);
+                NormalDist.AverageAndSD(subMatrix, out var av, out var sd);
                 if (sd < 0.0001)
                 {
                     sd = 0.0001;  //to prevent division by zero
@@ -2119,9 +2071,7 @@ namespace TowseyLibrary
                     subMatrix = DataTools.Submatrix(matrix, 0, start, height - 1, stop);
                 }
 
-                double av;
-                double sd;
-                NormalDist.AverageAndSD(subMatrix, out av, out sd);
+                NormalDist.AverageAndSD(subMatrix, out var av, out var sd);
 
                 //LoggedConsole.WriteLine(0 + "," + start + "," + (height - 1) + "," + stop + "   Threshold " + b + "=" + threshold);
 
@@ -2231,9 +2181,7 @@ namespace TowseyLibrary
                 }
 
                 double[,] subMatrix = DataTools.Submatrix(blurM, 0, start, height - 1, stop);
-                double lowerThreshold;
-                double upperThreshold;
-                PercentileThresholds(subMatrix, lowerShoulder, upperShoulder, out lowerThreshold, out upperThreshold);
+                PercentileThresholds(subMatrix, lowerShoulder, upperShoulder, out var lowerThreshold, out var upperThreshold);
 
                 //LoggedConsole.WriteLine(0 + "," + start + "," + (height - 1) + "," + stop + "   Threshold " + b + "=" + threshold);
 
@@ -2303,9 +2251,7 @@ namespace TowseyLibrary
             double[,] M = new double[height, width];
 
             double[,] subMatrix = DataTools.Submatrix(blurM, 0, 0, height - 1, bandWidth);
-            double lowerThreshold;
-            double upperThreshold;
-            PercentileThresholds(subMatrix, lowerShoulder, upperShoulder, out lowerThreshold, out upperThreshold);
+            PercentileThresholds(subMatrix, lowerShoulder, upperShoulder, out var lowerThreshold, out var upperThreshold);
 
             for (int col = 0; col < width; col++) //for all cols
             {
@@ -2366,8 +2312,7 @@ namespace TowseyLibrary
                         continue; //already have something here
                     }
 
-                    int colWidth; //colWidth of object
-                    Oblong.ColumnWidth(m2, x, y, out colWidth);
+                    Oblong.ColumnWidth(m2, x, y, out var colWidth);
                     int x2 = x + colWidth;
                     for (int j = x; j < x2; j++)
                     {
@@ -2411,8 +2356,7 @@ namespace TowseyLibrary
 
                     //int rowWidth; //rowWidth of object
                     //Shape.Row_Width(m2, x, y, out rowWidth);
-                    int colWidth; //colWidth of object
-                    Oblong.ColumnWidth(tmpM, x, y, out colWidth);
+                    Oblong.ColumnWidth(tmpM, x, y, out var colWidth);
                     int x2 = x + colWidth;
 
                     //check to see if object is in blob
@@ -2468,8 +2412,7 @@ namespace TowseyLibrary
                         continue; //already have something here
                     }
 
-                    int colWidth; //colWidth of object
-                    Oblong.ColumnWidth(m2, x, y, out colWidth);
+                    Oblong.ColumnWidth(m2, x, y, out var colWidth);
                     int x2 = x + colWidth - 1;
                     for (int j = x; j < x2; j++)
                     {
@@ -2514,8 +2457,7 @@ namespace TowseyLibrary
                         continue; //already have something here
                     }
 
-                    int colWidth; //colWidth of object
-                    Oblong.ColumnWidth(tmpM, x, y, out colWidth);
+                    Oblong.ColumnWidth(tmpM, x, y, out var colWidth);
 
                     int x2 = x + colWidth;
 
@@ -2610,8 +2552,7 @@ namespace TowseyLibrary
                         continue; //already have something here
                     }
 
-                    int colWidth; //colWidth of object
-                    Oblong.ColumnWidth(m2, x, y, out colWidth);
+                    Oblong.ColumnWidth(m2, x, y, out var colWidth);
                     int x2 = x + colWidth - 1;
                     for (int j = x; j < x2; j++)
                     {
@@ -2656,8 +2597,7 @@ namespace TowseyLibrary
                         continue; //already have something here
                     }
 
-                    int colWidth; //colWidth of object
-                    Oblong.ColumnWidth(tmpM, x, y, out colWidth);
+                    Oblong.ColumnWidth(tmpM, x, y, out var colWidth);
 
                     int x2 = x + colWidth;
 
@@ -2761,9 +2701,7 @@ namespace TowseyLibrary
             double[,] M = new double[height, width];
 
             double[,] subMatrix = DataTools.Submatrix(tmpM, 0, 0, height - 1, bandWidth);
-            double lowerThreshold;
-            double upperThreshold;
-            PercentileThresholds(subMatrix, lowerShoulder, upperShoulder, out lowerThreshold, out upperThreshold);
+            PercentileThresholds(subMatrix, lowerShoulder, upperShoulder, out var lowerThreshold, out var upperThreshold);
 
             for (int col = 2; col < width; col++) // for all cols
             {
@@ -2835,10 +2773,8 @@ namespace TowseyLibrary
                         continue; //already have something here
                     }
 
-                    int rowWidth; //rowWidth of object
-                    Oblong.Row_Width(m, x, y, out rowWidth);
-                    int colWidth; //colWidth of object
-                    Oblong.ColumnWidth(m, x, y, out colWidth);
+                    Oblong.Row_Width(m, x, y, out var rowWidth);
+                    Oblong.ColumnWidth(m, x, y, out var colWidth);
                     bool sizeOK = rowWidth >= minRowWidth && colWidth >= minColWidth;
 
                     if (sizeOK)
@@ -2881,10 +2817,8 @@ namespace TowseyLibrary
                         continue; //already have something here
                     }
 
-                    int rowWidth; //rowWidth of object
-                    Oblong.Row_Width(m, x, y, out rowWidth);
-                    int colWidth; //colWidth of object
-                    Oblong.ColumnWidth(m, x, y, out colWidth);
+                    Oblong.Row_Width(m, x, y, out var rowWidth);
+                    Oblong.ColumnWidth(m, x, y, out var colWidth);
                     bool sizeOK = false;
                     if (rowWidth >= minRowWidth && colWidth >= minColWidth)
                     {
@@ -2973,9 +2907,9 @@ namespace TowseyLibrary
         public static List<Pen> GetRedGradientPalette()
         {
             var pens = new List<Pen>();
-            for (int c = 0; c < 256; c++)
+            for (byte c = 0; c < 256; c++)
             {
-                pens.Add(new Pen(Color.FromArgb(255, c, c)));
+                pens.Add(new Pen(Color.FromRgb(255, c, c), 1f));
             }
 
             return pens;
@@ -2990,28 +2924,28 @@ namespace TowseyLibrary
         public static List<Pen> GetColorPalette(int paletteSize)
         {
             var pens = new List<Pen>();
-            pens.Add(new Pen(Color.Pink));
-            pens.Add(new Pen(Color.Red));
-            pens.Add(new Pen(Color.Orange));
-            pens.Add(new Pen(Color.Yellow));
-            pens.Add(new Pen(Color.Green));
-            pens.Add(new Pen(Color.Blue));
-            pens.Add(new Pen(Color.Crimson));
-            pens.Add(new Pen(Color.LimeGreen));
-            pens.Add(new Pen(Color.Tomato));
+            pens.Add(new Pen(Color.Pink, 1f));
+            pens.Add(new Pen(Color.Red, 1f));
+            pens.Add(new Pen(Color.Orange, 1f));
+            pens.Add(new Pen(Color.Yellow, 1f));
+            pens.Add(new Pen(Color.Green, 1f));
+            pens.Add(new Pen(Color.Blue, 1f));
+            pens.Add(new Pen(Color.Crimson, 1f));
+            pens.Add(new Pen(Color.LimeGreen, 1f));
+            pens.Add(new Pen(Color.Tomato, 1f));
 
-            //pens.Add(new Pen(Color.Indigo));
-            pens.Add(new Pen(Color.Violet));
+            //pens.Add(new Pen(Color.Indigo, 1));
+            pens.Add(new Pen(Color.Violet, 1f));
 
             //now add random coloured pens
             int max = 255;
-            var rn = new RandomNumber(1234567);
+            var rn = new RandomNumber();
             for (int c = 10; c <= paletteSize; c++)
             {
-                int rd = rn.GetInt(max);
-                int gr = rn.GetInt(max);
-                int bl = rn.GetInt(max);
-                pens.Add(new Pen(Color.FromArgb(rd, gr, bl)));
+                byte rd = (byte)rn.GetInt(max);
+                byte gr = (byte)rn.GetInt(max);
+                byte bl = (byte)rn.GetInt(max);
+                pens.Add(new Pen(Color.FromRgb(rd, gr, bl), 1f));
             }
 
             return pens;
@@ -3039,31 +2973,30 @@ namespace TowseyLibrary
                 width = 3;
             }
 
-            Bitmap colorScale = new Bitmap(colourCount * patchWidth, ht);
-            Graphics gr = Graphics.FromImage(colorScale);
+            Image colorScale = new Image<Rgb24>(colourCount * patchWidth, ht);
+            
             int offset = width + 1;
             if (width < 5)
             {
                 offset = width;
             }
 
-            Bitmap colorBmp = new Bitmap(width - 1, ht);
-            Graphics gr2 = Graphics.FromImage(colorBmp);
+            Image<Rgb24> colorBmp = new Image<Rgb24>(width - 1, ht);
             Color c;
             int x = 0;
 
             for (int i = 0; i < colourCount; i++)
             {
-                //c = Color.FromArgb(250, 15, 250);
-                gr2.Clear(colorArray[i]);
+                //c = Color.FromRgb(250, 15, 250);
+                colorBmp.Mutate(o => o.Fill(colorArray[i]));
 
                 //int x = 0;
-                gr.DrawImage(colorBmp, x, 0); //dra
+                colorScale.Mutate(o => o.DrawImage(colorBmp, new Point(x, 0), 1f)); //dra
 
-                //c = Color.FromArgb(250, 15, 15);
+                //c = Color.FromRgb(250, 15, 15);
                 //gr2.Clear(c);
                 x += patchWidth;
-                gr.DrawImage(colorBmp, x, 0); //dra
+                colorScale.Mutate(o => o.DrawImage(colorBmp, new Point(x, 0), 1f)); //dra
             }
 
             return colorScale;
@@ -3076,9 +3009,9 @@ namespace TowseyLibrary
         {
             int max = 256;
             Color[] grayScale = new Color[256];
-            for (int c = 0; c < max; c++)
+            for (byte c = 0; c < max; c++)
             {
-                grayScale[c] = Color.FromArgb(c, c, c);
+                grayScale[c] = Color.FromRgb(c, c, c);
             }
 
             return grayScale;
@@ -3088,9 +3021,9 @@ namespace TowseyLibrary
         {
             int max = 256;
             Color[] greenScale = new Color[256];
-            for (int c = 0; c < max; c++)
+            for (byte c = 0; c < max; c++)
             {
-                greenScale[c] = Color.FromArgb(0, c, 0);
+                greenScale[c] = Color.FromRgb(0, c, 0);
             }
 
             return greenScale;
@@ -3139,7 +3072,7 @@ namespace TowseyLibrary
         public static void DrawMatrix(byte[,] mBytes, string pathName)
         {
             double[,] matrix = ByteMatrix2DoublesMatrix(mBytes);
-            Image bmp = DrawNormalisedMatrix(matrix);
+            var bmp = DrawNormalisedMatrix(matrix);
             bmp.Save(pathName);
         }
 
@@ -3155,7 +3088,7 @@ namespace TowseyLibrary
                 matrix[0, i] = vector[i];
             }
 
-            Image bmp = DrawNormalisedMatrix(matrix);
+            Image<Rgb24> bmp = DrawNormalisedMatrix(matrix);
             bmp.Save(pathName);
         }
 
@@ -3166,13 +3099,13 @@ namespace TowseyLibrary
         /// <param name="pathName"></param>
         public static void DrawMatrix(double[,] matrix, string pathName)
         {
-            Image bmp = DrawNormalisedMatrix(matrix);
+            Image<Rgb24> bmp = DrawNormalisedMatrix(matrix);
             bmp.Save(pathName);
         }
 
         public static void DrawMatrix(double[,] matrix, double lowerBound, double upperBound, string pathName)
         {
-            Image bmp = DrawNormalisedMatrix(matrix, lowerBound, upperBound);
+            Image<Rgb24> bmp = DrawNormalisedMatrix(matrix, lowerBound, upperBound);
             bmp.Save(pathName);
         }
 
@@ -3181,13 +3114,13 @@ namespace TowseyLibrary
         /// </summary>
         /// <param name="matrix">the data</param>
         /// <param name="pathName"></param>
-        public static Image DrawNormalisedMatrix(double[,] matrix)
+        public static Image<Rgb24> DrawNormalisedMatrix(double[,] matrix)
         {
             double[,] norm = DataTools.normalise(matrix);
             return DrawMatrixWithoutNormalisation(norm);
         }
 
-        public static Image DrawNormalisedMatrix(double[,] matrix, double lowerBound, double upperBound)
+        public static Image<Rgb24> DrawNormalisedMatrix(double[,] matrix, double lowerBound, double upperBound)
         {
             double[,] norm = DataTools.NormaliseInZeroOne(matrix, lowerBound, upperBound);
             return DrawMatrixWithoutNormalisation(norm);
@@ -3197,7 +3130,7 @@ namespace TowseyLibrary
         /// Draws matrix after first normalising the data
         /// </summary>
         /// <param name="matrix">the data</param>
-        public static Image DrawReversedMatrix(double[,] matrix)
+        public static Image<Rgb24> DrawReversedMatrix(double[,] matrix)
         {
             double[,] norm = DataTools.normalise(matrix);
             return DrawReversedMatrixWithoutNormalisation(norm);
@@ -3209,14 +3142,14 @@ namespace TowseyLibrary
         /// </summary>
         /// <param name="matrix">the data</param>
         /// <param name="pathName"></param>
-        public static Image DrawReversedMatrixWithoutNormalisation(double[,] matrix)
+        public static Image<Rgb24> DrawReversedMatrixWithoutNormalisation(double[,] matrix)
         {
             int rows = matrix.GetLength(0); //number of rows
             int cols = matrix.GetLength(1); //number
 
             Color[] grayScale = GrayScale();
 
-            Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
+            Image<Rgb24> bmp = new Image<Rgb24>(cols, rows);
             int greyId = 0;
 
             for (int r = 0; r < rows; r++)
@@ -3245,7 +3178,7 @@ namespace TowseyLibrary
                         greyId = 255 - greyId; // reverse image - want high values in black, low values in white
                     }
 
-                    bmp.SetPixel(c, r, grayScale[greyId]);
+                    bmp[c, r] =  grayScale[greyId];
                 }//end all columns
             }
 
@@ -3257,14 +3190,14 @@ namespace TowseyLibrary
         /// Assume some form of normalisation already done.
         /// </summary>
         /// <param name="matrix">the data</param>
-        public static Image DrawMatrixWithoutNormalisation(double[,] matrix)
+        public static Image<Rgb24> DrawMatrixWithoutNormalisation(double[,] matrix)
         {
             int rows = matrix.GetLength(0); //number of rows
             int cols = matrix.GetLength(1); //number
 
             Color[] grayScale = GrayScale();
 
-            Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
+            var bmp = new Image<Rgb24>(cols, rows);
 
             for (int r = 0; r < rows; r++)
             {
@@ -3284,21 +3217,21 @@ namespace TowseyLibrary
                         }
                     }
 
-                    bmp.SetPixel(c, r, grayScale[greyId]);
+                    bmp[c, r] = grayScale[greyId];
                 }//end all columns
             }
 
             return bmp;
         }
 
-        public static Image DrawMatrixWithoutNormalisationGreenScale(double[,] matrix)
+        public static Image<Rgb24> DrawMatrixWithoutNormalisationGreenScale(double[,] matrix)
         {
             int rows = matrix.GetLength(0); //number of rows
             int cols = matrix.GetLength(1); //number
 
             Color[] grayScale = GreenScale();
 
-            Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
+            var bmp = new Image<Rgb24>(cols, rows);
 
             for (int r = 0; r < rows; r++)
             {
@@ -3318,19 +3251,19 @@ namespace TowseyLibrary
                         }
                     }
 
-                    bmp.SetPixel(c, r, grayScale[greyId]);
+                    bmp[c, r] =  grayScale[greyId];
                 } //end all columns
             } //end all rows
 
             return bmp;
         }
 
-        public static Image DrawRGBMatrix(double[,] matrixR, double[,] matrixG, double[,] matrixB)
+        public static Image<Rgb24> DrawRGBMatrix(double[,] matrixR, double[,] matrixG, double[,] matrixB)
         {
             int rows = matrixR.GetLength(0); //number of rows
             int cols = matrixR.GetLength(1); //number
 
-            Bitmap bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
+            var bmp = new Image<Rgb24>(cols, rows);
 
             for (int r = 0; r < rows; r++)
             {
@@ -3375,7 +3308,7 @@ namespace TowseyLibrary
                         }
                     }
 
-                    bmp.SetPixel(c, r, Color.FromArgb(R, G, B));
+                    bmp[c, r] = Color.FromRgb((byte)R, (byte)G, (byte)B);
                 }//end all columns
             }//end all rows
 
@@ -3385,36 +3318,40 @@ namespace TowseyLibrary
         /// <summary>
         /// Draws horizontal gridlines on Image
         /// </summary>
-        public static Image DrawYaxisScale(Image image, int scaleWidth, double yInterval, double yTicInterval, int yOffset)
+        public static Image<Rgb24> DrawYaxisScale(Image<Rgb24> image, int scaleWidth, double yInterval, double yTicInterval, int yOffset)
         {
             int ticCount = (int)(image.Height / yTicInterval);
-            var pen = new Pen(Color.White);
-            var stringFont = new Font("Arial", 10);
+            var pen = new Pen(Color.White, 1f);
+            var font = Drawing.Arial10;
 
-            var g = Graphics.FromImage(image);
-            for (int i = 1; i <= ticCount; i++)
+            image.Mutate(g => { 
+                
+                for (int i = 1; i <= ticCount; i++)
+                {
+                    int y1 = image.Height - (int)(i * yTicInterval) + yOffset;
+                    
+                    g.DrawLine(pen, 0, y1, image.Width - 1, y1);
+                    string value = Math.Round(yInterval * i).ToString();
+                    g.DrawText(value, font, Color.White, new PointF(2, y1 + 1));
+                }
+            });
+
+            Image<Rgb24> yAxisImage = new Image<Rgb24>(scaleWidth, image.Height);
+            yAxisImage.Mutate(g =>
             {
-                int y1 = image.Height - (int)(i * yTicInterval) + yOffset;
-                g.DrawLine(pen, 0, y1, image.Width - 1, y1);
-                string value = Math.Round(yInterval * i).ToString();
-                g.DrawString(value, stringFont, Brushes.White, new PointF(2, y1 + 1));
-            }
+                pen = new Pen(Color.Black, 1.0f);
+                g.Fill(Color.LightGray);
+                for (int i = 1; i <= ticCount; i++)
+                {
+                    int y1 = yAxisImage.Height - (int)(i * yTicInterval) + yOffset;
+                    g.DrawLine(pen, 0, y1, scaleWidth - 1, y1);
+                    g.DrawLine(pen, 0, y1 - 1, scaleWidth - 1, y1 - 1);
+                }
 
-            Image yAxisImage = new Bitmap(scaleWidth, image.Height);
-            g = Graphics.FromImage(yAxisImage);
-            pen = new Pen(Color.Black);
-            g.Clear(Color.LightGray);
-            for (int i = 1; i <= ticCount; i++)
-            {
-                int y1 = yAxisImage.Height - (int)(i * yTicInterval) + yOffset;
-                g.DrawLine(pen, 0, y1, scaleWidth - 1, y1);
-                g.DrawLine(pen, 0, y1 - 1, scaleWidth - 1, y1 - 1);
-            }
+                g.DrawRectangle(pen, 0, 0, scaleWidth - 1, image.Height - 1);
+            });
 
-            g.DrawRectangle(pen, 0, 0, scaleWidth - 1, image.Height - 1);
-            Image[] array = new Image[2];
-            array[0] = yAxisImage;
-            array[1] = image;
+            var array = new Image<Rgb24>[] {yAxisImage, image};
             return CombineImagesInLine(array);
         }
 
@@ -3422,39 +3359,42 @@ namespace TowseyLibrary
         /// assumes the y-axis has already been drawn already.
         /// Therefore require an offset at bottom left to accommodate the width of the y-axis.
         /// </summary>
-        public static Image DrawXaxisScale(Image image, int scaleHeight, double xInterval, double xTicInterval, int yScalePadding, int xOffset)
+        public static Image<Rgb24> DrawXaxisScale(Image<Rgb24> image, int scaleHeight, double xInterval, double xTicInterval, int yScalePadding, int xOffset)
         {
             int ticCount = (int)((image.Width - scaleHeight) / xTicInterval);
-            var pen = new Pen(Color.White);
-            var stringFont = new Font("Arial", 10);
-            var g = Graphics.FromImage(image);
+            var pen = new Pen(Color.White, 1f);
+            var font = Drawing.Arial10;
 
-            // draw on the grid lines
-            for (int i = 1; i <= ticCount; i++)
-            {
-                int x1 = yScalePadding + (int)(i * xTicInterval) + xOffset;
-                g.DrawLine(pen, x1, 0, x1, image.Height - 1);
-            }
+            image.Mutate(g => {
+                // draw on the grid lines
+                for (int i = 1; i <= ticCount; i++)
+                {
+                    int x1 = yScalePadding + (int)(i * xTicInterval) + xOffset;
+                    g.DrawLine(pen, x1, 0, x1, image.Height - 1);
+                }
+            });
 
             // create the x-axis scale
-            Image scaleImage = new Bitmap(image.Width, scaleHeight);
-            g = Graphics.FromImage(scaleImage);
-            pen = new Pen(Color.Black);
-            g.Clear(Color.LightGray);
-            for (int i = 0; i <= ticCount; i++)
+            var scaleImage = new Image<Rgb24>(image.Width, scaleHeight);
+            scaleImage.Mutate(g =>
             {
-                int x1 = yScalePadding + (int)(i * xTicInterval) + xOffset;
-                g.DrawLine(pen, x1, 0, x1, scaleHeight - 1);
-                //g.DrawLine(pen, x1 + 1, 0, x1 + 1, scaleHeight - 1);
+                pen = new Pen(Color.Black, 1f);
+                g.Clear(Color.LightGray);
+                for (int i = 0; i <= ticCount; i++)
+                {
+                    int x1 = yScalePadding + (int)(i * xTicInterval) + xOffset;
+                    g.DrawLine(pen, x1, 0, x1, scaleHeight - 1);
 
-                string value = Math.Round(xInterval * i).ToString();
-                g.DrawString(value, stringFont, Brushes.Black, new PointF(x1, 0));
-            }
+                    //g.DrawLine(pen, x1 + 1, 0, x1 + 1, scaleHeight - 1);
 
-            g.DrawRectangle(pen, 0, 0, image.Width - 1, scaleHeight - 1);
-            var array = new Image[2];
-            array[0] = image;
-            array[1] = scaleImage;
+                    string value = Math.Round(xInterval * i).ToString();
+                    g.DrawText(value, font, Color.Black, new PointF(x1, 0));
+                }
+
+                g.DrawRectangle(pen, 0, 0, image.Width - 1, scaleHeight - 1);
+            });
+
+            var array = new[] { image, scaleImage };
             return CombineImagesVertically(array);
         }
 
@@ -3493,7 +3433,7 @@ namespace TowseyLibrary
 
             Color[] grayScale = GrayScale();
 
-            var bmp = new Bitmap(Xpixels, Ypixels, PixelFormat.Format24bppRgb);
+            var bmp = new Image<Rgb24>(Xpixels, Ypixels);
 
             double[,] norm = DataTools.normalise(matrix);
             for (int r = 0; r < rows; r++)
@@ -3512,7 +3452,7 @@ namespace TowseyLibrary
                     {
                         for (int y = 0; y < YpixelsPerCell; y++)
                         {
-                            bmp.SetPixel(xOffset + x, yOffset + y, grayScale[greyId]);
+                            bmp[xOffset + x, yOffset + y] = grayScale[greyId];
                         }
                     }
                 }
@@ -3550,10 +3490,11 @@ namespace TowseyLibrary
             int cols = 1;
             int yPixelCount = cellWidth * rows;
             int xPixelCount = cellWidth;
-            Bitmap bmp = new Bitmap(xPixelCount, yPixelCount, PixelFormat.Format24bppRgb);
+            var bmp = new Image<Rgb24>(xPixelCount, yPixelCount);
 
             // Can comment next two lines if want black
-            Graphics g = Graphics.FromImage(bmp);
+            var converter = new ColorSpaceConverter();
+            bmp.Mutate(g => { 
             g.Clear(Color.Gray);
 
             for (int r = 0; r < rows; r++)
@@ -3570,23 +3511,25 @@ namespace TowseyLibrary
                     // double saturation = norm[r, c] * 0.5;
                     // double saturation = (1 - norm[r, c]) * 0.5;
                     double saturation = 1.0;
-                    var myHsv = new Hsv { H = hue, S = saturation, V = 1.0 };
-                    var myRgb = myHsv.To<Rgb>();
+                    var myHsv = new Hsv(hue, (float)saturation, 1.0f);
+                    var myRgb = converter.ToRgb(myHsv);
 
                     // use black as background zero colour rather than blue
                     if (myRgb.B < 255.0)
                     {
-                        var colour = Color.FromArgb((int)myRgb.R, (int)myRgb.G, (int)myRgb.B / 3);
+                        var colour =  new Rgb(myRgb.R, myRgb.G, myRgb.B / 3);
                         for (int x = 0; x < cellWidth; x++)
                         {
                             for (int y = 0; y < cellWidth; y++)
                             {
-                                bmp.SetPixel(xOffset + x, yOffset + y, colour);
+                                bmp[xOffset + x, yOffset + y] = colour;
                             }
                         }
                     }
                 }
             }
+
+            });
 
             return bmp;
         }
@@ -3604,13 +3547,13 @@ namespace TowseyLibrary
         /// <param name="vector">the vector of normalised values</param>
         /// <param name="cellWidth">the width of the image</param>
         /// <param name="cellHeight">the height of each image row</param>
-        public static Image DrawVectorInGrayScaleWithoutNormalisation(double[] vector, int cellWidth, int cellHeight, bool reverse)
+        public static Image<Rgb24> DrawVectorInGrayScaleWithoutNormalisation(double[] vector, int cellWidth, int cellHeight, bool reverse)
         {
             int rows = vector.Length;
             int cols = 1;
             int yPixelCount = cellHeight * rows;
             int xPixelCount = cellWidth;
-            var bmp = new Bitmap(xPixelCount, yPixelCount, PixelFormat.Format24bppRgb);
+            var bmp = new Image<Rgb24>(xPixelCount, yPixelCount);
 
             for (int r = 0; r < rows; r++)
             {
@@ -3620,22 +3563,22 @@ namespace TowseyLibrary
                     int yOffset = cellHeight * r;
 
                     // use reverse gray scale i.e. white = low value, black = high value
-                    int gray;
+                    byte gray;
                     if (reverse)
                     {
-                        gray = (int)Math.Floor(255 * vector[r]);
+                        gray = (byte)Math.Floor(255 * vector[r]);
                     }
                     else
                     {
-                        gray = 255 - (int)Math.Floor(255 * vector[r]);
+                        gray = (byte)(255 - (int)Math.Floor(255 * vector[r]));
                     }
 
-                    var colour = Color.FromArgb(gray, (int)gray, (int)gray);
+                    var colour = Color.FromRgb(gray, gray, gray);
                     for (int x = 0; x < xPixelCount; x++)
                     {
                         for (int y = 0; y < cellHeight; y++)
                         {
-                            bmp.SetPixel(xOffset + x, yOffset + y, colour);
+                            bmp[xOffset + x, yOffset + y] = colour;
                         }
                     }
                 }
@@ -3656,8 +3599,9 @@ namespace TowseyLibrary
             int cols = matrix.GetLength(1);
             int yPixelCount = yPixelsPerCell * rows;
             int xPixelCount = xPixelsPerCell * cols;
-            Bitmap bmp = new Bitmap(xPixelCount, yPixelCount, PixelFormat.Format24bppRgb);
+            var bmp = new Image<Rgb24>(xPixelCount, yPixelCount);
 
+            var converter = new ColorSpaceConverter();
             for (int r = 0; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
@@ -3673,18 +3617,18 @@ namespace TowseyLibrary
                     // double saturation = norm[r, c] * 0.5;
                     // double saturation = (1 - norm[r, c]) * 0.5;
                     double saturation = 1.0;
-                    var myHsv = new Hsv { H = hue, S = saturation, V = 1.0 };
-                    var myRgb = myHsv.To<Rgb>();
+                    var myHsv = new Hsv(hue,(float)saturation, 1.0f);
+                    var myRgb = converter.ToRgb(myHsv);
 
                     // use black as background zero colour rather than blue
                     if (myRgb.B < 255.0)
                     {
-                        var colour = Color.FromArgb((int)myRgb.R, (int)myRgb.G, (int)myRgb.B / 3);
+                        var colour = new Rgb(myRgb.R, myRgb.G, myRgb.B / 3);
                         for (int x = 0; x < xPixelsPerCell; x++)
                         {
                             for (int y = 0; y < yPixelsPerCell; y++)
                             {
-                                bmp.SetPixel(xOffset + x, yOffset + y, colour);
+                                bmp[xOffset + x, yOffset + y] = colour;
                             }
                         }
                     }
@@ -3707,14 +3651,14 @@ namespace TowseyLibrary
         /// <param name="xPixelsPerCell">X axis scale - pixels per cell</param>
         /// <param name="yPixelsPerCell">Y axis scale - pixels per cell</param>
         /// <param name="reverse">determines black on white or white on black</param>
-        public static Bitmap DrawMatrixInGrayScale(double[,] matrix, int xPixelsPerCell, int yPixelsPerCell, bool reverse)
+        public static Image<Rgb24> DrawMatrixInGrayScale(double[,] matrix, int xPixelsPerCell, int yPixelsPerCell, bool reverse)
         {
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
             int Ypixels = yPixelsPerCell * rows;
             int Xpixels = xPixelsPerCell * cols;
             Color[] grayScale = GrayScale();
-            var bmp = new Bitmap(Xpixels, Ypixels, PixelFormat.Format24bppRgb);
+            var bmp = new Image<Rgb24>(Xpixels, Ypixels);
 
             double[,] norm = DataTools.normalise(matrix);
             for (int r = 0; r < rows; r++)
@@ -3738,7 +3682,7 @@ namespace TowseyLibrary
                     {
                         for (int y = 0; y < yPixelsPerCell; y++)
                         {
-                            bmp.SetPixel(xOffset + x, yOffset + y, grayScale[colorId]);
+                            bmp[xOffset + x, yOffset + y] = grayScale[colorId];
                         }
                     }
                 }
@@ -3751,14 +3695,18 @@ namespace TowseyLibrary
         /// Stacks the passed images one on top of the other.
         /// Assumes that all images have the same width.
         /// </summary>
-        public static Image CombineImagesVertically(List<Image> list)
+        public static Image<T> CombineImagesVertically<T>(List<Image<T>> list) where T : struct, IPixel<T>
         {
             return CombineImagesVertically(list.ToArray());
         }
 
-        public static Image CombineImagesVertically(List<Image> list, int maxWidth)
+        public static Image<T> CombineImagesVertically<T>(List<Image<T>> list, int maxWidth) where T : struct, IPixel<T>
         {
             return CombineImagesVertically(list.ToArray(), maxWidth);
+        }
+        public static Image<T> CombineImagesVertically<T>(params Image<T>[] images) where T : struct, IPixel<T>
+        {
+            return CombineImagesVertically<T>(images);
         }
 
         /// <summary>
@@ -3768,7 +3716,7 @@ namespace TowseyLibrary
         /// <param name="array"></param>
         /// <param name="maximumWidth">The maximum width of the output images</param>
         /// <returns></returns>
-        public static Image CombineImagesVertically(Image[] array, int? maximumWidth = null)
+        public static Image<T> CombineImagesVertically<T>(Image<T>[] array, int? maximumWidth = null) where T : struct, IPixel<T>
         {
             int width = maximumWidth ?? array[0].Width;   // assume all images have the same width
 
@@ -3783,23 +3731,24 @@ namespace TowseyLibrary
                 compositeHeight += array[i].Height;
             }
 
-            Bitmap compositeBmp = new Bitmap(width, compositeHeight, PixelFormat.Format24bppRgb);
+            var compositeBmp = new Image<T>(width, compositeHeight);
             int yOffset = 0;
-            Graphics gr = Graphics.FromImage(compositeBmp);
+            compositeBmp.Mutate(gr => {
 
-            //gr.Clear(Color.Black);
-            gr.Clear(Color.DarkGray);
+                //gr.Clear(Color.Black);
+                gr.Clear(Color.DarkGray);
 
-            for (int i = 0; i < array.Length; i++)
-            {
-                if (null == array[i])
+                for (int i = 0; i < array.Length; i++)
                 {
-                    continue;
-                }
+                    if (null == array[i])
+                    {
+                        continue;
+                    }
 
-                gr.DrawImage(array[i], 0, yOffset); //draw in the top image
-                yOffset += array[i].Height;
-            }
+                    gr.DrawImage(array[i], 0, yOffset); //draw in the top image
+                    yOffset += array[i].Height;
+                }
+            });
 
             return compositeBmp;
         }
@@ -3810,7 +3759,7 @@ namespace TowseyLibrary
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
-        public static Image CombineImagesInLine(List<Image> list)
+        public static Image<T> CombineImagesInLine<T>(List<Image<T>> list) where T : struct, IPixel<T>
         {
             return CombineImagesInLine(list.ToArray());
         }
@@ -3821,7 +3770,7 @@ namespace TowseyLibrary
         /// </summary>
         /// <param name="array"></param>
         /// <returns></returns>
-        public static Image CombineImagesInLine(Image[] array)
+        public static Image<T> CombineImagesInLine<T>(params Image<T>[] array) where T : struct, IPixel<T>
         {
             int height = array[0].Height; // assume all images have the same height
 
@@ -3835,21 +3784,21 @@ namespace TowseyLibrary
                 }
             }
 
-            //Bitmap compositeBmp = new Bitmap(compositeWidth, height, PixelFormat.Format24bppRgb);
-            var compositeBmp = new Bitmap(compositeWidth, height);
+            //Image compositeBmp = new Image(compositeWidth, height);
+            var compositeBmp = new Image<T>(compositeWidth, height);
             int xOffset = 0;
-            Graphics gr = Graphics.FromImage(compositeBmp);
-            gr.Clear(Color.Black);
+            compositeBmp.Mutate(x => {
+                x.Fill(Color.Black);
 
-            for (int i = 0; i < array.Length; i++)
-            {
-                gr.DrawImage(array[i], xOffset, 0); //draw in the top spectrogram
-                xOffset += array[i].Width;
+                for (int i = 0; i < array.Length; i++)
+                {
+                    x.DrawImage(array[i], new Point(xOffset, 0), 1f); //draw in the top spectrogram
+                    xOffset += array[i].Width;
 
-                //string name = String.Format("TESTIMAGE" + i + ".png");
-                //array[i].Save(Path.Combine(@"C:\SensorNetworks\Output\Frommolt\ConcatImageOutput", name));
-            }
-
+                    //string name = String.Format("TESTIMAGE" + i + ".png");
+                    //array[i].Save(Path.Combine(@"C:\SensorNetworks\Output\Frommolt\ConcatImageOutput", name));
+                }
+            });
             // this was done in Berlin beacuse could not get images to save properly.
 
             //string fileName2 = String.Format("TESTIMAGE3.png");
@@ -3941,7 +3890,7 @@ namespace TowseyLibrary
         ///       hence the avoidance of outliers and references to freq bins.
         /// Perhaps this method should be put back in BaseSonogram.cs.
         /// </summary>
-        public static Image GetMatrixImage(double[,] data)
+        public static Image<Rgb24> GetMatrixImage(double[,] data)
         {
             int width = data.GetLength(0); // Number of spectra in sonogram
             int binCount = data.GetLength(1);
@@ -3963,7 +3912,7 @@ namespace TowseyLibrary
             double range = max - min;
 
             Color[] grayScale = GrayScale();
-            var bmp = new Bitmap(width, imageHeight, PixelFormat.Format24bppRgb);
+            var bmp = new Image<Rgb24>(width, imageHeight);
             int yOffset = imageHeight;
 
             // over all freq bins
@@ -3987,7 +3936,7 @@ namespace TowseyLibrary
                             c = 255;
                         }
 
-                        bmp.SetPixel(x, yOffset - 1, grayScale[c]);
+                        bmp[x, yOffset - 1] = grayScale[c];
                     } //for all pixels in line
 
                     yOffset--;
@@ -3997,7 +3946,7 @@ namespace TowseyLibrary
             return bmp;
         }
 
-        public static Dictionary<Color, double> GetColorHistogramNormalized(Bitmap image, Rectangle? region = null)
+        public static Dictionary<Color, double> GetColorHistogramNormalized(Image<Rgb24> image, Rectangle? region = null)
         {
             Rectangle definiteRegion = region ?? new Rectangle(0, 0, image.Width, image.Height);
             var histogram = new Dictionary<Color, int>(100);
@@ -4008,7 +3957,7 @@ namespace TowseyLibrary
             {
                 for (var j = definiteRegion.Top; j < definiteRegion.Bottom; j++)
                 {
-                    var color = image.GetPixel(i, j);
+                    var color = image[i, j];
                     if (histogram.ContainsKey(color))
                     {
                         histogram[color] = histogram[color] + 1;

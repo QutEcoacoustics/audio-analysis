@@ -1,4 +1,4 @@
-﻿// <copyright file="EventStatistics.cs" company="QutEcoacoustics">
+// <copyright file="EventStatistics.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -159,7 +159,7 @@ namespace AudioAnalysisTools.EventStatistics
         {
             public EventStatisticsClassMap()
             {
-                this.AutoMap();
+                this.AutoMap(Csv.DefaultConfiguration);
 
                 var ordered = new Dictionary<string, int>()
                 {
@@ -174,7 +174,7 @@ namespace AudioAnalysisTools.EventStatistics
                 };
 
                 var index = 6;
-                foreach (var propertyMap in this.PropertyMaps.OrderBy(x => x.Data.Names.First()))
+                foreach (var propertyMap in this.MemberMaps.OrderBy(x => x.Data.Names.First()))
                 {
                     var name = propertyMap.Data.Names.First();
 
@@ -184,7 +184,7 @@ namespace AudioAnalysisTools.EventStatistics
                     }
 
                     if (name == nameof(EventBase.LowFrequencyHertz) &&
-                        propertyMap.Data.Property.DeclaringType == typeof(EventBase))
+                        propertyMap.Data.Member.DeclaringType == typeof(EventBase))
                     {
                         propertyMap.Ignore();
                     }

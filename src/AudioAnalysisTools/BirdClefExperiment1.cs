@@ -6,12 +6,13 @@ namespace AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using System.Text;
     using Acoustics.Shared;
     using Indices;
+    using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
 
     /// <summary>
@@ -218,8 +219,7 @@ namespace AudioAnalysisTools
 
                     if (file.Exists)
                     {
-                        int binCount;
-                        double[,] matrix = IndexMatrices.ReadSpectrogram(file, out binCount);
+                        double[,] matrix = IndexMatrices.ReadSpectrogram(file, out var binCount);
 
                         // create or get the array of spectral values.
                         double[] aggregateArray = new double[reducedSpectralLength];
@@ -388,7 +388,7 @@ namespace AudioAnalysisTools
                 double[] ipVector = MatrixTools.GetRow(output.SpeciesFeatureMatrix, r);
 
                 // now make images
-                var images = new List<Image>();
+                var images = new List<Image<Rgb24>>();
                 int featureID = 0;
                 foreach (string key in keyArray)
                 {
@@ -404,11 +404,11 @@ namespace AudioAnalysisTools
                     vector = DataTools.Normalise2Probabilites(vector);
                     vector = DataTools.filterMovingAverage(vector, 3);
                     string label = $"{r + 1} {key} ({output.InstanceNumbersPerSpecies[r]})";
-                    Image image = GraphsAndCharts.DrawGraph(label, vector, output.ReducedSpectralLength, imageHeight, scalingFactor);
+                    var image = GraphsAndCharts.DrawGraph(label, vector, output.ReducedSpectralLength, imageHeight, scalingFactor);
                     images.Add(image);
                 }
 
-                Image combinedImage = ImageTools.CombineImagesVertically(images);
+                var combinedImage = ImageTools.CombineImagesVertically(images);
                 string outputFileName = $"Species{r + 1}.SpectralFeatures.png";
                 string path = Path.Combine(arguments.OutputDirectory.FullName, outputFileName);
                 combinedImage.Save(path);

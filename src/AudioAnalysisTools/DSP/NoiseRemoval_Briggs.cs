@@ -1,4 +1,4 @@
-﻿// <copyright file="NoiseRemoval_Briggs.cs" company="QutEcoacoustics">
+// <copyright file="NoiseRemoval_Briggs.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -6,12 +6,12 @@ namespace AudioAnalysisTools.DSP
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.Linq;
     using System.Text;
 
     using AudioAnalysisTools.StandardSpectrograms;
-
+    using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
 
     public static class NoiseRemoval_Briggs
@@ -241,16 +241,16 @@ namespace AudioAnalysisTools.DSP
             //double[,] m = NoiseRemoval_Briggs.BriggsNoiseFilter(matrix, percentileThreshold);
             double[,] m = NoiseReduction_byDivisionAndSqrRoot(matrix, percentileThreshold);
 
-            List<Image> images = new List<Image>();
+           var images = new List<Image<Rgb24>>();
 
             string title = "TITLE ONE";
-            Image image1 = DrawSonogram(m, recordingDuration, X_AxisInterval, stepDuration, nyquist, herzInterval, title);
+            var image1 = DrawSonogram(m, recordingDuration, X_AxisInterval, stepDuration, nyquist, herzInterval, title);
             images.Add(image1);
 
             m = ImageTools.WienerFilter(m, 7); //Briggs uses 17
             m = MatrixTools.SubtractAndTruncate2Zero(m, 1.0);
             title = "TITLE TWO";
-            Image image2 = DrawSonogram(m, recordingDuration, X_AxisInterval, stepDuration, nyquist, herzInterval, title);
+            var image2 = DrawSonogram(m, recordingDuration, X_AxisInterval, stepDuration, nyquist, herzInterval, title);
             images.Add(image2);
 
             //int[] histo = Histogram.Histo(m, 100);
@@ -271,7 +271,7 @@ namespace AudioAnalysisTools.DSP
             double binaryThreshold2 = binaryThreshold * 0.8;
             m = MatrixTools.ThresholdMatrix2RealBinary(m, binaryThreshold2);
             title = "TITLE FOUR";
-            Image image4 = DrawSonogram(m, recordingDuration, X_AxisInterval, stepDuration, nyquist, herzInterval, title);
+            var image4 = DrawSonogram(m, recordingDuration, X_AxisInterval, stepDuration, nyquist, herzInterval, title);
             images.Add(image4);
 
             Image combinedImage = ImageTools.CombineImagesVertically(images);
@@ -279,7 +279,7 @@ namespace AudioAnalysisTools.DSP
             return combinedImage;
         }
 
-        public static Image DrawSonogram(double[,] data, TimeSpan recordingDuration, TimeSpan X_interval, TimeSpan xAxisPixelDuration,
+        public static Image<Rgb24> DrawSonogram(double[,] data, TimeSpan recordingDuration, TimeSpan X_interval, TimeSpan xAxisPixelDuration,
                                          int nyquist, int herzInterval, string title)
         {
             // the next two variables determine how the greyscale sonogram image is normalised.
@@ -288,7 +288,7 @@ namespace AudioAnalysisTools.DSP
             int minPercentile = 5;
             int maxPercentile = 10;
 
-            Image image = BaseSonogram.GetSonogramImage(data, minPercentile, maxPercentile);
+            var image = BaseSonogram.GetSonogramImage(data, minPercentile, maxPercentile);
 
             Image titleBar = BaseSonogram.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
             TimeSpan minuteOffset = TimeSpan.Zero;

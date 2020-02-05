@@ -1,4 +1,4 @@
-﻿module Common
+module Common
 
 open System.IO
 
@@ -9,6 +9,8 @@ open System.IO.Compression
 open System.Reflection
 open QutSensors.AudioAnalysis.AED.GetAcousticEvents
 open QutSensors.AudioAnalysis.AED.Util
+open Microsoft.FSharp
+open Microsoft.FSharp.Math
                        
 type TestMetadata = {Dir:string; BWthresh:double; smallThreshIn:int; smallThreshOut:int}
 let BAC2_20071015_045040 =
@@ -112,8 +114,9 @@ let ``matrix parsing test`` () =
 1010101010101010
 1010101010101010
 "
+    
     let expected = 
-        matrix [|
+        MatrixTopLevelOperators.matrix [|
             [|1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0|];
             [|1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0|];
             [|1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0; 1.0; 0.0|];
@@ -150,7 +153,7 @@ let ``matrix order tests for sanities`` () =
 3692
 "
     let mString = pattern |> parseStringAsMatrix
-    let m = matrix [ [1.0;4.0;7.0;0.0]; [2.0;5.0;8.0;1.0]; [3.0;6.0;9.0;2.0]]
+    let m = MatrixTopLevelOperators.matrix [ [1.0;4.0;7.0;0.0]; [2.0;5.0;8.0;1.0]; [3.0;6.0;9.0;2.0]]
     
     Assert.Equal<matrix>(mString, m)
     Assert.Equal(5.0, m.[1,1])

@@ -17,34 +17,29 @@ namespace Acoustics.Shared
     /// </summary>
     public sealed class SunTimes
     {
-        private object mLock = new object();
+        private readonly object mLock = new object();
 
         private const double mDR = Math.PI / 180;
         private const double mK1 = 15 * mDR * 1.0027379;
 
-        private int[] mRiseTimeArr = new int[2] { 0, 0 };
-        private int[] mSetTimeArr = new int[2] { 0, 0 };
+        private readonly int[] mRiseTimeArr = new int[2] { 0, 0 };
+        private readonly int[] mSetTimeArr = new int[2] { 0, 0 };
         private double mRizeAzimuth = 0.0;
         private double mSetAzimuth = 0.0;
 
-        private double[] mSunPositionInSkyArr = new double[2] { 0.0, 0.0 };
-        private double[] mRightAscentionArr = new double[3] { 0.0, 0.0, 0.0 };
-        private double[] mDecensionArr = new double[3] { 0.0, 0.0, 0.0 };
-        private double[] mVHzArr = new double[3] { 0.0, 0.0, 0.0 };
+        private readonly double[] mSunPositionInSkyArr = new double[2] { 0.0, 0.0 };
+        private readonly double[] mRightAscentionArr = new double[3] { 0.0, 0.0, 0.0 };
+        private readonly double[] mDecensionArr = new double[3] { 0.0, 0.0, 0.0 };
+        private readonly double[] mVHzArr = new double[3] { 0.0, 0.0, 0.0 };
 
         private bool mIsSunrise = false;
         private bool mIsSunset = false;
-
-        private static readonly SunTimes MInstance = new SunTimes();    // The singleton instance
 
         private SunTimes()
         {
         }
 
-        public static SunTimes Instance
-        {
-            get { return MInstance; }
-        }
+        public static SunTimes Instance { get; } = new SunTimes();
 
         public abstract class Coords
         {

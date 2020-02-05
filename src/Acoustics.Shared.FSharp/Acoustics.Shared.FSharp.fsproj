@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>Acosutics.Shared.FSharp</RootNamespace>
     <AssemblyName>Acosutics.Shared.FSharp</AssemblyName>
@@ -10,6 +10,7 @@
     <DocumentationFile>bin\$(Configuration)\$(AssemblyName).XML</DocumentationFile>
     <WarningLevel>3</WarningLevel>
     <OutputPath>bin\$(Configuration)\</OutputPath>
+    <Deterministic>false</Deterministic>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>
@@ -19,50 +20,43 @@
     <DebugType>pdbonly</DebugType>
     <Tailcalls>true</Tailcalls>
   </PropertyGroup>
-  <Import Project="$(FSharpTargetsPath)" />
-  <ItemGroup>
-    <PackageReference Include="Accord" Version="2.12.0.0" />
-    <PackageReference Include="Accord.Math" Version="2.12.0.0" />
-    <PackageReference Include="Accord.Statistics" Version="2.12.0.0" />
-    <PackageReference Include="AForge" Version="2.2.5" />
-    <PackageReference Include="AForge.Math" Version="2.2.5" />
+    <ItemGroup>
+    <PackageReference Include="Accord" Version="3.8.2-alpha" />
+    <PackageReference Include="Accord.Math" Version="3.8.2-alpha" />
+    <PackageReference Include="Accord.Statistics" Version="3.8.2-alpha" />
     <PackageReference Include="FSharp.Compiler.Tools" Version="10.2.3" />
-    <PackageReference Include="FSharp.Core" Version="4.3.4" />
-    <PackageReference Include="FSPowerPack.Community" Version="3.0.0.0" />
-    <PackageReference Include="FSPowerPack.Core.Community" Version="3.0.0.0" />
-    <PackageReference Include="FSPowerPack.Linq.Community" Version="3.0.0.0" />
-    <PackageReference Include="FSPowerPack.Metadata.Community" Version="3.0.0.0" />
-    <PackageReference Include="FSPowerPack.Parallel.Seq.Community" Version="3.0.0.0" />
+    <PackageReference Include="FSharp.Core" Version="4.7.0" />
     <PackageReference Include="log4net" Version="2.0.8" />
-    <PackageReference Include="Microsoft.Bcl" Version="1.1.10" />
-    <PackageReference Include="Microsoft.Bcl.Async" Version="1.0.168" />
     <PackageReference Include="Microsoft.Bcl.Build" Version="1.0.21" />
     <PackageReference Include="Microsoft.DotNet.Analyzers.Compatibility" Version="0.2.12-alpha">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="QuickGraph" Version="3.6.61119.7" />
-    <PackageReference Include="StyleCop.Analyzers" Version="1.1.1-beta.61">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="StyleCop.Analyzers.Unstable" Version="1.1.1.61">
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.113">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="mscorlib" />
-    <Reference Include="System.ValueTuple">
-      <HintPath>..\..\packages\System.ValueTuple.4.3.1\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="mscorlib" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System.Net" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Remove="Debug.fs" />
-  </ItemGroup>
+    <ItemGroup>
+        <Compile Include="AssemblyInfo.fs" />
+        <Compile Include="BigRational.fs" />
+        <Compile Include="complex.fs" />
+        <Compile Include="INumeric.fs" />
+        <Compile Include="GlobalAssociations.fs" />
+        <Compile Include="matrix.fs" />
+        <Compile Include="SI.fs" />
+        <Compile Include="Reflection.fs" />
+        <Compile Include="Utilities.fs" />
+        <Compile Include="NumericLiteralG.fs" />
+        <Compile Include="Equality.fs" />
+        <Compile Include="Interval.fs" />
+        <Compile Include="System.fs" />
+        <Compile Include="Microsoft.FSharp.Core.fs" />
+        <Compile Include="Microsoft.FSharp.Collections.Seq.fs" />
+        <Compile Include="Microsoft.FSharp.Collections.Array.fs" />
+        <Compile Include="Microsoft.FSharp.Collections.Maps.fs" />
+        <Compile Include="Microsoft.FSharp.Collections.Set.fs" />
+        <Compile Include="IO.fs" />
+        <Compile Include="Math.fs" />
+        <Compile Include="Mutex.fs" />
+        <Compile Include="Serialization.fs" />
+    </ItemGroup>
 </Project>

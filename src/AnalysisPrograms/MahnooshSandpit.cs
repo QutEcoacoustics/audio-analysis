@@ -1,4 +1,4 @@
-﻿// <copyright file="UnsupervisedFeatureLearningTest.cs" company="QutEcoacoustics">
+// <copyright file="UnsupervisedFeatureLearningTest.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -6,7 +6,7 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
@@ -339,7 +339,7 @@ namespace AnalysisPrograms
 
                     Image image = DecibelSpectrogram.DrawSpectrogramAnnotated(decibelSpectrogram.Data, settings, attributes);
                     string pathToSpectrogramFiles = Path.Combine(resultDir, "Spectrograms", settings.SourceFileName + ".bmp");
-                    image.Save(pathToSpectrogramFiles, ImageFormat.Bmp);
+                    image.Save(pathToSpectrogramFiles);
 
                     // write the matrix to a csv file
                     string pathToMatrixFiles = Path.Combine(resultDir, "Matrices", settings.SourceFileName + ".csv");

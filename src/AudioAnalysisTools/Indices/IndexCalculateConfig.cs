@@ -9,9 +9,10 @@ namespace AudioAnalysisTools.Indices
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.LongDurationSpectrograms;
     using Equ;
-    using Fasterflect;
+    
     using log4net;
     using Newtonsoft.Json;
+    using ObjectCloner.Extensions;
     using YamlDotNet.Serialization;
 
     /// <summary>
@@ -52,7 +53,6 @@ namespace AudioAnalysisTools.Indices
             MemberwiseEqualityComparer<IndexCalculateConfig>.ByFields;
 
         private FreqScaleType frequencyScale;
-        private double indexCalculationDuration = DefaultIndexCalculationDurationInSeconds;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="IndexCalculateConfig"/> class.
@@ -86,19 +86,15 @@ namespace AudioAnalysisTools.Indices
         [JsonIgnore]
         public TimeSpan IndexCalculationDurationTimeSpan
         {
-            get => this.indexCalculationDuration.Seconds();
-            set => this.indexCalculationDuration = value.TotalSeconds;
+            get => this.IndexCalculationDuration.Seconds();
+            set => this.IndexCalculationDuration = value.TotalSeconds;
         }
 
         /// <summary>
         /// Gets or sets the duration of the sub-segment for which indices are calculated.
         /// Default = 60 seconds i.e. same duration as the Segment.
         /// </summary>
-        public double IndexCalculationDuration
-        {
-            get => this.indexCalculationDuration;
-            protected set => this.indexCalculationDuration = value;
-        }
+        public double IndexCalculationDuration { get; protected set; } = DefaultIndexCalculationDurationInSeconds;
 
         /// <summary>
         /// Gets bG noise for any location is calculated by extending the region of index calculation from 5 seconds before start to 5 sec after end of current index interval.
@@ -238,7 +234,7 @@ namespace AudioAnalysisTools.Indices
 
         public override bool Equals(object obj)
         {
-            return Equals(obj as IndexCalculateConfig);
+            return this.Equals(obj as IndexCalculateConfig);
         }
 
         public override int GetHashCode()

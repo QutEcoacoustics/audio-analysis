@@ -17,7 +17,6 @@ namespace Acoustics.Test.Tools
     using Acoustics.Tools.Audio;
     using Acoustics.Tools.Wav;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using MSTestExtensions;
     using TestHelpers;
 
     [TestClass]

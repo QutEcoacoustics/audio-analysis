@@ -13,7 +13,7 @@ namespace Acoustics.Shared.Csv
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.Globalization;
     using System.IO;
     using System.Linq;
@@ -22,9 +22,8 @@ namespace Acoustics.Shared.Csv
     using CsvHelper;
     using CsvHelper.Configuration;
     using CsvHelper.TypeConversion;
-    using Fasterflect;
     using log4net;
-
+    using SixLabors.Primitives;
     using Zio;
     using MissingFieldException = CsvHelper.MissingFieldException;
 

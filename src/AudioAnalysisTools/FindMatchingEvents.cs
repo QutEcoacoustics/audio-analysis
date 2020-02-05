@@ -1,4 +1,4 @@
-﻿// <copyright file="FindMatchingEvents.cs" company="QutEcoacoustics">
+// <copyright file="FindMatchingEvents.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -6,12 +6,13 @@ namespace AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using System.Text;
     using AudioAnalysisTools;
     using DSP;
+    using SixLabors.ImageSharp.PixelFormats;
     using StandardSpectrograms;
     using TowseyLibrary;
 
@@ -19,7 +20,7 @@ namespace AudioAnalysisTools
     {
         public static double[,] ReadImage2BinaryMatrixDouble(string fileName)
         {
-            Bitmap bitmap = ImageTools.ReadImage2Bitmap(fileName);
+            Image<Rgb24> bitmap = Image.Load<Rgb24>(fileName);
             int height = bitmap.Height;  //height
             int width = bitmap.Width;    //width
             var matrix = new double[height, width];
@@ -28,7 +29,7 @@ namespace AudioAnalysisTools
             {
                 for (int c = 0; c < width; c++)
                 {
-                    Color color = bitmap.GetPixel(c, r);
+                    var color = bitmap[c, r];
                     if (color.R < 255 && color.G < 255 && color.B < 255)
                     {
                         matrix[r, c] = 1; // init an ON CELL = +1
@@ -45,7 +46,7 @@ namespace AudioAnalysisTools
 
         public static double[,] ReadImage2TrinaryMatrix(string fileName)
         {
-            Bitmap bitmap = ImageTools.ReadImage2Bitmap(fileName);
+            Image<Rgb24> bitmap = Image.Load<Rgb24>(fileName);
             int height = bitmap.Height;  //height
             int width = bitmap.Width;    //width
             var matrix = new double[height, width];
@@ -54,7 +55,7 @@ namespace AudioAnalysisTools
             {
                 for (int c = 0; c < width; c++)
                 {
-                    Color color = bitmap.GetPixel(c, r);
+                    var color = bitmap[c, r];
                     if (color.R < 255 && color.G < 255 && color.B < 255)
                     {
                         matrix[r, c] = 1;

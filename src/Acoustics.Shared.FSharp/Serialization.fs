@@ -1,4 +1,4 @@
-﻿namespace MQUTeR.FSharp.Shared
+namespace MQUTeR.FSharp.Shared
     // https://gist.github.com/2071722
     module Serialization =
         
@@ -13,7 +13,7 @@
         open System.Xml
         open System.Xml.Serialization
 
-        let toString = System.Text.Encoding.ASCII.GetString
+        let toString : (byte[] -> string) = System.Text.Encoding.ASCII.GetString
         let toBytes (x : string) = System.Text.Encoding.ASCII.GetBytes x
 
         // #region Json

@@ -22,8 +22,7 @@ namespace TowseyLibrary
                 return double.NaN;
             }
 
-            object value;
-            if (this.TryGetValue(keyString, out value))
+            if (this.TryGetValue(keyString, out var value))
             {
                 return (double)value;
             }
@@ -40,8 +39,7 @@ namespace TowseyLibrary
                 return int.MaxValue;
             }
 
-            object value;
-            if (this.TryGetValue(keyString, out value))
+            if (this.TryGetValue(keyString, out var value))
             {
                 return (int)value;
             }
@@ -58,8 +56,7 @@ namespace TowseyLibrary
                 return false;
             }
 
-            object value;
-            if (this.TryGetValue(keyString, out value))
+            if (this.TryGetValue(keyString, out var value))
             {
                 return (bool)value;
             }

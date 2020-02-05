@@ -7,7 +7,7 @@ namespace System.Drawing
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.Linq;
     using System.Text;
 

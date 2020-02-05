@@ -18,24 +18,12 @@ namespace Acoustics.Test
     public class ArrayExtensionsTests
     {
         private const int TestSize = 1000000;
-        private TestContext testContextInstance;
 
         /// <summary>
         /// Gets or sets the test context which provides
         /// information about and functionality for the current test run.
         /// </summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return this.testContextInstance;
-            }
-
-            set
-            {
-                this.testContextInstance = value;
-            }
-        }
+        public TestContext TestContext { get; set; }
 
         [TestMethod]
         public void TestArrayFill()

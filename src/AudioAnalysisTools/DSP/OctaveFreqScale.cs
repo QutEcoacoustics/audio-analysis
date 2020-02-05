@@ -1,4 +1,4 @@
-﻿// <copyright file="OctaveFreqScale.cs" company="QutEcoacoustics">
+// <copyright file="OctaveFreqScale.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -125,8 +125,7 @@ namespace AudioAnalysisTools.DSP
 
             //convert spectrogram to octave scale
             dataMatrix = ConvertLinearSpectrogramToOctaveFreqScale(dataMatrix, freqScale);
-            double min, max;
-            dataMatrix = MatrixTools.Power2DeciBels(dataMatrix, out min, out max);
+            dataMatrix = MatrixTools.Power2DeciBels(dataMatrix, out var min, out var max);
             return dataMatrix;
         }
 
@@ -181,8 +180,7 @@ namespace AudioAnalysisTools.DSP
             double[,] powerSpectra = PowerSpectra(amplitudeM, windowPower, sampleRate, epsilon, freqScale);
 
             // Convert the power values to log using: dB = 10*log(power)
-            double min, max;
-            var decibelSpectra = MatrixTools.Power2DeciBels(powerSpectra, out min, out max);
+            var decibelSpectra = MatrixTools.Power2DeciBels(powerSpectra, out var min, out var max);
             return decibelSpectra;
         }
 

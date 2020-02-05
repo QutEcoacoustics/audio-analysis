@@ -14,10 +14,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using System;
     using System.Collections.Generic;
     using System.Data;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
-    using MoreLinq.Extensions;
+    using SixLabors.ImageSharp.PixelFormats;
+    using SixLabors.ImageSharp.Processing;
     using TowseyLibrary;
 
     public static class LdSpectrogramRibbons
@@ -54,8 +55,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             int endMinute = startMinute + minuteSpan;
 
             // get index matrices from the two images
-            var matrixList1 = ReadSpectralIndicesFromFalseColourSpectrogram((Bitmap)image1, startMinute, endMinute);
-            var matrixList2 = ReadSpectralIndicesFromFalseColourSpectrogram((Bitmap)image2, startMinute, endMinute);
+            var matrixList1 = ReadSpectralIndicesFromFalseColourSpectrogram((Image<Rgb24>)image1, startMinute, endMinute);
+            var matrixList2 = ReadSpectralIndicesFromFalseColourSpectrogram((Image<Rgb24>)image2, startMinute, endMinute);
 
             //set up the return Matrix containing 1440 rows and 5 x 32 indices
             var rowCount = matrixList1[0].GetLength((0));
@@ -116,7 +117,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <param name="startMinute">start reading from this row.</param>
         /// <param name="endMinute">end reading from this row.</param>
         /// <returns>an array of three index matrices, from red, green, blue components of each pixel.</returns>
-        public static List<double[,]> ReadSpectralIndicesFromFalseColourSpectrogram(Bitmap image, int startMinute, int endMinute)
+        public static List<double[,]> ReadSpectralIndicesFromFalseColourSpectrogram(Image<Rgb24> image, int startMinute, int endMinute)
         {
             if (startMinute >= endMinute)
             {
@@ -139,7 +140,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             {
                 for (int h = 0; h < height; h++)
                 {
-                    var pixel = image.GetPixel(w + startMinute, height - h - 1);
+                    var pixel = image[w + startMinute, height - h - 1];
                     red[w, h] = pixel.R / 255D;
                     grn[w, h] = pixel.G / 255D;
                     blu[w, h] = pixel.B / 255D;
@@ -162,11 +163,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// Note that if the height passed is a power of 2, then the full frequency scale (also a power of 2 due to FFT) can be scaled down exactly.
         /// A height of 32 is quite good - small but still discriminates frequency bands.
         /// </summary>
-        public static Image GetSpectrogramRibbon(double[,] indices1, double[,] indices2, double[,] indices3)
+        public static Image<Rgb24> GetSpectrogramRibbon(double[,] indices1, double[,] indices2, double[,] indices3)
         {
             int height = RibbonPlotHeight;
             int width = indices1.GetLength(1);
-            var image = new Bitmap(width, height);
+            var image = new Image<Rgb24>(width, height);
 
             // get the reduced spectra of indices in each minute.
             // calculate the reduction factor i.e. freq bins per pixel row
@@ -222,7 +223,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                         blu = 255;
                     }
 
-                    image.SetPixel(i, h, Color.FromArgb(red, grn, blu));
+                    image[i, h] = Color.FromRgb((byte)red, (byte)grn, (byte)blu);
                 }
             }
 
@@ -256,25 +257,27 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             int width = indices1.Length;
             int height = SpectrogramConstants.HEIGHT_OF_TITLE_BAR;
-            var image = new Bitmap(width, height);
-            var g = Graphics.FromImage(image);
-            for (int i = 0; i < width; i++)
+            var image = new Image<Rgb24>(width, height);
+            image.Mutate(g =>
             {
-                Pen pen;
-                if (double.IsNaN(indices1[i]) || double.IsNaN(indices2[i]) || double.IsNaN(indices3[i]))
+                for (int i = 0; i < width; i++)
                 {
-                    pen = new Pen(Color.Gray);
-                }
-                else
-                {
-                    int red = (int)(255 * indices1[i]);
-                    int grn = (int)(255 * indices2[i]);
-                    int blu = (int)(255 * indices3[i]);
-                    pen = new Pen(Color.FromArgb(red, grn, blu));
-                }
+                    Pen pen;
+                    if (double.IsNaN(indices1[i]) || double.IsNaN(indices2[i]) || double.IsNaN(indices3[i]))
+                    {
+                        pen = new Pen(Color.Gray, 1);
+                    }
+                    else
+                    {
+                        int red = (int)(255 * indices1[i]);
+                        int grn = (int)(255 * indices2[i]);
+                        int blu = (int)(255 * indices3[i]);
+                        pen = new Pen(Color.FromRgb((byte)red, (byte)grn, (byte)blu), 1);
+                    }
 
-                g.DrawLine(pen, i, 0, i, height);
-            }
+                    g.DrawLine(pen, i, 0, i, height);
+                }
+            });
 
             return image;
         }
@@ -283,46 +286,48 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             int width = indices1.GetLength(1);
             int height = SpectrogramConstants.HEIGHT_OF_TITLE_BAR;
-            var image = new Bitmap(width, height);
-            var g = Graphics.FromImage(image);
-
-            // get the low, mid and high band averages of indices in each minute.
-            for (int i = 0; i < width; i++)
+            var image = new Image<Rgb24>(width, height);
+            image.Mutate(g =>
             {
-                //  get the average of the three indices in the low bandwidth
-                var index = (indices1[0, i] + indices2[0, i] + indices3[0, i]) / 3;
-                Pen pen;
-                if (double.IsNaN(index))
+
+                // get the low, mid and high band averages of indices in each minute.
+                for (int i = 0; i < width; i++)
                 {
-                    pen = new Pen(Color.Gray);
+                    //  get the average of the three indices in the low bandwidth
+                    var index = (indices1[0, i] + indices2[0, i] + indices3[0, i]) / 3;
+                    Pen pen;
+                    if (double.IsNaN(index))
+                    {
+                        pen = new Pen(Color.Gray, 1);
+                    }
+                    else
+                    {
+                        int red = (int)(255 * index);
+                        if (red > 255)
+                        {
+                            red = 255;
+                        }
+
+                        index = (indices1[1, i] + indices2[1, i] + indices3[1, i]) / 3;
+                        int grn = (int)(255 * index);
+                        if (grn > 255)
+                        {
+                            grn = 255;
+                        }
+
+                        index = (indices1[2, i] + indices2[2, i] + indices3[2, i]) / 3;
+                        int blu = (int)(255 * index);
+                        if (blu > 255)
+                        {
+                            blu = 255;
+                        }
+
+                        pen = new Pen(Color.FromRgb((byte)red, (byte)grn, (byte)blu), 1);
+                    }
+
+                    g.DrawLine(pen, i, 0, i, height);
                 }
-                else
-                {
-                    int red = (int)(255 * index);
-                    if (red > 255)
-                    {
-                        red = 255;
-                    }
-
-                    index = (indices1[1, i] + indices2[1, i] + indices3[1, i]) / 3;
-                    int grn = (int)(255 * index);
-                    if (grn > 255)
-                    {
-                        grn = 255;
-                    }
-
-                    index = (indices1[2, i] + indices2[2, i] + indices3[2, i]) / 3;
-                    int blu = (int)(255 * index);
-                    if (blu > 255)
-                    {
-                        blu = 255;
-                    }
-
-                    pen = new Pen(Color.FromArgb(red, grn, blu));
-                }
-
-                g.DrawLine(pen, i, 0, i, height);
-            }
+            });
 
             return image;
         }

@@ -13,7 +13,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
     using System.Diagnostics;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -27,6 +27,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
     using AudioAnalysisTools.Indices;
     using log4net;
     using Production;
+    using SixLabors.ImageSharp.PixelFormats;
     using SourcePreparers;
 
     public partial class AnalyseLongRecording
@@ -321,7 +322,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
                     // Draw Tracks-Image of Summary indices
                     // set time scale resolution for drawing of summary index tracks
                     TimeSpan timeScale = TimeSpan.FromSeconds(0.1);
-                    Bitmap tracksImage =
+                    Image<Rgb24> tracksImage =
                         IndexDisplay.DrawImageOfSummaryIndices(
                             IndexProperties.GetIndexProperties(indicesPropertiesConfig),
                             indicesFile,

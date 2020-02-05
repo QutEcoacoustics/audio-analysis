@@ -6,7 +6,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
@@ -14,6 +14,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using AnalysisBase.ResultBases;
     using AudioAnalysisTools.StandardSpectrograms;
     using Indices;
+    using SixLabors.ImageSharp.PixelFormats;
+    using SixLabors.ImageSharp.Processing;
     using TowseyLibrary;
 
     /// <summary>
@@ -98,7 +100,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 //SummaryIndexBase[] summaryIndices = null;
                 string analysisType = "Towsey.Acoustic";
 
-                Tuple<Image, string>[] tuple = LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
+                Tuple<Image<Rgb24>, string>[] tuple = LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
                     opDir, // topLevelDirectories[0], // this should not be required but it is - because things have gotten complicated !
                     opDir,
                     sgConfig,
@@ -179,7 +181,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             string titletext =
                 $"SOURCE: \"{opFileStem}\".     Starts at {startTime}                       {Meta.OrganizationTag}";
-            Bitmap tracksImage = IndexDisplay.DrawImageOfSummaryIndices(
+            Image<Rgb24> tracksImage = IndexDisplay.DrawImageOfSummaryIndices(
                                  IndexProperties.GetIndexProperties(indexPropertiesConfigFileInfo),
                                  dictionaryOfCsvColumns,
                                  titletext,
@@ -285,9 +287,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             //######################################################
 
             string[] fileEntries = Directory.GetFiles(inputDirectory.FullName);
-            var images = new List<Image>();
+            var images = new List<Image<Rgb24>>();
             bool interpolateSpacer = true;
-            var imagePair = new Image[2];
 
             TimeSpan xAxisTicInterval = TimeSpan.FromMinutes(pixelColumnsPerHour); // assume 60 pixels per hour
 
@@ -300,15 +301,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     continue;
                 }
 
-                var image = new Bitmap(path);
+                var image = Image.Load<Rgb24>(path);
                 int spacerWidth = minutesBetweenRecordingStarts - image.Width;
 
                 if (interpolateSpacer)
                 {
-                    var spacer = new Bitmap(spacerWidth, image.Height);
-                    imagePair[0] = image;
-                    imagePair[1] = spacer;
-                    image = (Bitmap)ImageTools.CombineImagesInLine(imagePair);
+                    var spacer = new Image<Rgb24>(spacerWidth, image.Height);
+                    image = (Image<Rgb24>)ImageTools.CombineImagesInLine(image, spacer);
                 }
 
                 images.Add(image);
@@ -319,29 +318,32 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var fullDuration = TimeSpan.FromMinutes(compositeBmp.Width);
             var timeBmp = ImageTrack.DrawTimeTrack(fullDuration, minOffset, xAxisTicInterval, compositeBmp.Width, trackHeight, "hours");
 
-            var gr = Graphics.FromImage(compositeBmp);
-            int halfHeight = compositeBmp.Height / 2;
+            compositeBmp.Mutate(gr =>
+            {
+                int halfHeight = compositeBmp.Height / 2;
 
-            //add in the title bars
-            string title = $"24 hour FALSE-COLOUR SPECTROGRAM      (scale: hours x kHz)      (colour: R-G-B = BGN-AVG-CVR)         {Meta.OrganizationTag}  ";
-            var titleBmp = ImageTrack.DrawTitleTrack(compositeBmp.Width, trackHeight, title);
-            int offset = 0;
-            gr.DrawImage(titleBmp, 0, offset); //draw in the top time scale
-            title = $"24 hour FALSE-COLOUR SPECTROGRAM      (scale: hours x kHz)      (colour: R-G-B = ACI-ENT-EVN)         {Meta.OrganizationTag}  ";
-            titleBmp = ImageTrack.DrawTitleTrack(compositeBmp.Width, trackHeight, title);
-            offset = halfHeight;
-            gr.DrawImage(titleBmp, 0, offset); //draw in the top time scale
+                //add in the title bars
+                string title =
+                    $"24 hour FALSE-COLOUR SPECTROGRAM      (scale: hours x kHz)      (colour: R-G-B = BGN-AVG-CVR)         {Meta.OrganizationTag}  ";
+                var titleBmp = ImageTrack.DrawTitleTrack(compositeBmp.Width, trackHeight, title);
+                int offset = 0;
+                gr.DrawImage(titleBmp, 0, offset); //draw in the top time scale
+                title =
+                    $"24 hour FALSE-COLOUR SPECTROGRAM      (scale: hours x kHz)      (colour: R-G-B = ACI-ENT-EVN)         {Meta.OrganizationTag}  ";
+                titleBmp = ImageTrack.DrawTitleTrack(compositeBmp.Width, trackHeight, title);
+                offset = halfHeight;
+                gr.DrawImage(titleBmp, 0, offset); //draw in the top time scale
 
-            //add in the timescale tracks
-            offset = trackHeight;
-            gr.DrawImage(timeBmp, 0, offset); //draw in the top time scale
-            offset = compositeBmp.Height - trackHeight;
-            gr.DrawImage(timeBmp, 0, offset); //draw in the top time scale
-            offset = halfHeight - trackHeight;
-            gr.DrawImage(timeBmp, 0, offset); //draw in the top time scale
-            offset = halfHeight + trackHeight;
-            gr.DrawImage(timeBmp, 0, offset); //draw in the top time scale
-
+                //add in the timescale tracks
+                offset = trackHeight;
+                gr.DrawImage(timeBmp, 0, offset); //draw in the top time scale
+                offset = compositeBmp.Height - trackHeight;
+                gr.DrawImage(timeBmp, 0, offset); //draw in the top time scale
+                offset = halfHeight - trackHeight;
+                gr.DrawImage(timeBmp, 0, offset); //draw in the top time scale
+                offset = halfHeight + trackHeight;
+                gr.DrawImage(timeBmp, 0, offset); //draw in the top time scale
+            });
             compositeBmp.Save(Path.Combine(outputDirectory.FullName, opFileStem + ".png"));
         }
     }

@@ -40,7 +40,7 @@ namespace AnalysisPrograms.StandardizedFeatures
 
             public override bool Equals(object obj)
             {
-                return Equals(obj as BandsProperties);
+                return this.Equals(obj as BandsProperties);
             }
 
             public override int GetHashCode()
@@ -67,7 +67,7 @@ namespace AnalysisPrograms.StandardizedFeatures
 
             public override bool Equals(object obj)
             {
-                return Equals(obj as Bandwidth);
+                return this.Equals(obj as Bandwidth);
             }
 
             public override int GetHashCode()

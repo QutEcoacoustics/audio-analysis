@@ -1,4 +1,4 @@
-﻿// <copyright file="DrawSummaryIndexTracks.cs" company="QutEcoacoustics">
+// <copyright file="DrawSummaryIndexTracks.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -8,7 +8,7 @@ namespace AnalysisPrograms
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
     using System.Data;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using System.Text;
@@ -22,6 +22,7 @@ namespace AnalysisPrograms
     using Production;
     using Production.Arguments;
     using Production.Validation;
+    using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
     using Zio;
 
@@ -93,7 +94,7 @@ namespace AnalysisPrograms
             // Convert summary indices to image
             string fileName = input.BaseName();
             string title = $"SOURCE:{fileName},   {Meta.OrganizationTag};  ";
-            Bitmap tracksImage = IndexDisplay.DrawImageOfSummaryIndexTracks(
+            Image<Rgb24> tracksImage = IndexDisplay.DrawImageOfSummaryIndexTracks(
                 input,
                 arguments.IndexPropertiesConfig.ToFileInfo(),
                 title,

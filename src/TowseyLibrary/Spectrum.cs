@@ -14,23 +14,15 @@ namespace TowseyLibrary
 
     public class Spectrum
     {
-        public double[] Values
-        {
-            get
-            {
-                return this.values;
-            }
-        }
+        public double[] Values { get; }
 
         public int Index { get; set; }
 
         public string Name { get; set; }
 
-        private readonly double[] values;
-
         public Spectrum(double[] values, int index, string name)
         {
-            this.values = values;
+            this.Values = values;
             this.Index = index;
             this.Name = name;
 

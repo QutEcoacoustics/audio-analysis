@@ -12,7 +12,7 @@ namespace Acoustics.Test.Shared.LoggingTests
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Logging;
-    using Fasterflect;
+    
     using log4net;
     using log4net.Core;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -46,9 +46,11 @@ namespace Acoustics.Test.Shared.LoggingTests
                 // clear the log
                 TestSetup.TestLogging.MemoryAppender.Clear();
 
-                if (!(typeof(Level).TryGetFieldValue(targetVerbosity, Flags.AllMembers) is Level level))
+                
+                if (!(typeof(Level).GetField(targetVerbosity, BindingFlags.GetField).GetValue(null) is Level level))
                 {
-                    level = typeof(LogExtensions).TryGetFieldValue(targetVerbosity, Flags.AllMembers) as Level;
+                    
+                    level = typeof(LogExtensions).GetField(targetVerbosity, BindingFlags.GetField).GetValue(null) as Level;
                 }
 
                 Assert.IsNotNull(level);

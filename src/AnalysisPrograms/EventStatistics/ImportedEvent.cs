@@ -1,4 +1,4 @@
-﻿// <copyright file="ImportedEvent.cs" company="QutEcoacoustics">
+// <copyright file="ImportedEvent.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -63,14 +63,14 @@ namespace AnalysisPrograms.EventStatistics
                 // allow each field to be serialized by PascalCase, snake_case, or camelCase
                 foreach (var property in Properties)
                 {
-                    var map = new CsvPropertyMap(property);
+                    var map = MemberMap.CreateGeneric(typeof(ImportedEvent), property);
                     var pascalName = property.Name;
                     var snakeName = pascalName.ToSnakeCase();
                     var camelName = pascalName.ToCamelCase();
 
                     map.Name(pascalName, snakeName, camelName);
 
-                    this.PropertyMaps.Add(map);
+                    this.MemberMaps.Add(map);
                 }
             }
         }

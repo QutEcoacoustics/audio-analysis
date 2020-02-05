@@ -26,7 +26,8 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using System.Diagnostics;
+    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
@@ -42,6 +43,12 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.StandardSpectrograms;
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
+    using Production;
+    using Production.Arguments;
+    using Production.Validation;
+    using SixLabors.ImageSharp.PixelFormats;
+    using SixLabors.ImageSharp.Processing;
+    using SixLabors.Primitives;
     using TowseyLibrary;
     using Zio;
 
@@ -201,7 +208,7 @@ namespace AnalysisPrograms
             return frameCount;
         } // method DrawAggregatedSpectrograms()
 
-        public static Image DrawGrayScaleSpectrograms(Arguments arguments, string fileStem, TimeSpan dataScale, Dictionary<string, double[,]> spectra = null)
+        public static Image<Rgb24> DrawGrayScaleSpectrograms(Arguments arguments, string fileStem, TimeSpan dataScale, Dictionary<string, double[,]> spectra = null)
         {
             // default values
             int sampleRate = 22050;
@@ -236,8 +243,8 @@ namespace AnalysisPrograms
                 return null;
             }
 
-            List<Image> list = new List<Image>();
-            Font stringFont = new Font("Arial", 14);
+            var list = new List<Image<Rgb24>>();
+            var stringFont = Drawing.Arial14;
 
             foreach (string key in keys)
             {
@@ -245,23 +252,24 @@ namespace AnalysisPrograms
 
                 int width = 70;
                 int height = image.Height;
-                var label = new Bitmap(width, height);
-                var g1 = Graphics.FromImage(label);
-                g1.Clear(Color.Gray);
-                g1.DrawString(key, stringFont, Brushes.Black, new PointF(4, 30));
-                g1.DrawLine(new Pen(Color.Black), 0, 0, width, 0); //draw upper boundary
-                g1.DrawLine(new Pen(Color.Black), 0, 1, width, 1); //draw upper boundary
-
-                Image[] imagearray = { label, image };
+                var label = new Image<Rgb24>(width, height);
+                label.Mutate(g1 =>
+                {
+                    g1.Clear(Color.Gray);
+                    g1.DrawText(key, stringFont, Color.Black, new PointF(4, 30));
+                    g1.DrawLine(new Pen(Color.Black, 1), 0, 0, width, 0); //draw upper boundary
+                    g1.DrawLine(new Pen(Color.Black, 1), 0, 1, width, 1); //draw upper boundary
+                });
+                var imagearray = new [] { label, image };
                 var labelledImage = ImageTools.CombineImagesInLine(imagearray);
                 list.Add(labelledImage);
             } //foreach key
 
-            var combinedImage = ImageTools.CombineImagesVertically(list.ToArray());
+            var combinedImage = ImageTools.CombineImagesVertically(list);
             return combinedImage;
         } // method DrawGrayScaleSpectrograms()
 
-        public static Image DrawFalseColourSpectrograms(Arguments args, string fileStem, Dictionary<string, double[,]> spectra = null)
+        public static Image<Rgb24> DrawFalseColourSpectrograms(Arguments args, string fileStem, Dictionary<string, double[,]> spectra = null)
         {
             //DirectoryInfo inputDirectory = args.InputDataDirectory;
             var indexPropertiesConfig = args.IndexPropertiesConfig.ToFileInfo();
@@ -290,7 +298,7 @@ namespace AnalysisPrograms
             return DrawFalseColorSpectrograms(args, fileStem, indexProperties, spectra);
         }
 
-        public static Image DrawFalseColorSpectrograms(Arguments args, string fileStem, Dictionary<string, IndexProperties> indexProperties, Dictionary<string, double[,]> spectra = null)
+        public static Image<Rgb24> DrawFalseColorSpectrograms(Arguments args, string fileStem, Dictionary<string, IndexProperties> indexProperties, Dictionary<string, double[,]> spectra = null)
         {
             // note: the spectra are oriented as per visual orientation, i.e. xAxis = time framesDictionary<string, Int16>.KeyCollection keys = AuthorList.Keys
             // string[] keys = spectra.Keys.ToCommaSeparatedList().Split(',');
@@ -326,10 +334,10 @@ namespace AnalysisPrograms
             int trackHeight = 20;
             var timeScale = ImageTrack.DrawTimeRelativeTrack(fullDuration, image1.Width, trackHeight);
 
-            colorMap = args.ColourMap2 ?? LDSpectrogramRGB.DefaultColorMap2;
-            var image2 = cs1.DrawFalseColorSpectrogramChromeless("NEGATIVE", colorMap, blueEnhanceParameter);
-            var list = new List<Image> { titleImage, image1, timeScale, image2 };
-            var combinedImage = ImageTools.CombineImagesVertically(list.ToArray());
+            colourMap = args.ColourMap2 ?? LDSpectrogramRGB.DefaultColorMap2;
+            var image2 = cs1.DrawFalseColorSpectrogramChromeless("NEGATIVE", colourMap);
+            var list = new [] { titleImage, image1, timeScale, image2 };
+            var combinedImage = ImageTools.CombineImagesVertically(list);
             return combinedImage;
         }
 
@@ -392,44 +400,44 @@ namespace AnalysisPrograms
                 return null;
             }
 
-            Font stringFont = new Font("Tahoma", 8);
+            var stringFont = Drawing.Tahoma8;
 
             // constants for labels
-            Brush[] brush = { Brushes.Blue, Brushes.Green, Brushes.Red, Brushes.Orange, Brushes.Purple };
             Color[] color = { Color.Blue, Color.Green, Color.Red, Color.Orange, Color.Purple };
             int labelYvalue = 3;
             int labelIndex = 0;
-            Bitmap ridges = null;
-            Graphics g2 = null;
+            Image<Rgb24> ridges = null;
 
             foreach (string key in keys)
             {
-                Bitmap greyScaleImage = (Bitmap)cs1.DrawGreyscaleSpectrogramOfIndex(key);
+                Image<Rgb24> greyScaleImage = (Image<Rgb24>)cs1.DrawGreyscaleSpectrogramOfIndex(key);
                 var pixelWidth = greyScaleImage.Width;
 
                 int height = greyScaleImage.Height;
-                if (ridges == null)
+                ridges.Mutate(g2 =>
                 {
-                    ridges = new Bitmap(pixelWidth, height);
-                    g2 = Graphics.FromImage(ridges);
-                    g2.Clear(Color.White);
-                }
+                    if (ridges == null)
+                    {
+                        ridges = new Image<Rgb24>(pixelWidth, height);
+                        g2.Clear(Color.White);
+                    }
 
-                g2.DrawString(key, stringFont, brush[labelIndex], new PointF(0, labelYvalue));
+                    g2.DrawText(key, stringFont, color[labelIndex], new PointF(0, labelYvalue));
+                });
                 labelYvalue += 10;
 
-                //g1.DrawLine(new Pen(Color.Black), 0, 0, width, 0);//draw upper boundary
-                //g1.DrawLine(new Pen(Color.Black), 0, 1, width, 1);//draw upper boundary
+                //g1.DrawLine(new Pen(Color.Black, 1), 0, 0, width, 0);//draw upper boundary
+                //g1.DrawLine(new Pen(Color.Black, 1), 0, 1, width, 1);//draw upper boundary
 
                 // transfer greyscale image to colour image
                 for (int y = 0; y < height; y++)
                 {
                     for (int x = 0; x < pixelWidth; x++)
                     {
-                        var col = greyScaleImage.GetPixel(x, y);
+                        var col = greyScaleImage[x, y];
                         if (col.G < 150)
                         {
-                            ridges.SetPixel(x, y, color[labelIndex]);
+                            ridges[x, y] = color[labelIndex];
                         }
                     }
                 }

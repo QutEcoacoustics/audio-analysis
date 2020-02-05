@@ -5,12 +5,13 @@
 namespace AudioAnalysisTools
 {
     using System;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.Drawing.Imaging;
     using System.Linq;
     using Acoustics.Tools.Wav;
     using Acoustics.Unsafe;
     using MathNet.Numerics.IntegralTransforms;
+    using SixLabors.ImageSharp.PixelFormats;
     using StandardSpectrograms;
     using WavTools;
 
@@ -34,7 +35,7 @@ namespace AudioAnalysisTools
         /// <returns>
         /// Waveform image.
         /// </returns>
-        Bitmap Waveform(byte[] bytes, int width, int height);
+        Image<Rgb24> Waveform(byte[] bytes, int width, int height);
 
         /// <summary>
         /// Generate a Spectrogram.
@@ -45,7 +46,7 @@ namespace AudioAnalysisTools
         /// <returns>
         /// Spectrogram image.
         /// </returns>
-        Bitmap Spectrogram(byte[] bytes);
+        Image<Rgb24> Spectrogram(byte[] bytes);
     }
 
     /// <summary>
@@ -70,14 +71,14 @@ namespace AudioAnalysisTools
         /// <returns>
         /// Waveform image.
         /// </returns>
-        public Bitmap Waveform(byte[] bytes, int width, int height)
+        public Image<Rgb24> Waveform(byte[] bytes, int width, int height)
         {
-            Bitmap image;
+            Image<Rgb24> image;
 
             using (var recording = new AudioRecording(bytes))
             using (var img = recording.GetWaveFormInDecibels(width, height, WaveFormDbMin))
             {
-                image = new Bitmap(img);
+                image = img;
             }
 
             return image;
@@ -93,7 +94,7 @@ namespace AudioAnalysisTools
         /// Spectrogram image.
         /// </returns>
         /// <exception cref="NotSupportedException"><c>NotSupportedException</c>.</exception>
-        public Bitmap Spectrogram(byte[] bytes)
+        public Image<Rgb24> Spectrogram(byte[] bytes)
         {
             /*
              * 80 pixels per second is too quick for Silverlight.
@@ -107,7 +108,7 @@ namespace AudioAnalysisTools
                 DoSnr = false, // might save us some time generating spectrograms.
             };
 
-            Bitmap image;
+            Image<Rgb24> image;
 
             using (var audiorecording = new AudioRecording(bytes))
             {
@@ -123,7 +124,7 @@ namespace AudioAnalysisTools
                 var sonogram = new SpectrogramStandard(sonogramConfig, audiorecording.WavReader);
                 using (var img = sonogram.GetImage())
                 {
-                    image = new Bitmap(img);
+                    image = img;
                 }
             }
 
@@ -175,14 +176,14 @@ namespace AudioAnalysisTools
         /// <returns>
         /// Waveform image.
         /// </returns>
-        public Bitmap Waveform(byte[] bytes, int width, int height)
+        public Image<Rgb24> Waveform(byte[] bytes, int width, int height)
         {
-            Bitmap image;
+            Image<Rgb24> image;
 
             using (var recording = new AudioRecording(bytes))
             using (var img = recording.GetWaveFormInDecibels(width, height, WaveFormDbMin))
             {
-                image = new Bitmap(img);
+                image = (img.Clone());
             }
 
             return image;
@@ -197,11 +198,11 @@ namespace AudioAnalysisTools
         /// <returns>
         /// Spectrogram image.
         /// </returns>
-        public Bitmap Spectrogram(byte[] bytes)
+        public Image<Rgb24> Spectrogram(byte[] bytes)
         {
             IWavReader wavReader = new WavStreamReader(bytes);
 
-            return new Bitmap(GetSpectrogram(wavReader, 1));
+            return (GetSpectrogram(wavReader, 1));
         }
 
         /// <summary>
@@ -211,7 +212,7 @@ namespace AudioAnalysisTools
         /// <param name="reader">Wav Reader.</param>
         /// <param name="channel">Channel number.</param>
         /// <returns>Spectrogram image.</returns>
-        private static Image GetSpectrogram(IWavReader reader, int channel)
+        private static Image<Rgb24> GetSpectrogram(IWavReader reader, int channel)
         {
             /*
              * 80 pixels per second is too quick for Silverlight.
@@ -288,7 +289,7 @@ namespace AudioAnalysisTools
              * Done. Spectrogram is (finally) ready!
              */
 
-            Image image = GetImage(dbSonogram);
+            var image = GetImage(dbSonogram);
             return image;
         }
 
@@ -678,9 +679,7 @@ namespace AudioAnalysisTools
 
             //*******************************************************************************************************************
 
-            double minIntensity; // min value in matrix
-            double maxIntensity; // max value in matrix
-            DoubleSquareArrayExtensions.MinMax(matrix, out minIntensity, out maxIntensity);
+            DoubleSquareArrayExtensions.MinMax(matrix, out var minIntensity, out var maxIntensity);
             double binWidth = (maxIntensity - minIntensity) / binCount;  // width of an intensity bin
 
             // LoggedConsole.WriteLine("minIntensity=" + minIntensity + "  maxIntensity=" + maxIntensity + "  binWidth=" + binWidth);
@@ -718,8 +717,7 @@ namespace AudioAnalysisTools
 
                 //DataTools.writeBarGraph(histo);
                 double[] smoothHisto = FilterMovingAverage(histo, 7);
-                int maxindex; //mode
-                GetMaxIndex(smoothHisto, out maxindex); //this is mode of histogram
+                GetMaxIndex(smoothHisto, out var maxindex); //this is mode of histogram
                 if (maxindex > binLimit)
                 {
                     maxindex = binLimit;
@@ -910,15 +908,16 @@ namespace AudioAnalysisTools
         /// <returns>
         /// the image.
         /// </returns>
-        private static Image GetImage(double[,] data)
+        private static Image<Rgb24> GetImage(double[,] data)
         {
             // Number of spectra in sonogram
             int width = data.GetLength(0);
             int fftBins = data.GetLength(1);
 
-            var bmp = UnsafeImage.GetImage(data, fftBins, width);
+            throw new NotSupportedException("Broken in .NET core port");
+            //var bmp = UnsafeImage.GetImage(data, fftBins, width);
 
-            return bmp;
+            return null;
         }
     }
 }

@@ -15,7 +15,7 @@ namespace AnalysisPrograms.Recognizers
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.IO;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
@@ -157,10 +157,7 @@ namespace AnalysisPrograms.Recognizers
                 double[] subArray = DataTools.Subarray(highPassFilteredSignal, i, dctLength);
 
                 // Look for oscillations in the highPassFilteredSignal
-                double oscilFreq;
-                double period;
-                double intensity;
-                Oscillations2014.GetOscillationUsingDct(subArray, framesPerSecond, cosines, out oscilFreq, out period, out intensity);
+                Oscillations2014.GetOscillationUsingDct(subArray, framesPerSecond, cosines, out var oscilFreq, out var period, out var intensity);
                 bool periodWithinBounds = period > minPeriod && period < maxPeriod;
 
                 if (!periodWithinBounds)
@@ -212,9 +209,7 @@ namespace AnalysisPrograms.Recognizers
             if (displayDebugImage)
             {
                 // display a variety of debug score arrays
-                double[] normalisedScores;
-                double normalisedThreshold;
-                DataTools.Normalise(amplitudeArray, decibelThreshold, out normalisedScores, out normalisedThreshold);
+                DataTools.Normalise(amplitudeArray, decibelThreshold, out var normalisedScores, out var normalisedThreshold);
                 var ampltdPlot = new Plot("amplitude", normalisedScores, normalisedThreshold);
                 DataTools.Normalise(highPassFilteredSignal, decibelThreshold, out normalisedScores, out normalisedThreshold);
                 var demeanedPlot = new Plot("Hi Pass", normalisedScores, normalisedThreshold);

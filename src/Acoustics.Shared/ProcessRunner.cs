@@ -14,7 +14,6 @@ namespace Acoustics.Shared
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
-    using Fasterflect;
     using log4net;
 
     /// <summary>
@@ -99,35 +98,17 @@ namespace Acoustics.Shared
         /// </summary>
         public int MaxRetries { get; set; }
 
-        public IEnumerable<string> FailedRunOutput
-        {
-            get
-            {
-                return this.failedRuns.ToArray();
-            }
-        }
+        public IEnumerable<string> FailedRunOutput => this.failedRuns.ToArray();
 
         /// <summary>
         /// Gets StandardOutput.
         /// </summary>
-        public string StandardOutput
-        {
-            get
-            {
-                return this.standardOutput.ToString();
-            }
-        }
+        public string StandardOutput => this.standardOutput.ToString();
 
         /// <summary>
         /// Gets ErrorOutput.
         /// </summary>
-        public string ErrorOutput
-        {
-            get
-            {
-                return this.errorOutput.ToString();
-            }
-        }
+        public string ErrorOutput => this.errorOutput.ToString();
 
         /// <summary>
         /// Stop the process immediately.

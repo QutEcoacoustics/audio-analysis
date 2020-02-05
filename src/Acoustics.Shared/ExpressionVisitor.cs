@@ -55,7 +55,7 @@ namespace BTR.Core.Linq
     public class ExpressionVisitor<T> : ExpressionVisitor
         where T : Expression
     {
-        private Func<T, Expression> visitor;
+        private readonly Func<T, Expression> visitor;
 
         public ExpressionVisitor(Func<T, Expression> visitor)
         {

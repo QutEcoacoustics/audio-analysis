@@ -56,17 +56,9 @@ namespace AnalysisPrograms
             double[] channelRight = recording.WavReader.GetChannel(1);
             double epsilon = recording.WavReader.Epsilon;
 
-            double similarityIndex;
-            double decibelIndex;
-            double avDecibelBias;
-            double medianDecibelBias;
-            double lowDecibelBias;
-            double midDecibelBias;
-            double highDecibelBias;
-
-            ChannelIntegrity.SimilarityIndex(channelLeft, channelRight, epsilon, sampleRate, out similarityIndex,
-                                              out decibelIndex, out avDecibelBias, out medianDecibelBias,
-                                              out lowDecibelBias, out midDecibelBias, out highDecibelBias);
+            ChannelIntegrity.SimilarityIndex(channelLeft, channelRight, epsilon, sampleRate, out var similarityIndex,
+                                              out var decibelIndex, out var avDecibelBias, out var medianDecibelBias,
+                                              out var lowDecibelBias, out var midDecibelBias, out var highDecibelBias);
 
             //double similarityIndex = ChannelIntegrity.SimilarityIndex(channelLeft, channelRight, epsilon, sampleRate.Value);
             result.ChannelSimilarity = similarityIndex;
@@ -77,9 +69,7 @@ namespace AnalysisPrograms
             result.MidFreqDecibelBias = midDecibelBias;
             result.HighFreqDecibelBias = highDecibelBias;
 
-            double zeroCrossingFractionLeft;
-            double zeroCrossingFractionRight;
-            ChannelIntegrity.ZeroCrossingIndex(channelLeft, channelRight, out zeroCrossingFractionLeft, out zeroCrossingFractionRight);
+            ChannelIntegrity.ZeroCrossingIndex(channelLeft, channelRight, out var zeroCrossingFractionLeft, out var zeroCrossingFractionRight);
             result.ZeroCrossingFractionLeft = zeroCrossingFractionLeft;
             result.ZeroCrossingFractionRight = zeroCrossingFractionRight;
 

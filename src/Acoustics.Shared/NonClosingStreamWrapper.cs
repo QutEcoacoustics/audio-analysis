@@ -27,18 +27,13 @@ namespace Acoustics.Shared
                 throw new ArgumentNullException("stream");
             }
 
-            this.stream = stream;
+            this.BaseStream = stream;
         }
-
-        private readonly Stream stream;
 
         /// <summary>
         /// Gets stream wrapped by this wrapper
         /// </summary>
-        public Stream BaseStream
-        {
-            get { return this.stream; }
-        }
+        public Stream BaseStream { get; }
 
         /// <summary>
         /// Whether this stream has been closed or not
@@ -79,7 +74,7 @@ namespace Acoustics.Shared
                                                AsyncCallback callback, object state)
         {
             this.CheckClosed();
-            return this.stream.BeginRead(buffer, offset, count, callback, state);
+            return this.BaseStream.BeginRead(buffer, offset, count, callback, state);
         }
 
         /// <summary>
@@ -103,32 +98,23 @@ namespace Acoustics.Shared
                                                 AsyncCallback callback, object state)
         {
             this.CheckClosed();
-            return this.stream.BeginWrite(buffer, offset, count, callback, state);
+            return this.BaseStream.BeginWrite(buffer, offset, count, callback, state);
         }
 
         /// <summary>
         /// Gets a value indicating whether indicates whether or not the underlying stream can be read from.
         /// </summary>
-        public override bool CanRead
-        {
-            get { return this.closed ? false : this.stream.CanRead; }
-        }
+        public override bool CanRead => this.closed ? false : this.BaseStream.CanRead;
 
         /// <summary>
         /// Gets a value indicating whether indicates whether or not the underlying stream supports seeking.
         /// </summary>
-        public override bool CanSeek
-        {
-            get { return this.closed ? false : this.stream.CanSeek; }
-        }
+        public override bool CanSeek => this.closed ? false : this.BaseStream.CanSeek;
 
         /// <summary>
         /// Gets a value indicating whether indicates whether or not the underlying stream can be written to.
         /// </summary>
-        public override bool CanWrite
-        {
-            get { return this.closed ? false : this.stream.CanWrite; }
-        }
+        public override bool CanWrite => this.closed ? false : this.BaseStream.CanWrite;
 
         /// <summary>
         /// This method is not proxied to the underlying stream; instead, the wrapper
@@ -139,7 +125,7 @@ namespace Acoustics.Shared
         {
             if (!this.closed)
             {
-                this.stream.Flush();
+                this.BaseStream.Flush();
             }
 
             this.closed = true;
@@ -160,7 +146,7 @@ namespace Acoustics.Shared
         public override int EndRead(IAsyncResult asyncResult)
         {
             this.CheckClosed();
-            return this.stream.EndRead(asyncResult);
+            return this.BaseStream.EndRead(asyncResult);
         }
 
         /// <summary>
@@ -170,7 +156,7 @@ namespace Acoustics.Shared
         public override void EndWrite(IAsyncResult asyncResult)
         {
             this.CheckClosed();
-            this.stream.EndWrite(asyncResult);
+            this.BaseStream.EndWrite(asyncResult);
         }
 
         /// <summary>
@@ -179,7 +165,7 @@ namespace Acoustics.Shared
         public override void Flush()
         {
             this.CheckClosed();
-            this.stream.Flush();
+            this.BaseStream.Flush();
         }
 
         /// <summary>
@@ -199,7 +185,7 @@ namespace Acoustics.Shared
             get
             {
                 this.CheckClosed();
-                return this.stream.Length;
+                return this.BaseStream.Length;
             }
         }
 
@@ -211,13 +197,13 @@ namespace Acoustics.Shared
             get
             {
                 this.CheckClosed();
-                return this.stream.Position;
+                return this.BaseStream.Position;
             }
 
             set
             {
                 this.CheckClosed();
-                this.stream.Position = value;
+                this.BaseStream.Position = value;
             }
         }
 
@@ -246,7 +232,7 @@ namespace Acoustics.Shared
         public override int Read(byte[] buffer, int offset, int count)
         {
             this.CheckClosed();
-            return this.stream.Read(buffer, offset, count);
+            return this.BaseStream.Read(buffer, offset, count);
         }
 
         /// <summary>
@@ -257,7 +243,7 @@ namespace Acoustics.Shared
         public override int ReadByte()
         {
             this.CheckClosed();
-            return this.stream.ReadByte();
+            return this.BaseStream.ReadByte();
         }
 
         /// <summary>
@@ -272,7 +258,7 @@ namespace Acoustics.Shared
         public override long Seek(long offset, SeekOrigin origin)
         {
             this.CheckClosed();
-            return this.stream.Seek(offset, origin);
+            return this.BaseStream.Seek(offset, origin);
         }
 
         /// <summary>
@@ -282,7 +268,7 @@ namespace Acoustics.Shared
         public override void SetLength(long value)
         {
             this.CheckClosed();
-            this.stream.SetLength(value);
+            this.BaseStream.SetLength(value);
         }
 
         /// <summary>
@@ -301,7 +287,7 @@ namespace Acoustics.Shared
         public override void Write(byte[] buffer, int offset, int count)
         {
             this.CheckClosed();
-            this.stream.Write(buffer, offset, count);
+            this.BaseStream.Write(buffer, offset, count);
         }
 
         /// <summary>
@@ -312,7 +298,7 @@ namespace Acoustics.Shared
         public override void WriteByte(byte value)
         {
             this.CheckClosed();
-            this.stream.WriteByte(value);
+            this.BaseStream.WriteByte(value);
         }
     }
 }

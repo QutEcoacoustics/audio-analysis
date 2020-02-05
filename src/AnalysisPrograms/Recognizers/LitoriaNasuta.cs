@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="LitoriaNasuta.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -24,6 +24,7 @@ namespace AnalysisPrograms.Recognizers
     using AudioAnalysisTools.WavTools;
     using Base;
     using log4net;
+    using SixLabors.ImageSharp;
     using TowseyLibrary;
 
     /// <summary>
@@ -173,9 +174,7 @@ namespace AnalysisPrograms.Recognizers
             }
 
             // Perpare a normalised plot for later display with spectrogram
-            double[] normalisedScores;
-            double normalisedThreshold;
-            DataTools.Normalise(croakScoreArray, decibelThreshold, out normalisedScores, out normalisedThreshold);
+            DataTools.Normalise(croakScoreArray, decibelThreshold, out var normalisedScores, out var normalisedThreshold);
             var text1 = string.Format($"Croak scores (threshold={decibelThreshold})");
             var croakPlot1 = new Plot(text1, normalisedScores, normalisedThreshold);
 

@@ -824,8 +824,7 @@ namespace AudioAnalysisTools.DSP
                 binCount = 500;
             }
 
-            double min, max, binWidth;
-            int[] histo = Histogram.Histo(array, binCount, out binWidth, out min, out max);
+            int[] histo = Histogram.Histo(array, binCount, out var binWidth, out var min, out var max);
             ////Log.WriteLine("BindWidth = "+ binWidth);
 
             int smoothingwindow = 3;
@@ -837,8 +836,7 @@ namespace AudioAnalysisTools.DSP
             double[] smoothHisto = DataTools.filterMovingAverage(histo, smoothingwindow);
             ////DataTools.writeBarGraph(histo);
 
-            int indexOfMode, indexOfOneStdDev;
-            GetModeAndOneStandardDeviation(smoothHisto, out indexOfMode, out indexOfOneStdDev);
+            GetModeAndOneStandardDeviation(smoothHisto, out var indexOfMode, out var indexOfOneStdDev);
 
             // modal noise level gets symbol Q in Lamel et al.
             double mode = min + ((indexOfMode + 1) * binWidth);
@@ -949,8 +947,7 @@ namespace AudioAnalysisTools.DSP
         /// <returns>A NoiseReductionType enumeration.</returns>
         public static NoiseReductionType KeyToNoiseReductionType(string key)
         {
-            NoiseReductionType nrt;
-            Enum.TryParse(key, true, out nrt);
+            Enum.TryParse(key, true, out NoiseReductionType nrt);
 
             return nrt;
         }
@@ -1215,9 +1212,7 @@ namespace AudioAnalysisTools.DSP
         /// <param name="maxDb">maximum decibel value</param>
         public static double[,] SetDynamicRange(double[,] m, double minDb, double maxDb)
         {
-            double minIntensity; // min value in matrix
-            double maxIntensity; // max value in matrix
-            DataTools.MinMax(m, out minIntensity, out maxIntensity);
+            DataTools.MinMax(m, out var minIntensity, out var maxIntensity);
             double shift = maxDb - maxIntensity;
 
             int rowCount = m.GetLength(0);
@@ -1258,8 +1253,7 @@ namespace AudioAnalysisTools.DSP
                 for (int row = temporalNh; row < rowCount - temporalNh; row++) //for all rows i.e. frames
                 {
                     var localMatrix = MatrixTools.Submatrix(m, row - temporalNh, col - freqBinNh, row + temporalNh, col + freqBinNh);
-                    double minIntensity, maxIntensity, binWidth;
-                    int[] histo = Histogram.Histo(localMatrix, binCount, out binWidth, out minIntensity, out maxIntensity);
+                    int[] histo = Histogram.Histo(localMatrix, binCount, out var binWidth, out var minIntensity, out var maxIntensity);
                     int lowerBinBound = Histogram.GetPercentileBin(histo, minPercentileBound);
                     int upperBinBound = Histogram.GetPercentileBin(histo, maxPercentileBound);
 
@@ -1293,9 +1287,7 @@ namespace AudioAnalysisTools.DSP
             int rNh = M / 2;
             int cNh = N / 2;
 
-            double min;
-            double max;
-            DataTools.MinMax(matrix, out min, out max);
+            DataTools.MinMax(matrix, out var min, out var max);
             nhThreshold += min;
 
             //int[] h = DataTools.Histo(matrix, 50);

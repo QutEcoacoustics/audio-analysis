@@ -1,4 +1,4 @@
-﻿// <copyright file="KmeansClustering.cs" company="QutEcoacoustics">
+// <copyright file="KmeansClustering.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -94,7 +94,7 @@ namespace AudioAnalysisTools.DSP
             var images = new List<Image>();
             int spacerWidth = 2; // patchHeight;
             int binCount = patchWidth;
-            Image spacer = new Bitmap(spacerWidth, binCount);
+            Image spacer = new Image<Rgb24>(spacerWidth, binCount);
             Graphics g = Graphics.FromImage(spacer);
             g.Clear(Color.BlanchedAlmond);
 
@@ -109,7 +109,7 @@ namespace AudioAnalysisTools.DSP
                 images.Add(spacer);
             }
 
-            Bitmap combinedImage = (Bitmap)ImageTools.CombineImagesInLine(images);
+            Image<Rgb24> combinedImage = (Image<Rgb24>)ImageTools.CombineImagesInLine(images);
             // set up the mel frequency scale
             int finalBinCount = 128;
             var frequencyScale = new FrequencyScale(FreqScaleType.Mel, 11025, 1024, finalBinCount, hertzGridInterval: 1000);

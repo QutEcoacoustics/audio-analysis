@@ -1,8 +1,10 @@
-﻿module QutSensors.AudioAnalysis.AED.SpectralPeakTrack    
+module QutSensors.AudioAnalysis.AED.SpectralPeakTrack    
 
 open GetAcousticEvents
 open Matlab
 open Util
+open Microsoft.FSharp.Math
+open Microsoft.FSharp
 
 let verticalPeaks t (m:matrix) =
     let f c =

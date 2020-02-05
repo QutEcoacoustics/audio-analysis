@@ -1,4 +1,4 @@
-﻿// <copyright file="SunAndMoon.cs" company="QutEcoacoustics">
+// <copyright file="SunAndMoon.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -6,10 +6,14 @@ namespace AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using System.Text;
+    using Acoustics.Shared;
+    using SixLabors.ImageSharp.PixelFormats;
+    using SixLabors.ImageSharp.Processing;
+    using SixLabors.Primitives;
     using TowseyLibrary;
 
     [Obsolete("This class is not generalizeable and shouldn't be used until it can be made so.")]
@@ -118,7 +122,7 @@ namespace AudioAnalysisTools
         /// <param name="dateTimeOffset"></param>
         /// <param name="sunriseDatafile"></param>
         /// <returns></returns>
-        public static Bitmap AddSunTrackToImage(int width, DateTimeOffset? dateTimeOffset, FileInfo sunriseDatafile)
+        public static Image<Rgb24> AddSunTrackToImage(int width, DateTimeOffset? dateTimeOffset, FileInfo sunriseDatafile)
         {
             // AT: I DON'T UNDERSTAND THIS CODE! I CAN'T FIX IT
             LoggedConsole.WriteWarnLine("\t\tERROR: Sun track generation disabled - broken in long ago merge");
@@ -135,14 +139,14 @@ namespace AudioAnalysisTools
             //                double moonPhase = SunAndMoon.GetPhaseOfMoon((DateTimeOffset)dateTimeOffset);
             //                string strMoonPhase = SunAndMoon.ConvertMoonPhaseToString(moonPhase);
             //                throw new NotSupportedException("THE FOLLOWING FAILS IN PRODUCTION");
-            //                Bitmap suntrack = SunAndMoon.AddSunTrackToImage(width, SunAndMoon.BrisbaneSunriseDatafile, dayOfYear, strMoonPhase);
+            //                Image<Rgb24> suntrack = SunAndMoon.AddSunTrackToImage(width, SunAndMoon.BrisbaneSunriseDatafile, dayOfYear, strMoonPhase);
             //                return suntrack;
             //            }
             //
             //            return null;
             //        }
             //
-            //        public static Bitmap AddSunTrackToImage(int width, DateTimeOffset? dateTimeOffset, SiteDescription siteDescription)
+            //        public static Image<Rgb24> AddSunTrackToImage(int width, DateTimeOffset? dateTimeOffset, SiteDescription siteDescription)
             //        {
             //            return AddSunTrackToImage(width, dateTimeOffset, siteDescription.SiteName, siteDescription.Latitude, siteDescription.Longitude);
             //=======
@@ -150,7 +154,7 @@ namespace AudioAnalysisTools
             //            int dayOfYear = ((DateTimeOffset)dateTimeOffset).DayOfYear;
             //            double moonPhase = SunAndMoon.GetPhaseOfMoon((DateTimeOffset)dateTimeOffset);
             //            string strMoonPhase = SunAndMoon.ConvertMoonPhaseToString(moonPhase);
-            //            Bitmap suntrack = SunAndMoon.AddSunTrackToImage(width, sunriseDatafile, year, dayOfYear, strMoonPhase);
+            //            Image<Rgb24> suntrack = SunAndMoon.AddSunTrackToImage(width, sunriseDatafile, year, dayOfYear, strMoonPhase);
             //            return suntrack;
             //>>>>>>> master
         }
@@ -162,10 +166,10 @@ namespace AudioAnalysisTools
         /// <param name="sunriseSetData"></param>
         /// <param name="dayValue"></param>
         /// <returns></returns>
-        public static Bitmap AddSunTrackToImage(int width, FileInfo sunriseSetData, int year, int dayValue, string moonPhase = null)
+        public static Image<Rgb24> AddSunTrackToImage(int width, FileInfo sunriseSetData, int year, int dayValue, string moonPhase = null)
         {
             int trackHeight = 18;
-            Bitmap image = new Bitmap(width, trackHeight);
+            Image<Rgb24> image = new Image<Rgb24>(width, trackHeight);
 
             bool leapYear = false;
             if (year % 4 == 0)
@@ -225,18 +229,20 @@ namespace AudioAnalysisTools
                 int sunsetMinute = (int.Parse(sunsetArray[0]) * 60) + int.Parse(sunsetArray[1]) + 720;
                 int sunDayLength = sunsetMinute - sunriseMinute + 1;
 
-                Graphics g = Graphics.FromImage(image);
-                Color cbgn = Color.FromArgb(0, 0, 35);
-                g.Clear(cbgn);
-                g.FillRectangle(Brushes.Gray, nautiRiseMinute, 1, nautiDayLength, trackHeight - 2);
-                g.FillRectangle(Brushes.LightSalmon, civilRiseMinute, 1, civilDayLength, trackHeight - 2);
-                g.FillRectangle(Brushes.SkyBlue, sunriseMinute, 1, sunDayLength, trackHeight - 2);
-
-                if (moonPhase != null)
+                image.Mutate(g =>
                 {
-                    Font font = new Font("Arial", 9);
-                    g.DrawString(moonPhase, font, Brushes.White, new PointF(5, 1));
-                }
+                    Color cbgn = Color.FromRgb(0, 0, 35);
+                    g.Clear(cbgn);
+                    g.FillRectangle(Brushes.Solid(Color.Gray), nautiRiseMinute, 1, nautiDayLength, trackHeight - 2);
+                    g.FillRectangle(Brushes.Solid(Color.LightSalmon), civilRiseMinute, 1, civilDayLength, trackHeight - 2);
+                    g.FillRectangle(Brushes.Solid(Color.SkyBlue), sunriseMinute, 1, sunDayLength, trackHeight - 2);
+
+                    if (moonPhase != null)
+                    {
+                        var font = Drawing.Arial9;
+                        g.DrawText(moonPhase, font, Color.White, new PointF(5, 1));
+                    }
+                });
             }
             catch
             {
@@ -247,7 +253,7 @@ namespace AudioAnalysisTools
             return image;
         }
 
-        public static void AddSunRiseSetLinesToImage(Bitmap image, FileInfo sunriseSetData, int startdayOfYear, int endDayOfYear, int pixelStep)
+        public static void AddSunRiseSetLinesToImage(Image<Rgb24> image, FileInfo sunriseSetData, int startdayOfYear, int endDayOfYear, int pixelStep)
         {
             List<string> lines = FileTools.ReadTextFile(sunriseSetData.FullName);
             int imageRow = 0;
@@ -268,8 +274,8 @@ namespace AudioAnalysisTools
                 int sunsetMinute = (int.Parse(sunsetArray[0]) * 60) + int.Parse(sunsetArray[1]) + 720;
                 for (int px = 0; px < pixelStep; px++)
                 {
-                    image.SetPixel(sunriseMinute, imageRow, Color.White);
-                    image.SetPixel(sunsetMinute,  imageRow, Color.White);
+                    image[sunriseMinute, imageRow] = Color.White;
+                    image[sunsetMinute,  imageRow] = Color.White;
                     imageRow++;
                 }
 

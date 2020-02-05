@@ -7,6 +7,9 @@ namespace TowseyLibrary
     using System;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.ColorSpaces;
+    using SixLabors.ImageSharp.ColorSpaces.Conversion;
+    using SixLabors.ImageSharp.PixelFormats;
+    using SixLabors.ImageSharp.Processing;
 
     public class CubeHelix
         {
@@ -25,6 +28,7 @@ namespace TowseyLibrary
 
             public const int maxPalletteSize = 256;
             public int maxPalletteIndex = maxPalletteSize - 1;
+            private readonly ColorSpaceConverter converter;
 
             public CubeHelix(string mode)
             {
@@ -61,11 +65,12 @@ namespace TowseyLibrary
                     }
             }
 
-            public CubeHelix(Hsl colorARgb, Hsl colorBRgb, double gamma = 1.0)
+            public CubeHelix(Hsl colorA, Hsl colorB, double gamma = 1.0)
             {
+                this.converter = new ColorSpaceConverter();
                 this.Gamma = gamma;
-                this.colorA = colorARgb.To<Hsl>();
-                this.colorB = colorBRgb.To<Hsl>();
+                this.colorA = colorA;
+                this.colorB = colorB;
 
                 this.aHue = (this.colorA.H + 120) * Radians;
                 this.bHue = ((this.colorB.H + 120) * Radians) - this.aHue;
@@ -105,12 +110,11 @@ namespace TowseyLibrary
                 var cosh = Math.Cos(hue);
                 var sinh = Math.Sin(hue);
 
-                return new Rgb()
-                           {
-                               R = (luminosity + (amplitude * ((-0.14861 * cosh) + (1.78277 * sinh)))) * 255,
-                               G = (luminosity + (amplitude * ((-0.29227 * cosh) - (0.90649 * sinh)))) * 255,
-                               B = (luminosity + (amplitude * (+1.97294 * cosh))) * 255,
-                           };
+                return new Rgb(
+                    r: (float)(luminosity + (amplitude * ((-0.14861 * cosh) + (1.78277 * sinh)))),
+                    g: (float)(luminosity + (amplitude * ((-0.29227 * cosh) - (0.90649 * sinh)))),
+                    b: (float)(luminosity + (amplitude * (+1.97294 * cosh)))
+                );
             }
 
             public void SetDefaultCubeHelix()
@@ -121,7 +125,7 @@ namespace TowseyLibrary
             {
                 double value = c / (double)maxPalletteIndex;
                 Rgb rgbColour = this.GetColor(value);
-                pallette[c] = Color.FromArgb((int)rgbColour.R, (int)rgbColour.G, (int)rgbColour.B);
+                pallette[c] = new Color((Rgb24)rgbColour);
             }
 
             this.ColourPallette = pallette;
@@ -144,7 +148,7 @@ namespace TowseyLibrary
                 int G = (int)Math.Floor(255.0 * value * value * value) / 3;
 
                 //int B = R / 2;
-                pallette[c] = Color.FromArgb(R, G, B);
+                pallette[c] = Color.FromRgb((byte)R, (byte)G, (byte)B);
             }
 
             this.ColourPallette = pallette;
@@ -167,7 +171,7 @@ namespace TowseyLibrary
 
                 //int G = 0;
                 int B = (int)Math.Floor(255.0 * value * value);
-                pallette[c] = Color.FromArgb(R, G, B);
+                pallette[c] = Color.FromRgb((byte)R, (byte)G, (byte)B);
             }
 
             this.ColourPallette = pallette;
@@ -236,14 +240,15 @@ namespace TowseyLibrary
         {
             int width = maxPalletteSize;
             int height = 100;
-            Image image = new Bitmap(width, height);
-            Graphics g = Graphics.FromImage(image);
-            Pen pen = new Pen(Color.Purple);
-            for (int c = 0; c < maxPalletteSize; c++)
+            var image = new Image<Rgb24>(width, height);
+            image.Mutate(g =>
             {
-                pen = new Pen(this.ColourPallette[c]);
-                g.DrawLine(pen, c, 0, c, height - 1);
-            }
+                for (int c = 0; c < maxPalletteSize; c++)
+                {
+                    var pen = new Pen(this.ColourPallette[c], 1);
+                    g.DrawLine(pen, c, 0, c, height - 1);
+                }
+            });
 
             image.Save(path);
         }
@@ -254,12 +259,12 @@ namespace TowseyLibrary
         /// </summary>
         /// <param name="matrix">the data</param>
         /// <param name="pathName"></param>
-            public Image DrawMatrixWithoutNormalisation(double[,] matrix)
+            public Image<Rgb24> DrawMatrixWithoutNormalisation(double[,] matrix)
         {
             int rows = matrix.GetLength(0); //number of rows
             int cols = matrix.GetLength(1); //number
 
-            Bitmap bmp = new Bitmap(cols, rows, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+            var image = new Image<Rgb24>(cols, rows);
 
             for (int r = 0; r < rows; r++)
             {
@@ -279,11 +284,11 @@ namespace TowseyLibrary
                         }
                     }
 
-                    bmp.SetPixel(c, r, this.ColourPallette[colourID]);
+                    image[c, r] = this.ColourPallette[colourID];
                 }//end all columns
             }//end all rows
 
-            return bmp;
+            return image;
         }
 
             /**
@@ -344,15 +349,10 @@ namespace TowseyLibrary
         {
             //Hsl colorARgb = new Hsl(300, 0.5, 0.0);
             //Hsl colorBRgb = new Hsl(-240, 0.5, 1.0);
-            Hsl colorARgb = new Hsl();
-            colorARgb.H = 300;
-            colorARgb.S = 0.5;
-            colorARgb.L = 0.0;
-            Hsl colorBRgb = new Hsl();
-            colorBRgb.H = -240;
-            colorBRgb.S = 0.5;
-            colorBRgb.L = 1.0;
-
+            Hsl colorARgb = new Hsl(300, 0.5f, 0.0f);
+            
+            Hsl colorBRgb = new Hsl(-240, 0.5f, 1.0f);
+            
             var cch = new CubeHelix(colorARgb, colorBRgb);
             cch.SetDefaultCubeHelix();
             string path = @"C:\SensorNetworks\Output\FalseColourSpectrograms\SpectrogramZoom\ZoomImages\testImage.png";
@@ -369,16 +369,10 @@ namespace TowseyLibrary
         {
             //Hsl colorARgb = new Hsl(300, 0.5, 0.0); // DEFAULT - used prior to 26 June 2015
             //Hsl colorBRgb = new Hsl(-240, 0.5, 1.0); // DEFAULT - used prior to 26 June 2015
-            Hsl colorARgb = new Hsl();
-            colorARgb.H = 300;
-            colorARgb.S = 0.85;
-            colorARgb.L = 0.1;
-            Hsl colorBRgb = new Hsl();
+            Hsl colorARgb = new Hsl(300, 0.85f, 0.0f);
 
-            //colorBRgb.H = -240;
-            colorBRgb.H = -240;
-            colorBRgb.S = 0.5;
-            colorBRgb.L = 1.0;
+
+            Hsl colorBRgb = new Hsl(-240, 0.5f, 1.0f);
 
             var cch = new CubeHelix(colorARgb, colorBRgb);
             cch.SetDefaultCubeHelix();

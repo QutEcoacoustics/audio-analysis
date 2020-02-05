@@ -1,4 +1,4 @@
-﻿// <copyright file="DSP_IIRFilter.cs" company="QutEcoacoustics">
+// <copyright file="DSP_IIRFilter.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -201,8 +201,8 @@ namespace AudioAnalysisTools.DSP
         //================================================================================================
         //================================================================================================
 
-        private double[] a;  //x coefficients
-        private double[] b;  //y coefficients
+        private readonly double[] a;  //x coefficients
+        private readonly double[] b;  //y coefficients
 
         public int order { get; set; }
 
@@ -356,8 +356,7 @@ namespace AudioAnalysisTools.DSP
                 // create step funciton
                 //for (int i = 1; i < inputLength; i++) impulse[i] = 1;
 
-                double[] y;
-                filter.ApplyIIRFilter(impulse, out y);
+                filter.ApplyIIRFilter(impulse, out var y);
 
                 //DataTools.writeArray(y);
                 double myGain = 0.0;

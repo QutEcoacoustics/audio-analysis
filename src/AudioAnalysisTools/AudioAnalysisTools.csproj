@@ -41,19 +41,6 @@
     <PostBuildEvent />
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.ComponentModel.Composition" />
-    <Reference Include="System.configuration" />
-    <Reference Include="System.Data.Linq" />
-    <Reference Include="System.Net" />
-    <Reference Include="System.Net.Http.WebRequest" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="YamlDotNet.Dynamic, Version=3.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\Extra Assemblies\YamlDotNet\YamlDotNet.Dynamic.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Acoustics.Shared\Acoustics.Shared.csproj" />
     <ProjectReference Include="..\Acoustics.Tools\Acoustics.Tools.csproj" />
     <ProjectReference Include="..\Acoustics.Unsafe\Acoustics.Unsafe.csproj" />
@@ -70,5 +57,14 @@
     <Compile Remove="HMMSettings.cs" />
     <Compile Remove="SpectrogramConstants.cs" />
     <Compile Remove="DSP\AudioSegmentationOBSOLETE.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Accord" Version="3.8.2-alpha" />
+    <PackageReference Include="Accord.MachineLearning" Version="3.8.2-alpha" />
+    <PackageReference Include="Accord.Math" Version="3.8.2-alpha" />
+    <PackageReference Include="Equ" Version="2.2.0" />
+    <PackageReference Include="FastMember" Version="1.5.0" />
+    <PackageReference Include="morelinq" Version="3.3.2" />
+    <PackageReference Include="SixLabors.Shapes.Text" Version="1.0.0-beta0009" />
   </ItemGroup>
 </Project>

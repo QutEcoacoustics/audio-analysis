@@ -1,13 +1,14 @@
-﻿// <copyright file="DecibelSpectrogram.cs" company="QutEcoacoustics">
+// <copyright file="DecibelSpectrogram.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
 namespace AudioAnalysisTools.StandardSpectrograms
 {
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.Drawing.Imaging;
     using Acoustics.Tools.Wav;
     using DSP;
+    using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
 
     /// <summary>
@@ -138,18 +139,16 @@ namespace AudioAnalysisTools.StandardSpectrograms
         public void DrawSpectrogram(string path)
         {
             var image = DrawSpectrogramAnnotated(this.Data, this.Configuration, this.Attributes);
-            image.Save(path, ImageFormat.Png);
+            image.Save(path);
         }
 
         // ################################# STATIC METHODS BELOW HERE ###############################
 
-        public static Image DrawSpectrogramAnnotated(double[,] data, SpectrogramSettings config, SpectrogramAttributes attributes)
+        public static Image<Rgb24> DrawSpectrogramAnnotated(double[,] data, SpectrogramSettings config, SpectrogramAttributes attributes)
         {
             // normalise the data between 0 and 95th percentiles
             int binCount = 100;
-            double min;
-            double max;
-            DataTools.MinMax(data, out min, out max);
+            DataTools.MinMax(data, out var min, out var max);
             double binWidth = (max - min) / binCount;
             var histogram = Histogram.Histo(data, binCount, min, max, binWidth);
 

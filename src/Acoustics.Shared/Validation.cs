@@ -17,12 +17,9 @@ namespace Acoustics.Shared
             return null;
         }
 
-        private List<Exception> exceptions;
+        private readonly List<Exception> exceptions;
 
-        public IEnumerable<Exception> Exceptions
-        {
-            get { return this.exceptions; }
-        }
+        public IEnumerable<Exception> Exceptions => this.exceptions;
 
         public Validation AddException(Exception ex)
         {
@@ -43,7 +40,7 @@ namespace Acoustics.Shared
     [Serializable]
     public sealed class MultiException : Exception
     {
-        private Exception[] innerExceptions;
+        private readonly Exception[] innerExceptions;
 
         public IEnumerable<Exception> InnerExceptions
         {

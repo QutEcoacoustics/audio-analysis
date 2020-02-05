@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="PointOfInterest.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -8,7 +8,10 @@ namespace AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.PixelFormats;
+    using SixLabors.ImageSharp.Processing;
+    using SixLabors.Primitives;
 
     /// <summary>
     /// The point of interest.
@@ -43,10 +46,10 @@ namespace AudioAnalysisTools
             this.Point = point;
         }
 
-        public PointOfInterest(TimeSpan time, double herz)
+        public PointOfInterest(TimeSpan time, double hertz)
         {
             this.TimeLocation = time;
-            this.Herz = herz;
+            this.Hertz = hertz;
         }
 
         /// <summary>
@@ -66,7 +69,7 @@ namespace AudioAnalysisTools
         /// <summary>
         /// Gets or sets the frequency location of point of interest.
         /// </summary>
-        public double Herz { get; set; }
+        public double Hertz { get; set; }
 
         /// <summary>
         /// Gets or sets the X-axis timescale seconds per pixel.
@@ -125,87 +128,50 @@ namespace AudioAnalysisTools
         public bool IsLocalMaximum { get; set; }
 
         /// <summary>
-        /// The draw point method draws a collection of points onto a graphics surface.
-        /// </summary>
-        /// <param name="graphics">
-        /// The graphics surface to draw on.
-        /// </param>
-        /// <param name="pointsOfInterest">
-        /// The points of interest.
-        /// </param>
-        /// <param name="height">
-        /// The maximum height of the draw surface.
-        /// </param>
-        public void DrawCircle(Graphics graphics, IEnumerable<PointOfInterest> pointsOfInterest, int height)
-        {
-            foreach (PointOfInterest poi in pointsOfInterest)
-            {
-                graphics.DrawEllipse(new Pen(poi.DrawColor), poi.Point.X - 2, height - poi.Point.Y - 3, 4, 4);
-            }
-        }
-
-        /// <summary>
-        /// Draw a point on the pointOfInterest
-        /// </summary>
-        /// <param name="graphics"></param>
-        /// <param name="pointsOfInterest"></param>
-        /// <param name="height"></param>
-        public void DrawPoint(Graphics graphics, IEnumerable<PointOfInterest> pointsOfInterest, int height)
-        {
-            foreach (PointOfInterest poi in pointsOfInterest)
-            {
-                var brush = new SolidBrush(Color.Crimson);
-                graphics.FillRectangle(brush, poi.Point.X, height - poi.Point.Y - 1, 1, 1);
-
-                //DrawRectangle(new Pen(poi.DrawColor), poi.Point.X, height - poi.Point.Y - 1, 1, 1)
-            }
-        }
-
-        /// <summary>
         /// Draw a box from a point at top left with radius width and radius length
         /// </summary>
         /// <param name="graphics"></param>
         /// <param name="pointsOfInterest"></param>
         /// <param name="radius"></param>
-        public void DrawBox(Graphics graphics, IEnumerable<PointOfInterest> pointsOfInterest, int radius)
+        public void DrawBox(IImageProcessingContext context, IEnumerable<PointOfInterest> pointsOfInterest, int radius)
         {
             foreach (PointOfInterest poi in pointsOfInterest)
             {
-                var pen = new Pen(Color.Crimson);
+                var pen = new Pen(Color.Crimson, 1);
 
                 //graphics.DrawRectangle(pen, poi.Point.X, height - poi.Point.Y - 1, radius, radius);
-                graphics.DrawRectangle(pen, poi.Point.X, poi.Point.Y, radius, radius);
+                context.DrawRectangle(pen, poi.Point.X, poi.Point.Y, radius, radius);
             }
         }
 
-        public void DrawLocalMax(Bitmap bmp, int spectrogramHeight)
+        public void DrawLocalMax(Image<Rgb24> bmp, int spectrogramHeight)
         {
             if (this.IsLocalMaximum)
             {
                 int x = (int)Math.Round(this.TimeLocation.TotalSeconds / this.TimeScale.TotalSeconds);
-                int y = spectrogramHeight - (int)Math.Round(this.Herz / this.HerzScale) - 1;
+                int y = spectrogramHeight - (int)Math.Round(this.Hertz / this.HerzScale) - 1;
                 Color color = this.DrawColor;
-                bmp.SetPixel(x, y, color);
+                bmp[x, y] = color;
 
-                //bmp.SetPixel(x, y-1, color);
-                //bmp.SetPixel(x, y+1, color);
-                //bmp.SetPixel(x-1, y, color);
-                //bmp.SetPixel(x+1, y, color);
+                //bmp[x, y-1] = color;
+                //bmp[x, y+1] = color;
+                //bmp[x-1, y] = color;
+                //bmp[x+1, y] = color;
             }
         }
 
-        public void DrawPoint(Bitmap bmp, int spectrogramHeight, bool multiPixel)
+        public void DrawPoint(Image<Rgb24> bmp, int spectrogramHeight, bool multiPixel)
         {
             //int x = this.Point.X;
             //int y = this.Point.Y;
             int x = (int)Math.Round(this.TimeLocation.TotalSeconds / this.TimeScale.TotalSeconds);
-            int y = spectrogramHeight - (int)Math.Round(this.Herz / this.HerzScale) - 1;
+            int y = spectrogramHeight - (int)Math.Round(this.Hertz / this.HerzScale) - 1;
             int orientationCategory = (int)Math.Round(this.RidgeOrientation * 8 / Math.PI);
 
             //orientation = indexMax * Math.PI / (double)8;
 
             Color color = this.DrawColor;
-            bmp.SetPixel(x, y, color);
+            bmp[x, y] =  color;
             if (!multiPixel)
             {
                 return;
@@ -213,57 +179,57 @@ namespace AudioAnalysisTools
 
             if (orientationCategory == 0)
             {
-                bmp.SetPixel(x - 1, y, color);
-                bmp.SetPixel(x + 1, y, color);
-                bmp.SetPixel(x + 2, y, color);
+                bmp[x - 1, y] = color;
+                bmp[x + 1, y] = color;
+                bmp[x + 2, y] = color;
             }
             else
             {
                 if (orientationCategory == 1)
                 {
-                    bmp.SetPixel(x + 2, y, color);
-                    bmp.SetPixel(x + 1, y, color);
-                    bmp.SetPixel(x - 1, y, color);
+                    bmp[x + 2, y] = color;
+                    bmp[x + 1, y] = color;
+                    bmp[x - 1, y] = color;
                 }
                 else
                 {
                     if (orientationCategory == 2)
                     {
-                        bmp.SetPixel(x - 1, y + 1, color);
-                        bmp.SetPixel(x + 1, y - 1, color);
-                        bmp.SetPixel(x + 2, y - 2, color);
+                        bmp[x - 1, y + 1] = color;
+                        bmp[x + 1, y - 1] = color;
+                        bmp[x + 2, y - 2] = color;
                     }
                     else
                         if (orientationCategory == 3)
                         {
-                            bmp.SetPixel(x, y - 1, color);
-                            bmp.SetPixel(x, y + 1, color);
-                            bmp.SetPixel(x, y + 2, color);
+                            bmp[x, y - 1] = color;
+                            bmp[x, y + 1] = color;
+                            bmp[x, y + 2] = color;
                         }
                         else
                             if (orientationCategory == 4)
                             {
-                                bmp.SetPixel(x, y - 1, color);
-                                bmp.SetPixel(x, y + 1, color);
-                                bmp.SetPixel(x, y + 2, color);
+                                bmp[x, y - 1] = color;
+                                bmp[x, y + 1] = color;
+                                bmp[x, y + 2] = color;
                             }
                             else if (orientationCategory == 5)
                             {
-                                bmp.SetPixel(x, y - 1, color);
-                                bmp.SetPixel(x, y + 1, color);
-                                bmp.SetPixel(x, y + 2, color);
+                                bmp[x, y - 1] = color;
+                                bmp[x, y + 1] = color;
+                                bmp[x, y + 2] = color;
                             }
                             else if (orientationCategory == 6)
                             {
-                                bmp.SetPixel(x + 2, y + 2, color);
-                                bmp.SetPixel(x + 1, y + 1, color);
-                                bmp.SetPixel(x - 1, y - 1, color);
+                                bmp[x + 2, y + 2] = color;
+                                bmp[x + 1, y + 1] = color;
+                                bmp[x - 1, y - 1] = color;
                             }
                             else if (orientationCategory == 7)
                             {
-                                bmp.SetPixel(x + 2, y, color);
-                                bmp.SetPixel(x + 1, y, color);
-                                bmp.SetPixel(x - 1, y, color);
+                                bmp[x + 2, y] = color;
+                                bmp[x + 1, y] = color;
+                                bmp[x - 1, y] = color;
                             }
                 }
             }
@@ -274,10 +240,10 @@ namespace AudioAnalysisTools
         /// </summary>
         /// <param name="bmp"></param>
         /// <param name="spectrogramHeight"></param>
-        public void DrawRefinedOrientationPoint(Bitmap bmp, int spectrogramHeight)
+        public void DrawRefinedOrientationPoint(Image<Rgb24> bmp, int spectrogramHeight)
         {
             int x = (int)Math.Round(this.TimeLocation.TotalSeconds / this.TimeScale.TotalSeconds);
-            int y = spectrogramHeight - (int)Math.Round(this.Herz / this.HerzScale) - 1;
+            int y = spectrogramHeight - (int)Math.Round(this.Hertz / this.HerzScale) - 1;
             double orientation = this.RidgeOrientation;
             Color color = this.DrawColor;
 
@@ -330,10 +296,10 @@ namespace AudioAnalysisTools
                 color = Color.Pink;
             }
 
-            bmp.SetPixel(x, y, color);
+            bmp[x, y] = color;
         } // DrawOrientationPoint
 
-        public void DrawOrientationPoint(Bitmap bmp, int spectrogramHeight)
+        public void DrawOrientationPoint(Image<Rgb24> bmp, int spectrogramHeight)
         {
             // This ones for structure tensor
             //int x = this.Point.Y;
@@ -403,7 +369,7 @@ namespace AudioAnalysisTools
                 }
             } // if (orientationCategory == 0) else
 
-            bmp.SetPixel(x, y, color);
+            bmp[x, y] = color;
         } // DrawOrientationPoint
 
         public static void PruneSingletons(List<PointOfInterest> poiList, int rows, int cols)

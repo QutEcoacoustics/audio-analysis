@@ -184,8 +184,7 @@ namespace AnalysisPrograms
             {
                 var guid = fileName.Substring(0, fileName.IndexOf('_'));
 
-                Guid result;
-                if (Guid.TryParse(guid, out result))
+                if (Guid.TryParse(guid, out var result))
                 {
                     return result;
                 }

@@ -6,13 +6,17 @@ namespace AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using System.Text;
     using System.Text.RegularExpressions;
     using Acoustics.Shared;
     using Indices;
+    using SixLabors.Fonts;
+    using SixLabors.ImageSharp.PixelFormats;
+    using SixLabors.ImageSharp.Processing;
+    using SixLabors.Primitives;
     using TowseyLibrary;
 
     public static class FrommoltProject
@@ -64,10 +68,10 @@ namespace AudioAnalysisTools
             int defaultDayWidth = 20;
             int defaultDayHeight = 300;
 
-            Brush brush = Brushes.White;
-            Font stringFont = new Font("Tahoma", 12);
+            var brush = Color.White;
+            Font stringFont = Drawing.Tahoma12;
 
-            var list = new List<Image>();
+            var list = new List<Image<Rgb24>>();
 
             // loop over days
             for (int d = 0; d < dayCount; d++)
@@ -81,11 +85,14 @@ namespace AudioAnalysisTools
                 FileInfo[] files = IndexMatrices.GetFilesInDirectories(subDirectories, fileMatch);
                 if (files.Length == 0)
                 {
-                    Bitmap gapImage = new Bitmap(defaultDayWidth, defaultDayHeight);
-                    Graphics g5 = Graphics.FromImage(gapImage);
-                    g5.Clear(Color.Gray);
-                    g5.DrawString("Day", stringFont, brush, new PointF(2, 5));
-                    g5.DrawString("missing", stringFont, brush, new PointF(2, 35));
+                    Image<Rgb24> gapImage = new Image<Rgb24>(defaultDayWidth, defaultDayHeight);
+                    gapImage.Mutate(g5 =>
+                    {
+                        g5.Clear(Color.Gray);
+                        g5.DrawText("Day", stringFont, brush, new PointF(2, 5));
+                        g5.DrawText("missing", stringFont, brush, new PointF(2, 35));
+                    });
+
                     list.Add(gapImage);
 
                     continue;
@@ -94,47 +101,48 @@ namespace AudioAnalysisTools
                 // Sort the files by date and return as a dictionary: sortedDictionaryOfDatesAndFiles<DateTimeOffset, FileInfo>
                 //var sortedDictionaryOfDatesAndFiles = FileDateHelpers.FilterFilesForDates(files, timeSpanOffsetHint);
 
-                Image image = ConcatenateFourChannelImages(files, imageDirectory, fileSuffix, date);
+                var image = ConcatenateFourChannelImages(files, imageDirectory, fileSuffix, date);
 
                 defaultDayHeight = image.Height;
                 list.Add(image);
             }
 
-            Image combinedImage = ImageTools.CombineImagesInLine(list);
+            var combinedImage = ImageTools.CombineImagesInLine(list);
 
-            Bitmap labelImage1 = new Bitmap(combinedImage.Width, 24);
-            Graphics g1 = Graphics.FromImage(labelImage1);
-            g1.Clear(Color.Black);
-            g1.DrawString(fileSuffix, stringFont, brush, new PointF(2, 2));
+            Image<Rgb24> labelImage1 = new Image<Rgb24>(combinedImage.Width, 24);
+            labelImage1.Mutate(g1 =>
+            {
+                g1.Clear(Color.Black);
+                g1.DrawText(fileSuffix, stringFont, brush, new PointF(2, 2));
+            });
 
             //labelImage1.Save(Path.Combine(imageDirectory.FullName, suffix1));
-
-            Graphics g = Graphics.FromImage(combinedImage);
-            g.DrawImage(labelImage1, 0, 0);
+            combinedImage.Mutate(g => { g.DrawImage(labelImage1, 0, 0); });
             string fileName = string.Format(startDay + "." + fileSuffix);
             combinedImage.Save(Path.Combine(imageDirectory.FullName, fileName));
         }
 
-        public static Image ConcatenateFourChannelImages(FileInfo[] imageFiles, DirectoryInfo imageDirectory, string fileSuffix, string date)
+        public static Image<Rgb24> ConcatenateFourChannelImages(FileInfo[] imageFiles, DirectoryInfo imageDirectory, string fileSuffix, string date)
         {
             // get first image to find its dimensions
-            Image image = Image.FromFile(imageFiles[0].FullName);
+            var image = (Image<Rgb24>)Image.Load(imageFiles[0].FullName);
 
-            Brush brush = Brushes.White;
-            Font stringFont = new Font("Tahoma", 12);
+            var brush = Color.White;
+            Font stringFont = Drawing.Tahoma12;
 
             //create spacer image
             int width = 1;
             int height = image.Height;
-            Bitmap spacerImage = new Bitmap(width, height);
-            Graphics g = Graphics.FromImage(spacerImage);
-            g.Clear(Color.DarkGray);
+            Image<Rgb24> spacerImage = new Image<Rgb24>(width, height);
+            spacerImage.Mutate(g => {
+                g.Clear(Color.DarkGray);
+            });
 
             // init output list of images
-            var fourChannelList = new List<Image>();
+            var fourChannelList = new List<Image<Rgb24>>();
             for (int channel = 0; channel < 4; channel++)
             {
-                var imageList = new List<Image>();
+                var imageList = new List<Image<Rgb24>>();
 
                 //   Monitoring_Rosin_20120329T000000 + 0200_.merged.wav.channel_0__2Maps.png;
                 string fileMatch = $@"0000+0200_.merged.wav.channel_{channel}__{fileSuffix}";
@@ -146,22 +154,24 @@ namespace AudioAnalysisTools
                         continue;
                     }
 
-                    image = Image.FromFile(imageFile.FullName);
+                    image = (Image<Rgb24>)Image.Load(imageFile.FullName);
                     imageList.Add(image);
                     imageList.Add(spacerImage);
                 }
 
                 imageList.Add(spacerImage);
                 imageList.Add(spacerImage);
-                Image concatImage = ImageTools.CombineImagesInLine(imageList);
-                g = Graphics.FromImage(concatImage);
-                string chn = $"ch{channel + 1}";
-                g.DrawString(chn, stringFont, brush, new PointF(2, 40));
+                var concatImage = ImageTools.CombineImagesInLine(imageList);
+                concatImage.Mutate(g =>
+                {
+                    string chn = $"ch{channel + 1}";
+                    g.DrawText(chn, stringFont, brush, new PointF(2, 40));
+                });
 
                 fourChannelList.Add(concatImage);
             }
 
-            Image combinedImage = ImageTools.CombineImagesVertically(fourChannelList);
+            var combinedImage = ImageTools.CombineImagesVertically(fourChannelList);
             return combinedImage;
         }
     }

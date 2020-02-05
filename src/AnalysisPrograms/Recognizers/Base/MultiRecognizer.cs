@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="MultiRecognizer.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -17,7 +17,7 @@ namespace AnalysisPrograms.Recognizers.Base
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -34,6 +34,9 @@ namespace AnalysisPrograms.Recognizers.Base
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using log4net;
+    using SixLabors.ImageSharp.PixelFormats;
+    using SixLabors.ImageSharp.Processing;
+    using SixLabors.Primitives;
     using TowseyLibrary;
 
     public class MultiRecognizer : RecognizerBase
@@ -71,7 +74,7 @@ namespace AnalysisPrograms.Recognizers.Base
             };
             var sonogram = (BaseSonogram)new SpectrogramStandard(config, audioRecording.WavReader);
 
-            var scoreTracks = new List<Image>();
+            var scoreTracks = new List<Image<Rgb24>>();
             var plots = new List<Plot>();
             var events = new List<AcousticEvent>();
 
@@ -113,7 +116,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 }
             }
 
-            Image scoreTrackImage = ImageTools.CombineImagesVertically(scoreTracks);
+            var scoreTrackImage = ImageTools.CombineImagesVertically(scoreTracks);
 
             return new RecognizerResults()
                 {
@@ -174,7 +177,7 @@ namespace AnalysisPrograms.Recognizers.Base
             return result;
         }
 
-        public static Image GenerateScoreTrackImage(string name, double[] scores, int imageWidth)
+        public static Image<Rgb24> GenerateScoreTrackImage(string name, double[] scores, int imageWidth)
         {
             Log.Info("MultiRecognizer.GenerateScoreTrackImage(): " + name);
             if (scores == null)
@@ -191,30 +194,31 @@ namespace AnalysisPrograms.Recognizers.Base
             }
 
             //Color[] color = { Color.Blue, Color.LightGreen, Color.Red, Color.Orange, Color.Purple };
-            //Font stringFont = new Font("Arial", 6);
-            Font stringFont = new Font("Tahoma", 8);
-            Brush brush = Brushes.Red;
+            var stringFont = Drawing.Tahoma8;
+            var brush = Color.Red;
             int trackHeight = 20;
 
-            var trackImage = new Bitmap(imageWidth, trackHeight);
-            Graphics g2 = Graphics.FromImage(trackImage);
-            g2.Clear(Color.LightGray);
-            for (int x = 0; x < imageWidth; x++)
+            var trackImage = new Image<Rgb24>(imageWidth, trackHeight);
+            trackImage.Mutate(g2 =>
             {
-                int value = (int)Math.Round(scoreValues[x] * trackHeight);
-                for (int y = 1; y < value; y++)
+                g2.Clear(Color.LightGray);
+                for (int x = 0; x < imageWidth; x++)
                 {
-                    if (y > trackHeight)
+                    int value = (int)Math.Round(scoreValues[x] * trackHeight);
+                    for (int y = 1; y < value; y++)
                     {
-                        break;
+                        if (y > trackHeight)
+                        {
+                            break;
+                        }
+
+                        trackImage[x, trackHeight - y] = Color.Black;
                     }
-
-                    trackImage.SetPixel(x, trackHeight - y, Color.Black);
                 }
-            }
 
-            g2.DrawString(name, stringFont, brush, new PointF(1, 1));
-            g2.DrawRectangle(new Pen(Color.Gray), 0, 0, imageWidth - 1, trackHeight - 1);
+                g2.DrawText(name, stringFont, brush, new PointF(1, 1));
+                g2.DrawRectangle(new Pen(Color.Gray, 1), 0, 0, imageWidth - 1, trackHeight - 1);
+            });
             return trackImage;
         }
     }

@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="OscillationsGeneric.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -14,7 +14,7 @@ namespace AnalysisPrograms
     using System.Collections.Generic;
     using System.Data;
     using System.Diagnostics;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
@@ -35,6 +35,7 @@ namespace AnalysisPrograms
     using Production;
     using Production.Arguments;
     using Production.Validation;
+    using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
 
     /// <summary>
@@ -205,7 +206,7 @@ namespace AnalysisPrograms
                 Oscillations2014.DefaultSampleLength = int.Parse(configDict[AnalysisKeys.OscilDetection2014SensitivityThreshold]);
             }
 
-            var list1 = new List<Image>();
+            var list1 = new List<Image<Rgb24>>();
 
             //var result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, 64, "Autocorr-FFT");
             //list1.Add(result.FreqOscillationImage);
@@ -215,26 +216,26 @@ namespace AnalysisPrograms
             list1.Add(result.FreqOscillationImage);
             result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, "Autocorr-WPD");
             list1.Add(result.FreqOscillationImage);
-            Image compositeOscImage1 = ImageTools.CombineImagesInLine(list1.ToArray());
+            var compositeOscImage1 = ImageTools.CombineImagesInLine(list1.ToArray());
 
             // ###############################################################
 
             // init the sonogram image stack
-            var sonogramList = new List<Image>();
+            var sonogramList = new List<Image<Rgb24>>();
             var image = sonogram.GetImageFullyAnnotated("AMPLITUDE SPECTROGRAM");
             sonogramList.Add(image);
 
             //string testPath = @"C:\SensorNetworks\Output\Sonograms\amplitudeSonogram.png";
-            //image.Save(testPath, ImageFormat.Png);
+            //image.Save(testPath);
 
-            Image envelopeImage = ImageTrack.DrawWaveEnvelopeTrack(recordingSegment, image.Width);
+            var envelopeImage = ImageTrack.DrawWaveEnvelopeTrack(recordingSegment, image.Width);
             sonogramList.Add(envelopeImage);
 
             // 2) now draw the standard decibel spectrogram
             sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
 
             // ###############################################################
-            list1 = new List<Image>();
+            list1 = new List<Image<Rgb24>>();
 
             //result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, 64, "Autocorr-FFT");
             //list1.Add(result.FreqOscillationImage);
@@ -244,21 +245,21 @@ namespace AnalysisPrograms
             list1.Add(result.FreqOscillationImage);
             result = Oscillations2014.GetFreqVsOscillationsDataAndImage(sonogram, "Autocorr-WPD");
             list1.Add(result.FreqOscillationImage);
-            Image compositeOscImage2 = ImageTools.CombineImagesInLine(list1.ToArray());
+            var compositeOscImage2 = ImageTools.CombineImagesInLine(list1.ToArray());
 
             // ###############################################################
             //image = sonogram.GetImageFullyAnnotated("DECIBEL SPECTROGRAM");
             //list.Add(image);
 
             // combine eight images
-            list1 = new List<Image>();
+            list1 = new List<Image<Rgb24>>();
             list1.Add(compositeOscImage1);
             list1.Add(compositeOscImage2);
-            Image compositeOscImage3 = ImageTools.CombineImagesVertically(list1.ToArray());
+            var compositeOscImage3 = ImageTools.CombineImagesVertically(list1.ToArray());
             string imagePath3 = Path.Combine(opDir.FullName, sourceName + "_freqOscilMatrix.png");
-            compositeOscImage3.Save(imagePath3, ImageFormat.Png);
+            compositeOscImage3.Save(imagePath3);
 
-            Image segmentationImage = ImageTrack.DrawSegmentationTrack(
+            var segmentationImage = ImageTrack.DrawSegmentationTrack(
                 sonogram,
                 EndpointDetectionConfiguration.K1Threshold,
                 EndpointDetectionConfiguration.K2Threshold,
@@ -278,9 +279,9 @@ namespace AnalysisPrograms
             //Oscillations2014.SaveFreqVsOscillationsDataAndImage(sonogram, sampleLength, algorithmName, opDir);
             // ###############################################################
 
-            Image compositeSonogram = ImageTools.CombineImagesVertically(sonogramList);
+            var compositeSonogram = ImageTools.CombineImagesVertically(sonogramList);
             string imagePath2 = Path.Combine(opDir.FullName, sourceName + ".png");
-            compositeSonogram.Save(imagePath2, ImageFormat.Png);
+            compositeSonogram.Save(imagePath2);
 
             LoggedConsole.WriteLine("\n##### FINISHED FILE ###################################################\n");
         }

@@ -24,7 +24,7 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.IO;
     using System.IO.Compression;
     using System.Linq;
@@ -42,6 +42,13 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.StandardSpectrograms;
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
+    using Production;
+    using Production.Arguments;
+    using Production.Validation;
+    using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.PixelFormats;
+    using SixLabors.ImageSharp.Processing;
+    using SixLabors.Primitives;
     using TowseyLibrary;
     using Zio;
 
@@ -384,7 +391,7 @@ namespace AnalysisPrograms
                     TimeSpan start = ((DateTimeOffset)indexGenerationData.RecordingStartDate).TimeOfDay;
                     string startTime = $"{start.Hours:d2}{start.Minutes:d2}h";
                     string imageTitle = $"SOURCE: \"{outputFileStem}\".     Starts at {startTime}                       {Meta.OrganizationTag}";
-                    Bitmap tracksImage = IndexDisplay.DrawImageOfSummaryIndices(
+                    Image<Rgb24> tracksImage = IndexDisplay.DrawImageOfSummaryIndices(
                             IndexProperties.GetIndexProperties(indexPropertiesConfig),
                             dictionaryOfSummaryIndices,
                             imageTitle,
@@ -407,7 +414,7 @@ namespace AnalysisPrograms
 
                 if (arguments.DrawImages)
                 {
-                    Tuple<Image, string>[] tuple = LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
+                    Tuple<Image<Rgb24>, string>[] tuple = LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
                             subDirectories[0],
                             resultsDir,
                             ldSpectrogramConfig,
@@ -531,7 +538,7 @@ namespace AnalysisPrograms
                 // DRAW SPECTRAL INDEX IMAGES AND SAVE IN RESULTS DIRECTORY
                 if (arguments.DrawImages)
                 {
-                    Tuple<Image, string>[] tuple = LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
+                    Tuple<Image<Rgb24>, string>[] tuple = LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
                         subDirectories[0],
                         resultsDir,
                         ldSpectrogramConfig,
@@ -567,16 +574,14 @@ namespace AnalysisPrograms
 
                         var indexArray = ConvertEventsToSummaryIndices(output2);
 
-                        double[] normalisedScores;
-                        double normalisedThreshold;
-                        DataTools.Normalise(indexArray, 2, out normalisedScores, out normalisedThreshold);
+                        DataTools.Normalise(indexArray, 2, out var normalisedScores, out var normalisedThreshold);
 
                         //var plot = new Plot("Cane Toad", normalisedScores, normalisedThreshold);
                         var recognizerTrack = GraphsAndCharts.DrawGraph("Canetoad events", normalisedScores, 32);
                         var imageFilePath = Path.Combine(resultsDir.FullName, outputFileStem + "_" + dateString + "__2Maps" + ".png");
-                        var twoMaps = ImageTools.ReadImage2Bitmap(imageFilePath);
-                        var imageList = new List<Image> { twoMaps, recognizerTrack };
-                        var compositeBmp = (Bitmap)ImageTools.CombineImagesVertically(imageList);
+                        var twoMaps = Image.Load<Rgb24>(imageFilePath);
+                        var imageList = new [] { twoMaps, recognizerTrack };
+                        var compositeBmp = (Image<Rgb24>)ImageTools.CombineImagesVertically(imageList);
                         var imagePath2 = Path.Combine(resultsDir.FullName, outputFileStem + "_" + dateString + ".png");
                         compositeBmp.Save(imagePath2);
                     }
@@ -624,19 +629,18 @@ namespace AnalysisPrograms
             DateTimeOffset dto = new DateTimeOffset(2013, 3, 1, 0, 0, 0, TimeSpan.Zero);
             TimeSpan oneday = new TimeSpan(24, 0, 0);
 
-            var image = new Bitmap(imageFiles[0].FullName);
+            var image = Image.Load<Rgb24>(imageFiles[0].FullName);
 
             int imageHt = image.Height;
             int imageCount = imageFiles.Length;
-            var spacer = new Bitmap(image.Width, 1);
-            Graphics canvas = Graphics.FromImage(spacer);
-            canvas.Clear(Color.Gray);
+            var spacer = new Image<Rgb24>(image.Width, 1);
+            spacer.Mutate(canvas => { canvas.Clear(Color.Gray); });
 
             // add ribbon files to list
-            var imageList = new List<Image>();
+            var imageList = new List<Image<Rgb24>>();
             foreach (FileInfo imageFile in imageFiles)
             {
-                image = new Bitmap(imageFile.FullName);
+                image = Image.Load<Rgb24>(imageFile.FullName);
 
                 // draw on the tidal and sun info IFF available.
                 if (tidalInfo != null)
@@ -652,75 +656,83 @@ namespace AnalysisPrograms
             }
 
             //create composite image
-            var compositeBmp = (Bitmap)ImageTools.CombineImagesVertically(imageList);
+            var compositeBmp = (Image<Rgb24>)ImageTools.CombineImagesVertically(imageList);
 
             // create left side day scale
-            var stringFont = new Font("Arial", 16);
-            imageList = new List<Image>();
+            var stringFont = Drawing.GetArial(16);
+            imageList = new List<Image<Rgb24>>();
 
             for (int i = 0; i < imageCount; i++)
             {
-                image = new Bitmap(60, imageHt);
-                canvas = Graphics.FromImage(image);
-                var str = $"{i + 1}";
-                canvas.DrawString(str, stringFont, Brushes.White, new PointF(3, 3));
+                image = new Image<Rgb24>(60, imageHt);
+                image.Mutate(canvas =>
+                {
+                    var str = $"{i + 1}";
+                    canvas.DrawText(str, stringFont, Color.White, new PointF(3, 3));
+                });
 
                 imageList.Add(image);
                 imageList.Add(spacer);
             }
 
             //create composite image
-            var compositeBmpYscale = (Bitmap)ImageTools.CombineImagesVertically(imageList);
-            Image[] finalImages = { compositeBmpYscale, compositeBmp, compositeBmpYscale };
-            var finalComposite = (Bitmap)ImageTools.CombineImagesInLine(finalImages);
+            var compositeBmpYscale = (Image<Rgb24>)ImageTools.CombineImagesVertically(imageList);
+            var finalImages = new [] { compositeBmpYscale, compositeBmp, compositeBmpYscale };
+            var finalComposite = (Image<Rgb24>)ImageTools.CombineImagesInLine(finalImages);
 
             // add title bar
-            var titleBmp = new Bitmap(finalComposite.Width, 30);
-            canvas = Graphics.FromImage(titleBmp);
-            canvas.DrawString(title, stringFont, Brushes.White, new PointF(30, 3));
+            var titleBmp = new Image<Rgb24>(finalComposite.Width, 30);
+            titleBmp.Mutate(canvas => { canvas.DrawText(title, stringFont, Color.White, new PointF(30, 3)); });
 
             // add title plus spacer
-            spacer = new Bitmap(finalComposite.Width, 3);
-            canvas = Graphics.FromImage(spacer);
-            canvas.Clear(Color.Gray);
-            Image[] titledImages = { titleBmp, spacer, finalComposite };
-            finalComposite = (Bitmap)ImageTools.CombineImagesVertically(titledImages);
+            spacer = new Image<Rgb24>(finalComposite.Width, 3);
+            spacer.Mutate(canvas =>
+            {
+                canvas.Clear(Color.Gray);
+            });
+
+            var titledImages = new []{ titleBmp, spacer, finalComposite };
+            finalComposite = (Image<Rgb24>)ImageTools.CombineImagesVertically(titledImages);
 
             finalComposite.Save(Path.Combine(outputDirectory.FullName, opFileStem + ".png"));
             Console.WriteLine($"Final compositeBmp dimensions are width {compositeBmp.Width} by height {compositeBmp.Height}");
             Console.WriteLine($"Final number of ribbons/days = {imageFiles.Length}");
         } //ConcatenateRibbonImages
 
-        public static void AddTidalInfo(Bitmap image, SunAndMoon.SunMoonTides[] tidalInfo, DateTimeOffset dto)
+        public static void AddTidalInfo(Image<Rgb24> image, SunAndMoon.SunMoonTides[] tidalInfo, DateTimeOffset dto)
         {
-            var yellowPen = new Pen(Brushes.Yellow);
-            var cyanPen = new Pen(Brushes.Lime, 2);
-            var whitePen = new Pen(Brushes.White, 2);
-            var spgCanvas = Graphics.FromImage(image);
-
-            foreach (SunAndMoon.SunMoonTides smt in tidalInfo)
+            var yellowPen = new Pen(Color.Yellow, 1);
+            var cyanPen = new Pen(Color.Lime, 2);
+            var whitePen = new Pen(Color.White, 2);
+            image.Mutate(spgCanvas =>
             {
-                if (smt.Date == dto)
-                {
-                    foreach (KeyValuePair<string, DateTimeOffset> kvp in smt.dictionary)
-                    {
-                        string key = kvp.Key;
-                        DateTimeOffset dto2 = kvp.Value;
-                        var thisPen = yellowPen;
-                        if (key == SunAndMoon.SunMoonTides.HIGHTIDE)
-                        {
-                            thisPen = cyanPen;
-                        }
-                        else if (key == SunAndMoon.SunMoonTides.LOWTIDE)
-                        {
-                            thisPen = whitePen;
-                        }
 
-                        int minute = (int)Math.Round(dto2.TimeOfDay.TotalMinutes * 2); //IMPORTANT multiply by 2 because scale = 30s/px.
-                        spgCanvas.DrawLine(thisPen, minute, 0, minute, image.Height);
+                foreach (SunAndMoon.SunMoonTides smt in tidalInfo)
+                {
+                    if (smt.Date == dto)
+                    {
+                        foreach (KeyValuePair<string, DateTimeOffset> kvp in smt.dictionary)
+                        {
+                            string key = kvp.Key;
+                            DateTimeOffset dto2 = kvp.Value;
+                            var thisPen = yellowPen;
+                            if (key == SunAndMoon.SunMoonTides.HIGHTIDE)
+                            {
+                                thisPen = cyanPen;
+                            }
+                            else if (key == SunAndMoon.SunMoonTides.LOWTIDE)
+                            {
+                                thisPen = whitePen;
+                            }
+
+                            int minute =
+                                (int)Math.Round(dto2.TimeOfDay.TotalMinutes *
+                                                2); //IMPORTANT multiply by 2 because scale = 30s/px.
+                            spgCanvas.DrawLine(thisPen, minute, 0, minute, image.Height);
+                        }
                     }
                 }
-            }
+            });
         }
 
         public static void ConcatenateAcousticEventFiles(DirectoryInfo[] dataDirs, string pattern, DirectoryInfo outputDirectory, string opFileStem)
@@ -752,18 +764,18 @@ namespace AnalysisPrograms
             var image = GraphsAndCharts.DrawGraph("Canetoad events", indexArray, 100);
 
             string title = $"Canetoad events: {opFileStem}                       Max value={maxValue:f0}";
-            Image titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, indexArray.Length);
+            var titleBar = LDSpectrogramRGB.DrawTitleBarOfFalseColourSpectrogram(title, indexArray.Length);
 
             string firstFileName = csvFiles[0].Name;
             DateTimeOffset startTime = DataTools.Time_ConvertDateString2DateTime(firstFileName);
             var duration = new TimeSpan(0, indexArray.Length, 0);
 
             int trackHeight = 20;
-            Bitmap timeBmp1 = ImageTrack.DrawTimeRelativeTrack(duration, indexArray.Length, trackHeight);
-            Bitmap timeBmp2 = ImageTrack.DrawTimeTrack(duration, startTime, indexArray.Length, trackHeight);
+            Image<Rgb24> timeBmp1 = ImageTrack.DrawTimeRelativeTrack(duration, indexArray.Length, trackHeight);
+            Image<Rgb24> timeBmp2 = ImageTrack.DrawTimeTrack(duration, startTime, indexArray.Length, trackHeight);
 
-            var imageList = new List<Image> { titleBar, timeBmp1, image, timeBmp2 };
-            var compositeBmp = (Bitmap)ImageTools.CombineImagesVertically(imageList);
+            var imageList = new [] { titleBar, timeBmp1, image, timeBmp2 };
+            var compositeBmp = (Image<Rgb24>)ImageTools.CombineImagesVertically(imageList);
 
             string imagePath = Path.Combine(outputDirectory.FullName, opFileStem + ".png");
             compositeBmp.Save(imagePath);

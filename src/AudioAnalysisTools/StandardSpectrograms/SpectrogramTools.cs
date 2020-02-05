@@ -11,13 +11,15 @@ namespace AudioAnalysisTools.StandardSpectrograms
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.IO;
+    using Accord;
     using Acoustics.Shared;
     using AudioAnalysisTools.WavTools;
-    using ColorMine.ColorSpaces;
     using DSP;
     using LongDurationSpectrograms;
+    using SixLabors.ImageSharp.ColorSpaces;
+    using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
 
     public static class SpectrogramTools
@@ -70,7 +72,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                         fiImage.Delete();
                     }
 
-                    image.Save(fiImage.FullName, ImageFormat.Png);
+                    image.Save(fiImage.FullName);
                 }
 
                 return image;
@@ -186,7 +188,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// <param name="events">a list of acoustic events.</param>
         /// <param name="plots">a list of plots relevant to the spectrogram scores.</param>
         /// <param name="hits">not often used - can be null.</param>
-        public static Image GetSonogramPlusCharts(BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> plots, double[,] hits)
+        public static Image<Rgb24> GetSonogramPlusCharts(BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> plots, double[,] hits)
         {
             var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband: false, add1KHzLines: true, doMelScale: false));
             image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
@@ -215,7 +217,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 image.AddEvents(events, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
             }
 
-            return image.GetImage();
+            return image.GetImage().CloneAs<Rgb24>();
         }
 
         /*
@@ -298,7 +300,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// <param name="nrSpectrogramData">the noise reduced decibel spectrogram data - assigned to green channel</param>
         /// <param name="hits">assigned to ridge colours</param>
         /// <returns>coloured-rendered spectrogram as image</returns>
-        public static Image CreateFalseColourDecibelSpectrogram(double[,] dbSpectrogramData, double[,] nrSpectrogramData, byte[,] hits)
+        public static Image<Rgb24> CreateFalseColourDecibelSpectrogram(double[,] dbSpectrogramData, double[,] nrSpectrogramData, byte[,] hits)
         {
             double truncateMin = -120.0;
             double truncateMax = -30.0;
@@ -310,7 +312,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             int width = dbSpectrogramData.GetLength(0);
             int height = dbSpectrogramData.GetLength(1);
-            Bitmap image = new Bitmap(width, height);
+            Image<Rgb24> image = new Image<Rgb24>(width, height);
             Color[] ridgeColours = { Color.Red, Color.DarkMagenta, Color.Black, Color.LightPink };
 
             // for all freq bins
@@ -334,7 +336,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                         c1 = 255;
                     }
 
-                    var colour = Color.FromArgb(c1, c1, c1);
+                    var colour = Color.FromRgb((byte)c1, (byte)c1, (byte)c1);
 
                     if (nrSpectrogramNorm[x, y] > 0)
                     {
@@ -354,9 +356,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
                         //double value = 0.60 + (nrSpectrogramNorm[x, y] * 0.40);
 
-                        var myHsv = new Hsv { H = hue, S = saturation, V = value };
-                        var myRgb = myHsv.To<Rgb>();
-                        colour = Color.FromArgb((int)myRgb.R, (int)myRgb.G, (int)myRgb.B);
+                        var myHsv = new Hsv(hue, (float)saturation, (float)value);
+                        var myRgb = myHsv.To<Rgb24>();
+                        colour = Color.FromRgb((byte)myRgb.R, (byte)myRgb.G, (byte)myRgb.B);
 
                         // get colour for noise reduced portion
                         // superimpose ridge detection
@@ -366,16 +368,16 @@ namespace AudioAnalysisTools.StandardSpectrograms
                             //value = 0.60 + (nrSpectrogramNorm[x, y] * 0.40);
                             //myHsv = new Hsv { H = 260, S = saturation, V = value };
                             //myRgb = myHsv.To<Rgb>();
-                            //colour = Color.FromArgb((int)myRgb.R, (int)myRgb.G, (int)myRgb.B);
+                            //colour = Color.FromRgb((int)myRgb.R, (int)myRgb.G, (int)myRgb.B);
                             colour = ridgeColours[hits[x, y] - 1];
                         }
                     }
 
-                    image.SetPixel(x, height - y - 1, colour);
+                    image[x, height - y - 1] = colour;
                 }
             } // freq bins
 
-            //image.Save(@"C:\SensorNetworks\Output\Sonograms\TEST3.png", ImageFormat.Png);
+            //image.Save(@"C:\SensorNetworks\Output\Sonograms\TEST3.png");
 
             return image;
         }
@@ -390,11 +392,11 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// <param name="nrSpectrogramNorm">the noise reduced decibel spectrogram data - assigned to green channel</param>
         /// <param name="hits">assigned to ridge colours</param>
         /// <returns>coloured-rendered spectrogram as image</returns>
-        public static Image CreateFalseColourDecibelSpectrogramForZooming(double[,] dbSpectrogramNorm, double[,] nrSpectrogramNorm, byte[,] hits)
+        public static Image<Rgb24> CreateFalseColourDecibelSpectrogramForZooming(double[,] dbSpectrogramNorm, double[,] nrSpectrogramNorm, byte[,] hits)
         {
             int width = dbSpectrogramNorm.GetLength(0);
             int height = dbSpectrogramNorm.GetLength(1);
-            Bitmap image = new Bitmap(width, height);
+            Image<Rgb24> image = new Image<Rgb24>(width, height);
 
             // get red scale pallette
             var rsp = new CubeHelix("redscale");
@@ -430,7 +432,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                         colour = cch.GetColorFromPallette(colourId);
                     }
 
-                    image.SetPixel(x, height - y - 1, colour);
+                    image[x, height - y - 1] = colour;
                 }
             } // freq bins
 
@@ -440,7 +442,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// <summary>
         /// Another experimental method to colour render spectrograms, this time amplitude spectrograms.
         /// </summary>
-        public static Image CreateFalseColourAmplitudeSpectrogram(double[,] spectrogramData, double[,] nrSpectrogramData, byte[,] hits)
+        public static Image<Rgb24> CreateFalseColourAmplitudeSpectrogram(double[,] spectrogramData, double[,] nrSpectrogramData, byte[,] hits)
         {
             double truncateMin = 0.0;
             double truncateMax = 2.0;
@@ -449,7 +451,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             int width = spectrogramData.GetLength(0);
             int height = spectrogramData.GetLength(1);
-            Bitmap image = new Bitmap(width, height);
+            Image<Rgb24> image = new Image<Rgb24>(width, height);
             Color[] ridgeColours = { Color.Red, Color.Lime, Color.Blue, Color.Lime };
 
             //over all freq bins
@@ -472,7 +474,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                         c1 = 255;
                     }
 
-                    var colour = Color.FromArgb(c1, c1, c1);
+                    var colour = Color.FromRgb((byte)c1, (byte)c1, (byte)c1);
 
                     // superimpose ridge detection
                     if (hits[x, y] > 0)
@@ -480,7 +482,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                         colour = ridgeColours[hits[x, y] - 1];
                     }
 
-                    image.SetPixel(x, height - y - 1, colour);
+                    image[x, height - y - 1] = colour;
                 }
             }
 
@@ -581,8 +583,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     freqBin[r] = spectrogram[r, j];
                 }
 
-                double av, sd;
-                NormalDist.AverageAndSD(freqBin, out av, out sd);
+                NormalDist.AverageAndSD(freqBin, out var av, out var sd);
                 avgSpectrum[j] = av; // store average of the bin
 
                 //varSpectrum[j] = sd * sd; // store var of the bin
@@ -689,8 +690,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     freqBin[r] = amplitudeSpectrogram[r, j] * amplitudeSpectrogram[r, j];  //convert amplitude to energy or power.
                 }
 
-                double av, sd;
-                NormalDist.AverageAndSD(freqBin, out av, out sd);
+                NormalDist.AverageAndSD(freqBin, out var av, out var sd);
                 avgSpectrum[j] = av; // store average of the bin
                 varSpectrum[j] = sd * sd; // store var of the bin
                 covSpectrum[j] = sd * sd / av; //store the coefficient of variation of the bin
@@ -793,9 +793,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         public static double[,] ExtractFreqSubband(double[,] m, int minHz, int maxHz, bool doMelscale, int binCount, double binWidth)
         {
-            int c1;
-            int c2;
-            AcousticEvent.Freq2BinIDs(doMelscale, minHz, maxHz, binCount, binWidth, out c1, out c2);
+            AcousticEvent.Freq2BinIDs(doMelscale, minHz, maxHz, binCount, binWidth, out var c1, out var c2);
             return DataTools.Submatrix(m, 0, c1, m.GetLength(0) - 1, c2);
         }
 
@@ -830,8 +828,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         public static double[] ExtractModalNoiseSubband(double[] modalNoise, int minHz, int maxHz, bool doMelScale, int nyquist, double binWidth)
         {
             //extract subband modal noise profile
-            int c1, c2;
-            AcousticEvent.Freq2BinIDs(doMelScale, minHz, maxHz, nyquist, binWidth, out c1, out c2);
+            AcousticEvent.Freq2BinIDs(doMelScale, minHz, maxHz, nyquist, binWidth, out var c1, out var c2);
             int subbandCount = c2 - c1 + 1;
             var subband = new double[subbandCount];
             for (int i = 0; i < subbandCount; i++)
@@ -854,7 +851,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// <param name="fullDuration">full Duration</param>
         /// <param name="xAxisTicInterval">xAxis Tic Interval</param>
         /// <param name="freqScale">freq Scale</param>
-        public static void DrawGridLinesOnImage(Bitmap bmp, TimeSpan startOffset, TimeSpan fullDuration, TimeSpan xAxisTicInterval, FrequencyScale freqScale)
+        public static void DrawGridLinesOnImage(Image<Rgb24> bmp, TimeSpan startOffset, TimeSpan fullDuration, TimeSpan xAxisTicInterval, FrequencyScale freqScale)
         {
             FrequencyScale.DrawFrequencyLinesOnImage(bmp, freqScale, includeLabels: true);
 
@@ -862,7 +859,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             //DrawTimeLinesOnImage(bmp, startOffset, fullDuration, xAxisTicInterval);
         }
 
-        public static void DrawTimeLinesOnImage(Bitmap bmp, TimeSpan startOffset, TimeSpan fullDuration, TimeSpan xAxisTicInterval)
+        public static void DrawTimeLinesOnImage(Image<Rgb24> bmp, TimeSpan startOffset, TimeSpan fullDuration, TimeSpan xAxisTicInterval)
         {
             int rows = bmp.Height;
             int cols = bmp.Width;
@@ -874,8 +871,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 {
                     for (int row = 0; row < rows - 1; row++)
                     {
-                        bmp.SetPixel(column, row, Color.Black);
-                        bmp.SetPixel(column, row + 1, Color.White);
+                        bmp[column, row] = Color.Black;
+                        bmp[column, row + 1] = Color.White;
                         row += 2;
                     }
                 }
@@ -887,23 +884,22 @@ namespace AudioAnalysisTools.StandardSpectrograms
         // #######################################################################################################################################
 
 
-        public static Image GetImageFullyAnnotated(Image image, string title, int[,] gridLineLocations, TimeSpan duration)
+        public static Image<Rgb24> GetImageFullyAnnotated(Image<Rgb24> image, string title, int[,] gridLineLocations, TimeSpan duration)
         {
             if (image == null)
             {
                 throw new ArgumentNullException(nameof(image));
             }
 
-            FrequencyScale.DrawFrequencyLinesOnImage((Bitmap)image, gridLineLocations, includeLabels: true);
+            FrequencyScale.DrawFrequencyLinesOnImage((Image<Rgb24>)image, gridLineLocations, includeLabels: true);
 
             var titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
             var timeBmp = ImageTrack.DrawTimeTrack(duration, image.Width);
-            var list = new List<Image> { titleBar, timeBmp, image, timeBmp };
-            var compositeImage = ImageTools.CombineImagesVertically(list);
+            var compositeImage = ImageTools.CombineImagesVertically(titleBar, timeBmp, image, timeBmp);
             return compositeImage;
         }
 
-        public static Image GetImage(double[,] data, int nyquist, bool DoMel)
+        public static Image<Rgb24> GetImage(double[,] data, int nyquist, bool DoMel)
         {
             int subBandMinHz = 1000;
             int subBandMaxHz = 9000;

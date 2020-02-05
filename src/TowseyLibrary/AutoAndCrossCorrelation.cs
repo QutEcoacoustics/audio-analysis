@@ -146,8 +146,7 @@ out double[] r)
         public static double[] CrossCorr(double[] v1, double[] v2)
         {
             int n = v1.Length; // assume both vectors of same length
-            double[] r;
-            alglib.corrr1d(v1, n, v2, n, out r);
+            alglib.corrr1d(v1, n, v2, n, out var r);
 
             // alglib.complex[] f;
             // alglib.fftr1d(newOp, out f);
@@ -195,9 +194,8 @@ out double[] r)
         /// <returns></returns>
         public static double CorrelationCoefficient(double[] seriesX, double[] seriesY)
         {
-            double meanX, sdX, meanY, sdY;
-            NormalDist.AverageAndSD(seriesX, out meanX, out sdX);
-            NormalDist.AverageAndSD(seriesX, out meanY, out sdY);
+            NormalDist.AverageAndSD(seriesX, out var meanX, out var sdX);
+            NormalDist.AverageAndSD(seriesX, out var meanY, out var sdY);
 
             double covar = 0.0;
             for (int i = 0; i < seriesX.Length; i++)

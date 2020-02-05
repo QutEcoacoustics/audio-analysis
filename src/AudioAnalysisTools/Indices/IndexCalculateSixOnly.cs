@@ -19,7 +19,7 @@ namespace AudioAnalysisTools.Indices
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-    using Fasterflect;
+    
     using TowseyLibrary;
 
     /// <summary>

@@ -10,10 +10,11 @@
 namespace AudioAnalysisTools.Indices
 {
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
+    using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
 
     using Zio;
@@ -86,7 +87,7 @@ namespace AudioAnalysisTools.Indices
             // to accumulate the images
             int width = 300;  // pixels
             int height = 100; // pixels
-            var imageList = new List<Image>();
+            var imageList = new List<Image<Rgb24>>();
             Dictionary<string, SpectralStats> indexDistributionStatistics = new Dictionary<string, SpectralStats>();
 
             string[] spectrogramKeys = spectrogramMatrices.Keys.ToArray();
@@ -132,7 +133,7 @@ namespace AudioAnalysisTools.Indices
             var statsFile = new FileInfo(GetSpectralStatsPath(outputDirectory, fileStem));
             Json.Serialise(statsFile, indexDistributionStatistics);
 
-            var image3 = ImageTools.CombineImagesVertically(imageList.ToArray());
+            var image3 = ImageTools.CombineImagesVertically(imageList);
             string imagePath = GetSpectralImagePath(outputDirectory, fileStem);
             image3.Save(imagePath);
 
@@ -169,7 +170,7 @@ namespace AudioAnalysisTools.Indices
             // to accumulate the images
             int width = 100;  // pixels
             int height = 100; // pixels
-            var imageList = new List<Image>();
+            var imageList = new List<Image<Rgb24>>();
             Dictionary<string, SpectralStats> indexDistributionStatistics = new Dictionary<string, SpectralStats>();
 
             string[] indexKeys = summaryIndices.Keys.ToArray();
@@ -215,7 +216,7 @@ namespace AudioAnalysisTools.Indices
             FileInfo statsFile = new FileInfo(GetSummaryStatsPath(outputDirectory, fileStem));
             Json.Serialise(statsFile, indexDistributionStatistics);
 
-            Image image3 = ImageTools.CombineImagesVertically(imageList.ToArray());
+            Image image3 = ImageTools.CombineImagesVertically(imageList);
             string imagePath = GetSummaryImagePath(outputDirectory, fileStem);
             image3.Save(imagePath);
 

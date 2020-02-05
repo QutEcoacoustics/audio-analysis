@@ -12,12 +12,11 @@ namespace Acoustics.Test
     using System.Linq;
     using Acoustics.Shared;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using MSTestExtensions;
     using static System.DateTimeOffset;
     using DateTimeOffset = System.DateTimeOffset;
 
     [TestClass]
-    public class FileDateHelpersTests : BaseTest
+    public class FileDateHelpersTests
     {
         [TestMethod]
         public void BasicTestCase()
@@ -26,8 +25,7 @@ namespace Acoustics.Test
 
             var test = testCase?.Equals(string.Empty);
 
-            DateTimeOffset parsedDate;
-            Assert.IsTrue(FileDateHelpers.FileNameContainsDateTime(testCase, out parsedDate));
+            Assert.IsTrue(FileDateHelpers.FileNameContainsDateTime(testCase, out var parsedDate));
 
             var expected = new DateTimeOffset(2015, 08, 13, 12, 05, 13, TimeSpan.Zero);
 
@@ -71,10 +69,9 @@ namespace Acoustics.Test
         {
             foreach (var example in this.invalidFormats)
             {
-                DateTimeOffset parsedDate;
                 Debug.WriteLine($"Testing format: {example}");
                 Assert.IsFalse(
-                    FileDateHelpers.FileNameContainsDateTime(example, out parsedDate),
+                    FileDateHelpers.FileNameContainsDateTime(example, out var parsedDate),
                     $"Testing format: {example}");
             }
         }
@@ -84,10 +81,9 @@ namespace Acoustics.Test
         {
             foreach (var example in this.invalidDates)
             {
-                DateTimeOffset parsedDate;
                 Debug.WriteLine($"Testing format: {example}");
                 Assert.IsFalse(
-                    FileDateHelpers.FileNameContainsDateTime(example, out parsedDate),
+                    FileDateHelpers.FileNameContainsDateTime(example, out var parsedDate),
                     $"Testing format: {example}");
             }
         }
@@ -110,10 +106,9 @@ namespace Acoustics.Test
         {
             foreach (var example in this.validFormats)
             {
-                DateTimeOffset parsedDate;
                 Debug.WriteLine($"Testing format: {example.Key}");
                 Assert.IsTrue(
-                    FileDateHelpers.FileNameContainsDateTime(example.Key, out parsedDate),
+                    FileDateHelpers.FileNameContainsDateTime(example.Key, out var parsedDate),
                     $"Testing format: {example}");
 
                 Assert.AreEqual(example.Value, parsedDate);
@@ -141,12 +136,11 @@ namespace Acoustics.Test
         {
             foreach (var example in this.validFormatsWithOffsetHint)
             {
-                DateTimeOffset parsedDate;
                 Debug.WriteLine($"Testing format: {example.Key}");
                 Assert.IsTrue(
                     FileDateHelpers.FileNameContainsDateTime(
                         example.Key,
-                        out parsedDate,
+                        out var parsedDate,
                         offsetHint: new TimeSpan(6, 30, 0)),
                     $"Testing format: {example}");
 
@@ -169,7 +163,7 @@ namespace Acoustics.Test
                 @"Y:\2015Sept20\Woondum3\20150918-133146+1130.wav", @"Y:\2015Sept20\Woondum3\20150918_201738.wav",
             };
 
-        private DateTimeOffset[] orderedDates = new[]
+        private readonly DateTimeOffset[] orderedDates = new[]
             {
                 Parse("2014-03-01T08:50:31.000+06:30"), Parse("2014-03-01T08:50:31.000+06:30"),
                 Parse("2014-03-01T08:50:31.000+06:30"), Parse("2015-07-27T13:31:38.000+06:30"),

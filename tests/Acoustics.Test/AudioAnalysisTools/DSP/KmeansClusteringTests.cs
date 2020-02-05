@@ -1,4 +1,4 @@
-﻿// <copyright file="PcaWhiteningTest.cs" company="QutEcoacoustics">
+// <copyright file="PcaWhiteningTest.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -6,18 +6,20 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
     using Accord.MachineLearning;
     using Accord.Math;
+    using Acoustics.Shared;
     using Acoustics.Shared.Csv;
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.StandardSpectrograms;
     using global::AudioAnalysisTools.WavTools;
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using SixLabors.ImageSharp.PixelFormats;
     using TestHelpers;
 
     [TestClass]
@@ -177,7 +179,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                 clusterImage.RotateFlip(RotateFlipType.Rotate270FlipNone);
 
                 var outputClusteringImage = Path.Combine(outputDir.FullName, "ClustersWithGrid" + i.ToString() + ".bmp");
-                FrequencyScale.DrawFrequencyLinesOnImage((Bitmap)clusterImage, freqScale, includeLabels: false);
+                FrequencyScale.DrawFrequencyLinesOnImage((Image<Rgb24>)clusterImage, freqScale, includeLabels: false);
                 clusterImage.Save(outputClusteringImage);
             }
 
@@ -217,7 +219,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             // DO DRAW SPECTROGRAM
             var reconstructedSpecImage = sonogram2.GetImageFullyAnnotated(sonogram2.GetImage(), "RECONSTRUCTEDSPECTROGRAM: " + freqScale.ScaleType.ToString(), freqScale.GridLineLocations);
-            reconstructedSpecImage.Save(outputImagePath, ImageFormat.Png);
+            reconstructedSpecImage.Save(outputImagePath);
 
             // DO UNIT TESTING
             Assert.AreEqual(targetSpec.GetLength(0), sonogram2.Data.GetLength(0));

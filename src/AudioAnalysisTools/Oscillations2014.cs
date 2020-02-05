@@ -6,16 +6,20 @@ namespace AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.Drawing.Imaging;
     using System.Globalization;
     using System.IO;
     using System.Linq;
+    using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using DSP;
     using MathNet.Numerics;
     using MathNet.Numerics.LinearAlgebra;
     using MathNet.Numerics.LinearAlgebra.Double;
+    using SixLabors.ImageSharp.PixelFormats;
+    using SixLabors.ImageSharp.Processing;
+    using SixLabors.Primitives;
     using StandardSpectrograms;
     using TowseyLibrary;
     using WavTools;
@@ -65,7 +69,7 @@ namespace AudioAnalysisTools
 
             public int BinSampleLength { get; set; }
 
-            public Image FreqOscillationImage { get; set; }
+            public Image<Rgb24> FreqOscillationImage { get; set; }
 
             public double[,] FreqOscillationData { get; set; }
 
@@ -105,7 +109,7 @@ namespace AudioAnalysisTools
                 // (1) Save image file of this matrix.
                 var pathName = Path.Combine(output.FullName, fileName1);
                 var imagePath = pathName + ".png";
-                tuple.Item1.Save(imagePath, ImageFormat.Png);
+                tuple.Item1.Save(imagePath);
 
                 // construct output file name for freqOscilMatrix1
                 // and save matrix of oscillation data
@@ -173,7 +177,7 @@ namespace AudioAnalysisTools
             int yOffset = cellHeight / 2;
             vectorImage = ImageTools.DrawYaxisScale(vectorImage, 10, herzInterval, yTicInterval, yOffset);
             var pathName2 = Path.Combine(output.FullName, opStem + ".png");
-            vectorImage.Save(pathName2, ImageFormat.Png);
+            vectorImage.Save(pathName2);
         }
 
         public static Dictionary<string, string> GetDefaultConfigDictionary(FileInfo sourceRecording)
@@ -288,7 +292,7 @@ namespace AudioAnalysisTools
         ///  5: Discrete Cosine Transform
         ///     The DCT only works well when you know which periodicity you are looking for. e.g. Canetoad.
         /// </summary>
-        public static Tuple<Image, double[,]> GenerateOscillationDataAndImages(FileInfo audioSegment, Dictionary<string, string> configDict, bool drawImage = false)
+        public static Tuple<Image<Rgb24>, double[,]> GenerateOscillationDataAndImages(FileInfo audioSegment, Dictionary<string, string> configDict, bool drawImage = false)
         {
             // set two oscillation detection parameters
             double sensitivity = DefaultSensitivityThreshold;
@@ -331,7 +335,7 @@ namespace AudioAnalysisTools
             //IMPORTANT NOTE: To generate an OSC spectral index matrix for making LDFC spectrograms, use the following line:
             //var spectralIndex = MatrixTools.GetMaximumColumnValues(freqOscilMatrix2);
 
-            var compositeImage = ImageTools.CombineImagesInLine(new[] { image2, image1 });
+            var compositeImage = ImageTools.CombineImagesInLine(image2, image1);
 
             // Return (1) composite image of oscillations,
             //        (2) data matrix from only one algorithm,
@@ -386,7 +390,7 @@ namespace AudioAnalysisTools
         /// <param name="sampleLength">to allow calculation of the oscillations scale</param>
         /// <param name="algorithmName">the algorithm used to compute the oscillations.</param>
         /// <returns>bitmap image</returns>
-        public static Image GetFreqVsOscillationsImage(double[,] freqOscilMatrix, double framesPerSecond, double freqBinWidth, int sampleLength, string algorithmName)
+        public static Image<Rgb24> GetFreqVsOscillationsImage(double[,] freqOscilMatrix, double framesPerSecond, double freqBinWidth, int sampleLength, string algorithmName)
         {
             // remove the high cycles/sec end of the matrix because nothing really happens here.
             int maxRows = freqOscilMatrix.GetLength(0) / 2;
@@ -416,7 +420,7 @@ namespace AudioAnalysisTools
             spectralIndex = DataTools.NormaliseByScalingMaxValueToOne(spectralIndex);
             var image2 = ImageTools.DrawVectorInGrayScaleWithoutNormalisation(DataTools.reverseArray(spectralIndex), xscale, yscale, reverse: true);
 
-            var image = ImageTools.CombineImagesInLine(new[] { image1, image2 });
+            var image = ImageTools.CombineImagesInLine(image1, image2);
 
             // place a grid line every 5 cycles per second.
             double cycleInterval = 5.0;
@@ -432,8 +436,8 @@ namespace AudioAnalysisTools
             image = ImageTools.DrawXaxisScale(image, 15, cycleInterval, xTicInterval, 10, -xOffset);
 
             var titleBar = DrawTitleBarOfOscillationSpectrogram(algorithmName, image.Width);
-            var imageList = new List<Image> { titleBar, image };
-            var compositeBmp = (Bitmap)ImageTools.CombineImagesVertically(imageList);
+            var imageList = new [] { titleBar, image };
+            var compositeBmp = (Image<Rgb24>)ImageTools.CombineImagesVertically(imageList);
             return compositeBmp;
         }
 
@@ -963,15 +967,17 @@ namespace AudioAnalysisTools
 
 
 
-        private static Image DrawTitleBarOfOscillationSpectrogram(string algorithmName, int width)
+        private static Image<Rgb24> DrawTitleBarOfOscillationSpectrogram(string algorithmName, int width)
         {
             var longTitle = "Hz * Cycle/s (" + algorithmName + ")";
 
-            var bmp = new Bitmap(width, 20);
-            var g = Graphics.FromImage(bmp);
-            g.Clear(Color.Black);
-            var stringFont = new Font("Arial", 9);
-            g.DrawString(longTitle, stringFont, Brushes.Wheat, new PointF(3, 3));
+            var bmp = new Image<Rgb24>(width, 20);
+            bmp.Mutate(g =>
+            {
+                g.Clear(Color.Black);
+                var stringFont = Drawing.Arial9;
+                g.DrawText(longTitle, stringFont, Color.Wheat, new PointF(3, 3));
+            });
             return bmp;
         }
     }

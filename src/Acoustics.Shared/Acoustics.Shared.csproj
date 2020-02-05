@@ -71,7 +71,7 @@
   <ItemGroup>
     <PackageReference Include="ConsoleTools" Version="0.5.3" />
     <PackageReference Include="CsvHelper" Version="14.0.0" />
-    <PackageReference Include="fasterflect.reflect" Version="3.1.0" />
+    <PackageReference Include="FastMember" Version="1.5.0" />
     <PackageReference Include="JetBrains.Annotations" Version="2019.1.3" />
     <PackageReference Include="log4net" Version="2.0.8" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
@@ -84,7 +84,9 @@
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="ObjectCloner" Version="2.2.2" />
     <PackageReference Include="ObjectCloner.Extensions" Version="2.0.1" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-unstable0632" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0007" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0007" />
+    <PackageReference Include="SixLabors.Shapes.Text" Version="1.0.0-beta0009" />
     <PackageReference Include="YamlDotNet" Version="8.1.0" />
     <PackageReference Include="Zio" Version="0.7.6" />
     <PackageReference Include="Zio.FileSystems.Community.SqliteFileSystem" Version="1.0.0" />

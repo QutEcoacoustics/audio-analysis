@@ -863,9 +863,7 @@ namespace TowseyLibrary
                 throw new ArgumentException("maxPercentile must be at most 1.0");
             }
 
-            double min;
-            double max;
-            DataTools.MinMax(matrix, out min, out max);
+            DataTools.MinMax(matrix, out var min, out var max);
             if (max <= min)
             {
                 throw new ArgumentException("max=" + max + " must be > min=" + min);
@@ -1509,9 +1507,7 @@ namespace TowseyLibrary
 
         public static void AverageValuesInTriangleAboveAndBelowPositiveDiagonal(double[,] m, out double upperAv, out double lowerAv)
           {
-              int count;
-              double sum;
-              SumTriangleAbovePositiveDiagonal(m, out sum, out count);
+              SumTriangleAbovePositiveDiagonal(m, out var sum, out var count);
               upperAv = sum / count;
               SumTriangleBelowPositiveDiagonal(m, out sum, out count);
               lowerAv = sum / count;
@@ -1583,9 +1579,7 @@ namespace TowseyLibrary
 
         public static void AverageValuesInTriangleAboveAndBelowNegativeDiagonal(double[,] m, out double upperAv, out double lowerAv)
         {
-            int count;
-            double sum;
-            SumTriangleAboveNegativeDiagonal(m, out sum, out count);
+            SumTriangleAboveNegativeDiagonal(m, out var sum, out var count);
             upperAv = sum / count;
             SumTriangleBelowNegativeDiagonal(m, out sum, out count);
             lowerAv = sum / count;
@@ -2018,9 +2012,7 @@ namespace TowseyLibrary
         {
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
-            double min;
-            double max;
-            DataTools.MinMax(m, out min, out max);
+            DataTools.MinMax(m, out var min, out var max);
             double range = max - min;
             double[,] m2Return = new double[rows, cols];
             for (int r = 0; r < rows; r++)

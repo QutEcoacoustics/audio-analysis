@@ -1,4 +1,4 @@
-﻿// <copyright file="WaveletTransformContinuous.cs" company="QutEcoacoustics">
+// <copyright file="WaveletTransformContinuous.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -6,7 +6,7 @@ namespace TowseyLibrary
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
@@ -316,7 +316,7 @@ namespace TowseyLibrary
             //M = WaveletTransformContinuous.ProcessScaleTimeMatrix(M, minOscilCount);
             Image image1 = ImageTools.DrawMatrixInColour(M, 16, 16);
             string path = @"C:\SensorNetworks\Output\Test\testContWaveletTransform.png";
-            image1.Save(path, ImageFormat.Png);
+            image1.Save(path);
 
             //MatrixTools.writeMatrix(M);
             //MatrixTools.WriteLocationOfMaximumValues(M);

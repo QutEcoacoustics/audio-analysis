@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="DrawEasyImage.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -11,16 +11,20 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
+    using Acoustics.Shared;
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using McMaster.Extensions.CommandLineUtils;
     using Production;
     using Production.Arguments;
+    using SixLabors.ImageSharp.PixelFormats;
+    using SixLabors.ImageSharp.Processing;
+    using SixLabors.Primitives;
     using TowseyLibrary;
 
     /// <summary>
@@ -217,154 +221,155 @@ namespace AnalysisPrograms
             int dayPixelHeight = 4;
             int rowCount = (dayPixelHeight * dayCount) + 35; // +30 for grid lines
             int colCount = 1440;
-            var bitmap = new Bitmap(colCount, rowCount);
+            var bitmap = new Image<Rgb24>(colCount, rowCount);
             var colour = Color.Yellow;
             int currentRow = 0;
             var oneDay = TimeSpan.FromHours(24);
             int graphWidth = colCount;
             int trackHeight = 20;
-            Font stringFont = new Font("Arial", 8);
+            var stringFont = Drawing.Arial8;
             string[] monthNames = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
             // for drawing the y-axis scale
             int scaleWidth = trackHeight + 7;
-            var yAxisScale = new Bitmap(scaleWidth, rowCount + (2 * trackHeight));
-            Graphics g = Graphics.FromImage(yAxisScale);
-            g.Clear(Color.Black);
-
-            // loop over days
-            for (int d = 0; d < dayCount; d++)
+            var yAxisScale = new Image<Rgb24>(scaleWidth, rowCount + (2 * trackHeight));
+            yAxisScale.Mutate(g =>
             {
-                var thisday = ((DateTimeOffset)startDate).AddDays(d);
+                g.Clear(Color.Black);
 
-                if (thisday.Day == 1)
+                // loop over days
+                for (int d = 0; d < dayCount; d++)
                 {
-                    int nextRow = currentRow + 1;
+                    var thisday = ((DateTimeOffset)startDate).AddDays(d);
+
+                    if (thisday.Day == 1)
+                    {
+                        int nextRow = currentRow + 1;
+                        for (int c = 0; c < colCount; c++)
+                        {
+                            bitmap[c, currentRow] = Color.Gray;
+                            bitmap[c, nextRow] = Color.Gray;
+                        }
+
+                        for (int c = 0; c < scaleWidth; c++)
+                        {
+                            yAxisScale[c, currentRow + trackHeight] = Color.Gray;
+                            yAxisScale[c, nextRow + trackHeight] = Color.Gray;
+                        }
+
+                        string month = monthNames[thisday.Month - 1];
+                        if (thisday.Month == 1) // January
+                        {
+                            g.DrawText(thisday.Year.ToString(), stringFont, Color.White,
+                                new PointF(0, nextRow + trackHeight + 1)); //draw time
+                            g.DrawText(month, stringFont, Color.White,
+                                new PointF(1, nextRow + trackHeight + 11)); //draw time
+                        }
+                        else
+                        {
+                            g.DrawText(month, stringFont, Color.White,
+                                new PointF(1, nextRow + trackHeight + 1)); //draw time
+                        }
+
+                        currentRow += 2;
+                    }
+
+                    // get the exact date and time
+                    LoggedConsole.WriteLine($"READING DAY {d + 1} of {dayCount}:   {thisday.ToString()}");
+
+                    // CREATE DAY LEVEL OUTPUT DIRECTORY for this day
+                    string dateString = $"{thisday.Year}{thisday.Month:D2}{thisday.Day:D2}";
+
+                    tuple = CsvTools.ReadCSVFile(csvFiles[d].FullName);
+                    var arrays = tuple.Item2;
+
+                    var redArray = arrays[redID];
+                    var grnArray = arrays[grnID];
+                    var bluArray = arrays[bluID];
+
+                    // NormaliseMatrixValues the indices
+                    redArray = DataTools.NormaliseInZeroOne(redArray, redIndexProps.NormMin, redIndexProps.NormMax);
+                    grnArray = DataTools.NormaliseInZeroOne(grnArray, grnIndexProps.NormMin, grnIndexProps.NormMax);
+                    bluArray = DataTools.NormaliseInZeroOne(bluArray, bluIndexProps.NormMin, bluIndexProps.NormMax);
+
                     for (int c = 0; c < colCount; c++)
                     {
-                        bitmap.SetPixel(c, currentRow, Color.Gray);
-                        bitmap.SetPixel(c, nextRow,    Color.Gray);
-                    }
+                        for (int r = 0; r < dayPixelHeight; r++)
+                        {
+                            //transformedValue = Math.Sqrt(redArray[c]);
+                            var transformedValue = redArray[c] * redArray[c];
+                            int redVal = (int)Math.Round(transformedValue * 255);
+                            if (redVal < 0)
+                            {
+                                redVal = 0;
+                            }
+                            else if (redVal > 255)
+                            {
+                                redVal = 255;
+                            }
 
-                    for (int c = 0; c < scaleWidth; c++)
+                            //transformedValue = Math.Sqrt(grnArray[c]);
+                            transformedValue = grnArray[c] * grnArray[c]; // square the value
+                            int grnVal = (int)Math.Round(transformedValue * 255);
+                            if (grnVal < 0)
+                            {
+                                grnVal = 0;
+                            }
+                            else if (grnVal > 255)
+                            {
+                                grnVal = 255;
+                            }
+
+                            //transformedValue = Math.Sqrt(bluArray[c]);
+                            transformedValue = bluArray[c] * bluArray[c]; // square the value
+                            int bluVal = (int)Math.Round(transformedValue * 255);
+                            if (bluVal < 0)
+                            {
+                                bluVal = 0;
+                            }
+                            else if (bluVal > 255)
+                            {
+                                bluVal = 255;
+                            }
+
+                            bitmap[c, currentRow + r] = Color.FromRgb((byte)redVal, (byte)grnVal, (byte)bluVal);
+                        }
+                    } // over all columns
+
+                    currentRow += dayPixelHeight;
+
+                    if (thisday.Day % 7 == 0)
                     {
-                        yAxisScale.SetPixel(c, currentRow + trackHeight, Color.Gray);
-                        yAxisScale.SetPixel(c, nextRow + trackHeight, Color.Gray);
+                        for (int c = 0; c < colCount; c++)
+                        {
+                            bitmap[c, currentRow] = Color.Gray;
+                        }
+
+                        currentRow++;
                     }
-
-                    string month = monthNames[thisday.Month - 1];
-                    if (thisday.Month == 1) // January
-                    {
-                        g.DrawString(thisday.Year.ToString(), stringFont, Brushes.White, new PointF(0, nextRow + trackHeight + 1)); //draw time
-                        g.DrawString(month, stringFont, Brushes.White, new PointF(1, nextRow + trackHeight + 11)); //draw time
-                    }
-                    else
-                    {
-                        g.DrawString(month, stringFont, Brushes.White, new PointF(1, nextRow + trackHeight + 1)); //draw time
-                    }
-
-                    currentRow += 2;
-                }
-
-                // get the exact date and time
-                LoggedConsole.WriteLine($"READING DAY {d + 1} of {dayCount}:   {thisday.ToString()}");
-
-                // CREATE DAY LEVEL OUTPUT DIRECTORY for this day
-                string dateString = $"{thisday.Year}{thisday.Month:D2}{thisday.Day:D2}";
-
-                tuple = CsvTools.ReadCSVFile(csvFiles[d].FullName);
-                var arrays = tuple.Item2;
-
-                var redArray = arrays[redID];
-                var grnArray = arrays[grnID];
-                var bluArray = arrays[bluID];
-
-                // NormaliseMatrixValues the indices
-                redArray = DataTools.NormaliseInZeroOne(redArray, redIndexProps.NormMin, redIndexProps.NormMax);
-                grnArray = DataTools.NormaliseInZeroOne(grnArray, grnIndexProps.NormMin, grnIndexProps.NormMax);
-                bluArray = DataTools.NormaliseInZeroOne(bluArray, bluIndexProps.NormMin, bluIndexProps.NormMax);
-
-                for (int c = 0; c < colCount; c++)
-                {
-                    for (int r = 0; r < dayPixelHeight; r++)
-                    {
-                        //transformedValue = Math.Sqrt(redArray[c]);
-                        var transformedValue = redArray[c] * redArray[c];
-                        int redVal = (int)Math.Round(transformedValue * 255);
-                        if (redVal < 0)
-                        {
-                            redVal = 0;
-                        }
-                        else
-                        if (redVal > 255)
-                        {
-                            redVal = 255;
-                        }
-
-                        //transformedValue = Math.Sqrt(grnArray[c]);
-                        transformedValue = grnArray[c] * grnArray[c]; // square the value
-                        int grnVal = (int)Math.Round(transformedValue * 255);
-                        if (grnVal < 0)
-                        {
-                            grnVal = 0;
-                        }
-                        else
-                        if (grnVal > 255)
-                        {
-                            grnVal = 255;
-                        }
-
-                        //transformedValue = Math.Sqrt(bluArray[c]);
-                        transformedValue = bluArray[c] * bluArray[c]; // square the value
-                        int bluVal = (int)Math.Round(transformedValue * 255);
-                        if (bluVal < 0)
-                        {
-                            bluVal = 0;
-                        }
-                        else
-                        if (bluVal > 255)
-                        {
-                            bluVal = 255;
-                        }
-
-                        bitmap.SetPixel(c, currentRow + r, Color.FromArgb(redVal, grnVal, bluVal));
-                    }
-                } // over all columns
-
-                currentRow += dayPixelHeight;
-
-                if (thisday.Day % 7 == 0)
-                {
-                    for (int c = 0; c < colCount; c++)
-                    {
-                        bitmap.SetPixel(c, currentRow, Color.Gray);
-                    }
-
-                    currentRow++;
-                }
-            } // over days
-
+                } // over days
+            });
             // draw on civil dawn and dusk lines
             int startdayOfYear = ((DateTimeOffset)startDate).DayOfYear;
             int endDayOfYear = ((DateTimeOffset)endDate).DayOfYear;
             SunAndMoon.AddSunRiseSetLinesToImage(bitmap, arguments.BrisbaneSunriseDatafile.ToFileInfo(), startdayOfYear, endDayOfYear, dayPixelHeight);
 
             // add the time scales
-            Bitmap timeBmp1 = ImageTrack.DrawTimeRelativeTrack(oneDay, graphWidth, trackHeight);
-            var imageList = new List<Image> { timeBmp1, bitmap, timeBmp1 };
-            Bitmap compositeBmp1 = (Bitmap)ImageTools.CombineImagesVertically(imageList);
+            Image<Rgb24> timeBmp1 = ImageTrack.DrawTimeRelativeTrack(oneDay, graphWidth, trackHeight);
+            var imageList = new [] { timeBmp1, bitmap, timeBmp1 };
+            Image<Rgb24> compositeBmp1 = (Image<Rgb24>)ImageTools.CombineImagesVertically(imageList);
 
-            imageList = new List<Image> { yAxisScale, compositeBmp1 };
-            Bitmap compositeBmp2 = (Bitmap)ImageTools.CombineImagesInLine(imageList);
+            imageList = new [] { yAxisScale, compositeBmp1 };
+            Image<Rgb24> compositeBmp2 = (Image<Rgb24>)ImageTools.CombineImagesInLine(imageList);
 
             // indices used for image
             string indicesDescription = $"{redIndexProps.Name}|{grnIndexProps.Name}|{bluIndexProps.Name}";
             string startString = $"{startDate.Value.Year}/{startDate.Value.Month}/{startDate.Value.Day}";
             string endString = $"{endDate.Value.Year}/{endDate.Value.Month}/{endDate.Value.Day}";
             string title = $"EASY:   {arguments.FileStemName}    From {startString} to {endString}                          Indices: {indicesDescription}";
-            Bitmap titleBar = ImageTrack.DrawTitleTrack(compositeBmp2.Width, trackHeight, title);
-            imageList = new List<Image> { titleBar, compositeBmp2 };
-            compositeBmp2 = (Bitmap)ImageTools.CombineImagesVertically(imageList);
+            Image<Rgb24> titleBar = ImageTrack.DrawTitleTrack(compositeBmp2.Width, trackHeight, title);
+            imageList = new [] { titleBar, compositeBmp2 };
+            compositeBmp2 = (Image<Rgb24>)ImageTools.CombineImagesVertically(imageList);
             var outputFileName = Path.Combine(opDir.FullName, arguments.FileStemName + "." + rep + ".EASY.png");
             compositeBmp2.Save(outputFileName);
         } // Execute()

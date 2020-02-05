@@ -33,10 +33,7 @@ namespace AudioAnalysisTools.WavTools
 
         public string WavFileName { get; private set; }
 
-        public TimeSpan Time
-        {
-            get { return TimeSpan.FromSeconds((double)this.Samples.Length / this.SampleRate); }
-        }
+        public TimeSpan Time => TimeSpan.FromSeconds((double)this.Samples.Length / this.SampleRate);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TowseyWavReader"/> class.

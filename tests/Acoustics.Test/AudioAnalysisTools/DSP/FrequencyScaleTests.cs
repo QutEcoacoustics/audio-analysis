@@ -1,4 +1,4 @@
-﻿// <copyright file="FrequencyScaleTests.cs" company="QutEcoacoustics">
+// <copyright file="FrequencyScaleTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -15,6 +15,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
     using global::AudioAnalysisTools.WavTools;
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using SixLabors.ImageSharp;
     using TestHelpers;
     using TowseyLibrary;
 
@@ -98,7 +99,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             sonogram.Data = dataMatrix;
 
             var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-            image.Save(outputImagePath, ImageFormat.Png);
+            image.Save(outputImagePath);
 
             // DO UNIT TESTING
             var stemOfExpectedFile = opFileStem + "_DefaultLinearScaleGridLineLocations.EXPECTED.json";
@@ -160,7 +161,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             sonogram.Configuration.WindowSize = freqScale.WindowSize;
 
             var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-            image.Save(outputImagePath, ImageFormat.Png);
+            image.Save(outputImagePath);
 
             // DO FILE EQUALITY TEST
             var stemOfExpectedFile = opFileStem + "_LinearScaleGridLineLocations.EXPECTED.json";
@@ -223,7 +224,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             sonogram.Configuration.WindowSize = freqScale.WindowSize;
 
             var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-            image.Save(outputImagePath, ImageFormat.Png);
+            image.Save(outputImagePath);
 
             // DO FILE EQUALITY TESTS
             // Check that freqScale.OctaveBinBounds are correct
@@ -298,7 +299,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             sonogram.Configuration.WindowSize = freqScale.WindowSize;
 
             var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-            image.Save(outputImagePath, ImageFormat.Png);
+            image.Save(outputImagePath);
 
             // DO FILE EQUALITY TESTS
             // Check that freqScale.OctaveBinBounds are correct

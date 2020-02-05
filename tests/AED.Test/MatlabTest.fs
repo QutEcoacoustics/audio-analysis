@@ -1,9 +1,11 @@
-﻿module MatlabTest
+module MatlabTest
 
 open Common
 open FsCheckArbs
 open QutSensors.AudioAnalysis.AED.Matlab
 open Xunit
+open Microsoft.FSharp
+open Microsoft.FSharp.Math
 
 [<Fact>]
 let testHist () =

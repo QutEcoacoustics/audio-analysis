@@ -7,7 +7,7 @@ namespace AudioAnalysisTools
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using System.Runtime.InteropServices;
@@ -88,14 +88,14 @@ namespace AudioAnalysisTools
 
         public static Image<Gray, Byte> GetGreyScaleImage(string path)
         {
-            Bitmap bmp = new Bitmap(path);
+            Image<Rgb24> bmp = new Image<Rgb24>(path);
             Image<Gray, Byte> image = new Image<Gray, Byte>(bmp);
             //Image<Gray, Byte> modelImage = new Image<Gray, Byte>(path);
 
             //code for colour images
             //Image<Bgr, Byte> colorImage = new Image<Bgr, Byte>(bmp);
             // convert colour image to grayscale
-            //Image<Gray, Byte> modelImage = new Image<Gray, byte>(colorImage.Bitmap);
+            //Image<Gray, Byte> modelImage = new Image<Gray, byte>(colorImage.Image<Rgb24>);
             // OR
             //Capture cap = new Capture(path);
             //Image<Bgr, Byte> colorImage = cap.QueryFrame();

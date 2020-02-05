@@ -11,7 +11,7 @@ namespace TowseyLibrary
 
     public class RandomNumber
     {
-        private Random random;
+        private readonly Random random;
 
         public RandomNumber()
         {
@@ -200,8 +200,7 @@ namespace TowseyLibrary
                 distanceArray[i] = DataTools.EuclideanDistance(v1, v2);
             }
 
-            double av, sd;
-            NormalDist.AverageAndSD(distanceArray, out av, out sd);
+            NormalDist.AverageAndSD(distanceArray, out var av, out var sd);
             double[] avAndsd = { av, sd };
             Console.WriteLine(NormalDist.formatAvAndSD(avAndsd, 5));
             Console.WriteLine("Min --> Max: {0:f3} --> {1:f3}", distanceArray.Min(), distanceArray.Max());

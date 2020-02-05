@@ -11,7 +11,7 @@ namespace AnalysisPrograms.Recognizers
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.IO;
     using System.Reflection;
     using Acoustics.Shared;
@@ -277,10 +277,7 @@ namespace AnalysisPrograms.Recognizers
                 {
                     // Look for oscillations in the difference array
                     double[] differenceArray = DataTools.Subarray(differenceScores, i, dctLength);
-                    double oscilFreq;
-                    double period;
-                    double intensity;
-                    Oscillations2014.GetOscillationUsingDct(differenceArray, framesPerSecond, cosines, out oscilFreq, out period, out intensity);
+                    Oscillations2014.GetOscillationUsingDct(differenceArray, framesPerSecond, cosines, out var oscilFreq, out var period, out var intensity);
 
                     bool periodWithinBounds = period > lbConfig.MinPeriod && period < lbConfig.MaxPeriod;
 
@@ -324,8 +321,6 @@ namespace AnalysisPrograms.Recognizers
             if (drawDebugImage)
             {
                 // display a variety of debug score arrays
-                double[] normalisedScores;
-                double normalisedThreshold;
 
                 //DataTools.Normalise(scores, eventDecibelThreshold, out normalisedScores, out normalisedThreshold);
                 //var debugPlot = new Plot("Score", normalisedScores, normalisedThreshold);
@@ -333,7 +328,7 @@ namespace AnalysisPrograms.Recognizers
                 //var upperPlot = new Plot("Upper", normalisedScores, normalisedThreshold);
                 //DataTools.Normalise(lowerArray, eventDecibelThreshold, out normalisedScores, out normalisedThreshold);
                 //var lowerPlot = new Plot("Lower", normalisedScores, normalisedThreshold);
-                DataTools.Normalise(amplitudeScores, decibelThreshold, out normalisedScores, out normalisedThreshold);
+                DataTools.Normalise(amplitudeScores, decibelThreshold, out var normalisedScores, out var normalisedThreshold);
                 var sumDiffPlot = new Plot("SumMinusDifference", normalisedScores, normalisedThreshold);
                 DataTools.Normalise(differenceScores, 3.0, out normalisedScores, out normalisedThreshold);
                 var differencePlot = new Plot("Difference", normalisedScores, normalisedThreshold);

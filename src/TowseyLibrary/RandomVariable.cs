@@ -18,7 +18,7 @@ namespace TowseyLibrary
     {
         private double mean = 0.0;
         private double SD = 1.0;
-        private RandomNumber R;
+        private readonly RandomNumber R;
 
         /// <summary>
         /// CONSTRUCTOR

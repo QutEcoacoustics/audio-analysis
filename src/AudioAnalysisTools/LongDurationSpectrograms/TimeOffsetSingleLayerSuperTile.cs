@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="TimeOffsetSingleLayerSuperTile.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -10,8 +10,8 @@
 namespace AudioAnalysisTools.LongDurationSpectrograms
 {
     using System;
-    using System.Drawing;
-
+    using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.PixelFormats;
     using TileImage;
 
     public enum SpectrogramType
@@ -22,7 +22,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
     public class TimeOffsetSingleLayerSuperTile : ISuperTile
     {
-        public TimeOffsetSingleLayerSuperTile(TimeSpan durationToPreviousTileBoundaryAtUnitScale, SpectrogramType spectrogramType, TimeSpan scale, Image image, TimeSpan timeOffset)
+        public TimeOffsetSingleLayerSuperTile(TimeSpan durationToPreviousTileBoundaryAtUnitScale, SpectrogramType spectrogramType, TimeSpan scale, Image<Rgba32> image, TimeSpan timeOffset)
         {
             this.Image = image;
             this.Scale = scale;
@@ -31,7 +31,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             this.DurationToPreviousTileBoundaryAtUnitScale = durationToPreviousTileBoundaryAtUnitScale;
         }
 
-        public Image Image { get; }
+        public Image<Rgba32> Image { get; }
 
         public int OffsetX
         {
@@ -63,14 +63,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         public TimeSpan TimeOffset { get; }
 
-        double ISuperTile.Scale
-        {
-            get
-            {
+        double ISuperTile.Scale =>
                 // round scale to counter IEEE float rounding issues
                 // ReSharper disable once ArrangeAccessorOwnerBody
-                return Math.Round(this.Scale.TotalSeconds, 10);
-            }
-        }
+                Math.Round(this.Scale.TotalSeconds, 10);
     }
 }

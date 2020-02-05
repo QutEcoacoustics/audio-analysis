@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="ColorCubeHelix.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -6,8 +6,8 @@
 namespace TowseyLibrary
 {
     using System;
-    using System.Drawing;
-    using System.Drawing.Imaging;
+    using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.PixelFormats;
 
     /// <summary>
     ///     Code for CUBEHELIX adapted from JavaScript code obtained from following website:
@@ -69,12 +69,12 @@ namespace TowseyLibrary
         /// <returns>
         /// The <see cref="Image"/>.
         /// </returns>
-        public Image DrawMatrixWithoutNormalization(double[,] matrix)
+        public Image<Rgb24> DrawMatrixWithoutNormalization(double[,] matrix)
         {
             var rows = matrix.GetLength(0); // number of rows
             var cols = matrix.GetLength(1); // number
 
-            var bmp = new Bitmap(cols, rows, PixelFormat.Format24bppRgb);
+            var bmp = new Image<Rgb24>(cols, rows);
 
             for (var r = 0; r < rows; r++)
             {
@@ -94,7 +94,7 @@ namespace TowseyLibrary
                         }
                     }
 
-                    bmp.SetPixel(c, r, this.colorPalette[colourId]);
+                    bmp[c, r] = this.colorPalette[colourId];
                 }
             }
 

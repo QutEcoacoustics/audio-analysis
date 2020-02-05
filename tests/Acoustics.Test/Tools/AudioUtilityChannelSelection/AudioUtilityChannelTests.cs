@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="AudioUtilityChannelTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -18,13 +18,12 @@ namespace Acoustics.Test.Tools.AudioUtilityChannelSelection
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
     using Acoustics.Tools.Wav;
-    using Force.DeepCloner;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using MSTestExtensions;
+    using ObjectCloner.Extensions;
     using TestHelpers;
 
     [TestClass]
-    public class AudioUtilityChannelTests : BaseTest
+    public class AudioUtilityChannelTests 
     {
         private const string FourChannelFile = "4channelsPureTones.wav";
         private const string FourChannelFileOgg = "4channelsPureTones.ogg";
@@ -112,25 +111,25 @@ namespace Acoustics.Test.Tools.AudioUtilityChannelSelection
             // array of channels of frequencies (expected in each channel)
             var expectedFrequencies = new int[0][];
 
-            Assert.Throws<ChannelNotAvailableException>(
+            Assert.ThrowsException<ChannelNotAvailableException>(
                 () =>
                     {
                         ChannelTest(FourChannelFile, new[] { 5 }, false, expectedFrequencies);
                     });
 
-            Assert.Throws<ChannelNotAvailableException>(
+            Assert.ThrowsException<ChannelNotAvailableException>(
                 () =>
                     {
                         ChannelTest(FourChannelFile, new[] { 20 }, false, expectedFrequencies);
                     });
 
-            Assert.Throws<ChannelNotAvailableException>(
+            Assert.ThrowsException<ChannelNotAvailableException>(
                 () =>
                     {
                         ChannelTest(FourChannelFile, new[] { 0 }, false, expectedFrequencies);
                     });
 
-            Assert.Throws<ChannelNotAvailableException>(
+            Assert.ThrowsException<ChannelNotAvailableException>(
                 () =>
                     {
                         ChannelTest(FourChannelFile, new[] { -1 }, false, expectedFrequencies);
@@ -346,7 +345,7 @@ namespace Acoustics.Test.Tools.AudioUtilityChannelSelection
             // array of channels of frequencies (expected in each channel)
             var audioUtilityRequest = new AudioUtilityRequest { Channels = new[] { 1, 2 }, MixDownToMono = false };
 
-            Assert.Throws<ChannelSelectionOperationNotImplemented>(
+            Assert.ThrowsException<ChannelSelectionOperationNotImplemented>(
                 () =>
                 {
                     TestHelper.GetAudioUtilityMp3Splt().Modify(
@@ -370,7 +369,7 @@ namespace Acoustics.Test.Tools.AudioUtilityChannelSelection
         [TestMethod]
         public void FfmpegRawPcmFailsFailsWithoutChannelSpecification()
         {
-            Assert.Throws<InvalidOperationException>(
+            Assert.ThrowsException<InvalidOperationException>(
                 () =>
                 {
                     // array of channels of frequencies (expected in each channel)
@@ -382,8 +381,7 @@ namespace Acoustics.Test.Tools.AudioUtilityChannelSelection
 
                     ChannelTest(FourChannelFileRaw, null, null, expectedFrequencies, request);
                 },
-                "Channels must be set",
-                ExceptionMessageCompareOptions.Contains);
+                "Channels must be set");
         }
 
         [TestMethod]
@@ -435,7 +433,7 @@ namespace Acoustics.Test.Tools.AudioUtilityChannelSelection
             var utility = TestHelper.GetAudioUtilityFfmpegRawPcm();
             var file = FourChannelFileRaw;
 
-            Assert.Throws<ChannelSelectionOperationNotImplemented>(
+            Assert.ThrowsException<ChannelSelectionOperationNotImplemented>(
                 () =>
                 {
                     utility.Modify(
@@ -448,7 +446,7 @@ namespace Acoustics.Test.Tools.AudioUtilityChannelSelection
 
             audioUtilityRequest.MixDownToMono = true;
 
-            Assert.Throws<ChannelSelectionOperationNotImplemented>(
+            Assert.ThrowsException<ChannelSelectionOperationNotImplemented>(
                 () =>
                 {
                     utility.Modify(
@@ -461,7 +459,7 @@ namespace Acoustics.Test.Tools.AudioUtilityChannelSelection
 
             audioUtilityRequest.Channels = null;
 
-            Assert.Throws<InvalidOperationException>(
+            Assert.ThrowsException<InvalidOperationException>(
                 () =>
                 {
                     utility.Modify(
@@ -532,7 +530,7 @@ namespace Acoustics.Test.Tools.AudioUtilityChannelSelection
 
             otherMediaType = otherMediaType ?? mediaType;
 
-            Assert.Throws<ChannelSelectionOperationNotImplemented>(
+            Assert.ThrowsException<ChannelSelectionOperationNotImplemented>(
                 () =>
                 {
                     utility.Modify(
@@ -545,7 +543,7 @@ namespace Acoustics.Test.Tools.AudioUtilityChannelSelection
 
             audioUtilityRequest.MixDownToMono = true;
 
-            Assert.Throws<ChannelSelectionOperationNotImplemented>(
+            Assert.ThrowsException<ChannelSelectionOperationNotImplemented>(
                 () =>
                 {
                     utility.Modify(
@@ -563,7 +561,7 @@ namespace Acoustics.Test.Tools.AudioUtilityChannelSelection
 
             audioUtilityRequest.Channels = null;
 
-            Assert.Throws<ChannelSelectionOperationNotImplemented>(
+            Assert.ThrowsException<ChannelSelectionOperationNotImplemented>(
                 () =>
                     {
                         utility.Modify(

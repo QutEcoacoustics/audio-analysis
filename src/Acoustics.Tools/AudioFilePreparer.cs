@@ -173,8 +173,7 @@
         [Obsolete]
         public static IEnumerable<long> DivideEvenly(long numerator, long denominator)
         {
-            long rem;
-            long div = Math.DivRem(numerator, denominator, out rem);
+            long div = Math.DivRem(numerator, denominator, out var rem);
 
             for (long i = 0; i < denominator; i++)
             {

@@ -1,9 +1,11 @@
-﻿module QutSensors.AudioAnalysis.AED.Util
+module QutSensors.AudioAnalysis.AED.Util
 
 open Microsoft.FSharp.Math.SI
-open System.Drawing
 open System.Text
 open System.IO
+open Microsoft.FSharp.Math
+open Microsoft.FSharp
+open SixLabors.Primitives
 
 // If the first Option is not empty return it, else return the second. Copy of Scala Option.orElse.
 let orElse o (p:'a option Lazy) = if Option.isSome o then o else p.Force()
@@ -37,7 +39,7 @@ let boundedInterval (p:float<_>) ld up lb ub = (p-ld |> roundUpTo lb, p+up |> ro
 let maxmap f = Seq.max << Seq.map f
 let minmap f = Seq.min << Seq.map f
 
-let sumRows (m:matrix) = Math.Matrix.foldByRow (+) (Math.Vector.zero m.NumRows) m
+let sumRows (m:matrix) = Matrix.foldByRow (+) (Math.Vector.zero m.NumRows) m
 let sumColumns (m:matrix) = let v = Math.Matrix.foldByCol (+) (Math.RowVector.zero m.NumCols) m in v.Transpose
 
 // TODO this is now in PowerPack.Compatibility (need to add specific Reference)

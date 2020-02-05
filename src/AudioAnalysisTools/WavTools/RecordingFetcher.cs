@@ -23,9 +23,7 @@ namespace AudioAnalysisTools.WavTools
 
         private static Uri ConvertToUri(string filename)
         {
-            string sensorName, recordingName, extension;
-
-            ParseFilename(filename, out sensorName, out recordingName, out extension);
+            ParseFilename(filename, out var sensorName, out var recordingName, out var extension);
 
             string uriString = $"{SERVER}/{sensorName}/{recordingName}.{extension}";
 

@@ -351,8 +351,7 @@ namespace TowseyLibrary
             }
             else
             {
-                double result;
-                if (double.TryParse(value.ToString(), out result))
+                if (double.TryParse(value.ToString(), out var result))
                 {
                     return result;
                 }
@@ -387,8 +386,7 @@ namespace TowseyLibrary
                 }
                 else
                 {
-                    double result;
-                    if (double.TryParse(value.ToString(), out result))
+                    if (double.TryParse(value.ToString(), out var result))
                     {
                         list.Add(result);
                     }

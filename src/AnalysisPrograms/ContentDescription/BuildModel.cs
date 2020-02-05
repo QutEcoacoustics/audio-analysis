@@ -7,7 +7,7 @@ namespace AnalysisPrograms.ContentDescription
     using System;
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.IO;
     using System.Threading.Tasks;
     using Acoustics.Shared;
@@ -15,6 +15,7 @@ namespace AnalysisPrograms.ContentDescription
     using AnalysisPrograms.Production.Validation;
     using AudioAnalysisTools.ContentDescriptionTools;
     using McMaster.Extensions.CommandLineUtils;
+    using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
 
     /// <summary>
@@ -185,10 +186,10 @@ namespace AnalysisPrograms.ContentDescription
             plotsImage.Save(path1);
 
             // Attach plots to LDFC spectrogram and write to file
-            var imageList = new List<Image>();
+            var imageList = new List<Image<Rgb24>>();
             if (imageOfLdfcSpectrogram != null)
             {
-                var ldfcSpectrogram = Image.FromFile(imageOfLdfcSpectrogram.FullName);
+                var ldfcSpectrogram = Image.Load<Rgb24>(imageOfLdfcSpectrogram.FullName);
                 imageList.Add(ldfcSpectrogram);
             }
 

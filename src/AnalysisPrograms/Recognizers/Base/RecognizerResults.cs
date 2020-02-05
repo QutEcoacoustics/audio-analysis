@@ -11,13 +11,13 @@ namespace AnalysisPrograms.Recognizers.Base
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
 
     using AnalysisBase.ResultBases;
 
     using AudioAnalysisTools;
     using AudioAnalysisTools.StandardSpectrograms;
-
+    using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
 
     public class RecognizerResults
@@ -38,7 +38,7 @@ namespace AnalysisPrograms.Recognizers.Base
         /// <summary>
         /// Gets or sets currently used to return a score track image that can be appended to a **high resolution indices image**.
         /// </summary>
-        public Image ScoreTrack { get; set; }
+        public Image<Rgb24> ScoreTrack { get; set; }
 
         /// <summary>
         /// Gets or sets a list of plots.

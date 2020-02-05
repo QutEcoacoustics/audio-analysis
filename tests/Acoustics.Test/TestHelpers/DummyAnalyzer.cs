@@ -124,9 +124,6 @@ namespace Acoustics.Test.TestHelpers
             this.waitingFor = null;
         }
 
-        public bool IsPaused
-        {
-            get { return !this.waitingFor?.IsCompleted ?? false; }
-        }
+        public bool IsPaused => !this.waitingFor?.IsCompleted ?? false;
     }
 }

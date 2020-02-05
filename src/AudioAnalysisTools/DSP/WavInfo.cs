@@ -65,10 +65,7 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// Gets
         /// </summary>
-        public double Epsilon
-        {
-            get { return Math.Pow(0.5, this.BitsPerSample - 1); }
-        }
+        public double Epsilon => Math.Pow(0.5, this.BitsPerSample - 1);
 
         public int Frames { get; set; }
 

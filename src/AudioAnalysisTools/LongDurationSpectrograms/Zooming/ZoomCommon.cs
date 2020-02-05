@@ -6,11 +6,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.Linq;
     using Acoustics.Shared;
     using Acoustics.Shared.Contracts;
     using Indices;
+    using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
 
     public static class ZoomCommon
@@ -55,7 +56,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
             return (spectra, relevantIndexProperties);
         }
 
-        public static Image DrawIndexSpectrogramCommon(
+        public static Image<Rgb24> DrawIndexSpectrogramCommon(
             LdSpectrogramConfig config,
             IndexGenerationData indexGenerationData,
             Dictionary<string, IndexProperties> indexProperties,

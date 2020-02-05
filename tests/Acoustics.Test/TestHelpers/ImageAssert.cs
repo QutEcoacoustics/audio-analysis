@@ -7,8 +7,7 @@ namespace Acoustics.Test.TestHelpers
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using System.Drawing;
-    using System.Drawing.Imaging;
+    using SixLabors.ImageSharp;
     using System.Linq;
     using System.Runtime.CompilerServices;
     using Acoustics.Shared.Contracts;
@@ -20,19 +19,19 @@ namespace Acoustics.Test.TestHelpers
     using SixLabors.ImageSharp.ColorSpaces.Conversion;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using Point = System.Drawing.Point;
+    using SixLabors.Primitives;
 
     public static class ImageAssert
     {
-        public static void ImageIsSize(this Assert assert, int expectedWidth, int expectedHeight, System.Drawing.Image actualImage)
+        public static void ImageIsSize(this Assert assert, int expectedWidth, int expectedHeight, Image actualImage)
         {
             Assert.AreEqual(expectedWidth, actualImage.Width, "Expected image width did not match actual image width");
             Assert.AreEqual(expectedHeight, actualImage.Height, "Expected image height did not match actual image height");
         }
 
-        public static void PixelIsColor(this Assert assert, System.Drawing.Point pixel, System.Drawing.Color expectedColor, Bitmap actualImage)
+        public static void PixelIsColor(this Assert assert, Point pixel, Color expectedColor, Image<Rgb24> actualImage)
         {
-            var actualColor = actualImage.GetPixel(pixel.X, pixel.Y);
+            var actualColor = actualImage[pixel.X, pixel.Y];
             Assert.AreEqual(expectedColor, actualColor, $"Expected color at pixel {pixel} did not match actual color");
         }
 
@@ -42,52 +41,52 @@ namespace Acoustics.Test.TestHelpers
         /// A repeating pattern can fool this test.
         /// </summary>
         /// <example>
-        /// ImageAssert.ImageRegionIsColor(new Rectangle(10, 20, 100, 200), Color.FromArgb(41, 42, 31), actualImage, 1.0);
+        /// ImageAssert.ImageRegionIsColor(new Rectangle(10, 20, 100, 200), Color.FromRgb(41, 42, 31), actualImage, 1.0);
         /// </example>
         /// <param name="region">The rectangle within the image to test.</param>
         /// <param name="expectedColor">The single color you expect the region to have</param>
         /// <param name="actualImage">The image to test</param>
         /// <param name="tolerance">The tolerance allowed for each color channel</param>
-        public static void ImageRegionIsColor(this Assert assert, System.Drawing.Rectangle region, System.Drawing.Color expectedColor, Bitmap actualImage, double tolerance = 0.0)
-        {
-            var width = region.Width;
-            var area = region.Area();
-
-            var red = new int[area];
-            var green = new int[area];
-            var blue = new int[area];
-            var indices = new HashSet<int>();
-            for (var x = region.Left; x < region.Right; x++)
-            {
-                for (var y = region.Top; y < region.Bottom; y++)
-                {
-                    var color = actualImage.GetPixel(x, y);
-
-                    var i = x - region.Left;
-                    var j = y - region.Top;
-                    var index0 = (i * region.Height) + j;
-                    if (indices.Contains(index0))
-                    {
-                        Debugger.Break();
-                    }
-
-                    indices.Add(index0);
-                    red  [index0] = color.R;
-                    green[index0] = color.G;
-                    blue [index0] = color.B;
-                }
-            }
-
-            var averageRed = red.Average();
-            var averageBlue = blue.Average();
-            var averageGreen = green.Average();
-
-            Assert.IsTrue(
-                Math.Abs(averageRed - expectedColor.R) <= tolerance &&
-                Math.Abs(averageGreen - expectedColor.G) <= tolerance &&
-                Math.Abs(averageBlue - expectedColor.B) <= tolerance,
-                $"Region {region} is not expected color {expectedColor} - actual averages: R={averageRed:F20}, G={averageGreen:F20}, B={averageBlue:F20}");
-        }
+        // public static void ImageRegionIsColor(this Assert assert, Rectangle region, Rgb24 expectedColor, Image<Rgb24> actualImage, double tolerance = 0.0)
+        // {
+        //     var width = region.Width;
+        //     var area = region.Area();
+        //
+        //     var red = new int[area];
+        //     var green = new int[area];
+        //     var blue = new int[area];
+        //     var indices = new HashSet<int>();
+        //     for (var x = region.Left; x < region.Right; x++)
+        //     {
+        //         for (var y = region.Top; y < region.Bottom; y++)
+        //         {
+        //             var color = actualImage[x, y];
+        //
+        //             var i = x - region.Left;
+        //             var j = y - region.Top;
+        //             var index0 = (i * region.Height) + j;
+        //             if (indices.Contains(index0))
+        //             {
+        //                 Debugger.Break();
+        //             }
+        //
+        //             indices.Add(index0);
+        //             red  [index0] = color.R;
+        //             green[index0] = color.G;
+        //             blue [index0] = color.B;
+        //         }
+        //     }
+        //
+        //     var averageRed = red.Average();
+        //     var averageBlue = blue.Average();
+        //     var averageGreen = green.Average();
+        //
+        //     Assert.IsTrue(
+        //         Math.Abs(averageRed - expectedColor.R) <= tolerance &&
+        //         Math.Abs(averageGreen - expectedColor.G) <= tolerance &&
+        //         Math.Abs(averageBlue - expectedColor.B) <= tolerance,
+        //         $"Region {region} is not expected color {expectedColor} - actual averages: R={averageRed:F20}, G={averageGreen:F20}, B={averageBlue:F20}");
+        // }
 
         /// <summary>
         /// Assert a certain ratio of colors are present in a region.
@@ -96,16 +95,16 @@ namespace Acoustics.Test.TestHelpers
         /// <example>
         /// var expectedColors = new Dictionary&lt;Color, double&gt;()
         ///            {
-        ///                { Color.FromArgb(0, 0, 0), 0.7 },
-        ///                { Color.FromArgb(255, 255, 255), 0.3 },
+        ///                { Color.FromRgb(0, 0, 0), 0.7 },
+        ///                { Color.FromRgb(255, 255, 255), 0.3 },
         ///            };
         /// ImageAssert.ImageRegionHasColors(new Rectangle(0, 24, 210, 3),  expectedColors, actualImage1, 0.07);
         /// </example>
         public static void ImageRegionHasColors(
             this Assert assert,
-            System.Drawing.Rectangle region,
-            Dictionary<System.Drawing.Color, double> expectedColors,
-            Bitmap actualImage,
+            Rectangle region,
+            Dictionary<Color, double> expectedColors,
+            Image<Rgb24> actualImage,
             double tolerance = 0.0)
         {
             var actualColors = ImageTools.GetColorHistogramNormalized(actualImage);
@@ -128,9 +127,9 @@ namespace Acoustics.Test.TestHelpers
             }
         }
 
-        public static void ImageMatches(this Assert assert, Bitmap expectedImage, Bitmap actualImage, double tolerance = 0.0, string message = "")
+        public static void ImageMatches(this Assert assert, Image<Rgb24> expectedImage, Image<Rgb24> actualImage, double tolerance = 0.0, string message = "")
         {
-            Assert.AreEqual(expectedImage.Size, actualImage.Size);
+            Assert.AreEqual(expectedImage.Size(), actualImage.Size());
 
             var expectedHistogram = ImageTools.GetColorHistogramNormalized(expectedImage);
             var actualHistogram = ImageTools.GetColorHistogramNormalized(actualImage);
@@ -144,20 +143,19 @@ namespace Acoustics.Test.TestHelpers
             Assert.IsTrue(delta <= tolerance, $"Images are not equal - total delta {delta} is not less than tolerance {tolerance}.\n" + message);
         }
 
-        public static void ImageRegionIsRepeatedHorizontally(this Assert assert, System.Drawing.Rectangle region, int repeats, int spacing, Bitmap actualImage, double tolerance = 0.0)
+        public static void ImageRegionIsRepeatedHorizontally(this Assert assert, Rectangle region, int repeats, int spacing, Image<Rgb24> actualImage, double tolerance = 0.0)
         {
             Contract.Requires(spacing >= 1);
             Contract.Requires(spacing >= 1);
 
             // extract first region
-            var expected = actualImage.Clone(region, PixelFormat.DontCare);
+            var expected = actualImage.Clone(x => x.Crop(region));
 
             // extract the next regions
             var tiles = Enumerable.Range(1, repeats)
                 .Select(
-                    i => actualImage.Clone(
-                        new System.Drawing.Rectangle(region.X + (spacing * i), region.Y, region.Width, region.Height),
-                        PixelFormat.DontCare));
+                    i => actualImage.Clone(x => x.Crop(
+                        new Rectangle(region.X + (spacing * i), region.Y, region.Width, region.Height))));
 
             int index = 0;
             foreach (var tile in tiles)
@@ -170,9 +168,9 @@ namespace Acoustics.Test.TestHelpers
 
         public static void ImageColorsWellDistributed(
             this Assert assert,
-            Bitmap actualImage,
+            Image<Rgb24> actualImage,
             double allowedError = 0.1,
-            Dictionary<System.Drawing.Color, double> colorHistogram = null,
+            Dictionary<Color, double> colorHistogram = null,
             string message = "")
         {
             colorHistogram = colorHistogram ?? ImageTools.GetColorHistogramNormalized(actualImage);
@@ -192,7 +190,7 @@ namespace Acoustics.Test.TestHelpers
             Assert.AreEqual(expectedHeight, actualImage.Height, "Expected image height did not match actual image height");
         }
 
-        public static void ImageRegionIsColor(this Assert assert, SixLabors.ImageSharp.Rectangle region, Rgb24 expectedColor, Image<Rgb24> actualImage, double tolerance = 0.0)
+        public static void ImageRegionIsColor(this Assert assert, Rectangle region, Rgb24 expectedColor, Image<Rgb24> actualImage, double tolerance = 0.0)
         {
             //var width = region.Width;
             var area = region.Width * region.Height;
@@ -254,10 +252,10 @@ Difference are:
             }
         }
 
-        public static void ImageContainsExpected<T>(this Assert assert, Image<T> expectedImage, SixLabors.ImageSharp.Point expectedLocation, Image<T> actualImage, double tolerance = 0.0, string message = "")
+        public static void ImageContainsExpected<T>(this Assert assert, Image<T> expectedImage, SixLabors.Primitives.Point expectedLocation, Image<T> actualImage, double tolerance = 0.0, string message = "")
             where T : struct, IPixel<T>
         {
-            var regionToCheck = new SixLabors.ImageSharp.Rectangle(expectedLocation, expectedImage.Size());
+            var regionToCheck = new Rectangle(expectedLocation, expectedImage.Size());
             Assert.IsTrue(actualImage.Bounds().Contains(regionToCheck));
 
             var (normalizedDifference, differences) = CompareImage(expectedImage, actualImage, regionToCheck);
@@ -277,7 +275,7 @@ Difference are:
         }
 
         private static (float normalizedDifference, List<PixelDifference> differences) CompareImage<TPixel>(
-            Image<TPixel> expected, Image<TPixel> actual, SixLabors.ImageSharp.Rectangle? regionToCheck = null)
+            Image<TPixel> expected, Image<TPixel> actual, Rectangle? regionToCheck = null)
             where TPixel : struct, IPixel<TPixel>
         {
             // implementation based off of https://github.com/SixLabors/ImageSharp/blob/9ab02b6ee67b25fd3653146c069dab3687fc0ac8/tests/ImageSharp.Tests/TestUtilities/ImageComparison/TolerantImageComparer.cs
@@ -305,7 +303,7 @@ Difference are:
 
                     if (d > 0)
                     {
-                        var diff = new PixelDifference(new SixLabors.ImageSharp.Point(x, y), a, b);
+                        var diff = new PixelDifference(new SixLabors.Primitives.Point(x, y), a, b);
                         differences.Add(diff);
 
                         totalDifference += d;
@@ -331,13 +329,13 @@ Difference are:
 
     internal class PixelDifference
     {
-        public SixLabors.ImageSharp.Point Point { get; }
+        public SixLabors.Primitives.Point Point { get; }
 
         public Rgba32 A { get; }
 
         public Rgba32 B { get; }
 
-        public PixelDifference(SixLabors.ImageSharp.Point point, Rgba32 a, Rgba32 b)
+        public PixelDifference(SixLabors.Primitives.Point point, Rgba32 a, Rgba32 b)
         {
             this.Point = point;
             this.A = a;
@@ -353,19 +351,19 @@ Difference are:
         [TestMethod]
         public void TestColorAssertEmpty()
         {
-            var bitmap = new Bitmap(200, 200);
+            var bitmap = new Image<Rgb24>(200, 200);
             Assert.That.ImageColorsWellDistributed(bitmap);
         }
 
         [TestMethod]
         public void TestColorAssertFails()
         {
-            var bitmap = new Bitmap(200, 200);
-            using (var g = Graphics.FromImage(bitmap))
+            var bitmap = new Image<Rgb24>(200, 200);
+            bitmap.Mutate(g => 
             {
-                g.DrawRectangle(System.Drawing.Pens.Aqua, 50, 50, 50, 50);
-                g.DrawRectangle(System.Drawing.Pens.Red, 60, 60, 140, 140);
-            }
+                g.DrawRectangle(Pens.Solid(Color.Aqua, 1), 50, 50, 50, 50);
+                g.DrawRectangle(Pens.Solid(Color.Red, 1), 60, 60, 140, 140);
+            });
 
             Assert.ThrowsException<AssertFailedException>(() => Assert.That.ImageColorsWellDistributed(bitmap));
         }
@@ -373,11 +371,8 @@ Difference are:
         [TestMethod]
         public void TestColorAssertFails2()
         {
-            var bitmap = new Bitmap(200, 200);
-            using (var g = Graphics.FromImage(bitmap))
-            {
-                g.DrawRectangle(System.Drawing.Pens.Red, 20, 0, 180, 200);
-            }
+            var bitmap = new Image<Rgb24>(200, 200);
+            bitmap.Mutate(g => { g.DrawRectangle(Pens.Solid(Color.Red, 1), 20, 0, 180, 200); });
 
             Assert.ThrowsException<AssertFailedException>(() => Assert.That.ImageColorsWellDistributed(bitmap));
         }
@@ -386,13 +381,13 @@ Difference are:
         public void TestColorAssertRandomImage()
         {
             var random = Random.GetRandom();
-            var bitmap = new Bitmap(200, 200);
+            var bitmap = new Image<Rgb24>(200, 200);
 
             for (int i = 0; i < bitmap.Width; i++)
             {
                 for (int j = 0; j < bitmap.Height; j++)
                 {
-                    bitmap.SetPixel(i, j, random.NextColor());
+                    bitmap[i, j] = random.NextColor();
                 }
             }
 

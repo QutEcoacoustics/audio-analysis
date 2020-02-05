@@ -7,10 +7,11 @@ namespace Acoustics.Test.Shared
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
     using System.Text;
     using System.Threading.Tasks;
     using Acoustics.Shared;
-    using Fasterflect;
+    
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
     using static Acoustics.Shared.AppConfigHelper;
@@ -41,7 +42,7 @@ namespace Acoustics.Test.Shared
         [DataRow(nameof(WvunpackExe), "wvunpac")]
         public void GetExecutable(string name, string expected)
         {
-            var actual = (string)typeof(AppConfigHelper).GetPropertyValue(name);
+            var actual = typeof(AppConfigHelper).GetProperty(name).GetValue(null) as string;
 
             StringAssert.Contains(actual, expected);
         }

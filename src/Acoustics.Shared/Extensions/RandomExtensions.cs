@@ -1,4 +1,4 @@
-﻿// <copyright file="RandomExtensions.cs" company="QutEcoacoustics">
+// <copyright file="RandomExtensions.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -6,9 +6,11 @@ namespace Acoustics.Shared.Extensions
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.Linq;
+    using System.Runtime.InteropServices;
     using System.Text;
+    using SixLabors.ImageSharp.PixelFormats;
 
     public static class RandomExtensions
     {
@@ -98,7 +100,9 @@ namespace Acoustics.Shared.Extensions
         public static Color NextColor(this Random random, byte alpha = 255)
         {
             var value = random.Next();
-            return Color.FromArgb(alpha, Color.FromArgb(value));
+            var  bytes = BitConverter.GetBytes(value);
+
+            return Color.FromRgba(bytes[0], bytes[1], bytes[2], alpha);
         }
     }
 }

@@ -190,15 +190,9 @@
         /// <summary>
         /// Gets a FileStream. Must be disposed by user.
         /// </summary>
-        private Stream GetFileStream
-        {
-            get
-            {
-                return this.wavFile != null
+        private Stream GetFileStream => this.wavFile != null
                     ? new FileStream(this.wavFile.FullName, FileMode.Open, FileAccess.Read, FileShare.Read)
                     : null;
-            }
-        }
 
         /// <summary>
         /// Get samples from the wav stream. Start from <paramref name="firstSampleIndex"/> (zero indexed),

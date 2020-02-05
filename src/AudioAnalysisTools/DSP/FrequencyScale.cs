@@ -5,9 +5,15 @@
 namespace AudioAnalysisTools.DSP
 {
     using System;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.Drawing.Imaging;
     using System.IO;
+    using Acoustics.Shared;
+    using SixLabors.Fonts;
+    using SixLabors.ImageSharp.ColorSpaces;
+    using SixLabors.ImageSharp.PixelFormats;
+    using SixLabors.ImageSharp.Processing;
+    using SixLabors.Primitives;
     using StandardSpectrograms;
     using TowseyLibrary;
     using WavTools;
@@ -306,7 +312,7 @@ namespace AudioAnalysisTools.DSP
         /// THIS METHOD NEEDS TO BE DEBUGGED.  HAS NOT BEEN USED IN YEARS!
         /// Use this method to generate grid lines for mel scale image
         /// Currently this method is only called from BaseSonogram.GetImage() when bool doMelScale = true;
-        /// Frequencyscale.Draw1kHzLines(Bitmap bmp, bool doMelScale, int nyquist, double freqBinWidth)
+        /// Frequencyscale.Draw1kHzLines(Image<Rgb24> bmp, bool doMelScale, int nyquist, double freqBinWidth)
         /// </summary>
         public static int[,] GetMelGridLineLocations(int gridIntervalInHertz, int nyquistFreq, int melBinCount)
         {
@@ -331,7 +337,7 @@ namespace AudioAnalysisTools.DSP
             return gridLines;
         }
 
-        public static void DrawFrequencyLinesOnImage(Bitmap bmp, int[,] gridLineLocations, bool includeLabels)
+        public static void DrawFrequencyLinesOnImage(Image<Rgb24> bmp, int[,] gridLineLocations, bool includeLabels)
         {
             int minimumSpectrogramWidth = 10;
             if (bmp.Width < minimumSpectrogramWidth)
@@ -348,24 +354,25 @@ namespace AudioAnalysisTools.DSP
             {
                 for (int n = 5; n < minimumSpectrogramWidth; n++)
                 {
-                    var bgnColour = bmp.GetPixel(m, n);
+                    var bgnColour = bmp[m, n];
+                    
                     brightness += bgnColour.GetBrightness();
                     pixelCount++;
                 }
             }
 
             brightness /= pixelCount;
-            var txtColour = Brushes.White;
+            var txtColour = Color.White;
             if (brightness > 0.5)
             {
-                txtColour = Brushes.Black;
+                txtColour = Color.Black;
             }
 
             int width = bmp.Width;
             int height = bmp.Height;
             int bandCount = gridLineLocations.GetLength(0);
 
-            var g = Graphics.FromImage(bmp);
+            
 
             // draw the grid line for each frequency band
             for (int b = 0; b < bandCount; b++)
@@ -379,9 +386,9 @@ namespace AudioAnalysisTools.DSP
 
                 for (int x = 1; x < width - 3; x++)
                 {
-                    bmp.SetPixel(x, y, Color.White);
+                    bmp[x, y] = Color.White;
                     x += 3;
-                    bmp.SetPixel(x, y, Color.Black);
+                    bmp[x, y] = Color.Black;
                     x += 2;
                 }
             }
@@ -392,20 +399,23 @@ namespace AudioAnalysisTools.DSP
                 return;
             }
 
-            // draw Hertz label on each band
-            for (int b = 0; b < bandCount; b++)
+            bmp.Mutate(g =>
             {
-                int y = height - gridLineLocations[b, 0];
-                int hertzValue = gridLineLocations[b, 1];
-
-                if (y > 1)
+                // draw Hertz label on each band
+                for (int b = 0; b < bandCount; b++)
                 {
-                    g.DrawString($"{hertzValue}", new Font("Thachoma", 8), txtColour, 1, y);
+                    int y = height - gridLineLocations[b, 0];
+                    int hertzValue = gridLineLocations[b, 1];
+
+                    if (y > 1)
+                    {
+                        g.DrawText($"{hertzValue}", Drawing.Tahoma8, txtColour, new PointF(1, y));
+                    }
                 }
-            }
+            });
         } //end AddHzGridLines()
 
-        public static void DrawFrequencyLinesOnImage(Bitmap bmp, FrequencyScale freqScale, bool includeLabels)
+        public static void DrawFrequencyLinesOnImage(Image<Rgb24> bmp, FrequencyScale freqScale, bool includeLabels)
         {
             DrawFrequencyLinesOnImage(bmp, freqScale.GridLineLocations, includeLabels);
         }
@@ -451,7 +461,7 @@ namespace AudioAnalysisTools.DSP
             sonogram.Data = dataMatrix;
 
             var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-            image.Save(outputImagePath, ImageFormat.Png);
+            image.Save(outputImagePath);
 
             // DO FILE EQUALITY TEST
             string testName = "testName";
@@ -504,7 +514,7 @@ namespace AudioAnalysisTools.DSP
             sonogram.Configuration.WindowSize = freqScale.WindowSize;
 
             var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-            image.Save(outputImagePath, ImageFormat.Png);
+            image.Save(outputImagePath);
 
             // DO FILE EQUALITY TEST
             string testName = "testName";
@@ -556,7 +566,7 @@ namespace AudioAnalysisTools.DSP
 
             // DRAW SPECTROGRAM
             var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-            image.Save(outputImagePath, ImageFormat.Png);
+            image.Save(outputImagePath);
 
             // DO FILE EQUALITY TEST
             string testName = "MelTest";
@@ -610,7 +620,7 @@ namespace AudioAnalysisTools.DSP
             sonogram.Configuration.WindowSize = freqScale.WindowSize;
 
             var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-            image.Save(outputImagePath, ImageFormat.Png);
+            image.Save(outputImagePath);
 
             // DO FILE EQUALITY TEST
             //string testName = "test1";
@@ -661,7 +671,7 @@ namespace AudioAnalysisTools.DSP
             sonogram.Configuration.WindowSize = freqScale.WindowSize;
 
             var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-            image.Save(outputImagePath, ImageFormat.Png);
+            image.Save(outputImagePath);
 
             // DO FILE EQUALITY TEST
             string testName = "test2";
@@ -678,14 +688,14 @@ namespace AudioAnalysisTools.DSP
         {
             string filename = @"C:\SensorNetworks\SoftwareTests\TestFrequencyScale\Clusters50.bmp";
             string outputFile = @"C:\SensorNetworks\SoftwareTests\TestFrequencyScale\Clusters50WithGrid.bmp";
-            Image bmp = ImageTools.ReadImage2Bitmap(filename);
+            var bmp = Image.Load(filename);
 
             int nyquist = 11025;
             int frameSize = 1024;
             int finalBinCount = 128;
             int gridInterval = 1000;
             var freqScale = new FrequencyScale(FreqScaleType.Mel, nyquist, frameSize, finalBinCount, gridInterval);
-            DrawFrequencyLinesOnImage((Bitmap)bmp, freqScale, includeLabels: false);
+            DrawFrequencyLinesOnImage((Image<Rgb24>)bmp, freqScale, includeLabels: false);
             bmp.Save(outputFile);
         }
     }

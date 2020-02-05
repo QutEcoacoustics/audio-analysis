@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="UperoleiaLithomoda.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -10,7 +10,7 @@ namespace AnalysisPrograms.Recognizers
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.IO;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
@@ -22,6 +22,8 @@ namespace AnalysisPrograms.Recognizers
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using Base;
+    using SixLabors.Primitives;
+
     //using log4net;
     using TowseyLibrary;
 
@@ -107,7 +109,7 @@ namespace AnalysisPrograms.Recognizers
             //          var abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
 
             //RecognizerResults results = Algorithm1(recording, configuration, outputDirectory);
-            RecognizerResults results = Algorithm2(audioRecording, configuration, outputDirectory, segmentStartOffset);
+            RecognizerResults results = this.Algorithm2(audioRecording, configuration, outputDirectory, segmentStartOffset);
 
             return results;
         }
@@ -231,9 +233,7 @@ namespace AnalysisPrograms.Recognizers
             } // loop through all spectra
 
             // We now have a list of potential hits. This needs to be filtered.
-            double[] prunedScores;
-            List<Point> startEnds;
-            Plot.FindStartsAndEndsOfScoreEvents(amplitudeScores, eventDecibelThreshold, minFrameWidth, maxFrameWidth, out prunedScores, out startEnds);
+            Plot.FindStartsAndEndsOfScoreEvents(amplitudeScores, eventDecibelThreshold, minFrameWidth, maxFrameWidth, out var prunedScores, out var startEnds);
 
             // loop through the score array and find beginning and end of potential events
             var potentialEvents = new List<AcousticEvent>();
@@ -304,9 +304,7 @@ namespace AnalysisPrograms.Recognizers
             if (displayDebugImage)
             {
                 // display the original decibel score array
-                double[] normalisedScores;
-                double normalisedThreshold;
-                DataTools.Normalise(amplitudeScores, eventDecibelThreshold, out normalisedScores, out normalisedThreshold);
+                DataTools.Normalise(amplitudeScores, eventDecibelThreshold, out var normalisedScores, out var normalisedThreshold);
                 var debugPlot = new Plot(this.DisplayName, normalisedScores, normalisedThreshold);
                 var debugPlots = new List<Plot> { debugPlot, plot };
                 var debugImage = DisplayDebugImage(sonogram, potentialEvents, debugPlots, hits);
@@ -395,11 +393,9 @@ namespace AnalysisPrograms.Recognizers
 
             // minimum number of frames and bins covering the call
             // The PlatyplectrumOrnatum call has a duration of 3-5 frames GIVEN THE ABOVE SAMPLING and WINDOW SETTINGS!
-            int callFrameDuration;
-            int callBinWidth;
 
             // Get the call templates and their dimensions
-            var templates = GetTemplatesForAlgorithm2(out callFrameDuration, out callBinWidth);
+            var templates = GetTemplatesForAlgorithm2(out var callFrameDuration, out var callBinWidth);
 
             int dominantFrequency = configuration.GetInt("DominantFrequency");
 
@@ -516,9 +512,7 @@ namespace AnalysisPrograms.Recognizers
             } // loop through all spectra
 
             // display the amplitude scores
-            double[] normalisedScores;
-            double normalisedThreshold;
-            DataTools.Normalise(amplitudeScores, eventDecibelThreshold, out normalisedScores, out normalisedThreshold);
+            DataTools.Normalise(amplitudeScores, eventDecibelThreshold, out var normalisedScores, out var normalisedThreshold);
             var plot = new Plot(this.DisplayName, normalisedScores, normalisedThreshold);
             var plots = new List<Plot> { plot };
 

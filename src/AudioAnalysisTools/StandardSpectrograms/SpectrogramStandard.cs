@@ -139,9 +139,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         {
             int frameCount = this.Data.GetLength(0);
             int featureCount = this.Data.GetLength(1);
-            double minIntensity; // min value in matrix
-            double maxIntensity; // max value in matrix
-            DataTools.MinMax(this.Data, out minIntensity, out maxIntensity);
+            DataTools.MinMax(this.Data, out var minIntensity, out var maxIntensity);
             double[,] newMatrix = new double[frameCount, featureCount];
 
             //each row of matrix is a frame

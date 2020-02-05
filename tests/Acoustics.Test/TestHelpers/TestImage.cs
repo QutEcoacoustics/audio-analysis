@@ -4,15 +4,10 @@ namespace Acoustics.Test.TestHelpers
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using MoreLinq.Extensions;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
     using SixLabors.Primitives;
-    using Point = SixLabors.ImageSharp.Point;
-    using Rectangle = SixLabors.ImageSharp.Rectangle;
-    using RectangleF = SixLabors.ImageSharp.RectangleF;
-    using Size = SixLabors.ImageSharp.Size;
 
     public class TestImage
     {

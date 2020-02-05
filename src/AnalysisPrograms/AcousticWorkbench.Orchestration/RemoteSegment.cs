@@ -23,7 +23,7 @@ namespace AnalysisPrograms.AcousticWorkbench.Orchestration
     /// </summary>
     public class RemoteSegment : ISegment<AudioRecording>
     {
-        private AudioRecording recording;
+        private readonly AudioRecording recording;
 
         public RemoteSegment(AudioRecording source, Range<double> offsets)
         {

@@ -1,4 +1,4 @@
-﻿// <copyright file="StandardizedFeatureExtraction.cs" company="QutEcoacoustics">
+// <copyright file="StandardizedFeatureExtraction.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -6,7 +6,7 @@ namespace AnalysisPrograms.StandardizedFeatures
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
@@ -22,6 +22,9 @@ namespace AnalysisPrograms.StandardizedFeatures
     using AudioAnalysisTools.WavTools;
     using log4net;
     using log4net.Repository.Hierarchy;
+    using SixLabors.ImageSharp.PixelFormats;
+    using SixLabors.ImageSharp.Processing;
+    using SixLabors.Primitives;
     using TowseyLibrary;
 
     public class StandardizedFeatureExtraction : AbstractStrongAnalyser
@@ -36,15 +39,9 @@ namespace AnalysisPrograms.StandardizedFeatures
         }
 
         // Implemented from AbstractStrongAnalyser
-        public override string DisplayName
-        {
-            get { return "Standardized Feature Extraction"; }
-        }
+        public override string DisplayName => "Standardized Feature Extraction";
 
-        public override string Identifier
-        {
-            get { return "Ecosounds.StandardizedFeatures"; }
-        }
+        public override string Identifier => "Ecosounds.StandardizedFeatures";
 
         public override AnalyzerConfig ParseConfig(FileInfo file)
         {
@@ -85,7 +82,7 @@ namespace AnalysisPrograms.StandardizedFeatures
             analysisResults.SpectralIndices = new SpectralIndexBase[totalSubsegmentCount];
 
             // Create list to store images, one for each band. They are later combined into one image.
-            var list = new List<Image>();
+            var list = new List<Image<Rgb24>>();
             string imagePath = segmentSettings.SegmentImageFile.FullName;
             int maxImageWidth = 0;
 
@@ -179,18 +176,19 @@ namespace AnalysisPrograms.StandardizedFeatures
                     string[] segments = { minBandWidth, maxBandWidth, fftWindow, mel, melScale };
                     string labelText = segments.Aggregate(string.Empty, (aggregate, item) => aggregate + segmentSeparator + item);
 
-                    Font stringFont = new Font("Arial", 14);
+                    var stringFont = Drawing.Arial14;
                     int width = 250;
                     int height = image.Height;
-                    var label = new Bitmap(width, height);
-                    var g1 = Graphics.FromImage(label);
-                    g1.Clear(Color.Gray);
-                    g1.DrawString(labelText, stringFont, Brushes.Black, new PointF(4, 30));
-                    g1.DrawLine(new Pen(Color.Black), 0, 0, width, 0); //draw upper boundary
-                    g1.DrawLine(new Pen(Color.Black), 0, 1, width, 1); //draw upper boundary
+                    var label = new Image<Rgb24>(width, height);
+                    label.Mutate(g1 =>
+                    {
+                        g1.Clear(Color.Gray);
+                        g1.DrawText(labelText, stringFont, Color.Black, new PointF(4, 30));
+                        g1.DrawLine(new Pen(Color.Black, 1), 0, 0, width, 0); //draw upper boundary
+                        g1.DrawLine(new Pen(Color.Black, 1), 0, 1, width, 1); //draw upper boundary
+                    });
 
-                    Image[] imagearray = { label, image };
-                    var labelledImage = ImageTools.CombineImagesInLine(imagearray);
+                    var labelledImage = ImageTools.CombineImagesInLine(label, image);
 
                     // Add labeled image to list
                     list.Add(labelledImage);
@@ -219,8 +217,8 @@ namespace AnalysisPrograms.StandardizedFeatures
 
             if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave())
             {
-                Image finalImage = ImageTools.CombineImagesVertically(list.ToArray(), maxImageWidth);
-                finalImage.Save(imagePath, ImageFormat.Png);
+                var finalImage = ImageTools.CombineImagesVertically(list, maxImageWidth);
+                finalImage.Save(imagePath);
                 analysisResults.ImageFile = new FileInfo(imagePath);
                 LoggedConsole.WriteLine("See {0} for spectrogram pictures", imagePath);
             }

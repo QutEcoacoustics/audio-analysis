@@ -1,4 +1,4 @@
-﻿namespace Microsoft.FSharp.Collections
+namespace Microsoft.FSharp.Collections
     open System
     open Microsoft.FSharp.Collections
     open System.Linq
@@ -42,7 +42,7 @@
                     let count = map.[x]
                     Map.add x (count + 1) map
  
-                PSeq.fold (g) m collection
+                Seq.fold (g) m collection
 
             module Parallel =
                 open System.Threading.Tasks

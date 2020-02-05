@@ -59,20 +59,18 @@ namespace AudioAnalysisTools
                     }
 
                     var subM = MatrixTools.Submatrix(matrix, r - halfLength, c - halfLength, r + halfLength, c + halfLength); // extract NxN submatrix
-                    double magnitude;
 
                     bool isRidge = false;
 
                     // magnitude is dB
                     // direction is multiple of pi/4, i.e. 0. pi/4, pi/2, 3pi/4.
                     //ImageTools.MexicanHat5X5RidgeDetection(subM, out isRidge, out magnitude, out direction);
-                    ImageTools.Sobel5X5RidgeDetection(subM, out isRidge, out magnitude, out int direction);
+                    ImageTools.Sobel5X5RidgeDetection(subM, out isRidge, out var magnitude, out int direction);
                     if (magnitude > magnitudeThreshold && isRidge == true)
                     {
                         // now get average of 7x7 matrix as second check.
-                        double av, sd;
                         var subM2 = MatrixTools.Submatrix(matrix, r - halfLength - 1, c - halfLength - 1, r + halfLength + 1, c + halfLength + 1); // extract NxN submatrix
-                        NormalDist.AverageAndSD(subM2, out av, out sd);
+                        NormalDist.AverageAndSD(subM2, out var av, out var sd);
                         double localThreshold = sd * 0.9;
                         if (subM[halfLength, halfLength] - av < localThreshold)
                         {
@@ -332,8 +330,7 @@ namespace AudioAnalysisTools
                 }
             }
 
-            double av, sd;
-            NormalDist.AverageAndSD(scores, out av, out sd);
+            NormalDist.AverageAndSD(scores, out var av, out var sd);
             double threshold = av + (sd * 2.5);
 
             var hits = new byte[rows, cols];
@@ -685,9 +682,7 @@ namespace AudioAnalysisTools
             int rNH = 5;
             int cNH = 1;
 
-            double minIntensity; // min value in matrix
-            double maxIntensity; // max value in matrix
-            DataTools.MinMax(sonogram, out minIntensity, out maxIntensity);
+            DataTools.MinMax(sonogram, out var minIntensity, out var maxIntensity);
 
             int rows = sonogram.GetLength(0);
             int cols = sonogram.GetLength(1);

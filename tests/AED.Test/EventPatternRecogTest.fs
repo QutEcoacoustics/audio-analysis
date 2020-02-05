@@ -1,9 +1,10 @@
-﻿module EventPatternRecogTest
+module EventPatternRecogTest
 
 open Common
 open Microsoft.FSharp.Math.SI
 open Xunit
-
+open Microsoft.FSharp
+open Microsoft.FSharp.Math
 open QutSensors.AudioAnalysis.AED.EventPatternRecog
 open QutSensors.AudioAnalysis.AED.EventPatternRecog.EprInternals
 open QutSensors.AudioAnalysis.AED.Util

@@ -25,33 +25,13 @@ namespace TowseyLibrary
 
         public delegate double WindowFunc(int n, int N);
 
-        private double windowPower; //power of the window
+        public double WindowPower { get; private set; }
 
-        public double WindowPower
-        {
-            get { return this.windowPower; } private set { this.windowPower = value; }
-        }
+        public int WindowSize { get; private set; }
 
-        private int windowSize;
+        public int CoeffCount { get; private set; }
 
-        public int WindowSize
-        {
-            get { return this.windowSize; } private set { this.windowSize = value; }
-        }
-
-        private int coeffCount;
-
-        public int CoeffCount
-        {
-            get { return this.coeffCount; } private set { this.coeffCount = value; }
-        }
-
-        private double[] windowWeights;
-
-        public double[] WindowWeights
-        {
-            get { return this.windowWeights; } private set { this.windowWeights = value; }
-        }
+        public double[] WindowWeights { get; private set; }
 
         public FFT(int windowSize) : this(windowSize, null)
         {
@@ -91,7 +71,7 @@ namespace TowseyLibrary
                     power += this.WindowWeights[i] * this.WindowWeights[i];
                 }
 
-                this.windowPower = power;
+                this.WindowPower = power;
             }
         }
 
@@ -126,8 +106,8 @@ namespace TowseyLibrary
             //do the FFT
             four1(cdata); //array contains real and imaginary values
 
-            double[] f = new double[this.coeffCount]; //array to contain amplitude data
-            for (int i = 0; i < this.coeffCount; i++) //calculate amplitude
+            double[] f = new double[this.CoeffCount]; //array to contain amplitude data
+            for (int i = 0; i < this.CoeffCount; i++) //calculate amplitude
             {
                 //f[i] = hypot(cdata[2 * i], cdata[2 * i + 1]);
                 //f[i] = (cdata[2 * i] * cdata[2 * i]) + (cdata[2 * i + 1] * cdata[2 * i + 1]);
@@ -160,8 +140,8 @@ namespace TowseyLibrary
             //do the FFT
             four1(cdata);
 
-            double[] f = new double[this.coeffCount]; //array to contain amplitude data
-            for (int i = 0; i < this.coeffCount; i++) //calculate amplitude
+            double[] f = new double[this.CoeffCount]; //array to contain amplitude data
+            for (int i = 0; i < this.CoeffCount; i++) //calculate amplitude
             {
                 f[i] = hypot(cdata[2 * i], cdata[(2 * i) + 1]);
             }

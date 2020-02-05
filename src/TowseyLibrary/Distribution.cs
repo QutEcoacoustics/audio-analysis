@@ -24,26 +24,26 @@ namespace TowseyLibrary
     public class Distribution
 {
   //new functions - the arrays to hold the distribution
-    private int binCount;
-    private int barWidth = 1;  // int equivalent of binWidth below
-    private int[] posDistribution;
-    private int[] negDistribution;
+    private readonly int binCount;
+    private readonly int barWidth = 1;  // int equivalent of binWidth below
+    private readonly int[] posDistribution;
+    private readonly int[] negDistribution;
     private int valueCount = 0; // number of values in Distribution
     private int minIndex = int.MaxValue; // index of lowest bin containing a value
     private int maxIndex = int.MinValue;
 
   // all these variables below were part of the original class
-    private double[] prob;
+    private readonly double[] prob;
     private double[] IC;   // info content of each value
     private double totalIC = 0.0;
     private double expectedIC = 0.0; //assuming uniform distribution
-    private int min = 0;
-    private int max = 0;
+    private readonly int min = 0;
+    private readonly int max = 0;
 
   // vars for real valued distribution
-    private double minD = 0.0;
-    private double maxD = 0.0;
-    private double binWidth = 1.0;
+    private readonly double minD = 0.0;
+    private readonly double maxD = 0.0;
+    private readonly double binWidth = 1.0;
 
   /// <summary>
   /// CONSTRUCTOR

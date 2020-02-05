@@ -1,4 +1,4 @@
-﻿// <copyright file="SpeciesAccumulationCurve.cs" company="QutEcoacoustics">
+// <copyright file="SpeciesAccumulationCurve.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -97,7 +97,7 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("s25={0}\t  s50={1}\t  s75={2}\t  s100={3}", this.S25, this.S50, this.S75, this.S100);
             LoggedConsole.WriteLine("samples\t10\t30\t60\t90\t120\t180\t240");
             LoggedConsole.WriteLine("percent\t{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}", this.percentRecognitionWith10Samples, this.percentRecognitionWith30Samples,
-                percentRecognitionWith60Samples, this.percentRecognitionWith90Samples, this.percentRecognitionWith120Samples,
+                this.percentRecognitionWith60Samples, this.percentRecognitionWith90Samples, this.percentRecognitionWith120Samples,
                 this.percentRecognitionWith180Samples, this.percentRecognitionWith240Samples);
         }
 
@@ -110,8 +110,7 @@ namespace AnalysisPrograms
                 array[i] = list[i].percentRecognitionWith10Samples;
             }
 
-            double av10, sd10;
-            NormalDist.AverageAndSD(array, out av10, out sd10);
+            NormalDist.AverageAndSD(array, out var av10, out var sd10);
 
             array = new double[reps];
             for (int i = 0; i < reps; i++)
@@ -119,8 +118,7 @@ namespace AnalysisPrograms
                 array[i] = list[i].percentRecognitionWith30Samples;
             }
 
-            double av30, sd30;
-            NormalDist.AverageAndSD(array, out av30, out sd30);
+            NormalDist.AverageAndSD(array, out var av30, out var sd30);
 
             array = new double[reps];
             for (int i = 0; i < reps; i++)
@@ -128,8 +126,7 @@ namespace AnalysisPrograms
                 array[i] = list[i].percentRecognitionWith60Samples;
             }
 
-            double av60, sd60;
-            NormalDist.AverageAndSD(array, out av60, out sd60);
+            NormalDist.AverageAndSD(array, out var av60, out var sd60);
 
             array = new double[reps];
             for (int i = 0; i < reps; i++)
@@ -137,8 +134,7 @@ namespace AnalysisPrograms
                 array[i] = list[i].percentRecognitionWith90Samples;
             }
 
-            double av90, sd90;
-            NormalDist.AverageAndSD(array, out av90, out sd90);
+            NormalDist.AverageAndSD(array, out var av90, out var sd90);
 
             array = new double[reps];
             for (int i = 0; i < reps; i++)
@@ -146,8 +142,7 @@ namespace AnalysisPrograms
                 array[i] = list[i].percentRecognitionWith120Samples;
             }
 
-            double av120, sd120;
-            NormalDist.AverageAndSD(array, out av120, out sd120);
+            NormalDist.AverageAndSD(array, out var av120, out var sd120);
 
             array = new double[reps];
             for (int i = 0; i < reps; i++)
@@ -155,8 +150,7 @@ namespace AnalysisPrograms
                 array[i] = list[i].percentRecognitionWith180Samples;
             }
 
-            double av180, sd180;
-            NormalDist.AverageAndSD(array, out av180, out sd180);
+            NormalDist.AverageAndSD(array, out var av180, out var sd180);
 
             array = new double[reps];
             for (int i = 0; i < reps; i++)
@@ -164,8 +158,7 @@ namespace AnalysisPrograms
                 array[i] = list[i].percentRecognitionWith240Samples;
             }
 
-            double av240, sd240;
-            NormalDist.AverageAndSD(array, out av240, out sd240);
+            NormalDist.AverageAndSD(array, out var av240, out var sd240);
 
             LoggedConsole.WriteLine("samples\t10\t30\t60\t90\t120\t180\t240");
             LoggedConsole.WriteLine("avg %  \t{0:f1}\t{1:f1}\t{2:f1}\t{3:f1}\t{4:f1}\t{5:f1}\t{6:f1}", av10, av30, av60, av90, av120, av180, av240);
@@ -617,8 +610,7 @@ namespace AnalysisPrograms
         /// <returns>array of index locations in descending order</returns>
         public static int[] GetRankOrder(string fileName, int colNumber)
         {
-            string header1;
-            double[] array = CsvTools.ReadColumnOfCsvFile(fileName, colNumber, out header1);
+            double[] array = CsvTools.ReadColumnOfCsvFile(fileName, colNumber, out var header1);
             var results2 = DataTools.SortArray(array);
             return results2.Item1;
         }
@@ -629,31 +621,30 @@ namespace AnalysisPrograms
             int offset = 7;  //for 14th October 2010
 
             //int offset = 6;    //for 15,16,17th October 2010
-            string header1, header2, header3, header4, header5, header6;
 
             int colNumber1 = offset + 1;    //background noise
-            double[] array1 = CsvTools.ReadColumnOfCsvFile(fileName, colNumber1, out header1);
+            double[] array1 = CsvTools.ReadColumnOfCsvFile(fileName, colNumber1, out var header1);
 
             //array1 = DataTools.NormaliseArea(array1);
 
             int colNumber2 = offset + 3;  //SegmentCount
-            double[] array2 = CsvTools.ReadColumnOfCsvFile(fileName, colNumber2, out header2);
+            double[] array2 = CsvTools.ReadColumnOfCsvFile(fileName, colNumber2, out var header2);
             array2 = DataTools.NormaliseArea(array2);
 
             int colNumber3 = offset + 8;  //H[avSpectrum]
-            double[] array3 = CsvTools.ReadColumnOfCsvFile(fileName, colNumber3, out header3);
+            double[] array3 = CsvTools.ReadColumnOfCsvFile(fileName, colNumber3, out var header3);
             array3 = DataTools.NormaliseArea(array3);
 
             int colNumber4 = offset + 9;  //H[varSpectrum]
-            double[] array4 = CsvTools.ReadColumnOfCsvFile(fileName, colNumber4, out header4);
+            double[] array4 = CsvTools.ReadColumnOfCsvFile(fileName, colNumber4, out var header4);
             array4 = DataTools.NormaliseArea(array4);
 
             int colNumber5 = offset + 10;  //number of clusters
-            double[] array5 = CsvTools.ReadColumnOfCsvFile(fileName, colNumber5, out header5);
+            double[] array5 = CsvTools.ReadColumnOfCsvFile(fileName, colNumber5, out var header5);
             array5 = DataTools.NormaliseArea(array5);
 
             int colNumber6 = offset + 11;  //av cluster duration
-            double[] array6 = CsvTools.ReadColumnOfCsvFile(fileName, colNumber6, out header6);
+            double[] array6 = CsvTools.ReadColumnOfCsvFile(fileName, colNumber6, out var header6);
             array6 = DataTools.NormaliseArea(array6);
 
             //create sampling bias array - ie bias towards the dawn chorus
@@ -940,8 +931,7 @@ namespace AnalysisPrograms
                     oneHourArray[i] = bgArray[(b * oneHourCount) + i];
                 }
 
-                double av, sd;
-                NormalDist.AverageAndSD(oneHourArray, out av, out sd);
+                NormalDist.AverageAndSD(oneHourArray, out var av, out var sd);
                 LoggedConsole.WriteLine("Hour {0}:  av={1:f2}   sd={2:f2}", b, av, sd);
                 for (int i = 0; i < oneHourCount; i++)
                 {

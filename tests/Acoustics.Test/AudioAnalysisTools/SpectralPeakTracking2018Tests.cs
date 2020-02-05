@@ -19,6 +19,7 @@ namespace Acoustics.Test.AudioAnalysisTools
     using global::AudioAnalysisTools.StandardSpectrograms;
     using global::AudioAnalysisTools.WavTools;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using SixLabors.ImageSharp;
     using TestHelpers;
 
     [TestClass]
@@ -139,7 +140,7 @@ namespace Acoustics.Test.AudioAnalysisTools
             // draw the local peaks
             double[,] hits = SpectralPeakTracking2018.MakeHitMatrix(energySpectrogram.Data, output.TargetPeakBinsIndex, output.BandIndex);
             var image = SpectralPeakTracking2018.DrawSonogram(decibelSpectrogram, hits);
-            image.Save(imagePath, ImageFormat.Bmp);
+            image.Save(imagePath);
 
             string[] header = new[] { "Frame No", "Start Time", "Bin No", "Freq", "Score", "Detection" };
             var csv = new StringBuilder();

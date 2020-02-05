@@ -6,10 +6,13 @@ namespace AudioAnalysisTools.Indices
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
+    using SixLabors.ImageSharp.PixelFormats;
+    using SixLabors.ImageSharp.Processing;
+    using SixLabors.Primitives;
     using TowseyLibrary;
 
     /// <summary>
@@ -47,9 +50,9 @@ namespace AudioAnalysisTools.Indices
         public const string KeyFileJoin = "FileJoin";
         public const string KeyZeroSignal = "ZeroSignal";
 
-        private static string gapDescriptionMissingData = "No Recording";
-        private static string gapDescriptionZeroSignal = "ERROR: Zero Signal";
-        private static string gapDescriptionInvalidValue = "Invalid Index Value";
+        private static readonly string gapDescriptionMissingData = "No Recording";
+        private static readonly string gapDescriptionZeroSignal = "ERROR: Zero Signal";
+        private static readonly string gapDescriptionInvalidValue = "Invalid Index Value";
         public static string gapDescriptionFileJoin = "File Join";
 
         public string GapDescription { get; set; }
@@ -430,7 +433,7 @@ namespace AudioAnalysisTools.Indices
         /// <param name="list">list of erroneous segments.</param>
         /// <param name="drawFileJoins">drawing file joins is optional.</param>
         /// <returns>spectrogram with erroneous segments marked.</returns>
-        public static Image DrawErrorSegments(Image bmp, List<GapsAndJoins> list, bool drawFileJoins)
+        public static Image<Rgb24> DrawErrorSegments(Image<Rgb24> bmp, List<GapsAndJoins> list, bool drawFileJoins)
         {
             var newBmp = DrawGapPatches(bmp, list, gapDescriptionInvalidValue, bmp.Height, true);
             newBmp = DrawGapPatches(newBmp, list, gapDescriptionZeroSignal, bmp.Height, true);
@@ -446,9 +449,9 @@ namespace AudioAnalysisTools.Indices
             return newBmp;
         }
 
-        public static Image DrawGapPatches(Image bmp, List<GapsAndJoins> errorList, string errorDescription, int height, bool textInVerticalOrientation)
+        public static Image<Rgb24> DrawGapPatches(Image<Rgb24> bmp, List<GapsAndJoins> errorList, string errorDescription, int height, bool textInVerticalOrientation)
         {
-            var g = Graphics.FromImage(bmp);
+        
 
             // assume errors are in temporal order and pull out in reverse order
             for (int i = errorList.Count - 1; i >= 0; i--)
@@ -474,7 +477,7 @@ namespace AudioAnalysisTools.Indices
                         var patch = error.DrawErrorPatch(height, textInVerticalOrientation);
                         if (patch != null)
                         {
-                            g.DrawImage(patch, error.StartPosition, 1);
+                            bmp.Mutate(g => { g.DrawImage(patch, new Point(error.StartPosition, 1), 1); });
                         }
                     }
                 }
@@ -483,9 +486,9 @@ namespace AudioAnalysisTools.Indices
             return bmp;
         }
 
-        public static Image DrawFileJoins(Image bmp, List<GapsAndJoins> errorList)
+        public static Image<Rgb24> DrawFileJoins(Image<Rgb24> bmp, List<GapsAndJoins> errorList)
         {
-            var g = Graphics.FromImage(bmp);
+            
             var pen = new Pen(Color.HotPink, 1);
 
             // assume errors are in temporal order and pull out in reverse order
@@ -494,7 +497,9 @@ namespace AudioAnalysisTools.Indices
                 var error = errorList[i];
                 if (error.GapDescription.Equals(gapDescriptionFileJoin))
                 {
-                    g.DrawLine(pen, error.StartPosition, 0, error.StartPosition, bmp.Height);
+                    bmp.Mutate(g => { 
+                        g.DrawLine(pen, error.StartPosition, 0, error.StartPosition, bmp.Height);
+                    });
                 }
             }
 
@@ -507,13 +512,12 @@ namespace AudioAnalysisTools.Indices
         /// </summary>
         /// <param name="height">height in pixels of the error patch.</param>
         /// <param name="textInVerticalOrientation">orientation of error text should match orientation of the patch.</param>
-        public Bitmap DrawErrorPatch(int height, bool textInVerticalOrientation)
+        public Image<Rgb24> DrawErrorPatch(int height, bool textInVerticalOrientation)
         {
+            var background = this.GapDescription == gapDescriptionMissingData ? Color.LightGray : Color.HotPink;
             int width = this.EndPosition - this.StartPosition + 1;
-            var bmp = new Bitmap(width, height);
+            var bmp = Drawing.NewImage(width, height, background);
             int fontVerticalPosition = (height / 2) - 10;
-            var g = Graphics.FromImage(bmp);
-            g.Clear(this.GapDescription == gapDescriptionMissingData ? Color.LightGray : Color.HotPink);
 
             // Draw error message and black cross over error patch only if is wider than arbitrary 10 pixels.
             if (width > 10)
@@ -523,16 +527,18 @@ namespace AudioAnalysisTools.Indices
                 // g.DrawLine(Pens.Black, 0, height, width, 0);
 
                 // Write description of the error cause.
-                var font = new Font("Arial", 8.0f, FontStyle.Bold);
-                if (textInVerticalOrientation)
+                bmp.Mutate(g =>
                 {
-                    var drawFormat = new StringFormat(StringFormatFlags.DirectionVertical);
-                    g.DrawString(" " + this.GapDescription, font, Brushes.Black, 2, 10, drawFormat);
-                }
-                else
-                {
-                    g.DrawString(" " + this.GapDescription, font, Brushes.Black, 2, fontVerticalPosition);
-                }
+                    var font = Drawing.Arial8Bold;
+                    if (textInVerticalOrientation)
+                    {
+                        g.DrawVerticalText(" " + this.GapDescription, font, Color.Black, new Point(2, 10));
+                    }
+                    else
+                    {
+                        g.DrawText(" " + this.GapDescription, font, Color.Black, new PointF(2, fontVerticalPosition));
+                    }
+                });
             }
 
             return bmp;
@@ -541,7 +547,7 @@ namespace AudioAnalysisTools.Indices
         /// <summary>
         /// Cuts out gap portion of a spectrogram image.
         /// </summary>
-        public static Image RemoveGapPatch(Image source, GapsAndJoins error)
+        public static Image<Rgb24> RemoveGapPatch(Image<Rgb24> source, GapsAndJoins error)
         {
             int ht = source.Height;
             int width = source.Width;
@@ -550,20 +556,21 @@ namespace AudioAnalysisTools.Indices
             int gapWidth = error.EndPosition - error.StartPosition + 1;
 
             // create new image
-            Bitmap newBmp = new Bitmap(width - gapWidth, ht);
-            using (Graphics g = Graphics.FromImage(newBmp))
+            Image<Rgb24> newBmp = new Image<Rgb24>(width - gapWidth, ht);
+            newBmp.Mutate(g => 
             {
                 Rectangle srcRect = new Rectangle(0, 0, gapStart, ht);
-                g.DrawImage(source, 0, 0, srcRect, GraphicsUnit.Pixel);
+                
+                g.DrawImage(source.Clone(x => x.Crop(srcRect)), new Point(0, 0), 1);
 
                 // copy image after the gap
                 srcRect = new Rectangle(gapEnd + 1, 0, width, ht);
-                g.DrawImage(source, gapStart, 0, srcRect, GraphicsUnit.Pixel);
+                g.DrawImage(source.Clone(x => x.Crop(srcRect)), new Point(gapStart, 0), 1);
 
                 // draw separator at the join
-                g.DrawLine(new Pen(Color.LightGray), gapStart - 1, 0, gapStart, 15);
-                g.DrawLine(new Pen(Color.LightGray), gapStart, 0, gapStart, 15);
-            }
+                g.DrawLine(new Pen(Color.LightGray, 1), gapStart - 1, 0, gapStart, 15);
+                g.DrawLine(new Pen(Color.LightGray, 1), gapStart, 0, gapStart, 15);
+            });
 
             return newBmp;
         }
@@ -571,13 +578,13 @@ namespace AudioAnalysisTools.Indices
         /// <summary>
         /// Draws an echo patch into a spectrogram image.
         /// </summary>
-        public static Image DrawEchoPatch(Image source, GapsAndJoins error)
+        public static Image<Rgb24> DrawEchoPatch(Image<Rgb24> source, GapsAndJoins error)
         {
             int ht = source.Height;
             int gapStart = error.StartPosition;
             int gapEnd = error.EndPosition;
 
-            using (var g = Graphics.FromImage(source))
+            source.Mutate(g =>
             {
                 // get copy of the last spectrum before the gap.
                 Rectangle srcRect = new Rectangle(gapStart - 1, 0, 1, ht);
@@ -585,12 +592,12 @@ namespace AudioAnalysisTools.Indices
                 // plus one to gap end to draw the last column rather than leave it black
                 for (int i = gapStart; i < gapEnd + 1; i++)
                 {
-                    g.DrawImage(source, i, 0, srcRect, GraphicsUnit.Pixel);
+                    g.DrawImage(source.Clone(x => x.Crop(srcRect)), new Point(i, 0), 1);
                 }
 
-                //g.DrawLine(new Pen(Color.LightGray), gapStart, 0, gapStart, ht);
-                g.DrawLine(new Pen(Color.LightGray), gapEnd, 0, gapEnd, 15);
-            }
+                //g.DrawLine(new Pen(Color.LightGray, 1), gapStart, 0, gapStart, ht);
+                g.DrawLine(new Pen(Color.LightGray, 1), gapEnd, 0, gapEnd, 15);
+            });
 
             return source;
         }

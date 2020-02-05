@@ -12,10 +12,7 @@ namespace NeuralNets
 
     public class Cluster
     {
-        public int Size
-        {
-            get { return this.Vectors.Count; }
-        }
+        public int Size => this.Vectors.Count;
 
         public List<double[]> Vectors { get; private set; } //members  of the cluster
 

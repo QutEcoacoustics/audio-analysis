@@ -18,26 +18,13 @@ namespace AnalysisBase.ResultBases
     {
         private double eventStartSeconds;
 
-        private double segmentStartSeconds;
-
         /// <summary>
         /// Gets or sets the time the current audio segment is offset from the start of the file/recording.
         /// </summary>
         /// <remarks>
         /// <see cref="EventStartSeconds"/> will always be greater than or equal to <see cref="SegmentStartSeconds"/>.
         /// </remarks>
-        public double SegmentStartSeconds
-        {
-            get
-            {
-                return this.segmentStartSeconds;
-            }
-
-            set
-            {
-                this.segmentStartSeconds = value;
-            }
-        }
+        public double SegmentStartSeconds { get; set; }
 
         //AudioAnalysisTools.Keys.EVENT_SCORE,
         public double Score { get; set; }

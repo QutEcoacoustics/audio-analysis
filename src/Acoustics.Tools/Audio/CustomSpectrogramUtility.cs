@@ -11,6 +11,7 @@ namespace Acoustics.Tools.Audio
     using SixLabors.ImageSharp.Advanced;
     using SixLabors.ImageSharp.Formats;
     using SixLabors.ImageSharp.PixelFormats;
+    using SixLabors.Primitives;
     using Wav;
 
     /// <summary>
@@ -593,9 +594,13 @@ namespace Acoustics.Tools.Audio
             for (int i = 0; i < frameCount; i++)//foreach time step or frame
             {
                 if (amplitudeM[i, 0] < epsilon)
+                {
                     spectra[i, 0] = 10 * Math.Log10(epsilon * epsilon / windowPower / sampleRate);
+                }
                 else
+                {
                     spectra[i, 0] = 10 * Math.Log10(amplitudeM[i, 0] * amplitudeM[i, 0] / windowPower / sampleRate);
+                }
                 //spectra[i, 0] = amplitudeM[i, 0] * amplitudeM[i, 0] / windowPower; //calculates power
             }
 
@@ -606,9 +611,13 @@ namespace Acoustics.Tools.Audio
                 for (int i = 0; i < frameCount; i++)//foreach time step or frame
                 {
                     if (amplitudeM[i, j] < epsilon)
+                    {
                         spectra[i, j] = 10 * Math.Log10(epsilon * epsilon * 2 / windowPower / sampleRate);
+                    }
                     else
+                    {
                         spectra[i, j] = 10 * Math.Log10(amplitudeM[i, j] * amplitudeM[i, j] * 2 / windowPower / sampleRate);
+                    }
                     //spectra[i, j] = amplitudeM[i, j] * amplitudeM[i, j] * 2 / windowPower; //calculates power
                 }//end of all frames
             } //end of all freq bins
@@ -619,9 +628,13 @@ namespace Acoustics.Tools.Audio
             {
                 //calculate power of the DC value
                 if (amplitudeM[i, binCount - 1] < epsilon)
+                {
                     spectra[i, binCount - 1] = 10 * Math.Log10(epsilon * epsilon / windowPower / sampleRate);
+                }
                 else
+                {
                     spectra[i, binCount - 1] = 10 * Math.Log10(amplitudeM[i, binCount - 1] * amplitudeM[i, binCount - 1] / windowPower / sampleRate);
+                }
                 //spectra[i, 0] = amplitudeM[i, 0] * amplitudeM[i, 0] / windowPower; //calculates power
             }
 
@@ -650,15 +663,17 @@ namespace Acoustics.Tools.Audio
             //*******************************************************************************************************************
 
 
-            double minIntensity; // min value in matrix
-            double maxIntensity; // max value in matrix
-            MinMax(matrix, out minIntensity, out maxIntensity);
+            MinMax(matrix, out var minIntensity, out var maxIntensity);
             double binWidth = (maxIntensity - minIntensity) / binCount;  // width of an intensity bin
             // LoggedConsole.WriteLine("minIntensity=" + minIntensity + "  maxIntensity=" + maxIntensity + "  binWidth=" + binWidth);
 
             int rowCount = matrix.GetLength(0);
             int colCount = matrix.GetLength(1);
-            if (bandWidth > colCount) bandWidth = colCount - 1;
+            if (bandWidth > colCount)
+            {
+                bandWidth = colCount - 1;
+            }
+
             int halfWidth = bandWidth / 2;
 
             // init matrix from which histogram derived
@@ -669,16 +684,27 @@ namespace Acoustics.Tools.Audio
             {
                 // construct new submatrix to calculate modal noise
                 int start = col - halfWidth;   //extend range of submatrix below col for smoother changes
-                if (start < 0) start = 0;
+                if (start < 0)
+                {
+                    start = 0;
+                }
+
                 int stop = col + halfWidth;
-                if (stop >= colCount) stop = colCount - 1;
+                if (stop >= colCount)
+                {
+                    stop = colCount - 1;
+                }
+
                 submatrix = Submatrix(matrix, 0, start, rowCount - 1, stop);
                 int[] histo = Histo(submatrix, binCount, minIntensity, maxIntensity, binWidth);
                 //DataTools.writeBarGraph(histo);
                 double[] smoothHisto = FilterMovingAverage(histo, 7);
-                int maxindex; //mode
-                GetMaxIndex(smoothHisto, out maxindex); //this is mode of histogram
-                if (maxindex > binLimit) maxindex = binLimit;
+                GetMaxIndex(smoothHisto, out var maxindex); //this is mode of histogram
+                if (maxindex > binLimit)
+                {
+                    maxindex = binLimit;
+                }
+
                 modalNoise[col] = minIntensity + maxindex * binWidth;
                 //LoggedConsole.WriteLine("  modal index=" + maxindex + "  modalIntensity=" + modalIntensity.ToString("F3"));
             }//end for all cols
@@ -768,8 +794,16 @@ namespace Acoustics.Tools.Audio
                 for (int j = 0; j < cols; j++)
                 {
                     int bin = (int)((data[i, j] - min) / binWidth);
-                    if (bin >= binCount) bin = binCount - 1;
-                    if (bin < 0) bin = 0;
+                    if (bin >= binCount)
+                    {
+                        bin = binCount - 1;
+                    }
+
+                    if (bin < 0)
+                    {
+                        bin = 0;
+                    }
+
                     histo[bin]++;
                 }
             }
@@ -785,9 +819,16 @@ namespace Acoustics.Tools.Audio
         /// <returns>Filtered moving average.</returns>
         private static double[] FilterMovingAverage(double[] signal, int width)
         {
-            if (width <= 1) return signal;    // no filter required
+            if (width <= 1)
+            {
+                return signal;    // no filter required
+            }
+
             int length = signal.Length;
-            if (length <= 3) return signal;   // not worth the effort!
+            if (length <= 3)
+            {
+                return signal;   // not worth the effort!
+            }
 
             var fs = new double[length]; // filtered signal
             int edge = width / 2;            // half window width.

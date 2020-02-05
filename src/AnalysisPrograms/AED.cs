@@ -12,7 +12,7 @@ namespace AnalysisPrograms
     using System.Collections.Generic;
     using System.Data;
     using System.Diagnostics.CodeAnalysis;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
@@ -67,7 +67,7 @@ namespace AnalysisPrograms
             public AedConfiguration()
             {
                 this.AedEventColor = Color.Red;
-                this.AedHitColor = Color.FromArgb(128, this.AedEventColor);
+                this.AedHitColor = this.AedEventColor.WithAlpha(0.5f);
                 this.NoiseReductionType = NoiseReductionType.None;
             }
 
@@ -103,41 +103,23 @@ namespace AnalysisPrograms
         /// <summary>
         ///     Gets the initial (default) settings for the analysis.
         /// </summary>
-        public override AnalysisSettings DefaultSettings
+        public override AnalysisSettings DefaultSettings => new AnalysisSettings
         {
-            get
-            {
-                return new AnalysisSettings
-                           {
-                               AnalysisMaxSegmentDuration = TimeSpan.FromMinutes(1),
-                               AnalysisMinSegmentDuration = TimeSpan.FromSeconds(20),
-                               SegmentMediaType = MediaTypes.MediaTypeWav,
-                               SegmentOverlapDuration = TimeSpan.Zero,
-                           };
-            }
-        }
+            AnalysisMaxSegmentDuration = TimeSpan.FromMinutes(1),
+            AnalysisMinSegmentDuration = TimeSpan.FromSeconds(20),
+            SegmentMediaType = MediaTypes.MediaTypeWav,
+            SegmentOverlapDuration = TimeSpan.Zero,
+        };
 
         /// <summary>
         ///     Gets the name to display for the analysis.
         /// </summary>
-        public override string DisplayName
-        {
-            get
-            {
-                return "AED";
-            }
-        }
+        public override string DisplayName => "AED";
 
         /// <summary>
         ///     Gets Identifier.
         /// </summary>
-        public override string Identifier
-        {
-            get
-            {
-                return EcosoundsAedIdentifier;
-            }
-        }
+        public override string Identifier => EcosoundsAedIdentifier;
 
         public static Tuple<AcousticEvent[], AudioRecording, BaseSonogram> Detect(
             FileInfo audioFile,
@@ -261,7 +243,7 @@ namespace AnalysisPrograms
             // save image of sonograms
             var outputImagePath = outputDir.CombineFile(recodingBaseName + ".Sonogram.png");
             Image image = DrawSonogram(results.Item3, results.Item1);
-            image.Save(outputImagePath.FullName, ImageFormat.Png);
+            image.Save(outputImagePath.FullName);
             Log.Info("Image saved to: " + outputImagePath.FullName);
 
             // output csv
@@ -300,7 +282,7 @@ namespace AnalysisPrograms
             if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave(analysisResults.Events.Length))
             {
                 Image image = DrawSonogram(sonogram, results.Item1);
-                image.Save(segmentSettings.SegmentImageFile.FullName, ImageFormat.Png);
+                image.Save(segmentSettings.SegmentImageFile.FullName);
                 analysisResults.ImageFile = segmentSettings.SegmentImageFile;
             }
 

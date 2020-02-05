@@ -1,4 +1,4 @@
-﻿// <copyright file="Create4Sonograms.cs" company="QutEcoacoustics">
+// <copyright file="Create4Sonograms.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -7,7 +7,7 @@ namespace AnalysisPrograms
     using System;
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
-    using System.Drawing;
+    using SixLabors.ImageSharp;
     using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
@@ -23,6 +23,7 @@ namespace AnalysisPrograms
     using Production;
     using Production.Arguments;
     using Production.Validation;
+    using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
 
     /// <summary>
@@ -197,17 +198,17 @@ namespace AnalysisPrograms
             protoImage6.AddTrack(ImageTrack.GetSegmentationTrack(standardSonogram));
             var image6 = protoImage6.GetImage();
 
-            var list = new List<Image>();
+            var list = new List<Image<Rgb24>>();
             list.Add(image1); // amplitude spectrogram
             list.Add(image2); // decibel spectrogram before noise removal
             list.Add(image3); // decibel spectrogram after noise removal
             list.Add(image4); // second version of noise reduced spectrogram
 
             //list.Add(image5); // ceptral sonogram
-            list.Add(image6); // multitrack image
+            list.Add(image6.CloneAs<Rgb24>()); // multitrack image
 
             Image finalImage = ImageTools.CombineImagesVertically(list);
-            finalImage.Save(fiImage.FullName, ImageFormat.Png);
+            finalImage.Save(fiImage.FullName);
 
             ////2: NOISE REMOVAL
             //double[,] originalSg = sonogram.Data;

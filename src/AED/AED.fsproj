@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>AED.New</RootNamespace>
     <UseStandardResourceNames>true</UseStandardResourceNames>
@@ -9,6 +9,7 @@
     <DocumentationFile>bin\$(Configuration)\$(AssemblyName).XML</DocumentationFile>
     <WarningLevel>3</WarningLevel>
     <OutputPath>bin\$(Configuration)\</OutputPath>
+    <Deterministic>false</Deterministic>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>
@@ -18,40 +19,26 @@
     <DebugType>pdbonly</DebugType>
     <Tailcalls>true</Tailcalls>
   </PropertyGroup>
-  <Import Project="$(FSharpTargetsPath)" />
-  <ItemGroup>
+    <ItemGroup>
     <PackageReference Include="FSharp.Compiler.Tools" Version="10.2.3" />
-    <PackageReference Include="FSharp.Core" Version="4.3.4" />
-    <PackageReference Include="FSPowerPack.Community" Version="3.0.0.0" />
-    <PackageReference Include="FSPowerPack.Core.Community" Version="3.0.0.0" />
-    <PackageReference Include="FSPowerPack.Linq.Community" Version="3.0.0.0" />
-    <PackageReference Include="FSPowerPack.Metadata.Community" Version="3.0.0.0" />
-    <PackageReference Include="FSPowerPack.Parallel.Seq.Community" Version="3.0.0.0" />
-    <PackageReference Include="Microsoft.Bcl" Version="1.1.10" />
-    <PackageReference Include="Microsoft.Bcl.Async" Version="1.0.168" />
+    <PackageReference Include="FSharp.Core" Version="4.7.0" />
+    <PackageReference Include="MathNet.Numerics.FSharp" Version="4.9.0" />
     <PackageReference Include="Microsoft.Bcl.Build" Version="1.0.21" />
-    <PackageReference Include="Microsoft.DotNet.Analyzers.Compatibility" Version="0.2.12-alpha">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="StyleCop.Analyzers" Version="1.1.1-beta.61">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="StyleCop.Analyzers.Unstable" Version="1.1.1.61">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0007" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0007" />
+    <PackageReference Include="SixLabors.Shapes.Text" Version="1.0.0-beta0009" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="App.config" />
+      <Compile Include="Util.fs" />
+      <Compile Include="Matlab.fs" />
+      <Compile Include="GetAcousticEvents.fs" />
+      <Compile Include="Default.fs" />
+      <Compile Include="AcousticEventDetection.fs" />
+      <Compile Include="EventPatternRecog.fs" />
+      <Compile Include="SpectralPeakTrack.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Acoustics.Shared.FSharp\Acoustics.Shared.FSharp.fsproj" />
     <ProjectReference Include="..\TowseyLibrary\TowseyLibrary.csproj" />
-    <Reference Include="mscorlib" />
-    <Reference Include="System.Net" />
-    <Reference Include="System.ValueTuple">
-      <HintPath>..\..\packages\System.ValueTuple.4.3.1\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
   </ItemGroup>
 </Project>

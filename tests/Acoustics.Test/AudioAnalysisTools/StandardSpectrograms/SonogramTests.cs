@@ -16,6 +16,7 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
     using global::AudioAnalysisTools.WavTools;
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using SixLabors.ImageSharp;
 
     /// <summary>
     /// Test methods for the various standard Sonograms or Spectrograms

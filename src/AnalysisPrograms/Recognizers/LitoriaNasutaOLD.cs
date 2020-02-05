@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="LitoriaNasutaOLD.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -23,6 +23,7 @@ namespace AnalysisPrograms.Recognizers
     using AudioAnalysisTools.WavTools;
     using Base;
     using log4net;
+    using SixLabors.ImageSharp;
     using TowseyLibrary;
 
     /// <summary>
@@ -147,9 +148,7 @@ namespace AnalysisPrograms.Recognizers
 
             var maxDb = amplitudeArray.MaxOrDefault();
 
-            double[] normalisedScores;
-            double normalisedThreshold;
-            DataTools.Normalise(thresholdedPlot, decibelThreshold, out normalisedScores, out normalisedThreshold);
+            DataTools.Normalise(thresholdedPlot, decibelThreshold, out var normalisedScores, out var normalisedThreshold);
             var text = string.Format($"{this.DisplayName} (Fullscale={maxDb:f1}dB)");
             var plot = new Plot(text, normalisedScores, normalisedThreshold);
 

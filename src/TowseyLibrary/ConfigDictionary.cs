@@ -20,7 +20,7 @@ namespace TowseyLibrary
     [Obsolete]
     public class ConfigDictionary
     {
-        private Dictionary<string, string> dictionary;
+        private readonly Dictionary<string, string> dictionary;
 
         /// <summary>
         /// Gets or sets Source.
@@ -135,8 +135,7 @@ namespace TowseyLibrary
 
         public string GetString(string key)
         {
-            string value;
-            return this.dictionary.TryGetValue(key, out value) ? value : null;
+            return this.dictionary.TryGetValue(key, out var value) ? value : null;
         }
 
         public string GetPath(string key)
@@ -243,8 +242,7 @@ namespace TowseyLibrary
 
             try
             {
-                double d;
-                double.TryParse(value, out d);
+                double.TryParse(value, out var d);
                 return d;
             }
             catch
@@ -270,8 +268,7 @@ namespace TowseyLibrary
 
             try
             {
-                double d;
-                double.TryParse(value, out d);
+                double.TryParse(value, out var d);
                 return d;
             }
             catch
@@ -296,8 +293,7 @@ namespace TowseyLibrary
 
             try
             {
-                int int32;
-                if (int.TryParse(value, out int32))
+                if (int.TryParse(value, out var int32))
                 {
                     return int32;
                 }
@@ -327,8 +323,7 @@ namespace TowseyLibrary
 
             try
             {
-                int int32;
-                if (int.TryParse(value, out int32))
+                if (int.TryParse(value, out var int32))
                 {
                     return int32;
                 }
@@ -346,8 +341,7 @@ namespace TowseyLibrary
         public static string ReadPropertyFromFile(string fName, string key)
         {
             Dictionary<string, string> dict = ReadPropertiesFile(fName);
-            string value;
-            dict.TryGetValue(key, out value);
+            dict.TryGetValue(key, out var value);
             return value;
         }
 

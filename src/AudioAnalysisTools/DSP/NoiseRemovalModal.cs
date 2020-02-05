@@ -5,8 +5,8 @@
 namespace AudioAnalysisTools.DSP
 {
     using System;
-    using System.Drawing;
-
+    using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.PixelFormats;
     using StandardSpectrograms;
 
     using TowseyLibrary;
@@ -58,12 +58,7 @@ namespace AudioAnalysisTools.DSP
             title = "title4";
             var image4 = DrawSonogram(noiseReducedSpectrogram2, xAxisInterval, stepDuration, nyquist, hzInterval, title);
 
-            var array = new Image[4];
-            array[0] = image1;
-            array[1] = image2;
-            array[2] = image3;
-            array[3] = image4;
-            var combinedImage = ImageTools.CombineImagesVertically(array);
+            var combinedImage = ImageTools.CombineImagesVertically(image1, image2, image3, image4);
 
             return combinedImage;
         }
@@ -179,7 +174,7 @@ namespace AudioAnalysisTools.DSP
             return noiseMode;
         }
 
-        private static Image DrawSonogram(double[,] data, TimeSpan xInterval, TimeSpan xAxisPixelDuration, int nyquist, int herzInterval, string title)
+        private static Image<Rgb24> DrawSonogram(double[,] data, TimeSpan xInterval, TimeSpan xAxisPixelDuration, int nyquist, int herzInterval, string title)
         {
             var image = ImageTools.GetMatrixImage(data);
 
