@@ -41,15 +41,15 @@ namespace AnalysisPrograms.Recognizers.Base
             int maxBin = (int)Math.Round(maxHz / binWidth);
             //int binCountInBand = maxBin - minBin + 1;
 
-            // buffer zone around whistle is three bins wide.
-            int N = 3;
+            // buffer zone around whistle is four bins wide.
+            int N = 4;
 
             // list of accumulated acoustic events
             var events = new List<AcousticEvent>();
             var combinedIntensityArray = new double[frameCount];
 
-            // for all frequency bins
-            for (int bin = minBin; bin < maxBin - 1; bin++)
+            // for all frequency bins except top and bottom
+            for (int bin = minBin + 1; bin < maxBin - 1; bin++)
             {
                 // set up an intensity array for the frequency bin.
                 double[] intensity = new double[frameCount];
@@ -59,9 +59,9 @@ namespace AnalysisPrograms.Recognizers.Base
                     // for all time frames in this frequency bin
                     for (int t = 0; t < frameCount; t++)
                     {
-                        var bandIntensity = (sonogramData[t, bin] + sonogramData[t, bin + 1]) / 2.0;
-                        var sideBandIntensity = ((0.5 * sonogramData[t, bin + 2]) + sonogramData[t, bin + 3]) / (double)2.0;
-                        intensity[t] = bandIntensity - sideBandIntensity;
+                        var bandIntensity = (sonogramData[t, bin - 1] + sonogramData[t, bin] + sonogramData[t, bin + 1]) / 3.0;
+                        var topSideBandIntensity = (sonogramData[t, bin + 3] + sonogramData[t, bin + 4] + sonogramData[t, bin + 5]) / 3.0;
+                        intensity[t] = bandIntensity - topSideBandIntensity;
                         intensity[t] = Math.Max(0.0, intensity[t]);
                     }
                 }
@@ -70,15 +70,16 @@ namespace AnalysisPrograms.Recognizers.Base
                     // for all time frames in this frequency bin
                     for (int t = 0; t < frameCount; t++)
                     {
-                        var bandIntensity = (sonogramData[t, bin] + sonogramData[t, bin + 1]) / 2.0;
-                        var sideBandIntensity = ((0.5 * sonogramData[t, bin + 2]) + sonogramData[t, bin + 3] + (0.5 * sonogramData[t, bin - 2]) + sonogramData[t, bin - 3]) / (double)4.0;
-                        intensity[t] = bandIntensity - sideBandIntensity;
+                        var bandIntensity = (sonogramData[t, bin - 1] + sonogramData[t, bin] + sonogramData[t, bin + 1]) / 3.0;
+                        var topSideBandIntensity = (sonogramData[t, bin + 3] + sonogramData[t, bin + 4] + sonogramData[t, bin + 5]) / 6.0;
+                        var bottomSideBandIntensity = (sonogramData[t, bin - 3] + sonogramData[t, bin - 4] + sonogramData[t, bin - 5]) / 6.0;
+                        intensity[t] = bandIntensity - topSideBandIntensity - bottomSideBandIntensity;
                         intensity[t] = Math.Max(0.0, intensity[t]);
                     }
                 }
 
                 // smooth the decibel array to allow for brief gaps.
-                intensity = DataTools.filterMovingAverageOdd(intensity, 5);
+                intensity = DataTools.filterMovingAverageOdd(intensity, 7);
 
                 //calculate the Hertz bounds of the acoustic events for these freq bins
                 int bottomHzBound = (int)Math.Floor(sonogram.FBinWidth * (bin - 1));

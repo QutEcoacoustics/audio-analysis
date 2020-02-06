@@ -1,5 +1,6 @@
 ---
-
+# This yml config is designed to detect acoustic objects in an artificial test file prepared by Anthony Trukinger.
+# The file contains a whistle, a rectangular blob and a group of 12 smaller whistles in a 6x2 grid that can be used to detect oscillations and harmonics (perhaps)
 # Resample rate must be 2 X the desired Nyquist
 ResampleRate: 22050
 # SegmentDuration: units=seconds;    
@@ -9,7 +10,35 @@ SegmentOverlap: 0
 
 # Each of these profiles will be analyzed
 Profiles:
-    Territorial: !BlobParameters
+    FiveSecondwhistle: !WhistleParameters
+        FrameSize: 512
+        FrameStep: 512
+        BgNoiseThreshold: 6.0
+        # min and max of the freq band to search
+        MinHertz: 800          
+        MaxHertz: 8000
+        BottomHertzBuffer: 0
+        TopHertzBuffer: 0
+        MinDuration: 0.15
+        MaxDuration: 0.8
+        DecibelThreshold: 9.0
+        ComponentName: Blob 
+        SpeciesName: PteropusSp
+    HalfSecondwhistle: !WhistleParameters
+        FrameSize: 512
+        FrameStep: 512
+        BgNoiseThreshold: 6.0
+        # min and max of the freq band to search
+        MinHertz: 800          
+        MaxHertz: 8000
+        BottomHertzBuffer: 0
+        TopHertzBuffer: 0
+        MinDuration: 0.15
+        MaxDuration: 0.8
+        DecibelThreshold: 9.0
+        ComponentName: Blob 
+        SpeciesName: PteropusSp
+    LargeBlob: !WhistleParameters
         FrameSize: 512
         FrameStep: 512
         BgNoiseThreshold: 6.0
