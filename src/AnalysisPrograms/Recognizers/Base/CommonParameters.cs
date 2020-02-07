@@ -2,6 +2,8 @@
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
+using TowseyLibrary;
+
 namespace AnalysisPrograms.Recognizers.Base
 {
     /// <summary>
@@ -30,6 +32,13 @@ namespace AnalysisPrograms.Recognizers.Base
         /// The overlap can be any number of samples but less than the frame length/size.
         /// </summary>
         public int? FrameStep { get; set; }
+
+        /// <summary>
+        /// Gets or sets the windowing funciton used in conjunction with the FFT when making spectrogram.
+        /// This can have quite an impact in some cases so it is worth giving user the option.
+        /// The default is a HAMMIN window.
+        /// </summary>
+        public string WindowFunction { get; set; } = WindowFunctions.HAMMING.ToString();
 
         /// <summary>
         /// Gets or sets the threshold in decibels which determines signal over

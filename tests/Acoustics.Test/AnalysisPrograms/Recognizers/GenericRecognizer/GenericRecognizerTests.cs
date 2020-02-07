@@ -12,11 +12,13 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
     using Acoustics.Shared;
     using Acoustics.Test.TestHelpers;
     using Acoustics.Tools;
+    using global::AnalysisBase;
     using global::AnalysisPrograms;
     using global::AnalysisPrograms.Recognizers;
     using global::AnalysisPrograms.Recognizers.Base;
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.WavTools;
+    using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
@@ -85,7 +87,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             {
                 Profiles = new Dictionary<string, object>()
                 {
-                    { "TestBlob", new BlobParameters() { MaxHertz = 7200, MinHertz = 4800 } },
+                    { "TestBlob", new BlobParameters() { FrameSize = 512, FrameStep = 512, BgNoiseThreshold = 0.0, MinHertz = 4800, MaxHertz = 7200, BottomHertzBuffer = 1000, TopHertzBuffer = 500 } },
                 },
             };
 
@@ -114,20 +116,29 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
                         "TestOscillation",
                         new OscillationParameters()
                         {
+                            FrameSize = 512,
+                            FrameStep = 512,
+                            BgNoiseThreshold = 0.0,
                             MaxHertz = 1050,
                             MinHertz = 700,
+                            BottomHertzBuffer = 0,
+                            TopHertzBuffer = 0,
                             SpeciesName = "DTMF",
+                            DctDuration = 1.0,
                             MinOscillationFrequency = 1,
                             MaxOscillationFrequency = 2,
                             ComponentName = "LowerBandDTMF_z",
                             MinDuration = 4,
-                            MaxDuration = 6,
+                            MaxDuration = 8,
+                            EventThreshold = 0.3,
                         }
                     },
                 },
             };
 
             var results = recognizer.Recognize(recording, config, 100.Seconds(), null, this.outputDirectory, null);
+            //results.Plots.
+            //results.Sonogram.GetImage().Save(this.outputDirectory + "\\debug.png");
 
             Assert.AreEqual(1, results.Events.Count);
             var @event = results.Events[0];
@@ -152,11 +163,19 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
                         "TestWhistle",
                         new WhistleParameters()
                         {
-                            MaxHertz = 300,
-                            MinHertz = 500,
-                            ComponentName = "Whistle400Hz",
+                            FrameSize = 512,
+                            FrameStep = 512,
+                            WindowFunction = WindowFunctions.HANNING.ToString(),
+                            BgNoiseThreshold = 0.0,
+                            MinHertz = 340,
+                            MaxHertz = 560,
+                            BottomHertzBuffer = 0,
+                            TopHertzBuffer = 0,
                             MinDuration = 4,
-                            MaxDuration = 8,
+                            MaxDuration = 6,
+                            DecibelThreshold = 1.0,
+                            SpeciesName = "NoName",
+                            ComponentName = "Whistle400Hz",
                         }
                     },
                 },
@@ -169,10 +188,14 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
 
             Assert.AreEqual(101.2, @event.EventStartSeconds, 0.1);
             Assert.AreEqual(106.2, @event.EventEndSeconds, 0.1);
-            Assert.AreEqual(300, @event.LowFrequencyHertz, 0.1);
-            Assert.AreEqual(500, @event.HighFrequencyHertz, 0.1);
+
+            // NOTE: The whistle algorithm assigns the top and bottom freq bounds of an event based on where it finds the whistle.
+            //       Not on what the user has set.
+            //       In this test the margin of error has been set arbitrarily to 10.
+            Assert.AreEqual(340, @event.LowFrequencyHertz, 20.0);
+            Assert.AreEqual(560, @event.HighFrequencyHertz, 50.0);
             Assert.AreEqual("TestWhistle", @event.Profile);
-            Assert.AreEqual("", @event.SpeciesName);
+            Assert.AreEqual("NoName", @event.SpeciesName);
             Assert.AreEqual("Whistle400Hz", @event.Name);
         }
 
@@ -218,33 +241,58 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             {
                 Profiles = new Dictionary<string, object>()
                 {
-                    { "TestBlob", new BlobParameters() { MaxHertz = 7200, MinHertz = 4800 } },
+                    {
+                        "TestBlob", new BlobParameters()
+                        {
+                            FrameSize = 512,
+                            FrameStep = 512,
+                            MaxHertz = 7200,
+                            MinHertz = 4800,
+                            BgNoiseThreshold = 0.0,
+                            BottomHertzBuffer = 1000,
+                            TopHertzBuffer = 500,
+                        }
+                    },
                     {
                         "TestOscillationA",
                         new OscillationParameters()
                         {
+                            FrameSize = 512,
+                            FrameStep = 512,
+                            BgNoiseThreshold = 0.0,
                             MaxHertz = 1050,
                             MinHertz = 700,
-                            SpeciesName = "DTMF",
+                            BottomHertzBuffer = 0,
+                            TopHertzBuffer = 0,
+                            DctDuration = 1.0,
                             MinOscillationFrequency = 1,
                             MaxOscillationFrequency = 2,
-                            ComponentName = "LowerBandDTMF_z",
                             MinDuration = 4,
                             MaxDuration = 6,
+                            EventThreshold = 0.3,
+                            SpeciesName = "DTMF",
+                            ComponentName = "LowerBandDTMF_z",
                         }
                     },
                     {
                         "TestOscillationB",
                         new OscillationParameters()
                         {
+                            FrameSize = 512,
+                            FrameStep = 512,
+                            BgNoiseThreshold = 0.0,
                             MaxHertz = 1650,
                             MinHertz = 1350,
-                            SpeciesName = "DTMF",
+                            BottomHertzBuffer = 0,
+                            TopHertzBuffer = 0,
+                            DctDuration = 1.0,
                             MinOscillationFrequency = 1,
                             MaxOscillationFrequency = 2,
-                            ComponentName = "UpperBandDTMF_z",
                             MinDuration = 4,
                             MaxDuration = 6,
+                            EventThreshold = 0.3,
+                            SpeciesName = "DTMF",
+                            ComponentName = "UpperBandDTMF_z",
                         }
                     },
                 },

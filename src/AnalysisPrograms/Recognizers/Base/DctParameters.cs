@@ -35,6 +35,6 @@ namespace AnalysisPrograms.Recognizers.Base
         /// <summary>
         /// Gets or sets the Event threshold - use this to determine FP / FN trade-off for events.
         /// </summary>
-        public double EventThreshold { get; set; }
+        public double EventThreshold { get; set; } = 0.3;
     }
 }

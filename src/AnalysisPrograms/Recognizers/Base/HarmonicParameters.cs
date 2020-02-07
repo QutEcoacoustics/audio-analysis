@@ -14,13 +14,14 @@ namespace AnalysisPrograms.Recognizers.Base
     using TowseyLibrary;
 
     /// <summary>
+    /// TODO TODO: THIS METHOD IS WORK IN PROGESS AND CURRENTLY DOES YIELD A SUCCESSFUL RESULT. To BE FURTHER WORKED ON!!.
     /// Parameters needed from a config file to detect the stacked harmonic components of a soundscape.
     /// This can also be used for recognizing the harmonics of non-biological sounds such as from turbines, motor-bikes, compressors and other hi-revving motors.
     /// </summary>
     [YamlTypeTag(typeof(HarmonicParameters))]
     public class HarmonicParameters : CommonParameters
     {
-        public static (List<AcousticEvent>, double[]) GetSyllablesWithHarmonics(
+        public static (List<AcousticEvent>, double[]) GetComponentsWithHarmonics(
             SpectrogramStandard sonogram,
             int minHz,
             int maxHz,
@@ -36,7 +37,7 @@ namespace AnalysisPrograms.Recognizers.Base
             int maxFormantGap = 450;
 
             // Event threshold - Determines FP / FN trade-off for events.
-            double eventThreshold = 0.2;
+            //double eventThreshold = 0.2;
 
             var sonogramData = sonogram.Data;
             int frameCount = sonogramData.GetLength(0);
@@ -75,7 +76,6 @@ namespace AnalysisPrograms.Recognizers.Base
             int minCallSpan = (int)Math.Round(minDuration * sonogram.FramesPerSecond);
 
             //ii: DETECT HARMONICS
-            //#############################################################################################################################################
             var results = CrossCorrelation.DetectHarmonicsInSonogramMatrix(subMatrix, decibelThreshold, minCallSpan);
 
             double[] dBArray = results.Item1;
@@ -119,47 +119,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 {
                     scoreArray[r] = intensity[r] * discount;
                 }
-
-                //transfer info to a hits matrix.
-                //var hits = new double[rowCount, colCount];
-                //double threshold = harmonicIntensityThreshold * 0.75; //reduced threshold for display of hits
-                //for (int r = 0; r < rowCount; r++)
-                //{
-                //    if (scoreArray[r] < threshold)
-                //    {
-                //        continue;
-                //    }
-
-                //    double herzPeriod = periodicity[r] * freqBinWidth;
-                //    for (int c = minBin; c < maxbin; c++)
-                //    {
-                //        //hits[r, c] = herzPeriod / (double)380;  //divide by 380 to get a relativePeriod;
-                //        hits[r, c] = (herzPeriod - minFormantgap) / maxFormantgap;  //to get a relativePeriod;
-                //    }
-                //}
-
-                //iii: CONVERT TO ACOUSTIC EVENTS
-                //double maxPossibleScore = 0.5;
-                //int halfCallSpan = minCallSpan / 2;
-                //var predictedEvents = new List<AcousticEvent>();
-                //for (int i = 0; i < rowCount; i++)
-                //{
-                //    //assume one score position per crow call
-                //    if (scoreArray[i] < 0.001)
-                //    {
-                //        continue;
-                //    }
-
-                //    double startTime = (i - halfCallSpan) / framesPerSecond;
-                //    AcousticEvent ev = new AcousticEvent(segmentStartOffset, startTime, minDuration, minHz, maxHz);
-                //    ev.SetTimeAndFreqScales(framesPerSecond, freqBinWidth);
-                //    ev.Score = scoreArray[i];
-                //    ev.ScoreNormalised = ev.Score / maxPossibleScore; // normalised to the user supplied threshold
-
-                //    //ev.Score_MaxPossible = maxPossibleScore;
-                //    predictedEvents.Add(ev);
-                //} //for loop
-            } // for all time frames
+            }
 
             // smooth the decibel array to allow for brief gaps.
             harmonicScores = DataTools.filterMovingAverageOdd(harmonicScores, 5);

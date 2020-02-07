@@ -49,7 +49,7 @@ namespace AnalysisPrograms.Recognizers.Base
             var combinedIntensityArray = new double[frameCount];
 
             // for all frequency bins except top and bottom
-            for (int bin = minBin + 1; bin < maxBin - 1; bin++)
+            for (int bin = minBin + 1; bin < maxBin; bin++)
             {
                 // set up an intensity array for the frequency bin.
                 double[] intensity = new double[frameCount];

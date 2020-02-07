@@ -67,7 +67,7 @@ namespace AnalysisPrograms.Recognizers
                         break;
                     case HarmonicParameters _:
                         algorithmName = "Harmonics";
-                        //throw new NotImplementedException("The harmonic algorithm has not been implemented yet");
+                        throw new NotImplementedException("The harmonic algorithm has not been implemented yet");
                         break;
                     case Aed.AedConfiguration _:
                         algorithmName = "AED";
@@ -120,7 +120,6 @@ namespace AnalysisPrograms.Recognizers
                 List<AcousticEvent> acousticEvents;
                 var plots = new List<Plot>();
                 SpectrogramStandard sonogram;
-
 
                 Log.Debug($"Using the {profileName} algorithm... ");
                 if (profileConfig is CommonParameters parameters)
@@ -201,7 +200,7 @@ namespace AnalysisPrograms.Recognizers
                         {
                             //get the array of intensity values minus intensity in side/buffer bands.
                             double[] scoreArray;
-                            (acousticEvents, scoreArray) = HarmonicParameters.GetSyllablesWithHarmonics(
+                            (acousticEvents, scoreArray) = HarmonicParameters.GetComponentsWithHarmonics(
                                 sonogram,
                                 hp.MinHertz.Value,
                                 hp.MaxHertz.Value,
@@ -259,6 +258,9 @@ namespace AnalysisPrograms.Recognizers
                 // effectively keeps only the *last* sonogram produced
                 allResults.Sonogram = sonogram;
                 Log.Debug($"{profileName} event count = {acousticEvents.Count}");
+
+                // DEBUG PURPOSES COMMENT NEXT LINE
+                //SaveDebugSpectrogram(allResults, genericConfig, outputDirectory, "name");
             }
 
             return allResults;
@@ -285,10 +287,12 @@ namespace AnalysisPrograms.Recognizers
         {
             return new SonogramConfig()
             {
+                //WindowOverlap = (WindowSize - WindowStep) / (double)WindowSize,
                 WindowSize = (int)common.FrameSize,
                 WindowStep = (int)common.FrameStep,
 
-                //WindowOverlap = (WindowSize - WindowStep) / (double)WindowSize,
+                // Default window is Hamming. Alternative is to use Hanning. Can sometimes be better.
+                WindowFunction = (string)common.WindowFunction,   //WindowFunctions.HANNING.ToString(),
                 NoiseReductionType = NoiseReductionType.Standard,
                 NoiseReductionParameter = common.BgNoiseThreshold ?? 0.0,
             };
@@ -311,11 +315,25 @@ namespace AnalysisPrograms.Recognizers
             return plot;
         }
 
+        /// <summary>
+        /// THis method can be modified if want to do something non-standard with the output spectrogram.
+        /// </summary>
+        static void SaveDebugSpectrogram(RecognizerResults results, Config genericConfig, DirectoryInfo outputDirectory, string baseName)
+        {
+            //var image = sonogram.GetImageFullyAnnotated("Test");
+            var image = SpectrogramTools.GetSonogramPlusCharts(results.Sonogram, results.Events, results.Plots, null);
+
+            // image.Save(Path.Combine(outputDirectory.FullName, baseName + ".profile.png"));
+            image.Save(Path.Combine("C:\\temp\\test.profile.png"));
+            //sonogram.GetImageFullyAnnotated("test").Save("C:\\temp\\test.png");
+        }
+
         /// <inheritdoc cref="RecognizerConfig"/> />
         public class GenericRecognizerConfig : RecognizerConfig, INamedProfiles<object>
         {
             /// <inheritdoc />
             public Dictionary<string, object> Profiles { get; set; }
         }
+
     }
 }
