@@ -328,11 +328,11 @@ namespace Acoustics.Shared
 
                 if (this.WaitForExitMilliseconds > 0)
                 {
-                    // there are varoius bugs with the MONO implementation of this. here are two that are relevant:
+                    // there are various bugs with the MONO implementation of this. here are two that are relevant:
                     // https://bugzilla.xamarin.com/show_bug.cgi?id=27246
                     // https://github.com/mono/mono/issues/6200
                     // The upshot on this is that sometimes SIGCHLD will not be captured by mono, resulting in a
-                    // garunteed timeout in  high concurrency scenarios
+                    // guaranteed timeout in  high concurrency scenarios
                     var exited = this.process.WaitForExit(this.WaitForExitMilliseconds);
 
                     // https://msdn.microsoft.com/en-us/library/ty0d8k56(v=vs.110).aspx

@@ -24,7 +24,7 @@ namespace System
 
         private static readonly TimeSpan PromptTimeout = TimeSpan.FromSeconds(60);
 
-        public static string LogFolder { get; } = Path.Combine(AppConfigHelper.ExecutingAssemblyDirectory, "Logs");
+        public static string LogFolder { get; } = Logging.LogFolder;
 
         public static bool SuppressInteractive { get; set; } = false;
 

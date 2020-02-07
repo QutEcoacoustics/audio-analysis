@@ -3,43 +3,16 @@
   <PropertyGroup>
     <MSBuildCommunityTasksPath>$(MSBuildProjectDirectory)\.build</MSBuildCommunityTasksPath>
   </PropertyGroup>
-  <Target Name="APCopyFilesAfterBuild">
+  <Target Name="APCopyFilesAfterBuild" BeforeTargets="Build">
     <!-- Copy our audio tools from lib to build dir -->
     <Message Text="[APCopyFilesAfterBuild]: Scanning for lib files and config files" Importance="High" />
     <ItemGroup>
       <AudioTools Include="$(SolutionDir)\lib\audio-utils\**\*.*" />
-      <ConfigFiles Include="$(ProjectDir)..\AnalysisConfigFiles\**\*" />
+      <ConfigFiles Include="$(SolutionDir)\src\AnalysisConfigFiles\**\*" />
     </ItemGroup>
     <Message Text="[APCopyFilesAfterBuild]: Copying lib files" Importance="High" />
     <Copy SourceFiles="@(AudioTools)" DestinationFolder="$(TargetDir)\audio-utils\%(RecursiveDir)" SkipUnchangedFiles="true" />
     <Message Text="[APCopyFilesAfterBuild]: Copying config files" Importance="High" />
     <Copy SourceFiles="@(ConfigFiles)" DestinationFolder="$(TargetDir)\ConfigFiles\%(RecursiveDir)" SkipUnchangedFiles="true" />
-    <!-- Copy our linux sqlite native code to our pseudo runtime folder -->
-    <Message Text="[APCopyFilesAfterBuild]: Reading in packages.config" Importance="High" />
-    <XmlPeek Query="packages/package[@id='SQLitePCLRaw.lib.e_sqlite3.linux']/@*[name()='id' or name()='version']" XmlInputPath="packages.config">
-      <Output TaskParameter="Result" ItemName="SqliteLinuxPackageFragments" />
-    </XmlPeek>
-    <XmlPeek Query="packages/package[@id='SQLitePCLRaw.lib.e_sqlite3.osx']/@*[name()='id' or name()='version']" XmlInputPath="packages.config">
-      <Output TaskParameter="Result" ItemName="SqliteOsxPackageFragments" />
-    </XmlPeek>
-    <PropertyGroup>
-      <SqliteLinuxPackage>@(SqliteLinuxPackageFragments, '.')</SqliteLinuxPackage>
-      <SqliteOsxPackage>@(SqliteOsxPackageFragments, '.')</SqliteOsxPackage>
-    </PropertyGroup>
-    <Message Text="[APCopyFilesAfterBuild]: Xml found: $(SqliteLinuxPackage), $(SqliteOsxPackage). Searching for linux/osx sqlite native code..." Importance="High" />
-    <ItemGroup>
-      <SqliteNativeFiles Include="..\..\packages\$(SqliteLinuxPackage)\runtimes\**\*.*;..\..\packages\$(SqliteOsxPackage)\runtimes\**\*.*" />
-    </ItemGroup>
-    <Message Text="[APCopyFilesAfterBuild]: Found @(SqliteNativeFiles). Copying native code to libruntimes" Importance="High" />
-    <Copy SourceFiles="@(SqliteNativeFiles)" DestinationFolder="$(OutputPath)\\libruntimes\\%(RecursiveDir)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" Retries="3" RetryDelayMilliseconds="300" />
-    <Message Text="[APCopyFilesAfterBuild]: Completed copying native code" Importance="High" />
   </Target>
-
-  <PropertyGroup>
-    <!-- Register our task that as something to run after standard targets -->
-    <BuildDependsOn>
-      $(BuildDependsOn);
-      APCopyFilesAfterBuild;
-    </BuildDependsOn>
-  </PropertyGroup>
 </Project>

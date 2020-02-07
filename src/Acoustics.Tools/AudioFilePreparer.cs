@@ -1,4 +1,4 @@
-﻿namespace Acoustics.Tools
+namespace Acoustics.Tools
 {
     using System;
     using System.Collections.Generic;
@@ -31,46 +31,6 @@
         /// <returns>
         /// The prepared file.
         /// </returns>
-        ///
-        /*public static FileInfo PrepareFile(DirectoryInfo outputDirectory, FileInfo source, string outputMediaType, AudioUtilityRequest request, DirectoryInfo temporaryFilesDirectory)
-        {
-            var audioUtility = new MasterAudioUtility(temporaryFilesDirectory);
-            var sourceMimeType = MediaTypes.GetMediaType(source.Extension);
-            var outputFileName = Path.GetFileNameWithoutExtension(source.Name);
-
-            outputFileName = string.Format(
-                "{0}_{1:f0}min.{3}",
-                outputFileName,
-                request.OffsetStart.Value.TotalMinutes,
-                request.OffsetEnd.Value.TotalMilliseconds,
-                MediaTypes.GetExtension(outputMediaType));
-
-            if (!Directory.Exists(outputDirectory.FullName))
-            {
-                Directory.CreateDirectory(outputDirectory.FullName);
-            }
-
-            var outputFile = new FileInfo(Path.Combine(outputDirectory.FullName, outputFileName));
-            var outputMimeType = MediaTypes.GetMediaType(outputFile.Extension);
-
-            audioUtility.Modify(
-                source,
-                sourceMimeType,
-                outputFile,
-                outputMimeType,
-                request);
-
-            // TODO: this is hyper inefficient, especially when .Info is the first thing called inside Modify
-            //var result = new AudioUtilityModifiedInfo();
-            //result.SourceInfo = audioUtility.Info(source);
-            //result.TargetInfo = audioUtility.Info(outputFile);
-
-            // Next line is a HACK!!!!!! ############### MARK WILL HAVE TO DO MORE ELEGANTLY ONE DAY
-            //request.OriginalSampleRate = result.SourceInfo.SampleRate;
-
-            return outputFile;
-        }*/
-
         public static AudioUtilityModifiedInfo PrepareFile(
             DirectoryInfo outputDirectory,
             FileInfo source,

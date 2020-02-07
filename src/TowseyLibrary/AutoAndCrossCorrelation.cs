@@ -418,9 +418,9 @@ out double[] r)
         /// <param name="minLag"></param>
         /// <param name="maxLag"></param>
         /// <returns></returns>
-        public static double[] MyCrossCorrelation(double[] X1, double[] X2)
+        public static double[] MyCrossCorrelation(double[] x1, double[] x2)
         {
-            int length = X1.Length;
+            int length = x1.Length;
             int outputLength = length * 2;
             int centralIndex = length - 1;
             var AC = new double[outputLength];
@@ -430,7 +430,7 @@ out double[] r)
                 int count = 0;
                 for (int i = lag; i < length; i++)
                 {
-                    rigtShiftSum += X1[i] * X2[i - lag];
+                    rigtShiftSum += x1[i] * x2[i - lag];
                     count++;
                 }
 
@@ -446,7 +446,7 @@ out double[] r)
                 int count = 0;
                 for (int i = 0; i < length - lag; i++)
                 {
-                    leftShiftSum += X1[i] * X2[i + lag];
+                    leftShiftSum += x1[i] * x2[i + lag];
                     count++;
                 }
 

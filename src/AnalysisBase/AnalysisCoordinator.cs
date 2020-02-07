@@ -383,13 +383,6 @@ namespace AnalysisBase
             TimeSpan preparedFileDuration,
             bool parallelized)
         {
-            // TODO: remove if no issues - can't determine why this would have been prevented from occurring in the first place
-//            if (parallelized)
-//            {
-//                Log.Warn("VALIDATION OF ANALYSIS RESULTS BYPASSED BECAUSE THE ANALYSIS IS IN PARALLEL!");
-//                return;
-//            }
-
             Contract.Ensures(
                 result.SettingsUsed != null,
                 "The settings used in the analysis must be populated in the analysis result.");

@@ -23,6 +23,7 @@ namespace Acoustics.Test.TestHelpers
         [AssemblyInitialize]
         public static void AssemblyInitialize(TestContext context)
         {
+            PathHelper.Initialize(context);
             TestLogging = new Logging(
                 enableMemoryLogger: true,
                 enableFileLogger: false,

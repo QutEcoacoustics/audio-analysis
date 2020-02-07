@@ -17,7 +17,7 @@ namespace Acoustics.Test.TestHelpers
     public static class Assertions
     {
         [DebuggerHidden]
-        public static void AreClose(this Assert assert, long expected, long actual, long delta, string message = null)
+        public static void AreEqual(this Assert assert, long expected, long actual, long delta, string message = null)
         {
             var actualDelta = Math.Abs(expected - actual);
             if (actualDelta > delta)
@@ -28,7 +28,17 @@ namespace Acoustics.Test.TestHelpers
             }
         }
 
-        public static void AreClose(this Assert assert, DateTime expected, DateTime actual, TimeSpan delta, string message = null)
+        public static void AreEqual(this Assert assert, DateTime expected, DateTime actual, TimeSpan delta, string message = null)
+        {
+            var actualDelta = TimeSpan.FromTicks(Math.Abs((expected - actual).Ticks));
+            if (actualDelta > delta)
+            {
+                message = message == null ? string.Empty : message + "\n";
+                Assert.Fail(
+                    $"{message}Actual delta ({actualDelta}) between expected value ({expected:O}) and actual value ({actual:O}) was not less than {delta}");
+            }
+        }
+        public static void AreEqual(this Assert assert, DateTimeOffset expected, DateTimeOffset actual, TimeSpan delta, string message = null)
         {
             var actualDelta = TimeSpan.FromTicks(Math.Abs((expected - actual).Ticks));
             if (actualDelta > delta)

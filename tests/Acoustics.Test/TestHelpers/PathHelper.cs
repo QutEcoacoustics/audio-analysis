@@ -9,24 +9,45 @@ namespace Acoustics.Test.TestHelpers
     using System.IO;
     using System.Linq;
     using System.Runtime.CompilerServices;
+    using Acoustics.Shared;
+    using Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Adapter;
+    using Microsoft.VisualStudio.TestPlatform.ObjectModel.Engine.ClientProtocol;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Newtonsoft.Json;
 
     public static class PathHelper
     {
-        static PathHelper()
+        internal static void Initialize(TestContext context)
         {
-            CodeBase = Environment.CurrentDirectory;
-            TestResources = Path.Combine(CodeBase, "..", "..", "..", "Fixtures");
-            SolutionRoot = Path.Combine(CodeBase, "..", "..", "..", "..");
+            var directory = context.ResultsDirectory;
+
+            // search up directory for solution directory
+            var split = directory.Split(Path.DirectorySeparatorChar);
+
+            // the assumption is that the repo is always checked out and named with this name
+            var index = split.IndexOf(x=> x == "audio-analysis");
+
+
+            if (index < 0)
+            {
+                throw new InvalidOperationException($"Cannot find solution root directory in `{SolutionRoot}`!");
+            }
+
+            SolutionRoot = split[0..(index + 1)].Join(Path.DirectorySeparatorChar.ToString());
+
+            CodeBase = context.DeploymentDirectory;
+            TestResources = Path.Combine(SolutionRoot, "tests", "Fixtures");
+            
             AnalysisProgramsBuild = Path.Combine(SolutionRoot, "src", "AnalysisPrograms", "bin", "debug");
         }
 
-        public static string AnalysisProgramsBuild { get; set; }
+        public static string AnalysisProgramsBuild { get; private set; }
 
-        public static string SolutionRoot { get; }
+        public static string SolutionRoot { get; private set; }
 
-        public static string TestResources { get; }
+        public static string TestResources { get; private set; }
 
-        public static string CodeBase { get; }
+        public static string CodeBase { get; private set; }
 
         public static FileInfo ResolveConfigFile(string fileName)
         {

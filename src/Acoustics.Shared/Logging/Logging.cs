@@ -23,10 +23,12 @@ namespace Acoustics.Shared.Logging
 
     public class Logging
     {
-        public const string RootNamespace = Meta.Name;
         public const string CleanLogger = "CleanLogger";
         public const string LogFileOnly = "LogFileOnly";
         private const string LogPrefix = "log_";
+
+        public static readonly Assembly RootNamespace = typeof(Logging).Assembly;
+        public static readonly string LogFolder = Path.Combine(AppConfigHelper.ExecutingAssemblyDirectory, "Logs");
 
         private readonly Logger rootLogger;
 
@@ -38,6 +40,11 @@ namespace Acoustics.Shared.Logging
         private readonly AppenderSkeleton standardConsoleAppender;
         private readonly AppenderSkeleton cleanConsoleAppender;
         private readonly Hierarchy repository;
+
+        static Logging()
+        {
+            LoggerManager.CreateRepository(RootNamespace, (typeof(Hierarchy)));
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Logging"/> class.
@@ -65,6 +72,7 @@ namespace Acoustics.Shared.Logging
             Level defaultLevel,
             bool quietConsole)
         {
+            
             LogManager.ResetConfiguration(RootNamespace);
 
             this.repository = (Hierarchy)LogManager.GetRepository(RootNamespace);
@@ -94,7 +102,7 @@ namespace Acoustics.Shared.Logging
             };
             standardPattern.ActivateOptions();
 
-            string logFilePath = null;
+            this.LogFilePath = null;
             if (enableFileLogger)
             {
                 this.LogFileName = new PatternString(LogPrefix + "%utcdate{yyyyMMddTHHmmssZ}.txt").Format();
@@ -111,7 +119,7 @@ namespace Acoustics.Shared.Logging
                     Name = nameof(RollingFileAppender),
 
                     // ReSharper disable StringLiteralTypo
-                    File = "Logs/" + this.LogFileName,
+                    File = Path.Combine(LogFolder, this.LogFileName),
 
                     // ReSharper restore StringLiteralTypo
 
@@ -122,7 +130,7 @@ namespace Acoustics.Shared.Logging
                 this.cleanLogger.AddAppender(fileAppender);
                 this.noConsoleLogger.AddAppender(fileAppender);
                 fileAppender.ActivateOptions();
-                logFilePath = fileAppender.File;
+                this.LogFilePath = fileAppender.File;
             }
 
             if (enableMemoryLogger)
@@ -194,11 +202,13 @@ namespace Acoustics.Shared.Logging
                 // We'll never know if this fails or not, the exception is captured in the task
                 // that we do NOT await. We do however log any exceptions.
                 // ReSharper disable once AssignmentIsFullyDiscarded
-                _ = this.CleanLogs(logFilePath);
+                _ = this.CleanLogs(this.LogFilePath);
             }
         }
 
-        public string LogFileName { get; private set; }
+        public string LogFileName { get; }
+
+        public string LogFilePath { get; }
 
         internal MemoryAppender MemoryAppender { get; }
 

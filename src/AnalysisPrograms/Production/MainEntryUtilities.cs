@@ -27,7 +27,7 @@ namespace AnalysisPrograms
     using AnalysisPrograms.Production;
     using AnalysisPrograms.Production.Arguments;
     using AnalysisPrograms.Production.Parsers;
-    
+
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
     using static System.Environment;
@@ -196,17 +196,12 @@ namespace AnalysisPrograms
         /// </para>
         /// </summary>
         /// <returns><value>True</value> if modifications were made.</returns>
+        [Obsolete("No longer and issue on .NET Core")]
         internal static bool CheckAndUpdateApplicationConfig()
         {
-            if (AppConfigHelper.IsMono)
-            {
-                // this issue *should* not occur when AP.exe is invoked with a mono prefix...
-                Log.Verbose("Skipping app config name check for mono.");
-                return false;
-            }
-
-            // TODO: DOTNET CORE - we can expect most of this method to not work, it needs to
+            // TODO CORE: - we can expect most of this method to not work, it needs to
             // tested again.
+            // https://github.com/QutEcoacoustics/audio-analysis/issues/241
             var executableName = Process.GetCurrentProcess().MainModule.ModuleName;
             var expectedName = Assembly.GetAssembly(typeof(MainEntry)).ManifestModule.ScopeName;
 
@@ -223,22 +218,21 @@ namespace AnalysisPrograms
         /// <returns>A message if there is a problem.</returns>
         internal static string CheckForDataAnnotations()
         {
+            // TODO CORE: remove after testing
             // https://github.com/QutEcoacoustics/audio-analysis/issues/225
             try
             {
-                Assembly.Load(
-                    "System.ComponentModel.DataAnnotations, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35");
+                Assembly.Load("System.ComponentModel.DataAnnotations");
                 return null;
             }
             catch (FileNotFoundException fnfex)
             {
-                return $@"{fnfex.ToString()}
+                return $@"{fnfex}
 !
 !
 !
 In cases where System.ComponentModel.DataAnnotations is not found we have
-previously found that the mono install is corrupt. Try installing mono again
-and make sure you install the `mono-complete` package.
+previously found that the AP install is corrupt. Try installing AP again.
 !
 !
 !";
@@ -482,24 +476,11 @@ and make sure you install the `mono-complete` package.
             }
         }
 
-        /// <summary>
-        /// This method is used to do application wide loading of native code.
-        /// </summary>
-        /// <remarks>
-        /// Until we convert this application to a .NET Core, there is no support for "runtimes" backed into the build
-        /// system. Thus instead we:
-        /// - copy runtimes manually as a build step
-        ///   (due to a mono bug, the folder to copy in is named `libruntimes`. See https://github.com/libgit2/libgit2sharp/issues/1170)
-        /// - map Dlls to their appropriate native DLLs in the dllmap entry in the App.config (which is used by the
-        ///   mono runtime
-        /// - and finally, call any initialization code that is needed here in this method.
-        /// </remarks>
         private static void LoadNativeCode()
         {
             Log.Debug("Loading native code");
 
             // for sqlite
-            // note: a custom dll map for sqlite can be found in SQLitePCLRaw.provider.e_sqlite3.dll.config
             SQLitePCL.Batteries_V2.Init();
         }
 

@@ -168,7 +168,7 @@ namespace Acoustics.Shared
         {
             get
             {
-                // TODO: remove when tested
+                // TODO CORE: remove when tested
                 Debug.Assert(IsLinuxValue == RuntimeInformation.IsOSPlatform(OSPlatform.Linux));
                 return RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
             }
@@ -178,7 +178,7 @@ namespace Acoustics.Shared
         {
             get
             {
-                // TODO: remove when tested
+                // TODO CORE: remove when tested
                 Debug.Assert(IsWindowsValue == RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
                 return RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
             }
@@ -188,7 +188,7 @@ namespace Acoustics.Shared
         {
             get
             {
-                // TODO: remove when tested
+                // TODO CORE: remove when tested
                 Debug.Assert(IsMacOsXValue == RuntimeInformation.IsOSPlatform(OSPlatform.OSX));
                 return RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
             }

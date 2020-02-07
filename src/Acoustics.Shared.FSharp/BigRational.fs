@@ -255,7 +255,7 @@ type BigRational =
     static member Parse (str : string) =
         Q (BigRationalLarge.Parse str)
 
-    // TODO : Optimize this by implementing a proper comparison function (so we only do one comparison instead of two).
+    // future work: Optimize this by implementing a proper comparison function (so we only do one comparison instead of two).
     interface System.IComparable with
         member this.CompareTo (obj : obj) =
             match obj with

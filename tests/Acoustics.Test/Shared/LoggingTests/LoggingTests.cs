@@ -5,6 +5,7 @@
 namespace Acoustics.Test.Shared.LoggingTests
 {
     using System;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -12,9 +13,10 @@ namespace Acoustics.Test.Shared.LoggingTests
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Logging;
-    
+    using ImmediateReflection;
     using log4net;
     using log4net.Core;
+    using log4net.Util;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
 
@@ -46,11 +48,13 @@ namespace Acoustics.Test.Shared.LoggingTests
                 // clear the log
                 TestSetup.TestLogging.MemoryAppender.Clear();
 
+                var flags = BindingFlags.Public | BindingFlags.Static;
                 
-                if (!(typeof(Level).GetField(targetVerbosity, BindingFlags.GetField).GetValue(null) is Level level))
+                
+                if (!(typeof(Level).GetField(targetVerbosity, flags)?.GetValue(null) is Level level))
                 {
                     
-                    level = typeof(LogExtensions).GetField(targetVerbosity, BindingFlags.GetField).GetValue(null) as Level;
+                    level = typeof(LogExtensions).GetField(targetVerbosity, flags).GetValue(null) as Level;
                 }
 
                 Assert.IsNotNull(level);
@@ -69,6 +73,10 @@ namespace Acoustics.Test.Shared.LoggingTests
             var logging = new Logging(false, Level.Info, quietConsole: false);
 
             var expectedPath = Path.Combine(LoggedConsole.LogFolder, logging.LogFileName);
+            // Debug.WriteLine("expected:" + expectedPath);
+            // Debug.WriteLine("actual:" + logging.LogFilePath);
+            
+            Assert.That.PathExists(logging.LogFilePath);
             Assert.That.PathExists(expectedPath);
 
             StringAssert.StartsWith(logging.LogFileName, "log_20");
@@ -101,6 +109,18 @@ namespace Acoustics.Test.Shared.LoggingTests
             // get count
             files = Directory.GetFiles(logDirectory);
             Assert.AreEqual(50, files.Length);
+        }
+
+
+        [TestMethod]
+        public void TestNumberOfLoggingRepositories()
+        {
+            var repositories = LoggerManager.GetAllRepositories();
+
+            Debug.WriteLine("Found repositories: " + repositories.Select(x => x.Name).Join(", "));
+
+            Assert.AreEqual(1, repositories.Length);
+            Assert.AreEqual("log4net-default-repository", repositories[0].Name);
         }
     }
 }

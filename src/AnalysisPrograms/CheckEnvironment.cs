@@ -60,32 +60,13 @@ namespace AnalysisPrograms
                 errors.Add(message);
             }
 
-            if (AppConfigHelper.IsMono)
-            {
-                Type type = Type.GetType("Mono.Runtime");
-                if (type != null)
-                {
-                    MethodInfo displayName = type.GetMethod("GetDisplayName", BindingFlags.NonPublic | BindingFlags.Static);
 
-                    if (displayName?.Invoke(null, null) is string name)
-                    {
-                        var version = Regex.Match(name, @".*(\d+\.\d+\.\d+\.\d+).*").Groups[1].Value;
-                        Console.WriteLine(version);
-                        if (new Version(version) > new Version(5, 5))
-                        {
-                            Log.Success($"Your mono version {name} is greater than our required Mono version 5.5");
-                        }
-                        else
-                        {
-                            errors.Add($"Mono version is {name}, we require at least Mono 5.5");
-                        }
-                    }
-                    else
-                    {
-                        errors.Add("Could not get Mono display name");
-                    }
-                }
+            Type type = Type.GetType("Mono.Runtime");
+            if (type != null)
+            {
+                errors.Add($"We no longer use Mono with ${Meta.Name}. DO NOT prefix the {Meta.Name} prefix with `mono`.");
             }
+            
 
             // don't have much more to check at the current time
             if (errors.Count == 0)

@@ -123,6 +123,8 @@ namespace Acoustics.Test.AnalysisPrograms
         [TestMethod]
         public void TestConfigCanBeLoadedWithShortName()
         {
+            // https://github.com/QutEcoacoustics/audio-analysis/issues/241
+
             const string shortName = "ANALYS~1.EXE";
 
             Process process = new Process();

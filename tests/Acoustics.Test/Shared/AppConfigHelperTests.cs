@@ -54,5 +54,11 @@ namespace Acoustics.Test.Shared
 
             Assert.That.DirectoryExists(actual);
         }
+
+        [TestMethod]
+        public void IsMonoShouldAlwaysFails()
+        {
+            Assert.IsFalse(IsMono);
+        }
     }
 }

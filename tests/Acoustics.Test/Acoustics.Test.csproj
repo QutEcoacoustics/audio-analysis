@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <ProductVersion />
     <TargetFramework>netcoreapp3.1</TargetFramework>
@@ -9,10 +9,6 @@
     <CodeAnalysisRuleSet>..\..\style.ruleset</CodeAnalysisRuleSet>
     <LangVersion>latest</LangVersion>
     <OutputPath>bin\$(Configuration)\</OutputPath>
-    <BuildDependsOn>$(BuildDependsOn);AfterBuildMigrated</BuildDependsOn>
-    <PostBuildEvent />
-    <PostBuildEvent />
-    <PostBuildEvent />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>
@@ -23,22 +19,11 @@
   <PropertyGroup>
     <PostBuildEvent />
   </PropertyGroup>
-  <Target Name="AfterClean">
+  <Target Name="CleanupTestAssets" AfterTargets="Clean">
     <Message Text="[AfterClean]: Deleting all extra files in $(TargetDir) (Unit tests don't clean up after themselves very well!)" Importance="High" />
     <RemoveDir Directories="$(TargetDir);" />
   </Target>
-  <Target Name="AfterBuildMigrated">
-    <!-- Copy our audio tools from lib to build dir -->
-    <Message Text="[AfterBuild]: Scanning for lib files and config files" Importance="High" />
-    <ItemGroup>
-      <AudioTools Include="$(SolutionDir)\lib\audio-utils\**\*.*" />
-      <ConfigFiles Include="$(SolutionDir)\src\AnalysisConfigFiles\**\*" />
-    </ItemGroup>
-    <Message Text="[AfterBuild]: Copying lib files" Importance="High" />
-    <Copy SourceFiles="@(AudioTools)" DestinationFolder="$(TargetDir)\audio-utils\%(RecursiveDir)" SkipUnchangedFiles="true" />
-    <Message Text="[AfterBuild]: Copying config files" Importance="High" />
-    <Copy SourceFiles="@(ConfigFiles)" DestinationFolder="$(TargetDir)\ConfigFiles\%(RecursiveDir)" SkipUnchangedFiles="true" />
-  </Target>
+  <Import Project="$(SolutionDir)\src\AP.CopyFiles.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
@@ -50,13 +35,11 @@
   </Target>
   <ItemGroup>
     <PackageReference Include="FastMember" Version="1.5.0" />
+    <PackageReference Include="ImmediateReflection" Version="1.5.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
     <PackageReference Include="Moq" Version="4.13.1" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.1.0" />
     <PackageReference Include="MSTest.TestFramework" Version="2.1.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="ExampleTestTemplate.cs.txt" />
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="..\..\stylecop.json">
