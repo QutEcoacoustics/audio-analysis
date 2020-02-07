@@ -161,7 +161,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             // we expect only the second half (past midnight) of the image to be rendered
             Assert.That.ImageIsSize(512, 632, actualImage);
             Assert.That.PixelIsColor(new Point(105, 154), Color.FromArgb(34, 30, 126), actualImage);
-            Assert.That.PixelIsColor(new Point(100, 160), Color.FromArgb(15, 28, 64), actualImage);
+            Assert.That.PixelIsColor(new Point(100, 160), Color.FromArgb(8, 28, 64), actualImage);
         }
 
         /// <summary>
