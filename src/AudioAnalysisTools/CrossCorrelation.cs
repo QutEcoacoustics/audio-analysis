@@ -29,6 +29,7 @@ namespace AudioAnalysisTools
 
         //public const string key_COUNT = "count";
 
+        /*
         public static Tuple<double[,], double[,], double[,], double[]> DetectBarsUsingXcorrelation(double[,] m, int rowStep, int rowWidth, int colStep, int colWidth,
                                                                                                  double intensityThreshold, int zeroBinCount)
          {
@@ -103,6 +104,7 @@ namespace AudioAnalysisTools
 
              return Tuple.Create(intensityMatrix, periodicityMatrix, hitsMatrix, array2return);
          }
+         */
 
         /// <summary>
         /// This method assume the matrix is derived from a spectrogram rotated so that the matrix rows are spectral columns of sonogram.
@@ -203,6 +205,56 @@ namespace AudioAnalysisTools
             }// rows of matrix
 
             return Tuple.Create(dBArray, intensity, periodicity);
+        }
+
+        /// <summary>
+        /// A METHOD TO DETECT HARMONICS IN THE sub-band of a sonogram.
+        /// This method assume the matrix is derived from a spectrogram rotated so that the matrix rows are spectral columns of sonogram.
+        /// Developed for GenericRecognizer of harmonics.
+        /// </summary>
+        /// <param name="m">data matrix.</param>
+        /// <param name="dBThreshold">Minimum sound level.</param>
+        /// <returns>two arrays.</returns>
+        public static Tuple<double[], double[], int[]> DetectHarmonicsInSonogramMatrix(double[,] m, double dBThreshold)
+        {
+            int rowCount = m.GetLength(0);
+            int colCount = m.GetLength(1);
+            double[] dBArray = new double[rowCount];
+            var intensity = new double[rowCount];     //an array of formant intensity
+            var maxIndexArray = new int[rowCount];    //an array of max value index values
+            var binCount = m.GetLength(1);
+            double[,] cosines = MFCCStuff.Cosines(binCount, binCount); //set up the cosine coefficients
+
+            // for all time frames
+            for (int t = 0; t < rowCount; t++)
+            {
+                var frame = MatrixTools.GetRow(m, t);
+                double maxValue = frame.Max();
+                dBArray[t] = maxValue;
+                if (maxValue < dBThreshold)
+                {
+                    continue;
+                }
+
+                double[] xr = AutoAndCrossCorrelation.AutoCrossCorr(frame);
+
+                // xr has twice length of frame and is symmetrical.
+                // Require only first half. Also need to normalise the values for overlap count.
+                double[] normXr = new double[colCount];
+                for (int i = 0; i < colCount; i++)
+                {
+                    normXr[i] = xr[i] / (colCount - i);
+                }
+
+                // now do DCT across the auto cross xr
+                int lowerDctBound = 2;
+                var dctCoefficients = Oscillations2012.DoDct(normXr, cosines, lowerDctBound);
+                int indexOfMaxValue = DataTools.GetMaxIndex(dctCoefficients);
+                intensity[t] = dctCoefficients[indexOfMaxValue];
+                maxIndexArray[t] = indexOfMaxValue;
+            } // frames = rows of matrix
+
+            return Tuple.Create(dBArray, intensity, maxIndexArray);
         }
     }
 }

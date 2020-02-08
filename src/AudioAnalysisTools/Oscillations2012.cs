@@ -158,47 +158,9 @@ namespace AudioAnalysisTools
                         dctArray[i] = matrix[r + i, c];
                     }
 
-                    //dctArray = DataTools.Vector2Zscores(dctArray);
-
-                    dctArray = DataTools.SubtractMean(dctArray);
-                    double[] dctCoeff = MFCCStuff.DCT(dctArray, cosines);
-
-                    // convert to absolute values because not interested in negative values due to phase.
-                    for (int i = 0; i < dctLength; i++)
-                    {
-                        dctCoeff[i] = Math.Abs(dctCoeff[i]);
-                    }
-
-                    // remove low freq oscillations from consideration
-                    int thresholdIndex = minIndex / 4;
-                    for (int i = 0; i < thresholdIndex; i++)
-                    {
-                        dctCoeff[i] = 0.0;
-                    }
-
-                    dctCoeff = DataTools.normalise2UnitLength(dctCoeff);
-
-                    //dct = DataTools.NormaliseMatrixValues(dct); //another option to NormaliseMatrixValues
+                    int lowerDctBound = minIndex / 4;
+                    var dctCoeff = DoDct(dctArray, cosines, lowerDctBound);
                     int indexOfMaxValue = DataTools.GetMaxIndex(dctCoeff);
-
-                    //double oscilFreq = indexOfMaxValue / dctDuration * 0.5; //Times 0.5 because index = Pi and not 2Pi
-
-                    // #### Tried this option for scoring oscillation hits but did not work well.
-                    // #### Requires very fine tuning of thresholds
-                    //dctCoeff = DataTools.Normalise2Probabilities(dctCoeff);
-                    //// sum area under curve where looking for oscillations
-                    //double sum = 0.0;
-                    //for (int i = minIndex; i <= maxIndex; i++)
-                    //    sum += dctCoeff[i];
-                    //if (sum > dctThreshold)
-                    //{
-                    //    for (int i = 0; i < dctLength; i++) hits[r + i, c] = midOscilFreq;
-                    //}
-
-                    // DEBUGGING
-                    // DataTools.MinMax(dctCoeff, out min, out max);
-                    //DataTools.writeBarGraph(dctArray);
-                    //DataTools.writeBarGraph(dctCoeff);
 
                     //mark DCT location with oscillation freq, only if oscillation freq is in correct range and amplitude
                     if (indexOfMaxValue >= minIndex && indexOfMaxValue <= maxIndex && dctCoeff[indexOfMaxValue] > dctThreshold)
@@ -216,6 +178,29 @@ namespace AudioAnalysisTools
             }
 
             return hits;
+        }
+
+        public static double[] DoDct(double[] vector, double[,] cosines, int lowerDctBound)
+        {
+            //var dctArray = DataTools.Vector2Zscores(dctArray);
+            var dctArray = DataTools.SubtractMean(vector);
+            int dctLength = dctArray.Length;
+            double[] dctCoeff = MFCCStuff.DCT(dctArray, cosines);
+
+            // convert to absolute values because not interested in negative values due to phase.
+            for (int i = 0; i < dctLength; i++)
+            {
+                dctCoeff[i] = Math.Abs(dctCoeff[i]);
+            }
+
+            // remove lower coefficients from consideration because they dominate
+            for (int i = 0; i < lowerDctBound; i++)
+            {
+                dctCoeff[i] = 0.0;
+            }
+
+            dctCoeff = DataTools.normalise2UnitLength(dctCoeff);
+            return dctCoeff;
         }
 
         /// <summary>

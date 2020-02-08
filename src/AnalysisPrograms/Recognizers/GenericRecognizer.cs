@@ -206,6 +206,7 @@ namespace AnalysisPrograms.Recognizers
                                 hp.MaxHertz.Value,
                                 sonogram.NyquistFrequency,
                                 hp.DecibelThreshold.Value,
+                                hp.DctThreshold.Value,
                                 hp.MinDuration.Value,
                                 hp.MaxDuration.Value,
                                 hp.MinFormantGap.Value,
