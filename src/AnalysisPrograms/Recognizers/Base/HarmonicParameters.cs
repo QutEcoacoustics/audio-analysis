@@ -21,6 +21,40 @@ namespace AnalysisPrograms.Recognizers.Base
     [YamlTypeTag(typeof(HarmonicParameters))]
     public class HarmonicParameters : CommonParameters
     {
+        //ComponentName: Harmonic
+        //SpeciesName: Curlew
+        //FrameSize: 512
+        //FrameStep: 512
+        //WindowFunction: HANNING
+        //BgNoiseThreshold: 0.0
+        //# min and max of the freq band to search
+        //MinHertz: 1000
+        //MaxHertz: 6500
+        //MinDuration: 0.5
+        //MaxDuration: 3.0
+        //DecibelThreshold: 1.5
+        //# Parameters for the finding formants.
+        //# duration of DCT in seconds
+        //#DctDuration: 0.5
+        //# minimum acceptable value of a DCT coefficient
+        //DctThreshold: 0.5
+        //MinFormantGap: 800
+        //MaxFormantGap: 2200
+
+        /// <summary>
+        /// Gets or sets the bottom bound of the rectangle. Units are Hertz.
+        /// </summary>
+        public int? MinFormantGap { get; set; }
+
+        /// <summary>
+        /// Gets or sets the the top bound of the rectangle. Units are Hertz.
+        /// </summary>
+        public int? MaxFormantGap { get; set; }
+
+        //#IntensityThreshold: 0.15
+        //# Event threshold - Determines FP / FN trade-off for events.
+        //EventThreshold: 0.2
+
         public static (List<AcousticEvent>, double[]) GetComponentsWithHarmonics(
             SpectrogramStandard sonogram,
             int minHz,
@@ -29,12 +63,12 @@ namespace AnalysisPrograms.Recognizers.Base
             double decibelThreshold,
             double minDuration,
             double maxDuration,
+            int minFormantGap,
+            int maxFormantGap,
             TimeSpan segmentStartOffset)
         {
-            // paramters to be passed
+            // parameters to be passed
             double harmonicIntensityThreshold = 0.15;
-            int minFormantGap = 180;
-            int maxFormantGap = 450;
 
             // Event threshold - Determines FP / FN trade-off for events.
             //double eventThreshold = 0.2;

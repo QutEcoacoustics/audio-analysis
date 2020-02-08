@@ -208,6 +208,8 @@ namespace AnalysisPrograms.Recognizers
                                 hp.DecibelThreshold.Value,
                                 hp.MinDuration.Value,
                                 hp.MaxDuration.Value,
+                                hp.MinFormantGap.Value,
+                                hp.MaxFormantGap.Value,
                                 segmentStartOffset);
 
                             var plot = PreparePlot(scoreArray, $"{profileName} (Harmonics:dB Intensity)", hp.DecibelThreshold.Value);
