@@ -1,4 +1,4 @@
-﻿// <copyright file="Contract.cs" company="QutEcoacoustics">
+// <copyright file="Contract.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -6,6 +6,8 @@ namespace Acoustics.Shared.Contracts
 {
     using System;
     using System.Diagnostics;
+    using System.IO;
+    using Acoustics.Shared.ConfigFile;
     using JetBrains.Annotations;
 
     /// <summary>
@@ -13,7 +15,7 @@ namespace Acoustics.Shared.Contracts
     /// of our use cases. It doesn't do anything fancy and ends up being sugar for
     /// standard exception throwing.
     /// </summary>
-    public class Contract
+    public static class Contract
     {
         /// <summary>
         /// Require the supplied value to be not null, otherwise throw a argument null exception.

@@ -370,7 +370,7 @@ FileName:
 # ADD NEW SPECTRAL INDICES BELOW HERE
 
 # IMPORTANT:  SPECTRAL INDCIES MUST BE OF TYPE Double[]
-# When CalculateNormMin: and CalculateNormMax: are set true, the normalisation bounds
+# When CalculateNormBounds: are set true, the normalisation bounds
 #  for colour display will be calculated according to the distribution values in the 
 #   /Towsey.Acoustic/xxxxxxxxx_SpectralIndexStatistics.json File. 
 #   The norm min set = MODE - (0.1*SD) of the distribution
@@ -389,13 +389,13 @@ ACI:
   Units: ""
 BGN:
   Name: spectralBGN
-  Comment: "Spectrum of dB value of the background 'noise' removed each frequency bin."
+  Comment: "Spectrum of background 'noise' dB values removed from each frequency bin."
   DataType: double[]
-  DefaultValue: -150.0
+  DefaultValue: -100.0
   DoDisplay: true
   # min = SNR.MINIMUM_dB_BOUND_FOR_ZERO_SIGNAL - 20 = -80-20 = -100, 
-  # Usual values are min=-120, max=-40. However need to adjust down about -20dB for more sensitive microphones
-  NormMin: -140.0
+  # Usual values are min=-100, max=-40. However need to adjust down about -20dB for more sensitive microphones
+  NormMin: -100.0
   NormMax: -60.0
   CalculateNormBounds: false
   ProjectID: Acoustic Indices

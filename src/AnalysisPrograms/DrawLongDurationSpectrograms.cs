@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="DrawLongDurationSpectrograms.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -26,14 +26,15 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Drawing;
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
-    using AnalyseLongRecordings;
+    using AnalysisPrograms.Production;
+    using AnalysisPrograms.Production.Arguments;
+    using AnalysisPrograms.Production.Validation;
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
@@ -41,11 +42,7 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.StandardSpectrograms;
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
-    using Production;
-    using Production.Arguments;
-    using Production.Validation;
     using TowseyLibrary;
-
     using Zio;
 
     /// <summary>
@@ -149,10 +146,7 @@ namespace AnalysisPrograms
                 config = LdSpectrogramConfig.ReadYamlToConfig(arguments.FalseColourSpectrogramConfig.ToFileInfo());
             }
 
-            string originalBaseName;
-            string[] otherSegments;
-            string analysisTag;
-            FilenameHelpers.ParseAnalysisFileName(indexGenerationDataFile, out originalBaseName, out analysisTag, out otherSegments);
+            FilenameHelpers.ParseAnalysisFileName(indexGenerationDataFile, out var originalBaseName, out var _, out var _);
 
             // CHECK FOR ERROR SEGMENTS - get zero signal array
             var input = arguments.InputDataDirectory.ToDirectoryInfo();
@@ -194,14 +188,14 @@ namespace AnalysisPrograms
             int frameCount = spectra[keys[0]].GetLength(1);
             double spectrogramScale = 0.1;
             TimeSpan timeScale = TimeSpan.FromSeconds(spectrogramScale);
-            DirectoryInfo outputDirectory = arguments.OutputDirectory.ToDirectoryInfo();
+            var outputDirectory = arguments.OutputDirectory.ToDirectoryInfo();
 
             Image combinedImage = DrawGrayScaleSpectrograms(arguments, fileStem, timeScale, spectra);
             string fileName = Path.Combine(outputDirectory.FullName, fileStem + ".CombinedGreyScale.png");
             combinedImage.Save(fileName);
 
-            // Draw False-colour Spectrograms
-            combinedImage = DrawFalseColourSpectrograms(fileStem, timeScale, arguments.IndexPropertiesConfig.ToFileInfo(), spectra);
+            // Draw False-color Spectrograms
+            combinedImage = DrawFalseColorSpectrograms(fileStem, timeScale, arguments.IndexPropertiesConfig.ToFileInfo(), spectra);
             fileName = Path.Combine(outputDirectory.FullName, fileStem + ".TwoMaps.png");
             combinedImage.Save(fileName);
             return frameCount;
@@ -209,6 +203,7 @@ namespace AnalysisPrograms
 
         public static Image DrawGrayScaleSpectrograms(Arguments arguments, string fileStem, TimeSpan dataScale, Dictionary<string, double[,]> spectra = null)
         {
+            // default values
             int sampleRate = 22050;
             int frameWidth = 512;
 
@@ -216,21 +211,17 @@ namespace AnalysisPrograms
             double backgroundFilter = 0.75;  // 0.75 means small values are accentuated.
             string analysisType = AcousticIndices.TowseyAcoustic;
             string[] keys = LDSpectrogramRGB.GetArrayOfAvailableKeys();
-
-            //LoggedConsole.WriteLine("# Spectrogram Config      file: " + arguments.SpectrogramConfigPath);
-            //LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
             var inputDirectory = arguments.InputDataDirectory;
             Dictionary<string, IndexProperties> indexProperties = IndexProperties.GetIndexProperties(arguments.IndexPropertiesConfig.ToFileInfo());
 
             if (spectra == null)
             {
-                //C:\SensorNetworks\Output\BIRD50\Training\ID0001\Towsey.Acoustic\ID0001__Towsey.Acoustic.ACI
                 spectra = IndexMatrices.ReadSpectralIndices(inputDirectory.ToDirectoryInfo(), fileStem, analysisType, keys);
             }
 
             // note: the spectra are oriented as per visual orientation, i.e. xAxis = time frames
             //int frameCount = spectra[keys[0]].GetLength(1);
-            var cs1 = new LDSpectrogramRGB(minuteOffset: TimeSpan.Zero, xScale: dataScale, sampleRate: sampleRate, frameWidth: frameWidth, colourMap: null)
+            var cs1 = new LDSpectrogramRGB(minuteOffset: TimeSpan.Zero, xScale: dataScale, sampleRate: sampleRate, frameWidth: frameWidth, colorMap: null)
             {
                 FileName = fileStem,
                 BackgroundFilter = backgroundFilter,
@@ -273,15 +264,15 @@ namespace AnalysisPrograms
         public static Image DrawFalseColourSpectrograms(Arguments args, string fileStem, Dictionary<string, double[,]> spectra = null)
         {
             //DirectoryInfo inputDirectory = args.InputDataDirectory;
-            FileInfo indexPropertiesConfig = args.IndexPropertiesConfig.ToFileInfo();
+            var indexPropertiesConfig = args.IndexPropertiesConfig.ToFileInfo();
             Dictionary<string, IndexProperties> indexProperties = IndexProperties.GetIndexProperties(indexPropertiesConfig);
-            return DrawFalseColourSpectrograms(args, fileStem, indexProperties, spectra);
+            return DrawFalseColorSpectrograms(args, fileStem, indexProperties, spectra);
         }
 
         /// <summary>
-        /// Draws two false colour spectrograms using a default set of arguments
+        /// Draws two false-color spectrograms using a default set of arguments.
         /// </summary>
-        public static Image DrawFalseColourSpectrograms(string fileStem, TimeSpan dataScale, FileInfo indexPropertiesConfig, Dictionary<string, double[,]> spectra = null)
+        public static Image DrawFalseColorSpectrograms(string fileStem, TimeSpan dataScale, FileInfo indexPropertiesConfig, Dictionary<string, double[,]> spectra = null)
         {
             // read in index properties and create a new entry for "PHN"
             Dictionary<string, IndexProperties> indexProperties = IndexProperties.GetIndexProperties(indexPropertiesConfig);
@@ -296,10 +287,10 @@ namespace AnalysisPrograms
             args.ColourMap2 = LDSpectrogramRGB.DefaultColorMap2;
             args.TemporalScale = dataScale;
 
-            return DrawFalseColourSpectrograms(args, fileStem, indexProperties, spectra);
+            return DrawFalseColorSpectrograms(args, fileStem, indexProperties, spectra);
         }
 
-        public static Image DrawFalseColourSpectrograms(Arguments args, string fileStem, Dictionary<string, IndexProperties> indexProperties, Dictionary<string, double[,]> spectra = null)
+        public static Image DrawFalseColorSpectrograms(Arguments args, string fileStem, Dictionary<string, IndexProperties> indexProperties, Dictionary<string, double[,]> spectra = null)
         {
             // note: the spectra are oriented as per visual orientation, i.e. xAxis = time framesDictionary<string, Int16>.KeyCollection keys = AuthorList.Keys
             // string[] keys = spectra.Keys.ToCommaSeparatedList().Split(',');
@@ -310,17 +301,24 @@ namespace AnalysisPrograms
             double backgroundFilter = 0.75;  // 0.75 means small values are accentuated.
             var minuteOffset = TimeSpan.Zero;
             var dataScale = args.TemporalScale;
-            string colourMap = args.ColourMap1 ?? LDSpectrogramRGB.DefaultColorMap1;
-            var cs1 = new LDSpectrogramRGB(minuteOffset, dataScale, sampleRate, frameWidth, colourMap)
+            string colorMap = args.ColourMap1 ?? LDSpectrogramRGB.DefaultColorMap1;
+            var cs1 = new LDSpectrogramRGB(minuteOffset, dataScale, sampleRate, frameWidth, colorMap)
             {
                 FileName = fileStem,
                 BackgroundFilter = backgroundFilter,
                 IndexCalculationDuration = dataScale,
             };
-            cs1.SetSpectralIndexProperties(indexProperties); // set the relevant dictionary of index properties
+
+            // set the relevant dictionary of index properties
+            cs1.SetSpectralIndexProperties(indexProperties);
             cs1.SpectrogramMatrices = spectra;
 
-            var image1 = cs1.DrawFalseColourSpectrogramChromeless("NEGATIVE", colourMap);
+            // get parameter from the config file.
+            var configFile = args.FalseColourSpectrogramConfig.ToFileInfo();
+            var config = LdSpectrogramConfig.ReadYamlToConfig(configFile);
+            var blueEnhanceParameter = config.BlueEnhanceParameter ?? 0.0;
+
+            var image1 = cs1.DrawFalseColorSpectrogramChromeless("NEGATIVE", colorMap, blueEnhanceParameter);
             var fullDuration = TimeSpan.FromSeconds(image1.Width * dataScale.TotalSeconds);
 
             string title = fileStem;
@@ -328,8 +326,8 @@ namespace AnalysisPrograms
             int trackHeight = 20;
             var timeScale = ImageTrack.DrawTimeRelativeTrack(fullDuration, image1.Width, trackHeight);
 
-            colourMap = args.ColourMap2 ?? LDSpectrogramRGB.DefaultColorMap2;
-            var image2 = cs1.DrawFalseColourSpectrogramChromeless("NEGATIVE", colourMap);
+            colorMap = args.ColourMap2 ?? LDSpectrogramRGB.DefaultColorMap2;
+            var image2 = cs1.DrawFalseColorSpectrogramChromeless("NEGATIVE", colorMap, blueEnhanceParameter);
             var list = new List<Image> { titleImage, image1, timeScale, image2 };
             var combinedImage = ImageTools.CombineImagesVertically(list.ToArray());
             return combinedImage;
@@ -337,26 +335,22 @@ namespace AnalysisPrograms
 
         /// <summary>
         /// The integer returned from this method is the number of seconds duration of the spectrogram.
-        /// Note that this method is called only when spectrogramScale = 0.1
+        /// Note that this method is called only when spectrogramScale = 0.1.
         /// </summary>
         public static int DrawRidgeSpectrograms(Arguments arguments, string fileStem, Dictionary<string, double[,]> spectra = null)
         {
-            //LoggedConsole.WriteLine("# Spectrogram Config      file: " + arguments.SpectrogramConfigPath);
-            //LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
             var inputDirectory = arguments.InputDataDirectory;
             var outputDirectory = arguments.OutputDirectory;
             var indexPropertiesConfig = arguments.IndexPropertiesConfig;
             double spectrogramScale = 0.1;
 
-            // var dataScale = TimeSpan.FromSeconds(spectrogramScale);
-
             // draw the spectrogram images
-            var labelledImage = DrawRidgeSpectrograms(inputDirectory.ToDirectoryInfo(), indexPropertiesConfig.ToFileInfo(), fileStem, spectrogramScale, spectra = null);
+            var labeledImage = DrawRidgeSpectrograms(inputDirectory.ToDirectoryInfo(), indexPropertiesConfig.ToFileInfo(), fileStem, spectrogramScale, spectra = null);
 
             // combine and save
             string fileName = Path.Combine(outputDirectory.ToDirectoryInfo().FullName, fileStem + ".Ridges.png");
-            labelledImage.Save(fileName);
-            return (int)Math.Round(labelledImage.Width * spectrogramScale);
+            labeledImage.Save(fileName);
+            return (int)Math.Round(labeledImage.Width * spectrogramScale);
         } // method DrawRidgeSpectrograms()
 
         public static Image DrawRidgeSpectrograms(DirectoryInfo inputDirectory, FileInfo ipConfig, string fileStem, double scale, Dictionary<string, double[,]> spectra = null)
@@ -377,7 +371,7 @@ namespace AnalysisPrograms
                 spectra = IndexMatrices.ReadSpectralIndices(inputDirectory, fileStem, analysisType, keys);
             }
 
-            var cs1 = new LDSpectrogramRGB(minuteOffset: TimeSpan.Zero, xScale: dataScale, sampleRate: 22050, frameWidth: 512, colourMap: null)
+            var cs1 = new LDSpectrogramRGB(minuteOffset: TimeSpan.Zero, xScale: dataScale, sampleRate: 22050, frameWidth: 512, colorMap: null)
             {
                 FileName = fileStem,
                 BackgroundFilter = backgroundFilter,

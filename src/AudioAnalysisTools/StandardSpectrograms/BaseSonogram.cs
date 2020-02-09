@@ -53,7 +53,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
     /// <summary>
     /// Base Sonogram.
     /// </summary>
-    public abstract partial class BaseSonogram : IDisposable
+    public abstract partial class BaseSonogram
     {
         public SonogramConfig Configuration { get; set; }
 
@@ -444,20 +444,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             return bmp;
         }
-
-        public void Dispose()
-        {
-            this.Configuration = null;
-            this.SnrData = null;
-            this.DecibelsPerFrame = null;
-            this.DecibelsNormalised = null;
-            this.Data = null;
-            this.SigState = null;
-        }
-
-        //##################################################################################################################################
-        //########### STATIC METHODS #######################################################################################################
-        //##################################################################################################################################
 
         private static bool IsInBand(int y, int? minFreq, int? maxFreq)
         {

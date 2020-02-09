@@ -1,4 +1,4 @@
-﻿// <copyright file="AutoAndCrossCorrelation.cs" company="QutEcoacoustics">
+// <copyright file="AutoAndCrossCorrelation.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -130,12 +130,19 @@ out double[] r)
 
 *************************************************************************/
 
-        /// <summary>
-        /// returns the fft spectrum of a cross-correlation function
-        /// </summary>
-        /// <param name="v1"></param>
-        /// <param name="v2"></param>
-        /// <returns></returns>
+        public static double[] AutoCrossCorr(double[] v)
+        {
+            int n = v.Length;
+            alglib.corrr1d(v, n, v, n, out double[] xr);
+            return xr;
+        }
+
+            /// <summary>
+            /// returns the fft spectrum of a cross-correlation function.
+            /// </summary>
+            /// <param name="v1"></param>
+            /// <param name="v2"></param>
+            /// <returns></returns>
         public static double[] CrossCorr(double[] v1, double[] v2)
         {
             int n = v1.Length; // assume both vectors of same length

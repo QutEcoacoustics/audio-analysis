@@ -32,13 +32,13 @@ namespace AnalysisPrograms.Recognizers.Base
         /// <summary>
         /// Do your analysis. This method is called once per segment (typically one-minute segments).
         /// </summary>
-        /// <param name="audioRecording">The audio recording to process - it should be a minute or two long</param>
-        /// <param name="configuration">The configuration to use for this analysis</param>
-        /// <param name="segmentStartOffset">In analyze long recording scenarios this is the time from the start of the original audio recording for this segment</param>
-        /// <param name="getSpectralIndexes">Invoke this lazy function to get indices for the current segment</param>
-        /// <param name="outputDirectory">The current output directory</param>
-        /// <param name="imageWidth">The expected width of output images</param>
-        /// <returns>A recognizer results object</returns>
+        /// <param name="audioRecording">The audio recording to process - it should be a minute or two long.</param>
+        /// <param name="configuration">The configuration to use for this analysis.</param>
+        /// <param name="segmentStartOffset">In analyze long recording scenarios this is the time from the start of the original audio recording for this segment.</param>
+        /// <param name="getSpectralIndexes">Invoke this lazy function to get indices for the current segment.</param>
+        /// <param name="outputDirectory">The current output directory.</param>
+        /// <param name="imageWidth">The expected width of output images.</param>
+        /// <returns>A recognizer results object.</returns>
         RecognizerResults Recognize(AudioRecording audioRecording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth);
     }
 }

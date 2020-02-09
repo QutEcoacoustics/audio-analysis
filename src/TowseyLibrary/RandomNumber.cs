@@ -24,7 +24,7 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// returns a random number between 0.0 and 1.0
+        /// returns a random number between 0.0 and 1.0.
         /// </summary>
         public double GetDouble()
         {
@@ -155,17 +155,19 @@ namespace TowseyLibrary
             }
 
             return randomArray;
-        } //end of RandomizeNumberOrder()
+        }
 
         /// <summary>
-        /// generates vectors of numbers numbers 0 - 1.0
+        /// generates a vector of random numbers in [0, 1.0].
         /// </summary>
-        public static double[] GetRandomVector(int length, RandomNumber rn)
+        public static double[] GetRandomVector(int vectorLength, RandomNumber rn)
         {
-            double[] v = new double[length];
-            v[0] = rn.GetDouble();
-            v[1] = rn.GetDouble();
-            v[2] = rn.GetDouble();
+            double[] v = new double[vectorLength];
+            for (int i = 0; i < vectorLength; i++)
+            {
+                v[i] = rn.GetDouble();
+            }
+
             return v;
         }
 
@@ -195,7 +197,7 @@ namespace TowseyLibrary
             {
                 double[] v1 = GetRandomVector(dimensions, rn);
                 double[] v2 = GetRandomVector(dimensions, rn);
-                distanceArray[i] = DataTools.EuclidianDistance(v1, v2);
+                distanceArray[i] = DataTools.EuclideanDistance(v1, v2);
             }
 
             double av, sd;

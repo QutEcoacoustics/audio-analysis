@@ -1,4 +1,4 @@
-﻿// <copyright file="ConfigFile.Profiles.cs" company="QutEcoacoustics">
+// <copyright file="ConfigFile.Profiles.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -90,19 +90,19 @@ namespace Acoustics.Shared.ConfigFile
             return profileMapping.Keys.Cast<string>().ToArray();
         }
 
-        public static IEnumerable<(string Name, object Profile)> GetAllProfiles<T>(T configuration)
-            where T : IProfile<T>
-        {
-            Type profileType = typeof(T);
-
-            var props = profileType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            foreach (var propertyInfo in props)
-            {
-                var value = propertyInfo.GetValue(configuration.Profiles);
-                var name = propertyInfo.Name;
-
-                yield return (Name: name, Profile: value);
-            }
-        }
+        // public static IEnumerable<(string Name, object Profile)> GetAllProfiles<T>(T configuration)
+        //     where T : IProfile<T>
+        // {
+        //     Type profileType = typeof(T);
+        //
+        //     var props = profileType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+        //     foreach (var propertyInfo in props)
+        //     {
+        //         var value = propertyInfo.GetValue(configuration.Profiles);
+        //         var name = propertyInfo.Name;
+        //
+        //         yield return (Name: name, Profile: value);
+        //     }
+        // }
     }
 }

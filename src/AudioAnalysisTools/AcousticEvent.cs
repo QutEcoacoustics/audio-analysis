@@ -552,6 +552,48 @@ namespace AudioAnalysisTools
             }
         }
 
+        /// <summary>
+        /// Returns the fractional overlap of two events.
+        /// Translate time/freq dimensions to coordinates in a matrix.
+        /// Freq dimension = bins   = matrix columns. Origin is top left - as per matrix in the sonogram class.
+        /// Time dimension = frames = matrix rows.
+        /// </summary>
+        public static List<AcousticEvent> CombineOverlappingEvents(List<AcousticEvent> events)
+        {
+            if (events.Count < 2)
+            {
+                return events;
+            }
+
+            for (int i = events.Count - 1; i >= 0; i--)
+            {
+                for (int j = i - 1; j >= 0; j--)
+                {
+                    //check if event i starts within event j
+                    bool startOverlap = (events[i].EventStartSeconds >= events[j].EventStartSeconds) && (events[i].EventStartSeconds <= events[j].EventEndSeconds);
+                    // check if event i ends within event j
+                    bool endOverlap = (events[i].EventEndSeconds >= events[j].EventStartSeconds) && (events[i].EventEndSeconds <= events[j].EventEndSeconds);
+
+                    if (startOverlap || endOverlap)
+                    {
+                        events[j] = AcousticEvent.MergeTwoEvents(events[i], events[j]);
+                        events.RemoveAt(i);
+                    }
+                }
+            }
+
+            return events;
+        }
+
+        public static AcousticEvent MergeTwoEvents (AcousticEvent e1, AcousticEvent e2)
+        {
+            e1.EventStartSeconds = Math.Min(e1.EventStartSeconds, e2.EventStartSeconds);
+           // e1.EventEndSeconds = Math.Max(e1.EventEndSeconds, e2.EventEndSeconds);
+            e1.LowFrequencyHertz = Math.Min(e1.LowFrequencyHertz, e2.LowFrequencyHertz);
+            e1.HighFrequencyHertz = Math.Max(e1.HighFrequencyHertz, e2.HighFrequencyHertz);
+            return e1;
+        }
+
         //#################################################################################################################
         //METHODS TO CONVERT BETWEEN FREQ BIN AND HERZ OR MELS
 
@@ -1283,10 +1325,13 @@ namespace AudioAnalysisTools
                     }
 
                     av /= i - startFrame + 1;
-                    if (av < scoreThreshold)
-                    {
-                        continue; //skip events whose score is < the threshold
-                    }
+
+                    //NOTE av cannot be < threhsold because event started and ended based on threhsold.
+                    //     Therefore remove the following condition on 04/02/2020
+                    //if (av < scoreThreshold)
+                    //{
+                    //    continue; //skip events whose score is < the threshold
+                    //}
 
                     AcousticEvent ev = new AcousticEvent(segmentStartOffset, startTime, duration, minHz, maxHz);
 

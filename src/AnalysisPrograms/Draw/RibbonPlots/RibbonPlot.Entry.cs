@@ -20,6 +20,10 @@ namespace AnalysisPrograms.Draw.RibbonPlots
     using SixLabors.ImageSharp.Processing;
     using SixLabors.Primitives;
     using SixLabors.Shapes;
+    using Point = SixLabors.ImageSharp.Point;
+    using PointF = SixLabors.ImageSharp.PointF;
+    using Rectangle = SixLabors.ImageSharp.Rectangle;
+    using RectangularPolygon = SixLabors.ImageSharp.RectangularPolygon;
 
     /// <summary>
     /// Draws ribbon plots from ribbon FCS images.
@@ -205,14 +209,13 @@ namespace AnalysisPrograms.Draw.RibbonPlots
                 var top = Padding;
                 var bottom = Padding + ((Padding + ribbonHeight) * stats.Buckets);
                 context.DrawLines(
-                    new GraphicsOptions(false),
                     Pens.Solid(Color.Red, 1),
                     new PointF(left, top),
                     new PointF(left, bottom));
             });
 
             var bucketDate = stats.Start;
-            var textGraphics = new TextGraphicsOptions(true)
+            var textGraphics = new TextGraphicsOptions()
                 { HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center };
             var textColor = Color.Black;
             var voidColor = Color.Gray;
@@ -273,6 +276,7 @@ namespace AnalysisPrograms.Draw.RibbonPlots
 
                 var top = Padding + ((Padding + ribbonHeight) * ribbonStartBucket);
                 var left = ribbonLeft + ribbonHorizontalOffset;
+                var options = new GraphicsOptions();
                 using (var source = Image.Load<Rgb24>(ribbon.FullName))
                 {
                     // the image is longer than the ribbon, need to wrap to next day
@@ -285,18 +289,18 @@ namespace AnalysisPrograms.Draw.RibbonPlots
 
                         var split = estimatedWidth - ribbonHorizontalOffset;
                         var crop = source.Clone((context) => context.Crop(new Rectangle(0, 0, split, source.Height)));
-                        image.Mutate(x => x.DrawImage(crop, new Point(left, top), GraphicsOptions.Default));
+                        image.Mutate(x => x.DrawImage(crop, new Point(left, top), options));
 
                         // now draw the wrap around - starting from the left, which is start of new day
                         top += Padding + ribbonHeight;
                         left = ribbonLeft;
                         var rest = source.Clone(context =>
                             context.Crop(new Rectangle(split, 0, ribbonWidth - split, source.Height)));
-                        image.Mutate(x => x.DrawImage(rest, new Point(left, top), GraphicsOptions.Default));
+                        image.Mutate(x => x.DrawImage(rest, new Point(left, top), options));
                     }
                     else
                     {
-                        image.Mutate(x => x.DrawImage(source, new Point(left, top), GraphicsOptions.Default));
+                        image.Mutate(x => x.DrawImage(source, new Point(left, top), options));
                     }
                 }
             }

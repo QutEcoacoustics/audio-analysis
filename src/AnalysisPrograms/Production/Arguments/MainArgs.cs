@@ -39,6 +39,7 @@ namespace AnalysisPrograms.Production.Arguments
     [Subcommand(DrawZoomingSpectrograms.CommandName, typeof(DrawZoomingSpectrograms.Arguments))]
     [Subcommand(RibbonPlot.CommandName, typeof(RibbonPlot.Arguments))]
     [Subcommand(DrawEasyImage.CommandName, typeof(DrawEasyImage.Arguments))]
+    [Subcommand(ContentDescription.BuildModel.CommandName, typeof(ContentDescription.BuildModel.Arguments))]
     [Subcommand(Audio2InputForConvCnn.CommandName, typeof(Audio2InputForConvCnn.Arguments))]
     [Subcommand(DifferenceSpectrogram.CommandName, typeof(DifferenceSpectrogram.Arguments))]
     [Subcommand(EPR.CommandName, typeof(EPR.Arguments))]

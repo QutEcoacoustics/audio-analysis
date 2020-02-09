@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="ConfigFile.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -23,7 +23,7 @@ namespace Acoustics.Shared.ConfigFile
 
     public static partial class ConfigFile
     {
-        public const string ProfilesKey = nameof(IProfile<object>.Profiles);
+        public const string ProfilesKey = nameof(IProfiles<object>.Profiles);
 
         public static readonly Dictionary<Type, string> Defaults = new Dictionary<Type, string>();
 

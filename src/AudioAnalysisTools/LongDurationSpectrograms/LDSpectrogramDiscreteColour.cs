@@ -1,4 +1,4 @@
-﻿// <copyright file="LDSpectrogramDiscreteColour.cs" company="QutEcoacoustics">
+// <copyright file="LDSpectrogramDiscreteColour.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -87,7 +87,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                         colourVector[0] = discreteColourValues[c, 0];
                         colourVector[1] = discreteColourValues[c, 1];
                         colourVector[2] = discreteColourValues[c, 2];
-                        distance[c] = DataTools.EuclidianDistance(imageColorVector, colourVector);
+                        distance[c] = DataTools.EuclideanDistance(imageColorVector, colourVector);
                     }
 
                     int minindex, maxindex;

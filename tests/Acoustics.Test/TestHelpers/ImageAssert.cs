@@ -19,10 +19,8 @@ namespace Acoustics.Test.TestHelpers
     using SixLabors.ImageSharp.Advanced;
     using SixLabors.ImageSharp.ColorSpaces.Conversion;
     using SixLabors.ImageSharp.PixelFormats;
-    using SixLabors.Primitives;
     using SixLabors.ImageSharp.Processing;
     using Point = System.Drawing.Point;
-    using Region = SixLabors.ImageSharp.Primitives.Region;
 
     public static class ImageAssert
     {
@@ -40,7 +38,7 @@ namespace Acoustics.Test.TestHelpers
 
         /// <summary>
         /// Check whether a region in an image matches an expected color.
-        /// Does a simplisitic average on each color channel and includes and inbuilt tolerance parameter.
+        /// Does a simplistic average on each color channel and includes and inbuilt tolerance parameter.
         /// A repeating pattern can fool this test.
         /// </summary>
         /// <example>
@@ -103,10 +101,6 @@ namespace Acoustics.Test.TestHelpers
         ///            };
         /// ImageAssert.ImageRegionHasColors(new Rectangle(0, 24, 210, 3),  expectedColors, actualImage1, 0.07);
         /// </example>
-        /// <param name="region"></param>
-        /// <param name="expectedColors"></param>
-        /// <param name="actualImage"></param>
-        /// <param name="tolerance"></param>
         public static void ImageRegionHasColors(
             this Assert assert,
             System.Drawing.Rectangle region,
@@ -198,9 +192,9 @@ namespace Acoustics.Test.TestHelpers
             Assert.AreEqual(expectedHeight, actualImage.Height, "Expected image height did not match actual image height");
         }
 
-        public static void ImageRegionIsColor(this Assert assert, SixLabors.Primitives.Rectangle region, Rgb24 expectedColor, Image<Rgb24> actualImage, double tolerance = 0.0)
+        public static void ImageRegionIsColor(this Assert assert, SixLabors.ImageSharp.Rectangle region, Rgb24 expectedColor, Image<Rgb24> actualImage, double tolerance = 0.0)
         {
-            var width = region.Width;
+            //var width = region.Width;
             var area = region.Width * region.Height;
 
             var red = new int[area];
@@ -260,10 +254,10 @@ Difference are:
             }
         }
 
-        public static void ImageContainsExpected<T>(this Assert assert, Image<T> expectedImage, SixLabors.Primitives.Point expectedLocation, Image<T> actualImage, double tolerance = 0.0, string message = "")
+        public static void ImageContainsExpected<T>(this Assert assert, Image<T> expectedImage, SixLabors.ImageSharp.Point expectedLocation, Image<T> actualImage, double tolerance = 0.0, string message = "")
             where T : struct, IPixel<T>
         {
-            var regionToCheck = new SixLabors.Primitives.Rectangle(expectedLocation, expectedImage.Size());
+            var regionToCheck = new SixLabors.ImageSharp.Rectangle(expectedLocation, expectedImage.Size());
             Assert.IsTrue(actualImage.Bounds().Contains(regionToCheck));
 
             var (normalizedDifference, differences) = CompareImage(expectedImage, actualImage, regionToCheck);
@@ -283,7 +277,7 @@ Difference are:
         }
 
         private static (float normalizedDifference, List<PixelDifference> differences) CompareImage<TPixel>(
-            Image<TPixel> expected, Image<TPixel> actual, SixLabors.Primitives.Rectangle? regionToCheck = null)
+            Image<TPixel> expected, Image<TPixel> actual, SixLabors.ImageSharp.Rectangle? regionToCheck = null)
             where TPixel : struct, IPixel<TPixel>
         {
             // implementation based off of https://github.com/SixLabors/ImageSharp/blob/9ab02b6ee67b25fd3653146c069dab3687fc0ac8/tests/ImageSharp.Tests/TestUtilities/ImageComparison/TolerantImageComparer.cs
@@ -311,7 +305,7 @@ Difference are:
 
                     if (d > 0)
                     {
-                        var diff = new PixelDifference(new SixLabors.Primitives.Point(x, y), a, b);
+                        var diff = new PixelDifference(new SixLabors.ImageSharp.Point(x, y), a, b);
                         differences.Add(diff);
 
                         totalDifference += d;
@@ -337,13 +331,13 @@ Difference are:
 
     internal class PixelDifference
     {
-        public SixLabors.Primitives.Point Point { get; }
+        public SixLabors.ImageSharp.Point Point { get; }
 
         public Rgba32 A { get; }
 
         public Rgba32 B { get; }
 
-        public PixelDifference(SixLabors.Primitives.Point point, Rgba32 a, Rgba32 b)
+        public PixelDifference(SixLabors.ImageSharp.Point point, Rgba32 a, Rgba32 b)
         {
             this.Point = point;
             this.A = a;

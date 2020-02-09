@@ -78,7 +78,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                 IndexPropertiesConfig = indexPropertiesConfig.FullName,
                 FalseColourSpectrogramConfig = testConfig.FullName,
                 ColorMap1 = LDSpectrogramRGB.DefaultColorMap1,
-                ColorMap2 = "BGN-PMN-EVN", // POW was deprecated post May 2017
+                ColorMap2 = "BGN-PMN-EVN",
                 ConcatenateEverythingYouCanLayYourHandsOn = true, // join everything found
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
                 DrawImages = true,
@@ -104,7 +104,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             var actualImage = ImageTools.ReadImage2Bitmap(imageFileInfo.FullName);
             Assert.That.ImageIsSize(722, 632, actualImage);
             Assert.That.PixelIsColor(new Point(100, 100), Color.FromArgb(211, 211, 211), actualImage);
-            Assert.That.PixelIsColor(new Point(200, 125), Color.FromArgb(60, 44, 255), actualImage);
+            Assert.That.PixelIsColor(new Point(200, 125), Color.FromArgb(60, 44, 203), actualImage);
             Assert.That.PixelIsColor(new Point(675, 600), Color.FromArgb(255, 105, 180), actualImage);
         }
 
@@ -133,7 +133,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                 IndexPropertiesConfig = indexPropertiesConfig.FullName,
                 FalseColourSpectrogramConfig = testConfig.FullName,
                 ColorMap1 = LDSpectrogramRGB.DefaultColorMap1,
-                ColorMap2 = "BGN-PMN-EVN", // POW was depracated post May 2017
+                ColorMap2 = "BGN-PMN-EVN",
                 ConcatenateEverythingYouCanLayYourHandsOn = false, // 24 hour blocks only
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
                 DrawImages = true,
@@ -160,8 +160,8 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             // we expect only the second half (past midnight) of the image to be rendered
             Assert.That.ImageIsSize(512, 632, actualImage);
-            Assert.That.PixelIsColor(new Point(105, 154), Color.FromArgb(34, 30, 255), actualImage);
-            Assert.That.PixelIsColor(new Point(100, 160), Color.FromArgb(0, 79, 132), actualImage);
+            Assert.That.PixelIsColor(new Point(105, 154), Color.FromArgb(34, 30, 126), actualImage);
+            Assert.That.PixelIsColor(new Point(100, 160), Color.FromArgb(8, 28, 64), actualImage);
         }
 
         /// <summary>
@@ -190,7 +190,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
                 IndexPropertiesConfig = indexPropertiesConfig.FullName,
                 FalseColourSpectrogramConfig = testConfig.FullName,
                 ColorMap1 = LDSpectrogramRGB.DefaultColorMap1,
-                ColorMap2 = "BGN-PMN-EVN", // POW was depracated post May 2017
+                ColorMap2 = "BGN-PMN-EVN",
                 ConcatenateEverythingYouCanLayYourHandsOn = false, // 24 hour blocks only
                 TimeSpanOffsetHint = TimeSpan.FromHours(8),
                 DrawImages = true,
@@ -217,7 +217,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             var actualImage1 = ImageTools.ReadImage2Bitmap(image1FileInfo.FullName);
             Assert.That.ImageIsSize(210, 632, actualImage1);
             Assert.That.PixelIsColor(new Point(100, 100), Color.FromArgb(211, 211, 211), actualImage1);
-            Assert.That.PixelIsColor(new Point(50, 50), Color.FromArgb(86, 27, 16), actualImage1);
+            Assert.That.PixelIsColor(new Point(50, 50), Color.FromArgb(86, 27, 8), actualImage1);
 
             // IMAGE 2: Compare image files - check that image exists and dimensions are correct
             var dateString2 = "20160726";

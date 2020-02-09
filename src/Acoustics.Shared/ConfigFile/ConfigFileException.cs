@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="ConfigFileException.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -10,6 +10,7 @@
 namespace Acoustics.Shared.ConfigFile
 {
     using System;
+    using System.IO;
 
     public class ConfigFileException : Exception
     {
@@ -30,6 +31,12 @@ namespace Acoustics.Shared.ConfigFile
             : base(message, innerException)
         {
             this.File = file;
+        }
+
+        public ConfigFileException(string message, FileInfo file)
+            : base(message, null)
+        {
+            this.File = file.FullName;
         }
 
         public ConfigFileException()
