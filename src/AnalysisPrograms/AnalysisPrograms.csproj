@@ -4,21 +4,12 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <StartupObject>AnalysisPrograms.MainEntry</StartupObject>
-    <TargetZone>LocalIntranet</TargetZone>
     <GenerateManifests>false</GenerateManifests>
-    <FileUpgradeFlags />
-    <UpgradeBackupLocation />
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <CodeAnalysisRuleSet>..\..\style.ruleset</CodeAnalysisRuleSet>
     <LangVersion>latest</LangVersion>
     <OutputPath>bin\$(Configuration)\</OutputPath>
-    <PreBuildEvent />
-    <PostBuildEvent />
-    <PreBuildEvent />
-    <PostBuildEvent />
-    <PreBuildEvent />
-    <PostBuildEvent />
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <RuntimeIdentifiers>win-x64;win-arm64;linux-x64;linux-musl-x64;linux-arm;osx-x64</RuntimeIdentifiers>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>
@@ -48,7 +39,7 @@
     <Error Condition="!Exists('..\..\packages\SQLitePCLRaw.lib.e_sqlite3.v110_xp.1.1.9\build\net35\SQLitePCLRaw.lib.e_sqlite3.v110_xp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SQLitePCLRaw.lib.e_sqlite3.v110_xp.1.1.9\build\net35\SQLitePCLRaw.lib.e_sqlite3.v110_xp.targets'))" />
   </Target>
   <ItemGroup>
-    <Compile Include="..\AssemblyMetadata.cs" Link="AssemblyMetadata.cs" />
+    <Compile Include="..\AssemblyMetadata.Generated.cs" Link="Properties\AssemblyMetadata.Generated.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Acoustics.Shared\Acoustics.Shared.csproj" />
@@ -94,8 +85,8 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.5.0" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0007" />
-    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0007" />
-    <PackageReference Include="SixLabors.Shapes.Text" Version="1.0.0-beta0009" />
+    <PackageReference Include="SixLabors.Fonts" Version="1.0.0-unstable0024" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-unstable0598" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-unstable0418" />
   </ItemGroup>
 </Project>

@@ -1,4 +1,4 @@
-﻿// <copyright file="FileSegmentTests.cs" company="QutEcoacoustics">
+// <copyright file="FileSegmentTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -70,7 +70,7 @@ namespace Acoustics.Test.AnalysisBase
             Assert.AreEqual(null, s.SegmentEndOffset);
             Assert.AreEqual(0, s.StartOffsetSeconds);
             Assert.AreEqual(info.Duration.Value.TotalSeconds, s.EndOffsetSeconds, 1.0);
-            Assert.AreEqual(info.Duration, s.TargetFileDuration);
+            Assert.That.AreEqual(info.Duration.Value, s.TargetFileDuration.Value, TimeSpan.FromMilliseconds(0.050));
             Assert.AreEqual(info.SampleRate, s.TargetFileSampleRate);
             Assert.AreEqual("Currawongs_curlew_West_Knoll_Bees_20091102-183000", s.SourceMetadata.Identifier);
             Assert.IsNull(s.TargetFileStartDate);

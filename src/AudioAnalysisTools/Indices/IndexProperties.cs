@@ -23,7 +23,6 @@ namespace AudioAnalysisTools.Indices
     using Newtonsoft.Json;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using SixLabors.Primitives;
     using TowseyLibrary;
     using YamlDotNet.Serialization;
     using Zio;

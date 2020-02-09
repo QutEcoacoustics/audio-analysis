@@ -11,7 +11,6 @@ namespace log4net
 #pragma warning restore SA1300
 {
     using System;
-    using log4net;
     using log4net.Core;
 
     public static class LogExtensions

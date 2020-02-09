@@ -10,7 +10,6 @@
 namespace Acoustics.Test.Shared
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
@@ -29,7 +28,6 @@ namespace Acoustics.Test.Shared
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
-    using TowseyLibrary;
 
     [TestClass]
     public class CsvTests
@@ -254,8 +252,10 @@ namespace Acoustics.Test.Shared
 
             Assert.IsNull(data);
             Assert.IsNotNull(actual);
-            Assert.IsInstanceOfType(actual, typeof(TypeConverterException));
-            Assert.IsNotNull(actual.InnerException);
+            Assert.IsInstanceOfType(actual, typeof(FormatException));
+            Assert.IsInstanceOfType(actual.InnerException, typeof(TypeConverterException));
+
+            //Assert.IsNotNull(actual.InnerException);
             StringAssert.Contains(actual.Message, "Row");
             StringAssert.Contains(actual.Message, "Field Name");
         }
@@ -287,12 +287,17 @@ namespace Acoustics.Test.Shared
 
             var partialExpected = new[]
             {
-                typeof(AcousticEvent.AcousticEventClassMap),
-                typeof(EventStatistics.EventStatisticsClassMap),
-                typeof(ImportedEvent.ImportedEventNameClassMap),
+                (typeof(AcousticEvent), typeof(AcousticEvent.AcousticEventClassMap)),
+                (typeof(EventStatistics), typeof(EventStatistics.EventStatisticsClassMap)),
+                (typeof(ImportedEvent), typeof(ImportedEvent.ImportedEventNameClassMap)),
             };
 
-            CollectionAssert.IsSubsetOf(partialExpected, Csv.ClassMapsToRegister.Select(x => x.GetType()).ToArray());
+            foreach (var (type, classMapType) in partialExpected)
+            {
+                var mapping = Csv.DefaultConfiguration.Maps[type];
+                Assert.IsNotNull(mapping, $"Mapping for type {type} was null");
+                Assert.AreEqual(classMapType, mapping.GetType());
+            }
         }
 
         [TestMethod]
@@ -310,7 +315,8 @@ namespace Acoustics.Test.Shared
 
             var actual = result.ToString();
 
-            foreach (var property in AcousticEvent.AcousticEventClassMap.IgnoredProperties.Except(AcousticEvent.AcousticEventClassMap.RemappedProperties))
+            //.Except(AcousticEvent.AcousticEventClassMap.RemappedProperties)
+            foreach (var property in AcousticEvent.AcousticEventClassMap.IgnoredProperties)
             {
                 Assert.IsFalse(
                     actual.Contains(property, StringComparison.InvariantCultureIgnoreCase),
@@ -318,12 +324,16 @@ namespace Acoustics.Test.Shared
             }
 
             StringAssert.Contains(actual, "EventEndSeconds");
+            StringAssert.Contains(actual, "EventStartSeconds");
+            StringAssert.Contains(actual, "LowFrequencyHertz");
+            StringAssert.Contains(actual, "HighFrequencyHertz");
+            StringAssert.That.NotContains(actual, nameof(Oblong.ColCentroid));
         }
 
         [TestMethod]
         public void TestImportedEventClassMap()
         {
-            string[] names = new[] { "AudioEventId", "audioEventId", "audio_event_id" };
+            string[] names = { "AudioEventId", "audioEventId", "audio_event_id" };
 
             foreach (var name in names)
             {
@@ -364,8 +374,11 @@ namespace Acoustics.Test.Shared
             Assert.That.StringEqualWithDiff(childExpected, childText);
         }
 
+        /// <summary>
+        /// For some inane reason CsvHelper does not downcast to derived types!
+        /// </summary>
         [TestMethod]
-        public void TestBaseTypesAreSerializedAsEnumerable()
+        public void TestChildTypesAreSerializedWhenWrappedAsEnumerableParentType()
         {
             var exampleIndices = new SummaryIndexValues();
             IEnumerable<SummaryIndexValues> childArray = exampleIndices.AsArray().AsEnumerable();
@@ -379,14 +392,14 @@ namespace Acoustics.Test.Shared
 
             var baseText = File.ReadAllText(this.testFile.FullName);
 
-            Assert.AreEqual(childText, baseText);
+            Assert.AreNotEqual(childText, baseText);
         }
 
         /// <summary>
         /// For some inane reason CsvHelper does not downcast to derived types!
         /// </summary>
         [TestMethod]
-        public void TestBaseTypesAreSerializedAsEnumerableAcousticEvent()
+        public void TestChildTypesAreSerializedWhenWrappedAsEnumerableParentType_AcousticEvent()
         {
             var exampleEvent = new AcousticEvent(100.Seconds(), 15, 4, 100, 3000);
             var exampleEvent2 = new AcousticEvent(100.Seconds(), 15, 4, 100, 3000);
@@ -404,15 +417,32 @@ namespace Acoustics.Test.Shared
             Assert.AreNotEqual(childText, baseText);
         }
 
+        public class CultureDataTester
+        {
+            public double value { get; set; }
+            public double infinity { get; set; }
+            public double nan { get; set; }
+            public DateTime date { get; set; }
+            public DateTimeOffset dateOffset { get; set; }
+        }
+
         [TestMethod]
         public void TestInvariantCultureIsUsed()
         {
             var now = new DateTime(1234567891011121314);
             var nowOffset = new DateTimeOffset(1234567891011121314, TimeSpan.FromHours(10));
 
+            var o = new CultureDataTester
+            {
+                value = -789123.456,
+                infinity = double.NegativeInfinity,
+                nan = double.NaN,
+                date = now,
+                dateOffset = nowOffset
+            };
             Csv.WriteToCsv(
                 this.testFile,
-                new[] { new { value = -789123.456, infinity = double.NegativeInfinity, nan = double.NaN, date = now, dateOffset = nowOffset } });
+                new CultureDataTester[] { o });
 
             var actual = File.ReadAllText(this.testFile.FullName);
             var expected = $@"value,infinity,nan,date,dateOffset

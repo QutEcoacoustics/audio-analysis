@@ -1,16 +1,12 @@
-﻿// <copyright file="ProcessRunnerTests.cs" company="QutEcoacoustics">
+// <copyright file="ProcessRunnerTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
 namespace Acoustics.Test.Shared
 {
     using System;
-    using System.Collections.Generic;
-    using System.IO;
     using System.Linq;
     using System.Runtime.InteropServices;
-    using System.Text;
-    using System.Threading.Tasks;
     using Acoustics.Shared;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
@@ -48,7 +44,7 @@ namespace Acoustics.Test.Shared
                 try
                 {
                     runner.Run(
-                        $@"-sexagesimal -print_format default -show_error -show_streams -show_format ""{path}""",
+                        $@"-sexagesimal -print_format json -show_error -show_streams -show_format ""{path}""",
                         this.outputDirectory.FullName);
                     result = true;
                 }

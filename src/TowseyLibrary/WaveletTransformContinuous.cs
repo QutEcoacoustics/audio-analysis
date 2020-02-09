@@ -7,10 +7,6 @@ namespace TowseyLibrary
     using System;
     using System.Collections.Generic;
     using SixLabors.ImageSharp;
-    using System.Drawing.Imaging;
-    using System.IO;
-    using System.Linq;
-    using System.Text;
 
     /// <summary>
     /// An implementation of Continuous Wavelet Transform (CWT) using the Haar wavelet.

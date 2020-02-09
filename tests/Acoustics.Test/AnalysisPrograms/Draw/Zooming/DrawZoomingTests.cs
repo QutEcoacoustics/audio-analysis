@@ -8,23 +8,11 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
-
-    using global::AnalysisPrograms;
     using global::AnalysisPrograms.AnalyseLongRecordings;
     using global::AnalysisPrograms.Draw.Zooming;
-    using global::AnalysisPrograms.Production;
-    using global::AnalysisPrograms.Production.Arguments;
-    using global::AudioAnalysisTools.DSP;
-    using global::AudioAnalysisTools.Indices;
-    using global::AudioAnalysisTools.LongDurationSpectrograms;
     using global::AudioAnalysisTools.LongDurationSpectrograms.Zooming;
-
-    using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
-
-    using Zio;
-    using Zio.FileSystems.Community.SqliteFileSystem;
 
     [TestClass]
     public class DrawZoomingTests : OutputDirectoryTest
@@ -136,6 +124,7 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
         /// Tests the rendering of zooming spectrograms for a minute of audio indices
         /// </summary>
         [TestMethod]
+        [Ignore("Broken to resolve .NET Core dependencies. https://github.com/QutEcoacoustics/audio-analysis/issues/289")]
         public void TestGenerateTilesSqlite()
         {
             // generate the zooming spectrograms
@@ -153,6 +142,8 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
             var tiles = zoomOutput.CombineFile("OxleyCreek_site_1_1060_244333_20140529T081358+1000_120_0__Tiles.sqlite3");
             Assert.IsTrue(tiles.Exists);
 
+            throw new PlatformNotSupportedException("See https://github.com/QutEcoacoustics/audio-analysis/issues/289");
+            /*
             using (var fs = new SqliteFileSystem(tiles.FullName, OpenMode.ReadOnly))
             {
                 var filesProduced = fs.EnumerateFiles(UPath.Root).ToArray();
@@ -172,6 +163,7 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
             }
 
             // not sure what else to test - generally exceptions should be thrown if anything goes wrong
+            */
         }
     }
 }

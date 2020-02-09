@@ -15,7 +15,6 @@ namespace AnalysisPrograms
     using System.Collections.Generic;
     using System.Diagnostics;
     using SixLabors.ImageSharp;
-    using System.Drawing.Imaging;
     using System.IO;
     using System.Reflection;
     using System.Threading.Tasks;
@@ -32,10 +31,10 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.WavTools;
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
-    using Production;
     using Production.Arguments;
     using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
+    using Path = System.IO.Path;
 
     public class SurfAnalysis
     {

@@ -14,7 +14,6 @@ namespace AudioAnalysisTools.Indices
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
-    using AnalysisBase.ResultBases;
     using AudioAnalysisTools.ContentDescriptionTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;

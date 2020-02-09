@@ -5,15 +5,9 @@
 namespace AnalysisPrograms.EventStatistics
 {
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
     using System.Reflection;
-    using System.Text;
-    using System.Threading.Tasks;
     using Acoustics.Shared;
-    using AcousticWorkbench;
     using CsvHelper.Configuration;
-    using log4net;
 
     public class ImportedEvent
     {

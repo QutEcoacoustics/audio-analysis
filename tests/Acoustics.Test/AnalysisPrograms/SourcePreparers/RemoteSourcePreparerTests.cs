@@ -3,7 +3,6 @@ namespace Acoustics.Test.AnalysisPrograms.SourcePreparers
     using System;
     using System.Linq;
     using Acoustics.Shared;
-    using AnalysisBase;
     using global::AcousticWorkbench;
     using global::AcousticWorkbench.Models;
     using global::AnalysisBase;
@@ -11,7 +10,6 @@ namespace Acoustics.Test.AnalysisPrograms.SourcePreparers
     using global::AnalysisPrograms.AcousticWorkbench.Orchestration;
     using global::AnalysisPrograms.SourcePreparers;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
     using TestHelpers.Factories;
 
     [TestClass]

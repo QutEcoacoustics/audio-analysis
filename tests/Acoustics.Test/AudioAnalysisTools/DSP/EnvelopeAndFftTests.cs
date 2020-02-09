@@ -1,4 +1,4 @@
-﻿// <copyright file="ExampleTestTemplate.cs" company="QutEcoacoustics">
+// <copyright file="ExampleTestTemplate.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -14,7 +14,6 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
-    using TowseyLibrary;
 
     /// <summary>
     /// Test methods for the various standard Sonograms or Spectrograms
@@ -97,7 +96,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             // DO THE TESTS
             int expectedSR = 22050;
             Assert.AreEqual(expectedSR, sr);
-            Assert.AreEqual("00:01:00.2450000", duration.ToString());
+            Assert.AreEqual(60.244535147392290249433106575964M, recording.WavReader.ExactDurationSeconds);
             Assert.AreEqual(2594, frameCount);
             int expectedBitsPerSample = 16;
             double expectedEpsilon = Math.Pow(0.5, expectedBitsPerSample - 1);

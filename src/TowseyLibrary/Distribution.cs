@@ -5,10 +5,8 @@
 namespace TowseyLibrary
 {
     using System;
-    using System.Collections.Generic;
-    using System.Text;
 
-/*
+    /*
  * Created on 15/03/2005
  * This class represents a distribution of values.
  * Convert to a curve whch returns the probability for any value.

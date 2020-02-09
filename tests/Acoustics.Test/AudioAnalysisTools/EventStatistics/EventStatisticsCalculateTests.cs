@@ -1,21 +1,17 @@
-﻿// <copyright file="EventStatisticsCalculateTests.cs" company="QutEcoacoustics">
+// <copyright file="EventStatisticsCalculateTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
 namespace Acoustics.Test.AudioAnalysisTools.EventStatistics
 {
     using System;
-    using System.Collections.Generic;
     using Acoustics.Shared;
     using Acoustics.Tools.Wav;
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.EventStatistics;
-    using global::AudioAnalysisTools.StandardSpectrograms;
     using global::AudioAnalysisTools.WavTools;
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
-    using TowseyLibrary;
 
     [TestClass]
     public class EventStatisticsCalculateTests

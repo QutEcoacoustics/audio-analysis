@@ -17,7 +17,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using SixLabors.ImageSharp.PixelFormats;
-    using SixLabors.Primitives;
+    using Path = System.IO.Path;
 
     /// <summary>
     /// Test methods for the various Frequency Scales

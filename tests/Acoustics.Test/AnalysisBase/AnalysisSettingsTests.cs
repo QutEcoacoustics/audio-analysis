@@ -1,18 +1,12 @@
-﻿// <copyright file="AnalysisSettingsTests.cs" company="QutEcoacoustics">
+// <copyright file="AnalysisSettingsTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
 namespace Acoustics.Test.AnalysisBase
 {
-    using System;
-    using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
     using global::AnalysisBase;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
 
     [TestClass]
     public class AnalysisSettingsTests

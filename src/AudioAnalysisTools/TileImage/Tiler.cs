@@ -7,20 +7,14 @@
 namespace AudioAnalysisTools.TileImage
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using SixLabors.ImageSharp;
-    using System.Drawing.Imaging;
-    using System.IO;
     using System.Linq;
     using System.Reflection;
     using Acoustics.Shared;
     using Acoustics.Shared.Contracts;
     using log4net;
     using SixLabors.ImageSharp.PixelFormats;
-    using SixLabors.ImageSharp.Processing;
-    using SixLabors.Primitives;
-    using TowseyLibrary;
     using Zio;
 
     public class Tiler

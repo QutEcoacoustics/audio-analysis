@@ -1,4 +1,4 @@
-﻿// <copyright file="DifferenceSpectrogram.cs" company="QutEcoacoustics">
+// <copyright file="DifferenceSpectrogram.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -6,17 +6,13 @@ namespace AnalysisPrograms
 {
     using System;
     using System.ComponentModel.DataAnnotations;
-    using System.IO;
     using System.Threading.Tasks;
-    using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
 
     using AudioAnalysisTools.LongDurationSpectrograms;
     using McMaster.Extensions.CommandLineUtils;
-    using Production;
     using Production.Arguments;
     using Production.Validation;
-    using TowseyLibrary;
 
     public static class DifferenceSpectrogram
     {

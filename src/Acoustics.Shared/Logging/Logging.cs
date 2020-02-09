@@ -9,7 +9,6 @@ namespace Acoustics.Shared.Logging
     using System.Globalization;
     using System.IO;
     using System.Reflection;
-    using System.Runtime.CompilerServices;
     using System.Text;
     using System.Threading.Tasks;
     using Acoustics.Shared.Contracts;

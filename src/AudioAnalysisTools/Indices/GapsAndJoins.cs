@@ -12,7 +12,6 @@ namespace AudioAnalysisTools.Indices
     using Acoustics.Shared;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using SixLabors.Primitives;
     using TowseyLibrary;
 
     /// <summary>
@@ -565,7 +564,7 @@ namespace AudioAnalysisTools.Indices
 
                 // copy image after the gap
                 srcRect = new Rectangle(gapEnd + 1, 0, width, ht);
-                g.DrawImage(source.Clone(x => x.Crop(srcRect)), new Point(gapStart, 0), 1);
+                g.DrawImage(source.CropIntersection(srcRect), new Point(gapStart, 0), 1);
 
                 // draw separator at the join
                 g.DrawLine(new Pen(Color.LightGray, 1), gapStart - 1, 0, gapStart, 15);

@@ -1,10 +1,9 @@
-﻿// <copyright file="DataToolsTests.cs" company="QutEcoacoustics">
+// <copyright file="DataToolsTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
 namespace Acoustics.Test.TowseyLibrary
 {
-    using System;
     using System.Collections.Generic;
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;

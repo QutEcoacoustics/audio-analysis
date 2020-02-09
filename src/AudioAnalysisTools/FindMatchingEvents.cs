@@ -7,10 +7,7 @@ namespace AudioAnalysisTools
     using System;
     using System.Collections.Generic;
     using SixLabors.ImageSharp;
-    using System.IO;
-    using System.Linq;
     using System.Text;
-    using AudioAnalysisTools;
     using DSP;
     using SixLabors.ImageSharp.PixelFormats;
     using StandardSpectrograms;

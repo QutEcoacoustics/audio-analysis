@@ -12,7 +12,6 @@ namespace AnalysisPrograms.Recognizers
     using System.Collections.Generic;
     using SixLabors.ImageSharp;
     using System.IO;
-    using System.Reflection;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using AnalysisBase;
@@ -23,9 +22,8 @@ namespace AnalysisPrograms.Recognizers
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using Base;
-    using log4net;
-    using SixLabors.Primitives;
     using TowseyLibrary;
+    using Path = System.IO.Path;
 
     /// <summary>
     /// This is a frog recognizer based on the "honk" or "quack" template

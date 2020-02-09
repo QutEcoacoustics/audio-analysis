@@ -5,10 +5,7 @@
 namespace TowseyLibrary
 {
     using System;
-    using System.Collections;
-    using System.Collections.Generic;
     using System.IO;
-    using Acoustics.Shared;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
 

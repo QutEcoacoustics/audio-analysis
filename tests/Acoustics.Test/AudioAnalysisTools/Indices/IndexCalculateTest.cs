@@ -16,6 +16,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using SixLabors.ImageSharp;
     using TestHelpers;
+    using Path = System.IO.Path;
 
     /// <summary>
     /// Notes on TESTS: (from Anthony in email @ 05/04/2017)

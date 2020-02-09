@@ -6,13 +6,11 @@ namespace AudioAnalysisTools.StandardSpectrograms
 {
     using System;
     using SixLabors.ImageSharp;
-    using System.Linq;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.WavTools;
     using SixLabors.Fonts;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using SixLabors.Primitives;
     using TowseyLibrary;
     using Acoustics.Shared;
 
@@ -612,7 +610,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
             int width = bmp.Width;
 
             var timeTrack = DrawTimeTrack(this.timeSpan, width);
-            bmp.Mutate(g => { g.DrawImage(timeTrack, 0, this.topOffset); });
+            
+            // TODO: Fix at some point. Using default configuration with parallelism there is some kind of batching bug that causes a crash
+            bmp.Mutate(Drawing.NoParallelConfiguration, g => { g.DrawImage(timeTrack, new Point(0, this.topOffset), 1); });
 
             return bmp;
         }
@@ -1215,7 +1215,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
             int cols = bmp.Width;
 
             // for columns, draw in X-axis lines
-            bmp.Mutate(g =>
+            // TODO: Fix at some point. Using default configuration with parallelism there is some kind of batching bug that causes a crash
+            bmp.Mutate(Drawing.NoParallelConfiguration, g =>
             {
                 int xPixelInterval =
                     (int)Math.Round(xAxisTicInterval.TotalMilliseconds / xAxisPixelDurationInMilliseconds);
@@ -1258,7 +1259,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                             timeStr = $"{roundedTimeSpan.Hours:d2}{roundedTimeSpan.Minutes:d2}h";
                         }
 
-                        g.DrawText(timeStr, stringFont, Color.White, new PointF(tickPosition, 3)); //draw time
+                        g.DrawTextSafe(timeStr, stringFont, Color.White, new PointF(tickPosition, 3)); //draw time
                     }
                 }
 

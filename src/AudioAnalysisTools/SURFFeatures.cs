@@ -1,18 +1,9 @@
-﻿// <copyright file="SURFFeatures.cs" company="QutEcoacoustics">
+// <copyright file="SURFFeatures.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
 namespace AudioAnalysisTools
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using SixLabors.ImageSharp;
-    using System.IO;
-    using System.Linq;
-    using System.Runtime.InteropServices;
-    using System.Text;
-
     public static class SURFFeatures
     {
         /*

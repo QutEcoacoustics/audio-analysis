@@ -10,10 +10,8 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
-    using System.Data;
     using System.Diagnostics.CodeAnalysis;
     using SixLabors.ImageSharp;
-    using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -21,7 +19,6 @@ namespace AnalysisPrograms
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
-    using Acoustics.Shared.Extensions;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
     using AudioAnalysisTools;
@@ -31,7 +28,6 @@ namespace AnalysisPrograms
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
     using Microsoft.FSharp.Core;
-    using Production;
     using Production.Arguments;
     using QutSensors.AudioAnalysis.AED;
     using TowseyLibrary;

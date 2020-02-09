@@ -6,9 +6,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.IO;
-    using System.Linq;
     using Acoustics.Shared;
     using Acoustics.Test.TestHelpers;
     using Acoustics.Tools;

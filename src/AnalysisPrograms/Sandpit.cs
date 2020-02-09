@@ -5,30 +5,10 @@
 namespace AnalysisPrograms
 {
     using System;
-    using System.Collections.Generic;
-    using SixLabors.ImageSharp;
-    using System.Drawing.Imaging;
     using System.Globalization;
-    using System.IO;
-    using System.Linq;
-    using System.Text;
     using System.Threading.Tasks;
-    using Accord.Statistics.Kernels;
-    using Acoustics.Tools.Wav;
-    using AnalysisPrograms.AnalyseLongRecordings;
-    using AnalysisPrograms.ContentDescription;
     using AnalysisPrograms.Production.Arguments;
-    using AnalyseLongRecordings;
-    using AnalysisPrograms.Draw.Zooming;
-    using AudioAnalysisTools;
-    using AudioAnalysisTools.ContentDescriptionTools;
-    using AudioAnalysisTools.DSP;
-    using AudioAnalysisTools.Indices;
-    using AudioAnalysisTools.LongDurationSpectrograms;
-    using AudioAnalysisTools.StandardSpectrograms;
-    using AudioAnalysisTools.WavTools;
     using McMaster.Extensions.CommandLineUtils;
-    using TowseyLibrary;
     using Log = TowseyLibrary.Log;
 
     /// <summary>

@@ -1,4 +1,4 @@
-﻿// <copyright file="FunctionalTests.cs" company="QutEcoacoustics">
+// <copyright file="FunctionalTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -7,8 +7,6 @@ namespace TowseyLibrary
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
-    using System.Text;
 
     public static class FunctionalTests
     {

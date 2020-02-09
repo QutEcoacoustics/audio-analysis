@@ -6,9 +6,6 @@
 namespace AnalysisPrograms.Draw.Zooming
 {
     using System;
-    using System.IO;
-    using Acoustics.Shared;
-    using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
     using AudioAnalysisTools.LongDurationSpectrograms.Zooming;
     using log4net;

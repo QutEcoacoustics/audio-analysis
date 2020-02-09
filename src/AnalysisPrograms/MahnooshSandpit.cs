@@ -7,7 +7,6 @@ namespace AnalysisPrograms
     using System;
     using System.Collections.Generic;
     using SixLabors.ImageSharp;
-    using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
@@ -21,6 +20,7 @@ namespace AnalysisPrograms
     using McMaster.Extensions.CommandLineUtils;
     using Production.Arguments;
     using TowseyLibrary;
+    using Path = System.IO.Path;
 
     public class MahnooshSandpit
     {

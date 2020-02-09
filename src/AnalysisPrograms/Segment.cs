@@ -10,12 +10,10 @@ namespace AnalysisPrograms
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
-    using Acoustics.Shared.Extensions;
     using AudioAnalysisTools;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using McMaster.Extensions.CommandLineUtils;
-    using Production;
     using Production.Arguments;
     using TowseyLibrary;
 

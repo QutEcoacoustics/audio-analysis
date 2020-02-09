@@ -3,7 +3,8 @@
   <PropertyGroup>
     <MSBuildCommunityTasksPath>$(MSBuildProjectDirectory)\.build</MSBuildCommunityTasksPath>
   </PropertyGroup>
-  <Target Name="APCopyFilesAfterBuild" BeforeTargets="Build">
+  <!-- Register our task that as something to run before standard build target -->
+  <Target Name="APCopyFilesAfterBuild" AfterTargets="Build">
     <!-- Copy our audio tools from lib to build dir -->
     <Message Text="[APCopyFilesAfterBuild]: Scanning for lib files and config files" Importance="High" />
     <ItemGroup>
@@ -14,5 +15,12 @@
     <Copy SourceFiles="@(AudioTools)" DestinationFolder="$(TargetDir)\audio-utils\%(RecursiveDir)" SkipUnchangedFiles="true" />
     <Message Text="[APCopyFilesAfterBuild]: Copying config files" Importance="High" />
     <Copy SourceFiles="@(ConfigFiles)" DestinationFolder="$(TargetDir)\ConfigFiles\%(RecursiveDir)" SkipUnchangedFiles="true" />
+    <Message Text="[APCopyFilesAfterBuild]: $(MSBuildProjectName)" Importance="High" />
+  </Target>
+  <Target Name="CopyExtraRuntimeFiles" AfterTargets="Build" Condition="'$(MSBuildProjectName)' == 'AnalysisPrograms'">
+    <!-- https://github.com/QutEcoacoustics/audio-analysis/issues/241 -->
+    <!--See also MainEntry.CheckAndUpdateApplicationConfig -->
+    <Copy SourceFiles="$(TargetDir)\AnalysisPrograms.runtimeconfig.json" DestinationFiles="$(TargetDir)\ANALYS~1.runtimeconfig.json" SkipUnchangedFiles="true" />
+    <Message Text="[APCopyFilesAfterBuild]: Copied extra runtimeconfig.json file" Importance="High" />
   </Target>
 </Project>

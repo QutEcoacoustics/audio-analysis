@@ -7,9 +7,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using SixLabors.ImageSharp;
-    using System.Globalization;
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
@@ -19,11 +17,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
     using log4net;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using SixLabors.Primitives;
     using TileImage;
     using TowseyLibrary;
-    using Zio;
     using SpectrogramType = LongDurationSpectrograms.SpectrogramType;
+    using Path = System.IO.Path;
 
     public static class ZoomTiledSpectrograms
     {

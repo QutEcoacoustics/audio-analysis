@@ -6,7 +6,9 @@
   <Import Project="$(MSBuildCommunityTasksPath)\MSBuild.Community.Tasks.Targets" />
   <UsingTask AssemblyFile="$(MSBuildCommunityTasksLib)" TaskName="MSBuild.Community.Tasks.Git.GitCommits" />
   <!-- Condition="'$(Configuration)' == 'Release' Or !Exists('Properties\AssemblyInfo.cs')" -->
-  <Target Name="APVersionBeforeBuild">
+
+  <!-- Register our task that as something to run before standard build target -->
+  <Target Name="APVersionBeforeBuild" BeforeTargets="PrepareForBuild">
     <GitVersion Short="false">
       <Output TaskParameter="CommitHash" PropertyName="GitCommitHash" />
     </GitVersion>
@@ -76,13 +78,6 @@
     <Message Text="[APVersionBeforeBuild] InformationalVersion: $(InformationalVersion)" Importance="High" />
     <TemplateFile Tokens="@(Tokens)"
                   Template="$(MSBuildThisFileDirectory)\AssemblyMetadata.cs.template"
-                  OutputFilename="$(MSBuildThisFileDirectory)\AssemblyMetadata.cs" />
+                  OutputFilename="$(MSBuildThisFileDirectory)\AssemblyMetadata.Generated.cs" />
   </Target>
-  <PropertyGroup>
-    <!-- Register our task that as something to run before standard targets -->
-    <BuildDependsOn>
-      APVersionBeforeBuild;
-      $(BuildDependsOn);
-    </BuildDependsOn>
-  </PropertyGroup>
 </Project>

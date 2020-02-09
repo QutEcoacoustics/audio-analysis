@@ -12,7 +12,6 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
-    using System.Configuration;
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
@@ -191,6 +190,14 @@ namespace AnalysisPrograms
         /// converts executable names to 8.3 short format on Windows.
         /// </para>
         /// <para>
+        /// The saga continues: .NET Core also has a dependency on a runtime.json file
+        /// existing and having the name AnalysisPrograms.runtimeconfig.json.
+        /// In short this is still a problem. I've changed the approach to solving this
+        /// now though: I'm simply going to copy the config and give it the short file name
+        /// and place it next to the other one. Hopefully that is stable.
+        /// See `AP.CopyFiles.targets` for the fix.
+        /// </para>
+        /// <para>
         /// This method checks if this is the case and overrides the setting for
         /// checking where to find a config file.
         /// </para>
@@ -199,13 +206,14 @@ namespace AnalysisPrograms
         [Obsolete("No longer and issue on .NET Core")]
         internal static bool CheckAndUpdateApplicationConfig()
         {
-            // TODO CORE: - we can expect most of this method to not work, it needs to
-            // tested again.
             // https://github.com/QutEcoacoustics/audio-analysis/issues/241
             var executableName = Process.GetCurrentProcess().MainModule.ModuleName;
             var expectedName = Assembly.GetAssembly(typeof(MainEntry)).ManifestModule.ScopeName;
 
-            Log.Verbose($"Executable name is {executableName} and expected name is {expectedName}");
+            if (expectedName != executableName)
+            {
+                Log.Verbose($"!!! IMPORTANT: Executable name is {executableName} and expected name is {expectedName}");
+            }
 
             return false;
         }

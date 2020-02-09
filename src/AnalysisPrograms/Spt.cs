@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="Spt.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -14,14 +14,11 @@ namespace AnalysisPrograms
     using SixLabors.ImageSharp;
     using System.IO;
     using System.Threading.Tasks;
-    using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using McMaster.Extensions.CommandLineUtils;
     using Microsoft.FSharp.Math;
-
-    using Production;
     using Production.Arguments;
     using Production.Validation;
     using QutSensors.AudioAnalysis.AED;
@@ -92,7 +89,7 @@ namespace AnalysisPrograms
             sonogram.Data = result.Item1;
 
             // SAVE IMAGE
-            string savePath = opDir + Path.GetFileNameWithoutExtension(wavFilePath.Name);
+            string savePath = opDir + System.IO.Path.GetFileNameWithoutExtension(wavFilePath.Name);
             string suffix = string.Empty;
             while (File.Exists(savePath + suffix + ".jpg"))
             {

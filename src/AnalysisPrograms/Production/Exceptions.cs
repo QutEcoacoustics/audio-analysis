@@ -9,15 +9,12 @@ namespace AnalysisPrograms.Production
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
     using System.IO;
-    using System.Linq;
     using System.Reflection;
     using System.Text;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
 
     using AnalysisBase;
-    using AnalysisPrograms.Production.Arguments;
-    using log4net;
     using McMaster.Extensions.CommandLineUtils;
 
     public static class ExceptionLookup

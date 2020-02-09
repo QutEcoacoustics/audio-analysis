@@ -4,7 +4,6 @@ namespace Acoustics.Test.AnalysisPrograms.SourcePreparers
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
-    using AnalysisBase;
     using global::AnalysisBase;
     using global::AnalysisBase.Segment;
     using global::AnalysisPrograms.SourcePreparers;
@@ -139,7 +138,7 @@ namespace Acoustics.Test.AnalysisPrograms.SourcePreparers
                 (60.0, 120.0).AsRange(),
                 (120.0, 180.0).AsRange(),
                 (180.0, 240.0).AsRange(),
-                (240.0, 240.113).AsRange(),
+                (240.0, 240.112993).AsRange(),
             };
 
             AssertSegmentsAreEqual(analysisSegments, expected);
@@ -223,7 +222,7 @@ namespace Acoustics.Test.AnalysisPrograms.SourcePreparers
                 (0.0 + d, 60.0 + d).AsRange(),
                 (60.0 + d, 120.0 + d).AsRange(),
                 (120.0 + d, 180.0 + d).AsRange(),
-                (180.0 + d, 240.113).AsRange(),
+                (180.0 + d, 240.112993).AsRange(),
             };
 
             AssertSegmentsAreEqual(analysisSegments, expected);
@@ -247,7 +246,7 @@ namespace Acoustics.Test.AnalysisPrograms.SourcePreparers
                 (0.0 + d, 60.0 + d).AsRange(),
                 (60.0 + d, 120.0 + d).AsRange(),
                 (120.0 + d, 180.0 + d).AsRange(),
-                (180.0 + d, 240.113).AsRange(),
+                (180.0 + d, 240.112993).AsRange(),
             };
 
             AssertSegmentsAreEqual(analysisSegments, expected);

@@ -11,11 +11,9 @@
 namespace System
 {
     using Collections.Generic;
-    using Diagnostics;
     using IO;
     using Linq;
     using System;
-    using Text;
     using Acoustics.Shared.Contracts;
     using JetBrains.Annotations;
     using log4net;

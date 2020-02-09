@@ -30,9 +30,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using SixLabors.Fonts;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using SixLabors.Primitives;
     using StandardSpectrograms;
     using TowseyLibrary;
+    using Path = System.IO.Path;
 
     /// <summary>
     /// This class generates false-colour spectrograms of long duration audio recordings.

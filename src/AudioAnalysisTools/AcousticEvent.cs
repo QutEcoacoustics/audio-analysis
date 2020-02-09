@@ -21,12 +21,11 @@ namespace AudioAnalysisTools
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using CsvHelper.Configuration;
-    using SixLabors.Fonts;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using SixLabors.Primitives;
     using TowseyLibrary;
+    using Path = System.IO.Path;
 
     public class AcousticEvent : EventBase
     {
@@ -38,20 +37,14 @@ namespace AudioAnalysisTools
         {
             public static readonly string[] IgnoredProperties =
                 {
-                    nameof(TimeStart), nameof(TimeEnd), nameof(LowFrequencyHertz), nameof(HighFrequencyHertz),
+                    nameof(TimeStart), nameof(TimeEnd),
                     nameof(Bandwidth), nameof(IsMelscale), nameof(FrameOffset),
                     nameof(FramesPerSecond), nameof(Name2), nameof(ScoreComment),
                     nameof(ScoreNormalised), nameof(Score_MaxPossible),
                     nameof(Score_MaxInEvent), nameof(Score_TimeOfMaxInEvent),
                     nameof(Score2Name), nameof(Score2), nameof(Periodicity), nameof(DominantFreq),
                     nameof(Tag), nameof(Intensity), nameof(Quality), nameof(HitColour),
-                    nameof(EventDurationSeconds), nameof(EventStartSeconds), nameof(EventEndSeconds),
                 };
-
-            public static readonly string[] RemappedProperties =
-            {
-                nameof(LowFrequencyHertz), nameof(HighFrequencyHertz), nameof(EventDurationSeconds), nameof(EventStartSeconds), nameof(EventEndSeconds),
-            };
 
             public AcousticEventClassMap()
             {
@@ -59,19 +52,22 @@ namespace AudioAnalysisTools
 
                 foreach (var ignoredProperty in IgnoredProperties)
                 {
-                    var index = this.ParameterMaps.IndexOf(pm => pm.Data.Name == ignoredProperty);
-                    this.ParameterMaps.RemoveAt(index);
+                    var index = this.MemberMaps.Single(pm => pm.Data.Member.Name == ignoredProperty).Ignore();
+                    //this.MemberMaps.RemoveAt(index);
                 }
 
-                this.Map(m => m.EventStartSeconds).Index(0);
-                this.Map(m => m.EventEndSeconds).Index(2);
-                this.Map(m => m.EventDurationSeconds).Index(3);
-                this.GetPropertyMap(m => ((EventBase)m).LowFrequencyHertz).Index(4);
-                this.Map(m => m.HighFrequencyHertz).Index(5);
+                this.Map(m => m.EventStartSeconds, useExistingMap: true).Index(0);
+                this.Map(m => m.EventEndSeconds, useExistingMap: true).Index(2);
+                this.Map(m => m.EventDurationSeconds, useExistingMap: true).Index(3);
+                this.Map(m => m.LowFrequencyHertz, useExistingMap: true).Index(4);
+                
+                this.Map(m => m.HighFrequencyHertz, useExistingMap: true).Index(5);
+                
+                this.ReferenceMaps.Clear();
                 this.References<Oblong.OblongClassMap>(m => m.Oblong);
 
                 // Make sure HitElements is always in the last column!
-                this.Map(m => m.HitElements).Index(1000);
+                this.Map(m => m.HitElements, useExistingMap: true).Index(1000);
             }
         }
 
@@ -444,7 +440,7 @@ namespace AudioAnalysisTools
                 //g.DrawLine(scorePen, t1 + 1, y1, t1 + 1, y2);
                 //g.DrawLine(scorePen, t1 + 2, y1, t1 + 2, y2);
                 g.DrawLine(scorePen, t1, y1, t1, y2);
-                g.DrawText(this.Name, Drawing.Tahoma6, Color.Black, new PointF(t1, y - 1));
+                g.DrawTextSafe(this.Name, Drawing.Tahoma6, Color.Black, new PointF(t1, y - 1));
 
                 // ################ draw quality: this is hack for Michael. Please keep this - Oct 2016
                 //g.DrawText($"{this.Quality}", Drawing.Tahoma6, Color.Black, new PointF(t1, y - 10));

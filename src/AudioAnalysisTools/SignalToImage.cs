@@ -6,10 +6,8 @@ namespace AudioAnalysisTools
 {
     using System;
     using SixLabors.ImageSharp;
-    using System.Drawing.Imaging;
     using System.Linq;
     using Acoustics.Tools.Wav;
-    using Acoustics.Unsafe;
     using MathNet.Numerics.IntegralTransforms;
     using SixLabors.ImageSharp.PixelFormats;
     using StandardSpectrograms;

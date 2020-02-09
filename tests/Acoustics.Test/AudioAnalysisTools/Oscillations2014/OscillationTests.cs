@@ -4,7 +4,6 @@
 
 namespace Acoustics.Test.AudioAnalysisTools.Oscillations2014
 {
-    using System.Drawing.Imaging;
     using System.IO;
     using Acoustics.Shared;
     using global::AudioAnalysisTools;
@@ -13,6 +12,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Oscillations2014
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using SixLabors.ImageSharp;
     using TestHelpers;
+    using Path = System.IO.Path;
 
     /// <summary>
     /// Test for drawing of Oscillation Spectrogram

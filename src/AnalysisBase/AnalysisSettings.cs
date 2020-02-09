@@ -13,14 +13,8 @@ namespace AnalysisBase
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
-    using System.Reflection;
-    using System.Runtime.Serialization;
-
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
-    using Acoustics.Shared.Contracts;
-
     using log4net;
     using ObjectCloner.Extensions;
 
@@ -50,7 +44,12 @@ namespace AnalysisBase
         [NonSerialized]
         private static int instanceCounter = 0;
 
-        private readonly string fallbackTempDirectory;
+        // TODO CORE: IOC this so readonly avoidance hack not needed
+        // needs to be read only for modifications in AnalysisCoordinatorTests
+        // ReSharper disable once FieldCanBeMadeReadOnly.Local
+#pragma warning disable IDE0044 // Add readonly modifier
+        private string fallbackTempDirectory;
+#pragma warning restore IDE0044 // Add readonly modifier
 
         /// <summary>
         /// Used to track instances of this class through parallelism - must be readonly.

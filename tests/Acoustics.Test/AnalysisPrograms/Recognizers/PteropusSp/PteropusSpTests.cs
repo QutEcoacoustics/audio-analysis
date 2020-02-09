@@ -8,18 +8,13 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.PteropusSp
     using System.Collections.Generic;
     using SixLabors.ImageSharp;
     using System.IO;
-    using System.Linq;
-    using Acoustics.Shared;
-    using Acoustics.Shared.ConfigFile;
     using Acoustics.Test.TestHelpers;
-    using Acoustics.Tools.Wav;
     using global::AudioAnalysisTools;
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.StandardSpectrograms;
     using global::AudioAnalysisTools.WavTools;
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using SixLabors.Primitives;
 
     [TestClass]
     public class PteropusSpTests

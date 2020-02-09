@@ -7,9 +7,6 @@ namespace Acoustics.Shared.ConfigFile
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Reflection;
-
-    using YamlDotNet.RepresentationModel;
 
     public static partial class ConfigFile
     {

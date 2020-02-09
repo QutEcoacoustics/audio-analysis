@@ -6,7 +6,6 @@ namespace AnalysisBase
 {
     using System;
     using System.IO;
-    using Acoustics.Shared;
     using Acoustics.Shared.Contracts;
     using Segment;
     using static Acoustics.Shared.FilenameHelpers;

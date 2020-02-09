@@ -12,7 +12,6 @@ namespace AnalysisPrograms.Recognizers.Base
     using System;
     using System.Collections.Generic;
     using SixLabors.ImageSharp;
-    using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
     using System.Threading;

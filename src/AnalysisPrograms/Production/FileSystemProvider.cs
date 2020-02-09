@@ -1,22 +1,18 @@
-﻿// <copyright file="FileSystemProvider.cs" company="QutEcoacoustics">
+// <copyright file="FileSystemProvider.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
 namespace AnalysisPrograms.Production
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Reflection;
-    using System.Text;
-    using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.Contracts;
     using log4net;
     using Zio;
     using Zio.FileSystems;
-    using Zio.FileSystems.Community.SqliteFileSystem;
+    // using Zio.FileSystems.Community.SqliteFileSystem;
 
     /// <summary>
     /// Determine the output format for analysis results.
@@ -85,9 +81,12 @@ namespace AnalysisPrograms.Production
                     switch (extension)
                     {
                         case "." + SqlitePattern:
+                            throw new PlatformNotSupportedException("See https://github.com/QutEcoacoustics/audio-analysis/issues/289");
+                            /*
                             fileSystem = new SqliteFileSystem(
                                 path,
                                 readOnly ? OpenMode.ReadOnly : OpenMode.ReadWriteCreate);
+                                */
                             break;
                         default:
                             throw new NotSupportedException(

@@ -9,11 +9,9 @@ namespace TowseyLibrary
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
-    using SixLabors.Fonts;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using SixLabors.Primitives;
 
     public static class GraphsAndCharts
     {

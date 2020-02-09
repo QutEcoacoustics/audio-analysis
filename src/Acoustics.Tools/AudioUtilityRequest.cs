@@ -8,7 +8,6 @@ namespace Acoustics.Tools
     using System.Globalization;
     using System.Linq;
     using Audio;
-    using Shared;
 
     /// <summary>
     /// Audio Utility request.

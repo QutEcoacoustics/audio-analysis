@@ -49,9 +49,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using SixLabors.Fonts;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using SixLabors.Primitives;
     using StandardSpectrograms;
     using TowseyLibrary;
+    using Path = System.IO.Path;
 
     /// <summary>
     /// This class generates false-color spectrograms of long duration audio recordings.
@@ -888,8 +888,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 x += (int)stringSize.Width + 300;
 
                 var text = $"SCALE:(time x kHz)        {Meta.OrganizationTag}";
-                stringSize = g.MeasureString(text, stringFont);
-                int x2 = width - stringSize.ToSize().Width - 2;
+                var stringSize2 = g.MeasureString(text, stringFont);
+                int x2 = width - stringSize2.ToSize().Width - 2;
                 if (x2 > x)
                 {
                     g.DrawText(text, stringFont, Color.Wheat, new PointF(x2, 3));

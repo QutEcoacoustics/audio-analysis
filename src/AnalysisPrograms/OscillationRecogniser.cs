@@ -7,7 +7,6 @@
 namespace AnalysisPrograms
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
@@ -17,7 +16,6 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using McMaster.Extensions.CommandLineUtils;
-    using Production;
     using Production.Arguments;
     using TowseyLibrary;
 

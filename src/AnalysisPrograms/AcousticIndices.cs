@@ -14,7 +14,6 @@ namespace AnalysisPrograms
     using System.Collections.Generic;
     using System.Diagnostics;
     using SixLabors.ImageSharp;
-    using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -36,6 +35,7 @@ namespace AnalysisPrograms
     using Zio;
 
     using SpectrogramType = AudioAnalysisTools.LongDurationSpectrograms.SpectrogramType;
+    using Path = System.IO.Path;
 
     public class AcousticIndices : IAnalyser2
     {

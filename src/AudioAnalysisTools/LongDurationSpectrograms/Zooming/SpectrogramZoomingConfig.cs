@@ -10,8 +10,6 @@
 namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
 {
     using System;
-    using System.Collections.Generic;
-
     using Acoustics.Shared.ConfigFile;
 
     using AudioAnalysisTools.Indices;

@@ -6,12 +6,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 {
     using System;
     using SixLabors.ImageSharp;
-    using System.Drawing.Imaging;
     using System.IO;
 
     using Acoustics.Shared.ConfigFile;
     using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
+    using Path = System.IO.Path;
 
     public static class LdSpectrogramDifference
     {

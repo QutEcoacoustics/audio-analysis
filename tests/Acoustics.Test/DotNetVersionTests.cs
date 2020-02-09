@@ -4,9 +4,7 @@
 
 namespace Acoustics.Test
 {
-    using System;
     using System.IO;
-    using System.Text;
     using Acoustics.Shared.Extensions;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 

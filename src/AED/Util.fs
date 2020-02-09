@@ -5,7 +5,7 @@ open System.Text
 open System.IO
 open Microsoft.FSharp.Math
 open Microsoft.FSharp
-open SixLabors.Primitives
+open SixLabors.ImageSharp
 
 // If the first Option is not empty return it, else return the second. Copy of Scala Option.orElse.
 let orElse o (p:'a option Lazy) = if Option.isSome o then o else p.Force()

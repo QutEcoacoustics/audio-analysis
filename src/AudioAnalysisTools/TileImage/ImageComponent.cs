@@ -5,7 +5,6 @@
 namespace AudioAnalysisTools.TileImage
 {
     using SixLabors.ImageSharp;
-    using SixLabors.Primitives;
 
     public class ImageComponent
     {

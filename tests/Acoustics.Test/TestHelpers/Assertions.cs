@@ -10,8 +10,6 @@ namespace Acoustics.Test.TestHelpers
     using System.Globalization;
     using System.IO;
     using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     public static class Assertions
@@ -38,6 +36,7 @@ namespace Acoustics.Test.TestHelpers
                     $"{message}Actual delta ({actualDelta}) between expected value ({expected:O}) and actual value ({actual:O}) was not less than {delta}");
             }
         }
+
         public static void AreEqual(this Assert assert, DateTimeOffset expected, DateTimeOffset actual, TimeSpan delta, string message = null)
         {
             var actualDelta = TimeSpan.FromTicks(Math.Abs((expected - actual).Ticks));
@@ -48,6 +47,18 @@ namespace Acoustics.Test.TestHelpers
                     $"{message}Actual delta ({actualDelta}) between expected value ({expected:O}) and actual value ({actual:O}) was not less than {delta}");
             }
         }
+        public static void AreEqual(this Assert assert, TimeSpan expected, TimeSpan actual, TimeSpan delta, string message = null)
+        {
+            var actualDelta = TimeSpan.FromTicks(Math.Abs((expected - actual).Ticks));
+            if (actualDelta > delta)
+            {
+                message = message == null ? string.Empty : message + "\n";
+                Assert.Fail(
+                    $"{message}Actual delta ({actualDelta}) between expected value ({expected:O}) and actual value ({actual:O}) was not less than {delta}");
+            }
+        }
+
+
 
         public static void AreEqual(
             this CollectionAssert collectionAssert,
@@ -214,6 +225,14 @@ namespace Acoustics.Test.TestHelpers
 
             Assert.Fail($"Expected '{expected}' was not found in collection");
         }
+
+        public static void NotContains(this StringAssert assert, string value, string substring, string message = "")
+        {
+            Assert.IsFalse(
+                value.Contains(substring),
+                $"String\n{value}\n should not contain `{substring}`. {message}");
+        }
+
 
         public enum DiffStyle
         {

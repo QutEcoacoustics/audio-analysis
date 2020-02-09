@@ -5,25 +5,15 @@
 namespace AnalysisPrograms
 {
     using System;
-    using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
-    using System.Data;
     using SixLabors.ImageSharp;
-    using System.IO;
-    using System.Linq;
-    using System.Text;
     using System.Threading.Tasks;
     using Acoustics.Shared;
-    using Acoustics.Shared.Extensions;
-    using AnalysisBase;
-    using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
     using McMaster.Extensions.CommandLineUtils;
-    using Production;
     using Production.Arguments;
     using Production.Validation;
     using SixLabors.ImageSharp.PixelFormats;
-    using TowseyLibrary;
     using Zio;
 
     /// <summary>

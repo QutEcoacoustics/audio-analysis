@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="RecognizerEntry.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -14,7 +14,6 @@ namespace AnalysisPrograms.Recognizers.Base
 {
     using System;
     using System.IO;
-    using System.Reflection;
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
@@ -23,11 +22,8 @@ namespace AnalysisPrograms.Recognizers.Base
     using AnalysisBase.Extensions;
 
     using AnalysisPrograms.AnalyseLongRecordings;
-
-    using AudioAnalysisTools;
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
-    using Production;
     using Production.Arguments;
 
     public class RecognizerEntry

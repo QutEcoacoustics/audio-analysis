@@ -7,14 +7,10 @@ namespace AudioAnalysisTools.EventStatistics
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Reflection;
     using Acoustics.Shared.Csv;
     using AcousticWorkbench;
     using AnalysisBase.ResultBases;
     using CsvHelper.Configuration;
-    using DSP;
-    using TowseyLibrary;
-    using WavTools;
 
     /// <summary>
     /// The data class that holds event statistics
@@ -174,9 +170,9 @@ namespace AudioAnalysisTools.EventStatistics
                 };
 
                 var index = 6;
-                foreach (var propertyMap in this.MemberMaps.OrderBy(x => x.Data.Names.First()))
+                foreach (var propertyMap in this.MemberMaps.OrderBy(x => x.Data.Member.Name))
                 {
-                    var name = propertyMap.Data.Names.First();
+                    var name = propertyMap.Data.Member.Name;
 
                     if (name == nameof(EventBase.Score) || name == nameof(EventStatistics.Order))
                     {

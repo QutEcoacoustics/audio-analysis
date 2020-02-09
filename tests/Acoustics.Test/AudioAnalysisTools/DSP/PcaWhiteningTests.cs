@@ -4,7 +4,6 @@
 
 namespace Acoustics.Test.AudioAnalysisTools.DSP
 {
-    using System.Drawing.Imaging;
     using System.IO;
     using Accord.Math;
     using global::AudioAnalysisTools.DSP;
@@ -13,6 +12,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using SixLabors.ImageSharp;
     using TestHelpers;
+    using Path = System.IO.Path;
 
     [TestClass]
     public class PcaWhiteningTests

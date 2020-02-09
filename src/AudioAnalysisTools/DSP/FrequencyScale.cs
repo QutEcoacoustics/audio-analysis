@@ -6,17 +6,14 @@ namespace AudioAnalysisTools.DSP
 {
     using System;
     using SixLabors.ImageSharp;
-    using System.Drawing.Imaging;
     using System.IO;
     using Acoustics.Shared;
-    using SixLabors.Fonts;
-    using SixLabors.ImageSharp.ColorSpaces;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using SixLabors.Primitives;
     using StandardSpectrograms;
     using TowseyLibrary;
     using WavTools;
+    using Path = System.IO.Path;
 
     // IMPORTANT NOTE: If you are converting Herz scale from LINEAR to MEL or OCTAVE, this conversion MUST be done BEFORE noise reduction
 

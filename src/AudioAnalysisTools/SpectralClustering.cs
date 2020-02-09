@@ -19,7 +19,6 @@ namespace AudioAnalysisTools
     using System;
     using System.Collections.Generic;
     using SixLabors.ImageSharp;
-    using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
     using DSP;
@@ -27,6 +26,7 @@ namespace AudioAnalysisTools
     using StandardSpectrograms;
     using TowseyLibrary;
     using WavTools;
+    using Path = System.IO.Path;
 
     public static class SpectralClustering
     {

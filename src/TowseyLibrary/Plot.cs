@@ -7,11 +7,9 @@ namespace TowseyLibrary
     using System;
     using System.Collections.Generic;
     using Acoustics.Shared;
-    using SixLabors.Fonts;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using SixLabors.Primitives;
 
     /// <summary>
     /// Represents a single array of data with X and Y scales and other info useful for plotting a graph.

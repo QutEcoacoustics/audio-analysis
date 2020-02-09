@@ -32,7 +32,7 @@ namespace Acoustics.Test.Shared.Extensions
         [TestMethod]
         public void TestPrintOptions()
         {
-            Assert.AreEqual("ToEven|AwayFromZero", typeof(MidpointRounding).PrintEnumOptions());
+            Assert.AreEqual("ToEven|AwayFromZero|ToZero|ToNegativeInfinity|ToPositiveInfinity", typeof(MidpointRounding).PrintEnumOptions());
         }
     }
 }

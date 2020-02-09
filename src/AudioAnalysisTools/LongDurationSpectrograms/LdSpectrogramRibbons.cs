@@ -13,9 +13,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 {
     using System;
     using System.Collections.Generic;
-    using System.Data;
     using SixLabors.ImageSharp;
-    using System.IO;
     using System.Linq;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;

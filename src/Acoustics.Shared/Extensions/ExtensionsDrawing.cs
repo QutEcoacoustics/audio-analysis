@@ -10,16 +10,9 @@ namespace System
     using System.Text.RegularExpressions;
     using Acoustics.Shared;
     using SixLabors.ImageSharp;
-    using SixLabors.ImageSharp.ColorSpaces;
     using SixLabors.ImageSharp.Formats;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using SixLabors.Primitives;
-    using SixLabors.Shapes;
-    using Path = SixLabors.Shapes.Path;
-    using PointF = SixLabors.Primitives.PointF;
-    using Rectangle = SixLabors.Primitives.Rectangle;
-    using Size = SixLabors.Primitives.Size;
 
     /// <summary>
     /// Image extension methods.
@@ -66,21 +59,7 @@ namespace System
             return bytes;
         }
 
-        /// <summary>
-        /// Crop an image using a <paramref name="crop"/> Rectangle.
-        /// </summary>
-        /// <param name="source">
-        /// Source image.
-        /// </param>
-        /// <param name="crop">
-        /// Crop rectangle.
-        /// </param>
-        /// <returns>
-        /// Cropped image.
-        /// </returns>
-        [Obsolete("This shim only exists for compatibility. Not needed when ImageSharp replaced System.Drawing")]
-        public static Image<T> Crop<T>(this Image<T> source, Rectangle crop)
-            where T : struct, IPixel<T> => source.Clone(x => x.Crop(crop));
+
 
         /// <summary>
         /// The to hex string.
@@ -122,6 +101,7 @@ namespace System
         /// <returns>
         /// Modified image.
         /// </returns>
+        [Obsolete("This shim only exists for compatibility. Not needed when ImageSharp replaced System.Drawing")]
         public static Image Modify(this Image sourceImage, int? height, int? width, bool removeBottomRow)
         {
             var amountToRemove = removeBottomRow ? 1 : 0;

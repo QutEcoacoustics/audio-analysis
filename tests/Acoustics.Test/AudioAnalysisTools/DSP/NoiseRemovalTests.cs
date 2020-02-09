@@ -11,7 +11,6 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
-    using TowseyLibrary;
 
     /// <summary>
     /// Test methods for noise removal from signals and their spectrograms.

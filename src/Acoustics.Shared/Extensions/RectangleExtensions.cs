@@ -1,16 +1,10 @@
-﻿// <copyright file="RectangleExtensions.cs" company="QutEcoacoustics">
+// <copyright file="RectangleExtensions.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
 // ReSharper disable once CheckNamespace
 namespace System.Drawing
 {
-    using System;
-    using System.Collections.Generic;
-    using SixLabors.ImageSharp;
-    using System.Linq;
-    using System.Text;
-
     public static class RectangleExtensions
     {
         public static int Area(this Rectangle rectangle)

@@ -7,10 +7,8 @@ namespace AnalysisPrograms.StandardizedFeatures
     using System;
     using System.Collections.Generic;
     using SixLabors.ImageSharp;
-    using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
-    using System.Security.Policy;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
@@ -21,11 +19,10 @@ namespace AnalysisPrograms.StandardizedFeatures
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.WavTools;
     using log4net;
-    using log4net.Repository.Hierarchy;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using SixLabors.Primitives;
     using TowseyLibrary;
+    using Path = System.IO.Path;
 
     public class StandardizedFeatureExtraction : AbstractStrongAnalyser
     {

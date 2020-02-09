@@ -8,9 +8,6 @@ namespace AudioAnalysisTools.TileImage
     using System;
     using System.Collections.Generic;
     using SixLabors.ImageSharp;
-    using System.Linq;
-    using System.Text;
-    using SixLabors.Primitives;
 
     public class PanoJsTilingProfile : TilingProfile
     {

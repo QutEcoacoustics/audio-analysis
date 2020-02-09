@@ -6,7 +6,6 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.RibbonPlots
 {
     using System;
     using System.IO;
-    using System.Linq;
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.Extensions;
@@ -19,7 +18,6 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.RibbonPlots
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
-    using SixLabors.Primitives;
 
     [TestClass]
     public class RibbonPlotTests : OutputDirectoryTest

@@ -1,15 +1,12 @@
-﻿namespace Acoustics.Test.Tools
+namespace Acoustics.Test.Tools
 {
     using System;
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
-    using System.Reflection;
     using System.Threading;
     using Acoustics.Shared;
-    using Acoustics.Tools;
     using Acoustics.Tools.Audio;
-    using Acoustics.Tools.Wav;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
 
@@ -17,9 +14,12 @@
     public class AudioUtilityInfoTests
     {
         [TestMethod]
-        [Timeout(3000)]
+        [Timeout(10_000)]
         public void InfoCanTimeout()
         {
+            //TestSetup.TestLogging.ModifyVerbosity(Level.All, false);
+
+            // with sox --version v14.4.1 it should take ~2minutes to run sox --info -V on the corrupt file
             var source = PathHelper.GetTestAudioFile("corrupt.wav");
             AbstractAudioUtility util = (AbstractAudioUtility)TestHelper.GetAudioUtilitySox();
 

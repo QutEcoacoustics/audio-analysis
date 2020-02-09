@@ -5,12 +5,6 @@
 namespace Acoustics.Shared
 {
     using System;
-    using System.Collections.Generic;
-    using System.IO.Enumeration;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-
     using Acoustics.Shared.Contracts;
 
     using Zio;

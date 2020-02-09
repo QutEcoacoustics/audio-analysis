@@ -7,10 +7,6 @@ namespace AudioAnalysisTools
     using System;
     using System.Collections.Generic;
     using SixLabors.ImageSharp;
-    using System.IO;
-    using System.Linq;
-    using Accord.Statistics.Kernels;
-    using Acoustics.Shared.Csv;
     using StandardSpectrograms;
     using TowseyLibrary;
 

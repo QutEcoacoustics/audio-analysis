@@ -10,12 +10,10 @@
 namespace AnalysisPrograms
 {
     using System;
-    using System.Reflection;
     using System.Threading.Tasks;
     using Acoustics.Shared.Logging;
     using AnalysisPrograms.Production.Arguments;
     using log4net;
-    using log4net.Core;
     using static System.Environment;
 
     /// <summary>

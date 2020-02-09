@@ -8,8 +8,6 @@ namespace AudioAnalysisTools
     using System.Collections.Generic;
     using SixLabors.ImageSharp;
     using System.Linq;
-    using System.Text;
-
     using AudioAnalysisTools.StandardSpectrograms;
     using SixLabors.ImageSharp.Processing;
     using TowseyLibrary;

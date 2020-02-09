@@ -10,17 +10,9 @@
 namespace AnalysisPrograms.Recognizers.Base
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
-    using System.Reflection;
-
     using Acoustics.Shared.ConfigFile;
-    using Acoustics.Tools.Wav;
-
     using AnalysisBase;
-    using AnalysisBase.ResultBases;
-
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.WavTools;
 

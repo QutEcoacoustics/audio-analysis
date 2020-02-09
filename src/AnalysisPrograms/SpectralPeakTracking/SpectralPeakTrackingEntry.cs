@@ -5,11 +5,9 @@
 namespace AnalysisPrograms.SpectralPeakTracking
 {
     using System;
-    using System.Drawing.Imaging;
     using System.IO;
     using System.Threading.Tasks;
     using Acoustics.Shared.ConfigFile;
-    using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;

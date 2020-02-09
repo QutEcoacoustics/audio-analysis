@@ -5,7 +5,6 @@
 namespace AnalysisBase
 {
     using System;
-    using System.IO;
     using Acoustics.Shared.ConfigFile;
 
     public class AnalyzerConfig

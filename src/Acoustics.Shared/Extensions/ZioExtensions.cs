@@ -6,19 +6,15 @@
 namespace Zio
 {
     using System;
-    using System.Collections.Generic;
-    using System.Drawing.Imaging;
     using System.IO;
-    using System.Linq;
     using System.Text;
-    using System.Threading.Tasks;
-
     using Acoustics.Shared.Contracts;
 
     using FileSystems;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.Formats;
     using SixLabors.ImageSharp.Formats.Png;
+    using Path = System.IO.Path;
 
     public static class ZioExtensions
     {

@@ -5,13 +5,9 @@
 namespace Acoustics.Test
 {
     using System;
-    using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
-    using System.Reflection;
-    using System.Text;
     using System.Text.RegularExpressions;
-    using Acoustics.Test.AnalysisPrograms;
     using global::AnalysisPrograms;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
@@ -54,7 +50,7 @@ namespace Acoustics.Test
 
             Assert.That.DirectoryExists(buildDir);
 
-            var runtimeDir = Path.Combine(buildDir, "audio-utils");
+            var runtimeDir = Path.GetFullPath(Path.Combine(buildDir, "audio-utils"));
 
             var expected = new string[]
             {
@@ -69,7 +65,7 @@ namespace Acoustics.Test
 
             foreach (var directory in expected)
             {
-                Assert.That.FileExists(Path.Combine(runtimeDir, directory));
+                Assert.That.PathExists(Path.Combine(runtimeDir, directory));
             }
         }
 
@@ -84,11 +80,11 @@ namespace Acoustics.Test
             // so we're just going to detect of the modified date is close to the build date.
             // This won't fail if a build stops generating build data immediately, but the time
             // it takes to commit->push->run on ci should definitely trigger the failure.
-            var generatedBuildData = Path.Combine(PathHelper.SolutionRoot, "src", "AnalysisPrograms",
-                "AssemblyMetadata.cs");
+            var generatedBuildData = Path.GetFullPath(Path.Combine(PathHelper.SolutionRoot, "src",
+                "AssemblyMetadata.Generated.cs"));
             Debug.WriteLine(generatedBuildData);
             var actual = File.GetLastWriteTimeUtc(generatedBuildData);
-            Assert.That.AreEqual(now, actual, TimeSpan.FromMinutes(5));
+            Assert.That.AreEqual(now, actual, TimeSpan.FromMinutes(60));
 
             var ciBuild = Environment.GetEnvironmentVariable("CI_BUILD");
             Assert.AreEqual(string.IsNullOrWhiteSpace(ciBuild) ? "000" : ciBuild, BuildMetadata.CiBuild);

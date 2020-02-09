@@ -18,8 +18,6 @@ namespace AnalysisPrograms.Draw.RibbonPlots
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using SixLabors.Primitives;
-    using SixLabors.Shapes;
 
     /// <summary>
     /// Draws ribbon plots from ribbon FCS images.
@@ -205,9 +203,11 @@ namespace AnalysisPrograms.Draw.RibbonPlots
                 var top = Padding;
                 var bottom = Padding + ((Padding + ribbonHeight) * stats.Buckets);
                 context.DrawLines(
-                    Pens.Solid(Color.Red, 1),
-                    new PointF(left, top),
-                    new PointF(left, bottom));
+                    new ShapeGraphicsOptions() { Antialias = false },
+                    Brushes.Solid(Color.Red),
+                    1,
+                    new Point(left, top),
+                    new Point(left, bottom));
             });
 
             var bucketDate = stats.Start;
@@ -292,11 +292,13 @@ namespace AnalysisPrograms.Draw.RibbonPlots
                         left = ribbonLeft;
                         var rest = source.Clone(context =>
                             context.Crop(new Rectangle(split, 0, ribbonWidth - split, source.Height)));
-                        image.Mutate(x => x.DrawImage(rest, new Point(left, top), options));
+                        // TODO: Fix at some point. Using default configuration with parallelism there is some kind of batching bug that causes a crash
+                        image.Mutate(Drawing.NoParallelConfiguration, x => x.DrawImage(rest, new Point(left, top), options));
                     }
                     else
                     {
-                        image.Mutate(x => x.DrawImage(source, new Point(left, top), options));
+                        // TODO: Fix at some point. Using default configuration with parallelism there is some kind of batching bug that causes a crash
+                        image.Mutate(Drawing.NoParallelConfiguration, x => x.DrawImage(source, new Point(left, top), options));
                     }
                 }
             }

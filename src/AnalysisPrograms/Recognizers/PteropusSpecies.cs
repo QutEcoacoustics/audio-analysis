@@ -39,8 +39,6 @@ namespace AnalysisPrograms.Recognizers
     using System.IO;
     using System.Linq;
     using System.Reflection;
-
-    using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools;
@@ -51,6 +49,7 @@ namespace AnalysisPrograms.Recognizers
     using log4net;
     using SixLabors.ImageSharp;
     using TowseyLibrary;
+    using Path = System.IO.Path;
 
     /// <summary>
     /// This is a recognizer for species of Flying Fox, Pteropus species.

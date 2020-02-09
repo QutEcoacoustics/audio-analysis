@@ -5,31 +5,31 @@
 namespace Acoustics.Test.AnalysisBase
 {
     using System;
-    using System.CodeDom;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
-    using System.Linq;
-    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.Contracts;
-    using FastMember;
     using global::AnalysisBase;
     using global::AnalysisBase.Segment;
+    using ImmediateReflection;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using StringTokenFormatter;
     using TestHelpers;
 
     [TestClass]
     public class AnalysisCoordinatorTests
     {
         private DirectoryInfo outputDirectory;
+        private ImmediateType settingsAccessor;
 
         [TestInitialize]
         public void Setup()
         {
             this.outputDirectory = PathHelper.GetTempDir();
+            this.settingsAccessor = TypeAccessor.Get<AnalysisSettings>(includeNonPublicMembers: true);
         }
 
         [TestCleanup]
@@ -876,6 +876,17 @@ namespace Acoustics.Test.AnalysisBase
             this.TestAnalysisCoordinatorPaths(wav: SaveBehavior.Never, unique: false, temp: this.AnalysisOutput, states: states);
         }
 
+        public class CoordinatorPathTestSet
+        {
+            public string output { get; set; }
+            public string temp { get; set; }
+            public string tempNull { get; set; }
+            public string fragment { get; set; }
+            public string unique1 { get; set; }
+            public string unique2 { get; set; }
+            public string source { get; set; }
+        }
+
         private void TestAnalysisCoordinatorPaths(SaveBehavior wav, bool unique, DirectoryInfo temp, State[] states)
         {
             Contract.Requires(states.Length == 5);
@@ -902,8 +913,7 @@ namespace Acoustics.Test.AnalysisBase
             settings.AnalysisOutputDirectory = this.AnalysisOutput;
             settings.AnalysisTempDirectory = temp;
 
-            var accessor = ObjectAccessor.Create(settings, true);
-            accessor["fallbackTempDirectory"] = this.FallbackTemp.FullName;
+            this.settingsAccessor.Fields["fallbackTempDirectory"].SetValue(settings, this.FallbackTemp.FullName);
 
             var task = Task.Run(() =>
             {
@@ -915,18 +925,15 @@ namespace Acoustics.Test.AnalysisBase
 
             // set up path strings
             string basename = Path.GetFileNameWithoutExtension(source.Name);
-            var paths = new
+            var paths = new CoordinatorPathTestSet
             {
                 output = this.AnalysisOutput.FullName,
-
-                // some tests temp is null, so we want to test that the TestTemp hasn't been used... so we always need
-                // to template the path
                 temp = (temp ?? this.TestTemp).FullName,
                 tempNull = this.FallbackTemp.FullName,
                 fragment = "Ecosounds.TempusSubstitutus",
                 unique1 = basename + "_000000.00-000060.00",
                 unique2 = basename + "_000060.00-000120.00",
-                source = basename,
+                source = basename
             };
 
             // wait for the analyzer to pause
@@ -963,15 +970,20 @@ namespace Acoustics.Test.AnalysisBase
             Assert.IsTrue(task.IsCompleted);
         }
 
-        private void AssertFilesAreAsExpected(int stage, State state, object paths)
+        private void AssertFilesAreAsExpected(int stage, State state, CoordinatorPathTestSet paths)
         {
             foreach (var file in state.ShouldExist)
             {
-                Assert.That.PathExists(file, $"(stage: {stage}, pre-templated string: \"{file}\")");
+                var f = file.FormatToken(paths);
+                Debug.WriteLine(f);
+
+                Assert.That.PathExists(f, $"(stage: {stage}, pre-templated string: \"{file}\")");
             }
 
             foreach (var file in state.ShouldNotExist)
             {
+                var f = file.FormatToken(paths);
+                Debug.WriteLine(f);
                 Assert.That.PathNotExists(file, $"(stage: {stage}, pre-templated string: \"{file}\")");
             }
         }

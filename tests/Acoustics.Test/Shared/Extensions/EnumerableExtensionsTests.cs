@@ -34,7 +34,7 @@ namespace Acoustics.Test.Shared.Extensions
             var items = Enum.GetValues(typeof(MidpointRounding));
             var actual = items.Join();
 
-            Assert.AreEqual("ToEven AwayFromZero", actual);
+            Assert.AreEqual("ToEven AwayFromZero ToZero ToNegativeInfinity ToPositiveInfinity", actual);
         }
 
         [TestMethod]
@@ -43,7 +43,7 @@ namespace Acoustics.Test.Shared.Extensions
             var items = Enum.GetValues(typeof(MidpointRounding));
             var actual = items.Join("|");
 
-            Assert.AreEqual("ToEven|AwayFromZero", actual);
+            Assert.AreEqual("ToEven|AwayFromZero|ToZero|ToNegativeInfinity|ToPositiveInfinity", actual);
         }
     }
 }

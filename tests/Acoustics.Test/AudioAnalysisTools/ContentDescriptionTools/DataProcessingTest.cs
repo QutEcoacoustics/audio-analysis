@@ -4,10 +4,8 @@
 
 namespace Acoustics.Test.AudioAnalysisTools.ContentDescriptionTools
 {
-    using System;
     using System.IO;
     using Acoustics.Test.TestHelpers;
-    using global::AudioAnalysisTools.Indices;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     /// <summary>

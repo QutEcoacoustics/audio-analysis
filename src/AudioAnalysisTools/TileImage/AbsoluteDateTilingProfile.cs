@@ -13,11 +13,7 @@ namespace AudioAnalysisTools.TileImage
     using System.Collections.Generic;
     using SixLabors.ImageSharp;
     using System.Globalization;
-    using System.Linq;
-    using System.Text;
-
     using Acoustics.Shared;
-    using SixLabors.Primitives;
 
     public class AbsoluteDateTilingProfile : TilingProfile
     {

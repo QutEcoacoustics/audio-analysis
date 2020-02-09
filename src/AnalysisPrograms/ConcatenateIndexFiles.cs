@@ -45,12 +45,11 @@ namespace AnalysisPrograms
     using Production;
     using Production.Arguments;
     using Production.Validation;
-    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using SixLabors.Primitives;
     using TowseyLibrary;
     using Zio;
+    using Path = System.IO.Path;
 
     /// <summary>
     /// First argument on command line to call this action is "concatenateIndexFiles"

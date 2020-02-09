@@ -34,12 +34,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using Indices;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using SixLabors.Primitives;
     using StandardSpectrograms;
     using TowseyLibrary;
     using Zooming;
-    using Zio;
-    using Zio.FileSystems;
+    using Path = System.IO.Path;
 
     public static class ZoomFocusedSpectrograms
     {

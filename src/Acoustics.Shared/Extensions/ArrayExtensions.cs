@@ -10,11 +10,7 @@
 // ReSharper disable once CheckNamespace
 namespace System
 {
-    using System;
-    using Collections.Generic;
     using Diagnostics;
-    using Linq;
-    using Text;
 
     public static class ArrayExtensions
     {

@@ -7,16 +7,14 @@ namespace AudioAnalysisTools.ContentDescriptionTools
     using System;
     using System.Collections.Generic;
     using SixLabors.ImageSharp;
-    using System.Drawing.Drawing2D;
     using System.IO;
     using Acoustics.Shared;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
-    using SixLabors.Fonts;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using SixLabors.Primitives;
     using TowseyLibrary;
+    using Path = System.IO.Path;
 
     public static class ContentVisualization
     {

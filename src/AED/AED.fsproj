@@ -6,8 +6,7 @@
     <TargetFSharpCoreVersion>4.4.1.0</TargetFSharpCoreVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Name>AED</Name>
-    <DocumentationFile>bin\$(Configuration)\$(AssemblyName).XML</DocumentationFile>
-    <WarningLevel>3</WarningLevel>
+      <WarningLevel>3</WarningLevel>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <Deterministic>false</Deterministic>
   </PropertyGroup>
@@ -24,9 +23,9 @@
     <PackageReference Include="FSharp.Core" Version="4.7.0" />
     <PackageReference Include="MathNet.Numerics.FSharp" Version="4.9.0" />
     <PackageReference Include="Microsoft.Bcl.Build" Version="1.0.21" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0007" />
-    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0007" />
-    <PackageReference Include="SixLabors.Shapes.Text" Version="1.0.0-beta0009" />
+    <PackageReference Include="SixLabors.Fonts" Version="1.0.0-unstable0024" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-unstable0598" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-unstable0418" />
   </ItemGroup>
   <ItemGroup>
       <Compile Include="Util.fs" />

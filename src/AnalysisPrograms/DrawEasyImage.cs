@@ -20,12 +20,11 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using McMaster.Extensions.CommandLineUtils;
-    using Production;
     using Production.Arguments;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using SixLabors.Primitives;
     using TowseyLibrary;
+    using Path = System.IO.Path;
 
     /// <summary>
     /// First argument on command line to call this action is "drawEasyImage"

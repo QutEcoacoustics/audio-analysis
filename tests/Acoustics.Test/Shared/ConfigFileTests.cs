@@ -16,7 +16,6 @@ namespace Acoustics.Test.Shared
     using System.Text.RegularExpressions;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
-    using Acoustics.Shared.Logging;
     using global::AnalysisPrograms;
     using global::AudioAnalysisTools.Indices;
     using log4net.Appender;

@@ -20,8 +20,6 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using TestHelpers;
-    using TowseyLibrary;
-
     using Zio;
 
     /// <summary>

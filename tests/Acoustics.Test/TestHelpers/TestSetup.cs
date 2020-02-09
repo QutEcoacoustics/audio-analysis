@@ -4,14 +4,7 @@
 
 namespace Acoustics.Test.TestHelpers
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
     using Acoustics.Shared.Logging;
-    using global::AnalysisPrograms;
-    using global::AnalysisPrograms.Production.Arguments;
     using log4net.Core;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 

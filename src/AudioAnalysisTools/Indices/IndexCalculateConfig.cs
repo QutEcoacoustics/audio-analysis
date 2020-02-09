@@ -5,9 +5,7 @@
 namespace AudioAnalysisTools.Indices
 {
     using System;
-    using Acoustics.Shared.ConfigFile;
     using AudioAnalysisTools.DSP;
-    using AudioAnalysisTools.LongDurationSpectrograms;
     using Equ;
     
     using log4net;

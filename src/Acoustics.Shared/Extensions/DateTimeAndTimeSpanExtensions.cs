@@ -10,7 +10,6 @@
 // ReSharper disable once CheckNamespace
 namespace System
 {
-    using System.IO;
     using Acoustics.Shared;
     using Collections.Generic;
     using Linq;

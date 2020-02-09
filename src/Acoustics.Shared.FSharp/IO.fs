@@ -28,14 +28,14 @@ namespace MQUTeR.FSharp.Shared
     
     [<AutoOpen>]
     module Logger =
-        open log4net
+        
 
         do
             ()
 
         let mutable fName:string = null;
         //let tempMessages = new ResizeArray<string>()
-        let log4Net = LogManager.GetLogger("FSharpLog", "IO");
+        
         (*
         let create file =
             let lfi = new FileInfo(file)
@@ -67,13 +67,12 @@ namespace MQUTeR.FSharp.Shared
         let ErrorFail str = 
                 logToFile " FATAL ERROR: " str 
                 *)
-        let Debug = log4Net.Debug
-        let Log   = log4Net.Info
-        let Info  = log4Net.Info
-        let Warn  = log4Net.Warn
-        let Error = log4Net.Error
-        let ErrorFail = 
-                log4Net.Fatal
+        let Debug : 'a -> unit = Console.WriteLine
+        let Log   : 'a -> unit = Console.WriteLine
+        let Info  : 'a -> unit = Console.WriteLine
+        let Warn  : 'a -> unit = Console.WriteLine
+        let Error : 'a -> unit = Console.WriteLine
+        let ErrorFail : 'a -> unit = Console.WriteLine
 
         let Debugf   fmt = Printf.ksprintf Log fmt 
         let Logf   fmt = Printf.ksprintf Log fmt 

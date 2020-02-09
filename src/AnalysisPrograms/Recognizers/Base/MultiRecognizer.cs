@@ -36,7 +36,6 @@ namespace AnalysisPrograms.Recognizers.Base
     using log4net;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using SixLabors.Primitives;
     using TowseyLibrary;
 
     public class MultiRecognizer : RecognizerBase

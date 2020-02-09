@@ -1,19 +1,15 @@
-﻿// <copyright file="RemoteSegment.cs" company="QutEcoacoustics">
+// <copyright file="RemoteSegment.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
 namespace AnalysisPrograms.AcousticWorkbench.Orchestration
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
     using Acoustics.Shared;
     using AnalysisBase.Segment;
-    using global::AcousticWorkbench;
     using global::AcousticWorkbench.Models;
 
     /// <inheritdoc />

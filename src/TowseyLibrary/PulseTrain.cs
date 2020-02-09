@@ -6,17 +6,8 @@
 //  This class contains methods to recognise pulse trains.
 // It is an alternative to using the Oscillations class.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace TowseyLibrary
 {
-    using Acoustics.Shared.ConfigFile;
-    using MathNet.Numerics.LinearAlgebra.Solvers;
-
     /// <summary>
     /// This class was an attempt to detect pulse trains as an alternative to using the Oscillation recognition methods.
     /// It did not work effectively so discontinued the idea and have commented out the three methods.

@@ -8,12 +8,7 @@ namespace Acoustics.Test.TestHelpers
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
-    using System.Runtime.CompilerServices;
-    using Acoustics.Shared;
-    using Microsoft.VisualStudio.TestPlatform.CrossPlatEngine.Adapter;
-    using Microsoft.VisualStudio.TestPlatform.ObjectModel.Engine.ClientProtocol;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Newtonsoft.Json;
 
     public static class PathHelper
     {
@@ -38,7 +33,7 @@ namespace Acoustics.Test.TestHelpers
             CodeBase = context.DeploymentDirectory;
             TestResources = Path.Combine(SolutionRoot, "tests", "Fixtures");
             
-            AnalysisProgramsBuild = Path.Combine(SolutionRoot, "src", "AnalysisPrograms", "bin", "debug");
+            AnalysisProgramsBuild = Path.Combine(SolutionRoot, "src", "AnalysisPrograms", "bin", "debug", "netcoreapp3.1");
         }
 
         public static string AnalysisProgramsBuild { get; private set; }

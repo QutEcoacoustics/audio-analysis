@@ -10,12 +10,9 @@ namespace AnalysisPrograms.SourcePreparers
     using System.IO;
     using System.Linq;
     using System.Net.Sockets;
-    using System.Reflection;
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Tools;
-    using Acoustics.Tools.Audio;
-    using AcousticWorkbench;
     using AcousticWorkbench.Orchestration;
     using AnalysisBase;
     using AnalysisBase.Segment;

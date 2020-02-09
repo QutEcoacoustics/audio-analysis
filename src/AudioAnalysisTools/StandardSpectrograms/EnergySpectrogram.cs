@@ -4,8 +4,6 @@
 
 namespace AudioAnalysisTools.StandardSpectrograms
 {
-    using System.Collections.Generic;
-    using System.Drawing.Imaging;
     using System.IO;
     using Acoustics.Tools.Wav;
     using TowseyLibrary;

@@ -4,13 +4,7 @@
 
 namespace Acoustics.Test.TestHelpers
 {
-    using System;
-    using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Acoustics.Shared;
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
 

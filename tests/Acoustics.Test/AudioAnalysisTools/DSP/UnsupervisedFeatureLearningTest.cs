@@ -7,7 +7,6 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
     using System;
     using System.Collections.Generic;
     using SixLabors.ImageSharp;
-    using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
     using Accord.MachineLearning;
@@ -22,6 +21,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
     using NeuralNets;
     using SixLabors.ImageSharp.PixelFormats;
     using TestHelpers;
+    using Path = System.IO.Path;
 
     [TestClass]
     public class UnsupervisedFeatureLearningTest

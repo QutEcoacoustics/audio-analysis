@@ -17,7 +17,6 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
     using Moq;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using SixLabors.Primitives;
     using TestHelpers;
     using Zio;
 

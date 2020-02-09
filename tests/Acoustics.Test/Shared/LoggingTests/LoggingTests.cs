@@ -10,13 +10,9 @@ namespace Acoustics.Test.Shared.LoggingTests
     using System.Linq;
     using System.Reflection;
     using System.Threading.Tasks;
-    using Acoustics.Shared;
-    using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Logging;
-    using ImmediateReflection;
     using log4net;
     using log4net.Core;
-    using log4net.Util;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
 

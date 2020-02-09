@@ -1,20 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <RootNamespace>Acosutics.Shared.FSharp</RootNamespace>
-    <AssemblyName>Acosutics.Shared.FSharp</AssemblyName>
-    <UseStandardResourceNames>true</UseStandardResourceNames>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
-    <TargetFSharpCoreVersion>4.4.1.0</TargetFSharpCoreVersion>
+    <RootNamespace>Acoustics.Shared.FSharp</RootNamespace>
+    <AssemblyName>Acoustics.Shared.FSharp</AssemblyName>
+      <TargetFramework>netcoreapp3.1</TargetFramework>
+      <TargetFSharpCoreVersion>4.4.1.0</TargetFSharpCoreVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Name>Acoustics.Shared.FSharp</Name>
-    <DocumentationFile>bin\$(Configuration)\$(AssemblyName).XML</DocumentationFile>
-    <WarningLevel>3</WarningLevel>
+      <WarningLevel>3</WarningLevel>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <Deterministic>false</Deterministic>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugType>full</DebugType>
+    <DebugType>pdbonly</DebugType>
     <Tailcalls>false</Tailcalls>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -26,7 +25,6 @@
     <PackageReference Include="Accord.Statistics" Version="3.8.2-alpha" />
     <PackageReference Include="FSharp.Compiler.Tools" Version="10.2.3" />
     <PackageReference Include="FSharp.Core" Version="4.7.0" />
-    <PackageReference Include="log4net" Version="2.0.8" />
     <PackageReference Include="Microsoft.Bcl.Build" Version="1.0.21" />
     <PackageReference Include="Microsoft.DotNet.Analyzers.Compatibility" Version="0.2.12-alpha">
       <PrivateAssets>all</PrivateAssets>

@@ -7,13 +7,9 @@ namespace TowseyLibrary
     using System;
     using System.Collections.Generic;
     using SixLabors.ImageSharp;
-    using System.IO;
     using System.Linq;
-    using System.Text;
     using Acoustics.Shared;
-    using SixLabors.Fonts;
     using SixLabors.ImageSharp.Processing;
-    using SixLabors.Primitives;
 
     public static class TernaryPlots
     {

@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="ObjectExtensions.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -10,11 +10,7 @@ namespace System
 // ReSharper restore CheckNamespace
 {
     using Collections.Generic;
-    using Diagnostics.Contracts;
     using JetBrains.Annotations;
-    using Linq.Expressions;
-
-    using Newtonsoft.Json;
 
     /// <summary>
     /// The object extensions.

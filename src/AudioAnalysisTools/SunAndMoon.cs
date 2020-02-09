@@ -8,12 +8,9 @@ namespace AudioAnalysisTools
     using System.Collections.Generic;
     using SixLabors.ImageSharp;
     using System.IO;
-    using System.Linq;
-    using System.Text;
     using Acoustics.Shared;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using SixLabors.Primitives;
     using TowseyLibrary;
 
     [Obsolete("This class is not generalizeable and shouldn't be used until it can be made so.")]

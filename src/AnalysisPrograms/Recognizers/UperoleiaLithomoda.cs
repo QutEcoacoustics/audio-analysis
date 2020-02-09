@@ -22,10 +22,10 @@ namespace AnalysisPrograms.Recognizers
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using Base;
-    using SixLabors.Primitives;
 
     //using log4net;
     using TowseyLibrary;
+    using Path = System.IO.Path;
 
     /// <summary>
     /// This is a frog recognizer based on the "honk" or "quack" template

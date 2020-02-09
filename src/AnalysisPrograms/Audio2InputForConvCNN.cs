@@ -14,7 +14,6 @@ namespace AnalysisPrograms
     using System.Collections.Generic;
     using System.Diagnostics;
     using SixLabors.ImageSharp;
-    using System.Drawing.Imaging;
     using System.IO;
     using System.Reflection;
     using System.Text.RegularExpressions;
@@ -36,6 +35,7 @@ namespace AnalysisPrograms
     using Production.Arguments;
     using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
+    using Path = System.IO.Path;
 
     /// <summary>
     /// Use the following paths for the command line for the 'audio2sonogram' task.

@@ -7,22 +7,20 @@ namespace AudioAnalysisTools
     using System;
     using System.Collections.Generic;
     using SixLabors.ImageSharp;
-    using System.Drawing.Imaging;
     using System.Globalization;
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using DSP;
-    using MathNet.Numerics;
     using MathNet.Numerics.LinearAlgebra;
     using MathNet.Numerics.LinearAlgebra.Double;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using SixLabors.Primitives;
     using StandardSpectrograms;
     using TowseyLibrary;
     using WavTools;
+    using Path = System.IO.Path;
 
     /// <summary>
     /// This is the latest of three implementations to detect oscillations in a spectrogram.

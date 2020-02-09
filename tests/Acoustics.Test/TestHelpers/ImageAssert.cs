@@ -14,12 +14,9 @@ namespace Acoustics.Test.TestHelpers
     using Acoustics.Shared.Extensions;
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.Advanced;
-    using SixLabors.ImageSharp.ColorSpaces.Conversion;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using SixLabors.Primitives;
 
     public static class ImageAssert
     {
@@ -32,7 +29,7 @@ namespace Acoustics.Test.TestHelpers
         public static void PixelIsColor(this Assert assert, Point pixel, Color expectedColor, Image<Rgb24> actualImage)
         {
             var actualColor = actualImage[pixel.X, pixel.Y];
-            Assert.AreEqual(expectedColor, actualColor, $"Expected color at pixel {pixel} did not match actual color");
+            Assert.AreEqual((Rgb24)expectedColor, actualColor, $"Expected color at pixel {pixel} did not match actual color");
         }
 
         /// <summary>
@@ -252,7 +249,7 @@ Difference are:
             }
         }
 
-        public static void ImageContainsExpected<T>(this Assert assert, Image<T> expectedImage, SixLabors.Primitives.Point expectedLocation, Image<T> actualImage, double tolerance = 0.0, string message = "")
+        public static void ImageContainsExpected<T>(this Assert assert, Image<T> expectedImage, Point expectedLocation, Image<T> actualImage, double tolerance = 0.0, string message = "")
             where T : struct, IPixel<T>
         {
             var regionToCheck = new Rectangle(expectedLocation, expectedImage.Size());
@@ -303,7 +300,7 @@ Difference are:
 
                     if (d > 0)
                     {
-                        var diff = new PixelDifference(new SixLabors.Primitives.Point(x, y), a, b);
+                        var diff = new PixelDifference(new Point(x, y), a, b);
                         differences.Add(diff);
 
                         totalDifference += d;
@@ -329,13 +326,13 @@ Difference are:
 
     internal class PixelDifference
     {
-        public SixLabors.Primitives.Point Point { get; }
+        public Point Point { get; }
 
         public Rgba32 A { get; }
 
         public Rgba32 B { get; }
 
-        public PixelDifference(SixLabors.Primitives.Point point, Rgba32 a, Rgba32 b)
+        public PixelDifference(Point point, Rgba32 a, Rgba32 b)
         {
             this.Point = point;
             this.A = a;

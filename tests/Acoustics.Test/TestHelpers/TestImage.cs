@@ -7,7 +7,6 @@ namespace Acoustics.Test.TestHelpers
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using SixLabors.Primitives;
 
     public class TestImage
     {

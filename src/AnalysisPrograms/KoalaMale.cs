@@ -8,22 +8,17 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
-    using System.Data;
     using SixLabors.ImageSharp;
-    using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
-    using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Csv;
-    using Acoustics.Tools;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-    using Production;
     using TowseyLibrary;
 
     /// <summary>

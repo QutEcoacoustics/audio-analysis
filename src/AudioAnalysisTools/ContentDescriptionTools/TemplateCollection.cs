@@ -6,9 +6,6 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 {
     using System;
     using System.Collections.Generic;
-    using System.IO;
-    using System.Xml.Schema;
-    using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
 
     public class TemplateCollection : Dictionary<string, TemplateManifest>, IConfig

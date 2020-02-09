@@ -8,8 +8,6 @@ namespace Acoustics.Tools.Audio
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.Advanced;
     using SixLabors.ImageSharp.PixelFormats;
-    using SixLabors.ImageSharp.Processing;
-    using SixLabors.Primitives;
 
     /// <summary>
     /// Spectrogram utility that uses sox.exe to generate spectrograms.

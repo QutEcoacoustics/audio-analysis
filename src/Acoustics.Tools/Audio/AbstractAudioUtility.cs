@@ -1,6 +1,5 @@
-﻿namespace Acoustics.Tools.Audio
+namespace Acoustics.Tools.Audio
 {
-    using System;
     using System.Collections.Generic;
     using System.IO;
     using log4net;

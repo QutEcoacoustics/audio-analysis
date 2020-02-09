@@ -9,7 +9,6 @@
 
 namespace System
 {
-    using Acoustics.Shared;
     using Collections.Generic;
     using Collections.Specialized;
     using ComponentModel;
@@ -22,7 +21,6 @@ namespace System
     using Runtime.Serialization.Formatters.Binary;
     using Text;
     using Text.RegularExpressions;
-    using Web;
 
     public static class ExtensionsGeneral
     {

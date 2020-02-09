@@ -1,15 +1,12 @@
-﻿// <copyright file="AuthenticationService.cs" company="QutEcoacoustics">
+// <copyright file="AuthenticationService.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
 namespace AcousticWorkbench
 {
-    using System.Net;
     using System.Net.Http;
-    using System.Runtime.CompilerServices;
     using System.Security.Authentication;
     using System.Threading.Tasks;
-    using Newtonsoft.Json;
 
     public class AuthenticationService : Service
     {

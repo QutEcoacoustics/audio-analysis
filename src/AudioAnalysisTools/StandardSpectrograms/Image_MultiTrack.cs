@@ -7,9 +7,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
     using System;
     using System.Collections.Generic;
     using SixLabors.ImageSharp;
-    using System.Drawing.Imaging;
-
-    using Acoustics.Shared;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
     using TowseyLibrary;

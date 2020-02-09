@@ -1,4 +1,4 @@
-﻿// <copyright file="EventMetadataResolver.cs" company="QutEcoacoustics">
+// <copyright file="EventMetadataResolver.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -9,12 +9,10 @@ namespace AnalysisPrograms.AcousticWorkbench.Orchestration
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Linq;
-    using System.Text;
     using System.Threading.Tasks;
     using System.Threading.Tasks.Dataflow;
     using Acoustics.Shared;
     using Acoustics.Shared.Contracts;
-    using AnalysisBase.Segment;
     using EventStatistics;
     using global::AcousticWorkbench;
     using global::AcousticWorkbench.Models;

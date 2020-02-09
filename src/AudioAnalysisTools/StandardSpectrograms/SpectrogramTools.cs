@@ -15,7 +15,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
     using System.IO;
     using Accord;
     using Acoustics.Shared;
-    using AudioAnalysisTools.WavTools;
     using DSP;
     using LongDurationSpectrograms;
     using SixLabors.ImageSharp.ColorSpaces;

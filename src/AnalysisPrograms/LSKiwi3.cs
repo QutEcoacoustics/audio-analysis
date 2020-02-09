@@ -1,32 +1,24 @@
-﻿// <copyright file="LSKiwi3.cs" company="QutEcoacoustics">
+// <copyright file="LSKiwi3.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
 namespace AnalysisPrograms
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Data;
     using SixLabors.ImageSharp;
-    using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
-    using System.Text;
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.Contracts;
-    using Acoustics.Shared.Extensions;
-    using Acoustics.Tools;
-    using Acoustics.Tools.Audio;
     using AnalysisBase;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
-    using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using McMaster.Extensions.CommandLineUtils;
-    using Production;
     using Production.Arguments;
     using TowseyLibrary;
 

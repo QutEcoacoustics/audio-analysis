@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="ResultBase.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -10,7 +10,6 @@
 namespace AnalysisBase.ResultBases
 {
     using System;
-    using System.Diagnostics.CodeAnalysis;
 
     /// <summary>
     /// This is the base type for every type of result we produce.

@@ -5,15 +5,8 @@
 namespace Acoustics.Test.Shared
 {
     using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
     using System.IO;
-    using System.Text;
-    using System.Threading;
     using System.Threading.Tasks;
-    using Acoustics.Shared.Logging;
-    using global::AnalysisPrograms;
-    using global::AnalysisPrograms.Production.Arguments;
     using log4net.Core;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
@@ -25,7 +18,7 @@ namespace Acoustics.Test.Shared
 
         [TestMethod]
         [DoNotParallelize]
-        public void UsesCleanlayout()
+        public void UsesCleanLayout()
         {
             TestSetup.TestLogging.MemoryAppender.Clear();
             LoggedConsole.WriteLine("test message");
@@ -33,12 +26,14 @@ namespace Acoustics.Test.Shared
         }
 
         [TestMethod]
+        [DoNotParallelize]
         public void IsInteractive()
         {
             Assert.IsTrue(LoggedConsole.IsInteractive);
         }
 
         [TestMethod]
+        [DoNotParallelize]
         public void SuppressInteractive()
         {
             LoggedConsole.SuppressInteractive = true;
@@ -83,6 +78,7 @@ namespace Acoustics.Test.Shared
 
         [TestMethod]
         [Timeout(5000)]
+        [DoNotParallelize]
         public void PromptNonInteractive()
         {
             TestSetup.TestLogging.ModifyVerbosity(Level.Info, false);
@@ -105,6 +101,7 @@ namespace Acoustics.Test.Shared
 
         [TestMethod]
         [Timeout(30_000)]
+        [DoNotParallelize]
         public void PromptTimesOut()
         {
             LoggedConsole.SuppressInteractive = false;
@@ -118,6 +115,8 @@ namespace Acoustics.Test.Shared
                     () => LoggedConsole.Prompt("Enter your name:", timeout: TimeSpan.FromMilliseconds(500)),
                     "Timed out waiting for user input to prompt:");
             }
+
+
         }
     }
 }

@@ -6,7 +6,6 @@ namespace AudioAnalysisTools.WavTools
 {
     using System;
     using SixLabors.ImageSharp;
-    using System.Drawing.Imaging;
     using System.IO;
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
@@ -14,6 +13,7 @@ namespace AudioAnalysisTools.WavTools
     using DSP;
     using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
+    using Path = System.IO.Path;
 
     public class AudioRecording : IDisposable
     {

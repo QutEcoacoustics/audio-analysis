@@ -13,7 +13,6 @@ namespace AnalysisPrograms.AnalyseLongRecordings
     using System.Threading.Tasks;
     using AnalysisBase;
     using McMaster.Extensions.CommandLineUtils;
-    using Production;
     using Production.Arguments;
     using Production.Validation;
 

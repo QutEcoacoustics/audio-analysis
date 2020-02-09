@@ -8,7 +8,7 @@ open Util
 open Option
 open Default
 open Microsoft.FSharp
-open SixLabors.Primitives
+open SixLabors.ImageSharp
 
 let frequencyToPixels rndFunc maxPixels maxFreq freq = int (rndFunc (((float maxPixels) * freq) / maxFreq))
 

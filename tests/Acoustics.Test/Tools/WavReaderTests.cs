@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="WavReaderTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -464,7 +464,7 @@ namespace Acoustics.Test.Tools
             Assert.AreEqual(529_200U, reader.BytesPerSecond);
             Assert.AreEqual(257_411, reader.BlockCount);
             Assert.AreEqual(257_411, reader.Length);
-            Assert.AreEqual(5_837, reader.Time.TotalMilliseconds, 0);
+            Assert.AreEqual(5.836984126984126, reader.Time.TotalSeconds, 0.000_001);
             Assert.AreEqual(5.836984126984126984126984127M, reader.ExactDurationSeconds);
             Assert.AreEqual(
                 (int)(5_837.0 / 1000 * 44100),
@@ -488,7 +488,7 @@ namespace Acoustics.Test.Tools
             Assert.AreEqual(768_000U, reader.BytesPerSecond);
             Assert.AreEqual(500, reader.BlockCount);
             Assert.AreEqual(500, reader.Length);
-            Assert.AreEqual(10, reader.Time.TotalMilliseconds, 0);
+            Assert.AreEqual(0.010416666666, reader.Time.TotalSeconds, 0.000_001);
             Assert.AreEqual(0.0104166666666666666666666667M, reader.ExactDurationSeconds);
             Assert.AreEqual(
                 (int)(10.416 / 1000 * 48000),

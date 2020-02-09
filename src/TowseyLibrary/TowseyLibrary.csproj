@@ -75,8 +75,8 @@
   <ItemGroup>
     <PackageReference Include="alglib.net" Version="3.16.0" />
     <PackageReference Include="MathNet.Numerics" Version="4.9.0" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0007" />
-    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0007" />
-    <PackageReference Include="SixLabors.Shapes.Text" Version="1.0.0-beta0009" />
+    <PackageReference Include="SixLabors.Fonts" Version="1.0.0-unstable0024" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-unstable0598" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-unstable0418" />
   </ItemGroup>
 </Project>

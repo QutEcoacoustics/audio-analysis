@@ -23,6 +23,8 @@
     <Copyright>Copyright © QUT 2012</Copyright>
     <LangVersion>latest</LangVersion>
     <OutputPath>bin\$(Configuration)\</OutputPath>
+    <!-- TODO CORE: For log4net -->
+    <NoWarn>$(NoWarn);NU1605</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>
@@ -84,11 +86,11 @@
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="ObjectCloner" Version="2.2.2" />
     <PackageReference Include="ObjectCloner.Extensions" Version="2.0.1" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0007" />
-    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0007" />
-    <PackageReference Include="SixLabors.Shapes.Text" Version="1.0.0-beta0009" />
+    <PackageReference Include="SixLabors.Fonts" Version="1.0.0-unstable0024" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-unstable0598" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-unstable0418" />
+    <PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.0.2" />
     <PackageReference Include="YamlDotNet" Version="8.1.0" />
     <PackageReference Include="Zio" Version="0.7.6" />
-    <PackageReference Include="Zio.FileSystems.Community.SqliteFileSystem" Version="1.0.0" />
   </ItemGroup>
 </Project>

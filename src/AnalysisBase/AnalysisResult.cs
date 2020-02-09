@@ -1,9 +1,8 @@
-﻿namespace AnalysisBase
+namespace AnalysisBase
 {
     using System.Data;
     using System.Collections.Generic;
     using System.IO;
-    using System.Text;
     using System;
 
 

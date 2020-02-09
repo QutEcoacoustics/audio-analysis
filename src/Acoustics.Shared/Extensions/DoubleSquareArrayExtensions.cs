@@ -11,7 +11,6 @@
 namespace System
 {
     using Drawing;
-    using System;
     using Acoustics.Shared.Contracts;
 
     /// <summary>

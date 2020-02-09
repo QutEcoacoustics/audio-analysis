@@ -12,9 +12,6 @@ namespace AnalysisPrograms.Recognizers.Base
     using System;
     using System.Collections.Generic;
     using SixLabors.ImageSharp;
-
-    using AnalysisBase.ResultBases;
-
     using AudioAnalysisTools;
     using AudioAnalysisTools.StandardSpectrograms;
     using SixLabors.ImageSharp.PixelFormats;

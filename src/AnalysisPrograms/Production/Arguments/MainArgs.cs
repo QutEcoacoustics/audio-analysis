@@ -4,7 +4,6 @@
 
 namespace AnalysisPrograms.Production.Arguments
 {
-    using System;
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using AnalyseLongRecordings;

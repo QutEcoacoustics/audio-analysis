@@ -5,7 +5,6 @@
 namespace AudioAnalysisTools.StandardSpectrograms
 {
     using SixLabors.ImageSharp;
-    using System.Drawing.Imaging;
     using Acoustics.Tools.Wav;
     using DSP;
     using SixLabors.ImageSharp.PixelFormats;

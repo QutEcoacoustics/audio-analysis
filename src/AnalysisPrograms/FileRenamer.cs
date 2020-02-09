@@ -1,23 +1,17 @@
-﻿// <copyright file="FileRenamer.cs" company="QutEcoacoustics">
+// <copyright file="FileRenamer.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
 namespace AnalysisPrograms
 {
     using System;
-    using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
-    using System.Diagnostics;
-    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Reflection;
-    using System.Text;
-    using System.Text.RegularExpressions;
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Tools.Audio;
-    using AnalysisBase;
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
     using McMaster.Extensions.CommandLineUtils.Abstractions;

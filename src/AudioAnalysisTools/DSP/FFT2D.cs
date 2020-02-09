@@ -5,12 +5,11 @@
 namespace AudioAnalysisTools.DSP
 {
     using System;
-    using System.Collections.Generic;
     using SixLabors.ImageSharp;
     using System.Linq;
     using System.Numerics;
-    using System.Text;
-    using MathNet.Numerics; // this is needed for the class ComplexExtensions which does the calculation of the magnitude of a complex number.
+
+    // this is needed for the class ComplexExtensions which does the calculation of the magnitude of a complex number.
     using MathNet.Numerics.IntegralTransforms;
     using SixLabors.ImageSharp.PixelFormats;
 

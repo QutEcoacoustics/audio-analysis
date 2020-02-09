@@ -6,7 +6,6 @@ namespace Acoustics.Shared
 {
     using System;
     using System.IO;
-    using System.Runtime.Remoting;
 
     /// <summary>
     /// Wraps a stream for all operations except Close and Dispose, which

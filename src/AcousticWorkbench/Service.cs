@@ -1,15 +1,13 @@
-﻿// <copyright file="Service.cs" company="QutEcoacoustics">
+// <copyright file="Service.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
 namespace AcousticWorkbench
 {
     using System;
-    using System.Diagnostics.Contracts;
     using System.Net;
     using System.Net.Http;
     using System.Net.Http.Headers;
-    using System.Net.Security;
     using System.Text;
     using System.Threading.Tasks;
     using Newtonsoft.Json;

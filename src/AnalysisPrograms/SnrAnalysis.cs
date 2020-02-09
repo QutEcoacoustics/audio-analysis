@@ -5,25 +5,22 @@
 namespace AnalysisPrograms
 {
     using System;
-    using System.Collections.Generic;
     using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
-    using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
-    using Acoustics.Shared.Extensions;
     using Acoustics.Tools;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using McMaster.Extensions.CommandLineUtils;
-    using Production;
     using Production.Arguments;
     using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
+    using Path = System.IO.Path;
 
     public class SnrAnalysis
     {

@@ -11,8 +11,6 @@ namespace Acoustics.Tools
 {
     using System;
 
-    using Shared;
-
     /// <summary>
     /// Spectrogram Request.
     /// </summary>

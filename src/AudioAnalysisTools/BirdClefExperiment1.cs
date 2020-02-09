@@ -10,10 +10,10 @@ namespace AudioAnalysisTools
     using System.IO;
     using System.Linq;
     using System.Text;
-    using Acoustics.Shared;
     using Indices;
     using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
+    using Path = System.IO.Path;
 
     /// <summary>
     /// This class is experimental work on the Bird50 dataset provided by Herve Glotin.

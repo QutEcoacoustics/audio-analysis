@@ -6,9 +6,7 @@ namespace TowseyLibrary
 {
     using System;
     using System.Collections.Generic;
-    using System.IO;
     using System.Linq;
-    using System.Text;
 
     /// <summary>
     /// An implementation of wavelet pack decomposition (WPD) using the Haar wavelet.

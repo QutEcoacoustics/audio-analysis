@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Acoustics.Shared
 {
@@ -8,8 +6,6 @@ namespace Acoustics.Shared
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using SixLabors.Primitives;
-    using SixLabors.Shapes;
 
     /// <summary>
     /// Helpers for drawing images.
@@ -43,14 +39,23 @@ namespace Acoustics.Shared
             return SystemFonts.CreateFont(Arial, size);
         }
 
+        public static Configuration NoParallelConfiguration => new Configuration() {
+            MaxDegreeOfParallelism = 1,
+        };
+
         public static Image<Rgb24> NewImage(int width, int height, Color fill)
         {
             return new Image<Rgb24>(DefaultConfiguration, width, height, fill);
         }
 
+        public static SizeF ToSizeF(this FontRectangle rectangle)
+        {
+            return new SizeF(rectangle.Width, rectangle.Height);
+        }
+
         public static SizeF MeasureString(this IImageProcessingContext _, string text, Font font)
         {
-            return TextMeasurer.Measure(text, new RendererOptions(font));
+            return TextMeasurer.MeasureBounds(text, new RendererOptions(font)).ToSizeF();
         }
 
         public static Size ToSize(this SizeF size)
@@ -58,17 +63,95 @@ namespace Acoustics.Shared
             return (Size)size;
         }
 
+        public static void DrawTextSafe(this IImageProcessingContext context, string text, Font font,
+            Color color, PointF location)
+            {
+            if (text.IsNullOrEmpty())
+            {
+                return;
+            }
+
+            context.DrawText(text, font, color, location);
+
+        }
+
+
         public static void DrawVerticalText(this IImageProcessingContext context, string text, Font font, Color color, Point location)
         {
-            var (width, height) = TextMeasurer.Measure(text, new RendererOptions(font));
-            var image = new Image<Rgba32>(Configuration.Default, (int)(width + 1), (int)(height + 1), Rgba32.Transparent);
+            var (width, height) = TextMeasurer.Measure(text, new RendererOptions(font)).ToSizeF();
+            var image = new Image<Rgba32>(Configuration.Default, (int)(width + 1), (int)(height + 1), Color.Transparent);
 
             image.Mutate(x => x
-                .DrawText(new TextGraphicsOptions(true), text, font, color, new PointF(0, 0))
+                .DrawText(new TextGraphicsOptions(), text, font, color, new PointF(0, 0))
                 .Rotate(-90));
 
             context.DrawImage(image, location, PixelColorBlendingMode.Normal, PixelAlphaCompositionMode.SrcAtop, 1);
 
+        }
+
+        /// <summary>
+        /// Crop an image using a <paramref name="crop"/> Rectangle.
+        /// </summary>
+        /// <param name="source">
+        /// Source image.
+        /// </param>
+        /// <param name="crop">
+        /// Crop rectangle.
+        /// </param>
+        /// <returns>
+        /// Cropped image.
+        /// </returns>
+        public static Image<T> Crop<T>(this Image<T> source, Rectangle crop)
+            where T : struct, IPixel<T> => source.Clone(x => x.Crop(crop));
+
+        /// <summary>
+        /// Crop an image using a <paramref name="crop"/> Rectangle.
+        /// If <paramref name="crop"/> spills over <paramref name="source"/> only intersecting areas are returned.
+        /// </summary>
+        /// <param name="source">
+        /// Source image.
+        /// </param>
+        /// <param name="crop">
+        /// Crop rectangle.
+        /// </param>
+        /// <returns>
+        /// Cropped image.
+        /// </returns>
+        public static Image<T> CropIntersection<T>(this Image<T> source, Rectangle crop)
+            where T : struct, IPixel<T>
+        {
+            var intersection = Rectangle.Intersect(crop, source.Bounds());
+
+            return source.Clone(x => x.Crop(intersection));
+        }
+
+        /// <summary>
+        /// Draw a crop of an image onto a rectangle surface. Unlike crop, it treats the rectangle coordinates
+        /// as the source of truth and returns a new image, with a section of <paramref name="source"/> drawn on top.
+        /// </summary>
+        /// <param name="source">
+        /// Source image.
+        /// </param>
+        /// <param name="crop">
+        /// Crop rectangle.
+        /// </param>
+        /// <returns>
+        /// Cropped image.
+        /// </returns>
+        public static Image<T> CropInverse<T>(this Image<T> source, Rectangle crop)
+            where T : struct, IPixel<T>
+        {
+            var result  = new Image<T>(crop.Width, crop.Height);
+
+            var intersection = source.Bounds();
+            intersection.Intersect(crop);
+
+            result.Mutate(x => x.DrawImage(
+                source.CropIntersection(intersection),
+                new Point(intersection.X - crop.X, intersection.Y - crop.Y),
+                1));
+
+            return result;
         }
 
         public static void RotateFlip<T>(this Image<T> image, RotateFlipType operation) where T : struct, IPixel<T>
@@ -115,8 +198,6 @@ namespace Acoustics.Shared
 
             image.Mutate(x => x.RotateFlip(r, f));
         }
-
-
     }
 
     public enum RotateFlipType

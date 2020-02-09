@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="EventStatisticsEntry.Arguments.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -9,13 +9,10 @@
 
 namespace AnalysisPrograms.EventStatistics
 {
-    using System;
     using System.ComponentModel.DataAnnotations;
     using System.IO;
     using System.Threading.Tasks;
-    using AnalysisBase;
     using McMaster.Extensions.CommandLineUtils;
-    using Production;
     using Production.Arguments;
     using Production.Validation;
 
@@ -36,16 +33,31 @@ For remote resources, the input file needs to have either one of these sets of f
             CommandName,
             Description = "[BETA] Accepts a list of acoustic events to analyze. Returns a data file of statistics",
             ExtendedHelpText = AdditionalNotes)]
-        public class Arguments
-            : SourceConfigOutputDirArguments
+        public class Arguments : SubCommandBase
         {
             [Argument(
                 0,
                 Description = "The source event (annotations) file to operate on")]
+
             [ExistingFile]
             [Required]
             [LegalFilePath]
-            public override FileInfo Source { get; set; }
+            public FileInfo Source { get; set; }
+
+            [Argument(
+                1,
+                Description = "The path to the config file. If not found it will attempt to use the default config file of the same name.")]
+            [Required]
+            [LegalFilePath]
+            public string Config { get; set; }
+
+            [Argument(
+                2,
+                Description = "A directory to write output to")]
+            [Required]
+            [DirectoryExistsOrCreate(createIfNotExists: true)]
+            [LegalFilePath]
+            public virtual DirectoryInfo Output { get; set; }
 
             [Option(
                 CommandOptionType.SingleValue,

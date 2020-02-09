@@ -6,13 +6,8 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using SixLabors.ImageSharp;
-    using System.Drawing.Imaging;
-    using System.IO;
     using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Test.TestHelpers;
@@ -23,7 +18,6 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using SixLabors.ImageSharp.PixelFormats;
-    using SixLabors.Primitives;
 
     [TestClass]
     public class LDSpectrogramRGBTests : OutputDirectoryTest

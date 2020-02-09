@@ -10,13 +10,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
-    using Acoustics.Shared.Csv;
-    using AnalysisBase.ResultBases;
     using AudioAnalysisTools.StandardSpectrograms;
     using Indices;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
     using TowseyLibrary;
+    using Path = System.IO.Path;
 
     /// <summary>
     /// This class used to contain only two methods:  (1) StitchPartialSpectrograms()   and    (2) ConcatenateSpectralIndexFiles()

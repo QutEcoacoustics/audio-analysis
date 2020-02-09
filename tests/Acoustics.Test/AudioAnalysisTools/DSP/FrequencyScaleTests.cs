@@ -6,10 +6,8 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 {
     using System;
     using System.Collections.Generic;
-    using System.Drawing.Imaging;
     using System.IO;
     using Acoustics.Shared;
-    using global::AudioAnalysisTools;
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.StandardSpectrograms;
     using global::AudioAnalysisTools.WavTools;
@@ -17,7 +15,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using SixLabors.ImageSharp;
     using TestHelpers;
-    using TowseyLibrary;
+    using Path = System.IO.Path;
 
     /// <summary>
     /// Test methods for the various Frequency Scales

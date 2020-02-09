@@ -1,18 +1,13 @@
-﻿// <copyright file="EventMetadataResolverTests.cs" company="QutEcoacoustics">
+// <copyright file="EventMetadataResolverTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
 namespace Acoustics.Test.AnalysisPrograms.AcousticWorkbench.Orchestration
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
     using Acoustics.Shared;
-    using global::AcousticWorkbench.Models;
     using global::AnalysisPrograms.AcousticWorkbench.Orchestration;
-    using global::AudioAnalysisTools.EventStatistics;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers.Factories;
 

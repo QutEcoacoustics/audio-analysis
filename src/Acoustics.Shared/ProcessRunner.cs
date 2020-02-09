@@ -9,11 +9,8 @@ namespace Acoustics.Shared
     using System.ComponentModel;
     using System.Diagnostics;
     using System.IO;
-    using System.Linq;
-    using System.Runtime.Serialization;
     using System.Text;
     using System.Threading;
-    using System.Threading.Tasks;
     using log4net;
 
     /// <summary>
@@ -399,10 +396,10 @@ namespace Acoustics.Shared
 
             // wild guess code - we're unable to really test this code except in high concurrency scenarios
             // So timeouts are common in high concurrency scenarios because SIGCHLD are sometimes not captured by mono.
-            // The process is theoretically completing sucessfully but mono doesn't notice (see note in RunAndRead).
-            // If (despite timing out) however the exit code was captured, and execution was sucessfull, and we
-            // captured output, then there's a really nothing wrong with the execution (other than it timed out unnecessarilly).
-            // The following code cpatures the spirit of this notion and allows us to not repeat another failed timeout run if
+            // The process is theoretically completing successfully but mono doesn't notice (see note in RunAndRead).
+            // If (despite timing out) however the exit code was captured, and execution was successful, and we
+            // captured output, then there's a really nothing wrong with the execution (other than it timed out unnecessarily).
+            // The following code captures the spirit of this notion and allows us to not repeat another failed timeout run if
             // execution was probably successful.
             if (this.process.ExitCode == 0 && (this.StandardOutput.Length > 0 || this.ErrorOutput.Length > 0))
             {

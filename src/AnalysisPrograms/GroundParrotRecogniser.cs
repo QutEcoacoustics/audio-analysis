@@ -12,12 +12,10 @@ namespace AnalysisPrograms
     using System;
     using System.Collections.Generic;
     using SixLabors.ImageSharp;
-    using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
     using System.Reflection;
     using System.Threading.Tasks;
-    using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
     using AnalysisBase;
@@ -31,6 +29,7 @@ namespace AnalysisPrograms
     using Production.Arguments;
     using QutSensors.AudioAnalysis.AED;
     using TowseyLibrary;
+    using Path = System.IO.Path;
 
     /// <summary>
     /// The ground parrot recognizer.

@@ -107,7 +107,7 @@ namespace AudioAnalysisTools.Indices
                     continue;
                 }
 
-                CachedSetter[this, kvp.Key] = kvp.Value;
+                CachedSetter[this, kvp.Key] = kvp.Value.DefaultValue;
             }
         }
 

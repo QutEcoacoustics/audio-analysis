@@ -22,6 +22,7 @@ namespace AnalysisPrograms.ContentDescription
     using log4net;
     using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
+    using Path = System.IO.Path;
 
     /// <summary>
     /// This class is derived from AbstractStrongAnalyser.

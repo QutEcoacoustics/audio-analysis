@@ -11,10 +11,10 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
     using global::AudioAnalysisTools.TileImage;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using SixLabors.ImageSharp.PixelFormats;
-    using SixLabors.Primitives;
     using TestHelpers;
     using Zio;
     using SixLabors.ImageSharp.Processing;
+    using Drawing = Acoustics.Shared.Drawing;
 
     [TestClass]
     public class AbsoluteDateTimeTilerTests
@@ -106,7 +106,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
                     new PointF(900, 256), new Point(1080, 0), new Point(1260, 256),
                 };
                 graphics.DrawLines(
-                    GraphicsOptions.Default,
+                    new GraphicsOptions(),
                     Brushes.Solid(Color.Red),
                     1,
                     points);
@@ -141,7 +141,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
             var expectedImages =
                 expectedFiles
                     .OrderBy(x => x)
-                    .Select((x, i) => testBitmap.Crop(new Rectangle((i * TileWidth) - 100, 0, TileWidth, 256)))
+                    .Select((x, i) => Drawing.CropInverse(testBitmap, new Rectangle((i * TileWidth) - 100, 0, TileWidth, 256)))
                     .ToArray();
 
             for (var i = 0; i < expectedImages.Length; i++)

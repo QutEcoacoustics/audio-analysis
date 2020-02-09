@@ -12,11 +12,11 @@ namespace AnalysisPrograms.ContentDescription
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using AnalysisPrograms.Production.Arguments;
-    using AnalysisPrograms.Production.Validation;
     using AudioAnalysisTools.ContentDescriptionTools;
     using McMaster.Extensions.CommandLineUtils;
     using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
+    using Path = System.IO.Path;
 
     /// <summary>
     /// THis class builds/makes a set of content description templates.

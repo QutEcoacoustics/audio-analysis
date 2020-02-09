@@ -7,12 +7,10 @@ namespace AnalysisPrograms.SourcePreparers
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
     using System.Reflection;
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Tools;
-    using Acoustics.Tools.Audio;
     using AnalysisBase;
     using AnalysisBase.Segment;
     using log4net;

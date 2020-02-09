@@ -5,12 +5,7 @@
 namespace Acoustics.Shared.Extensions
 {
     using System;
-    using System.Collections.Generic;
     using SixLabors.ImageSharp;
-    using System.Linq;
-    using System.Runtime.InteropServices;
-    using System.Text;
-    using SixLabors.ImageSharp.PixelFormats;
 
     public static class RandomExtensions
     {

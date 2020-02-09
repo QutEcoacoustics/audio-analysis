@@ -5,11 +5,7 @@
 namespace Acoustics.Test.Shared
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
     using Acoustics.Shared;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;

@@ -9,11 +9,7 @@
 
 namespace TowseyLibrary
 {
-    using System.IO;
-
     using log4net;
-    using log4net.Config;
-    using log4net.Core;
 
     public static class Log
     {

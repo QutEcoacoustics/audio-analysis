@@ -6,7 +6,6 @@ namespace AnalysisPrograms.Production.Validation
 {
     using System;
     using System.ComponentModel.DataAnnotations;
-    using System.Globalization;
 
     [AttributeUsage(AttributeTargets.Property)]
     public class InRangeAttribute : ValidationAttribute

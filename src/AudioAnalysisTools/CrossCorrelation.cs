@@ -5,9 +5,6 @@
 namespace AudioAnalysisTools
 {
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
     using DSP;
     using TowseyLibrary;
 

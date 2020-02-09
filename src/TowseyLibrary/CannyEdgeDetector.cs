@@ -15,13 +15,10 @@
 namespace AForge.Imaging.Filters
 {
     using System;
-    using System.Buffers;
-    using System.Collections.Generic;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
     using SixLabors.ImageSharp.Processing.Processors.Convolution;
-    using SixLabors.Primitives;
 
     /// <summary>
     /// Base class for filters, which require source image backup to make them applicable to
@@ -60,14 +57,14 @@ namespace AForge.Imaging.Filters
         ///
         /// <exception cref="UnsupportedImageFormatException">Unsupported pixel format of the source image.</exception>
         ///
-        public Image<Gray8> Apply(Image<Rgb24> imageData)
+        public Image<L8> Apply(Image<Rgb24> imageData)
         {
             // get width and height
             int width = imageData.Width;
             int height = imageData.Height;
 
             // create new image of required format
-            var dstImage = new Image<Gray8>(width, height);
+            var dstImage = new Image<L8>(width, height);
 
             // lock destination bitmap data
 
@@ -86,7 +83,7 @@ namespace AForge.Imaging.Filters
         /// <param name="destinationData">Destination image data.</param>
         /// <param name="rect">Image rectangle for processing by the filter.</param>
         /// 
-        protected abstract void ProcessFilter(Image<Rgb24> sourceData, Image<Gray8> destinationData, Rectangle rect);
+        protected abstract void ProcessFilter(Image<Rgb24> sourceData, Image<L8> destinationData, Rectangle rect);
     }
 
 
@@ -222,7 +219,7 @@ namespace AForge.Imaging.Filters
         /// <param name="destination">Destination image data.</param>
         /// <param name="rect">Image rectangle for processing by the filter.</param>
         /// 
-        protected override void ProcessFilter(Image<Rgb24> source, Image<Gray8> destination, Rectangle rect)
+        protected override void ProcessFilter(Image<Rgb24> source, Image<L8> destination, Rectangle rect)
         {
             // processing start and stop X,Y positions
             int startX = rect.Left + 1;
@@ -245,7 +242,7 @@ namespace AForge.Imaging.Filters
 
             // STEP 1 - blur image
             source.Mutate(x => x.ApplyProcessor(this.gaussianFilter));
-            var src = source.CloneAs<Gray8>();
+            var src = source.CloneAs<L8>();
 
             // orientation array
             byte[] orients = new byte[width * height];
@@ -360,12 +357,12 @@ namespace AForge.Imaging.Filters
                     // compare current pixels value with adjacent pixels
                     if ((gradients[x, y] < leftPixel) || (gradients[x, y] < rightPixel))
                     {
-                        destination[startY, startX] = new Gray8(0);
+                        destination[startY, startX] = new L8(0);
                     }
                     else
                     {
                         var result = (byte)(gradients[x, y] / maxGradient * 255);
-                        destination[startY, startX] = new Gray8(result);
+                        destination[startY, startX] = new L8(result);
                     }
                 }
             }
@@ -383,7 +380,7 @@ namespace AForge.Imaging.Filters
                         if (destination[startY, startX].PackedValue < this.LowThreshold)
                         {
                             // non edge
-                            destination[startY, startX] = new Gray8(0);
+                            destination[startY, startX] = new L8(0);
                         }
                         else
                         {
@@ -397,7 +394,7 @@ namespace AForge.Imaging.Filters
                                 (destination[startY + 1, startX].PackedValue < this.HighThreshold) &&
                                 (destination[startY + 1, startX + 1].PackedValue < this.HighThreshold))
                             {
-                                destination[startY, startX] = new Gray8(0);
+                                destination[startY, startX] = new L8(0);
                             }
                         }
                     }

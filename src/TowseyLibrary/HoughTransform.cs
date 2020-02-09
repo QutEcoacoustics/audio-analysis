@@ -4,15 +4,6 @@
 
 namespace TowseyLibrary
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Text;
-    using AForge;
-    using AForge.Imaging;
-    using AForge.Imaging.Filters;
-
     // AT: The following code was disabled in 2020-02 in the port to .NET Core
 
     /*

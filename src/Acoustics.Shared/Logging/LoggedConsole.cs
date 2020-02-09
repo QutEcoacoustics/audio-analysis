@@ -5,10 +5,8 @@
 // ReSharper disable once CheckNamespace
 namespace System
 {
-    using System.IO;
     using System.Text;
     using System.Threading.Tasks;
-    using Acoustics.Shared;
     using Acoustics.Shared.Logging;
     using DustInTheWind.ConsoleTools.Spinners;
     using log4net;
@@ -152,12 +150,11 @@ namespace System
                     var line = Console.ReadLine();
                     return line;
                 });
-                IAsyncResult result = d.BeginInvoke(null, null);
-                result.AsyncWaitHandle.WaitOne(timeout ?? PromptTimeout);
-                if (result.IsCompleted)
+                var task = Task.Run(d);
+                task.Wait(timeout ?? PromptTimeout);
+                if (task.IsCompleted)
                 {
-                    var endInvoke = d.EndInvoke(result);
-                    return endInvoke;
+                    return task.Result;
                 }
 
                 throw new TimeoutException($"Timed out waiting for user input to prompt: \"{prompt}\"");

@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="CriniaTinnula_OBSOLETE.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -8,26 +8,6 @@
 
 namespace AnalysisPrograms.Recognizers
 {
-    using System;
-    using System.Collections.Generic;
-    using SixLabors.ImageSharp;
-    using System.IO;
-    using System.Linq;
-    using System.Reflection;
-    using System.Text;
-    using Acoustics.Shared;
-    using Acoustics.Tools.Wav;
-    using AnalysisBase;
-    using AnalysisBase.ResultBases;
-    using AudioAnalysisTools;
-    using AudioAnalysisTools.DSP;
-    using AudioAnalysisTools.Indices;
-    using AudioAnalysisTools.StandardSpectrograms;
-    using AudioAnalysisTools.WavTools;
-    using Base;
-    using log4net;
-    using TowseyLibrary;
-
     /// <summary>
     /// This is a frog recognizer is designed to detect a short honk (30ms long) that has the structure of stacked harmonics, similar to crow, female koala etc.
     ///

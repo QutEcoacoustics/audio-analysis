@@ -16,7 +16,6 @@ namespace AnalysisPrograms.AnalyseLongRecordings
     using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
-    using System.Reflection;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Contracts;
@@ -29,6 +28,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
     using Production;
     using SixLabors.ImageSharp.PixelFormats;
     using SourcePreparers;
+    using Path = System.IO.Path;
 
     public partial class AnalyseLongRecording
     {

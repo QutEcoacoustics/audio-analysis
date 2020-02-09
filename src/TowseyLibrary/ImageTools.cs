@@ -10,18 +10,13 @@ namespace TowseyLibrary
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
-    using Acoustics.Shared.Extensions;
     using AForge.Imaging.Filters;
     using MathNet.Numerics.LinearAlgebra;
-    using SixLabors.Fonts;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.ColorSpaces;
     using SixLabors.ImageSharp.ColorSpaces.Conversion;
     using SixLabors.ImageSharp.PixelFormats;
-    using SixLabors.ImageSharp.Primitives;
     using SixLabors.ImageSharp.Processing;
-    using SixLabors.ImageSharp.Processing.Processors.Convolution;
-    using SixLabors.Primitives;
 
 
     public enum Kernal
@@ -3007,7 +3002,7 @@ namespace TowseyLibrary
         /// </summary>
         public static Color[] GrayScale()
         {
-            int max = 256;
+            int max = byte.MaxValue;
             Color[] grayScale = new Color[256];
             for (byte c = 0; c < max; c++)
             {
@@ -3697,16 +3692,16 @@ namespace TowseyLibrary
         /// </summary>
         public static Image<T> CombineImagesVertically<T>(List<Image<T>> list) where T : struct, IPixel<T>
         {
-            return CombineImagesVertically(list.ToArray());
+            return CombineImagesVertically(null, list.ToArray());
         }
 
         public static Image<T> CombineImagesVertically<T>(List<Image<T>> list, int maxWidth) where T : struct, IPixel<T>
         {
-            return CombineImagesVertically(list.ToArray(), maxWidth);
+            return CombineImagesVertically(maxWidth, list.ToArray());
         }
         public static Image<T> CombineImagesVertically<T>(params Image<T>[] images) where T : struct, IPixel<T>
         {
-            return CombineImagesVertically<T>(images);
+            return CombineImagesVertically<T>(maximumWidth: null, images);
         }
 
         /// <summary>
@@ -3716,7 +3711,7 @@ namespace TowseyLibrary
         /// <param name="array"></param>
         /// <param name="maximumWidth">The maximum width of the output images</param>
         /// <returns></returns>
-        public static Image<T> CombineImagesVertically<T>(Image<T>[] array, int? maximumWidth = null) where T : struct, IPixel<T>
+        public static Image<T> CombineImagesVertically<T>(int? maximumWidth, Image<T>[] array) where T : struct, IPixel<T>
         {
             int width = maximumWidth ?? array[0].Width;   // assume all images have the same width
 
@@ -3733,7 +3728,8 @@ namespace TowseyLibrary
 
             var compositeBmp = new Image<T>(width, compositeHeight);
             int yOffset = 0;
-            compositeBmp.Mutate(gr => {
+            // TODO: Fix at some point. Using default configuration with parallelism there is some kind of batching bug that causes a crash
+            compositeBmp.Mutate(Drawing.NoParallelConfiguration, gr => {
 
                 //gr.Clear(Color.Black);
                 gr.Clear(Color.DarkGray);
@@ -3745,7 +3741,7 @@ namespace TowseyLibrary
                         continue;
                     }
 
-                    gr.DrawImage(array[i], 0, yOffset); //draw in the top image
+                    gr.DrawImage( array[i], new Point(0, yOffset), 1); //draw in the top image
                     yOffset += array[i].Height;
                 }
             });

@@ -10,25 +10,16 @@
 namespace AnalysisPrograms
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
-    using System.Data;
-    using System.Diagnostics;
     using SixLabors.ImageSharp;
-    using System.Drawing.Imaging;
     using System.IO;
-    using System.Linq;
-    using System.Text;
-    using System.Threading;
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
-    using AnalysisBase;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
-    using AudioAnalysisTools.LongDurationSpectrograms;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using McMaster.Extensions.CommandLineUtils;
@@ -37,6 +28,7 @@ namespace AnalysisPrograms
     using Production.Validation;
     using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
+    using Path = System.IO.Path;
 
     /// <summary>
     /// ACTIVITY NAME = oscillationsGeneric

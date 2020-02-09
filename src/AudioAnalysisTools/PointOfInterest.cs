@@ -11,7 +11,6 @@ namespace AudioAnalysisTools
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using SixLabors.Primitives;
 
     /// <summary>
     /// The point of interest.

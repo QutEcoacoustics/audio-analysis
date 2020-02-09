@@ -9,7 +9,6 @@ namespace Acoustics.Test.AnalysisPrograms
     using System.Diagnostics;
     using System.Linq;
     using System.Threading.Tasks;
-    using Accord.Math.Optimization;
     using Acoustics.Shared;
     using Acoustics.Test.TestHelpers;
     using global::AnalysisPrograms;
@@ -127,28 +126,34 @@ namespace Acoustics.Test.AnalysisPrograms
 
             const string shortName = "ANALYS~1.EXE";
 
-            Process process = new Process();
-            process.StartInfo = new ProcessStartInfo(shortName, $"{CheckEnvironment.CommandName} -n")
+            Debug.WriteLine("Executing in: " + PathHelper.AnalysisProgramsBuild);
+            Process process = new Process
             {
-                EnvironmentVariables =
+                StartInfo = new ProcessStartInfo(shortName, $"{CheckEnvironment.CommandName} -n")
                 {
-                    { MainEntry.ApDefaultLogVerbosityKey, LogVerbosity.All.ToString() },
-                },
-                WorkingDirectory = PathHelper.AnalysisProgramsBuild,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
+                    EnvironmentVariables =
+                    {
+                        { MainEntry.ApDefaultLogVerbosityKey, LogVerbosity.All.ToString() },
+                    },
+                    WorkingDirectory = PathHelper.AnalysisProgramsBuild,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                }
             };
             process.Start();
             process.WaitForExit(milliseconds: 30_000);
 
             var output = process.StandardOutput.ReadToEnd();
+            var error = process.StandardError.ReadToEnd();
 
-            //Debug.WriteLine("Output:\n\n" + output + "\n\n");
-            //Debug.WriteLine("Error:\n\n" + process.StandardError.ReadToEnd() + "\n\n");
+            Debug.WriteLine("Output:\n" + output);
+            Debug.WriteLine("Error:\n" + error);
 
-            StringAssert.Contains(output, "Updating AppDomain APP_CONFIG_FILE to point to `AnalysisPrograms.exe.config`");
-            Assert.IsFalse(output.Contains("ReflectionTypeLoadException"),$"Output should not contain `ReflectionTypeLoadException`.");
+            StringAssert.Contains(output,
+                "!!!IMPORTANT: Executable name is ANALYS~1.EXE and expected name is AnalysisPrograms.exe");
+             Assert.IsFalse(output.Contains("ReflectionTypeLoadException"),$"Output should not contain `ReflectionTypeLoadException`.");
+             Assert.IsFalse(error.Contains("ReflectionTypeLoadException"),$"Output should not contain `ReflectionTypeLoadException`.");
 
             Assert.AreEqual(0, process.ExitCode);
         }
