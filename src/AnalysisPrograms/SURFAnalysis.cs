@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="SURFAnalysis.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -512,30 +512,28 @@ namespace AnalysisPrograms
         {
             var audioFile = segmentSettings.SegmentAudioFile;
             var recording = new AudioRecording(audioFile.FullName);
+            var sourceRecordingName = recording.BaseName;
             var outputDirectory = segmentSettings.SegmentOutputDirectory;
 
             var analysisResult = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration);
-            Config configuration = ConfigFile.Deserialize(analysisSettings.ConfigFile);
 
             bool saveCsv = analysisSettings.AnalysisDataSaveBehavior;
 
-            if (configuration.GetBool(AnalysisKeys.MakeSoxSonogram))
-            {
-                Log.Warn("SoX spectrogram generation config variable found (and set to true) but is ignored when running as an IAnalyzer");
-            }
+            //Config configuration = ConfigFile.Deserialize(analysisSettings.ConfigFile);
+            //if (configuration.GetBool(AnalysisKeys.MakeSoxSonogram))
+            //{
+            //    Log.Warn("SoX spectrogram generation config variable found (and set to true) but is ignored when running as an IAnalyzer");
+            //}
+
+            //var configurationDictionary = new Dictionary<string, string>(configuration.ToDictionary());
+            //configurationDictionary[ConfigKeys.Recording.Key_RecordingCallName] = audioFile.FullName;
+            //configurationDictionary[ConfigKeys.Recording.Key_RecordingFileName] = audioFile.Name;
+            //var soxImage = new FileInfo(Path.Combine(segmentSettings.SegmentOutputDirectory.FullName, audioFile.Name + ".SOX.png"));
 
             // generate spectrogram
-            var configurationDictionary = new Dictionary<string, string>(configuration.ToDictionary());
-            configurationDictionary[ConfigKeys.Recording.Key_RecordingCallName] = audioFile.FullName;
-            configurationDictionary[ConfigKeys.Recording.Key_RecordingFileName] = audioFile.Name;
-            var soxImage = new FileInfo(Path.Combine(segmentSettings.SegmentOutputDirectory.FullName, audioFile.Name + ".SOX.png"));
-
-            var spectrogramResult = Audio2Sonogram.GenerateFourSpectrogramImages(
-                audioFile,
-                soxImage,
-                configurationDictionary,
-                dataOnly: analysisSettings.AnalysisImageSaveBehavior.ShouldSave(analysisResult.Events.Length),
-                makeSoxSonogram: false);
+            // TODO the following may need to be checked since change of method signature in December 2019.
+            var configInfo = ConfigFile.Deserialize<AnalyzerConfig>(analysisSettings.ConfigFile);
+            var spectrogramResult = Audio2Sonogram.GenerateSpectrogramImages(audioFile, configInfo, sourceRecordingName);
 
             // this analysis produces no results!
             // but we still print images (that is the point)

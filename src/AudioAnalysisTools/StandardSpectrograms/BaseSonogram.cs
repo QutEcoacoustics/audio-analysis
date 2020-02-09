@@ -91,6 +91,11 @@ namespace AudioAnalysisTools.StandardSpectrograms
         public double[] DecibelsNormalised { get; set; }
 
         /// <summary>
+        /// Noise profile in decibels
+        /// </summary>
+        public double[] ModalNoiseProfile { get; set; }
+
+        /// <summary>
         /// Gets or sets decibel reference with which to NormaliseMatrixValues the dB values for MFCCs
         /// </summary>
         public double DecibelReference { get; protected set; }
@@ -119,7 +124,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// Initializes a new instance of the <see cref="BaseSonogram"/> class.
         /// BASE CONSTRUCTOR
         /// This constructor contains all steps required to prepare the amplitude spectrogram.
-        /// The third boolean parameter is simply a placefiller to ensure a different Constructor signature
+        /// The third boolean parameter is simply a place-filler to ensure a different Constructor signature.
         /// from the principle Constructor which follows.
         /// </summary>
         /// <param name="config">config file to use</param>
@@ -128,7 +133,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         public BaseSonogram(SonogramConfig config, WavReader wav, bool dummy)
             : this(config)
         {
-            // As of 28 March 2017 drop capability to get subband of spectrogram because was not being used.
+            // As of 28 March 2017 drop capability to get sub-band of spectrogram because was not being used.
             // can be recovered later if desired.
             //bool doExtractSubband = this.SubBandMinHz > 0 || this.SubBandMaxHz < this.NyquistFrequency;
 
@@ -147,7 +152,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             this.MaxAmplitude = wav.CalculateMaximumAmplitude();
 
             var recording = new AudioRecording(wav);
-            var fftdata = DSP_Frames.ExtractEnvelopeAndFfts(
+            var fftData = DSP_Frames.ExtractEnvelopeAndFfts(
                 recording,
                 config.WindowSize,
                 config.WindowOverlap,
@@ -155,14 +160,14 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             // now recover required data
             //epsilon is a signal dependent minimum amplitude value to prevent possible subsequent log of zero value.
-            this.Configuration.epsilon = fftdata.Epsilon;
-            this.Configuration.WindowPower = fftdata.WindowPower;
-            this.FrameCount = fftdata.FrameCount;
-            this.DecibelsPerFrame = fftdata.FrameDecibels;
+            this.Configuration.epsilon = fftData.Epsilon;
+            this.Configuration.WindowPower = fftData.WindowPower;
+            this.FrameCount = fftData.FrameCount;
+            this.DecibelsPerFrame = fftData.FrameDecibels;
 
             //init normalised signal energy array but do nothing with it. This has to be done from outside
             this.DecibelsNormalised = new double[this.FrameCount];
-            this.Data = fftdata.AmplitudeSpectrogram;
+            this.Data = fftData.AmplitudeSpectrogram;
 
             // ENERGY PER FRAME and NORMALISED dB PER FRAME AND SNR
             // currently DoSnr = true by default
@@ -170,14 +175,14 @@ namespace AudioAnalysisTools.StandardSpectrograms
             {
                 // If the FractionOfHighEnergyFrames PRIOR to noise removal exceeds SNR.FractionalBoundForMode,
                 // then Lamel's noise removal algorithm may not work well.
-                if (fftdata.FractionOfHighEnergyFrames > SNR.FractionalBoundForMode)
+                if (fftData.FractionOfHighEnergyFrames > SNR.FractionalBoundForMode)
                 {
                     Log.WriteIfVerbose("\nWARNING ##############");
                     Log.WriteIfVerbose(
-                        $"\t################### BaseSonogram(): This is a high energy recording. Percent of high energy frames = {0:f0} > {1:f0}%",
-                        fftdata.FractionOfHighEnergyFrames * 100,
+                        "\t############### BaseSonogram(): This is a high energy recording. Percent of high energy frames = {0:f0} > {1:f0}%",
+                        fftData.FractionOfHighEnergyFrames * 100,
                         SNR.FractionalBoundForMode * 100);
-                    Log.WriteIfVerbose("\t################### Noise reduction algorithm may not work well in this instance!\n");
+                    Log.WriteIfVerbose("\t############### Noise reduction algorithm may not work well in this instance!\n");
                 }
 
                 //AUDIO SEGMENTATION/END POINT DETECTION - based on Lamel et al
@@ -208,8 +213,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// This BASE CONSTRUCTOR is the one most used - it automatically makes the Amplitude spectrum and
         /// then, using a call to Make(), it converts the Amplitude matrix to a Spectrogram whose values are decibels.
         /// </summary>
-        /// <param name="config">All parameters required to make spectrogram</param>
-        /// <param name="wav">the recording whose spectrogram is to be made</param>
+        /// <param name="config">All parameters required to make spectrogram.</param>
+        /// <param name="wav">The recording whose spectrogram is to be made.</param>
         public BaseSonogram(SonogramConfig config, WavReader wav)
             : this(config, wav, false)
         {
@@ -218,22 +223,21 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseSonogram"/> class.
-        /// Use this BASE CONSTRUCTOR when already have the amplitude spectrogram in matrix
-        /// Init normalised signal energy array but do nothing with it. This has to be done from outside
+        /// Use this BASE CONSTRUCTOR when already have the amplitude spectrogram in matrix.
+        /// Init normalised signal energy array but do nothing with it. This has to be done from outside.
         /// </summary>
-        /// <param name="config">the spectrogram ocnfig</param>
-        /// <param name="amplitudeSpectrogram">an amplitude Spectrogram</param>
-        public BaseSonogram(SonogramConfig config, double[,] amplitudeSpectrogram)
+        /// <param name="config">the spectrogram config.</param>
+        /// <param name="amplitudeSpectrogramData">data of an amplitude Spectrogram.</param>
+        public BaseSonogram(SonogramConfig config, double[,] amplitudeSpectrogramData)
         {
             this.Configuration = config;
-            this.FrameCount = amplitudeSpectrogram.GetLength(0);
+            this.FrameCount = amplitudeSpectrogramData.GetLength(0);
             this.SampleRate = this.Configuration.SampleRate;
 
             //init normalised signal energy array but do nothing with it. This has to be done from outside
             this.DecibelsNormalised = new double[this.FrameCount];
-
-            this.Data = amplitudeSpectrogram;
-            this.Make(this.Data); // Do we need this line???
+            this.Data = amplitudeSpectrogramData;
+            //this.Make(this.Data); // Do we need this line???
         }
 
         public abstract void Make(double[,] amplitudeM);
@@ -296,13 +300,14 @@ namespace AudioAnalysisTools.StandardSpectrograms
             // image height will be half frame size.
             int frameSize = image.Height * 2;
             int hertzInterval = 1000;
-            if (frameSize < 512)
+            if (image.Height < 200)
             {
                 hertzInterval = 2000;
             }
 
             var freqScale = new FrequencyScale(this.NyquistFrequency, frameSize, hertzInterval);
             var compositeImage = this.GetImageFullyAnnotated(image, title, freqScale.GridLineLocations);
+            //image = BaseSonogram.GetImageAnnotatedWithLinearHertzScale(image, sampleRate, frameStep, "DECIBEL SPECTROGRAM");
             return compositeImage;
         }
 
@@ -459,14 +464,14 @@ namespace AudioAnalysisTools.StandardSpectrograms
             int width = matrix.GetLength(0);   // Number of spectra in sonogram
             int fftBins = matrix.GetLength(1);
             DataTools.MinMax(matrix, out double min, out double max);
-            double range = max - min; //for normalisation
+            double range = max - min; //for normalization
 
-            var Mt = new double[fftBins, width];
+            var mt = new double[fftBins, width];
             for (int f = 0; f < fftBins; f++)
             {
                 for (int t = 0; t < width; t++)
                 {
-                    // NormaliseMatrixValues and bound the value - use 0-255 image intensity range
+                    // Normalize MatrixValues and bound the value - use 0-255 image intensity range
                     double value = (matrix[t, f] - min) / range;
                     int c = 255 - (int)Math.Floor(255.0 * value); //original version
                     if (c < 0)
@@ -478,11 +483,11 @@ namespace AudioAnalysisTools.StandardSpectrograms
                         c = 255;
                     }
 
-                    Mt[fftBins - 1 - f, t] = c;
+                    mt[fftBins - 1 - f, t] = c;
                 }
             }
 
-            return Tuple.Create(Mt, min, max);
+            return Tuple.Create(mt, min, max);
         }
 
         public static Image GetSonogramImage(double[,] data, int nyquistFreq, int maxFrequency, bool doMelScale, int binHeight, bool doHighlightSubband, int subBandMinHz, int subBandMaxHz)
@@ -676,35 +681,76 @@ namespace AudioAnalysisTools.StandardSpectrograms
             return avSpectrum;
         }
 
-        public static Image FrameSonogram(Image image, Image titleBar, TimeSpan minuteOffset, TimeSpan xAxisTicInterval, TimeSpan xAxisPixelDuration,
-                                          TimeSpan labelInterval, int nyquist, int herzInterval)
+        /// <summary>
+        /// Draws Frame around image of spectrogram.
+        /// </summary>
+        /// <param name="image">Image of Spectrogram.</param>
+        /// <param name="sampleRate">sample rate of recording. Necessary for both time scale and Hertz scale.</param>
+        /// <param name="frameStep">frame step allows correct time scale to be drawn.</param>
+        /// <param name="title">Descriptive title of the spectrogram.</param>
+        /// <returns>The framed spectrogram image.</returns>
+        public static Image GetImageAnnotatedWithLinearHertzScale(Image image, int sampleRate, int frameStep, string title)
         {
-            double secondsDuration = xAxisPixelDuration.TotalSeconds * image.Width;
+            var titleBar = DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
+            var startTime = TimeSpan.Zero;
+            var xAxisTicInterval = TimeSpan.FromSeconds(1);
+            TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(frameStep / (double)sampleRate);
+            var labelInterval = TimeSpan.FromSeconds(5);
+            var nyquist = sampleRate / 2;
+            int hertzInterval = 1000;
+            if (image.Height < 200)
+            {
+                hertzInterval = 2000;
+            }
+
+            image = FrameSonogram(image, titleBar, startTime, xAxisTicInterval, xAxisPixelDuration, labelInterval, nyquist, hertzInterval);
+            return image;
+        }
+
+        /// <summary>
+        /// This method draws only top and bottom time scales and adds the title bar.
+        /// It does NOT include the frequency grid lines.
+        /// </summary>
+        public static Image FrameSonogram(
+            Image sonogramImage,
+            Image titleBar,
+            TimeSpan minuteOffset,
+            TimeSpan xAxisTicInterval,
+            TimeSpan xAxisPixelDuration,
+            TimeSpan labelInterval)
+        {
+            int imageWidth = sonogramImage.Width;
+            var timeBmp = ImageTrack.DrawShortTimeTrack(minuteOffset, xAxisPixelDuration, xAxisTicInterval, labelInterval, imageWidth, "Seconds");
+            Image[] imageArray = { titleBar, timeBmp, sonogramImage, timeBmp };
+            return ImageTools.CombineImagesVertically(imageArray);
+        }
+
+        /// <summary>
+        /// This method assumes that the height of the passed sonogram image is half of the original frame size.
+        /// This assumption allows the frequency scale grid lines to be placed at the correct intervals.
+        /// </summary>
+        public static Image FrameSonogram(
+            Image sonogramImage,
+            Image titleBar,
+            TimeSpan minuteOffset,
+            TimeSpan xAxisTicInterval,
+            TimeSpan xAxisPixelDuration,
+            TimeSpan labelInterval,
+            int nyquist,
+            int hertzInterval)
+        {
+            double secondsDuration = xAxisPixelDuration.TotalSeconds * sonogramImage.Width;
             var fullDuration = TimeSpan.FromSeconds(secondsDuration);
 
             // init frequency scale
-            int frameSize = image.Height;
-            var freqScale = new FrequencyScale(nyquist, frameSize, herzInterval);
-            SpectrogramTools.DrawGridLinesOnImage((Bitmap)image, minuteOffset, fullDuration, xAxisTicInterval, freqScale);
+            int frameSize = sonogramImage.Height * 2;
+            var freqScale = new FrequencyScale(nyquist, frameSize, hertzInterval);
+            SpectrogramTools.DrawGridLinesOnImage((Bitmap)sonogramImage, minuteOffset, fullDuration, xAxisTicInterval, freqScale);
 
-            int imageWidth = image.Width;
-            int trackHeight = 20;
-            int imageHt = image.Height + trackHeight + trackHeight + trackHeight;
-
-            var timeBmp = DrawTimeTrack(minuteOffset, xAxisPixelDuration, xAxisTicInterval, labelInterval, imageWidth, trackHeight, "Seconds");
-
-            var compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image
-            var gr = Graphics.FromImage(compositeBmp);
-            gr.Clear(Color.Black);
-            int offset = 0;
-            gr.DrawImage(titleBar, 0, offset); //draw in the top time scale
-            offset += timeBmp.Height;
-            gr.DrawImage(timeBmp, 0, offset); //draw
-            offset += titleBar.Height;
-            gr.DrawImage(image, 0, offset); //draw
-            offset += image.Height;
-            gr.DrawImage(timeBmp, 0, offset); //draw
-            return compositeBmp;
+            int imageWidth = sonogramImage.Width;
+            var timeBmp = ImageTrack.DrawShortTimeTrack(minuteOffset, xAxisPixelDuration, xAxisTicInterval, labelInterval, imageWidth, "Seconds");
+            Image[] imageArray = { titleBar, timeBmp, sonogramImage, timeBmp };
+            return ImageTools.CombineImagesVertically(imageArray);
         }
 
         public static Image DrawTitleBarOfGrayScaleSpectrogram(string title, int width)
@@ -717,62 +763,21 @@ namespace AudioAnalysisTools.StandardSpectrograms
             var stringFont = new Font("Arial", 9);
 
             //string text = title;
-            int X = 4;
-            g.DrawString(title, stringFont, Brushes.Wheat, new PointF(X, 3));
+            int x = 4;
+            g.DrawString(title, stringFont, Brushes.Wheat, new PointF(x, 3));
 
             var stringSize = g.MeasureString(title, stringFont);
-            X += stringSize.ToSize().Width + 70;
+            x += stringSize.ToSize().Width + 70;
             string text = Meta.OrganizationTag;
             stringSize = g.MeasureString(text, stringFont);
             int x2 = width - stringSize.ToSize().Width - 2;
-            if (x2 > X)
+            if (x2 > x)
             {
                 g.DrawString(text, stringFont, Brushes.Wheat, new PointF(x2, 3));
             }
 
             // g.DrawLine(pen, duration + 1, 0, trackWidth, 0);
             g.DrawLine(new Pen(Color.Gray), 0, 0, width, 0); //draw upper boundary
-            return bmp;
-        }
-
-        // mark of time scale according to scale.
-        public static Bitmap DrawTimeTrack(TimeSpan offsetMinute, TimeSpan xAxisPixelDuration, TimeSpan xAxisTicInterval, TimeSpan labelInterval, int trackWidth, int trackHeight, string title)
-        {
-            var bmp = new Bitmap(trackWidth, trackHeight);
-            var g = Graphics.FromImage(bmp);
-            g.Clear(Color.Black);
-
-            double elapsedTime = offsetMinute.TotalSeconds;
-            double pixelDuration = xAxisPixelDuration.TotalSeconds;
-            int labelSecondsInterval = (int)labelInterval.TotalSeconds;
-            var whitePen = new Pen(Color.White);
-            var stringFont = new Font("Arial", 8);
-
-            // for columns, draw in second lines
-            double xInterval = (int)(xAxisTicInterval.TotalMilliseconds / xAxisPixelDuration.TotalMilliseconds);
-
-            // for pixels in the line
-            for (int x = 1; x < trackWidth; x++)
-            {
-                elapsedTime += pixelDuration;
-                if (x % xInterval <= pixelDuration)
-                {
-                    g.DrawLine(whitePen, x, 0, x, trackHeight);
-                    int totalSeconds = (int)Math.Round(elapsedTime);
-                    if (totalSeconds % labelSecondsInterval == 0)
-                    {
-                        int minutes = totalSeconds / 60;
-                        int seconds = totalSeconds % 60;
-                        string time = $"{minutes}m{seconds}s";
-                        g.DrawString(time, stringFont, Brushes.White, new PointF(x + 1, 2)); //draw time
-                    }
-                }
-            }
-
-            g.DrawLine(whitePen, 0, 0, trackWidth, 0); //draw upper boundary
-            g.DrawLine(whitePen, 0, trackHeight - 1, trackWidth, trackHeight - 1); //draw lower boundary
-            g.DrawLine(whitePen, trackWidth, 0, trackWidth, trackHeight - 1); //draw right end boundary
-            g.DrawString(title, stringFont, Brushes.White, new PointF(4, 3));
             return bmp;
         }
     }

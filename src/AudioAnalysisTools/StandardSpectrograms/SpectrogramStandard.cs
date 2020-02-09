@@ -1,4 +1,4 @@
-﻿// <copyright file="SpectrogramStandard.cs" company="QutEcoacoustics">
+// <copyright file="SpectrogramStandard.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -27,6 +27,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             : base(config, amplitudeSpectrogram)
         {
             this.Configuration = config;
+            this.Duration = config.Duration;
             this.FrameCount = amplitudeSpectrogram.GetLength(0);
             this.Data = amplitudeSpectrogram;
             this.Make(this.Data);
