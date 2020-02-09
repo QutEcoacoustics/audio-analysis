@@ -532,7 +532,7 @@ CVR:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 0.2
+  NormMax: 0.4
   CalculateNormBounds: false
   ProjectID: Acoustic Indices
   Units: ""
@@ -565,7 +565,7 @@ EVN:
   DefaultValue: 0.0
   DoDisplay: true
   NormMin: 0.0
-  NormMax: 2.0
+  NormMax: 4.0
   CalculateNormBounds: false
   ProjectID: Acoustic Indices
   Units: "events/s"

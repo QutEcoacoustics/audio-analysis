@@ -3,12 +3,11 @@
 // </copyright>
 
 // Defines the ConcatenateIndexFiles type.
-//
 // Action code for this activity = "concatenateIndexFiles"
+
 // Activity Codes for other tasks to do with spectrograms and audio files:
-//
-// audio2csv - Calls AnalyseLongRecording.Execute(): Outputs acoustic indices and LD false-colour spectrograms.
-// audio2sonogram - Calls AnalysisPrograms.Audio2Sonogram.Main(): Produces a sonogram from an audio file - EITHER custom OR via SOX.Generates multiple spectrogram images and oscilllations info
+// audio2csv - Calls AnalyseLongRecording.Execute(): Outputs acoustic indices and LD false-color spectrograms.
+// audio2sonogram - Calls AnalysisPrograms.Audio2Sonogram.Main(): Produces a sonogram from an audio file - EITHER custom OR via SOX.Generates multiple spectrogram images and oscillations info
 // indicescsv2image - Calls DrawSummaryIndexTracks.Main(): Input csv file of summary indices. Outputs a tracks image.
 // colourspectrogram - Calls DrawLongDurationSpectrograms.Execute():  Produces LD spectrograms from matrices of indices.
 // zoomingspectrograms - Calls DrawZoomingSpectrograms.Execute():  Produces LD spectrograms on different time scales.
@@ -33,15 +32,15 @@ namespace AnalysisPrograms
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
+    using AnalysisPrograms.Production;
+    using AnalysisPrograms.Production.Arguments;
+    using AnalysisPrograms.Production.Validation;
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
     using AudioAnalysisTools.StandardSpectrograms;
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
-    using Production;
-    using Production.Arguments;
-    using Production.Validation;
     using TowseyLibrary;
     using Zio;
 
@@ -65,7 +64,7 @@ namespace AnalysisPrograms
                 Description = "One or more directories where the original csv files are located.")]
             public DirectoryInfo[] InputDataDirectories { get; set; }
 
-            [Obsolete("Originally hack to get around powerargs limitation, can probably be removed soon")]
+            [Obsolete("Originally hack to get around power-args limitation, can probably be removed soon")]
             [Option(
                 CommandOptionType.SingleValue,
                 Description = "One directory where the original csv files are located. This option exists as an alternative to input data directories")]
@@ -78,7 +77,7 @@ namespace AnalysisPrograms
             [LegalFilePath]
             public DirectoryInfo OutputDirectory { get; set; }
 
-            [Option(Description = "Used to get the required data.csv files, which are assumed to be in a matching dir or subdirectory. E.g. use name of audio file suffix e.g.: *.wav")]
+            [Option(Description = "Used to get the required data.csv files, which are assumed to be in a matching dir or sub-directory. E.g. use name of audio file suffix e.g.: *.wav")]
             public string DirectoryFilter { get; set; }
 
             [Option(
@@ -104,17 +103,17 @@ namespace AnalysisPrograms
 
             [Option(
                 CommandOptionType.NoValue,
-                Description = "Draw false-colour spectrograms after concatenating index files",
+                Description = "Draw false-color spectrograms after concatenating index files",
                 ShortName = "")]
             public bool DrawImages { get; set; } = true;
 
             [Option(
-                Description = "The mapping of indices to colour channel in false-colour spectrogram 1",
+                Description = "The mapping of indices to color channel in false-color spectrogram 1",
                 ShortName = "")]
             public string ColorMap1 { get; set; }
 
             [Option(
-                Description = "The mapping of indices to colour channel in false-colour spectrogram 2",
+                Description = "The mapping of indices to color channel in false-color spectrogram 2",
                 ShortName = "")]
             public string ColorMap2 { get; set; }
 
