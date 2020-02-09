@@ -314,6 +314,7 @@ namespace AnalysisPrograms.ContentDescription
         {
             string colorMap1 = ldSpectrogramConfig.ColorMap1; // SpectrogramConstants.RGBMap_ACI_ENT_EVN;
             string colorMap2 = ldSpectrogramConfig.ColorMap2; // SpectrogramConstants.RGBMap_BGN_PMN_OSC;
+            double blueEnhanceParameter = ldSpectrogramConfig.BlueEnhanceParameter.Value;
 
             var cs1 = new LDSpectrogramRGB(ldSpectrogramConfig, indexGenerationData, colorMap1);
             string fileStem = basename;
@@ -347,8 +348,8 @@ namespace AnalysisPrograms.ContentDescription
             cs1.DrawGreyScaleSpectrograms(outputDirectory, fileStem, keys);
 
             // create two false-color spectrogram images
-            var image1NoChrome = cs1.DrawFalseColourSpectrogramChromeless(cs1.ColorMode, colorMap1);
-            var image2NoChrome = cs1.DrawFalseColourSpectrogramChromeless(cs1.ColorMode, colorMap2);
+            var image1NoChrome = cs1.DrawFalseColorSpectrogramChromeless(cs1.ColorMode, colorMap1, blueEnhanceParameter);
+            var image2NoChrome = cs1.DrawFalseColorSpectrogramChromeless(cs1.ColorMode, colorMap2, blueEnhanceParameter);
             var spacer = new Bitmap(image1NoChrome.Width, 10);
             var imageList = new[] { image1NoChrome, spacer, image2NoChrome, spacer };
             Image image3 = ImageTools.CombineImagesVertically(imageList);
