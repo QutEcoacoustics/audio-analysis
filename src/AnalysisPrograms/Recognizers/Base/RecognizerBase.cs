@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="RecognizerBase.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -19,15 +19,12 @@ namespace AnalysisPrograms.Recognizers.Base
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
-    using Acoustics.Tools.Wav;
-    using AcousticWorkbench;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-    using Production;
     using TowseyLibrary;
 
     public abstract class RecognizerBase : AbstractStrongAnalyser, IEventRecognizer
@@ -91,7 +88,6 @@ namespace AnalysisPrograms.Recognizers.Base
                 / acousticIndicesConfig.HighResolutionIndices.IndexCalculationDuration);
 
             // execute actual analysis
-            Config configuration = analysisSettings.Configuration;
             RecognizerResults results = this.Recognize(
                 recording,
                 analysisSettings.Configuration,

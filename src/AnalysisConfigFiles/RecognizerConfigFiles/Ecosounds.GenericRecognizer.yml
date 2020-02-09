@@ -1,0 +1,91 @@
+---
+# This yml config is designed to detect acoustic objects in an artificial test file prepared by Anthony Trukinger.
+# The file contains a whistle, a rectangular blob and a group of 12 smaller whistles in a 6x2 grid that can be used to detect oscillations and harmonics (perhaps)
+# Resample rate must be 2 X the desired Nyquist
+ResampleRate: 22050
+# SegmentDuration: units=seconds;    
+SegmentDuration: 60
+# SegmentOverlap: units=seconds;
+SegmentOverlap: 0
+
+# Each of these profiles will be analyzed
+Profiles:
+    Whistles: !WhistleParameters
+        FrameSize: 256
+        FrameStep: 256
+        WindowFunction: HANNING
+        BgNoiseThreshold: 6.0
+        # min and max of the freq band to search
+        MinHertz: 100          
+        MaxHertz: 1000
+        BottomHertzBuffer: 0
+        TopHertzBuffer: 0
+        MinDuration: 0.4
+        MaxDuration: 8.0
+        DecibelThreshold: 6.0
+        ComponentName: Whistle 
+        SpeciesName: Artifical
+    LargeBlob: !BlobParameters
+        FrameSize: 512
+        FrameStep: 512
+        BgNoiseThreshold: 6.0
+        # min and max of the freq band to search
+        MinHertz: 4600          
+        MaxHertz: 7000
+        BottomHertzBuffer: 1000
+        TopHertzBuffer: 1000
+        MinDuration: 1.0
+        MaxDuration: 3.0
+        DecibelThreshold: 9.0
+        ComponentName: Blob 
+        SpeciesName: Artifical
+    GroupBlob: !OscillationParameters
+        FrameSize: 512
+        FrameStep: 512
+        MinHertz: 600          
+        MaxHertz: 2000
+        DecibelThreshold: 6.0
+        # duration of DCT in seconds 
+        DctDuration: 4.0
+        # minimum acceptable value of a DCT coefficient
+        DctThreshold: 0.5
+        # ignore oscillation rates below the min & above the max threshold
+        # A sample of four wingbeats yielded an average of 5.1 +/-0.5 beats/s.
+        # 95% confidence interval (2 SDs) is therefore approx 4-6 beats/s.    
+        # OSCILLATIONS PER SECOND
+        MinOscillationFrequency: 1        
+        MaxOscillationFrequency: 2
+        # Minimum and maximum duration for the length of a true call.
+        MinDuration: 5.0
+        MaxDuration: 10.0
+        # Event threshold - use this to determine FP / FN trade-off for events.
+        EventThreshold: 0.5
+        ComponentName: Oscillation
+        SpeciesName: Artificial
+
+
+# Common settings
+#Standard: &STANDARD
+#EventThreshold: 0.2
+#BgNoiseThreshold: 3.0
+
+# This notation means the a profile has all of the settings that the Standard profile has,
+# however, the DctDuration parameter has been overridden.
+#  <<: *STANDARD
+#  DctDuration: 0.3
+
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveIntermediateWavFiles: Never
+SaveIntermediateCsvFiles: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+# "True" is useful when debugging but "WhenEventsDetected" is required for operational use.
+SaveSonogramImages: True
+#SaveSonogramImages: WhenEventsDetected
+# DisplayCsvImage is obsolete - ensure it remains set to: false
+DisplayCsvImage: false
+## End section for AnalyzeLongRecording
+
+# Other config files to reference
+
+HighResolutionIndicesConfig: "../Towsey.Acoustic.HiResIndicesForRecognisers.yml"
+...

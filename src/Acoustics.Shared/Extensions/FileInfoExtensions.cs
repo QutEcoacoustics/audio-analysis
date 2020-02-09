@@ -17,6 +17,7 @@ namespace System
     using System;
     using Text;
     using Acoustics.Shared.Contracts;
+    using JetBrains.Annotations;
     using log4net;
 
     public static class FileInfoExtensions
@@ -177,6 +178,8 @@ namespace System
         {
             return infos.Select(x => x.FullName).FormatList();
         }
+
+        public static string[] ReadAllLines([NotNull] this FileInfo file) => File.ReadAllLines(file.FullName);
     }
 
     public class FileInfoNameComparer : IComparer<FileInfo>, IEqualityComparer<FileInfo>

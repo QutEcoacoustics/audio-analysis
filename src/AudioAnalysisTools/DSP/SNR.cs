@@ -491,7 +491,7 @@ namespace AudioAnalysisTools.DSP
 
         /// <summary>
         /// Calculates the mean intensity in a freq band defined by its min and max freq.
-        /// THis method adds dB log values incorrectly but it is faster than doing many log conversions.
+        /// THis method averages dB log values incorrectly but it is faster than doing many log conversions.
         /// This method is used to find acoustic events and is accurate enough for the purpose.
         /// </summary>
         public static double[] CalculateFreqBandAvIntensity(double[,] sonogram, int minHz, int maxHz, int nyquist)
@@ -514,6 +514,50 @@ namespace AudioAnalysisTools.DSP
             }
 
             return intensity;
+        }
+
+        /// <summary>
+        /// Calculates the average intensity in a freq band having min and max freq,
+        /// AND then subtracts average intensity in the side/buffer bands, below and above.
+        /// THis method adds dB log values incorrectly but it is faster than doing many log conversions.
+        /// This method is used to find acoustic events and is accurate enough for the purpose.
+        /// </summary>
+        public static double[] CalculateFreqBandAvIntensityMinusBufferIntensity(double[,] sonogramData, int minHz, int maxHz, int bottomHzBuffer, int topHzBuffer, int nyquist)
+        {
+            var bandIntensity = SNR.CalculateFreqBandAvIntensity(sonogramData, minHz, maxHz, nyquist);
+            var bottomSideBandIntensity = SNR.CalculateFreqBandAvIntensity(sonogramData, minHz - bottomHzBuffer, minHz, nyquist);
+            var topSideBandIntensity = SNR.CalculateFreqBandAvIntensity(sonogramData, maxHz, maxHz + topHzBuffer, nyquist);
+
+            int frameCount = sonogramData.GetLength(0);
+            double[] netIntensity = new double[frameCount];
+            for (int i = 0; i < frameCount; i++)
+            {
+                netIntensity[i] = bandIntensity[i] - bottomSideBandIntensity[i] - topSideBandIntensity[i];
+            }
+
+            return netIntensity;
+        }
+
+        /// <summary>
+        /// Calculates the average intensity in a freq band having min and max freq,
+        /// AND then subtracts average intensity in the side/buffer bands, below and above.
+        /// THis method adds dB log values incorrectly but it is faster than doing many log conversions.
+        /// This method is used to find acoustic events and is accurate enough for the purpose.
+        /// </summary>
+        public static double[] CalculateWhistleIntensity(double[,] sonogramData, int minHz, int maxHz, int bottomHzBuffer, int topHzBuffer, int nyquist)
+        {
+            var bandIntensity = SNR.CalculateFreqBandAvIntensity(sonogramData, minHz, maxHz, nyquist);
+            var bottomSideBandIntensity = SNR.CalculateFreqBandAvIntensity(sonogramData, minHz - bottomHzBuffer, minHz, nyquist);
+            var topSideBandIntensity = SNR.CalculateFreqBandAvIntensity(sonogramData, maxHz, maxHz + topHzBuffer, nyquist);
+
+            int frameCount = sonogramData.GetLength(0);
+            double[] netIntensity = new double[frameCount];
+            for (int i = 0; i < frameCount; i++)
+            {
+                netIntensity[i] = bandIntensity[i] - bottomSideBandIntensity[i] - topSideBandIntensity[i];
+            }
+
+            return netIntensity;
         }
 
         private static double CalculateFractionOfHighEnergyFrames(double[] dbArray, double dbThreshold)

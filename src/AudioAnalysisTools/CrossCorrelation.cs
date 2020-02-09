@@ -1,4 +1,4 @@
-﻿// <copyright file="CrossCorrelation.cs" company="QutEcoacoustics">
+// <copyright file="CrossCorrelation.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -29,6 +29,7 @@ namespace AudioAnalysisTools
 
         //public const string key_COUNT = "count";
 
+        /*
         public static Tuple<double[,], double[,], double[,], double[]> DetectBarsUsingXcorrelation(double[,] m, int rowStep, int rowWidth, int colStep, int colWidth,
                                                                                                  double intensityThreshold, int zeroBinCount)
          {
@@ -103,6 +104,7 @@ namespace AudioAnalysisTools
 
              return Tuple.Create(intensityMatrix, periodicityMatrix, hitsMatrix, array2return);
          }
+         */
 
         /// <summary>
         /// This method assume the matrix is derived from a spectrogram rotated so that the matrix rows are spectral columns of sonogram.
@@ -152,84 +154,107 @@ namespace AudioAnalysisTools
             return Tuple.Create(intensity, periodicity);
         } //DetectBarsInTheRowsOfaMatrix()
 
-         /// A METHOD TO DETECT HARMONICS IN THE ROWS of the passed portion of a sonogram.
-         /// This method assume the matrix is derived from a spectrogram rotated so that the matrix rows are spectral columns of sonogram.
-         /// Was first developed for crow calls.
-         /// First looks for a decibel profile that matches the passed call duration and decibel loudness
-         /// Then samples the centre portion for the correct harmonic period.
-         /// </summary>
-         /// <param name="m"></param>
-         /// <param name="amplitudeThreshold"></param>
-         /// <returns></returns>
+        /// <summary>
+        /// A METHOD TO DETECT HARMONICS IN THE ROWS of the passed portion of a sonogram.
+        /// This method assume the matrix is derived from a spectrogram rotated so that the matrix rows are spectral columns of sonogram.
+        /// Was first developed for crow calls.
+        /// First looks for a decibel profile that matches the passed call duration and decibel loudness.
+        /// Then samples the centre portion for the correct harmonic period.
+        /// </summary>
+        /// <param name="m">data matrix.</param>
+        /// <param name="dBThreshold">Minimum sound level.</param>
+        /// <param name="callSpan">Minimum length of call of interest.</param>
+        /// <returns>a tuple.</returns>
         public static Tuple<double[], double[], double[]> DetectHarmonicsInSonogramMatrix(double[,] m, double dBThreshold, int callSpan)
          {
-             int zeroBinCount = 3; //to remove low freq content which dominates the spectrum
-             int halfspan = callSpan / 2;
+            int rowCount = m.GetLength(0);
+            int colCount = m.GetLength(1);
+            var intensity = new double[rowCount];     //an array of period intensity
+            var periodicity = new double[rowCount];   //an array of the periodicity values
+            double[] dBArray = MatrixTools.GetRowAverages(m);
+            dBArray = DataTools.filterMovingAverage(dBArray, 3);
 
-             double[] dBArray = MatrixTools.GetRowAverages(m);
-             dBArray = DataTools.filterMovingAverage(dBArray, 3);
-
-             bool doNoiseRemoval = true;
-             if (doNoiseRemoval)
-             {
-                 double StandardDeviationCount = 0.1; // number of noise SDs to calculate noise threshold - determines severity of noise reduction
-                 SNR.BackgroundNoise bgn = SNR.SubtractBackgroundNoiseFromSignal(dBArray, StandardDeviationCount);
-                 dBArray = bgn.NoiseReducedSignal;
-             }
-
-             bool[] peaks = DataTools.GetPeaks(dBArray);
-
-             int rowCount = m.GetLength(0);
-             int colCount = m.GetLength(1);
-             var intensity = new double[rowCount];     //an array of period intensity
-             var periodicity = new double[rowCount];     //an array of the periodicity values
-
-             for (int r = halfspan; r < rowCount - halfspan; r++)
-             {
-                 //APPLY A FILTER: must satisfy the following conditions for a call.
-                 if (!peaks[r])
+            // for all time frames
+            for (int t = 0; t < rowCount; t++)
+            {
+                if (dBArray[t] < dBThreshold)
                 {
                     continue;
                 }
 
-                 if (dBArray[r] < dBThreshold)
-                {
-                    continue;
-                }
-
-                 double lowerDiff = dBArray[r] - dBArray[r - halfspan];
-                 double upperDiff = dBArray[r] - dBArray[r + halfspan];
-                 if (lowerDiff < dBThreshold || upperDiff < dBThreshold)
-                {
-                    continue;
-                }
-
-                 double[] prevRow = DataTools.DiffFromMean(MatrixTools.GetRow(m, r - 1));
-                 double[] thisRow = DataTools.DiffFromMean(MatrixTools.GetRow(m, r));
-                 var spectrum = AutoAndCrossCorrelation.CrossCorr(prevRow, thisRow);
-
-                 for (int s = 0; s < zeroBinCount; s++)
+                var row = MatrixTools.GetRow(m, t);
+                var spectrum = AutoAndCrossCorrelation.CrossCorr(row, row);
+                int zeroBinCount = 3; //to remove low freq content which dominates the spectrum
+                for (int s = 0; s < zeroBinCount; s++)
                 {
                     spectrum[s] = 0.0;  //in real data these bins are dominant and hide other frequency content
                 }
 
-                 spectrum = DataTools.NormaliseArea(spectrum);
-                 int maxId = DataTools.GetMaxIndex(spectrum);
-                 double intensityValue = spectrum[maxId];
-                 intensity[r] = intensityValue;
+                spectrum = DataTools.NormaliseArea(spectrum);
+                int maxId = DataTools.GetMaxIndex(spectrum);
+                double intensityValue = spectrum[maxId];
+                intensity[t] = intensityValue;
 
-                 double period = 0.0;
-                 if (maxId != 0)
+                double period = 0.0;
+                if (maxId != 0)
                 {
-                    period = 2 * colCount / (double)maxId;
+                   period = 2 * colCount / (double)maxId;
                 }
 
-                 periodicity[r] = period;
+                periodicity[t] = period;
+            }// rows of matrix
 
-                 prevRow = thisRow;
-             }// rows
+            return Tuple.Create(dBArray, intensity, periodicity);
+        }
 
-             return Tuple.Create(dBArray, intensity, periodicity);
-         } //DetectHarmonicsInSonogramMatrix()
-    } //class
+        /// <summary>
+        /// A METHOD TO DETECT HARMONICS IN THE sub-band of a sonogram.
+        /// This method assume the matrix is derived from a spectrogram rotated so that the matrix rows are spectral columns of sonogram.
+        /// Developed for GenericRecognizer of harmonics.
+        /// </summary>
+        /// <param name="m">data matrix.</param>
+        /// <param name="dBThreshold">Minimum sound level.</param>
+        /// <returns>two arrays.</returns>
+        public static Tuple<double[], double[], int[]> DetectHarmonicsInSonogramMatrix(double[,] m, double dBThreshold)
+        {
+            int rowCount = m.GetLength(0);
+            int colCount = m.GetLength(1);
+            double[] dBArray = new double[rowCount];
+            var intensity = new double[rowCount];     //an array of formant intensity
+            var maxIndexArray = new int[rowCount];    //an array of max value index values
+            var binCount = m.GetLength(1);
+            double[,] cosines = MFCCStuff.Cosines(binCount, binCount); //set up the cosine coefficients
+
+            // for all time frames
+            for (int t = 0; t < rowCount; t++)
+            {
+                var frame = MatrixTools.GetRow(m, t);
+                double maxValue = frame.Max();
+                dBArray[t] = maxValue;
+                if (maxValue < dBThreshold)
+                {
+                    continue;
+                }
+
+                double[] xr = AutoAndCrossCorrelation.AutoCrossCorr(frame);
+
+                // xr has twice length of frame and is symmetrical.
+                // Require only first half. Also need to normalise the values for overlap count.
+                double[] normXr = new double[colCount];
+                for (int i = 0; i < colCount; i++)
+                {
+                    normXr[i] = xr[i] / (colCount - i);
+                }
+
+                // now do DCT across the auto cross xr
+                int lowerDctBound = 2;
+                var dctCoefficients = Oscillations2012.DoDct(normXr, cosines, lowerDctBound);
+                int indexOfMaxValue = DataTools.GetMaxIndex(dctCoefficients);
+                intensity[t] = dctCoefficients[indexOfMaxValue];
+                maxIndexArray[t] = indexOfMaxValue;
+            } // frames = rows of matrix
+
+            return Tuple.Create(dBArray, intensity, maxIndexArray);
+        }
+    }
 }
