@@ -31,6 +31,7 @@ namespace AnalysisPrograms
     using System.Reflection;
     using System.Threading.Tasks;
     using Acoustics.Shared;
+    using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
     using AnalysisPrograms.Production;
     using AnalysisPrograms.Production.Arguments;
@@ -77,8 +78,9 @@ namespace AnalysisPrograms
             [LegalFilePath]
             public DirectoryInfo OutputDirectory { get; set; }
 
-            [Option(Description = "Used to get the required data.csv files, which are assumed to be in a matching dir or sub-directory. E.g. use name of audio file suffix e.g.: *.wav")]
-            public string DirectoryFilter { get; set; }
+            [Option(Description =
+                "Used to get the required data.csv files, which are assumed to be in a matching dir or sub-directory. E.g. use name of audio file suffix e.g.: `*.wav`. The default is `*.wav`")]
+            public string DirectoryFilter { get; set; } = "*.wav";
 
             [Option(
                 CommandOptionType.SingleValue,
@@ -173,6 +175,8 @@ namespace AnalysisPrograms
 !
 !   THIS IS A BETA COMMAND.
 !   It generally works but only for very narrow scenarios. Your mileage *will* vary.
+!
+!   DO NOT USE THE OUTPUT INDICES FOR QUANTITATIVE ANALYSIS.
 !");
 
             if (arguments.InputDataDirectory != null)
@@ -267,6 +271,12 @@ namespace AnalysisPrograms
                 output.Create();
             }
 
+            if (arguments.FileStemName.IsNullOrEmpty())
+            {
+                arguments.FileStemName = arguments.InputDataDirectories.First().Name;
+                Log.Warn($"FileStemName was empty had a default value of `{arguments.FileStemName}` was used");
+            }
+
             string outputFileStem = arguments.FileStemName;
 
             // SET UP DEFAULT SITE LOCATION INFO --  DISCUSS IWTH ANTHONY
@@ -283,8 +293,28 @@ namespace AnalysisPrograms
 
             // the following are required if drawing the index images
             IndexGenerationData indexGenerationData = null;
-            FileInfo indexPropertiesConfig = null;
+            FileInfo indexPropertiesConfig;
+            if (arguments.IndexPropertiesConfig.IsNullOrEmpty())
+            {
+                indexPropertiesConfig = ConfigFile.Default<IndexPropertiesCollection>();
+                Log.Warn($"IndexPropertiesConfig file not provided, using default: {indexPropertiesConfig}");
+            }
+            else
+            {
+                indexPropertiesConfig = ConfigFile.Resolve(arguments.IndexPropertiesConfig.ToString());
+            }
+
+            FileInfo ldSpectrogramConfigFile = null;
             LdSpectrogramConfig ldSpectrogramConfig = null;
+            if (arguments.FalseColourSpectrogramConfig.IsNullOrEmpty())
+            {
+                ldSpectrogramConfigFile = ConfigFile.Default<LdSpectrogramConfig>();
+                Log.Warn($"FalseColourSpectrogramConfig file not provided, using default: {ldSpectrogramConfig}");
+            }
+            else
+            {
+                ldSpectrogramConfigFile = ConfigFile.Resolve(arguments.FalseColourSpectrogramConfig.ToString());
+            }
 
             if (arguments.DrawImages)
             {
@@ -299,9 +329,8 @@ namespace AnalysisPrograms
 
                 // prepare the LDFC spgm config file or set up a default config
                 // WARNING: This default config is used when testing. If you alter these defaults, Unit Test results may be affected.
-                var colourSpectrogramConfig = arguments?.FalseColourSpectrogramConfig?.ToFileInfo();
-                ldSpectrogramConfig = (colourSpectrogramConfig?.Exists ?? false)
-                    ? LdSpectrogramConfig.ReadYamlToConfig(colourSpectrogramConfig)
+                ldSpectrogramConfig = (ldSpectrogramConfigFile?.Exists ?? false)
+                    ? LdSpectrogramConfig.ReadYamlToConfig(ldSpectrogramConfigFile)
                     : new LdSpectrogramConfig();
 
                 // the user should have provided ColorMap arguments which we insert here
