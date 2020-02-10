@@ -198,6 +198,13 @@ namespace AnalysisPrograms
         /// <returns><value>True</value> if modifications were made.</returns>
         internal static bool CheckAndUpdateApplicationConfig()
         {
+            if (AppConfigHelper.IsMono)
+            {
+                // this issue *should* not occur when AP.exe is invoked with a mono prefix...
+                Log.Verbose("Skipping app config name check for mono.");
+                return false;
+            }
+
             // TODO: DOTNET CORE - we can expect most of this method to not work, it needs to
             // tested again.
             var executableName = Process.GetCurrentProcess().MainModule.ModuleName;
