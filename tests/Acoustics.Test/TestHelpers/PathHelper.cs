@@ -20,8 +20,7 @@ namespace Acoustics.Test.TestHelpers
             var split = directory.Split(Path.DirectorySeparatorChar);
 
             // the assumption is that the repo is always checked out and named with this name
-            var index = split.IndexOf(x=> x == "audio-analysis");
-
+            var index = split.IndexOf(x => x == "audio-analysis");
 
             if (index < 0)
             {
@@ -32,8 +31,8 @@ namespace Acoustics.Test.TestHelpers
 
             CodeBase = context.DeploymentDirectory;
             TestResources = Path.Combine(SolutionRoot, "tests", "Fixtures");
-            
-            AnalysisProgramsBuild = Path.Combine(SolutionRoot, "src", "AnalysisPrograms", "bin", "debug", "netcoreapp3.1");
+
+            AnalysisProgramsBuild = Path.Combine(SolutionRoot, "src", "AnalysisPrograms", "bin", "Debug", "netcoreapp3.1");
         }
 
         public static string AnalysisProgramsBuild { get; private set; }

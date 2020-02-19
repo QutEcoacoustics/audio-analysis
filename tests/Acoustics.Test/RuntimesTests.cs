@@ -8,6 +8,7 @@ namespace Acoustics.Test
     using System.Diagnostics;
     using System.IO;
     using System.Text.RegularExpressions;
+    using Acoustics.Shared.Extensions;
     using global::AnalysisPrograms;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
@@ -88,6 +89,20 @@ namespace Acoustics.Test
 
             var ciBuild = Environment.GetEnvironmentVariable("CI_BUILD");
             Assert.AreEqual(string.IsNullOrWhiteSpace(ciBuild) ? "000" : ciBuild, BuildMetadata.CiBuild);
+        }
+
+        [TestMethod]
+        public void HasSupportForLongPaths()
+        {
+            var random = TestHelpers.Random.GetRandom();
+            var longPath = @"\\?\C:\";
+            while (longPath.Length < 1024)
+            {
+                longPath += random.NextGuid().ToString();
+            }
+
+            // this should fail if not supported
+            var info = new FileInfo(longPath);
         }
     }
 }

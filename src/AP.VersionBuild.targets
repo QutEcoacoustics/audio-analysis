@@ -1,83 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <MSBuildCommunityTasksPath>.build</MSBuildCommunityTasksPath>
-  </PropertyGroup>
-  <Import Project="$(MSBuildCommunityTasksPath)\MSBuild.Community.Tasks.Targets" />
-  <UsingTask AssemblyFile="$(MSBuildCommunityTasksLib)" TaskName="MSBuild.Community.Tasks.Git.GitCommits" />
   <!-- Condition="'$(Configuration)' == 'Release' Or !Exists('Properties\AssemblyInfo.cs')" -->
-
   <!-- Register our task that as something to run before standard build target -->
   <Target Name="APVersionBeforeBuild" BeforeTargets="PrepareForBuild">
-    <GitVersion Short="false">
-      <Output TaskParameter="CommitHash" PropertyName="GitCommitHash" />
-    </GitVersion>
-    <GitBranch>
-      <Output TaskParameter="Branch" PropertyName="GitBranch" />
-    </GitBranch>
-    <GitDescribe Always="True">
-      <Output TaskParameter="Tag" PropertyName="GitDescribeTag" />
-      <Output TaskParameter="CommitHash" PropertyName="GitDescribeHash" />
-      <Output TaskParameter="CommitCount" PropertyName="GitDescribeCommitCount" />
-    </GitDescribe>
-    <!--    <GitCommits>-->
-    <!--      <Output TaskParameter="CommitsCount" PropertyName="GitCommitsCount" />-->
-    <!--    </GitCommits>-->
-    <PropertyGroup>
-      <TagCommand>--tags --simplify-by-decoration --first-parent --pretty="format:%ai %d" --after="$([System.DateTime]::Now.ToString("yyyy-MM-01T00:00Z"))"</TagCommand>
-    </PropertyGroup>
-    <GitClient Command="log" Arguments="$(TagCommand)">
-      <Output TaskParameter="ConsoleOutput" ItemName="GitTagCount" />
-    </GitClient>
-    <Message Text="[APVersionBeforeBuild] Tags command: $(TagCommand)" Importance="High" />
-    <Message Text="[APVersionBeforeBuild] Tags this month: @(GitTagCount)" Importance="High" />
-    <GitPendingChanges>
-      <Output TaskParameter="HasPendingChanges" PropertyName="GitHasPendingChanges" />
-    </GitPendingChanges>
-    <PropertyGroup>
-      <year>$([System.DateTime]::Now.ToString("yy"))</year>
-      <month>$([System.DateTime]::Now.ToString("%M"))</month>
-      <buildDate>$([System.DateTime]::UtcNow.ToString("o"))</buildDate>
-      <APPVEYOR_BUILD_NUMBER Condition="''=='$(APPVEYOR_BUILD_NUMBER)'">000</APPVEYOR_BUILD_NUMBER>
-      <GitBranch Condition="''=='$(GitBranch)'">$(APPVEYOR_REPO_BRANCH)</GitBranch>
-      <version>$(year).$(month).@(GitTagCount-&gt;Count()).$(GitDescribeCommitCount)</version>
-      <isDirty Condition="$(GitHasPendingChanges)">DIRTY</isDirty>
-      <InformationalVersion>$(version)-$(GitBranch)-$(GitCommitHash)-$(isDirty)-CI:$(APPVEYOR_BUILD_NUMBER)</InformationalVersion>
-    </PropertyGroup>
-    <ItemGroup>
-      <Tokens Include="Version">
-        <ReplacementValue>$(version)</ReplacementValue>
-      </Tokens>
-      <Tokens Include="InformationalVersion">
-        <ReplacementValue>$(InformationalVersion)</ReplacementValue>
-      </Tokens>
-      <Tokens Include="BuildDate">
-        <ReplacementValue>$(buildDate)</ReplacementValue>
-      </Tokens>
-      <Tokens Include="GitCommit">
-        <ReplacementValue>$(GitCommitHash)</ReplacementValue>
-      </Tokens>
-      <Tokens Include="GitBranch">
-        <ReplacementValue>$(GitBranch)</ReplacementValue>
-      </Tokens>
-      <Tokens Include="IsDirty">
-        <ReplacementValue>$(GitHasPendingChanges.ToString().ToLower())</ReplacementValue>
-      </Tokens>
-      <Tokens Include="CiBuild">
-        <ReplacementValue>$(APPVEYOR_BUILD_NUMBER)</ReplacementValue>
-      </Tokens>
-      <Tokens Include="Year">
-        <ReplacementValue>20$(year)</ReplacementValue>
-      </Tokens>
-      <Tokens Include="RootNameSpace">
-        <ReplacementValue>$(RootNameSpace)</ReplacementValue>
-      </Tokens>
-    </ItemGroup>
-    <Message Text="[APVersionBeforeBuild] Last Tag: $(GitDescribeTag)%0a[APVersionBeforeBuild] Hash: $(GitDescribeHash)%0a[APVersionBeforeBuild] CommitCount: $(GitDescribeCommitCount)" Importance="High" />
-    <Message Text="[APVersionBeforeBuild] Updating assembly version with: $(version)!" Importance="High" />
+    <Exec Command="pwsh -noprofile $(ProjectDir)../git_version.ps1" ConsoleToMSBuild="True" EchoOff="False">
+       <Output TaskParameter="ConsoleOutput" PropertyName="VersionMetadata" />
+    </Exec>
+  </Target>
+  <Import Project="AssemblyMetadata.Generated.targets" />
+  <Target Name="APVersionMessage" AfterTargets="APVersionLoadProperties">
+    <Message Text="[APVersionBeforeBuild] Last Tag: $(LastTag)%0a[APVersionBeforeBuild] Hash: $(CommitHashShort)%0a[APVersionBeforeBuild] CommitCount: $(CommitsSinceLastTag)" Importance="High" />
+    <Message Text="[APVersionBeforeBuild] Updating assembly version with: $(Version)!" Importance="High" />
     <Message Text="[APVersionBeforeBuild] InformationalVersion: $(InformationalVersion)" Importance="High" />
-    <TemplateFile Tokens="@(Tokens)"
-                  Template="$(MSBuildThisFileDirectory)\AssemblyMetadata.cs.template"
-                  OutputFilename="$(MSBuildThisFileDirectory)\AssemblyMetadata.Generated.cs" />
   </Target>
 </Project>

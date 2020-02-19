@@ -17,10 +17,5 @@
     <Copy SourceFiles="@(ConfigFiles)" DestinationFolder="$(TargetDir)\ConfigFiles\%(RecursiveDir)" SkipUnchangedFiles="true" />
     <Message Text="[APCopyFilesAfterBuild]: $(MSBuildProjectName)" Importance="High" />
   </Target>
-  <Target Name="CopyExtraRuntimeFiles" AfterTargets="Build" Condition="'$(MSBuildProjectName)' == 'AnalysisPrograms'">
-    <!-- https://github.com/QutEcoacoustics/audio-analysis/issues/241 -->
-    <!--See also MainEntry.CheckAndUpdateApplicationConfig -->
-    <Copy SourceFiles="$(TargetDir)\AnalysisPrograms.runtimeconfig.json" DestinationFiles="$(TargetDir)\ANALYS~1.runtimeconfig.json" SkipUnchangedFiles="true" />
-    <Message Text="[APCopyFilesAfterBuild]: Copied extra runtimeconfig.json file" Importance="High" />
-  </Target>
+
 </Project>

@@ -1,12 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <ProductVersion />
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <AssemblyTitle>Acoustics.Test</AssemblyTitle>
     <Product>Acoustics.Test</Product>
-    <Copyright>Copyright ©  2012</Copyright>
-    <CodeAnalysisRuleSet>..\..\style.ruleset</CodeAnalysisRuleSet>
     <LangVersion>latest</LangVersion>
     <OutputPath>bin\$(Configuration)\</OutputPath>
   </PropertyGroup>
@@ -15,9 +12,6 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
-  </PropertyGroup>
-  <PropertyGroup>
-    <PostBuildEvent />
   </PropertyGroup>
   <Target Name="CleanupTestAssets" AfterTargets="Clean">
     <Message Text="[AfterClean]: Deleting all extra files in $(TargetDir) (Unit tests don't clean up after themselves very well!)" Importance="High" />
@@ -32,12 +26,10 @@
     <PackageReference Include="MSTest.TestAdapter" Version="2.1.0" />
     <PackageReference Include="MSTest.TestFramework" Version="2.1.0" />
     <PackageReference Include="StringTokenFormatter" Version="4.0.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <AdditionalFiles Include="..\..\stylecop.json">
-      <Link>stylecop.json</Link>
-    </AdditionalFiles>
-    <None Include=".runsettings" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.164">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\AnalysisBase\AnalysisBase.csproj" />
@@ -47,8 +39,5 @@
     <ProjectReference Include="..\..\src\Acoustics.Shared\Acoustics.Shared.csproj" />
     <ProjectReference Include="..\..\src\Acoustics.Tools\Acoustics.Tools.csproj" />
     <ProjectReference Include="..\..\src\AcousticWorkbench\AcousticWorkbench.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Remove="ConcatenationTests.cs" />
   </ItemGroup>
 </Project>

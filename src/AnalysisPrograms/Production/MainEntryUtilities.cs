@@ -206,13 +206,14 @@ namespace AnalysisPrograms
         [Obsolete("No longer and issue on .NET Core")]
         internal static bool CheckAndUpdateApplicationConfig()
         {
+            // TODO CORE: remove when tested
             // https://github.com/QutEcoacoustics/audio-analysis/issues/241
             var executableName = Process.GetCurrentProcess().MainModule.ModuleName;
-            var expectedName = Assembly.GetAssembly(typeof(MainEntry)).ManifestModule.ScopeName;
-
+            var expectedName = Assembly.GetAssembly(typeof(MainEntry)).ManifestModule.ScopeName.Replace(".dll", ".exe");
+            Log.Verbose($"!!! IMPORTANT: Executable name is {executableName} and expected name is {expectedName}");
             if (expectedName != executableName)
             {
-                Log.Verbose($"!!! IMPORTANT: Executable name is {executableName} and expected name is {expectedName}");
+                Log.Warn($"!!! IMPORTANT: Executable name is {executableName} and expected name is {expectedName}");
             }
 
             return false;

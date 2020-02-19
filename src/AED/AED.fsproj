@@ -8,14 +8,14 @@
     <Name>AED</Name>
       <WarningLevel>3</WarningLevel>
     <OutputPath>bin\$(Configuration)\</OutputPath>
-    <Deterministic>false</Deterministic>
+    <Deterministic>true</Deterministic>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugType>full</DebugType>
+    <DebugType>portable</DebugType>
     <Tailcalls>false</Tailcalls>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
+    <DebugType>portable</DebugType>
     <Tailcalls>true</Tailcalls>
   </PropertyGroup>
     <ItemGroup>

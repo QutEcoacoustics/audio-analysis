@@ -13,18 +13,18 @@ using System.Runtime.InteropServices;
 
 
 
-[assembly: AssemblyVersion("${Version}")]
-[assembly: AssemblyFileVersion("${Version}")]
-[assembly: AssemblyInformationalVersion("${InformationalVersion}")]
-[assembly: AssemblyMetadata("BuildDate","${BuildDate}")]
-[assembly: AssemblyMetadata("GitCommit","${GitCommit}")]
-[assembly: AssemblyMetadata("GitBranch","${GitBranch}")]
-[assembly: AssemblyMetadata("IsDirty","${IsDirty}")]
-[assembly: AssemblyMetadata("CiBuild","${CiBuild}")]
-[assembly: AssemblyCopyright("Copyright © QUT 2007-${Year}")]
+[assembly: AssemblyVersion("${version}")]
+[assembly: AssemblyFileVersion("${version}")]
+[assembly: AssemblyInformationalVersion("${informational_version}")]
+[assembly: AssemblyMetadata("BuildDate","${build_date}")]
+[assembly: AssemblyMetadata("GitCommit","${commit_hash}")]
+[assembly: AssemblyMetadata("GitBranch","${branch}")]
+[assembly: AssemblyMetadata("IsDirty","${is_dirty}")]
+[assembly: AssemblyMetadata("CiBuild","${build_number}")]
+[assembly: AssemblyCopyright("Copyright © QUT 2007-${year}")]
 
 
-namespace ${RootNamespace}
+namespace AnalysisPrograms
 {
     using System;
 
@@ -33,13 +33,13 @@ namespace ${RootNamespace}
     /// </summary>
     public static partial class BuildMetadata
     {
-        public const string VersionString = "${Version}";
-        public const string BuildDate = "${BuildDate}";
-        public const string GitCommit = "${GitCommit}";
-        public const string GitBranch = "${GitBranch}";
-        public const bool IsDirty = ${IsDirty};
-        public const string CiBuild = "${CiBuild}";
+        public const string VersionString = "${version}";
+        public const string BuildDate = "${build_date}";
+        public const string GitCommit = "${commit_hash}";
+        public const string GitBranch = "${branch}";
+        public const bool IsDirty = ${is_dirty};
+        public const string CiBuild = "${build_number}";
 
-        public static readonly Version Version = new Version("${Version}");
+        public static readonly Version Version = new Version("${version}");
     }
 }

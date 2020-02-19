@@ -28,11 +28,15 @@ Required Software
 
 The required software for developing new code (not running the program) includes:
 
+- A PowerShell Core (version 6+) install
+    - You can install it from here: https://github.com/powershell/powershell#get-powershell
 - The latest .NET Core SDK
     - You can download it from here: https://dotnet.microsoft.com/download/dotnet-core/
 - An IDE:
     - Visual Studio 2019 (Windows only)
-        - .NET Core SDK for Visual Studio 2019
+        - Install features:
+            - C# Development
+            - .NET Core SDK for Visual Studio 2019
         - If you're at a university that has an Office365 Subscription you can download software from https://azureforeducation.microsoft.com/devtools
         - The [community edition](https://visualstudio.microsoft.com/vs/) of Visual Studio should work fine and is totally free
         - [Optional] Resharper Ulitmate (Academic License)
@@ -40,8 +44,8 @@ The required software for developing new code (not running the program) includes
           - ReSpeller Free
     - VS Code
         - C# Extension
-
-- [msysgit](https://git-for-windows.github.io/)
+- msysgit or a git executable on PATH
+    - https://git-for-windows.github.io/
 
 Binary Large Objects (BLOBs)
 ----------------------------
