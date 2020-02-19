@@ -9,7 +9,7 @@ namespace AnalysisPrograms
     using System.Threading.Tasks;
     using AnalysisPrograms.Production.Arguments;
     using McMaster.Extensions.CommandLineUtils;
-    using Log = TowseyLibrary.Log;
+    using Log = System.LoggedConsole;
 
     /// <summary>
     /// Activity Code for this class:= sandpit
@@ -40,7 +40,6 @@ namespace AnalysisPrograms
             public override Task<int> Execute(CommandLineApplication app)
             {
                 var tStart = DateTime.Now;
-                Log.Verbosity = 1;
                 Log.WriteLine("# Start Time = " + tStart.ToString(CultureInfo.InvariantCulture));
 
                 // CONTENT DESCRIPTION

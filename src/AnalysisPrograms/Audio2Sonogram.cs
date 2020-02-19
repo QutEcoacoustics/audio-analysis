@@ -30,8 +30,10 @@ namespace AnalysisPrograms
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
     using SixLabors.ImageSharp.PixelFormats;
-    using TowseyLibrary;
+    using SixLabors.ImageSharp.Processing;
+    //using TowseyLibrary;
     using Path = System.IO.Path;
+    using TowseyLibrary;
 
     /// <summary>
     /// Produces standard greyscale spectrograms of various types from a wav audio file.
@@ -104,7 +106,7 @@ namespace AnalysisPrograms
 
             // 5: Save the image
             var outputImageFile = new FileInfo(Path.Combine(output.FullName, sourceName + ".Spectrograms.png"));
-            result.CompositeImage.Save(outputImageFile.FullName, ImageFormat.Png);
+            result.CompositeImage.Save(outputImageFile.FullName);
         }
 
         /// <summary>
@@ -130,9 +132,6 @@ namespace AnalysisPrograms
             var recordingSegment = new AudioRecording(sourceRecording.FullName);
             int sampleRate = recordingSegment.WavReader.SampleRate;
             var result = new AudioToSonogramResult();
-
-            // init the image stack
-            var list = new List<Image>();
 
             bool doWaveForm = configInfo.GetBoolOrNull("Waveform") ?? false;
             bool doDecibelSpectrogram = configInfo.GetBoolOrNull("DecibelSpectrogram") ?? false;
@@ -171,12 +170,13 @@ namespace AnalysisPrograms
             };
 
             // IMAGE 1) draw the WAVEFORM
+            Image<Rgb24> waveformImage = null;
             if (doWaveForm)
             {
                 var minValues = dspOutput1.MinFrameValues;
                 var maxValues = dspOutput1.MaxFrameValues;
                 int height = configInfo.GetIntOrNull("WaveformHeight") ?? 180;
-                var waveformImage = GetWaveformImage(minValues, maxValues, height);
+                waveformImage = GetWaveformImage(minValues, maxValues, height);
 
                 // add in the title bar and time scales.
                 string title = $"WAVEFORM - {sourceRecordingName} (min value={dspOutput1.MinSignalValue:f3}, max value={dspOutput1.MaxSignalValue:f3})";
@@ -186,19 +186,15 @@ namespace AnalysisPrograms
                 TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(frameStep / (double)sampleRate);
                 var labelInterval = TimeSpan.FromSeconds(5);
                 waveformImage = BaseSonogram.FrameSonogram(waveformImage, titleBar, startTime, xAxisTicInterval, xAxisPixelDuration, labelInterval);
-                list.Add(waveformImage);
             }
 
             // Draw various decibel spectrograms
+            Image<Rgb24> decibelImage = null;
+            Image<Rgb24> noiseReducedImage = null;
+            Image<Rgb24> differenceImage = null;
+            Image<Rgb24> experimentalImage = null;
             if (doDecibelSpectrogram || doNoiseReducedSpectrogram || doDifferenceSpectrogram || doExperimentalSpectrogram)
             {
-                // init the image stack
-                var list = new List<Image<Rgb24>>();
-
-                // IMAGE 1) draw amplitude spectrogram
-                var recordingSegment = new AudioRecording(sourceRecording.FullName);
-                var sonoConfig = new SonogramConfig(configDict); // default values config
-
                 // disable noise removal for first two spectrograms
                 var disabledNoiseReductionType = sonoConfig.NoiseReductionType;
                 sonoConfig.NoiseReductionType = NoiseReductionType.None;
@@ -209,10 +205,10 @@ namespace AnalysisPrograms
                 double[,] dbSpectrogramData = (double[,])decibelSpectrogram.Data.Clone();
 
                 // IMAGE 2) DecibelSpectrogram
+                
                 if (doDecibelSpectrogram)
                 {
-                    var image3 = decibelSpectrogram.GetImageFullyAnnotated($"DECIBEL SPECTROGRAM ({sourceRecordingName})");
-                    list.Add(image3);
+                    decibelImage = decibelSpectrogram.GetImageFullyAnnotated($"DECIBEL SPECTROGRAM ({sourceRecordingName})");
                 }
 
                 if (doNoiseReducedSpectrogram || doExperimentalSpectrogram || doDifferenceSpectrogram)
@@ -226,176 +222,65 @@ namespace AnalysisPrograms
                     // IMAGE 3) DecibelSpectrogram - noise reduced
                     if (doNoiseReducedSpectrogram)
                     {
-                        var image4 = decibelSpectrogram.GetImageFullyAnnotated($"DECIBEL SPECTROGRAM + Lamel noise subtraction. ({sourceRecordingName})");
-                        list.Add(image4);
+                        noiseReducedImage = decibelSpectrogram.GetImageFullyAnnotated($"DECIBEL SPECTROGRAM + Lamel noise subtraction. ({sourceRecordingName})");
                     }
 
                     // IMAGE 4) EXPERIMENTAL Spectrogram
                     if (doExperimentalSpectrogram)
                     {
                         sonoConfig.NoiseReductionType = disabledNoiseReductionType;
-                        var image5 = GetDecibelSpectrogram_Ridges(dbSpectrogramData, decibelSpectrogram, sourceRecordingName);
-                        list.Add(image5);
+                        experimentalImage = GetDecibelSpectrogram_Ridges(dbSpectrogramData, decibelSpectrogram, sourceRecordingName);
                     }
 
                     // IMAGE 5) draw difference spectrogram
                     if (doDifferenceSpectrogram)
                     {
                         var differenceThreshold = configInfo.GetDoubleOrNull("DifferenceThreshold") ?? 3.0;
-                        var image6 = GetDifferenceSpectrogram(dbSpectrogramData, differenceThreshold);
-                        image6 = BaseSonogram.GetImageAnnotatedWithLinearHertzScale(image6, sampleRate, frameStep, $"DECIBEL DIFFERENCE SPECTROGRAM ({sourceRecordingName})");
-                        list.Add(image6);
+                        differenceImage = GetDifferenceSpectrogram(dbSpectrogramData, differenceThreshold);
+                        differenceImage = BaseSonogram.GetImageAnnotatedWithLinearHertzScale(differenceImage, sampleRate, frameStep, $"DECIBEL DIFFERENCE SPECTROGRAM ({sourceRecordingName})");
                     }
                 }
             }
 
-                //save spectrogram data at this point - prior to noise reduction
-                var spectrogramDataBeforeNoiseReduction = sonogram.Data;
-
-                const double neighbourhoodSeconds = 0.25;
-                int neighbourhoodFrames = (int)(sonogram.FramesPerSecond * neighbourhoodSeconds);
-                const double lcnContrastLevel = 0.001;
-                LoggedConsole.WriteLine("LCN: FramesPerSecond (Prior to LCN) = {0}", sonogram.FramesPerSecond);
-                LoggedConsole.WriteLine("LCN: Neighbourhood of {0} seconds = {1} frames", neighbourhoodSeconds, neighbourhoodFrames);
-                const int lowPercentile = 20;
-                sonogram.Data = NoiseRemoval_Briggs.NoiseReduction_byLowestPercentileSubtraction(sonogram.Data, lowPercentile);
-                sonogram.Data = NoiseRemoval_Briggs.NoiseReduction_byLCNDivision(sonogram.Data, neighbourhoodFrames, lcnContrastLevel);
-
-                //sonogram.Data = NoiseRemoval_Briggs.NoiseReduction_byLowestPercentileSubtraction(sonogram.Data, lowPercentile);
-
-                var image = sonogram.GetImageFullyAnnotated("AMPLITUDE SPECTROGRAM + Bin LCN (Local Contrast Normalisation)");
-                list.Add(image);
-
-                //string path2 = @"C:\SensorNetworks\Output\Sonograms\dataInput2.png";
-                //Histogram.DrawDistributionsAndSaveImage(sonogram.Data, path2);
-
-                // double[,] matrix = sonogram.Data;
-                double[,] matrix = ImageTools.WienerFilter(sonogram.Data, 3);
-                double ridgeThreshold = 0.25;
-                byte[,] hits = RidgeDetection.Sobel5X5RidgeDetectionExperiment(matrix, ridgeThreshold);
-                hits = RidgeDetection.JoinDisconnectedRidgesInMatrix(hits, matrix, ridgeThreshold);
-                image = SpectrogramTools.CreateFalseColourAmplitudeSpectrogram(spectrogramDataBeforeNoiseReduction, null, hits);
-                image = sonogram.GetImageAnnotatedWithLinearHerzScale(image, "AMPLITUDE SPECTROGRAM + LCN + ridge detection");
-                list.Add(image);
-
-                var envelopeImage = ImageTrack.DrawWaveEnvelopeTrack(recordingSegment, image.Width);
-                list.Add(envelopeImage);
-
-                // IMAGE 2) now draw the standard decibel spectrogram
-                sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
-                result.DecibelSpectrogram = (SpectrogramStandard)sonogram;
-                image = sonogram.GetImageFullyAnnotated("DECIBEL SPECTROGRAM");
-                list.Add(image);
-
-                var segmentationImage = ImageTrack.DrawSegmentationTrack(
-                    sonogram,
-                    EndpointDetectionConfiguration.K1Threshold,
-                    EndpointDetectionConfiguration.K2Threshold,
-                    image.Width);
-                list.Add(segmentationImage);
-
-                // keep the sonogram data for later use
-                double[,] dbSpectrogramData = (double[,])sonogram.Data.Clone();
-
-                // 3) now draw the noise reduced decibel spectrogram
-                // #NOISE REDUCTION PARAMETERS - restore noise reduction ##################################################################
-                sonoConfig.NoiseReductionType = disabledNoiseReductionType;
-                sonoConfig.NoiseReductionParameter = double.Parse(configDict[AnalysisKeys.NoiseBgThreshold] ?? "2.0");
-
-                // #NOISE REDUCTION PARAMETERS - MARINE HACK ##################################################################
-                //sonoConfig.NoiseReductionType = NoiseReductionType.FIXED_DYNAMIC_RANGE;
-                //sonoConfig.NoiseReductionParameter = 80.0;
-
-                sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
-                image = sonogram.GetImageFullyAnnotated("DECIBEL SPECTROGRAM + Lamel noise subtraction");
-                list.Add(image);
-
-                // keep the sonogram data for later use
-                double[,] nrSpectrogramData = sonogram.Data;
-
-                // 4) A FALSE-COLOUR VERSION OF SPECTROGRAM
-                // ########################### SOBEL ridge detection
-                ridgeThreshold = 3.5;
-                matrix = ImageTools.WienerFilter(dbSpectrogramData, 3);
-                hits = RidgeDetection.Sobel5X5RidgeDetectionExperiment(matrix, ridgeThreshold);
-
-                // ########################### EIGEN ridge detection
-                //double ridgeThreshold = 6.0;
-                //double dominanceThreshold = 0.7;
-                //var rotatedData = MatrixTools.MatrixRotate90Anticlockwise(dbSpectrogramData);
-                //byte[,] hits = RidgeDetection.StructureTensorRidgeDetection(rotatedData, ridgeThreshold, dominanceThreshold);
-                //hits = MatrixTools.MatrixRotate90Clockwise(hits);
-                // ########################### EIGEN ridge detection
-
-                image = SpectrogramTools.CreateFalseColourDecibelSpectrogram(dbSpectrogramData, nrSpectrogramData, hits);
-                image = sonogram.GetImageAnnotatedWithLinearHerzScale(image, "DECIBEL SPECTROGRAM - Colour annotated");
-
-                list.Add(image);
-
-                // 5) TODO: ONE OF THESE YEARS FIX UP THE CEPTRAL SONOGRAM
-                ////SpectrogramCepstral cepgram = new SpectrogramCepstral((AmplitudeSonogram)amplitudeSpg);
-                ////var mti3 = SpectrogramTools.Sonogram2MultiTrackImage(sonogram, configDict);
-                ////var image3 = mti3.GetImage();
-                ////image3.Save(fiImage.FullName + "3");
-
-                // 6) COMBINE THE SPECTROGRAM IMAGES
-                result.CompositeImage = ImageTools.CombineImagesVertically(list);
-            }
-
-            // 8) SOX SPECTROGRAM
-            //if (doSoxSpectrogram)
-            //{
-            //Log.Warn("SoX spectrogram set to true but is ignored when running as an IAnalyzer");
-
-            // The following parameters were once used to implement a sox spectrogram.
-            //bool makeSoxSonogram = configuration.GetBoolOrNull(AnalysisKeys.MakeSoxSonogram) ?? false;
-            //configDict[AnalysisKeys.SonogramTitle] = configuration[AnalysisKeys.SonogramTitle] ?? "Sonogram";
-            //configDict[AnalysisKeys.SonogramComment] = configuration[AnalysisKeys.SonogramComment] ?? "Sonogram produced using SOX";
-            //configDict[AnalysisKeys.SonogramColored] = configuration[AnalysisKeys.SonogramColored] ?? "false";
-            //configDict[AnalysisKeys.SonogramQuantisation] = configuration[AnalysisKeys.SonogramQuantisation] ?? "128";
-            //configDict[AnalysisKeys.AddTimeScale] = configuration[AnalysisKeys.AddTimeScale] ?? "true";
-            //configDict[AnalysisKeys.AddAxes] = configuration[AnalysisKeys.AddAxes] ?? "true";
-            //configDict[AnalysisKeys.AddSegmentationTrack] = configuration[AnalysisKeys.AddSegmentationTrack] ?? "true";
-            //    var soxFile = new FileInfo(Path.Combine(output.FullName, sourceName + "SOX.png"));
-            //    SpectrogramTools.MakeSonogramWithSox(sourceRecording, configDict, path2SoxSpectrogram);
-            // list.Add(image7);
-            //}
 
             // COMBINE THE SPECTROGRAM IMAGES
-            result.CompositeImage = ImageTools.CombineImagesVertically(list);
+            result.CompositeImage = ImageTools.CombineImagesVertically(waveformImage, decibelImage, noiseReducedImage, experimentalImage, differenceImage);
             return result;
         }
 
-        public static Image GetWaveformImage(double[] minValues, double[] maxValues, int imageHeight)
+        public static Image<Rgb24> GetWaveformImage(double[] minValues, double[] maxValues, int imageHeight)
         {
             var range = imageHeight / 2;
             var imageWidth = minValues.Length;
-            var image = new Bitmap(imageWidth, imageHeight);
-            var canvas = Graphics.FromImage(image);
-            canvas.Clear(Color.Black);
-            var pen = new Pen(Color.Lime);
+            var image = Drawing.NewImage(imageWidth, imageHeight, Color.Black);
+            
+            
+            var pen = Color.Lime.ToPen();
 
-            for (var i = 0; i < imageWidth; i++)
+            image.Mutate(canvas =>
             {
-                var y1 = range - (int)Math.Ceiling(minValues[i] * range);
-                var y2 = range - (int)Math.Ceiling(maxValues[i] * range);
-                canvas.DrawLine(pen, i, y1, i, y2);
-            }
+                for (var i = 0; i < imageWidth; i++)
+                {
+                    var y1 = range - (int)Math.Ceiling(minValues[i] * range);
+                    var y2 = range - (int)Math.Ceiling(maxValues[i] * range);
+                    canvas.DrawLine(pen, i, y1, i, y2);
+                }
 
-            // draw axis labels
-            var pen2 = new Pen(Color.White);
-            var pen3 = new Pen(Color.Black);
-            canvas.DrawLine(pen3, 0, range, imageWidth, range);
-            canvas.DrawLine(pen2, imageWidth / 2, 0, imageWidth / 2, imageHeight);
-            var stringFont = new Font("Arial", 9);
-            var brush = new SolidBrush(Color.LightGray);
-            canvas.DrawString("+1.0", stringFont, brush, (imageWidth / 2) + 2, 10.0F);
-            canvas.DrawString("-1.0", stringFont, brush, (imageWidth / 2) + 2, imageHeight - 20.0F);
+                // draw axis labels
+                var pen2 = Color.White.ToPen();
+                var pen3 = Color.Black.ToPen();
+                canvas.DrawLine(pen3, 0, range, imageWidth, range);
+                canvas.DrawLine(pen2, imageWidth / 2, 0, imageWidth / 2, imageHeight);
+                var stringFont = Drawing.Arial9;
+                var brush = Color.LightGray;
+                canvas.DrawText("+1.0", stringFont, brush, new PointF((imageWidth / 2) + 2, 10.0f));
+                canvas.DrawText("-1.0", stringFont, brush, new PointF((imageWidth / 2) + 2, imageHeight - 20.0f));
+            });
 
             return image;
         }
 
-        public static Image GetDifferenceSpectrogram(double[,] spectrogramData, double threshold)
+        public static Image<Rgb24> GetDifferenceSpectrogram(double[,] spectrogramData, double threshold)
         {
             var rowCount = spectrogramData.GetLength(0);
             var colCount = spectrogramData.GetLength(1);
@@ -438,40 +323,6 @@ namespace AnalysisPrograms
                         dM[r, c] = 0.0;
                     }
                 }
-
-                // 1. get the config dictionary
-                var configDict = GetConfigDictionary(configFile, true);
-                configDict[ConfigKeys.Recording.Key_RecordingCallName] = sourceRecording.FullName;
-                configDict[ConfigKeys.Recording.Key_RecordingFileName] = sourceRecording.Name;
-
-                // 2. Create temp copy of recording
-                int resampleRate = Convert.ToInt32(configDict[AnalysisKeys.ResampleRate]);
-                var tempAudioSegment = AudioRecording.CreateTemporaryAudioFile(sourceRecording, output, resampleRate);
-
-                // 3. GET composite image of 4 sonograms
-                var sourceName = Path.GetFileNameWithoutExtension(sourceRecording.Name);
-                var soxImage = new FileInfo(Path.Combine(output.FullName, sourceName + ".SOX.png"));
-                var result = GenerateFourSpectrogramImages(tempAudioSegment, soxImage, configDict, dataOnly: false, makeSoxSonogram: false);
-                var outputImage = new FileInfo(Path.Combine(output.FullName, sourceName + ".FourSpectrograms.png"));
-                result.CompositeImage.Save(outputImage.FullName);
-
-                // construct output file names
-                var fileName = sourceName + ".FourSpectrogramsImageInfo";
-                var pathName = Path.Combine(output.FullName, fileName);
-                var csvFile1 = new FileInfo(pathName + ".json");
-
-                // Do my version of UNIT TESTING - This is the File Equality Test.
-                // First construct a test result file containing image info
-                var sb = new StringBuilder("Width,Height\n");
-                sb.AppendLine($"{result.CompositeImage.Width},{result.CompositeImage.Height}");
-
-                // Acoustics.Shared.Csv.Csv.WriteToCsv(csvFile1, sb);
-                FileTools.WriteTextFile(csvFile1.FullName, sb.ToString());
-
-                // Now do the test
-                var expectedTestFile1 = new FileInfo(Path.Combine(expectedResultsDir.FullName, "FourSpectrogramsTest.EXPECTED.json"));
-                TestTools.FileEqualityTest("Matrix Equality", csvFile1, expectedTestFile1);
-                Console.WriteLine("\n\n");
             }
 
             var image = ImageTools.DrawMatrixInGrayScale(dM, 1, 1, false);
@@ -486,7 +337,7 @@ namespace AnalysisPrograms
         /// <param name="nrSpectrogram">The noise-reduced spectrogram.</param>
         /// <param name="sourceRecordingName">Name of the source file. Required only to add label to spectrogram.</param>
         /// <returns>Image of spectrogram.</returns>
-        public static Image GetDecibelSpectrogram_Ridges(double[,] dbSpectrogramData,  SpectrogramStandard nrSpectrogram, string sourceRecordingName)
+        public static Image<Rgb24> GetDecibelSpectrogram_Ridges(double[,] dbSpectrogramData,  SpectrogramStandard nrSpectrogram, string sourceRecordingName)
         {
             // ########################### SOBEL ridge detection
             var ridgeThreshold = 3.5;
@@ -559,7 +410,7 @@ namespace AnalysisPrograms
     /// </summary>
     public class SpectrogramAnalyzer : IAnalyser2
     {
-        //private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         public SpectrogramAnalyzer()
         {
@@ -597,40 +448,22 @@ namespace AnalysisPrograms
             var audioFile = segmentSettings.SegmentAudioFile;
             var recording = new AudioRecording(audioFile.FullName);
             var sourceRecordingName = recording.BaseName;
+            var configuration = analysisSettings.Configuration as AnalyzerConfig;
 
             if (analysisSettings.Configuration.GetBool(AnalysisKeys.MakeSoxSonogram))
             {
                 Log.Warn("SoX spectrogram generation config variable found (and set to true) but is ignored when running as an IAnalyzer");
             }
 
-            // generate spectrogram
-            var configurationDictionary = new Dictionary<string, string>(analysisSettings.Configuration.ToDictionary());
-            configurationDictionary[ConfigKeys.Recording.Key_RecordingCallName] = audioFile.FullName;
-            configurationDictionary[ConfigKeys.Recording.Key_RecordingFileName] = audioFile.Name;
-            var spectrogramResult = Audio2Sonogram.GenerateFourSpectrogramImages(
-                audioFile,
-                null, // path2SoxFile
-                configurationDictionary,
-                dataOnly: analysisSettings.AnalysisDataSaveBehavior,
-                makeSoxSonogram: false);
-
-            // this analysis produces no results!
-            // but we still print images (that is the point)
-            if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave(analysisResult.Events.Length))
-            {
-                Debug.Assert(segmentSettings.SegmentImageFile.Exists);
-                spectrogramResult.CompositeImage.Save(segmentSettings.SegmentImageFile.FullName);
-            }
-
             var analysisResult = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration);
-            var configInfo = ConfigFile.Deserialize<AnalyzerConfig>(analysisSettings.ConfigFile);
-            var spectrogramResult = Audio2Sonogram.GenerateSpectrogramImages(audioFile, configInfo, sourceRecordingName);
+
+            var spectrogramResult = Audio2Sonogram.GenerateSpectrogramImages(audioFile, configuration, sourceRecordingName);
 
             // this analysis produces no results! But we still print images (that is the point)
             // if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave(analysisResult.Events.Length))
             // {
             //     Debug.Assert(condition: segmentSettings.SegmentImageFile.Exists, "Warning: Image file must exist.");
-            spectrogramResult.CompositeImage.Save(segmentSettings.SegmentImageFile.FullName, ImageFormat.Png);
+            spectrogramResult.CompositeImage.Save(segmentSettings.SegmentImageFile.FullName);
             // }
 
             //if (saveCsv)

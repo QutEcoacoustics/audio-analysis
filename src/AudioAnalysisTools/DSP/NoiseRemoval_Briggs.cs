@@ -287,7 +287,7 @@ namespace AudioAnalysisTools.DSP
 
             var image = BaseSonogram.GetSonogramImage(data, minPercentile, maxPercentile);
 
-            Image titleBar = BaseSonogram.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
+            var titleBar = BaseSonogram.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
             TimeSpan minuteOffset = TimeSpan.Zero;
             TimeSpan labelInterval = TimeSpan.FromSeconds(5);
             image = BaseSonogram.FrameSonogram(image, titleBar, minuteOffset, X_interval, xAxisPixelDuration, labelInterval, nyquist, herzInterval);

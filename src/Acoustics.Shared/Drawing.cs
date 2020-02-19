@@ -39,7 +39,7 @@ namespace Acoustics.Shared
             return SystemFonts.CreateFont(Arial, size);
         }
 
-        public static Configuration NoParallelConfiguration => new Configuration() {
+        public static readonly Configuration NoParallelConfiguration = new Configuration() {
             MaxDegreeOfParallelism = 1,
         };
 
@@ -61,6 +61,11 @@ namespace Acoustics.Shared
         public static Size ToSize(this SizeF size)
         {
             return (Size)size;
+        }
+
+        public static Pen ToPen(this Color color, float width = 1)
+        {
+            return new Pen(color, width);
         }
 
         public static void DrawTextSafe(this IImageProcessingContext context, string text, Font font,

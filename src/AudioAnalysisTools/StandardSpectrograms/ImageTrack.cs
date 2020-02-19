@@ -1358,40 +1358,13 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 int halfheight = trackHeight / 3;
                 for (int x = 1; x < cols; x++)
                 {
-<<<<<<< HEAD
-                    int tickPosition = x;
-                    g.DrawLine(whitePen, tickPosition, 0, tickPosition, trackHeight);
-                    TimeSpan elapsedTimeSpan = TimeSpan.FromMilliseconds(xAxisPixelDurationInMilliseconds * tickPosition);
-                    if (xAxisPixelDurationInMilliseconds <= 1000)
-                    {
-<<<<<<< HEAD
-                        time = String.Format("{0}", elapsedTimeSpan);
-                    }
-                    else if (xAxisPixelDurationInMilliseconds < 60000)
-                    {
-                        time = String.Format("{0:d2}{1:d2}", elapsedTimeSpan.Hours, elapsedTimeSpan.Minutes);
-                    }
-                    else
-                    {
-                        time = String.Format("{0:f0}", elapsedTimeSpan.TotalHours);
-=======
-                        time = $"{elapsedTimeSpan}";
-                    }
-                    else if (xAxisPixelDurationInMilliseconds < 60000)
-=======
                     if (x % halfInterval == 0)
->>>>>>> Converting to .NET Core and ImageSharp
                     {
                         g.DrawLine(whitePen, x, 0, x, halfheight);
                     }
 
                     if (x % xPixelInterval == 0)
                     {
-<<<<<<< HEAD
-                        time = $"{elapsedTimeSpan.TotalHours:f0}";
->>>>>>> Fixing .NET Core incompatibilities
-                    }
-=======
                         int tickPosition = x;
                         g.DrawLine(whitePen, tickPosition, 0, tickPosition, trackHeight);
                         TimeSpan elapsedTimeSpan =
@@ -1408,7 +1381,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
                         {
                             time = $"{elapsedTimeSpan.TotalHours:f0}";
                         }
->>>>>>> Converting to .NET Core and ImageSharp
 
                         g.DrawText(time, stringFont, Color.White, new PointF(tickPosition, 2)); //draw time
                     }
@@ -1572,23 +1544,15 @@ namespace AudioAnalysisTools.StandardSpectrograms
             return ba; //byte array
         }
 
-<<<<<<< HEAD
         /// <summary>
         /// Draws time track with labels to indicate hh:mm:ss.
         /// </summary>
-        public static Bitmap DrawTimeTrack(TimeSpan duration, int width)
-        {
-            int height = HeightOfTimeScale;
-            Pen blackPen = new Pen(Color.Black);
-            Pen grayPen = new Pen(Color.DarkGray);
-=======
         public static Image<Rgb24> DrawTimeTrack(TimeSpan duration, int width)
         {
             int height = HeightOfTimeScale;
             Pen blackPen = new Pen(Color.Black, 1);
             Pen grayPen = new Pen(Color.DarkGray, 1);
             var bgBrush = new SolidBrush(Color.FromRgb(240, 240, 240));
->>>>>>> Converting to .NET Core and ImageSharp
 
             //DateTime start = new DateTime(0);
             double secondsPerPixel = duration.TotalSeconds / width;
@@ -1661,44 +1625,48 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// <summary>
         /// This time track is labeled to be convenient for time durations around 1-20 minutes.
         /// </summary>
-        public static Bitmap DrawShortTimeTrack(TimeSpan offsetMinute, TimeSpan xAxisPixelDuration, TimeSpan xAxisTicInterval, TimeSpan labelInterval, int trackWidth, string title)
+        public static Image<Rgb24> DrawShortTimeTrack(TimeSpan offsetMinute, TimeSpan xAxisPixelDuration, TimeSpan xAxisTicInterval, TimeSpan labelInterval, int trackWidth, string title)
         {
             int trackHeight = HeightOfTimeScale;
-            var bmp = new Bitmap(trackWidth, trackHeight);
-            var g = Graphics.FromImage(bmp);
-            g.Clear(Color.White);
+            var bmp = Drawing.NewImage(trackWidth, trackHeight, Color.White);
+            
+            
 
             double elapsedTime = offsetMinute.TotalSeconds;
             double pixelDuration = xAxisPixelDuration.TotalSeconds;
             int labelSecondsInterval = (int)labelInterval.TotalSeconds;
-            var blackPen = new Pen(Color.Black);
-            var stringFont = new Font("Arial", 8);
+            var blackPen = Color.Black.ToPen();
+            var stringFont = Drawing.Arial8;
 
             // for columns, draw in second lines
             double xInterval = (int)(xAxisTicInterval.TotalMilliseconds / xAxisPixelDuration.TotalMilliseconds);
 
-            // for pixels in the line
-            for (int x = 1; x < trackWidth; x++)
+            bmp.Mutate(g =>
             {
-                elapsedTime += pixelDuration;
-                if (x % xInterval <= pixelDuration)
+                // for pixels in the line
+                for (int x = 1; x < trackWidth; x++)
                 {
-                    g.DrawLine(blackPen, x, 0, x, trackHeight);
-                    int totalSeconds = (int)Math.Round(elapsedTime);
-                    if (totalSeconds % labelSecondsInterval == 0)
+                    elapsedTime += pixelDuration;
+                    if (x % xInterval <= pixelDuration)
                     {
-                        int minutes = totalSeconds / 60;
-                        int seconds = totalSeconds % 60;
-                        string time = $"{minutes}m{seconds}s";
-                        g.DrawString(time, stringFont, Brushes.Black, new PointF(x + 1, 1)); //draw time
+                        g.DrawLine(blackPen, x, 0, x, trackHeight);
+                        int totalSeconds = (int)Math.Round(elapsedTime);
+                        if (totalSeconds % labelSecondsInterval == 0)
+                        {
+                            int minutes = totalSeconds / 60;
+                            int seconds = totalSeconds % 60;
+                            string time = $"{minutes}m{seconds}s";
+                            g.DrawText(time, stringFont, Color.Black, new PointF(x + 1, 1)); //draw time
+                        }
                     }
                 }
-            }
 
-            g.DrawLine(blackPen, 0, 0, trackWidth, 0); //draw upper boundary
-            g.DrawLine(blackPen, 0, trackHeight - 1, trackWidth, trackHeight - 1); //draw lower boundary
-            g.DrawLine(blackPen, trackWidth, 0, trackWidth, trackHeight - 1); //draw right end boundary
-            g.DrawString(title, stringFont, Brushes.Black, new PointF(1, 1));
+                g.DrawLine(blackPen, 0, 0, trackWidth, 0); //draw upper boundary
+                g.DrawLine(blackPen, 0, trackHeight - 1, trackWidth, trackHeight - 1); //draw lower boundary
+                g.DrawLine(blackPen, trackWidth, 0, trackWidth, trackHeight - 1); //draw right end boundary
+                g.DrawText(title, stringFont, Color.Black, new PointF(1, 1));
+            });
+
             return bmp;
         }
     }

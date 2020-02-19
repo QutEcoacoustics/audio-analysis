@@ -15,7 +15,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using SixLabors.Primitives;
 
     using TowseyLibrary;
     using Path = System.IO.Path;

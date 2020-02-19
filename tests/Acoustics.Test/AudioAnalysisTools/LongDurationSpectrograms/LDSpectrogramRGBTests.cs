@@ -92,14 +92,14 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms
             grnM[3, 3] = 0.01;
             bluM[3, 3] = 0.11;
 
-            var image = (Image<Rgb24>)LDSpectrogramRGB.DrawRgbColourMatrix(redM, grnM, bluM, doReverseColour: true);
+            var image = (Image<Rgb24>)LDSpectrogramRGB.DrawRgbColorMatrix(redM, grnM, bluM, doReverseColor: true, 0.5);
 
             Assert.That.PixelIsColor(new Point(1, 1), Color.FromRgb(128, 128, 128), image);
             Assert.That.PixelIsColor(new Point(2, 2), Color.FromRgb(128, 128, 128), image);
 
             // empty values are rendered as white because of `doReverseColour`
-            Assert.That.ImageRegionIsColor(Rectangle.FromLTRB(0,0, 1,5), Color.FromArgb(255, 255, 255), image);
-            Assert.That.ImageRegionIsColor(Rectangle.FromLTRB(4,0, 5,5), Color.FromArgb(255, 255, 255), image);
+            Assert.That.ImageRegionIsColor(Rectangle.FromLTRB(0,0, 1,5), Color.FromRgb(255, 255, 255), image);
+            Assert.That.ImageRegionIsColor(Rectangle.FromLTRB(4,0, 5,5), Color.FromRgb(255, 255, 255), image);
         }
     }
 }

@@ -330,8 +330,8 @@ namespace AnalysisPrograms
             int trackHeight = 20;
             var timeScale = ImageTrack.DrawTimeRelativeTrack(fullDuration, image1.Width, trackHeight);
 
-            colourMap = args.ColourMap2 ?? LDSpectrogramRGB.DefaultColorMap2;
-            var image2 = cs1.DrawFalseColorSpectrogramChromeless("NEGATIVE", colourMap);
+            colorMap = args.ColourMap2 ?? LDSpectrogramRGB.DefaultColorMap2;
+            var image2 = cs1.DrawFalseColorSpectrogramChromeless("NEGATIVE", colorMap, blueEnhanceParameter);
             var list = new [] { titleImage, image1, timeScale, image2 };
             var combinedImage = ImageTools.CombineImagesVertically(list);
             return combinedImage;

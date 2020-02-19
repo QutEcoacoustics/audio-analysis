@@ -689,7 +689,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// <param name="frameStep">frame step allows correct time scale to be drawn.</param>
         /// <param name="title">Descriptive title of the spectrogram.</param>
         /// <returns>The framed spectrogram image.</returns>
-        public static Image GetImageAnnotatedWithLinearHertzScale(Image image, int sampleRate, int frameStep, string title)
+        public static Image<Rgb24> GetImageAnnotatedWithLinearHertzScale(Image<Rgb24> image, int sampleRate, int frameStep, string title)
         {
             var titleBar = DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
             var startTime = TimeSpan.Zero;
@@ -711,9 +711,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// This method draws only top and bottom time scales and adds the title bar.
         /// It does NOT include the frequency grid lines.
         /// </summary>
-        public static Image FrameSonogram(
-            Image sonogramImage,
-            Image titleBar,
+        public static Image<Rgb24> FrameSonogram(
+            Image<Rgb24> sonogramImage,
+            Image<Rgb24> titleBar,
             TimeSpan minuteOffset,
             TimeSpan xAxisTicInterval,
             TimeSpan xAxisPixelDuration,
@@ -721,8 +721,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         {
             int imageWidth = sonogramImage.Width;
             var timeBmp = ImageTrack.DrawShortTimeTrack(minuteOffset, xAxisPixelDuration, xAxisTicInterval, labelInterval, imageWidth, "Seconds");
-            Image[] imageArray = { titleBar, timeBmp, sonogramImage, timeBmp };
-            return ImageTools.CombineImagesVertically(imageArray);
+            return ImageTools.CombineImagesVertically(titleBar, timeBmp, sonogramImage, timeBmp);
         }
 
         /// <summary>
@@ -730,8 +729,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// This assumption allows the frequency scale grid lines to be placed at the correct intervals.
         /// </summary>
         public static Image<Rgb24> FrameSonogram(
-            Image sonogramImage,
-            Image titleBar,
+            Image<Rgb24> sonogramImage,
+            Image<Rgb24> titleBar,
             TimeSpan minuteOffset,
             TimeSpan xAxisTicInterval,
             TimeSpan xAxisPixelDuration,
@@ -749,17 +748,14 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             int imageWidth = sonogramImage.Width;
             var timeBmp = ImageTrack.DrawShortTimeTrack(minuteOffset, xAxisPixelDuration, xAxisTicInterval, labelInterval, imageWidth, "Seconds");
-            Image[] imageArray = { titleBar, timeBmp, sonogramImage, timeBmp };
-            return ImageTools.CombineImagesVertically(imageArray);
+            return ImageTools.CombineImagesVertically(titleBar, timeBmp, sonogramImage, timeBmp);
         }
 
-        public static Image DrawTitleBarOfGrayScaleSpectrogram(string title, int width)
+        public static Image<Rgb24> DrawTitleBarOfGrayScaleSpectrogram(string title, int width)
         {
-            var bmp = new Bitmap(width, SpectrogramConstants.HEIGHT_OF_TITLE_BAR);
+            var bmp = Drawing.NewImage(width, SpectrogramConstants.HEIGHT_OF_TITLE_BAR, Color.Black);
             bmp.Mutate(g =>
             {
-                g.Clear(Color.Black);
-
                 // var stringFont = Drawing.Tahoma9;
                 var stringFont = Drawing.Arial9;
 

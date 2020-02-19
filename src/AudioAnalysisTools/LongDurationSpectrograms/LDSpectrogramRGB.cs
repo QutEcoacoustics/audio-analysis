@@ -629,7 +629,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// Chromeless means WITHOUT all the trimmings, such as title bar axis labels, grid lines etc.
         /// However it does add in notated error segments.
         /// </summary>
-        public Image<Rgb24> DrawFalseColorSpectrogramChromeless(string colorMode, string colorMap)
+        public Image<Rgb24> DrawFalseColorSpectrogramChromeless(string colorMode, string colorMap, double blueEnhanceParameter)
         {
             if (!this.ContainsMatrixForKeys(colorMap))
             {
@@ -907,7 +907,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// Black is a frequent color in LDFC spectrograms, but gray is highly unlikely,
         /// and therefore its presence stands out as indicating an error in one or more of the rgb values.
         /// </summary>
-        public static Image<Rgb24> DrawRgbColourMatrix(double[,] redM, double[,] grnM, double[,] bluM, bool doReverseColour, double blueEnhanceParameter)
+        public static Image<Rgb24> DrawRgbColorMatrix(double[,] redM, double[,] grnM, double[,] bluM, bool doReverseColor, double blueEnhanceParameter)
         {
             int rows = redM.GetLength(0); //number of rows
             int cols = redM.GetLength(1); //number

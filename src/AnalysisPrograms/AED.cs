@@ -145,7 +145,7 @@ namespace AnalysisPrograms
             var sonogram = (BaseSonogram)new SpectrogramStandard(config, recording.WavReader);
 
             AcousticEvent[] events = CallAed(sonogram, aedConfiguration, segmentStartOffset, segmentDuration);
-            TowseyLibrary.Log.WriteIfVerbose("AED # events: " + events.Length);
+            Log.Debug("AED # events: " + events.Length);
             return Tuple.Create(events, recording, sonogram);
         }
 
@@ -216,8 +216,6 @@ namespace AnalysisPrograms
         public static void Execute(Arguments arguments)
         {
             MainEntry.WarnIfDeveloperEntryUsed();
-
-            TowseyLibrary.Log.Verbosity = 1;
             string date = "# DATE AND TIME: " + DateTime.Now;
             LoggedConsole.WriteLine("# Running acoustic event detection.");
             LoggedConsole.WriteLine(date);
@@ -247,7 +245,7 @@ namespace AnalysisPrograms
             WriteEventsFileStatic(outputCsvPath, results.Item1);
             Log.Info("CSV file saved to: " + outputCsvPath.FullName);
 
-            TowseyLibrary.Log.WriteLine("Finished");
+            Log.Success("Finished");
         }
 
         public override AnalysisResult2 Analyze<T>(AnalysisSettings analysisSettings, SegmentSettings<T> segmentSettings)

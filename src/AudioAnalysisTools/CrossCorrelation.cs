@@ -5,6 +5,7 @@
 namespace AudioAnalysisTools
 {
     using System;
+    using Accord.Math;
     using DSP;
     using TowseyLibrary;
 
