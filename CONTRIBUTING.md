@@ -29,14 +29,15 @@ Required Software
 The required software for developing new code (not running the program) includes:
 
 - The latest .NET Core SDK
+    - You can download it from here: https://dotnet.microsoft.com/download/dotnet-core/
 - An IDE:
     - Visual Studio 2019 (Windows only)
-      - .NET Core SDK for Visual Studio 2019
-      - If you're at a university that has an Office365 Subscription you can download software from https://azureforeducation.microsoft.com/devtools
-      - The [community edition](https://visualstudio.microsoft.com/vs/) of Visual Studio should work fine and is totally free
-      - [Optional] Resharper Ulitmate (Academic License)
-      - Install these plugins (_ReSharper_ menu > _Extension Manager_)
-        - ReSpeller Free
+        - .NET Core SDK for Visual Studio 2019
+        - If you're at a university that has an Office365 Subscription you can download software from https://azureforeducation.microsoft.com/devtools
+        - The [community edition](https://visualstudio.microsoft.com/vs/) of Visual Studio should work fine and is totally free
+        - [Optional] Resharper Ulitmate (Academic License)
+        - Install these plugins (_ReSharper_ menu > _Extension Manager_)
+          - ReSpeller Free
     - VS Code
         - C# Extension
 
