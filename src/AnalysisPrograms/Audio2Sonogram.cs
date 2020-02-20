@@ -141,9 +141,6 @@ namespace AnalysisPrograms
             bool doCepstralSpectrogram = configInfo.GetBoolOrNull("CepstralSpectrogram") ?? false;
             bool doExperimentalSpectrogram = configInfo.GetBoolOrNull("Experimental") ?? false;
 
-            //Don't do SOX spectrogram.
-            //bool doSoxSpectrogram = configInfo.GetBool("SoxSpectrogram");
-
             int frameSize = configInfo.GetIntOrNull("FrameLength") ?? 512;
             int frameStep = configInfo.GetIntOrNull("FrameStep") ?? 0;
 
@@ -152,6 +149,9 @@ namespace AnalysisPrograms
 
             // Default noiseReductionType = Standard
             var bgNoiseThreshold = configInfo.GetDoubleOrNull("BgNoiseThreshold") ?? 3.0;
+
+            // threshold for drawing the difference spectrogram
+            var differenceThreshold = configInfo.GetDoubleOrNull("DifferenceThreshold") ?? 3.0;
 
             // EXTRACT ENVELOPE and SPECTROGRAM FROM RECORDING SEGMENT
             var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFfts(recordingSegment, frameSize, frameStep);
@@ -193,6 +193,9 @@ namespace AnalysisPrograms
             Image<Rgb24> noiseReducedImage = null;
             Image<Rgb24> differenceImage = null;
             Image<Rgb24> experimentalImage = null;
+            Image<Rgb24> ceptralImage = null;
+            Image<Rgb24> lcnImage = null;
+
             if (doDecibelSpectrogram || doNoiseReducedSpectrogram || doDifferenceSpectrogram || doExperimentalSpectrogram)
             {
                 // disable noise removal for first two spectrograms
@@ -204,14 +207,13 @@ namespace AnalysisPrograms
                 result.DecibelSpectrogram = decibelSpectrogram;
                 double[,] dbSpectrogramData = (double[,])decibelSpectrogram.Data.Clone();
 
-                // IMAGE 2) DecibelSpectrogram
-                
+                // IMAGE 2) Display the DecibelSpectrogram
                 if (doDecibelSpectrogram)
                 {
                     decibelImage = decibelSpectrogram.GetImageFullyAnnotated($"DECIBEL SPECTROGRAM ({sourceRecordingName})");
                 }
 
-                if (doNoiseReducedSpectrogram || doExperimentalSpectrogram || doDifferenceSpectrogram)
+                if (doNoiseReducedSpectrogram || doExperimentalSpectrogram || doCepstralSpectrogram)
                 {
                     sonoConfig.NoiseReductionType = disabledNoiseReductionType;
                     sonoConfig.NoiseReductionParameter = bgNoiseThreshold;
@@ -232,19 +234,32 @@ namespace AnalysisPrograms
                         experimentalImage = GetDecibelSpectrogram_Ridges(dbSpectrogramData, decibelSpectrogram, sourceRecordingName);
                     }
 
-                    // IMAGE 5) draw difference spectrogram
-                    if (doDifferenceSpectrogram)
+                    // IMAGE 5) Cepstral Spectrogram
+                    if (doCepstralSpectrogram)
                     {
-                        var differenceThreshold = configInfo.GetDoubleOrNull("DifferenceThreshold") ?? 3.0;
-                        differenceImage = GetDifferenceSpectrogram(dbSpectrogramData, differenceThreshold);
-                        differenceImage = BaseSonogram.GetImageAnnotatedWithLinearHertzScale(differenceImage, sampleRate, frameStep, $"DECIBEL DIFFERENCE SPECTROGRAM ({sourceRecordingName})");
+                        ceptralImage = GetCepstralSpectrogram(sonoConfig, recordingSegment, sourceRecordingName);
                     }
+                }
+
+                // IMAGE 6) draw difference spectrogram. This is derived from the original decibel spectrogram
+                if (doDifferenceSpectrogram)
+                {
+                    //var differenceThreshold = configInfo.GetDoubleOrNull("DifferenceThreshold") ?? 3.0;
+                    differenceImage = GetDifferenceSpectrogram(dbSpectrogramData, differenceThreshold);
+                    differenceImage = BaseSonogram.GetImageAnnotatedWithLinearHertzScale(differenceImage, sampleRate, frameStep, $"DECIBEL DIFFERENCE SPECTROGRAM ({sourceRecordingName})");
                 }
             }
 
+            // 7) AmplitudeSpectrogram_LocalContrastNormalization
+            if (doLcnSpectrogram)
+            {
+                var neighbourhoodSeconds = configInfo.GetDoubleOrNull("NeighbourhoodSeconds") ?? 0.5;
+                var lcnContrastParameter = configInfo.GetDoubleOrNull("LcnContrastLevel") ?? 0.2;
+                lcnImage = GetLcnSpectrogram(sonoConfig, recordingSegment, sourceRecordingName, neighbourhoodSeconds, lcnContrastParameter);
+            }
 
             // COMBINE THE SPECTROGRAM IMAGES
-            result.CompositeImage = ImageTools.CombineImagesVertically(waveformImage, decibelImage, noiseReducedImage, experimentalImage, differenceImage);
+            result.CompositeImage = ImageTools.CombineImagesVertically(waveformImage, decibelImage, noiseReducedImage, experimentalImage, differenceImage, ceptralImage, lcnImage);
             return result;
         }
 
@@ -253,8 +268,6 @@ namespace AnalysisPrograms
             var range = imageHeight / 2;
             var imageWidth = minValues.Length;
             var image = Drawing.NewImage(imageWidth, imageHeight, Color.Black);
-            
-            
             var pen = Color.Lime.ToPen();
 
             image.Mutate(canvas =>
@@ -360,7 +373,7 @@ namespace AnalysisPrograms
             return image;
         }
 
-        public static Image GetCepstralSpectrogram(SonogramConfig sonoConfig, AudioRecording recording, string sourceRecordingName)
+        public static Image<Rgb24> GetCepstralSpectrogram(SonogramConfig sonoConfig, AudioRecording recording, string sourceRecordingName)
         {
             // TODO at present noise reduction type must be set = Standard.
             sonoConfig.NoiseReductionType = NoiseReductionType.Standard;
@@ -376,15 +389,22 @@ namespace AnalysisPrograms
             return image;
         }
 
-        public static Image GetLcnSpectrogram(SonogramConfig sonoConfig, AudioRecording recordingSegment, string sourceRecordingName, double neighbourhoodSeconds, double lcnContrastLevel)
+        public static Image<Rgb24> GetLcnSpectrogram(SonogramConfig sonoConfig, AudioRecording recordingSegment, string sourceRecordingName, double neighbourhoodSeconds, double lcnContrastLevel)
         {
             BaseSonogram sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
             int neighbourhoodFrames = (int)(sonogram.FramesPerSecond * neighbourhoodSeconds);
             LoggedConsole.WriteLine("LCN: FramesPerSecond (Prior to LCN) = {0}", sonogram.FramesPerSecond);
             LoggedConsole.WriteLine("LCN: Neighbourhood of {0} seconds = {1} frames", neighbourhoodSeconds, neighbourhoodFrames);
+
+            // subtract the lowest 20% of frames. This is first step in LCN noise removal. Sets the baseline.
             const int lowPercentile = 20;
             sonogram.Data = NoiseRemoval_Briggs.NoiseReduction_byLowestPercentileSubtraction(sonogram.Data, lowPercentile);
             sonogram.Data = NoiseRemoval_Briggs.NoiseReduction_byLCNDivision(sonogram.Data, neighbourhoodFrames, lcnContrastLevel);
+
+            //Matrix normalisation
+            //MatrixTools.PercentileCutoffs(sonogram.Data, 10.0, 90, out double minCut, out double maxCut);
+            //NoiseRemoval_Briggs.NoiseReduction_byLowestPercentileSubtraction(sonogram.Data, lowPercentile);
+
             var image = sonogram.GetImageFullyAnnotated("AMPLITUDE SPECTROGRAM with freq bin Local Contrast Normalization - " + sourceRecordingName);
             return image;
         }
@@ -450,10 +470,10 @@ namespace AnalysisPrograms
             var sourceRecordingName = recording.BaseName;
             var configuration = analysisSettings.Configuration as AnalyzerConfig;
 
-            if (analysisSettings.Configuration.GetBool(AnalysisKeys.MakeSoxSonogram))
-            {
-                Log.Warn("SoX spectrogram generation config variable found (and set to true) but is ignored when running as an IAnalyzer");
-            }
+//            if (analysisSettings.Configuration.GetBool(AnalysisKeys.MakeSoxSonogram))
+//            {
+//                Log.Warn("SoX spectrogram generation config variable found (and set to true) but is ignored when running as an IAnalyzer");
+//            }
 
             var analysisResult = new AnalysisResult2(analysisSettings, segmentSettings, recording.Duration);
 

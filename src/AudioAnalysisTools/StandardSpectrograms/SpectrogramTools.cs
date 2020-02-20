@@ -23,150 +23,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
     public static class SpectrogramTools
     {
-        /*
         /// <summary>
-        ///
-        /// </summary>
-        /// <param name="fiAudio"></param>
-        /// <param name="fiConfig"></param>
-        /// <param name="fiImage"></param>
-        /// <returns></returns>
-        public static Image GetImageFromAudioSegment(FileInfo fiAudio, FileInfo fiConfig, FileInfo fiImage, IAnalyser2 analyser)
-        {
-            var config = new ConfigDictionary(fiConfig.FullName); //read in config file
-
-            bool doAnnotate = config.GetBoolean(AnalysisKeys.AnnotateSonogram);
-
-            //bool doNoiseReduction = config.GetBoolean(Keys.NOISE_DO_REDUCTION);
-            //double bgNoiseThreshold = config.GetDouble(Keys.NOISE_BG_REDUCTION);
-
-            var diOutputDir = new DirectoryInfo(Path.GetDirectoryName(fiImage.FullName));
-
-            //Image image = null;
-
-            if (doAnnotate)
-            {
-                if (analyser == null)
-                {
-                    string analyisName = config.GetString(AnalysisKeys.AnalysisName);
-                    LoggedConsole.WriteLine("\nWARNING: Could not construct annotated image because analysis name not recognized:");
-                    LoggedConsole.WriteLine("\t " + analyisName);
-                    return null;
-                }
-
-                throw new NotSupportedException("Code intentionally broken because it is out of date and not used");
-            }
-            else
-            {
-                analyser = null;
-                var configDict = config.GetDictionary();
-                BaseSonogram sonogram = Audio2DecibelSonogram(fiAudio, configDict);
-                var mti = Sonogram2MultiTrackImage(sonogram, configDict);
-                var image = mti.GetImage();
-
-                if (image != null)
-                {
-                    if (fiImage.Exists)
-                    {
-                        fiImage.Delete();
-                    }
-
-                    image.Save(fiImage.FullName);
-                }
-
-                return image;
-            }
-        }
-
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="fiAudio"></param>
-        /// <param name="configDict"></param>
-        /// <returns></returns>
-        public static Image Audio2SonogramImage(FileInfo fiAudio, Dictionary<string, string> configDict)
-        {
-            BaseSonogram sonogram = Audio2DecibelSonogram(fiAudio, configDict);
-            var mti = Sonogram2MultiTrackImage(sonogram, configDict);
-            var image = mti.GetImage();
-            return image;
-        }
-
-        public static double[,] ReduceDimensionalityOfSpectrogram(double[,] data, int timeRedFactor, int freqRedFactor)
-        {
-            int frameCount = data.GetLength(0);
-            int freqBinCount = data.GetLength(1);
-
-            int timeReducedCount = frameCount / timeRedFactor;
-            int freqReducedCount = freqBinCount / freqRedFactor;
-
-            var reducedMatrix = new double[timeReducedCount, freqReducedCount];
-
-            //int cellArea = timeRedFactor * freqRedFactor;
-            for (int r = 0; r < timeReducedCount; r++)
-            {
-                for (int c = 0; c < freqReducedCount; c++)
-                {
-                    int or = r * timeRedFactor;
-                    int oc = c * freqRedFactor;
-
-                    //display average of the cell
-                    //double sum = 0.0;
-                    //for (int i = 0; i < timeRedFactor; i++)
-                    //    for (int j = 0; j < freqRedFactor; j++)
-                    //    {
-                    //        sum += data[or + i, oc + j];
-                    //    }
-                    //reducedMatrix[r, c] = sum / cellArea;
-
-                    //display the maximum in the cell
-                    double max = -100000000.0;
-                    for (int i = 0; i < timeRedFactor; i++)
-                    {
-                        for (int j = 0; j < freqRedFactor; j++)
-                        {
-                            if (max < data[or + i, oc + j])
-                            {
-                                max = data[or + i, oc + j];
-                            }
-                        }
-                    }
-
-                    reducedMatrix[r, c] = max;
-                }
-            }
-
-            return reducedMatrix;
-        }//end AI_DimRed
-
-        public static List<double[]> Sonogram2ListOfFreqBinArrays(BaseSonogram sonogram, double dynamicRange)
-        {
-            //int rowCount = sonogram.Data.GetLength(0);
-            int colCount = sonogram.Data.GetLength(1);
-
-            //set up a list of normalised arrays representing the spectrum - one array per freq bin
-            var listOfFrequencyBins = new List<double[]>();
-            for (int c = 0; c < colCount; c++)
-            {
-                double[] array = MatrixTools.GetColumn(sonogram.Data, c);
-                array = DataTools.NormaliseInZeroOne(array, 0, 50); //##IMPORTANT: ABSOLUTE NORMALISATION 0-50 dB #######################################
-                listOfFrequencyBins.Add(array);
-            }
-
-            return listOfFrequencyBins;
-        } // Sonogram2ListOfFreqBinArrays()
-
-        public static BaseSonogram Audio2DecibelSonogram(FileInfo fiAudio, Dictionary<string, string> configDict)
-        {
-            AudioRecording recordingSegment = new AudioRecording(fiAudio.FullName);
-            SonogramConfig sonoConfig = new SonogramConfig(configDict); //default values config
-            BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recordingSegment.WavReader);
-            return sonogram;
-        }
-    */
-
-        /// <summary>
-        /// Used to normalise a spectrogram in 0,1
+        /// Used to normalise a spectrogram in 0,1.
         /// </summary>
         /// <param name="matrix">the spectrogram data</param>
         /// <param name="truncateMin">set all values above to 1.0</param>
@@ -219,78 +77,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
             return image.GetImage().CloneAs<Rgb24>();
         }
 
-        /*
         /// <summary>
-        ///
-        /// </summary>
-        public static Image_MultiTrack Sonogram2MultiTrackImage(BaseSonogram sonogram, Dictionary<string, string> configDict)
-        {
-            bool doHighlightSubband = false;
-
-            //ADD time and frequency scales
-            bool addScale = false;
-            if (configDict.ContainsKey(AnalysisKeys.AddTimeScale))
-            {
-                addScale = ConfigDictionary.GetBoolean(AnalysisKeys.AddTimeScale, configDict);
-            }
-            else
-            if (configDict.ContainsKey(AnalysisKeys.AddAxes))
-            {
-                addScale = ConfigDictionary.GetBoolean(AnalysisKeys.AddAxes, configDict);
-            }
-
-            Image img = sonogram.GetImage(doHighlightSubband, add1KHzLines: addScale, doMelScale: false);
-            Image_MultiTrack mti = new Image_MultiTrack(img);
-            if (addScale)
-            {
-                mti.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond)); //add time scale
-            }
-
-            bool addSegmentationTrack = false;
-
-            //add segmentation track
-            if (configDict.ContainsKey(AnalysisKeys.AddSegmentationTrack))
-            {
-                addSegmentationTrack = ConfigDictionary.GetBoolean(AnalysisKeys.AddSegmentationTrack, configDict);
-            }
-
-            if (addSegmentationTrack)
-            {
-                mti.AddTrack(ImageTrack.GetSegmentationTrack(sonogram)); //add segmentation track
-            }
-
-            return mti;
-        }
-        */
-
-        /*
-        public static Image Sonogram2Image(BaseSonogram sonogram, Dictionary<string, string> configDict, double[,] hits, List<Plot> scores, List<AcousticEvent> predictedEvents, double eventThreshold)
-        {
-            Image_MultiTrack multiTrackImage = Sonogram2MultiTrackImage(sonogram, configDict);
-
-            if (scores != null)
-            {
-                foreach (Plot plot in scores)
-                {
-                    multiTrackImage.AddTrack(ImageTrack.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title)); //assumes data normalised in 0,1
-                }
-            }
-
-            if (hits != null)
-            {
-                multiTrackImage.OverlayRainbowTransparency(hits);
-            }
-
-            if (predictedEvents.Count > 0)
-            {
-                multiTrackImage.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
-            }
-
-            return multiTrackImage.GetImage();
-        } //Sonogram2Image()
-*/
-
-        /// <summary>
+        /// TODO: This method needs a unit test.
         /// This is experimental method to explore colour rendering of standard spectrograms
         /// Used to convert a standard decibel spectrogram into a colour version using
         /// a colour rendering for three separate properties.
@@ -312,6 +100,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             int width = dbSpectrogramData.GetLength(0);
             int height = dbSpectrogramData.GetLength(1);
             Image<Rgb24> image = new Image<Rgb24>(width, height);
+            var converter = new SixLabors.ImageSharp.ColorSpaces.Conversion.ColorSpaceConverter();
             Color[] ridgeColours = { Color.Red, Color.DarkMagenta, Color.Black, Color.LightPink };
 
             // for all freq bins
@@ -351,13 +140,11 @@ namespace AudioAnalysisTools.StandardSpectrograms
                         //double saturation = nrSpectrogramNorm[x, y] * 0.5;
                         //double saturation = (1 - nrSpectrogramNorm[x, y]) * 0.5;
 
-                        double value = 1.0;
-
-                        //double value = 0.60 + (nrSpectrogramNorm[x, y] * 0.40);
-
-                        var myHsv = new Hsv(hue, (float)saturation, (float)value);
-                        var myRgb = myHsv.To<Rgb24>();
-                        colour = Color.FromRgb((byte)myRgb.R, (byte)myRgb.G, (byte)myRgb.B);
+                        //Convert HSV color space to RGB
+                        // for this require instance of a SixLabors colour converter.
+                        var myHsv = new Hsv(hue, (float)saturation, 1.0f);
+                        var myRgb = converter.ToRgb(myHsv);
+                        colour = Color.FromRgb((byte)(myRgb.R * 255), (byte)(myRgb.G * 255), (byte)(myRgb.B * 255));
 
                         // get colour for noise reduced portion
                         // superimpose ridge detection
@@ -375,8 +162,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     image[x, height - y - 1] = colour;
                 }
             } // freq bins
-
-            //image.Save(@"C:\SensorNetworks\Output\Sonograms\TEST3.png");
 
             return image;
         }
@@ -488,6 +273,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             return image;
         }
 
+        /*
         /// <summary>
         /// Method to make spectrogram with SOX
         /// But the ConfigDictionary clsas is now obsolete.
@@ -560,6 +346,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 process.Run(args, output.DirectoryName);
             }
         }
+        */
 
         /// <summary>
         /// NOTE: This method should not be used to average a decibel spectrogram.
@@ -631,29 +418,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
             return dB;
         }
 
-        /*
-        public static double[] CalculateSumSpectrumFromSpectrogram(double[,] spectrogram)
-        {
-            int frameCount = spectrogram.GetLength(0);
-            int freqBinCount = spectrogram.GetLength(1);
-
-            // for average  of the spectral bins
-            double[] sumSpectrum = new double[freqBinCount];
-
-            // for all frequency bins
-            for (int j = 0; j < freqBinCount; j++)
-            {
-                for (int r = 0; r < frameCount; r++)
-                {
-                    // add to store for the bin
-                    sumSpectrum[j] += spectrogram[r, j];
-                }
-            }
-
-            return sumSpectrum;
-        }
-        */
-
         /// <summary>
         /// Returns AVERAGE POWER SPECTRUM (PSD) and VARIANCE OF POWER SPECTRUM.
         /// Have been passed the amplitude spectrum but square amplitude values to get power or energy.
@@ -699,9 +463,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
         }
 
         /// <summary>
-        /// Calculates Stuart gage's NDSI acoustic index from the Power Spectrum derived from a spectrogram.
+        /// Calculates Stuart Gage's NDSI acoustic index from the Power Spectrum derived from a spectrogram.
         /// This method assumes P.D. Welch's method has been used to calculate the PSD.
-        /// See method above: CalculateAvgSpectrumAndVarianceSpectrumFromAmplitudeSpectrogram()
+        /// See method above: CalculateAvgSpectrumAndVarianceSpectrumFromAmplitudeSpectrogram().
         /// </summary>
         /// <param name="psd">power spectral density</param>
         /// <param name="samplerate">original sample rate of the recording. Only used to get nyquist</param>
@@ -795,34 +559,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
             AcousticEvent.Freq2BinIDs(doMelscale, minHz, maxHz, binCount, binWidth, out var c1, out var c2);
             return DataTools.Submatrix(m, 0, c1, m.GetLength(0) - 1, c2);
         }
-
-        /*
-        /// <summary>
-        /// Extracts an acoustic event from a sonogram given the location of a user defined rectangular marquee.
-        /// NOTE: Nyquist value is used ONLY if using mel scale.
-        /// </summary>
-        /// <param name="m">the sonogram data as matrix of reals</param>
-        /// <param name="start">start time in seconds</param>
-        /// <param name="end">end time in seconds</param>
-        /// <param name="frameOffset">the time scale: i.e. the duration in seconds of each frame</param>
-        /// <param name="minHz">lower freq bound of the event</param>
-        /// <param name="maxHz">upper freq bound of the event</param>
-        /// <param name="doMelscale">informs whether the sonogram data is linear or mel scale</param>
-        /// <param name="nyquist">full freq range 0-Nyquist</param>
-        /// <param name="binWidth">the frequency scale i.e. herz per bin width - assumes linear scale</param>
-        /// <returns></returns>
-        public static double[,] ExtractEvent(double[,] m, double start, double end, double frameOffset,
-                                             int minHz, int maxHz, bool doMelscale, int nyquist, double binWidth)
-        {
-            int r1;
-            int r2;
-            AcousticEvent.Time2RowIDs(start, end - start, frameOffset, out r1, out r2);
-            int c1;
-            int c2;
-            AcousticEvent.Freq2BinIDs(doMelscale, minHz, maxHz, nyquist, binWidth, out c1, out c2);
-            return DataTools.Submatrix(m, r1, c1, r2, c2);
-        }
-        */
 
         public static double[] ExtractModalNoiseSubband(double[] modalNoise, int minHz, int maxHz, bool doMelScale, int nyquist, double binWidth)
         {

@@ -93,15 +93,16 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// Assumes the passed matrix is a spectrogram. i.e. rows=frames, cols=freq bins.
+        /// Assumes the passed matrix is a spectrogram. i.e. rows=frames, cols=freq bins,
+        /// and that all values in data matrix are positive.
         /// WARNING: This method should NOT be used for short recordings (i.e LT approx 10-15 seconds long)
         /// Obtains a background noise profile from the passed percentile of lowest energy frames,
         /// Then subtracts the noise profile value from every cell.
         /// This method was adapted from a paper by Briggs.
         /// </summary>
-        /// <param name="matrix"></param>
-        /// <param name="percentileThreshold"></param>
-        /// <returns></returns>
+        /// <param name="matrix">the passed amplitude or energy spectrogram.</param>
+        /// <param name="percentileThreshold">Must be an integer percent.</param>
+        /// <returns>Spectrogram data matrix with noise subtracted.</returns>
         public static double[,] NoiseReduction_byLowestPercentileSubtraction(double[,] matrix, int percentileThreshold)
         {
             double[] profile = NoiseProfile.GetNoiseProfile_fromLowestPercentileFrames(matrix, percentileThreshold);
@@ -109,15 +110,19 @@ namespace AudioAnalysisTools.DSP
 
             int rowCount = matrix.GetLength(0);
             int colCount = matrix.GetLength(1);
-            double[,] outM = new double[rowCount, colCount]; //to contain noise reduced matrix
 
-            for (int col = 0; col < colCount; col++) //for all cols i.e. freq bins
+            //to contain noise reduced matrix
+            double[,] outM = new double[rowCount, colCount];
+
+            //for all cols i.e. freq bins
+            for (int col = 0; col < colCount; col++)
             {
-                for (int y = 0; y < rowCount; y++) //for all rows
+                //for all rows
+                for (int y = 0; y < rowCount; y++)
                 {
                     outM[y, col] = matrix[y, col] - profile[col];
-                } //end for all rows
-            } //end for all cols
+                }
+            }
 
             return outM;
         }

@@ -190,13 +190,14 @@ namespace AudioAnalysisTools.DSP
 
         /// <summary>
         /// (2) LOWEST PERCENTILE FRAMES METHOD
-        /// Assumes the passed matrix is a spectrogram.
+        /// Assumes the passed matrix is a spectrogram and that all values in the data matrix are positive.
         /// Returns the noise profile over freq bins. i.e. one noise value per freq bin.
         /// First calculate the frame averages, sort in ascending order and accumulate the first N% of frames.
         /// WARNING: This method should NOT be used for short recordings i.e LT approx 10-15 seconds long.
         /// </summary>
         /// <param name="matrix">the spectrogram whose rows=frames, cols=freq bins.</param>
         /// <param name="lowPercentile">The percent of lowest energy frames to be included in calculation of the noise profile.</param>
+        /// <returns>Returns a noise profile consisting of averaged values from the selected X% of low energy frames.</returns>
         public static double[] GetNoiseProfile_fromLowestPercentileFrames(double[,] matrix, int lowPercentile)
         {
             int rowCount = matrix.GetLength(0);

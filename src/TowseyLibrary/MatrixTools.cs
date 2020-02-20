@@ -839,30 +839,30 @@ namespace TowseyLibrary
 
         /// <summary>
         /// returns the min and max percentile values of the values in passed matrix.
-        /// Must have previously calculated the min and max values in the matrix.
         /// </summary>
         /// <param name="matrix">the matrix</param>
-        /// <param name="minPercentile">minPercentile</param>
-        /// <param name="maxPercentile">maxPercentile</param>
-        /// <param name="minCut">power value equivalent to minPercentile</param>
-        /// <param name="maxCut">power value equivalent to maxPercentile</param>
-        public static void PercentileCutoffs(double[,] matrix, double minPercentile, double maxPercentile, out double minCut, out double maxCut)
+        /// <param name="minPercentile">minPercentile.</param>
+        /// <param name="maxPercentile">maxPercentile.</param>
+        /// <param name="minCut">power value equivalent to minPercentile.</param>
+        /// <param name="maxCut">power value equivalent to maxPercentile.</param>
+        public static void PercentileCutoffs(double[,] matrix, int minPercentile, int maxPercentile, out double minCut, out double maxCut)
         {
             if (maxPercentile < minPercentile)
             {
                 throw new ArgumentException("maxPercentile must be greater than or equal to minPercentile");
             }
 
-            if (minPercentile < 0.0)
+            if (minPercentile < 0)
             {
-                throw new ArgumentException("minPercentile must be at least 0.0");
+                throw new ArgumentException("minPercentile must be at least 0%");
             }
 
-            if (maxPercentile > 1.0)
+            if (maxPercentile > 100)
             {
-                throw new ArgumentException("maxPercentile must be at most 1.0");
+                throw new ArgumentException("maxPercentile must be at most 100%");
             }
 
+            // Must first calculate the min and max values in the matrix.
             DataTools.MinMax(matrix, out var min, out var max);
             if (max <= min)
             {
@@ -871,14 +871,16 @@ namespace TowseyLibrary
 
             minCut = min;
             maxCut = max;
-            const double tolerance = 0.0000001;
-            if (Math.Abs(minPercentile) < tolerance && Math.Abs(maxPercentile - 1.0) < tolerance)
-            {
-                return;
-            }
+            //const double tolerance = 0.0000001;
+            //if (Math.Abs(minPercentile) < tolerance && Math.Abs(maxPercentile - 1.0) < tolerance)
+            //{
+            //    return;
+            //}
 
-            const int n = 1024;      //number of bins for histogram
+            //const int n = 1024;      //number of bins for histogram
+            const int n = 100;      //number of bins for histogram
             int[] bins = new int[n]; //histogram of power in sonogram
+
             int rows = matrix.GetLength(0); //width
             int cols = matrix.GetLength(1); //height
             double range = max - min;
@@ -887,22 +889,26 @@ namespace TowseyLibrary
                 for (int j = 0; j < cols; j++)
                 {
                     //NormaliseMatrixValues power for given min and max
-                    int k = (int)Math.Floor(n * (matrix[i, j] - min) / range); //NormaliseMatrixValues
-                    if (k < 0)
+                    int binId = (int)Math.Floor(n * (matrix[i, j] - min) / range); //NormaliseMatrixValues
+                    if (binId < 0)
                     {
-                        k = 0; //range check
+                        binId = 0; //range check
                     }
 
-                    if (k >= n)
+                    if (binId >= n)
                     {
-                        k = n - 1;
+                        binId = n - 1;
                     }
 
-                    bins[k]++;
+                    bins[binId]++;
                 }
             }
 
-            int minThres = (int)Math.Floor(minPercentile * rows * cols);
+            //int minThres = (int)Math.Floor(minPercentile * rows * cols);
+            //int minThres = (int)Math.Floor(minPercentile * rows * cols);
+
+            double binWidth = range / 100.00;
+            int minThres = (int)Math.Floor(binWidth * minPercentile);
             minCut = min;
             for (int k = 0; k < n; k++)
             {

@@ -2969,7 +2969,7 @@ namespace TowseyLibrary
             }
 
             Image colorScale = new Image<Rgb24>(colourCount * patchWidth, ht);
-            
+
             int offset = width + 1;
             if (width < 5)
             {
@@ -2998,27 +2998,35 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// returns a colour array of 256 gray scale values
+        /// returns a colour array of 256 gray scale values.
         /// </summary>
         public static Color[] GrayScale()
         {
             int max = byte.MaxValue;
             Color[] grayScale = new Color[256];
-            for (byte c = 0; c < max; c++)
+
+            // take care for byte arithmetic overflow here
+            for (var c = 0; c <= max; c++)
             {
-                grayScale[c] = Color.FromRgb(c, c, c);
+                var b = (byte)c;
+                grayScale[c] = Color.FromRgb(b, b, b);
             }
 
             return grayScale;
         }
 
+        /// <summary>
+        /// returns a colour array of 256 green scale values.
+        /// </summary>
         public static Color[] GreenScale()
         {
-            int max = 256;
+            int max = byte.MaxValue;
             Color[] greenScale = new Color[256];
-            for (byte c = 0; c < max; c++)
+
+            // take care for byte arithmetic overflow here
+            for (var c = 0; c <= max; c++)
             {
-                greenScale[c] = Color.FromRgb(0, c, 0);
+                greenScale[c] = Color.FromRgb(0, (byte)c, 0);
             }
 
             return greenScale;
@@ -3640,20 +3648,20 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// Draws matrix according to user defined scale
+        /// Draws matrix according to user defined scale.
         /// </summary>
         /// <param name="matrix">the data</param>
-        /// <param name="xPixelsPerCell">X axis scale - pixels per cell</param>
-        /// <param name="yPixelsPerCell">Y axis scale - pixels per cell</param>
-        /// <param name="reverse">determines black on white or white on black</param>
+        /// <param name="xPixelsPerCell">X axis scale - pixels per cell.</param>
+        /// <param name="yPixelsPerCell">Y axis scale - pixels per cell.</param>
+        /// <param name="reverse">determines black on white or white on black.</param>
         public static Image<Rgb24> DrawMatrixInGrayScale(double[,] matrix, int xPixelsPerCell, int yPixelsPerCell, bool reverse)
         {
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
-            int Ypixels = yPixelsPerCell * rows;
-            int Xpixels = xPixelsPerCell * cols;
+            int yPixels = yPixelsPerCell * rows;
+            int xPixels = xPixelsPerCell * cols;
             Color[] grayScale = GrayScale();
-            var bmp = new Image<Rgb24>(Xpixels, Ypixels);
+            var bmp = new Image<Rgb24>(xPixels, yPixels);
 
             double[,] norm = DataTools.normalise(matrix);
             for (int r = 0; r < rows; r++)
