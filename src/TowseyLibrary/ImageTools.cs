@@ -3004,7 +3004,9 @@ namespace TowseyLibrary
         {
             int max = byte.MaxValue;
             Color[] grayScale = new Color[256];
-            for (byte c = 0; c < max; c++)
+
+            // take care for byte arithmetic overflow here
+            for (byte c = 0; c <= max; c = (byte)(c + 1))
             {
                 grayScale[c] = Color.FromRgb(c, c, c);
             }
@@ -3014,9 +3016,11 @@ namespace TowseyLibrary
 
         public static Color[] GreenScale()
         {
-            int max = 256;
+            int max = byte.MaxValue;
             Color[] greenScale = new Color[256];
-            for (byte c = 0; c < max; c++)
+
+            // take care for byte arithmetic overflow here
+            for (byte c = 0; c <= max; c = (byte)(c + 1))
             {
                 greenScale[c] = Color.FromRgb(0, c, 0);
             }
