@@ -233,15 +233,9 @@ namespace AnalysisPrograms
                         sonoConfig.NoiseReductionType = disabledNoiseReductionType;
                         experimentalImage = GetDecibelSpectrogram_Ridges(dbSpectrogramData, decibelSpectrogram, sourceRecordingName);
                     }
-
-                    // IMAGE 5) Cepstral Spectrogram
-                    if (doCepstralSpectrogram)
-                    {
-                        ceptralImage = GetCepstralSpectrogram(sonoConfig, recordingSegment, sourceRecordingName);
-                    }
                 }
 
-                // IMAGE 6) draw difference spectrogram. This is derived from the original decibel spectrogram
+                // IMAGE 5) draw difference spectrogram. This is derived from the original decibel spectrogram
                 if (doDifferenceSpectrogram)
                 {
                     //var differenceThreshold = configInfo.GetDoubleOrNull("DifferenceThreshold") ?? 3.0;
@@ -250,7 +244,13 @@ namespace AnalysisPrograms
                 }
             }
 
-            // 7) AmplitudeSpectrogram_LocalContrastNormalization
+            // IMAGE 6) Cepstral Spectrogram
+            if (doCepstralSpectrogram)
+            {
+                ceptralImage = GetCepstralSpectrogram(sonoConfig, recordingSegment, sourceRecordingName);
+            }
+
+            // IMAGE 7) AmplitudeSpectrogram_LocalContrastNormalization
             if (doLcnSpectrogram)
             {
                 var neighbourhoodSeconds = configInfo.GetDoubleOrNull("NeighbourhoodSeconds") ?? 0.5;
@@ -259,7 +259,16 @@ namespace AnalysisPrograms
             }
 
             // COMBINE THE SPECTROGRAM IMAGES
-            result.CompositeImage = ImageTools.CombineImagesVertically(waveformImage, decibelImage, noiseReducedImage, experimentalImage, differenceImage, ceptralImage, lcnImage);
+            var list = new List<Image<Rgb24>>();
+            if (waveformImage != null) { list.Add(waveformImage); }
+            if (decibelImage != null) { list.Add(decibelImage); }
+            if (noiseReducedImage != null) { list.Add(noiseReducedImage); }
+            if (experimentalImage != null) { list.Add(experimentalImage); }
+            if (differenceImage != null) { list.Add(differenceImage); }
+            if (ceptralImage != null) { list.Add(ceptralImage); }
+            if (lcnImage != null) { list.Add(lcnImage); }
+            result.CompositeImage = ImageTools.CombineImagesVertically(list);
+            //result.CompositeImage = ImageTools.CombineImagesVertically(waveformImage, decibelImage, noiseReducedImage, experimentalImage, differenceImage, ceptralImage, lcnImage);
             return result;
         }
 
