@@ -3,7 +3,7 @@
   <!-- MSTest adapter -->
   <MSTest>
     <Parallelize>
-      <Workers>0</Workers>
+      <Workers>12</Workers>
       <Scope>ClassLevel</Scope>
     </Parallelize>
   </MSTest>

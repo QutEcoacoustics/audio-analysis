@@ -5,11 +5,14 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A050BD53-DEE0-40F3-BEAB-1F7474533C40}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		tests\Acoustics.Test\.runsettings = tests\Acoustics.Test\.runsettings
 		src\AP.CopyFiles.targets = src\AP.CopyFiles.targets
 		src\AP.Settings.json = src\AP.Settings.json
 		src\AP.VersionBuild.targets = src\AP.VersionBuild.targets
 		src\AssemblyMetadata.cs.template = src\AssemblyMetadata.cs.template
+		Directory.Build.props = Directory.Build.props
 		build\download_ap.ps1 = build\download_ap.ps1
+		src\git_version.ps1 = src\git_version.ps1
 		README.md = README.md
 		style.ruleset = style.ruleset
 		stylecop.json = stylecop.json
@@ -37,13 +40,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{1DEC9774-C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AcousticWorkbench", "src\AcousticWorkbench\AcousticWorkbench.csproj", "{E92AFA1B-B089-4CC3-B765-3B4CFF84E294}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AED", "src\AED\AED.fsproj", "{D5DFD3D5-EF64-4F5B-867F-192DAA7594FC}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AED", "src\AED\AED.fsproj", "{D5DFD3D5-EF64-4F5B-867F-192DAA7594FC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Acoustics.Unsafe", "src\Acoustics.Unsafe\Acoustics.Unsafe.csproj", "{CB44FCC9-E533-4BB6-85A5-EFB204C60A4F}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Acoustics.Shared.FSharp", "src\Acoustics.Shared.FSharp\Acoustics.Shared.FSharp.fsproj", "{0A247CB0-779D-4E71-BD86-D3F1D233B7E9}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Acoustics.Shared.FSharp", "src\Acoustics.Shared.FSharp\Acoustics.Shared.FSharp.fsproj", "{0A247CB0-779D-4E71-BD86-D3F1D233B7E9}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AED.Test", "tests\AED.Test\AED.Test.fsproj", "{007BCD6A-6381-42D7-B5BB-61D07D54A311}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "AED.Test", "tests\AED.Test\AED.Test.fsproj", "{007BCD6A-6381-42D7-B5BB-61D07D54A311}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

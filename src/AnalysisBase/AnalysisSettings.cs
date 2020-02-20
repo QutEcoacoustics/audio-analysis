@@ -180,7 +180,7 @@ namespace AnalysisBase
 
         /// <summary>
         /// Gets or sets the audio sample rate the analysis expects (in hertz).
-        /// This is initially set to the value of the <c>DefaultTargetSampleRateKey</c> setting in the app.config.
+        /// This is initially set to the value of the <c>DefaultTargetSampleRateKey</c> setting in the AP.Settings.json.
         /// This used to be set by a constant in each implementation of an analysis.
         /// A null value indicates that no sample rate modification will be done.
         /// </summary>

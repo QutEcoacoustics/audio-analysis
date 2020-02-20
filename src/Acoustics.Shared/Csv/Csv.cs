@@ -37,20 +37,18 @@ namespace Acoustics.Shared.Csv
         private static readonly CsvConfiguration InternalConfig =
             new CsvConfiguration(CultureInfo.InvariantCulture)
             {
-
                 // change the defaults here if you want
-                // ensure we always use InvariantCulture - only reliable way to serialize data
-                // Additionally R can parse invariant representations of Double.Infinity and
-                // Double.NaN (whereas it can't in other cultures).
                 HasHeaderRecord = true,
 
                 // acoustic workbench used to output faulty data with padded headers
                 PrepareHeaderForMatch = (x, i) => x.Trim(),
 
+                // ensure we always use InvariantCulture - only reliable way to serialize data
+                // Additionally R can parse invariant representations of Double.Infinity and
+                // Double.NaN (whereas it can't in other cultures).
                 CultureInfo = CultureInfo.InvariantCulture,
             };
 #pragma warning restore IDE0032 // Use auto property
-
 
         static Csv()
         {
@@ -59,7 +57,6 @@ namespace Acoustics.Shared.Csv
 
         private static void Initialize()
         {
-
             // Registers CsvHelper type converters that can allow serialization of complex types.
             InternalConfig.TypeConverterCache.AddConverter<ISet<Point>>(new CsvSetPointConverter());
 
@@ -70,7 +67,6 @@ namespace Acoustics.Shared.Csv
                 Formats = "o".AsArray(),
             };
             InternalConfig.TypeConverterOptionsCache.AddOptions<DateTimeOffset>(typeConverterOptions);
-
             InternalConfig.TypeConverterOptionsCache.AddOptions<DateTime>(typeConverterOptions);
 
             // Find all of our custom class maps
@@ -102,8 +98,6 @@ namespace Acoustics.Shared.Csv
                 writer.WriteRecords(results);
             }
         }
-
-
 
         /// <summary>
         /// Read an object from a CSV file.
