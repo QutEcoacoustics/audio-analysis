@@ -3707,6 +3707,7 @@ namespace TowseyLibrary
         {
             return CombineImagesVertically(maxWidth, list.ToArray());
         }
+
         public static Image<T> CombineImagesVertically<T>(params Image<T>[] images) where T : struct, IPixel<T>
         {
             return CombineImagesVertically<T>(maximumWidth: null, images);
@@ -3714,37 +3715,45 @@ namespace TowseyLibrary
 
         /// <summary>
         /// Stacks the passed images one on top of the other.
-        /// Assumes that all images have the same width.
         /// </summary>
-        /// <param name="array"></param>
-        /// <param name="maximumWidth">The maximum width of the output images</param>
-        /// <returns></returns>
+        /// <param name="maximumWidth">The maximum width of the output images.</param>
+        /// <param name="array">An array of Image.</param>
+        /// <returns>A single image.</returns>
         public static Image<T> CombineImagesVertically<T>(int? maximumWidth, Image<T>[] array) where T : struct, IPixel<T>
         {
-            int width = maximumWidth ?? array[0].Width;   // assume all images have the same width
-
+            int width = 0;
             int compositeHeight = 0;
             for (int i = 0; i < array.Length; i++)
             {
-                if (null == array[i])
+                if (array[i] == null)
                 {
                     continue;
                 }
 
                 compositeHeight += array[i].Height;
+
+                if (array[i].Width > width)
+                {
+                    width = array[i].Width;
+                }
+            }
+
+            // check width is not over the max
+            if (width > maximumWidth)
+            {
+                width = (int)maximumWidth;
             }
 
             var compositeBmp = new Image<T>(width, compositeHeight);
             int yOffset = 0;
+
             // TODO: Fix at some point. Using default configuration with parallelism there is some kind of batching bug that causes a crash
             compositeBmp.Mutate(Drawing.NoParallelConfiguration, gr => {
-
-                //gr.Clear(Color.Black);
                 gr.Clear(Color.DarkGray);
 
                 for (int i = 0; i < array.Length; i++)
                 {
-                    if (null == array[i])
+                    if (array[i] == null)
                     {
                         continue;
                     }
@@ -3761,8 +3770,8 @@ namespace TowseyLibrary
         /// Stacks the passed images one on top of the other.
         /// Assumes that all images have the same width.
         /// </summary>
-        /// <param name="list"></param>
-        /// <returns></returns>
+        /// <param name="list">A list of images.</param>
+        /// <returns>A single image.</returns>
         public static Image<T> CombineImagesInLine<T>(List<Image<T>> list) where T : struct, IPixel<T>
         {
             return CombineImagesInLine(list.ToArray());
@@ -3772,8 +3781,8 @@ namespace TowseyLibrary
         /// Stacks the passed images one on top of the other.
         /// Assumes that all images have the same width.
         /// </summary>
-        /// <param name="array"></param>
-        /// <returns></returns>
+        /// <param name="array">An array of images.</param>
+        /// <returns>A single image.</returns>
         public static Image<T> CombineImagesInLine<T>(params Image<T>[] array) where T : struct, IPixel<T>
         {
             int height = array[0].Height; // assume all images have the same height
