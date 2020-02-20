@@ -2,8 +2,8 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!-- Condition="'$(Configuration)' == 'Release' Or !Exists('Properties\AssemblyInfo.cs')" -->
   <!-- Register our task that as something to run before standard build target -->
-  <Target Name="APVersionBeforeBuild" BeforeTargets="PrepareForBuild">
-    <Exec Command="pwsh -noprofile $(ProjectDir)../git_version.ps1" ConsoleToMSBuild="True" EchoOff="False">
+  <Target Name="APVersionBeforeBuild" BeforeTargets="BuildGenerateSources">
+    <Exec Command="pwsh -noprofile $(ProjectDir)../git_version.ps1 -build_type $(Configuration)" ConsoleToMSBuild="True" EchoOff="False">
        <Output TaskParameter="ConsoleOutput" PropertyName="VersionMetadata" />
     </Exec>
   </Target>

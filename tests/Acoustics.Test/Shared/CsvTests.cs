@@ -18,6 +18,7 @@ namespace Acoustics.Test.Shared
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
     using CsvHelper;
+    using CsvHelper.Configuration;
     using CsvHelper.TypeConversion;
     
     using global::AnalysisBase.ResultBases;
@@ -291,6 +292,11 @@ namespace Acoustics.Test.Shared
                 (typeof(EventStatistics), typeof(EventStatistics.EventStatisticsClassMap)),
                 (typeof(ImportedEvent), typeof(ImportedEvent.ImportedEventNameClassMap)),
             };
+
+            // test reflection is working
+            CollectionAssert.AreEquivalent(
+                partialExpected.Select(x => x.Item2).ToArray(),
+                Meta.GetTypesFromQutAssemblies<ClassMap>().ToArray());
 
             foreach (var (type, classMapType) in partialExpected)
             {

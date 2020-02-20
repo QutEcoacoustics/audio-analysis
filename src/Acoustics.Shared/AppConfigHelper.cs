@@ -39,7 +39,7 @@ namespace Acoustics.Shared
         public const string RenderedDateFormatShort = "yyyy-MM-dd HH:mm";
 
         private static readonly string ExecutingAssemblyPath =
-            (Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly()).Location;
+            Assembly.GetAssembly(typeof(AppConfigHelper)).Location;
 
         private static readonly Lazy<IConfigurationSection> SharedSettings = new Lazy<IConfigurationSection>(() =>
         {

@@ -20,7 +20,7 @@ namespace Acoustics.Shared.Logging
     using log4net.Util;
     using static log4net.Appender.ManagedColoredConsoleAppender;
 
-    public class Logging
+    public class Logging : IDisposable
     {
         public const string CleanLogger = "CleanLogger";
         public const string LogFileOnly = "LogFileOnly";
@@ -42,7 +42,7 @@ namespace Acoustics.Shared.Logging
 
         static Logging()
         {
-            LoggerManager.CreateRepository(RootNamespace, (typeof(Hierarchy)));
+            LoggerManager.CreateRepository(RootNamespace, typeof(Hierarchy));
         }
 
         /// <summary>
@@ -71,7 +71,6 @@ namespace Acoustics.Shared.Logging
             Level defaultLevel,
             bool quietConsole)
         {
-            
             LogManager.ResetConfiguration(RootNamespace);
 
             this.repository = (Hierarchy)LogManager.GetRepository(RootNamespace);
@@ -210,6 +209,12 @@ namespace Acoustics.Shared.Logging
         public string LogFilePath { get; }
 
         internal MemoryAppender MemoryAppender { get; }
+
+        public void Dispose()
+        {
+            this.standardConsoleAppender.Close();
+            this.cleanConsoleAppender.Close();
+        }
 
         /// <summary>
         /// Initializes the logging system.

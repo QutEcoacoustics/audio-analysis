@@ -52,17 +52,16 @@ namespace AudioAnalysisTools
 
                 foreach (var ignoredProperty in IgnoredProperties)
                 {
-                    var index = this.MemberMaps.Single(pm => pm.Data.Member.Name == ignoredProperty).Ignore();
-                    //this.MemberMaps.RemoveAt(index);
+                    this.MemberMaps.Single(pm => pm.Data.Member.Name == ignoredProperty).Ignore();
                 }
 
                 this.Map(m => m.EventStartSeconds, useExistingMap: true).Index(0);
                 this.Map(m => m.EventEndSeconds, useExistingMap: true).Index(2);
                 this.Map(m => m.EventDurationSeconds, useExistingMap: true).Index(3);
                 this.Map(m => m.LowFrequencyHertz, useExistingMap: true).Index(4);
-                
+
                 this.Map(m => m.HighFrequencyHertz, useExistingMap: true).Index(5);
-                
+
                 this.ReferenceMaps.Clear();
                 this.References<Oblong.OblongClassMap>(m => m.Oblong);
 

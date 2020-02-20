@@ -1,9 +1,20 @@
 <Project>
- <PropertyGroup>
-   <Deterministic>true</Deterministic>
-   <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)style.ruleset</CodeAnalysisRuleSet>
- </PropertyGroup>
- <ItemGroup>
+  <PropertyGroup>
+    <Deterministic>true</Deterministic>
+    <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)style.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Label="Common">
+    <Company>QUT Ecoacoustics Research Group</Company>
+    <Authors>Michael Towsey, Anthony Truskinger, et al.</Authors>
+    <Copyright>Copyright © QUT $([System.DateTime]::Now.Year)</Copyright>
+    <Product>QUT Ecoacoustics Analysis Programs</Product>
+    <RepositoryType>Git</RepositoryType>
+    <PackageLicenseUrl>https://github.com/QutEcoacoustics/audio-analysis/blob/master/LICENSE.txt</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/QutEcoacoustics/audio-analysis</PackageProjectUrl>
+    <PackageIconUrl></PackageIconUrl>
+    <RepositoryUrl>https://github.com/QutEcoacoustics/audio-analysis.git</RepositoryUrl>
+  </PropertyGroup>
+  <ItemGroup>
     <AdditionalFiles Include="$(MSBuildThisFileDirectory)stylecop.json">
       <Link>stylecop.json</Link>
     </AdditionalFiles>

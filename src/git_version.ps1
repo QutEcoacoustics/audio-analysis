@@ -2,8 +2,27 @@
 
 #Requires -Version 6
 
+param(
+    [string]$build_type = "Release"
+)
+
 Push-Location
 Set-Location $PSScriptRoot
+
+$metadata_file = "AssemblyMetadata.Generated.cs"
+$props_file = "AssemblyMetadata.Generated.targets"
+$now = [System.DateTimeOffset]::UtcNow
+
+# cache files in debug release
+$cache_warning = ""
+if ($build_type -eq "Debug") {
+    $cache_warning = "// GENERATED_VALUES_MAY_BE_CACHED_IN_DEBUG_BUILD"
+    $last_write = (Get-Item $metadata_file).LastWriteTimeUtc
+    if (($now - $last_write) -lt [timespan]::FromMinutes(5)) {
+        Write-Warning "Skipping AssemblyMetadata generation because we're in Debug and the file was generated less than five minutes ago"
+        exit 0
+    }
+}
 
 $commit_hash = git show -s --format="%H"
 
@@ -17,7 +36,7 @@ $describe_tag, $describe_commit_count, $describe_hash, $describe_dirty = $descri
 $is_dirty = if ($null -ne $describe_dirty) { 'true' } else { 'false' }
 $dirty = if ($is_dirty) { 'DIRTY'} else { '' }
 
-$now = [System.DateTimeOffset]::UtcNow
+
 $year = $now.Year
 $month = $now.Month
 $short_year = $now.ToString("yy")
@@ -34,8 +53,6 @@ $informational_version = "$version-$branch-$commit_hash-$dirty-CI:$build_number"
 $template_file = "AssemblyMetadata.cs.template"
 $content = Get-Content -Raw $template_file
 $templated = $ExecutionContext.InvokeCommand.ExpandString($content)
-$metadata_file = "AssemblyMetadata.Generated.cs"
-$props_file = "AssemblyMetadata.Generated.targets"
 $templated | Out-File $metadata_file -Force -Encoding utf8NoBOM
 
 $props =  @"

@@ -39,28 +39,31 @@ namespace Acoustics.Test.Shared.LoggingTests
         [DataRow(nameof(Level.All), 19)]
         public void TestVerbosityModifier(string targetVerbosity, int expectedMessageCount)
         {
-            lock (TestSetup.TestLogging.MemoryAppender)
+            using var logging = new Logging(
+                enableMemoryLogger: true,
+                enableFileLogger: false,
+                colorConsole: false,
+                Level.Info,
+                quietConsole: true);
+
+            // fresh copy of the logger
+            Assert.AreEqual(0, logging.MemoryAppender.GetEvents().Length);
+
+            // make sure the verbosity exists somewhere
+            var flags = BindingFlags.Public | BindingFlags.Static;
+            if (!(typeof(Level).GetField(targetVerbosity, flags)?.GetValue(null) is Level level))
             {
-                // clear the log
-                TestSetup.TestLogging.MemoryAppender.Clear();
-
-                var flags = BindingFlags.Public | BindingFlags.Static;
-                
-                
-                if (!(typeof(Level).GetField(targetVerbosity, flags)?.GetValue(null) is Level level))
-                {
-                    
-                    level = typeof(LogExtensions).GetField(targetVerbosity, flags).GetValue(null) as Level;
-                }
-
-                Assert.IsNotNull(level);
-
-                TestSetup.TestLogging.ModifyVerbosity(level, true);
-
-                TestSetup.TestLogging.TestLogging();
-
-                Assert.AreEqual(expectedMessageCount, TestSetup.TestLogging.MemoryAppender.GetEvents().Length);
+                level = typeof(LogExtensions).GetField(targetVerbosity, flags).GetValue(null) as Level;
             }
+
+            Assert.IsNotNull(level);
+
+            logging.ModifyVerbosity(level, true);
+
+            // finally write some diagnostic messages
+            logging.TestLogging();
+
+            Assert.AreEqual(expectedMessageCount, logging.MemoryAppender.GetEvents().Length);
         }
 
         [TestMethod]
@@ -69,9 +72,10 @@ namespace Acoustics.Test.Shared.LoggingTests
             var logging = new Logging(false, Level.Info, quietConsole: false);
 
             var expectedPath = Path.Combine(LoggedConsole.LogFolder, logging.LogFileName);
+
             // Debug.WriteLine("expected:" + expectedPath);
             // Debug.WriteLine("actual:" + logging.LogFilePath);
-            
+
             Assert.That.PathExists(logging.LogFilePath);
             Assert.That.PathExists(expectedPath);
 
