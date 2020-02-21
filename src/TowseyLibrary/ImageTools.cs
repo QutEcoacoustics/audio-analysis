@@ -3720,22 +3720,23 @@ namespace TowseyLibrary
         /// <param name="maximumWidth">The maximum width of the output images.</param>
         /// <param name="array">An array of Image.</param>
         /// <returns>A single image.</returns>
-        public static Image<T> CombineImagesVertically<T>(int? maximumWidth, Image<T>[] array) where T : struct, IPixel<T>
+        public static Image<T> CombineImagesVertically<T>(int? maximumWidth, Image<T>[] array)
+            where T : struct, IPixel<T>
         {
             int width = 0;
             int compositeHeight = 0;
-            for (int i = 0; i < array.Length; i++)
+            foreach (var image in array)
             {
-                if (array[i] == null)
+                if (image == null)
                 {
                     continue;
                 }
 
-                compositeHeight += array[i].Height;
+                compositeHeight += image.Height;
 
-                if (array[i].Width > width)
+                if (image.Width > width)
                 {
-                    width = array[i].Width;
+                    width = image.Width;
                 }
             }
 
@@ -3745,22 +3746,21 @@ namespace TowseyLibrary
                 width = (int)maximumWidth;
             }
 
-            var compositeBmp = new Image<T>(width, compositeHeight);
+            var compositeBmp = Drawing.NewImage<T>(width, compositeHeight, Color.DarkGray);
             int yOffset = 0;
 
             // TODO: Fix at some point. Using default configuration with parallelism there is some kind of batching bug that causes a crash
-            compositeBmp.Mutate(Drawing.NoParallelConfiguration, gr => {
-                gr.Clear(Color.DarkGray);
-
-                for (int i = 0; i < array.Length; i++)
+            compositeBmp.Mutate(Drawing.NoParallelConfiguration, gr =>
+            {
+                foreach (var image in array)
                 {
-                    if (array[i] == null)
+                    if (image == null)
                     {
                         continue;
                     }
 
-                    gr.DrawImage( array[i], new Point(0, yOffset), 1); //draw in the top image
-                    yOffset += array[i].Height;
+                    gr.DrawImage(image, new Point(0, yOffset), 1); //draw in the top image
+                    yOffset += image.Height;
                 }
             });
 
@@ -3773,7 +3773,8 @@ namespace TowseyLibrary
         /// </summary>
         /// <param name="list">A list of images.</param>
         /// <returns>A single image.</returns>
-        public static Image<T> CombineImagesInLine<T>(List<Image<T>> list) where T : struct, IPixel<T>
+        public static Image<T> CombineImagesInLine<T>(List<Image<T>> list)
+            where T : struct, IPixel<T>
         {
             return CombineImagesInLine(list.ToArray());
         }
@@ -3784,56 +3785,44 @@ namespace TowseyLibrary
         /// </summary>
         /// <param name="array">An array of images.</param>
         /// <returns>A single image.</returns>
-        public static Image<T> CombineImagesInLine<T>(params Image<T>[] array) where T : struct, IPixel<T>
+        public static Image<T> CombineImagesInLine<T>(params Image<T>[] array)
+            where T : struct, IPixel<T>
         {
-            int height = array[0].Height; // assume all images have the same height
-
+            int height = 0;
             int compositeWidth = 0;
-            for (int i = 0; i < array.Length; i++)
+            foreach (var image in array)
             {
-                compositeWidth += array[i].Width;
-                if (height < array[i].Height)
+                if (image == null)
                 {
-                    height = array[i].Height;
+                    continue;
+                }
+
+                compositeWidth += image.Width;
+                if (height < image.Height)
+                {
+                    height = image.Height;
                 }
             }
 
             //Image compositeBmp = new Image(compositeWidth, height);
-            var compositeBmp = new Image<T>(compositeWidth, height);
+            var compositeBmp = Drawing.NewImage<T>(compositeWidth, height, Color.Black);
             int xOffset = 0;
-            compositeBmp.Mutate(x => {
-                x.Fill(Color.Black);
-
-                for (int i = 0; i < array.Length; i++)
+            compositeBmp.Mutate(x =>
+            {
+                foreach (var image in array)
                 {
-                    x.DrawImage(array[i], new Point(xOffset, 0), 1f); //draw in the top spectrogram
-                    xOffset += array[i].Width;
+                    if (image == null)
+                    {
+                        continue;
+                    }
 
-                    //string name = String.Format("TESTIMAGE" + i + ".png");
-                    //array[i].Save(Path.Combine(@"C:\SensorNetworks\Output\Frommolt\ConcatImageOutput", name));
+                    x.DrawImage(image, new Point(xOffset, 0), 1f);
+                    xOffset += image.Width;
                 }
             });
-            // this was done in Berlin beacuse could not get images to save properly.
-
-            //string fileName2 = String.Format("TESTIMAGE3.png");
-            //compositeBmp.Save(Path.Combine(@"C:\SensorNetworks\Output\Frommolt\ConcatImageOutput", fileName2));
 
             return compositeBmp;
         }
-
-        //public static void METHOD(string[] titleArray, int imageWidth, int imageHeight)
-        //{
-        //    // now make images
-        //    var images = new List<Image>();
-        //    int scalingFactor = 20;
-        //    foreach (string key in titleArray)
-        //    {
-        //        string label = String.Format("{0} {1} ({2})", speciesLabel, key, speciesNumbers[i]);
-        //        Image image = ImageTools.DrawGraph(label, dictionary[key], imageWidth, imageHeight, scalingFactor);
-        //        images.Add(image);
-        //    }
-        //    Image combinedImage = ImageTools.CombineImagesVertically(images);
-        //}
 
         public static Tuple<int, double> DetectLine(double[,] m, int row, int col, int lineLength, double centreThreshold, int resolutionAngle)
         {
