@@ -610,16 +610,15 @@ namespace AudioAnalysisTools.StandardSpectrograms
             int width = bmp.Width;
 
             var timeTrack = DrawTimeTrack(this.timeSpan, width);
-            
+
             // TODO: Fix at some point. Using default configuration with parallelism there is some kind of batching bug that causes a crash
             bmp.Mutate(Drawing.NoParallelConfiguration, g => { g.DrawImage(timeTrack, new Point(0, this.topOffset), 1); });
-
             return bmp;
         }
 
         /// <summary>
-        /// This method assumes that the passed decibel array has been normalised
-        /// Also requires values to be set for SegmentationThreshold_k1 and SegmentationThreshold_k2
+        /// This method assumes that the passed decibel array has been normalised.
+        /// Also requires values to be set for SegmentationThreshold_k1 and SegmentationThreshold_k2.
         /// </summary>
         public Image<Rgb24> DrawSegmentationTrack(Image<Rgb24> bmp)
         {
@@ -630,7 +629,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 return bmp;
             }
 
-            bmp.Mutate(g => { g.DrawImage(track, 0, this.topOffset); });
+            //bmp.Mutate(g => { g.DrawImage(track, 0, this.topOffset); });
+            bmp.Mutate(g => { g.DrawImage(track, new Point(0, this.topOffset), 1); });
 
             return bmp;
         }
@@ -1560,7 +1560,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             byte[] hScale = GetXaxisTicLocations(width, duration);
 
             var bmp = new Image<Rgb24>(width, height);
-            var font = Drawing.Tahoma8;
+            var font = Drawing.Tahoma9;
 
             bmp.Mutate(g =>
             {
@@ -1610,7 +1610,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     {
                         int secs = (int)Math.Round(x * secondsPerPixel);
                         TimeSpan span = new TimeSpan(0, 0, secs);
-                        g.DrawText(span.ToString(), font, Color.Black, new PointF(x, 0));
+                        g.DrawText(span.ToString(), font, Color.Black, new PointF(x + 1, 3));
                         prevLocation = x;
                     }
                 }
