@@ -9,6 +9,7 @@ namespace TowseyLibrary
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
+    using Acoustics.Shared.ImageSharp;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;

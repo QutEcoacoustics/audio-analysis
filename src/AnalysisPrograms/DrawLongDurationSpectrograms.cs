@@ -32,6 +32,7 @@ namespace AnalysisPrograms
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
+    using Acoustics.Shared.ImageSharp;
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;

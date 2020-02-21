@@ -9,6 +9,7 @@ namespace AudioAnalysisTools
     using SixLabors.ImageSharp;
     using System.IO;
     using Acoustics.Shared;
+    using Acoustics.Shared.ImageSharp;
     using Indices;
     using SixLabors.Fonts;
     using SixLabors.ImageSharp.PixelFormats;

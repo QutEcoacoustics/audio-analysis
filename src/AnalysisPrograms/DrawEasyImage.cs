@@ -16,6 +16,7 @@ namespace AnalysisPrograms
     using System.Linq;
     using System.Threading.Tasks;
     using Acoustics.Shared;
+    using Acoustics.Shared.ImageSharp;
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;

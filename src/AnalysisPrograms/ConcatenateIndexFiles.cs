@@ -33,6 +33,7 @@ namespace AnalysisPrograms
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
+    using Acoustics.Shared.ImageSharp;
     using AnalysisPrograms.Production;
     using AnalysisPrograms.Production.Arguments;
     using AnalysisPrograms.Production.Validation;

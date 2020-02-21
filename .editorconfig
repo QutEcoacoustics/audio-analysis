@@ -179,6 +179,14 @@ csharp_space_before_open_square_brackets = false:warning
 csharp_space_between_empty_square_brackets = false:warning
 csharp_space_between_method_declaration_name_and_open_parenthesis = false:warning
 csharp_space_between_square_brackets = false:warning
+# Miscellaneous Preferences
+# https://docs.microsoft.com/en-us/visualstudio/ide/editorconfig-language-conventions?view=vs-2019#miscellaneous-preferences
+csharp_style_deconstructed_variable_declaration = true:suggestion
+csharp_style_pattern_local_over_anonymous_function = true:suggestion
+csharp_using_directive_placement = inside_namespace:suggestion
+csharp_prefer_static_local_function = true:suggestion
+csharp_prefer_simple_using_statement = true:suggestion
+csharp_style_prefer_switch_expression = true:suggestion
 
 #########################
 # .NET Naming conventions

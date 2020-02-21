@@ -17,6 +17,7 @@ namespace AudioAnalysisTools
     using Acoustics.Shared;
     using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Csv;
+    using Acoustics.Shared.ImageSharp;
     using AnalysisBase.ResultBases;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;

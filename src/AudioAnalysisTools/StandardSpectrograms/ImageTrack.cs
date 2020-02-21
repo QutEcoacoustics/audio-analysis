@@ -13,6 +13,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
     using SixLabors.ImageSharp.Processing;
     using TowseyLibrary;
     using Acoustics.Shared;
+    using Acoustics.Shared.ImageSharp;
 
     public enum TrackType
     {

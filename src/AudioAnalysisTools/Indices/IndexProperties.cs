@@ -19,6 +19,7 @@ namespace AudioAnalysisTools.Indices
     using System.IO;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
+    using Acoustics.Shared.ImageSharp;
     using AnalysisBase;
     using Newtonsoft.Json;
     using SixLabors.ImageSharp.PixelFormats;

@@ -10,6 +10,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
     using System.Linq;
 
     using Acoustics.Shared;
+    using Acoustics.Shared.ImageSharp;
     using Acoustics.Tools.Wav;
 
     using AudioAnalysisTools.DSP;

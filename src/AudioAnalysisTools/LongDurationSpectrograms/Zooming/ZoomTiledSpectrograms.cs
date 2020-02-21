@@ -13,6 +13,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Contracts;
+    using Acoustics.Shared.ImageSharp;
     using Indices;
     using log4net;
     using SixLabors.ImageSharp.PixelFormats;

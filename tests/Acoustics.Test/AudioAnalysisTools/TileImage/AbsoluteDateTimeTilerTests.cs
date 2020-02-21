@@ -14,7 +14,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
     using TestHelpers;
     using Zio;
     using SixLabors.ImageSharp.Processing;
-    using Drawing = Acoustics.Shared.Drawing;
+    using Drawing = Acoustics.Shared.ImageSharp.Drawing;
 
     [TestClass]
     public class AbsoluteDateTimeTilerTests
@@ -141,7 +141,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
             var expectedImages =
                 expectedFiles
                     .OrderBy(x => x)
-                    .Select((x, i) => Drawing.CropInverse(testBitmap, new Rectangle((i * TileWidth) - 100, 0, TileWidth, 256)))
+                    .Select((x, i) => testBitmap.CropInverse(new Rectangle((i * TileWidth) - 100, 0, TileWidth, 256)))
                     .ToArray();
 
             for (var i = 0; i < expectedImages.Length; i++)

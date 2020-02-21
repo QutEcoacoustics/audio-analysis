@@ -13,6 +13,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
     using Accord.Math;
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
+    using Acoustics.Shared.ImageSharp;
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.StandardSpectrograms;
     using global::AudioAnalysisTools.WavTools;

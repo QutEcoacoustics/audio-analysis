@@ -12,6 +12,7 @@ namespace AudioAnalysisTools
     using System.Linq;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
+    using Acoustics.Shared.ImageSharp;
     using DSP;
     using MathNet.Numerics.LinearAlgebra;
     using MathNet.Numerics.LinearAlgebra.Double;

@@ -41,6 +41,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using System.Linq;
     using System.Reflection;
     using Acoustics.Shared;
+    using Acoustics.Shared.ImageSharp;
     using AnalysisBase.ResultBases;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;

@@ -24,7 +24,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using System.Reflection;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
-
+    using Acoustics.Shared.ImageSharp;
     using Indices;
     using log4net;
     using SixLabors.Fonts;

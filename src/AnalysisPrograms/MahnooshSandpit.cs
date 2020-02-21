@@ -14,6 +14,7 @@ namespace AnalysisPrograms
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
+    using Acoustics.Shared.ImageSharp;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;

@@ -29,7 +29,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using System.Linq;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
-
+    using Acoustics.Shared.ImageSharp;
     using DSP;
     using Indices;
     using SixLabors.ImageSharp.PixelFormats;

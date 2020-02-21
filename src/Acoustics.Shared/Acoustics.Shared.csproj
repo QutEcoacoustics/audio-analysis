@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AssemblyTitle>Acoustics.Shared</AssemblyTitle>
-    <LangVersion>latest</LangVersion>
+    <LangVersion>8</LangVersion>
     <!-- TODO CORE: For log4net -->
     <NoWarn>$(NoWarn);NU1605</NoWarn>
   </PropertyGroup>

@@ -1,14 +1,17 @@
-// <copyright file="ExtensionsDrawing.cs" company="QutEcoacoustics">
+// <copyright file="ImageSharpExtensions.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
 // ReSharper disable once CheckNamespace
-namespace System
+namespace SixLabors.ImageSharp
 {
-    using Globalization;
-    using IO;
+    using System;
+    using System.Globalization;
+    using System.IO;
     using System.Text.RegularExpressions;
     using Acoustics.Shared;
+    using Acoustics.Shared.ImageSharp;
+    using SixLabors.Fonts;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.Formats;
     using SixLabors.ImageSharp.PixelFormats;
@@ -17,7 +20,7 @@ namespace System
     /// <summary>
     /// Image extension methods.
     /// </summary>
-    public static class ExtensionsDrawing
+    public static class ImageSharpExtensions
     {
         /// <summary>
         /// The color reg ex error.
@@ -58,8 +61,6 @@ namespace System
 
             return bytes;
         }
-
-
 
         /// <summary>
         /// The to hex string.
@@ -102,7 +103,7 @@ namespace System
         /// Modified image.
         /// </returns>
         [Obsolete("This shim only exists for compatibility. Not needed when ImageSharp replaced System.Drawing")]
-        public static Image Modify(this Image sourceImage, int? height, int? width, bool removeBottomRow)
+        public static Image ModifySpectrogram(this Image sourceImage, int? height, int? width, bool removeBottomRow)
         {
             var amountToRemove = removeBottomRow ? 1 : 0;
 
@@ -187,7 +188,10 @@ namespace System
             return Color.FromRgb(tone, tone, tone);
         }
 
-        public static void DrawImage(this Image destination, Image source, Rectangle destinationRectangle,
+        public static void DrawImage(
+            this Image destination,
+            Image source,
+            Rectangle destinationRectangle,
             Rectangle sourceRectangle)
         {
             destination.Mutate(
@@ -238,9 +242,9 @@ namespace System
         /// </remarks>
         public static float GetBrightness(this Rgb24 pixel)
         {
-            float r = (float)pixel.R / 255.0f;
-            float g = (float)pixel.G / 255.0f;
-            float b = (float)pixel.B / 255.0f;
+            float r = pixel.R / 255.0f;
+            float g = pixel.G / 255.0f;
+            float b = pixel.B / 255.0f;
 
             var max = r;
             var min = r;
@@ -266,6 +270,176 @@ namespace System
             }
 
             return (max + min) / 2;
+        }
+
+        public static void Save<T>(this Image<T> image, FileInfo path)
+            where T : struct, IPixel<T>
+        {
+            image.Save(path.ToString());
+        }
+        public static SizeF ToSizeF(this FontRectangle rectangle)
+        {
+            return new SizeF(rectangle.Width, rectangle.Height);
+        }
+
+
+        public static SizeF MeasureString(this IImageProcessingContext _, string text, Font font)
+        {
+            return TextMeasurer.MeasureBounds(text, new RendererOptions(font)).ToSizeF();
+        }
+
+        public static Size ToSize(this SizeF size)
+        {
+            return (Size)size;
+        }
+
+        public static Pen ToPen(this Color color, float width = 1)
+        {
+            return new Pen(color, width);
+        }
+
+        public static Rectangle AsRect(this (int X, int Y, int Width, int Height) rect)
+        {
+            return new Rectangle(rect.X, rect.Y, rect.Width, rect.Height);
+        }
+
+
+
+        public static void DrawTextSafe(this IImageProcessingContext context, string text, Font font,
+            Color color, PointF location)
+        {
+            if (text.IsNullOrEmpty())
+            {
+                return;
+            }
+
+            context.DrawText(text, font, color, location);
+
+        }
+
+        public static void DrawVerticalText(this IImageProcessingContext context, string text, Font font, Color color, Point location)
+        {
+            var (width, height) = TextMeasurer.Measure(text, new RendererOptions(font)).ToSizeF();
+            var image = new Image<Rgba32>(Configuration.Default, (int)(width + 1), (int)(height + 1), Color.Transparent);
+
+            image.Mutate(x => x
+                .DrawText(new TextGraphicsOptions(), text, font, color, new PointF(0, 0))
+                .Rotate(-90));
+
+            context.DrawImage(image, location, PixelColorBlendingMode.Normal, PixelAlphaCompositionMode.SrcAtop, 1);
+
+        }
+
+        /// <summary>
+        /// Crop an image using a <paramref name="crop"/> Rectangle.
+        /// </summary>
+        /// <param name="source">
+        /// Source image.
+        /// </param>
+        /// <param name="crop">
+        /// Crop rectangle.
+        /// </param>
+        /// <returns>
+        /// Cropped image.
+        /// </returns>
+        public static Image<T> Crop<T>(this Image<T> source, Rectangle crop)
+            where T : struct, IPixel<T> => source.Clone(x => x.Crop(crop));
+
+        /// <summary>
+        /// Crop an image using a <paramref name="crop"/> Rectangle.
+        /// If <paramref name="crop"/> spills over <paramref name="source"/> only intersecting areas are returned.
+        /// </summary>
+        /// <param name="source">
+        /// Source image.
+        /// </param>
+        /// <param name="crop">
+        /// Crop rectangle.
+        /// </param>
+        /// <returns>
+        /// Cropped image.
+        /// </returns>
+        public static Image<T> CropIntersection<T>(this Image<T> source, Rectangle crop)
+            where T : struct, IPixel<T>
+        {
+            var intersection = Rectangle.Intersect(crop, source.Bounds());
+
+            return source.Clone(x => x.Crop(intersection));
+        }
+
+
+        /// <summary>
+        /// Draw a crop of an image onto a rectangle surface. Unlike crop, it treats the rectangle coordinates
+        /// as the source of truth and returns a new image, with a section of <paramref name="source"/> drawn on top.
+        /// </summary>
+        /// <param name="source">
+        /// Source image.
+        /// </param>
+        /// <param name="crop">
+        /// Crop rectangle.
+        /// </param>
+        /// <returns>
+        /// Cropped image.
+        /// </returns>
+        public static Image<T> CropInverse<T>(this Image<T> source, Rectangle crop)
+            where T : struct, IPixel<T>
+        {
+            var result = new Image<T>(crop.Width, crop.Height);
+
+            var intersection = source.Bounds();
+            intersection.Intersect(crop);
+
+            result.Mutate(x => x.DrawImage(
+                source.CropIntersection(intersection),
+                new Point(intersection.X - crop.X, intersection.Y - crop.Y),
+                1));
+
+            return result;
+        }
+
+        public static void RotateFlip<T>(this Image<T> image, RotateFlipType operation)
+            where T : struct, IPixel<T>
+        {
+            RotateMode r;
+            FlipMode f;
+            switch (operation)
+            {
+                case RotateFlipType.RotateNoneFlipNone:
+                    f = FlipMode.None;
+                    r = RotateMode.None;
+                    break;
+                case RotateFlipType.Rotate90FlipNone:
+                    f = FlipMode.None;
+                    r = RotateMode.Rotate90;
+                    break;
+                case RotateFlipType.Rotate180FlipNone:
+                    f = FlipMode.None;
+                    r = RotateMode.Rotate180;
+                    break;
+                case RotateFlipType.Rotate270FlipNone:
+                    f = FlipMode.None;
+                    r = RotateMode.Rotate270;
+                    break;
+                case RotateFlipType.RotateNoneFlipX:
+                    f = FlipMode.Horizontal;
+                    r = RotateMode.None;
+                    break;
+                case RotateFlipType.Rotate90FlipX:
+                    f = FlipMode.Horizontal;
+                    r = RotateMode.Rotate90;
+                    break;
+                case RotateFlipType.Rotate180FlipX:
+                    f = FlipMode.Horizontal;
+                    r = RotateMode.Rotate180;
+                    break;
+                case RotateFlipType.Rotate270FlipX:
+                    f = FlipMode.Horizontal;
+                    r = RotateMode.Rotate270;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(operation), operation, null);
+            }
+
+            image.Mutate(x => x.RotateFlip(r, f));
         }
     }
 }

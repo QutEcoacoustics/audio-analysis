@@ -12,6 +12,7 @@ namespace AudioAnalysisTools.Indices
     using System.Reflection;
     using System.Text;
     using Acoustics.Shared;
+    using Acoustics.Shared.ImageSharp;
     using AnalysisBase.ResultBases;
     using StandardSpectrograms;
     using log4net;

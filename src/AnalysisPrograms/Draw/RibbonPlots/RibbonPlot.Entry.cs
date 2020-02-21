@@ -10,6 +10,7 @@ namespace AnalysisPrograms.Draw.RibbonPlots
     using System.Linq;
     using System.Threading.Tasks;
     using Acoustics.Shared;
+    using Acoustics.Shared.ImageSharp;
     using AnalysisPrograms.Production;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;

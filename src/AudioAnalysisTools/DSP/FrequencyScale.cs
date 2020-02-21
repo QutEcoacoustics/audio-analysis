@@ -8,6 +8,7 @@ namespace AudioAnalysisTools.DSP
     using SixLabors.ImageSharp;
     using System.IO;
     using Acoustics.Shared;
+    using Acoustics.Shared.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
     using StandardSpectrograms;

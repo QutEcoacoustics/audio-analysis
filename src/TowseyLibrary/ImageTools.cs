@@ -10,6 +10,7 @@ namespace TowseyLibrary
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
+    using Acoustics.Shared.ImageSharp;
     using AForge.Imaging.Filters;
     using MathNet.Numerics.LinearAlgebra;
     using SixLabors.ImageSharp;

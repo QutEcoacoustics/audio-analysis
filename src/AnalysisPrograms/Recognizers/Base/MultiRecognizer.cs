@@ -23,6 +23,7 @@ namespace AnalysisPrograms.Recognizers.Base
     using System.Reflection;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
+    using Acoustics.Shared.ImageSharp;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
 

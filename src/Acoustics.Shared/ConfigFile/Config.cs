@@ -7,10 +7,7 @@ namespace Acoustics.Shared.ConfigFile
     using System;
     using System.Collections.Generic;
     using System.Globalization;
-    using System.Reflection;
     using Acoustics.Shared.Contracts;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Serialization;
 
     public class Config : IConfig
     {
@@ -316,24 +313,6 @@ namespace Acoustics.Shared.ConfigFile
                 default:
                     throw new InvalidOperationException();
             }
-        }
-    }
-
-    public class ConfigSerializeContractResolver : DefaultContractResolver
-    {
-        public static readonly ConfigSerializeContractResolver Instance = new ConfigSerializeContractResolver();
-
-        protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
-        {
-            JsonProperty property = base.CreateProperty(member, memberSerialization);
-
-            if (property.DeclaringType == typeof(Config) && property.PropertyName == nameof(Config.GenericConfig))
-            {
-                // only serialize generic config iff the current type is Config exactly
-                property.ShouldSerialize = instance => typeof(Config) == instance.GetType();
-            }
-
-            return property;
         }
     }
 }

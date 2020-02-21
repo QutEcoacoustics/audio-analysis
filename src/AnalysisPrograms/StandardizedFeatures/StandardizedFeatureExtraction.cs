@@ -12,6 +12,7 @@ namespace AnalysisPrograms.StandardizedFeatures
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
+    using Acoustics.Shared.ImageSharp;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
     using AudioAnalysisTools;

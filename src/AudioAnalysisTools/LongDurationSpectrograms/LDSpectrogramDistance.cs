@@ -11,6 +11,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using System.IO;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
+    using Acoustics.Shared.ImageSharp;
     using AudioAnalysisTools.Indices;
 
     using SixLabors.ImageSharp.PixelFormats;
