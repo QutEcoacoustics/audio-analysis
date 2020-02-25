@@ -4,9 +4,11 @@
 
 namespace Acoustics.Shared.ImageSharp
 {
+    using System.Runtime.CompilerServices;
     using SixLabors.Fonts;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
+    using SixLabors.ImageSharp.Processing;
 
     /// <summary>
     /// Helpers for drawing images.
@@ -36,8 +38,29 @@ namespace Acoustics.Shared.ImageSharp
             MaxDegreeOfParallelism = 1,
         };
 
+        public static readonly ShapeGraphicsOptions NoAntiAlias = new ShapeGraphicsOptions()
+        {
+            BlendPercentage = 1,
+            Antialias = false,
+            ColorBlendingMode = PixelColorBlendingMode.Normal,
+            AntialiasSubpixelDepth = 0,
+            //IntersectionRule = IntersectionRule.OddEven,
+        };
+
+        //public static readonly ShapeGraphicsOptions NoAntiAlias = new ShapeGraphicsOptions()
+        //{
+        //    BlendPercentage = 1,
+        //    Antialias = false,
+        //    ColorBlendingMode = PixelColorBlendingMode.Normal,
+        //    AntialiasSubpixelDepth = 0,
+        //};
+
         private const string Tahoma = "Tahoma";
         private const string Arial = "Arial";
+
+        static Drawing()
+        {
+        }
 
         public static Font GetArial(float size)
         {
@@ -54,6 +77,64 @@ namespace Acoustics.Shared.ImageSharp
             where T : struct, IPixel<T>
         {
             return new Image<T>(DefaultConfiguration, width, height, fill.ToPixel<T>());
+        }
+
+        /// <summary>
+        /// A specialized class the deals with drawing graphics without anti-aliasing.
+        /// It deal with two issues:
+        /// - Lines in ImageSharp are drawn on the centre pixel. Without AA they're drawn a pixel
+        ///   off. This class draws all lines with +0.0,+0.5 coordinates.
+        ///   See https://github.com/SixLabors/ImageSharp.Drawing/issues/28
+        /// - It also applies the NoAntiAliasing profile by default to all operations.
+        /// </summary>
+        public class NoAA
+        {
+            private static readonly PointF Offset = new PointF(0.0f, 0.5f);
+            private readonly IImageProcessingContext context;
+
+            public NoAA(IImageProcessingContext context)
+            {
+                this.context = context;
+            }
+
+            public void DrawLine(IPen pen, int x1, int y1, int x2, int y2)
+            {
+                var a = new PointF(x1, y1) + Offset;
+                var b = new PointF(x2, y2) + Offset;
+
+                this.context.DrawLines(
+                    Drawing.NoAntiAlias,
+                    pen,
+                    a,
+                    b);
+            }
+
+            public void DrawLine(IPen pen, params PointF[] points)
+            {
+                for (int i = 0; i < points.Length; i++)
+                {
+                    points[i].Offset(Offset);
+                }
+
+                this.context.DrawLines(
+                    Drawing.NoAntiAlias,
+                    pen,
+                    points);
+            }
+
+            public void DrawRectangle(Pen pen, int x1, int y1, int x2, int y2)
+            {
+                var r = RectangleF.FromLTRB(x1, y1, x2, y2);
+                r.Offset(Offset);
+                this.context.Draw(Drawing.NoAntiAlias, pen, r);
+            }
+
+            public void FillRectangle(IBrush brush, int x1, int y1, int x2, int y2)
+            {
+                var r = RectangleF.FromLTRB(x1, y1, x2, y2);
+                r.Offset(Offset);
+                this.context.Fill(Drawing.NoAntiAlias, brush, r);
+            }
         }
     }
 }

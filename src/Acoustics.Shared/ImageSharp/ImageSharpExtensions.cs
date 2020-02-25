@@ -203,6 +203,11 @@ namespace SixLabors.ImageSharp
                     1.0f));
         }
 
+        public static Drawing.NoAA NoAA(this IImageProcessingContext context)
+        {
+            return new Drawing.NoAA(context);
+        }
+
         public static void DrawLine(this IImageProcessingContext context, Pen pen, int x1, int y1, int x2, int y2)
         {
             context.DrawLines(pen, new PointF(x1, y1), new PointF(x2, y2));
@@ -220,7 +225,6 @@ namespace SixLabors.ImageSharp
         {
             var r = RectangleF.FromLTRB(x1, y1, x2, y2);
             context.Fill(brush, r);
-
         }
 
         public static void Clear(this IImageProcessingContext context, Color color)
@@ -277,11 +281,11 @@ namespace SixLabors.ImageSharp
         {
             image.Save(path.ToString());
         }
+
         public static SizeF ToSizeF(this FontRectangle rectangle)
         {
             return new SizeF(rectangle.Width, rectangle.Height);
         }
-
 
         public static SizeF MeasureString(this IImageProcessingContext _, string text, Font font)
         {
@@ -303,10 +307,7 @@ namespace SixLabors.ImageSharp
             return new Rectangle(rect.X, rect.Y, rect.Width, rect.Height);
         }
 
-
-
-        public static void DrawTextSafe(this IImageProcessingContext context, string text, Font font,
-            Color color, PointF location)
+        public static void DrawTextSafe(this IImageProcessingContext context, string text, Font font, Color color, PointF location)
         {
             if (text.IsNullOrEmpty())
             {
@@ -365,7 +366,6 @@ namespace SixLabors.ImageSharp
 
             return source.Clone(x => x.Crop(intersection));
         }
-
 
         /// <summary>
         /// Draw a crop of an image onto a rectangle surface. Unlike crop, it treats the rectangle coordinates
