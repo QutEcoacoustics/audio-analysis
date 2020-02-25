@@ -13,12 +13,12 @@ namespace AnalysisPrograms
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Reflection;
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
+    using Acoustics.Shared.ImageSharp;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
     using AnalysisPrograms.Production.Arguments;
@@ -29,11 +29,11 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.WavTools;
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    //using TowseyLibrary;
-    using Path = System.IO.Path;
     using TowseyLibrary;
+    using Path = System.IO.Path;
 
     /// <summary>
     /// Produces standard greyscale spectrograms of various types from a wav audio file.

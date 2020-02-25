@@ -349,17 +349,26 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// </summary>
         public Image<Rgb24> OverlayRedTransparency(Image<Rgb24> bmp)
         {
+            return Image_MultiTrack.OverlayScoresAsRedTransparency(bmp, this.SuperimposedRedTransparency);
+        }
+
+        /// <summary>
+        /// superimposes a matrix of scores on top of a sonogram.
+        /// TODO: WARNING: THIS METHOD IS YET TO BE DEBUGGED SINCE TRANSITION TO SIX-LABOURS, FEB 2020.
+        /// </summary>
+        public static Image<Rgb24> OverlayScoresAsRedTransparency(Image<Rgb24> bmp, double[,] hits)
+        {
             Image<Rgb24> newBmp = (Image<Rgb24>)bmp.Clone();
-            int rows = this.SuperimposedRedTransparency.GetLength(0);
-            int cols = this.SuperimposedRedTransparency.GetLength(1);
-            int imageHt = this.SonogramImage.Height - 1; //subtract 1 because indices start at zero
+            int rows = hits.GetLength(0);
+            int cols = hits.GetLength(1);
+            int imageHt = bmp.Height - 1; //subtract 1 because indices start at zero
 
             //traverse columns - skip DC column
             for (int c = 1; c < cols; c++)
             {
                 for (int r = 0; r < rows; r++)
                 {
-                    if (this.SuperimposedRedTransparency[r, c] == 0.0)
+                    if (hits[r, c] == 0.0)
                     {
                         continue;
                     }
@@ -375,11 +384,11 @@ namespace AudioAnalysisTools.StandardSpectrograms
             }
 
             return newBmp;
-        } //OverlayRedTransparency()
+        }
 
         /// <summary>
-        /// superimposes a matrix of scores on top of a sonogram. USES RAINBOW PALLETTE
-        /// ASSUME MATRIX NORMALIZED IN [0,1]
+        /// superimposes a matrix of scores on top of a sonogram. USES RAINBOW PALLETTE.
+        /// ASSUME MATRIX NORMALIZED IN [0,1].
         /// </summary>
         public void OverlayRainbowTransparency(IImageProcessingContext g, Image<Rgb24> bmp)
         {

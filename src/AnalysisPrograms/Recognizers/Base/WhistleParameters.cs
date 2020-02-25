@@ -110,7 +110,7 @@ namespace AnalysisPrograms.Recognizers.Base
             } //end for all freq bins
 
             // combine adjacent acoustic events
-            //events = AcousticEvent.CombineOverlappingEvents(events);
+            events = AcousticEvent.CombineOverlappingEvents(events);
 
             return (events, combinedIntensityArray);
         }

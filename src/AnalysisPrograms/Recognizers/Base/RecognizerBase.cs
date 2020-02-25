@@ -335,48 +335,43 @@ namespace AnalysisPrograms.Recognizers.Base
             List<AcousticEvent> predictedEvents,
             double eventThreshold)
         {
-            const bool doHighlightSubband = false;
-            const bool add1KHzLines = true;
-            var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1KHzLines, doMelScale: false));
+            var image = SpectrogramTools.GetSonogramPlusCharts(sonogram, predictedEvents, scores, hits);
 
-            ////System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines);
-            ////img.Save(@"C:\SensorNetworks\temp\testimage1.png", System.Drawing.Imaging.ImageFormat.Png);
+            //const bool doHighlightSubband = false;
+            //const bool add1KHzLines = true;
+            //var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1KHzLines, doMelScale: false));
+            //image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+            //image.AddTrack(ImageTrack.GetSegmentationTrack(sonogram));
 
-            ////Image_MultiTrack image = new Image_MultiTrack(img);
-            image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-            image.AddTrack(ImageTrack.GetSegmentationTrack(sonogram));
+            //if (scores != null)
+            //{
+            //    foreach (var plot in scores)
+            //    {
+            //        image.AddTrack(ImageTrack.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title));
+            //    }
+            //}
 
-            if (scores != null)
-            {
-                foreach (var plot in scores)
-                {
-                    image.AddTrack(ImageTrack.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title));
-                }
-            }
+            //if (hits != null)
+            //{
+            //    image.OverlayRedTransparency(hits);
+            //}
 
-            if (hits != null)
-            {
-                image.OverlayRedTransparency(hits);
-            }
+            //if (predictedEvents != null && predictedEvents.Count > 0)
+            //{
+            //    image.AddEvents(
+            //        predictedEvents,
+            //        sonogram.NyquistFrequency,
+            //        sonogram.Configuration.FreqBinCount,
+            //        sonogram.FramesPerSecond);
+            //}
 
-            if (predictedEvents != null && predictedEvents.Count > 0)
-            {
-                image.AddEvents(
-                    predictedEvents,
-                    sonogram.NyquistFrequency,
-                    sonogram.Configuration.FreqBinCount,
-                    sonogram.FramesPerSecond);
-            }
-
-            var result = image.GetImage();
-
-            return result;
+            return image;
         }
 
         /// <summary>
-        /// Run once before each segment of analysis
+        /// Run once before each segment of analysis.
         /// </summary>
-        /// <param name="analysisSettings"></param>
+        /// <param name="analysisSettings">Settings used for the analysis.</param>
         public override void BeforeAnalyze(AnalysisSettings analysisSettings)
         {
             // noop

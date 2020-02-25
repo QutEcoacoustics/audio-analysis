@@ -118,24 +118,24 @@ namespace AnalysisPrograms
                 string feature = rule[0];
                 string op = rule[1];
                 double value = double.Parse(rule[2]);
-                if (feature == key_BANDWIDTH_SCORE)
-                {
-                    if ((op == "LT" && ae.kiwi_bandWidthScore < value) || (op == "GT" && ae.kiwi_bandWidthScore > value))
-                    {
-                        ae.kiwi_bandWidthScore = 0.0;
-                        ae.ScoreNormalised = 0.0;
-                        return ae;
-                    }
-                }
-                else // end if key_BANDWIDTH_SCORE
-                    if (feature == key_INTENSITY_SCORE)
-                    {
-                        if ((op == "LT" && ae.kiwi_intensityScore < value) || (op == "GT" && ae.kiwi_intensityScore > value))
-                        {
-                            ae.ScoreNormalised = 0.0;
-                            return ae;
-                        }
-                    } // end if key_INTENSITY_SCORE
+                //if (feature == key_BANDWIDTH_SCORE)
+                //{
+                //    if ((op == "LT" && ae.kiwi_bandWidthScore < value) || (op == "GT" && ae.kiwi_bandWidthScore > value))
+                //    {
+                //        ae.kiwi_bandWidthScore = 0.0;
+                //        ae.ScoreNormalised = 0.0;
+                //        return ae;
+                //    }
+                //}
+                //else // end if key_BANDWIDTH_SCORE
+                //    if (feature == key_INTENSITY_SCORE)
+                //    {
+                //        if ((op == "LT" && ae.kiwi_intensityScore < value) || (op == "GT" && ae.kiwi_intensityScore > value))
+                //        {
+                //            ae.ScoreNormalised = 0.0;
+                //            return ae;
+                //        }
+                //    } // end if key_INTENSITY_SCORE
             }
 
             return ae;
