@@ -38,6 +38,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             return m;
         }
 
+        /*
         /// <summary>
         /// THis method draws a sonogram with other useful information attached.
         /// </summary>
@@ -75,6 +76,86 @@ namespace AudioAnalysisTools.StandardSpectrograms
             }
 
             return image.GetImage().CloneAs<Rgb24>();
+        }
+        */
+
+        /// <summary>
+        /// THis method draws a spectrogram with other useful information attached.
+        /// </summary>
+        /// <param name="sonogram">of BaseSonogram class.</param>
+        /// <param name="events">a list of acoustic events.</param>
+        /// <param name="plots">a list of plots relevant to the spectrogram scores.</param>
+        /// <param name="hits">not often used - can be null.</param>
+        public static Image<Rgb24> GetSonogramPlusCharts(BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> plots, double[,] hits)
+        {
+            var spImage = sonogram.GetImage(doHighlightSubband: false, add1KHzLines: true, doMelScale: false);
+
+            if (spImage == null)
+            {
+                throw new ArgumentNullException(nameof(spImage));
+            }
+
+            var spHeight = spImage.Height;
+            var frameSize = sonogram.Configuration.WindowSize;
+
+            // init with linear frequency scale and draw freq grid lines on image
+            int hertzInterval = 1000;
+            if (spHeight < 200)
+            {
+                hertzInterval = 2000;
+            }
+
+            var freqScale = new FrequencyScale(sonogram.NyquistFrequency, frameSize, hertzInterval);
+            FrequencyScale.DrawFrequencyLinesOnImage(spImage, freqScale.GridLineLocations, includeLabels: true);
+
+            // draw event outlines onto spectrogram.
+            if (events != null && events.Count > 0)
+            {
+                // set colour for the events
+                foreach (AcousticEvent ev in events)
+                {
+                    ev.BorderColour = AcousticEvent.DefaultBorderColor;
+                    ev.ScoreColour = AcousticEvent.DefaultScoreColor;
+                    ev.DrawEvent(spImage, sonogram.FramesPerSecond, sonogram.FBinWidth, spHeight);
+                }
+            }
+
+            // now add in hits to the spectrogram image.
+            if (hits != null)
+            {
+                spImage = Image_MultiTrack.OverlayScoresAsRedTransparency(spImage, hits);
+                //OverlayRedTransparency(bmp, this.SuperimposedRedTransparency);
+                //this.SonogramImage = this.OverlayRedTransparency((Image<Rgb24>)this.SonogramImage);
+            }
+
+            int pixelWidth = spImage.Width;
+            var titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram("TITLE", pixelWidth);
+            var timeTrack = ImageTrack.DrawTimeTrack(sonogram.Duration, pixelWidth);
+
+            var imageList = new List<Image<Rgb24>>
+            {
+                titleBar,
+                timeTrack,
+                spImage,
+                timeTrack,
+            };
+
+            if (plots != null)
+            {
+                foreach (var plot in plots)
+                {
+                    // Next line assumes plot data normalised in 0,1
+                    var plotImage = plot.DrawAnnotatedPlot(ImageTrack.DefaultHeight);
+
+                    // the following draws same plot without the title.
+                    //var plotImage = ImageTrack.DrawScoreArrayTrack(plot.data, plot.threshold, pixelWidth);
+                    imageList.Add(plotImage);
+                }
+            }
+
+            var compositeImage = ImageTools.CombineImagesVertically(imageList);
+            //return image.GetImage().CloneAs<Rgb24>();
+            return compositeImage;
         }
 
         /// <summary>

@@ -14,6 +14,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
     using TowseyLibrary;
     using Acoustics.Shared;
     using Acoustics.Shared.ImageSharp;
+    using System.Linq;
 
     public enum TrackType
     {
@@ -313,91 +314,100 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// </summary>
         public Image<Rgb24> DrawScoreArrayTrack(Image<Rgb24> bmp)
         {
-            // LoggedConsole.WriteLine("DRAW SCORE TRACK: image ht=" + bmp.Height + "  topOffset = " + this.topOffset + "   bottomOffset =" + this.bottomOffset);
-            if (this.doubleData == null)
-            {
-                return bmp;
-            }
+            // first draw the track image
+            var trackImage = DrawScoreArrayTrack(this.doubleData, this.ScoreThreshold, bmp.Width);
 
-            int dataLength = this.doubleData.Length;
-            double range = this.scoreMax - this.scoreMin;
+            // now add track image into passed image at the required offset.
+            bmp.Mutate(g => { g.DrawImage(trackImage, new Point(0, this.topOffset), 1); });
+
+            return bmp;
+        }
+
+        /// <summary>
+        /// Displays a score track, normalised to min and max of the data. max=approx 8-16.
+        /// </summary>
+        public static Image<Rgb24> DrawScoreArrayTrack(double[] data, double threshold, int trackWidth)
+        {
+            int dataLength = data.Length;
+            double min = data.Min();
+            double max = data.Max();
+            double range = max - min;
 
             //next two lines are for subsampling if the score array is compressed to fit smaller image width.
-            double subSample = dataLength / (double)bmp.Width;
+            double subSample = dataLength / (double)trackWidth;
             if (subSample < 1.0)
             {
                 subSample = 1;
             }
 
-            Color gray = Color.FromRgb(235, 235, 235); // use as background
-            int baseLine = this.topOffset + this.Height - 2;
+            int trackHeight = ImageTrack.DefaultHeight;
+            var bmp = new Image<Rgb24>(trackWidth, trackHeight);
 
-            //int length = (bmpWidth <= doubleData.Length) ? bmpWidth : doubleData.Length;
-            //for (int w = 0; w < length; w++)
-            for (int w = 0; w < bmp.Width; w++)
+            // use gray as background
+            Color gray = Color.FromRgb(235, 235, 235);
+
+            for (int w = 0; w < trackWidth; w++)
             {
                 int start = (int)Math.Round(w * subSample);
                 int end = (int)Math.Round((w + 1) * subSample);
-                if (end >= this.doubleData.Length)
+                if (end >= dataLength)
                 {
-                    continue;
+                    break;
                 }
-
-                int location = 0;
 
                 //find max value in sub-sample - if there is a sub-sample
                 double subsampleMax = -double.MaxValue;
                 for (int x = start; x < end; x++)
                 {
-                    if (subsampleMax < this.doubleData[x])
+                    if (subsampleMax < data[x])
                     {
-                        subsampleMax = this.doubleData[x];
+                        subsampleMax = data[x];
                     }
-
-                    location = x;
                 }
 
-                double fraction = (subsampleMax - this.scoreMin) / range;
-                int id = this.Height - 1 - (int)(this.Height * fraction);
+                double fraction = (subsampleMax - min) / range;
+                int id = trackHeight - 1 - (int)(trackHeight * fraction);
                 if (id < 0)
                 {
                     id = 0;
                 }
-                else if (id > this.Height)
+                else if (id > trackHeight)
                 {
-                    id = this.Height; // impose bounds
+                    id = trackHeight; // impose bounds
                 }
 
-                //paint white and leave a black vertical histogram bar
-                //for (int z = 0; z < id; z++)
+                //paint background and leave a black vertical score bar
+                for (int z = 0; z < id; z++)
+                {
+                    bmp[w, z] = gray; // background
+                }
+
+                // draw the score bar
+                //for (int z = id; z < trackHeight; z++)
                 //{
-                //    bmp[w, this.topOffset + z] = gray; // background
+                //    bmp[w, z] = Color.Black;
                 //}
 
-                for (int z = id; z < this.Height; z++)
-                {
-                    bmp[w, this.topOffset + z] = Color.Black; // draw the score bar
-                }
-
-                bmp[w, baseLine] = Color.Black; // draw base line
+                // draw base line
+                bmp[w, 0] = Color.Black;
             }
 
             //add in horizontal threshold significance line
-            double f = (this.ScoreThreshold - this.scoreMin) / range;
-            int lineID = this.Height - 1 - (int)(this.Height * f);
+            double f = (threshold - min) / range;
+            int lineID = trackHeight - 1 - (int)(trackHeight * f);
             if (lineID < 0)
             {
                 return bmp;
             }
 
-            if (lineID > this.Height)
+            if (lineID > trackHeight)
             {
                 return bmp;
             }
 
-            for (int x = 0; x < bmp.Width; x++)
+            for (int x = 0; x < trackWidth; x++)
             {
-                bmp[x, this.topOffset + lineID] = Color.Lime;
+                bmp[x, lineID] = Color.Lime;
             }
 
             return bmp;
@@ -1147,11 +1157,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             {
                 g.Clear(Color.Black);
                 Pen pen = new Pen(Color.White, 1);
-
                 g.DrawLine(new Pen(Color.Gray, 1), 0, 0, trackWidth, 0); //draw upper boundary
-
-                //g.DrawLine(pen, duration + 1, 0, trackWidth, 0);
-                
                 g.DrawText(title, Drawing.Tahoma9, Color.Wheat, new PointF(4, 3));
             });
             return bmp;
@@ -1548,6 +1554,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// <summary>
         /// Draws time track with labels to indicate hh:mm:ss.
         /// </summary>
+        /// <param name="duration">Duration of the time scale.</param>
+        /// <param name="width">pixel width of the time scale.</param>
         public static Image<Rgb24> DrawTimeTrack(TimeSpan duration, int width)
         {
             int height = HeightOfTimeScale;

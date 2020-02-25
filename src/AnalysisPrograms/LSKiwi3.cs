@@ -778,15 +778,15 @@ namespace AnalysisPrograms
                         AcousticEvent ev = new AcousticEvent(segmentStartOffset, startTime, duration, minHz, maxHz);
                         ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth); //need time scale for later cropping of events
 
-                        ev.kiwi_snrScore = CalculatePeakSnrScore(ev, dBarray);
-                        ev.kiwi_intensityScore = LSKiwiHelper.CalculateAverageEventScore(ev, intensity);
-                        ev.kiwi_gridScore = LSKiwiHelper.CalculateAverageEventScore(ev, gridScore);
-                        ev.kiwi_deltaPeriodScore = LSKiwiHelper.CalculateAverageEventScore(ev, deltaPeriodScore);
-                        ev.kiwi_chirpScore = LSKiwiHelper.CalculateAverageEventScore(ev, chirpScores);
-                        ev.kiwi_bandWidthScore = LSKiwiHelper.CalculateAverageEventScore(ev, bwScore);
-                        ev.kiwi_comboScore = LSKiwiHelper.CalculateAverageEventScore(ev, comboScore);
-                        ev.Score = ev.kiwi_comboScore;                     //assume score already nomalised
-                        ev.ScoreNormalised = ev.Score * ev.kiwi_bandWidthScore;      //discount the normalised score by the bandwidth score.
+                        //ev.kiwi_snrScore = CalculatePeakSnrScore(ev, dBarray);
+                        //ev.kiwi_intensityScore = LSKiwiHelper.CalculateAverageEventScore(ev, intensity);
+                        //ev.kiwi_gridScore = LSKiwiHelper.CalculateAverageEventScore(ev, gridScore);
+                        //ev.kiwi_deltaPeriodScore = LSKiwiHelper.CalculateAverageEventScore(ev, deltaPeriodScore);
+                        //ev.kiwi_chirpScore = LSKiwiHelper.CalculateAverageEventScore(ev, chirpScores);
+                        //ev.kiwi_bandWidthScore = LSKiwiHelper.CalculateAverageEventScore(ev, bwScore);
+                        //ev.kiwi_comboScore = LSKiwiHelper.CalculateAverageEventScore(ev, comboScore);
+                        //ev.Score = ev.kiwi_comboScore;                     //assume score already nomalised
+                        //ev.ScoreNormalised = ev.Score * ev.kiwi_bandWidthScore;      //discount the normalised score by the bandwidth score.
 
                         if (ev.ScoreNormalised > 1.0)
                     {
@@ -846,35 +846,35 @@ namespace AnalysisPrograms
                 {
                     events[i].Oblong = null;
                     events[i].SetEventPositionRelative(segmentStartOffset, events[i].TimeStart, events[i + 1].TimeEnd);
-                    if (events[i + 1].kiwi_intensityScore > events[i].kiwi_intensityScore)
-                    {
-                        events[i].kiwi_intensityScore = events[i + 1].kiwi_intensityScore;
-                    }
+                    //if (events[i + 1].kiwi_intensityScore > events[i].kiwi_intensityScore)
+                    //{
+                    //    events[i].kiwi_intensityScore = events[i + 1].kiwi_intensityScore;
+                    //}
 
-                    if (events[i + 1].kiwi_chirpScore > events[i].kiwi_chirpScore)
-                    {
-                        events[i].kiwi_chirpScore = events[i + 1].kiwi_chirpScore;
-                    }
+                    //if (events[i + 1].kiwi_chirpScore > events[i].kiwi_chirpScore)
+                    //{
+                    //    events[i].kiwi_chirpScore = events[i + 1].kiwi_chirpScore;
+                    //}
 
-                    if (events[i + 1].kiwi_deltaPeriodScore > events[i].kiwi_deltaPeriodScore)
-                    {
-                        events[i].kiwi_deltaPeriodScore = events[i + 1].kiwi_deltaPeriodScore;
-                    }
+                    //if (events[i + 1].kiwi_deltaPeriodScore > events[i].kiwi_deltaPeriodScore)
+                    //{
+                    //    events[i].kiwi_deltaPeriodScore = events[i + 1].kiwi_deltaPeriodScore;
+                    //}
 
-                    if (events[i + 1].kiwi_gridScore > events[i].kiwi_gridScore)
-                    {
-                        events[i].kiwi_gridScore = events[i + 1].kiwi_gridScore;
-                    }
+                    //if (events[i + 1].kiwi_gridScore > events[i].kiwi_gridScore)
+                    //{
+                    //    events[i].kiwi_gridScore = events[i + 1].kiwi_gridScore;
+                    //}
 
-                    if (events[i + 1].kiwi_snrScore > events[i].kiwi_snrScore)
-                    {
-                        events[i].kiwi_snrScore = events[i + 1].kiwi_snrScore;
-                    }
+                    //if (events[i + 1].kiwi_snrScore > events[i].kiwi_snrScore)
+                    //{
+                    //    events[i].kiwi_snrScore = events[i + 1].kiwi_snrScore;
+                    //}
 
-                    if (events[i + 1].kiwi_bandWidthScore > events[i].kiwi_bandWidthScore)
-                    {
-                        events[i].kiwi_bandWidthScore = events[i + 1].kiwi_bandWidthScore;
-                    }
+                    //if (events[i + 1].kiwi_bandWidthScore > events[i].kiwi_bandWidthScore)
+                    //{
+                    //    events[i].kiwi_bandWidthScore = events[i + 1].kiwi_bandWidthScore;
+                    //}
 
                     events.Remove(events[i + 1]);
                     if (events[i].EventDurationSeconds > 80.0)
@@ -1004,13 +1004,13 @@ namespace AnalysisPrograms
                 row[AnalysisKeys.EventStartSec] = ev.TimeStart;  //EvStartSec
                 row[AnalysisKeys.EventDuration] = ev.EventDurationSeconds;   //duratio in seconds
                 row[AnalysisKeys.EventName] = ev.Name;
-                row[AnalysisKeys.EventIntensity] = ev.kiwi_intensityScore;
-                row[LSKiwiHelper.key_BANDWIDTH_SCORE] = ev.kiwi_bandWidthScore;
-                row[LSKiwiHelper.key_DELTA_SCORE] = ev.kiwi_deltaPeriodScore;
-                row[LSKiwiHelper.key_GRID_SCORE] = ev.kiwi_gridScore;
-                row[LSKiwiHelper.key_CHIRP_SCORE] = ev.kiwi_chirpScore;
-                row[LSKiwiHelper.key_PEAKS_SNR_SCORE] = ev.kiwi_snrScore;
-                row[LSKiwiHelper.key_COMBO_SCORE] = ev.kiwi_comboScore;
+                //row[AnalysisKeys.EventIntensity] = ev.kiwi_intensityScore;
+                //row[LSKiwiHelper.key_BANDWIDTH_SCORE] = ev.kiwi_bandWidthScore;
+                //row[LSKiwiHelper.key_DELTA_SCORE] = ev.kiwi_deltaPeriodScore;
+                //row[LSKiwiHelper.key_GRID_SCORE] = ev.kiwi_gridScore;
+                //row[LSKiwiHelper.key_CHIRP_SCORE] = ev.kiwi_chirpScore;
+                //row[LSKiwiHelper.key_PEAKS_SNR_SCORE] = ev.kiwi_snrScore;
+                //row[LSKiwiHelper.key_COMBO_SCORE] = ev.kiwi_comboScore;
                 row[AnalysisKeys.EventNormscore] = ev.ScoreNormalised;
                 dataTable.Rows.Add(row);
             }
