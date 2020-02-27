@@ -29,15 +29,15 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
             {
                 Source = recordingPath,
                 Config = configPath.FullName,
-                Output = SharedDirectory,
-                TempDir = SharedDirectory.Combine("Temp"),
+                Output = ResultsDirectory,
+                TempDir = ResultsDirectory.Combine("Temp"),
             };
 
             context.WriteLine($"{DateTime.Now} generating indices fixture data");
             AnalyseLongRecording.Execute(arguments);
             context.WriteLine($"{DateTime.Now} finished generting fixture");
 
-            ResultsDirectory = SharedDirectory.Combine("Towsey.Acoustic");
+            ResultsDirectory = ResultsDirectory.Combine("Towsey.Acoustic");
 
             // do some basic checks that the indices were generated
             var listOfFiles = ResultsDirectory.EnumerateFiles().ToArray();
@@ -56,7 +56,7 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
         [TestMethod]
         public void TestGenerateTilesFailsWithInvalidScales()
         {
-            PathHelper.ResolveConfigFile("IndexPropertiesConfig.Zooming.yml").CopyTo(this.outputDirectory.CombineFile("IndexPropertiesConfig.Zooming.yml").FullName);
+            PathHelper.ResolveConfigFile("IndexPropertiesConfig.Zooming.yml").CopyTo(this.TestOutputDirectory.CombineFile("IndexPropertiesConfig.Zooming.yml").FullName);
 
             void SetupAndRun(params double[] scales)
             {
@@ -64,14 +64,14 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
                 config.SpectralIndexScale = scales;
                 config.IndexPropertiesConfig = ".\\IndexPropertiesConfig.Zooming.yml";
 
-                var newConfigFile = this.outputDirectory.CombineFile("SpectrogramZoomingConfig.yml");
+                var newConfigFile = this.TestOutputDirectory.CombineFile("SpectrogramZoomingConfig.yml");
                 Yaml.Serialize(newConfigFile, config);
 
                 // generate the zooming spectrograms
                 DrawZoomingSpectrograms.Execute(
                     new DrawZoomingSpectrograms.Arguments()
                         {
-                            Output = this.outputDirectory.FullName,
+                            Output = this.TestOutputDirectory.FullName,
                             SourceDirectory = ResultsDirectory.FullName,
                             SpectrogramZoomingConfig = newConfigFile.FullName,
                             ZoomAction = DrawZoomingSpectrograms.Arguments.ZoomActionType.Tile,
@@ -92,7 +92,7 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
         public void TestGenerateTiles()
         {
             // generate the zooming spectrograms
-            var zoomOutput = this.outputDirectory.Combine("Zooming");
+            var zoomOutput = this.TestOutputDirectory.Combine("Zooming");
             DrawZoomingSpectrograms.Execute(
                 new DrawZoomingSpectrograms.Arguments()
                 {
@@ -128,7 +128,7 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
         public void TestGenerateTilesSqlite()
         {
             // generate the zooming spectrograms
-            var zoomOutput = this.outputDirectory.Combine("Zooming");
+            var zoomOutput = this.TestOutputDirectory.Combine("Zooming");
             DrawZoomingSpectrograms.Execute(
                 new DrawZoomingSpectrograms.Arguments()
                 {

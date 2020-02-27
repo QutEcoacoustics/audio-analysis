@@ -47,7 +47,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
                 },
             };
 
-            var target = PathHelper.GetTempFile(this.outputDirectory, ".yml");
+            var target = PathHelper.GetTempFile(this.TestOutputDirectory, ".yml");
             Yaml.Serialize(target, config);
 
             var lines = target.ReadAllLines();
@@ -89,7 +89,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
                 },
             };
 
-            var results = recognizer.Recognize(recording, config, 100.Seconds(), null, this.outputDirectory, null);
+            var results = recognizer.Recognize(recording, config, 100.Seconds(), null, this.TestOutputDirectory, null);
 
             Assert.AreEqual(1, results.Events.Count);
             var @event = results.Events[0];
@@ -134,7 +134,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
                 },
             };
 
-            var results = recognizer.Recognize(recording, config, 100.Seconds(), null, this.outputDirectory, null);
+            var results = recognizer.Recognize(recording, config, 100.Seconds(), null, this.TestOutputDirectory, null);
             //results.Plots.
             //results.Sonogram.GetImage().Save(this.outputDirectory + "\\debug.png");
 
@@ -179,7 +179,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
                 },
             };
 
-            var results = recognizer.Recognize(recording, config, 100.Seconds(), null, this.outputDirectory, null);
+            var results = recognizer.Recognize(recording, config, 100.Seconds(), null, this.TestOutputDirectory, null);
 
             Assert.AreEqual(1, results.Events.Count);
             var @event = results.Events[0];
@@ -200,7 +200,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
         [TestMethod]
         public void TestAedAlgorithm()
         {
-            var resampledRecordingPath = PathHelper.GetTempFile(this.outputDirectory, ".wav");
+            var resampledRecordingPath = PathHelper.GetTempFile(this.TestOutputDirectory, ".wav");
             TestHelper.GetAudioUtility().Modify(
                 TestAsset,
                 MediaTypes.MediaTypeWav,
@@ -227,7 +227,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
                 },
             };
 
-            var results = recognizer.Recognize(new AudioRecording(resampledRecordingPath), config, 100.Seconds(), null, this.outputDirectory, null);
+            var results = recognizer.Recognize(new AudioRecording(resampledRecordingPath), config, 100.Seconds(), null, this.TestOutputDirectory, null);
 
             Assert.AreEqual(14, results.Events.Count);
         }
@@ -296,7 +296,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
                 },
             };
 
-            var results = recognizer.Recognize(recording, config, 100.Seconds(), null, this.outputDirectory, null);
+            var results = recognizer.Recognize(recording, config, 100.Seconds(), null, this.TestOutputDirectory, null);
 
             Assert.AreEqual(3, results.Events.Count);
 

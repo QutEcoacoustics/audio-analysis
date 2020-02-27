@@ -43,6 +43,11 @@ namespace Acoustics.Test.TestHelpers
             this.FillPattern(specification);
         }
 
+        public static Image<Rgb24> Create(int width, int height, Color color, string specification)
+        {
+            return new TestImage(width, height, specification, color).Finish();
+        }
+
         public Point Cursor { get; private set; }
 
         public TestImage FillPattern(string specification)

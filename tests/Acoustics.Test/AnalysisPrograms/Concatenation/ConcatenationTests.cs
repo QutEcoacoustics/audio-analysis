@@ -48,8 +48,8 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             var indonesiaIndices = PathHelper.ResolveAsset("Concatenation", IndonesiaReduced + ".zip");
             var newZealandIndices = PathHelper.ResolveAsset("Concatenation", NewZealandArk01 + ".zip");
 
-            indonesiaIndicesDirectory = SharedDirectory.Combine(IndonesiaReduced);
-            newZealandArk01IndicesDirectory = SharedDirectory.Combine(NewZealandArk01);
+            indonesiaIndicesDirectory = ResultsDirectory.Combine(IndonesiaReduced);
+            newZealandArk01IndicesDirectory = ResultsDirectory.Combine(NewZealandArk01);
 
             ZipFile.ExtractToDirectory(indonesiaIndices.FullName, indonesiaIndicesDirectory.FullName);
             ZipFile.ExtractToDirectory(newZealandIndices.FullName, newZealandArk01IndicesDirectory.FullName);
@@ -72,7 +72,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             var arguments = new ConcatenateIndexFiles.Arguments
             {
                 InputDataDirectories = new[] { indonesiaIndicesDirectory },
-                OutputDirectory = this.outputDirectory,
+                OutputDirectory = this.TestOutputDirectory,
                 DirectoryFilter = "*.wav",
                 FileStemName = "Test1_Indonesia",
                 StartDate = new DateTimeOffset(2016, 07, 25, 0, 0, 0, TimeSpan.Zero),
@@ -94,7 +94,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             // Do TESTS on the 2Maps image
             // Compare image files - check that image dimensions are correct
-            var outputDataDir = this.outputDirectory.Combine(arguments.FileStemName, dateString);
+            var outputDataDir = this.TestOutputDirectory.Combine(arguments.FileStemName, dateString);
             var prefix = arguments.FileStemName + "__";
 
             var imageFileInfo = outputDataDir.CombineFile(prefix + "2Maps.png");
@@ -127,7 +127,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             var arguments = new ConcatenateIndexFiles.Arguments
             {
                 InputDataDirectories = new[] { indonesiaIndicesDirectory },
-                OutputDirectory = this.outputDirectory,
+                OutputDirectory = this.TestOutputDirectory,
                 DirectoryFilter = "*.wav",
                 FileStemName = "Test2_Indonesia",
                 StartDate = new DateTimeOffset(2016, 07, 26, 0, 0, 0, TimeSpan.Zero),
@@ -149,7 +149,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             // Do TESTS on the 2Maps image
             // Compare image files - check that image dimensions are correct
-            var outputDataDir = this.outputDirectory.Combine(arguments.FileStemName, dateString);
+            var outputDataDir = this.TestOutputDirectory.Combine(arguments.FileStemName, dateString);
             var prefix = arguments.FileStemName + "_" + dateString + "__";
 
             var imageFileInfo = outputDataDir.CombineFile(prefix + "2Maps.png");
@@ -184,7 +184,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             var arguments = new ConcatenateIndexFiles.Arguments
             {
                 InputDataDirectories = new[] { indonesiaIndicesDirectory },
-                OutputDirectory = this.outputDirectory,
+                OutputDirectory = this.TestOutputDirectory,
                 DirectoryFilter = "*.wav",
                 FileStemName = "Test3_Indonesia",
                 StartDate = null,
@@ -207,7 +207,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             // There should be two sets of output images one for each partial day.
             // IMAGE 1: Compare image files - check that image exists and dimensions are correct
             var dateString1 = "20160725";
-            var outputDataDir1 = this.outputDirectory.Combine(arguments.FileStemName, dateString1);
+            var outputDataDir1 = this.TestOutputDirectory.Combine(arguments.FileStemName, dateString1);
             var prefix1 = arguments.FileStemName + "_" + dateString1 + "__";
 
             var image1FileInfo = outputDataDir1.CombineFile(prefix1 + "2Maps.png");
@@ -223,7 +223,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
 
             // IMAGE 2: Compare image files - check that image exists and dimensions are correct
             var dateString2 = "20160726";
-            var outputDataDir2 = this.outputDirectory.Combine(arguments.FileStemName, dateString2);
+            var outputDataDir2 = this.TestOutputDirectory.Combine(arguments.FileStemName, dateString2);
             var prefix2 = arguments.FileStemName + "_" + dateString2 + "__";
 
             var image2FileInfo = outputDataDir2.CombineFile(prefix2 + "2Maps.png");
@@ -256,13 +256,13 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             config.ColorMap2 = "ACI-RNG-EVN";
 
             // write new config
-            var testConfig = this.outputDirectory.CombineFile("SpectrogramFalseColourConfig.yml");
+            var testConfig = this.TestOutputDirectory.CombineFile("SpectrogramFalseColourConfig.yml");
             Yaml.Serialize(testConfig, config);
 
             var arguments = new ConcatenateIndexFiles.Arguments
             {
                 InputDataDirectories = new[] { indonesiaIndicesDirectory },
-                OutputDirectory = this.outputDirectory,
+                OutputDirectory = this.TestOutputDirectory,
                 DirectoryFilter = "*.wav",
                 FileStemName = "Test2_Indonesia",
                 StartDate = new DateTimeOffset(2016, 07, 26, 0, 0, 0, TimeSpan.Zero),
@@ -281,7 +281,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             ConcatenateIndexFiles.Execute(arguments);
 
             // Make sure files that match our config file are actually created!
-            var outputDataDir = this.outputDirectory.Combine(arguments.FileStemName, dateString);
+            var outputDataDir = this.TestOutputDirectory.Combine(arguments.FileStemName, dateString);
             var prefix = arguments.FileStemName + "_" + dateString + "__";
 
             Assert.That.FileExists(outputDataDir.CombineFile(prefix + "Towsey.Acoustic.Indices.csv"));
@@ -309,7 +309,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             var arguments = new ConcatenateIndexFiles.Arguments
                 {
                     InputDataDirectories = new[] { newZealandArk01IndicesDirectory },
-                    OutputDirectory = this.outputDirectory,
+                    OutputDirectory = this.TestOutputDirectory,
                     DirectoryFilter = "*.wav",
                     FileStemName = ark01,
                     StartDate = null,
@@ -329,7 +329,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             var dateStrings = new[] { "20161209", "20161210", "20161211" }.Zip(expectedWidths, ValueTuple.Create);
             foreach (var (dateString, expectedWidth) in dateStrings)
             {
-                var prefix = Path.Combine(this.outputDirectory.FullName, ark01, dateString, ark01 + "_" + dateString + "__");
+                var prefix = Path.Combine(this.TestOutputDirectory.FullName, ark01, dateString, ark01 + "_" + dateString + "__");
 
                 Assert.That.PathExists(prefix + "Towsey.Acoustic.Indices.csv");
                 Assert.That.PathNotExists(prefix + "SummaryIndex.csv");

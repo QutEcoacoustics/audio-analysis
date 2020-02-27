@@ -23,10 +23,10 @@ namespace Acoustics.Test.AnalysisBase
         {
             this.analysisSettings = new AnalysisSettings();
 
-            this.analysisSettings.AnalysisOutputDirectory = this.outputDirectory.Combine("output");
-            this.analysisSettings.AnalysisTempDirectory = this.outputDirectory.Combine("tmp");
+            this.analysisSettings.AnalysisOutputDirectory = this.TestOutputDirectory.Combine("output");
+            this.analysisSettings.AnalysisTempDirectory = this.TestOutputDirectory.Combine("tmp");
 
-            var fakeSource = this.outputDirectory.CombineFile("abc_min1.wav");
+            var fakeSource = this.TestOutputDirectory.CombineFile("abc_min1.wav");
             fakeSource.Touch();
             this.segment = new FileSegment(fakeSource, 123456, 60.0.Seconds())
             {
@@ -34,7 +34,7 @@ namespace Acoustics.Test.AnalysisBase
                 SegmentEndOffset = 60.0.Seconds(),
             };
 
-            var fakePrepared = this.outputDirectory.CombineFile("abc_min1.wav");
+            var fakePrepared = this.TestOutputDirectory.CombineFile("abc_min1.wav");
             fakePrepared.Touch();
             this.preparedSegment = new FileSegment(fakePrepared, 123456, 30.Seconds())
             {

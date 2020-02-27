@@ -45,7 +45,7 @@ namespace Acoustics.Test.Shared
                 {
                     runner.Run(
                         $@"-sexagesimal -print_format json -show_error -show_streams -show_format ""{path}""",
-                        this.outputDirectory.FullName);
+                        this.TestOutputDirectory.FullName);
                     result = true;
                 }
                 catch
@@ -84,7 +84,7 @@ namespace Acoustics.Test.Shared
         private bool RunFfprobeIndefinite(int _)
         {
             var path = PathHelper.ResolveAssetPath(TestFile);
-            var dest = PathHelper.GetTempFile(this.outputDirectory, ".mp3");
+            var dest = PathHelper.GetTempFile(this.TestOutputDirectory, ".mp3");
             using (ProcessRunner runner = new ProcessRunner(AppConfigHelper.FfmpegExe))
             {
                 runner.WaitForExitMilliseconds = 1000;
@@ -93,7 +93,7 @@ namespace Acoustics.Test.Shared
 
                 Assert.ThrowsException<ProcessRunner.ProcessMaximumRetriesException>(() =>
                 {
-                    runner.Run($@"-i ""{path}"" -ar 8000 ""{dest}""", this.outputDirectory.FullName);
+                    runner.Run($@"-i ""{path}"" -ar 8000 ""{dest}""", this.TestOutputDirectory.FullName);
                 });
 
                 Assert.AreEqual(0, runner.StandardOutput.Length);

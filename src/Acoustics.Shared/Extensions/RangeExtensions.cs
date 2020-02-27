@@ -130,8 +130,8 @@ namespace Acoustics.Shared
                 a2b2 = rangeA.Maximum * rangeB.Maximum;
 
             return new Range<double>(
-                Maths.Min(a1b1, a1b2, a2b1, a2b2),
-                Maths.Max(a1b1, a1b2, a2b1, a2b2),
+                MathExtensions.Min(a1b1, a1b2, a2b1, a2b2),
+                MathExtensions.Max(a1b1, a1b2, a2b1, a2b2),
                 rangeA.CombineTopology(rangeB));
         }
 

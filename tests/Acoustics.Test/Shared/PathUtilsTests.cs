@@ -28,7 +28,7 @@ namespace Acoustics.Test.Shared
         [TestMethod]
         public void CanGetShortFileNames()
         {
-            var path = this.outputDirectory.CombineFile("bad folder", "REC_C_20180616_145526😂.wav").Touch();
+            var path = this.TestOutputDirectory.CombineFile("bad folder", "REC_C_20180616_145526😂.wav").Touch();
 
             var actual = PathUtils.GetShortFilename(path.FullName);
             string[] expected;

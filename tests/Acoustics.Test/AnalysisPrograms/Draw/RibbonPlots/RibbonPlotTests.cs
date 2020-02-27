@@ -27,8 +27,8 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.RibbonPlots
         [TestMethod]
         public void BasicCli()
         {
-            var tempA = this.outputDirectory.CreateSubdirectory("A");
-            var tempB = this.outputDirectory.CreateSubdirectory("B");
+            var tempA = this.TestOutputDirectory.CreateSubdirectory("A");
+            var tempB = this.TestOutputDirectory.CreateSubdirectory("B");
 
             var args = new[]
             {
@@ -36,7 +36,7 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.RibbonPlots
                 tempA.FullName,
                 tempB.FullName,
                 "-o",
-                this.outputDirectory.FullName,
+                this.TestOutputDirectory.FullName,
 
                 "-z",
                 "-12:34",
@@ -61,7 +61,7 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.RibbonPlots
                     tempB,
                 },
                 arguments.InputDirectories);
-            Assert.That.AreEqual(this.outputDirectory, arguments.OutputDirectory);
+            Assert.That.AreEqual(this.TestOutputDirectory, arguments.OutputDirectory);
             Assert.AreEqual(new TimeSpan(-12, -34, 00), arguments.TimeSpanOffsetHint);
             Assert.AreEqual(new TimeSpan(5, 6, 00), arguments.Midnight);
         }
@@ -69,21 +69,21 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.RibbonPlots
         [TestMethod]
         public async Task RendersRibbonPlotsCorrectly()
         {
-            var fixture = this.CreateTestData(this.outputDirectory);
+            var fixture = this.CreateTestData(this.TestOutputDirectory);
 
             var result = await RibbonPlot.Execute(new RibbonPlot.Arguments()
             {
                 InputDirectories = new[] { fixture },
-                OutputDirectory = this.outputDirectory,
+                OutputDirectory = this.TestOutputDirectory,
             });
 
             Assert.AreEqual(0, result);
 
-            var plot1 = this.outputDirectory.CombineFile($"{this.outputDirectory.Name}__RibbonPlot_ACI-ENT-EVN.png");
+            var plot1 = this.TestOutputDirectory.CombineFile($"{this.TestOutputDirectory.Name}__RibbonPlot_ACI-ENT-EVN.png");
             Assert.That.FileExists(plot1);
-            var plot2 = this.outputDirectory.CombineFile($"{this.outputDirectory.Name}__RibbonPlot_BGN-PMN-OSC.png");
+            var plot2 = this.TestOutputDirectory.CombineFile($"{this.TestOutputDirectory.Name}__RibbonPlot_BGN-PMN-OSC.png");
             Assert.That.FileExists(plot2);
-            var plot3 = this.outputDirectory.CombineFile($"{this.outputDirectory.Name}__RibbonPlot_ENT-CVR-OSC.png");
+            var plot3 = this.TestOutputDirectory.CombineFile($"{this.TestOutputDirectory.Name}__RibbonPlot_ENT-CVR-OSC.png");
             Assert.That.FileExists(plot3);
 
             const int Left = 223;
@@ -108,7 +108,7 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.RibbonPlots
                 .Fill(1440, 32, Color.Red)
                 .Move(Horizontal.Left, 2)
                 .EndRepeat()
-                .Finish(this.outputDirectory.CombineFile("expectedRibbons1.png"));
+                .Finish(this.TestOutputDirectory.CombineFile("expectedRibbons1.png"));
 
             Assert.That.ImageContainsExpected(expectedRibbons1, new Point(Left, 0),  image1);
 
@@ -150,7 +150,7 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.RibbonPlots
                 .Fill(1440, 32, Color.Green)
                 .Move(Horizontal.Left, 2)
                 .EndRepeat()
-                .Finish(this.outputDirectory.CombineFile("expectedRibbons3.png"));
+                .Finish(this.TestOutputDirectory.CombineFile("expectedRibbons3.png"));
 
             Assert.That.ImageContainsExpected(expectedRibbons3, new Point(Left, 0), image3);
         }
@@ -158,22 +158,22 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.RibbonPlots
         [TestMethod]
         public async Task RendersRibbonPlotsWithDifferentMidnightCorrectly()
         {
-            var fixture = this.CreateTestData(this.outputDirectory);
+            var fixture = this.CreateTestData(this.TestOutputDirectory);
 
             var result = await RibbonPlot.Execute(new RibbonPlot.Arguments()
             {
                 InputDirectories = new[] { fixture },
-                OutputDirectory = this.outputDirectory,
+                OutputDirectory = this.TestOutputDirectory,
                 Midnight = TimeSpan.FromHours(12),
             });
 
             Assert.AreEqual(0, result);
 
-            var plot1 = this.outputDirectory.CombineFile($"{this.outputDirectory.Name}__RibbonPlot_ACI-ENT-EVN_Midnight=1200.png");
+            var plot1 = this.TestOutputDirectory.CombineFile($"{this.TestOutputDirectory.Name}__RibbonPlot_ACI-ENT-EVN_Midnight=1200.png");
             Assert.That.FileExists(plot1);
-            var plot2 = this.outputDirectory.CombineFile($"{this.outputDirectory.Name}__RibbonPlot_BGN-PMN-OSC_Midnight=1200.png");
+            var plot2 = this.TestOutputDirectory.CombineFile($"{this.TestOutputDirectory.Name}__RibbonPlot_BGN-PMN-OSC_Midnight=1200.png");
             Assert.That.FileExists(plot2);
-            var plot3 = this.outputDirectory.CombineFile($"{this.outputDirectory.Name}__RibbonPlot_ENT-CVR-OSC_Midnight=1200.png");
+            var plot3 = this.TestOutputDirectory.CombineFile($"{this.TestOutputDirectory.Name}__RibbonPlot_ENT-CVR-OSC_Midnight=1200.png");
             Assert.That.FileExists(plot3);
 
             const int Left = 223;
@@ -203,7 +203,7 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.RibbonPlots
                 .Move(Horizontal.Left, 2)
                 .EndRepeat()
                 .FillHorizontalSplit(1440, 32, Color.Red, Color.Gray)
-                .Finish(this.outputDirectory.CombineFile("expectedRibbons1.png"));
+                .Finish(this.TestOutputDirectory.CombineFile("expectedRibbons1.png"));
 
             Assert.That.ImageContainsExpected(expectedRibbons1, new Point(Left, 0), image1);
 

@@ -68,7 +68,7 @@ R100
 39×W100
 R100";
             var actual = new TestImage(100, 100, pattern, Color.Black).Finish();
-            actual.Save(this.outputDirectory.CombineFile("blah.png").FullName);
+            actual.Save(this.TestOutputDirectory.CombineFile("blah.png").FullName);
 
             Assert.That.ImageMatches(expected, actual);
         }

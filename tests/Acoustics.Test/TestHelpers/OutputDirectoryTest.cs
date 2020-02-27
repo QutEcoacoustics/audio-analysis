@@ -4,32 +4,40 @@
 
 namespace Acoustics.Test.TestHelpers
 {
+    using System;
     using System.IO;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
     public class OutputDirectoryTest
     {
-        protected static DirectoryInfo SharedDirectory { get; } = PathHelper.GetTempDir();
+        private DirectoryInfo classOutputDirectory = null;
+        private DirectoryInfo testOutputDirectory = null;
 
-        protected DirectoryInfo outputDirectory;
+        public static DirectoryInfo ResultsDirectory { get; private set; }
 
-        [TestInitialize]
-        public void Setup()
+        public TestContext TestContext { get; set; }
+
+        /// <summary>
+        /// Gets a directory that is shared by all tests in the current class.
+        /// e.g. C:\Work\Github\audio-analysis\TestResults\Deploy_Anthony 2020-02-27 16_56_40\In\Acoustics.Shared.ImageTests
+        /// </summary>
+        protected DirectoryInfo ClassOutputDirectory =>
+            this.classOutputDirectory ??= this.TestContext.TestResultsDirectory
+                .ToDirectoryInfo()
+                .CreateSubdirectory(this.TestContext.FullyQualifiedTestClassName);
+
+        /// <summary>
+        /// Gets a directory scoped to only the current test
+        /// e.g. C:\Work\Github\audio-analysis\TestResults\Deploy_Anthony 2020-02-27 16_56_40\In\Acoustics.Shared.ImageTests\TestImageTest
+        /// </summary>
+        protected DirectoryInfo TestOutputDirectory =>
+            this.testOutputDirectory ??= this.ClassOutputDirectory.CreateSubdirectory(this.TestContext.TestName);
+
+        [ClassInitialize]
+        public static void MyClassInitialize(TestContext testContext)
         {
-            this.outputDirectory = PathHelper.GetTempDir();
-        }
-
-        [TestCleanup]
-        public void Cleanup()
-        {
-            PathHelper.DeleteTempDir(this.outputDirectory);
-        }
-
-        [ClassCleanup]
-        public static void CleanupStatic()
-        {
-            PathHelper.DeleteTempDir(SharedDirectory);
+            ResultsDirectory = testContext.ResultsDirectory.ToDirectoryInfo();
         }
     }
 }

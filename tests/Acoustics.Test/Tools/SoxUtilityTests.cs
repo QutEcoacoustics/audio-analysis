@@ -32,13 +32,13 @@ namespace Acoustics.Test.Tools
 
             var sox = new SoxAudioUtility(
                 AppConfigHelper.SoxExe.ToFileInfo(),
-                this.outputDirectory,
+                this.TestOutputDirectory,
                 enableShortNameHack: false);
 
             // create a file we know sox can't handle
             var fixture = "different_channels_tone.wav";
             var fixtureAsset = PathHelper.ResolveAsset(fixture);
-            var path = this.outputDirectory.CombineFile("🤷‍♂️20180616_145526😂.wav");
+            var path = this.TestOutputDirectory.CombineFile("🤷‍♂️20180616_145526😂.wav");
 
             fixtureAsset.CopyTo(path.FullName);
 
@@ -50,7 +50,7 @@ namespace Acoustics.Test.Tools
             // and with the hack it should work
             sox = new SoxAudioUtility(
                 AppConfigHelper.SoxExe.ToFileInfo(),
-                this.outputDirectory,
+                this.TestOutputDirectory,
                 enableShortNameHack: true);
 
             var actual = sox.Info(path);

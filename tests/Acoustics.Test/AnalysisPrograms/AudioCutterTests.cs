@@ -26,7 +26,7 @@ namespace Acoustics.Test.AnalysisPrograms
             {
                 "AudioCutter",
                 this.testFile,
-                this.outputDirectory.FullName,
+                this.TestOutputDirectory.FullName,
 
                 // test we can allow really long segments
                 "-d",
@@ -53,7 +53,7 @@ namespace Acoustics.Test.AnalysisPrograms
             {
                 "AudioCutter",
                 this.testFile,
-                this.outputDirectory.FullName,
+                this.TestOutputDirectory.FullName,
 
                 // must be >= 1
                 "--segment-duration-minimum",
@@ -86,7 +86,7 @@ namespace Acoustics.Test.AnalysisPrograms
             {
                 "AudioCutter",
                 this.testFile,
-                this.outputDirectory.FullName,
+                this.TestOutputDirectory.FullName,
 
                 // must be >= 0
                 "--segment-overlap",
@@ -113,11 +113,11 @@ namespace Acoustics.Test.AnalysisPrograms
             await AudioCutter.Execute(new AudioCutter.Arguments
             {
                 InputFile = this.testFile,
-                OutputDir = this.outputDirectory.FullName,
+                OutputDir = this.TestOutputDirectory.FullName,
                 Parallel = false,
             });
 
-            this.CommonAssertions(this.outputDirectory, "wav");
+            this.CommonAssertions(this.TestOutputDirectory, "wav");
         }
 
         [TestMethod]
@@ -126,11 +126,11 @@ namespace Acoustics.Test.AnalysisPrograms
             await AudioCutter.Execute(new AudioCutter.Arguments
             {
                 InputFile = this.testFile,
-                OutputDir = this.outputDirectory.FullName,
+                OutputDir = this.TestOutputDirectory.FullName,
                 Parallel = true,
             });
 
-            this.CommonAssertions(this.outputDirectory, "wav");
+            this.CommonAssertions(this.TestOutputDirectory, "wav");
         }
 
         [TestMethod]
@@ -139,12 +139,12 @@ namespace Acoustics.Test.AnalysisPrograms
             await AudioCutter.Execute(new AudioCutter.Arguments
             {
                 InputFile = this.testFile,
-                OutputDir = this.outputDirectory.FullName,
+                OutputDir = this.TestOutputDirectory.FullName,
                 Parallel = true,
                 SegmentFileExtension = "mp3",
             });
 
-            this.CommonAssertions(this.outputDirectory, "mp3");
+            this.CommonAssertions(this.TestOutputDirectory, "mp3");
         }
 
         [TestMethod]
@@ -153,12 +153,12 @@ namespace Acoustics.Test.AnalysisPrograms
             await AudioCutter.Execute(new AudioCutter.Arguments
             {
                 InputFile = this.testFile,
-                OutputDir = this.outputDirectory.FullName,
+                OutputDir = this.TestOutputDirectory.FullName,
                 Parallel = true,
                 SegmentDuration = 6 * 3600,
             });
 
-            var files = this.outputDirectory.GetFiles().ToArray();
+            var files = this.TestOutputDirectory.GetFiles().ToArray();
             Assert.AreEqual(1, files.Length);
             CollectionAssert.That.Contains(files, $"f969b39d-2705-42fc-992c-252a776f1af3_090705-0600_0-600.wav", FileInfoMapper);
         }
@@ -169,13 +169,13 @@ namespace Acoustics.Test.AnalysisPrograms
             await AudioCutter.Execute(new AudioCutter.Arguments
             {
                 InputFile = this.testFile,
-                OutputDir = this.outputDirectory.FullName,
+                OutputDir = this.TestOutputDirectory.FullName,
                 StartOffset = 150,
                 EndOffset = 300,
                 SegmentDuration = 90.0,
             });
 
-            var files = this.outputDirectory.GetFiles();
+            var files = this.TestOutputDirectory.GetFiles();
             Assert.AreEqual(2, files.Length);
             CollectionAssert.That.Contains(files, $"f969b39d-2705-42fc-992c-252a776f1af3_090705-0600_150-240.wav", FileInfoMapper);
             CollectionAssert.That.Contains(files, $"f969b39d-2705-42fc-992c-252a776f1af3_090705-0600_240-300.wav", FileInfoMapper);
@@ -187,11 +187,11 @@ namespace Acoustics.Test.AnalysisPrograms
             await AudioCutter.Execute(new AudioCutter.Arguments
             {
                 InputFile = this.testFile,
-                OutputDir = this.outputDirectory.FullName,
+                OutputDir = this.TestOutputDirectory.FullName,
                 SampleRate = 8000,
             });
 
-            var files = this.CommonAssertions(this.outputDirectory, "wav");
+            var files = this.CommonAssertions(this.TestOutputDirectory, "wav");
             var info = TestHelper.GetAudioUtility().Info(files[0]);
             Assert.AreEqual(8000, info.SampleRate);
         }
@@ -202,14 +202,14 @@ namespace Acoustics.Test.AnalysisPrograms
             await AudioCutter.Execute(new AudioCutter.Arguments
             {
                 InputFile = PathHelper.ResolveAssetPath("4channelsPureTones.wav"),
-                OutputDir = this.outputDirectory.FullName,
+                OutputDir = this.TestOutputDirectory.FullName,
                 MixDownToMono = false,
                 StartOffset = 20,
                 EndOffset = 35,
                 SegmentDuration = 5,
             });
 
-            var files = this.outputDirectory.GetFiles();
+            var files = this.TestOutputDirectory.GetFiles();
             Assert.AreEqual(3, files.Length);
             CollectionAssert.That.Contains(files, $"4channelsPureTones_25-30.wav", FileInfoMapper);
             var info = TestHelper.GetAudioUtility().Info(files[0]);
@@ -223,14 +223,14 @@ namespace Acoustics.Test.AnalysisPrograms
             await AudioCutter.Execute(new AudioCutter.Arguments
             {
                 InputFile = PathHelper.ResolveAssetPath("4channelsPureTones.wav"),
-                OutputDir = this.outputDirectory.FullName,
+                OutputDir = this.TestOutputDirectory.FullName,
                 MixDownToMono = true,
                 StartOffset = 20,
                 EndOffset = 35,
                 SegmentDuration = 5,
             });
 
-            var files = this.outputDirectory.GetFiles();
+            var files = this.TestOutputDirectory.GetFiles();
             Assert.AreEqual(3, files.Length);
             CollectionAssert.That.Contains(files, $"4channelsPureTones_25-30.wav", FileInfoMapper);
             var info = TestHelper.GetAudioUtility().Info(files[0]);
@@ -244,13 +244,13 @@ namespace Acoustics.Test.AnalysisPrograms
             await AudioCutter.Execute(new AudioCutter.Arguments
             {
                 InputFile = this.testFile,
-                OutputDir = this.outputDirectory.FullName,
+                OutputDir = this.TestOutputDirectory.FullName,
                 SegmentOverlap = 30,
                 SegmentDuration = 60 * 4,
                 SegmentDurationMinimum = 130,
             });
 
-            var files = this.outputDirectory.GetFiles();
+            var files = this.TestOutputDirectory.GetFiles();
 
             // the last segment should be 120 seconds long but we set SegmentDurationMinimum to 130 so it should not  be output
             Assert.AreEqual(2, files.Length);

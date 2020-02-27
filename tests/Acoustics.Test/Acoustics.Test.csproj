@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -13,10 +13,6 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
-  <Target Name="CleanupTestAssets" AfterTargets="Clean">
-    <Message Text="[AfterClean]: Deleting all extra files in $(TargetDir) (Unit tests don't clean up after themselves very well!)" Importance="High" />
-    <RemoveDir Directories="$(TargetDir);" />
-  </Target>
   <Import Project="$(SolutionDir)\src\AP.CopyFiles.targets" />
   <ItemGroup>
     <PackageReference Include="FastMember" Version="1.5.0" />

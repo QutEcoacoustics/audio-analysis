@@ -41,7 +41,7 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms
 
             var images = LDSpectrogramRGB.DrawSpectrogramsFromSpectralIndices(
                 inputDirectory: null,
-                outputDirectory: this.outputDirectory,
+                outputDirectory: this.TestOutputDirectory,
                 ldSpectrogramConfig: new LdSpectrogramConfig(),
                 indexPropertiesConfigPath: indexPropertiesFile,
                 indexGenerationData: new IndexGenerationData()

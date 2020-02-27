@@ -98,7 +98,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             var random = TestHelpers.Random.GetRandom();
             var testSpectra = random.NextMatrix(100, 50);
 
-            var testFile = this.outputDirectory.CombineFile("test.matrix.csv");
+            var testFile = this.TestOutputDirectory.CombineFile("test.matrix.csv");
             Csv.WriteMatrixToCsv(testFile, testSpectra);
 
             var matrix = IndexMatrices.ReadSpectrogram(testFile, out var binCount);

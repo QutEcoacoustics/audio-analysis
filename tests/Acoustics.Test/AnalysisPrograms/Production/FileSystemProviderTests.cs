@@ -28,18 +28,18 @@ namespace Acoustics.Test.AnalysisPrograms.Production
         [TestMethod]
         public void TestSubFileSystem()
         {
-            var fs = FileSystemProvider.DetermineFileSystem(this.outputDirectory.FullName).Item1;
+            var fs = FileSystemProvider.DetermineFileSystem(this.TestOutputDirectory.FullName).Item1;
 
             Assert.IsInstanceOfType(fs, typeof(SubFileSystem));
 
-            Assert.AreEqual(this.outputDirectory.ToUPath(), ((SubFileSystem)fs).SubPath);
+            Assert.AreEqual(this.TestOutputDirectory.ToUPath(), ((SubFileSystem)fs).SubPath);
         }
 
         [TestMethod]
         [Ignore("Broken to resolve .NET Core dependencies. https://github.com/QutEcoacoustics/audio-analysis/issues/289")]
         public void TestSqliteFileSystem()
         {
-            var path = this.outputDirectory.FullName + "\\test.sqlite3";
+            var path = this.TestOutputDirectory.FullName + "\\test.sqlite3";
             var fs = FileSystemProvider.DetermineFileSystem(path).Item1;
 
             throw new PlatformNotSupportedException("See https://github.com/QutEcoacoustics/audio-analysis/issues/289");
@@ -54,7 +54,7 @@ namespace Acoustics.Test.AnalysisPrograms.Production
         public void TestInvalidFileSystem()
         {
             Assert.ThrowsException<NotSupportedException>(
-            () => FileSystemProvider.DetermineFileSystem(this.outputDirectory.FullName + "\\test.zip"));
+            () => FileSystemProvider.DetermineFileSystem(this.TestOutputDirectory.FullName + "\\test.zip"));
         }
     }
 }

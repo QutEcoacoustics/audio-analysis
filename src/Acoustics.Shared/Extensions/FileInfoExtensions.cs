@@ -67,6 +67,16 @@ namespace System
             return new FileInfo(merged);
         }
 
+        public static string CombinePath(this DirectoryInfo directoryInfo, params string[] str)
+        {
+            Contract.Requires(directoryInfo != null);
+            Contract.Requires(str != null && str.Length > 0);
+
+            string merged = Path.Combine(str.Prepend(directoryInfo.FullName).ToArray());
+
+            return merged;
+        }
+
         public static FileInfo ToFileInfo(this string str)
         {
             if (string.IsNullOrWhiteSpace(str))
@@ -85,6 +95,16 @@ namespace System
             }
 
             return new DirectoryInfo(str);
+        }
+
+        public static DirectoryInfo ToDirectoryInfo(this string str, params string[] subDirectories)
+        {
+            if (string.IsNullOrWhiteSpace(str))
+            {
+                return null;
+            }
+
+            return new DirectoryInfo(Path.Combine(subDirectories.Prepend(str).ToArray()));
         }
 
         public static bool TryDelete(this FileSystemInfo file, string message = "")
