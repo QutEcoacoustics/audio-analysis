@@ -3699,17 +3699,20 @@ namespace TowseyLibrary
         /// Stacks the passed images one on top of the other.
         /// Assumes that all images have the same width.
         /// </summary>
-        public static Image<T> CombineImagesVertically<T>(List<Image<T>> list) where T : struct, IPixel<T>
+        public static Image<T> CombineImagesVertically<T>(List<Image<T>> list)
+            where T : struct, IPixel<T>
         {
             return CombineImagesVertically(null, list.ToArray());
         }
 
-        public static Image<T> CombineImagesVertically<T>(List<Image<T>> list, int maxWidth) where T : struct, IPixel<T>
+        public static Image<T> CombineImagesVertically<T>(List<Image<T>> list, int maxWidth)
+            where T : struct, IPixel<T>
         {
             return CombineImagesVertically(maxWidth, list.ToArray());
         }
 
-        public static Image<T> CombineImagesVertically<T>(params Image<T>[] images) where T : struct, IPixel<T>
+        public static Image<T> CombineImagesVertically<T>(params Image<T>[] images)
+            where T : struct, IPixel<T>
         {
             return CombineImagesVertically<T>(maximumWidth: null, images);
         }

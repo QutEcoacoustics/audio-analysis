@@ -267,7 +267,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// This method assumes that the spectrogram has linear Herz scale
         /// </summary>
         /// <param name="title">title to be added to spectrogram</param>
-        public Image<Rgb24> GetImageFullyAnnotated(string title)
+        public Image<Rgb24> GetImageFullyAnnotated(string title, Color? tag = null)
         {
             var image = this.GetImage();
             if (image == null)
@@ -275,27 +275,27 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 throw new ArgumentNullException(nameof(image));
             }
 
-            image = this.GetImageAnnotatedWithLinearHerzScale(image, title);
+            image = this.GetImageAnnotatedWithLinearHerzScale(image, title, tag);
             return image;
         }
 
-        public Image<Rgb24> GetImageFullyAnnotated(Image<Rgb24> image, string title, int[,] gridLineLocations)
+        public Image<Rgb24> GetImageFullyAnnotated(Image<Rgb24> image, string title, int[,] gridLineLocations, Color? tag = null)
         {
             if (image == null)
             {
                 throw new ArgumentNullException(nameof(image));
             }
 
-            FrequencyScale.DrawFrequencyLinesOnImage((Image<Rgb24>)image, gridLineLocations, includeLabels: true);
+            FrequencyScale.DrawFrequencyLinesOnImage(image, gridLineLocations, includeLabels: true);
 
-            var titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
+            var titleBar = DrawTitleBarOfGrayScaleSpectrogram(title, image.Width, tag);
             var timeBmp = ImageTrack.DrawTimeTrack(this.Duration, image.Width);
             var list = new List<Image<Rgb24>> { titleBar, timeBmp, image, timeBmp };
             var compositeImage = ImageTools.CombineImagesVertically(list);
             return compositeImage;
         }
 
-        public Image<Rgb24> GetImageAnnotatedWithLinearHerzScale(Image<Rgb24> image, string title)
+        public Image<Rgb24> GetImageAnnotatedWithLinearHerzScale(Image<Rgb24> image, string title, Color? tag = null)
         {
             // init with linear frequency scale and draw freq grid lines on image
             // image height will be half frame size.
@@ -307,7 +307,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             }
 
             var freqScale = new FrequencyScale(this.NyquistFrequency, frameSize, hertzInterval);
-            var compositeImage = this.GetImageFullyAnnotated(image, title, freqScale.GridLineLocations);
+            var compositeImage = this.GetImageFullyAnnotated(image, title, freqScale.GridLineLocations, tag);
             //image = BaseSonogram.GetImageAnnotatedWithLinearHertzScale(image, sampleRate, frameStep, "DECIBEL SPECTROGRAM");
             return compositeImage;
         }
@@ -690,9 +690,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// <param name="frameStep">frame step allows correct time scale to be drawn.</param>
         /// <param name="title">Descriptive title of the spectrogram.</param>
         /// <returns>The framed spectrogram image.</returns>
-        public static Image<Rgb24> GetImageAnnotatedWithLinearHertzScale(Image<Rgb24> image, int sampleRate, int frameStep, string title)
+        public static Image<Rgb24> GetImageAnnotatedWithLinearHertzScale(Image<Rgb24> image, int sampleRate, int frameStep, string title, Color? tag = null)
         {
-            var titleBar = DrawTitleBarOfGrayScaleSpectrogram(title, image.Width);
+            var titleBar = DrawTitleBarOfGrayScaleSpectrogram(title, image.Width, tag);
             var startTime = TimeSpan.Zero;
             var xAxisTicInterval = TimeSpan.FromSeconds(1);
             TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(frameStep / (double)sampleRate);
@@ -752,7 +752,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             return ImageTools.CombineImagesVertically(titleBar, timeBmp, sonogramImage, timeBmp);
         }
 
-        public static Image<Rgb24> DrawTitleBarOfGrayScaleSpectrogram(string title, int width)
+        public static Image<Rgb24> DrawTitleBarOfGrayScaleSpectrogram(string title, int width, Color? tag = null)
         {
             var bmp = Drawing.NewImage(width, SpectrogramConstants.HEIGHT_OF_TITLE_BAR, Color.Black);
             bmp.Mutate(g =>
@@ -775,7 +775,16 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 }
 
                 // g.DrawLine(pen, duration + 1, 0, trackWidth, 0);
-                g.DrawLine(new Pen(Color.Gray, 1), 0, 0, width, 0); //draw upper boundary
+                g.NoAA().DrawLine(new Pen(Color.Gray, 1), 0, 0, width, 0); //draw upper boundary
+
+                if (tag.NotNull())
+                {
+                    g.NoAA().DrawLine(
+                        tag.Value,
+                        1f,
+                        new PointF(0, 0),
+                        new PointF(0, SpectrogramConstants.HEIGHT_OF_TITLE_BAR));
+                }
             });
 
             return bmp;

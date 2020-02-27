@@ -25,6 +25,7 @@ namespace AnalysisPrograms
     using Acoustics.Tools.Audio;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
+    using AnalysisPrograms.SpectrogramGenerator;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
@@ -806,8 +807,8 @@ namespace AnalysisPrograms
             //configurationDictionary[ConfigKeys.Recording.Key_RecordingCallName] = audioFile.FullName;
             //configurationDictionary[ConfigKeys.Recording.Key_RecordingFileName] = audioFile.Name;
             //var soxImage = new FileInfo(Path.Combine(segmentSettings.SegmentOutputDirectory.FullName, audioFile.Name + ".SOX.png"));
-            var configInfo = ConfigFile.Deserialize<AnalyzerConfig>(analysisSettings.ConfigFile);
-            var spectrogramResult = Audio2Sonogram.GenerateSpectrogramImages(audioFile, configInfo, sourceRecordingName);
+            var configInfo = ConfigFile.Deserialize<SpectrogramGeneratorConfig>(analysisSettings.ConfigFile);
+            var spectrogramResult = SpectrogramGenerator.SpectrogramGenerator.GenerateSpectrogramImages(audioFile, configInfo, sourceRecordingName);
 
             // this analysis produces no results! But we still print images (that is the point)
             if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave(analysisResult.Events.Length))

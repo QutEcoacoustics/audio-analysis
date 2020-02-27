@@ -29,6 +29,7 @@ namespace Acoustics.Test.Shared.Drawing
         public DrawingTests()
             : base()
         {
+            this.Actual = new Image<Rgb24>(Configuration.Default, 100, 100, Color.Black);
             this.blankExpected = new TestImage(100, 100, Color.Black);
         }
 

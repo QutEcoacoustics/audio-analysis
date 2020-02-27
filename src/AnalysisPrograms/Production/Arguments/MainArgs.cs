@@ -8,6 +8,7 @@ namespace AnalysisPrograms.Production.Arguments
     using Acoustics.Shared;
     using AnalyseLongRecordings;
     using AnalysisPrograms.Draw.RibbonPlots;
+    using AnalysisPrograms.SpectrogramGenerator;
     using Draw.Zooming;
     using EventStatistics;
     using McMaster.Extensions.CommandLineUtils;

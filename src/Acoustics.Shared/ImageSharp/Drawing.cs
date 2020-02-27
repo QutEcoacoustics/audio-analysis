@@ -4,7 +4,6 @@
 
 namespace Acoustics.Shared.ImageSharp
 {
-    using System.Runtime.CompilerServices;
     using SixLabors.Fonts;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
@@ -44,16 +43,9 @@ namespace Acoustics.Shared.ImageSharp
             Antialias = false,
             ColorBlendingMode = PixelColorBlendingMode.Normal,
             AntialiasSubpixelDepth = 0,
+
             //IntersectionRule = IntersectionRule.OddEven,
         };
-
-        //public static readonly ShapeGraphicsOptions NoAntiAlias = new ShapeGraphicsOptions()
-        //{
-        //    BlendPercentage = 1,
-        //    Antialias = false,
-        //    ColorBlendingMode = PixelColorBlendingMode.Normal,
-        //    AntialiasSubpixelDepth = 0,
-        //};
 
         private const string Tahoma = "Tahoma";
         private const string Arial = "Arial";
@@ -117,8 +109,22 @@ namespace Acoustics.Shared.ImageSharp
                 }
 
                 this.context.DrawLines(
-                    Drawing.NoAntiAlias,
+                    NoAntiAlias,
                     pen,
+                    points);
+            }
+
+            public void DrawLine(Color color, float thickness, params PointF[] points)
+            {
+                for (int i = 0; i < points.Length; i++)
+                {
+                    points[i].Offset(Offset);
+                }
+
+                this.context.DrawLines(
+                    NoAntiAlias,
+                    color,
+                    thickness,
                     points);
             }
 

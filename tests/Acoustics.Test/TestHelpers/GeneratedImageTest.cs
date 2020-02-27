@@ -20,14 +20,20 @@ namespace Acoustics.Test.TestHelpers
         }
 
         protected GeneratedImageTest(WriteTestOutput writeImages)
-            : this(writeImages, writeImages)
+            : this(writeImages, writeImages, null)
         {
         }
 
-        protected GeneratedImageTest(WriteTestOutput writeImages, WriteTestOutput writeDelta)
+        protected GeneratedImageTest(Image<T> baseActual)
+            : this(WriteTestOutput.OnFailure, WriteTestOutput.OnFailure, baseActual)
+        {
+        }
+
+        protected GeneratedImageTest(WriteTestOutput writeImages, WriteTestOutput writeDelta, Image<T> baseActual)
         {
             this.WriteImages = writeImages;
             this.WriteDelta = writeDelta;
+            this.Actual = baseActual;
         }
 
         protected WriteTestOutput WriteImages { get; }
@@ -38,15 +44,18 @@ namespace Acoustics.Test.TestHelpers
 
         protected Image<T> Expected { get; set; }
 
-        [TestInitialize]
-        public virtual void TestSetup()
-        {
-            this.Actual = new Image<T>(Configuration.Default, 100, 100, Color.Black.ToPixel<T>());
-        }
+        /// <summary>
+        /// Gets or sets extra string tokens to insert into saved imaged file names.
+        /// MSTest does not support getting any information about data rows
+        /// or dynamic data tests at runtime :-/
+        /// </summary>
+        protected string ExtraName { get; set; }
 
         [TestCleanup]
         public void TestCleanup()
         {
+            this.TestContext.WriteLine($"I exist!");
+            //
             Assert.IsNotNull(this.Actual, "The actual image cannot be null!");
 
             if (this.ShouldWrite(this.WriteImages))
@@ -78,9 +87,22 @@ namespace Acoustics.Test.TestHelpers
             Assert.That.ImageMatches(this.Expected, this.Actual);
         }
 
-        protected void SaveImage(string token, Image<T> image)
+        protected void SaveExtraImage(string token, Image<T> image)
         {
-            var path = this.ClassOutputDirectory.CombinePath($"{this.TestContext.TestName}_{token}.png");
+            if (this.ShouldWrite(this.WriteImages))
+            {
+                this.SaveImage(token, image);
+            }
+            else
+            {
+                this.TestContext.WriteLine($"Skipping writing extra image because `WriteImages` is set to `{this.WriteImages}`");
+            }
+        }
+
+        private void SaveImage(string typeToken, Image<T> image)
+        {
+            var extra = this.ExtraName.IsNullOrEmpty() ? string.Empty : "_" + this.ExtraName;
+            var path = this.ClassOutputDirectory.CombinePath($"{this.TestContext.TestName}{extra}_{typeToken}.png");
             if (image == null)
             {
                 this.TestContext.WriteLine($"Skipping writing expected image `{path}` because it is null");

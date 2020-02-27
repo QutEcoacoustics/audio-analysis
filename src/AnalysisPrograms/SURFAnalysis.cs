@@ -25,6 +25,7 @@ namespace AnalysisPrograms
     using Acoustics.Tools.Audio;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
+    using AnalysisPrograms.SpectrogramGenerator;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
@@ -532,8 +533,8 @@ namespace AnalysisPrograms
 
             // generate spectrogram
             // TODO the following may need to be checked since change of method signature in December 2019.
-            var configInfo = ConfigFile.Deserialize<AnalyzerConfig>(analysisSettings.ConfigFile);
-            var spectrogramResult = Audio2Sonogram.GenerateSpectrogramImages(audioFile, configInfo, sourceRecordingName);
+            var configInfo = ConfigFile.Deserialize<SpectrogramGeneratorConfig>(analysisSettings.ConfigFile);
+            var spectrogramResult = SpectrogramGenerator.SpectrogramGenerator.GenerateSpectrogramImages(audioFile, configInfo, sourceRecordingName);
 
             // this analysis produces no results!
             // but we still print images (that is the point)

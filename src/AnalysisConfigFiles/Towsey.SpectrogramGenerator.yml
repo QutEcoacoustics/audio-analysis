@@ -2,12 +2,7 @@
 AnalysisName: Towsey.SpectrogramGenerator
 
 # Generate multiple standard-scale spectrogram images and oscillations info
-
-# Usage: AnalysisPrograms.exe Audio2Sonogram [arguments] [options]
-#Arguments:
-#  Source: The source audio file to operate on
-#  Config  The path to this config file. If not found it will attempt to use a default config file of the same name.
-#  Output  A directory to write output
+# Use with the `Audio2Sonogram` command or as an analysis with `audio2csv`
 
 #Following segmentation parameters are default and should usually not be changed. Units are seconds.
 SegmentDuration: 60
@@ -24,13 +19,15 @@ FrameLength: 512
 # Following frame step yields 50 frames/s which can make some subsequent operations a bit easier.
 FrameStep: 441
 
-Waveform: true
-DecibelSpectrogram: true
-DecibelSpectrogram_NoiseReduced: true
-CepstralSpectrogram: true
-DifferenceSpectrogram: true
-AmplitudeSpectrogram_LocalContrastNormalization: true
-Experimental: true
+Images:
+  - Waveform
+  - DecibelSpectrogram
+  - DecibelSpectrogramNoiseReduced
+  - Experimental
+  - DifferenceSpectrogram
+  - CepstralSpectrogram
+  - AmplitudeSpectrogramLocalContrastNormalization
+  
 
 # WAVE-FORM PARAMETERS
 WaveformHeight: 100
@@ -46,7 +43,6 @@ DifferenceThreshold: 3.0
 NeighbourhoodSeconds: 1.0
 LcnContrastLevel: 0.2
 
-
 AddAxes: true
 
 # IAnalyzer options
@@ -58,6 +54,6 @@ SaveIntermediateWavFiles: Never
 SaveIntermediateCsvFiles: false
 # Output sonogram (composite) images
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
-SaveSonogramImages: Never
+SaveSonogramImages: Always
 ...
 

@@ -24,9 +24,9 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
     /// Notes on TESTS: (from Anthony in email @ 05/04/2017)
     /// (1) small tests are better
     /// (2) simpler tests are better
-    /// (3) use an appropriate serialisation format
+    /// (3) use an appropriate serialization format
     /// (4) for binary large objects(BLOBs) make sure git-lfs is tracking them
-    /// See this commit for dealing with BLOBs: https://github.com/QutBioacoustics/audio-analysis/commit/55142089c8eb65d46e2f96f1d2f9a30d89b62710
+    /// See this commit for dealing with BLOBs: https://github.com/QutBioacoustics/audio-analysis/commit/55142089c8eb65d46e2f96f1d2f9a30d89b62710.
     /// </summary>
     [TestClass]
     public class SonogramTests
