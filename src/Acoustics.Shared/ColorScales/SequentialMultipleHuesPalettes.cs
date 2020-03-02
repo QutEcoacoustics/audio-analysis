@@ -17,43 +17,43 @@ namespace Acoustics.Shared.ColorScales
                 Type1 = Type.SequentialMultipleHues,
                 Colors = new List<Color[]>
                 {
-                    new[] { Color.FromHex("f7fcb9"), Color.FromHex("addd8e"), Color.FromHex("31a354") },
-                    new[] { Color.FromHex("f7fcb9"), Color.FromHex("addd8e"), Color.FromHex("31a354") },
-                    new[] { Color.FromHex("f7fcb9"), Color.FromHex("addd8e"), Color.FromHex("31a354") },
+                    new[] { Color.ParseHex("f7fcb9"), Color.ParseHex("addd8e"), Color.ParseHex("31a354") },
+                    new[] { Color.ParseHex("f7fcb9"), Color.ParseHex("addd8e"), Color.ParseHex("31a354") },
+                    new[] { Color.ParseHex("f7fcb9"), Color.ParseHex("addd8e"), Color.ParseHex("31a354") },
                     new[]
                     {
-                        Color.FromHex("ffffcc"), Color.FromHex("c2e699"), Color.FromHex("78c679"),
-                        Color.FromHex("238443")
+                        Color.ParseHex("ffffcc"), Color.ParseHex("c2e699"), Color.ParseHex("78c679"),
+                        Color.ParseHex("238443")
                     },
                     new[]
                     {
-                        Color.FromHex("ffffcc"), Color.FromHex("c2e699"), Color.FromHex("78c679"),
-                        Color.FromHex("31a354"), Color.FromHex("006837")
+                        Color.ParseHex("ffffcc"), Color.ParseHex("c2e699"), Color.ParseHex("78c679"),
+                        Color.ParseHex("31a354"), Color.ParseHex("006837")
                     },
                     new[]
                     {
-                        Color.FromHex("ffffcc"), Color.FromHex("d9f0a3"), Color.FromHex("addd8e"),
-                        Color.FromHex("78c679"), Color.FromHex("31a354"),
-                        Color.FromHex("006837"),
+                        Color.ParseHex("ffffcc"), Color.ParseHex("d9f0a3"), Color.ParseHex("addd8e"),
+                        Color.ParseHex("78c679"), Color.ParseHex("31a354"),
+                        Color.ParseHex("006837"),
                     },
                     new[]
                     {
-                        Color.FromHex("ffffcc"), Color.FromHex("d9f0a3"), Color.FromHex("addd8e"),
-                        Color.FromHex("78c679"), Color.FromHex("41ab5d"),
-                        Color.FromHex("238443"), Color.FromHex("005a32"),
+                        Color.ParseHex("ffffcc"), Color.ParseHex("d9f0a3"), Color.ParseHex("addd8e"),
+                        Color.ParseHex("78c679"), Color.ParseHex("41ab5d"),
+                        Color.ParseHex("238443"), Color.ParseHex("005a32"),
                     },
                     new[]
                     {
-                        Color.FromHex("ffffe5"), Color.FromHex("f7fcb9"), Color.FromHex("d9f0a3"),
-                        Color.FromHex("addd8e"), Color.FromHex("78c679"),
-                        Color.FromHex("41ab5d"), Color.FromHex("238443"), Color.FromHex("005a32"),
+                        Color.ParseHex("ffffe5"), Color.ParseHex("f7fcb9"), Color.ParseHex("d9f0a3"),
+                        Color.ParseHex("addd8e"), Color.ParseHex("78c679"),
+                        Color.ParseHex("41ab5d"), Color.ParseHex("238443"), Color.ParseHex("005a32"),
                     },
                     new[]
                     {
-                        Color.FromHex("ffffe5"), Color.FromHex("f7fcb9"), Color.FromHex("d9f0a3"),
-                        Color.FromHex("addd8e"), Color.FromHex("78c679"),
-                        Color.FromHex("41ab5d"), Color.FromHex("238443"), Color.FromHex("006837"),
-                        Color.FromHex("004529"),
+                        Color.ParseHex("ffffe5"), Color.ParseHex("f7fcb9"), Color.ParseHex("d9f0a3"),
+                        Color.ParseHex("addd8e"), Color.ParseHex("78c679"),
+                        Color.ParseHex("41ab5d"), Color.ParseHex("238443"), Color.ParseHex("006837"),
+                        Color.ParseHex("004529"),
                     },
                 },
             };
@@ -64,41 +64,41 @@ namespace Acoustics.Shared.ColorScales
                 Type1 = Type.SequentialMultipleHues,
                 Colors = new List<Color[]>
                 {
-                    new[] { Color.FromHex("edf8b1"), Color.FromHex("7fcdbb"), Color.FromHex("2c7fb8") },
+                    new[] { Color.ParseHex("edf8b1"), Color.ParseHex("7fcdbb"), Color.ParseHex("2c7fb8") },
                     new[]
                     {
-                        Color.FromHex("ffffcc"), Color.FromHex("a1dab4"), Color.FromHex("41b6c4"),
-                        Color.FromHex("225ea8")
+                        Color.ParseHex("ffffcc"), Color.ParseHex("a1dab4"), Color.ParseHex("41b6c4"),
+                        Color.ParseHex("225ea8")
                     },
                     new[]
                     {
-                        Color.FromHex("ffffcc"), Color.FromHex("a1dab4"), Color.FromHex("41b6c4"),
-                        Color.FromHex("2c7fb8"), Color.FromHex("253494")
+                        Color.ParseHex("ffffcc"), Color.ParseHex("a1dab4"), Color.ParseHex("41b6c4"),
+                        Color.ParseHex("2c7fb8"), Color.ParseHex("253494")
                     },
                     new[]
                     {
-                        Color.FromHex("ffffcc"), Color.FromHex("c7e9b4"), Color.FromHex("7fcdbb"),
-                        Color.FromHex("41b6c4"), Color.FromHex("2c7fb8"),
-                        Color.FromHex("253494"),
+                        Color.ParseHex("ffffcc"), Color.ParseHex("c7e9b4"), Color.ParseHex("7fcdbb"),
+                        Color.ParseHex("41b6c4"), Color.ParseHex("2c7fb8"),
+                        Color.ParseHex("253494"),
                     },
                     new[]
                     {
-                        Color.FromHex("ffffcc"), Color.FromHex("c7e9b4"), Color.FromHex("7fcdbb"),
-                        Color.FromHex("41b6c4"), Color.FromHex("1d91c0"),
-                        Color.FromHex("225ea8"), Color.FromHex("0c2c84"),
+                        Color.ParseHex("ffffcc"), Color.ParseHex("c7e9b4"), Color.ParseHex("7fcdbb"),
+                        Color.ParseHex("41b6c4"), Color.ParseHex("1d91c0"),
+                        Color.ParseHex("225ea8"), Color.ParseHex("0c2c84"),
                     },
                     new[]
                     {
-                        Color.FromHex("ffffd9"), Color.FromHex("edf8b1"), Color.FromHex("c7e9b4"),
-                        Color.FromHex("7fcdbb"), Color.FromHex("41b6c4"),
-                        Color.FromHex("1d91c0"), Color.FromHex("225ea8"), Color.FromHex("0c2c84"),
+                        Color.ParseHex("ffffd9"), Color.ParseHex("edf8b1"), Color.ParseHex("c7e9b4"),
+                        Color.ParseHex("7fcdbb"), Color.ParseHex("41b6c4"),
+                        Color.ParseHex("1d91c0"), Color.ParseHex("225ea8"), Color.ParseHex("0c2c84"),
                     },
                     new[]
                     {
-                        Color.FromHex("ffffd9"), Color.FromHex("edf8b1"), Color.FromHex("c7e9b4"),
-                        Color.FromHex("7fcdbb"), Color.FromHex("41b6c4"),
-                        Color.FromHex("1d91c0"), Color.FromHex("225ea8"), Color.FromHex("253494"),
-                        Color.FromHex("081d58"),
+                        Color.ParseHex("ffffd9"), Color.ParseHex("edf8b1"), Color.ParseHex("c7e9b4"),
+                        Color.ParseHex("7fcdbb"), Color.ParseHex("41b6c4"),
+                        Color.ParseHex("1d91c0"), Color.ParseHex("225ea8"), Color.ParseHex("253494"),
+                        Color.ParseHex("081d58"),
                     },
                 },
             };
@@ -109,41 +109,41 @@ namespace Acoustics.Shared.ColorScales
                 Type1 = Type.SequentialMultipleHues,
                 Colors = new List<Color[]>
                 {
-                    new[] { Color.FromHex("e0f3db"), Color.FromHex("a8ddb5"), Color.FromHex("43a2ca") },
+                    new[] { Color.ParseHex("e0f3db"), Color.ParseHex("a8ddb5"), Color.ParseHex("43a2ca") },
                     new[]
                     {
-                        Color.FromHex("f0f9e8"), Color.FromHex("bae4bc"), Color.FromHex("7bccc4"),
-                        Color.FromHex("2b8cbe")
+                        Color.ParseHex("f0f9e8"), Color.ParseHex("bae4bc"), Color.ParseHex("7bccc4"),
+                        Color.ParseHex("2b8cbe")
                     },
                     new[]
                     {
-                        Color.FromHex("f0f9e8"), Color.FromHex("bae4bc"), Color.FromHex("7bccc4"),
-                        Color.FromHex("43a2ca"), Color.FromHex("0868ac")
+                        Color.ParseHex("f0f9e8"), Color.ParseHex("bae4bc"), Color.ParseHex("7bccc4"),
+                        Color.ParseHex("43a2ca"), Color.ParseHex("0868ac")
                     },
                     new[]
                     {
-                        Color.FromHex("f0f9e8"), Color.FromHex("ccebc5"), Color.FromHex("a8ddb5"),
-                        Color.FromHex("7bccc4"), Color.FromHex("43a2ca"),
-                        Color.FromHex("0868ac"),
+                        Color.ParseHex("f0f9e8"), Color.ParseHex("ccebc5"), Color.ParseHex("a8ddb5"),
+                        Color.ParseHex("7bccc4"), Color.ParseHex("43a2ca"),
+                        Color.ParseHex("0868ac"),
                     },
                     new[]
                     {
-                        Color.FromHex("f0f9e8"), Color.FromHex("ccebc5"), Color.FromHex("a8ddb5"),
-                        Color.FromHex("7bccc4"), Color.FromHex("4eb3d3"),
-                        Color.FromHex("2b8cbe"), Color.FromHex("08589e"),
+                        Color.ParseHex("f0f9e8"), Color.ParseHex("ccebc5"), Color.ParseHex("a8ddb5"),
+                        Color.ParseHex("7bccc4"), Color.ParseHex("4eb3d3"),
+                        Color.ParseHex("2b8cbe"), Color.ParseHex("08589e"),
                     },
                     new[]
                     {
-                        Color.FromHex("f7fcf0"), Color.FromHex("e0f3db"), Color.FromHex("ccebc5"),
-                        Color.FromHex("a8ddb5"), Color.FromHex("7bccc4"),
-                        Color.FromHex("4eb3d3"), Color.FromHex("2b8cbe"), Color.FromHex("08589e"),
+                        Color.ParseHex("f7fcf0"), Color.ParseHex("e0f3db"), Color.ParseHex("ccebc5"),
+                        Color.ParseHex("a8ddb5"), Color.ParseHex("7bccc4"),
+                        Color.ParseHex("4eb3d3"), Color.ParseHex("2b8cbe"), Color.ParseHex("08589e"),
                     },
                     new[]
                     {
-                        Color.FromHex("f7fcf0"), Color.FromHex("e0f3db"), Color.FromHex("ccebc5"),
-                        Color.FromHex("a8ddb5"), Color.FromHex("7bccc4"),
-                        Color.FromHex("4eb3d3"), Color.FromHex("2b8cbe"), Color.FromHex("0868ac"),
-                        Color.FromHex("084081"),
+                        Color.ParseHex("f7fcf0"), Color.ParseHex("e0f3db"), Color.ParseHex("ccebc5"),
+                        Color.ParseHex("a8ddb5"), Color.ParseHex("7bccc4"),
+                        Color.ParseHex("4eb3d3"), Color.ParseHex("2b8cbe"), Color.ParseHex("0868ac"),
+                        Color.ParseHex("084081"),
                     },
                 },
             };
@@ -154,41 +154,41 @@ namespace Acoustics.Shared.ColorScales
                 Type1 = Type.SequentialMultipleHues,
                 Colors = new List<Color[]>
                 {
-                    new[] { Color.FromHex("e5f5f9"), Color.FromHex("99d8c9"), Color.FromHex("2ca25f") },
+                    new[] { Color.ParseHex("e5f5f9"), Color.ParseHex("99d8c9"), Color.ParseHex("2ca25f") },
                     new[]
                     {
-                        Color.FromHex("edf8fb"), Color.FromHex("b2e2e2"), Color.FromHex("66c2a4"),
-                        Color.FromHex("238b45")
+                        Color.ParseHex("edf8fb"), Color.ParseHex("b2e2e2"), Color.ParseHex("66c2a4"),
+                        Color.ParseHex("238b45")
                     },
                     new[]
                     {
-                        Color.FromHex("edf8fb"), Color.FromHex("b2e2e2"), Color.FromHex("66c2a4"),
-                        Color.FromHex("2ca25f"), Color.FromHex("006d2c")
+                        Color.ParseHex("edf8fb"), Color.ParseHex("b2e2e2"), Color.ParseHex("66c2a4"),
+                        Color.ParseHex("2ca25f"), Color.ParseHex("006d2c")
                     },
                     new[]
                     {
-                        Color.FromHex("edf8fb"), Color.FromHex("ccece6"), Color.FromHex("99d8c9"),
-                        Color.FromHex("66c2a4"), Color.FromHex("2ca25f"),
-                        Color.FromHex("006d2c"),
+                        Color.ParseHex("edf8fb"), Color.ParseHex("ccece6"), Color.ParseHex("99d8c9"),
+                        Color.ParseHex("66c2a4"), Color.ParseHex("2ca25f"),
+                        Color.ParseHex("006d2c"),
                     },
                     new[]
                     {
-                        Color.FromHex("edf8fb"), Color.FromHex("ccece6"), Color.FromHex("99d8c9"),
-                        Color.FromHex("66c2a4"), Color.FromHex("41ae76"),
-                        Color.FromHex("238b45"), Color.FromHex("005824"),
+                        Color.ParseHex("edf8fb"), Color.ParseHex("ccece6"), Color.ParseHex("99d8c9"),
+                        Color.ParseHex("66c2a4"), Color.ParseHex("41ae76"),
+                        Color.ParseHex("238b45"), Color.ParseHex("005824"),
                     },
                     new[]
                     {
-                        Color.FromHex("f7fcfd"), Color.FromHex("e5f5f9"), Color.FromHex("ccece6"),
-                        Color.FromHex("99d8c9"), Color.FromHex("66c2a4"),
-                        Color.FromHex("41ae76"), Color.FromHex("238b45"), Color.FromHex("005824"),
+                        Color.ParseHex("f7fcfd"), Color.ParseHex("e5f5f9"), Color.ParseHex("ccece6"),
+                        Color.ParseHex("99d8c9"), Color.ParseHex("66c2a4"),
+                        Color.ParseHex("41ae76"), Color.ParseHex("238b45"), Color.ParseHex("005824"),
                     },
                     new[]
                     {
-                        Color.FromHex("f7fcfd"), Color.FromHex("e5f5f9"), Color.FromHex("ccece6"),
-                        Color.FromHex("99d8c9"), Color.FromHex("66c2a4"),
-                        Color.FromHex("41ae76"), Color.FromHex("238b45"), Color.FromHex("006d2c"),
-                        Color.FromHex("00441b"),
+                        Color.ParseHex("f7fcfd"), Color.ParseHex("e5f5f9"), Color.ParseHex("ccece6"),
+                        Color.ParseHex("99d8c9"), Color.ParseHex("66c2a4"),
+                        Color.ParseHex("41ae76"), Color.ParseHex("238b45"), Color.ParseHex("006d2c"),
+                        Color.ParseHex("00441b"),
                     },
                 },
             };
@@ -199,41 +199,41 @@ namespace Acoustics.Shared.ColorScales
                 Type1 = Type.SequentialMultipleHues,
                 Colors = new List<Color[]>
                 {
-                    new[] { Color.FromHex("ece2f0"), Color.FromHex("a6bddb"), Color.FromHex("1c9099") },
+                    new[] { Color.ParseHex("ece2f0"), Color.ParseHex("a6bddb"), Color.ParseHex("1c9099") },
                     new[]
                     {
-                        Color.FromHex("f6eff7"), Color.FromHex("bdc9e1"), Color.FromHex("67a9cf"),
-                        Color.FromHex("02818a")
+                        Color.ParseHex("f6eff7"), Color.ParseHex("bdc9e1"), Color.ParseHex("67a9cf"),
+                        Color.ParseHex("02818a")
                     },
                     new[]
                     {
-                        Color.FromHex("f6eff7"), Color.FromHex("bdc9e1"), Color.FromHex("67a9cf"),
-                        Color.FromHex("1c9099"), Color.FromHex("016c59")
+                        Color.ParseHex("f6eff7"), Color.ParseHex("bdc9e1"), Color.ParseHex("67a9cf"),
+                        Color.ParseHex("1c9099"), Color.ParseHex("016c59")
                     },
                     new[]
                     {
-                        Color.FromHex("f6eff7"), Color.FromHex("d0d1e6"), Color.FromHex("a6bddb"),
-                        Color.FromHex("67a9cf"), Color.FromHex("1c9099"),
-                        Color.FromHex("016c59"),
+                        Color.ParseHex("f6eff7"), Color.ParseHex("d0d1e6"), Color.ParseHex("a6bddb"),
+                        Color.ParseHex("67a9cf"), Color.ParseHex("1c9099"),
+                        Color.ParseHex("016c59"),
                     },
                     new[]
                     {
-                        Color.FromHex("f6eff7"), Color.FromHex("d0d1e6"), Color.FromHex("a6bddb"),
-                        Color.FromHex("67a9cf"), Color.FromHex("3690c0"),
-                        Color.FromHex("02818a"), Color.FromHex("016450"),
+                        Color.ParseHex("f6eff7"), Color.ParseHex("d0d1e6"), Color.ParseHex("a6bddb"),
+                        Color.ParseHex("67a9cf"), Color.ParseHex("3690c0"),
+                        Color.ParseHex("02818a"), Color.ParseHex("016450"),
                     },
                     new[]
                     {
-                        Color.FromHex("fff7fb"), Color.FromHex("ece2f0"), Color.FromHex("d0d1e6"),
-                        Color.FromHex("a6bddb"), Color.FromHex("67a9cf"),
-                        Color.FromHex("3690c0"), Color.FromHex("02818a"), Color.FromHex("016450"),
+                        Color.ParseHex("fff7fb"), Color.ParseHex("ece2f0"), Color.ParseHex("d0d1e6"),
+                        Color.ParseHex("a6bddb"), Color.ParseHex("67a9cf"),
+                        Color.ParseHex("3690c0"), Color.ParseHex("02818a"), Color.ParseHex("016450"),
                     },
                     new[]
                     {
-                        Color.FromHex("fff7fb"), Color.FromHex("ece2f0"), Color.FromHex("d0d1e6"),
-                        Color.FromHex("a6bddb"), Color.FromHex("67a9cf"),
-                        Color.FromHex("3690c0"), Color.FromHex("02818a"), Color.FromHex("016c59"),
-                        Color.FromHex("014636"),
+                        Color.ParseHex("fff7fb"), Color.ParseHex("ece2f0"), Color.ParseHex("d0d1e6"),
+                        Color.ParseHex("a6bddb"), Color.ParseHex("67a9cf"),
+                        Color.ParseHex("3690c0"), Color.ParseHex("02818a"), Color.ParseHex("016c59"),
+                        Color.ParseHex("014636"),
                     },
                 },
             };
@@ -244,41 +244,41 @@ namespace Acoustics.Shared.ColorScales
                 Type1 = Type.SequentialMultipleHues,
                 Colors = new List<Color[]>
                 {
-                    new[] { Color.FromHex("ece7f2"), Color.FromHex("a6bddb"), Color.FromHex("2b8cbe") },
+                    new[] { Color.ParseHex("ece7f2"), Color.ParseHex("a6bddb"), Color.ParseHex("2b8cbe") },
                     new[]
                     {
-                        Color.FromHex("f1eef6"), Color.FromHex("bdc9e1"), Color.FromHex("74a9cf"),
-                        Color.FromHex("0570b0")
+                        Color.ParseHex("f1eef6"), Color.ParseHex("bdc9e1"), Color.ParseHex("74a9cf"),
+                        Color.ParseHex("0570b0")
                     },
                     new[]
                     {
-                        Color.FromHex("f1eef6"), Color.FromHex("bdc9e1"), Color.FromHex("74a9cf"),
-                        Color.FromHex("2b8cbe"), Color.FromHex("045a8d")
+                        Color.ParseHex("f1eef6"), Color.ParseHex("bdc9e1"), Color.ParseHex("74a9cf"),
+                        Color.ParseHex("2b8cbe"), Color.ParseHex("045a8d")
                     },
                     new[]
                     {
-                        Color.FromHex("f1eef6"), Color.FromHex("d0d1e6"), Color.FromHex("a6bddb"),
-                        Color.FromHex("74a9cf"), Color.FromHex("2b8cbe"),
-                        Color.FromHex("045a8d"),
+                        Color.ParseHex("f1eef6"), Color.ParseHex("d0d1e6"), Color.ParseHex("a6bddb"),
+                        Color.ParseHex("74a9cf"), Color.ParseHex("2b8cbe"),
+                        Color.ParseHex("045a8d"),
                     },
                     new[]
                     {
-                        Color.FromHex("f1eef6"), Color.FromHex("d0d1e6"), Color.FromHex("a6bddb"),
-                        Color.FromHex("74a9cf"), Color.FromHex("3690c0"),
-                        Color.FromHex("0570b0"), Color.FromHex("034e7b"),
+                        Color.ParseHex("f1eef6"), Color.ParseHex("d0d1e6"), Color.ParseHex("a6bddb"),
+                        Color.ParseHex("74a9cf"), Color.ParseHex("3690c0"),
+                        Color.ParseHex("0570b0"), Color.ParseHex("034e7b"),
                     },
                     new[]
                     {
-                        Color.FromHex("fff7fb"), Color.FromHex("ece7f2"), Color.FromHex("d0d1e6"),
-                        Color.FromHex("a6bddb"), Color.FromHex("74a9cf"),
-                        Color.FromHex("3690c0"), Color.FromHex("0570b0"), Color.FromHex("034e7b"),
+                        Color.ParseHex("fff7fb"), Color.ParseHex("ece7f2"), Color.ParseHex("d0d1e6"),
+                        Color.ParseHex("a6bddb"), Color.ParseHex("74a9cf"),
+                        Color.ParseHex("3690c0"), Color.ParseHex("0570b0"), Color.ParseHex("034e7b"),
                     },
                     new[]
                     {
-                        Color.FromHex("fff7fb"), Color.FromHex("ece7f2"), Color.FromHex("d0d1e6"),
-                        Color.FromHex("a6bddb"), Color.FromHex("74a9cf"),
-                        Color.FromHex("3690c0"), Color.FromHex("0570b0"), Color.FromHex("045a8d"),
-                        Color.FromHex("023858"),
+                        Color.ParseHex("fff7fb"), Color.ParseHex("ece7f2"), Color.ParseHex("d0d1e6"),
+                        Color.ParseHex("a6bddb"), Color.ParseHex("74a9cf"),
+                        Color.ParseHex("3690c0"), Color.ParseHex("0570b0"), Color.ParseHex("045a8d"),
+                        Color.ParseHex("023858"),
                     },
                 },
             };
@@ -289,41 +289,41 @@ namespace Acoustics.Shared.ColorScales
                 Type1 = Type.SequentialMultipleHues,
                 Colors = new List<Color[]>
                 {
-                    new[] { Color.FromHex("e0ecf4"), Color.FromHex("9ebcda"), Color.FromHex("8856a7") },
+                    new[] { Color.ParseHex("e0ecf4"), Color.ParseHex("9ebcda"), Color.ParseHex("8856a7") },
                     new[]
                     {
-                        Color.FromHex("edf8fb"), Color.FromHex("b3cde3"), Color.FromHex("8c96c6"),
-                        Color.FromHex("88419d")
+                        Color.ParseHex("edf8fb"), Color.ParseHex("b3cde3"), Color.ParseHex("8c96c6"),
+                        Color.ParseHex("88419d")
                     },
                     new[]
                     {
-                        Color.FromHex("edf8fb"), Color.FromHex("b3cde3"), Color.FromHex("8c96c6"),
-                        Color.FromHex("8856a7"), Color.FromHex("810f7c")
+                        Color.ParseHex("edf8fb"), Color.ParseHex("b3cde3"), Color.ParseHex("8c96c6"),
+                        Color.ParseHex("8856a7"), Color.ParseHex("810f7c")
                     },
                     new[]
                     {
-                        Color.FromHex("edf8fb"), Color.FromHex("bfd3e6"), Color.FromHex("9ebcda"),
-                        Color.FromHex("8c96c6"), Color.FromHex("8856a7"),
-                        Color.FromHex("810f7c"),
+                        Color.ParseHex("edf8fb"), Color.ParseHex("bfd3e6"), Color.ParseHex("9ebcda"),
+                        Color.ParseHex("8c96c6"), Color.ParseHex("8856a7"),
+                        Color.ParseHex("810f7c"),
                     },
                     new[]
                     {
-                        Color.FromHex("edf8fb"), Color.FromHex("bfd3e6"), Color.FromHex("9ebcda"),
-                        Color.FromHex("8c96c6"), Color.FromHex("8c6bb1"),
-                        Color.FromHex("88419d"), Color.FromHex("6e016b"),
+                        Color.ParseHex("edf8fb"), Color.ParseHex("bfd3e6"), Color.ParseHex("9ebcda"),
+                        Color.ParseHex("8c96c6"), Color.ParseHex("8c6bb1"),
+                        Color.ParseHex("88419d"), Color.ParseHex("6e016b"),
                     },
                     new[]
                     {
-                        Color.FromHex("f7fcfd"), Color.FromHex("e0ecf4"), Color.FromHex("bfd3e6"),
-                        Color.FromHex("9ebcda"), Color.FromHex("8c96c6"),
-                        Color.FromHex("8c6bb1"), Color.FromHex("88419d"), Color.FromHex("6e016b"),
+                        Color.ParseHex("f7fcfd"), Color.ParseHex("e0ecf4"), Color.ParseHex("bfd3e6"),
+                        Color.ParseHex("9ebcda"), Color.ParseHex("8c96c6"),
+                        Color.ParseHex("8c6bb1"), Color.ParseHex("88419d"), Color.ParseHex("6e016b"),
                     },
                     new[]
                     {
-                        Color.FromHex("f7fcfd"), Color.FromHex("e0ecf4"), Color.FromHex("bfd3e6"),
-                        Color.FromHex("9ebcda"), Color.FromHex("8c96c6"),
-                        Color.FromHex("8c6bb1"), Color.FromHex("88419d"), Color.FromHex("810f7c"),
-                        Color.FromHex("4d004b"),
+                        Color.ParseHex("f7fcfd"), Color.ParseHex("e0ecf4"), Color.ParseHex("bfd3e6"),
+                        Color.ParseHex("9ebcda"), Color.ParseHex("8c96c6"),
+                        Color.ParseHex("8c6bb1"), Color.ParseHex("88419d"), Color.ParseHex("810f7c"),
+                        Color.ParseHex("4d004b"),
                     },
                 },
             };
@@ -334,41 +334,41 @@ namespace Acoustics.Shared.ColorScales
                 Type1 = Type.SequentialMultipleHues,
                 Colors = new List<Color[]>
                 {
-                    new[] { Color.FromHex("fde0dd"), Color.FromHex("fa9fb5"), Color.FromHex("c51b8a") },
+                    new[] { Color.ParseHex("fde0dd"), Color.ParseHex("fa9fb5"), Color.ParseHex("c51b8a") },
                     new[]
                     {
-                        Color.FromHex("feebe2"), Color.FromHex("fbb4b9"), Color.FromHex("f768a1"),
-                        Color.FromHex("ae017e")
+                        Color.ParseHex("feebe2"), Color.ParseHex("fbb4b9"), Color.ParseHex("f768a1"),
+                        Color.ParseHex("ae017e")
                     },
                     new[]
                     {
-                        Color.FromHex("feebe2"), Color.FromHex("fbb4b9"), Color.FromHex("f768a1"),
-                        Color.FromHex("c51b8a"), Color.FromHex("7a0177")
+                        Color.ParseHex("feebe2"), Color.ParseHex("fbb4b9"), Color.ParseHex("f768a1"),
+                        Color.ParseHex("c51b8a"), Color.ParseHex("7a0177")
                     },
                     new[]
                     {
-                        Color.FromHex("feebe2"), Color.FromHex("fcc5c0"), Color.FromHex("fa9fb5"),
-                        Color.FromHex("f768a1"), Color.FromHex("c51b8a"),
-                        Color.FromHex("7a0177"),
+                        Color.ParseHex("feebe2"), Color.ParseHex("fcc5c0"), Color.ParseHex("fa9fb5"),
+                        Color.ParseHex("f768a1"), Color.ParseHex("c51b8a"),
+                        Color.ParseHex("7a0177"),
                     },
                     new[]
                     {
-                        Color.FromHex("feebe2"), Color.FromHex("fcc5c0"), Color.FromHex("fa9fb5"),
-                        Color.FromHex("f768a1"), Color.FromHex("dd3497"),
-                        Color.FromHex("ae017e"), Color.FromHex("7a0177"),
+                        Color.ParseHex("feebe2"), Color.ParseHex("fcc5c0"), Color.ParseHex("fa9fb5"),
+                        Color.ParseHex("f768a1"), Color.ParseHex("dd3497"),
+                        Color.ParseHex("ae017e"), Color.ParseHex("7a0177"),
                     },
                     new[]
                     {
-                        Color.FromHex("fff7f3"), Color.FromHex("fde0dd"), Color.FromHex("fcc5c0"),
-                        Color.FromHex("fa9fb5"), Color.FromHex("f768a1"),
-                        Color.FromHex("dd3497"), Color.FromHex("ae017e"), Color.FromHex("7a0177"),
+                        Color.ParseHex("fff7f3"), Color.ParseHex("fde0dd"), Color.ParseHex("fcc5c0"),
+                        Color.ParseHex("fa9fb5"), Color.ParseHex("f768a1"),
+                        Color.ParseHex("dd3497"), Color.ParseHex("ae017e"), Color.ParseHex("7a0177"),
                     },
                     new[]
                     {
-                        Color.FromHex("fff7f3"), Color.FromHex("fde0dd"), Color.FromHex("fcc5c0"),
-                        Color.FromHex("fa9fb5"), Color.FromHex("f768a1"),
-                        Color.FromHex("dd3497"), Color.FromHex("ae017e"), Color.FromHex("7a0177"),
-                        Color.FromHex("49006a"),
+                        Color.ParseHex("fff7f3"), Color.ParseHex("fde0dd"), Color.ParseHex("fcc5c0"),
+                        Color.ParseHex("fa9fb5"), Color.ParseHex("f768a1"),
+                        Color.ParseHex("dd3497"), Color.ParseHex("ae017e"), Color.ParseHex("7a0177"),
+                        Color.ParseHex("49006a"),
                     },
                 },
             };
@@ -379,41 +379,41 @@ namespace Acoustics.Shared.ColorScales
                 Type1 = Type.SequentialMultipleHues,
                 Colors = new List<Color[]>
                 {
-                    new[] { Color.FromHex("e7e1ef"), Color.FromHex("c994c7"), Color.FromHex("dd1c77") },
+                    new[] { Color.ParseHex("e7e1ef"), Color.ParseHex("c994c7"), Color.ParseHex("dd1c77") },
                     new[]
                     {
-                        Color.FromHex("f1eef6"), Color.FromHex("d7b5d8"), Color.FromHex("df65b0"),
-                        Color.FromHex("ce1256")
+                        Color.ParseHex("f1eef6"), Color.ParseHex("d7b5d8"), Color.ParseHex("df65b0"),
+                        Color.ParseHex("ce1256")
                     },
                     new[]
                     {
-                        Color.FromHex("f1eef6"), Color.FromHex("d7b5d8"), Color.FromHex("df65b0"),
-                        Color.FromHex("dd1c77"), Color.FromHex("980043")
+                        Color.ParseHex("f1eef6"), Color.ParseHex("d7b5d8"), Color.ParseHex("df65b0"),
+                        Color.ParseHex("dd1c77"), Color.ParseHex("980043")
                     },
                     new[]
                     {
-                        Color.FromHex("f1eef6"), Color.FromHex("d4b9da"), Color.FromHex("c994c7"),
-                        Color.FromHex("df65b0"), Color.FromHex("dd1c77"),
-                        Color.FromHex("980043"),
+                        Color.ParseHex("f1eef6"), Color.ParseHex("d4b9da"), Color.ParseHex("c994c7"),
+                        Color.ParseHex("df65b0"), Color.ParseHex("dd1c77"),
+                        Color.ParseHex("980043"),
                     },
                     new[]
                     {
-                        Color.FromHex("f1eef6"), Color.FromHex("d4b9da"), Color.FromHex("c994c7"),
-                        Color.FromHex("df65b0"), Color.FromHex("e7298a"),
-                        Color.FromHex("ce1256"), Color.FromHex("91003f"),
+                        Color.ParseHex("f1eef6"), Color.ParseHex("d4b9da"), Color.ParseHex("c994c7"),
+                        Color.ParseHex("df65b0"), Color.ParseHex("e7298a"),
+                        Color.ParseHex("ce1256"), Color.ParseHex("91003f"),
                     },
                     new[]
                     {
-                        Color.FromHex("f7f4f9"), Color.FromHex("e7e1ef"), Color.FromHex("d4b9da"),
-                        Color.FromHex("c994c7"), Color.FromHex("df65b0"),
-                        Color.FromHex("e7298a"), Color.FromHex("ce1256"), Color.FromHex("91003f"),
+                        Color.ParseHex("f7f4f9"), Color.ParseHex("e7e1ef"), Color.ParseHex("d4b9da"),
+                        Color.ParseHex("c994c7"), Color.ParseHex("df65b0"),
+                        Color.ParseHex("e7298a"), Color.ParseHex("ce1256"), Color.ParseHex("91003f"),
                     },
                     new[]
                     {
-                        Color.FromHex("f7f4f9"), Color.FromHex("e7e1ef"), Color.FromHex("d4b9da"),
-                        Color.FromHex("c994c7"), Color.FromHex("df65b0"),
-                        Color.FromHex("e7298a"), Color.FromHex("ce1256"), Color.FromHex("980043"),
-                        Color.FromHex("67001f"),
+                        Color.ParseHex("f7f4f9"), Color.ParseHex("e7e1ef"), Color.ParseHex("d4b9da"),
+                        Color.ParseHex("c994c7"), Color.ParseHex("df65b0"),
+                        Color.ParseHex("e7298a"), Color.ParseHex("ce1256"), Color.ParseHex("980043"),
+                        Color.ParseHex("67001f"),
                     },
                 },
             };
@@ -424,41 +424,41 @@ namespace Acoustics.Shared.ColorScales
                 Type1 = Type.SequentialMultipleHues,
                 Colors = new List<Color[]>
                 {
-                    new[] { Color.FromHex("fee8c8"), Color.FromHex("fdbb84"), Color.FromHex("e34a33") },
+                    new[] { Color.ParseHex("fee8c8"), Color.ParseHex("fdbb84"), Color.ParseHex("e34a33") },
                     new[]
                     {
-                        Color.FromHex("fef0d9"), Color.FromHex("fdcc8a"), Color.FromHex("fc8d59"),
-                        Color.FromHex("d7301f")
+                        Color.ParseHex("fef0d9"), Color.ParseHex("fdcc8a"), Color.ParseHex("fc8d59"),
+                        Color.ParseHex("d7301f")
                     },
                     new[]
                     {
-                        Color.FromHex("fef0d9"), Color.FromHex("fdcc8a"), Color.FromHex("fc8d59"),
-                        Color.FromHex("e34a33"), Color.FromHex("b30000")
+                        Color.ParseHex("fef0d9"), Color.ParseHex("fdcc8a"), Color.ParseHex("fc8d59"),
+                        Color.ParseHex("e34a33"), Color.ParseHex("b30000")
                     },
                     new[]
                     {
-                        Color.FromHex("fef0d9"), Color.FromHex("fdd49e"), Color.FromHex("fdbb84"),
-                        Color.FromHex("fc8d59"), Color.FromHex("e34a33"),
-                        Color.FromHex("b30000"),
+                        Color.ParseHex("fef0d9"), Color.ParseHex("fdd49e"), Color.ParseHex("fdbb84"),
+                        Color.ParseHex("fc8d59"), Color.ParseHex("e34a33"),
+                        Color.ParseHex("b30000"),
                     },
                     new[]
                     {
-                        Color.FromHex("fef0d9"), Color.FromHex("fdd49e"), Color.FromHex("fdbb84"),
-                        Color.FromHex("fc8d59"), Color.FromHex("ef6548"),
-                        Color.FromHex("d7301f"), Color.FromHex("990000"),
+                        Color.ParseHex("fef0d9"), Color.ParseHex("fdd49e"), Color.ParseHex("fdbb84"),
+                        Color.ParseHex("fc8d59"), Color.ParseHex("ef6548"),
+                        Color.ParseHex("d7301f"), Color.ParseHex("990000"),
                     },
                     new[]
                     {
-                        Color.FromHex("fff7ec"), Color.FromHex("fee8c8"), Color.FromHex("fdd49e"),
-                        Color.FromHex("fdbb84"), Color.FromHex("fc8d59"),
-                        Color.FromHex("ef6548"), Color.FromHex("d7301f"), Color.FromHex("990000"),
+                        Color.ParseHex("fff7ec"), Color.ParseHex("fee8c8"), Color.ParseHex("fdd49e"),
+                        Color.ParseHex("fdbb84"), Color.ParseHex("fc8d59"),
+                        Color.ParseHex("ef6548"), Color.ParseHex("d7301f"), Color.ParseHex("990000"),
                     },
                     new[]
                     {
-                        Color.FromHex("fff7ec"), Color.FromHex("fee8c8"), Color.FromHex("fdd49e"),
-                        Color.FromHex("fdbb84"), Color.FromHex("fc8d59"),
-                        Color.FromHex("ef6548"), Color.FromHex("d7301f"), Color.FromHex("b30000"),
-                        Color.FromHex("7f0000"),
+                        Color.ParseHex("fff7ec"), Color.ParseHex("fee8c8"), Color.ParseHex("fdd49e"),
+                        Color.ParseHex("fdbb84"), Color.ParseHex("fc8d59"),
+                        Color.ParseHex("ef6548"), Color.ParseHex("d7301f"), Color.ParseHex("b30000"),
+                        Color.ParseHex("7f0000"),
                     },
                 },
             };
@@ -469,41 +469,41 @@ namespace Acoustics.Shared.ColorScales
                 Type1 = Type.SequentialMultipleHues,
                 Colors = new List<Color[]>
                 {
-                    new[] { Color.FromHex("ffeda0"), Color.FromHex("feb24c"), Color.FromHex("f03b20") },
+                    new[] { Color.ParseHex("ffeda0"), Color.ParseHex("feb24c"), Color.ParseHex("f03b20") },
                     new[]
                     {
-                        Color.FromHex("ffffb2"), Color.FromHex("fecc5c"), Color.FromHex("fd8d3c"),
-                        Color.FromHex("e31a1c")
+                        Color.ParseHex("ffffb2"), Color.ParseHex("fecc5c"), Color.ParseHex("fd8d3c"),
+                        Color.ParseHex("e31a1c")
                     },
                     new[]
                     {
-                        Color.FromHex("ffffb2"), Color.FromHex("fecc5c"), Color.FromHex("fd8d3c"),
-                        Color.FromHex("f03b20"), Color.FromHex("bd0026")
+                        Color.ParseHex("ffffb2"), Color.ParseHex("fecc5c"), Color.ParseHex("fd8d3c"),
+                        Color.ParseHex("f03b20"), Color.ParseHex("bd0026")
                     },
                     new[]
                     {
-                        Color.FromHex("ffffb2"), Color.FromHex("fed976"), Color.FromHex("feb24c"),
-                        Color.FromHex("fd8d3c"), Color.FromHex("f03b20"),
-                        Color.FromHex("bd0026"),
+                        Color.ParseHex("ffffb2"), Color.ParseHex("fed976"), Color.ParseHex("feb24c"),
+                        Color.ParseHex("fd8d3c"), Color.ParseHex("f03b20"),
+                        Color.ParseHex("bd0026"),
                     },
                     new[]
                     {
-                        Color.FromHex("ffffb2"), Color.FromHex("fed976"), Color.FromHex("feb24c"),
-                        Color.FromHex("fd8d3c"), Color.FromHex("fc4e2a"),
-                        Color.FromHex("e31a1c"), Color.FromHex("b10026"),
+                        Color.ParseHex("ffffb2"), Color.ParseHex("fed976"), Color.ParseHex("feb24c"),
+                        Color.ParseHex("fd8d3c"), Color.ParseHex("fc4e2a"),
+                        Color.ParseHex("e31a1c"), Color.ParseHex("b10026"),
                     },
                     new[]
                     {
-                        Color.FromHex("ffffcc"), Color.FromHex("ffeda0"), Color.FromHex("fed976"),
-                        Color.FromHex("feb24c"), Color.FromHex("fd8d3c"),
-                        Color.FromHex("fc4e2a"), Color.FromHex("e31a1c"), Color.FromHex("b10026"),
+                        Color.ParseHex("ffffcc"), Color.ParseHex("ffeda0"), Color.ParseHex("fed976"),
+                        Color.ParseHex("feb24c"), Color.ParseHex("fd8d3c"),
+                        Color.ParseHex("fc4e2a"), Color.ParseHex("e31a1c"), Color.ParseHex("b10026"),
                     },
                     new[]
                     {
-                        Color.FromHex("ffffcc"), Color.FromHex("ffeda0"), Color.FromHex("fed976"),
-                        Color.FromHex("feb24c"), Color.FromHex("fd8d3c"),
-                        Color.FromHex("fc4e2a"), Color.FromHex("e31a1c"), Color.FromHex("bd0026"),
-                        Color.FromHex("800026"),
+                        Color.ParseHex("ffffcc"), Color.ParseHex("ffeda0"), Color.ParseHex("fed976"),
+                        Color.ParseHex("feb24c"), Color.ParseHex("fd8d3c"),
+                        Color.ParseHex("fc4e2a"), Color.ParseHex("e31a1c"), Color.ParseHex("bd0026"),
+                        Color.ParseHex("800026"),
                     },
                 },
             };
@@ -514,41 +514,41 @@ namespace Acoustics.Shared.ColorScales
                 Type1 = Type.SequentialMultipleHues,
                 Colors = new List<Color[]>
                 {
-                    new[] { Color.FromHex("fff7bc"), Color.FromHex("fec44f"), Color.FromHex("d95f0e") },
+                    new[] { Color.ParseHex("fff7bc"), Color.ParseHex("fec44f"), Color.ParseHex("d95f0e") },
                     new[]
                     {
-                        Color.FromHex("ffffd4"), Color.FromHex("fed98e"), Color.FromHex("fe9929"),
-                        Color.FromHex("cc4c02")
+                        Color.ParseHex("ffffd4"), Color.ParseHex("fed98e"), Color.ParseHex("fe9929"),
+                        Color.ParseHex("cc4c02")
                     },
                     new[]
                     {
-                        Color.FromHex("ffffd4"), Color.FromHex("fed98e"), Color.FromHex("fe9929"),
-                        Color.FromHex("d95f0e"), Color.FromHex("993404")
+                        Color.ParseHex("ffffd4"), Color.ParseHex("fed98e"), Color.ParseHex("fe9929"),
+                        Color.ParseHex("d95f0e"), Color.ParseHex("993404")
                     },
                     new[]
                     {
-                        Color.FromHex("ffffd4"), Color.FromHex("fee391"), Color.FromHex("fec44f"),
-                        Color.FromHex("fe9929"), Color.FromHex("d95f0e"),
-                        Color.FromHex("993404"),
+                        Color.ParseHex("ffffd4"), Color.ParseHex("fee391"), Color.ParseHex("fec44f"),
+                        Color.ParseHex("fe9929"), Color.ParseHex("d95f0e"),
+                        Color.ParseHex("993404"),
                     },
                     new[]
                     {
-                        Color.FromHex("ffffd4"), Color.FromHex("fee391"), Color.FromHex("fec44f"),
-                        Color.FromHex("fe9929"), Color.FromHex("ec7014"),
-                        Color.FromHex("cc4c02"), Color.FromHex("8c2d04"),
+                        Color.ParseHex("ffffd4"), Color.ParseHex("fee391"), Color.ParseHex("fec44f"),
+                        Color.ParseHex("fe9929"), Color.ParseHex("ec7014"),
+                        Color.ParseHex("cc4c02"), Color.ParseHex("8c2d04"),
                     },
                     new[]
                     {
-                        Color.FromHex("ffffe5"), Color.FromHex("fff7bc"), Color.FromHex("fee391"),
-                        Color.FromHex("fec44f"), Color.FromHex("fe9929"),
-                        Color.FromHex("ec7014"), Color.FromHex("cc4c02"), Color.FromHex("8c2d04"),
+                        Color.ParseHex("ffffe5"), Color.ParseHex("fff7bc"), Color.ParseHex("fee391"),
+                        Color.ParseHex("fec44f"), Color.ParseHex("fe9929"),
+                        Color.ParseHex("ec7014"), Color.ParseHex("cc4c02"), Color.ParseHex("8c2d04"),
                     },
                     new[]
                     {
-                        Color.FromHex("ffffe5"), Color.FromHex("fff7bc"), Color.FromHex("fee391"),
-                        Color.FromHex("fec44f"), Color.FromHex("fe9929"),
-                        Color.FromHex("ec7014"), Color.FromHex("cc4c02"), Color.FromHex("993404"),
-                        Color.FromHex("662506"),
+                        Color.ParseHex("ffffe5"), Color.ParseHex("fff7bc"), Color.ParseHex("fee391"),
+                        Color.ParseHex("fec44f"), Color.ParseHex("fe9929"),
+                        Color.ParseHex("ec7014"), Color.ParseHex("cc4c02"), Color.ParseHex("993404"),
+                        Color.ParseHex("662506"),
                     },
                 },
             };

@@ -5,9 +5,9 @@
 namespace Acoustics.Shared.ImageSharp
 {
     using System;
+    using System.Runtime.CompilerServices;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.Advanced;
-    using SixLabors.ImageSharp.Advanced.ParallelUtils;
     using SixLabors.ImageSharp.Memory;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing.Processors;
@@ -18,41 +18,77 @@ namespace Acoustics.Shared.ImageSharp
     {
         public DeltaImageProcessor(
             Configuration configuration,
-            Image<TPixelFg> image,
+            Image<TPixelFg> targetImage,
             Image<TPixelBg> source,
             Rectangle sourceRectangle)
             : base(configuration, source, sourceRectangle)
         {
-            this.Image = image;
+            this.TargetImage = targetImage;
             this.Blender = new DeltaPixelBlender<TPixelBg>();
         }
 
         public DeltaPixelBlender<TPixelBg> Blender { get; }
 
-        public Image<TPixelFg> Image { get; }
+        public Image<TPixelFg> TargetImage { get; }
 
         protected override void OnFrameApply(ImageFrame<TPixelBg> source)
         {
-            var targetBounds = this.Image.Bounds();
+            var targetBounds = this.TargetImage.Bounds();
             var sourceBounds = this.Source.Bounds();
             var maxWidth = Math.Min(targetBounds.Width, sourceBounds.Width);
 
-            void Apply(RowInterval rows)
+            var operation = new RowIntervalOperation(
+                source,
+                this.TargetImage,
+                this.Blender,
+                this.Configuration,
+                maxWidth);
+
+            ParallelRowIterator.IterateRows(this.Configuration, this.SourceRectangle, operation);
+        }
+
+        /// <summary>
+        /// A <see langword="struct"/> implementing the draw logic for <see cref="DeltaImageProcessor{TPixelBg,TPixelFg}"/>.
+        /// </summary>
+        private readonly struct RowIntervalOperation : IRowIntervalOperation
+        {
+            private readonly ImageFrame<TPixelBg> sourceFrame;
+            private readonly Image<TPixelFg> targetImage;
+            private readonly PixelBlender<TPixelBg> blender;
+            private readonly Configuration configuration;
+            private readonly int width;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public RowIntervalOperation(
+                ImageFrame<TPixelBg> sourceFrame,
+                Image<TPixelFg> targetImage,
+                PixelBlender<TPixelBg> blender,
+                Configuration configuration,
+                int width)
             {
-                for (int min = rows.Min; min < rows.Max; ++min)
+                this.sourceFrame = sourceFrame;
+                this.targetImage = targetImage;
+                this.blender = blender;
+                this.configuration = configuration;
+                this.width = width;
+            }
+
+            /// <inheritdoc/>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Invoke(in RowInterval rows)
+            {
+                for (int y = rows.Min; y < rows.Max; y++)
                 {
-                    Span<TPixelBg> destination = source.GetPixelRowSpan<TPixelBg>(min).Slice(0, maxWidth);
-                    Span<TPixelFg> span = this.Image.GetPixelRowSpan<TPixelFg>(min).Slice(0, maxWidth);
-                    this.Blender.Blend<TPixelFg>(
-                        this.Configuration,
-                        destination,
-                        (ReadOnlySpan<TPixelBg>)destination,
-                        (ReadOnlySpan<TPixelFg>)span,
+                    Span<TPixelBg> background = this.sourceFrame.GetPixelRowSpan(y).Slice(0, this.width);
+                    Span<TPixelFg> foreground = this.targetImage.GetPixelRowSpan(y).Slice(0, this.width);
+                    this.blender.Blend(
+                        this.configuration,
+                        background,
+                        background,
+                        (ReadOnlySpan<TPixelFg>)foreground,
                         1f);
                 }
             }
-
-            ParallelHelper.IterateRows(this.SourceRectangle, this.Configuration, Apply);
         }
     }
 }

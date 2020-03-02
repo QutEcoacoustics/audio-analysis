@@ -387,7 +387,7 @@ namespace AudioAnalysisTools
         /// Fields requireed to be set include: `FramesPerSecond`, `FreqBinWidth`.
         /// </summary>
         public void DrawEvent<T>(Image<T> sonogram)
-            where T : struct, IPixel<T>
+            where T : unmanaged, IPixel<T>
         {
             this.DrawEvent(sonogram, this.FramesPerSecond, this.FreqBinWidth, sonogram.Height);
         }
@@ -397,7 +397,7 @@ namespace AudioAnalysisTools
         /// Drawing the event requires a time scale and a frequency scale. Hence the additional arguments.
         /// </summary>
         public void DrawEvent<T>(Image<T> imageToReturn, double framesPerSecond, double freqBinWidth, int sonogramHeight)
-            where T : struct, IPixel<T>
+            where T : unmanaged, IPixel<T>
         {
             Contract.Requires(this.BorderColour != null);
             Contract.Requires(this.HitElements == null || (this.HitElements != null && this.HitColour != null));
