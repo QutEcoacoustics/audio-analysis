@@ -12,7 +12,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Acoustics.Shared\Acoustics.Shared.csproj" />
-    <ProjectReference Include="..\Acoustics.Unsafe\Acoustics.Unsafe.csproj" />
     <ProjectReference Include="..\AcousticWorkbench\AcousticWorkbench.csproj" />
   </ItemGroup>
   <ItemGroup>
