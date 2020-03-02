@@ -1,3 +1,7 @@
+// <copyright file="SpectrogramGenerator.Core.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
 namespace AnalysisPrograms.SpectrogramGenerator
 {
     using System;
@@ -19,7 +23,6 @@ namespace AnalysisPrograms.SpectrogramGenerator
 
     public partial class SpectrogramGenerator
     {
-
         internal static readonly IDictionary<SpectrogramImageType, Color> ImageTags;
 
         static SpectrogramGenerator()
@@ -31,15 +34,15 @@ namespace AnalysisPrograms.SpectrogramGenerator
         }
 
         /// <summary>
-        /// Calculates the following spectrograms as per content of config.yml file:
-        /// Waveform: true.
-        /// DifferenceSpectrogram: true.
-        /// DecibelSpectrogram: true.
-        /// DecibelSpectrogram_NoiseReduced: true.
-        /// DecibelSpectrogram_Ridges: true.
-        /// AmplitudeSpectrogram_LocalContrastNormalization: true.
-        /// SoxSpectrogram: false.
-        /// Experimental: true.
+        /// Calculates the following spectrograms as per settings in the Images array in the config file: Towsey.SpectrogramGenerator.yml:
+        /// Waveform.
+        /// DecibelSpectrogram.
+        /// DecibelSpectrogramNoiseReduced.
+        /// CepstralSpectrogram.
+        /// DifferenceSpectrogram.
+        /// AmplitudeSpectrogramLocalContrastNormalization.
+        /// Experimental.
+        /// Comment the config.yml file with a hash, those spectrograms that are not required.
         /// </summary>
         /// <param name="sourceRecording">The name of the original recording.</param>
         /// <param name="config">Contains parameter info to make spectrograms.</param>
@@ -305,8 +308,10 @@ namespace AnalysisPrograms.SpectrogramGenerator
         /// <param name="nrSpectrogram">The noise-reduced spectrogram.</param>
         /// <param name="sourceRecordingName">Name of the source file. Required only to add label to spectrogram.</param>
         /// <returns>Image of spectrogram.</returns>
-        public static Image<Rgb24> GetDecibelSpectrogram_Ridges(double[,] dbSpectrogramData,
-            SpectrogramStandard nrSpectrogram, string sourceRecordingName)
+        public static Image<Rgb24> GetDecibelSpectrogram_Ridges(
+            double[,] dbSpectrogramData,
+            SpectrogramStandard nrSpectrogram,
+            string sourceRecordingName)
         {
             // ########################### SOBEL ridge detection
             var ridgeThreshold = 3.5;
@@ -323,8 +328,7 @@ namespace AnalysisPrograms.SpectrogramGenerator
 
             var frameStep = nrSpectrogram.Configuration.WindowStep;
             var sampleRate = nrSpectrogram.SampleRate;
-            var image = SpectrogramTools.CreateFalseColourDecibelSpectrogram(dbSpectrogramData, nrSpectrogram.Data,
-                hits);
+            var image = SpectrogramTools.CreateFalseColourDecibelSpectrogram(dbSpectrogramData, nrSpectrogram.Data, hits);
             image = BaseSonogram.GetImageAnnotatedWithLinearHertzScale(
                 image,
                 sampleRate,
@@ -336,7 +340,9 @@ namespace AnalysisPrograms.SpectrogramGenerator
             return image;
         }
 
-        public static Image<Rgb24> GetCepstralSpectrogram(SonogramConfig sonoConfig, AudioRecording recording,
+        public static Image<Rgb24> GetCepstralSpectrogram(
+            SonogramConfig sonoConfig,
+            AudioRecording recording,
             string sourceRecordingName)
         {
             // TODO at present noise reduction type must be set = Standard.
@@ -344,8 +350,7 @@ namespace AnalysisPrograms.SpectrogramGenerator
             sonoConfig.NoiseReductionParameter = 3.0;
             var cepgram = new SpectrogramCepstral(sonoConfig, recording.WavReader);
             var image = cepgram.GetImage();
-            var titleBar =
-                BaseSonogram.DrawTitleBarOfGrayScaleSpectrogram(
+            var titleBar = BaseSonogram.DrawTitleBarOfGrayScaleSpectrogram(
                     "CEPSTRO-GRAM " + sourceRecordingName,
                     image.Width,
                     ImageTags[CepstralSpectrogram]);
@@ -353,19 +358,21 @@ namespace AnalysisPrograms.SpectrogramGenerator
             var xAxisTicInterval = TimeSpan.FromSeconds(1);
             TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(sonoConfig.WindowStep / (double)sonoConfig.SampleRate);
             var labelInterval = TimeSpan.FromSeconds(5);
-            image = BaseSonogram.FrameSonogram(image, titleBar, startTime, xAxisTicInterval, xAxisPixelDuration,
-                labelInterval);
+            image = BaseSonogram.FrameSonogram(image, titleBar, startTime, xAxisTicInterval, xAxisPixelDuration, labelInterval);
             return image;
         }
 
-        public static Image<Rgb24> GetLcnSpectrogram(SonogramConfig sonoConfig, AudioRecording recordingSegment,
-            string sourceRecordingName, double neighbourhoodSeconds, double lcnContrastLevel)
+        public static Image<Rgb24> GetLcnSpectrogram(
+            SonogramConfig sonoConfig,
+            AudioRecording recordingSegment,
+            string sourceRecordingName,
+            double neighbourhoodSeconds,
+            double lcnContrastLevel)
         {
             BaseSonogram sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
             int neighbourhoodFrames = (int)(sonogram.FramesPerSecond * neighbourhoodSeconds);
             LoggedConsole.WriteLine("LCN: FramesPerSecond (Prior to LCN) = {0}", sonogram.FramesPerSecond);
-            LoggedConsole.WriteLine("LCN: Neighbourhood of {0} seconds = {1} frames", neighbourhoodSeconds,
-                neighbourhoodFrames);
+            LoggedConsole.WriteLine("LCN: Neighbourhood of {0} seconds = {1} frames", neighbourhoodSeconds, neighbourhoodFrames);
 
             // subtract the lowest 20% of frames. This is first step in LCN noise removal. Sets the baseline.
             const int lowPercentile = 20;

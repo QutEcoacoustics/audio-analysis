@@ -19,6 +19,7 @@ FrameLength: 512
 # Following frame step yields 50 frames/s which can make some subsequent operations a bit easier.
 FrameStep: 441
 
+# These spectrogram images will be produced as in the order below.
 Images:
   - Waveform
   - DecibelSpectrogram

@@ -6,20 +6,19 @@ namespace AudioAnalysisTools.StandardSpectrograms
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.Linq;
-
     using Acoustics.Shared;
     using Acoustics.Shared.ImageSharp;
     using Acoustics.Tools.Wav;
-
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.LongDurationSpectrograms;
     using AudioAnalysisTools.WavTools;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
     using TowseyLibrary;
 
+    /*
     /// <summary>
     /// Sonogram type.
     /// </summary>
@@ -50,6 +49,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// </summary>
         SobelEdge,
     }
+    */
 
     /// <summary>
     /// Base Sonogram.
@@ -80,24 +80,24 @@ namespace AudioAnalysisTools.StandardSpectrograms
         public int FrameCount { get; protected set; } //Temporarily set to (int)(Duration.TotalSeconds/FrameOffset) then reset later
 
         /// <summary>
-        /// Gets or sets instance of class SNR that stores info about signal energy and dB per frame
+        /// Gets or sets instance of class SNR that stores info about signal energy and dB per frame.
         /// </summary>
         public SNR SnrData { get; set; }
 
         /// <summary>
-        /// Gets or sets decibels per signal frame
+        /// Gets or sets decibels per signal frame.
         /// </summary>
         public double[] DecibelsPerFrame { get; set; }
 
         public double[] DecibelsNormalised { get; set; }
 
         /// <summary>
-        /// Noise profile in decibels
+        /// Gets or sets the Noise profile in decibels.
         /// </summary>
         public double[] ModalNoiseProfile { get; set; }
 
         /// <summary>
-        /// Gets or sets decibel reference with which to NormaliseMatrixValues the dB values for MFCCs
+        /// Gets or sets decibel reference with which to NormaliseMatrixValues the dB values for MFCCs.
         /// </summary>
         public double DecibelReference { get; protected set; }
 
@@ -107,15 +107,15 @@ namespace AudioAnalysisTools.StandardSpectrograms
         public int[] SigState { get; protected set; }
 
         /// <summary>
-        /// Gets or sets the spectrogram data matrix of doubles
+        /// Gets or sets the spectrogram data matrix of doubles.
         /// </summary>
         public double[,] Data { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseSonogram"/> class.
-        /// BASE CONSTRUCTOR: Use this when want to extract time segment of existing sonogram
+        /// BASE CONSTRUCTOR: Use this when want to extract time segment of existing sonogram.
         /// </summary>
-        /// <param name="config">config file to use</param>
+        /// <param name="config">config file to use.</param>
         public BaseSonogram(SonogramConfig config)
         {
             this.Configuration = config;
@@ -128,9 +128,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// The third boolean parameter is simply a place-filler to ensure a different Constructor signature.
         /// from the principle Constructor which follows.
         /// </summary>
-        /// <param name="config">config file to use</param>
-        /// <param name="wav">wav</param>
-        /// <param name="dummy">filler boolean. Calculate in method</param>
+        /// <param name="config">config file to use.</param>
+        /// <param name="wav">wav.</param>
+        /// <param name="dummy">filler boolean. Calculate in method.</param>
         public BaseSonogram(SonogramConfig config, WavReader wav, bool dummy)
             : this(config)
         {
@@ -238,7 +238,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
             //init normalised signal energy array but do nothing with it. This has to be done from outside
             this.DecibelsNormalised = new double[this.FrameCount];
             this.Data = amplitudeSpectrogramData;
-            //this.Make(this.Data); // Do we need this line???
         }
 
         public abstract void Make(double[,] amplitudeM);
@@ -264,9 +263,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
         }
 
         /// <summary>
-        /// This method assumes that the spectrogram has linear Herz scale
+        /// This method assumes that the spectrogram has linear Herz scale.
         /// </summary>
-        /// <param name="title">title to be added to spectrogram</param>
+        /// <param name="title">title to be added to spectrogram.</param>
         public Image<Rgb24> GetImageFullyAnnotated(string title, Color? tag = null)
         {
             var image = this.GetImage();
@@ -308,6 +307,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             var freqScale = new FrequencyScale(this.NyquistFrequency, frameSize, hertzInterval);
             var compositeImage = this.GetImageFullyAnnotated(image, title, freqScale.GridLineLocations, tag);
+
+            //following line for debug.
             //image = BaseSonogram.GetImageAnnotatedWithLinearHertzScale(image, sampleRate, frameStep, "DECIBEL SPECTROGRAM");
             return compositeImage;
         }
@@ -459,10 +460,11 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// <summary>
         /// converts the dB data in sonogram.Data to grey scale image of spectrogram.
         /// </summary>
-        /// <param name="matrix">matrix of sonogram values</param>
+        /// <param name="matrix">matrix of sonogram values.</param>
         public static Tuple<double[,], double, double> Data2ImageData(double[,] matrix)
         {
-            int width = matrix.GetLength(0);   // Number of spectra in sonogram
+            // Number of spectra in sonogram
+            int width = matrix.GetLength(0);
             int fftBins = matrix.GetLength(1);
             DataTools.MinMax(matrix, out double min, out double max);
             double range = max - min; //for normalization
@@ -760,16 +762,15 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 // var stringFont = Drawing.Tahoma9;
                 var stringFont = Drawing.Arial9;
 
-                //string text = title;
-                int X = 4;
-                g.DrawText(title, stringFont, Color.Wheat, new PointF(X, 3));
+                int xBuffer = 4;
+                g.DrawText(title, stringFont, Color.Wheat, new PointF(xBuffer, 3));
 
                 var stringSize = g.MeasureString(title, stringFont);
-                X += stringSize.ToSize().Width + 70;
+                xBuffer += stringSize.ToSize().Width + 70;
                 string text = Meta.OrganizationTag;
                 stringSize = g.MeasureString(text, stringFont);
                 int x2 = width - stringSize.ToSize().Width - 2;
-                if (x2 > X)
+                if (x2 > xBuffer)
                 {
                     g.DrawText(text, stringFont, Color.Wheat, new PointF(x2, 3));
                 }
