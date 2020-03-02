@@ -15,6 +15,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
     using System.IO;
     using Accord;
     using Acoustics.Shared;
+    using Acoustics.Shared.Contracts;
     using DSP;
     using LongDurationSpectrograms;
     using SixLabors.ImageSharp.ColorSpaces;
@@ -80,33 +81,33 @@ namespace AudioAnalysisTools.StandardSpectrograms
         */
 
         /// <summary>
-        /// THis method draws a spectrogram with other useful information attached.
+        /// This method draws a spectrogram with other useful information attached.
         /// </summary>
         /// <param name="sonogram">of BaseSonogram class.</param>
         /// <param name="events">a list of acoustic events.</param>
         /// <param name="plots">a list of plots relevant to the spectrogram scores.</param>
         /// <param name="hits">not often used - can be null.</param>
-        public static Image<Rgb24> GetSonogramPlusCharts(BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> plots, double[,] hits)
+        public static Image<Rgb24> GetSonogramPlusCharts(
+            BaseSonogram sonogram,
+            List<AcousticEvent> events,
+            List<Plot> plots,
+            double[,] hits)
         {
-            var spImage = sonogram.GetImage(doHighlightSubband: false, add1KHzLines: true, doMelScale: false);
+            var spectrogram = sonogram.GetImage(doHighlightSubband: false, add1KHzLines: true, doMelScale: false);
+            Contract.RequiresNotNull(spectrogram, nameof(spectrogram));
 
-            if (spImage == null)
-            {
-                throw new ArgumentNullException(nameof(spImage));
-            }
-
-            var spHeight = spImage.Height;
+            var height = spectrogram.Height;
             var frameSize = sonogram.Configuration.WindowSize;
 
             // init with linear frequency scale and draw freq grid lines on image
             int hertzInterval = 1000;
-            if (spHeight < 200)
+            if (height < 200)
             {
                 hertzInterval = 2000;
             }
 
             var freqScale = new FrequencyScale(sonogram.NyquistFrequency, frameSize, hertzInterval);
-            FrequencyScale.DrawFrequencyLinesOnImage(spImage, freqScale.GridLineLocations, includeLabels: true);
+            FrequencyScale.DrawFrequencyLinesOnImage(spectrogram, freqScale.GridLineLocations, includeLabels: true);
 
             // draw event outlines onto spectrogram.
             if (events != null && events.Count > 0)
@@ -116,19 +117,19 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 {
                     ev.BorderColour = AcousticEvent.DefaultBorderColor;
                     ev.ScoreColour = AcousticEvent.DefaultScoreColor;
-                    ev.DrawEvent(spImage, sonogram.FramesPerSecond, sonogram.FBinWidth, spHeight);
+                    ev.DrawEvent(spectrogram, sonogram.FramesPerSecond, sonogram.FBinWidth, height);
                 }
             }
 
             // now add in hits to the spectrogram image.
             if (hits != null)
             {
-                spImage = Image_MultiTrack.OverlayScoresAsRedTransparency(spImage, hits);
+                spectrogram = Image_MultiTrack.OverlayScoresAsRedTransparency(spectrogram, hits);
                 //OverlayRedTransparency(bmp, this.SuperimposedRedTransparency);
                 //this.SonogramImage = this.OverlayRedTransparency((Image<Rgb24>)this.SonogramImage);
             }
 
-            int pixelWidth = spImage.Width;
+            int pixelWidth = spectrogram.Width;
             var titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram("TITLE", pixelWidth);
             var timeTrack = ImageTrack.DrawTimeTrack(sonogram.Duration, pixelWidth);
 
@@ -136,7 +137,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             {
                 titleBar,
                 timeTrack,
-                spImage,
+                spectrogram,
                 timeTrack,
             };
 
@@ -154,7 +155,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             }
 
             var compositeImage = ImageTools.CombineImagesVertically(imageList);
-            //return image.GetImage().CloneAs<Rgb24>();
+
             return compositeImage;
         }
 

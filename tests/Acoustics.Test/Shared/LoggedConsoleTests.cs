@@ -9,9 +9,10 @@ namespace Acoustics.Test.Shared
     using System.Threading.Tasks;
     using log4net.Core;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
+    using Acoustics.Test.TestHelpers;
 
     [TestClass]
+    [DoNotParallelize]
     public class LoggedConsoleTests
     {
         public TestContext TestContext { get; set; }
@@ -20,9 +21,24 @@ namespace Acoustics.Test.Shared
         [DoNotParallelize]
         public void UsesCleanLayout()
         {
-            TestSetup.TestLogging.MemoryAppender.Clear();
-            LoggedConsole.WriteLine("test message");
-            Assert.AreEqual("test message", TestSetup.TestLogging.MemoryAppender.GetEvents()[0].RenderedMessage);
+            var testLogging = TestSetup.TestLogging;
+            lock (testLogging)
+            {
+                testLogging.MemoryAppender.Clear();
+                var (verbosity, quietConsole) = (testLogging.Verbosity, testLogging.QuietConsole);
+
+                try
+                {
+                    testLogging.ModifyVerbosity(Level.Info, false);
+
+                    LoggedConsole.WriteLine("test message");
+                    Assert.AreEqual("test message", testLogging.MemoryAppender.GetEvents()[0].RenderedMessage);
+                }
+                finally
+                {
+                    testLogging.ModifyVerbosity(verbosity, quietConsole);
+                }
+            }
         }
 
         [TestMethod]
@@ -36,9 +52,16 @@ namespace Acoustics.Test.Shared
         [DoNotParallelize]
         public void SuppressInteractive()
         {
-            LoggedConsole.SuppressInteractive = true;
+            try
+            {
+                LoggedConsole.SuppressInteractive = true;
 
-            Assert.IsFalse(LoggedConsole.IsInteractive);
+                Assert.IsFalse(LoggedConsole.IsInteractive);
+            }
+            finally
+            {
+                LoggedConsole.SuppressInteractive = false;
+            }
         }
 
         [TestMethod]

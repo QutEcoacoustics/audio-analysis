@@ -122,7 +122,7 @@ namespace AnalysisPrograms
                 return;
             }
 #if DEBUG
-            if (!Debugger.IsAttached && !IsMsTestRunningMe())
+            if (!Debugger.IsAttached && !IsMsTestRunningMe)
             {
                 if (options == DebugOptions.Prompt)
                 {
@@ -210,8 +210,8 @@ namespace AnalysisPrograms
             // https://github.com/QutEcoacoustics/audio-analysis/issues/241
             var executableName = Process.GetCurrentProcess().MainModule.ModuleName;
             var expectedName = Assembly.GetAssembly(typeof(MainEntry)).ManifestModule.ScopeName.Replace(".dll", ".exe");
-            Log.Verbose($"!!! IMPORTANT: Executable name is {executableName} and expected name is {expectedName}");
-            if (expectedName != executableName)
+            
+            if (expectedName != executableName && !IsMsTestRunningMe)
             {
                 Log.Warn($"!!! IMPORTANT: Executable name is {executableName} and expected name is {expectedName}");
             }
@@ -285,7 +285,7 @@ previously found that the AP install is corrupt. Try installing AP again.
                 return;
             }
 
-            if (IsMsTestRunningMe())
+            if (IsMsTestRunningMe)
             {
                 return;
             }
@@ -300,15 +300,12 @@ previously found that the AP install is corrupt. Try installing AP again.
 #endif
         }
 
-#if DEBUG
-        internal static bool IsMsTestRunningMe()
-        {
-            // https://stackoverflow.com/questions/3167617/determine-if-code-is-running-as-part-of-a-unit-test
-            string testAssemblyName = "Microsoft.VisualStudio.TestPlatform.TestFramework";
-            return AppDomain.CurrentDomain.GetAssemblies()
-                .Any(a => a.FullName.StartsWith(testAssemblyName));
-        }
-#endif
+        // https://stackoverflow.com/questions/3167617/determine-if-code-is-running-as-part-of-a-unit-test
+        internal static bool IsMsTestRunningMe { get; } =
+            AppDomain
+            .CurrentDomain
+            .GetAssemblies()
+            .Any(a => a.FullName.StartsWith("Microsoft.VisualStudio.TestPlatform.TestFramework"));
 
         internal static void PrintUsage(string message, Usages usageStyle, string commandName = null)
         {

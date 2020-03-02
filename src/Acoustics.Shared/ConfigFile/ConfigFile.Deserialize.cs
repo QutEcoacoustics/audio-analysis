@@ -5,21 +5,21 @@
 namespace Acoustics.Shared.ConfigFile
 {
     using System;
-    using System.Collections.Generic;
+    using System.Collections.Concurrent;
     using System.IO;
-    using Contracts;
+    using Acoustics.Shared.Contracts;
     using log4net;
     using Newtonsoft.Json;
     using ObjectCloner.Extensions;
 
     public static partial class ConfigFile
     {
-        private static readonly Dictionary<string, IConfig> CachedProperties;
+        private static readonly ConcurrentDictionary<string, IConfig> CachedProperties;
         private static JsonSerializerSettings configJsonSerializerSettings;
 
         static ConfigFile()
         {
-            CachedProperties = new Dictionary<string, IConfig>();
+            CachedProperties = new ConcurrentDictionary<string, IConfig>();
             configJsonSerializerSettings = new JsonSerializerSettings()
             {
                 ContractResolver = ConfigSerializeContractResolver.Instance,
@@ -139,7 +139,7 @@ namespace Acoustics.Shared.ConfigFile
                     ((IConfig)loadedConfig).InvokeLoaded();
 
                     // cache the config (with possible nested configs)
-                    CachedProperties.Add(path, loadedConfig);
+                    CachedProperties.AddOrUpdate(path, loadedConfig, (key, existing) => loadedConfig);
 
                     cachedConfig = loadedConfig;
                 }

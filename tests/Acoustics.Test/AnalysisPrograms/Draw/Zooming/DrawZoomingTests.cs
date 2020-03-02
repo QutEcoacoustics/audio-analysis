@@ -17,7 +17,7 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
     [TestClass]
     public class DrawZoomingTests : OutputDirectoryTest
     {
-        public static DirectoryInfo ResultsDirectory { get; set; }
+        private static DirectoryInfo indicesDirectory;
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext context)
@@ -35,12 +35,12 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
 
             context.WriteLine($"{DateTime.Now} generating indices fixture data");
             AnalyseLongRecording.Execute(arguments);
-            context.WriteLine($"{DateTime.Now} finished generting fixture");
+            context.WriteLine($"{DateTime.Now} finished generating fixture");
 
-            ResultsDirectory = ResultsDirectory.Combine("Towsey.Acoustic");
+            indicesDirectory = ResultsDirectory.Combine("Towsey.Acoustic");
 
             // do some basic checks that the indices were generated
-            var listOfFiles = ResultsDirectory.EnumerateFiles().ToArray();
+            var listOfFiles = indicesDirectory.EnumerateFiles().ToArray();
             Assert.AreEqual(19, listOfFiles.Length);
             var csvCount = listOfFiles.Count(f => f.Name.EndsWith(".csv"));
             Assert.AreEqual(15, csvCount);
@@ -72,7 +72,7 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
                     new DrawZoomingSpectrograms.Arguments()
                         {
                             Output = this.TestOutputDirectory.FullName,
-                            SourceDirectory = ResultsDirectory.FullName,
+                            SourceDirectory = indicesDirectory.FullName,
                             SpectrogramZoomingConfig = newConfigFile.FullName,
                             ZoomAction = DrawZoomingSpectrograms.Arguments.ZoomActionType.Tile,
                         });
@@ -92,12 +92,12 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
         public void TestGenerateTiles()
         {
             // generate the zooming spectrograms
-            var zoomOutput = this.TestOutputDirectory.Combine("Zooming");
+            var zoomOutput = this.TestOutputDirectory;
             DrawZoomingSpectrograms.Execute(
                 new DrawZoomingSpectrograms.Arguments()
                 {
                     Output = zoomOutput.FullName,
-                    SourceDirectory = ResultsDirectory.FullName,
+                    SourceDirectory = indicesDirectory.FullName,
                     SpectrogramZoomingConfig = PathHelper.ResolveConfigFile("SpectrogramZoomingConfig.yml").FullName,
                     ZoomAction = DrawZoomingSpectrograms.Arguments.ZoomActionType.Tile,
                 });
@@ -134,7 +134,7 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
                 {
                     Output = zoomOutput.FullName,
                     OutputFormat = "sqlite3",
-                    SourceDirectory = ResultsDirectory.FullName,
+                    SourceDirectory = indicesDirectory.FullName,
                     SpectrogramZoomingConfig = PathHelper.ResolveConfigFile("SpectrogramZoomingConfig.yml").FullName,
                     ZoomAction = DrawZoomingSpectrograms.Arguments.ZoomActionType.Tile,
                 });

@@ -93,6 +93,9 @@ namespace Acoustics.Shared.Logging
             this.repository.Threshold = defaultLevel;
             this.rootLogger.Level = defaultLevel;
 
+            this.Verbosity = defaultLevel;
+            this.QuietConsole = quietConsole;
+
             // log to a file
             PatternLayout standardPattern = new PatternLayout
             {
@@ -204,6 +207,10 @@ namespace Acoustics.Shared.Logging
             }
         }
 
+        public Level Verbosity { get; private set; }
+
+        public bool QuietConsole { get; private set; }
+
         public string LogFileName { get; }
 
         public string LogFilePath { get; }
@@ -239,6 +246,8 @@ namespace Acoustics.Shared.Logging
             }
 
             this.repository.RaiseConfigurationChanged(EventArgs.Empty);
+            this.Verbosity = defaultLevel;
+            this.QuietConsole = quietConsole;
         }
 
         public void TestLogging()

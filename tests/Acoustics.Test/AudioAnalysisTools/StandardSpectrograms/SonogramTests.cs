@@ -214,10 +214,10 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
             var image = SpectrogramTools.GetSonogramPlusCharts(actualDecibelSpectrogram, events, plots, null);
 
             // create the image for visual confirmation
-            image.Save(Path.Combine(this.outputDirectory.FullName, this.recording.BaseName + ".png"));
+            image.Save(this.outputDirectory.CombineFile(this.recording.BaseName + ".png"));
 
             Assert.AreEqual(1621, image.Width);
-            Assert.AreEqual(647, image.Height);
+            Assert.AreEqual(656, image.Height);
         }
     }
 }

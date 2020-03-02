@@ -8,10 +8,21 @@ namespace Acoustics.Test.TestHelpers
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
+    using System.Runtime.CompilerServices;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     public static class PathHelper
     {
+        private static TestContext testContext;
+
+        public static string AnalysisProgramsBuild { get; private set; }
+
+        public static string SolutionRoot { get; private set; }
+
+        public static string TestResources { get; private set; }
+
+        public static string CodeBase { get; private set; }
+
         internal static void Initialize(TestContext context)
         {
             var directory = context.ResultsDirectory;
@@ -33,15 +44,9 @@ namespace Acoustics.Test.TestHelpers
             TestResources = Path.Combine(SolutionRoot, "tests", "Fixtures");
 
             AnalysisProgramsBuild = Path.Combine(SolutionRoot, "src", "AnalysisPrograms", "bin", "Debug", "netcoreapp3.1");
+
+            testContext = context;
         }
-
-        public static string AnalysisProgramsBuild { get; private set; }
-
-        public static string SolutionRoot { get; private set; }
-
-        public static string TestResources { get; private set; }
-
-        public static string CodeBase { get; private set; }
 
         public static FileInfo ResolveConfigFile(string fileName)
         {
@@ -90,14 +95,22 @@ namespace Acoustics.Test.TestHelpers
 
         public static DirectoryInfo GetTempDir()
         {
-            var dir = "." + Path.DirectorySeparatorChar + Path.GetRandomFileName();
+            return ClassOutputDirectory().CreateSubdirectory(Path.GetRandomFileName());
+        }
 
-            if (!Directory.Exists(dir))
-            {
-                Directory.CreateDirectory(dir);
-            }
+        public static DirectoryInfo ClassOutputDirectory(TestContext context = null)
+        {
+            context ??= testContext;
+            return context
+                .TestResultsDirectory
+                .ToDirectoryInfo()
+                .CreateSubdirectory(context.FullyQualifiedTestClassName);
+        }
 
-            return new DirectoryInfo(dir);
+        public static DirectoryInfo TestOutputDirectory(TestContext context = null)
+        {
+            context ??= testContext;
+            return ClassOutputDirectory(context).CreateSubdirectory(context.TestName);
         }
 
         public static void DeleteTempDir(DirectoryInfo dir)

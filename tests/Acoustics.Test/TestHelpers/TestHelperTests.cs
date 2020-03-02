@@ -12,10 +12,10 @@ namespace Acoustics.Test.TestHelpers
     using SixLabors.ImageSharp.PixelFormats;
 
     [TestClass]
-    public class TestHelperTests : OutputDirectoryTest
+    public class TestHelperTests : GeneratedImageTest<Rgb24>
     {
         private static readonly Rgb24 R = Color.Red;
-        private static readonly Rgb24 G = Color.Green;
+        private static readonly Rgb24 G = Color.Lime;
         private static readonly Rgb24 B = Color.Blue;
         private static readonly Rgb24 Y = Color.Yellow;
         private static readonly Rgb24 E = Color.Black;
@@ -56,7 +56,7 @@ namespace Acoustics.Test.TestHelpers
         [TestMethod]
         public void TestFillPattern()
         {
-            var expected = Image.Load<Rgb24>(PathHelper.ResolveAssetPath("diagnosticBitmap.bmp"));
+            this.Expected = Image.Load<Rgb24>(PathHelper.ResolveAssetPath("diagnosticBitmap.bmp"));
 
             var pattern = @"
 R100
@@ -67,10 +67,9 @@ R100
 ⬇7
 39×W100
 R100";
-            var actual = new TestImage(100, 100, pattern, Color.Black).Finish();
-            actual.Save(this.TestOutputDirectory.CombineFile("blah.png").FullName);
+            this.Actual = new TestImage(100, 100, pattern, Color.Black).Finish();
 
-            Assert.That.ImageMatches(expected, actual);
+            this.AssertImagesEqual();
         }
     }
 }

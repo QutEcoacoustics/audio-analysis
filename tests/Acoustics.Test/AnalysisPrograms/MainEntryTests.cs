@@ -38,16 +38,14 @@ namespace Acoustics.Test.AnalysisPrograms
         [TestMethod]
         public async Task DefaultHelpWorks()
         {
-            using (var console = new ConsoleRedirector())
-            {
-                var code = await MainEntry.Main(new[] { "--help" });
+            using var console = new ConsoleRedirector();
+            var code = await MainEntry.Main(new[] { "--help" });
 
-                Assert.AreEqual(0, code);
+            Assert.AreEqual(0, code);
 
-                this.AssertContainsCopyright(console.Lines);
-                this.AssertContainsGitHashAndVersion(console.Lines);
-                StringAssert.StartsWith(console.Lines[6], Meta.Description);
-            }
+            this.AssertContainsCopyright(console.Lines);
+            this.AssertContainsGitHashAndVersion(console.Lines);
+            StringAssert.StartsWith(console.Lines[6], Meta.Description);
         }
 
         [DoNotParallelize]

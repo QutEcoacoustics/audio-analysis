@@ -54,9 +54,11 @@ namespace Acoustics.Test.TestHelpers
         [TestCleanup]
         public void TestCleanup()
         {
-            this.TestContext.WriteLine($"I exist!");
-            //
-            Assert.IsNotNull(this.Actual, "The actual image cannot be null!");
+            if (this.Actual == null)
+            {
+                this.TestContext.WriteLine("The actual image is null, so skipping all of GeneratedImageTest cleanup, save, and delta functions");
+                return;
+            }
 
             if (this.ShouldWrite(this.WriteImages))
             {

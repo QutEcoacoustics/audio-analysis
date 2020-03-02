@@ -214,16 +214,15 @@ namespace SixLabors.ImageSharp
 
         }
 
-        public static void DrawRectangle(this IImageProcessingContext context, Pen pen, int x1, int y1, int x2, int y2)
+        public static void DrawRectangle(this IImageProcessingContext context, Pen pen, int x, int y, int width, int height)
         {
-            var r = RectangleF.FromLTRB(x1, y1, x2, y2);
+            var r = new RectangleF(x, y, width, height);
             context.Draw(pen, r);
-
         }
 
-        public static void FillRectangle(this IImageProcessingContext context, IBrush brush, int x1, int y1, int x2, int y2)
+        public static void FillRectangle(this IImageProcessingContext context, IBrush brush, int x, int y, int width, int height)
         {
-            var r = RectangleF.FromLTRB(x1, y1, x2, y2);
+            var r = new RectangleF(x, y, width, height);
             context.Fill(brush, r);
         }
 
@@ -307,6 +306,16 @@ namespace SixLabors.ImageSharp
             return new Rectangle(rect.X, rect.Y, rect.Width, rect.Height);
         }
 
+        public static RectangleF AsRect(this PointF point, SizeF size)
+        {
+            return new RectangleF(point, size);
+        }
+
+        public static RectangleF AsRect(this FontRectangle rectangle)
+        {
+            return new RectangleF(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height);
+        }
+
         public static void DrawTextSafe(this IImageProcessingContext context, string text, Font font, Color color, PointF location)
         {
             if (text.IsNullOrEmpty())
@@ -314,8 +323,47 @@ namespace SixLabors.ImageSharp
                 return;
             }
 
-            context.DrawText(text, font, color, location);
+            // check to see if text overlaps with image
+            var destArea = new RectangleF(PointF.Empty, context.GetCurrentSize());
+            var rendererOptions = new RendererOptions(font, location);
+            var textArea = TextMeasurer.MeasureBounds(text, rendererOptions);
+            if (destArea.IntersectsWith(textArea.AsRect()))
+            {
+                if (textArea.X < 0)
+                {
+                    // TODO BUG: see https://github.com/SixLabors/ImageSharp.Drawing/issues/30
+                    // to get around the bug, we measure each character, and then trim them from the
+                    // start of the text, move the location right by the width of the trimmed character
+                    // and continue until we're in a spot that does not trigger the bug;
+                    int trim = 0;
+                    float trimOffset = 0;
+                    if (TextMeasurer.TryMeasureCharacterBounds(text, rendererOptions, out var characterBounds))
+                    {
+                        foreach (var characterBound in characterBounds)
+                        {
+                            // magic value found empirically, does not seem to trigger bug when first char less than offset equal to char size
+                            if (characterBound.Bounds.X > -(font.Size - 2))
+                            {
+                                break;
+                            }
 
+                            trim++;
+                            trimOffset += characterBound.Bounds.Width;
+                        }
+                    }
+                    else
+                    {
+                        throw new NotSupportedException("Due to a bug with ImageSharp this text cannot be rendered");
+                    }
+
+                    location.Offset(trimOffset, 0);
+                    context.DrawText(text[trim..], font, color, location);
+                }
+                else
+                {
+                    context.DrawText(text, font, color, location);
+                }
+            }
         }
 
         public static void DrawVerticalText(this IImageProcessingContext context, string text, Font font, Color color, Point location)

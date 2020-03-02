@@ -14,7 +14,7 @@ namespace Acoustics.Test.TestHelpers
         private DirectoryInfo classOutputDirectory = null;
         private DirectoryInfo testOutputDirectory = null;
 
-        public static DirectoryInfo ResultsDirectory { get; private set; }
+        public static DirectoryInfo ResultsDirectory { get; private set; } = PathHelper.ClassOutputDirectory();
 
         public TestContext TestContext { get; set; }
 
@@ -23,21 +23,13 @@ namespace Acoustics.Test.TestHelpers
         /// e.g. C:\Work\Github\audio-analysis\TestResults\Deploy_Anthony 2020-02-27 16_56_40\In\Acoustics.Shared.ImageTests
         /// </summary>
         protected DirectoryInfo ClassOutputDirectory =>
-            this.classOutputDirectory ??= this.TestContext.TestResultsDirectory
-                .ToDirectoryInfo()
-                .CreateSubdirectory(this.TestContext.FullyQualifiedTestClassName);
+            this.classOutputDirectory ??= PathHelper.ClassOutputDirectory(this.TestContext);
 
         /// <summary>
         /// Gets a directory scoped to only the current test
         /// e.g. C:\Work\Github\audio-analysis\TestResults\Deploy_Anthony 2020-02-27 16_56_40\In\Acoustics.Shared.ImageTests\TestImageTest
         /// </summary>
         protected DirectoryInfo TestOutputDirectory =>
-            this.testOutputDirectory ??= this.ClassOutputDirectory.CreateSubdirectory(this.TestContext.TestName);
-
-        [ClassInitialize]
-        public static void MyClassInitialize(TestContext testContext)
-        {
-            ResultsDirectory = testContext.ResultsDirectory.ToDirectoryInfo();
-        }
+            this.testOutputDirectory ??= PathHelper.TestOutputDirectory(this.TestContext);
     }
 }

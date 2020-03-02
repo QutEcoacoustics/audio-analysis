@@ -308,6 +308,7 @@
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=resampled/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Runtimes/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=spectrograms/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/UserDictionary/Words/=Subband/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Submatrix/@EntryIndexedValue">True</s:Boolean>
   <s:Boolean x:Key="/Default/UserDictionary/Words/=Anthony/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=appenders/@EntryIndexedValue">True</s:Boolean>
