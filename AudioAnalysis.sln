@@ -10,6 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		src\AP.Settings.json = src\AP.Settings.json
 		src\AP.VersionBuild.targets = src\AP.VersionBuild.targets
 		src\AssemblyMetadata.cs.template = src\AssemblyMetadata.cs.template
+		src\AssemblyMetadata.Generated.targets = src\AssemblyMetadata.Generated.targets
 		Directory.Build.props = Directory.Build.props
 		build\download_ap.ps1 = build\download_ap.ps1
 		src\git_version.ps1 = src\git_version.ps1
