@@ -1,16 +1,16 @@
-# overwrite the default version scheme - we have our own set in MsBuild
-version: '{build}'
+# # overwrite the default version scheme - we have our own set in MsBuild
+# version: '{build}'
 
-image: Visual Studio 2017
+# image: Visual Studio 2017
 
-skip_commits:
-  # allow us to manually skip a build
-  message: '/\[chore\]|\[no_ci\]|\[ci_skip\]|\[skip_ci\]/'
-  # Do not trigger a build for anything not .NET
-  files:
-    - '**/*.md'
-    - 'docs/**/*'
-    - 'scripts/**/*'
+# skip_commits:
+#   # allow us to manually skip a build
+#   message: '/\[chore\]|\[no_ci\]|\[ci_skip\]|\[skip_ci\]/'
+#   # Do not trigger a build for anything not .NET
+#   files:
+#     - '**/*.md'
+#     - 'docs/**/*'
+#     - 'scripts/**/*'
 
 # Do not run a build on new tags - we use tags to create releases, which can
 # only occur after successful build on another branch
@@ -24,7 +24,7 @@ cache:
 
 matrix:
   fast_finish: true
-  
+
 platform:
   - Any CPU
 
@@ -50,8 +50,8 @@ init:
   - echo Starting Build
 
 before_build:
-  # Download fresh lfs assets
-  - git lfs pull
+  # # Download fresh lfs assets
+  # - git lfs pull
   # Determine whether or not we should tag and release
   # if the last tag hash matches the current build hash then we should not duplicate a release
   - ps: |
@@ -61,7 +61,7 @@ before_build:
       $env:RELEASE_COMMIT = $env:APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED -ilike "*``[release``]*"
       $env:SHOULD_RELEASE = ($env:RELEASE_COMMIT -ieq "true") -or ($env:APPVEYOR_SCHEDULED_BUILD -and ($env:TAG_NOT_PREVIOUSLY_RELEASED -ieq "true"))
       ls env:* -Include SHOULD*,APPVEYOR_SCHEDULED_BUILD*,APPVEYOR_REPO_COMMIT_MESSAGE_EXTENDED*,RELEASE_COMMIT,TAG_NOT_PREVIOUSLY_RELEASED
-  # Restore packages 
+  # Restore packages
   - nuget restore
   # Debugging a dirty flag in build version
   - git status
@@ -70,16 +70,16 @@ before_build:
 build_script:
   - echo "Building Debug"
   - ps: >
-      msbuild 
-      "C:\projects\audio-analysis\AudioAnalysis.sln" /m /verbosity:minimal 
+      msbuild
+      "C:\projects\audio-analysis\AudioAnalysis.sln" /m /verbosity:minimal
       /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
       /p:WarningLevel=0 /p:RunCodeAnalysis=false
       /p:Configuration=Debug /property:Platform=$env:platform
 
   - echo "Building Release"
   - ps: >
-      msbuild 
-      "C:\projects\audio-analysis\AudioAnalysis.sln" /m /verbosity:minimal 
+      msbuild
+      "C:\projects\audio-analysis\AudioAnalysis.sln" /m /verbosity:minimal
       /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
       /p:WarningLevel=0 /p:RunCodeAnalysis=false
       /p:Configuration=Release /property:Platform=$env:platform
@@ -97,7 +97,7 @@ test:
     only:
       - 'tests\Acoustics.Test\bin\Debug\Acoustics.Test.dll'
       - 'tests\AED.Test\bin\Debug\AED.Test.dll'
-  
+
 # Upload previously generated artifacts
 artifacts:
   - path: '$(ApPackageDebug)'
@@ -112,7 +112,7 @@ before_deploy:
   - ps: git config --global user.name "$($env:APPVEYOR_REPO_COMMIT_AUTHOR)"
   # add our auth token to the cred store
   - ps: Add-Content "$env:USERPROFILE\.git-credentials" "https://$($env:GH_CREATE_RELEASES_TOKEN):x-oauth-basic@github.com`n"
-  # tag if needed, and output $env:ApTagName 
+  # tag if needed, and output $env:ApTagName
   - cd %APPVEYOR_BUILD_FOLDER%
   # Buggy authentication with git-lfs
   - git config lfs.https://github.com/QutBioacoustics/audio-analysis.git/info/lfs.locksverify false
@@ -120,7 +120,7 @@ before_deploy:
   # prepare release strings: $env:ApReleaseMessage, $env:ApReleaseTitle
   - ps: . .\build\release.ps1 $env:ApTagName $true
   #- ps: 'ls env:'
-  
+
 deploy:
   - provider: GitHub
     tag: $(ApTagName)
@@ -134,7 +134,7 @@ deploy:
       branch: master
       # Do not create a new release unless this was a scheduled build or a forced build
       SHOULD_RELEASE: True
-      
+
 # scripts to run after deployment
 #after_deploy:
 #  # build and push our docker image
@@ -149,6 +149,6 @@ notifications:
     on_build_status_changed: true
     on_build_failure: true
     on_build_success: true
-  
+
 #on_finish:
 #  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))

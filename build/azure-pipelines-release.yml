@@ -1,0 +1,17 @@
+
+
+jobs:
+
+  - job: 'publish'
+    steps:
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: publish
+          projects: src/AnalysisPrograms/AnalysisPrograms.csproj
+          arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+          modifyOutputPath: true
+          zipAfterPublish: true
+      - task: PublishBuildArtifacts@1
+        inputs:
+          path: $(Build.ArtifactStagingDirectory)
+          artifact: drop

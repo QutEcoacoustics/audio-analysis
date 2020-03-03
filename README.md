@@ -41,7 +41,7 @@ citations will printed in the console and in the log file.
 
 ## Build status
 
-[![Build status](https://ci.appveyor.com/api/projects/status/ntf6vtuy5wnlww37/branch/master?svg=true)](https://ci.appveyor.com/project/QUTEcoacousticsResearchGroup/audio-analysis/branch/master)
+[![Build Status](https://dev.azure.com/QutEcoacoustics/audio-analysis/_apis/build/status/QutEcoacoustics.audio-analysis?branchName=master)](https://dev.azure.com/QutEcoacoustics/audio-analysis/_build/latest?definitionId=3&branchName=master)
 
 Weekly versions of AnalysisPrograms.exe are now built automatically at midnight Monday night.
 You can get copies from the [Releases](https://github.com/QutBioacoustics/audio-analysis/releases) page.

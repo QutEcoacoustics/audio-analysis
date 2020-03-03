@@ -1,0 +1,82 @@
+parameters:
+
+  buildPlatform: 'Any CPU'
+  configurations: [debug, release]
+  platforms:
+    - rid: win-x64
+      pool: windows-latest
+    - rid: win-arm64
+      pool: windows-latest
+    - rid: linux-x64
+      pool: ubuntu-latest
+    - rid: linux-musl-x64
+      pool: ubuntu-latest
+    - rid: linux-arm
+      pool: ubuntu-latest
+    - rid: osx-x64
+      pool: macos-latest
+
+  # cross-product not supported
+  # https://github.com/microsoft/azure-pipelines-yaml/issues/20
+  job_matrix:
+
+        linux_arm_debug:
+          pool: ubuntu-latest
+
+          buildConfiguration: 'Debug'
+          rid:
+
+
+jobs:
+  - job:
+    strategy:
+      matrix:
+        ${{ each platform in parameters.platforms }}:
+            ${{ each configuration in parameters.configurations }}:
+              ${{ format('{0}_{1}_{2}', platform.rid, platform.pool, configuration) }}:
+                rid: ${{ platform.rid }}
+                pool: ${{ platform.pool }}
+                configuration: ${{ configuration }}
+    pool:
+      vmImage: $(pool)
+    displayName: Build, test and package for
+    steps:
+
+      - checkout: self
+        clean: false
+        fetchDepth: 100
+        lfs: false
+        persistCredentials: true
+        displayName: "Shallow cloning repo"
+
+      - task: Cache@2
+        inputs:
+          key: "lfs_assets"
+          path: "$(Pipeline.Workspace)/.git/lfs/objects"
+        displayName: "Cache git LFS objects"
+
+      - pwsh: git lfs pull
+        displayName: "Refresh LFS assets"
+
+      - pwsh: |
+          $sdkVersion = (Get-Content "global.json" | ConvertFrom-Json).sdk.version
+          echo "##vso[task.setvariable variable=sdkVersion]$sdkVersion"
+        displayName: Get .NET SDK version from "global.json"
+
+      - task: UseDotNet@2
+        inputs:
+          packageType: sdk
+          version: $(sdkVersion)
+        displayName: Lock down .NET SDK version
+
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: restore
+        displayName: Restore solution dependencies
+
+      - pwsh:
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: build
+          arguments: '--configuration $(buildConfiguration)'
+        displayName: Build solution ($(buildConfiguration))

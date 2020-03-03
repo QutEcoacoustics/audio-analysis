@@ -4,3 +4,6 @@
 
 
 Write-Output "Empty stub, do not use yet"
+
+
+dotnet test --no-build --settings test/Acoustics.Test/.runsettings
