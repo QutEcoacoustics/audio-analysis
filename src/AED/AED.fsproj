@@ -1,14 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <RootNamespace>AED.New</RootNamespace>
-    <UseStandardResourceNames>true</UseStandardResourceNames>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
-    <TargetFSharpCoreVersion>4.4.1.0</TargetFSharpCoreVersion>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Name>AED</Name>
-      <WarningLevel>3</WarningLevel>
-    <OutputPath>bin\$(Configuration)\</OutputPath>
-    <Deterministic>true</Deterministic>
+      <TargetFramework>netcoreapp3.1</TargetFramework>
+      <Name>AED</Name>
+      <Deterministic>true</Deterministic>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>portable</DebugType>

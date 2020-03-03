@@ -1,13 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <RootNamespace>Acoustics.Shared.FSharp</RootNamespace>
         <AssemblyName>Acoustics.Shared.FSharp</AssemblyName>
         <TargetFramework>netcoreapp3.1</TargetFramework>
-        <TargetFSharpCoreVersion>4.4.1.0</TargetFSharpCoreVersion>
-        <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
         <Name>Acoustics.Shared.FSharp</Name>
-        <WarningLevel>3</WarningLevel>
-        <OutputPath>bin\$(Configuration)\</OutputPath>
+        <Deterministic>true</Deterministic>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
         <DebugType>portable</DebugType>

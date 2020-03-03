@@ -2,16 +2,10 @@
   <PropertyGroup>
     <UseStandardResourceNames>true</UseStandardResourceNames>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <TargetFSharpCoreVersion>4.4.1.0</TargetFSharpCoreVersion>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Name>AED.Test</Name>
-    <DocumentationFile>bin\$(Configuration)\$(AssemblyName).XML</DocumentationFile>
-    <WarningLevel>3</WarningLevel>
-    <OutputPath>bin\$(Configuration)\</OutputPath>
-    <Deterministic>false</Deterministic>
+      <Name>AED.Test</Name>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugType>full</DebugType>
+    <DebugType>portable</DebugType>
     <Tailcalls>false</Tailcalls>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">

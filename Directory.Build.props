@@ -2,6 +2,8 @@
   <PropertyGroup>
     <Deterministic>true</Deterministic>
     <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)style.ruleset</CodeAnalysisRuleSet>
+    <DisableAutoSetFscCompilerPath>true</DisableAutoSetFscCompilerPath>
+    <DotnetFscCompilerPath></DotnetFscCompilerPath>
   </PropertyGroup>
   <PropertyGroup Label="Common">
     <Company>QUT Ecoacoustics Research Group</Company>
