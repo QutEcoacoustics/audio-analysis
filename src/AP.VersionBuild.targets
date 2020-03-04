@@ -7,7 +7,7 @@
        <Output TaskParameter="ConsoleOutput" PropertyName="VersionMetadata" />
     </Exec>
   </Target>
-  <Import Project="AssemblyMetadata.Generated.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)AssemblyMetadata.Generated.targets" Condition="Exists('$(MSBuildThisFileDirectory)AssemblyMetadata.Generated.targets')"/>
   <Target Name="APVersionMessage" AfterTargets="APVersionLoadProperties">
     <Message Text="[APVersionBeforeBuild] Last Tag: $(LastTag)%0a[APVersionBeforeBuild] Hash: $(CommitHashShort)%0a[APVersionBeforeBuild] CommitCount: $(CommitsSinceLastTag)" Importance="High" />
     <Message Text="[APVersionBeforeBuild] Updating assembly version with: $(Version)!" Importance="High" />
