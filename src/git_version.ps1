@@ -3,7 +3,7 @@
 #Requires -Version 6
 
 param(
-    [string]$build_type = "Release"
+    [string]$configuration = "Release"
 )
 
 Push-Location
@@ -15,7 +15,7 @@ $now = [System.DateTimeOffset]::UtcNow
 
 # cache files in debug release
 $cache_warning = ""
-if ($build_type -eq "Debug") {
+if ($build_type -ieq "Debug") {
     $cache_warning = "// GENERATED_VALUES_MAY_BE_CACHED_IN_DEBUG_BUILD"
     $last_write = (Get-Item $metadata_file).LastWriteTimeUtc
     if (($now - $last_write) -lt [timespan]::FromMinutes(5)) {
@@ -42,7 +42,7 @@ $month = $now.Month
 $short_year = $now.ToString("yy")
 $short_month = $now.ToString("%M")
 $build_date = $now.ToString("O")
-$build_number = if ($null -eq  ${env:Build.BuildNumber}) { "000" } else { ${env:Build.BuildNumber} }
+$build_number = if ($null -eq  ${env:BUILD_BUILDID}) { "000" } else { ${env:BUILD_BUILDID} }
 
 $tags_this_month = git log --tags --simplify-by-decoration --first-parent --pretty="format:%ai %d" --after="$year-$month-01T00:00Z"
 $tag_count_this_month = $tags_this_month.Count

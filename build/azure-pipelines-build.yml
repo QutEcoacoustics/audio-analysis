@@ -41,6 +41,8 @@ jobs:
       vmImage: $(pool)
     displayName: Build, test and package for
     steps:
+      - pwsh: 'ls env:'
+        displayName: debug environment variables
 
       - checkout: self
         clean: false
@@ -51,12 +53,21 @@ jobs:
 
       - task: Cache@2
         inputs:
-          key: "lfs_assets"
-          path: "$(Pipeline.Workspace)/.git/lfs/objects"
+          key: '"lfs_assets"'
+          path: ".git/lfs/objects"
         displayName: "Cache git LFS objects"
 
       - pwsh: git lfs pull
         displayName: "Refresh LFS assets"
+
+      - task: Cache@2
+        inputs:
+          key: nuget | "$(Agent.OS)"
+          restoreKeys: |
+            nuget | "$(Agent.OS)"
+            nuget
+          path: $(NUGET_PACKAGES)
+        displayName: Cache NuGet packages
 
       - pwsh: |
           $sdkVersion = (Get-Content "global.json" | ConvertFrom-Json).sdk.version
@@ -71,16 +82,17 @@ jobs:
 
       - task: DotNetCoreCLI@2
         inputs:
-          # command: custom
-          # arguments: restore  --configfile .\NuGet.config --locked-mode --verbosity Detailed
           command: restore
           selectOrConfig: config
           nugetConfigPath: NuGet.config
         displayName: Restore solution dependencies
 
+      - pwsh: src/git_version.ps1 -build_type $(configuration)
+        displayName: debug git_version.ps1 script
+
       - task: DotNetCoreCLI@2
         inputs:
           command: build
-
-          arguments: --configuration $(buildConfiguration) --no-restore
-        displayName: Build solution ($(buildConfiguration))
+          versioningScheme: 'off'
+          arguments: --configuration $(configuration) --no-restore --runtime $(rid)
+        displayName: Build solution ($(configuration), $(rid))

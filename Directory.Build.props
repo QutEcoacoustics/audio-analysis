@@ -4,6 +4,7 @@
     <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)style.ruleset</CodeAnalysisRuleSet>
     <DisableAutoSetFscCompilerPath>true</DisableAutoSetFscCompilerPath>
     <DotnetFscCompilerPath></DotnetFscCompilerPath>
+    <RuntimeIdentifiers>win-x64;win-arm64;linux-x64;linux-musl-x64;linux-arm;osx-x64</RuntimeIdentifiers>
   </PropertyGroup>
   <PropertyGroup Label="Common">
     <Company>QUT Ecoacoustics Research Group</Company>
