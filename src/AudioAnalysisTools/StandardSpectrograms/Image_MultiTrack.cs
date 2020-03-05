@@ -353,33 +353,42 @@ namespace AudioAnalysisTools.StandardSpectrograms
         }
 
         /// <summary>
-        /// superimposes a matrix of scores on top of a sonogram.
-        /// TODO: WARNING: THIS METHOD IS YET TO BE DEBUGGED SINCE TRANSITION TO SIX-LABOURS, FEB 2020.
+        /// It is assumed that the spectrogram image is grey scale.
+        /// NOTE: The score matrix must consist of reals in [0.0, 1.0].
+        /// NOTE: The image and the score matrix must have the same number of rows and columns.
+        /// In case of a spectrogram, it is assumed that the rows are frequency bins and the columns are individual spectra.
         /// </summary>
+        /// <param name="bmp">the spectrogram image.</param>
+        /// <param name="hits">the matrix of scores or hits.</param>
         public static Image<Rgb24> OverlayScoresAsRedTransparency(Image<Rgb24> bmp, double[,] hits)
         {
             Image<Rgb24> newBmp = (Image<Rgb24>)bmp.Clone();
             int rows = hits.GetLength(0);
             int cols = hits.GetLength(1);
-            int imageHt = bmp.Height - 1; //subtract 1 because indices start at zero
 
-            //traverse columns - skip DC column
-            for (int c = 1; c < cols; c++)
+            if (rows != bmp.Height || cols != bmp.Width)
             {
-                for (int r = 0; r < rows; r++)
+                LoggedConsole.WriteErrorLine("ERROR: Image and hits matrix do not have the same dimensions.");
+                return bmp;
+            }
+
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
                 {
-                    if (hits[r, c] == 0.0)
+                    if (hits[r, c] <= 0.0)
                     {
                         continue;
                     }
 
-                    var pixel = bmp[r, imageHt - c];
-                    if (pixel.R == 255)
+                    if (hits[r, c] > 1.0)
                     {
-                        continue; // white
+                        hits[r, c] = 1.0;
                     }
 
-                    newBmp[r, imageHt - c] = Color.FromRgb(255, pixel.G, pixel.B);
+                    var pixel = bmp[r, c];
+                    byte value = (byte)Math.Floor(hits[r, c] * 255);
+                    newBmp[r, c] = Color.FromRgb(value, pixel.G, pixel.B);
                 }
             }
 
@@ -387,8 +396,54 @@ namespace AudioAnalysisTools.StandardSpectrograms
         }
 
         /// <summary>
-        /// superimposes a matrix of scores on top of a sonogram. USES RAINBOW PALLETTE.
-        /// ASSUME MATRIX NORMALIZED IN [0,1].
+        /// Overlays a matrix of scores on an image, typically a spectrogram image.
+        /// It is assumed that the spectrogram image is grey scale.
+        /// NOTE: The score matrix must consist of integers from 0 to 255.
+        /// NOTE: The image and the score matrix must have the same number of rows and columns.
+        /// In case of a spectrogram, it is assumed that the rows are frequency bins and the columns are individual spectra.
+        /// </summary>
+        /// <param name="bmp">the spectrogram image.</param>
+        /// <param name="hits">the matrix of scores or hits.</param>
+        /// <returns>The new image with overlay of scores as red transparency.</returns>
+        public static Image<Rgb24> OverlayScoresAsRedTransparency(Image<Rgb24> bmp, int[,] hits)
+        {
+            Image<Rgb24> newBmp = (Image<Rgb24>)bmp.Clone();
+            int rows = hits.GetLength(0);
+            int cols = hits.GetLength(1);
+
+            if (rows != bmp.Height || cols != bmp.Width)
+            {
+                LoggedConsole.WriteErrorLine("ERROR: Image and hits matrix do not have the same dimensions.");
+                return bmp;
+            }
+
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    if (hits[r, c] <= 0)
+                    {
+                        continue;
+                    }
+
+                    if (hits[r, c] > 255)
+                    {
+                        hits[r, c] = 255;
+                    }
+
+                    var pixel = bmp[c, r];
+                    newBmp[c, r] = Color.FromRgb((byte)hits[r, c], pixel.G, pixel.B);
+                }
+            }
+
+            return newBmp;
+        }
+
+        /// <summary>
+        /// WARNING: THis method is yet to be debugged and tested following move to SixLabors drawing libraries.
+        /// superimposes a matrix of scores on top of a sonogram.
+        /// USES A PALLETTE of ten RAINBOW colours.
+        /// ASSUME MATRIX is NORMALIZED IN [0,1].
         /// </summary>
         public void OverlayRainbowTransparency(IImageProcessingContext g, Image<Rgb24> bmp)
         {
