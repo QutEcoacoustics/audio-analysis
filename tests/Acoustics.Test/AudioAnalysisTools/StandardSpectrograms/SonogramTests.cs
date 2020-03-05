@@ -17,6 +17,7 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.PixelFormats;
     using Path = System.IO.Path;
 
     /// <summary>
@@ -218,6 +219,47 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
 
             Assert.AreEqual(1621, image.Width);
             Assert.AreEqual(656, image.Height);
+        }
+
+        [TestMethod]
+        public void TestSonogramHitsOverlay()
+        {
+            int width = 100;
+            int height = 50;
+
+            // make a pretend sonogram image
+            var pretendSonogram = new Image<Rgb24>(width, height);
+
+            // make a pretend hits matrix with crossed diagonals
+            var hitsMatrix = new int[height, width];
+            for (int i = 0; i < width; i++)
+            {
+                int intensity = (int)Math.Floor(i / (double)width * 255);
+                hitsMatrix[i / 2, i] = intensity;
+                hitsMatrix[i / 2, width - i - 1] = intensity;
+            }
+
+            // now add in hits to the spectrogram image.
+            if (hitsMatrix != null)
+            {
+                pretendSonogram = Image_MultiTrack.OverlayScoresAsRedTransparency(pretendSonogram, hitsMatrix);
+            }
+
+            //pretendSonogram.Save("C:\\temp\\image.png");
+            var pixel = new Argb32(252, 0, 0);
+            var expectedColor = new Color(pixel);
+            var actualColor = pretendSonogram[0, height - 1];
+            Assert.AreEqual<Color>(expectedColor, actualColor);
+
+            pixel = new Argb32(127, 0, 0);
+            expectedColor = new Color(pixel);
+            actualColor = pretendSonogram[width / 2, height / 2];
+            Assert.AreEqual<Color>(expectedColor, actualColor);
+
+            pixel = new Argb32(0, 0, 0);
+            expectedColor = new Color(pixel);
+            actualColor = pretendSonogram[0, 0];
+            Assert.AreEqual<Color>(expectedColor, actualColor);
         }
     }
 }

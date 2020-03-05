@@ -417,6 +417,7 @@ namespace AudioAnalysisTools
             if (duration >= 0.0 && framesPerSecond >= 0.0)
             {
                 t1 = (int)Math.Round(this.TimeStart * framesPerSecond);
+
                 t2 = (int)Math.Round(this.TimeEnd * framesPerSecond);
             }
             else if (this.Oblong != null)
@@ -426,7 +427,7 @@ namespace AudioAnalysisTools
                 t2 = this.Oblong.RowBottom;
             }
 
-            imageToReturn.Mutate(g => g.DrawRectangle(borderPen, t1, y1, t2, y2));
+            imageToReturn.Mutate(g => g.DrawRectangle(borderPen, t1, y1, t2 - t1 + 1, y2 - y1 + 1));
 
             if (this.HitElements != null)
             {

@@ -125,8 +125,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
             if (hits != null)
             {
                 spectrogram = Image_MultiTrack.OverlayScoresAsRedTransparency(spectrogram, hits);
-                //OverlayRedTransparency(bmp, this.SuperimposedRedTransparency);
-                //this.SonogramImage = this.OverlayRedTransparency((Image<Rgb24>)this.SonogramImage);
             }
 
             int pixelWidth = spectrogram.Width;
