@@ -19,15 +19,12 @@ namespace AnalysisPrograms
     using Acoustics.Shared;
     using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Logging;
-    using log4net.Core;
-#if DEBUG
-    using Acoustics.Shared.Debugging;
-#endif
     using AnalysisPrograms.Production;
     using AnalysisPrograms.Production.Arguments;
     using AnalysisPrograms.Production.Parsers;
 
     using log4net;
+    using log4net.Core;
     using McMaster.Extensions.CommandLineUtils;
     using static System.Environment;
 
@@ -115,19 +112,25 @@ namespace AnalysisPrograms
             //Logging.TestLogging();
         }
 
+        [Conditional("DEBUG")]
         internal static void AttachDebugger(DebugOptions options)
         {
             if (options == DebugOptions.No)
             {
                 return;
             }
-#if DEBUG
+
             if (!Debugger.IsAttached && !IsMsTestRunningMe)
             {
                 if (options == DebugOptions.Prompt)
                 {
+                    var prompt =
+$@"Do you wish to debug?
+\tAttach now or press [Y] and [ENTER] to attach. Press [N] or [ENTER] to continue.
+See {Meta.GetDocsUrl("debugging.md")} for help.";
+
                     var response = Prompt.GetYesNo(
-                        "Do you wish to debug? Attach now or press [Y] and [ENTER] to attach. Press [N] or [ENTER] to continue.",
+                        prompt,
                         defaultAnswer: false,
                         promptColor: ConsoleColor.Cyan);
                     options = response ? DebugOptions.Yes : DebugOptions.No;
@@ -135,19 +138,8 @@ namespace AnalysisPrograms
 
                 if (options == DebugOptions.Yes || options == DebugOptions.YesSilent)
                 {
-                    var vsProcess =
-                        VisualStudioAttacher.GetVisualStudioForSolutions(
-                            new List<string> { "AudioAnalysis.sln" });
-
-                    if (vsProcess != null)
-                    {
-                        VisualStudioAttacher.AttachVisualStudioToProcess(vsProcess, Process.GetCurrentProcess());
-                    }
-                    else
-                    {
-                        // try and attach the old fashioned way
-                        Debugger.Launch();
-                    }
+                    // try and attach the old fashioned way
+                    Debugger.Launch();
                 }
 
                 // ReSharper disable once ConditionIsAlwaysTrueOrFalse
@@ -160,7 +152,6 @@ namespace AnalysisPrograms
                     }
                 }
             }
-#endif
         }
 
         internal static void BeforeExecute(MainArgs main, CommandLineApplication application)

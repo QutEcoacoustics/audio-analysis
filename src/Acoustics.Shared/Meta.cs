@@ -21,6 +21,12 @@ namespace Acoustics.Shared
 
         public static readonly int NowYear = DateTime.Now.Year;
 
+        private static readonly Assembly[] OurAssemblies =
+            AppDomain.CurrentDomain
+                .GetAssemblies()
+                .Where(OurCodePredicate)
+                .ToArray();
+
         public static string Organization { get; } = "QUT";
 
         public static string Website { get; } = "http://research.ecosounds.org/";
@@ -29,11 +35,10 @@ namespace Acoustics.Shared
 
         public static string Repository { get; } = "https://github.com/QutBioacoustics/audio-analysis";
 
-        private static readonly Assembly[] OurAssemblies =
-            AppDomain.CurrentDomain
-                .GetAssemblies()
-                .Where(OurCodePredicate)
-                .ToArray();
+        public static string GetDocsUrl(string page)
+        {
+            return $"{Repository}/blob/master/docs/{page}";
+        }
 
         public static IEnumerable<TypeInfo> GetTypesFromQutAssemblies<T>()
         {
