@@ -71,12 +71,16 @@ jobs:
 
       - task: DotNetCoreCLI@2
         inputs:
+          # command: custom
+          # arguments: restore  --configfile .\NuGet.config --locked-mode --verbosity Detailed
           command: restore
+          selectOrConfig: config
+          nugetConfigPath: NuGet.config
         displayName: Restore solution dependencies
 
-      - pwsh:
       - task: DotNetCoreCLI@2
         inputs:
           command: build
-          arguments: '--configuration $(buildConfiguration)'
+
+          arguments: --configuration $(buildConfiguration) --no-restore
         displayName: Build solution ($(buildConfiguration))
