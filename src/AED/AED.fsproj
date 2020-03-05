@@ -13,14 +13,13 @@
     <Tailcalls>true</Tailcalls>
   </PropertyGroup>
     <ItemGroup>
-    <PackageReference Include="FSharp.Compiler.Tools" Version="10.2.3" />
-    <PackageReference Include="FSharp.Core" Version="4.7.0" />
-    <PackageReference Include="MathNet.Numerics.FSharp" Version="4.9.0" />
-    <PackageReference Include="Microsoft.Bcl.Build" Version="1.0.21" />
-    <PackageReference Include="SixLabors.Fonts" Version="1.0.0-unstable0024" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-unstable0702" />
-    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-unstable0421" />
-  </ItemGroup>
+        <PackageReference Include="FSharp.Core" Version="4.7.0" />
+        <PackageReference Include="MathNet.Numerics.FSharp" Version="4.9.0" />
+        <PackageReference Include="Microsoft.Bcl.Build" Version="1.0.21" />
+        <PackageReference Include="SixLabors.Fonts" Version="1.0.0-unstable0024" />
+        <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-unstable0702" />
+        <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-unstable0421" />
+    </ItemGroup>
   <ItemGroup>
       <Compile Include="Util.fs" />
       <Compile Include="Matlab.fs" />

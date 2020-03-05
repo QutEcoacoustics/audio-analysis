@@ -1,30 +1,27 @@
 parameters:
-
   buildPlatform: 'Any CPU'
-  configurations: [debug, release]
   platforms:
     - rid: win-x64
       pool: windows-latest
+      configurations: [debug, release]
     - rid: win-arm64
       pool: windows-latest
+      configurations: [release]
     - rid: linux-x64
       pool: ubuntu-latest
+      configurations: [debug, release]
     - rid: linux-musl-x64
       pool: ubuntu-latest
+      configurations: [release]
     - rid: linux-arm
       pool: ubuntu-latest
+      configurations: [release]
     - rid: osx-x64
       pool: macos-latest
-
+      configurations: [debug, release]
   # cross-product not supported
   # https://github.com/microsoft/azure-pipelines-yaml/issues/20
-  job_matrix:
 
-        linux_arm_debug:
-          pool: ubuntu-latest
-
-          buildConfiguration: 'Debug'
-          rid:
 
 
 jobs:
@@ -32,16 +29,16 @@ jobs:
     strategy:
       matrix:
         ${{ each platform in parameters.platforms }}:
-            ${{ each configuration in parameters.configurations }}:
+            ${{ each configuration in platform.configurations }}:
               ${{ format('{0}_{1}_{2}', platform.rid, platform.pool, configuration) }}:
                 rid: ${{ platform.rid }}
                 pool: ${{ platform.pool }}
                 configuration: ${{ configuration }}
     pool:
       vmImage: $(pool)
-    displayName: Build, test and package for
+    displayName: Build
     steps:
-      - pwsh: 'ls env:'
+      - pwsh: 'Get-ChildItem Env:'
         displayName: debug environment variables
 
       - checkout: self
@@ -54,6 +51,8 @@ jobs:
       - task: Cache@2
         inputs:
           key: '"lfs_assets"'
+          restore: |
+            lfs_assets
           path: ".git/lfs/objects"
         displayName: "Cache git LFS objects"
 
