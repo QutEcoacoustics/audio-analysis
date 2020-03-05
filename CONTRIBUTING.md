@@ -22,11 +22,22 @@ Best Practices
     1. **Do not** abbreviate units
     1. It is **recommended** that full units be used in any user facing field name
         - e.g. `EventEndSeconds` in a CSV file
+- Dates and durations:
+    1. **ONLY** format dates in an ISO8601 format
+        - a modified ISO8601 format with all punctuation removed is acceptable
+          for file/folder names. Example format string: yyyyMMddTHHmmssZ
+    1. **ALWAYS** format dates with UTC offset information if available
+    1. **PREFER** formatting dates in the UTC timezone
+    1. **AVOID** exposing `TimeSpan`s to user facing fields (use seconds instead)
+        - if a `TimeSpan` needs to be formatted
+            - in a log: the default formatting is acceptable
+            - in a filename: use ISO8601 duration formatting
+
 
 Required Software
 -----------------
 
-The required software for developing new code (not running the program) includes:
+The **required** software for developing new code (not running the program) includes:
 
 - A PowerShell Core (version 6+) install
     - You can install it from here: https://github.com/powershell/powershell#get-powershell
