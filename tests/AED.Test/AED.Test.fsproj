@@ -2,14 +2,14 @@
   <PropertyGroup>
     <UseStandardResourceNames>true</UseStandardResourceNames>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-      <Name>AED.Test</Name>
+    <Name>AED.Test</Name>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>portable</DebugType>
     <Tailcalls>false</Tailcalls>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
+    <DebugType>portable</DebugType>
     <Tailcalls>true</Tailcalls>
   </PropertyGroup>
   <ItemGroup>
@@ -18,13 +18,12 @@
       <Compile Include="UtilTest.fs" />
       <Compile Include="MatlabTest.fs" />
       <Compile Include="AcousticEventDetectionTest.fs" />
-      <Compile Include="GetAcousticEventsTest.fs" />
+      <Compile Include="GetAcousticEventsTest.fs" />    
       <Compile Include="EventPatternRecogTest.fs" />
       <Compile Include="SpectralPeakTrackTest.fs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="FSharp.Compiler.Tools" Version="10.2.3" />
-    <PackageReference Include="FSharp.Core" Version="4.7.0" />
+      <PackageReference Include="FSharp.Core" Version="4.7.0" />
     <PackageReference Include="FsCheck" Version="3.0.0-alpha4" />
     <PackageReference Include="FsCheck.Xunit" Version="3.0.0-alpha4" />
     <PackageReference Include="FsUnit.xUnit" Version="3.8.0" />
