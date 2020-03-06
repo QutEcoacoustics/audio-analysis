@@ -18,6 +18,7 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
+    using SixLabors.ImageSharp.Processing;
     using Path = System.IO.Path;
 
     /// <summary>
@@ -91,7 +92,7 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
         /// <summary>
         /// METHOD TO CHECK that averaging of decibel values is working.
         /// var array = new[] { 96.0, 100.0, 90.0, 97.0 };
-        /// The return value should = 96.98816759 dB
+        /// The return value should = 96.98816759 dB.
         /// </summary>
         [TestMethod]
         public void TestAverageOfDecibelValues()
@@ -225,18 +226,19 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
         public void TestSonogramHitsOverlay()
         {
             int width = 100;
-            int height = 50;
+            int height = 256;
 
-            // make a pretend sonogram image
+            // make a substitute sonogram image
             var pretendSonogram = new Image<Rgb24>(width, height);
 
-            // make a pretend hits matrix with crossed diagonals
+            // make a hits matrix with crossed diagonals
             var hitsMatrix = new int[height, width];
-            for (int i = 0; i < width; i++)
+            for (int i = 0; i < height; i++)
             {
-                int intensity = (int)Math.Floor(i / (double)width * 255);
-                hitsMatrix[i / 2, i] = intensity;
-                hitsMatrix[i / 2, width - i - 1] = intensity;
+                int col = (int)Math.Floor(width * i / (double)height);
+                int intensity = col;
+                hitsMatrix[i, col] = i;
+                hitsMatrix[i, width - col - 1] = i;
             }
 
             // now add in hits to the spectrogram image.
@@ -246,12 +248,12 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
             }
 
             //pretendSonogram.Save("C:\\temp\\image.png");
-            var pixel = new Argb32(252, 0, 0);
+            var pixel = new Argb32(255, 0, 0);
             var expectedColor = new Color(pixel);
             var actualColor = pretendSonogram[0, height - 1];
             Assert.AreEqual<Color>(expectedColor, actualColor);
 
-            pixel = new Argb32(127, 0, 0);
+            pixel = new Argb32(128, 0, 0);
             expectedColor = new Color(pixel);
             actualColor = pretendSonogram[width / 2, height / 2];
             Assert.AreEqual<Color>(expectedColor, actualColor);
