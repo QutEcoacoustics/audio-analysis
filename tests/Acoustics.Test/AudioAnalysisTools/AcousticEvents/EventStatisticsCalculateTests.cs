@@ -2,7 +2,7 @@
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
-namespace Acoustics.Test.AudioAnalysisTools.EventStatistics
+namespace Acoustics.Test.AudioAnalysisTools.AcousticEvents
 {
     using System;
     using Acoustics.Shared;
@@ -16,11 +16,10 @@ namespace Acoustics.Test.AudioAnalysisTools.EventStatistics
     [TestClass]
     public class EventStatisticsCalculateTests
     {
-
         [TestMethod]
         public void TestCalculateEventStatistics()
         {
-            int sampleRate = 22050;
+            var sampleRate = 22050;
             double duration = 28;
             int[] harmonics1 = { 500 };
             int[] harmonics2 = { 500, 1000, 2000, 4000, 8000 };
@@ -37,8 +36,8 @@ namespace Acoustics.Test.AudioAnalysisTools.EventStatistics
 
             var start = TimeSpan.FromSeconds(28) + segmentOffset;
             var end = TimeSpan.FromSeconds(32) + segmentOffset;
-            double lowFreq = 1500.0;
-            double topFreq = 8500.0;
+            var lowFreq = 1500.0;
+            var topFreq = 8500.0;
 
             var statsConfig = new EventStatisticsConfiguration()
             {
@@ -46,7 +45,7 @@ namespace Acoustics.Test.AudioAnalysisTools.EventStatistics
                 FrameStep = 512,
             };
 
-            EventStatistics stats =
+            var stats =
                 EventStatisticsCalculate.AnalyzeAudioEvent(
                     recording,
                     (start, end).AsRange(),
