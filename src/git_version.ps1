@@ -10,7 +10,6 @@ Push-Location
 Set-Location $PSScriptRoot
 
 $metadata_file = "AssemblyMetadata.Generated.cs"
-$props_file = "AssemblyMetadata.Generated.targets"
 $now = [System.DateTimeOffset]::UtcNow
 
 # cache files in debug release
@@ -28,14 +27,11 @@ $commit_hash = git show -s --format="%H"
 
 $branch = git rev-parse --abbrev-ref HEAD
 
-
-
 $describe = git describe --dirty --abbrev --long --always
 
 $describe_tag, $describe_commit_count, $describe_hash, $describe_dirty = $describe.Split("-")
 $is_dirty = if ($null -ne $describe_dirty) { 'true' } else { 'false' }
 $dirty = if ($is_dirty) { 'DIRTY'} else { '' }
-
 
 $year = $now.Year
 $month = $now.Month
@@ -56,31 +52,21 @@ $templated = $ExecutionContext.InvokeCommand.ExpandString($content)
 $templated | Out-File $metadata_file -Force -Encoding utf8NoBOM
 
 $props =  @"
-<?xml version="1.0" encoding="utf-8"?>
-<Project>
-    <Target Name="APVersionLoadProperties" AfterTargets="APVersionBeforeBuild">
-        <PropertyGroup>
-            <Year>$short_year</Year>
-            <Month>$short_month</Month>
-            <BuildDate>$build_date</BuildDate>
-            <BuildNumber>$build_number</BuildNumber>
-            <CommitHash>$commit_hash</CommitHash>
-            <CommitHashShort>$describe_hash</CommitHashShort>
-            <Branch>$branch</Branch>
-            <LastTag>$describe_tag</LastTag>
-            <CommitsSinceLastTag>$describe_commit_count</CommitsSinceLastTag>
-            <TagsThisMonth>$tag_count_this_month</TagsThisMonth>
-            <IsDirty>$is_dirty</IsDirty>
-            <Version>$version</Version>
-            <InformationalVersion>$informational_version</InformationalVersion>
-            <GeneratedMetadata>$metadata_file</GeneratedMetadata>
-            <GeneratedProps>$props_file</GeneratedProps>
-        </PropertyGroup>
-    </Target>
-</Project>
+Year=$short_year
+Month=$short_month
+BuildDate=$build_date
+BuildNumber=$build_number
+CommitHash=$commit_hash
+CommitHashShort=$describe_hash
+Branch=$branch
+LastTag=$describe_tag
+CommitsSinceLastTag=$describe_commit_count
+TagsThisMonth=$tag_count_this_month
+IsDirty=$is_dirty
+Version=$version
+InformationalVersion=$informational_version
+GeneratedMetadata=$metadata_file
 "@
-
-$props | Out-File $props_file -Force -Encoding utf8NoBOM
 
 Write-Output $props
 
