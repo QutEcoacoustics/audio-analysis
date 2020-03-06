@@ -1,15 +1,3 @@
-The binaries you download here should work on as many systems as possible.
-
-We can utilise so called static builds.
-
-When adding a new binary check that our supported platforms documentation matches
-what the binary is capable of running on.
-
-# FFMPEG notes
-
-Download from here:
-https://ffmpeg.zeranoe.com/builds/
-
-Choose a stable version, 64-bit builds only, and choose "Shared" linking.
-The shared linking option saves on space, otherwise all resources are embedded into all 
-executables.
+version https://git-lfs.github.com/spec/v1
+oid sha256:7a21bfc05f804029847191b06d3a5543329662b0ad3aaea132a70c812f3e1a7b
+size 202
