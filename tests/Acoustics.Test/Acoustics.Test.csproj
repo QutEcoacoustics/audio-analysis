@@ -6,6 +6,7 @@
     <Product>Acoustics.Test</Product>
     <LangVersion>8</LangVersion>
     <OutputPath>bin\$(Configuration)\</OutputPath>
+    <RunSettingsFilePath>$(MSBuildThisFileDirectory).runsettings</RunSettingsFilePath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>
@@ -13,7 +14,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
-  <Import Project="$(SolutionDir)\src\AP.CopyFiles.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)..\..\src\AP.CopyFiles.targets" />
   <ItemGroup>
     <PackageReference Include="FastMember" Version="1.5.0" />
     <PackageReference Include="ImmediateReflection" Version="1.5.0" />
