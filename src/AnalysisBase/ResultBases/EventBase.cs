@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="EventBase.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -12,14 +12,14 @@ namespace AnalysisBase.ResultBases
     using System;
 
     /// <summary>
-    /// The base class for all Event style results
+    /// The base class for all Event style results.
     /// </summary>
     public abstract class EventBase : ResultBase
     {
         private double eventStartSeconds;
 
         /// <summary>
-        /// Gets or sets the time the current audio segment is offset from the start of the file/recording.
+        /// Gets or sets the time (in seconds) from start of the file/recording to start of the current audio segment.
         /// </summary>
         /// <remarks>
         /// <see cref="EventStartSeconds"/> will always be greater than or equal to <see cref="SegmentStartSeconds"/>.
@@ -36,7 +36,7 @@ namespace AnalysisBase.ResultBases
         /// </summary>
         /// <remarks>
         /// 2017-09: This field USED to be offset relative to the current segment.
-        /// 2017-09: This field is NOW equivalent to <see cref="ResultBase.ResultStartSeconds"/>
+        /// 2017-09: This field is NOW equivalent to <see cref="ResultBase.ResultStartSeconds"/>.
         /// </remarks>
         public virtual double EventStartSeconds
         {
@@ -60,10 +60,13 @@ namespace AnalysisBase.ResultBases
         /// </summary>
         public virtual double? LowFrequencyHertz { get; protected set; }
 
-        protected void SetEventStartRelative(TimeSpan segmentStart, double eventStartSegmentRelative)
+        /// <summary>
+        /// Sets both the Segment start and the Event start wrt to recording.
+        /// </summary>
+        protected void SetSegmentAndEventStartsWrtRecording(TimeSpan segmentStartWrtRecording, double eventStartWrtSegment)
         {
-            this.SegmentStartSeconds = segmentStart.TotalSeconds;
-            this.EventStartSeconds = this.SegmentStartSeconds + eventStartSegmentRelative;
+            this.SegmentStartSeconds = segmentStartWrtRecording.TotalSeconds;
+            this.EventStartSeconds = this.SegmentStartSeconds + eventStartWrtSegment;
         }
     }
 }

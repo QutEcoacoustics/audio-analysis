@@ -334,7 +334,7 @@ namespace AnalysisPrograms.Recognizers
             var image3 = SpectrogramTools.GetSonogramPlusCharts(results.Sonogram, results.Events, results.Plots, null);
 
             //image3.Save(Path.Combine(outputDirectory.FullName, baseName + ".profile.png"));
-            image3.Save(Path.Combine("C:\\temp", baseName + ".profile.png"));
+            //image3.Save(Path.Combine("C:\\temp", baseName + ".profile.png"));
 
             //sonogram.GetImageFullyAnnotated("test").Save("C:\\temp\\test.png");
         }

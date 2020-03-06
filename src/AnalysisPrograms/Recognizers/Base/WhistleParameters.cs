@@ -30,7 +30,7 @@ namespace AnalysisPrograms.Recognizers.Base
             double decibelThreshold,
             double minDuration,
             double maxDuration,
-            TimeSpan segmentStartOffset)
+            TimeSpan segmentStartWrtRecording)
         {
             var sonogramData = sonogram.Data;
             int frameCount = sonogramData.GetLength(0);
@@ -39,10 +39,6 @@ namespace AnalysisPrograms.Recognizers.Base
             double binWidth = nyquist / (double)binCount;
             int minBin = (int)Math.Round(minHz / binWidth);
             int maxBin = (int)Math.Round(maxHz / binWidth);
-            //int binCountInBand = maxBin - minBin + 1;
-
-            // buffer zone around whistle is four bins wide.
-            int N = 4;
 
             // list of accumulated acoustic events
             var events = new List<AcousticEvent>();
@@ -54,7 +50,8 @@ namespace AnalysisPrograms.Recognizers.Base
                 // set up an intensity array for the frequency bin.
                 double[] intensity = new double[frameCount];
 
-                if (minBin < N)
+                // buffer zone around whistle is four bins wide.
+                if (minBin < 4)
                 {
                     // for all time frames in this frequency bin
                     for (int t = 0; t < frameCount; t++)
@@ -96,7 +93,7 @@ namespace AnalysisPrograms.Recognizers.Base
                     decibelThreshold,
                     minDuration,
                     maxDuration,
-                    segmentStartOffset);
+                    segmentStartWrtRecording);
 
                 // add to conbined intensity array
                 for (int t = 0; t < frameCount; t++)
@@ -110,33 +107,9 @@ namespace AnalysisPrograms.Recognizers.Base
             } //end for all freq bins
 
             // combine adjacent acoustic events
-            events = AcousticEvent.CombineOverlappingEvents(events);
+            events = AcousticEvent.CombineOverlappingEvents(events, segmentStartWrtRecording);
 
             return (events, combinedIntensityArray);
         }
-
-        /*
-        /// <summary>
-        /// Calculates the average intensity in a freq band having min and max freq,
-        /// AND then subtracts average intensity in the side/buffer bands, below and above.
-        /// THis method adds dB log values incorrectly but it is faster than doing many log conversions.
-        /// This method is used to find acoustic events and is accurate enough for the purpose.
-        /// </summary>
-        public static double[] CalculateFreqBandAvIntensityMinusBufferIntensity(double[,] sonogramData, int minHz, int maxHz, int nyquist)
-        {
-            var bandIntensity = SNR.CalculateFreqBandAvIntensity(sonogramData, minHz, maxHz, nyquist);
-            var bottomSideBandIntensity = SNR.CalculateFreqBandAvIntensity(sonogramData, minHz - bottomHzBuffer, minHz, nyquist);
-            var topSideBandIntensity = SNR.CalculateFreqBandAvIntensity(sonogramData, maxHz, maxHz + topHzBuffer, nyquist);
-
-            int frameCount = sonogramData.GetLength(0);
-            double[] netIntensity = new double[frameCount];
-            for (int i = 0; i < frameCount; i++)
-            {
-                netIntensity[i] = bandIntensity[i] - bottomSideBandIntensity[i] - topSideBandIntensity[i];
-            }
-
-            return netIntensity;
-        }
-        */
     }
 }
