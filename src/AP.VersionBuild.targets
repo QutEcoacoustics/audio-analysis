@@ -1,16 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <!-- Condition="'$(Configuration)' == 'Release' Or !Exists('Properties\AssemblyInfo.cs')" -->
+
   <!-- Register our task that as something to run before standard build target -->
   <Target Name="APVersionBeforeBuild" BeforeTargets="PrepareForBuild">
-    <Exec Command="pwsh -noprofile $(ProjectDir)../git_version.ps1 -configuration $(Configuration)" ConsoleToMSBuild="True" EchoOff="False">
-       <Output TaskParameter="ConsoleOutput" PropertyName="VersionMetadata" />
+    <Exec Command="pwsh –NonInteractive -noprofile $(ProjectDir)../git_version.ps1 -configuration $(Configuration)"
+        ConsoleToMSBuild="True"
+        EchoOff="false"
+        StandardOutputImportance="low" >
+       <Output TaskParameter="ConsoleOutput" ItemName="VersionMetadata"  />
     </Exec>
-  </Target>
-  <Import Project="$(MSBuildThisFileDirectory)AssemblyMetadata.Generated.targets" Condition="Exists('$(MSBuildThisFileDirectory)AssemblyMetadata.Generated.targets')"/>
-  <Target Name="APVersionMessage" AfterTargets="APVersionLoadProperties">
-    <Message Text="[APVersionBeforeBuild] Last Tag: $(LastTag)%0a[APVersionBeforeBuild] Hash: $(CommitHashShort)%0a[APVersionBeforeBuild] CommitCount: $(CommitsSinceLastTag)" Importance="High" />
-    <Message Text="[APVersionBeforeBuild] Updating assembly version with: $(Version)!" Importance="High" />
+    <!-- batch through returned metadata, then use ✨MAGIC✨ to convert subexpression to string, then split on key/value -->
+    <!-- and finally create each property -->
+    <CreateProperty Value="$([System.String]::Copy(`%(VersionMetadata.Identity)`).Split('=')[1].Trim())">
+      <Output TaskParameter="Value" PropertyName="$([System.String]::Copy(`%(VersionMetadata.Identity)`).Split('=')[0].Trim())" />
+    </CreateProperty>
+
+    <Message Text="[APVersionBeforeBuild] Generated metadata file: $(GeneratedMetadata)" Importance="High" />
+    <Message Text="[APVersionBeforeBuild] Last Tag: $(LastTag), Hash: $(CommitHashShort), CommitCount: $(CommitsSinceLastTag)" Importance="High" />
+    <Message Text="[APVersionBeforeBuild] Using assembly version with: $(Version)!" Importance="High" />
     <Message Text="[APVersionBeforeBuild] InformationalVersion: $(InformationalVersion)" Importance="High" />
+    <Message Text="[APVersionBeforeBuild] BuildDate: $(BuildDate)" Importance="High" />
+    <Message Text="[APVersionBeforeBuild] git_version.ps1 stdout:    %(VersionMetadata.Identity)" Importance="High" Condition="$(GeneratedMetadata) == ''"/>
+
+    <Error Text="AP Version metadata generation failed. Check you have PowerShell 6+ &amp; Git installed and available on the system PATH."
+        Condition="$(GeneratedMetadata) == ''"/>
   </Target>
 </Project>
