@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <RunSettings>
-  <!-- MSTest adapter -->
+    <RunConfiguration>
+        <ResultsDirectory>..\..\tests\Results</ResultsDirectory>
+    </RunConfiguration>
+    <!-- MSTest adapter -->
   <MSTest>
     <Parallelize>
       <Workers>12</Workers>
