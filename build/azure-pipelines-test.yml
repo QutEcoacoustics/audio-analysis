@@ -3,14 +3,3 @@
 jobs:
   - job: 'test'
     steps:
-      - task: DotNetCoreCLI@2
-        inputs:
-          command: test
-          noBuild: true
-          publishTestResults: true
-          arguments: "--settings test/Acoustics.Test/.runsettings --configuration $(buildConfiguration) --logger trx"
-      - task: PublishTestResults@2
-        condition: succeededOrFailed()
-        inputs:
-          testRunner: VSTest
-          testResultsFiles: '**/*.trx'

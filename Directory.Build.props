@@ -2,8 +2,9 @@
   <PropertyGroup>
     <Deterministic>true</Deterministic>
     <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)style.ruleset</CodeAnalysisRuleSet>
-    
+
     <DotnetFscCompilerPath></DotnetFscCompilerPath>
+    <!-- all of these are 64 bit except for linux-arm -->
     <RuntimeIdentifiers>win-x64;win-arm64;linux-x64;linux-musl-x64;linux-arm;osx-x64</RuntimeIdentifiers>
     <IsOSX Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' == 'true'">true</IsOSX>
     <IsLinux Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))' == 'true'">true</IsLinux>

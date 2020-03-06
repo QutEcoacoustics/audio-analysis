@@ -38,8 +38,8 @@ jobs:
       vmImage: $(pool)
     displayName: Build
     steps:
-      - pwsh: 'Get-ChildItem Env:'
-        displayName: debug environment variables
+      # - pwsh: 'Get-ChildItem Env:'
+      #   displayName: debug environment variables
 
       - checkout: self
         clean: false
@@ -73,6 +73,8 @@ jobs:
           echo "##vso[task.setvariable variable=sdkVersion]$sdkVersion"
         displayName: Get .NET SDK version from "global.json"
 
+      # the following steps were adapted form this guide:
+      # https://docs.microsoft.com/en-us/azure/devops/pipelines/ecosystems/dotnet-core?view=azure-devops#run-your-tests
       - task: UseDotNet@2
         inputs:
           packageType: sdk
@@ -95,3 +97,57 @@ jobs:
           versioningScheme: 'off'
           arguments: --configuration $(configuration) --no-restore --runtime $(rid)
         displayName: Build solution ($(configuration), $(rid))
+
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: test
+          noBuild: true
+          publishTestResults: true
+          projects: tests/Acoustics.Test/Acoustics.Test.csproj
+          arguments: >
+            --runtime $(rid)
+            --configuration $(configuration)
+            --settings test/Acoustics.Test/.runsettings
+            --logger trx
+            --collect:"XPlat Code Coverage"
+            -- RunConfiguration.DisableAppDomain=true
+        displayName: Run tests
+
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: custom
+          custom: tool
+          arguments: install --tool-path . dotnet-reportgenerator-globaltool
+        displayName: Install ReportGenerator tool
+
+      - script: >
+          ./reportgenerator
+          -reports:$(Agent.TempDirectory)/**/coverage.cobertura.xml
+          -targetdir:$(Build.SourcesDirectory)/coverlet/reports
+          -reporttypes:"Cobertura"
+        displayName: Create reports
+
+      - task: PublishCodeCoverageResults@1
+        inputs:
+          codeCoverageTool: Cobertura
+          summaryFileLocation: $(Build.SourcesDirectory)/coverlet/reports/Cobertura.xml
+        displayName: 'Publish code coverage'
+
+      - task: DotNetCoreCLI@2
+        inputs:
+          command: publish
+          projects: src/AnalysisPrograms/AnalysisPrograms.csproj
+          arguments: >
+            --runtime $(rid)
+            --configuration $(configuration)
+            --output $(Build.ArtifactStagingDirectory)
+            --self-contained
+          nobuild: true
+          zipAfterPublish: true
+        displayName: dotnet publish
+
+      # this code takes all the files in $(Build.ArtifactStagingDirectory) and uploads them as an artifact of your build.
+      - task: PublishBuildArtifacts@1
+        inputs:
+          pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+          artifactName: '($rid)_$(configuration)'
