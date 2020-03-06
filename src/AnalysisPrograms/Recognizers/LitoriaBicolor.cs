@@ -152,13 +152,15 @@ namespace AnalysisPrograms.Recognizers
                 ae.SegmentDurationSeconds = recordingDuration.TotalSeconds;
             }
 
-            // do a RECOGNIZER TEST.
+            /*
+            // do a RECOGNIZER TEST. DELETE ONE DAY!
             if (false)
             {
                 var testDir = new DirectoryInfo(outputDirectory.Parent.Parent.FullName);
                 TestTools.RecognizerScoresTest(recording.BaseName, testDir, recognizerConfig.AnalysisName, scoreArray);
                 AcousticEvent.TestToCompareEvents(recording.BaseName, testDir, recognizerConfig.AnalysisName, predictedEvents);
             }
+            */
 
             var plot = new Plot(this.DisplayName, scoreArray, recognizerConfig.EventThreshold);
             return new RecognizerResults()
@@ -171,7 +173,7 @@ namespace AnalysisPrograms.Recognizers
         }
 
         /// <summary>
-        /// ################ THE KEY ANALYSIS METHOD
+        /// THE KEY ANALYSIS METHOD.
         /// </summary>
         /// <param name="recording"></param>
         /// <param name="sonoConfig"></param>

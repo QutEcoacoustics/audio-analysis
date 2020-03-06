@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="LewiniaPectoralis.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -193,13 +193,15 @@ namespace AnalysisPrograms.Recognizers
                     prunedEvents.Add(ae);
                 }
 
-                // do a recognizer TEST.
+                /*
+                // do a recognizer TEST. DELETE ONE DAY!
                 if (false)
                 {
                     var testDir = new DirectoryInfo(outputDirectory.Parent.Parent.FullName);
                     TestTools.RecognizerScoresTest(recording.BaseName, testDir, recognizerConfig.AnalysisName, scoreArray);
                     AcousticEvent.TestToCompareEvents(recording.BaseName, testDir, recognizerConfig.AnalysisName, predictedEvents);
                 }
+                */
 
                 // increase very low scores
                 for (int j = 0; j < scoreArray.Length; j++)
