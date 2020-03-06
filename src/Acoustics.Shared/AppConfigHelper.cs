@@ -380,5 +380,11 @@ namespace Acoustics.Shared
             Log.Debug($"No key found for `{key}` in the AP.Settings.config. This program may fail if this binary is needed.");
             return null;
         }
+
+        private static string GetRuntimeIdentifier()
+        {
+            PlatformServices
+            //return RuntimeInformation.
+        }
     }
 }

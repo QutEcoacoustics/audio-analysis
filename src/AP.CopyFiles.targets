@@ -3,19 +3,40 @@
   <PropertyGroup>
     <MSBuildCommunityTasksPath>$(MSBuildProjectDirectory)\.build</MSBuildCommunityTasksPath>
   </PropertyGroup>
-  <!-- Register our task that as something to run before standard build target -->
+  <!-- Register our task that as something to run after standard build target -->
   <Target Name="APCopyFilesAfterBuild" AfterTargets="Build">
     <!-- Copy our audio tools from lib to build dir -->
     <Message Text="[APCopyFilesAfterBuild]: Scanning for lib files and config files" Importance="High" />
+    <Message Text="[APCopyFilesAfterBuild]: Copying to $(TargetDir)" Importance="High" />
     <ItemGroup>
-      <AudioTools Include="$(SolutionDir)\lib\audio-utils\**\*.*" />
-      <ConfigFiles Include="$(SolutionDir)\src\AnalysisConfigFiles\**\*" />
+      <AudioTools Include="$(MSBuildThisFileDirectory)..\lib\audio-utils\**\*.*" />
+      <ConfigFiles Include="$(MSBuildThisFileDirectory)AnalysisConfigFiles\**\*" />
     </ItemGroup>
-    <Message Text="[APCopyFilesAfterBuild]: Copying lib files" Importance="High" />
-    <Copy SourceFiles="@(AudioTools)" DestinationFolder="$(TargetDir)\audio-utils\%(RecursiveDir)" SkipUnchangedFiles="true" />
-    <Message Text="[APCopyFilesAfterBuild]: Copying config files" Importance="High" />
-    <Copy SourceFiles="@(ConfigFiles)" DestinationFolder="$(TargetDir)\ConfigFiles\%(RecursiveDir)" SkipUnchangedFiles="true" />
-    <Message Text="[APCopyFilesAfterBuild]: $(MSBuildProjectName)" Importance="High" />
+    <Message Text="[APCopyFilesAfterBuild]: Copying audio-utils files to '$(TargetDir)\audio-utils" Importance="High" />
+    <Copy SourceFiles="@(AudioTools)"
+        DestinationFolder="$(TargetDir)\audio-utils\%(RecursiveDir)"
+        SkipUnchangedFiles="true" />
+    <Message Text="[APCopyFilesAfterBuild]: Copying config files to '$(TargetDir)\ConfigFiles'" Importance="High" />
+    <Copy SourceFiles="@(ConfigFiles)"
+        DestinationFolder="$(TargetDir)\ConfigFiles\%(RecursiveDir)"
+        SkipUnchangedFiles="true" />
   </Target>
-
+  <Target Name="APCopyFilesAfterPublish" AfterTargets="Publish">
+    <!-- Copy our audio tools from lib to Publish dir -->
+    <Message Text="[APCopyFilesAfterPublish]: Scanning for lib files and config files" Importance="High" />
+    <Message Text="[APCopyFilesAfterPublish]: Copying to $(PublishDir)" Importance="High" />
+    <Message Text="[APCopyFilesAfterPublish]: Runtime $(RuntimeIdentifier)" Importance="High" />
+    <ItemGroup>
+      <AudioTools Include="$(MSBuildThisFileDirectory)..\lib\audio-utils\$(RuntimeIdentifier)\**\*.*" />
+      <ConfigFiles Include="$(MSBuildThisFileDirectory)AnalysisConfigFiles\**\*" />
+    </ItemGroup>
+    <Message Text="[APCopyFilesAfterPublish]: Copying audio-utils files to '$(PublishDir)audio-utils\$(RuntimeIdentifier)" Importance="High" />
+    <Copy SourceFiles="@(AudioTools)"
+        DestinationFolder="$(PublishDir)audio-utils\$(RuntimeIdentifier)\%(RecursiveDir)"
+        SkipUnchangedFiles="true" />
+    <Message Text="[APCopyFilesAfterPublish]: Copying config files to '$(PublishDir)ConfigFiles'" Importance="High" />
+    <Copy SourceFiles="@(ConfigFiles)"
+        DestinationFolder="$(PublishDir)ConfigFiles\%(RecursiveDir)"
+        SkipUnchangedFiles="true" />
+  </Target>
 </Project>

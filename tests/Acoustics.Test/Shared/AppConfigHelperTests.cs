@@ -5,9 +5,8 @@
 namespace Acoustics.Test.Shared
 {
     using Acoustics.Shared;
-    
+    using Acoustics.Test.TestHelpers;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
     using static Acoustics.Shared.AppConfigHelper;
 
     [TestClass]
@@ -50,7 +49,7 @@ namespace Acoustics.Test.Shared
         }
 
         [TestMethod]
-        public void IsMonoShouldAlwaysFails()
+        public void IsMonoShouldAlwaysFail()
         {
             Assert.IsFalse(IsMono);
         }
