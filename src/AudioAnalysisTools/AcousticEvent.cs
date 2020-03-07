@@ -527,7 +527,7 @@ namespace AudioAnalysisTools
         /// </summary>
         public bool Overlaps(AcousticEvent ae)
         {
-            return EventsOverlap(this, ae);
+            return EventsOverlapInTime(this, ae);
         }
 
         /// <summary>
@@ -565,54 +565,74 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        /// Determines if two events overlap in time or frequency or both.
+        /// Determines if two events overlap in frequency.
         /// </summary>
         /// <param name="event1">event one.</param>
         /// <param name="event2">event two.</param>
         /// <returns>true if events overlap.</returns>
-        public static bool EventsOverlap(AcousticEvent event1, AcousticEvent event2)
+        public static bool EventsOverlapInFrequency(AcousticEvent event1, AcousticEvent event2)
         {
-            var timeOverlap = false;
-            var freqOverlap = false;
+            //check if event 1 freq band overlaps event 2 freq band
+            if (event1.HighFrequencyHertz >= event2.LowFrequencyHertz && event1.HighFrequencyHertz <= event2.HighFrequencyHertz)
+            {
+                return true;
+            }
 
+            // check if event 1 freq band overlaps event 2 freq band
+            if (event1.LowFrequencyHertz >= event2.LowFrequencyHertz && event1.LowFrequencyHertz <= event2.HighFrequencyHertz)
+            {
+                return true;
+            }
+
+            //check if event 2 freq band overlaps event 1 freq band
+            if (event2.HighFrequencyHertz >= event1.LowFrequencyHertz && event2.HighFrequencyHertz <= event1.HighFrequencyHertz)
+            {
+                return true;
+            }
+
+            // check if event 2 freq band overlaps event 1 freq band
+            if (event2.LowFrequencyHertz >= event1.LowFrequencyHertz && event2.LowFrequencyHertz <= event1.HighFrequencyHertz)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Determines if two events overlap in time.
+        /// </summary>
+        /// <param name="event1">event one.</param>
+        /// <param name="event2">event two.</param>
+        /// <returns>true if events overlap.</returns>
+        public static bool EventsOverlapInTime(AcousticEvent event1, AcousticEvent event2)
+        {
             //check if event 1 starts within event 2
             if (event1.EventStartSeconds >= event2.EventStartSeconds && event1.EventStartSeconds <= event2.EventEndSeconds)
             {
-                timeOverlap = true;
+                return true;
             }
 
             // check if event 1 ends within event 2
             if (event1.EventEndSeconds >= event2.EventStartSeconds && event1.EventEndSeconds <= event2.EventEndSeconds)
             {
-                timeOverlap = true;
+                return true;
             }
 
             // now check possibility that event2 is inside event1.
             //check if event 2 starts within event 1
             if (event2.EventStartSeconds >= event1.EventStartSeconds && event2.EventStartSeconds <= event1.EventEndSeconds)
             {
-                timeOverlap = true;
+                return true;
             }
 
             // check if event 2 ends within event 1
             if (event2.EventEndSeconds >= event1.EventStartSeconds && event2.EventEndSeconds <= event1.EventEndSeconds)
             {
-                timeOverlap = true;
+                return true;
             }
 
-            //check if event 1 freq band overlaps event 2 freq band
-            if (event1.HighFrequencyHertz >= event1.LowFrequencyHertz && event1.HighFrequencyHertz <= event2.HighFrequencyHertz)
-            {
-                freqOverlap = true;
-            }
-
-            // check if event 1 freq band overlaps event 2 freq band
-            if (event1.LowFrequencyHertz >= event2.LowFrequencyHertz && event1.LowFrequencyHertz <= event2.HighFrequencyHertz)
-            {
-                freqOverlap = true;
-            }
-
-            return timeOverlap && freqOverlap;
+            return false;
         }
 
         /// <summary>
@@ -632,7 +652,7 @@ namespace AudioAnalysisTools
             {
                 for (int j = i - 1; j >= 0; j--)
                 {
-                    if (EventsOverlap(events[i], events[j]))
+                    if (EventsOverlapInTime(events[i], events[j]) && EventsOverlapInFrequency(events[i], events[j]))
                     {
                         events[j] = AcousticEvent.MergeTwoEvents(events[i], events[j], segmentStartWrtRecording);
                         events.RemoveAt(i);
@@ -662,16 +682,16 @@ namespace AudioAnalysisTools
         //METHODS TO CONVERT BETWEEN FREQ BIN AND HERZ OR MELS
 
         /// <summary>
-        /// converts frequency bounds of an event to left and right columns of object in sonogram matrix
-        /// NOTE: binCount is required only if freq is in Mel scale
+        /// converts frequency bounds of an event to left and right columns of object in sonogram matrix.
+        /// NOTE: binCount is required only if freq is in Mel scale.
         /// </summary>
-        /// <param name="doMelscale">mel scale</param>
-        /// <param name="minFreq">lower freq bound</param>
-        /// <param name="maxFreq">upper freq bound</param>
-        /// <param name="nyquist">Nyquist freq in Herz</param>
-        /// <param name="binWidth">frequency scale</param>
-        /// <param name="leftCol">return bin index for lower freq bound</param>
-        /// <param name="rightCol">return bin index for upper freq bound</param>
+        /// <param name="doMelscale">mel scale.</param>
+        /// <param name="minFreq">lower freq bound.</param>
+        /// <param name="maxFreq">upper freq bound.</param>
+        /// <param name="nyquist">Nyquist freq in Herz.</param>
+        /// <param name="binWidth">frequency scale.</param>
+        /// <param name="leftCol">return bin index for lower freq bound.</param>
+        /// <param name="rightCol">return bin index for upper freq bound.</param>
         public static void Freq2BinIDs(bool doMelscale, int minFreq, int maxFreq, int nyquist, double binWidth, out int leftCol, out int rightCol)
         {
             if (doMelscale)
@@ -839,8 +859,15 @@ namespace AudioAnalysisTools
             return tuple;
         }
 
-        public static Tuple<List<AcousticEvent>, double, double, double, double[]> GetSegmentationEvents(SpectrogramStandard sonogram, TimeSpan segmentStartOffset,
-                                    int minHz, int maxHz, double smoothWindow, double thresholdSD, double minDuration, double maxDuration)
+        public static Tuple<List<AcousticEvent>, double, double, double, double[]> GetSegmentationEvents(
+            SpectrogramStandard sonogram,
+            TimeSpan segmentStartOffset,
+            int minHz,
+            int maxHz,
+            double smoothWindow,
+            double thresholdSD,
+            double minDuration,
+            double maxDuration)
         {
             int nyquist = sonogram.SampleRate / 2;
             var tuple = SNR.SubbandIntensity_NoiseReduced(sonogram.Data, minHz, maxHz, nyquist, smoothWindow, sonogram.FramesPerSecond);
@@ -964,7 +991,7 @@ namespace AudioAnalysisTools
             foreach (AcousticEvent ae in labels)
             {
                 count++;
-                string hitFile = "";
+                string hitFile = string.Empty;
 
                 //check if this FN event is in a file that score tp of fp hit.
                 if (resultsSourceFiles.Contains(ae.FileName))
@@ -977,7 +1004,12 @@ namespace AudioAnalysisTools
                     fn++;
                     line = string.Format(
                         "False NEGATIVE: {0,4} {5,15} {1,6:f1} ...{2,6:f1}    intensity={3}     quality={4}",
-                        count, ae.TimeStart, ae.TimeEnd, ae.Intensity, ae.Quality, ae.Name);
+                        count,
+                        ae.TimeStart,
+                        ae.TimeEnd,
+                        ae.Intensity,
+                        ae.Quality,
+                        ae.Name);
                     if (previousSourceFile != ae.FileName)
                     {
                         LoggedConsole.WriteLine(line + "\t" + ae.FileName + " " + hitFile);
@@ -1033,8 +1065,16 @@ namespace AudioAnalysisTools
         /// This method is similar to the one above except that it is assumed that all the events, both labelled and predicted
         /// come from the same recording.
         /// </summary>
-        public static void CalculateAccuracyOnOneRecording(List<AcousticEvent> results, List<AcousticEvent> labels, out int tp, out int fp, out int fn,
-                                         out double precision, out double recall, out double accuracy, out string resultsText)
+        public static void CalculateAccuracyOnOneRecording(
+            List<AcousticEvent> results,
+            List<AcousticEvent> labels,
+            out int tp,
+            out int fp,
+            out int fn,
+            out double precision,
+            out double recall,
+            out double accuracy,
+            out string resultsText)
         {
             //init  values
             tp = 0;
@@ -1087,7 +1127,12 @@ namespace AudioAnalysisTools
                     fn++;
                     line = string.Format(
                         "False NEGATIVE: {0,4} {5,15} {1,6:f1} ...{2,6:f1}    intensity={3}     quality={4}",
-                        count, ae.TimeStart, ae.TimeEnd, ae.Intensity, ae.Quality, ae.Name);
+                        count,
+                        ae.TimeStart,
+                        ae.TimeEnd,
+                        ae.Intensity,
+                        ae.Quality,
+                        ae.Name);
                     sb.Append(line + "\t" + ae.FileName + "\n");
                 }
             }
@@ -1113,7 +1158,7 @@ namespace AudioAnalysisTools
             accuracy = (precision + recall) / 2;
 
             resultsText = sb.ToString();
-        } //end method
+        }
 
 //##############################################################################################################################################
 //  THE NEXT THREE METHODS CONVERT BETWEEN SCORE ARRAYS AND ACOUSTIC EVENTS
@@ -1138,17 +1183,20 @@ namespace AudioAnalysisTools
             double startTime = 0.0;
             int startFrame = 0;
 
-            for (int i = 0; i < count; i++) //pass over all frames
+            //pass over all frames
+            for (int i = 0; i < count; i++)
             {
-                if (isHit == false && values[i] > scoreThreshold) //start of an event
+                //start of an event
+                if (isHit == false && values[i] > scoreThreshold)
                 {
                     isHit = true;
                     startTime = i * frameOffset;
                     startFrame = i;
                 }
                 else //check for the end of an event
-                    if (isHit && values[i] <= scoreThreshold) //this is end of an event, so initialise it
+                    if (isHit && values[i] <= scoreThreshold)
                     {
+                        //this is end of an event, so initialise it
                         isHit = false;
                         double endTime = i * frameOffset;
                         double duration = endTime - startTime;
@@ -1159,9 +1207,10 @@ namespace AudioAnalysisTools
                             continue; //skip events with duration shorter than threshold
                         }
 
-                        AcousticEvent ev = new AcousticEvent(segmentStartOffset, startTime, duration, minHz, maxHz);
-
-                        ev.Name = "Acoustic Segment"; //default name
+                        AcousticEvent ev = new AcousticEvent(segmentStartOffset, startTime, duration, minHz, maxHz)
+                        {
+                            Name = "Acoustic Segment", //default name
+                        };
                         ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
 
                         //obtain average intensity score.
