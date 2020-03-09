@@ -2,12 +2,27 @@
   <PropertyGroup>
     <Deterministic>true</Deterministic>
     <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)style.ruleset</CodeAnalysisRuleSet>
-
     <DotnetFscCompilerPath></DotnetFscCompilerPath>
     <!-- all of these are 64 bit except for linux-arm -->
-    <RuntimeIdentifiers>win-x64;win-arm64;linux-x64;linux-musl-x64;linux-arm;osx-x64</RuntimeIdentifiers>
-    <IsOSX Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' == 'true'">true</IsOSX>
-    <IsLinux Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))' == 'true'">true</IsLinux>
+    <RuntimeIdentifiers>win-x64;win-arm64;linux-x64;linux-musl-x64;linux-arm;linux-arm64;osx-x64</RuntimeIdentifiers>
+  </PropertyGroup>
+  <PropertyGroup
+    Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' == 'true'">
+    <BuildIsOSX>true</BuildIsOSX>
+    <DefineConstants>$(DefineConstants);BUILDING_ON_OSX</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup
+    Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))' == 'true'">
+    <BuildIsLinux>true</BuildIsLinux>
+    <DefineConstants>$(DefineConstants);BUILDING_ON_LINUX</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup
+    Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'true'">
+    <BuildIsWindows>true</BuildIsWindows>
+    <DefineConstants>$(DefineConstants);BUILDING_ON_WINDOWS</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(RuntimeIdentifier.Contains('musl'))">
+    <DefineConstants>$(DefineConstants);BUILT_AGAINST_MUSL</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Label="Common">
     <Company>QUT Ecoacoustics Research Group</Company>

@@ -26,9 +26,6 @@ namespace Acoustics.Tools.Audio
 
         private readonly FfmpegAudioUtility ffmpegUtility;
 
-        // we allow only mp3splt utility to  be null
-        private readonly Mp3SpltAudioUtility mp3SpltUtility;
-
         private readonly SoxAudioUtility soxUtility;
 
         private readonly FfmpegRawPcmAudioUtility ffmpegRawPcmUtility;
@@ -40,12 +37,6 @@ namespace Acoustics.Tools.Audio
         public MasterAudioUtility()
         {
             this.wvunpackUtility = new WavPackAudioUtility(new FileInfo(AppConfigHelper.WvunpackExe));
-
-            var mp3SpltExe = AppConfigHelper.Mp3SpltExe;
-            if (mp3SpltExe != null)
-            {
-                this.mp3SpltUtility = new Mp3SpltAudioUtility(new FileInfo(mp3SpltExe));
-            }
 
             this.ffmpegUtility = new FfmpegAudioUtility(new FileInfo(AppConfigHelper.FfmpegExe), new FileInfo(AppConfigHelper.FfprobeExe));
             this.ffmpegRawPcmUtility = new FfmpegRawPcmAudioUtility(new FileInfo(AppConfigHelper.FfmpegExe));
@@ -84,14 +75,12 @@ namespace Acoustics.Tools.Audio
         /// <param name="temporaryFilesDirectory">Directory for temporary files.</param>
         public MasterAudioUtility(
             FfmpegAudioUtility ffmpegUtility,
-            Mp3SpltAudioUtility mp3SpltUtility,
             WavPackAudioUtility wvunpackUtility,
             SoxAudioUtility soxUtility,
             FfmpegRawPcmAudioUtility ffmpegRawPcmUtility,
             DirectoryInfo temporaryFilesDirectory = null)
         {
             this.wvunpackUtility = wvunpackUtility;
-            this.mp3SpltUtility = mp3SpltUtility;
             this.ffmpegUtility = ffmpegUtility;
             this.ffmpegRawPcmUtility = ffmpegRawPcmUtility;
             this.soxUtility = soxUtility;
@@ -104,15 +93,8 @@ namespace Acoustics.Tools.Audio
         private void Validate()
         {
             Contract.RequiresNotNull(this.ffmpegUtility, nameof(this.ffmpegUtility));
-            Contract.RequiresNotNull(this.wvunpackUtility, nameof(this.wvunpackUtility));
             Contract.RequiresNotNull(this.soxUtility, nameof(this.soxUtility));
             Contract.RequiresNotNull(this.TemporaryFilesDirectory, nameof(this.TemporaryFilesDirectory));
-
-            if (this.mp3SpltUtility == null && !missingMp3SpltWarned)
-            {
-                missingMp3SpltWarned = true;   
-                this.Log.Warn("No Mp3Splt utility provided. If you try to segment MP3 the program will fail.");
-            }
         }
 
         /// <summary>
@@ -226,13 +208,6 @@ namespace Acoustics.Tools.Audio
                 soxRequest.OffsetStart = null;
                 soxRequest.OffsetEnd = null;
             }
-            else if (sourceMediaType == MediaTypes.MediaTypeMp3)
-            {
-                // segment mp3 file
-                soxSourceFile = this.SegmentMp3(source, sourceMediaType, segmentRequest);
-                soxRequest.OffsetStart = null;
-                soxRequest.OffsetEnd = null;
-            }
             else if (sourceMediaType == MediaTypes.MediaTypePcmRaw)
             {
                 // transform (and segment) raw PCM file
@@ -250,7 +225,7 @@ namespace Acoustics.Tools.Audio
                 soxRequest.OffsetStart = null;
                 soxRequest.OffsetEnd = null;
             }
-            else if (sourceMediaType != MediaTypes.MediaTypeWav && sourceMediaType != MediaTypes.MediaTypeMp3)
+            else if (sourceMediaType != MediaTypes.MediaTypeWav)
             {
                 // convert to wav using ffmpeg
                 soxSourceFile = this.ConvertNonWavOrMp3(source, sourceMediaType, segmentRequest);
@@ -456,27 +431,6 @@ namespace Acoustics.Tools.Audio
             this.ffmpegRawPcmUtility.Modify(source, MediaTypes.MediaTypePcmRaw, rawFile, MediaTypes.MediaTypeWav, request);
 
             return rawFile;
-        }
-
-        private FileInfo SegmentMp3(FileInfo source, string sourceMimeType, AudioUtilityRequest request)
-        {
-            if (this.mp3SpltUtility == null)
-            {
-                throw new NotSupportedException($"MP3 conversion not supported because mp3splt utility has not been configured for this { nameof(MasterAudioUtility)}.");
-            }
-
-            // use a temp file to segment.
-            var mp3SpltTempFile = TempFileHelper.NewTempFile(this.TemporaryFilesDirectory, MediaTypes.GetExtension(MediaTypes.MediaTypeMp3));
-
-            if (this.Log.IsDebugEnabled)
-            {
-                this.Log.Debug("Segmenting mp3 file " + source.FullName + " to " + mp3SpltTempFile.FullName + " using mp3splt. Settings: " + request);
-            }
-
-            // use mp3splt to segment mp3.
-            this.mp3SpltUtility.Modify(source, sourceMimeType, mp3SpltTempFile, MediaTypes.MediaTypeMp3, request);
-
-            return mp3SpltTempFile;
         }
 
         private FileInfo ConvertNonWavOrMp3(FileInfo source, string sourceMimeType, AudioUtilityRequest request)

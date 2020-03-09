@@ -12,6 +12,7 @@ namespace System
     using System.Linq;
     using System.Text;
     using System.Text.RegularExpressions;
+    using Path = System.IO.Path;
 
     public static class ExtensionsString
     {
@@ -418,6 +419,11 @@ namespace System
             }
 
             return builder.ToString();
+        }
+
+        public static string NormalizeDirectorySeparators(this string path)
+        {
+            return path.Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar);
         }
     }
 }

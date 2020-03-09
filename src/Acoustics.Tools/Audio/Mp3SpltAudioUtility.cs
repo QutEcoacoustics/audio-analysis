@@ -13,6 +13,7 @@ namespace Acoustics.Tools.Audio
     /// <summary>
     /// Mp3 split audio utility.
     /// </summary>
+    [Obsolete("No longer have need of mp3splt")]
     public class Mp3SpltAudioUtility : AbstractAudioUtility, IAudioUtility
     {
         /// <summary>
@@ -25,6 +26,7 @@ namespace Acoustics.Tools.Audio
         /// <exception cref="ArgumentNullException"><paramref name="mp3SpltExe" /> is <c>null</c>.</exception>
         public Mp3SpltAudioUtility(FileInfo mp3SpltExe)
         {
+            throw new NotSupportedException("Deprecated");
             this.CheckExe(mp3SpltExe, "mp3splt");
             this.ExecutableModify = mp3SpltExe;
             this.ExecutableInfo = mp3SpltExe;
@@ -42,6 +44,7 @@ namespace Acoustics.Tools.Audio
         /// <exception cref="ArgumentNullException"><paramref name="mp3SpltExe" /> is <c>null</c>.</exception>
         public Mp3SpltAudioUtility(FileInfo mp3SpltExe, DirectoryInfo temporaryFilesDirectory)
         {
+            throw new NotSupportedException("Deprecated");
             this.CheckExe(mp3SpltExe, "mp3splt");
             this.ExecutableModify = mp3SpltExe;
             this.ExecutableInfo = mp3SpltExe;
@@ -539,57 +542,6 @@ Hundredths (optional): Must be between 0 and 99. Use them for higher precision.
             var ext = Path.GetExtension(originalFileName);
 
             return audioFileName + ext;
-        }
-
-        /// <summary>
-        /// Get a segment from an mp3 file.
-        /// </summary>
-        /// <param name="audioFile">
-        /// The audio file.
-        /// </param>
-        /// <param name="start">
-        /// The start.
-        /// </param>
-        /// <param name="end">
-        /// The end.
-        /// </param>
-        /// <param name="requestMimeType">
-        /// The request Mime Type.
-        /// </param>
-        /// <returns>
-        /// Byte array of audio segment. Byte array will be null or 0 length if segmentation failed.
-        /// </returns>
-        public byte[] SegmentMp3(string audioFile, long? start, long? end, string requestMimeType)
-        {
-            try
-            {
-                var pathToMp3Split = AppConfigHelper.Mp3SpltExe;
-
-
-
-                var mimeType = MediaTypes.GetMediaType(Path.GetExtension(audioFile));
-
-                if (mimeType == MediaTypes.MediaTypeMp3 && requestMimeType == MediaTypes.MediaTypeMp3 &&
-                    !string.IsNullOrEmpty(pathToMp3Split) && File.Exists(pathToMp3Split))
-                {
-                    var tempFile = TempFileHelper.NewTempFile(this.TemporaryFilesDirectory, MediaTypes.ExtMp3);
-
-                    var segmentedFile = this.SingleSegment(
-                        tempFile.FullName, start ?? 0, end ?? long.MaxValue);
-
-                    byte[] bytes = File.ReadAllBytes(segmentedFile);
-
-                    tempFile.Delete();
-
-                    return bytes;
-                }
-            }
-            catch
-            {
-                return new byte[0];
-            }
-
-            return new byte[0];
         }
 
         /// <summary>

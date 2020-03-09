@@ -30,26 +30,26 @@ namespace Acoustics.Test.Tools
             // and we should be able to parse the data
 
             var raw = @"Metadata:
-     SENSORUID       : 000010
-     :
-     MICROPHONEBUILDDATE2: unknown
-     MICROPHONEUID2  : unknown
-     MICROPHONEUID1  : 000629
-     SENSORFIRMWAREVERSION: Firmware: V3.08
-     SENSORLOCATION  : +19.2144 +152.8811
-     SDCARDCID       : 9E42453531324742100000004D012BE5
-     MICROPHONEBUILDDATE1: 2019-02-22
-     MICROPHONETYPE2 : unknown
-     CHANNELGAIN1    : 50dB
-     MICROPHONETYPE1 : STD AUDIO MIC
-     BATTERYLEVEL    : 100p 12.83V
-     RECORDINGEND    : 2019-04-01 01:59:56
-     RECORDINGSTART  : 2019-04-01 00:00:01
-     CHANNELGAIN2    : 0dB";
+TAG:SensorUid=000010
+
+TAG:MicrophoneBuildDate2=unknown
+TAG:MicrophoneUid2=unknown
+TAG:MicrophoneUid1=000629
+TAG:SensorFirmwareVersion=Firmware: V3.08
+TAG:SensorLocation=+19.2144 +152.8811
+TAG:SdCardCid=9E42453531324742100000004D012BE5
+TAG:MicrophoneBuildDate1=2019-02-22
+TAG:MicrophoneType2=unknown
+TAG:ChannelGain1=50dB
+TAG:MicrophoneType1=STD AUDIO MIC
+TAG:BatteryLevel=100p 12.83V
+TAG:RecordingEnd=2019-04-01 01:59:56
+TAG:RecordingStart=2019-04-01 00:00:01
+TAG:ChannelGain2=0dB";
 
             IEnumerable<(string Key, string Value)> Clean(string line)
             {
-                var parts = line.Split(new[] { ':', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                var parts = line.Split(new[] { '=', ' ' }, StringSplitOptions.RemoveEmptyEntries);
                 if (parts.Length != 2)
                 {
                     yield break;
@@ -62,7 +62,7 @@ namespace Acoustics.Test.Tools
 
             foreach (var keyAndValue in values)
             {
-                string ffmpegKey = "FORMAT TAG:" + keyAndValue.Key;
+                string ffmpegKey = "FORMAT " + keyAndValue.Key;
                 Assert.IsTrue(info.RawData.ContainsKey(ffmpegKey));
                 Assert.AreEqual(keyAndValue.Value, info.RawData[ffmpegKey]);
             }

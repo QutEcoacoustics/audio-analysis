@@ -339,31 +339,33 @@ namespace Acoustics.Test.Tools.AudioUtilityChannelSelection
         }
 
         [TestMethod]
+        [Ignore("deprecated audio tool")]
         public void AdvancedChannelSelectionMp3SpltFails()
         {
-            // mp3 only supports two channels anwyay...
-            // array of channels of frequencies (expected in each channel)
-            var audioUtilityRequest = new AudioUtilityRequest { Channels = new[] { 1, 2 }, MixDownToMono = false };
+            //// mp3 only supports two channels anwyay...
+            //// array of channels of frequencies (expected in each channel)
+            //var audioUtilityRequest = new AudioUtilityRequest { Channels = new[] { 1, 2 }, MixDownToMono = false };
 
-            Assert.ThrowsException<ChannelSelectionOperationNotImplemented>(
-                () =>
-                {
-                    TestHelper.GetAudioUtilityMp3Splt().Modify(
-                        TestHelper.GetAudioFile(TwoChannelFileMp3),
-                        MediaTypes.MediaTypeMp3,
-                        TempFileHelper.NewTempFile(MediaTypes.GetExtension(MediaTypes.MediaTypeMp3)),
-                        MediaTypes.MediaTypeMp3,
-                        audioUtilityRequest);
-                });
+            //Assert.ThrowsException<ChannelSelectionOperationNotImplemented>(
+            //    () =>
+            //    {
+            //        TestHelper.GetAudioUtilityMp3Splt().Modify(
+            //            TestHelper.GetAudioFile(TwoChannelFileMp3),
+            //            MediaTypes.MediaTypeMp3,
+            //            TempFileHelper.NewTempFile(MediaTypes.GetExtension(MediaTypes.MediaTypeMp3)),
+            //            MediaTypes.MediaTypeMp3,
+            //            audioUtilityRequest);
+            //    });
         }
 
         [TestMethod]
+        [Ignore("deprecated audio tool")]
         public void AdvancedChannelSelectionShntoolFails()
         {
-            AssertAdvancedChannelConversionFails(
-                FourChannelFile,
-                MediaTypes.MediaTypeWav,
-                TestHelper.GetAudioUtilityShntool());
+            //AssertAdvancedChannelConversionFails(
+            //    FourChannelFile,
+            //    MediaTypes.MediaTypeWav,
+            //    TestHelper.GetAudioUtilityShntool());
         }
 
         [TestMethod]

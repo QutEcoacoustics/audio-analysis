@@ -10,20 +10,15 @@
 namespace Acoustics.Shared
 {
     using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
     using System.IO;
-    using System.Linq;
     using System.Reflection;
     using System.Runtime.InteropServices;
-    using ConfigFile;
     using log4net;
-    using Microsoft.Extensions.Configuration;
+    using static System.Runtime.InteropServices.OSPlatform;
+    using static System.Runtime.InteropServices.RuntimeInformation;
 
     public static class AppConfigHelper
     {
-        public const string DefaultTargetSampleRateKey = "DefaultTargetSampleRate";
-
         /// <summary>
         /// Warning: do not use this format to print dates as strings - it will include a colon in the time zone offset :-(.
         /// </summary>
@@ -38,19 +33,17 @@ namespace Acoustics.Shared
         public const string StandardDateFormatSm2 = "yyyyMMdd_HHmmss";
         public const string RenderedDateFormatShort = "yyyy-MM-dd HH:mm";
 
+        public const int DefaultTargetSampleRate = 22050;
+
+        public const bool WasBuiltAgainstMusl =
+#if BUILT_AGAINST_MUSL
+            true;
+#else
+            false;
+#endif
+
         private static readonly string ExecutingAssemblyPath =
             Assembly.GetAssembly(typeof(AppConfigHelper)).Location;
-
-        private static readonly Lazy<IConfigurationSection> SharedSettings = new Lazy<IConfigurationSection>(() =>
-        {
-            var settings = AppConfiguration.Value.GetSection("appSettings");
-            if (!settings.AsEnumerable().Any())
-            {
-                throw new ConfigFileException("Could not read AP.Settings.json - no values were found in the config file");
-            }
-
-            return settings;
-        });
 
         private static readonly ILog Log = LogManager.GetLogger(typeof(AppConfigHelper));
         private static readonly bool IsLinuxValue;
@@ -59,266 +52,162 @@ namespace Acoustics.Shared
 
         static AppConfigHelper()
         {
-            IsMono = Type.GetType("Mono.Runtime") != null;
             CheckOs(ref IsWindowsValue, ref IsLinuxValue, ref IsMacOsXValue);
         }
 
-        public static Lazy<IConfigurationRoot> AppConfiguration { get; } = new Lazy<IConfigurationRoot>(() =>
-            new ConfigurationBuilder()
-                .AddJsonFile("AP.Settings.json")
-                .Build());
-
-        public static int DefaultTargetSampleRate => GetInt(DefaultTargetSampleRateKey);
-
         public static string ExecutingAssemblyDirectory { get; } = Path.GetDirectoryName(ExecutingAssemblyPath);
 
-        public static string FileDateFormatUtc
-        {
-            get
-            {
-                var dateFormat = GetString("StandardFileDateFormatUtc");
-                return dateFormat.IsNotWhitespace() ? dateFormat : StandardDateFormatUtc;
-            }
-        }
-
-        public static string FileDateFormat
-        {
-            get
-            {
-                var dateFormat = GetString("StandardFileDateFormat");
-                return dateFormat.IsNotWhitespace() ? dateFormat : StandardDateFormat;
-            }
-        }
-
-        public static string FileDateFormatSm2
-        {
-            get
-            {
-                var dateFormat = GetString("StandardFileDateFormatSm2");
-                return dateFormat.IsNotWhitespace() ? dateFormat : StandardDateFormatSm2;
-            }
-        }
+        /// <summary>
+        /// Gets FfmpegExe.
+        /// </summary>
+        public static string FfmpegExe => GetExeFile("ffmpeg");
 
         /// <summary>
         /// Gets FfmpegExe.
         /// </summary>
-        public static string FfmpegExe => GetExeFile("AudioUtilityFfmpegExe");
-
-        /// <summary>
-        /// Gets FfmpegExe.
-        /// </summary>
-        public static string FfprobeExe => GetExeFile("AudioUtilityFfprobeExe");
+        public static string FfprobeExe => GetExeFile("ffprobe");
 
         /// <summary>
         /// Gets WvunpackExe.
         /// </summary>
-        public static string WvunpackExe => GetExeFile("AudioUtilityWvunpackExe");
-
-        /// <summary>
-        /// Gets Mp3SpltExe.
-        /// </summary>
-        public static string Mp3SpltExe => GetExeFile("AudioUtilityMp3SpltExe", false);
-
-        /// <summary>
-        /// Gets ShntoolExe.
-        /// </summary>
-        public static string ShntoolExe => GetExeFile("AudioUtilityShntoolExe", false);
+        public static string WvunpackExe => GetExeFile("wvunpack", required: false);
 
         /// <summary>
         /// Gets SoxExe.
         /// </summary>
-        public static string SoxExe => GetExeFile("AudioUtilitySoxExe");
+        public static string SoxExe => GetExeFile("sox");
 
         /// <summary>
-        /// Gets Wav2PngExe.
+        /// Gets a value indicating whether we are running on the Mono platform.
+        /// This should always be false.
         /// </summary>
-        public static string Wav2PngExe => GetExeFile("AudioUtilityWav2PngExe");
+        public static bool IsMono { get; } = Type.GetType("Mono.Runtime") != null;
 
         /// <summary>
-        /// Gets the directory of the QutSensors.Shared.dll assembly.
+        /// Gets a value indicating whether the current operating system is a linux variant.
+        /// Note: this property actually tests what operating system we're using, unlike
+        /// <see cref="RuntimeInformation.IsOSPlatform"/> which uses values from the ***build**.
         /// </summary>
-        /// <exception cref="DirectoryNotFoundException">
-        /// Could not get directory.
-        /// </exception>
-        public static DirectoryInfo AssemblyDir
-        {
-            get
+        public static bool IsLinux => IsLinuxValue;
+
+        /// <summary>
+        /// Gets a value indicating whether the current operating system is a Windows variant.
+        /// Note: this property actually tests what operating system we're using, unlike
+        /// <see cref="RuntimeInformation.IsOSPlatform"/> which uses values from the ***build**.
+        /// </summary>
+        public static bool IsWindows => IsWindowsValue;
+
+        /// <summary>
+        /// Gets a value indicating whether the current operating system is a OSX variant.
+        /// Note: this property actually tests what operating system we're using, unlike
+        /// <see cref="RuntimeInformation.IsOSPlatform"/> which uses values from the ***build**.
+        /// </summary>
+        public static bool IsMacOsX => IsMacOsXValue;
+
+        /// <summary>
+        /// Gets a pseudo (fake) runtime identifier from the information available to us.
+        /// This value represents a ***build** time construct.
+        /// </summary>
+        /// <remarks>
+        /// Note: these are not real .NET RIDs... but they're meant to simulate them.
+        /// </remarks>
+        /// <returns>An rid-like string.</returns>
+        public static string PseudoRuntimeIdentifier { get; } =
+            OSArchitecture switch
             {
-                var assemblyDirString = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                Architecture.X64 when IsOSPlatform(Windows) => "win-x64",
+                Architecture.X64 when IsOSPlatform(Linux) => "linux-x64",
+                Architecture.X64 when IsOSPlatform(OSX) => "osx-x64",
+                Architecture.Arm64 when IsOSPlatform(Windows) => "win-arm64",
 
-                if (!string.IsNullOrEmpty(assemblyDirString))
+                // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+#pragma warning disable 162
+                Architecture.Arm64 when IsOSPlatform(Linux) && WasBuiltAgainstMusl => "linux-musl-arm64",
+#pragma warning restore 162
+                Architecture.Arm64 when IsOSPlatform(Linux) => "linux-arm64",
+                Architecture.Arm when IsOSPlatform(Linux) => "linux-arm",
+
+                // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+                // ReSharper disable once UnreachableCode
+#pragma warning disable 162
+                _ => throw new PlatformNotSupportedException($"{Meta.Name} has not been configured to work with {OSDescription} {OSArchitecture}{(WasBuiltAgainstMusl ? " musl" : string.Empty)}"),
+#pragma warning restore 162
+            };
+
+        internal static string GetExeFile(string name, bool required = true)
+        {
+            (string directory, string osName) = name switch
+            {
+                "ffmpeg" => (name, IsOSPlatform(Windows) ? $"{name}.exe" : name),
+                "ffprobe" => ("ffmpeg", IsOSPlatform(Windows) ? $"{name}.exe" : name),
+                "sox" => (name, IsOSPlatform(Windows) ? $"{name}.exe" : name),
+                "wvunpack" => ("wavpack", IsOSPlatform(Windows) ? $"{name}.exe" : name),
+                _ => throw new ArgumentException("Executable not supported" ,nameof(name)),
+            };
+
+            string rid = PseudoRuntimeIdentifier;
+
+            string executablePath = Path.Join(ExecutingAssemblyDirectory, "audio-utils", rid, directory, osName);
+
+            if (!File.Exists(executablePath))
+            {
+                Log.Verbose($"Attempted to get exe path `{executablePath}` but it was not found");
+
+                executablePath = FindProgramInPath(osName);
+            }
+
+            if (executablePath != null)
+            {
+                if (Log.IsVerboseEnabled())
                 {
-                    var assemblyDir = new DirectoryInfo(assemblyDirString);
-
-                    if (!Directory.Exists(assemblyDir.FullName))
-                    {
-                        throw new DirectoryNotFoundException("Could not find assembly directory: " + assemblyDir.FullName);
-                    }
-
-                    return assemblyDir;
+                    Log.Verbose($"Found and using exe {executablePath}");
                 }
 
-                throw new Exception("Cannot get assembly directory.");
+                return executablePath;
             }
-        }
 
-        public static bool IsMono { get; }
-
-        public static bool IsLinux
-        {
-            get
+            if (required)
             {
-                // TODO CORE: remove when tested
-                Debug.Assert(IsLinuxValue == RuntimeInformation.IsOSPlatform(OSPlatform.Linux));
-                return RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
-            }
-        }
-
-        public static bool IsWindows
-        {
-            get
-            {
-                // TODO CORE: remove when tested
-                Debug.Assert(IsWindowsValue == RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
-                return RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-            }
-        }
-
-        public static bool IsMacOsX
-        {
-            get
-            {
-                // TODO CORE: remove when tested
-                Debug.Assert(IsMacOsXValue == RuntimeInformation.IsOSPlatform(OSPlatform.OSX));
-                return RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
-            }
-        }
-
-        public static string GetString(string key)
-        {
-            var value = SharedSettings.Value[key];
-
-            if (string.IsNullOrEmpty(value))
-            {
-                throw new ConfigFileException("Could not find appSettings key or it did not have a value: " + key);
+                throw new FileNotFoundException($"Could not find {name} audio-utils or in the system. Please install {name}.");
             }
 
-            return value;
-        }
-
-        public static bool GetBool(string key)
-        {
-            var value = GetString(key);
-
-            if (bool.TryParse(value, out var valueParsed))
-            {
-                return valueParsed;
-            }
-
-            throw new ConfigFileException(
-                "Key " + key + " exists but could not be converted to a bool: " + value);
-        }
-
-        public static int GetInt(string key)
-        {
-            var value = GetString(key);
-
-            if (int.TryParse(value, out var valueParsed))
-            {
-                return valueParsed;
-            }
-
-            throw new ConfigFileException(
-                "Key " + key + " exists but could not be converted to a int: " + value);
-        }
-
-        public static double GetDouble(string key)
-        {
-            var value = GetString(key);
-
-            if (double.TryParse(value, out var valueParsed))
-            {
-                return valueParsed;
-            }
-
-            throw new ConfigFileException(
-                "Key " + key + " exists but could not be converted to a double: " + value);
-        }
-
-        public static DirectoryInfo GetDir(string key, bool checkExists)
-        {
-            var value = GetString(key);
-
-            if (checkExists && !Directory.Exists(value))
-            {
-                throw new DirectoryNotFoundException($"Could not find directory: {key} = {value}");
-            }
-
-            return new DirectoryInfo(value);
-        }
-
-        public static FileInfo GetFile(string key, bool checkExists)
-        {
-            var value = GetString(key);
-
-            if (checkExists && !File.Exists(value))
-            {
-                throw new FileNotFoundException($"Could not find file: {key} = {value}");
-            }
-
-            return new FileInfo(value);
+            Log.Verbose($"No audio tool found for {name}. This program may fail if this binary is needed.");
+            return null;
         }
 
         /// <summary>
-        /// Get the value for a key as one or more files.
+        /// Gets the path to the program.
         /// </summary>
-        /// <param name="key">
-        /// The key.
-        /// </param>
-        /// <param name="checkAnyExist">
-        /// The check any exist.
-        /// </param>
-        /// <param name="separators">
-        /// The separators.
-        /// </param>
-        /// <returns>
-        /// The specified file, if it exists
-        /// </returns>
-        public static IEnumerable<FileInfo> GetFiles(string key, bool checkAnyExist, params string[] separators)
+        /// <remarks>Copied from https://github.com/dotnet/corefx/blob/master/src/System.Diagnostics.Process/src/System/Diagnostics/Process.Unix.cs#L727</remarks>
+        /// <param name="program">The program to search for</param>
+        /// <returns>The path if the file is found, otherwise null.</returns>
+        private static string FindProgramInPath(string program)
         {
-            var value = GetString(key);
-            var values = value.Split(separators, StringSplitOptions.RemoveEmptyEntries);
-
-            var files = values.Where(v => !string.IsNullOrEmpty(v)).Select(v => new FileInfo(v)).ToList();
-
-            if (checkAnyExist && files.All(f => !File.Exists(f.FullName)))
+            string pathEnvVar = Environment.GetEnvironmentVariable(IsWindows ? "Path" : "PATH");
+            if (pathEnvVar != null)
             {
-                throw new FileNotFoundException("None of the given files exist: " + string.Join(", ", files.Select(f => f.FullName)));
+                var pathParser = pathEnvVar.Split(':', StringSplitOptions.RemoveEmptyEntries);
+                foreach (var subPath in pathParser)
+                {
+                    var path = Path.Combine(subPath, program);
+                    if (File.Exists(path))
+                    {
+                        return path;
+                    }
+                }
             }
 
-            return files;
-        }
-
-        public static long GetLong(string key)
-        {
-            var value = GetString(key);
-
-            if (long.TryParse(value, out var valueParsed))
-            {
-                return valueParsed;
-            }
-
-            throw new ConfigFileException(
-                "Key " + key + " exists but could not be converted to a long: " + value);
+            Log.Verbose($"Attempted to search for exe on system Path but it was not found. System path: \n{pathEnvVar}");
+            return null;
         }
 
         /// <summary>
-        /// Adapted from https://stackoverflow.com/a/38795621/224512
+        /// Adapted from https://stackoverflow.com/a/38795621/224512.
         /// </summary>
         private static void CheckOs(ref bool isWindows, ref bool isLinux, ref bool isMacOsX)
         {
-            var windir = Environment.GetEnvironmentVariable("windir");
-            if (!string.IsNullOrEmpty(windir) && windir.Contains(@"\") && Directory.Exists(windir))
+            var winDir = Environment.GetEnvironmentVariable("windir");
+            if (!string.IsNullOrEmpty(winDir) && winDir.Contains(@"\") && Directory.Exists(winDir))
             {
                 isWindows = true;
             }
@@ -342,49 +231,8 @@ namespace Acoustics.Shared
             }
             else
             {
-                throw new PlatformNotSupportedException("Unkown platform");
+                throw new PlatformNotSupportedException("Unknown platform");
             }
-        }
-
-        private static string GetExeFile(string appConfigKey, bool required = true)
-        {
-            string key;
-
-            if (IsMacOsX)
-            {
-                key = appConfigKey + "MacOsX";
-            }
-            else if (IsLinux)
-            {
-                key = appConfigKey + "Linux";
-            }
-            else
-            {
-                key = appConfigKey;
-            }
-
-            var path = SharedSettings.Value[key];
-
-            Log.Verbose($"Attempted to get exe path `{appConfigKey}`. Value: '{path}'");
-
-            if (!path.IsNullOrEmpty())
-            {
-                return Path.IsPathRooted(path) ? path : Path.Combine(AssemblyDir.FullName, path);
-            }
-
-            if (required)
-            {
-                throw new ConfigFileException($"An exe path for `{key}` was not found or it's value is empty in AP.Settings.json");
-            }
-
-            Log.Debug($"No key found for `{key}` in the AP.Settings.config. This program may fail if this binary is needed.");
-            return null;
-        }
-
-        private static string GetRuntimeIdentifier()
-        {
-            PlatformServices
-            //return RuntimeInformation.
         }
     }
 }

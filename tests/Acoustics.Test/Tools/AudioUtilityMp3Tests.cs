@@ -1,4 +1,4 @@
-﻿namespace Acoustics.Test.Tools
+namespace Acoustics.Test.Tools
 {
     using System;
     using System.IO;
@@ -558,7 +558,7 @@
         {
             var expected = new AudioUtilityInfo
             {
-                Duration = TimeSpan.FromSeconds(213),
+                Duration = TimeSpan.FromSeconds(213.031020),
                 SampleRate = 11025,
                 ChannelCount = 1,
                 MediaType = MediaTypes.MediaTypeMp3,

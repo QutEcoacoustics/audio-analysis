@@ -38,10 +38,6 @@
       <Link>download_ap.ps1</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <None Include="..\AP.Settings.json">
-      <Link>AP.Settings.json</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="AcousticFeatures.cs" />

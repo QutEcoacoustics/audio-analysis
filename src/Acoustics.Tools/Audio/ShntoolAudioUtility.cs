@@ -12,6 +12,7 @@ namespace Acoustics.Tools.Audio
     /// <remarks>
     /// see: http://www.etree.org/shnutils/shntool/ for more info.
     /// </remarks>
+    [Obsolete("No longer have need of shntool")]
     public class ShntoolAudioUtility : AbstractAudioUtility, IAudioUtility
     {
         /// <summary>
@@ -24,6 +25,7 @@ namespace Acoustics.Tools.Audio
         /// <exception cref="ArgumentNullException"><paramref name="shntoolExe" /> is <c>null</c>.</exception>
         public ShntoolAudioUtility(FileInfo shntoolExe)
         {
+            throw new NotSupportedException("Deprecated");
             this.CheckExe(shntoolExe, "shntool");
             this.ExecutableModify = shntoolExe;
             this.ExecutableInfo = shntoolExe;
@@ -41,6 +43,7 @@ namespace Acoustics.Tools.Audio
         /// <exception cref="ArgumentNullException"><paramref name="shntoolExe" /> is <c>null</c>.</exception>
         public ShntoolAudioUtility(FileInfo shntoolExe, DirectoryInfo temporaryFilesDirectory)
         {
+            throw new NotSupportedException("Deprecated");
             this.CheckExe(shntoolExe, "shntool");
             this.ExecutableModify = shntoolExe;
             this.ExecutableInfo = shntoolExe;

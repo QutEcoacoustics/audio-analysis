@@ -289,6 +289,7 @@ namespace Acoustics.Test.Shared
             var partialExpected = new[]
             {
                 (typeof(AcousticEvent), typeof(AcousticEvent.AcousticEventClassMap)),
+                (typeof(Oblong), typeof(Oblong.OblongClassMap)),
                 (typeof(EventStatistics), typeof(EventStatistics.EventStatisticsClassMap)),
                 (typeof(ImportedEvent), typeof(ImportedEvent.ImportedEventNameClassMap)),
             };
