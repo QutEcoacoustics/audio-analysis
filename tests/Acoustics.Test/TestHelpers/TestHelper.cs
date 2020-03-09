@@ -240,7 +240,7 @@ namespace Acoustics.Test.TestHelpers
                     "different_channels_tone.mp3",
                     new AudioUtilityInfo
                         {
-                            Duration = TimeSpan.FromSeconds(30.07),
+                            Duration = TimeSpan.FromSeconds(30.016825),
                             SampleRate = 22050,
                             ChannelCount = 2,
                             BitsPerSecond = 64100,
@@ -559,11 +559,10 @@ namespace Acoustics.Test.TestHelpers
 
             var ffmpeg = new FfmpegAudioUtility(ffmpegExe, new FileInfo( AppConfigHelper.FfprobeExe));
             var ffmpegRawPcm = new FfmpegRawPcmAudioUtility(ffmpegExe);
-            var mp3Splt = new Mp3SpltAudioUtility(new FileInfo(AppConfigHelper.Mp3SpltExe));
             var wvunpack = new WavPackAudioUtility(new FileInfo(AppConfigHelper.WvunpackExe));
             var sox = new SoxAudioUtility(new FileInfo(AppConfigHelper.SoxExe));
 
-            return new MasterAudioUtility(ffmpeg, mp3Splt, wvunpack, sox, ffmpegRawPcm, PathHelper.GetTempDir());
+            return new MasterAudioUtility(ffmpeg, wvunpack, sox, ffmpegRawPcm, PathHelper.GetTempDir());
         }
 
         public static IAudioUtility GetAudioUtilitySox()
@@ -601,24 +600,6 @@ namespace Acoustics.Test.TestHelpers
             var util = new WavPackAudioUtility(wavunpackExe);
 
             return util;
-        }
-
-        public static IAudioUtility GetAudioUtilityMp3Splt()
-        {
-            var mp3SpltExe = PathHelper.GetExe(AppConfigHelper.Mp3SpltExe);
-
-            var mp3Splt = new Mp3SpltAudioUtility(mp3SpltExe);
-
-            return mp3Splt;
-        }
-
-        public static IAudioUtility GetAudioUtilityShntool()
-        {
-            var shntoolExe = PathHelper.GetExe(AppConfigHelper.ShntoolExe);
-
-            var shntool = new ShntoolAudioUtility(shntoolExe);
-
-            return shntool;
         }
 
         public static void AssertFrequencyInSignal(WavReader wavReader, double[] signal, int[] frequencies, int variance = 1)

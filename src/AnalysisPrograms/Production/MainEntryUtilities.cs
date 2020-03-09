@@ -201,7 +201,7 @@ See {Meta.GetDocsUrl("debugging.md")} for help.";
             // https://github.com/QutEcoacoustics/audio-analysis/issues/241
             var executableName = Process.GetCurrentProcess().MainModule.ModuleName;
             var expectedName = Assembly.GetAssembly(typeof(MainEntry)).ManifestModule.ScopeName.Replace(".dll", ".exe");
-            
+
             if (expectedName != executableName && !IsMsTestRunningMe)
             {
                 Log.Warn($"!!! IMPORTANT: Executable name is {executableName} and expected name is {expectedName}");
@@ -271,10 +271,6 @@ previously found that the AP install is corrupt. Try installing AP again.
         internal static void HangBeforeExit()
         {
 #if DEBUG
-            if (AppConfigHelper.IsMono)
-            {
-                return;
-            }
 
             if (IsMsTestRunningMe)
             {
@@ -393,6 +389,11 @@ previously found that the AP install is corrupt. Try installing AP again.
             }
 
             AppDomain.CurrentDomain.UnhandledException += CurrentDomainOnUnhandledException;
+
+            if (AppConfigHelper.IsMono)
+            {
+                throw new PlatformNotSupportedException($"This version of ${Meta.Name} cannot be used with Mono.");
+            }
         }
 
         private static void CurrentDomainOnUnhandledException(object sender, UnhandledExceptionEventArgs unhandledExceptionEventArgs)

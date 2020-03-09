@@ -16,6 +16,9 @@ parameters:
     - rid: linux-arm
       pool: ubuntu-latest
       configurations: [release]
+    - rid: linux-arm64
+      pool: ubuntu-latest
+      configurations: [release]
     - rid: osx-x64
       pool: macos-latest
       configurations: [debug, release]

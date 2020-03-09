@@ -206,15 +206,15 @@ namespace Acoustics.Test.Tools
                 () => new FfmpegAudioUtility(GetAudioUtilityExe(AppConfigHelper.WvunpackExe), GetAudioUtilityExe(AppConfigHelper.WvunpackExe)),
                 "Expected file name to contain ");
 
-            TestHelper.ExceptionMatches<ArgumentException>(
-                () => new Mp3SpltAudioUtility(GetAudioUtilityExe(AppConfigHelper.FfmpegExe)), "Expected file name to contain ");
+            //TestHelper.ExceptionMatches<ArgumentException>(
+            //    () => new Mp3SpltAudioUtility(GetAudioUtilityExe(AppConfigHelper.FfmpegExe)), "Expected file name to contain ");
 
             TestHelper.ExceptionMatches<ArgumentException>(
-                () => new WavPackAudioUtility(GetAudioUtilityExe(AppConfigHelper.Mp3SpltExe)),
+                () => new WavPackAudioUtility(GetAudioUtilityExe(AppConfigHelper.FfmpegExe)),
                 "Expected file name to contain ");
 
             TestHelper.ExceptionMatches<ArgumentException>(
-                () => new SoxAudioUtility(GetAudioUtilityExe(AppConfigHelper.Mp3SpltExe)), "Expected file name to contain ");
+                () => new SoxAudioUtility(GetAudioUtilityExe(AppConfigHelper.FfmpegExe)), "Expected file name to contain ");
         }
 
         /// <summary>
@@ -241,7 +241,7 @@ namespace Acoustics.Test.Tools
                 MediaTypes.MediaTypeMp3,
                 TimeSpan.FromMinutes(1),
                 TimeSpan.FromMinutes(2),
-                TimeSpan.FromMilliseconds(50));
+                TimeSpan.FromMilliseconds(60));
         }
 
         /// <summary>
@@ -326,8 +326,8 @@ namespace Acoustics.Test.Tools
             TestHelper.ExceptionMatches<FileNotFoundException>(
                 () => new FfmpegAudioUtility(randomFile, randomFile), "Could not find exe");
 
-            TestHelper.ExceptionMatches<FileNotFoundException>(
-                () => new Mp3SpltAudioUtility(randomFile), "Could not find exe");
+            //TestHelper.ExceptionMatches<FileNotFoundException>(
+            //    () => new Mp3SpltAudioUtility(randomFile), "Could not find exe");
 
             TestHelper.ExceptionMatches<FileNotFoundException>(
                 () => new WavPackAudioUtility(randomFile), "Could not find exe");
@@ -345,8 +345,8 @@ namespace Acoustics.Test.Tools
             TestHelper.ExceptionMatches<ArgumentNullException>(
                 () => new FfmpegAudioUtility(null,null), "Value cannot be null");
 
-            TestHelper.ExceptionMatches<ArgumentNullException>(
-                () => new Mp3SpltAudioUtility(null), "Value cannot be null");
+            //TestHelper.ExceptionMatches<ArgumentNullException>(
+            //    () => new Mp3SpltAudioUtility(null), "Value cannot be null");
 
             TestHelper.ExceptionMatches<ArgumentNullException>(
                 () => new WavPackAudioUtility(null), "Value cannot be null");
@@ -360,20 +360,9 @@ namespace Acoustics.Test.Tools
             // creation should normally fail but MasterAudioUtility was changed so that Mp3Splt was optional
             var utility = new MasterAudioUtility(
                 (FfmpegAudioUtility)TestHelper.GetAudioUtilityFfmpeg(),
-                null, //(Mp3SpltAudioUtility)TestHelper.GetAudioUtilityMp3Splt(),
                 (WavPackAudioUtility)TestHelper.GetAudioUtilityWavunpack(),
                 (SoxAudioUtility)TestHelper.GetAudioUtilitySox(),
                 (FfmpegRawPcmAudioUtility)TestHelper.GetAudioUtilityFfmpegRawPcm());
-
-            // but it throws an exception if we try and segment a mp3
-            TestHelper.ExceptionMatches<NotSupportedException>(
-                () => utility.Modify(
-                    PathHelper.GetTestAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3"),
-                    MediaTypes.MediaTypeMp3,
-                    TempFileHelper.NewTempFile(),
-                    MediaTypes.MediaTypeWav,
-                    new AudioUtilityRequest()),
-                "MP3 conversion not supported because mp3splt utility has not been configured");
         }
 
         private static FileInfo GetAudioUtilityExe(string name)

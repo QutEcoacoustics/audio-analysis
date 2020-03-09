@@ -161,16 +161,17 @@ namespace Acoustics.Test.Tools
         [DataRow("geckos.wav")]
         [DataRow("4channelsPureTones.wav")]
         [DataRow("different_channels_tone.wav")]
+        [Ignore("deprecated audio tool")]
         public void InfoWorksShnTool(string file)
         {
-            var util = TestHelper.GetAudioUtilityShntool();
+        //    var util = TestHelper.GetAudioUtilityShntool();
 
-            var source = TestHelper.GetAudioFile(file);
-            var info = util.Info(source);
+        //    var source = TestHelper.GetAudioFile(file);
+        //    var info = util.Info(source);
 
-            var expected = TestHelper.AudioDetails[file];
+        //    var expected = TestHelper.AudioDetails[file];
 
-            TestHelper.CheckAudioUtilityInfo(expected, info);
+        //    TestHelper.CheckAudioUtilityInfo(expected, info);
         }
 
         [DataTestMethod]
@@ -188,14 +189,15 @@ namespace Acoustics.Test.Tools
         [DataRow("4channelsPureTones.wv")]
         [DataRow("different_channels_tone.mp3")]
         [DataRow("4min test.mp3")]
+        [Ignore("deprecated audio tool")]
         public void InfoFailsForShnTool(string file)
         {
-            var util = TestHelper.GetAudioUtilityShntool();
+            //var util = TestHelper.GetAudioUtilityShntool();
 
-            var source = TestHelper.GetAudioFile(file);
-            TestHelper.ExceptionMatches<NotSupportedException>(
-                () => util.Info(source),
-                "cannot be processed.  Valid formats are: wav (audio/wav).");
+            //var source = TestHelper.GetAudioFile(file);
+            //TestHelper.ExceptionMatches<NotSupportedException>(
+            //    () => util.Info(source),
+            //    "cannot be processed.  Valid formats are: wav (audio/wav).");
         }
 
         [DataTestMethod]
@@ -330,14 +332,15 @@ namespace Acoustics.Test.Tools
         [DataRow("A French Fiddle Speaks.mp3")]
         [DataRow("different_channels_tone.mp3")]
         [DataRow("4min test.mp3")]
+        [Ignore("deprecated audio tool")]
         public void InfoWorksForMp3Splt(string file)
         {
-            var util = TestHelper.GetAudioUtilityMp3Splt();
+            //var util = TestHelper.GetAudioUtilityMp3Splt();
 
-            var source = TestHelper.GetAudioFile(file);
-            TestHelper.ExceptionMatches<NotImplementedException>(
-                () => util.Info(source),
-                "The method or operation is not implemented.");
+            //var source = TestHelper.GetAudioFile(file);
+            //TestHelper.ExceptionMatches<NotImplementedException>(
+            //    () => util.Info(source),
+            //    "The method or operation is not implemented.");
         }
 
         [DataTestMethod]
@@ -356,14 +359,15 @@ namespace Acoustics.Test.Tools
         [DataRow("4channelsPureTones.ogg")]
         [DataRow("4channelsPureTones.wv")]
         [DataRow("different_channels_tone.wav")]
+        [Ignore("deprecated audio tool")]
         public void InfoFailsForMp3Splt(string file)
         {
-            var util = TestHelper.GetAudioUtilityMp3Splt();
+            //var util = TestHelper.GetAudioUtilityMp3Splt();
 
-            var source = TestHelper.GetAudioFile(file);
-            TestHelper.ExceptionMatches<NotSupportedException>(
-                () => util.Info(source),
-                "cannot be processed.  Valid formats are: mp3 (audio/mpeg).");
+            //var source = TestHelper.GetAudioFile(file);
+            //TestHelper.ExceptionMatches<NotSupportedException>(
+            //    () => util.Info(source),
+            //    "cannot be processed.  Valid formats are: mp3 (audio/mpeg).");
         }
 
         [DataTestMethod]

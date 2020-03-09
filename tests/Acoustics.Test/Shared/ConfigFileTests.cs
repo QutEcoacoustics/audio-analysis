@@ -28,7 +28,6 @@ namespace Acoustics.Test.Shared
     public class ConfigFileTests : OutputDirectoryTest
     {
         private static FileInfo knownConfigFile;
-        private static MemoryAppender memoryAppender;
 
         private FileInfo currentPath;
 
@@ -37,7 +36,6 @@ namespace Acoustics.Test.Shared
         {
             // for the config dumping events
             knownConfigFile = PathHelper.ResolveConfigFile("Towsey.Acoustic.yml");
-            memoryAppender = TestSetup.TestLogging.MemoryAppender;
         }
 
         [TestInitialize]
@@ -50,9 +48,6 @@ namespace Acoustics.Test.Shared
                     Path.Combine(
                         Assembly.GetExecutingAssembly().Location,
                         "../ConfigFiles"));
-
-            // clear the log
-            memoryAppender.Clear();
 
             // flush the cache (important to reset state between tests)
             ConfigFile.FlushCache();
@@ -236,131 +231,165 @@ namespace Acoustics.Test.Shared
         }
 
         [TestMethod]
+        [DoNotParallelize]
         public void TheDeserializeMethodsCachesConfigReads()
         {
-            void AssertMessageCount(int typedCount, int untypedCount)
+            var testLogging = TestSetup.TestLogging;
+            lock (testLogging)
             {
-                var messages = memoryAppender.GetEvents();
-                Assert.AreEqual(typedCount, messages.Count(x => x.RenderedMessage.Contains(" typed ")));
-                Assert.AreEqual(untypedCount, messages.Count(x => x.RenderedMessage.Contains(" untyped ")));
+                testLogging.MemoryAppender.Clear();
+
+                void AssertMessageCount(int typedCount, int untypedCount)
+                {
+                    var messages = testLogging.MemoryAppender.GetEvents();
+                    Assert.AreEqual(typedCount, messages.Count(x => x.RenderedMessage.Contains(" typed ")));
+                    Assert.AreEqual(untypedCount, messages.Count(x => x.RenderedMessage.Contains(" untyped ")));
+                }
+
+                TestSetup.TestLogging.ModifyVerbosity(Level.All, quietConsole: true);
+
+                // this should be a fresh read
+                var configuration1 = ConfigFile.Deserialize<AcousticIndices.AcousticIndicesConfig>(knownConfigFile);
+
+                // index properties should get loaded as well
+                AssertMessageCount(2, 0);
+
+                // but not this, it was already read as a "typed" variant
+                var configuration2 = ConfigFile.Deserialize(knownConfigFile);
+
+                AssertMessageCount(2, 0);
+
+                // this should be pulled from the cache
+                var configuration3 = ConfigFile.Deserialize<AcousticIndices.AcousticIndicesConfig>(knownConfigFile);
+
+                AssertMessageCount(2, 0);
+
+                // so should this
+                var configuration4 = ConfigFile.Deserialize(knownConfigFile);
+
+                AssertMessageCount(2, 0);
+
+                // none of them should be the same object
+                Assert.AreNotSame(configuration1, configuration2);
+                Assert.AreNotSame(configuration1, configuration3);
+                Assert.AreNotSame(configuration3, configuration4);
+                Assert.AreNotSame(configuration2, configuration4);
+
+                // they all should have values
+                Assert.AreEqual(60.0, configuration1.IndexCalculationDuration);
+                Assert.AreEqual(
+                    60.0,
+                    configuration2.GetDouble(nameof(AcousticIndices.AcousticIndicesConfig.IndexCalculationDuration)));
+                Assert.AreEqual(60.0, configuration3.IndexCalculationDuration);
+                Assert.AreEqual(
+                    60.0,
+                    configuration4.GetDouble(nameof(AcousticIndices.AcousticIndicesConfig.IndexCalculationDuration)));
+
+                TestSetup.TestLogging.ModifyVerbosity(Level.Info, quietConsole: true);
             }
-
-            TestSetup.TestLogging.ModifyVerbosity(Level.All, quietConsole: true);
-
-            // this should be a fresh read
-            var configuration1 = ConfigFile.Deserialize<AcousticIndices.AcousticIndicesConfig>(knownConfigFile);
-
-            // index properties should get loaded as well
-            AssertMessageCount(2, 0);
-
-            // but not this, it was already read as a "typed" variant
-            var configuration2 = ConfigFile.Deserialize(knownConfigFile);
-
-            AssertMessageCount(2, 0);
-
-            // this should be pulled from the cache
-            var configuration3 = ConfigFile.Deserialize<AcousticIndices.AcousticIndicesConfig>(knownConfigFile);
-
-            AssertMessageCount(2, 0);
-
-            // so should this
-            var configuration4 = ConfigFile.Deserialize(knownConfigFile);
-
-            AssertMessageCount(2, 0);
-
-            // none of them should be the same object
-            Assert.AreNotSame(configuration1, configuration2);
-            Assert.AreNotSame(configuration1, configuration3);
-            Assert.AreNotSame(configuration3, configuration4);
-            Assert.AreNotSame(configuration2, configuration4);
-
-            // they all should have values
-            Assert.AreEqual(60.0, configuration1.IndexCalculationDuration);
-            Assert.AreEqual(60.0, configuration2.GetDouble(nameof(AcousticIndices.AcousticIndicesConfig.IndexCalculationDuration)));
-            Assert.AreEqual(60.0, configuration3.IndexCalculationDuration);
-            Assert.AreEqual(60.0, configuration4.GetDouble(nameof(AcousticIndices.AcousticIndicesConfig.IndexCalculationDuration)));
-
-            TestSetup.TestLogging.ModifyVerbosity(Level.Info, quietConsole: true);
         }
 
         [TestMethod]
+        [DoNotParallelize]
         public void DumpsTypedConfigUsedIntoLog()
         {
-            // the log should be empty
-            Assert.AreEqual(0, memoryAppender.GetEvents().Length);
+            var testLogging = TestSetup.TestLogging;
+            lock (testLogging)
+            {
+                testLogging.MemoryAppender.Clear();
 
-            // read the config file
-            ConfigFile.Deserialize<AcousticIndices.AcousticIndicesConfig>(knownConfigFile);
+                // the log should be empty
+                Assert.AreEqual(0, testLogging.MemoryAppender.GetEvents().Length);
 
-            // the log should contain the serialized config
-            var actualEvents = memoryAppender.GetEvents();
+                // read the config file
+                ConfigFile.Deserialize<AcousticIndices.AcousticIndicesConfig>(knownConfigFile);
 
-            // acoustic indices config loads another config, hence we expect two log messages
-            Assert.AreEqual(2, actualEvents.Length);
-            var expectedMessage = new Regex(@"Config file `.*Towsey\.Acoustic\.yml` loaded:\r?\n{"".*");
-            StringAssert.Matches(actualEvents[0].RenderedMessage, expectedMessage);
+                // the log should contain the serialized config
+                var actualEvents = testLogging.MemoryAppender.GetEvents();
 
-            string expectedContent = "\"IndexCalculationDuration\":60.0";
-            StringAssert.Contains(actualEvents[0].RenderedMessage, expectedContent);
-            Assert.AreEqual(1, Regex.Matches(actualEvents[0].RenderedMessage, expectedContent).Count);
-            StringAssert.DoesNotMatch(actualEvents[0].RenderedMessage, new Regex("\"RankOrder\""));
+                // acoustic indices config loads another config, hence we expect two log messages
+                Assert.AreEqual(2, actualEvents.Length);
+                var expectedMessage = new Regex(@"Config file `.*Towsey\.Acoustic\.yml` loaded:\r?\n{"".*");
+                StringAssert.Matches(actualEvents[0].RenderedMessage, expectedMessage);
 
-            var expectedMessage2 = new Regex(@"Config file `.*IndexPropertiesConfig\.yml` loaded:\r?\n{""RankOrder"":{.*");
-            StringAssert.Matches(actualEvents[1].RenderedMessage, expectedMessage2);
+                string expectedContent = "\"IndexCalculationDuration\":60.0";
+                StringAssert.Contains(actualEvents[0].RenderedMessage, expectedContent);
+                Assert.AreEqual(1, Regex.Matches(actualEvents[0].RenderedMessage, expectedContent).Count);
+                StringAssert.DoesNotMatch(actualEvents[0].RenderedMessage, new Regex("\"RankOrder\""));
+
+                var expectedMessage2 = new Regex(
+                    @"Config file `.*IndexPropertiesConfig\.yml` loaded:\r?\n{""RankOrder"":{.*");
+                StringAssert.Matches(actualEvents[1].RenderedMessage, expectedMessage2);
+            }
         }
 
         [TestMethod]
+        [DoNotParallelizeAttribute]
         public void DumpsUntypedConfigUsedIntoLog()
         {
-            // the log should be empty
-            Assert.AreEqual(0, memoryAppender.GetEvents().Length);
+            var testLogging = TestSetup.TestLogging;
+            lock (testLogging)
+            {
+                testLogging.MemoryAppender.Clear();
 
-            // read the config file
-            ConfigFile.Deserialize(knownConfigFile);
+                // the log should be empty
+                Assert.AreEqual(0, testLogging.MemoryAppender.GetEvents().Length);
 
-            // the log should contain the serialized config
-            var actualEvents = memoryAppender.GetEvents();
+                // read the config file
+                ConfigFile.Deserialize(knownConfigFile);
 
-            // acoustic indices config normally loads another config, but since we're not using the "static"
-            // config, the extra on-loaded behaviour does not happen!
-            Assert.AreEqual(1, actualEvents.Length);
-            var expectedMessage = new Regex(@"Config file `.*Towsey\.Acoustic\.yml` loaded:\r?\n{"".*");
-            StringAssert.Matches(actualEvents[0].RenderedMessage, expectedMessage);
+                // the log should contain the serialized config
+                var actualEvents = testLogging.MemoryAppender.GetEvents();
 
-            // all values are strings in generic configs
-            string expectedContent = "\"IndexCalculationDuration\":\"60.0\"";
-            StringAssert.Contains(actualEvents[0].RenderedMessage, expectedContent);
-            Assert.AreEqual(1, Regex.Matches(actualEvents[0].RenderedMessage, expectedContent).Count);
-            StringAssert.DoesNotMatch(actualEvents[0].RenderedMessage, new Regex("\"RankOrder\""));
+                // acoustic indices config normally loads another config, but since we're not using the "static"
+                // config, the extra on-loaded behaviour does not happen!
+                Assert.AreEqual(1, actualEvents.Length);
+                var expectedMessage = new Regex(@"Config file `.*Towsey\.Acoustic\.yml` loaded:\r?\n{"".*");
+                StringAssert.Matches(actualEvents[0].RenderedMessage, expectedMessage);
+
+                // all values are strings in generic configs
+                string expectedContent = "\"IndexCalculationDuration\":\"60.0\"";
+                StringAssert.Contains(actualEvents[0].RenderedMessage, expectedContent);
+                Assert.AreEqual(1, Regex.Matches(actualEvents[0].RenderedMessage, expectedContent).Count);
+                StringAssert.DoesNotMatch(actualEvents[0].RenderedMessage, new Regex("\"RankOrder\""));
+            }
 
         }
 
         [TestMethod]
+        [DoNotParallelize]
         public void OnlyDumpsEachConfigFileOnce()
         {
-            // the log should be empty
-            Assert.AreEqual(0, memoryAppender.GetEvents().Length);
+            var testLogging = TestSetup.TestLogging;
+            lock (testLogging)
+            {
+                testLogging.MemoryAppender.Clear();
 
-            // read the config file
-            ConfigFile.Deserialize<AcousticIndices.AcousticIndicesConfig>(knownConfigFile);
-            ConfigFile.Deserialize(knownConfigFile);
-            ConfigFile.Deserialize<AcousticIndices.AcousticIndicesConfig>(knownConfigFile);
+                // the log should be empty
+                Assert.AreEqual(0, testLogging.MemoryAppender.GetEvents().Length);
 
-            var actualEvents = memoryAppender.GetEvents();
+                // read the config file
+                ConfigFile.Deserialize<AcousticIndices.AcousticIndicesConfig>(knownConfigFile);
+                ConfigFile.Deserialize(knownConfigFile);
+                ConfigFile.Deserialize<AcousticIndices.AcousticIndicesConfig>(knownConfigFile);
 
-            // acoustic indices config loads another config, hence we expect two log messages
-            // despite how many times this config is "loaded" it's info should have only been dumped once
-            Assert.AreEqual(2, actualEvents.Length);
-            var expectedMessage = new Regex(@"Config file `.*Towsey\.Acoustic\.yml` loaded:\r?\n{"".*");
-            StringAssert.Matches(actualEvents[0].RenderedMessage, expectedMessage);
+                var actualEvents = testLogging.MemoryAppender.GetEvents();
 
-            string expectedContent = "\"IndexCalculationDuration\":60.0";
-            StringAssert.Contains(actualEvents[0].RenderedMessage, expectedContent);
-            Assert.AreEqual(1, Regex.Matches(actualEvents[0].RenderedMessage, expectedContent).Count);
-            StringAssert.DoesNotMatch(actualEvents[0].RenderedMessage, new Regex("\"RankOrder\""));
+                // acoustic indices config loads another config, hence we expect two log messages
+                // despite how many times this config is "loaded" it's info should have only been dumped once
+                Assert.AreEqual(2, actualEvents.Length);
+                var expectedMessage = new Regex(@"Config file `.*Towsey\.Acoustic\.yml` loaded:\r?\n{"".*");
+                StringAssert.Matches(actualEvents[0].RenderedMessage, expectedMessage);
 
-            var expectedMessage2 = new Regex(@"Config file `.*IndexPropertiesConfig\.yml` loaded:\r?\n{""RankOrder"":{.*");
-            StringAssert.Matches(actualEvents[1].RenderedMessage, expectedMessage2);
+                string expectedContent = "\"IndexCalculationDuration\":60.0";
+                StringAssert.Contains(actualEvents[0].RenderedMessage, expectedContent);
+                Assert.AreEqual(1, Regex.Matches(actualEvents[0].RenderedMessage, expectedContent).Count);
+                StringAssert.DoesNotMatch(actualEvents[0].RenderedMessage, new Regex("\"RankOrder\""));
+
+                var expectedMessage2 = new Regex(
+                    @"Config file `.*IndexPropertiesConfig\.yml` loaded:\r?\n{""RankOrder"":{.*");
+                StringAssert.Matches(actualEvents[1].RenderedMessage, expectedMessage2);
+            }
         }
 
         private FileInfo WriteConfigFile(DirectoryInfo directory = null)

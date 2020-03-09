@@ -1,4 +1,4 @@
-﻿namespace Acoustics.Test.Tools
+namespace Acoustics.Test.Tools
 {
     using System;
     using System.IO;
@@ -212,218 +212,218 @@
         }
 
         [TestMethod]
-        [Ignore]
+        [Ignore("deprecated audio tool")]
         public void SegmentsWavCorrectly1Shntool()
         {
-            var expected = new AudioUtilityInfo
-            {
-                Duration = TimeSpan.FromSeconds(30),
-                SampleRate = 17460,
-                ChannelCount = 1,
-                MediaType = MediaTypes.MediaTypeWav,
-                BitsPerSecond = 279000,
-            };
+            //var expected = new AudioUtilityInfo
+            //{
+            //    Duration = TimeSpan.FromSeconds(30),
+            //    SampleRate = 17460,
+            //    ChannelCount = 1,
+            //    MediaType = MediaTypes.MediaTypeWav,
+            //    BitsPerSecond = 279000,
+            //};
 
-            var request = new AudioUtilityRequest
-            {
-                //MixDownToMono = true,
+            //var request = new AudioUtilityRequest
+            //{
+            //    //MixDownToMono = true,
 
-                OffsetStart = TimeSpan.FromSeconds(20),
-                OffsetEnd = TimeSpan.FromSeconds(50),
+            //    OffsetStart = TimeSpan.FromSeconds(20),
+            //    OffsetEnd = TimeSpan.FromSeconds(50),
 
-                //TargetSampleRate = 17460
-            };
+            //    //TargetSampleRate = 17460
+            //};
 
-            var util = TestHelper.GetAudioUtilityShntool();
+            //var util = TestHelper.GetAudioUtilityShntool();
 
-            var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.wav");
-            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
+            //var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.wav");
+            //var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
-            util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
+            //util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
-            var actual = util.Info(output);
+            //var actual = util.Info(output);
 
-            File.Delete(output.FullName);
+            //File.Delete(output.FullName);
 
-            TestHelper.CheckAudioUtilityInfo(expected, actual);
+            //TestHelper.CheckAudioUtilityInfo(expected, actual);
         }
 
         [TestMethod]
-        [Ignore]
+        [Ignore("deprecated audio tool")]
         public void SegmentsWavCorrectly2Shntool()
         {
-            var expected = new AudioUtilityInfo
-            {
-                Duration = TimeSpan.FromSeconds(35),
-                SampleRate = 17460,
-                ChannelCount = 1,
-                MediaType = MediaTypes.MediaTypeWav,
-                BitsPerSecond = 279000,
-            };
+            //var expected = new AudioUtilityInfo
+            //{
+            //    Duration = TimeSpan.FromSeconds(35),
+            //    SampleRate = 17460,
+            //    ChannelCount = 1,
+            //    MediaType = MediaTypes.MediaTypeWav,
+            //    BitsPerSecond = 279000,
+            //};
 
-            var request = new AudioUtilityRequest
-            {
-                //MixDownToMono = true,
+            //var request = new AudioUtilityRequest
+            //{
+            //    //MixDownToMono = true,
 
-                OffsetEnd = TimeSpan.FromSeconds(35),
+            //    OffsetEnd = TimeSpan.FromSeconds(35),
 
-                //TargetSampleRate = 17460
-            };
+            //    //TargetSampleRate = 17460
+            //};
 
-            var util = TestHelper.GetAudioUtilityShntool();
+            //var util = TestHelper.GetAudioUtilityShntool();
 
-            var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.wav");
-            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
+            //var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.wav");
+            //var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
-            util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
+            //util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
-            var actual = util.Info(output);
+            //var actual = util.Info(output);
 
-            File.Delete(output.FullName);
+            //File.Delete(output.FullName);
 
-            TestHelper.CheckAudioUtilityInfo(expected, actual);
+            //TestHelper.CheckAudioUtilityInfo(expected, actual);
         }
 
         [TestMethod]
-        [Ignore]
+        [Ignore("deprecated audio tool")]
         public void SegmentsWavCorrectly3Shntool()
         {
-            var expected = new AudioUtilityInfo
-            {
-                Duration = TimeSpan.FromSeconds(22.2445),
-                SampleRate = 17460,
-                ChannelCount = 1,
-                MediaType = MediaTypes.MediaTypeWav,
-                BitsPerSecond = 279000,
-            };
+            //var expected = new AudioUtilityInfo
+            //{
+            //    Duration = TimeSpan.FromSeconds(22.2445),
+            //    SampleRate = 17460,
+            //    ChannelCount = 1,
+            //    MediaType = MediaTypes.MediaTypeWav,
+            //    BitsPerSecond = 279000,
+            //};
 
-            var request = new AudioUtilityRequest
-            {
-                //MixDownToMono = true,
-                OffsetStart = TimeSpan.FromSeconds(38),
-                //TargetSampleRate = 17460
-            };
+            //var request = new AudioUtilityRequest
+            //{
+            //    //MixDownToMono = true,
+            //    OffsetStart = TimeSpan.FromSeconds(38),
+            //    //TargetSampleRate = 17460
+            //};
 
-            var util = TestHelper.GetAudioUtilityShntool();
+            //var util = TestHelper.GetAudioUtilityShntool();
 
-            var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.wav");
-            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
+            //var source = TestHelper.GetAudioFile("Lewins Rail Kekkek.wav");
+            //var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
-            util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
+            //util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
-            var actual = util.Info(output);
+            //var actual = util.Info(output);
 
-            File.Delete(output.FullName);
+            //File.Delete(output.FullName);
 
-            TestHelper.CheckAudioUtilityInfo(expected, actual);
+            //TestHelper.CheckAudioUtilityInfo(expected, actual);
         }
 
         [TestMethod]
-        [Ignore]
+        [Ignore("deprecated audio tool")]
         public void SegmentsWavCorrectly4Shntool()
         {
-            var expected = new AudioUtilityInfo
-            {
-                Duration = TimeSpan.FromSeconds(60),
-                SampleRate = 22050,
-                ChannelCount = 1,
-                MediaType = MediaTypes.MediaTypeWav,
-                BitsPerSecond = 353000,
-            };
+            //var expected = new AudioUtilityInfo
+            //{
+            //    Duration = TimeSpan.FromSeconds(60),
+            //    SampleRate = 22050,
+            //    ChannelCount = 1,
+            //    MediaType = MediaTypes.MediaTypeWav,
+            //    BitsPerSecond = 353000,
+            //};
 
-            var request = new AudioUtilityRequest
-            {
-                //MixDownToMono = true,
-                OffsetStart = TimeSpan.FromSeconds(15),
-                OffsetEnd = TimeSpan.FromSeconds(75),
-            };
+            //var request = new AudioUtilityRequest
+            //{
+            //    //MixDownToMono = true,
+            //    OffsetStart = TimeSpan.FromSeconds(15),
+            //    OffsetEnd = TimeSpan.FromSeconds(75),
+            //};
 
-            var util = TestHelper.GetAudioUtilityShntool();
+            //var util = TestHelper.GetAudioUtilityShntool();
 
-            var source = TestHelper.GetAudioFile("FemaleKoala MaleKoala.wav");
-            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
+            //var source = TestHelper.GetAudioFile("FemaleKoala MaleKoala.wav");
+            //var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
-            util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
+            //util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
-            var actual = util.Info(output);
+            //var actual = util.Info(output);
 
-            File.Delete(output.FullName);
+            //File.Delete(output.FullName);
 
-            TestHelper.CheckAudioUtilityInfo(expected, actual);
+            //TestHelper.CheckAudioUtilityInfo(expected, actual);
         }
 
         [TestMethod]
-        [Ignore]
+        [Ignore("deprecated audio tool")]
         public void SegmentsWavCorrectly5Shntool()
         {
-            var expected = new AudioUtilityInfo
-            {
-                Duration = TimeSpan.FromSeconds(90),
-                SampleRate = 17460,
-                ChannelCount = 1,
-                MediaType = MediaTypes.MediaTypeWav,
-                BitsPerSecond = 279000,
-            };
+            //var expected = new AudioUtilityInfo
+            //{
+            //    Duration = TimeSpan.FromSeconds(90),
+            //    SampleRate = 17460,
+            //    ChannelCount = 1,
+            //    MediaType = MediaTypes.MediaTypeWav,
+            //    BitsPerSecond = 279000,
+            //};
 
-            var request = new AudioUtilityRequest
-            {
-                //MixDownToMono = true,
+            //var request = new AudioUtilityRequest
+            //{
+            //    //MixDownToMono = true,
 
-                OffsetStart = TimeSpan.FromSeconds(27),
-                OffsetEnd = TimeSpan.FromSeconds(117),
+            //    OffsetStart = TimeSpan.FromSeconds(27),
+            //    OffsetEnd = TimeSpan.FromSeconds(117),
 
-                //TargetSampleRate = 17460
-            };
+            //    //TargetSampleRate = 17460
+            //};
 
-            var util = TestHelper.GetAudioUtilityShntool();
+            //var util = TestHelper.GetAudioUtilityShntool();
 
-            var source = TestHelper.GetAudioFile("FemaleKoala MaleKoala.wav");
-            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
+            //var source = TestHelper.GetAudioFile("FemaleKoala MaleKoala.wav");
+            //var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
-            util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
+            //util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
-            var actual = util.Info(output);
+            //var actual = util.Info(output);
 
-            File.Delete(output.FullName);
+            //File.Delete(output.FullName);
 
-            TestHelper.CheckAudioUtilityInfo(expected, actual);
+            //TestHelper.CheckAudioUtilityInfo(expected, actual);
         }
 
         [TestMethod]
-        [Ignore]
+        [Ignore("deprecated audio tool")]
         public void SegmentsWavCorrectly6Shntool()
         {
-            var expected = new AudioUtilityInfo
-            {
-                Duration = TimeSpan.FromSeconds(93),
-                SampleRate = 17460,
-                ChannelCount = 1,
-                MediaType = MediaTypes.MediaTypeWav,
-                BitsPerSecond = 279000,
-            };
+            //var expected = new AudioUtilityInfo
+            //{
+            //    Duration = TimeSpan.FromSeconds(93),
+            //    SampleRate = 17460,
+            //    ChannelCount = 1,
+            //    MediaType = MediaTypes.MediaTypeWav,
+            //    BitsPerSecond = 279000,
+            //};
 
-            var request = new AudioUtilityRequest
-            {
-                //MixDownToMono = false,
-                //Channel = 2,
+            //var request = new AudioUtilityRequest
+            //{
+            //    //MixDownToMono = false,
+            //    //Channel = 2,
 
-                OffsetStart = TimeSpan.FromSeconds(27),
+            //    OffsetStart = TimeSpan.FromSeconds(27),
 
-                //TargetSampleRate = 17460,
-            };
+            //    //TargetSampleRate = 17460,
+            //};
 
-            var util = TestHelper.GetAudioUtilityShntool();
+            //var util = TestHelper.GetAudioUtilityShntool();
 
-            var source = TestHelper.GetAudioFile("geckos.wav");
-            var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
+            //var source = TestHelper.GetAudioFile("geckos.wav");
+            //var output = PathHelper.GetTempFile(MediaTypes.ExtWav);
 
-            util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
+            //util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request);
 
-            var actual = util.Info(output);
+            //var actual = util.Info(output);
 
-            File.Delete(output.FullName);
+            //File.Delete(output.FullName);
 
-            TestHelper.CheckAudioUtilityInfo(expected, actual);
+            //TestHelper.CheckAudioUtilityInfo(expected, actual);
         }
 
         [TestMethod]

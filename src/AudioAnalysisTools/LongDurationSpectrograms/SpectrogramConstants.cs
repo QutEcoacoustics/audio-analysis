@@ -36,7 +36,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         // These parameters describe the time and frequency scales for drawing X and Y axes on LONG DURATION spectrograms
         public static TimeSpan X_AXIS_TIC_INTERVAL = TimeSpan.FromMinutes(60);  // default assumes one minute spectra and 60 spectra per hour
         public static TimeSpan MINUTE_OFFSET = TimeSpan.Zero;    // assume recording starts at zero minute of day i.e. midnight
-        public static int SAMPLE_RATE = AppConfigHelper.GetInt(AppConfigHelper.DefaultTargetSampleRateKey);  // default value - after resampling
+        public static int SAMPLE_RATE = AppConfigHelper.DefaultTargetSampleRate;
         public const int FRAME_LENGTH = 512;    // default value - from which spectrogram was derived
         public const int HEIGHT_OF_TITLE_BAR = 24;
     }

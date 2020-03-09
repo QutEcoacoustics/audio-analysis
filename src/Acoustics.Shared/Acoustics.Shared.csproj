@@ -14,12 +14,6 @@
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="..\AP.Settings.json">
-      <Link>AP.Settings.json</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="ConsoleTools" Version="0.5.3" />
     <PackageReference Include="CsvHelper" Version="14.0.0" />
     <PackageReference Include="FastMember" Version="1.5.0" />
