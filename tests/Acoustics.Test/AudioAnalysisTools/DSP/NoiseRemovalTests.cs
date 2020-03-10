@@ -77,8 +77,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             double[] spectralDecibelBgn = NoiseProfile.CalculateBackgroundNoise(deciBelSpectrogram);
 
-            var resourcesDir = PathHelper.ResolveAssetPath("Indices");
-            var expectedSpectrumFile = new FileInfo(resourcesDir + "\\NoiseProfile.bin");
+            var expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "NoiseProfile.bin");
 
             //Binary.Serialize(expectedSpectrumFile, spectralDecibelBgn);
             var expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);

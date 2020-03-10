@@ -23,7 +23,6 @@ namespace Acoustics.Shared
             Serializer = new JsonSerializer()
             {
                 Formatting = Formatting.Indented,
-                PreserveReferencesHandling = PreserveReferencesHandling.All,
             };
         }
 

@@ -7,11 +7,13 @@ namespace Acoustics.Test
     using System;
     using System.Diagnostics;
     using System.IO;
+    using System.Runtime.InteropServices;
     using System.Text.RegularExpressions;
     using Acoustics.Shared.Extensions;
     using global::AnalysisPrograms;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
+    using static System.Runtime.InteropServices.OSPlatform;
 
     [TestClass]
     public class RuntimesTests
@@ -53,15 +55,18 @@ namespace Acoustics.Test
 
             var runtimeDir = Path.GetFullPath(Path.Combine(buildDir, "audio-utils"));
 
-            var expected = new string[]
+            var expected = new[]
             {
-                "macosx/ffmpeg",
-                "macosx/ffmpeg/ffmpeg",
-                "macosx/ffmpeg/ffprobe",
-                "macosx/sox",
-                "macosx/sox/sox",
-                "windows/ffmpeg",
-                "windows/sox"
+                "osx-x64/ffmpeg",
+                "osx-x64/ffmpeg/ffmpeg",
+                "osx-x64/ffmpeg/ffprobe",
+                "osx-x64/sox",
+                "osx-x64/sox/sox",
+                "win-x64/ffmpeg/ffmpeg.exe",
+                "win-x64/ffmpeg/ffprobe.exe",
+                "win-x64/sox/sox.exe",
+                "linux-x64/ffmpeg/ffmpeg",
+                "linux-x64/ffmpeg/ffprobe",
             };
 
             foreach (var directory in expected)
@@ -81,17 +86,16 @@ namespace Acoustics.Test
             // so we're just going to detect of the modified date is close to the build date.
             // This won't fail if a build stops generating build data immediately, but the time
             // it takes to commit->push->run on ci should definitely trigger the failure.
-            var generatedBuildData = Path.GetFullPath(Path.Combine(PathHelper.SolutionRoot, "src",
-                "AssemblyMetadata.Generated.cs"));
+            var generatedBuildData = Path.GetFullPath(Path.Combine(PathHelper.SolutionRoot, "src", "AssemblyMetadata.Generated.cs"));
             Debug.WriteLine(generatedBuildData);
             var actual = File.GetLastWriteTimeUtc(generatedBuildData);
             Assert.That.AreEqual(now, actual, TimeSpan.FromMinutes(60));
 
-            var ciBuild = Environment.GetEnvironmentVariable("CI_BUILD");
+            var ciBuild = Environment.GetEnvironmentVariable("BUILD_BUILDID");
             Assert.AreEqual(string.IsNullOrWhiteSpace(ciBuild) ? "000" : ciBuild, BuildMetadata.CiBuild);
         }
 
-        [TestMethod]
+        [PlatformSpecificTestMethod("Windows")]
         public void HasSupportForLongPaths()
         {
             var random = TestHelpers.Random.GetRandom();

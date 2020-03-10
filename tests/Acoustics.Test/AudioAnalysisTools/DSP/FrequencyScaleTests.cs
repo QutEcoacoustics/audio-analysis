@@ -70,9 +70,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
         public void LinearFrequencyScaleDefault()
         {
             var recordingPath = PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav");
-            var opFileStem = "BAC2_20071008";
-            var outputDir = this.outputDirectory;
-            var outputImagePath = Path.Combine(outputDir.FullName, "DefaultLinearScaleSonogram.png");
+            var outputImagePath = this.outputDirectory.CombineFile("DefaultLinearScaleSonogram.png");
 
             var recording = new AudioRecording(recordingPath);
 
@@ -96,25 +94,26 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             var dataMatrix = SNR.NoiseReduce_Standard(sonogram.Data);
             sonogram.Data = dataMatrix;
 
-            var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
+            var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + fst, freqScale.GridLineLocations);
             image.Save(outputImagePath);
 
-            // DO UNIT TESTING
-            var stemOfExpectedFile = opFileStem + "_DefaultLinearScaleGridLineLocations.EXPECTED.json";
-            var stemOfActualFile = opFileStem + "_DefaultLinearScaleGridLineLocations.ACTUAL.json";
-
             // Check that freqScale.GridLineLocations are correct
-            var expectedFile1 = PathHelper.ResolveAsset("FrequencyScale\\" + stemOfExpectedFile);
-            if (!expectedFile1.Exists)
+            var expected = new[,]
             {
-                LoggedConsole.WriteErrorLine("An EXPECTED results file does not exist. Test will fail!");
-                LoggedConsole.WriteErrorLine(
-                    $"If ACTUAL results file is correct, move it to dir `{PathHelper.TestResources}` and change its suffix to <.EXPECTED.json>");
-            }
+                { 23, 1000 },
+                { 46, 2000 },
+                { 69, 3000 },
+                { 92, 4000 },
+                { 116, 5000 },
+                { 139, 6000 },
+                { 162, 7000 },
+                { 185, 8000 },
+                { 208, 9000 },
+                { 232, 10000 },
+                { 255, 11000 },
+            };
 
-            var resultFile1 = new FileInfo(Path.Combine(outputDir.FullName, stemOfActualFile));
-            Json.Serialise(resultFile1, freqScale.GridLineLocations);
-            FileEqualityHelpers.TextFileEqual(expectedFile1, resultFile1);
+            Assert.That.MatricesAreEqual(expected, freqScale.GridLineLocations);
 
             // Check that image dimensions are correct
             Assert.AreEqual(310, image.Height);
@@ -129,9 +128,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
         public void LinearFrequencyScale()
         {
             var recordingPath = PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav");
-            var opFileStem = "BAC2_20071008";
-            var outputDir = this.outputDirectory;
-            var outputImagePath = Path.Combine(outputDir.FullName, "LinearScaleSonogram.png");
+            var outputImagePath = this.outputDirectory.CombineFile("DefaultLinearScaleSonogram.png");
 
             var recording = new AudioRecording(recordingPath);
 
@@ -158,25 +155,25 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             sonogram.Data = dataMatrix;
             sonogram.Configuration.WindowSize = freqScale.WindowSize;
 
-            var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
+            var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + fst, freqScale.GridLineLocations);
             image.Save(outputImagePath);
 
-            // DO FILE EQUALITY TEST
-            var stemOfExpectedFile = opFileStem + "_LinearScaleGridLineLocations.EXPECTED.json";
-            var stemOfActualFile = opFileStem + "_LinearScaleGridLineLocations.ACTUAL.json";
-
-            // Check that freqScale.GridLineLocations are correct
-            var expectedFile1 = PathHelper.ResolveAsset("FrequencyScale\\" + stemOfExpectedFile);
-            if (!expectedFile1.Exists)
+            var expected = new[,]
             {
-                LoggedConsole.WriteErrorLine("An EXPECTED results file does not exist. Test will fail!");
-                LoggedConsole.WriteErrorLine(
-                    $"If ACTUAL results file is correct, move it to dir `{PathHelper.TestResources}` and change its suffix to <.EXPECTED.json>");
-            }
+                { 46, 1000 },
+                { 92, 2000 },
+                { 139, 3000 },
+                { 185, 4000 },
+                { 232, 5000 },
+                { 278, 6000 },
+                { 325, 7000 },
+                { 371, 8000 },
+                { 417, 9000 },
+                { 464, 10000 },
+                { 510, 11000 },
+            };
 
-            var resultFile1 = new FileInfo(Path.Combine(outputDir.FullName, stemOfActualFile));
-            Json.Serialise(resultFile1, freqScale.GridLineLocations);
-            FileEqualityHelpers.TextFileEqual(expectedFile1, resultFile1);
+            Assert.That.MatricesAreEqual(expected, freqScale.GridLineLocations);
 
             // Check that image dimensions are correct
             Assert.AreEqual(566, image.Height);
@@ -224,36 +221,65 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
             image.Save(outputImagePath);
 
-            // DO FILE EQUALITY TESTS
-            // Check that freqScale.OctaveBinBounds are correct
-            var stemOfExpectedFile = opFileStem + "_Octave1ScaleBinBounds.EXPECTED.json";
-            var stemOfActualFile = opFileStem + "_Octave1ScaleBinBounds.ACTUAL.json";
-            var expectedFile1 = PathHelper.ResolveAsset("FrequencyScale\\" + stemOfExpectedFile);
-            if (!expectedFile1.Exists)
+#pragma warning disable SA1500 // Braces for multi-line statements should not share line
+            var expectedBinBounds = new[,]
             {
-                LoggedConsole.WriteErrorLine("An EXPECTED results file does not exist. Test will fail!");
-                LoggedConsole.WriteErrorLine(
-                    $"If ACTUAL results file is correct, move it to dir `{PathHelper.TestResources}` and change its suffix to <.EXPECTED.json>");
-            }
+                { 0, 0 }, { 1, 3 }, { 2, 5 }, { 3, 8 }, { 4, 11 }, { 5, 13 }, { 6, 16 }, { 7, 19 }, { 8, 22 },
+                { 9, 24 }, { 10, 27 }, { 11, 30 }, { 12, 32 }, { 13, 35 }, { 14, 38 }, { 15, 40 }, { 16, 43 },
+                { 17, 46 }, { 18, 48 }, { 19, 51 }, { 20, 54 }, { 21, 57 }, { 22, 59 }, { 23, 62 }, { 24, 65 },
+                { 25, 67 }, { 26, 70 }, { 27, 73 }, { 28, 75 }, { 29, 78 }, { 30, 81 }, { 31, 83 }, { 32, 86 },
+                { 33, 89 }, { 34, 92 }, { 35, 94 }, { 36, 97 }, { 37, 100 }, { 38, 102 }, { 39, 105 }, { 40, 108 },
+                { 41, 110 }, { 42, 113 }, { 43, 116 }, { 44, 118 }, { 45, 121 }, { 46, 124 }, { 47, 127 }, { 48, 129 },
+                { 49, 132 }, { 50, 135 }, { 51, 137 }, { 52, 140 }, { 53, 143 }, { 55, 148 }, { 56, 151 }, { 57, 153 },
+                { 58, 156 }, { 59, 159 }, { 61, 164 }, { 62, 167 }, { 63, 170 }, { 65, 175 }, { 66, 178 }, { 68, 183 },
+                { 69, 186 }, { 71, 191 }, { 72, 194 }, { 74, 199 }, { 75, 202 }, { 77, 207 }, { 79, 213 }, { 80, 215 },
+                { 82, 221 }, { 84, 226 }, { 86, 231 }, { 88, 237 }, { 89, 240 }, { 91, 245 }, { 93, 250 }, { 95, 256 },
+                { 97, 261 }, { 100, 269 }, { 102, 275 }, { 104, 280 }, { 106, 285 }, { 109, 293 }, { 111, 299 },
+                { 113, 304 }, { 116, 312 }, { 118, 318 }, { 121, 326 }, { 124, 334 }, { 126, 339 }, { 129, 347 },
+                { 132, 355 }, { 135, 363 }, { 138, 371 }, { 141, 380 }, { 144, 388 }, { 147, 396 }, { 150, 404 },
+                { 153, 412 }, { 157, 423 }, { 160, 431 }, { 164, 441 }, { 167, 450 }, { 171, 460 }, { 175, 471 },
+                { 178, 479 }, { 182, 490 }, { 186, 501 }, { 190, 511 }, { 194, 522 }, { 199, 536 }, { 203, 546 },
+                { 208, 560 }, { 212, 571 }, { 217, 584 }, { 221, 595 }, { 226, 608 }, { 231, 622 }, { 236, 635 },
+                { 241, 649 }, { 247, 665 }, { 252, 678 }, { 258, 694 }, { 263, 708 }, { 269, 724 }, { 275, 740 },
+                { 281, 756 }, { 287, 773 }, { 293, 789 }, { 300, 807 }, { 306, 824 }, { 313, 842 }, { 320, 861 },
+                { 327, 880 }, { 334, 899 }, { 341, 918 }, { 349, 939 }, { 356, 958 }, { 364, 980 }, { 372, 1001 },
+                { 380, 1023 }, { 388, 1044 }, { 397, 1069 }, { 406, 1093 }, { 415, 1117 }, { 424, 1141 }, { 433, 1165 },
+                { 442, 1190 }, { 452, 1217 }, { 462, 1244 }, { 472, 1270 }, { 482, 1297 }, { 493, 1327 }, { 504, 1357 },
+                { 515, 1386 }, { 526, 1416 }, { 537, 1445 }, { 549, 1478 }, { 561, 1510 }, { 573, 1542 }, { 586, 1577 },
+                { 599, 1612 }, { 612, 1647 }, { 625, 1682 }, { 639, 1720 }, { 653, 1758 }, { 667, 1795 }, { 682, 1836 },
+                { 697, 1876 }, { 712, 1916 }, { 728, 1960 }, { 744, 2003 }, { 760, 2046 }, { 776, 2089 }, { 793, 2134 },
+                { 811, 2183 }, { 829, 2231 }, { 847, 2280 }, { 865, 2328 }, { 884, 2379 }, { 903, 2431 }, { 923, 2484 },
+                { 943, 2538 }, { 964, 2595 }, { 985, 2651 }, { 1007, 2710 }, { 1029, 2770 }, { 1051, 2829 },
+                { 1074, 2891 }, { 1098, 2955 }, { 1122, 3020 }, { 1146, 3085 }, { 1172, 3155 }, { 1197, 3222 },
+                { 1223, 3292 }, { 1250, 3365 }, { 1278, 3440 }, { 1305, 3513 }, { 1334, 3591 }, { 1363, 3669 },
+                { 1393, 3749 }, { 1424, 3833 }, { 1455, 3916 }, { 1487, 4002 }, { 1519, 4089 }, { 1552, 4177 },
+                { 1586, 4269 }, { 1621, 4363 }, { 1657, 4460 }, { 1693, 4557 }, { 1730, 4657 }, { 1768, 4759 },
+                { 1806, 4861 }, { 1846, 4969 }, { 1886, 5076 }, { 1928, 5190 }, { 1970, 5303 }, { 2013, 5418 },
+                { 2057, 5537 }, { 2102, 5658 }, { 2148, 5782 }, { 2195, 5908 }, { 2243, 6037 }, { 2292, 6169 },
+                { 2343, 6307 }, { 2394, 6444 }, { 2446, 6584 }, { 2500, 6729 }, { 2555, 6877 }, { 2610, 7025 },
+                { 2668, 7181 }, { 2726, 7337 }, { 2786, 7499 }, { 2847, 7663 }, { 2909, 7830 }, { 2973, 8002 },
+                { 3038, 8177 }, { 3104, 8355 }, { 3172, 8538 }, { 3242, 8726 }, { 3313, 8917 }, { 3385, 9111 },
+                { 3459, 9310 }, { 3535, 9515 }, { 3612, 9722 }, { 3691, 9935 }, { 3772, 10153 }, { 3855, 10376 },
+                { 3939, 10602 }, { 4026, 10837 }, { 4095, 11022 },
+                { 4095, 11022 },
+            };
+#pragma warning restore SA1500 // Braces for multi-line statements should not share line
 
-            var resultFile1 = new FileInfo(Path.Combine(outputDir.FullName, stemOfActualFile));
-            Json.Serialise(resultFile1, freqScale.BinBounds);
-            FileEqualityHelpers.TextFileEqual(expectedFile1, resultFile1);
+            Assert.That.MatricesAreEqual(expectedBinBounds, freqScale.BinBounds);
 
             // Check that freqScale.GridLineLocations are correct
-            stemOfExpectedFile = opFileStem + "_Octave1ScaleGridLineLocations.EXPECTED.json";
-            stemOfActualFile = opFileStem + "_Octave1ScaleGridLineLocations.ACTUAL.json";
-            var expectedFile2 = PathHelper.ResolveAsset("FrequencyScale\\" + stemOfExpectedFile);
-            if (!expectedFile2.Exists)
+            var expected = new[,]
             {
-                LoggedConsole.WriteErrorLine("An EXPECTED results file does not exist. Test will fail!");
-                LoggedConsole.WriteErrorLine(
-                    $"If ACTUAL results file is correct, move it to dir `{PathHelper.TestResources}` and change its suffix to <.EXPECTED.json>");
-            }
+                { 46, 125 },
+                { 79, 250 },
+                { 111, 500 },
+                { 143, 1000 },
+                { 175, 2000 },
+                { 207, 4000 },
+                { 239, 8000 },
+            };
 
-            var resultFile2 = new FileInfo(Path.Combine(outputDir.FullName, stemOfActualFile));
-            Json.Serialise(resultFile2, freqScale.GridLineLocations);
-            FileEqualityHelpers.TextFileEqual(expectedFile2, resultFile2);
+            Assert.That.MatricesAreEqual(expected, freqScale.GridLineLocations);
 
             // Check that image dimensions are correct
             Assert.AreEqual(645, image.Width);
@@ -301,34 +327,27 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             // DO FILE EQUALITY TESTS
             // Check that freqScale.OctaveBinBounds are correct
-            var stemOfExpectedFile = opFileStem + "_Octave2ScaleBinBounds.EXPECTED.json";
-            var stemOfActualFile = opFileStem + "_Octave2ScaleBinBounds.ACTUAL.json";
-            var expectedFile1 = PathHelper.ResolveAsset("FrequencyScale\\" + stemOfExpectedFile);
-            if (!expectedFile1.Exists)
-            {
-                LoggedConsole.WriteErrorLine("An EXPECTED results file does not exist. Test will fail!");
-                LoggedConsole.WriteErrorLine(
-                    $"If ACTUAL results file is correct, move it to dir `{PathHelper.TestResources}` and change its suffix to <.EXPECTED.json>");
-            }
 
-            var resultFile1 = new FileInfo(Path.Combine(outputDir.FullName, stemOfActualFile));
-            Json.Serialise(resultFile1, freqScale.BinBounds);
-            FileEqualityHelpers.TextFileEqual(expectedFile1, resultFile1);
+            var expectedBinBoundsFile = PathHelper.ResolveAsset("FrequencyScale", opFileStem + "_Octave2ScaleBinBounds.EXPECTED.json");
+            var expectedBinBounds = Json.Deserialize<int[,]>(expectedBinBoundsFile);
+
+            Assert.That.MatricesAreEqual(expectedBinBounds, freqScale.BinBounds);
 
             // Check that freqScale.GridLineLocations are correct
-            stemOfExpectedFile = opFileStem + "_Octave2ScaleGridLineLocations.EXPECTED.json";
-            stemOfActualFile = opFileStem + "_Octave2ScaleGridLineLocations.ACTUAL.json";
-            var expectedFile2 = PathHelper.ResolveAsset("FrequencyScale\\" + stemOfExpectedFile);
-            if (!expectedFile2.Exists)
+            var expected = new[,]
             {
-                LoggedConsole.WriteErrorLine("An EXPECTED results file does not exist. Test will fail!");
-                LoggedConsole.WriteErrorLine(
-                    $"If ACTUAL results file is correct, move it to dir `{PathHelper.TestResources}` and change its suffix to <.EXPECTED.json>");
-            }
+                { 34, 125 },
+                { 62, 250 },
+                { 89, 500 },
+                { 117, 1000 },
+                { 145, 2000 },
+                { 173, 4000 },
+                { 201, 8000 },
+                { 229, 16000 },
+                { 256, 32000 },
+            };
 
-            var resultFile2 = new FileInfo(Path.Combine(outputDir.FullName, stemOfActualFile));
-            Json.Serialise(resultFile2, freqScale.GridLineLocations);
-            FileEqualityHelpers.TextFileEqual(expectedFile2, resultFile2);
+            Assert.That.MatricesAreEqual(expected, freqScale.GridLineLocations);
 
             // Check that image dimensions are correct
             Assert.AreEqual(201, image.Width);

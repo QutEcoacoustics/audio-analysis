@@ -5,6 +5,7 @@
 namespace Acoustics.Test.AnalysisPrograms.Production
 {
     using System;
+    using System.IO;
     using global::AnalysisPrograms.Production;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
@@ -54,7 +55,7 @@ namespace Acoustics.Test.AnalysisPrograms.Production
         public void TestInvalidFileSystem()
         {
             Assert.ThrowsException<NotSupportedException>(
-            () => FileSystemProvider.DetermineFileSystem(this.TestOutputDirectory.FullName + "\\test.zip"));
+            () => FileSystemProvider.DetermineFileSystem(Path.Join(this.TestOutputDirectory.FullName, "test.zip")));
         }
     }
 }
