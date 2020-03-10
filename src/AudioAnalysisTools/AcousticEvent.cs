@@ -11,10 +11,8 @@ namespace AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
-    using System.IO;
     using System.Linq;
     using System.Text;
-    using Acoustics.Shared;
     using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Csv;
     using Acoustics.Shared.ImageSharp;
@@ -26,7 +24,6 @@ namespace AudioAnalysisTools
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
     using TowseyLibrary;
-    using Path = System.IO.Path;
 
     public class AcousticEvent : EventBase
     {
@@ -40,7 +37,7 @@ namespace AudioAnalysisTools
                 {
                     nameof(TimeStart), nameof(TimeEnd),
                     nameof(Bandwidth), nameof(IsMelscale), nameof(FrameOffset),
-                    nameof(FramesPerSecond), nameof(Name2), nameof(ScoreComment),
+                    nameof(FramesPerSecond),
                     nameof(ScoreNormalised), nameof(Score_MaxPossible),
                     nameof(Score_MaxInEvent), nameof(Score_TimeOfMaxInEvent),
                     nameof(Score2Name), nameof(Score2), nameof(Periodicity), nameof(DominantFreq),
@@ -70,6 +67,13 @@ namespace AudioAnalysisTools
                 this.Map(m => m.HitElements, useExistingMap: true).Index(1000);
             }
         }
+
+        // double I1MeandB; //mean intensity of pixels in the event prior to noise subtraction
+        // double I1Var;    //,
+        // double I2MeandB; // mean intensity of pixels in the event after Wiener filter, prior to noise subtraction
+        // double I2Var;    //,
+        // private double i3Mean;      // mean intensity of pixels in the event AFTER noise reduciton - USED FOR CLUSTERING
+        // private double i3Var;       // variance of intensity of pixels in the event.
 
         /// <summary>
         /// Gets the time offset from start of current segment to start of event in seconds.
@@ -102,21 +106,6 @@ namespace AudioAnalysisTools
         /// Gets the start time of an event WRT the recording/file start.
         /// </summary>
         public override double EventStartSeconds => this.TimeStart + this.SegmentStartSeconds;
-
-        /// <summary>
-        /// Set the start and end times of an event with respect to the segment start time
-        /// AND also calls method to set event start time with respect the recording/file start.
-        /// </summary>
-        public void SetEventPositionRelative(
-            TimeSpan segmentStartWrtRecording,
-            double eventStartWrtSegment,
-            double eventEndWrtSegment)
-        {
-            this.TimeStart = eventStartWrtSegment;
-            this.TimeEnd = eventEndWrtSegment;
-
-            this.SetSegmentAndEventStartsWrtRecording(segmentStartWrtRecording, eventStartWrtSegment);
-        }
 
         /// <summary>
         /// Gets or sets units = Hertz.
@@ -175,11 +164,6 @@ namespace AudioAnalysisTools
 
         public string Name { get; set; }
 
-        public string Name2 { get; set; }
-
-        /// <summary> Gets or sets average score through the event.</summary>
-        public string ScoreComment { get; set; }
-
         /// <summary> Gets or sets score normalised in range [0,1]. NOTE: Max is set = to five times user supplied threshold.</summary>
         public double ScoreNormalised { get; set; }
 
@@ -202,7 +186,7 @@ namespace AudioAnalysisTools
         /// i.e. Points can be outside of events and can have negative values.
         /// Point location is relative to the top left corner of the event.
         /// </summary>
-        public List<Point> Points { get; set; }
+        //public List<Point> Points { get; set; }
 
         /// <summary>
         /// Gets or sets the periodicity of acoustic energy in an event.
@@ -212,29 +196,10 @@ namespace AudioAnalysisTools
 
         public double DominantFreq { get; set; } // the dominant freq in the event - used for frog calls
 
-        // double I1MeandB; //mean intensity of pixels in the event prior to noise subtraction
-        // double I1Var;    //,
-        // double I2MeandB; // mean intensity of pixels in the event after Wiener filter, prior to noise subtraction
-        // double I2Var;    //,
-        private double i3Mean;      // mean intensity of pixels in the event AFTER noise reduciton - USED FOR CLUSTERING
-        private double i3Var;       // variance of intensity of pixels in the event.
-
-        // following are no longer needed. Delete eventually.
-        /*
-        //KIWI SCORES
-        public double kiwi_durationScore;
-        public double kiwi_hitScore;
-        public double kiwi_snrScore;
-        public double kiwi_sdPeakScore;
-        public double kiwi_intensityScore;
-        public double kiwi_gridScore;
-        public double kiwi_chirpScore;
-        public double kiwi_bandWidthScore;
-        public double kiwi_deltaPeriodScore;
-        public double kiwi_comboScore;
-        */
-
-        /// <summary>Gets or sets a value indicating whether use this if want to filter or tag some members of a list for some purpose.</summary>
+        /// <summary>
+        /// Gets or sets a value that can be used to filter or tag some members of a list of acoustic events.
+        /// Was used for constructing data sets.
+        /// </summary>
         public bool Tag { get; set; }
 
         /// <summary>Gets or sets assigned value when reading in a list of user identified events. Indicates a user assigned assessment of event intensity.</summary>
@@ -247,6 +212,11 @@ namespace AudioAnalysisTools
 
         public Color ScoreColour { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AcousticEvent"/> class.
+        /// Sets some default colors for drawing an event on a spectrogram.
+        /// THis is the first of three constructors.
+        /// </summary>
         public AcousticEvent()
         {
             this.BorderColour = DefaultBorderColor;
@@ -323,22 +293,44 @@ namespace AudioAnalysisTools
         /// </summary>
         public string Profile { get; set; }
 
-        public void DoMelScale(bool doMelscale, int freqBinCount)
+        //public void DoMelScale(bool doMelscale, int freqBinCount)
+        //{
+        //    this.IsMelscale = doMelscale;
+        //    this.FreqBinCount = freqBinCount;
+        //}
+
+        /// <summary>
+        /// Set the start and end times of an event with respect to the segment start time
+        /// AND also calls method to set event start time with respect the recording/file start.
+        /// </summary>
+        public void SetEventPositionRelative(
+            TimeSpan segmentStartWrtRecording,
+            double eventStartWrtSegment,
+            double eventEndWrtSegment)
         {
-            this.IsMelscale = doMelscale;
-            this.FreqBinCount = freqBinCount;
+            this.TimeStart = eventStartWrtSegment;
+            this.TimeEnd = eventEndWrtSegment;
+
+            this.SetSegmentAndEventStartsWrtRecording(segmentStartWrtRecording, eventStartWrtSegment);
         }
 
+        /// <summary>
+        /// THe only call to this method is from a no-longer used recogniser.
+        /// Could be deleted.
+        /// It sets the time and frequency scales for an event given the sr, and window size.
+        /// </summary>
         public void SetTimeAndFreqScales(int samplingRate, int windowSize, int windowOffset)
         {
-            CalculateTimeScale(samplingRate, windowSize, windowOffset, out var frameDuration, out var frameOffset, out var framesPerSecond);
-            this.FrameDuration = frameDuration;    //frame duration in seconds
-            this.FrameOffset = frameOffset;      //frame offset in seconds
-            this.FramesPerSecond = framesPerSecond;  //inverse of the frame offset
+            //set the frame duration and offset in seconds
+            this.FrameDuration = windowSize / (double)samplingRate;
+            this.FrameOffset = windowOffset / (double)samplingRate;
+            this.FramesPerSecond = 1 / this.FrameOffset;
 
-            CalculateFreqScale(samplingRate, windowSize, out var binCount, out var binWidth);
-            this.FreqBinCount = binCount; //required for conversions to & from MEL scale
-            this.FreqBinWidth = binWidth; //required for freq-binID conversions
+            //set the Freq Scale. Required for freq-binID conversions
+            this.FreqBinWidth = samplingRate / (double)windowSize;
+
+            //required for conversions to & from MEL scale
+            this.FreqBinCount = windowSize / 2;
 
             if (this.Oblong == null)
             {
@@ -361,14 +353,40 @@ namespace AudioAnalysisTools
         {
             this.FramesPerSecond = 1 / frameOffset;   //inverse of the frame offset
             this.FrameDuration = frameDuration;       //frame duration in seconds
-            this.FrameOffset = frameOffset;       //frame duration in seconds
-
-            //this.FreqBinCount = binCount;           //required for conversions to & from MEL scale
+            this.FrameOffset = frameOffset;           //frame duration in seconds
             this.FreqBinWidth = freqBinWidth;         //required for freq-binID conversions
 
             if (this.Oblong == null)
             {
                 this.Oblong = ConvertEvent2Oblong(this);
+            }
+        }
+
+        /// <summary>
+        /// Converts frequency bounds of an event to left and right columns of object in sonogram matrix.
+        /// </summary>
+        /// <param name="doMelscale">mel scale.</param>
+        /// <param name="minFreq">lower freq bound.</param>
+        /// <param name="maxFreq">upper freq bound.</param>
+        /// <param name="nyquist">Nyquist freq in Herz.</param>
+        /// <param name="binWidth">frequency scale.</param>
+        /// <param name="leftCol">return bin index for lower freq bound.</param>
+        /// <param name="rightCol">return bin index for upper freq bound.</param>
+        public static void Freq2BinIDs(bool doMelscale, int minFreq, int maxFreq, int nyquist, double binWidth, out int leftCol, out int rightCol)
+        {
+            if (doMelscale)
+            {
+                int binCount = (int)(nyquist / binWidth) + 1;
+                double maxMel = MFCCStuff.Mel(nyquist);
+                int melRange = (int)(maxMel - 0 + 1);
+                double binsPerMel = binCount / (double)melRange;
+                leftCol = (int)Math.Round(MFCCStuff.Mel(minFreq) * binsPerMel);
+                rightCol = (int)Math.Round(MFCCStuff.Mel(maxFreq) * binsPerMel);
+            }
+            else
+            {
+                leftCol = (int)Math.Round(minFreq / binWidth);
+                rightCol = (int)Math.Round(maxFreq / binWidth);
             }
         }
 
@@ -380,8 +398,9 @@ namespace AudioAnalysisTools
         /// </summary>
         public static Oblong ConvertEvent2Oblong(AcousticEvent ae)
         {
-            // Translate time dimension = frames = matrix rows.
-            Time2RowIDs(ae.TimeStart, ae.EventDurationSeconds, ae.FrameOffset, out var topRow, out var bottomRow);
+            // Translate time dimension (seconds) to frames to matrix rows.
+            var topRow = (int)Math.Round(ae.TimeStart / ae.FrameOffset);
+            var bottomRow = (int)Math.Round((ae.TimeStart + ae.EventDurationSeconds) / ae.FrameOffset);
 
             //Translate freq dimension = freq bins = matrix columns.
             Freq2BinIDs(ae.IsMelscale, (int)ae.LowFrequencyHertz, (int)ae.HighFrequencyHertz, ae.FreqBinCount, ae.FreqBinWidth, out var leftCol, out var rightCol);
@@ -412,20 +431,20 @@ namespace AudioAnalysisTools
             }
         }
 
-        public string WriteProperties()
-        {
-            return " min-max=" + this.LowFrequencyHertz + "-" + this.HighFrequencyHertz + ",  " + this.Oblong.ColumnLeft + "-" + this.Oblong.ColumnRight;
-        }
+        //public string WriteProperties()
+        //{
+        //    return " min-max=" + this.LowFrequencyHertz + "-" + this.HighFrequencyHertz + ",  " + this.Oblong.ColumnLeft + "-" + this.Oblong.ColumnRight;
+        //}
 
         /// <summary>
         /// Draws an event on the image. Uses the fields already set on the audio event to determine correct placement.
         /// Fields requireed to be set include: `FramesPerSecond`, `FreqBinWidth`.
         /// </summary>
-        public void DrawEvent<T>(Image<T> sonogram)
-            where T : unmanaged, IPixel<T>
-        {
-            this.DrawEvent(sonogram, this.FramesPerSecond, this.FreqBinWidth, sonogram.Height);
-        }
+        //public void DrawEvent<T>(Image<T> sonogram)
+        //    where T : unmanaged, IPixel<T>
+        //{
+        //    this.DrawEvent(sonogram, this.FramesPerSecond, this.FreqBinWidth, sonogram.Height);
+        //}
 
         /// <summary>
         /// Draws an event on the image. Allows for custom specification of variables.
@@ -482,6 +501,7 @@ namespace AudioAnalysisTools
             });
         }
 
+        /*
         /// <summary>
         /// Passed point is relative to top-left corner of the Acoustic Event.
         /// Oblong needs to be set for this method to work.
@@ -504,65 +524,10 @@ namespace AudioAnalysisTools
 
             bmp[col, row] = colour;
         }
+        */
 
-        /// <summary>
-        /// Returns the first event in the passed list which overlaps with this one IN THE SAME RECORDING.
-        /// If no event overlaps return null.
-        /// </summary>
-        public AcousticEvent OverlapsEventInList(List<AcousticEvent> events)
-        {
-            foreach (AcousticEvent ae in events)
-            {
-                if (this.FileName.Equals(ae.FileName) && this.Overlaps(ae))
-                {
-                    return ae;
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Returns true/false if this event time-overlaps the passed event.
-        /// </summary>
-        public bool Overlaps(AcousticEvent ae)
-        {
-            return EventsOverlapInTime(this, ae);
-        }
-
-        /// <summary>
-        /// Returns the fractional overlap of two events.
-        /// Translate time/freq dimensions to coordinates in a matrix.
-        /// Freq dimension = bins   = matrix columns. Origin is top left - as per matrix in the sonogram class.
-        /// Time dimension = frames = matrix rows.
-        /// </summary>
-        public static double EventFractionalOverlap(AcousticEvent event1, AcousticEvent event2)
-        {
-            int timeOverlap = Oblong.RowOverlap(event1.Oblong, event2.Oblong);
-            if (timeOverlap == 0)
-            {
-                return 0.0;
-            }
-
-            int hzOverlap = Oblong.ColumnOverlap(event1.Oblong, event2.Oblong);
-            if (hzOverlap == 0)
-            {
-                return 0.0;
-            }
-
-            int overlapArea = timeOverlap * hzOverlap;
-            double fractionalOverlap1 = overlapArea / (double)event1.Oblong.Area();
-            double fractionalOverlap2 = overlapArea / (double)event2.Oblong.Area();
-
-            if (fractionalOverlap1 > fractionalOverlap2)
-            {
-                return fractionalOverlap1;
-            }
-            else
-            {
-                return fractionalOverlap2;
-            }
-        }
+        //#################################################################################################################
+        //FOLLOWING METHODS DEAL WITH THE OVERLAP OF EVENTS
 
         /// <summary>
         /// Determines if two events overlap in frequency.
@@ -678,115 +643,65 @@ namespace AudioAnalysisTools
             return e1;
         }
 
-        //#################################################################################################################
-        //METHODS TO CONVERT BETWEEN FREQ BIN AND HERZ OR MELS
-
         /// <summary>
-        /// converts frequency bounds of an event to left and right columns of object in sonogram matrix.
-        /// NOTE: binCount is required only if freq is in Mel scale.
+        /// Returns the first event in the passed list which overlaps with this one IN THE SAME RECORDING.
+        /// If no event overlaps return null.
         /// </summary>
-        /// <param name="doMelscale">mel scale.</param>
-        /// <param name="minFreq">lower freq bound.</param>
-        /// <param name="maxFreq">upper freq bound.</param>
-        /// <param name="nyquist">Nyquist freq in Herz.</param>
-        /// <param name="binWidth">frequency scale.</param>
-        /// <param name="leftCol">return bin index for lower freq bound.</param>
-        /// <param name="rightCol">return bin index for upper freq bound.</param>
-        public static void Freq2BinIDs(bool doMelscale, int minFreq, int maxFreq, int nyquist, double binWidth, out int leftCol, out int rightCol)
+        public AcousticEvent OverlapsEventInList(List<AcousticEvent> events)
         {
-            if (doMelscale)
+            foreach (AcousticEvent ae in events)
             {
-                Freq2MelsBinIDs(minFreq, maxFreq, binWidth, nyquist, out leftCol, out rightCol);
-            }
-            else
-            {
-                Freq2HerzBinIDs(minFreq, maxFreq, binWidth, out leftCol, out rightCol);
-            }
-        }
-
-        public static void Freq2HerzBinIDs(int minFreq, int maxFreq, double binWidth, out int leftCol, out int rightCol)
-        {
-            leftCol = (int)Math.Round(minFreq / binWidth);
-            rightCol = (int)Math.Round(maxFreq / binWidth);
-        }
-
-        public static void Freq2MelsBinIDs(int minFreq, int maxFreq, double binWidth, int nyquistFrequency, out int leftCol, out int rightCol)
-        {
-            int binCount = (int)(nyquistFrequency / binWidth) + 1;
-            double maxMel = MFCCStuff.Mel(nyquistFrequency);
-            int melRange = (int)(maxMel - 0 + 1);
-            double binsPerMel = binCount / (double)melRange;
-            leftCol = (int)Math.Round(MFCCStuff.Mel(minFreq) * binsPerMel);
-            rightCol = (int)Math.Round(MFCCStuff.Mel(maxFreq) * binsPerMel);
-        }
-
-        //#################################################################################################################
-        //METHODS TO CONVERT BETWEEN TIME BIN AND SECONDS
-
-        public static void Time2RowIDs(double startTime, double duration, double frameOffset, out int topRow, out int bottomRow)
-        {
-            topRow = (int)Math.Round(startTime / frameOffset);
-            bottomRow = (int)Math.Round((startTime + duration) / frameOffset);
-        }
-
-        public void SetNetIntensityAfterNoiseReduction(double mean, double var)
-        {
-            this.i3Mean = mean;
-            this.i3Var = var;
-        }
-
-        /// <summary>
-        /// returns the frame duration and offset duration in seconds.
-        /// </summary>
-        /// <param name="samplingRate">signal samples per second.</param>
-        /// <param name="windowSize">number of signal samples in one window or frame.</param>
-        /// <param name="windowOffset">number of signal samples between start of one frame and start of next frame.</param>
-        /// <param name="frameDuration">units = seconds.</param>
-        /// <param name="frameOffset">units = second.</param>
-        /// <param name="framesPerSecond">number of frames in one second.</param>
-        public static void CalculateTimeScale(int samplingRate, int windowSize, int windowOffset, out double frameDuration, out double frameOffset, out double framesPerSecond)
-        {
-            frameDuration = windowSize / (double)samplingRate;
-            frameOffset = windowOffset / (double)samplingRate;
-            framesPerSecond = 1 / frameOffset;
-        }
-
-        /// <summary>
-        ///  return Nyquist / binCount.
-        /// </summary>
-        public static void CalculateFreqScale(int samplingRate, int windowSize, out int binCount, out double binWidth)
-        {
-            binCount = windowSize / 2;
-            binWidth = samplingRate / (double)windowSize;
-        }
-
-        public static void WriteEvents(List<AcousticEvent> eventList, ref StringBuilder sb)
-        {
-            if (eventList.Count == 0)
-            {
-                string line =
-                    $"#     Event Name\t{"Start",8:f3}\t{"End",6:f3}\t{"MinF"}\t{"MaxF"}\t{"Score1":f2}\t{"Score2":f1}\t{"SourceFile"}";
-                sb.AppendLine(line);
-                line = $"{"NoEvent"}\t{0.000,8:f3}\t{0.000,8:f3}\t{"N/A"}\t{"N/A"}\t{0.000:f2}\t{0.000:f1}\t{"N/A"}";
-                sb.AppendLine(line);
-            }
-            else
-            {
-                AcousticEvent ae1 = eventList[0];
-                string line =
-                    $"#     Event Name\t{"Start",8:f3}\t{"End",6:f3}\t{"MinF"}\t{"MaxF"}\t{"Score":f2}\t{ae1.Score2Name:f1}\t{"SourceFile"}";
-                sb.AppendLine(line);
-                foreach (AcousticEvent ae in eventList)
+                if (this.FileName.Equals(ae.FileName) && EventsOverlapInTime(this, ae))
                 {
-                    line =
-                        $"{ae.Name}\t{ae.TimeStart,8:f3}\t{ae.TimeEnd,8:f3}\t{ae.LowFrequencyHertz}\t{ae.HighFrequencyHertz}\t{ae.Score:f2}\t{ae.Score2:f1}\t{ae.FileName}";
-                    sb.AppendLine(line);
+                    return ae;
                 }
             }
+
+            return null;
         }
 
+        /*
         /// <summary>
-        /// used to write lists of acousitc event data to an excell spread sheet.
+        /// This method not currently called but is POTENTIALLY USEFUL.
+        /// Returns the fractional overlap of two events.
+        /// Translate time/freq dimensions to coordinates in a matrix.
+        /// Freq dimension = bins   = matrix columns. Origin is top left - as per matrix in the sonogram class.
+        /// Time dimension = frames = matrix rows.
+        /// </summary>
+        public static double EventFractionalOverlap(AcousticEvent event1, AcousticEvent event2)
+        {
+            int timeOverlap = Oblong.RowOverlap(event1.Oblong, event2.Oblong);
+            if (timeOverlap == 0)
+            {
+                return 0.0;
+            }
+
+            int hzOverlap = Oblong.ColumnOverlap(event1.Oblong, event2.Oblong);
+            if (hzOverlap == 0)
+            {
+                return 0.0;
+            }
+
+            int overlapArea = timeOverlap * hzOverlap;
+            double fractionalOverlap1 = overlapArea / (double)event1.Oblong.Area();
+            double fractionalOverlap2 = overlapArea / (double)event2.Oblong.Area();
+
+            if (fractionalOverlap1 > fractionalOverlap2)
+            {
+                return fractionalOverlap1;
+            }
+            else
+            {
+                return fractionalOverlap2;
+            }
+        }
+        */
+
+        //#################################################################################################################
+        //METHOD TO WRITE ACOUSTIC EVETNS TO FILE
+
+        /// <summary>
+        /// Writes acousitc event data to an excel spread sheet.
         /// </summary>
         public static StringBuilder WriteEvents(List<AcousticEvent> eventList, string str)
         {
@@ -818,6 +733,36 @@ namespace AudioAnalysisTools
 
             return sb;
         }
+
+        /*
+        public static void WriteEvents(List<AcousticEvent> eventList, ref StringBuilder sb)
+        {
+            if (eventList.Count == 0)
+            {
+                string line =
+                    $"#     Event Name\t{"Start",8:f3}\t{"End",6:f3}\t{"MinF"}\t{"MaxF"}\t{"Score1":f2}\t{"Score2":f1}\t{"SourceFile"}";
+                sb.AppendLine(line);
+                line = $"{"NoEvent"}\t{0.000,8:f3}\t{0.000,8:f3}\t{"N/A"}\t{"N/A"}\t{0.000:f2}\t{0.000:f1}\t{"N/A"}";
+                sb.AppendLine(line);
+            }
+            else
+            {
+                AcousticEvent ae1 = eventList[0];
+                string line =
+                    $"#     Event Name\t{"Start",8:f3}\t{"End",6:f3}\t{"MinF"}\t{"MaxF"}\t{"Score":f2}\t{ae1.Score2Name:f1}\t{"SourceFile"}";
+                sb.AppendLine(line);
+                foreach (AcousticEvent ae in eventList)
+                {
+                    line =
+                        $"{ae.Name}\t{ae.TimeStart,8:f3}\t{ae.TimeEnd,8:f3}\t{ae.LowFrequencyHertz}\t{ae.HighFrequencyHertz}\t{ae.Score:f2}\t{ae.Score2:f1}\t{ae.FileName}";
+                    sb.AppendLine(line);
+                }
+            }
+        }
+        */
+
+        //#################################################################################################################
+        //METHODS FOR SEGMENTATION OF A FREQ BAND BASED ON ACOUSTIC ENERGY
 
         /// <summary>
         /// Segments or not depending value of boolean doSegmentation.
@@ -859,6 +804,19 @@ namespace AudioAnalysisTools
             return tuple;
         }
 
+        /// <summary>
+        /// Segments the acoustic energy in the passed frequency band and returns as list of acoustic events.
+        /// Noise reduction is done first.
+        /// </summary>
+        /// <param name="sonogram">the full spectrogram.</param>
+        /// <param name="segmentStartOffset">Start of current segment wrt recording start.</param>
+        /// <param name="minHz">Bottom of the required frequency band.</param>
+        /// <param name="maxHz">Top of the required frequency band.</param>
+        /// <param name="smoothWindow">To smooth the amplitude array.</param>
+        /// <param name="thresholdSD">Determines the threshold for an acoustic event.</param>
+        /// <param name="minDuration">Minimum duration of an acceptable acoustic event.</param>
+        /// <param name="maxDuration">Maximum duration of an acceptable acoustic event.</param>
+        /// <returns>a list of acoustic events.</returns>
         public static Tuple<List<AcousticEvent>, double, double, double, double[]> GetSegmentationEvents(
             SpectrogramStandard sonogram,
             TimeSpan segmentStartOffset,
@@ -872,10 +830,11 @@ namespace AudioAnalysisTools
             int nyquist = sonogram.SampleRate / 2;
             var tuple = SNR.SubbandIntensity_NoiseReduced(sonogram.Data, minHz, maxHz, nyquist, smoothWindow, sonogram.FramesPerSecond);
             double[] intensity = tuple.Item1; //noise reduced intensity array
-            double Q = tuple.Item2;      //baseline dB in the original scale
+            double baselineDb = tuple.Item2;      //baseline dB in the original scale
             double oneSD = tuple.Item3;  //1 SD in dB around the baseline
             double dBThreshold = thresholdSD * oneSD;
 
+            // get list of acoustic events
             var segmentEvents = ConvertIntensityArray2Events(
                 intensity,
                 segmentStartOffset,
@@ -889,12 +848,15 @@ namespace AudioAnalysisTools
             foreach (AcousticEvent ev in segmentEvents)
             {
                 ev.FileName = sonogram.Configuration.SourceFName;
-
-                //ev.Name = callName;
             }
 
-            return Tuple.Create(segmentEvents, Q, oneSD, dBThreshold, intensity);
+            return Tuple.Create(segmentEvents, baselineDb, oneSD, dBThreshold, intensity);
         }
+
+        //##############################################################################################################################################
+        // THE NEXT FOUR METHODS ARE NOT CURRENTLY CALLED.
+        // THEY WERE USED FOR COLLECTING EVENTS INTO DATA SETS for Machine Learning purposes. (Kiwi publications)
+        // MAY BE USEFUL IN FUTURE
 
         /// <summary>
         /// returns all the events in a list that occur in the recording with passed file name.
@@ -911,7 +873,7 @@ namespace AudioAnalysisTools
             }
 
             return events;
-        } // end method GetEventsInFile(List<AcousticEvent> eventList, string fileName)
+        }
 
         public static List<AcousticEvent> GetTaggedEventsInFile(List<AcousticEvent> labeledEvents, string filename)
         {
@@ -1057,7 +1019,7 @@ namespace AudioAnalysisTools
             accuracy = (precision + recall) / 2;
 
             resultsText = sb.ToString();
-        } //end method
+        }
 
         /// <summary>
         /// Given two lists of AcousticEvents, one being labelled events and the other being predicted events,
@@ -1161,9 +1123,7 @@ namespace AudioAnalysisTools
         }
 
 //##############################################################################################################################################
-//  THE NEXT THREE METHODS CONVERT BETWEEN SCORE ARRAYS AND ACOUSTIC EVENTS
-//  THE NEXT TWO METHOD CONVERT AN ARRAY OF SCORE (USUALLY INTENSITY VALUES IN A SUB-BAND) TO ACOUSTIC EVENTS.
-//  THE THIRD METHOD PRODUCES A SCORE ARRAY GIVEN A LIST OF EVENTS.
+//  THE NEXT THREE METHODS CONVERT AN ARRAY OF SCORE VALUES (USUALLY INTENSITY VALUES IN A SUB-BAND) TO ACOUSTIC EVENTS.
 
         public static List<AcousticEvent> ConvertIntensityArray2Events(
             double[] values,
@@ -1229,7 +1189,7 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        /// Given a time series of acoustic amplitude (typically in decibels), this method finds events that match the passed constraints.
+        /// Given a time series of acoustic amplitude (typically in decibels), finds events that match the passed constraints.
         /// </summary>
         /// <param name="values">an array of amplitude values, typically decibel values.</param>
         /// <param name="segmentStartOffset">not sure what this is about!.</param>
@@ -1368,7 +1328,7 @@ namespace AudioAnalysisTools
             var events = new List<AcousticEvent>();
             double maxPossibleScore = 5 * scoreThreshold; // used to calculate a normalised score between 0 - 1.0
             bool isHit = false;
-            double frameOffset = 1 / framesPerSec; // frame offset in fractions of second
+            double frameOffset = 1 / framesPerSec;
             double startTimeWrtSegment = 0.0; // units = seconds
             int startFrame = 0;
 
@@ -1393,7 +1353,8 @@ namespace AudioAnalysisTools
                     // if (duration < minDuration) continue; //skip events with duration shorter than threshold
                     if (duration < minDuration || duration > maxDuration)
                     {
-                        continue; //skip events with duration shorter than threshold
+                        //skip events with duration shorter than threshold
+                        continue;
                     }
 
                     // obtain an average score for the duration of the potential event.
@@ -1407,10 +1368,11 @@ namespace AudioAnalysisTools
 
                     // Initialize the event.
                     AcousticEvent ev = new AcousticEvent(segmentStartWrtRecording, startTimeWrtSegment, duration, minHz, maxHz);
-
                     ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
                     ev.Score = av;
-                    ev.ScoreNormalised = ev.Score / maxPossibleScore; // normalised to the user supplied threshold
+
+                    // normalised to the user supplied threshold
+                    ev.ScoreNormalised = ev.Score / maxPossibleScore;
                     if (ev.ScoreNormalised > 1.0)
                     {
                         ev.ScoreNormalised = 1.0;
@@ -1432,14 +1394,17 @@ namespace AudioAnalysisTools
 
                     events.Add(ev);
                 }
-            } //end of pass over all frames
+            }
 
             return events;
-        } //end method ConvertScoreArray2Events()
+        }
 
         /// <summary>
-        /// Extracts an array of scores from a list of events.
-        /// The events are required to have the passed name.
+        /// FOR POSSIBLE DELETION!
+        /// THis method called only once from a frog recogniser class that is no longer used> LitoriaCaerulea:RecognizerBase.
+        /// THis method is potentially useful but can be deleted.
+        /// Attempts to reconstruct an array of scores from a list of acoustic events.
+        /// The events are required to have the passed name (a filter).
         /// The events are assumed to contain sufficient info about frame rate in order to populate the array.
         /// </summary>
         public static double[] ExtractScoreArrayFromEvents(List<AcousticEvent> events, int arraySize, string nameOfTargetEvent)
@@ -1474,6 +1439,7 @@ namespace AudioAnalysisTools
         }
 
         //##############################################################################################################################################
+        // METHODS to CLUSTER acoustic events
 
         /// <summary>
         /// Although not currently used, this method and following methods could be useful in future for clustering of events.
