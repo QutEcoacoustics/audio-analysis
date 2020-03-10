@@ -6,13 +6,7 @@ namespace Acoustics.Test.AudioAnalysisTools.EventStatistics
 {
     using System;
     using System.Collections.Generic;
-    using Acoustics.Shared;
-    using Acoustics.Tools.Wav;
     using global::AudioAnalysisTools;
-    using global::AudioAnalysisTools.DSP;
-    using global::AudioAnalysisTools.EventStatistics;
-    using global::AudioAnalysisTools.WavTools;
-    using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
@@ -26,13 +20,8 @@ namespace Acoustics.Test.AudioAnalysisTools.EventStatistics
             // make a list of events
             var events = new List<AcousticEvent>();
 
-            var segmentStartOffset = TimeSpan.Zero;
             double maxPossibleScore = 10.0;
-            var startTime1 = 1.0;
-            var duration1 = 5.0;
-            var minHz1 = 1000;
-            var maxHz1 = 8000;
-            var event1 = new AcousticEvent(segmentStartOffset, startTime1, duration1, minHz1, maxHz1)
+            var event1 = new AcousticEvent(segmentStartOffset: TimeSpan.Zero, eventStartSegmentRelative: 1.0, eventDuration: 5.0, minFreq: 1000, maxFreq: 8000)
             {
                 Name = "Event1",
                 Score = 1.0,
@@ -41,11 +30,7 @@ namespace Acoustics.Test.AudioAnalysisTools.EventStatistics
 
             events.Add(event1);
 
-            var startTime2 = 4.5;
-            var duration2 = 2.0;
-            var minHz2 = 1500;
-            var maxHz2 = 6000;
-            var event2 = new AcousticEvent(segmentStartOffset, startTime2, duration2, minHz2, maxHz2)
+            var event2 = new AcousticEvent(segmentStartOffset: TimeSpan.Zero, eventStartSegmentRelative: 4.5, eventDuration: 2.0, minFreq: 1500, maxFreq: 6000)
             {
                 Name = "Event2",
                 Score = 5.0,
@@ -53,11 +38,7 @@ namespace Acoustics.Test.AudioAnalysisTools.EventStatistics
             };
             events.Add(event2);
 
-            var startTime3 = 7.0;
-            var duration3 = 2.0;
-            var minHz3 = 1000;
-            var maxHz3 = 8000;
-            var event3 = new AcousticEvent(segmentStartOffset, startTime3, duration3, minHz3, maxHz3)
+            var event3 = new AcousticEvent(segmentStartOffset: TimeSpan.Zero, eventStartSegmentRelative: 7.0, eventDuration: 2.0, minFreq: 1000, maxFreq: 8000)
             {
                 Name = "Event3",
                 Score = 9.0,
@@ -66,7 +47,7 @@ namespace Acoustics.Test.AudioAnalysisTools.EventStatistics
             events.Add(event3);
 
             // combine adjacent acoustic events
-            events = AcousticEvent.CombineOverlappingEvents(events, segmentStartOffset);
+            events = AcousticEvent.CombineOverlappingEvents(events: events, segmentStartOffset: TimeSpan.Zero);
 
             Assert.AreEqual(2, events.Count);
             Assert.AreEqual(1.0, events[0].EventStartSeconds, 1E-4);
@@ -99,15 +80,10 @@ namespace Acoustics.Test.AudioAnalysisTools.EventStatistics
             // make a list of events
             var framesPerSecond = 10.0;
             var freqBinWidth = 43.0664;
-            var segmentStartOffset = TimeSpan.Zero;
-            var minHz = 1000;
-            var maxHz = 8000;
             double maxPossibleScore = 10.0;
 
             var events = new List<AcousticEvent>();
-            var startTime1 = 1.0;
-            var duration1 = 5.0;
-            var event1 = new AcousticEvent(segmentStartOffset, startTime1, duration1, minHz, maxHz)
+            var event1 = new AcousticEvent(segmentStartOffset: TimeSpan.Zero, eventStartSegmentRelative: 1.0, eventDuration: 5.0, minFreq: 1000, maxFreq: 8000)
             {
                 Score = 10.0,
                 Name = "Event1",
@@ -115,9 +91,7 @@ namespace Acoustics.Test.AudioAnalysisTools.EventStatistics
             };
 
             events.Add(event1);
-            var startTime2 = 7.0;
-            var duration2 = 2.0;
-            var event2 = new AcousticEvent(segmentStartOffset, startTime2, duration2, minHz, maxHz)
+            var event2 = new AcousticEvent(segmentStartOffset: TimeSpan.Zero, eventStartSegmentRelative: 7.0, eventDuration: 2.0, minFreq: 1000, maxFreq: 8000)
             {
                 Score = 1.0,
                 Name = "Event2",
@@ -134,7 +108,6 @@ namespace Acoustics.Test.AudioAnalysisTools.EventStatistics
                 ev.DrawEvent(substituteSonogram, framesPerSecond, freqBinWidth, height);
             }
 
-            //substituteSonogram.Save("C:\\temp\\image.png");
             var redPixel1 = new Argb32(110, 10, 30);
             var expectedRed1 = new Color(redPixel1);
             var redPixel2 = new Argb32(124, 11, 34);

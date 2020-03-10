@@ -63,10 +63,10 @@ namespace AnalysisBase.ResultBases
         /// <summary>
         /// Sets both the Segment start and the Event start wrt to recording.
         /// </summary>
-        protected void SetSegmentAndEventStartsWrtRecording(TimeSpan segmentStartWrtRecording, double eventStartWrtSegment)
+        protected void SetEventStartRelative(TimeSpan segmentStart, double eventStartSegmentRelative)
         {
-            this.SegmentStartSeconds = segmentStartWrtRecording.TotalSeconds;
-            this.EventStartSeconds = this.SegmentStartSeconds + eventStartWrtSegment;
+            this.SegmentStartSeconds = segmentStart.TotalSeconds;
+            this.EventStartSeconds = this.SegmentStartSeconds + eventStartSegmentRelative;
         }
     }
 }
