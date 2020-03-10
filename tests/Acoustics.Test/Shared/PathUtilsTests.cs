@@ -28,6 +28,7 @@ namespace Acoustics.Test.Shared
         [TestMethod]
         public void CanGetShortFileNames()
         {
+
             var path = this.TestOutputDirectory.CombineFile("bad folder", "REC_C_20180616_145526😂.wav").Touch();
 
             var actual = PathUtils.GetShortFilename(path.FullName);
@@ -36,7 +37,7 @@ namespace Acoustics.Test.Shared
             {
                 expected = new[]
                 {
-                    "C:\\", "BADFOL~1", "REC_C_~1.WAV",
+                   this.TestOutputDirectory.Root.Name, "BADFOL~1", "REC_C_~1.WAV",
                 };
             }
             else if (AppConfigHelper.IsLinux || AppConfigHelper.IsMacOsX)

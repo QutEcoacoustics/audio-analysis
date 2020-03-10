@@ -107,12 +107,8 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
         [TestMethod]
         public void TestOfSpectralIndices()
         {
-            //var indexPropertiesConfig = PathHelper.ResolveConfigFile(@"IndexPropertiesConfig.yml");
-            var sourceRecording = PathHelper.ResolveAsset(@"Recordings\BAC2_20071008-085040.wav");
+            var sourceRecording = PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav");
             var configFile = PathHelper.ResolveConfigFile(@"Towsey.Acoustic.yml");
-
-            // var outputDir = this.outputDirectory;
-            var resourcesDir = PathHelper.ResolveAssetPath("Indices");
 
             if (!this.outputDirectory.Exists)
             {
@@ -140,84 +136,84 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             // After serializing the expected vector and writing to the resources directory, comment the Binary.Serialise line.
 
             // 1:ACI
-            var expectedSpectrumFile = new FileInfo(resourcesDir + "\\ACI.bin");
+            var expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "\\ACI.bin");
 
             //Binary.Serialize(expectedSpectrumFile, spectralIndices.ACI);
             var expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.ACI, AllowedDelta);
 
             // 2:BGN
-            expectedSpectrumFile = new FileInfo(resourcesDir + "\\BGN.bin");
+            expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "\\BGN.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.BGN);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.BGN, AllowedDelta);
 
             // 3:CVR
-            expectedSpectrumFile = new FileInfo(resourcesDir + "\\CVR.bin");
+            expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "\\CVR.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.CVR);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.CVR, AllowedDelta);
 
             // 4:ENT
-            expectedSpectrumFile = new FileInfo(resourcesDir + "\\ENT.bin");
+            expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "\\ENT.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.ENT);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.ENT, AllowedDelta);
 
             // 5:EVN
-            expectedSpectrumFile = new FileInfo(resourcesDir + "\\EVN.bin");
+            expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "\\EVN.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.EVN);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.EVN, AllowedDelta);
 
             // 6:OSC
-            expectedSpectrumFile = new FileInfo(resourcesDir + "\\OSC.bin");
+            expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "\\OSC.bin");
 
             //Binary.Serialize(expectedSpectrumFile, spectralIndices.OSC);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.OSC, AllowedDelta);
 
             // 7:PMN
-            expectedSpectrumFile = new FileInfo(resourcesDir + "\\PMN.bin");
+            expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "\\PMN.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.PMN);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.PMN, AllowedDelta);
 
             // 8:RHZ
-            expectedSpectrumFile = new FileInfo(resourcesDir + "\\RHZ.bin");
+            expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "\\RHZ.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.RHZ);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.RHZ, AllowedDelta);
 
             // 9:RNG
-            expectedSpectrumFile = new FileInfo(resourcesDir + "\\RNG.bin");
+            expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "\\RNG.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.RNG);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.RNG, AllowedDelta);
 
             // 10:RPS
-            expectedSpectrumFile = new FileInfo(resourcesDir + "\\RPS.bin");
+            expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "\\RPS.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.RPS);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.RPS, AllowedDelta);
 
             // 11:RVT
-            expectedSpectrumFile = new FileInfo(resourcesDir + "\\RVT.bin");
+            expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "\\RVT.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.RVT);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.RVT, AllowedDelta);
 
             // 12:SPT
-            expectedSpectrumFile = new FileInfo(resourcesDir + "\\SPT.bin");
+            expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "\\SPT.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.SPT);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
@@ -264,19 +260,19 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
 
             // TEST the SPECTRAL INDICES
             var resourcesDir = PathHelper.ResolveAssetPath("Indices");
-            var expectedSpectrumFile = new FileInfo(resourcesDir + "\\BGN_ICD20.bin");
+            var expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "BGN_ICD20.bin");
 
             //Binary.Serialize(expectedSpectrumFile, spectralIndices.BGN);
             var expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.BGN, AllowedDelta);
 
-            expectedSpectrumFile = new FileInfo(resourcesDir + "\\CVR_ICD20.bin");
+            expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "CVR_ICD20.bin");
 
             //Binary.Serialize(expectedSpectrumFile, spectralIndices.CVR);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.CVR, AllowedDelta);
 
-            var outputImagePath1 = Path.Combine(this.outputDirectory.FullName, "SpectralIndices_ICD20.png");
+            var outputImagePath1 = this.outputDirectory.CombinePath("SpectralIndices_ICD20.png");
             var image = SpectralIndexValues.CreateImageOfSpectralIndices(spectralIndices);
             image.Save(outputImagePath1);
         }
@@ -336,17 +332,12 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             // TEST the BGN SPECTRAL INDEX
             Assert.AreEqual(256, spectralIndices.BGN.Length);
 
-            var resourcesDir = PathHelper.ResolveAssetPath("Indices");
-            var expectedSpectrumFile = new FileInfo(resourcesDir + "\\BGN_OctaveScale.bin");
-
             //Binary.Serialize(expectedSpectrumFile, spectralIndices.BGN);
-            var expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
+            var expectedVector = Binary.Deserialize<double[]>(PathHelper.ResolveAsset("Indices", "BGN_OctaveScale.bin"));
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.BGN, AllowedDelta);
 
-            expectedSpectrumFile = new FileInfo(resourcesDir + "\\CVR_OctaveScale.bin");
-
             //Binary.Serialize(expectedSpectrumFile, spectralIndices.CVR);
-            expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
+            expectedVector = Binary.Deserialize<double[]>(PathHelper.ResolveAsset("Indices", "CVR_OctaveScale.bin"));
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.CVR, AllowedDelta);
         }
     }

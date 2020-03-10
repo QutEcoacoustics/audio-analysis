@@ -49,7 +49,6 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             var wavFilePath = PathHelper.ResolveAsset(@"Recordings", "BAC2_20071008-085040.wav");
 
             // var outputDir = this.outputDirectory;
-            var outputDir = PathHelper.ResolveAssetPath("BinaryClustering"); // only use this to write expected output.
 
             int frameSize = 512;
             var recording = new AudioRecording(wavFilePath); // get recording segment
@@ -81,8 +80,8 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             Assert.AreEqual(clusterInfo.TriGramUniqueCount, 342);
 
             // test what used to be the CLS spectral index. Sum of the rows of the weight vectors.
-            var expectedSpectrumFile = new FileInfo(outputDir + "\\clusterSpectrum.bin");
-            
+            var expectedSpectrumFile = PathHelper.ResolveAsset("BinaryClustering", "clusterSpectrum.bin");
+
             // Binary.Serialize(expectedSpectrumFile, clusterSpectrum);
             var expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.AreEqual(expectedVector, clusterSpectrum);

@@ -7,12 +7,12 @@ namespace Acoustics.Test.TestHelpers
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using SixLabors.ImageSharp;
     using System.Linq;
     using System.Runtime.CompilerServices;
     using Acoustics.Shared.Contracts;
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.Advanced;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
@@ -30,59 +30,6 @@ namespace Acoustics.Test.TestHelpers
             var actualColor = actualImage[pixel.X, pixel.Y];
             Assert.AreEqual((Rgb24)expectedColor, actualColor, $"Expected color at pixel {pixel} did not match actual color");
         }
-
-        /// <summary>
-        /// Check whether a region in an image matches an expected color.
-        /// Does a simplistic average on each color channel and includes and inbuilt tolerance parameter.
-        /// A repeating pattern can fool this test.
-        /// </summary>
-        /// <example>
-        /// ImageAssert.ImageRegionIsColor(new Rectangle(10, 20, 100, 200), Color.FromRgb(41, 42, 31), actualImage, 1.0);
-        /// </example>
-        /// <param name="region">The rectangle within the image to test.</param>
-        /// <param name="expectedColor">The single color you expect the region to have</param>
-        /// <param name="actualImage">The image to test</param>
-        /// <param name="tolerance">The tolerance allowed for each color channel</param>
-        // public static void ImageRegionIsColor(this Assert assert, Rectangle region, Rgb24 expectedColor, Image<Rgb24> actualImage, double tolerance = 0.0)
-        // {
-        //     var width = region.Width;
-        //     var area = region.Area();
-        //
-        //     var red = new int[area];
-        //     var green = new int[area];
-        //     var blue = new int[area];
-        //     var indices = new HashSet<int>();
-        //     for (var x = region.Left; x < region.Right; x++)
-        //     {
-        //         for (var y = region.Top; y < region.Bottom; y++)
-        //         {
-        //             var color = actualImage[x, y];
-        //
-        //             var i = x - region.Left;
-        //             var j = y - region.Top;
-        //             var index0 = (i * region.Height) + j;
-        //             if (indices.Contains(index0))
-        //             {
-        //                 Debugger.Break();
-        //             }
-        //
-        //             indices.Add(index0);
-        //             red  [index0] = color.R;
-        //             green[index0] = color.G;
-        //             blue [index0] = color.B;
-        //         }
-        //     }
-        //
-        //     var averageRed = red.Average();
-        //     var averageBlue = blue.Average();
-        //     var averageGreen = green.Average();
-        //
-        //     Assert.IsTrue(
-        //         Math.Abs(averageRed - expectedColor.R) <= tolerance &&
-        //         Math.Abs(averageGreen - expectedColor.G) <= tolerance &&
-        //         Math.Abs(averageBlue - expectedColor.B) <= tolerance,
-        //         $"Region {region} is not expected color {expectedColor} - actual averages: R={averageRed:F20}, G={averageGreen:F20}, B={averageBlue:F20}");
-        // }
 
         /// <summary>
         /// Assert a certain ratio of colors are present in a region.
@@ -169,7 +116,7 @@ namespace Acoustics.Test.TestHelpers
             Dictionary<Color, double> colorHistogram = null,
             string message = "")
         {
-            colorHistogram = colorHistogram ?? ImageTools.GetColorHistogramNormalized(actualImage);
+            colorHistogram ??= ImageTools.GetColorHistogramNormalized(actualImage);
 
             var perfectColorAverage = 1.0 / colorHistogram.Count;
             var sumOfDeltas = colorHistogram.Select(x => Math.Abs(perfectColorAverage - x.Value)).Sum();

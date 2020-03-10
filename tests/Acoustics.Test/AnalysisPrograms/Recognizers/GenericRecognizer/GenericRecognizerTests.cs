@@ -135,8 +135,6 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             };
 
             var results = recognizer.Recognize(recording, config, 100.Seconds(), null, this.TestOutputDirectory, null);
-            //results.Plots.
-            //results.Sonogram.GetImage().Save(this.outputDirectory + "\\debug.png");
 
             Assert.AreEqual(1, results.Events.Count);
             var @event = results.Events[0];

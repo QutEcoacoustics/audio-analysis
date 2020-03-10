@@ -47,6 +47,7 @@ namespace Acoustics.Test.TestHelpers
                     $"{message}Actual delta ({actualDelta}) between expected value ({expected:O}) and actual value ({actual:O}) was not less than {delta}");
             }
         }
+
         public static void AreEqual(this Assert assert, TimeSpan expected, TimeSpan actual, TimeSpan delta, string message = null)
         {
             var actualDelta = TimeSpan.FromTicks(Math.Abs((expected - actual).Ticks));
@@ -58,7 +59,52 @@ namespace Acoustics.Test.TestHelpers
             }
         }
 
+        public static void MatricesAreEqual<T>(this Assert assert, T[,] expected, T[,] actual, Func<T, T, bool> comparer = null, string message = null)
+            where T : IEquatable<T>
+        {
+            string Error(string reason)
+            {
+                return $"2D arrays are not equal because {reason}."
+                       + (message == null ? string.Empty : "\n" + message);
+            }
 
+            if (expected == actual)
+            {
+                return;
+            }
+
+            Assert.IsNotNull(expected, Error("expected should not be null"));
+            Assert.IsNotNull(actual, Error("actual should not be null"));
+            Assert.AreEqual(expected.GetLength(0), actual.GetLength(0), $"Dimension 0 length of actual <{actual.GetLength(0)}> does not equal expected <{expected.GetLength(0)}>");
+            Assert.AreEqual(expected.GetLength(1), actual.GetLength(1), $"Dimension 1 length of actual <{actual.GetLength(1)}> does not equal expected <{expected.GetLength(1)}>");
+
+            var mismatches = new List<(int I, int J, T Expected, T Actual)>(expected.Length);
+            for (int i = 0; i < expected.RowLength(); i++)
+            {
+                for (int j = 0; j < expected.ColumnLength(); j++)
+                {
+                    var expectedItem = expected[i, j];
+                    var actualItem = actual[i, j];
+                    bool equal = comparer?.Invoke(expectedItem, actualItem)
+                                 ?? expectedItem.Equals(actualItem);
+                    if (!equal)
+                    {
+                        mismatches.Add((i, j, expectedItem, actualItem));
+                    }
+                }
+            }
+
+            if (mismatches.Count == 0)
+            {
+                return;
+            }
+
+            var report = $" the elements are different.\nThere are {mismatches.Count} mismatches at: "
+                         + mismatches.Select(x => $"[{x.I},{x.J}] <{x.Expected}> vs <{x.Actual}>")
+                             .FormatList();
+
+            Assert.Fail(Error(report));
+        }
 
         public static void AreEqual(
             this CollectionAssert collectionAssert,

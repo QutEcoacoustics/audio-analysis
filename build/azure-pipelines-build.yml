@@ -105,6 +105,7 @@ jobs:
         inputs:
           command: test
           publishTestResults: true
+          testRunTitle: "Tests for $(rid) $(configuration)"
           projects: tests/Acoustics.Test/Acoustics.Test.csproj
           arguments: >
             --runtime $(rid)
