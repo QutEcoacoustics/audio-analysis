@@ -9,7 +9,9 @@ namespace Acoustics.Test.TestHelpers
     using System.IO;
     using System.Linq;
     using System.Runtime.CompilerServices;
+    using Acoustics.Shared;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Newtonsoft.Json;
 
     public static class PathHelper
     {
@@ -45,7 +47,8 @@ namespace Acoustics.Test.TestHelpers
 
             if (found < 0)
             {
-                throw new InvalidOperationException($"Cannot find solution root directory in `{directory}`!");
+                var diagnostics = Json.SerializeToString(context, true, new JsonSerializerSettings {PreserveReferencesHandling = PreserveReferencesHandling.All });
+                throw new InvalidOperationException($"Cannot find solution root directory in `{directory}`!\n{diagnostics}");
             }
 
             SolutionRoot = split[..found].Join(pathDelimiter);
