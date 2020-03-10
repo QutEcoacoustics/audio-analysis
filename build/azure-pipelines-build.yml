@@ -104,13 +104,13 @@ jobs:
       - task: DotNetCoreCLI@2
         inputs:
           command: test
-          noBuild: true
+          nobuild: true
           publishTestResults: true
           projects: tests/Acoustics.Test/Acoustics.Test.csproj
           arguments: >
             --runtime $(rid)
             --configuration $(configuration)
-            --settings test/Acoustics.Test/.runsettings
+            --settings tests/Acoustics.Test/.runsettings
             --logger trx
             --collect:"XPlat Code Coverage"
             -- RunConfiguration.DisableAppDomain=true
