@@ -110,7 +110,7 @@ jobs:
             --runtime $(rid)
             --configuration $(configuration)
             --settings tests/Acoustics.Test/.runsettings
-            --nobuild
+            --no-build
             --logger trx
             --collect:"XPlat Code Coverage"
             -- RunConfiguration.DisableAppDomain=true
