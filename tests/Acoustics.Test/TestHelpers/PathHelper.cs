@@ -27,18 +27,28 @@ namespace Acoustics.Test.TestHelpers
         {
             var directory = context.ResultsDirectory;
 
-            // search up directory for solution directory
+            // search down directory for solution directory
             var split = directory.Split(Path.DirectorySeparatorChar);
 
             // the assumption is that the repo is always checked out and named with this name
-            var index = split.IndexOf(x => x == "audio-analysis");
-
-            if (index < 0)
+            // this assumption is violated on Azure Pipelines
+            int found = -1;
+            var pathDelimiter = Path.DirectorySeparatorChar.ToString();
+            for (var index = 1; index < split.Length; index++)
             {
-                throw new InvalidOperationException($"Cannot find solution root directory in `{SolutionRoot}`!");
+                if (File.Exists(split[..index].Append("AudioAnalysis.sln").Join(pathDelimiter)))
+                {
+                    found = index;
+                    break;
+                }
             }
 
-            SolutionRoot = split[0..(index + 1)].Join(Path.DirectorySeparatorChar.ToString());
+            if (found < 0)
+            {
+                throw new InvalidOperationException($"Cannot find solution root directory in `{directory}`!");
+            }
+
+            SolutionRoot = split[..found].Join(pathDelimiter);
 
             CodeBase = context.DeploymentDirectory;
             TestResources = Path.Combine(SolutionRoot, "tests", "Fixtures");
