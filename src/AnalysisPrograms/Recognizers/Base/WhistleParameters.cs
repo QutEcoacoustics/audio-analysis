@@ -30,7 +30,7 @@ namespace AnalysisPrograms.Recognizers.Base
             double decibelThreshold,
             double minDuration,
             double maxDuration,
-            TimeSpan segmentStartWrtRecording)
+            TimeSpan segmentStartOffset)
         {
             var sonogramData = sonogram.Data;
             int frameCount = sonogramData.GetLength(0);
@@ -93,7 +93,7 @@ namespace AnalysisPrograms.Recognizers.Base
                     decibelThreshold,
                     minDuration,
                     maxDuration,
-                    segmentStartWrtRecording);
+                    segmentStartOffset);
 
                 // add to conbined intensity array
                 for (int t = 0; t < frameCount; t++)
@@ -107,7 +107,7 @@ namespace AnalysisPrograms.Recognizers.Base
             } //end for all freq bins
 
             // combine adjacent acoustic events
-            events = AcousticEvent.CombineOverlappingEvents(events, segmentStartWrtRecording);
+            events = AcousticEvent.CombineOverlappingEvents(events, segmentStartOffset);
 
             return (events, combinedIntensityArray);
         }
