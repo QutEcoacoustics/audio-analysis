@@ -191,13 +191,41 @@ namespace Acoustics.Shared
         {
             if (this.process != null)
             {
-                if (!this.process.HasExited)
+                bool exited;
+                try
+                {
+                    exited = this.process.HasExited;
+                }
+                catch (InvalidOperationException ioex)
+                {
+                    if (Log.IsVerboseEnabled())
+                    {
+                        Log.Verbose("Exception occurred while disposing a process (and was ignored):", ioex);
+                    }
+
+                    exited = true;
+                }
+                catch (Win32Exception wex)
+                {
+                    // this case no longer occurs in .NET Core 3+
+
+                    // access denied exception. Either not enough rights, or process already terminating
+                    if (Log.IsVerboseEnabled())
+                    {
+                        Log.Verbose("Exception occurred while disposing a process (and was ignored):", wex);
+                    }
+
+                    exited = true;
+                }
+
+                if (!exited)
                 {
                     this.KillProcess();
                 }
 
                 // https://github.com/QutBioacoustics/audio-analysis/issues/118
                 // Workaround for: https://bugzilla.xamarin.com/show_bug.cgi?id=43462#c14
+                // TODO core: remove?
                 this.process.Dispose();
 
                 GC.Collect();
@@ -254,13 +282,14 @@ namespace Acoustics.Shared
 
             while (exceptions.Count < 10)
             {
+                bool added = false;
                 try
                 {
                     // kill?
                     this.process.Refresh();
                     if (!this.process.HasExited)
                     {
-                        this.process.Kill();
+                        this.process.Kill(entireProcessTree: true);
                     }
 
                     // has killed? clean up
@@ -282,10 +311,26 @@ namespace Acoustics.Shared
 
                     // has not killed? wait and try again
                 }
+                catch (InvalidOperationException ioex)
+                {
+                    exceptions.Add(ioex);
+                    added = true;
+                }
                 catch (Win32Exception wex)
                 {
+                    // this case no longer occurs in .NET Core 3+
+
                     // access denied exception. Either not enough rights, or process already terminating
                     exceptions.Add(wex);
+                    added = true;
+                }
+
+                // https://developers.redhat.com/blog/2019/10/29/the-net-process-class-on-linux/
+                // because an exception is no longer thrown in .NET Core 3+ we have to increment this loop
+                // otherwise we risk an infinite loop.
+                if (!added)
+                {
+                    exceptions.Add(null);
                 }
 
                 // Wait a short while, let the process attempt to kill itself
