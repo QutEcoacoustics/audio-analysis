@@ -74,11 +74,11 @@ namespace Acoustics.Test.AudioAnalysisTools
         [TestMethod]
         public void LocalSpectralPeakTest()
         {
-            var configPath = @"SpectralPeakTrackingConfig.yml";
-            var recordingPath = @"SM27 22 Sep 2018 3.30 am.wav";
-            var imagePath = @"image_whistle_peaks_1500_3500_100_250_6.bmp";
+            var configPath = "SpectralPeakTrackingConfig.yml";
+            var recordingPath = "SM27 22 Sep 2018 3.30 am.wav";
+            var imagePath = "image_whistle_peaks_1500_3500_100_250_6.bmp";
             //var trackImagePath = @"trackImage.bmp";
-            var pathToCsvFile = @"PeakTrackInfo_SM27 22 Sep 2018 3.30 am.csv";
+            var pathToCsvFile = "PeakTrackInfo_SM27 22 Sep 2018 3.30 am.csv";
 
             var configFile = configPath.ToFileInfo();
 

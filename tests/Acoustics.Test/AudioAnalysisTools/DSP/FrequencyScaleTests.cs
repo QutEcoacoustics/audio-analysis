@@ -296,7 +296,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
         [TestMethod]
         public void OctaveFrequencyScale2()
         {
-            var recordingPath = PathHelper.ResolveAsset(@"Recordings\MarineJasco_AMAR119-00000139.00000139.Chan_1-24bps.1375012796.2013-07-28-11-59-56-16bit-60sec.wav");
+            var recordingPath = PathHelper.ResolveAsset("Recordings", "MarineJasco_AMAR119-00000139.00000139.Chan_1-24bps.1375012796.2013-07-28-11-59-56-16bit-60sec.wav");
             var opFileStem = "JascoMarineGBR1";
             var outputDir = this.outputDirectory;
             var outputImagePath = Path.Combine(this.outputDirectory.FullName, "Octave2ScaleSonogram.png");

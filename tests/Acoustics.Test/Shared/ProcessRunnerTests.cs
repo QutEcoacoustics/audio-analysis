@@ -81,7 +81,7 @@ namespace Acoustics.Test.Shared
             this.RunFfprobeIndefinite(0);
         }
 
-        private bool RunFfprobeIndefinite(int _)
+        private bool RunFfprobeIndefinite(int index)
         {
             var path = PathHelper.ResolveAssetPath(TestFile);
             var dest = PathHelper.GetTempFile(this.TestOutputDirectory, ".mp3");
@@ -99,7 +99,7 @@ namespace Acoustics.Test.Shared
                 Assert.AreEqual(0, runner.StandardOutput.Length);
                 Assert.IsTrue(
                     runner.ErrorOutput.Length > 1500,
-                    $"Expected stderr to at least include ffmpeg header but it was only {runner.ErrorOutput.Length} chars. StdErr:\n{runner.ErrorOutput}");
+                    $"Expected stderr to at least include ffmpeg header but it was only {runner.ErrorOutput.Length} chars. Index: {index}. StdErr:\n{runner.ErrorOutput}");
 
                 // we're killing the program this the exit code should be invalid
                 Assert.AreEqual(-1, runner.ExitCode);

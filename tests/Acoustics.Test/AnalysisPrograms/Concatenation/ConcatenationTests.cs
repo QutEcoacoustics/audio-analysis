@@ -298,7 +298,8 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
         /// These tests use a dataset constructed from one-minute long samples, recorded every 20-min.
         /// Thus there's a column of data for every 20 pixels.
         /// </summary>
-        [DataTestMethod]
+        /// TODO: https://github.com/microsoft/testfx/issues/678
+        [PlatformSpecificTestMethod("Windows", Reason = "BUG: https://github.com/microsoft/testfx/issues/678")]
         [DataRow(ConcatMode.TimedGaps, new[] { 1440, 1420, 1440 })]
         [DataRow(ConcatMode.NoGaps, new[] { 73, 72, 73 })]
         [DataRow(ConcatMode.EchoGaps, new[] { 1440, 1420, 1440 })]

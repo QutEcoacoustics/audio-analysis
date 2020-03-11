@@ -47,7 +47,7 @@ namespace Acoustics.Test.Shared
             Assert.AreEqual(expected, WasBuiltAgainstMusl);
         }
 
-        [DataTestMethod]
+        [RuntimeIdentifierSpecificDataTestMethod]
         [DataRow("win-x64", "ffmpeg", "audio-utils/win-x64/ffmpeg/ffmpeg.exe", true)]
         [DataRow("win-x64", "ffprobe", "audio-utils/win-x64/ffmpeg/ffprobe.exe", true)]
         [DataRow("win-x64", "sox", "audio-utils/win-x64/sox/sox.exe", true)]

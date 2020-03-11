@@ -5,9 +5,8 @@
 namespace Acoustics.Test.TestHelpers
 {
     using System;
-    using System.Collections.Generic;
+    using System.Linq;
     using System.Runtime.InteropServices;
-    using System.Text;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     public class PlatformSpecificTestMethod : TestMethodAttribute
@@ -32,11 +31,13 @@ namespace Acoustics.Test.TestHelpers
 
         public OSPlatform Platform { get; }
 
+        public string Reason { get; set; }
+
         public override TestResult[] Execute(ITestMethod testMethod)
         {
             if (!RuntimeInformation.IsOSPlatform(this.Platform))
             {
-                var message = $"Test not executed. The current platform is not {this.Platform}";
+                var message = $"Test not executed. The current platform is not {this.Platform}{this.Reason?.Prepend(" ")}.";
                 return new[]
                 {
                     new TestResult

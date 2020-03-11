@@ -23,15 +23,13 @@ namespace Acoustics.Test.AnalysisPrograms
         [TestMethod]
         public async Task DefaultCliWorks()
         {
-            using (var console = new ConsoleRedirector())
-            {
-                var code = await MainEntry.Main(Array.Empty<string>());
+            using var console = new ConsoleRedirector();
+            var code = await MainEntry.Main(Array.Empty<string>());
 
-                Assert.AreEqual(2, code);
+            Assert.AreEqual(2, code);
 
-                this.AssertContainsCopyright(console.Lines);
-                this.AssertContainsGitHashAndVersion(console.Lines);
-            }
+            this.AssertContainsCopyright(console.Lines);
+            this.AssertContainsGitHashAndVersion(console.Lines);
         }
 
         [DoNotParallelize]
@@ -52,32 +50,28 @@ namespace Acoustics.Test.AnalysisPrograms
         [TestMethod]
         public async Task DefaultVersionWorks()
         {
-            using (var console = new ConsoleRedirector())
-            {
-                var code = await MainEntry.Main(new[] { "--version" });
+            using var console = new ConsoleRedirector();
+            var code = await MainEntry.Main(new[] { "--version" });
 
-                Assert.AreEqual(0, code);
+            Assert.AreEqual(0, code);
 
-                this.AssertContainsCopyright(console.Lines);
-                this.AssertContainsGitHashAndVersion(console.Lines);
-                StringAssert.StartsWith(console.Lines[3], BuildMetadata.VersionString);
-            }
+            this.AssertContainsCopyright(console.Lines);
+            this.AssertContainsGitHashAndVersion(console.Lines);
+            StringAssert.StartsWith(console.Lines[3], BuildMetadata.VersionString);
         }
 
         [DoNotParallelize]
         [TestMethod]
         public async Task CheckEnvironmentWorks()
         {
-            using (var console = new ConsoleRedirector())
-            {
-                var code = await MainEntry.Main(new[] { "CheckEnvironment" });
+            using var console = new ConsoleRedirector();
+            var code = await MainEntry.Main(new[] { "CheckEnvironment" });
 
-                Assert.AreEqual(0, code);
+            Assert.AreEqual(0, code);
 
-                this.AssertContainsCopyright(console.Lines);
-                this.AssertContainsGitHashAndVersion(console.Lines);
-                StringAssert.Contains(console.Lines[4], "SUCCESS - Valid environment");
-            }
+            this.AssertContainsCopyright(console.Lines);
+            this.AssertContainsGitHashAndVersion(console.Lines);
+            StringAssert.Contains(console.Lines[4], "SUCCESS - Valid environment");
         }
 
         [TestMethod]

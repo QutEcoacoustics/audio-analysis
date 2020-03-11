@@ -88,13 +88,13 @@ namespace Acoustics.Test.AudioAnalysisTools.EventStatistics
             var image = sonogram.GetImage();
             string title = $"Spectrogram of Harmonics: SR={sampleRate}  Window={freqScale.WindowSize}";
             image = sonogram.GetImageFullyAnnotated(image, title, freqScale.GridLineLocations);
-            string path = @"C:\SensorNetworks\Output\Sonograms\UnitTestSonograms\SineSignal3.png";
+            string path = ;
             image.Save(path);
 
             // get spectrum from row 1300
             var normalisedIndex = DataTools.normalise(MatrixTools.GetRow(sonogram.Data, 1300));
             var image2 = GraphsAndCharts.DrawGraph("SPECTRUM", normalisedIndex, 100);
-            string path2 = @"C:\SensorNetworks\Output\Sonograms\UnitTestSonograms\Spectrum3.png";
+            string path2 = ;
             image2.Save(path2);
             */
         }

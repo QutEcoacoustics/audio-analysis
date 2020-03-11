@@ -1,4 +1,4 @@
-// <copyright file="ExampleTestTemplate.cs" company="QutEcoacoustics">
+// <copyright file="EnvelopeAndFftTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -7,23 +7,13 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
     using System;
     using System.IO;
     using System.Linq;
-
     using Acoustics.Shared;
+    using Acoustics.Test.TestHelpers;
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.WavTools;
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
 
-    /// <summary>
-    /// Test methods for the various standard Sonograms or Spectrograms
-    /// Notes on TESTS: (from Anthony in email @ 05/04/2017)
-    /// (1) small tests are better
-    /// (2) simpler tests are better
-    /// (3) use an appropriate serialization format
-    /// (4) for binary large objects(BLOBs) make sure git-lfs is tracking them
-    /// See this commit for dealing with BLOBs: https://github.com/QutBioacoustics/audio-analysis/commit/55142089c8eb65d46e2f96f1d2f9a30d89b62710
-    /// </summary>
     [TestClass]
     public class EnvelopeAndFftTests
     {
@@ -108,7 +98,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             // Test sonogram data matrix by comparing the vector of column sums.
             double[] columnSums = MatrixTools.SumColumns(amplSpectrogram);
 
-            var sumFile = PathHelper.ResolveAsset(@"EnvelopeAndFft\BAC2_20071008-085040_DataColumnSums.bin");
+            var sumFile = PathHelper.ResolveAsset("EnvelopeAndFft", "BAC2_20071008-085040_DataColumnSums.bin");
 
             // uncomment this to update the binary data. Should be rarely needed
             // AT: Updated 2017-02-15 because FFT library changed in 864f7a491e2ea0e938161bd390c1c931ecbdf63c
@@ -186,17 +176,17 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             // first write to here and move binary file to resources folder.
             // var averageArrayFile = new FileInfo(this.outputDirectory + @"\BAC2_20071008-085040_AvSigArray.bin");
             // Binary.Serialize(averageArrayFile, avArray);
-            var averageFile = PathHelper.ResolveAsset(@"EnvelopeAndFft\BAC2_20071008-085040_AvSigArray.bin");
+            var averageFile = PathHelper.ResolveAsset("EnvelopeAndFft", "BAC2_20071008-085040_AvSigArray.bin");
             var expectedAvArray = Binary.Deserialize<double[]>(averageFile);
             CollectionAssert.AreEqual(expectedAvArray, avArray);
 
             // var envelopeArrayFile = new FileInfo(this.outputDirectory + @"\BAC2_20071008-085040_EnvelopeArray.bin");
             // Binary.Serialize(envelopeArrayFile, envelope);
-            var envelopeFile = PathHelper.ResolveAsset(@"EnvelopeAndFft\BAC2_20071008-085040_EnvelopeArray.bin");
+            var envelopeFile = PathHelper.ResolveAsset("EnvelopeAndFft", "BAC2_20071008-085040_EnvelopeArray.bin");
             var expectedEnvelope = Binary.Deserialize<double[]>(envelopeFile);
             CollectionAssert.AreEqual(expectedEnvelope, envelope);
 
-            var frameEnergyFile = PathHelper.ResolveAsset(@"EnvelopeAndFft\BAC2_20071008-085040_FrameEnergyArray.bin");
+            var frameEnergyFile = PathHelper.ResolveAsset("EnvelopeAndFft", "BAC2_20071008-085040_FrameEnergyArray.bin");
 
             // uncomment this to update the binary data. Should be rarely needed
             // AT: Updated 2017-02-15 because FFT library changed in 864f7a491e2ea0e938161bd390c1c931ecbdf63c
@@ -205,7 +195,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             var expectedFrameEnergy = Binary.Deserialize<double[]>(frameEnergyFile);
             CollectionAssert.AreEqual(expectedFrameEnergy, frameEnergy);
 
-            var frameDecibelsFile = PathHelper.ResolveAsset(@"EnvelopeAndFft\BAC2_20071008-085040_FrameDecibelsArray.bin");
+            var frameDecibelsFile = PathHelper.ResolveAsset("EnvelopeAndFft", "BAC2_20071008-085040_FrameDecibelsArray.bin");
 
             // uncomment this to update the binary data. Should be rarely needed
             // AT: Updated 2017-02-15 because FFT library changed in 864f7a491e2ea0e938161bd390c1c931ecbdf63c

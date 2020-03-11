@@ -10,19 +10,29 @@ namespace Acoustics.Test
     using System.Runtime.InteropServices;
     using System.Text.RegularExpressions;
     using Acoustics.Shared.Extensions;
+    using Acoustics.Test.TestHelpers;
     using global::AnalysisPrograms;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
     using static System.Runtime.InteropServices.OSPlatform;
 
     [TestClass]
     public class RuntimesTests
     {
-        public RuntimesTests()
-        {
-        }
 
-        [TestMethod]
+        [RuntimeIdentifierSpecificDataTestMethod]
+        [DataRow("win-x64", "ffmpeg", "audio-utils/win-x64/ffmpeg/ffmpeg.exe", true)]
+
+        [DataRow("win-arm64", "ffmpeg", "audio-utils/win-arm64/ffmpeg/ffmpeg.exe", true)]
+
+        [DataRow("osx-x64", "ffmpeg", "audio-utils/osx-x64/ffmpeg/ffmpeg", true)]
+
+        [DataRow("linux-x64", "ffmpeg", "audio-utils/linux-x64/ffmpeg/ffmpeg", true)]
+
+        [DataRow("linux-musl-x64", "ffmpeg", "audio-utils/linux-musl-x64/ffmpeg/ffmpeg", true)]
+
+        [DataRow("linux-arm", "ffmpeg", "audio-utils/linux-arm/ffmpeg/ffmpeg", true)]
+
+        [DataRow("linux-arm64", "ffmpeg", "audio-utils/linux-arm64/ffmpeg/ffmpeg", true)]
         public void TestRequiredDllsCopiedToBuildDir()
         {
             var buildDir = TestHelpers.PathHelper.AnalysisProgramsBuild;

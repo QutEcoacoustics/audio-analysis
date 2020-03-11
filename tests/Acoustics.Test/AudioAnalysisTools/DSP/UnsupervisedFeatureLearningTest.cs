@@ -504,7 +504,8 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
         ///     4) Take average of each of the energy values in each frequency bin >> this gives power spectrum or PSD.
         /// Finally draw the the spectrogram of PSD values for the whole day.
         /// </summary>
-        [Ignore]
+        [Ignore("obsolete work, mark for removal")]
+        [Obsolete("marked for removal")]
         [TestMethod]
         public void PowerSpectrumDensityTest()
         {
