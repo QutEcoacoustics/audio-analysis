@@ -16,12 +16,12 @@ namespace Acoustics.Test.Shared
     using System.Text.RegularExpressions;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
+    using Acoustics.Test.TestHelpers;
     using global::AnalysisPrograms;
     using global::AudioAnalysisTools.Indices;
     using log4net.Appender;
     using log4net.Core;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
 
     [TestClass]
     [DoNotParallelize]
@@ -97,7 +97,10 @@ namespace Acoustics.Test.Shared
 
             var actual = ConfigFile.Resolve(config);
 
-            Assert.AreEqual(config.FullName, actual.FullName);
+            // we have a weird case where sometimes the drive letter is reported as a different case on the CI
+            // ideally we would use this API https://github.com/dotnet/runtime/issues/14321
+            // for now, we'll just ToLower the path
+            Assert.AreEqual(config.FullName.ToLower(), actual.FullName.ToLower());
 
             Directory.Delete(Path.Combine(fullPath, "../"), true);
         }
@@ -177,7 +180,10 @@ namespace Acoustics.Test.Shared
 
             var actual = ConfigFile.Resolve(config);
 
-            Assert.AreEqual(config.FullName, actual.FullName);
+            // we have a weird case where sometimes the drive letter is reported as a different case on the CI
+            // ideally we would use this API https://github.com/dotnet/runtime/issues/14321
+            // for now, we'll just ToLower the path
+            Assert.AreEqual(config.FullName.ToLower(), actual.FullName.ToLower());
         }
 
         [TestMethod]

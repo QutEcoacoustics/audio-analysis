@@ -45,7 +45,6 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
         [TestMethod]
         public void TestBinaryClusteringOfSpectra()
         {
-            //string wavFilePath = @"C:\SensorNetworks\WavFiles\TestRecordings\BAC\BAC2_20071008-085040.wav";
             var wavFilePath = PathHelper.ResolveAsset(@"Recordings", "BAC2_20071008-085040.wav");
 
             // var outputDir = this.outputDirectory;

@@ -4,14 +4,15 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
+// ReSharper disable once CheckNamespace
 namespace System
 {
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.Globalization;
     using System.Linq;
     using System.Text;
     using System.Text.RegularExpressions;
+    using SixLabors.ImageSharp;
     using Path = System.IO.Path;
 
     public static class ExtensionsString
@@ -424,6 +425,11 @@ namespace System
         public static string NormalizeDirectorySeparators(this string path)
         {
             return path.Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar);
+        }
+
+        public static string Prepend(this string first, string prefix)
+        {
+            return prefix + first;
         }
     }
 }

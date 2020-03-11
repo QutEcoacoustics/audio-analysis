@@ -10,6 +10,8 @@
 namespace Acoustics.Shared
 {
     using System;
+    using System.Collections.Generic;
+    using System.Collections.Immutable;
     using System.IO;
     using System.Reflection;
     using System.Runtime.InteropServices;
@@ -33,6 +35,14 @@ namespace Acoustics.Shared
         public const string StandardDateFormatSm2 = "yyyyMMdd_HHmmss";
         public const string RenderedDateFormatShort = "yyyy-MM-dd HH:mm";
 
+        public const string WinX64 = "win-x64";
+        public const string WinArm64 = "win-arm64";
+        public const string OsxX64 = "osx-x64";
+        public const string LinuxX64 = "linux-x64";
+        public const string LinuxMuslX64 = "linux-musl-x64";
+        public const string LinuxArm = "linux-arm";
+        public const string LinuxArm64 = "linux-arm64";
+
         public const int DefaultTargetSampleRate = 22050;
 
         public const bool WasBuiltAgainstMusl =
@@ -49,6 +59,15 @@ namespace Acoustics.Shared
         private static readonly bool IsLinuxValue;
         private static readonly bool IsWindowsValue;
         private static readonly bool IsMacOsXValue;
+
+        public static readonly IImmutableSet<string> WellKnownRuntimeIdentifiers = ImmutableHashSet.Create(
+            WinX64,
+            WinArm64,
+            OsxX64,
+            LinuxX64,
+            LinuxMuslX64,
+            LinuxArm,
+            LinuxArm64);
 
         static AppConfigHelper()
         {
@@ -115,17 +134,17 @@ namespace Acoustics.Shared
         public static string PseudoRuntimeIdentifier { get; } =
             OSArchitecture switch
             {
-                Architecture.X64 when IsOSPlatform(Windows) => "win-x64",
-                Architecture.X64 when IsOSPlatform(Linux) => "linux-x64",
-                Architecture.X64 when IsOSPlatform(OSX) => "osx-x64",
-                Architecture.Arm64 when IsOSPlatform(Windows) => "win-arm64",
+                Architecture.X64 when IsOSPlatform(Windows) => WinX64,
+                Architecture.X64 when IsOSPlatform(Linux) => LinuxX64,
+                Architecture.X64 when IsOSPlatform(OSX) => OsxX64,
+                Architecture.Arm64 when IsOSPlatform(Windows) => WinArm64,
 
                 // ReSharper disable once ConditionIsAlwaysTrueOrFalse
 #pragma warning disable 162
-                Architecture.Arm64 when IsOSPlatform(Linux) && WasBuiltAgainstMusl => "linux-musl-arm64",
+                Architecture.Arm64 when IsOSPlatform(Linux) && WasBuiltAgainstMusl => LinuxMuslX64,
 #pragma warning restore 162
-                Architecture.Arm64 when IsOSPlatform(Linux) => "linux-arm64",
-                Architecture.Arm when IsOSPlatform(Linux) => "linux-arm",
+                Architecture.Arm64 when IsOSPlatform(Linux) => LinuxArm64,
+                Architecture.Arm when IsOSPlatform(Linux) => LinuxArm,
 
                 // ReSharper disable once ConditionIsAlwaysTrueOrFalse
                 // ReSharper disable once UnreachableCode

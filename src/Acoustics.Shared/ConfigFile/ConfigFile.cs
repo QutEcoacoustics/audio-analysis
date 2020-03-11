@@ -15,7 +15,7 @@ namespace Acoustics.Shared.ConfigFile
     using System.Linq;
     using System.Runtime.CompilerServices;
 
-    using Contracts;
+    using Acoustics.Shared.Contracts;
 
     using log4net;
 

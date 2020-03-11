@@ -8,7 +8,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
     using System.IO;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
-
+    using global::AnalysisPrograms;
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.Indices;
     using global::AudioAnalysisTools.WavTools;
@@ -50,10 +50,10 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
         [TestMethod]
         public void TestOfSummaryIndices()
         {
-            var sourceRecording = PathHelper.ResolveAsset(@"Recordings\BAC2_20071008-085040.wav");
-            var configFile = PathHelper.ResolveConfigFile(@"Towsey.Acoustic.yml");
+            var sourceRecording = PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav");
+            var configFile = PathHelper.ResolveConfigFile("Towsey.Acoustic.yml");
 
-            //var indexPropertiesConfig = PathHelper.ResolveConfigFile(@"IndexPropertiesConfig.yml");
+            //var indexPropertiesConfig = PathHelper.ResolveConfigFile("IndexPropertiesConfig.yml");
 
             // var outputDir = this.outputDirectory;
             // Create temp directory to store output
@@ -62,7 +62,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
                 this.outputDirectory.Create();
             }
 
-            var indexCalculateConfig = ConfigFile.Deserialize<IndexCalculateConfig>(configFile);
+            var indexCalculateConfig = ConfigFile.Deserialize<AcousticIndices.AcousticIndicesConfig>(configFile);
 
             // CHANGE CONFIG PARAMETERS HERE IF REQUIRED
             //indexCalculateConfig.IndexCalculationDuration = TimeSpan.FromSeconds(20);
@@ -108,14 +108,14 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
         public void TestOfSpectralIndices()
         {
             var sourceRecording = PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav");
-            var configFile = PathHelper.ResolveConfigFile(@"Towsey.Acoustic.yml");
+            var configFile = PathHelper.ResolveConfigFile("Towsey.Acoustic.yml");
 
             if (!this.outputDirectory.Exists)
             {
                 this.outputDirectory.Create();
             }
 
-            var indexCalculateConfig = ConfigFile.Deserialize<IndexCalculateConfig>(configFile);
+            var indexCalculateConfig = ConfigFile.Deserialize<AcousticIndices.AcousticIndicesConfig>(configFile);
 
             // CHANGE CONFIG PARAMETERS HERE IF REQUIRED
             //indexCalculateConfig.IndexCalculationDuration = TimeSpan.FromSeconds(20);
@@ -136,84 +136,84 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             // After serializing the expected vector and writing to the resources directory, comment the Binary.Serialise line.
 
             // 1:ACI
-            var expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "\\ACI.bin");
+            var expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "ACI.bin");
 
             //Binary.Serialize(expectedSpectrumFile, spectralIndices.ACI);
             var expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.ACI, AllowedDelta);
 
             // 2:BGN
-            expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "\\BGN.bin");
+            expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "BGN.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.BGN);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.BGN, AllowedDelta);
 
             // 3:CVR
-            expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "\\CVR.bin");
+            expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "CVR.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.CVR);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.CVR, AllowedDelta);
 
             // 4:ENT
-            expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "\\ENT.bin");
+            expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "ENT.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.ENT);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.ENT, AllowedDelta);
 
             // 5:EVN
-            expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "\\EVN.bin");
+            expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "EVN.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.EVN);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.EVN, AllowedDelta);
 
             // 6:OSC
-            expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "\\OSC.bin");
+            expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "OSC.bin");
 
             //Binary.Serialize(expectedSpectrumFile, spectralIndices.OSC);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.OSC, AllowedDelta);
 
             // 7:PMN
-            expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "\\PMN.bin");
+            expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "PMN.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.PMN);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.PMN, AllowedDelta);
 
             // 8:RHZ
-            expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "\\RHZ.bin");
+            expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "RHZ.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.RHZ);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.RHZ, AllowedDelta);
 
             // 9:RNG
-            expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "\\RNG.bin");
+            expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "RNG.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.RNG);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.RNG, AllowedDelta);
 
             // 10:RPS
-            expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "\\RPS.bin");
+            expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "RPS.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.RPS);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.RPS, AllowedDelta);
 
             // 11:RVT
-            expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "\\RVT.bin");
+            expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "RVT.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.RVT);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.RVT, AllowedDelta);
 
             // 12:SPT
-            expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "\\SPT.bin");
+            expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "SPT.bin");
 
             // Binary.Serialize(expectedSpectrumFile, spectralIndices.SPT);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
@@ -230,9 +230,9 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
         [TestMethod]
         public void TestOfSpectralIndices_ICD20()
         {
-            //var indexPropertiesConfig = PathHelper.ResolveConfigFile(@"IndexPropertiesConfig.yml");
-            var sourceRecording = PathHelper.ResolveAsset(@"Recordings\BAC2_20071008-085040.wav");
-            var configFile = PathHelper.ResolveConfigFile(@"Towsey.Acoustic.yml");
+            //var indexPropertiesConfig = PathHelper.ResolveConfigFile("IndexPropertiesConfig.yml");
+            var sourceRecording = PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav");
+            var configFile = PathHelper.ResolveConfigFile("Towsey.Acoustic.yml");
 
             // var outputDir = this.outputDirectory;
             // Create temp directory to store output
@@ -244,7 +244,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             var recording = new AudioRecording(sourceRecording);
 
             // CHANGE CONFIG PARAMETERS HERE IF REQUIRED
-            var indexCalculateConfig = ConfigFile.Deserialize<IndexCalculateConfig>(configFile);
+            var indexCalculateConfig = ConfigFile.Deserialize<AcousticIndices.AcousticIndicesConfig>(configFile);
             indexCalculateConfig.IndexCalculationDurationTimeSpan = TimeSpan.FromSeconds(20);
 
             var results = IndexCalculate.Analysis(
@@ -297,8 +297,8 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             var wr = new Acoustics.Tools.Wav.WavReader(subsamples, 1, 16, sampleRate);
             var subsegmentRecording = new AudioRecording(wr);
 
-            //var indexPropertiesConfig = PathHelper.ResolveConfigFile(@"IndexPropertiesConfig.yml");
-            var configFile = PathHelper.ResolveConfigFile(@"Towsey.Acoustic.yml");
+            //var indexPropertiesConfig = PathHelper.ResolveConfigFile("IndexPropertiesConfig.yml");
+            var configFile = PathHelper.ResolveConfigFile("Towsey.Acoustic.yml");
 
             // Create temp directory to store output
             if (!this.outputDirectory.Exists)
@@ -307,7 +307,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             }
 
             // CHANGE CONFIG PARAMETERS HERE IF REQUIRED
-            var indexCalculateConfig = ConfigFile.Deserialize<IndexCalculateConfig>(configFile);
+            var indexCalculateConfig = ConfigFile.Deserialize<AcousticIndices.AcousticIndicesConfig>(configFile);
             indexCalculateConfig.FrequencyScale = FreqScaleType.Octave;
 
             var freqScale = new FrequencyScale(indexCalculateConfig.FrequencyScale);

@@ -481,7 +481,7 @@ namespace Acoustics.Test.Shared
         {
             var lines = File.ReadAllText(actual.FullName);
 
-            Assert.AreEqual(expected, lines);
+            Assert.That.StringEqualWithDiff(expected, lines);
 
             //Debug.WriteLine(lines);
 

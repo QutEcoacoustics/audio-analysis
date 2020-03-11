@@ -12,98 +12,28 @@ namespace Acoustics.Test.AnalysisBase
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.Contracts;
+    using Acoustics.Test.TestHelpers;
     using global::AnalysisBase;
     using global::AnalysisBase.Segment;
     using ImmediateReflection;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using StringTokenFormatter;
-    using TestHelpers;
 
     [TestClass]
-    public class AnalysisCoordinatorTests
+    public class AnalysisCoordinatorTests : OutputDirectoryTest
     {
-        private DirectoryInfo outputDirectory;
         private ImmediateType settingsAccessor;
+
+        public DirectoryInfo TestTemp => this.TestOutputDirectory.Combine("Temp");
+
+        public DirectoryInfo FallbackTemp => this.TestOutputDirectory.Combine("FallbackTemp");
+
+        public DirectoryInfo AnalysisOutput => this.TestOutputDirectory.Combine("Output");
 
         [TestInitialize]
         public void Setup()
         {
-            this.outputDirectory = PathHelper.GetTempDir();
             this.settingsAccessor = TypeAccessor.Get<AnalysisSettings>(includeNonPublicMembers: true);
-        }
-
-        [TestCleanup]
-        public void Cleanup()
-        {
-            Debug.WriteLine("Deleting output directory:" + this.outputDirectory.FullName);
-
-            PathHelper.DeleteTempDir(this.outputDirectory);
-        }
-
-        public DirectoryInfo TestTemp => this.outputDirectory.Combine("Temp");
-
-        public DirectoryInfo FallbackTemp => this.outputDirectory.Combine("FallbackTemp");
-
-        public DirectoryInfo AnalysisOutput => this.outputDirectory.Combine("Output");
-
-        private class State
-        {
-            /// <summary>
-            /// - {temp} is a supplied temp directory (which can be any valid dir, including {output}
-            /// - {tempNull} is an automatically defined temp directory which is used IFF {temp} is NULL
-            ///   We use it by patching the private <see cref="AnalysisSettings.AnalysisTempDirectoryFallback"/> field.
-            /// </summary>
-            private readonly string[] allFiles =
-            {
-                "{output}",
-                "{output}/{fragment}",
-                "{output}/{fragment}/{source}_0min.wav",
-                "{output}/{fragment}/{source}_1min.wav",
-                "{output}/{fragment}/{unique1}",
-                "{output}/{fragment}/{unique2}",
-                "{output}/{fragment}/{unique1}/{source}_0min.wav",
-                "{output}/{fragment}/{unique1}/{source}_1min.wav",
-                "{output}/{fragment}/{unique2}/{source}_1min.wav",
-                "{temp}",
-                "{temp}/{fragment}/{source}_0min.wav",
-                "{temp}/{fragment}/{source}_1min.wav",
-                "{temp}/{fragment}/{unique1}",
-                "{temp}/{fragment}/{unique2}",
-                "{temp}/{fragment}/{unique1}/{source}_0min.wav",
-                "{temp}/{fragment}/{unique1}/{source}_1min.wav",
-                "{temp}/{fragment}/{unique2}/{source}_1min.wav",
-                "{tempNull}",
-                "{tempNull}/{fragment}/{source}_0min.wav",
-                "{tempNull}/{fragment}/{source}_1min.wav",
-                "{tempNull}/{fragment}/{unique1}",
-                "{tempNull}/{fragment}/{unique2}",
-                "{tempNull}/{fragment}/{unique1}/{source}_0min.wav",
-                "{tempNull}/{fragment}/{unique2}/{source}_0min.wav",
-                "{tempNull}/{fragment}/{unique2}/{source}_1min.wav",
-            };
-
-            public State()
-            {
-                this.ShouldNotExist = new HashSet<string>(this.allFiles);
-            }
-
-            public HashSet<string> ShouldExist { get; } = new HashSet<string>();
-
-            public HashSet<string> ShouldNotExist { get; }
-
-            public State Exist(params string[] shouldExist)
-            {
-                this.ShouldExist.UnionWith(shouldExist);
-                this.ShouldNotExist.ExceptWith(shouldExist);
-                return this;
-            }
-
-            public State NotExist(params string[] shouldNotExist)
-            {
-                this.ShouldNotExist.UnionWith(shouldNotExist);
-                this.ShouldExist.ExceptWith(shouldNotExist);
-                return this;
-            }
         }
 
         [TestMethod]
@@ -111,10 +41,10 @@ namespace Acoustics.Test.AnalysisBase
         {
             var analyzer = new DummyAnalyzer(false);
             var settings = analyzer.DefaultSettings;
-            settings.AnalysisOutputDirectory = this.outputDirectory;
+            settings.AnalysisOutputDirectory = this.TestOutputDirectory;
 
             var actual = AnalysisCoordinator.GetNamedDirectory(settings.AnalysisOutputDirectory, analyzer);
-            var expected = this.outputDirectory.Combine("Ecosounds.TempusSubstitutus");
+            var expected = this.TestOutputDirectory.Combine("Ecosounds.TempusSubstitutus");
             Assert.AreEqual(expected.FullName, actual.FullName);
         }
 
@@ -123,10 +53,10 @@ namespace Acoustics.Test.AnalysisBase
         {
             var analyzer = new DummyAnalyzer(false);
             var settings = analyzer.DefaultSettings;
-            settings.AnalysisOutputDirectory = this.outputDirectory;
+            settings.AnalysisOutputDirectory = this.TestOutputDirectory;
 
             var actual = AnalysisCoordinator.GetNamedDirectory(settings.AnalysisOutputDirectory, analyzer, "a", "b", "c");
-            var expected = this.outputDirectory.Combine("Ecosounds.TempusSubstitutus/a/b/c");
+            var expected = this.TestOutputDirectory.Combine("Ecosounds.TempusSubstitutus/a/b/c");
             Assert.AreEqual(expected.FullName, actual.FullName);
         }
 
@@ -134,7 +64,7 @@ namespace Acoustics.Test.AnalysisBase
         public void FailsIfSegmentTooShort()
         {
             // an empty non-existent file
-            var source = TempFileHelper.NewTempFile(this.outputDirectory).Touch();
+            var source = TempFileHelper.NewTempFile(this.TestOutputDirectory).Touch();
 
             ISegment<FileInfo>[] segments = { new FileSegment(source, duration: 1.0.Seconds(), sampleRate: 123456) };
             Assert.ThrowsException<AudioRecordingTooShortException>(() =>
@@ -147,8 +77,8 @@ namespace Acoustics.Test.AnalysisBase
         public void RemovesShortSegmentsAfterSplitting()
         {
             // an empty non-existent file
-            var sourceA = TempFileHelper.NewTempFile(this.outputDirectory).Touch();
-            var sourceB = TempFileHelper.NewTempFile(this.outputDirectory).Touch();
+            var sourceA = TempFileHelper.NewTempFile(this.TestOutputDirectory).Touch();
+            var sourceB = TempFileHelper.NewTempFile(this.TestOutputDirectory).Touch();
 
             // this segment list would create 4 segments of {60, 5, 60, 5}
             // two of which are invalid because they are too short
@@ -175,7 +105,7 @@ namespace Acoustics.Test.AnalysisBase
         public void RemovesDuplicateSegmentsAfterSplitting()
         {
             // an empty non-existent file
-            var sourceA = TempFileHelper.NewTempFile(this.outputDirectory).Touch();
+            var sourceA = TempFileHelper.NewTempFile(this.TestOutputDirectory).Touch();
 
             // this segment list would create 3 segments of {60(A0-60), 60(A60-120), 60(A0-60)}
             // the whole segment requests are not identical before they are split,
@@ -207,7 +137,7 @@ namespace Acoustics.Test.AnalysisBase
         public void ShouldRejectIdenticalSegments()
         {
             // an empty non-existent file
-            var source = TempFileHelper.NewTempFile(this.outputDirectory).Touch();
+            var source = TempFileHelper.NewTempFile(this.TestOutputDirectory).Touch();
 
             // two segments from the same file, with the same offsets... should throw
             ISegment<FileInfo>[] segments =
@@ -228,7 +158,7 @@ namespace Acoustics.Test.AnalysisBase
         public void FailsWithInvalidSegment()
         {
             // an empty non-existent file
-            var source = TempFileHelper.NewTempFile(this.outputDirectory).Touch();
+            var source = TempFileHelper.NewTempFile(this.TestOutputDirectory).Touch();
 
             var segment = new FileSegment(source, duration: 65.Seconds(), sampleRate: 123456)
             {
@@ -238,33 +168,12 @@ namespace Acoustics.Test.AnalysisBase
 
             Assert.ThrowsException<InvalidSegmentException>(() =>
             {
-                this.TestAnalysisCoordinator(new[] { segment });
+                this.TestAnalysisCoordinator(new ISegment<FileInfo>[] { segment });
             });
         }
 
-        private AnalysisResult2[] TestAnalysisCoordinator(ISegment<FileInfo>[] segments)
-        {
-            Contract.Requires(segments != null);
-
-            var preparer = new DummySourcePreparer();
-
-            AnalysisCoordinator coordinator = new AnalysisCoordinator(
-                preparer,
-                saveIntermediateWavFiles: SaveBehavior.Always,
-                uniqueDirectoryPerSegment: false,
-                isParallel: false);
-
-            IAnalyser2 dummyAnalyzer = new DummyAnalyzer(false);
-            var settings = dummyAnalyzer.DefaultSettings;
-
-            settings.AnalysisOutputDirectory = this.outputDirectory;
-            settings.AnalysisTempDirectory = this.outputDirectory.Combine("Temp");
-
-            return coordinator.Run(segments, dummyAnalyzer, settings);
-        }
-
         [TestMethod]
-        public void Test︳Save︳Unique︳Temp()
+        public void Test_Save_Unique_Temp()
         {
             var states = new[]
             {
@@ -323,7 +232,7 @@ namespace Acoustics.Test.AnalysisBase
         }
 
         [TestMethod]
-        public void Test︳Never︳Unique︳Temp()
+        public void Test_Never_Unique_Temp()
         {
             var states = new[]
             {
@@ -377,7 +286,7 @@ namespace Acoustics.Test.AnalysisBase
         }
 
         [TestMethod]
-        public void Test︳Save︳Same︳Temp()
+        public void Test_Save_Same_Temp()
         {
             var states = new[]
             {
@@ -427,7 +336,7 @@ namespace Acoustics.Test.AnalysisBase
         }
 
         [TestMethod]
-        public void Test︳Never︳Same︳Temp()
+        public void Test_Never_Same_Temp()
         {
             var states = new[]
             {
@@ -456,7 +365,7 @@ namespace Acoustics.Test.AnalysisBase
         }
 
         [TestMethod]
-        public void Test︳Save︳Unique︳Null()
+        public void Test_Save_Unique_Null()
         {
             var states = new[]
             {
@@ -513,7 +422,7 @@ namespace Acoustics.Test.AnalysisBase
         }
 
         [TestMethod]
-        public void Test︳Never︳Unique︳Null()
+        public void Test_Never_Unique_Null()
         {
             var states = new[]
             {
@@ -549,7 +458,7 @@ namespace Acoustics.Test.AnalysisBase
         }
 
         [TestMethod]
-        public void Test︳Save︳Same︳Null()
+        public void Test_Save_Same_Null()
         {
             var states = new[]
             {
@@ -597,7 +506,7 @@ namespace Acoustics.Test.AnalysisBase
         }
 
         [TestMethod]
-        public void Test︳Never︳Same︳Null()
+        public void Test_Never_Same_Null()
         {
             var states = new[]
             {
@@ -626,7 +535,7 @@ namespace Acoustics.Test.AnalysisBase
         }
 
         [TestMethod]
-        public void Test︳Save︳Unique︳Output()
+        public void Test_Save_Unique_Output()
         {
             var states = new[]
             {
@@ -703,7 +612,7 @@ namespace Acoustics.Test.AnalysisBase
         }
 
         [TestMethod]
-        public void Test︳Never︳Unique︳Output()
+        public void Test_Never_Unique_Output()
         {
             var states = new[]
             {
@@ -767,7 +676,7 @@ namespace Acoustics.Test.AnalysisBase
         }
 
         [TestMethod]
-        public void Test︳Save︳Same︳Output()
+        public void Test_Save_Same_Output()
         {
             var states = new[]
             {
@@ -827,7 +736,7 @@ namespace Acoustics.Test.AnalysisBase
         }
 
         [TestMethod]
-        public void Test︳Never︳Same︳Output()
+        public void Test_Never_Same_Output()
         {
             var states = new[]
             {
@@ -876,15 +785,25 @@ namespace Acoustics.Test.AnalysisBase
             this.TestAnalysisCoordinatorPaths(wav: SaveBehavior.Never, unique: false, temp: this.AnalysisOutput, states: states);
         }
 
-        public class CoordinatorPathTestSet
+        private AnalysisResult2[] TestAnalysisCoordinator(ISegment<FileInfo>[] segments)
         {
-            public string output { get; set; }
-            public string temp { get; set; }
-            public string tempNull { get; set; }
-            public string fragment { get; set; }
-            public string unique1 { get; set; }
-            public string unique2 { get; set; }
-            public string source { get; set; }
+            Contract.Requires(segments != null);
+
+            var preparer = new DummySourcePreparer();
+
+            AnalysisCoordinator coordinator = new AnalysisCoordinator(
+                preparer,
+                saveIntermediateWavFiles: SaveBehavior.Always,
+                uniqueDirectoryPerSegment: false,
+                isParallel: false);
+
+            IAnalyser2 dummyAnalyzer = new DummyAnalyzer(false);
+            var settings = dummyAnalyzer.DefaultSettings;
+
+            settings.AnalysisOutputDirectory = this.TestOutputDirectory;
+            settings.AnalysisTempDirectory = this.TestOutputDirectory.Combine("Temp");
+
+            return coordinator.Run(segments, dummyAnalyzer, settings);
         }
 
         private void TestAnalysisCoordinatorPaths(SaveBehavior wav, bool unique, DirectoryInfo temp, State[] states)
@@ -900,20 +819,20 @@ namespace Acoustics.Test.AnalysisBase
                 isParallel: false);
 
             // an empty non-existent file
-            var source = TempFileHelper.NewTempFile(this.outputDirectory).Touch();
+            var source = TempFileHelper.NewTempFile(this.TestOutputDirectory).Touch();
 
             FileSegment segment = new FileSegment(source, duration: 120.0.Seconds(), sampleRate: 123456);
 
             var dummyAnalyzer = new DummyAnalyzer(true);
             var settings = dummyAnalyzer.DefaultSettings;
 
-            Debug.WriteLine("Class output directory:" + this.outputDirectory.FullName);
+            Debug.WriteLine("Class output directory:" + this.TestOutputDirectory.FullName);
 
             settings.AnalysisMaxSegmentDuration = 60.Seconds();
             settings.AnalysisOutputDirectory = this.AnalysisOutput;
             settings.AnalysisTempDirectory = temp;
 
-            this.settingsAccessor.Fields["fallbackTempDirectory"].SetValue(settings, this.FallbackTemp.FullName);
+            this.settingsAccessor.Fields["fallbackTempDirectory"]?.SetValue(settings, this.FallbackTemp.FullName);
 
             var task = Task.Run(() =>
             {
@@ -933,7 +852,7 @@ namespace Acoustics.Test.AnalysisBase
                 fragment = "Ecosounds.TempusSubstitutus",
                 unique1 = basename + "_000000.00-000060.00",
                 unique2 = basename + "_000060.00-000120.00",
-                source = basename
+                source = basename,
             };
 
             // wait for the analyzer to pause
@@ -985,6 +904,83 @@ namespace Acoustics.Test.AnalysisBase
                 var f = file.FormatToken(paths);
                 Debug.WriteLine(f);
                 Assert.That.PathNotExists(file, $"(stage: {stage}, pre-templated string: \"{file}\")");
+            }
+        }
+
+        public class CoordinatorPathTestSet
+        {
+#pragma warning disable SA1300 // Element should begin with upper-case letter
+#pragma warning disable IDE1006 // Naming Styles
+            // ReSharper disable InconsistentNaming
+            public string output { get; set; }
+
+            public string temp { get; set; }
+
+            public string tempNull { get; set; }
+
+            public string fragment { get; set; }
+
+            public string unique1 { get; set; }
+
+            public string unique2 { get; set; }
+
+            public string source { get; set; }
+
+            // ReSharper restore InconsistentNaming
+#pragma warning restore SA1300 // Element should begin with upper-case letter
+#pragma warning restore IDE1006 // Naming Styles
+        }
+
+        private class State
+        {
+            /// <summary>
+            /// - {temp} is a supplied temp directory (which can be any valid dir, including {output}
+            /// - {tempNull} is an automatically defined temp directory which is used IFF {temp} is NULL
+            ///   We use it by patching the private <see cref="AnalysisSettings.AnalysisTempDirectoryFallback"/> field.
+            /// </summary>
+            private readonly string[] allFiles =
+            {
+                "{output}",
+                "{output}/{fragment}",
+                "{output}/{fragment}/{source}_0min.wav",
+                "{output}/{fragment}/{source}_1min.wav",
+                "{output}/{fragment}/{unique1}",
+                "{output}/{fragment}/{unique2}",
+                "{output}/{fragment}/{unique1}/{source}_0min.wav",
+                "{output}/{fragment}/{unique1}/{source}_1min.wav",
+                "{output}/{fragment}/{unique2}/{source}_1min.wav",
+                "{temp}",
+                "{temp}/{fragment}/{source}_0min.wav",
+                "{temp}/{fragment}/{source}_1min.wav",
+                "{temp}/{fragment}/{unique1}",
+                "{temp}/{fragment}/{unique2}",
+                "{temp}/{fragment}/{unique1}/{source}_0min.wav",
+                "{temp}/{fragment}/{unique1}/{source}_1min.wav",
+                "{temp}/{fragment}/{unique2}/{source}_1min.wav",
+                "{tempNull}",
+                "{tempNull}/{fragment}/{source}_0min.wav",
+                "{tempNull}/{fragment}/{source}_1min.wav",
+                "{tempNull}/{fragment}/{unique1}",
+                "{tempNull}/{fragment}/{unique2}",
+                "{tempNull}/{fragment}/{unique1}/{source}_0min.wav",
+                "{tempNull}/{fragment}/{unique2}/{source}_0min.wav",
+                "{tempNull}/{fragment}/{unique2}/{source}_1min.wav",
+            };
+
+            public State()
+            {
+                this.ShouldNotExist = new HashSet<string>(this.allFiles);
+            }
+
+            public HashSet<string> ShouldExist { get; } = new HashSet<string>();
+
+            public HashSet<string> ShouldNotExist { get; }
+
+            public State Exist(params string[] shouldExist)
+            {
+                this.ShouldExist.UnionWith(shouldExist);
+                this.ShouldNotExist.ExceptWith(shouldExist);
+                return this;
             }
         }
     }

@@ -112,7 +112,7 @@ namespace log4net
         /// See the <see cref="M:Verbose(object)"/> form for more detailed information.
         /// </para>
         /// </remarks>
-        public static void Verbose(this ILog log, object message, Exception exception)
+        public static void Verbose(this ILog log, string message, Exception exception)
         {
             log.Logger.Log(null, Level.Verbose, message, exception);
         }

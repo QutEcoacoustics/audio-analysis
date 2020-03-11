@@ -179,51 +179,6 @@ namespace AudioAnalysisTools.Indices
         /// </remarks>
         public int MelScale { get; set; }
 
-        /*
-        /// <summary>
-        /// WARNING: This method does not incorporate all the parameters in the config.yml file.
-        /// Only those that are likely to change.
-        /// If you want to change a config parameter in the yml file make sure it appears in this method.
-        /// </summary>
-        /// <param name="configuration">the Config config.</param>
-        /// <param name="writeParameters">default = false.</param>
-        [Obsolete("Incorporation of statically typed config should obviate need for this method")]
-        public static IndexCalculateConfig GetConfig(Config configuration,  bool writeParameters = false)
-        {
-            var config = new IndexCalculateConfig
-            {
-                ResampleRate = configuration.GetIntOrNull(AnalysisKeys.ResampleRate) ?? DefaultResampleRate,
-                FrameLength = configuration.GetIntOrNull(AnalysisKeys.FrameLength) ?? DefaultWindowSize,
-                MidFreqBound = configuration.GetIntOrNull(AnalysisKeys.MidFreqBound) ?? DefaultMidFreqBound,
-                LowFreqBound = configuration.GetIntOrNull(AnalysisKeys.LowFreqBound) ?? DefaultLowFreqBound,
-            };
-
-            var duration = configuration.GetDoubleOrNull(AnalysisKeys.IndexCalculationDuration);
-            config.IndexCalculationDurationTimeSpan = (duration ?? DefaultIndexCalculationDurationInSeconds).Seconds();
-            duration = configuration.GetDoubleOrNull(AnalysisKeys.BgNoiseNeighbourhood);
-            config.BgNoiseNeighborhood = duration ?? DefaultBgNoiseNeighborhood;
-
-            if (!Enum.TryParse<FreqScaleType>(configuration["FrequencyScale"], true, out var scaleType))
-            {
-                scaleType = DefaultFrequencyScaleType;
-            }
-
-            config.FrequencyScale = scaleType;
-
-            if (writeParameters)
-            {
-                // print out the sonogram parameters
-                LoggedConsole.WriteLine("\nPARAMETERS");
-
-                //foreach (KeyValuePair<string, string> kvp in configDict)
-                //{
-                //    LoggedConsole.WriteLine("{0}  =  {1}", kvp.Key, kvp.Value);
-                //}
-            }
-
-            return config;
-        }
-        */
 
         public bool Equals(IndexCalculateConfig other)
         {
