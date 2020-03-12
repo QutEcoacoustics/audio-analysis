@@ -10,6 +10,7 @@ namespace Acoustics.Test.TestHelpers
     using System.Globalization;
     using System.IO;
     using System.Linq;
+    using Acoustics.Shared;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     public static class Assertions
@@ -240,9 +241,11 @@ namespace Acoustics.Test.TestHelpers
         {
             path = Path.GetFullPath(path);
 
+            bool exists = PathDiagnostics.PathExistsOrDiff(path, out var diff);
+
             Assert.IsTrue(
-                Directory.Exists(path) || File.Exists(path),
-                $"Expected path {path} to exist but it could not be found. {message}");
+                exists,
+                $"Expected path {path} to exist but it could not be found. {message}. Path diagnostics:\n{diff.Messages}");
         }
 
         public static void PathNotExists(this Assert assert, string path, string message = "")
@@ -278,7 +281,6 @@ namespace Acoustics.Test.TestHelpers
                 value.Contains(substring),
                 $"String\n{value}\n should not contain `{substring}`. {message}");
         }
-
 
         public enum DiffStyle
         {
