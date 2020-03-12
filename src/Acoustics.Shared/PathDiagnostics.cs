@@ -118,7 +118,7 @@ namespace Acoustics.Shared
             }
             else
             {
-                var searchPath =  builtUpPath + slash;
+                var searchPath = builtUpPath + slash;
 
                 // reverse search here -i've found often the mistake is closer to the end of the file name
                 // and if it is, there are way fewer matching files that could be returned as possible suggestions
