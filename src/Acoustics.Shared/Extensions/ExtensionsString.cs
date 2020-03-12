@@ -12,6 +12,7 @@ namespace System
     using System.Linq;
     using System.Text;
     using System.Text.RegularExpressions;
+    using Acoustics.Shared.Contracts;
     using SixLabors.ImageSharp;
     using Path = System.IO.Path;
 
@@ -411,13 +412,21 @@ namespace System
             return str.Split(newLines, StringSplitOptions.RemoveEmptyEntries);
         }
 
-        public static string FormatList(this IEnumerable<string> strings)
+        public static void FormatList(this IEnumerable<string> strings, StringBuilder builder)
         {
-            var builder = new StringBuilder("\n", 1000);
+            Contract.RequiresNotNull(builder, nameof(builder));
+
             foreach (var value in strings)
             {
                 builder.AppendFormat("\t- {0}\n", value);
             }
+        }
+
+        public static string FormatList(this IEnumerable<string> strings)
+        {
+            var builder = new StringBuilder("\n", 1000);
+
+            strings.FormatList(builder);
 
             return builder.ToString();
         }
