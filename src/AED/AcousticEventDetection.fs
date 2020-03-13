@@ -1,4 +1,4 @@
-module QutSensors.AudioAnalysis.AED.AcousticEventDetection
+module Acoustics.AED.AcousticEventDetection
 
 open Microsoft.FSharp.Math
 open GetAcousticEvents
@@ -169,5 +169,5 @@ let detectEvents options a =
     detectEventsMinor options a
     |> Seq.map (fun ae ->
         let points = new System.Collections.Generic.HashSet<Point>(Seq.map toPoint2 ae.Elements)
-        new Oblong(ae.Bounds.Left, ae.Bounds.Top, right ae.Bounds, bottom ae.Bounds, points))
+        Oblong(ae.Bounds.Left, ae.Bounds.Top, right ae.Bounds, bottom ae.Bounds, points))
     

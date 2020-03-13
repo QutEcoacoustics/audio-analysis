@@ -123,7 +123,7 @@ namespace AnalysisPrograms
     ///
     /// var binaryMatrix = ConvertSpectrogram2Binary(spectrogram, threshold);
     /// var matrix       = Microsoft.FSharp.Math.MatrixModule.ofArray2D(binaryMatrix);
-    /// var aeList       = QutSensors.AudioAnalysis.AED.GetAcousticEvents.getAcousticEvents(matrix);
+    /// var aeList       = Acoustics.AED.GetAcousticEvents.getAcousticEvents(matrix);
     ///
     /// more info here:
     /// http://stackoverflow.com/questions/271966/about-using-f-to-create-a-matrix-assembly-usable-from-c

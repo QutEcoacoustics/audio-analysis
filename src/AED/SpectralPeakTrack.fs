@@ -1,4 +1,4 @@
-module QutSensors.AudioAnalysis.AED.SpectralPeakTrack    
+module Acoustics.AED.SpectralPeakTrack    
 
 open GetAcousticEvents
 open Matlab

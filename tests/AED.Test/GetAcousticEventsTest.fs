@@ -1,8 +1,8 @@
 module GetAcousticEventsTest
 
 open Common
-open QutSensors.AudioAnalysis.AED.GetAcousticEvents
-open QutSensors.AudioAnalysis.AED.Util
+open Acoustics.AED.GetAcousticEvents
+open Acoustics.AED.Util
 open Xunit
 open Microsoft.FSharp
 open Microsoft.FSharp.Math

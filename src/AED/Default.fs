@@ -1,4 +1,4 @@
-﻿namespace QutSensors.AudioAnalysis.AED
+﻿namespace Acoustics.AED
 
 module Default =
     open Util
@@ -18,7 +18,7 @@ module Default =
     let doNoiseRemoval = true
 
     type SeparateParameters = {
-        AreaThreshold : int<px^2>
+        AreaThreshold : int<Px^2>
         MainThreshold : Percent
         OrthogonalThreshold : Percent
         ExtrapolateBridgeEvents : bool 
@@ -30,9 +30,9 @@ module Default =
         | Skip
 
     let largeAreaHorizontal = Horizontal {
-            AreaThreshold = 3000<px * px>;
-            MainThreshold = 20.0.percent;
-            OrthogonalThreshold = 100.0.percent / 3.0;
+            AreaThreshold = 3000<Px * Px>;
+            MainThreshold = 20.0.Percent;
+            OrthogonalThreshold = 100.0.Percent / 3.0;
             ExtrapolateBridgeEvents = true
         }
 
@@ -41,7 +41,7 @@ module Default =
     let eprNormalisedMinScore = 4.0/15.0
 
 open System.Runtime.InteropServices
-type AedOptions (nyquistFrequency : double,
+type public AedOptions (nyquistFrequency : double,
                  ?intensityThreshold,
                  ?smallAreaThreshold ,
                  ?bandPassFilter,

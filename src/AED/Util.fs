@@ -1,4 +1,4 @@
-module QutSensors.AudioAnalysis.AED.Util
+module Acoustics.AED.Util
 
 open Microsoft.FSharp.Math.SI
 open System.Text
@@ -81,21 +81,22 @@ let matrixMapi2Unzip f (m:matrix) =
     (r,s) 
 
 /// A unit of measure for a Pixel
-[<Measure>] type px
-let px = 1.0<px>
+[<Measure>] type Px
+let Px = 1.0<Px>
 
-type Pixelf = float<px>
-type Pixel = int<px>
+type Pixelf = float<Px>
+type Pixel = int<Px>
 
+// fsharplint:disable-next-line
 [<Measure>] type percent
 type Percent = float<percent>  
 let unit p = p / 100.0<percent>
 let percent u : Percent = u * 100.0<percent>
 
 type System.Double with
-    member x.percent = x * 1.0<percent>
-    member x.toPercent = percent x
-    member x.toUnit = unit x
+    member x.Percent = x * 1.0<percent>
+    member x.ToPercent = percent x
+    member x.ToUnit = unit x
     
 let inline s x y = x - y
 //type 'a Rectangle = {Left:'a; Top:'a; Right:'a; Bottom:'a; Width:'a; Height:'a;}
@@ -131,7 +132,7 @@ let inline removeDimensions (r:Rectangle<'a,'b>) (convertA:'a) (convertB:'b) : R
     }
     
 type EventRect = Rectangle<float<s>, float<Hz>>
-type pxf = float<px>
+type Pxf = float<Px>
 
 let inline cornersToRect l r t b = {Left=l; Top=t; Right=r; Bottom=b}
 let inline lengthsToRect l t w h = 
@@ -161,7 +162,7 @@ let inline oldWidth r = (right r) - (left r)
 let inline height r = (top r) - (bottom r) |> abs |> increment
 let inline height2 (top:float<_>) (bottom:float<_>) = top - bottom |> abs |> (+) (LanguagePrimitives.FloatWithMeasure 1.0)
 let inline area r = (width r) * (height r)
-let inline areaUnits r = (area r) * 1<px^2>
+let inline areaUnits r = (area r) * 1<Px^2>
 let inline isWithin r (x,y) =
     not (x < r.Left || x > r.Right || y < r.Top || y > r.Bottom)
     //x >= r.Left && x < r.Right && y >= r.Top && y < r.Bottom
@@ -171,8 +172,8 @@ let inline isWithin2 r (y,x) =
 let inline toFloatRect r =
     cornersToRect (left r |> float) (right r |> float) (top r |> float) (bottom r |> float)
 
-let inline toPoint (x, y) = new Point(x, y)
-let inline toPoint2 (y, x) = new Point(x, y)
+let inline toPoint (x, y) = Point(x, y)
+let inline toPoint2 (y, x) = Point(x, y)
     
 (* This is currently done the easy, inefficient way.
 
@@ -202,5 +203,6 @@ let matrixToCsv (m:matrix) f =
 
 let itemsToFile path (transformer: 'a -> string) items = 
     use file = File.CreateText(path)
+    // fsharplint:disable-next-line
     Seq.iter (fun x ->  x |> transformer |> file.WriteLine) items
 

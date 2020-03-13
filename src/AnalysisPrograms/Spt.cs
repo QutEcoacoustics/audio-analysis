@@ -21,7 +21,7 @@ namespace AnalysisPrograms
     using Microsoft.FSharp.Math;
     using Production.Arguments;
     using Production.Validation;
-    using QutSensors.AudioAnalysis.AED;
+    using Acoustics.AED;
     using TowseyLibrary;
 
     public class SPT

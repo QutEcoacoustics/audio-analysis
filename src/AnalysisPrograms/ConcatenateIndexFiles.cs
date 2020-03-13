@@ -659,7 +659,7 @@ namespace AnalysisPrograms
             var compositeBmp = (Image<Rgb24>)ImageTools.CombineImagesVertically(imageList);
 
             // create left side day scale
-            var stringFont = Drawing.GetArial(16);
+            var stringFont = Drawing.Arial16;
             imageList = new List<Image<Rgb24>>();
 
             for (int i = 0; i < imageCount; i++)

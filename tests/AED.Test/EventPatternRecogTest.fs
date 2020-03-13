@@ -5,9 +5,9 @@ open Microsoft.FSharp.Math.SI
 open Xunit
 open Microsoft.FSharp
 open Microsoft.FSharp.Math
-open QutSensors.AudioAnalysis.AED.EventPatternRecog
-open QutSensors.AudioAnalysis.AED.EventPatternRecog.EprInternals
-open QutSensors.AudioAnalysis.AED.Util
+open Acoustics.AED.EventPatternRecog
+open Acoustics.AED.EventPatternRecog.EprInternals
+open Acoustics.AED.Util
 open System.IO
 
 let convert s = Seq.map (fun r -> addDimensions 1.0<s> 1.0<Hz> r) s
@@ -51,13 +51,13 @@ let testCandidates () =
 let testPixelAxisLengths () =
     let (_, _, ttd, tfr) = templateBounds groundParrotTemplate
     let (xl, yl) = pixelAxisLengths ttd tfr
-    Assert.Equal(384.0<px>, xl)
-    Assert.Equal(29.0<px>, yl)
+    Assert.Equal(384.0<Px>, xl)
+    Assert.Equal(29.0<Px>, yl)
 
 [<Fact>]
 let testTemplateCentroidsBottomLefts () =
     let md = GParrots_JB2_20090607_173000_wav_minute_3
-    let mToTuples = mapByRow (fun v -> (v.[0] * 1.0<px>, v.[1] * 1.0<px>))
+    let mToTuples = mapByRow (fun v -> (v.[0] * 1.0<Px>, v.[1] * 1.0<Px>))
     let mtcs = loadTestFile "EPRtemplatecentroids.csv" md |> mToTuples
     let mtbls = loadTestFile "EPRtemplatebottomlefts.csv" md |> mToTuples
     
@@ -85,5 +85,5 @@ let testDetectGroundParrots () =
     let m = loadFloatEventsFile "EPRresults.csv" md 
     ////let r = Seq.map (fun (r:Rectangle<_,_>)-> (left(r)).ToString() + "," + (width(r)).ToString() + "," + (bottom(r)).ToString() + "," + (top(r)).ToString()) (unconvert (Seq.map fst (DetectGroundParrots ae)))
     ////Assert.True(false, (String.concat "\r\n" r))
-    assertSeqEqual (=) rectToString m (unconvert (Seq.map fst (DetectGroundParrots ae QutSensors.AudioAnalysis.AED.Default.eprNormalisedMinScore)))
+    assertSeqEqual (=) rectToString m (unconvert (Seq.map fst (DetectGroundParrots ae Acoustics.AED.Default.eprNormalisedMinScore)))
     

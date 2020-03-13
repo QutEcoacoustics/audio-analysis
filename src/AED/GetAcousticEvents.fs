@@ -1,4 +1,4 @@
-module QutSensors.AudioAnalysis.AED.GetAcousticEvents
+module Acoustics.AED.GetAcousticEvents
 
 open Util
 open Microsoft.FSharp.Math

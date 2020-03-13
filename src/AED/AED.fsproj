@@ -1,13 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
       <TargetFramework>netcoreapp3.1</TargetFramework>
+      <RootNamespace>Acoustics.AED</RootNamespace>
+      <AssemblyName>Acoustics.AED</AssemblyName>
       <Name>AED</Name>
       <Deterministic>true</Deterministic>
   </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="FSharp.Core" Version="4.7.0" />
         <PackageReference Include="MathNet.Numerics.FSharp" Version="4.9.0" />
-        <PackageReference Include="Microsoft.Bcl.Build" Version="1.0.21" />
         <PackageReference Include="SixLabors.Fonts" Version="1.0.0-unstable0024" />
         <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-unstable0702" />
         <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-unstable0421" />
