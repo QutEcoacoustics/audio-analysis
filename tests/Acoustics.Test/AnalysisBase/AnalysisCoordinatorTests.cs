@@ -882,11 +882,11 @@ namespace Acoustics.Test.AnalysisBase
 
             // complete
             dummyAnalyzer.Pump(false);
-            task.Wait(1.0.Seconds());
+            task.Wait(10.0.Seconds());
 
             this.AssertFilesAreAsExpected(4, states[4], paths);
 
-            Assert.IsTrue(task.IsCompleted);
+            Assert.IsTrue(task.IsCompleted, "task was not yet completed");
         }
 
         private void AssertFilesAreAsExpected(int stage, State state, CoordinatorPathTestSet paths)
