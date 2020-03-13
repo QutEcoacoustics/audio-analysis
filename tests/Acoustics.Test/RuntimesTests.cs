@@ -7,53 +7,54 @@ namespace Acoustics.Test
     using System;
     using System.Diagnostics;
     using System.IO;
-    using System.Runtime.InteropServices;
     using System.Text.RegularExpressions;
     using Acoustics.Shared.Extensions;
     using Acoustics.Test.TestHelpers;
     using global::AnalysisPrograms;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using static System.Runtime.InteropServices.OSPlatform;
+    using static Acoustics.Shared.AppConfigHelper;
 
     [TestClass]
     public class RuntimesTests
     {
-
         [RuntimeIdentifierSpecificDataTestMethod]
-        [DataRow("win-x64", "ffmpeg", "audio-utils/win-x64/ffmpeg/ffmpeg.exe", true)]
-
-        [DataRow("win-arm64", "ffmpeg", "audio-utils/win-arm64/ffmpeg/ffmpeg.exe", true)]
-
-        [DataRow("osx-x64", "ffmpeg", "audio-utils/osx-x64/ffmpeg/ffmpeg", true)]
-
-        [DataRow("linux-x64", "ffmpeg", "audio-utils/linux-x64/ffmpeg/ffmpeg", true)]
-
-        [DataRow("linux-musl-x64", "ffmpeg", "audio-utils/linux-musl-x64/ffmpeg/ffmpeg", true)]
-
-        [DataRow("linux-arm", "ffmpeg", "audio-utils/linux-arm/ffmpeg/ffmpeg", true)]
-
-        [DataRow("linux-arm64", "ffmpeg", "audio-utils/linux-arm64/ffmpeg/ffmpeg", true)]
-        public void TestRequiredDllsCopiedToBuildDir()
+        [DataRow(WinX64, "win-x64/native/e_sqlite3.dll")]
+        [DataRow(WinArm64, "win-arm/native/e_sqlite3.dll")]
+        [DataRow(OsxX64, "osx-x64/native/libe_sqlite3.dylib")]
+        [DataRow(LinuxX64, "linux-x64/native/libe_sqlite3.so")]
+        [DataRow(LinuxMuslX64, "linux-musl-x64/native/libe_sqlite3.so")]
+        [DataRow(LinuxArm, "linux-arm/native/libe_sqlite3.so")]
+        [DataRow(LinuxArm64, "linux-arm64/native/libe_sqlite3.so")]
+        public void TestRequiredSqliteLibsCopiedToBuildDir(string rid, string expected)
         {
-            var buildDir = TestHelpers.PathHelper.AnalysisProgramsBuild;
+            var buildDir = PathHelper.AnalysisProgramsBuild;
 
             Assert.That.DirectoryExists(buildDir);
 
-            var runtimeDir = Path.Combine(buildDir, "runtimes");
+            Assert.That.FileExists(Path.Combine(buildDir, "runtimes", expected));
+        }
 
-            var expected = new string[]
-            {
-                "linux-arm/native/libe_sqlite3.so",
-                "linux-armel/native/libe_sqlite3.so",
-                "linux-x64/native/libe_sqlite3.so",
-                "linux-x86/native/libe_sqlite3.so",
-                "osx-x64/native/libe_sqlite3.dylib",
-            };
+        [RuntimeIdentifierSpecificDataTestMethod]
+        [DataRow(WinX64,              "win-x64/lib/Mono.Posix.NETStandard.dll")]
+        [DataRow(OsxX64,              "osx-x64/lib/Mono.Posix.NETStandard.dll")]
+        [DataRow(LinuxX64,          "linux-x64/lib/Mono.Posix.NETStandard.dll")]
+        /*[DataRow(LinuxMuslX64, "linux-musl-x64/lib/Mono.Posix.NETStandard.dll")]*/
+        [DataRow(LinuxArm,          "linux-arm/lib/Mono.Posix.NETStandard.dll")]
+        [DataRow(LinuxArm64,      "linux-arm64/lib/Mono.Posix.NETStandard.dll")]
 
-            foreach (var directory in expected)
-            {
-                Assert.That.FileExists(Path.Combine(runtimeDir, directory));
-            }
+        [DataRow(WinX64,              "win-x64/native/libMonoPosixHelper.dll")]
+        [DataRow(OsxX64,              "osx-x64/native/libMonoPosixHelper.dylib")]
+        [DataRow(LinuxX64,          "linux-x64/native/libMonoPosixHelper.so")]
+      /*[DataRow(LinuxMuslX64, "linux-musl-x64/native/libMonoPosixHelper.so")]*/
+        [DataRow(LinuxArm,          "linux-arm/native/libMonoPosixHelper.so")]
+        [DataRow(LinuxArm64,      "linux-arm64/native/libMonoPosixHelper.so")]
+        public void TestRequiredMonoPosixDllCopiedToBuildDir(string rid, string expected)
+        {
+            var buildDir = PathHelper.AnalysisProgramsBuild;
+
+            Assert.That.DirectoryExists(buildDir);
+
+            Assert.That.FileExists(Path.Combine(buildDir, "runtimes", expected));
         }
 
         [TestMethod]
@@ -116,7 +117,8 @@ namespace Acoustics.Test
             }
 
             // this should fail if not supported
-            var info = new FileInfo(longPath);
+            // ReSharper disable once ObjectCreationAsStatement
+            new FileInfo(longPath);
         }
     }
 }

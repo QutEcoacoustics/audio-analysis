@@ -6,9 +6,12 @@ namespace Acoustics.Test.Shared
 {
     using System;
     using System.IO;
+    using System.Runtime.InteropServices;
     using Acoustics.Shared;
     using Acoustics.Test.TestHelpers;
+    using Acoustics.Test.TestHelpers.Fixtures;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Mono.Unix;
     using static Acoustics.Shared.AppConfigHelper;
 
     [TestClass]
@@ -113,6 +116,27 @@ namespace Acoustics.Test.Shared
                 StringAssert.EndsWith(actual, expected.NormalizeDirectorySeparators());
             }
 
+        }
+
+        [TestMethod]
+        public void TestCheckForExecutePermissions()
+        {
+            // first get a known non-exe
+            var anything = PathHelper.ResolveAssetPath("1s_silence.wav");
+
+            void Action() => CheckForExecutePermission(anything);
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                // noop, test passes
+                Action();
+            }
+            else
+            {
+                Assert.ThrowsException<UnauthorizedAccessException>(
+                    Action,
+                    $"The executable file `{anything}` does not have any execute permissions set. Please `chmod a+x {anything}`");
+            }
         }
     }
 }
