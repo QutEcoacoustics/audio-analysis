@@ -92,14 +92,6 @@ namespace Acoustics.Test.TestHelpers
             return new FileInfo(Path.Combine(TestResources, filename));
         }
 
-        public static FileInfo GetExe(string exePath)
-        {
-            //var resourcesBaseDir = TestHelper.GetResourcesBaseDir();
-
-            //return new FileInfo(Path.Combine(exePath, resourcesBaseDir));
-            return new FileInfo(exePath);
-        }
-
         public static string GetResourcesBaseDir()
         {
             return TestResources;

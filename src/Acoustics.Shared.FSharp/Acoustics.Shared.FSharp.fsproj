@@ -6,21 +6,11 @@
         <Name>Acoustics.Shared.FSharp</Name>
         <Deterministic>true</Deterministic>
     </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-        <DebugType>portable</DebugType>
-        <Tailcalls>false</Tailcalls>
-        <DefineConstants>DEBUG;TRACE</DefineConstants>
-    </PropertyGroup>
-    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-        <DebugType>portable</DebugType>
-        <Tailcalls>true</Tailcalls>
-    </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Accord" Version="3.8.2-alpha" />
         <PackageReference Include="Accord.Math" Version="3.8.2-alpha" />
         <PackageReference Include="Accord.Statistics" Version="3.8.2-alpha" />
         <PackageReference Include="FSharp.Core" Version="4.7.0" />
-        <PackageReference Include="Microsoft.Bcl.Build" Version="1.0.21" />
     </ItemGroup>
     <ItemGroup>
         <Compile Include="AssemblyInfo.fs" />

@@ -225,7 +225,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
         }
 
         /// <summary>
-        /// Test index calculation when the IndexCalculationDuration= 20 seconds & subsegmentOffsetTimeSpan = 40seconds
+        /// Test index calculation when the IndexCalculationDuration= 20 seconds &amp; subsegmentOffsetTimeSpan = 40seconds.
         /// </summary>
         [TestMethod]
         public void TestOfSpectralIndices_ICD20()

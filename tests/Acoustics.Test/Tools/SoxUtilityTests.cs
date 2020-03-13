@@ -135,7 +135,7 @@ namespace Acoustics.Test.Tools
             Thread.CurrentThread.CurrentCulture = new CultureInfo(culture);
             try
             {
-                var util = new LeakySoxAudioUtility(PathHelper.GetExe(AppConfigHelper.SoxExe));
+                var util = new LeakySoxAudioUtility(new FileInfo(AppConfigHelper.SoxExe));
 
                 var source = TestHelper.GetAudioFile("CaneToad_Gympie_44100.wav");
 
