@@ -7,8 +7,8 @@ open System
 open System.IO
 open System.IO.Compression
 open System.Reflection
-open QutSensors.AudioAnalysis.AED.GetAcousticEvents
-open QutSensors.AudioAnalysis.AED.Util
+open Acoustics.AED.GetAcousticEvents
+open Acoustics.AED.Util
 open Microsoft.FSharp
 open Microsoft.FSharp.Math
                        

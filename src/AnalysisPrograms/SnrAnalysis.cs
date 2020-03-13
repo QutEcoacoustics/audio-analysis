@@ -80,9 +80,9 @@ namespace AnalysisPrograms
 
             //bool DRAW_SONOGRAMS = (bool?)configuration.DrawSonograms ?? true;    //options to draw sonogram
 
-            //double intensityThreshold = QutSensors.AudioAnalysis.AED.Default.intensityThreshold;
+            //double intensityThreshold = Acoustics.AED.Default.intensityThreshold;
             //if (dict.ContainsKey(key_AED_INTENSITY_THRESHOLD)) intensityThreshold = Double.Parse(dict[key_AED_INTENSITY_THRESHOLD]);
-            //int smallAreaThreshold = QutSensors.AudioAnalysis.AED.Default.smallAreaThreshold;
+            //int smallAreaThreshold = Acoustics.AED.Default.smallAreaThreshold;
             //if( dict.ContainsKey(key_AED_SMALL_AREA_THRESHOLD))   smallAreaThreshold = Int32.Parse(dict[key_AED_SMALL_AREA_THRESHOLD]);
 
             // COnvert input recording into wav

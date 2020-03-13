@@ -1,7 +1,7 @@
 module SpectralPeakTrackTest
 
 open Common
-open QutSensors.AudioAnalysis.AED.SpectralPeakTrack
+open Acoustics.AED.SpectralPeakTrack
 open Xunit
 open Microsoft.FSharp
 open Microsoft.FSharp.Math

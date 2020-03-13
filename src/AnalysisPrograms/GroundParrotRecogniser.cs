@@ -27,7 +27,7 @@ namespace AnalysisPrograms
     using McMaster.Extensions.CommandLineUtils;
     using Production;
     using Production.Arguments;
-    using QutSensors.AudioAnalysis.AED;
+    using Acoustics.AED;
     using TowseyLibrary;
     using Path = System.IO.Path;
 

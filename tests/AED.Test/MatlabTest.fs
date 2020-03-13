@@ -2,7 +2,7 @@ module MatlabTest
 
 open Common
 open FsCheckArbs
-open QutSensors.AudioAnalysis.AED.Matlab
+open Acoustics.AED.Matlab
 open Xunit
 open Microsoft.FSharp
 open Microsoft.FSharp.Math

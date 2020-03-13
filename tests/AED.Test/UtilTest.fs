@@ -1,6 +1,6 @@
 module UtilTest
 
-open QutSensors.AudioAnalysis.AED.Util
+open Acoustics.AED.Util
 open Xunit
 open Microsoft.FSharp
 open Microsoft.FSharp.Math

@@ -1,16 +1,16 @@
 module AcousticEventDetectionTest
 
-open QutSensors.AudioAnalysis.AED.AcousticEventDetection
-open QutSensors.AudioAnalysis.AED.GetAcousticEvents
-open QutSensors.AudioAnalysis.AED.Default
+open Acoustics.AED.AcousticEventDetection
+open Acoustics.AED.GetAcousticEvents
+open Acoustics.AED.Default
 open Common
 open FsCheckArbs
 open Xunit
-open QutSensors.AudioAnalysis.AED.Util
+open Acoustics.AED.Util
 open Microsoft.FSharp
 open Microsoft.FSharp.Math
 
-let sleDefaults = QutSensors.AudioAnalysis.AED.Default.largeAreaHorizontal
+let sleDefaults = Acoustics.AED.Default.largeAreaHorizontal
 
 [<Fact>]
 let testRemoveSubbandModeIntensities () =
@@ -354,9 +354,9 @@ module AcousticEventDetectionTestsForVerticalSeperateLargeEvents =
 
 
     let sleParams = Vertical {
-        AreaThreshold = 1900<px *px>;
-        MainThreshold = 20.0.percent;
-        OrthogonalThreshold = 10.0.percent;
+        AreaThreshold = 1900<Px * Px>;
+        MainThreshold = 20.0.Percent;
+        OrthogonalThreshold = 10.0.Percent;
         ExtrapolateBridgeEvents = true
     }
 
@@ -476,9 +476,9 @@ module AcousticEventDetectionTestsForDebugSeperateLargeEvents =
 100
 "
     let sleParams = Horizontal {
-        AreaThreshold = 1000<px *px>;
-        MainThreshold = 10.0.percent;
-        OrthogonalThreshold = 10.0.percent;
+        AreaThreshold = 1000<Px * Px>;
+        MainThreshold = 10.0.Percent;
+        OrthogonalThreshold = 10.0.Percent;
         ExtrapolateBridgeEvents = true
     }
 

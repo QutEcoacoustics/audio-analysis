@@ -1,4 +1,4 @@
-module QutSensors.AudioAnalysis.AED.Matlab
+module Acoustics.AED.Matlab
 
 open Util
 open Microsoft.FSharp.Math

@@ -1,8 +1,8 @@
 ﻿module FsCheckArbs
 
 open FsCheck
-open QutSensors.AudioAnalysis.AED.GetAcousticEvents
-open QutSensors.AudioAnalysis.AED.Util
+open Acoustics.AED.GetAcousticEvents
+open Acoustics.AED.Util
 
 let nonNeg = Arb.generate<int>|> Gen.map abs
 

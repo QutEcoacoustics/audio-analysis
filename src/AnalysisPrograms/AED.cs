@@ -29,7 +29,7 @@ namespace AnalysisPrograms
     using McMaster.Extensions.CommandLineUtils;
     using Microsoft.FSharp.Core;
     using Production.Arguments;
-    using QutSensors.AudioAnalysis.AED;
+    using Acoustics.AED;
     using TowseyLibrary;
 
     /// <summary>
@@ -152,6 +152,7 @@ namespace AnalysisPrograms
         public static AcousticEvent[] CallAed(BaseSonogram sonogram, AedConfiguration aedConfiguration, TimeSpan segmentStartOffset, TimeSpan segmentDuration)
         {
             Log.Info("AED start");
+            
             var aedOptions = new AedOptions(sonogram.Configuration.NyquistFreq)
                                  {
                                      IntensityThreshold = aedConfiguration.IntensityThreshold,

@@ -1,4 +1,4 @@
-﻿module QutSensors.AudioAnalysis.AED.EventPatternRecog
+﻿module Acoustics.AED.EventPatternRecog
 
 open Microsoft.FSharp.Math.SI
 
@@ -47,8 +47,8 @@ module EprInternals =
     ///					x'
     ///		// then, apply g twice in tuple, once each for time and frequency
     ///		(g t startTime timedimensions nt, g f startfrequency frequencyrange nf) 
-    let normaliseTimeFreq (st:float<s>) (sf:float<Hz>) (td:float<s>) (fr:float<Hz>) (nt:pxf) (nf:pxf) ((t:float<s>),(f:float<Hz>)) =    
-        let rnd l v = let x' = (round v) * px in if x' < px then px else if x' > l then l else x'
+    let normaliseTimeFreq (st:float<s>) (sf:float<Hz>) (td:float<s>) (fr:float<Hz>) (nt:Pxf) (nf:Pxf) ((t:float<s>),(f:float<Hz>)) =    
+        let rnd l v = let x' = (round v) * Px in if x' < Px then Px else if x' > l then l else x'
         let g x s d l = (x - s) / d * (float l) |> rnd l
         let h x s d l = (x - s) / d * (float l) |> rnd l
         (g t st td nt, h f sf fr nf)
@@ -106,8 +106,8 @@ module EprInternals =
     ///     templateFrequency / freqMax * (freqBins - 1.0)  //e.g. 11025 / 22050 * (255) = 0.0??
     let pixelAxisLengths (ttd:float<s>) (tfr:float<Hz>) = 
         (
-            ttd / (freqBins / samplingRate) |> round |> (+) 1.0 |> (*) 1.0<px>, 
-            (tfr / freqMax) * (freqBins - 1.0) |> round |> (+) 1.0 |> (*) 1.0<px>
+            ttd / (freqBins / samplingRate) |> round |> (+) 1.0 |> (*) 1.0<Px>, 
+            (tfr / freqMax) * (freqBins - 1.0) |> round |> (+) 1.0 |> (*) 1.0<Px>
         )
 
     /// function: absLeftAbsBottom rectangleSequence : Seq<a' Rectangle> -> a' * a'
