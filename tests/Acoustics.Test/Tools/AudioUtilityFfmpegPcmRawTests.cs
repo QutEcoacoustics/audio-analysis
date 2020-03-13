@@ -280,7 +280,7 @@ namespace Acoustics.Test.Tools
         internal class FfmpegRawPcmAudioUtilityTester : FfmpegRawPcmAudioUtility
         {
             public FfmpegRawPcmAudioUtilityTester()
-                : base(PathHelper.GetExe(AppConfigHelper.FfmpegExe), null)
+                : base(new FileInfo(AppConfigHelper.FfmpegExe), null)
             {
             }
 
