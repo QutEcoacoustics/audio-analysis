@@ -1,4 +1,6 @@
+#!/usr/bin/pwsh
 
+#Requires -Version 6
 
 $tools = @(
     "ffmpeg",

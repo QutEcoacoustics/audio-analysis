@@ -9,8 +9,7 @@ namespace Acoustics.Test.Shared
     using System.Runtime.InteropServices;
     using Acoustics.Shared;
     using Acoustics.Test.TestHelpers;
-    using Acoustics.Test.TestHelpers.Fixtures;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+        using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Mono.Unix;
     using static Acoustics.Shared.AppConfigHelper;
 

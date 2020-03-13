@@ -207,7 +207,7 @@ namespace Acoustics.Shared
             return null;
         }
 
-        private static void CheckForExecutePermission(string executablePath)
+        internal static void CheckForExecutePermission(string executablePath)
         {
             // check we have required permissions
             if (!IsOSPlatform(Windows))
