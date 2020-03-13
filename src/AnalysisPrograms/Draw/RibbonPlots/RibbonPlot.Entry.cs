@@ -183,7 +183,7 @@ namespace AnalysisPrograms.Draw.RibbonPlots
             }
 
             // get width of text
-            var scaledFont = Drawing.GetArial(ribbonHeight * 0.8f);
+            var scaledFont = Drawing.GetFont(Drawing.Roboto, ribbonHeight * 0.8f);
             int labelWidth = (int)Math.Ceiling(TextMeasurer.Measure(someRibbon.Key.ToString(AppConfigHelper.RenderedDateFormatShort), new RendererOptions(scaledFont)).Width);
 
             var finalHeight = Padding + ((Padding + ribbonHeight) * stats.Buckets);
