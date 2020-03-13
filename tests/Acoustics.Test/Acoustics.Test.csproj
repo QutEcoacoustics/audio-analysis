@@ -7,6 +7,8 @@
     <LangVersion>8</LangVersion>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <RunSettingsFilePath>$(MSBuildThisFileDirectory).runsettings</RunSettingsFilePath>
+    <!-- No consumers for our test docs, so don't generate them. -->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>

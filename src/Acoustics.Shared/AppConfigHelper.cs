@@ -10,12 +10,12 @@
 namespace Acoustics.Shared
 {
     using System;
-    using System.Collections.Generic;
     using System.Collections.Immutable;
     using System.IO;
     using System.Reflection;
     using System.Runtime.InteropServices;
     using log4net;
+    using Mono.Unix.Native;
     using static System.Runtime.InteropServices.OSPlatform;
     using static System.Runtime.InteropServices.RuntimeInformation;
 
@@ -52,14 +52,6 @@ namespace Acoustics.Shared
             false;
 #endif
 
-        private static readonly string ExecutingAssemblyPath =
-            Assembly.GetAssembly(typeof(AppConfigHelper)).Location;
-
-        private static readonly ILog Log = LogManager.GetLogger(typeof(AppConfigHelper));
-        private static readonly bool IsLinuxValue;
-        private static readonly bool IsWindowsValue;
-        private static readonly bool IsMacOsXValue;
-
         public static readonly IImmutableSet<string> WellKnownRuntimeIdentifiers = ImmutableHashSet.Create(
             WinX64,
             WinArm64,
@@ -68,6 +60,23 @@ namespace Acoustics.Shared
             LinuxMuslX64,
             LinuxArm,
             LinuxArm64);
+
+        private const string Ffmpeg = "ffmpeg";
+        private const string Ffprobe = "ffprobe";
+        private const string Wvunpack = "wvunpack";
+        private const string Sox = "sox";
+
+        private static readonly string ExecutingAssemblyPath =
+            Assembly.GetAssembly(typeof(AppConfigHelper)).Location;
+
+        private static readonly ILog Log = LogManager.GetLogger(typeof(AppConfigHelper));
+        private static readonly bool IsLinuxValue;
+        private static readonly bool IsWindowsValue;
+        private static readonly bool IsMacOsXValue;
+        private static string resolvedFfmpegExe;
+        private static string resolvedFfprobeExe;
+        private static string resolvedSoxExe;
+        private static string resolvedWvunpackExe;
 
         static AppConfigHelper()
         {
@@ -79,22 +88,22 @@ namespace Acoustics.Shared
         /// <summary>
         /// Gets FfmpegExe.
         /// </summary>
-        public static string FfmpegExe => GetExeFile("ffmpeg");
+        public static string FfmpegExe => resolvedFfmpegExe ??= GetExeFile(Ffmpeg);
 
         /// <summary>
         /// Gets FfmpegExe.
         /// </summary>
-        public static string FfprobeExe => GetExeFile("ffprobe");
+        public static string FfprobeExe => resolvedFfprobeExe ??= GetExeFile(Ffprobe);
 
         /// <summary>
         /// Gets WvunpackExe.
         /// </summary>
-        public static string WvunpackExe => GetExeFile("wvunpack", required: false);
+        public static string WvunpackExe => resolvedWvunpackExe ??= GetExeFile(Wvunpack, required: false);
 
         /// <summary>
         /// Gets SoxExe.
         /// </summary>
-        public static string SoxExe => GetExeFile("sox");
+        public static string SoxExe => resolvedSoxExe ??= GetExeFile(Sox);
 
         /// <summary>
         /// Gets a value indicating whether we are running on the Mono platform.
@@ -155,13 +164,15 @@ namespace Acoustics.Shared
 
         internal static string GetExeFile(string name, bool required = true)
         {
+            var isWindows = IsOSPlatform(Windows);
+
             (string directory, string osName) = name switch
             {
-                "ffmpeg" => (name, IsOSPlatform(Windows) ? $"{name}.exe" : name),
-                "ffprobe" => ("ffmpeg", IsOSPlatform(Windows) ? $"{name}.exe" : name),
-                "sox" => (name, IsOSPlatform(Windows) ? $"{name}.exe" : name),
-                "wvunpack" => ("wavpack", IsOSPlatform(Windows) ? $"{name}.exe" : name),
-                _ => throw new ArgumentException("Executable not supported" ,nameof(name)),
+                Ffmpeg => (name, isWindows ? $"{name}.exe" : name),
+                Ffprobe => (Ffmpeg, isWindows ? $"{name}.exe" : name),
+                Sox => (name, isWindows ? $"{name}.exe" : name),
+                Wvunpack => ("wavpack", isWindows ? $"{name}.exe" : name),
+                _ => throw new ArgumentException("Executable not supported", nameof(name)),
             };
 
             string rid = PseudoRuntimeIdentifier;
@@ -172,7 +183,7 @@ namespace Acoustics.Shared
             {
                 Log.Verbose($"Attempted to get exe path `{executablePath}` but it was not found");
 
-                executablePath = FindProgramInPath(osName);
+                executablePath = FindProgramInPath(name);
             }
 
             if (executablePath != null)
@@ -181,6 +192,8 @@ namespace Acoustics.Shared
                 {
                     Log.Verbose($"Found and using exe {executablePath}");
                 }
+
+                CheckForExecutePermission(executablePath);
 
                 return executablePath;
             }
@@ -194,10 +207,28 @@ namespace Acoustics.Shared
             return null;
         }
 
+        private static void CheckForExecutePermission(string executablePath)
+        {
+            // check we have required permissions
+            if (!IsOSPlatform(Windows))
+            {
+                Syscall.stat(executablePath, out var stat);
+                FilePermissions filePerms = stat.st_mode & FilePermissions.ALLPERMS;
+                const FilePermissions execute = FilePermissions.S_IXUSR | FilePermissions.S_IXGRP | FilePermissions.S_IXOTH;
+                if ((filePerms & execute) == 0)
+                {
+                    throw new UnauthorizedAccessException(
+                        $"The executable file `{executablePath}` does not have any execute permissions set. Please `chmod a+x {executablePath}`");
+                }
+            }
+        }
+
         /// <summary>
         /// Gets the path to the program.
         /// </summary>
-        /// <remarks>Copied from https://github.com/dotnet/corefx/blob/master/src/System.Diagnostics.Process/src/System/Diagnostics/Process.Unix.cs#L727</remarks>
+        /// <remarks>
+        /// Copied from https://github.com/dotnet/corefx/blob/master/src/System.Diagnostics.Process/src/System/Diagnostics/Process.Unix.cs#L727
+        /// </remarks>
         /// <param name="program">The program to search for</param>
         /// <returns>The path if the file is found, otherwise null.</returns>
         private static string FindProgramInPath(string program)
