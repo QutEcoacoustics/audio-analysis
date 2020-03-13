@@ -100,7 +100,7 @@ namespace Acoustics.Test
             var generatedBuildData = Path.GetFullPath(Path.Combine(PathHelper.SolutionRoot, "src", "AssemblyMetadata.Generated.cs"));
             Debug.WriteLine(generatedBuildData);
             var actual = File.GetLastWriteTimeUtc(generatedBuildData);
-            Assert.That.AreEqual(now, actual, TimeSpan.FromMinutes(60));
+            Assert.That.AreEqual(now, actual, TimeSpan.FromMinutes(5));
 
             var ciBuild = Environment.GetEnvironmentVariable("BUILD_BUILDID");
             Assert.AreEqual(string.IsNullOrWhiteSpace(ciBuild) ? "000" : ciBuild, BuildMetadata.CiBuild);
