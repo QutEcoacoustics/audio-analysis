@@ -1,6 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <RuleSet Name="New Rule Set" Description=" " ToolsVersion="15.0">
   <Include Path="allrules.ruleset" Action="Default" />
+  <Rules AnalyzerId="Microsoft.CodeAnalysis.CSharp" RuleNamespace="Microsoft.CodeAnalysis.CSharp">
+    <Rule Id="CS1573" Action="Hidden" /> <!-- https://docs.microsoft.com/en-us/dotnet/csharp/misc/cs1573-->
+    <Rule Id="CS1591" Action="Hidden" /> <!-- https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-messages/cs1591 -->
+    
+  </Rules>
   <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
     <Rule Id="SA1005" Action="None" />
     <Rule Id="SA1512" Action="None" />

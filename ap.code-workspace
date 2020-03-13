@@ -5,19 +5,28 @@
 
         }
     ],
+    "extensions": {
+        "recommendations": [
+            "ms-dotnettools.csharp",
+            "ms-vscode.powershell",
+            "ionide.ionide-fsharp"
+        ]
+    },
 	"settings": {
         "files.exclude": {
             "**/.git": true,
             "**/.DS_Store": true,
-            "src/Acoustics.*/**": true,
-            "src/AcousticWorkbench": true,
-            "src/AED": true,
-            "src/AudioAnalysisTools": true,
-            "src/TowseyLibrary": true,
-            "src/AnalysisPrograms/**": true,
-            "src/AnalysisBase/**": true,
-            "tests": true,
-            "TestResults": true
+            // "src/Acoustics.*/**": true,
+            // "src/AcousticWorkbench": true,
+            // "src/AED": true,
+            // "src/AudioAnalysisTools": true,
+            // "src/TowseyLibrary": true,
+            // "src/AnalysisPrograms/**": true,
+            // "src/AnalysisBase/**": true,
+            // "tests": true,
+            // "TestResults": true
         },
+        "omnisharp.enableRoslynAnalyzers": true,
+        "omnisharp.enableEditorConfigSupport": true,
     }
 }

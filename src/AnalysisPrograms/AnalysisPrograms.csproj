@@ -61,7 +61,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.5.0" />
-    <PackageReference Include="Microsoft.Bcl.Build" Version="1.0.21" />
     <PackageReference Include="SixLabors.Fonts" Version="1.0.0-unstable0024" />
     <PackageReference Include="SixLabors.Fonts" Version="1.0.0-unstable0024" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-unstable0702" />
