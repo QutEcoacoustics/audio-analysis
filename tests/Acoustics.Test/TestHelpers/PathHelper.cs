@@ -23,6 +23,15 @@ namespace Acoustics.Test.TestHelpers
 
         public static string TestResources { get; private set; }
 
+        /// <summary>
+        /// Gets the directory where the app is currently deployed to.
+        /// </summary>
+        /// <example>
+        /// In a msbuild context, on Windows.
+        /// <value>
+        /// C:\Work\Github\audio-analysis\tests\Acoustics.Test\bin\Debug\netcoreapp3.1
+        /// </value>
+        /// </example>
         public static string CodeBase { get; private set; }
 
         internal static void Initialize(TestContext context)
@@ -30,7 +39,6 @@ namespace Acoustics.Test.TestHelpers
             var directory = context.ResultsDirectory;
 
             // the assumption is that the repo is always checked out and named with this name
-            int found = -1;
             if (!TryFindSolution(context.ResultsDirectory, out var solutionDirectory))
             {
                 // this assumption is violated on Azure Pipelines

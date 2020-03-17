@@ -3,6 +3,14 @@
   <PropertyGroup>
     <MSBuildCommunityTasksPath>$(MSBuildProjectDirectory)\.build</MSBuildCommunityTasksPath>
   </PropertyGroup>
+  <!-- Register the Roboto font as a resource to copy -->
+  <ItemGroup>
+    <ContentWithTargetPath  
+      Include="$(MSBuildThisFileDirectory)..\lib\Roboto\*"
+      CopyToOutputDirectory="PreserveNewest"
+      TargetPath="fonts\Roboto\%(Filename)%(Extension)"/>
+  </ItemGroup>
+  
   <!-- Register our task that as something to run after standard build target -->
   <Target Name="APCopyFilesAfterBuild" AfterTargets="Build">
     <!-- Copy our audio tools from lib to build dir -->

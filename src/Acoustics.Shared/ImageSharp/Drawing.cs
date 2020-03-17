@@ -4,6 +4,7 @@
 
 namespace Acoustics.Shared.ImageSharp
 {
+    using System.IO;
     using SixLabors.Fonts;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
@@ -17,6 +18,10 @@ namespace Acoustics.Shared.ImageSharp
     /// </remarks>
     public static class Drawing
     {
+        /// <summary>
+        /// An open source sans-serif font produced by Google that is hopefully a good fallback for missing fonts.
+        /// </summary>
+        public const string Roboto = "Roboto";
         public static readonly Configuration DefaultConfiguration = Configuration.Default;
 
         public static readonly Configuration NoParallelConfiguration = new Configuration()
@@ -34,10 +39,10 @@ namespace Acoustics.Shared.ImageSharp
             //IntersectionRule = IntersectionRule.OddEven,
         };
 
-        /// <summary>
-        /// An open source sans-serif font produced by Google that is hopefully a good fallback for missing fonts.
-        /// </summary>
-        public const string Roboto = "Roboto";
+        public static readonly TextGraphicsOptions TextOptions = new TextGraphicsOptions()
+        {
+            // noop currently
+        };
 
         private const string Tahoma = "Tahoma";
 
@@ -46,11 +51,10 @@ namespace Acoustics.Shared.ImageSharp
         /// <summary>
         /// Fonts bundled with AP.exe.
         /// </summary>
-        private static readonly FontCollection BundledFonts = new FontCollection();
+        private static FontCollection bundledFontCollection;
 
         static Drawing()
         {
-            BundledFonts.InstallCollection(System.IO.Path.Combine(AppConfigHelper.ExecutingAssemblyDirectory, Roboto));
         }
 
         public static Font Tahoma6 => GetFont(Tahoma, 6f);
@@ -78,6 +82,28 @@ namespace Acoustics.Shared.ImageSharp
         public static Font Arial14 => GetFont(Arial, 14f);
 
         public static Font Arial16 => GetFont(Arial, 16f);
+
+        /// <summary>
+        /// Gets (or initializes) fonts bundled with AP.exe.
+        /// </summary>
+        public static FontCollection BundledFonts
+        {
+            get
+            {
+                if (bundledFontCollection == null)
+                {
+                    bundledFontCollection = new FontCollection();
+                    var fontDirectory = System.IO.Path.Combine(AppConfigHelper.ExecutingAssemblyDirectory, "fonts", Roboto);
+                    var fonts = Directory.EnumerateFiles(fontDirectory, "*.ttf");
+                    foreach (var font in fonts)
+                    {
+                        bundledFontCollection.Install(font);
+                    }
+                }
+
+                return bundledFontCollection;
+            }
+        }
 
         /// <summary>
         /// Gets the requested font family or falls back to using <see cref="Roboto" />.
