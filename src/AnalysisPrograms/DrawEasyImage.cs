@@ -260,22 +260,19 @@ namespace AnalysisPrograms
                         string month = monthNames[thisday.Month - 1];
                         if (thisday.Month == 1) // January
                         {
-                            g.DrawText(thisday.Year.ToString(), stringFont, Color.White,
-                                new PointF(0, nextRow + trackHeight + 1)); //draw time
-                            g.DrawText(month, stringFont, Color.White,
-                                new PointF(1, nextRow + trackHeight + 11)); //draw time
+                            g.DrawText(thisday.Year.ToString(), stringFont, Color.White, new PointF(0, nextRow + trackHeight + 1)); //draw time
+                            g.DrawText(month, stringFont, Color.White, new PointF(1, nextRow + trackHeight + 11)); //draw time
                         }
                         else
                         {
-                            g.DrawText(month, stringFont, Color.White,
-                                new PointF(1, nextRow + trackHeight + 1)); //draw time
+                            g.DrawText(month, stringFont, Color.White, new PointF(1, nextRow + trackHeight + 1)); //draw time
                         }
 
                         currentRow += 2;
                     }
 
                     // get the exact date and time
-                    LoggedConsole.WriteLine($"READING DAY {d + 1} of {dayCount}:   {thisday.ToString()}");
+                    LoggedConsole.WriteLine($"READING DAY {d + 1} of {dayCount}:   {thisday}");
 
                     // CREATE DAY LEVEL OUTPUT DIRECTORY for this day
                     string dateString = $"{thisday.Year}{thisday.Month:D2}{thisday.Day:D2}";

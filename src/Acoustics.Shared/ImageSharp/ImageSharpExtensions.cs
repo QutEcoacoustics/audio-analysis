@@ -357,11 +357,11 @@ namespace SixLabors.ImageSharp
                     }
 
                     location.Offset(trimOffset, 0);
-                    context.DrawText(text[trim..], font, color, location);
+                    context.DrawText(Drawing.TextOptions, text[trim..], font, color, location);
                 }
                 else
                 {
-                    context.DrawText(text, font, color, location);
+                    context.DrawText(Drawing.TextOptions, text, font, color, location);
                 }
             }
         }
@@ -372,7 +372,7 @@ namespace SixLabors.ImageSharp
             var image = new Image<Rgba32>(Configuration.Default, (int)(width + 1), (int)(height + 1), Color.Transparent);
 
             image.Mutate(x => x
-                .DrawText(new TextGraphicsOptions(), text, font, color, new PointF(0, 0))
+                .DrawText(Drawing.TextOptions, text, font, color, new PointF(0, 0))
                 .Rotate(-90));
 
             context.DrawImage(image, location, PixelColorBlendingMode.Normal, PixelAlphaCompositionMode.SrcAtop, 1);

@@ -15,6 +15,7 @@ namespace Acoustics.Test
     using static Acoustics.Shared.AppConfigHelper;
 
     [TestClass]
+    [TestCategory("Runtime")]
     public class RuntimesTests
     {
         [RuntimeIdentifierSpecificDataTestMethod]
@@ -35,19 +36,19 @@ namespace Acoustics.Test
         }
 
         [RuntimeIdentifierSpecificDataTestMethod]
-        [DataRow(WinX64,              "win-x64/lib/Mono.Posix.NETStandard.dll")]
-        [DataRow(OsxX64,              "osx-x64/lib/Mono.Posix.NETStandard.dll")]
-        [DataRow(LinuxX64,          "linux-x64/lib/Mono.Posix.NETStandard.dll")]
+        [DataRow(WinX64, "win-x64/lib/netstandard2.0/Mono.Posix.NETStandard.dll")]
+        [DataRow(OsxX64, "osx-x64/lib/netstandard2.0/Mono.Posix.NETStandard.dll")]
+        [DataRow(LinuxX64, "linux-x64/lib/netstandard2.0/Mono.Posix.NETStandard.dll")]
         /*[DataRow(LinuxMuslX64, "linux-musl-x64/lib/Mono.Posix.NETStandard.dll")]*/
-        [DataRow(LinuxArm,          "linux-arm/lib/Mono.Posix.NETStandard.dll")]
-        [DataRow(LinuxArm64,      "linux-arm64/lib/Mono.Posix.NETStandard.dll")]
+        [DataRow(LinuxArm, "linux-arm/lib/netstandard2.0/Mono.Posix.NETStandard.dll")]
+        [DataRow(LinuxArm64, "linux-arm64/lib/netstandard2.0/Mono.Posix.NETStandard.dll")]
 
-        [DataRow(WinX64,              "win-x64/native/libMonoPosixHelper.dll")]
-        [DataRow(OsxX64,              "osx-x64/native/libMonoPosixHelper.dylib")]
-        [DataRow(LinuxX64,          "linux-x64/native/libMonoPosixHelper.so")]
-      /*[DataRow(LinuxMuslX64, "linux-musl-x64/native/libMonoPosixHelper.so")]*/
-        [DataRow(LinuxArm,          "linux-arm/native/libMonoPosixHelper.so")]
-        [DataRow(LinuxArm64,      "linux-arm64/native/libMonoPosixHelper.so")]
+        [DataRow(WinX64, "win-x64/native/libMonoPosixHelper.dll")]
+        [DataRow(OsxX64, "osx-x64/native/libMonoPosixHelper.dylib")]
+        [DataRow(LinuxX64, "linux-x64/native/libMonoPosixHelper.so")]
+        /*[DataRow(LinuxMuslX64, "linux-musl-x64/native/libMonoPosixHelper.so")]*/
+        [DataRow(LinuxArm, "linux-arm/native/libMonoPosixHelper.so")]
+        [DataRow(LinuxArm64, "linux-arm64/native/libMonoPosixHelper.so")]
         public void TestRequiredMonoPosixDllCopiedToBuildDir(string rid, string expected)
         {
             var buildDir = PathHelper.AnalysisProgramsBuild;
@@ -78,6 +79,38 @@ namespace Acoustics.Test
                 "win-x64/sox/sox.exe",
                 "linux-x64/ffmpeg/ffmpeg",
                 "linux-x64/ffmpeg/ffprobe",
+            };
+
+            foreach (var directory in expected)
+            {
+                Assert.That.PathExists(Path.Combine(runtimeDir, directory));
+            }
+        }
+
+        [TestMethod]
+        public void TestRobotoFontCopiedToOutputDirectory()
+        {
+            var buildDir = PathHelper.CodeBase;
+
+            Assert.That.DirectoryExists(buildDir);
+
+            var runtimeDir = Path.GetFullPath(Path.Combine(buildDir, "fonts", "Roboto"));
+
+            var expected = new[]
+            {
+                "Roboto-ThinItalic.ttf",
+                "LICENSE.txt",
+                "Roboto-Black.ttf",
+                "Roboto-BlackItalic.ttf",
+                "Roboto-Bold.ttf",
+                "Roboto-BoldItalic.ttf",
+                "Roboto-Italic.ttf",
+                "Roboto-Light.ttf",
+                "Roboto-LightItalic.ttf",
+                "Roboto-Medium.ttf",
+                "Roboto-MediumItalic.ttf",
+                "Roboto-Regular.ttf",
+                "Roboto-Thin.ttf",
             };
 
             foreach (var directory in expected)
