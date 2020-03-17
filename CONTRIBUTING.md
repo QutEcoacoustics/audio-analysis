@@ -41,7 +41,7 @@ The **required** software for developing new code (not running the program) incl
 
 - A PowerShell Core (version 6+) install
     - You can install it from here: https://github.com/powershell/powershell#get-powershell
-- The latest .NET Core SDK
+- The latest, stable, .NET Core SDK
     - You can download it from here: https://dotnet.microsoft.com/download/dotnet-core/
 - An IDE:
     - Visual Studio 2019 (Windows only)
@@ -53,10 +53,11 @@ The **required** software for developing new code (not running the program) incl
         - [Optional] Resharper Ulitmate (Academic License)
         - Install these plugins (_ReSharper_ menu > _Extension Manager_)
           - ReSpeller Free
-    - VS Code
-        - C# Extension
-- msysgit or a git executable on PATH
-    - https://git-for-windows.github.io/
+    - VS Code (recommended for Mac and Linux)
+        - Install the recommended extensions
+    - JetBrains Rider ()
+- a recent `git` executable on PATH
+    - https://git-scm.com/downloads
 
 Binary Large Objects (BLOBs)
 ----------------------------
