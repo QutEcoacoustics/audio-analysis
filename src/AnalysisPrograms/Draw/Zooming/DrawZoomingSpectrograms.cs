@@ -11,7 +11,7 @@ namespace AnalysisPrograms.Draw.Zooming
     using log4net;
     using Production;
 
-    using Zio;
+    using Acoustics.Shared.Contracts;
 
     /// <summary>
     /// Renders index data as false color images at various scales, with various styles.
@@ -49,8 +49,8 @@ namespace AnalysisPrograms.Draw.Zooming
             LoggedConsole.WriteLine("# Output Directory            : " + arguments.Output);
 
             var common = new ZoomParameters(
-                arguments.SourceDirectory.ToDirectoryEntry(),
-                arguments.SpectrogramZoomingConfig.ToFileEntry(),
+                arguments.SourceDirectory.ToDirectoryInfo(),
+                arguments.SpectrogramZoomingConfig.ToFileInfo(),
                 !string.IsNullOrEmpty(arguments.OutputFormat));
 
             LoggedConsole.WriteLine("# File name of recording      : " + common.OriginalBasename);

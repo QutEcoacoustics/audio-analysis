@@ -14,7 +14,7 @@ namespace Acoustics.Shared
 
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
-    using Zio;
+    using Acoustics.Shared.Contracts;
 
     public static class Json
     {
@@ -52,12 +52,12 @@ namespace Acoustics.Shared
 
         public static T Deserialize<T>(FileInfo file)
         {
-            return Deserialize<T>(file.ToFileEntry());
+            return Deserialize<T>(file.FullName);
         }
 
-        public static T Deserialize<T>(FileEntry file)
+        public static T Deserialize<T>(string file)
         {
-            using (var stream = file.OpenText())
+            using (var stream = File.OpenText(file))
             using (var reader = new JsonTextReader(stream))
             {
                 return Serializer.Deserialize<T>(reader);

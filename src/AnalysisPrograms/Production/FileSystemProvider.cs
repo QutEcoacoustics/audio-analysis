@@ -6,13 +6,11 @@ namespace AnalysisPrograms.Production
 {
     using System;
     using System.IO;
+    using System.IO.Abstractions;
     using System.Linq;
     using Acoustics.Shared;
     using Acoustics.Shared.Contracts;
     using log4net;
-    using Zio;
-    using Zio.FileSystems;
-    // using Zio.FileSystems.Community.SqliteFileSystem;
 
     /// <summary>
     /// Determine the output format for analysis results.
@@ -44,7 +42,7 @@ namespace AnalysisPrograms.Production
         /// Determine what kind of filesystem to use.
         /// After this point we *should theoretically* not need to use System.IO.Path.
         /// </summary>
-        public static (IFileSystem, DirectoryEntry) DetermineFileSystem(string path, bool readOnly = false)
+        public static (IFileSystem, IDirectoryInfo) DetermineFileSystem(string path, bool readOnly = false)
         {
             var emptyPath = string.IsNullOrWhiteSpace(path);
             var extension = Path.GetExtension(path);
@@ -52,13 +50,12 @@ namespace AnalysisPrograms.Production
             Log.Debug($"Determining file system for {path}");
 
             IFileSystem fileSystem;
-            DirectoryEntry baseEntry;
+            IDirectoryInfo baseEntry;
 
             if (emptyPath)
             {
-                fileSystem = new PhysicalFileSystem();
-                baseEntry = fileSystem.GetDirectoryEntry(
-                    fileSystem.ConvertPathFromInternal(Directory.GetCurrentDirectory()));
+                fileSystem = new FileSystem();
+                baseEntry = fileSystem.DirectoryInfo.FromDirectoryName(Directory.GetCurrentDirectory());
             }
             else
             {
@@ -67,11 +64,11 @@ namespace AnalysisPrograms.Production
 
                 if (Directory.Exists(path) || extension == string.Empty)
                 {
-                    var physicalFileSystem = new PhysicalFileSystem();
-                    var internalPath = physicalFileSystem.ConvertPathFromInternal(path);
-                    physicalFileSystem.CreateDirectory(internalPath);
-                    fileSystem = new SubFileSystem(physicalFileSystem, internalPath);
-                    baseEntry = fileSystem.GetDirectoryEntry(UPath.Root);
+                    var physicalFileSystem = new FileSystem();
+                    var internalPath = path;
+                    physicalFileSystem.Directory.CreateDirectory(internalPath);
+                    fileSystem = physicalFileSystem;
+                    baseEntry = fileSystem.DirectoryInfo.FromDirectoryName(internalPath);
                 }
                 else
                 {
@@ -93,7 +90,8 @@ namespace AnalysisPrograms.Production
                                 $"Cannot determine file system for given extension {extension}");
                     }
 
-                    baseEntry = new DirectoryEntry(fileSystem, UPath.Root);
+                    // broken!
+                    baseEntry = null;
                 }
             }
 

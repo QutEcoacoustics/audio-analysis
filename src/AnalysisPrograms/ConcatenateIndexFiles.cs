@@ -49,7 +49,7 @@ namespace AnalysisPrograms
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
     using TowseyLibrary;
-    using Zio;
+    using Acoustics.Shared.Contracts;
     using Path = System.IO.Path;
 
     /// <summary>
@@ -326,7 +326,7 @@ namespace AnalysisPrograms
             if (arguments.DrawImages)
             {
                 // get the IndexGenerationData file from the first directory
-                indexGenerationData = IndexGenerationData.GetIndexGenerationData(csvFiles[0].Directory.ToDirectoryEntry());
+                indexGenerationData = IndexGenerationData.GetIndexGenerationData(csvFiles[0].Directory);
                 if (indexGenerationData.RecordingStartDate == null)
                 {
                     indexGenerationData.RecordingStartDate = startDate;

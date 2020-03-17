@@ -12,7 +12,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using SixLabors.ImageSharp.PixelFormats;
     using TestHelpers;
-    using Zio;
+    using Acoustics.Shared.Contracts;
     using SixLabors.ImageSharp.Processing;
     using Drawing = Acoustics.Shared.ImageSharp.Drawing;
 
@@ -44,7 +44,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
             this.outputDirectory = PathHelper.GetTempDir();
 
             this.tiler = new Tiler(
-                this.outputDirectory.ToDirectoryEntry(),
+                this.outputDirectory,
                 this.tilingProfile,
                 new SortedSet<double>() { 60.0 },
                 60.0,
@@ -88,7 +88,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
                 TileWidth);
 
             var tiler = new Tiler(
-                            this.outputDirectory.ToDirectoryEntry(),
+                            this.outputDirectory,
                             profile,
                             new SortedSet<double>() { 60.0, 0.1 },
                             60.0,
@@ -183,7 +183,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
         public void TestPaddingANonBlockTime()
         {
             this.tiler = new Tiler(
-                this.outputDirectory.ToDirectoryEntry(),
+                this.outputDirectory,
                 this.tilingProfileNotRoundStart,
                 new SortedSet<double>() { 60.0 },
                 60.0,

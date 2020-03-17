@@ -46,7 +46,7 @@ namespace AnalysisPrograms
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
     using TowseyLibrary;
-    using Zio;
+    using Acoustics.Shared.Contracts;
     using Path = System.IO.Path;
 
     /// <summary>
@@ -127,8 +127,8 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("# Index Properties Config file: " + arguments.IndexPropertiesConfig);
             LoggedConsole.WriteLine();
 
-            (FileEntry indexGenerationDataFile, FileEntry indexDistributionsFile) =
-                ZoomParameters.CheckNeededFilesExist(arguments.InputDataDirectory.ToDirectoryEntry());
+            (FileInfo indexGenerationDataFile, FileInfo indexDistributionsFile) =
+                ZoomParameters.CheckNeededFilesExist(arguments.InputDataDirectory.ToDirectoryInfo());
 
             var indexGenerationData = Json.Deserialize<IndexGenerationData>(indexGenerationDataFile);
 

@@ -18,7 +18,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
     using TestHelpers;
-    using Zio;
+    using Acoustics.Shared.Contracts;
 
     [TestClass]
     public class TilerTests
@@ -35,7 +35,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
             this.outputDirectory = PathHelper.GetTempDir();
 
             this.tiler = new Tiler(
-                this.outputDirectory.ToDirectoryEntry(),
+                this.outputDirectory,
                 this.tilingProfile,
                 new SortedSet<double>() { 60.0, 24, 12, 6, 2, 1 },
                 60.0,
@@ -98,7 +98,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
             List<ISuperTile> moqCurrent = new List<ISuperTile>(testCases.Length),
                              moqNext = new List<ISuperTile>(testCases.Length);
             var tilerMock = new Mock<Tiler>(
-                this.outputDirectory.ToDirectoryEntry(),
+                this.outputDirectory,
                 this.tilingProfile,
                 new SortedSet<double>() { 60.0, 24, 12, 6, 2, 1 },
                 60.0,
@@ -324,7 +324,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
 
             // scale size results in two images drawn
             var singleScaleTiler = new Tiler(
-                this.outputDirectory.ToDirectoryEntry(),
+                this.outputDirectory,
                 this.tilingProfile,
                 new SortedSet<double>() { 0.16 },
                 60.0,
@@ -356,7 +356,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
 
             // scale size results in two images drawn
             var singleScaleTiler = new Tiler(
-                this.outputDirectory.ToDirectoryEntry(),
+                this.outputDirectory,
                 this.tilingProfile,
                 new SortedSet<double>() { 0.16 },
                 60.0,
@@ -385,7 +385,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
                 };
 
             var singleScaleTiler = new Tiler(
-                this.outputDirectory.ToDirectoryEntry(),
+                this.outputDirectory,
                 this.tilingProfile,
                 new SortedSet<double>() { 0.16 },
                 60.0,

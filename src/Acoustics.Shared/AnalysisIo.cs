@@ -5,14 +5,13 @@
 namespace Acoustics.Shared
 {
     using System;
+    using System.IO;
+    using System.IO.Abstractions;
     using Acoustics.Shared.Contracts;
-
-    using Zio;
-    using FileSystemEntry = Zio.FileSystemEntry;
 
     public class AnalysisIo
     {
-        public AnalysisIo((IFileSystem FileSystem, FileSystemEntry Base) input, (IFileSystem FileSystem, DirectoryEntry Base) output, (IFileSystem FileSystem, DirectoryEntry Base)? temp)
+        public AnalysisIo((IFileSystem FileSystem, IDirectoryInfo Base) input, (IFileSystem FileSystem, IDirectoryInfo Base) output, (IFileSystem FileSystem, IDirectoryInfo Base)? temp)
         {
             this.Input = input.FileSystem;
             this.InputBase = input.Base;
@@ -21,14 +20,14 @@ namespace Acoustics.Shared
             this.OutputBase = output.Base;
 
             this.Temp = (temp ?? input).FileSystem;
-            this.TempBase = (DirectoryEntry)(temp ?? input).Base;
+            this.TempBase = (temp ?? input).Base;
         }
 
-        public FileSystemEntry InputBase { get; }
+        public IDirectoryInfo InputBase { get; }
 
-        public DirectoryEntry OutputBase { get; }
+        public IDirectoryInfo OutputBase { get; }
 
-        public DirectoryEntry TempBase { get; }
+        public IDirectoryInfo TempBase { get; }
 
         public IFileSystem Input { get; }
 
@@ -40,7 +39,7 @@ namespace Acoustics.Shared
         {
             Contract.Requires(this.InputBase != null, $"{nameof(this.InputBase)} must not be null");
 
-            if (this.Input.DirectoryExists(this.InputBase.Path))
+            if (this.Input.Directory.Exists(this.InputBase.FullName))
             {
                 return new AnalysisIoInputDirectory((this.Input, this.InputBase), (this.Output, this.OutputBase), (this.Temp, this.TempBase));
             }
@@ -52,11 +51,11 @@ namespace Acoustics.Shared
     public class AnalysisIoInputDirectory
         : AnalysisIo
     {
-        internal AnalysisIoInputDirectory((IFileSystem FileSystem, FileSystemEntry Base) input, (IFileSystem FileSystem, DirectoryEntry Base) output, (IFileSystem FileSystem, DirectoryEntry Base)? temp)
+        internal AnalysisIoInputDirectory((IFileSystem FileSystem, IDirectoryInfo Base) input, (IFileSystem FileSystem, IDirectoryInfo Base) output, (IFileSystem FileSystem, IDirectoryInfo Base)? temp)
             : base(input, output, temp)
         {
         }
 
-        public new DirectoryEntry InputBase => (DirectoryEntry)base.InputBase;
+        public new DirectoryInfo InputBase => new DirectoryInfo(base.InputBase.FullName);
     }
 }

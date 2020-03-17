@@ -12,17 +12,16 @@ namespace Acoustics.Shared.Csv
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Reflection;
-    using Contracts;
+    using Acoustics.Shared.Contracts;
     using CsvHelper;
     using CsvHelper.Configuration;
     using CsvHelper.TypeConversion;
     using log4net;
-    using Zio;
+    using SixLabors.ImageSharp;
 
     /// <summary>
     /// Generic methods for reading and writing Csv file.
@@ -316,11 +315,6 @@ Member Name: {tce.MemberMapData.Member.Name}
         }
 
         public static T[,] ReadMatrixFromCsv<T>(FileInfo source, TwoDimensionalArray transform = TwoDimensionalArray.None)
-        {
-            return ReadMatrixFromCsv<T>(source.ToFileEntry(), transform);
-        }
-
-        public static T[,] ReadMatrixFromCsv<T>(FileEntry source, TwoDimensionalArray transform = TwoDimensionalArray.None)
         {
             Contract.Requires(source != null);
 

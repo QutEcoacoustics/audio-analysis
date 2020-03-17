@@ -14,7 +14,7 @@ namespace Acoustics.Test.Shared
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    using Zio;
+    using Acoustics.Shared.Contracts;
 
     [TestClass]
     public class YamlTests
@@ -160,7 +160,7 @@ EventThreshold: 0.2
         [TestMethod]
         public void OurDefaultDeserializerSupportsMergingDocumentsAndZio()
         {
-            var wrapper = Yaml.Deserialize<YamlTestWrapperClass>(this.testDocument.ToFileEntry());
+            var wrapper = Yaml.Deserialize<YamlTestWrapperClass>(this.testDocument);
 
             Assert.AreEqual(this.wrapperTestCase.InfoA.SomeProperty, wrapper.InfoA.SomeProperty);
             Assert.AreEqual(this.wrapperTestCase.InfoB.SomeProperty, wrapper.InfoB.SomeProperty);

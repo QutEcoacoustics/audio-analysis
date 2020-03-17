@@ -81,7 +81,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
             // pass it scales for x and y-axis
             // also pass it unit scale relations (between unit scale and unit height/width) to use as a reference point
             var tiler = new Tiler(
-                io.OutputBase,
+                new DirectoryInfo(io.OutputBase.FullName),
                 namingPattern,
                 xScales: new SortedSet<double>(allImageScales),
                 xUnitScale: XNominalUnitScale,

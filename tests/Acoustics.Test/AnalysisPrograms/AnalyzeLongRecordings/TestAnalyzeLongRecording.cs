@@ -20,7 +20,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using TestHelpers;
-    using Zio;
+    using Acoustics.Shared.Contracts;
 
     /// <summary>
     /// Test methods for the various standard Sonograms or Spectrograms
@@ -137,7 +137,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             var ldsBgnSpectrumFile = this.outputDirectory.CombineFile("Spectrum1.png");
             GraphsAndCharts.DrawGraph(array, "LD BGN SPECTRUM Linear", ldsBgnSpectrumFile);
 
-            var generationData = Json.Deserialize<IndexGenerationData>(IndexGenerationData.FindFile(resultsDirectory.ToDirectoryEntry()));
+            var generationData = Json.Deserialize<IndexGenerationData>(IndexGenerationData.FindFile(resultsDirectory));
             Assert.AreEqual("TemporaryRecording1", generationData.RecordingBasename);
         }
 

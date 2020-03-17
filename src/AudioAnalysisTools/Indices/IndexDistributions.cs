@@ -17,7 +17,7 @@ namespace AudioAnalysisTools.Indices
     using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
 
-    using Zio;
+    using Acoustics.Shared.Contracts;
 
     public static class IndexDistributions
     {
@@ -280,11 +280,6 @@ namespace AudioAnalysisTools.Indices
         }
 
         public static Dictionary<string, SpectralStats> Deserialize(FileInfo file)
-        {
-            return Deserialize(file.ToFileEntry());
-        }
-
-        public static Dictionary<string, SpectralStats> Deserialize(FileEntry file)
         {
             return Json.Deserialize<Dictionary<string, SpectralStats>>(file);
         }

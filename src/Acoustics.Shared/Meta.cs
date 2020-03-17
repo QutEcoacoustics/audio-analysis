@@ -27,6 +27,8 @@ namespace Acoustics.Shared
                 .Where(OurCodePredicate)
                 .ToArray();
 
+        public static string BinaryName => AppConfigHelper.IsWindows ? Name : "AnalysisPrograms";
+        
         public static string Organization { get; } = "QUT";
 
         public static string Website { get; } = "http://research.ecosounds.org/";

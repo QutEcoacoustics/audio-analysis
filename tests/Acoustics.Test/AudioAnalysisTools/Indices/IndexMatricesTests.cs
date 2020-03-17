@@ -7,15 +7,12 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
     using System;
     using System.Collections.Generic;
     using System.Linq;
-
     using Acoustics.Shared.Csv;
     using Acoustics.Shared.Extensions;
+    using Acoustics.Test.TestHelpers;
     using global::AudioAnalysisTools.Indices;
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
-
-    using Zio;
 
     [TestClass]
     public class IndexMatricesTests : OutputDirectoryTest
@@ -62,10 +59,10 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
         {
             var testSpectra = PathHelper.ResolveAssetPath("20160725_203006_continuous1__Towsey.Acoustic.ACI.csv");
 
-            var dir = PathHelper.TestResources.ToDirectoryEntry();
+            var dir = PathHelper.TestResources;
 
             var matrix = IndexMatrices.ReadSpectralIndices(
-                    dir,
+                    dir.ToDirectoryInfo(),
                     "20160725_203006_continuous1",
                     "Towsey.Acoustic",
                     new[] { "ACI" })

@@ -9,8 +9,8 @@ namespace Acoustics.Test.AnalysisPrograms.Production
     using global::AnalysisPrograms.Production;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using TestHelpers;
-    using Zio;
-    using Zio.FileSystems;
+    using Acoustics.Shared.Contracts;
+    using System.IO.Abstractions;
     //using Zio.FileSystems.Community.SqliteFileSystem;
 
     [TestClass]
@@ -23,18 +23,9 @@ namespace Acoustics.Test.AnalysisPrograms.Production
         {
             var fs = FileSystemProvider.DetermineFileSystem(path).Item1;
 
-            Assert.IsInstanceOfType(fs, typeof(PhysicalFileSystem));
+            Assert.IsInstanceOfType(fs, typeof(FileSystem));
         }
 
-        [TestMethod]
-        public void TestSubFileSystem()
-        {
-            var fs = FileSystemProvider.DetermineFileSystem(this.TestOutputDirectory.FullName).Item1;
-
-            Assert.IsInstanceOfType(fs, typeof(SubFileSystem));
-
-            Assert.AreEqual(this.TestOutputDirectory.ToUPath(), ((SubFileSystem)fs).SubPath);
-        }
 
         [TestMethod]
         [Ignore("Broken to resolve .NET Core dependencies. https://github.com/QutEcoacoustics/audio-analysis/issues/289")]
