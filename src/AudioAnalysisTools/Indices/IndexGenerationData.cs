@@ -14,7 +14,7 @@ namespace AudioAnalysisTools.Indices
     using AudioAnalysisTools.LongDurationSpectrograms;
     using log4net;
     using Newtonsoft.Json;
-    using Zio;
+    using Acoustics.Shared.Contracts;
 
     public class IndexGenerationData
     {
@@ -88,7 +88,7 @@ namespace AudioAnalysisTools.Indices
         /// <summary>
         /// Returns the index generation data from file in passed directory.
         /// </summary>
-        public static IndexGenerationData GetIndexGenerationData(DirectoryEntry directory)
+        public static IndexGenerationData GetIndexGenerationData(DirectoryInfo directory)
         {
             return Json.Deserialize<IndexGenerationData>(FindFile(directory));
         }
@@ -100,7 +100,7 @@ namespace AudioAnalysisTools.Indices
             return indexGenerationData;
         }
 
-        public static FileEntry FindFile(DirectoryEntry directory)
+        public static FileInfo FindFile(DirectoryInfo directory)
         {
             const string pattern = "*" + FileNameFragment + "*";
             return directory.EnumerateFiles(pattern).Single();

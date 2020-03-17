@@ -19,8 +19,6 @@ namespace Acoustics.Shared.ConfigFile
 
     using log4net;
 
-    using Zio;
-
     public static partial class ConfigFile
     {
         public const string ProfilesKey = nameof(IProfiles<object>.Profiles);
@@ -55,11 +53,11 @@ namespace Acoustics.Shared.ConfigFile
         {
             if (!path.IsNullOrEmpty())
             {
-                var success = TryResolve(path, searchPaths.Select(x => x.ToDirectoryEntry()), out FileEntry configFile);
+                var success = TryResolve(path, searchPaths, out FileInfo configFile);
 
                 if (success)
                 {
-                    return configFile.ToFileInfo();
+                    return configFile;
                 }
             }
 
@@ -98,18 +96,18 @@ namespace Acoustics.Shared.ConfigFile
                 throw new ArgumentException("Try to resolve config failed, because supplied file argument was null or empty.", nameof(file));
             }
 
-            var success = TryResolve(file, searchPaths.Select(x => x.ToDirectoryEntry()), out FileEntry configFile);
+            var success = TryResolve(file, searchPaths, out FileInfo configFile);
 
             if (success)
             {
-                return configFile.ToFileInfo();
+                return configFile;
             }
 
             var message = NotFoundMessage(file, searchPaths);
             throw new ConfigFileException(message, file);
         }
 
-        public static bool TryResolve(string file, IEnumerable<DirectoryEntry> searchPaths, out FileEntry configFile)
+        public static bool TryResolve(string file, IEnumerable<DirectoryInfo> searchPaths, out FileInfo configFile)
         {
             configFile = null;
             if (string.IsNullOrWhiteSpace(file))
@@ -123,7 +121,7 @@ namespace Acoustics.Shared.ConfigFile
             var fullPath = Path.GetFullPath(file);
             if (File.Exists(fullPath))
             {
-                configFile = fullPath.ToFileEntry();
+                configFile = fullPath.ToFileInfo();
                 return true;
             }
 
@@ -183,10 +181,10 @@ namespace Acoustics.Shared.ConfigFile
 
             if (found)
             {
-                FileEntry defaultConfig = null;
+                FileInfo defaultConfig = null;
                 if (TryResolveInConfigFolder(defaultName, ref defaultConfig))
                 {
-                    var file = defaultConfig.ToFileInfo();
+                    var file = defaultConfig;
                     Log.Info($"Supplied config file not found, but a default was found and returned (`{file}`)");
                     {
                         fileInfo = file;
@@ -204,13 +202,13 @@ namespace Acoustics.Shared.ConfigFile
             return false;
         }
 
-        private static bool TryResolveInConfigFolder(string file, ref FileEntry configFile)
+        private static bool TryResolveInConfigFolder(string file, ref FileInfo configFile)
         {
             // config files are always packaged with the app so use a physical file system
             var defaultConfigFile = Path.GetFullPath(Path.Combine(ConfigFolder, file));
             if (File.Exists(defaultConfigFile))
             {
-                configFile = defaultConfigFile.ToFileEntry();
+                configFile = defaultConfigFile.ToFileInfo();
                 return true;
             }
 
@@ -220,7 +218,7 @@ namespace Acoustics.Shared.ConfigFile
                 var nestedDefaultConfigFile = Path.Combine(directory, file);
                 if (File.Exists(nestedDefaultConfigFile))
                 {
-                    configFile = nestedDefaultConfigFile.ToFileEntry();
+                    configFile = nestedDefaultConfigFile.ToFileInfo();
                     return true;
                 }
             }

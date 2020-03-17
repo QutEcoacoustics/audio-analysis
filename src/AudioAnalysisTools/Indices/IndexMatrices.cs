@@ -22,7 +22,7 @@ namespace AudioAnalysisTools.Indices
     using StandardSpectrograms;
     using log4net;
     using TowseyLibrary;
-    using Zio;
+    using Acoustics.Shared.Contracts;
     using MoreLinq;
 
     public static class IndexMatrices
@@ -422,10 +422,10 @@ namespace AudioAnalysisTools.Indices
         /// </summary>
         public static double[,] ReadSpectrogram(FileInfo csvFile, out int binCount)
         {
-            return ReadSpectrogram(csvFile.ToFileEntry(), out binCount);
+            return ReadSpectrogram(csvFile, out binCount);
         }
 
-        public static double[,] ReadSpectrogram(FileEntry csvFile, out int binCount, TwoDimensionalArray transform = TwoDimensionalArray.None)
+        public static double[,] ReadSpectrogram(FileInfo csvFile, out int binCount, TwoDimensionalArray transform = TwoDimensionalArray.None)
         {
             double[,] matrix = Csv.ReadMatrixFromCsv<double>(csvFile, transform);
             binCount = matrix.GetLength(1);
@@ -451,11 +451,6 @@ namespace AudioAnalysisTools.Indices
         }
 
         public static Dictionary<string, double[,]> ReadSpectralIndices(DirectoryInfo ipdir, string fileName, string analysisTag, string[] keys)
-        {
-            return ReadSpectralIndices(ipdir.ToDirectoryEntry(), fileName, analysisTag, keys);
-        }
-
-        public static Dictionary<string, double[,]> ReadSpectralIndices(DirectoryEntry ipdir, string fileName, string analysisTag, string[] keys)
         {
             // parallel reading of CSV files
             var readData = keys.AsParallel()

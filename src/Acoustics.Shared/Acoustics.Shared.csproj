@@ -38,7 +38,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="System.IO.Abstractions" Version="9.0.5" />
     <PackageReference Include="YamlDotNet" Version="8.1.0" />
-    <PackageReference Include="Zio" Version="0.7.6" />
   </ItemGroup>
 </Project>

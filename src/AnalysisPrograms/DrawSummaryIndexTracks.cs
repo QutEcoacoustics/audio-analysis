@@ -14,7 +14,7 @@ namespace AnalysisPrograms
     using Production.Arguments;
     using Production.Validation;
     using SixLabors.ImageSharp.PixelFormats;
-    using Zio;
+    using Acoustics.Shared.Contracts;
 
     /// <summary>
     /// 4. Produces a tracks image of column values in a csv file - one track per csv column.
@@ -79,7 +79,7 @@ namespace AnalysisPrograms
             output.CreateParentDirectories();
 
             // Find required index generation data
-            var igd = IndexGenerationData.GetIndexGenerationData(input.Directory.ToDirectoryEntry());
+            var igd = IndexGenerationData.GetIndexGenerationData(input.Directory);
 
             // Convert summary indices to image
             string fileName = input.BaseName();

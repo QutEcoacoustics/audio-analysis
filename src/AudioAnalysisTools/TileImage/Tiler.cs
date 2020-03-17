@@ -8,27 +8,27 @@ namespace AudioAnalysisTools.TileImage
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
+    using System.IO;
     using System.Linq;
     using System.Reflection;
     using Acoustics.Shared;
     using Acoustics.Shared.Contracts;
     using log4net;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
-    using Zio;
 
     public class Tiler
     {
         private const double Epsilon = 1.0 / (2.0 * TimeSpan.TicksPerSecond);
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-        private readonly DirectoryEntry output;
+        private readonly DirectoryInfo output;
         private readonly TilingProfile profile;
         private readonly Dictionary<double, HashSet<Tuple<int, int>>> superTileHistory = new Dictionary<double, HashSet<Tuple<int, int>>>();
         private readonly Dictionary<string, Tuple<bool, bool>> tileNameHistory = new Dictionary<string, Tuple<bool, bool>>();
 
         public Tiler(
-            DirectoryEntry output,
+            DirectoryInfo output,
             TilingProfile profile,
             SortedSet<double> scales,
             double unitScale,
@@ -38,7 +38,7 @@ namespace AudioAnalysisTools.TileImage
         }
 
         public Tiler(
-            DirectoryEntry output,
+            DirectoryInfo output,
             TilingProfile profile,
             double xUnitScale,
             int unitWidth,
@@ -57,7 +57,7 @@ namespace AudioAnalysisTools.TileImage
         }
 
         public Tiler(
-            DirectoryEntry output,
+            DirectoryInfo output,
             TilingProfile profile,
             SortedSet<double> xScales,
             double xUnitScale,
@@ -82,18 +82,18 @@ namespace AudioAnalysisTools.TileImage
 
         public SortedSet<Layer> CalculatedLayers { get; }
 
-        public UPath OutputDirectory => this.output.Path;
+        public string OutputDirectory => this.output.FullName;
 
         /// <summary>
         /// Gets or sets a value indicating whether images are written.
-        /// Dirty hack to short circuit Tile's functionality for unit testing
+        /// Dirty hack to short circuit Tile's functionality for unit testing.
         /// </summary>
         internal bool WriteImages { get; set; }
 
         /// <summary>
-        /// Split one large image (a super tile) into smaller tiles
+        /// Split one large image (a super tile) into smaller tiles.
         /// </summary>
-        /// <param name="superTile">The super tile to be split</param>
+        /// <param name="superTile">The super tile to be split.</param>
         public virtual void Tile(ISuperTile superTile)
         {
             this.Tile(null, superTile, null);
@@ -318,12 +318,11 @@ namespace AudioAnalysisTools.TileImage
                                 tileImage.DrawImage(current.Image, destinationRect, sourceRect);
                             }
                         }
-                    
 
                     // write tile to disk
-                    UPath outputTilePath = this.output.Path / (name + "." + MediaTypes.ExtPng);
+                    string outputTilePath = this.output.CombinePath(name + "." + MediaTypes.ExtPng);
                     Log.Debug("Saving tile: " + outputTilePath);
-                    tileImage.Save(this.output.FileSystem, outputTilePath);
+                    tileImage.Save(outputTilePath);
                 }
             }
         }

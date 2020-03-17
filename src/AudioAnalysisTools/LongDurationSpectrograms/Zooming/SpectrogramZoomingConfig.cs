@@ -15,7 +15,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.TileImage;
 
-    using Zio;
+    using Acoustics.Shared.Contracts;
 
     public class SpectrogramZoomingConfig : Config, IIndexPropertyReferenceConfiguration
     {
@@ -25,7 +25,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
                 {
                     // search
                     var indicesPropertiesConfig = Indices.IndexProperties.Find(this, this.ConfigPath);
-                    this.IndexPropertiesConfig = indicesPropertiesConfig.Path.ToOsPath();
+                    this.IndexPropertiesConfig = indicesPropertiesConfig.FullName;
 
                     // load
                     this.IndexProperties = ConfigFile.Deserialize<IndexPropertiesCollection>(this.IndexPropertiesConfig);

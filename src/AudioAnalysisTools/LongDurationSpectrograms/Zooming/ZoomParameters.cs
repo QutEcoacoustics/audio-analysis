@@ -15,15 +15,16 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
 
     using log4net;
 
-    using Zio;
+    using Acoustics.Shared.Contracts;
+    using System.IO;
 
     public class ZoomParameters
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(ZoomParameters));
 
-        public ZoomParameters(DirectoryEntry inputDirectory, FileEntry config, bool omitBasename)
+        public ZoomParameters(DirectoryInfo inputDirectory, FileInfo config, bool omitBasename)
         {
-            this.SpectrogramZoomingConfig = ConfigFile.Deserialize<SpectrogramZoomingConfig>(config.ToFileInfo());
+            this.SpectrogramZoomingConfig = ConfigFile.Deserialize<SpectrogramZoomingConfig>(config);
 
             // results of search for index properties config
             Log.Debug("Using index properties file: " + this.SpectrogramZoomingConfig.IndexPropertiesConfig);
@@ -53,10 +54,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
         /// <summary>
         /// Read in required files.
         /// We expect a valid indices output directory (the input directory in this action)
-        /// to contain a SpectralIndexStatistics.json and a IndexGenerationData.json file
+        /// to contain a SpectralIndexStatistics.json and a IndexGenerationData.json file.
         /// </summary>
-        public static (FileEntry indexGenerationDataFile, FileEntry indexDistributionsFile) CheckNeededFilesExist(
-            DirectoryEntry indicesDirectory)
+        public static (FileInfo indexGenerationDataFile, FileInfo indexDistributionsFile) CheckNeededFilesExist(
+            DirectoryInfo indicesDirectory)
         {
             // MT NOTE: This file (IndexDistributions.json) should not be compulsory requirement for this activity. At the most a warning could be
             // written to say that file not found.
@@ -66,7 +67,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
                 indexDistributionsFile: indicesDirectory.EnumerateFiles("*" + Indices.IndexDistributions.SpectralIndexStatisticsFilenameFragment + "*").SingleOrDefault());
         }
 
-        private void VerifyOriginalBasename((FileEntry indexGenerationDataFile, FileEntry indexDistributionsFile) paths)
+        private void VerifyOriginalBasename((FileInfo indexGenerationDataFile, FileInfo indexDistributionsFile) paths)
         {
             FilenameHelpers.ParseAnalysisFileName(paths.indexGenerationDataFile, out var originalBaseName, out _, out _);
 #if DEBUG

@@ -15,18 +15,18 @@ namespace AudioAnalysisTools.Indices
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.IO;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
+    using Acoustics.Shared.Contracts;
     using Acoustics.Shared.ImageSharp;
     using AnalysisBase;
     using Newtonsoft.Json;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
     using TowseyLibrary;
     using YamlDotNet.Serialization;
-    using Zio;
 
     public interface IIndexPropertyReferenceConfiguration
     {
@@ -42,7 +42,7 @@ namespace AudioAnalysisTools.Indices
             void OnLoaded(IConfig config)
             {
                 var indicesPropertiesConfig = Indices.IndexProperties.Find(this, this.ConfigPath);
-                this.IndexPropertiesConfig = indicesPropertiesConfig.Path.ToOsPath();
+                this.IndexPropertiesConfig = indicesPropertiesConfig.FullName;
                 this.IndexProperties = ConfigFile.Deserialize<IndexPropertiesCollection>(this.IndexPropertiesConfig);
             }
 
@@ -307,26 +307,26 @@ namespace AudioAnalysisTools.Indices
                 return null;
             }
 
-            return Find(configuration[AnalysisKeys.KeyIndexPropertiesConfig], originalConfigFile?.ToFileEntry(), allowDefault)?.ToFileInfo();
+            return Find(configuration[AnalysisKeys.KeyIndexPropertiesConfig], originalConfigFile, allowDefault);
         }
 
         /// <summary>
         /// Locate an IndexPropertiesConfig.yml file from the IndexPropertiesConfig key in a config file.
         /// </summary>
-        public static FileEntry Find(IIndexPropertyReferenceConfiguration configuration, string originalConfigpath, bool allowDefault = false)
+        public static FileInfo Find(IIndexPropertyReferenceConfiguration configuration, string originalConfigpath, bool allowDefault = false)
         {
             if (configuration == null)
             {
                 return null;
             }
 
-            return Find(configuration.IndexPropertiesConfig, originalConfigpath.ToFileEntry());
+            return Find(configuration.IndexPropertiesConfig, originalConfigpath.ToFileInfo());
         }
 
         /// <summary>
         /// Locate and IndexPropertiesConfig.yml file from the IndexPropertiesConfig key in a config file.
         /// </summary>
-        public static FileEntry Find(IIndexPropertyReferenceConfiguration configuration, FileEntry originalConfigFile, bool allowDefault = false)
+        public static FileInfo Find(IIndexPropertyReferenceConfiguration configuration, FileInfo originalConfigFile, bool allowDefault = false)
         {
             if (configuration == null)
             {
@@ -336,11 +336,11 @@ namespace AudioAnalysisTools.Indices
             return Find(configuration.IndexPropertiesConfig, originalConfigFile, allowDefault);
         }
 
-        public static FileEntry Find(string relativePath, FileEntry originalConfigFile, bool allowDefault = false)
+        public static FileInfo Find(string relativePath, FileInfo originalConfigFile, bool allowDefault = false)
         {
             var found = ConfigFile.TryResolve(
                 relativePath,
-                new[] { originalConfigFile.Parent },
+                new[] { originalConfigFile.Directory },
                 out var configFile);
 
             return found ? configFile : null;

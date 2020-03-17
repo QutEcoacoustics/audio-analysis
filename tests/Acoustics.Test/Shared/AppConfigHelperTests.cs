@@ -9,7 +9,7 @@ namespace Acoustics.Test.Shared
     using System.Runtime.InteropServices;
     using Acoustics.Shared;
     using Acoustics.Test.TestHelpers;
-        using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Mono.Unix;
     using static Acoustics.Shared.AppConfigHelper;
 
@@ -30,7 +30,7 @@ namespace Acoustics.Test.Shared
             var actual = ExecutingAssemblyDirectory;
 
             Assert.That.DirectoryExists(actual);
-            Assert.That.FileExists(Path.Join(actual, Meta.Name));
+            Assert.That.FileExists(Path.Join(actual, Meta.BinaryName));
         }
 
         [TestMethod]
@@ -91,30 +91,34 @@ namespace Acoustics.Test.Shared
                 Assert.Inconclusive($"Testing for RID {rid} on current build {PseudoRuntimeIdentifier} is not supported");
             }
 
-            Func<string> get = () => GetExeFile(toolName);
+            string Invoke()
+            {
+                return GetExeFile(toolName);
+            }
 
             if (expected == null)
             {
                 if (required)
                 {
                     Assert.ThrowsException<FileNotFoundException>(
-                        get,
+                        Invoke,
                         $"Could not find {toolName} in audio-utils or in the system. Please install {toolName}.");
                 }
                 else
                 {
-                    Assert.IsNull(get.Invoke());
+                    // some test environments might actually have a non-required exe installed
+                    var path = Invoke();
+                    Assert.IsTrue(path == null || File.Exists(path));
                 }
             }
             else
             {
-                var actual = get.Invoke();
+                var actual = Invoke();
 
                 Assert.IsNotNull(actual);
                 Assert.That.FileExists(actual);
                 StringAssert.EndsWith(actual, expected.NormalizeDirectorySeparators());
             }
-
         }
 
         [TestMethod]

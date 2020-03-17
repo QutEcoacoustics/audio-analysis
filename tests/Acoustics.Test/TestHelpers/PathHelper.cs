@@ -54,7 +54,7 @@ namespace Acoustics.Test.TestHelpers
             CodeBase = context.DeploymentDirectory;
             TestResources = Path.Combine(SolutionRoot, "tests", "Fixtures");
 
-            AnalysisProgramsBuild = Path.Combine(SolutionRoot, "src", "AnalysisPrograms", "bin", "Debug", "netcoreapp3.1");
+            AnalysisProgramsBuild = Path.Combine(SolutionRoot, "src", Meta.Name, "bin", "Debug", "netcoreapp3.1");
 
             testContext = context;
 
