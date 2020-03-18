@@ -84,9 +84,9 @@ namespace Acoustics.Test.TestHelpers
             }
         }
 
-        protected void AssertImagesEqual()
+        protected void AssertImagesEqual(double tolerance = 0.0)
         {
-            Assert.That.ImageMatches(this.Expected, this.Actual);
+            Assert.That.ImageMatches(this.Expected, this.Actual, tolerance);
         }
 
         protected void SaveExtraImage(string token, Image<T> image)

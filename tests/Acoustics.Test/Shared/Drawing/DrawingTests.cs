@@ -7,6 +7,7 @@ namespace Acoustics.Test.Shared.Drawing
     using Acoustics.Shared.ImageSharp;
     using Acoustics.Test.TestHelpers;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using SixLabors.Fonts;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
@@ -32,11 +33,45 @@ namespace Acoustics.Test.Shared.Drawing
         }
 
         [TestMethod]
-        public void TestDrawingWithRoboto()
+        public void TestDrawingTextWithRoboto()
         {
             this.Expected = Image.Load<Rgb24>(PathHelper.ResolveAssetPath("roboto_font_test.png"));
 
             this.Actual.Mutate(x => x.DrawTextSafe("Hello World", Drawing.GetFont(Drawing.Roboto, 18f), Color.White, new PointF(1f, 50f)));
+
+            this.AssertImagesEqual();
+        }
+
+        [TestMethod]
+        public void TestDrawingTextMissingArialFallsbackToRoboto()
+        {
+            // only some platforms don't have Arial
+            if (SystemFonts.TryFind(Drawing.Arial, out var _))
+            {
+                Assert.Inconclusive("Can't test font fallback when Arial is available");
+                return;
+            }
+
+            this.Expected = Image.Load<Rgb24>(PathHelper.ResolveAssetPath("roboto_font_test.png"));
+
+            this.Actual.Mutate(x => x.DrawTextSafe("Hello World", Drawing.GetFont(Drawing.Arial, 18f), Color.White, new PointF(1f, 50f)));
+
+            this.AssertImagesEqual();
+        }
+
+        [TestMethod]
+        public void TestDrawingTextMissingTahomaFallsbackToRoboto()
+        {
+            // only some platforms don't have Tahoma
+            if (SystemFonts.TryFind(Drawing.Tahoma, out var _))
+            {
+                Assert.Inconclusive("Can't test font fallback when Arial is available");
+                return;
+            }
+
+            this.Expected = Image.Load<Rgb24>(PathHelper.ResolveAssetPath("roboto_font_test.png"));
+
+            this.Actual.Mutate(x => x.DrawTextSafe("Hello World", Drawing.GetFont(Drawing.Tahoma, 18f), Color.White, new PointF(1f, 50f)));
 
             this.AssertImagesEqual();
         }
