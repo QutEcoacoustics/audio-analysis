@@ -150,8 +150,7 @@ namespace Acoustics.Test
             }
 
             // this should fail if not supported
-            // ReSharper disable once ObjectCreationAsStatement
-            new FileInfo(longPath);
+            _ = new FileInfo(longPath);
         }
     }
 }

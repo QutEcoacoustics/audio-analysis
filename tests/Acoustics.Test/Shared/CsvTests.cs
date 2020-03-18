@@ -17,10 +17,10 @@ namespace Acoustics.Test.Shared
     using System.Text;
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
+    using Acoustics.Test.TestHelpers;
     using CsvHelper;
     using CsvHelper.Configuration;
     using CsvHelper.TypeConversion;
-    
     using global::AnalysisBase.ResultBases;
     using global::AnalysisPrograms.EventStatistics;
     using global::AudioAnalysisTools;
@@ -28,7 +28,6 @@ namespace Acoustics.Test.Shared
     using global::AudioAnalysisTools.Indices;
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
 
     [TestClass]
     public class CsvTests
@@ -50,8 +49,8 @@ namespace Acoustics.Test.Shared
             // pump static class initializers - it seems when running multiple tests that sometimes
             // these classes are not discovered.
 
-            AcousticEvent aev = new AcousticEvent();
-            ImportedEvent iev = new ImportedEvent();
+            _ = new AcousticEvent();
+            _ = new ImportedEvent();
         }
 
         [TestInitialize]
@@ -81,7 +80,7 @@ namespace Acoustics.Test.Shared
                 new[] { 12, 13, 14, 15 },
                 new[] { 16, 17, 18, 19 });
 
-            this.AssertCsvEqual(expected, this.testFile);
+            AssertCsvEqual(expected, this.testFile);
         }
 
         [TestMethod]
@@ -95,7 +94,7 @@ namespace Acoustics.Test.Shared
                 new[] { 1, 5, 9, 13, 17 },
                 new[] { 0, 4, 8, 12, 16 });
 
-            this.AssertCsvEqual(expected, this.testFile);
+            AssertCsvEqual(expected, this.testFile);
         }
 
         [TestMethod]
@@ -109,7 +108,7 @@ namespace Acoustics.Test.Shared
                 new[] { 2, 6, 10, 14, 18 },
                 new[] { 3, 7, 11, 15, 19 });
 
-            this.AssertCsvEqual(expected, this.testFile);
+            AssertCsvEqual(expected, this.testFile);
         }
 
         [TestMethod]
@@ -123,7 +122,7 @@ namespace Acoustics.Test.Shared
                 new[] { 18, 14, 10, 6, 2 },
                 new[] { 19, 15, 11, 7, 3 });
 
-            this.AssertCsvEqual(expected, this.testFile);
+            AssertCsvEqual(expected, this.testFile);
         }
 
         [TestMethod]
@@ -206,7 +205,8 @@ namespace Acoustics.Test.Shared
             for (int i = 0; i < data.Length; i++)
             {
                 var ticks = Math.Pow(i, 10) * random.NextDouble();
-                data[i] = new CsvTestClass {
+                data[i] = new CsvTestClass
+                {
                     SomeNumber = random.Next(),
                     SomeTimeSpan = TimeSpan.FromTicks((long)ticks),
                 };
@@ -295,9 +295,13 @@ namespace Acoustics.Test.Shared
             };
 
             // test reflection is working
+            var actual = Meta.GetTypesFromQutAssemblies<ClassMap>().ToArray();
+            // Debug.WriteLine("Actual classmaps:\n" + actual.FormatList());
+            // Debug.WriteLine("Actual assemblies:\n" + Meta.QutAssemblies.Select(x => x.FullName).FormatList());
+
             CollectionAssert.AreEquivalent(
                 partialExpected.Select(x => x.Item2).ToArray(),
-                Meta.GetTypesFromQutAssemblies<ClassMap>().ToArray());
+                actual);
 
             foreach (var (type, classMapType) in partialExpected)
             {
@@ -382,7 +386,7 @@ namespace Acoustics.Test.Shared
         }
 
         /// <summary>
-        /// For some inane reason CsvHelper does not downcast to derived types!
+        /// For some inane reason CsvHelper does not downcast to derived types.
         /// </summary>
         [TestMethod]
         public void TestChildTypesAreSerializedWhenWrappedAsEnumerableParentType()
@@ -403,7 +407,7 @@ namespace Acoustics.Test.Shared
         }
 
         /// <summary>
-        /// For some inane reason CsvHelper does not downcast to derived types!
+        /// For some inane reason CsvHelper does not downcast to derived types.
         /// </summary>
         [TestMethod]
         public void TestChildTypesAreSerializedWhenWrappedAsEnumerableParentType_AcousticEvent()
@@ -424,15 +428,6 @@ namespace Acoustics.Test.Shared
             Assert.AreNotEqual(childText, baseText);
         }
 
-        public class CultureDataTester
-        {
-            public double value { get; set; }
-            public double infinity { get; set; }
-            public double nan { get; set; }
-            public DateTime date { get; set; }
-            public DateTimeOffset dateOffset { get; set; }
-        }
-
         [TestMethod]
         public void TestInvariantCultureIsUsed()
         {
@@ -441,23 +436,22 @@ namespace Acoustics.Test.Shared
 
             var o = new CultureDataTester
             {
-                value = -789123.456,
-                infinity = double.NegativeInfinity,
-                nan = double.NaN,
-                date = now,
-                dateOffset = nowOffset
+                Value = -789123.456,
+                Infinity = double.NegativeInfinity,
+                Nan = double.NaN,
+                Date = now,
+                DateOffset = nowOffset,
             };
             Csv.WriteToCsv(
                 this.testFile,
                 new CultureDataTester[] { o });
 
             var actual = File.ReadAllText(this.testFile.FullName);
-            var expected = $@"value,infinity,nan,date,dateOffset
+            var expected = $@"{nameof(CultureDataTester.Value)},{nameof(CultureDataTester.Infinity)},{nameof(CultureDataTester.Nan)},{nameof(CultureDataTester.Date)},{nameof(CultureDataTester.DateOffset)}
 -789123.456,-Infinity,NaN,3913-03-12T00:31:41.1121314,3913-03-12T00:31:41.1121314+10:00
 ".NormalizeToCrLf();
 
             Assert.AreEqual(expected, actual);
-
         }
 
         [TestMethod]
@@ -474,10 +468,9 @@ namespace Acoustics.Test.Shared
 ".NormalizeToCrLf();
 
             Assert.AreEqual(expected, actual);
-
         }
 
-        private void AssertCsvEqual(string expected, FileInfo actual)
+        private static void AssertCsvEqual(string expected, FileInfo actual)
         {
             var lines = File.ReadAllText(actual.FullName);
 
@@ -490,12 +483,14 @@ namespace Acoustics.Test.Shared
 
         private static string CsvExpectedHelper(params int[][] indexes)
         {
-            return "Index," + string.Join(",", indexes[0].Select((s, i) => "c00000" + i)) + Environment.NewLine
+            // per https://tools.ietf.org/html/rfc4180
+            const string csvNewline = "\r\n";
+            return "Index," + string.Join(",", indexes[0].Select((s, i) => "c00000" + i)) + csvNewline
                    + string.Join(
-                       Environment.NewLine,
+                       csvNewline,
                        indexes.Select(
                            (row, rowIndex) => rowIndex + row.Aggregate(string.Empty, (s, i) => s + "," + GetValue(i))))
-                   + Environment.NewLine;
+                   + csvNewline;
         }
 
         private static string GetValue(int index)
@@ -508,6 +503,19 @@ namespace Acoustics.Test.Shared
             public int SomeNumber { get; set; }
 
             public TimeSpan SomeTimeSpan { get; set; }
+        }
+
+        public class CultureDataTester
+        {
+            public double Value { get; set; }
+
+            public double Infinity { get; set; }
+
+            public double Nan { get; set; }
+
+            public DateTime Date { get; set; }
+
+            public DateTimeOffset DateOffset { get; set; }
         }
     }
 }

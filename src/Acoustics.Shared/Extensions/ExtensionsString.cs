@@ -412,7 +412,7 @@ namespace System
             return str.Split(newLines, StringSplitOptions.RemoveEmptyEntries);
         }
 
-        public static void FormatList(this IEnumerable<string> strings, StringBuilder builder)
+        public static void FormatList<T>(this IEnumerable<T> strings, StringBuilder builder)
         {
             Contract.RequiresNotNull(builder, nameof(builder));
 
@@ -422,7 +422,7 @@ namespace System
             }
         }
 
-        public static string FormatList(this IEnumerable<string> strings)
+        public static string FormatList<T>(this IEnumerable<T> strings)
         {
             var builder = new StringBuilder("\n", 1000);
 
