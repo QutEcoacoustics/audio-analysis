@@ -279,7 +279,11 @@ previously found that the AP install is corrupt. Try installing AP again.
 
             // if Michael is debugging with visual studio, this will prevent the window closing.
             Process parentProcess = ProcessExtensions.ParentProcessUtilities.GetParentProcess();
-            if (parentProcess.ProcessName == "devenv")
+            if (parentProcess == null)
+            {
+                LoggedConsole.WriteWarnLine("WARNING: Unable to detect parent process, this is a windows specific tool.");
+            }
+            else if (parentProcess.ProcessName == "devenv")
             {
                 LoggedConsole.WriteSuccessLine("FINISHED: Press RETURN key to exit.");
                 Console.ReadLine();
