@@ -4,6 +4,7 @@
 
 namespace Acoustics.Shared.ImageSharp
 {
+    using System;
     using System.IO;
     using SixLabors.Fonts;
     using SixLabors.ImageSharp;
@@ -44,14 +45,25 @@ namespace Acoustics.Shared.ImageSharp
             // noop currently
         };
 
-        private const string Tahoma = "Tahoma";
+        internal const string Tahoma = "Tahoma";
 
-        private const string Arial = "Arial";
+        internal const string Arial = "Arial";
 
         /// <summary>
         /// Fonts bundled with AP.exe.
         /// </summary>
-        private static FontCollection bundledFontCollection;
+        private static readonly Lazy<FontCollection> BundledFontCollection = new Lazy<FontCollection>(() =>
+            {
+                var collection = new FontCollection();
+                var fontDirectory = System.IO.Path.Combine(AppConfigHelper.ExecutingAssemblyDirectory, "fonts", Roboto);
+                var fonts = Directory.EnumerateFiles(fontDirectory, "*.ttf");
+                foreach (var font in fonts)
+                {
+                    collection.Install(font);
+                }
+
+                return collection;
+            });
 
         static Drawing()
         {
@@ -86,27 +98,10 @@ namespace Acoustics.Shared.ImageSharp
         /// <summary>
         /// Gets (or initializes) fonts bundled with AP.exe.
         /// </summary>
-        public static FontCollection BundledFonts
-        {
-            get
-            {
-                if (bundledFontCollection == null)
-                {
-                    bundledFontCollection = new FontCollection();
-                    var fontDirectory = System.IO.Path.Combine(AppConfigHelper.ExecutingAssemblyDirectory, "fonts", Roboto);
-                    var fonts = Directory.EnumerateFiles(fontDirectory, "*.ttf");
-                    foreach (var font in fonts)
-                    {
-                        bundledFontCollection.Install(font);
-                    }
-                }
-
-                return bundledFontCollection;
-            }
-        }
+        public static FontCollection BundledFonts => BundledFontCollection.Value;
 
         /// <summary>
-        /// Gets the requested font family or falls back to using <see cref="Roboto" />.
+        /// Gets the requested font family or falls back to using <see cref="Roboto"/>.
         /// </summary>
         /// <param name="fontFamily">The name of the font family to get.</param>
         /// <param name="size">The requested size of the returned font.</param>
@@ -128,7 +123,7 @@ namespace Acoustics.Shared.ImageSharp
             else
             {
                 // fallback case
-                return BundledFonts.CreateFont(fontFamily, size, style);
+                return BundledFonts.CreateFont(Roboto, size, style);
             }
         }
 

@@ -23,7 +23,7 @@ namespace Acoustics.Test.Shared.Drawing
 
         /// <summary>
         /// <see cref="ImageSharpExtensions.DrawTextSafe"/>.
-        /// TODO BUG: see https://github.com/SixLabors/ImageSharp.Drawing/issues/30
+        /// TODO BUG: see https://github.com/SixLabors/ImageSharp.Drawing/issues/30.
         /// </summary>
         [TestMethod]
         [TestCategory("SpecialCase")]
@@ -49,7 +49,10 @@ namespace Acoustics.Test.Shared.Drawing
             this.Expected.Mutate(
                 x => x.DrawText("016-12-10", Drawing.Arial10, Color.White, new PointF((float)(-10f + 4.741211f), 3)));
 
-            this.AssertImagesEqual();
+            // if we're on a system where Arial isn't installed, we fall back to roboto font,
+            // thus we allow a slight tolerance on the image
+            var tolerance = SystemFonts.TryFind(Drawing.Arial, out _) ? 0.0 : 1.5E-06;
+            this.AssertImagesEqual(tolerance);
         }
     }
 }
