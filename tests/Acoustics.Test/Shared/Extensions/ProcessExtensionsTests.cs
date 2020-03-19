@@ -4,6 +4,7 @@
 
 namespace Acoustics.Test.Shared.Extensions
 {
+#if DEBUG
     using Acoustics.Test.TestHelpers;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using static System.ProcessExtensions.ParentProcessUtilities;
@@ -23,4 +24,5 @@ namespace Acoustics.Test.Shared.Extensions
             Assert.IsNull(GetParentProcess());
         }
     }
+#endif
 }

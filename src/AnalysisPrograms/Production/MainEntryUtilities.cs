@@ -73,8 +73,6 @@ namespace AnalysisPrograms
             NoAction,
         }
 
-        public static bool AppConfigOverridden { get; private set; }
-
         /// <summary>
         /// Gets the default log level set by an environment variable.
         /// </summary>
@@ -100,6 +98,13 @@ namespace AnalysisPrograms
         /// Gets a value indicating whether or not the debugger should automatically attach.
         /// </summary>
         internal static bool ApAutoAttach { get; private set; }
+
+        // https://stackoverflow.com/questions/3167617/determine-if-code-is-running-as-part-of-a-unit-test
+        internal static bool IsMsTestRunningMe { get; } =
+            AppDomain
+            .CurrentDomain
+            .GetAssemblies()
+            .Any(a => a.FullName.StartsWith("Microsoft.VisualStudio.TestPlatform.TestFramework"));
 
         public static void SetLogVerbosity(LogVerbosity logVerbosity, bool quietConsole = false)
         {
@@ -279,24 +284,20 @@ previously found that the AP install is corrupt. Try installing AP again.
 
             // if Michael is debugging with visual studio, this will prevent the window closing.
             Process parentProcess = ProcessExtensions.ParentProcessUtilities.GetParentProcess();
-            if (parentProcess == null)
+            if (Debugger.IsAttached)
             {
-                LoggedConsole.WriteWarnLine("WARNING: Unable to detect parent process, this is a windows specific tool.");
-            }
-            else if (parentProcess.ProcessName == "devenv")
-            {
-                LoggedConsole.WriteSuccessLine("FINISHED: Press RETURN key to exit.");
-                Console.ReadLine();
+                if (parentProcess == null)
+                {
+                    LoggedConsole.WriteWarnLine("WARNING: Unable to detect parent process, this is a windows specific tool.");
+                }
+                else if (parentProcess?.ProcessName == "devenv")
+                {
+                    LoggedConsole.WriteSuccessLine("FINISHED: Press RETURN key to exit.");
+                    Console.ReadLine();
+                }
             }
 #endif
         }
-
-        // https://stackoverflow.com/questions/3167617/determine-if-code-is-running-as-part-of-a-unit-test
-        internal static bool IsMsTestRunningMe { get; } =
-            AppDomain
-            .CurrentDomain
-            .GetAssemblies()
-            .Any(a => a.FullName.StartsWith("Microsoft.VisualStudio.TestPlatform.TestFramework"));
 
         internal static void PrintUsage(string message, Usages usageStyle, string commandName = null)
         {
@@ -383,8 +384,6 @@ previously found that the AP install is corrupt. Try installing AP again.
         private static void PrepareForErrors()
         {
             ExitCode = ExceptionLookup.UnhandledExceptionErrorCode;
-
-            AppConfigOverridden = CheckAndUpdateApplicationConfig();
 
             if (CheckForDataAnnotations() is string message)
             {
@@ -495,7 +494,6 @@ previously found that the AP install is corrupt. Try installing AP again.
                 ProcessorCount,
                 ExecutionTime = (DateTime.Now - thisProcess.StartTime).TotalSeconds,
                 PeakWorkingSet = thisProcess.PeakWorkingSet64,
-                AppConfigOverridden,
             };
 
             var statsString = "Programs stats:\n" + Json.SerializeToString(stats, prettyPrint: true);
