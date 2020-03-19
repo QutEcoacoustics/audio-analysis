@@ -71,22 +71,30 @@ namespace Acoustics.Shared
             var lastPart = fragments.Length == 0 ? path : fragments[^1];
             var spaceAtEnd = false;
 
-            var builtUpPath = isWindows ? string.Empty : VolumeSeparatorChar.ToString();
+            var builtUpPath = string.Empty;
             var slash = DirectorySeparatorChar.ToString();
             for (int f = 0; f < fragments.Length; f++)
             {
                 var delimiter = f == 0 ? string.Empty : slash;
                 var fragment = fragments[f];
+
+                // skip checking if unix root exists
+                if (!isWindows && f == 0 && fragment == string.Empty)
+                {
+                    continue;
+                }
+
                 var testPath = builtUpPath + delimiter + fragment;
+                var endsWithSpaces = EndsWithSpaces(testPath);
 
                 if (File.Exists(testPath) || Directory.Exists(testPath))
                 {
                     // the .NET framework normalizes paths with trailing spaces by stripping
                     // the trailing spaces. It only does it in some cases though, which
-                    // means if there is a directory with a trailing space, and another 
+                    // means if there is a directory with a trailing space, and another
                     // fragment after it, the path will not resolve, which is one use case
                     // for Trace-path
-                    if (EndsWithSpaces(testPath))
+                    if (endsWithSpaces && isWindows)
                     {
                         lastPart = fragment;
                         spaceAtEnd = true;
@@ -95,12 +103,20 @@ namespace Acoustics.Shared
 
                     builtUpPath = testPath;
                 }
-                else if (EndsWithSpaces(testPath))
+                else if (EndsWithSpaces(testPath) && isWindows)
                 {
                     // sometimes though, there are actually spaces in the path!
                     // we can't detect if this case is actually real though.
 
                     builtUpPath = testPath;
+                }
+                else if (EndsWithSpaces(testPath) && !isWindows)
+                {
+                    // does not exist, but has spaces in the folder name
+                    spaceAtEnd = true;
+                    lastPart = fragment;
+
+                    break;
                 }
                 else
                 {
@@ -150,7 +166,7 @@ namespace Acoustics.Shared
             }
 
             // i.e. everything in original path that we could not match
-            var rest = path.Substring(finalTestPath.Length);
+            var rest = path.Substring(finalTestPath.Length).NormalizeDirectorySeparators();
 
             // index of last good character - and index of first bad character
             int goodIndex = finalTestPath.Length - 1;
@@ -209,9 +225,9 @@ namespace Acoustics.Shared
 
             return false;
 
-            bool EndsWithSpaces(string fragment)
+            static bool EndsWithSpaces(string fragment)
             {
-                return isWindows && fragment.Length > 0 && (fragment[^1] == ' ' || fragment.TrimEnd(' ') != fragment);
+                return fragment.Length > 0 && (fragment[^1] == ' ' || fragment.TrimEnd(' ') != fragment);
             }
         }
 

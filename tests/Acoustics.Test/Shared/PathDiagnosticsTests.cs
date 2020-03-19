@@ -105,25 +105,6 @@ Input path differs from real path with character 'z', at column {9 + AssetPathLe
             this.AssertDiff(false, exists, expected, report);
         }
 
-//        [TestMethod]
-//        public void ItDealsWithErrantSpacesInDirectoryNames()
-//        {
-//            string path = ResolveAssetPath("AFolder   ");
-
-//            var exists = PathDiagnostics.PathExistsOrDiff(path, out var report);
-
-//            var alternatives = Directory.EnumerateFileSystemEntries(ResolveAssetPath("AFolder")).ToArray();
-
-//            var expected = $@"`{path}` does not exist
-//Input path differs from real path with character ' ' (<space>), at column {8 + AssetPathLength}:
-//{MakeIndicator(8, "remove trailing spaces)")}
-//{MakeGoodBad($"AFolder", "   ")}
-//{MakeAlternatives(alternatives)}
-//";
-
-//            this.AssertDiff(false, exists, expected, report);
-//        }
-
         [TestMethod]
         public void ItDealsWithErrantSpacesInParentDirectories()
         {
@@ -136,7 +117,7 @@ Input path differs from real path with character 'z', at column {9 + AssetPathLe
             var expected = $@"`{path}` does not exist
 Input path has one or more spaces in a parent folder, starting at column {8 + AssetPathLength}:
 {MakeIndicator(8, "(remove trailing spaces)")}
-{MakeGoodBad($"AFolder", @"   \Example1\.gitkeep")}
+{MakeGoodBad($"AFolder", $"   {Slash}Example1{Slash}.gitkeep")}
 {MakeAlternatives(alternatives)}
 ";
 
@@ -169,6 +150,7 @@ Input path differs from real path with character 'e', at column {41 + AssetPathL
         [DataRow(".git")]
         [DataRow(".gi")]
         [DataRow(".g")]
+
         //[DataRow(".")] // of course that file exists
         public void ItDealsWithMissingEndCharacters(string file)
         {
