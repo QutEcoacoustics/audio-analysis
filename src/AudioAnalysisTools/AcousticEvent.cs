@@ -24,6 +24,7 @@ namespace AudioAnalysisTools
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
     using TowseyLibrary;
+    using static Acoustics.Shared.ImageSharp.Drawing;
 
     public class AcousticEvent : EventBase
     {
@@ -461,10 +462,7 @@ namespace AudioAnalysisTools
                 t2 = this.Oblong.RowBottom;
             }
 
-            // rectangle width = t2 - t1 + 1
-            // rectangle height =  y2 - y1 + 1
-            imageToReturn.Mutate(g => g.DrawRectangle(borderPen, t1, y1, t2 - t1 + 1, y2 - y1 + 1));
-
+            imageToReturn.Mutate(g => g.NoAA().DrawRectangle(borderPen, t1, y1, t2, y2));
             if (this.HitElements != null)
             {
                 foreach (var hitElement in this.HitElements)
@@ -478,8 +476,9 @@ namespace AudioAnalysisTools
             int scoreHt = (int)Math.Round(eventHeight * this.ScoreNormalised);
             imageToReturn.Mutate(g =>
             {
-                g.DrawLine(scorePen, t1, y2 - scoreHt, t1, y2);
-                g.DrawTextSafe(this.Name, Drawing.Tahoma6, Color.Black, new PointF(t1, y1 - 4));
+                g.NoAA().DrawLine(scorePen, t1, y2 - scoreHt, t1, y2 + 1);
+                //g.DrawTextSafe(this.Name, Drawing.Tahoma6, Color.Black, new PointF(t1, y1 - 5));
+                g.DrawTextSafe(this.Name, Drawing.Arial8, Color.Black, new PointF(t1, y1 - 5));
             });
         }
 
