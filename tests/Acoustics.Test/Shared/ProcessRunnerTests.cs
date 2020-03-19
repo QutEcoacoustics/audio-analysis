@@ -8,8 +8,8 @@ namespace Acoustics.Test.Shared
     using System.Linq;
     using System.Runtime.InteropServices;
     using Acoustics.Shared;
+    using Acoustics.Test.TestHelpers;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
 
     [TestClass]
     public class ProcessRunnerTests : OutputDirectoryTest
@@ -30,7 +30,48 @@ namespace Acoustics.Test.Shared
             this.RunFfprobe(0);
         }
 
-        private bool RunFfprobe(int _)
+        [TestMethod]
+        public void ProcessRunnerTimeOutDoesNotDeadlock()
+        {
+            var result = Enumerable.Range(0, 100).AsParallel().Select(this.RunFfprobeIndefinite).ToArray();
+
+            Assert.IsTrue(result.All());
+        }
+
+        [TestMethod]
+        public void ProcessRunnerTimeOutSimple()
+        {
+            this.RunFfprobeIndefinite(0);
+        }
+
+        [TestMethod]
+        public void ProcessRunnerSetsExitCode()
+        {
+            string command;
+            string argument;
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                command = @"C:\Windows\system32\cmd.exe";
+                argument = @" /C ""exit 3""";
+            }
+            else
+            {
+                command = AppConfigHelper.FindProgramInPath("bash");
+                argument = @" -c ""exit 3""";
+            }
+
+            using ProcessRunner runner = new ProcessRunner(command)
+            {
+                WaitForExitMilliseconds = 5_000,
+                WaitForExit = true,
+            };
+
+            runner.Run(argument, Environment.CurrentDirectory);
+
+            Assert.AreEqual(3, runner.ExitCode);
+        }
+
+        private bool RunFfprobe(int index)
         {
             var path = PathHelper.ResolveAssetPath(TestFile);
 
@@ -67,20 +108,6 @@ namespace Acoustics.Test.Shared
             return result;
         }
 
-        [TestMethod]
-        public void ProcessRunnerTimeOutDoesNotDeadlock()
-        {
-            var result = Enumerable.Range(0, 100).AsParallel().Select(this.RunFfprobeIndefinite).ToArray();
-
-            Assert.IsTrue(result.All());
-        }
-
-        [TestMethod]
-        public void ProcessRunnerTimeOutSimple()
-        {
-            this.RunFfprobeIndefinite(0);
-        }
-
         private bool RunFfprobeIndefinite(int index)
         {
             var path = PathHelper.ResolveAssetPath(TestFile);
@@ -101,39 +128,19 @@ namespace Acoustics.Test.Shared
                     runner.ErrorOutput.Length > 1500,
                     $"Expected stderr to at least include ffmpeg header but it was only {runner.ErrorOutput.Length} chars. Index: {index}. StdErr:\n{runner.ErrorOutput}");
 
-                // we're killing the program this the exit code should be invalid
-                Assert.AreEqual(-1, runner.ExitCode);
+                if (AppConfigHelper.IsWindows) {
+                    // we're killing the program; this exit code should be invalid
+                    Assert.AreEqual(-1, runner.ExitCode);
+                }
+                else
+                {
+                    // ffmpeg can handle unix signals on unix. It returns
+                    // 137 which means 128 (fail) + 9 (killed with SIIGKILL).
+                    Assert.AreEqual(137, runner.ExitCode);
+                }
             }
 
             return true;
-        }
-
-        [TestMethod]
-        public void ProcessRunnerSetsExitCode()
-        {
-            string command;
-            string argument;
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                command = @"C:\Windows\system32\cmd.exe";
-                argument = @" /C ""exit 3""";
-
-            }
-            else
-            {
-                command = "bash";
-                argument = @" -c ""exit 3""";
-            }
-
-            using (ProcessRunner runner = new ProcessRunner(command))
-            {
-                runner.WaitForExitMilliseconds = 5_000;
-                runner.WaitForExit = true;
-
-                runner.Run(argument, Environment.CurrentDirectory);
-
-                Assert.AreEqual(3, runner.ExitCode);
-            }
         }
     }
 }

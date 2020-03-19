@@ -227,11 +227,11 @@ namespace Acoustics.Shared
         /// Gets the path to the program.
         /// </summary>
         /// <remarks>
-        /// Copied from https://github.com/dotnet/corefx/blob/master/src/System.Diagnostics.Process/src/System/Diagnostics/Process.Unix.cs#L727
+        /// Copied from https://github.com/dotnet/corefx/blob/master/src/System.Diagnostics.Process/src/System/Diagnostics/Process.Unix.cs#L727.
         /// </remarks>
-        /// <param name="program">The program to search for</param>
+        /// <param name="program">The program to search for.</param>
         /// <returns>The path if the file is found, otherwise null.</returns>
-        private static string FindProgramInPath(string program)
+        internal static string FindProgramInPath(string program)
         {
             string pathEnvVar = Environment.GetEnvironmentVariable(IsWindows ? "Path" : "PATH");
             if (pathEnvVar != null)
