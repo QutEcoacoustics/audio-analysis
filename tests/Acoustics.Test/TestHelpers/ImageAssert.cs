@@ -70,22 +70,6 @@ namespace Acoustics.Test.TestHelpers
             }
         }
 
-        public static void ImageMatches(this Assert assert, Image<Rgb24> expectedImage, Image<Rgb24> actualImage, double tolerance = 0.0, string message = "")
-        {
-            Assert.AreEqual(expectedImage.Size(), actualImage.Size());
-
-            var expectedHistogram = ImageTools.GetColorHistogramNormalized(expectedImage);
-            var actualHistogram = ImageTools.GetColorHistogramNormalized(actualImage);
-
-            // sum the deltas
-            var delta = expectedHistogram
-                .Zip(actualHistogram, ValueTuple.Create)
-                .Select(pair => Math.Abs(pair.Item1.Value - pair.Item2.Value))
-                .Sum();
-
-            Assert.IsTrue(delta <= tolerance, $"Images are not equal - total delta {delta} is not less than tolerance {tolerance}.\n" + message);
-        }
-
         public static void ImageRegionIsRepeatedHorizontally(this Assert assert, Rectangle region, int repeats, int spacing, Image<Rgb24> actualImage, double tolerance = 0.0)
         {
             Contract.Requires(spacing >= 1);

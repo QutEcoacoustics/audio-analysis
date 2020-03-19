@@ -1,18 +1,21 @@
+// <copyright file="AbsoluteDateTimeTilerTests.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
 namespace Acoustics.Test.AudioAnalysisTools.TileImage
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
-
+    using Acoustics.Shared.Contracts;
+    using Acoustics.Test.TestHelpers;
     using global::AudioAnalysisTools.LongDurationSpectrograms;
     using global::AudioAnalysisTools.LongDurationSpectrograms.Zooming;
     using global::AudioAnalysisTools.TileImage;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
-    using TestHelpers;
-    using Acoustics.Shared.Contracts;
     using SixLabors.ImageSharp.Processing;
     using Drawing = Acoustics.Shared.ImageSharp.Drawing;
 
@@ -52,12 +55,6 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
                 new SortedSet<double>() { 1 },
                 1.0,
                 256);
-        }
-
-        [TestCleanup]
-        public void Cleanup()
-        {
-            PathHelper.DeleteTempDir(this.outputDirectory);
         }
 
         [TestMethod]
@@ -150,8 +147,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
 
                 var expectedImage = expectedImages[i];
                 var actualImage = Image.Load<Rgba32>(actualFiles[i].FullName);
-                var areEqual = TilerTests.BitmapEquals(expectedImage, actualImage);
-                Assert.IsTrue(areEqual, "Bitmaps were not equal {0}, {1}", expectedFiles[i], actualFiles[i]);
+                Assert.That.ImageMatches(expectedImages[i], actualImage, message: $"Bitmaps were not equal {expectedImages[i]}, {actualFiles[i]}");
             }
         }
 
@@ -175,8 +171,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
                     .ToArray();
 
             var producedImage = Image.Load<Rgba32>(producedFiles[23].FullName);
-            var areEqual = TilerTests.BitmapEquals((Image<Rgba32>)expectedImages[0], (Image<Rgba32>)producedImage);
-            Assert.IsTrue(areEqual, "Bitmaps were not equal {0}, {1}", expectedImages[0], producedFiles[23].Name);
+            Assert.That.ImageMatches(expectedImages[0], producedImage, message: $"Bitmaps were not equal {expectedImages[0]}, {producedFiles[23].Name}");
         }
 
         [TestMethod]
@@ -234,8 +229,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
                                 .ToArray().Length; i++)
             {
                 var producedImage = Image.Load<Rgba32>(producedFiles[i].FullName);
-                var areEqual = TilerTests.BitmapEquals(expectedImages[i], producedImage);
-                Assert.IsTrue(areEqual, "Bitmaps were not equal {0}, {1}", expectedImages[i], producedFiles[i].Name);
+                Assert.That.ImageMatches(expectedImages[i], producedImage, message: $"Bitmaps were not equal {expectedImages[i]}, {producedFiles[i].Name}");
             }
         }
     }
