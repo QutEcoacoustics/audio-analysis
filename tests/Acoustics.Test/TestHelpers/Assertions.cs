@@ -15,6 +15,12 @@ namespace Acoustics.Test.TestHelpers
 
     public static class Assertions
     {
+        public enum DiffStyle
+        {
+            Full,
+            Minimal,
+        }
+
         [DebuggerHidden]
         public static void AreEqual(this Assert assert, long expected, long actual, long delta, string message = null)
         {
@@ -282,12 +288,6 @@ namespace Acoustics.Test.TestHelpers
                 $"String\n{value}\n should not contain `{substring}`. {message}");
         }
 
-        public enum DiffStyle
-        {
-            Full,
-            Minimal,
-        }
-
         public static void StringEqualWithDiff(this Assert assert, string expectedValue, string actualValue)
         {
             ShouldEqualWithDiff(actualValue, expectedValue, DiffStyle.Full, Console.Out);
@@ -306,6 +306,25 @@ namespace Acoustics.Test.TestHelpers
         public static void ShouldEqualWithDiff(this string actualValue, string expectedValue, DiffStyle diffStyle)
         {
             ShouldEqualWithDiff(actualValue, expectedValue, diffStyle, Console.Out);
+        }
+
+        public static void DoesNotThrow<T>(Action expressionUnderTest, string exceptionMessage = "Expected exception was thrown by target of invocation.")
+        where T : Exception
+        {
+            try
+            {
+                expressionUnderTest();
+            }
+            catch (T)
+            {
+                Assert.Fail(exceptionMessage);
+            }
+            catch (Exception)
+            {
+                Assert.IsTrue(true);
+            }
+
+            Assert.IsTrue(true);
         }
 
         public static void ShouldEqualWithDiff(this string actualValue, string expectedValue, DiffStyle diffStyle, TextWriter output)
