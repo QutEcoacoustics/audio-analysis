@@ -108,23 +108,21 @@ namespace Acoustics.Test.AudioAnalysisTools.EventStatistics
                 ev.DrawEvent(substituteSonogram, framesPerSecond, freqBinWidth, height);
             }
 
-            var redPixel1 = new Argb32(110, 10, 30);
-            var expectedRed1 = new Color(redPixel1);
-            var redPixel2 = new Argb32(124, 11, 34);
-            var expectedRed2 = new Color(redPixel2);
-            var greenPixel = new Argb32(55, 133, 15);
+            substituteSonogram.Save("C:\\temp\\image.png");
+
+            var redPixel = new Argb32(220, 20, 60);
+            var expectedRed = new Color(redPixel);
+            var greenPixel = new Argb32(0, 255, 0);
             var expectedGreen = new Color(greenPixel);
 
-            //var actualColor = substituteSonogram[0, height - 1];
-            Assert.AreEqual<Color>(expectedRed1, substituteSonogram[61, 119]);
-            Assert.AreEqual<Color>(expectedRed1, substituteSonogram[70, 122]);
-            Assert.AreEqual<Color>(expectedRed1, substituteSonogram[91, 181]);
-            Assert.AreEqual<Color>(expectedRed2, substituteSonogram[36, 233]);
-            Assert.AreEqual<Color>(expectedRed1, substituteSonogram[56, 69]);
+            Assert.AreEqual<Color>(expectedRed, substituteSonogram[60, 119]);
+            Assert.AreEqual<Color>(expectedRed, substituteSonogram[70, 122]);
+            Assert.AreEqual<Color>(expectedRed, substituteSonogram[90, 181]);
+            Assert.AreEqual<Color>(expectedRed, substituteSonogram[36, 232]);
+            Assert.AreEqual<Color>(expectedRed, substituteSonogram[56, 69]);
 
-            //actualColor = substituteSonogram[9, 72];
-            Assert.AreEqual<Color>(expectedGreen, substituteSonogram[9, 72]);
-            Assert.AreEqual<Color>(expectedGreen, substituteSonogram[69, 217]);
+            Assert.AreEqual<Color>(expectedGreen, substituteSonogram[10, 72]);
+            Assert.AreEqual<Color>(expectedGreen, substituteSonogram[70, 217]);
         }
     }
 }
