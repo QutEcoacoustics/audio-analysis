@@ -14,6 +14,13 @@ namespace Acoustics.Test.TestHelpers
     /// </summary>
     public class PlatformSpecificTestMethod : TestMethodAttribute
     {
+        public const string Windows = "WINDOWS";
+        public const string NotWindows = "!WINDOWS";
+        public const string OSX = "OSX";
+        public const string NotOSX = "!OSX";
+        public const string Linux = "LINUX";
+        public const string NotLinux = "!LINUX";
+
         /// <summary>
         /// Initializes a new instance of the <see cref="PlatformSpecificTestMethod"/> class.
         /// </summary>

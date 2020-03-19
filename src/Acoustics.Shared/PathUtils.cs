@@ -49,7 +49,7 @@ namespace Acoustics.Shared
         /// modification.
         /// </remarks>
         /// <param name="path">The path to convert.</param>
-        /// <exception cref="FileNotFoundException">If the requested file does not exist</exception>
+        /// <exception cref="FileNotFoundException">If the requested file does not exist.</exception>
         /// <returns>An 8.3 filename extracted from kernel32.dll.</returns>
         public static string GetShortFilename(string path)
         {
