@@ -7,8 +7,9 @@ namespace Acoustics.Test.Shared
     using System;
     using System.IO;
     using Acoustics.Shared;
+    using Acoustics.Test.TestHelpers;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
+    using static Acoustics.Test.TestHelpers.PlatformSpecificTestMethod;
 
     [TestClass]
     public class PathUtilsTests : OutputDirectoryTest
@@ -25,30 +26,15 @@ namespace Acoustics.Test.Shared
             Assert.IsFalse(PathUtils.HasUnicodeOrUnsafeChars(path));
         }
 
-        [TestMethod]
-        public void CanGetShortFileNames()
+        [PlatformSpecificTestMethod(Windows)]
+        public void CanGetShortFileNamesWindows()
         {
-
             var path = this.TestOutputDirectory.CombineFile("bad folder", "REC_C_20180616_145526😂.wav").Touch();
 
             var actual = PathUtils.GetShortFilename(path.FullName);
-            string[] expected;
-            if (AppConfigHelper.IsWindows)
-            {
-                expected = new[]
-                {
-                   this.TestOutputDirectory.Root.Name, "BADFOL~1", "REC_C_~1.WAV",
-                };
-            }
-            else if (AppConfigHelper.IsLinux || AppConfigHelper.IsMacOsX)
-            {
-                expected = string.Copy(actual).AsArray();
-            }
-            else
-            {
-                throw new InvalidOperationException();
-            }
 
+            // make sure each segment of the path is what we expect
+            string[] expected = new[] { this.TestOutputDirectory.Root.Name, "BADFOL~1", "REC_C_~1.WAV" };
             foreach (var fragment in expected)
             {
                 StringAssert.Contains(actual, fragment);
@@ -58,7 +44,21 @@ namespace Acoustics.Test.Shared
             Assert.IsFalse(PathUtils.HasUnicodeOrUnsafeChars(actual));
         }
 
-        [TestMethod]
+        [PlatformSpecificTestMethod(NotWindows)]
+        public void CanGetShortFileNamesOther()
+        {
+            var path = this.TestOutputDirectory.CombineFile("bad folder", "REC_C_20180616_145526😂.wav").Touch();
+
+            var actual = PathUtils.GetShortFilename(path.FullName);
+
+            Assert.That.FileExists(actual);
+
+            // path should be unchanged
+            Assert.IsTrue(PathUtils.HasUnicodeOrUnsafeChars(actual));
+            Assert.That.StringEqualWithDiff(path.FullName, actual);
+        }
+
+        [PlatformSpecificTestMethod(Windows)]
         public void ShortFilenameValidatesFileExistence()
         {
             Assert.ThrowsException<FileNotFoundException>(

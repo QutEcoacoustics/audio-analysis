@@ -20,6 +20,8 @@ namespace Acoustics.Shared
 
         public const string Name = "AnalysisPrograms.exe";
 
+        public const string ProjectName = "AnalysisPrograms";
+
         public static readonly int NowYear = DateTime.Now.Year;
 
         private static Assembly[] ourAssemblies;
@@ -38,7 +40,8 @@ namespace Acoustics.Shared
         {
             get
             {
-                if (ourAssemblies == null) {
+                if (ourAssemblies == null)
+                {
                     // warning: there are subtle runtime races that change which assemblies are
                     // currently loaded when this code runs. Caching it once with static
                     // intializer results in us returning only some of the assemblies
