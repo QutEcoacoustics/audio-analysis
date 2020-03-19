@@ -420,11 +420,6 @@ namespace AudioAnalysisTools.Indices
         /// and the first column contains row/time names.
         /// Note: no rotation of data is done!.
         /// </summary>
-        public static double[,] ReadSpectrogram(FileInfo csvFile, out int binCount)
-        {
-            return ReadSpectrogram(csvFile, out binCount);
-        }
-
         public static double[,] ReadSpectrogram(FileInfo csvFile, out int binCount, TwoDimensionalArray transform = TwoDimensionalArray.None)
         {
             double[,] matrix = Csv.ReadMatrixFromCsv<double>(csvFile, transform);
