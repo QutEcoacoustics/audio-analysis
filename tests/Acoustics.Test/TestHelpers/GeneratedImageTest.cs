@@ -47,7 +47,7 @@ namespace Acoustics.Test.TestHelpers
         /// <summary>
         /// Gets or sets extra string tokens to insert into saved imaged file names.
         /// MSTest does not support getting any information about data rows
-        /// or dynamic data tests at runtime :-/
+        /// or dynamic data tests at runtime :-/.
         /// </summary>
         protected string ExtraName { get; set; }
 
