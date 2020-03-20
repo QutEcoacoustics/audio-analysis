@@ -19,6 +19,22 @@ namespace Acoustics.Shared
     /// </summary>
     public static class PathDiagnostics
     {
+        /// <summary>
+        /// Checks if a path exists. If it does not it generates a report detailing
+        /// what aspects of the path do exist and suggests possible alternatives.
+        /// </summary>
+        /// <param name="path">The path to check.</param>
+        /// <param name="report">
+        /// A report that details errors found in the path if the <paramref name="path"/> does not exist.
+        /// </param>
+        /// <param name="root">
+        /// An optional root to apply to a relative path.
+        /// Defaults to <see cref="Environment.CurrentDirectory"/> is <paramref name="root"/> is null.
+        /// </param>
+        /// <returns>True if the path exists.</returns>
+        /// <exception cref="ArgumentException">
+        /// If the supplied <paramref name="root"/> is not itself rooted.
+        /// </exception>
         public static bool PathExistsOrDiff(string path, out PathDiffReport report, string root = null)
         {
             report = new PathDiffReport();
@@ -126,7 +142,7 @@ namespace Acoustics.Shared
             }
 
             var finalTestPath = builtUpPath;
-            string lastFragment = string.Empty;
+            string lastFragment;
             if (spaceAtEnd)
             {
                 lastFragment = lastPart.TrimEnd(' ');
@@ -231,10 +247,19 @@ namespace Acoustics.Shared
             }
         }
 
+        /// <summary>
+        /// A report on a path.
+        /// </summary>
         public class PathDiffReport
         {
-            public StringBuilder Messages { get; set; } = new StringBuilder(1000);
+            /// <summary>
+            /// Gets the messages the comprise the diff report.
+            /// </summary>
+            public StringBuilder Messages { get; } = new StringBuilder(1000);
 
+            /// <summary>
+            /// Gets or sets a file system info of the path in question.
+            /// </summary>
             public FileSystemInfo Found { get; set; }
         }
     }

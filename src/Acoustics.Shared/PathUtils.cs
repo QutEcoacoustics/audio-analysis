@@ -102,7 +102,6 @@ namespace Acoustics.Shared
             string path,
             [MarshalAs(UnmanagedType.LPTStr)]
             StringBuilder shortPath,
-            uint shortPathLength
-        );
+            uint shortPathLength);
     }
 }
