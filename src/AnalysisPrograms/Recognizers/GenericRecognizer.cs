@@ -325,18 +325,9 @@ namespace AnalysisPrograms.Recognizers
         /// </summary>
         static void SaveDebugSpectrogram(RecognizerResults results, Config genericConfig, DirectoryInfo outputDirectory, string baseName)
         {
-            //var image1 = results.Sonogram.GetImage(false, true, false);
-            //image1.Save(Path.Combine("C:\\temp\\test1.profile.png"));
-
-            //var image2 = results.Sonogram.GetImageFullyAnnotated("Test");
-            //image2.Save(Path.Combine("C:\\temp\\test2.profile.png"));
-
             var image3 = SpectrogramTools.GetSonogramPlusCharts(results.Sonogram, results.Events, results.Plots, null);
 
-            //image3.Save(Path.Combine(outputDirectory.FullName, baseName + ".profile.png"));
-            //image3.Save(Path.Combine("C:\\temp", baseName + ".profile.png"));
-
-            //sonogram.GetImageFullyAnnotated("test").Save("C:\\temp\\test.png");
+            image3.Save(Path.Combine(outputDirectory.FullName, baseName + ".profile.png"));
         }
 
         /// <inheritdoc cref="RecognizerConfig"/> />
