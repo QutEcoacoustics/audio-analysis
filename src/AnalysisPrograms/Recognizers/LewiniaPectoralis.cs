@@ -193,16 +193,6 @@ namespace AnalysisPrograms.Recognizers
                     prunedEvents.Add(ae);
                 }
 
-                /*
-                // do a recognizer TEST. DELETE ONE DAY!
-                if (false)
-                {
-                    var testDir = new DirectoryInfo(outputDirectory.Parent.Parent.FullName);
-                    TestTools.RecognizerScoresTest(recording.BaseName, testDir, recognizerConfig.AnalysisName, scoreArray);
-                    AcousticEvent.TestToCompareEvents(recording.BaseName, testDir, recognizerConfig.AnalysisName, predictedEvents);
-                }
-                */
-
                 // increase very low scores
                 for (int j = 0; j < scoreArray.Length; j++)
                 {

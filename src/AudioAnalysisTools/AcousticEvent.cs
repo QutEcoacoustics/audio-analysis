@@ -71,33 +71,41 @@ namespace AudioAnalysisTools
 
         /// <summary>
         /// Gets the time offset from start of current segment to start of event in seconds.
-        /// NOTE: AcousticEvents do not have a notion of time offset wrt start of recording ; - only to start of current recording segment.
-        /// Proxied to EventBase.EventStartSeconds.
+        ///  Proxied to EventBase.EventStartSeconds.
         /// </summary>
         /// <remarks>
+        /// <para>
+        /// NOTE: <see cref="TimeStart"/> is relative to the start of a segment. This notion is obsolete!
+        /// Events must always be stored relative to start of the recording.
+        /// </para>
         /// Note: converted to private setter so we can control how this is set. Recommend using <see cref="SetEventPositionRelative"/>
         /// after event instantiation to modify bounds.
         /// </remarks>
+        [Obsolete("Bounds relative to the segment are inconsistent with our rules for always measuring from the start of the recording.")]
         public double TimeStart { get; private set; }
 
         /// <summary>
         /// Gets the time offset (in seconds) from start of current segment to end of the event.
-        /// Written into the csv file under column "EventEndSeconds"
         /// This field is NOT in EventBase. EventBase only requires TimeStart because it is designed to also accomodate points.
         /// </summary>
         /// <remarks>
+        /// <para>
+        /// NOTE: <see cref="TimeStart"/> is relative to the start of a segment. This notion is obsolete!
+        /// Events must always be stored relative to start of the recording.
+        /// </para>
         /// Note: converted to private setter so we can control how this is set.
         /// Recommend using <see cref="SetEventPositionRelative"/> after event instantiation to modify bounds.
         /// </remarks>
+        [Obsolete("Bounds relative to the segment are inconsistent with our rules for always measuring from the start of the recording.")]
         public double TimeEnd { get; private set; }
 
         /// <summary>
-        /// Gets the end time of an event WRT the recording/file start.
+        /// Gets the end time of an event relative to the recording start.
         /// </summary>
         public double EventEndSeconds => this.TimeEnd + this.SegmentStartSeconds;
 
         /// <summary>
-        /// Gets the start time of an event WRT the recording/file start.
+        /// Gets the start time of an event relative to the recording start.
         /// </summary>
         public override double EventStartSeconds => this.TimeStart + this.SegmentStartSeconds;
 
@@ -172,13 +180,14 @@ namespace AudioAnalysisTools
 
         /// <summary> Gets or sets second score if required.
         /// </summary>
+        [Obsolete("We should use another type of Event class to represent this concept")]
         public double Score2 { get; set; }
 
-        /// <summary>
-        /// Gets or sets a list of points that can be used to identifies features in spectrogram relative to the Event.
-        /// i.e. Points can be outside of events and can have negative values.
-        /// Point location is relative to the top left corner of the event.
-        /// </summary>
+        ///// <summary>
+        ///// Gets or sets a list of points that can be used to identifies features in spectrogram relative to the Event.
+        ///// i.e. Points can be outside of events and can have negative values.
+        ///// Point location is relative to the top left corner of the event.
+        ///// </summary>
         //public List<Point> Points { get; set; }
 
         /// <summary>
@@ -222,8 +231,8 @@ namespace AudioAnalysisTools
         /// Initializes a new instance of the <see cref="AcousticEvent"/> class.
         /// This constructor requires the minimum information to establish the temporal and frequency bounds of an acoustic event.
         /// </summary>
-        /// <param name="segmentStartWrtRecording">The start of the current segment with respect to start of recording/file.</param>
-        /// <param name="startTime">event start with respect to start of segment.</param>
+        /// <param name="segmentStartOffset">The start of the current segment relative to start of recording.</param>
+        /// <param name="eventStartSegmentRelative">event start with respect to start of segment.</param>
         /// <param name="eventDuration">event end with respect to start of segment.</param>
         /// <param name="minFreq">Lower frequency bound of event.</param>
         /// <param name="maxFreq">Upper frequency bound of event.</param>
@@ -653,43 +662,6 @@ namespace AudioAnalysisTools
         */
 
         //#################################################################################################################
-        //METHOD TO WRITE ACOUSTIC EVETNS TO FILE
-
-        /// <summary>
-        /// Writes acousitc event data to an excel spread sheet.
-        /// </summary>
-        public static StringBuilder WriteEvents(List<AcousticEvent> eventList, string str)
-        {
-            StringBuilder sb = new StringBuilder();
-            if (eventList.Count == 0)
-            {
-                string line = string.Format(
-                    str + "\t{0}\t{1,8:f3}\t{2,8:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}", "NoEvent", 0.000, 0.000, "N/A", "N/A", 0.000, 0.000, "N/A");
-                sb.AppendLine(line);
-            }
-            else
-            {
-                foreach (AcousticEvent ae in eventList)
-                {
-                    string line = string.Format(
-                        str + "\t{0}\t{1,8:f3}\t{2,8:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}",
-                        ae.Name,
-                        ae.TimeStart,
-                        ae.TimeEnd,
-                        ae.LowFrequencyHertz,
-                        ae.HighFrequencyHertz,
-                        ae.Score,
-                        ae.Score2,
-                        ae.FileName);
-
-                    sb.AppendLine(line);
-                }
-            }
-
-            return sb;
-        }
-
-        //#################################################################################################################
         //METHODS FOR SEGMENTATION OF A FREQ BAND BASED ON ACOUSTIC ENERGY
 
         /// <summary>
@@ -737,7 +709,7 @@ namespace AudioAnalysisTools
         /// Noise reduction is done first.
         /// </summary>
         /// <param name="sonogram">the full spectrogram.</param>
-        /// <param name="segmentStartOffset">Start of current segment wrt recording start.</param>
+        /// <param name="segmentStartOffset">Start of current segment relative to the recording start.</param>
         /// <param name="minHz">Bottom of the required frequency band.</param>
         /// <param name="maxHz">Top of the required frequency band.</param>
         /// <param name="smoothWindow">To smooth the amplitude array.</param>
@@ -1239,7 +1211,7 @@ namespace AudioAnalysisTools
         /// <param name="scoreThreshold">threshold.</param>
         /// <param name="minDuration">duration of event must exceed this to count as an event.</param>
         /// <param name="maxDuration">duration of event must be less than this to count as an event.</param>
-        /// <param name="segmentStartWrtRecording">offset.</param>
+        /// <param name="segmentStart">offset.</param>
         /// <returns>a list of acoustic events.</returns>
         public static List<AcousticEvent> ConvertScoreArray2Events(
             double[] scores,
@@ -1250,14 +1222,14 @@ namespace AudioAnalysisTools
             double scoreThreshold,
             double minDuration,
             double maxDuration,
-            TimeSpan segmentStartWrtRecording)
+            TimeSpan segmentStart)
         {
             int count = scores.Length;
             var events = new List<AcousticEvent>();
             double maxPossibleScore = 5 * scoreThreshold; // used to calculate a normalised score between 0 - 1.0
             bool isHit = false;
             double frameOffset = 1 / framesPerSec;
-            double startTimeWrtSegment = 0.0; // units = seconds
+            double startTimeInSegment = 0.0; // units = seconds
             int startFrame = 0;
 
             // pass over all frames
@@ -1267,7 +1239,7 @@ namespace AudioAnalysisTools
                 {
                     //start of an event
                     isHit = true;
-                    startTimeWrtSegment = i * frameOffset;
+                    startTimeInSegment = i * frameOffset;
                     startFrame = i;
                 }
                 else // check for the end of an event
@@ -1276,7 +1248,7 @@ namespace AudioAnalysisTools
                     // this is end of an event, so initialise it
                     isHit = false;
                     double endTime = i * frameOffset;
-                    double duration = endTime - startTimeWrtSegment;
+                    double duration = endTime - startTimeInSegment;
 
                     // if (duration < minDuration) continue; //skip events with duration shorter than threshold
                     if (duration < minDuration || duration > maxDuration)
@@ -1295,7 +1267,7 @@ namespace AudioAnalysisTools
                     av /= i - startFrame + 1;
 
                     // Initialize the event.
-                    AcousticEvent ev = new AcousticEvent(segmentStartWrtRecording, startTimeWrtSegment, duration, minHz, maxHz);
+                    AcousticEvent ev = new AcousticEvent(segmentStart, startTimeInSegment, duration, minHz, maxHz);
                     ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
                     ev.Score = av;
 

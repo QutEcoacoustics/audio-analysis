@@ -61,7 +61,11 @@ namespace AnalysisBase.ResultBases
         public virtual double? LowFrequencyHertz { get; protected set; }
 
         /// <summary>
-        /// Sets both the Segment start and the Event start wrt to recording.
+        /// Sets both the Segment start and the Event start.
+        /// <paramref name="segmentStart"/> is measured relative to the start of the recording.
+        /// <paramref name="eventStartSegmentRelative"/> is measured relative to the start of the segment.
+        /// This method sets both <see cref="SegmentStartSeconds"/> and <see cref="EventStartSeconds"/> which
+        /// are both measured relative to the start of the recording.
         /// </summary>
         protected void SetEventStartRelative(TimeSpan segmentStart, double eventStartSegmentRelative)
         {

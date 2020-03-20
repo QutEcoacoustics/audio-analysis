@@ -1,8 +1,8 @@
-// <copyright file="EventTests.cs" company="QutEcoacoustics">
+// <copyright file="AcousticEventTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
-namespace Acoustics.Test.AudioAnalysisTools.EventStatistics
+namespace Acoustics.Test.AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
@@ -14,7 +14,7 @@ namespace Acoustics.Test.AudioAnalysisTools.EventStatistics
     using SixLabors.ImageSharp.PixelFormats;
 
     [TestClass]
-    public class EventTests : GeneratedImageTest<Rgb24>
+    public class AcousticEventTests : GeneratedImageTest<Rgb24>
     {
         [TestMethod]
         public void TestEventMerging()
