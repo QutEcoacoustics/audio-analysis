@@ -477,8 +477,7 @@ namespace AudioAnalysisTools
             imageToReturn.Mutate(g =>
             {
                 g.NoAA().DrawLine(scorePen, t1, y2 - scoreHt, t1, y2 + 1);
-                //g.DrawTextSafe(this.Name, Drawing.Tahoma6, Color.Black, new PointF(t1, y1 - 5));
-                g.DrawTextSafe(this.Name, Drawing.Arial8, Color.Black, new PointF(t1, y1 - 5));
+                g.DrawTextSafe(this.Name, Drawing.Tahoma6, Color.Black, new PointF(t1, y1 - 4));
             });
         }
 

@@ -6,13 +6,14 @@ namespace Acoustics.Test.AudioAnalysisTools.EventStatistics
 {
     using System;
     using System.Collections.Generic;
+    using Acoustics.Test.TestHelpers;
     using global::AudioAnalysisTools;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
 
     [TestClass]
-    public class EventTests
+    public class EventTests : GeneratedImageTest<Rgb24>
     {
         [TestMethod]
         public void TestEventMerging()
@@ -103,26 +104,28 @@ namespace Acoustics.Test.AudioAnalysisTools.EventStatistics
             // set colour for the events
             foreach (AcousticEvent ev in events)
             {
+                // do not set an event name because text is not drawing anit-aliased at present time.
+                ev.Name = string.Empty;
                 ev.BorderColour = AcousticEvent.DefaultBorderColor;
                 ev.ScoreColour = AcousticEvent.DefaultScoreColor;
                 ev.DrawEvent(substituteSonogram, framesPerSecond, freqBinWidth, height);
             }
 
-            substituteSonogram.Save("C:\\temp\\image.png");
+            substituteSonogram.Save("C:\\temp\\EventTests_SuperimposeEventsOnImage.png");
 
-            var redPixel = new Argb32(220, 20, 60);
-            var expectedRed = new Color(redPixel);
-            var greenPixel = new Argb32(0, 255, 0);
-            var expectedGreen = new Color(greenPixel);
+            this.Actual = substituteSonogram;
+            /*
+            var pattern = @"
+⬇150
+E100R50
+48×E100RE48R
+E100R50
+";
+            this.Expected = TestImage.Create(width: 100, height: 100, Color.Black, pattern);
+            */
 
-            Assert.AreEqual<Color>(expectedRed, substituteSonogram[60, 119]);
-            Assert.AreEqual<Color>(expectedRed, substituteSonogram[70, 122]);
-            Assert.AreEqual<Color>(expectedRed, substituteSonogram[90, 181]);
-            Assert.AreEqual<Color>(expectedRed, substituteSonogram[36, 232]);
-            Assert.AreEqual<Color>(expectedRed, substituteSonogram[56, 69]);
-
-            Assert.AreEqual<Color>(expectedGreen, substituteSonogram[10, 72]);
-            Assert.AreEqual<Color>(expectedGreen, substituteSonogram[70, 217]);
+            this.Expected = Image.Load<Rgb24>(PathHelper.ResolveAssetPath("EventTests_SuperimposeEventsOnImage.png"));
+            this.AssertImagesEqual();
         }
     }
 }
