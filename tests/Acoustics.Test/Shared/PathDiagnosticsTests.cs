@@ -9,9 +9,11 @@ namespace Acoustics.Test.Shared
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
+    using System.Runtime.InteropServices;
     using Acoustics.Shared;
     using Acoustics.Test.TestHelpers;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Microsoft.Win32.SafeHandles;
     using static Acoustics.Test.TestHelpers.PathHelper;
 
     [TestClass]
@@ -43,7 +45,7 @@ namespace Acoustics.Test.Shared
 
             var expected = "Supplied path was null or empty\n";
 
-            this.AssertDiff(false, exists, expected, report);
+            AssertDiff(false, exists, expected, report);
         }
 
         [TestMethod]
@@ -54,7 +56,7 @@ namespace Acoustics.Test.Shared
 
             var expected = string.Empty;
 
-            this.AssertDiff(true, exists, expected, report);
+            AssertDiff(true, exists, expected, report);
         }
 
         [PlatformSpecificTestMethod("Windows")]
@@ -66,7 +68,7 @@ namespace Acoustics.Test.Shared
 
             var expected = string.Empty;
 
-            this.AssertDiff(true, exists, expected, report);
+            AssertDiff(true, exists, expected, report);
         }
 
         [TestMethod]
@@ -83,7 +85,7 @@ Input path differs from real path with character 'r', at column {6 + AssetPathLe
 {MakeAlternatives(ResolveAssetPath("FSharp"))}
 ";
 
-            this.AssertDiff(false, exists, expected, report);
+            AssertDiff(false, exists, expected, report);
         }
 
         [TestMethod]
@@ -102,7 +104,7 @@ Input path differs from real path with character 'z', at column {9 + AssetPathLe
 {MakeAlternatives(alternatives)}
 ";
 
-            this.AssertDiff(false, exists, expected, report);
+            AssertDiff(false, exists, expected, report);
         }
 
         [TestMethod]
@@ -121,26 +123,32 @@ Input path has one or more spaces in a parent folder, starting at column {8 + As
 {MakeAlternatives(alternatives)}
 ";
 
-            this.AssertDiff(false, exists, expected, report);
+            AssertDiff(false, exists, expected, report);
         }
 
         [TestMethod]
         public void ItDealsWithActualSpacesInParentDirectories()
         {
-            string path = ResolveAssetPath("AFolder", "Example2", "Evil folder3   ", ".gitkeeep");
+            // arrange
+            string badDirectory = ResolveAssetPath("AFolder", "Example2", "Evil folder3   ");
+            MakeIllegalDirectoryWithFileInside(badDirectory, ".gitkeep");
 
-            var exists = PathDiagnostics.PathExistsOrDiff(path, out var report);
+            string badPath = ResolveAssetPath("AFolder", "Example2", "Evil folder3   ", ".gitkeeep");
 
+            // act
+            var exists = PathDiagnostics.PathExistsOrDiff(badPath, out var report);
+
+            // assert
             var alternatives = ResolveAssetPath("AFolder", "Example2", "Evil folder3   ", ".gitkeep");
 
-            var expected = $@"`{path}` does not exist
+            var expected = $@"`{badPath}` does not exist
 Input path differs from real path with character 'e', at column {41 + AssetPathLength}:
 {MakeIndicator(41)}
 {MakeGoodBad($"AFolder{Slash}Example2{Slash}Evil folder3   {Slash}.gitkee", "ep")}
 {MakeAlternatives(alternatives)}
 ";
 
-            this.AssertDiff(false, exists, expected, report);
+            AssertDiff(false, exists, expected, report);
         }
 
         [TestMethod]
@@ -168,7 +176,7 @@ Input path exists wholly until its end (column {testFragment.Length + AssetPathL
 {MakeAlternatives(alternatives)}
 ";
 
-            this.AssertDiff(false, exists, expected, report);
+            AssertDiff(false, exists, expected, report);
         }
 
         [TestMethod]
@@ -198,7 +206,7 @@ Input path exists wholly until its end (column {testFragment.Length + AssetPathL
 {MakeAlternatives(alternatives)}
 ";
 
-            this.AssertDiff(false, exists, expected, report);
+            AssertDiff(false, exists, expected, report);
         }
 
         private static string MakeIndicator(int index, string suffix = "")
@@ -217,7 +225,53 @@ Input path exists wholly until its end (column {testFragment.Length + AssetPathL
             return "Here are some alternatives:\n" + alternatives.Select(x => $"\t- {x}").Join("\n");
         }
 
-        private void AssertDiff(bool expectedExists, bool actualExists, string expected, PathDiagnostics.PathDiffReport report)
+        /// <summary>
+        /// Creates a directory with illegal characters in it on Windows.
+        /// On non-Windows platforms this is equivalent to <see cref="Directory.CreateDirectory"/>.
+        /// </summary>
+        /// <param name="path">The directory to create.</param>
+        /// <param name="child">The name of a file to touch inside the directory.</param>
+        private static void MakeIllegalDirectoryWithFileInside(string path, string child)
+        {
+            if (AppConfigHelper.IsWindows)
+            {
+                var directory = @"\\?\" + path;
+                CreateDirectory(directory, IntPtr.Zero);
+                SafeFileHandle handle = CreateFileW(
+                    directory + Path.DirectorySeparatorChar + child,
+                    FileAccess.Write,
+                    FileShare.ReadWrite,
+                    IntPtr.Zero,
+                    FileMode.OpenOrCreate,
+                    FileAttributes.Normal,
+                    IntPtr.Zero);
+                handle.Close();
+            }
+            else
+            {
+                Directory.CreateDirectory(path);
+                File.Create(path + Path.DirectorySeparatorChar + child).Dispose();
+            }
+        }
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern bool CreateDirectory(string lpPathName, IntPtr lpSecurityAttributes);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        private static extern SafeFileHandle CreateFileW(
+            [MarshalAs(UnmanagedType.LPWStr)] string filename,
+            [MarshalAs(UnmanagedType.U4)] FileAccess access,
+            [MarshalAs(UnmanagedType.U4)] FileShare share,
+            IntPtr securityAttributes,
+            [MarshalAs(UnmanagedType.U4)] FileMode creationDisposition,
+            [MarshalAs(UnmanagedType.U4)] FileAttributes flagsAndAttributes,
+            IntPtr templateFile);
+
+        private static void AssertDiff(
+            bool expectedExists,
+            bool actualExists,
+            string expected,
+            PathDiagnostics.PathDiffReport report)
         {
             Assert.AreEqual(expectedExists, actualExists);
 
