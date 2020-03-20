@@ -6,6 +6,7 @@ namespace Acoustics.Test.AudioAnalysisTools.EventStatistics
 {
     using System;
     using System.Collections.Generic;
+    using Acoustics.Shared.ImageSharp;
     using Acoustics.Test.TestHelpers;
     using global::AudioAnalysisTools;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -71,12 +72,7 @@ namespace Acoustics.Test.AudioAnalysisTools.EventStatistics
         public void TestSonogramWithEventsOverlay()
         {
             // make a substitute sonogram image
-            int width = 100;
-            int height = 256;
-            var substituteSonogram = new Image<Rgb24>(width, height);
-
-            //substituteSonogram.Mutate(x => x.Pad(width, height, Color.Gray));
-            // image.Mutate(x => x.Resize(image.Width / 2, image.Height / 2));
+            var substituteSonogram = Drawing.NewImage(100, 256, Color.Black);
 
             // make a list of events
             var framesPerSecond = 10.0;
@@ -101,29 +97,19 @@ namespace Acoustics.Test.AudioAnalysisTools.EventStatistics
             events.Add(event2);
 
             // now add events into the spectrogram image.
-            // set colour for the events
+            // set color for the events
             foreach (AcousticEvent ev in events)
             {
-                // do not set an event name because text is not drawing anit-aliased at present time.
+                // because we are testing placement of box not text.
                 ev.Name = string.Empty;
                 ev.BorderColour = AcousticEvent.DefaultBorderColor;
                 ev.ScoreColour = AcousticEvent.DefaultScoreColor;
-                ev.DrawEvent(substituteSonogram, framesPerSecond, freqBinWidth, height);
+                ev.DrawEvent(substituteSonogram, framesPerSecond, freqBinWidth, 256);
             }
 
-            substituteSonogram.Save("C:\\temp\\EventTests_SuperimposeEventsOnImage.png");
-
             this.Actual = substituteSonogram;
-            /*
-            var pattern = @"
-⬇150
-E100R50
-48×E100RE48R
-E100R50
-";
-            this.Expected = TestImage.Create(width: 100, height: 100, Color.Black, pattern);
-            */
 
+            // BUG: this asset is faulty. See https://github.com/QutEcoacoustics/audio-analysis/issues/300#issuecomment-601537263
             this.Expected = Image.Load<Rgb24>(PathHelper.ResolveAssetPath("EventTests_SuperimposeEventsOnImage.png"));
             this.AssertImagesEqual();
         }
