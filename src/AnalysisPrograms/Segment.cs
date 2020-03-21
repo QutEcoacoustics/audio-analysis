@@ -117,8 +117,8 @@ namespace AnalysisPrograms
             //StringBuilder sb = new StringBuilder(str);
             //StringBuilder sb = new StringBuilder();
             string str = string.Format("{0}\t{1}\t{2}\t{3}", fname, sigDuration, count, pcHIF);
-            StringBuilder sb = AcousticEvent.WriteEvents(predictedEvents, str);
-            FileTools.WriteTextFile(opPath.FullName, sb.ToString());
+            //StringBuilder sb = AcousticEvent.WriteEvents(predictedEvents, str);
+            //FileTools.WriteTextFile(opPath.FullName, sb.ToString());
 
             //draw images of sonograms
             string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath.Name) + ".png";

@@ -119,6 +119,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         public BaseSonogram(SonogramConfig config)
         {
             this.Configuration = config;
+            this.Duration = config.Duration;
         }
 
         /// <summary>

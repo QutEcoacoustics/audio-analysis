@@ -39,47 +39,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
             return m;
         }
 
-        /*
-        /// <summary>
-        /// THis method draws a sonogram with other useful information attached.
-        /// </summary>
-        /// <param name="sonogram">of BaseSonogram class.</param>
-        /// <param name="events">a list of acoustic events.</param>
-        /// <param name="plots">a list of plots relevant to the spectrogram scores.</param>
-        /// <param name="hits">not often used - can be null.</param>
-        public static Image<Rgb24> GetSonogramPlusCharts(BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> plots, double[,] hits)
-        {
-            var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband: false, add1KHzLines: true, doMelScale: false));
-            image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-            if (plots != null)
-            {
-                foreach (var plot in plots)
-                {
-                    image.AddTrack(ImageTrack.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title)); //assumes data normalised in 0,1
-                }
-            }
-
-            if (hits != null)
-            {
-                image.OverlayRainbowTransparency(hits);
-            }
-
-            if (events != null && events.Count > 0)
-            {
-                // set colour for the events
-                foreach (AcousticEvent ev in events)
-                {
-                    ev.BorderColour = AcousticEvent.DefaultBorderColor;
-                    ev.ScoreColour = AcousticEvent.DefaultScoreColor;
-                }
-
-                image.AddEvents(events, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
-            }
-
-            return image.GetImage().CloneAs<Rgb24>();
-        }
-        */
-
         /// <summary>
         /// This method draws a spectrogram with other useful information attached.
         /// </summary>
@@ -125,6 +84,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
             if (hits != null)
             {
                 spectrogram = Image_MultiTrack.OverlayScoresAsRedTransparency(spectrogram, hits);
+
+                // following line needs to be reworked if want to call OverlayRainbowTransparency(hits); 
+                //image.OverlayRainbowTransparency(hits);
             }
 
             int pixelWidth = spectrogram.Width;

@@ -11,10 +11,15 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
     public class SpectrogramStandard : BaseSonogram
     {
-        //There are three CONSTRUCTORS
-        //Use the third constructor when you want to init a new Spectrogram by extracting portion of an existing sonogram.
-        public SpectrogramStandard(string configFile, WavReader wav)
-            : this(SonogramConfig.Load(configFile), wav)
+        //There are five CONSTRUCTORS
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SpectrogramStandard"/> class.
+        /// Use this constructor when you want to init a new Spectrogram but add the data later.
+        /// Useful for when constructing artificial specytrograms.
+        /// </summary>
+        public SpectrogramStandard(SonogramConfig config)
+            : base(config)
         {
         }
 
@@ -23,6 +28,10 @@ namespace AudioAnalysisTools.StandardSpectrograms
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SpectrogramStandard"/> class.
+        /// Use this constructor when you want to init a new Spectrogram by extracting portion of an existing sonogram.
+        /// </summary>
         public SpectrogramStandard(SonogramConfig config, double[,] amplitudeSpectrogram)
             : base(config, amplitudeSpectrogram)
         {
