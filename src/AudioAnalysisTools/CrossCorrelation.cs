@@ -206,14 +206,14 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        /// A METHOD TO DETECT HARMONICS IN THE sub-band of a sonogram.
-        /// This method assume the matrix is derived from a spectrogram rotated so that the matrix rows are spectral columns of sonogram.
+        /// A METHOD TO DETECT HARMONICS IN THE sub-band of a spectrogram.
+        /// This method assume the matrix is derived from a spectrogram rotated so that the matrix rows are spectral columns of the spectrogram.
         /// Developed for GenericRecognizer of harmonics.
         /// </summary>
-        /// <param name="m">data matrix.</param>
+        /// <param name="m">spectrogram data matrix.</param>
         /// <param name="dBThreshold">Minimum sound level.</param>
-        /// <returns>two arrays.</returns>
-        public static Tuple<double[], double[], int[]> DetectHarmonicsInSonogramMatrix(double[,] m, double dBThreshold)
+        /// <returns>three arrays: dBArray, intensity, maxIndexArray.</returns>
+        public static Tuple<double[], double[], int[]> DetectHarmonicsInSpectrogramData(double[,] m, double dBThreshold)
         {
             int rowCount = m.GetLength(0);
             int colCount = m.GetLength(1);

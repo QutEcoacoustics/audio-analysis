@@ -16,7 +16,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// <summary>
         /// Initializes a new instance of the <see cref="SpectrogramStandard"/> class.
         /// Use this constructor when you want to init a new Spectrogram but add the data later.
-        /// Useful for when constructing artificial specytrograms.
+        /// Useful for when constructing artificial spectrograms.
         /// </summary>
         public SpectrogramStandard(SonogramConfig config)
             : base(config)

@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="BaseSonogramConfig.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -19,6 +19,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
     public class SonogramConfig
     {
         public const int DEFAULT_WINDOW_SIZE = 512;
+
+        // TODO  THIS DEFAULT SHOULD BE SET TO ZERO OVERLAP
         public const double DEFAULT_WINDOW_OVERLAP = 0.5;
 
         public string SourceFName { get; set; } // name of source file for recordingt
@@ -340,7 +342,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         public double GetFrameOffset()
         {
             double frameDuration = this.GetFrameDuration(this.SampleRate); // Duration of full frame or window in seconds
-            double frameOffset = frameDuration * (1 - this.WindowOverlap);           // Duration of non-overlapped part of window/frame in seconds
+            double frameOffset = frameDuration * (1 - this.WindowOverlap); // Duration of non-overlapped part of window/frame in seconds
             return frameOffset;
         }
 
