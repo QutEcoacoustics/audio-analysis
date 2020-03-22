@@ -69,7 +69,7 @@ namespace AnalysisPrograms.Recognizers
                         break;
                     case HarmonicParameters _:
                         algorithmName = "Harmonics";
-                        throw new NotImplementedException("The harmonic algorithm has not been implemented yet");
+                        //throw new NotImplementedException("The harmonic algorithm has not been implemented yet");
                         break;
                     case Aed.AedConfiguration _:
                         algorithmName = "AED";
@@ -200,9 +200,9 @@ namespace AnalysisPrograms.Recognizers
                         }
                         else if (profileConfig is HarmonicParameters hp)
                         {
-                            //get the array of intensity values minus intensity in side/buffer bands.
-                            double[] scoreArray;
-                            (acousticEvents, scoreArray) = HarmonicParameters.GetComponentsWithHarmonics(
+                            double[] decibelMaxArray;
+                            double[] harmonicIntensityScores;
+                            (acousticEvents, decibelMaxArray, harmonicIntensityScores) = HarmonicParameters.GetComponentsWithHarmonics(
                                 sonogram,
                                 hp.MinHertz.Value,
                                 hp.MaxHertz.Value,
@@ -215,7 +215,7 @@ namespace AnalysisPrograms.Recognizers
                                 hp.MaxFormantGap.Value,
                                 segmentStartOffset);
 
-                            var plot = PreparePlot(scoreArray, $"{profileName} (Harmonics:dB Intensity)", hp.DecibelThreshold.Value);
+                            var plot = PreparePlot(harmonicIntensityScores, $"{profileName} (Harmonics:dct intensity)", hp.DctThreshold.Value);
                             plots.Add(plot);
                         }
                         else
@@ -323,7 +323,7 @@ namespace AnalysisPrograms.Recognizers
         /// <summary>
         /// THis method can be modified if want to do something non-standard with the output spectrogram.
         /// </summary>
-        static void SaveDebugSpectrogram(RecognizerResults results, Config genericConfig, DirectoryInfo outputDirectory, string baseName)
+        public static void SaveDebugSpectrogram(RecognizerResults results, Config genericConfig, DirectoryInfo outputDirectory, string baseName)
         {
             var image3 = SpectrogramTools.GetSonogramPlusCharts(results.Sonogram, results.Events, results.Plots, null);
 
