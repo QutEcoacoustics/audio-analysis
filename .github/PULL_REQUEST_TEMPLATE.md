@@ -8,11 +8,13 @@ List of changes added as part of this PR. This only needs to include the big cha
 
 ## Issues
 
-Any issues caused by the PR that will need to be address in another PR. These issues may be caused by another branch which will change how this branch functions.
+Any issues caused by the PR that will need to be addressed in another PR.
+These issues may be caused by another branch which will change how this branch functions.
 
 ## Visual Changes
 
-If the PR has any visual changes to the website, post pictures of the new pages and how they look. Label any images if more than one is given.
+If the PR has any visual changes to the website, post pictures of the new pages and how they look.
+Label any images if more than one is given.
 
 ## Final Checklist
 
