@@ -211,7 +211,8 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             var dctThreshold = 0.15;
             var minFormantGap = 400;
             var maxFormantGap = 1200;
-            var minDuration = 0.35;
+            //var minDuration = 0.35;
+            var minDuration = 0.2;
             var maxDuration = 1.1;
             var decibelThreshold = 2.0;
 
@@ -234,7 +235,6 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
 
             var spectrogram = this.CreateArtificialSpectrogramContainingHarmonics(sonoConfig);
             //var image1 = SpectrogramTools.GetSonogramPlusCharts(spectrogram, null, null, null);
-            //image1.Save("C:\\temp\\TestSpectrogram.png");
 
             //var results = recognizer.Recognize(recording, sonoConfig, 100.Seconds(), null, this.TestOutputDirectory, null);
             //get the array of intensity values minus intensity in side/buffer bands.
@@ -301,8 +301,8 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             Assert.AreEqual(5000, @event.HighFrequencyHertz);
 
             @event = allResults.Events[1];
-            Assert.AreEqual(5.0, @event.EventStartSeconds, 0.1);
-            Assert.AreEqual(5.45, @event.EventEndSeconds, 0.1);
+            Assert.AreEqual(5.2, @event.EventStartSeconds, 0.1);
+            Assert.AreEqual(5.5, @event.EventEndSeconds, 0.1);
 
             @event = allResults.Events[2];
             Assert.AreEqual(7.0, @event.EventStartSeconds, 0.1);
@@ -310,7 +310,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
 
             @event = allResults.Events[3];
             Assert.AreEqual(11.3, @event.EventStartSeconds, 0.1);
-            Assert.AreEqual(11.8, @event.EventEndSeconds, 0.1);
+            Assert.AreEqual(11.6, @event.EventEndSeconds, 0.1);
         }
 
         public SpectrogramStandard CreateArtificialSpectrogramContainingHarmonics(SonogramConfig config)
