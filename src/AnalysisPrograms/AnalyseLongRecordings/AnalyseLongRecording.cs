@@ -124,10 +124,14 @@ namespace AnalysisPrograms.AnalyseLongRecordings
             }
 
             // AT 2018-02: changed logic so default index properties loaded if not provided
-            FileInfo indicesPropertiesConfig = IndexProperties.Find(configuration, configFile);
+            // IFF the analyzer has a static config property that includes IndexPropertiesConfig it will be loaded.
+            // IFF the IndexPropertiesConfig is null/empty a default is loaded
+            // IFF the IndexPropertiesConfig is not null/empty, and is not a file that can be found, a ConfigFile exception
+            //   will be thrown.
+            FileInfo indicesPropertiesConfig = IndexProperties.Find(configuration as IIndexPropertyReferenceConfiguration);
             if (indicesPropertiesConfig == null || !indicesPropertiesConfig.Exists)
             {
-                Log.Warn("IndexProperties config can not be found! Loading a default");
+                Log.Warn("IndexPropertiesConfig was not specified! Loading a default");
                 indicesPropertiesConfig = ConfigFile.Default<Dictionary<string, IndexProperties>>();
             }
 

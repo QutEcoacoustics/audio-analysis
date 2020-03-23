@@ -60,9 +60,11 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
 
             void SetupAndRun(params double[] scales)
             {
-                SpectrogramZoomingConfig config = new SpectrogramZoomingConfig();
-                config.SpectralIndexScale = scales;
-                config.IndexPropertiesConfig = ".\\IndexPropertiesConfig.Zooming.yml";
+                SpectrogramZoomingConfig config = new SpectrogramZoomingConfig
+                {
+                    SpectralIndexScale = scales,
+                    IndexPropertiesConfig = "IndexPropertiesConfig.Zooming.yml",
+                };
 
                 var newConfigFile = this.TestOutputDirectory.CombineFile("SpectrogramZoomingConfig.yml");
                 Yaml.Serialize(newConfigFile, config);

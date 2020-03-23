@@ -28,7 +28,7 @@ namespace AudioAnalysisTools.Indices
     using TowseyLibrary;
     using YamlDotNet.Serialization;
 
-    public interface IIndexPropertyReferenceConfiguration
+    public interface IIndexPropertyReferenceConfiguration : IConfig
     {
         string IndexPropertiesConfig { get; set; }
 
@@ -41,7 +41,7 @@ namespace AudioAnalysisTools.Indices
         {
             void OnLoaded(IConfig config)
             {
-                var indicesPropertiesConfig = Indices.IndexProperties.Find(this, this.ConfigPath);
+                var indicesPropertiesConfig = Indices.IndexProperties.Find(this);
                 this.IndexPropertiesConfig = indicesPropertiesConfig.FullName;
                 this.IndexProperties = ConfigFile.Deserialize<IndexPropertiesCollection>(this.IndexPropertiesConfig);
             }
@@ -98,8 +98,6 @@ namespace AudioAnalysisTools.Indices
     /// </summary>
     public class IndexProperties
     {
-        private static readonly Dictionary<string, Dictionary<string, IndexProperties>> CachedProperties = new Dictionary<string, Dictionary<string, IndexProperties>>();
-
         private string dataType;
 
         private double defaultValue;
@@ -148,6 +146,7 @@ namespace AudioAnalysisTools.Indices
 
         [YamlIgnore]
         [JsonIgnore]
+
         // TODO: this information should really be encoded rather than inferred
         public bool IsSpectralIndex => this.DataType == "double[]";
 
@@ -300,50 +299,64 @@ namespace AudioAnalysisTools.Indices
             return ConfigFile.Deserialize<IndexPropertiesCollection>(configFile);
         }
 
-        public static FileInfo Find(Config configuration, FileInfo originalConfigFile, bool allowDefault = false)
+        /// <summary>
+        /// Loads the IndexProperties config file, specified by the property <see cref="IIndexPropertyReferenceConfiguration.IndexPropertiesConfig"/>
+        ///  defined on  <paramref name="configuration" /> which may be found
+        /// relative to the original parent config file <see cref="IConfig.ConfigPath"/>.
+        /// </summary>
+        /// <remarks>
+        /// This method is intended for use when a config file references another config file, in this case
+        /// an IndexProperties config files, as a string property in the config file.
+        /// </remarks>
+        /// <exception cref="ConfigFileException">
+        /// if <paramref name="configuration" /> is not null or empty, and does not exist.
+        /// </exception>
+        /// <param name="configuration">
+        /// The configuration object that has the <see cref="IIndexPropertyReferenceConfiguration.IndexPropertiesConfig"/>
+        /// key defined. If <see cref="IIndexPropertyReferenceConfiguration.IndexPropertiesConfig"/> is not rooted it
+        /// is treated as relative to the parent config file <see cref="IConfig.ConfigPath"/>'s directory.
+        /// </param>
+        /// <returns>
+        /// <code>null</code> if <paramref name="configuration" /> is null or empty, otherwise a reference to
+        /// the desired config file.
+        /// </returns>
+        public static FileInfo Find(IIndexPropertyReferenceConfiguration configuration)
         {
-            if (configuration == null)
-            {
-                return null;
-            }
-
-            return Find(configuration[AnalysisKeys.KeyIndexPropertiesConfig], originalConfigFile, allowDefault);
+            return Find(configuration?.IndexPropertiesConfig, configuration?.ConfigPath?.ToFileInfo());
         }
 
         /// <summary>
-        /// Locate an IndexPropertiesConfig.yml file from the IndexPropertiesConfig key in a config file.
+        /// Loads the IndexProperties config file, specified by <paramref name="relativePath" /> which may be found
+        /// relative to the original config file <paramref name="originalConfigFile"/>.
         /// </summary>
-        public static FileInfo Find(IIndexPropertyReferenceConfiguration configuration, string originalConfigpath, bool allowDefault = false)
+        /// <remarks>
+        /// This method is intended for use when a config file references another config file, in this case
+        /// an IndexProperties config files, as a string property in the config file.
+        /// </remarks>
+        /// <exception cref="ConfigFileException">
+        /// if <paramref name="relativePath" /> is not null or empty, and does not exist.
+        /// </exception>
+        /// <param name="relativePath">
+        /// The path to the config file to find.
+        /// If it is not rooted it is treated as relative to the <paramref name="originalConfigFile"/>'s directory.
+        /// </param>
+        /// <param name="originalConfigFile">
+        /// The config file were the path to <paramref name="relativePath"/> was originally extracted.
+        /// </param>
+        /// <returns>
+        /// <code>null</code> if <paramref name="relativePath" /> is null or empty, otherwise a reference to
+        /// the desired config file.
+        /// </returns>
+        public static FileInfo Find(string relativePath, FileInfo originalConfigFile)
         {
-            if (configuration == null)
+            if (string.IsNullOrEmpty(relativePath))
             {
                 return null;
             }
 
-            return Find(configuration.IndexPropertiesConfig, originalConfigpath.ToFileInfo());
-        }
-
-        /// <summary>
-        /// Locate and IndexPropertiesConfig.yml file from the IndexPropertiesConfig key in a config file.
-        /// </summary>
-        public static FileInfo Find(IIndexPropertyReferenceConfiguration configuration, FileInfo originalConfigFile, bool allowDefault = false)
-        {
-            if (configuration == null)
-            {
-                return null;
-            }
-
-            return Find(configuration.IndexPropertiesConfig, originalConfigFile, allowDefault);
-        }
-
-        public static FileInfo Find(string relativePath, FileInfo originalConfigFile, bool allowDefault = false)
-        {
-            var found = ConfigFile.TryResolve(
+            return ConfigFile.Resolve(
                 relativePath,
-                new[] { originalConfigFile.Directory },
-                out var configFile);
-
-            return found ? configFile : null;
+                originalConfigFile?.Directory?.AsArray());
         }
 
         private void UpdateTypedDefault()

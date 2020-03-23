@@ -7,11 +7,11 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
     using System;
     using System.IO;
     using Acoustics.Shared;
+    using Acoustics.Test.TestHelpers;
     using global::AudioAnalysisTools;
     using global::AudioAnalysisTools.WavTools;
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
 
     /// <summary>
     /// tests the clustering algorithm used to calculate the summary indices Clustercount and TrigramCount.

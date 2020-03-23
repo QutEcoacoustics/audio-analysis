@@ -6,7 +6,9 @@
 namespace AudioAnalysisTools
 {
     using System;
+    using AudioAnalysisTools.Indices;
 
+    [Obsolete("All access to properties should be done via statically-typed configuration classes. In this scenario access to dynamic keys should not be needed.")]
     public static class AnalysisKeys
     {
         // KEYS TO PARAMETERS IN CONFIG FILE
@@ -124,7 +126,7 @@ namespace AudioAnalysisTools
         public const string KeyOctaveFreqScale = "OctaveFreqScale";
 
         // Other config keys
-        public const string KeyIndexPropertiesConfig = "IndexPropertiesConfig";
+        public const string KeyIndexPropertiesConfig = nameof(IIndexPropertyReferenceConfiguration.IndexPropertiesConfig);
         public const string TileImageOutput = "TileImageOutput";
         public const string RequireDateInFilename = "RequireDateInFilename";
     }
