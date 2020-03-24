@@ -86,7 +86,8 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.RibbonPlots
             var plot3 = this.TestOutputDirectory.CombineFile($"{this.TestOutputDirectory.Name}__RibbonPlot_ENT-CVR-OSC.png");
             Assert.That.FileExists(plot3);
 
-            const int Left = 223;
+            // label width + padding left + padding right
+            const int Left = 200 + 10 + 10;
             const int Height = ((32 + 2) * 12) + 2;
 
             // whole image that goes all through the data
@@ -176,7 +177,8 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.RibbonPlots
             var plot3 = this.TestOutputDirectory.CombineFile($"{this.TestOutputDirectory.Name}__RibbonPlot_ENT-CVR-OSC_Midnight=1200.png");
             Assert.That.FileExists(plot3);
 
-            const int Left = 223;
+            // label width + padding left + padding right
+            const int Left = 200 + 10 + 10;
             const int Height = ((32 + 2) * (12 + 1)) + 2;
 
             // whole image that goes all through the data (but it is two rows longer because of midnight config)
