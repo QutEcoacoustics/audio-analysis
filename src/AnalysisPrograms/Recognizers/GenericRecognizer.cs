@@ -290,14 +290,14 @@ namespace AnalysisPrograms.Recognizers
 
         private static SonogramConfig ParametersToSonogramConfig(CommonParameters common)
         {
+            int windowSize = (int)common.FrameSize;
+            int windowStep = (int)common.FrameStep;
             return new SonogramConfig()
             {
-                //WindowOverlap = (WindowSize - WindowStep) / (double)WindowSize,
-                WindowSize = (int)common.FrameSize,
-                WindowStep = (int)common.FrameStep,
-
-                // Default window is Hamming. Alternative is to use Hanning. Can sometimes be better.
-                WindowFunction = (string)common.WindowFunction,   //WindowFunctions.HANNING.ToString(),
+                WindowSize = windowSize,
+                WindowStep = windowStep,
+                WindowOverlap = (windowSize - windowStep) / (double)windowSize,
+                WindowFunction = (string)common.WindowFunction,
                 NoiseReductionType = NoiseReductionType.Standard,
                 NoiseReductionParameter = common.BgNoiseThreshold ?? 0.0,
             };

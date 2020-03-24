@@ -211,7 +211,7 @@ namespace AudioAnalysisTools
         /// Developed for GenericRecognizer of harmonics.
         /// WARNING: As of March 2020, this method averages the values in five adjacent frames. This is to reduce noise.
         ///          But it requires that the frequency of any potential formants is not changing rapidly.
-        ///          THis may not be suitable for detecting human speech.
+        ///          THis may not be suitable for detecting human speech. However can reduce the frame step.
         /// </summary>
         /// <param name="m">spectrogram data matrix.</param>
         /// <param name="dBThreshold">Minimum sound level.</param>
