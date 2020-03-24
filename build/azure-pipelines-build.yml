@@ -106,7 +106,6 @@ jobs:
           command: test
           publishTestResults: true
           testRunTitle: "Tests for $(rid) $(configuration)"
-          projects: tests/Acoustics.Test/Acoustics.Test.csproj
           arguments: >
             --runtime $(rid)
             --configuration $(configuration)
@@ -114,7 +113,7 @@ jobs:
             --no-build
             --logger trx
             --collect:"XPlat Code Coverage"
-            -- RunConfiguration.DisableAppDomain=true
+            --RunConfiguration.DisableAppDomain=true
         displayName: Run tests
 
       - task: DotNetCoreCLI@2
