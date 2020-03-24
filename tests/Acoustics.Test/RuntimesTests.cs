@@ -32,7 +32,7 @@ namespace Acoustics.Test
 
             Assert.That.DirectoryExists(buildDir);
 
-            Assert.That.FileExists(Path.Combine(buildDir, "runtimes", expected));
+            Assert.That.FileExists(Path.GetFullPath(Path.Combine(buildDir, "runtimes", expected)));
         }
 
         [RuntimeIdentifierSpecificDataTestMethod]
@@ -55,7 +55,7 @@ namespace Acoustics.Test
 
             Assert.That.DirectoryExists(buildDir);
 
-            Assert.That.FileExists(Path.Combine(buildDir, "runtimes", expected));
+            Assert.That.FileExists(Path.GetFullPath(Path.Combine(buildDir, "runtimes", expected)));
         }
 
         [TestMethod]

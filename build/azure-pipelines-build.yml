@@ -52,6 +52,7 @@ jobs:
         displayName: "Shallow cloning repo"
 
       - task: Cache@2
+        # this won't work unless the build succeeds https://github.com/microsoft/azure-pipelines-tasks/issues/11388
         inputs:
           key: '"lfs_assets"'
           restore: |
@@ -104,8 +105,9 @@ jobs:
       - task: DotNetCoreCLI@2
         inputs:
           command: test
+          projects: tests/Acoustics.Test/Acoustics.Test.csproj
           publishTestResults: true
-          testRunTitle: "Tests for $(rid) $(configuration)"
+          testRunTitle: "Acoustics.Test for $(rid) $(configuration)"
           arguments: >
             --runtime $(rid)
             --configuration $(configuration)
@@ -113,8 +115,27 @@ jobs:
             --no-build
             --logger trx
             --collect:"XPlat Code Coverage"
-            --RunConfiguration.DisableAppDomain=true
-        displayName: Run tests
+            --
+            RunConfiguration.DisableAppDomain=true
+        displayName: Run Acoustics.Test
+
+      - task: DotNetCoreCLI@2
+        # run even if other tests failed
+        condition: succeededOrFailed()
+        inputs:
+          command: test
+          projects: tests/AED.Test/AED.Test.csproj
+          publishTestResults: true
+          testRunTitle: "AED.Test for $(rid) $(configuration)"
+          arguments: >
+            --runtime $(rid)
+            --configuration $(configuration)
+            --no-build
+            --logger trx
+            --collect:"XPlat Code Coverage"
+            --
+            RunConfiguration.DisableAppDomain=true
+        displayName: Run AED.Test
 
       - task: DotNetCoreCLI@2
         inputs:

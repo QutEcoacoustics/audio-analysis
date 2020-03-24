@@ -34,50 +34,6 @@ namespace Acoustics.Test.TestHelpers
         /// </example>
         public static string CodeBase { get; private set; }
 
-        internal static void Initialize(TestContext context)
-        {
-            var directory = context.ResultsDirectory;
-
-            // the assumption is that the repo is always checked out and named with this name
-            if (!TryFindSolution(context.ResultsDirectory, out var solutionDirectory))
-            {
-                // this assumption is violated on Azure Pipelines
-                if (!TryFindSolution(context.DeploymentDirectory, out solutionDirectory))
-                {
-                    var diagnostics = Json.SerializeToString(context, true, new JsonSerializerSettings { PreserveReferencesHandling = PreserveReferencesHandling.All });
-                    throw new InvalidOperationException($"Cannot find solution root directory in `{directory}`!\n{diagnostics}");
-                }
-            }
-
-            SolutionRoot = solutionDirectory;
-
-            CodeBase = context.DeploymentDirectory;
-            TestResources = Path.Combine(SolutionRoot, "tests", "Fixtures");
-
-            AnalysisProgramsBuild = Path.Combine(SolutionRoot, "src", Meta.ProjectName, "bin", "Debug", "netcoreapp3.1");
-
-            testContext = context;
-
-            static bool TryFindSolution(string testDirectory, out string solutionDirectory)
-            {
-                // search down directory for solution directory
-                var split = testDirectory.Split(Path.DirectorySeparatorChar);
-
-                var pathDelimiter = Path.DirectorySeparatorChar.ToString();
-                for (var index = 1; index < split.Length; index++)
-                {
-                    if (File.Exists(split[..index].Append("AudioAnalysis.sln").Join(pathDelimiter)))
-                    {
-                        solutionDirectory = split[..index].Join(pathDelimiter);
-                        return true;
-                    }
-                }
-
-                solutionDirectory = null;
-                return false;
-            }
-        }
-
         public static FileInfo ResolveConfigFile(string fileName)
         {
             return new FileInfo(Path.Combine(SolutionRoot, "src", "AnalysisConfigFiles", fileName));
@@ -144,6 +100,50 @@ namespace Acoustics.Test.TestHelpers
             catch (Exception e)
             {
                 Debug.WriteLine(e.Message);
+            }
+        }
+
+        internal static void Initialize(TestContext context)
+        {
+            var directory = context.ResultsDirectory;
+
+            // the assumption is that the repo is always checked out and named with this name
+            if (!TryFindSolution(context.ResultsDirectory, out var solutionDirectory))
+            {
+                // this assumption is violated on Azure Pipelines
+                if (!TryFindSolution(context.DeploymentDirectory, out solutionDirectory))
+                {
+                    var diagnostics = Json.SerializeToString(context, true, new JsonSerializerSettings { PreserveReferencesHandling = PreserveReferencesHandling.All });
+                    throw new InvalidOperationException($"Cannot find solution root directory in `{directory}`!\n{diagnostics}");
+                }
+            }
+
+            SolutionRoot = solutionDirectory;
+
+            CodeBase = context.DeploymentDirectory;
+            TestResources = Path.Combine(SolutionRoot, "tests", "Fixtures");
+
+            AnalysisProgramsBuild = Path.Combine(SolutionRoot, "src", Meta.ProjectName, "bin", "Debug", "netcoreapp3.1");
+
+            testContext = context;
+
+            static bool TryFindSolution(string testDirectory, out string solutionDirectory)
+            {
+                // search down directory for solution directory
+                var split = testDirectory.Split(Path.DirectorySeparatorChar);
+
+                var pathDelimiter = Path.DirectorySeparatorChar.ToString();
+                for (var index = 1; index < split.Length; index++)
+                {
+                    if (File.Exists(split[..index].Append("AudioAnalysis.sln").Join(pathDelimiter)))
+                    {
+                        solutionDirectory = split[..index].Join(pathDelimiter);
+                        return true;
+                    }
+                }
+
+                solutionDirectory = null;
+                return false;
             }
         }
     }
