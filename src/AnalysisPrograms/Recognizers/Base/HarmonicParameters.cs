@@ -14,33 +14,12 @@ namespace AnalysisPrograms.Recognizers.Base
     using TowseyLibrary;
 
     /// <summary>
-    /// TODO TODO: THIS METHOD IS WORK IN PROGESS AND CURRENTLY DOES YIELD A SUCCESSFUL RESULT. To BE FURTHER WORKED ON!!.
     /// Parameters needed from a config file to detect the stacked harmonic components of a soundscape.
     /// This can also be used for recognizing the harmonics of non-biological sounds such as from turbines, motor-bikes, compressors and other hi-revving motors.
     /// </summary>
     [YamlTypeTag(typeof(HarmonicParameters))]
     public class HarmonicParameters : CommonParameters
     {
-        //ComponentName: Harmonic
-        //SpeciesName: Curlew
-        //FrameSize: 512
-        //FrameStep: 512
-        //WindowFunction: HANNING
-        //BgNoiseThreshold: 0.0
-        //# min and max of the freq band to search
-        //MinHertz: 1000
-        //MaxHertz: 6500
-        //MinDuration: 0.5
-        //MaxDuration: 3.0
-        //DecibelThreshold: 1.5
-        //# Parameters for the finding formants.
-        //# duration of DCT in seconds
-        //#DctDuration: 0.5
-        //# minimum acceptable value of a DCT coefficient
-        //DctThreshold: 0.5
-        //MinFormantGap: 800
-        //MaxFormantGap: 2200
-
         /// <summary>
         /// Gets or sets the dctThreshold.
         /// </summary>
