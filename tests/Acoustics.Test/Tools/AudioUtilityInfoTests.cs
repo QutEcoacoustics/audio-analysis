@@ -96,7 +96,7 @@ namespace Acoustics.Test.Tools
                 "it-it",
             };
 
-            return files.SelectMany(f => cultures.Select(c => new object[] {f, c}));
+            return files.SelectMany(f => cultures.Select(c => new object[] { f, c }));
         }
 
         [DataTestMethod]

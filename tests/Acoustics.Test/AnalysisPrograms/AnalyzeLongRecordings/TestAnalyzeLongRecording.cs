@@ -10,7 +10,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
     using System.Linq;
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
-
+    using Acoustics.Test.TestHelpers;
     using global::AnalysisPrograms.AnalyseLongRecordings;
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.Indices;
@@ -19,8 +19,6 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
-    using TestHelpers;
-    using Acoustics.Shared.Contracts;
 
     /// <summary>
     /// Test methods for the various standard Sonograms or Spectrograms
@@ -30,7 +28,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
     /// (3) use an appropriate serialization format
     /// (4) for binary large objects(BLOBs) make sure git-lfs is tracking them
     /// See this commit for dealing with BLOBs: https://github.com/QutBioacoustics/audio-analysis/commit/55142089c8eb65d46e2f96f1d2f9a30d89b62710
-    /// (5) Wherever possible, don't use test assets
+    /// (5) Wherever possible, don't use test assets.
     /// </summary>
     [TestClass]
     public class TestAnalyzeLongRecording
@@ -54,7 +52,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
         /// Acoustic indices as calculated from Linear frequency scale spectrogram.
         /// </summary>
         [TestMethod]
-        [Timeout(120_000)]
+        [Timeout(240_000)]
         public void TestAnalyzeSr22050Recording()
         {
             int sampleRate = 22050;
@@ -285,6 +283,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             var recordingPath = PathHelper.ResolveAsset("geckos.wav");
 
             var configPath = PathHelper.ResolveConfigFile("Towsey.Acoustic.yml");
+
             //var indexPropertiesFile = PathHelper.ResolveConfigFile("IndexPropertiesConfig.yml");
             //indexPropertiesFile.CopyTo(Path.Combine(this.outputDirectory.FullName, "IndexPropertiesConfig.yml"));
 
@@ -314,6 +313,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             var recordingPath = this.outputDirectory.CombineFile("20160801_110000_continuous1.wav");
 
             var configPath = PathHelper.ResolveConfigFile("Towsey.Acoustic.yml");
+
             //var indexPropertiesFile = PathHelper.ResolveConfigFile("IndexPropertiesConfig.yml");
             //indexPropertiesFile.CopyTo(Path.Combine(this.outputDirectory.FullName, "IndexPropertiesConfig.yml"));
 
