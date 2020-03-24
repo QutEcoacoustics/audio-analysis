@@ -21,7 +21,7 @@ let GParrots_JB2_20090607_173000_wav_minute_3 =
 let testAll f = Seq.iter f [BAC2_20071015_045040; GParrots_JB2_20090607_173000_wav_minute_3]
 
 /// Sets the current directory to be the fictures folders where test resources are kept
-let matlabPath = @"..\..\..\Fixtures\FSharp\"
+let matlabPath = Path.Combine("..", "..", "..", "..", "Fixtures", "FSharp")
 
 // when module opens, unzip asssets
 do
