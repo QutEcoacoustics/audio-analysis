@@ -258,7 +258,10 @@ module AcousticEventDetectionTestsForSeperateLargeEvents =
     
     [<Fact>]
     let ``seperate large events - hits returned for event 3 when ExtrapolateBridgeEvents is diabled`` () =
-        let sleParams = match sleDefaults with Horizontal p -> {p with ExtrapolateBridgeEvents = false} |> Horizontal
+        let sleParams =
+            match sleDefaults with 
+            | Horizontal p -> {p with ExtrapolateBridgeEvents = false} |> Horizontal
+            | _ -> invalidOp "invalid match case"
         let result = testMatrix |> getAcousticEvents |> separateLargeEvents sleParams|> Seq.item 2
         
         let absoluteHits = Set.map (fun (y, x) -> (y + 4, x + 43)) expectedEvent3Alternate
@@ -403,7 +406,10 @@ module AcousticEventDetectionTestsForVerticalSeperateLargeEvents =
 
     [<Fact>]
     let ``seperate large events - hits returned for event 3 when ExtrapolateBridgeEvents is diabled`` () =
-        let sleParams = match sleParams with Vertical p -> {p with ExtrapolateBridgeEvents = false} |> Vertical
+        let sleParams = 
+            match sleParams with 
+            | Vertical p -> {p with ExtrapolateBridgeEvents = false} |> Vertical
+            | _ -> invalidOp "invalid match case"
         let result = testMatrix |> getAcousticEvents |> separateLargeEvents sleParams |> Seq.item 2
         
         let absoluteHits = Set.map (fun (y, x) -> (y + 9, x + 43)) expectedEvent3Alternate
@@ -515,13 +521,11 @@ module AcousticEventDetectionTestsForDebugSeperateLargeEvents =
     
     [<Fact>]
     let ``seperate large events - hits returned for event 3 when ExtrapolateBridgeEvents is diabled`` () =
-        let sleParams = match sleParams with Horizontal p -> {p with ExtrapolateBridgeEvents = false} |> Horizontal
+        let sleParams = 
+            match sleParams with 
+            | Horizontal p -> {p with ExtrapolateBridgeEvents = false} |> Horizontal
+            | _ -> invalidOp "invalid match case"
         let result = testMatrix |> getAcousticEvents |> separateLargeEvents sleParams |> Seq.item 1        
         let absoluteHits = Set.map (fun (y,x) -> (y + 1, x + 64)) expectedEvent2Alternate
         Assert.Equal<Set<_>>(absoluteHits, result.Elements)
         Assert.Equal(expectedAlternateBounds, result.Bounds)
-
-
-
-  
-  
