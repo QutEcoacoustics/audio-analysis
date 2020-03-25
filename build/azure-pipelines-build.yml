@@ -124,7 +124,7 @@ jobs:
         condition: succeededOrFailed()
         inputs:
           command: test
-          projects: tests/AED.Test/AED.Test.csproj
+          projects: tests/AED.Test/AED.Test.fsproj
           publishTestResults: true
           testRunTitle: "AED.Test for $(rid) $(configuration)"
           arguments: >
@@ -138,6 +138,7 @@ jobs:
         displayName: Run AED.Test
 
       - task: DotNetCoreCLI@2
+        condition: succeededOrFailed()
         inputs:
           command: custom
           custom: tool

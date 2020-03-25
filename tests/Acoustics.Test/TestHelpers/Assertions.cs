@@ -214,9 +214,12 @@ namespace Acoustics.Test.TestHelpers
 
         public static void DirectoryExists(this Assert assert, string path)
         {
-            Assert.IsTrue(
-                Directory.Exists(Path.GetFullPath(path)),
-                $"Expected path {path} to exist but it could not be found");
+            var exists = Directory.Exists(Path.GetFullPath(path));
+            if (!exists)
+            {
+                 PathDiagnostics.PathExistsOrDiff(path, out var diff);
+                 Assert.Fail($"Expected path {path} to exist but it could not be found. Path diagnostics:\n{diff.Messages}");
+            }
         }
 
         public static void FileExists(this Assert assert, FileInfo file)
@@ -226,9 +229,12 @@ namespace Acoustics.Test.TestHelpers
 
         public static void FileExists(this Assert assert, string path)
         {
-            Assert.IsTrue(
-                File.Exists(Path.GetFullPath(path)),
-                $"Expected path {path} to exist but it could not be found");
+            var exists = File.Exists(Path.GetFullPath(path));
+            if (!exists)
+            {
+                 PathDiagnostics.PathExistsOrDiff(path, out var diff);
+                 Assert.Fail($"Expected path {path} to exist but it could not be found. Path diagnostics:\n{diff.Messages}");
+            }
         }
 
         public static void FileNotExists(this Assert assert, FileInfo file)

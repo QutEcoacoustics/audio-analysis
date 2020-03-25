@@ -11,10 +11,12 @@ namespace Acoustics.Shared
 {
     using System;
     using System.Collections.Immutable;
+    using System.Diagnostics;
     using System.IO;
     using System.Reflection;
     using System.Runtime.InteropServices;
     using log4net;
+    using Microsoft.DotNet.PlatformAbstractions;
     using Mono.Unix.Native;
     using static System.Runtime.InteropServices.OSPlatform;
     using static System.Runtime.InteropServices.RuntimeInformation;
@@ -162,6 +164,19 @@ namespace Acoustics.Shared
 #pragma warning restore 162
             };
 
+        public static string RuntimeIdentifier
+        {
+            get
+            {
+                // TODO: replace PseudoRuntimeIdentifier with this property once stable
+                string rid = Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironment.GetRuntimeIdentifier();
+                Debug.Assert(
+                    rid == PseudoRuntimeIdentifier,
+                    $"Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironment.GetRuntimeIdentifier() `{rid}` does not match PseudoRuntimeIdentifier `{PseudoRuntimeIdentifier}`");
+                return rid;
+            }
+        }
+
         internal static string GetExeFile(string name, bool required = true)
         {
             var isWindows = IsOSPlatform(Windows);
@@ -256,10 +271,14 @@ namespace Acoustics.Shared
         /// </summary>
         private static void CheckOs(ref bool isWindows, ref bool isLinux, ref bool isMacOsX)
         {
+            // TODO: theres a new API that should deprecate this
+            var platform = Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironment.OperatingSystemPlatform;
+
             var winDir = Environment.GetEnvironmentVariable("windir");
             if (!string.IsNullOrEmpty(winDir) && winDir.Contains(@"\") && Directory.Exists(winDir))
             {
                 isWindows = true;
+                Debug.Assert(platform == Platform.Windows, "Our manual check for the Windows platform disagrees with .NET");
             }
             else if (File.Exists(@"/proc/sys/kernel/ostype"))
             {
@@ -268,6 +287,7 @@ namespace Acoustics.Shared
                 {
                     // Note: Android gets here too
                     isLinux = true;
+                    Debug.Assert(platform == Platform.Linux, "Our manual check for the Linux platform disagrees with .NET");
                 }
                 else
                 {
@@ -278,6 +298,7 @@ namespace Acoustics.Shared
             {
                 // Note: iOS gets here too
                 isMacOsX = true;
+                Debug.Assert(platform == Platform.Darwin, "Our manual check for the Darwin platform disagrees with .NET");
             }
             else
             {

@@ -41,6 +41,10 @@ namespace AnalysisPrograms
         public const bool IsDirty = ${is_dirty};
         public const string CiBuild = "${build_number}";
 
+        public const bool CompiledAsSelfContained = ${self_contained};
+        public const string CompiledRuntimeIdentifer = "${runtime_identifer}";
+
+
         public static readonly Version Version = new Version("${version}");
     }
 }
