@@ -3,7 +3,9 @@
 #Requires -Version 6
 
 param(
-    [string]$configuration = "Release"
+    [string]$configuration = "Release",
+    [string]$self_contained,
+    [string]$runtime_indentifier
 )
 
 Push-Location
@@ -22,6 +24,8 @@ if ($build_type -ieq "Debug") {
         exit 0
     }
 }
+
+$self_contained = if ($self_contained -eq 'true') { 'true' } else { 'false' }
 
 $commit_hash = git show -s --format="%H"
 
@@ -66,6 +70,9 @@ IsDirty=$is_dirty
 Version=$version
 InformationalVersion=$informational_version
 GeneratedMetadata=$metadata_file
+CacheWarning=$cache_warning
+MsBuildSelfContained=$self_contained
+MsBuildRuntimeIdentifer=$runtime_identifer
 "@
 
 Write-Output $props

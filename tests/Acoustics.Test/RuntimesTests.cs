@@ -32,7 +32,16 @@ namespace Acoustics.Test
 
             Assert.That.DirectoryExists(buildDir);
 
-            Assert.That.FileExists(Path.GetFullPath(Path.Combine(buildDir, "runtimes", expected)));
+#pragma warning disable IDE0035, CS0162
+            if (BuildMetadata.CompiledAsSelfContained)
+            {
+                Assert.That.FileExists(Path.Combine(buildDir, Path.GetFileName(expected)));
+            }
+            else
+            {
+                Assert.That.FileExists(Path.Combine(buildDir, "runtimes", expected));
+            }
+#pragma warning restore IDE0035, CS0162
         }
 
         [RuntimeIdentifierSpecificDataTestMethod]
@@ -55,7 +64,16 @@ namespace Acoustics.Test
 
             Assert.That.DirectoryExists(buildDir);
 
-            Assert.That.FileExists(Path.GetFullPath(Path.Combine(buildDir, "runtimes", expected)));
+#pragma warning disable IDE0035, CS0162
+            if (BuildMetadata.CompiledAsSelfContained)
+            {
+                Assert.That.FileExists(Path.Combine(buildDir, Path.GetFileName(expected)));
+            }
+            else
+            {
+                Assert.That.FileExists(Path.Combine(buildDir, "runtimes", expected));
+            }
+#pragma warning restore IDE0035, CS0162
         }
 
         [TestMethod]

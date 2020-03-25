@@ -3,12 +3,13 @@
 
   <!-- Register our task that as something to run before standard build target -->
   <Target Name="APVersionBeforeBuild" BeforeTargets="PrepareForBuild">
-    <Exec Command="pwsh –NonInteractive -noprofile $(ProjectDir)../git_version.ps1 -configuration $(Configuration)"
+    <Exec Command="pwsh –NonInteractive -noprofile $(ProjectDir)../git_version.ps1 -configuration $(Configuration) -self_contained $(SelfContained) -runtime_identifier $(RuntimeIdentifier)"
         ConsoleToMSBuild="True"
         EchoOff="false"
         StandardOutputImportance="low" >
        <Output TaskParameter="ConsoleOutput" ItemName="VersionMetadata"  />
     </Exec>
+    <Message Text="[APVersionBeforeBuild] %(VersionMetadata.Indentity)" Importance="High" />
     <!-- batch through returned metadata, then use ✨MAGIC✨ to convert subexpression to string, then split on key/value -->
     <!-- and finally create each property -->
     <CreateProperty Value="$([System.String]::Copy(`%(VersionMetadata.Identity)`).Split('=')[1].Trim())">
@@ -20,6 +21,7 @@
     <Message Text="[APVersionBeforeBuild] Using assembly version with: $(Version)!" Importance="High" />
     <Message Text="[APVersionBeforeBuild] InformationalVersion: $(InformationalVersion)" Importance="High" />
     <Message Text="[APVersionBeforeBuild] BuildDate: $(BuildDate)" Importance="High" />
+    <Message Text="[APVersionBeforeBuild] SelfContained: $(MsBuildSelfContained), Build RuntimeIdentifier:$(MsBuildRuntimeIdentifer)" Importance="High" />
     <Message Text="[APVersionBeforeBuild] git_version.ps1 stdout:    %(VersionMetadata.Identity)" Importance="High" Condition="$(GeneratedMetadata) == ''"/>
 
     <Error Text="AP Version metadata generation failed. Check you have PowerShell 6+ &amp; Git installed and available on the system PATH."
