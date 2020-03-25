@@ -30,15 +30,6 @@ RUN add-apt-repository "deb http://mp3splt.sourceforge.net/repository unstable m
     && apt-get update --allow-unauthenticated \
     && apt-get -y --allow-unauthenticated install libmp3splt0-mp3 libmp3splt0-ogg libmp3splt0-flac libmp3splt-doc libmp3splt-dev mp3splt mp3splt-gtk
 
-# Mono
-RUN \
-    # Add mono key server
-    curl https://origin-download.mono-project.com/repo/xamarin.gpg | apt-key add - \
-    # install mono
-    echo "deb http://download.mono-project.com/repo/debian stable-stretch main" | tee /etc/apt/sources.list.d/mono-official-stable.list \
-    && apt-get update \
-    && apt-get install -y mono-complete \
-    && rm -rf /var/lib/apt/lists/* /tmp/*
 
 # Powershell
 RUN \
