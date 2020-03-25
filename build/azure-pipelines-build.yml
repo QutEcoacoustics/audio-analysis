@@ -36,7 +36,7 @@ jobs:
         displayName: Build ${{ format('{0}_{1}_{2}', platform.rid, platform.pool, configuration) }}
         continueOnError: ${{ coalesce(platform.continueOnError, 'false') }}
         pool:
-          vmImage: $(platform.pool)
+          vmImage: ${{ platform.pool }}
       
         steps:
           # - pwsh: 'Get-ChildItem Env:'
@@ -90,15 +90,15 @@ jobs:
               nugetConfigPath: NuGet.config
             displayName: Restore solution dependencies
 
-          - pwsh: src/git_version.ps1 -build_type $(configuration)
+          - pwsh: src/git_version.ps1 -build_type ${{ configuration }}
             displayName: debug git_version.ps1 script
 
           - task: DotNetCoreCLI@2
             inputs:
               command: build
               versioningScheme: 'off'
-              arguments: --configuration $(configuration) --no-restore --runtime $(platform.rid)
-            displayName: Build solution ($(configuration), $(platform.rid))
+              arguments: --configuration ${{ configuration }} --no-restore --runtime ${{ platform.rid }}
+            displayName: Build solution (${{ configuration }}, ${{ platform.rid }})
 
           # https://github.com/microsoft/vstest/issues/2202 -- need to remove --no-build to make tests work on linux
           - task: DotNetCoreCLI@2
@@ -106,10 +106,10 @@ jobs:
               command: test
               projects: tests/Acoustics.Test/Acoustics.Test.csproj
               publishTestResults: true
-              testRunTitle: "Acoustics.Test for $(platform.rid) $(configuration)"
+              testRunTitle: "Acoustics.Test for ${{ platform.rid }} ${{ configuration }}"
               arguments: >
-                --runtime $(platform.rid)
-                --configuration $(configuration)
+                --runtime ${{ platform.rid }}
+                --configuration ${{ configuration }}
                 --settings tests/Acoustics.Test/.runsettings
                 --logger trx
                 --collect:"XPlat Code Coverage"
@@ -125,10 +125,10 @@ jobs:
               command: test
               projects: tests/AED.Test/AED.Test.fsproj
               publishTestResults: true
-              testRunTitle: "AED.Test for $(platform.rid) $(configuration)"
+              testRunTitle: "AED.Test for ${{ platform.rid }} ${{ configuration }}"
               arguments: >
-                --runtime $(platform.rid)
-                --configuration $(configuration)
+                --runtime ${{ platform.rid }}
+                --configuration ${{ configuration }}
                 --logger trx
                 --collect:"XPlat Code Coverage"
                 --
@@ -161,8 +161,8 @@ jobs:
               command: publish
               projects: src/AnalysisPrograms/AnalysisPrograms.csproj
               arguments: >
-                --runtime $(platform.rid)
-                --configuration $(configuration)
+                --runtime ${{ platform.rid }}
+                --configuration ${{ configuration }}
                 --output $(Build.ArtifactStagingDirectory)
                 --self-contained
               nobuild: true
@@ -173,4 +173,4 @@ jobs:
           - task: PublishBuildArtifacts@1
             inputs:
               pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-              artifactName: '($platform.rid)_$(configuration)'
+              artifactName: '${{ platform.rid }}_${{ configuration }}'
