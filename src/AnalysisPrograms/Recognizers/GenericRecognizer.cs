@@ -69,6 +69,9 @@ namespace AnalysisPrograms.Recognizers
                         break;
                     case HarmonicParameters _:
                         algorithmName = "Harmonics";
+                        break;
+                    case SpectralPeakTrackParameters _:
+                        algorithmName = "SpectralTracks";
                         //throw new NotImplementedException("The harmonic algorithm has not been implemented yet");
                         break;
                     case Aed.AedConfiguration _:
@@ -126,7 +129,7 @@ namespace AnalysisPrograms.Recognizers
                 Log.Debug($"Using the {profileName} algorithm... ");
                 if (profileConfig is CommonParameters parameters)
                 {
-                    if (profileConfig is BlobParameters || profileConfig is OscillationParameters || profileConfig is WhistleParameters || profileConfig is HarmonicParameters)
+                    if (profileConfig is BlobParameters || profileConfig is OscillationParameters || profileConfig is WhistleParameters || profileConfig is HarmonicParameters || profileConfig is SpectralPeakTrackParameters)
                     {
                         sonogram = new SpectrogramStandard(ParametersToSonogramConfig(parameters), audioRecording.WavReader);
 
@@ -216,6 +219,23 @@ namespace AnalysisPrograms.Recognizers
                                 segmentStartOffset);
 
                             var plot = PreparePlot(harmonicIntensityScores, $"{profileName} (Harmonics:dct intensity)", hp.DctThreshold.Value);
+                            plots.Add(plot);
+                        }
+                        else if (profileConfig is SpectralPeakTrackParameters tp)
+                        {
+                            //get the array of intensity values minus intensity in side/buffer bands.
+                            double[] decibelArray;
+                            (acousticEvents, decibelArray) = SpectralPeakTrackParameters.GetSpectralPeakTracks(
+                                sonogram,
+                                tp.MinHertz.Value,
+                                tp.MaxHertz.Value,
+                                sonogram.NyquistFrequency,
+                                tp.DecibelThreshold.Value,
+                                tp.MinDuration.Value,
+                                tp.MaxDuration.Value,
+                                segmentStartOffset);
+
+                            var plot = PreparePlot(decibelArray, $"{profileName} (SpectralPeaks:dB Intensity)", tp.DecibelThreshold.Value);
                             plots.Add(plot);
                         }
                         else

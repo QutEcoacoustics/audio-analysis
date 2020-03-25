@@ -313,6 +313,95 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             Assert.AreEqual(11.6, @event.EventEndSeconds, 0.1);
         }
 
+        [TestMethod]
+        public void TestSpectralPeakTracksAlgorithm()
+        {
+            // Set up the recognizer parameters.
+            var windowSize = 512;
+            var windowStep = 512;
+            var minHertz = 500;
+            var maxHertz = 6000;
+            var minDuration = 0.2;
+            var maxDuration = 1.1;
+            var decibelThreshold = 2.0;
+
+            //Set up the virtual recording.
+            int samplerate = 22050;
+            double signalDuration = 13.0; //seconds
+
+            // set up the config for a virtual spectrogram.
+            var sonoConfig = new SonogramConfig()
+            {
+                WindowSize = windowSize,
+                WindowStep = windowStep,
+                WindowOverlap = 0.0, // this must be set
+                WindowFunction = WindowFunctions.HANNING.ToString(),
+                NoiseReductionType = NoiseReductionType.Standard,
+                NoiseReductionParameter = 0.0,
+                Duration = TimeSpan.FromSeconds(signalDuration),
+                SampleRate = samplerate,
+            };
+
+            var spectrogram = this.CreateArtificialSpectrogramContainingHarmonics(sonoConfig);
+            //var image1 = SpectrogramTools.GetSonogramPlusCharts(spectrogram, null, null, null);
+
+            var segmentStartOffset = TimeSpan.Zero;
+            var plots = new List<Plot>();
+            double[] dBArray;
+            List<AcousticEvent> acousticEvents;
+            (acousticEvents, dBArray) = SpectralPeakTrackParameters.GetSpectralPeakTracks(
+                spectrogram,
+                minHertz,
+                maxHertz,
+                spectrogram.NyquistFrequency,
+                decibelThreshold,
+                minDuration,
+                maxDuration,
+                segmentStartOffset);
+
+            // draw a plot of max decibels in each frame
+            double decibelNormalizationMax = 3 * decibelThreshold;
+            var dBThreshold = decibelThreshold / decibelNormalizationMax;
+            var normalisedDecibelArray = DataTools.NormaliseInZeroOne(dBArray, 0, decibelNormalizationMax);
+            var plot1 = new Plot("decibel max", normalisedDecibelArray, dBThreshold);
+            plots.Add(plot1);
+
+            var allResults = new RecognizerResults()
+            {
+                Events = new List<AcousticEvent>(),
+                Hits = null,
+                ScoreTrack = null,
+                Plots = new List<Plot>(),
+                Sonogram = null,
+            };
+
+            // combine the results i.e. add the events list of call events.
+            allResults.Events.AddRange(acousticEvents);
+            allResults.Plots.AddRange(plots);
+
+            // effectively keeps only the *last* sonogram produced
+            allResults.Sonogram = spectrogram;
+
+            // DEBUG PURPOSES COMMENT NEXT LINE
+            var outputDirectory = new DirectoryInfo("C:\\temp");
+            GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "track");
+
+            Assert.AreEqual(21, allResults.Events.Count);
+
+            var @event = allResults.Events[3];
+            Assert.AreEqual(2.0, @event.EventStartSeconds, 0.1);
+            Assert.AreEqual(2.5, @event.EventEndSeconds, 0.1);
+            Assert.AreEqual(1680, @event.LowFrequencyHertz);
+            Assert.AreEqual(2110, @event.HighFrequencyHertz);
+
+            @event = allResults.Events[10];
+            Assert.AreEqual(6.0, @event.EventStartSeconds, 0.1);
+            Assert.AreEqual(6.6, @event.EventEndSeconds, 0.1);
+            Assert.AreEqual(2110, @event.LowFrequencyHertz);
+            Assert.AreEqual(2584, @event.HighFrequencyHertz);
+
+        }
+
         public SpectrogramStandard CreateArtificialSpectrogramContainingHarmonics(SonogramConfig config)
         {
             int samplerate = config.SampleRate;
@@ -363,7 +452,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
                 amplitudeSpectrogram[frame, bottomBin] = 9.0;
                 amplitudeSpectrogram[frame, bottomBin + binGap + offset] = 9.0;
                 amplitudeSpectrogram[frame, bottomBin + binGap + binGap + offset + offset] = 9.0;
-                amplitudeSpectrogram[frame, bottomBin + binGap + binGap + offset + offset + 1] = 9.0;
+                amplitudeSpectrogram[frame, bottomBin + binGap + binGap + offset + offset + 1] = 6.0;
                 offset++;
             }
 
@@ -374,9 +463,9 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             endframe = (int)Math.Round(framesPerSecond * 8);
             for (int frame = startframe; frame < endframe; frame++)
             {
-                amplitudeSpectrogram[frame, bottomBin] = 9.0;
+                amplitudeSpectrogram[frame, bottomBin] = 6.0;
                 amplitudeSpectrogram[frame, bottomBin + binGap] = 9.0;
-                amplitudeSpectrogram[frame, bottomBin + binGap + binGap] = 9.0;
+                amplitudeSpectrogram[frame, bottomBin + binGap + binGap] = 6.0;
             }
 
             // draw fifth set of harmonics
@@ -401,10 +490,37 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             {
                 amplitudeSpectrogram[frame, bottomBin] = 9.0;
                 amplitudeSpectrogram[frame, bottomBin + binGap - offset] = 9.0;
-                amplitudeSpectrogram[frame, bottomBin + binGap + binGap - offset - offset - 1] = 9.0;
+                amplitudeSpectrogram[frame, bottomBin + binGap + binGap - offset - offset - 1] = 3.0;
                 amplitudeSpectrogram[frame, bottomBin + binGap + binGap - offset - offset] = 9.0;
                 offset++;
             }
+
+            // draw a set of sequential tracks
+            startframe = (int)Math.Round(framesPerSecond * 2) + 3;
+            int startBin = 40;
+            for (int i = 0; i < 9; i++)
+            {
+                amplitudeSpectrogram[startframe + i, startBin + i] = 9.0;
+                amplitudeSpectrogram[startframe + 16 - i, startBin + i] = 6.0;
+            }
+
+            startframe = (int)Math.Round(framesPerSecond * 6) + 3;
+            startBin = 50;
+            for (int i = 0; i < 10; i++)
+            {
+                amplitudeSpectrogram[startframe + i, startBin + i] = 6.0;
+                amplitudeSpectrogram[startframe + 20 - i, startBin + i] = 9.0;
+            }
+
+            startframe = (int)Math.Round(framesPerSecond * 10) + 3;
+            startBin = 50;
+            for (int i = 0; i < 8; i++)
+            {
+                amplitudeSpectrogram[startframe + i, startBin + i] = 9.0;
+                amplitudeSpectrogram[startframe + 16 - i, startBin + i] = 9.0;
+            }
+            amplitudeSpectrogram[startframe + 8, startBin + 8] = 6.0;
+            amplitudeSpectrogram[startframe + 8, startBin + 7] = 9.0;
 
             var spectrogram = new SpectrogramStandard(config)
             {
@@ -413,8 +529,6 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
                 Data = amplitudeSpectrogram,
             };
 
-            // TODO BUG TO FIX!! THis constructor is producing a wrong value for framesPerSecond. Reset it here.
-            //spectrogram.FramesPerSecond = samplerate / config.WindowStep;
             return spectrogram;
         }
 
