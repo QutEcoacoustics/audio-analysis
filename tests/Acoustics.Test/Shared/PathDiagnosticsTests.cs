@@ -277,7 +277,7 @@ Input path exists wholly until its end (column {testFragment.Length + AssetPathL
 
             Assert.That.StringEqualWithDiff(expected.NormalizeToCrLf(), report.Messages.ToString().NormalizeToCrLf());
 
-            Debug.WriteLine(report.Messages.ToString());
+            Trace.WriteLine(report.Messages.ToString());
         }
     }
 }

@@ -30,9 +30,6 @@ jobs:
   - ${{ each platform in parameters.platforms }}:
     - ${{ each configuration in platform.configurations }}:
       - job:
-        # rid: ${{ platform.rid }}
-        # pool: ${{ platform.pool }}
-        # configuration: ${{ configuration }}
         displayName: Build ${{ format('{0}_{1}_{2}', platform.rid, platform.pool, configuration) }}
         continueOnError: ${{ coalesce(platform.continueOnError, 'false') }}
         pool:

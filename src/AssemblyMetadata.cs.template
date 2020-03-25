@@ -43,7 +43,7 @@ namespace AnalysisPrograms
 
         public const bool CompiledAsSelfContained = ${self_contained};
         public const string CompiledRuntimeIdentifer = "${runtime_identifer}";
-
+        public const string CompiledConfiguration = "${configuration}";
 
         public static readonly Version Version = new Version("${version}");
     }

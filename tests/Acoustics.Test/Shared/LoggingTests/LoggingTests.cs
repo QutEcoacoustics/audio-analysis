@@ -73,8 +73,8 @@ namespace Acoustics.Test.Shared.LoggingTests
 
             var expectedPath = Path.Combine(LoggedConsole.LogFolder, logging.LogFileName);
 
-            // Debug.WriteLine("expected:" + expectedPath);
-            // Debug.WriteLine("actual:" + logging.LogFilePath);
+            // Trace.WriteLine("expected:" + expectedPath);
+            // Trace.WriteLine("actual:" + logging.LogFilePath);
 
             Assert.That.PathExists(logging.LogFilePath);
             Assert.That.PathExists(expectedPath);
@@ -117,7 +117,7 @@ namespace Acoustics.Test.Shared.LoggingTests
         {
             var repositories = LoggerManager.GetAllRepositories();
 
-            Debug.WriteLine("Found repositories: " + repositories.Select(x => x.Name).Join(", "));
+            Trace.WriteLine("Found repositories: " + repositories.Select(x => x.Name).Join(", "));
 
             Assert.AreEqual(1, repositories.Length);
             Assert.AreEqual("log4net-default-repository", repositories[0].Name);

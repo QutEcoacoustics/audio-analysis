@@ -557,17 +557,20 @@ namespace Acoustics.Test.TestHelpers
         {
             var ffmpegExe = new FileInfo(AppConfigHelper.FfmpegExe);
 
-            var ffmpeg = new FfmpegAudioUtility(ffmpegExe, new FileInfo( AppConfigHelper.FfprobeExe));
+            var ffmpeg = new FfmpegAudioUtility(ffmpegExe, AppConfigHelper.FfprobeExe.ToFileInfo());
             var ffmpegRawPcm = new FfmpegRawPcmAudioUtility(ffmpegExe);
-            var wvunpack = new WavPackAudioUtility(new FileInfo(AppConfigHelper.WvunpackExe));
-            var sox = new SoxAudioUtility(new FileInfo(AppConfigHelper.SoxExe));
 
-            return new MasterAudioUtility(ffmpeg, wvunpack, sox, ffmpegRawPcm, PathHelper.GetTempDir());
+            var wvunpack = AppConfigHelper.WvunpackExe;
+            var wvunpackUtility = wvunpack != null ? new WavPackAudioUtility(wvunpack.ToFileInfo()) : null;
+
+            var sox = new SoxAudioUtility(AppConfigHelper.SoxExe.ToFileInfo());
+
+            return new MasterAudioUtility(ffmpeg, wvunpackUtility, sox, ffmpegRawPcm, PathHelper.GetTempDir());
         }
 
         public static IAudioUtility GetAudioUtilitySox()
         {
-            var soxExe = new FileInfo(AppConfigHelper.SoxExe);
+            var soxExe = AppConfigHelper.SoxExe?.ToFileInfo();
 
             var sox = new SoxAudioUtility(soxExe);
 

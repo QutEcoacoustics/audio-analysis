@@ -69,7 +69,7 @@ namespace Acoustics.Test
         {
             foreach (var example in this.invalidFormats)
             {
-                Debug.WriteLine($"Testing format: {example}");
+                Trace.WriteLine($"Testing format: {example}");
                 Assert.IsFalse(
                     FileDateHelpers.FileNameContainsDateTime(example, out var parsedDate),
                     $"Testing format: {example}");
@@ -81,7 +81,7 @@ namespace Acoustics.Test
         {
             foreach (var example in this.invalidDates)
             {
-                Debug.WriteLine($"Testing format: {example}");
+                Trace.WriteLine($"Testing format: {example}");
                 Assert.IsFalse(
                     FileDateHelpers.FileNameContainsDateTime(example, out var parsedDate),
                     $"Testing format: {example}");
@@ -89,24 +89,24 @@ namespace Acoustics.Test
         }
 
         private readonly Dictionary<string, DateTimeOffset> validFormats = new Dictionary<string, DateTimeOffset>
-            {
-                ["sdncv*_-T&^%34jd_20140301_085031+0630blah_T-suffix.mp3"] = Parse("2014-03-01T08:50:31.000+06:30"),
-                ["sdncv*_-T&^%34jd_20140301_085031-0630blah_T-suffix.mp3"] = Parse("2014-03-01T08:50:31.000-06:30"),
-                ["blah_T-suffix20140301-085031-07s:dncv*_-T&^%34jd.ext"] = Parse("2014-03-01T08:50:31.000-07:00"),
-                ["20150727T133138Z.wav"] = Parse("2015-07-27T13:31:38.000+00:00"),
-                ["blah_T-suffix20140301-085031Z:dncv*_-T&^%34jd.ext"] = Parse("2014-03-01T08:50:31.000+00:00"),
-                ["SERF_20130314_000021Z_000.wav"] = Parse("2013-03-14T00:00:21.000+00:00"),
-                ["20150727T133138Z.wav"] = Parse("2015-07-27T13:31:38.000+00:00"),
-                ["5BFA3A06.WAV"] = Parse("2018-11-25T05:58:30.000+00:00"),
-                ["5BFA3A06__blahblahblahresults.WAV"] = Parse("2018-11-25T05:58:30.000+00:00"),
-            };
+        {
+            ["sdncv*_-T&^%34jd_20140301_085031+0630blah_T-suffix.mp3"] = Parse("2014-03-01T08:50:31.000+06:30"),
+            ["sdncv*_-T&^%34jd_20140301_085031-0630blah_T-suffix.mp3"] = Parse("2014-03-01T08:50:31.000-06:30"),
+            ["blah_T-suffix20140301-085031-07s:dncv*_-T&^%34jd.ext"] = Parse("2014-03-01T08:50:31.000-07:00"),
+            ["20150727T133138Z.wav"] = Parse("2015-07-27T13:31:38.000+00:00"),
+            ["blah_T-suffix20140301-085031Z:dncv*_-T&^%34jd.ext"] = Parse("2014-03-01T08:50:31.000+00:00"),
+            ["SERF_20130314_000021Z_000.wav"] = Parse("2013-03-14T00:00:21.000+00:00"),
+            ["20150727T133138Z.wav"] = Parse("2015-07-27T13:31:38.000+00:00"),
+            ["5BFA3A06.WAV"] = Parse("2018-11-25T05:58:30.000+00:00"),
+            ["5BFA3A06__blahblahblahresults.WAV"] = Parse("2018-11-25T05:58:30.000+00:00"),
+        };
 
         [TestMethod]
         public void TestValidDateFormats()
         {
             foreach (var example in this.validFormats)
             {
-                Debug.WriteLine($"Testing format: {example.Key}");
+                Trace.WriteLine($"Testing format: {example.Key}");
                 Assert.IsTrue(
                     FileDateHelpers.FileNameContainsDateTime(example.Key, out var parsedDate),
                     $"Testing format: {example}");
@@ -116,27 +116,27 @@ namespace Acoustics.Test
         }
 
         private readonly Dictionary<string, DateTimeOffset> validFormatsWithOffsetHint = new Dictionary<string, DateTimeOffset>
-            {
-                ["sdncv*_-T&^%34jd_20140301_085031blah_T-suffix.mp3"] = Parse("2014-03-01T08:50:31.000+06:30"),
-                ["sdncv*_-T&^%34jd_20140301T085031blah_T-suffix.mp3"] = Parse("2014-03-01T08:50:31.000+06:30"),
-                ["blah_T-suffix20140301-085031:dncv*_-T&^%34jd.ext"] = Parse("2014-03-01T08:50:31.000+06:30"),
-                ["20150727T133138.wav"] = Parse("2015-07-27T13:31:38.000+06:30"),
-                ["blah_T-suffix20140301-085031:dncv*_-T&^%34jd.ext"] = Parse("2014-03-01T08:50:31.000+06:30"),
-                ["SERF_20130314_000021_000.wav"] = Parse("2013-03-14T00:00:21.000+06:30"),
-                ["20150727T133138.wav"] = Parse("2015-07-27T13:31:38.000+06:30"),
-                ["20150801-064555.wav"] = Parse("2015-08-01T06:45:55.000+06:30"),
+        {
+            ["sdncv*_-T&^%34jd_20140301_085031blah_T-suffix.mp3"] = Parse("2014-03-01T08:50:31.000+06:30"),
+            ["sdncv*_-T&^%34jd_20140301T085031blah_T-suffix.mp3"] = Parse("2014-03-01T08:50:31.000+06:30"),
+            ["blah_T-suffix20140301-085031:dncv*_-T&^%34jd.ext"] = Parse("2014-03-01T08:50:31.000+06:30"),
+            ["20150727T133138.wav"] = Parse("2015-07-27T13:31:38.000+06:30"),
+            ["blah_T-suffix20140301-085031:dncv*_-T&^%34jd.ext"] = Parse("2014-03-01T08:50:31.000+06:30"),
+            ["SERF_20130314_000021_000.wav"] = Parse("2013-03-14T00:00:21.000+06:30"),
+            ["20150727T133138.wav"] = Parse("2015-07-27T13:31:38.000+06:30"),
+            ["20150801-064555.wav"] = Parse("2015-08-01T06:45:55.000+06:30"),
 
-                // Temporary support for another date format
-                ["0645-01082015.wav"] = Parse("2015-08-01T06:45:00.000+06:30"),
-                ["test_0645-01082015_test.wav"] = Parse("2015-08-01T06:45:00.000+06:30"),
-            };
+            // Temporary support for another date format
+            ["0645-01082015.wav"] = Parse("2015-08-01T06:45:00.000+06:30"),
+            ["test_0645-01082015_test.wav"] = Parse("2015-08-01T06:45:00.000+06:30"),
+        };
 
         [TestMethod]
         public void TestValidDateFormatsWithOffsetHint()
         {
             foreach (var example in this.validFormatsWithOffsetHint)
             {
-                Debug.WriteLine($"Testing format: {example.Key}");
+                Trace.WriteLine($"Testing format: {example.Key}");
                 Assert.IsTrue(
                     FileDateHelpers.FileNameContainsDateTime(
                         example.Key,
@@ -192,7 +192,7 @@ namespace Acoustics.Test
             for (var i = 0; i < sortedFiles.Length; i++)
             {
                 var datePair = sortedFiles[i];
-                Debug.WriteLine($"Date parsed: {datePair.Key.ToString("O")}, {datePair.Key.UtcDateTime.ToString("O")}, for file: {datePair.Value}");
+                Trace.WriteLine($"Date parsed: {datePair.Key.ToString("O")}, {datePair.Key.UtcDateTime.ToString("O")}, for file: {datePair.Value}");
 
                 //Assert.AreEqual(this.orderedDates[i], datePair.Key);
             }

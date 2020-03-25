@@ -826,7 +826,7 @@ namespace Acoustics.Test.AnalysisBase
             var dummyAnalyzer = new DummyAnalyzer(true);
             var settings = dummyAnalyzer.DefaultSettings;
 
-            Debug.WriteLine("Class output directory:" + this.TestOutputDirectory.FullName);
+            Trace.WriteLine("Class output directory:" + this.TestOutputDirectory.FullName);
 
             settings.AnalysisMaxSegmentDuration = 60.Seconds();
             settings.AnalysisOutputDirectory = this.AnalysisOutput;
@@ -894,7 +894,7 @@ namespace Acoustics.Test.AnalysisBase
             foreach (var file in state.ShouldExist)
             {
                 var f = file.FormatToken(paths);
-                Debug.WriteLine(f);
+                Trace.WriteLine(f);
 
                 Assert.That.PathExists(f, $"(stage: {stage}, pre-templated string: \"{file}\")");
             }
@@ -902,7 +902,7 @@ namespace Acoustics.Test.AnalysisBase
             foreach (var file in state.ShouldNotExist)
             {
                 var f = file.FormatToken(paths);
-                Debug.WriteLine(f);
+                Trace.WriteLine(f);
                 Assert.That.PathNotExists(file, $"(stage: {stage}, pre-templated string: \"{file}\")");
             }
         }

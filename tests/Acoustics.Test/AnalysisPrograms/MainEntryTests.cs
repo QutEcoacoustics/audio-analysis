@@ -67,6 +67,8 @@ namespace Acoustics.Test.AnalysisPrograms
             using var console = new ConsoleRedirector();
             var code = await MainEntry.Main(new[] { "CheckEnvironment" });
 
+            Trace.WriteLine(console.Lines);
+
             Assert.AreEqual(0, code);
 
             this.AssertContainsCopyright(console.Lines);
@@ -120,7 +122,7 @@ namespace Acoustics.Test.AnalysisPrograms
 
             const string shortName = "ANALYS~1.EXE";
 
-            Debug.WriteLine("Executing in: " + PathHelper.AnalysisProgramsBuild);
+            Trace.WriteLine("Executing in: " + PathHelper.AnalysisProgramsBuild);
             Process process = new Process
             {
                 StartInfo = new ProcessStartInfo(shortName, $"{CheckEnvironment.CommandName} -n")
@@ -141,13 +143,13 @@ namespace Acoustics.Test.AnalysisPrograms
             var output = process.StandardOutput.ReadToEnd();
             var error = process.StandardError.ReadToEnd();
 
-            Debug.WriteLine("Output:\n" + output);
-            Debug.WriteLine("Error:\n" + error);
+            Trace.WriteLine("Output:\n" + output);
+            Trace.WriteLine("Error:\n" + error);
 
             StringAssert.Contains(output,
                 "!!!IMPORTANT: Executable name is ANALYS~1.EXE and expected name is AnalysisPrograms.exe");
-             Assert.IsFalse(output.Contains("ReflectionTypeLoadException"),$"Output should not contain `ReflectionTypeLoadException`.");
-             Assert.IsFalse(error.Contains("ReflectionTypeLoadException"),$"Output should not contain `ReflectionTypeLoadException`.");
+            Assert.IsFalse(output.Contains("ReflectionTypeLoadException"), $"Output should not contain `ReflectionTypeLoadException`.");
+            Assert.IsFalse(error.Contains("ReflectionTypeLoadException"), $"Output should not contain `ReflectionTypeLoadException`.");
 
             Assert.AreEqual(0, process.ExitCode);
         }

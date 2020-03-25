@@ -36,13 +36,15 @@ namespace Acoustics.Tools.Audio
         /// </summary>
         public MasterAudioUtility()
         {
-            this.wvunpackUtility = new WavPackAudioUtility(new FileInfo(AppConfigHelper.WvunpackExe));
+            this.wvunpackUtility = AppConfigHelper.WvunpackExe != null
+                ? new WavPackAudioUtility(AppConfigHelper.WvunpackExe.ToFileInfo())
+                : null;
 
             this.ffmpegUtility = new FfmpegAudioUtility(new FileInfo(AppConfigHelper.FfmpegExe), new FileInfo(AppConfigHelper.FfprobeExe));
             this.ffmpegRawPcmUtility = new FfmpegRawPcmAudioUtility(new FileInfo(AppConfigHelper.FfmpegExe));
             this.soxUtility = new SoxAudioUtility(new FileInfo(AppConfigHelper.SoxExe));
 
-            this.TemporaryFilesDirectory = this.TemporaryFilesDirectory ?? TempFileHelper.TempDir();
+            this.TemporaryFilesDirectory ??= TempFileHelper.TempDir();
 
             this.Validate();
         }
@@ -191,11 +193,11 @@ namespace Acoustics.Tools.Audio
             }
 
             var segmentRequest = new AudioUtilityRequest
-                {
-                    OffsetStart = request.OffsetStart,
-                    OffsetEnd = request.OffsetEnd,
-                    MixDownToMono = false,
-                };
+            {
+                OffsetStart = request.OffsetStart,
+                OffsetEnd = request.OffsetEnd,
+                MixDownToMono = false,
+            };
 
             FileInfo soxSourceFile;
             var soxRequest = request;

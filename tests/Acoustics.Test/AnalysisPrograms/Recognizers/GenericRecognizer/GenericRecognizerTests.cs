@@ -57,7 +57,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             CollectionAssert.Contains(lines, "  TestBlob: !BlobParameters");
             CollectionAssert.Contains(lines, "  TestWhistle: !WhistleParameters");
 
-            //lines.ForEach(x => Debug.WriteLine(x));
+            //lines.ForEach(x => Trace.WriteLine(x));
 
             var config2 = Yaml.Deserialize<GenericRecognizer.GenericRecognizerConfig>(target);
 
