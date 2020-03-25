@@ -5,12 +5,12 @@
 namespace Acoustics.Test.Shared
 {
     using System;
+    using System.Diagnostics;
     using System.IO;
     using System.Runtime.InteropServices;
     using Acoustics.Shared;
     using Acoustics.Test.TestHelpers;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Mono.Unix;
     using static Acoustics.Shared.AppConfigHelper;
 
     [TestClass]
@@ -121,24 +121,33 @@ namespace Acoustics.Test.Shared
             }
         }
 
-        [TestMethod]
-        public void TestCheckForExecutePermissions()
+        [RuntimeIdentifierSpecificDataTestMethod]
+        [DataRow(WinX64, null)]
+        [DataRow(OsxX64, null)]
+        [DataRow(LinuxX64, null)]
+        [DataRow(LinuxArm, null)]
+        [DataRow(LinuxArm64, null)]
+        [DataRow(LinuxMuslX64, false)]
+        [DataRow(WinArm64, false)]
+        public void TestCheckForExecutePermissions(string rid, bool? expected)
         {
             // first get a known non-exe
             var anything = PathHelper.ResolveAssetPath("1s_silence.wav");
 
-            void Action() => CheckForExecutePermission(anything);
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            bool Act()
             {
-                // noop, test passes
-                Action();
+                return CheckForExecutePermission(anything);
+            }
+
+            if (expected == null)
+            {
+                Assert.ThrowsException<UnauthorizedAccessException>(
+                    () => Act(),
+                    $"The executable file `{anything}` does not have any execute permissions set. Please `chmod a+x {anything}`");
             }
             else
             {
-                Assert.ThrowsException<UnauthorizedAccessException>(
-                    Action,
-                    $"The executable file `{anything}` does not have any execute permissions set. Please `chmod a+x {anything}`");
+                Assert.AreEqual(expected.Value, Act());
             }
         }
     }

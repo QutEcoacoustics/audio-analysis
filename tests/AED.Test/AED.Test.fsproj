@@ -39,5 +39,6 @@
     <ItemGroup>
         <ProjectReference Include="..\..\src\Acoustics.Shared.FSharp\Acoustics.Shared.FSharp.fsproj" />
         <ProjectReference Include="..\..\src\AED\AED.fsproj" />
+        <ProjectReference Include="..\..\src\AnalysisPrograms\AnalysisPrograms.csproj" />
     </ItemGroup>
 </Project>

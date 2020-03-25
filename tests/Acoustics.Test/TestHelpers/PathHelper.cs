@@ -8,8 +8,8 @@ namespace Acoustics.Test.TestHelpers
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
-    using System.Runtime.CompilerServices;
     using Acoustics.Shared;
+    using global::AnalysisPrograms;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Newtonsoft.Json;
 
@@ -123,7 +123,14 @@ namespace Acoustics.Test.TestHelpers
             CodeBase = context.DeploymentDirectory;
             TestResources = Path.Combine(SolutionRoot, "tests", "Fixtures");
 
-            AnalysisProgramsBuild = Path.Combine(SolutionRoot, "src", Meta.ProjectName, "bin", "Debug", "netcoreapp3.1");
+            AnalysisProgramsBuild = Path.Combine(
+                SolutionRoot,
+                "src",
+                Meta.ProjectName,
+                "bin",
+                "Debug",
+                "netcoreapp3.1",
+                BuildMetadata.CompiledAsSelfContained ? AppConfigHelper.PseudoRuntimeIdentifier : string.Empty);
 
             testContext = context;
 

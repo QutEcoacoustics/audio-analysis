@@ -102,6 +102,7 @@ jobs:
           arguments: --configuration $(configuration) --no-restore --runtime $(rid)
         displayName: Build solution ($(configuration), $(rid))
 
+      # https://github.com/microsoft/vstest/issues/2202 -- need to remove --no-build to make tests work on linux
       - task: DotNetCoreCLI@2
         inputs:
           command: test
@@ -112,13 +113,13 @@ jobs:
             --runtime $(rid)
             --configuration $(configuration)
             --settings tests/Acoustics.Test/.runsettings
-            --no-build
             --logger trx
             --collect:"XPlat Code Coverage"
             --
             RunConfiguration.DisableAppDomain=true
         displayName: Run Acoustics.Test
 
+      # https://github.com/microsoft/vstest/issues/2202 -- need to remove --no-build to make tests work on linux
       - task: DotNetCoreCLI@2
         # run even if other tests failed
         condition: succeededOrFailed()
@@ -130,7 +131,6 @@ jobs:
           arguments: >
             --runtime $(rid)
             --configuration $(configuration)
-            --no-build
             --logger trx
             --collect:"XPlat Code Coverage"
             --
