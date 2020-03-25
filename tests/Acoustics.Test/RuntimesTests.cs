@@ -48,9 +48,10 @@ namespace Acoustics.Test
         [DataRow(WinX64, "win-x64/lib/netstandard2.0/Mono.Posix.NETStandard.dll")]
         [DataRow(OsxX64, "osx-x64/lib/netstandard2.0/Mono.Posix.NETStandard.dll")]
         [DataRow(LinuxX64, "linux-x64/lib/netstandard2.0/Mono.Posix.NETStandard.dll")]
-        /*[DataRow(LinuxMuslX64, "linux-musl-x64/lib/Mono.Posix.NETStandard.dll")]*/
         [DataRow(LinuxArm, "linux-arm/lib/netstandard2.0/Mono.Posix.NETStandard.dll")]
         [DataRow(LinuxArm64, "linux-arm64/lib/netstandard2.0/Mono.Posix.NETStandard.dll")]
+        [DataRow(LinuxMuslX64, null)]
+        [DataRow(WinArm64, null)]
 
         [DataRow(WinX64, "win-x64/native/libMonoPosixHelper.dll")]
         [DataRow(OsxX64, "osx-x64/native/libMonoPosixHelper.dylib")]
@@ -60,6 +61,11 @@ namespace Acoustics.Test
         [DataRow(LinuxArm64, "linux-arm64/native/libMonoPosixHelper.so")]
         public void TestRequiredMonoPosixDllCopiedToBuildDir(string rid, string expected)
         {
+            if (expected == null)
+            {
+                Assert.Inconclusive($"Mono.Posix.NETStandard.dll not expected on {rid}");
+            }
+
             var buildDir = PathHelper.AnalysisProgramsBuild;
 
             Assert.That.DirectoryExists(buildDir);

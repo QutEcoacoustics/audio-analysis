@@ -17,7 +17,6 @@ namespace Acoustics.Shared
     using System.Runtime.InteropServices;
     using log4net;
     using Microsoft.DotNet.PlatformAbstractions;
-    using Mono.Unix.Native;
     using static System.Runtime.InteropServices.OSPlatform;
     using static System.Runtime.InteropServices.RuntimeInformation;
 
@@ -141,6 +140,17 @@ namespace Acoustics.Shared
         /// <remarks>
         /// Note: these are not real .NET RIDs... but they're meant to simulate them.
         /// </remarks>
+        /// <remarks>
+        /// This value will be more less accurate than <see cref="RuntimeIdentifier"/>
+        /// which is made to return a value similar to the target runtimes we have set
+        /// in project files.
+        /// <example>
+        /// For Ubuntu 18 x86 64-bit <see cref="PseudoRuntimeIdentifier"/> will return "linux-x64".
+        /// </example>
+        /// <example>
+        /// For Ubuntu 18 x86 64-bit <see cref="RuntimeIdentifier"/> will return "ubuntu.18.04-x64".
+        /// </example>
+        /// </remarks>
         /// <returns>An rid-like string.</returns>
         public static string PseudoRuntimeIdentifier { get; } =
             OSArchitecture switch
@@ -164,18 +174,22 @@ namespace Acoustics.Shared
 #pragma warning restore 162
             };
 
-        public static string RuntimeIdentifier
-        {
-            get
-            {
-                // TODO: replace PseudoRuntimeIdentifier with this property once stable
-                string rid = Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironment.GetRuntimeIdentifier();
-                Debug.Assert(
-                    rid == PseudoRuntimeIdentifier,
-                    $"Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironment.GetRuntimeIdentifier() `{rid}` does not match PseudoRuntimeIdentifier `{PseudoRuntimeIdentifier}`");
-                return rid;
-            }
-        }
+        /// <summary>
+        /// Gets the runtime identifier as defined by Microsoft.
+        /// </summary>
+        /// <remarks>
+        /// This value will be more accurate than <see cref="PseudoRuntimeIdentifier"/>
+        /// which is made to return a value similar to the target runtimes we have set
+        /// in project files.
+        /// <example>
+        /// For Ubuntu 18 x86 64-bit <see cref="PseudoRuntimeIdentifier"/> will return "linux-x64".
+        /// </example>
+        /// <example>
+        /// For Ubuntu 18 x86 64-bit <see cref="RuntimeIdentifier"/> will return "ubuntu.18.04-x64".
+        /// </example>
+        /// </remarks>
+        /// <value>A runtime indentifier.</value>
+        public static string RuntimeIdentifier => Microsoft.DotNet.PlatformAbstractions.RuntimeEnvironment.GetRuntimeIdentifier();
 
         internal static string GetExeFile(string name, bool required = true)
         {
@@ -208,7 +222,11 @@ namespace Acoustics.Shared
                     Log.Verbose($"Found and using exe {executablePath}");
                 }
 
-                CheckForExecutePermission(executablePath);
+                var wasChecked = CheckForExecutePermission(executablePath);
+                if (!wasChecked)
+                {
+                    Log.Verbose($"Could not check {executablePath} for execute permissions");
+                }
 
                 return executablePath;
             }
@@ -222,20 +240,22 @@ namespace Acoustics.Shared
             return null;
         }
 
-        internal static void CheckForExecutePermission(string executablePath)
+        internal static bool CheckForExecutePermission(string executablePath)
         {
             // check we have required permissions
-            if (!IsOSPlatform(Windows))
+            if (IsOSPlatform(Windows))
             {
-                Syscall.stat(executablePath, out var stat);
-                FilePermissions filePerms = stat.st_mode & FilePermissions.ALLPERMS;
-                const FilePermissions execute = FilePermissions.S_IXUSR | FilePermissions.S_IXGRP | FilePermissions.S_IXOTH;
-                if ((filePerms & execute) == 0)
-                {
-                    throw new UnauthorizedAccessException(
-                        $"The executable file `{executablePath}` does not have any execute permissions set. Please `chmod a+x {executablePath}`");
-                }
+                return false;
             }
+#pragma warning disable IDE0035, CS0162
+            if (WasBuiltAgainstMusl)
+            {
+                return false;
+            }
+
+            CheckForExecutePermissionInternal(executablePath);
+            return true;
+#pragma warning restore IDE0035, CS0162
         }
 
         /// <summary>
@@ -303,6 +323,24 @@ namespace Acoustics.Shared
             else
             {
                 throw new PlatformNotSupportedException("Unknown platform");
+            }
+        }
+
+        private static void CheckForExecutePermissionInternal(string executablePath)
+        {
+            // full using reference is very intentional here!
+            // we are trying to avoid loading the Mono.Posix.NetStandard.dll unless absolutely necessary
+            // this is because it is not shipped with all runtimes that we support.
+            Mono.Unix.Native.Syscall.stat(executablePath, out var stat);
+            Mono.Unix.Native.FilePermissions filePerms = stat.st_mode & Mono.Unix.Native.FilePermissions.ALLPERMS;
+            const Mono.Unix.Native.FilePermissions execute =
+                Mono.Unix.Native.FilePermissions.S_IXUSR
+                | Mono.Unix.Native.FilePermissions.S_IXGRP |
+                Mono.Unix.Native.FilePermissions.S_IXOTH;
+            if ((filePerms & execute) == 0)
+            {
+                throw new UnauthorizedAccessException(
+                    $"The executable file `{executablePath}` does not have any execute permissions set. Please `chmod a+x {executablePath}`");
             }
         }
     }

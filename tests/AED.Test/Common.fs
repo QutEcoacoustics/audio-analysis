@@ -9,6 +9,7 @@ open System.IO.Compression
 open System.Reflection
 open Acoustics.AED.GetAcousticEvents
 open Acoustics.AED.Util
+open AnalysisPrograms
 open Microsoft.FSharp
 open Microsoft.FSharp.Math
 
@@ -21,7 +22,15 @@ let GParrots_JB2_20090607_173000_wav_minute_3 =
 let testAll f = Seq.iter f [BAC2_20071015_045040; GParrots_JB2_20090607_173000_wav_minute_3]
 
 /// Sets the current directory to be the fictures folders where test resources are kept
-let matlabPath = Path.Combine("..", "..", "..", "..", "Fixtures", "FSharp")
+let matlabPath =
+    Path.Combine(
+        (if BuildMetadata.CompiledAsSelfContained then ".." else ""),
+        "..", 
+        "..", 
+        "..",
+        "..",
+        "Fixtures",
+        "FSharp")
 
 // when module opens, unzip asssets
 do
