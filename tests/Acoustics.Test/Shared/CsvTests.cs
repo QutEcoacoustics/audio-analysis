@@ -132,9 +132,9 @@ namespace Acoustics.Test.Shared
 
             double[,] matrix = Csv.ReadMatrixFromCsv<double>(this.testFile, TwoDimensionalArray.None);
 
-            Debug.WriteLine(Json.SerializeToString(TestMatrix, prettyPrint: true));
-            Debug.WriteLine("Actual:");
-            Debug.WriteLine(Json.SerializeToString(matrix, true));
+            Trace.WriteLine(Json.SerializeToString(TestMatrix, prettyPrint: true));
+            Trace.WriteLine("Actual:");
+            Trace.WriteLine(Json.SerializeToString(matrix, true));
 
             CollectionAssert.AreEqual(TestMatrix, matrix);
         }
@@ -156,9 +156,9 @@ namespace Acoustics.Test.Shared
 
             double[,] matrix = Csv.ReadMatrixFromCsv<double>(this.testFile, TwoDimensionalArray.Rotate90AntiClockWise);
 
-            Debug.WriteLine(Json.SerializeToString(TestMatrix, prettyPrint: true));
-            Debug.WriteLine("Actual:");
-            Debug.WriteLine(Json.SerializeToString(matrix, true));
+            Trace.WriteLine(Json.SerializeToString(TestMatrix, prettyPrint: true));
+            Trace.WriteLine("Actual:");
+            Trace.WriteLine(Json.SerializeToString(matrix, true));
 
             CollectionAssert.AreEqual(TestMatrix, matrix);
         }
@@ -170,9 +170,9 @@ namespace Acoustics.Test.Shared
 
             double[,] matrix = Csv.ReadMatrixFromCsv<double>(this.testFile, TwoDimensionalArray.Rotate90ClockWise);
 
-            Debug.WriteLine(Json.SerializeToString(TestMatrix, prettyPrint: true));
-            Debug.WriteLine("Actual:");
-            Debug.WriteLine(Json.SerializeToString(matrix, true));
+            Trace.WriteLine(Json.SerializeToString(TestMatrix, prettyPrint: true));
+            Trace.WriteLine("Actual:");
+            Trace.WriteLine(Json.SerializeToString(matrix, true));
 
             CollectionAssert.AreEqual(TestMatrix, matrix);
         }
@@ -184,9 +184,9 @@ namespace Acoustics.Test.Shared
 
             double[,] matrix = Csv.ReadMatrixFromCsv<double>(this.testFile, TwoDimensionalArray.None);
 
-            Debug.WriteLine(Json.SerializeToString(TestMatrix, prettyPrint: true));
-            Debug.WriteLine("Actual:");
-            Debug.WriteLine(Json.SerializeToString(matrix, true));
+            Trace.WriteLine(Json.SerializeToString(TestMatrix, prettyPrint: true));
+            Trace.WriteLine("Actual:");
+            Trace.WriteLine(Json.SerializeToString(matrix, true));
 
             matrix = MatrixTools.MatrixRotate90Anticlockwise(matrix);
 
@@ -296,8 +296,8 @@ namespace Acoustics.Test.Shared
 
             // test reflection is working
             var actual = Meta.GetTypesFromQutAssemblies<ClassMap>().ToArray();
-            // Debug.WriteLine("Actual classmaps:\n" + actual.FormatList());
-            // Debug.WriteLine("Actual assemblies:\n" + Meta.QutAssemblies.Select(x => x.FullName).FormatList());
+            // Trace.WriteLine("Actual classmaps:\n" + actual.FormatList());
+            // Trace.WriteLine("Actual assemblies:\n" + Meta.QutAssemblies.Select(x => x.FullName).FormatList());
 
             CollectionAssert.AreEquivalent(
                 partialExpected.Select(x => x.Item2).ToArray(),
@@ -459,7 +459,7 @@ namespace Acoustics.Test.Shared
         {
             Csv.WriteMatrixToCsv(
                 this.testFile,
-                new[,] { { -789123.456, double.NegativeInfinity,  double.NaN } });
+                new[,] { { -789123.456, double.NegativeInfinity, double.NaN } });
 
             var actual = File.ReadAllText(this.testFile.FullName);
 
@@ -476,7 +476,7 @@ namespace Acoustics.Test.Shared
 
             Assert.That.StringEqualWithDiff(expected, lines);
 
-            //Debug.WriteLine(lines);
+            //Trace.WriteLine(lines);
 
             CollectionAssert.AreEqual(expected.ToArray(), lines.ToArray());
         }

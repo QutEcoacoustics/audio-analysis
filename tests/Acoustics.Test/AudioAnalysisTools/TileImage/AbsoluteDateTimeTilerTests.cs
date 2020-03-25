@@ -118,8 +118,8 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
 
             tiler.Tile(superTile);
 
-            ////Debug.WriteLine(this.outputDirectory.FullName);
-            ////Debug.WriteLine(this.outputDirectory.GetFiles().Length);
+            ////Trace.WriteLine(this.outputDirectory.FullName);
+            ////Trace.WriteLine(this.outputDirectory.GetFiles().Length);
             var actualFiles = this.outputDirectory.GetFiles().OrderBy(x => x.Name).ToArray();
 
             Assert.AreEqual(8, actualFiles.Length);
@@ -158,8 +158,8 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
             var superTile = new DefaultSuperTile() { Image = testBitmap, OffsetX = 0, Scale = 60.0 };
             this.tiler.Tile(superTile);
 
-            ////Debug.WriteLine(this.outputDirectory.FullName);
-            ////Debug.WriteLine(this.outputDirectory.GetFiles().Length);
+            ////Trace.WriteLine(this.outputDirectory.FullName);
+            ////Trace.WriteLine(this.outputDirectory.GetFiles().Length);
             var producedFiles = this.outputDirectory.GetFiles().OrderBy(x => x.Name).ToArray();
 
             Assert.AreEqual(24, producedFiles.Length);
@@ -198,8 +198,8 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
             };
             this.tiler.Tile(superTile);
 
-            ////Debug.WriteLine(this.outputDirectory.FullName);
-            ////Debug.WriteLine(this.outputDirectory.GetFiles().Length);
+            ////Trace.WriteLine(this.outputDirectory.FullName);
+            ////Trace.WriteLine(this.outputDirectory.GetFiles().Length);
             var producedFiles = this.outputDirectory.GetFiles().OrderBy(x => x.Name).ToArray();
 
             Assert.AreEqual(25, producedFiles.Length);

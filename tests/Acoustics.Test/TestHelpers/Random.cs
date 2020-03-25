@@ -15,7 +15,7 @@ namespace Acoustics.Test.TestHelpers
         {
             seed = seed ?? Environment.TickCount;
 
-            Debug.WriteLine("\n\nRandom seed used: " + seed.Value);
+            Trace.WriteLine("\n\nRandom seed used: " + seed.Value);
             LoggedConsole.WriteWarnLine($"Random seed: {seed}");
 
             return new System.Random(seed.Value);

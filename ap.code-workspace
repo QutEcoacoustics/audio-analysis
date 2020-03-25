@@ -25,9 +25,9 @@
             // "tests": true,
             // "TestResults": true
         },
-        "files.associations": {
-            "**/build/azure*yml": "azure-pipelines"
-        },
+        // "files.associations": {
+        //     "**/build/azure*yml": "azure-pipelines"
+        // },
         "omnisharp.enableRoslynAnalyzers": true,
         "omnisharp.enableEditorConfigSupport": true,
         "editor.formatOnType": true,

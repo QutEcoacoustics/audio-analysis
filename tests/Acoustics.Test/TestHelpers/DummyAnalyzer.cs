@@ -95,7 +95,7 @@ namespace Acoustics.Test.TestHelpers
 
         public void Pause(string description)
         {
-            Debug.WriteLine($"{this.Identifier} analysis has paused at stage `{description}`");
+            Trace.WriteLine($"{this.Identifier} analysis has paused at stage `{description}`");
             if (!this.block)
             {
                 return;
@@ -115,7 +115,7 @@ namespace Acoustics.Test.TestHelpers
                     throw;
                 }
 
-                Debug.WriteLine($"{this.Identifier} analysis has canceled at stage `{description}`");
+                Trace.WriteLine($"{this.Identifier} analysis has canceled at stage `{description}`");
             }
 
             this.waitingFor = null;

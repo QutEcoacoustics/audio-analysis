@@ -99,7 +99,7 @@ namespace Acoustics.Test.Shared
                         runner.StandardOutput.Length > 1200,
                         $"Expected stdout to at least include ffmpeg header but it was only {runner.StandardOutput.Length} chars. StdOut:\n{runner.StandardOutput}");
                     Assert.IsTrue(
-                        runner.ErrorOutput.Length > 1500,
+                        runner.ErrorOutput.Length > 1300,
                         $"Expected stderr to at least include ffmpeg header but it was only {runner.ErrorOutput.Length} chars. StdErr:\n{runner.ErrorOutput}");
                     Assert.AreEqual(0, runner.ExitCode);
                 }
@@ -128,7 +128,8 @@ namespace Acoustics.Test.Shared
                     runner.ErrorOutput.Length > 1500,
                     $"Expected stderr to at least include ffmpeg header but it was only {runner.ErrorOutput.Length} chars. Index: {index}. StdErr:\n{runner.ErrorOutput}");
 
-                if (AppConfigHelper.IsWindows) {
+                if (AppConfigHelper.IsWindows)
+                {
                     // we're killing the program; this exit code should be invalid
                     Assert.AreEqual(-1, runner.ExitCode);
                 }

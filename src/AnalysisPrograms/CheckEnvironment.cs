@@ -54,13 +54,11 @@ namespace AnalysisPrograms
                 errors.Add(message);
             }
 
-
             Type type = Type.GetType("Mono.Runtime");
             if (type != null)
             {
                 errors.Add($"We no longer use Mono with ${Meta.Name}. DO NOT prefix the {Meta.Name} prefix with `mono`.");
             }
-            
 
             // don't have much more to check at the current time
             if (errors.Count == 0)

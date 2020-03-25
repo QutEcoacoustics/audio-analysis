@@ -41,7 +41,7 @@ namespace Acoustics.Test.TestHelpers
             if (rid != actualRid)
             {
                 var message = $"Test not executed. The current RID <{actualRid}> is not <{rid}>. {this.IgnoreMessage}";
-                Debug.WriteLine(message);
+                Trace.WriteLine(message);
                 return new[]
                 {
                     new TestResult

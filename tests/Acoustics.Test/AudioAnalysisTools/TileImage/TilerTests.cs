@@ -182,8 +182,8 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
                 TimeSpan.Zero);
             this.tiler.Tile(superTile);
 
-            ////Debug.WriteLine(this.outputDirectory.FullName);
-            ////Debug.WriteLine(this.outputDirectory.GetFiles().Length);
+            ////Trace.WriteLine(this.outputDirectory.FullName);
+            ////Trace.WriteLine(this.outputDirectory.GetFiles().Length);
             var producedFiles = this.outputDirectory.GetFiles().OrderBy(x => x.Name).ToArray();
 
             Assert.AreEqual(6, producedFiles.Length);
@@ -218,8 +218,8 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
                 TimeSpan.FromHours(1));
             this.tiler.Tile(superTile);
 
-            ////Debug.WriteLine(this.outputDirectory.FullName);
-            ////Debug.WriteLine(this.outputDirectory.GetFiles().Length);
+            ////Trace.WriteLine(this.outputDirectory.FullName);
+            ////Trace.WriteLine(this.outputDirectory.GetFiles().Length);
             var producedFiles = this.outputDirectory.GetFiles().OrderBy(x => x.Name).ToArray();
 
             Assert.AreEqual(12, producedFiles.Length);

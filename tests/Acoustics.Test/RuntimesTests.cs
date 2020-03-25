@@ -155,7 +155,7 @@ namespace Acoustics.Test
             // This won't fail if a build stops generating build data immediately, but the time
             // it takes to commit->push->run on ci should definitely trigger the failure.
             var generatedBuildData = Path.GetFullPath(Path.Combine(PathHelper.SolutionRoot, "src", "AssemblyMetadata.Generated.cs"));
-            Debug.WriteLine(generatedBuildData);
+            Trace.WriteLine(generatedBuildData);
             var actual = File.GetLastWriteTimeUtc(generatedBuildData);
             Assert.That.AreEqual(now, actual, TimeSpan.FromMinutes(5));
 

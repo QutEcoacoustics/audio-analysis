@@ -39,7 +39,7 @@ namespace Acoustics.Test
             }
 
             stopwatch.Stop();
-            Debug.WriteLine("Time taken:" + stopwatch.Elapsed);
+            Trace.WriteLine("Time taken:" + stopwatch.Elapsed);
 
             Assert.IsTrue(testArray.All(value => value == 4.123456));
         }
@@ -58,7 +58,7 @@ namespace Acoustics.Test
             }
 
             stopwatch.Stop();
-            Debug.WriteLine("Time taken:" + stopwatch.Elapsed);
+            Trace.WriteLine("Time taken:" + stopwatch.Elapsed);
 
             Assert.IsTrue(testArray.All(value => value == 4.123456));
         }

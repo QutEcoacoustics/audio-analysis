@@ -127,7 +127,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                 FileInfo f = filePath.ToFileInfo();
                 if (f.Length == 0)
                 {
-                    Debug.WriteLine(f.Name);
+                    Trace.WriteLine(f.Name);
                 }
             }
             */

@@ -3,7 +3,8 @@
 #Requires -Version 6
 
 param(
-    [string]$configuration = "Release",
+    
+    [string]$configuration,
     [string]$self_contained,
     [string]$runtime_indentifier
 )
@@ -35,14 +36,14 @@ $describe = git describe --dirty --abbrev --long --always
 
 $describe_tag, $describe_commit_count, $describe_hash, $describe_dirty = $describe.Split("-")
 $is_dirty = if ($null -ne $describe_dirty) { 'true' } else { 'false' }
-$dirty = if ($is_dirty) { 'DIRTY'} else { '' }
+$dirty = if ($is_dirty) { 'DIRTY' } else { '' }
 
 $year = $now.Year
 $month = $now.Month
 $short_year = $now.ToString("yy")
 $short_month = $now.ToString("%M")
 $build_date = $now.ToString("O")
-$build_number = if ($null -eq  ${env:BUILD_BUILDID}) { "000" } else { ${env:BUILD_BUILDID} }
+$build_number = if ($null -eq ${env:BUILD_BUILDID}) { "000" } else { ${env:BUILD_BUILDID} }
 
 $tags_this_month = git log --tags --simplify-by-decoration --first-parent --pretty="format:%ai %d" --after="$year-$month-01T00:00Z"
 $tag_count_this_month = $tags_this_month.Count
@@ -55,7 +56,7 @@ $content = Get-Content -Raw $template_file
 $templated = $ExecutionContext.InvokeCommand.ExpandString($content)
 $templated | Out-File $metadata_file -Force -Encoding utf8NoBOM
 
-$props =  @"
+$props = @"
 Year=$short_year
 Month=$short_month
 BuildDate=$build_date
@@ -73,6 +74,7 @@ GeneratedMetadata=$metadata_file
 CacheWarning=$cache_warning
 MsBuildSelfContained=$self_contained
 MsBuildRuntimeIdentifer=$runtime_identifer
+MsBuildConfiguration=$configuration
 "@
 
 Write-Output $props

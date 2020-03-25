@@ -99,7 +99,7 @@ namespace Acoustics.Test.TestHelpers
             }
             catch (Exception e)
             {
-                Debug.WriteLine(e.Message);
+                Trace.WriteLine(e.Message);
             }
         }
 
@@ -128,7 +128,7 @@ namespace Acoustics.Test.TestHelpers
                 "src",
                 Meta.ProjectName,
                 "bin",
-                "Debug",
+                BuildMetadata.CompiledConfiguration,
                 "netcoreapp3.1",
                 BuildMetadata.CompiledAsSelfContained ? AppConfigHelper.PseudoRuntimeIdentifier : string.Empty);
 

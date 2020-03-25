@@ -23,7 +23,7 @@ namespace Acoustics.Test
 
         public void InfiniteStreamIsInfinite()
         {
-            Debug.WriteLine("Generating output");
+            Trace.WriteLine("Generating output");
 
             var builder = new StringBuilder(1_000_000);
             var source = new CancellationTokenSource();
@@ -59,18 +59,18 @@ namespace Acoustics.Test
             Assert.IsTrue(work.IsCompleted);
 
             string s = builder.ToString();
-            Debug.WriteLine($"Generation complete (length: {s.Length}):");
+            Trace.WriteLine($"Generation complete (length: {s.Length}):");
 
             Assert.IsTrue(s.Length > 1_000, $"Length {s.Length} was not greater than expected length of 1000");
 
-            //Debug.WriteLine(s);
+            //Trace.WriteLine(s);
         }
 
         [TestMethod]
         [Timeout(5_000)]
         public void InfiniteStreamCanReadLines()
         {
-            Debug.WriteLine("Generating output");
+            Trace.WriteLine("Generating output");
 
             StringBuilder builder = new StringBuilder(1_000_000);
             var source = new CancellationTokenSource();
@@ -100,11 +100,11 @@ namespace Acoustics.Test
             Assert.IsTrue(work.IsCompleted);
 
             string s = builder.ToString();
-            Debug.WriteLine($"Generation complete (length: {s.Length}:");
+            Trace.WriteLine($"Generation complete (length: {s.Length}:");
 
             Assert.IsTrue(s.Length > 10_000);
 
-            //Debug.WriteLine(s);
+            //Trace.WriteLine(s);
         }
     }
 }
