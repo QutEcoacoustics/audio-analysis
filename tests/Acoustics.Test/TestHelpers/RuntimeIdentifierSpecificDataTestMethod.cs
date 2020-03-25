@@ -5,6 +5,7 @@
 namespace Acoustics.Test.TestHelpers
 {
     using System;
+    using System.Diagnostics;
     using System.Runtime.InteropServices;
     using Acoustics.Shared;
     using JetBrains.Annotations;
@@ -40,6 +41,7 @@ namespace Acoustics.Test.TestHelpers
             if (rid != actualRid)
             {
                 var message = $"Test not executed. The current RID <{actualRid}> is not <{rid}>. {this.IgnoreMessage}";
+                Debug.WriteLine(message);
                 return new[]
                 {
                     new TestResult

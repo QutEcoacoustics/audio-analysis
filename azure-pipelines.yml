@@ -20,6 +20,9 @@ stages:
   - stage: build
     jobs:
       - template: build/azure-pipelines-build.yml
+  # - stage: build
+  #   jobs:
+  #     - template: build/azure-pipelines-build.yml
   # - stage: test
   #   jobs:
   #     - template: build/azure-pipelines-test.yml

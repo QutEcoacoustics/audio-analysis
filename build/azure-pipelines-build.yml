@@ -7,6 +7,7 @@ parameters:
     - rid: win-arm64
       pool: windows-latest
       configurations: [release]
+      continueOnError: true # not yet ready for release
     - rid: linux-x64
       pool: ubuntu-latest
       configurations: [debug, release]
@@ -25,154 +26,151 @@ parameters:
   # cross-product not supported
   # https://github.com/microsoft/azure-pipelines-yaml/issues/20
 
-
-
 jobs:
-  - job:
-    strategy:
-      matrix:
-        ${{ each platform in parameters.platforms }}:
-            ${{ each configuration in platform.configurations }}:
-              ${{ format('{0}_{1}_{2}', platform.rid, platform.pool, configuration) }}:
-                rid: ${{ platform.rid }}
-                pool: ${{ platform.pool }}
-                configuration: ${{ configuration }}
-    pool:
-      vmImage: $(pool)
-    displayName: Build
-    steps:
-      # - pwsh: 'Get-ChildItem Env:'
-      #   displayName: debug environment variables
+  - ${{ each platform in parameters.platforms }}:
+    - ${{ each configuration in platform.configurations }}:
+      - job:
+        # rid: ${{ platform.rid }}
+        # pool: ${{ platform.pool }}
+        # configuration: ${{ configuration }}
+        displayName: Build ${{ format('{0}_{1}_{2}', platform.rid, platform.pool, configuration) }}
+        continueOnError: ${{ coalesce(platform.continueOnError, 'false') }}
+        pool:
+          vmImage: $(platform.pool)
+      
+        steps:
+          # - pwsh: 'Get-ChildItem Env:'
+          #   displayName: debug environment variables
 
-      - checkout: self
-        clean: false
-        fetchDepth: 100
-        lfs: false
-        persistCredentials: true
-        displayName: "Shallow cloning repo"
+          - checkout: self
+            clean: false
+            fetchDepth: 100
+            lfs: false
+            persistCredentials: true
+            displayName: "Shallow cloning repo"
 
-      - task: Cache@2
-        # this won't work unless the build succeeds https://github.com/microsoft/azure-pipelines-tasks/issues/11388
-        inputs:
-          key: '"lfs_assets"'
-          restore: |
-            lfs_assets
-          path: ".git/lfs/objects"
-        displayName: "Cache git LFS objects"
+          - task: Cache@2
+            # this won't work unless the build succeeds https://github.com/microsoft/azure-pipelines-tasks/issues/11388
+            inputs:
+              key: '"lfs_assets"'
+              restore: |
+                lfs_assets
+              path: ".git/lfs/objects"
+            displayName: "Cache git LFS objects"
 
-      - pwsh: git lfs pull
-        displayName: "Refresh LFS assets"
+          - pwsh: git lfs pull
+            displayName: "Refresh LFS assets"
 
-      - task: Cache@2
-        inputs:
-          key: nuget | "$(Agent.OS)"
-          restoreKeys: |
-            nuget | "$(Agent.OS)"
-            nuget
-          path: $(NUGET_PACKAGES)
-        displayName: Cache NuGet packages
+          - task: Cache@2
+            inputs:
+              key: nuget | "$(Agent.OS)"
+              restoreKeys: |
+                nuget | "$(Agent.OS)"
+                nuget
+              path: $(NUGET_PACKAGES)
+            displayName: Cache NuGet packages
 
-      - pwsh: |
-          $sdkVersion = (Get-Content "global.json" | ConvertFrom-Json).sdk.version
-          echo "##vso[task.setvariable variable=sdkVersion]$sdkVersion"
-        displayName: Get .NET SDK version from "global.json"
+          - pwsh: |
+              $sdkVersion = (Get-Content "global.json" | ConvertFrom-Json).sdk.version
+              echo "##vso[task.setvariable variable=sdkVersion]$sdkVersion"
+            displayName: Get .NET SDK version from "global.json"
 
-      # the following steps were adapted form this guide:
-      # https://docs.microsoft.com/en-us/azure/devops/pipelines/ecosystems/dotnet-core?view=azure-devops#run-your-tests
-      - task: UseDotNet@2
-        inputs:
-          packageType: sdk
-          version: $(sdkVersion)
-        displayName: Lock down .NET SDK version
+          # the following steps were adapted form this guide:
+          # https://docs.microsoft.com/en-us/azure/devops/pipelines/ecosystems/dotnet-core?view=azure-devops#run-your-tests
+          - task: UseDotNet@2
+            inputs:
+              packageType: sdk
+              version: $(sdkVersion)
+            displayName: Lock down .NET SDK version
 
-      - task: DotNetCoreCLI@2
-        inputs:
-          command: restore
-          selectOrConfig: config
-          nugetConfigPath: NuGet.config
-        displayName: Restore solution dependencies
+          - task: DotNetCoreCLI@2
+            inputs:
+              command: restore
+              selectOrConfig: config
+              nugetConfigPath: NuGet.config
+            displayName: Restore solution dependencies
 
-      - pwsh: src/git_version.ps1 -build_type $(configuration)
-        displayName: debug git_version.ps1 script
+          - pwsh: src/git_version.ps1 -build_type $(configuration)
+            displayName: debug git_version.ps1 script
 
-      - task: DotNetCoreCLI@2
-        inputs:
-          command: build
-          versioningScheme: 'off'
-          arguments: --configuration $(configuration) --no-restore --runtime $(rid)
-        displayName: Build solution ($(configuration), $(rid))
+          - task: DotNetCoreCLI@2
+            inputs:
+              command: build
+              versioningScheme: 'off'
+              arguments: --configuration $(configuration) --no-restore --runtime $(platform.rid)
+            displayName: Build solution ($(configuration), $(platform.rid))
 
-      # https://github.com/microsoft/vstest/issues/2202 -- need to remove --no-build to make tests work on linux
-      - task: DotNetCoreCLI@2
-        inputs:
-          command: test
-          projects: tests/Acoustics.Test/Acoustics.Test.csproj
-          publishTestResults: true
-          testRunTitle: "Acoustics.Test for $(rid) $(configuration)"
-          arguments: >
-            --runtime $(rid)
-            --configuration $(configuration)
-            --settings tests/Acoustics.Test/.runsettings
-            --logger trx
-            --collect:"XPlat Code Coverage"
-            --
-            RunConfiguration.DisableAppDomain=true
-        displayName: Run Acoustics.Test
+          # https://github.com/microsoft/vstest/issues/2202 -- need to remove --no-build to make tests work on linux
+          - task: DotNetCoreCLI@2
+            inputs:
+              command: test
+              projects: tests/Acoustics.Test/Acoustics.Test.csproj
+              publishTestResults: true
+              testRunTitle: "Acoustics.Test for $(platform.rid) $(configuration)"
+              arguments: >
+                --runtime $(platform.rid)
+                --configuration $(configuration)
+                --settings tests/Acoustics.Test/.runsettings
+                --logger trx
+                --collect:"XPlat Code Coverage"
+                --
+                RunConfiguration.DisableAppDomain=true
+            displayName: Run Acoustics.Test
 
-      # https://github.com/microsoft/vstest/issues/2202 -- need to remove --no-build to make tests work on linux
-      - task: DotNetCoreCLI@2
-        # run even if other tests failed
-        condition: succeededOrFailed()
-        inputs:
-          command: test
-          projects: tests/AED.Test/AED.Test.fsproj
-          publishTestResults: true
-          testRunTitle: "AED.Test for $(rid) $(configuration)"
-          arguments: >
-            --runtime $(rid)
-            --configuration $(configuration)
-            --logger trx
-            --collect:"XPlat Code Coverage"
-            --
-            RunConfiguration.DisableAppDomain=true
-        displayName: Run AED.Test
+          # https://github.com/microsoft/vstest/issues/2202 -- need to remove --no-build to make tests work on linux
+          - task: DotNetCoreCLI@2
+            # run even if other tests failed
+            condition: succeededOrFailed()
+            inputs:
+              command: test
+              projects: tests/AED.Test/AED.Test.fsproj
+              publishTestResults: true
+              testRunTitle: "AED.Test for $(platform.rid) $(configuration)"
+              arguments: >
+                --runtime $(platform.rid)
+                --configuration $(configuration)
+                --logger trx
+                --collect:"XPlat Code Coverage"
+                --
+                RunConfiguration.DisableAppDomain=true
+            displayName: Run AED.Test
 
-      - task: DotNetCoreCLI@2
-        condition: succeededOrFailed()
-        inputs:
-          command: custom
-          custom: tool
-          arguments: install --tool-path . dotnet-reportgenerator-globaltool
-        displayName: Install ReportGenerator tool
+          - task: DotNetCoreCLI@2
+            condition: succeededOrFailed()
+            inputs:
+              command: custom
+              custom: tool
+              arguments: install --tool-path . dotnet-reportgenerator-globaltool
+            displayName: Install ReportGenerator tool
 
-      - script: >
-          ./reportgenerator
-          -reports:$(Agent.TempDirectory)/**/coverage.cobertura.xml
-          -targetdir:$(Build.SourcesDirectory)/coverlet/reports
-          -reporttypes:"Cobertura"
-        displayName: Create reports
+          - script: >
+              ./reportgenerator
+              -reports:$(Agent.TempDirectory)/**/coverage.cobertura.xml
+              -targetdir:$(Build.SourcesDirectory)/coverlet/reports
+              -reporttypes:"Cobertura"
+            displayName: Create reports
 
-      - task: PublishCodeCoverageResults@1
-        inputs:
-          codeCoverageTool: Cobertura
-          summaryFileLocation: $(Build.SourcesDirectory)/coverlet/reports/Cobertura.xml
-        displayName: 'Publish code coverage'
+          - task: PublishCodeCoverageResults@1
+            inputs:
+              codeCoverageTool: Cobertura
+              summaryFileLocation: $(Build.SourcesDirectory)/coverlet/reports/Cobertura.xml
+            displayName: 'Publish code coverage'
 
-      - task: DotNetCoreCLI@2
-        inputs:
-          command: publish
-          projects: src/AnalysisPrograms/AnalysisPrograms.csproj
-          arguments: >
-            --runtime $(rid)
-            --configuration $(configuration)
-            --output $(Build.ArtifactStagingDirectory)
-            --self-contained
-          nobuild: true
-          zipAfterPublish: true
-        displayName: dotnet publish
+          - task: DotNetCoreCLI@2
+            inputs:
+              command: publish
+              projects: src/AnalysisPrograms/AnalysisPrograms.csproj
+              arguments: >
+                --runtime $(platform.rid)
+                --configuration $(configuration)
+                --output $(Build.ArtifactStagingDirectory)
+                --self-contained
+              nobuild: true
+              zipAfterPublish: true
+            displayName: dotnet publish
 
-      # this code takes all the files in $(Build.ArtifactStagingDirectory) and uploads them as an artifact of your build.
-      - task: PublishBuildArtifacts@1
-        inputs:
-          pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-          artifactName: '($rid)_$(configuration)'
+          # this code takes all the files in $(Build.ArtifactStagingDirectory) and uploads them as an artifact of your build.
+          - task: PublishBuildArtifacts@1
+            inputs:
+              pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+              artifactName: '($platform.rid)_$(configuration)'
