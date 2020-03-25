@@ -28,5 +28,7 @@
         },
         "omnisharp.enableRoslynAnalyzers": true,
         "omnisharp.enableEditorConfigSupport": true,
+        "editor.formatOnType": true,
+        "editor.formatOnSave": true,
     }
 }

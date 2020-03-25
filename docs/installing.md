@@ -28,13 +28,12 @@ to setup and install _AP.exe_
 
 The following additional dependencies are required for MaxOSX machines:
 
-- [Mono](https://www.mono-project.com/download/stable/#download-mac) (version 5.5 or greater)
 - [Optional] [Powershell](https://docs.microsoft.com/en-us/powershell/scripting/setup/installing-powershell-core-on-macos?view=powershell-6)
 
-Note all AP.exe commands must be prefixed with `mono ` to be used on MacOSX.
+
 
 ```
-$ mono AnalysisPrograms.exe CheckEnvironment
+$ AnalysisPrograms CheckEnvironment
 ```
 
 
@@ -42,7 +41,6 @@ $ mono AnalysisPrograms.exe CheckEnvironment
 
 The following additional dependencies are required for Unix machines:
 
-- [Mono]( https://www.mono-project.com/download/stable/#download-lin) (version 5.5 or greater)
 - ffmpeg
 - wavpack
 - libsox-fmt-all
@@ -52,10 +50,9 @@ The following additional dependencies are required for Unix machines:
 - libav-tools (on some distros only, not needed in Ubuntu 18)
 - [Optional] [PowerShell](https://docs.microsoft.com/en-us/powershell/scripting/setup/installing-powershell-core-on-linux?view=powershell-6)
 
-Note all AP.exe commands must be prefixed with `mono ` to be used on Linux.
 
 ```
-$ mono AnalysisPrograms.exe CheckEnvironment
+$ AnalysisPrograms CheckEnvironment
 ```
 
 ## Automatic install
