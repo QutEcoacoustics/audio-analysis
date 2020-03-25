@@ -122,7 +122,7 @@ namespace Acoustics.Test.Shared
         }
 
         [RuntimeIdentifierSpecificDataTestMethod]
-        [DataRow(WinX64, null)]
+        [DataRow(WinX64, false)]
         [DataRow(OsxX64, null)]
         [DataRow(LinuxX64, null)]
         [DataRow(LinuxArm, null)]

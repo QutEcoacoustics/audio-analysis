@@ -1,8 +1,7 @@
 {
-	"folders": [
-		{
+    "folders": [
+        {
             "path": "."
-
         }
     ],
     "extensions": {
@@ -12,7 +11,7 @@
             "ionide.ionide-fsharp"
         ]
     },
-	"settings": {
+    "settings": {
         "files.exclude": {
             "**/.git": true,
             "**/.DS_Store": true,
@@ -25,6 +24,9 @@
             // "src/AnalysisBase/**": true,
             // "tests": true,
             // "TestResults": true
+        },
+        "files.associations": {
+            "**/build/azure*yml": "azure-pipelines"
         },
         "omnisharp.enableRoslynAnalyzers": true,
         "omnisharp.enableEditorConfigSupport": true,
