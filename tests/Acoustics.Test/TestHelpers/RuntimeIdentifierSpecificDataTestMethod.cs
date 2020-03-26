@@ -1,4 +1,4 @@
-// <copyright file="RuntimeIdentifierSpecificTestMethod.cs" company="QutEcoacoustics">
+// <copyright file="RuntimeIdentifierSpecificDataTestMethod.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -6,18 +6,30 @@ namespace Acoustics.Test.TestHelpers
 {
     using System;
     using System.Diagnostics;
-    using System.Runtime.InteropServices;
+
     using Acoustics.Shared;
+    using global::AnalysisPrograms;
     using JetBrains.Annotations;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+    public enum RidType
+    {
+        Pseudo,
+        Compiled,
+        Actual,
+    }
+
     public class RuntimeIdentifierSpecificDataTestMethod : DataTestMethodAttribute
     {
-
-        public RuntimeIdentifierSpecificDataTestMethod([CanBeNull] string ignoreMessage = null)
+        public RuntimeIdentifierSpecificDataTestMethod(
+            RidType runtimeIdentifierSource,
+            [CanBeNull] string ignoreMessage = null)
         {
+            this.RuntimeIdentifierSource = runtimeIdentifierSource;
             this.IgnoreMessage = ignoreMessage;
         }
+
+        public RidType RuntimeIdentifierSource { get; set; }
 
         public string IgnoreMessage { get; }
 
@@ -36,7 +48,18 @@ namespace Acoustics.Test.TestHelpers
                     $"The first argument of a {nameof(RuntimeIdentifierSpecificDataTestMethod)} must be a string representing an RID - but we got <{rid}> which is not one of our well known RIDs");
             }
 
-            var actualRid = AppConfigHelper.PseudoRuntimeIdentifier;
+            var pseudo = AppConfigHelper.PseudoRuntimeIdentifier;
+            var actual = AppConfigHelper.RuntimeIdentifier;
+            var compiled = BuildMetadata.CompiledRuntimeIdentifer;
+            Trace.WriteLine($"RIDs: Pseudo={pseudo}, Actual={actual}, Compiled={compiled}. Using={this.RuntimeIdentifierSource}.");
+
+            var actualRid = this.RuntimeIdentifierSource switch
+            {
+                RidType.Actual => actual,
+                RidType.Compiled => compiled,
+                RidType.Pseudo => pseudo,
+                _ => throw new InvalidOperationException($"RidType {this.RuntimeIdentifierSource} is not supported"),
+            };
 
             if (rid != actualRid)
             {
