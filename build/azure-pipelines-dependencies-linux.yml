@@ -1,0 +1,5 @@
+
+steps:
+    - script: |
+        sudo apt-get update -y
+        sudo apt-get install -y libsox-fmt-all sox
