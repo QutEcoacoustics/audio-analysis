@@ -138,7 +138,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             };
 
             var results = recognizer.Recognize(recording, config, 100.Seconds(), null, this.TestOutputDirectory, null);
-            //results.Plots.
+
             //results.Sonogram.GetImage().Save(this.outputDirectory + "\\debug.png");
 
             Assert.AreEqual(1, results.Events.Count);
@@ -211,7 +211,6 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             var dctThreshold = 0.15;
             var minFormantGap = 400;
             var maxFormantGap = 1200;
-            //var minDuration = 0.35;
             var minDuration = 0.2;
             var maxDuration = 1.1;
             var decibelThreshold = 2.0;
@@ -233,8 +232,10 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
                 SampleRate = samplerate,
             };
 
-            var spectrogram = this.CreateArtificialSpectrogramContainingHarmonics(sonoConfig);
+            var spectrogram = this.CreateArtificialSpectrogramToTestTracksAndHarmonics(sonoConfig);
+
             //var image1 = SpectrogramTools.GetSonogramPlusCharts(spectrogram, null, null, null);
+            //results.Sonogram.GetImage().Save(this.outputDirectory + "\\debug.png");
 
             //var results = recognizer.Recognize(recording, sonoConfig, 100.Seconds(), null, this.TestOutputDirectory, null);
             //get the array of intensity values minus intensity in side/buffer bands.
@@ -342,8 +343,10 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
                 SampleRate = samplerate,
             };
 
-            var spectrogram = this.CreateArtificialSpectrogramContainingHarmonics(sonoConfig);
+            var spectrogram = this.CreateArtificialSpectrogramToTestTracksAndHarmonics(sonoConfig);
+
             //var image1 = SpectrogramTools.GetSonogramPlusCharts(spectrogram, null, null, null);
+            //results.Sonogram.GetImage().Save(this.outputDirectory + "\\debug.png");
 
             var segmentStartOffset = TimeSpan.Zero;
             var plots = new List<Plot>();
@@ -386,23 +389,22 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             var outputDirectory = new DirectoryInfo("C:\\temp");
             GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "track");
 
-            Assert.AreEqual(21, allResults.Events.Count);
+            Assert.AreEqual(23, allResults.Events.Count);
 
-            var @event = allResults.Events[3];
+            var @event = allResults.Events[4];
             Assert.AreEqual(2.0, @event.EventStartSeconds, 0.1);
             Assert.AreEqual(2.5, @event.EventEndSeconds, 0.1);
             Assert.AreEqual(1680, @event.LowFrequencyHertz);
             Assert.AreEqual(2110, @event.HighFrequencyHertz);
 
-            @event = allResults.Events[10];
+            @event = allResults.Events[11];
             Assert.AreEqual(6.0, @event.EventStartSeconds, 0.1);
             Assert.AreEqual(6.6, @event.EventEndSeconds, 0.1);
             Assert.AreEqual(2110, @event.LowFrequencyHertz);
             Assert.AreEqual(2584, @event.HighFrequencyHertz);
-
         }
 
-        public SpectrogramStandard CreateArtificialSpectrogramContainingHarmonics(SonogramConfig config)
+        public SpectrogramStandard CreateArtificialSpectrogramToTestTracksAndHarmonics(SonogramConfig config)
         {
             int samplerate = config.SampleRate;
             double signalDuration = config.Duration.TotalSeconds;
@@ -496,8 +498,18 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             }
 
             // draw a set of sequential tracks
+            for (int i = 0; i < 15; i++)
+            {
+                // track that starts in very first time frame
+                amplitudeSpectrogram[i, 50] = 6.0;
+
+                // track that goes to end of spectrogram
+                amplitudeSpectrogram[frameCount - 1 - i, 50] = 6.0;
+            }
+
+            //boobook owl look-alike
             startframe = (int)Math.Round(framesPerSecond * 2) + 3;
-            int startBin = 40;
+            var startBin = 40;
             for (int i = 0; i < 9; i++)
             {
                 amplitudeSpectrogram[startframe + i, startBin + i] = 9.0;
@@ -519,12 +531,12 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
                 amplitudeSpectrogram[startframe + i, startBin + i] = 9.0;
                 amplitudeSpectrogram[startframe + 16 - i, startBin + i] = 9.0;
             }
+
             amplitudeSpectrogram[startframe + 8, startBin + 8] = 6.0;
             amplitudeSpectrogram[startframe + 8, startBin + 7] = 9.0;
 
             var spectrogram = new SpectrogramStandard(config)
             {
-                //FrameCount = amplitudeSpectrogram.GetLength(0),
                 SampleRate = samplerate,
                 Data = amplitudeSpectrogram,
             };

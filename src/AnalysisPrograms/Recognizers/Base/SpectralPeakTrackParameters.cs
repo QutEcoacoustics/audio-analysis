@@ -43,6 +43,7 @@ namespace AnalysisPrograms.Recognizers.Base
             int bandWidth = maxBin - minBin + 1;
             var frameDuration = sonogram.FrameDuration;
             var frameStep = sonogram.FrameStep;
+            var frameOverStep = frameDuration - frameStep;
 
             // list of accumulated acoustic events
             var events = new List<AcousticEvent>();
@@ -72,15 +73,12 @@ namespace AnalysisPrograms.Recognizers.Base
             //Look for track starts and initialise them as events.
             // Cannot used edge rows & columns because of edge effects.
             var combinedIntensityArray = new double[frameCount];
-            for (int row = 1; row < frameCount; row++)
+            for (int row = 0; row < frameCount; row++)
             {
                 for (int col = 3; col < bandWidth - 3; col++)
                 {
                     // if this spectral peak is possible start of a track
-                    if (peaks[row, col] >= decibelThreshold
-                        && peaks[row - 1, col] <= decibelThreshold
-                        && peaks[row - 1, col - 1] <= decibelThreshold
-                        && peaks[row - 1, col + 1] <= decibelThreshold)
+                    if (peaks[row, col] >= decibelThreshold)
                     {
                         //have the beginning of a potential track
                         (int[] BinIds, double[] Amplitude) track = GetTrack(peaks, row, col, decibelThreshold);
@@ -88,22 +86,21 @@ namespace AnalysisPrograms.Recognizers.Base
                         // calculate max and min bin IDs in the original spectrogram
                         int trackMinBin = track.BinIds.Min() + minBin;
                         int trackMaxBin = track.BinIds.Max() + minBin;
-                        double trackDuration = track.BinIds.Length * frameDuration;
+                        double trackDuration = (track.BinIds.Length * frameStep) + frameOverStep;
 
-                        //Ignore short tracks.
-                        if (trackDuration < minDuration || trackDuration > maxDuration)
+                        //If track has length within duration bounds, then create an event
+                        if (trackDuration >= minDuration && trackDuration <= maxDuration)
                         {
-                            break;
-                        }
+                            var oblong = new Oblong(row, trackMinBin - 1, row + track.BinIds.Length - 1, trackMaxBin + 1);
+                            var ae = new AcousticEvent(segmentStartOffset, oblong, nyquist, binCount, frameDuration, frameStep, frameCount);
+                            events.Add(ae);
 
-                        for (int i = 0; i < track.Amplitude.Length; i++)
-                        {
-                            combinedIntensityArray[row + i] += track.Amplitude[i];
+                            // fill the intensity array
+                            for (int i = 0; i < track.Amplitude.Length; i++)
+                            {
+                                combinedIntensityArray[row + i] += track.Amplitude[i];
+                            }
                         }
-
-                        var oblong = new Oblong(row, trackMinBin - 1, row + track.BinIds.Length, trackMaxBin + 1);
-                        var ae = new AcousticEvent(segmentStartOffset, oblong, nyquist, binCount, frameDuration, frameStep, frameCount);
-                        events.Add(ae);
                     }
                 }
             }
@@ -126,12 +123,17 @@ namespace AnalysisPrograms.Recognizers.Base
             peaks[startRow, startCol] = 0.0;
 
             int bin = startCol;
-            for (int row = startRow + 2; row < peaks.GetLength(0) - 2; row++)
+            for (int row = startRow + 1; row < peaks.GetLength(0) - 2; row++)
             {
                 //cannot take bin value less than 3 because of edge effects.
                 if (bin < 3)
                 {
                     bin = 3;
+                }
+
+                if (bin > peaks.GetLength(1) - 4)
+                {
+                    bin = peaks.GetLength(1) - 4;
                 }
 
                 // explore options for track ahead
