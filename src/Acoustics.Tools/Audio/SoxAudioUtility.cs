@@ -1,3 +1,7 @@
+// <copyright file="SoxAudioUtility.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
 namespace Acoustics.Tools.Audio
 {
     using System;
@@ -5,8 +9,8 @@ namespace Acoustics.Tools.Audio
     using System.Globalization;
     using System.IO;
     using System.Linq;
+    using Acoustics.Shared;
     using log4net;
-    using Shared;
 
     /// <summary>
     /// Soxi (sound exchange information) Audio utility.
@@ -118,7 +122,7 @@ namespace Acoustics.Tools.Audio
             /// Rej dB: 175
             /// Typical Use: 24-bit mastering.
             /// </summary>
-            VeryHigh = 4
+            VeryHigh = 4,
         }
 
         /// <summary>
@@ -178,6 +182,7 @@ namespace Acoustics.Tools.Audio
             {
                 var targetSampleRateHz = request.TargetSampleRate.Value.ToString(CultureInfo.InvariantCulture);
                 rate = $"rate {resampleQuality} -s -a {targetSampleRateHz}";
+
                 // the -R forces sox to run in repeatable mode. It makes SoX use the same seed for the random number generator
                 repeatable = " -R ";
             }
@@ -213,7 +218,7 @@ namespace Acoustics.Tools.Audio
                         double width = request.BandpassHigh.Value - request.BandpassLow.Value;
                         var center = request.BandpassLow.Value + (width / 2.0);
                         bandpass += FormattableString.Invariant(
-                            $"bandpass { center / 1000 }k { width / 1000 }k");
+                            $"bandpass {center / 1000}k {width / 1000}k");
                         break;
                     case BandPassType.None:
                     default:
@@ -242,36 +247,6 @@ namespace Acoustics.Tools.Audio
             }
 
             return $"{repeatable} -q -V4 \"{this.FixFilename(source)}\" {forceOutput}\"{output.FullName}\" {trim} {rate} {remix} {bandpass}";
-        }
-
-        private static string FormatChannelSelection(AudioUtilityRequest request)
-        {
-            /*
-             * Where a range of channels is specified, the channel numbers to the left and right of the hyphen are
-             * optional and default to 1 and to the number of input channels respectively. Thus
-             *    sox input.wav output.wav remix −
-             * performs a mix-down of all input channels to mono.
-            */
-
-            var remix = string.Empty;
-            var mixDown = request.MixDownToMono.HasValue && request.MixDownToMono.Value;
-            if (mixDown && request.Channels.NotNull())
-            {
-                // select a subset of channels
-                remix = "remix " + string.Join(",", request.Channels);
-            }
-            else if (mixDown)
-            {
-                // mix down to mono
-                remix = "remix -";
-            }
-            else if (request.Channels.NotNull())
-            {
-                // get channels but don't mix down
-                remix = "remix " + string.Join(" ", request.Channels);
-            }
-
-            return remix;
         }
 
         /// <summary>
@@ -313,8 +288,10 @@ namespace Acoustics.Tools.Audio
 
             IEnumerable<string> lines = process.StandardOutput.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
 
-            var result = new AudioUtilityInfo();
-            result.SourceFile = source;
+            var result = new AudioUtilityInfo
+            {
+                SourceFile = source,
+            };
 
             foreach (var line in lines)
             {
@@ -360,7 +337,6 @@ namespace Acoustics.Tools.Audio
 
             if (result.RawData.ContainsKey(keyDuration))
             {
-                
                 var sampleCount = result.RawData[keySamples];
 
                 // most precise and efficient calculation, duration from sample count
@@ -381,7 +357,10 @@ namespace Acoustics.Tools.Audio
                         @"hh:mm:ss.ff",
                     };
 
-                    if (TimeSpan.TryParseExact(stringDuration.Trim(), formats, CultureInfo.InvariantCulture,
+                    if (TimeSpan.TryParseExact(
+                        stringDuration.Trim(),
+                        formats,
+                        CultureInfo.InvariantCulture,
                         out var duration))
                     {
                         result.Duration = duration;
@@ -441,7 +420,7 @@ namespace Acoustics.Tools.Audio
 
                 var value = double.Parse(stringValue, CultureInfo.InvariantCulture);
 
-                value = value * magnitude;
+                value *= magnitude;
 
                 result.BitsPerSecond = Convert.ToInt32(value);
 
@@ -507,7 +486,7 @@ namespace Acoustics.Tools.Audio
 
                 int max = request.Channels.Max();
                 int min = request.Channels.Min();
-                info = info ?? this.Info(source);
+                info ??= this.Info(source);
                 if (max > info.ChannelCount || min < 1)
                 {
                     var msg = $"Requested channel number was out of range. Requested channel {max} but there are only {info.ChannelCount} channels in {source}.";
@@ -518,21 +497,15 @@ namespace Acoustics.Tools.Audio
 
         private static string GetResampleQuality(SoxResampleQuality rq)
         {
-            switch (rq)
+            return rq switch
             {
-                case SoxResampleQuality.Quick:
-                    return "q";
-                case SoxResampleQuality.Low:
-                    return "l";
-                case SoxResampleQuality.Medium:
-                    return "m";
-                case SoxResampleQuality.High:
-                    return "h";
-                case SoxResampleQuality.VeryHigh:
-                    return "v";
-                default:
-                    return "m";
-            }
+                SoxResampleQuality.Quick => "q",
+                SoxResampleQuality.Low => "l",
+                SoxResampleQuality.Medium => "m",
+                SoxResampleQuality.High => "h",
+                SoxResampleQuality.VeryHigh => "v",
+                _ => "m",
+            };
         }
 
         private static TimeSpan Parse(string timeToParse)
@@ -551,6 +524,59 @@ namespace Acoustics.Tools.Audio
             {
                 return TimeSpan.Zero;
             }
+        }
+
+        private static string GetMediaType(Dictionary<string, string> rawData, string extension)
+        {
+            var ext = extension.Trim('.');
+
+            // separate stream and format
+            var formats = rawData.Where(item => item.Key.Contains("Sample Encoding"));
+
+            foreach (var item in formats)
+            {
+                return item.Value switch
+                {
+                    "MPEG audio (layer I, II or III)" => MediaTypes.MediaTypeMp3,
+                    "Vorbis" => MediaTypes.MediaTypeOggAudio,
+                    "16-bit Signed Integer PCM" => MediaTypes.MediaTypeWav,
+                    "16-bit WavPack" => MediaTypes.MediaTypeWavpack,
+                    "16-bit FLAC" => MediaTypes.MediaTypeFlacAudio,
+                    _ => null,
+                };
+            }
+
+            return null;
+        }
+
+        private static string FormatChannelSelection(AudioUtilityRequest request)
+        {
+            /*
+             * Where a range of channels is specified, the channel numbers to the left and right of the hyphen are
+             * optional and default to 1 and to the number of input channels respectively. Thus
+             *    sox input.wav output.wav remix −
+             * performs a mix-down of all input channels to mono.
+            */
+
+            var remix = string.Empty;
+            var mixDown = request.MixDownToMono.HasValue && request.MixDownToMono.Value;
+            if (mixDown && request.Channels.NotNull())
+            {
+                // select a subset of channels
+                remix = "remix " + string.Join(",", request.Channels);
+            }
+            else if (mixDown)
+            {
+                // mix down to mono
+                remix = "remix -";
+            }
+            else if (request.Channels.NotNull())
+            {
+                // get channels but don't mix down
+                remix = "remix " + string.Join(" ", request.Channels);
+            }
+
+            return remix;
         }
 
         private string FixFilename(FileInfo file)
@@ -592,12 +618,12 @@ namespace Acoustics.Tools.Audio
              *
              * sox "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\FemaleKoala MaleKoala.wav" -n stat stats trim 0 60 spectrogram -m -r -l -w Bartlett -X 45 -y 257 -o "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\FemaleKoala MaleKoala.png" stats stat
 
-sox "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\GParrots_JB2_20090607-173000.wav_minute_8.wav" -n trim 0 10 noiseprof | sox "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\GParrots_JB2_20090607-173000.wav_minute_8.wav" "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\GParrots_JB2_20090607-173000.wav_minute_8-reduced.wav" noisered
+    sox "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\GParrots_JB2_20090607-173000.wav_minute_8.wav" -n trim 0 10 noiseprof | sox "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\GParrots_JB2_20090607-173000.wav_minute_8.wav" "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\GParrots_JB2_20090607-173000.wav_minute_8-reduced.wav" noisered
 
-sox "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\GParrots_JB2_20090607-173000.wav_minute_8-reduced.wav" -n spectrogram -m -r -l -w Bartlett -X 45 -y 257 -o "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\GParrots_JB2_20090607-173000.wav_minute_8-reduced.png" stats stat
+    sox "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\GParrots_JB2_20090607-173000.wav_minute_8-reduced.wav" -n spectrogram -m -r -l -w Bartlett -X 45 -y 257 -o "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\GParrots_JB2_20090607-173000.wav_minute_8-reduced.png" stats stat
 
-I:\Projects\QUT\QutSensors\sensors-trunk\Extra Assemblies\sox>sox "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\FemaleKoala MaleKoala.wav" -n trim 0 60  spectrogram -m -r -l -w Bartlett -X 45 -y 257 -o "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\FemaleKoal
-a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
+    I:\Projects\QUT\QutSensors\sensors-trunk\Extra Assemblies\sox>sox "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\FemaleKoala MaleKoala.wav" -n trim 0 60  spectrogram -m -r -l -w Bartlett -X 45 -y 257 -o "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\FemaleKoal
+    a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
              *
              * Could also do this for every minute of recording, using trim <start seconds> <end seconds> and looping.
             */
@@ -616,7 +642,7 @@ a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
                     this.Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
                 }
 
-                lines = process.ErrorOutput.Split(new[] {'\n', '\r'}, StringSplitOptions.RemoveEmptyEntries);
+                lines = process.ErrorOutput.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
             }
 
             // if no lines, or any line contains "no handler for file extension", return empty
@@ -624,8 +650,6 @@ a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
             {
                 return new AudioUtilityInfo();
             }
-
-            //
 
             // first 15 are split by colon (:)
             var statOutputRaw = lines.Take(15).Select(l => l.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries).Select(i => i.Trim()));
@@ -669,7 +693,6 @@ a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
 
                     lines = lines.Skip(1);
                 }
-
             }
 
             // next 4 always 1 value
@@ -707,39 +730,10 @@ a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
                     return null;
                 }
 
-                lines = process.StandardOutput.Split(new[] {'\n', '\r'}, StringSplitOptions.RemoveEmptyEntries);
+                lines = process.StandardOutput.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
             }
 
             return TimeSpan.FromSeconds(this.ParseDoubleStringWithException(lines.FirstOrDefault(), "Duration").Value);
-        }
-
-        private static string GetMediaType(Dictionary<string, string> rawData, string extension)
-        {
-            var ext = extension.Trim('.');
-
-            // separate stream and format
-            var formats = rawData.Where(item => item.Key.Contains("Sample Encoding"));
-
-            foreach (var item in formats)
-            {
-                switch (item.Value)
-                {
-                    case "MPEG audio (layer I, II or III)":
-                        return MediaTypes.MediaTypeMp3;
-                    case "Vorbis":
-                        return MediaTypes.MediaTypeOggAudio;
-                    case "16-bit Signed Integer PCM":
-                        return MediaTypes.MediaTypeWav;
-                    case "16-bit WavPack":
-                        return MediaTypes.MediaTypeWavpack;
-                    case "16-bit FLAC":
-                        return MediaTypes.MediaTypeFlacAudio;
-                    default:
-                        return null;
-                }
-            }
-
-            return null;
         }
     }
 }
