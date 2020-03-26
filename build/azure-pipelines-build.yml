@@ -7,19 +7,22 @@ parameters:
     - rid: win-arm64
       pool: windows-latest
       configurations: [release]
-      continueOnError: true # not yet ready for release
+      unsupportedAzurePipelinesPlatform: true
     - rid: linux-x64
       pool: ubuntu-latest
       configurations: [debug, release]
     - rid: linux-musl-x64
       pool: ubuntu-latest
       configurations: [release]
+      unsupportedAzurePipelinesPlatform: true
     - rid: linux-arm
       pool: ubuntu-latest
       configurations: [release]
+      unsupportedAzurePipelinesPlatform: true
     - rid: linux-arm64
       pool: ubuntu-latest
       configurations: [release]
+      unsupportedAzurePipelinesPlatform: true
     - rid: osx-x64
       pool: macos-latest
       configurations: [debug, release]
@@ -31,7 +34,7 @@ jobs:
     - ${{ each configuration in platform.configurations }}:
       - job:
         displayName: Build ${{ format('{0}_{1}_{2}', platform.rid, platform.pool, configuration) }}
-        continueOnError: ${{ coalesce(platform.continueOnError, 'false') }}
+        continueOnError: ${{ coalesce(platform.unsupportedAzurePipelinesPlatform, 'false') }}
         pool:
           vmImage: ${{ platform.pool }}
       

@@ -14,13 +14,23 @@ namespace Acoustics.Test.AnalysisPrograms
     using global::AnalysisPrograms;
     using global::AnalysisPrograms.Production.Arguments;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using static Acoustics.Shared.AppConfigHelper;
 
     [TestClass]
     [DoNotParallelize]
     public class MainEntryTests
     {
         [DoNotParallelize]
-        [TestMethod]
+        [RuntimeIdentifierSpecificDataTestMethod(RidType.Compiled)]
+        [TestCategory("UnsupportedAzurePipelinesPlatform")]
+        [DataRow(WinX64)]
+        [DataRow(OsxX64)]
+        [DataRow(LinuxX64)]
+        [DataRow(LinuxMuslX64)]
+
+        //[DataRow(LinuxArm)]
+        //[DataRow(LinuxArm64)]
+        //[DataRow(WinArm64)]
         public async Task DefaultCliWorks()
         {
             using var console = new ConsoleRedirector();
@@ -33,7 +43,16 @@ namespace Acoustics.Test.AnalysisPrograms
         }
 
         [DoNotParallelize]
-        [TestMethod]
+        [RuntimeIdentifierSpecificDataTestMethod(RidType.Compiled)]
+        [TestCategory("UnsupportedAzurePipelinesPlatform")]
+        [DataRow(WinX64)]
+        [DataRow(OsxX64)]
+        [DataRow(LinuxX64)]
+        [DataRow(LinuxMuslX64)]
+
+        //[DataRow(LinuxArm)]
+        //[DataRow(LinuxArm64)]
+        //[DataRow(WinArm64)]
         public async Task DefaultHelpWorks()
         {
             using var console = new ConsoleRedirector();
@@ -47,7 +66,16 @@ namespace Acoustics.Test.AnalysisPrograms
         }
 
         [DoNotParallelize]
-        [TestMethod]
+        [RuntimeIdentifierSpecificDataTestMethod(RidType.Compiled)]
+        [TestCategory("UnsupportedAzurePipelinesPlatform")]
+        [DataRow(WinX64)]
+        [DataRow(OsxX64)]
+        [DataRow(LinuxX64)]
+        [DataRow(LinuxMuslX64)]
+
+        //[DataRow(LinuxArm)]
+        //[DataRow(LinuxArm64)]
+        //[DataRow(WinArm64)]
         public async Task DefaultVersionWorks()
         {
             using var console = new ConsoleRedirector();
@@ -61,13 +89,22 @@ namespace Acoustics.Test.AnalysisPrograms
         }
 
         [DoNotParallelize]
-        [TestMethod]
+        [RuntimeIdentifierSpecificDataTestMethod(RidType.Compiled)]
+        [TestCategory("UnsupportedAzurePipelinesPlatform")]
+        [DataRow(WinX64)]
+        [DataRow(OsxX64)]
+        [DataRow(LinuxX64)]
+        [DataRow(LinuxMuslX64)]
+
+        //[DataRow(LinuxArm)]
+        //[DataRow(LinuxArm64)]
+        //[DataRow(WinArm64)]
         public async Task CheckEnvironmentWorks()
         {
             using var console = new ConsoleRedirector();
             var code = await MainEntry.Main(new[] { "CheckEnvironment" });
 
-            Trace.WriteLine(console.Lines);
+            Trace.WriteLine(console.Lines.Join(Environment.NewLine));
 
             Assert.AreEqual(0, code);
 
@@ -146,7 +183,8 @@ namespace Acoustics.Test.AnalysisPrograms
             Trace.WriteLine("Output:\n" + output);
             Trace.WriteLine("Error:\n" + error);
 
-            StringAssert.Contains(output,
+            StringAssert.Contains(
+                output,
                 "!!!IMPORTANT: Executable name is ANALYS~1.EXE and expected name is AnalysisPrograms.exe");
             Assert.IsFalse(output.Contains("ReflectionTypeLoadException"), $"Output should not contain `ReflectionTypeLoadException`.");
             Assert.IsFalse(error.Contains("ReflectionTypeLoadException"), $"Output should not contain `ReflectionTypeLoadException`.");
