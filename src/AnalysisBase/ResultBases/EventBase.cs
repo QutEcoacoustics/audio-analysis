@@ -11,6 +11,18 @@ namespace AnalysisBase.ResultBases
 {
     using System;
 
+    public enum EventType
+    {
+        Blob,
+        Whistle,
+        Track,
+        Whip,
+        Click,
+        Oscillation,
+        StackedHarmonic,
+        Untyped, // obtained using AED.
+    }
+
     /// <summary>
     /// The base class for all Event style results.
     /// </summary>
