@@ -3,3 +3,6 @@ steps:
     - script: |
         sudo apt-get update -y
         sudo apt-get install -y libsox-fmt-all sox
+      displayName: Install SoX
+    - script: |
+        sudo apt-get install -y wavpack
