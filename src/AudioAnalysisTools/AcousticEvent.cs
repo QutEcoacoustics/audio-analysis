@@ -134,6 +134,13 @@ namespace AudioAnalysisTools
         /// </summary>
         public double Bandwidth => this.HighFrequencyHertz - this.LowFrequencyHertz + 1;
 
+        /// <summary>
+        /// Gets or sets and array of frequency values.
+        /// For events of type SpectralTrack, this arrays stores the dominant frequency for each frame of the event.
+        /// i.e. it defines the track.
+        /// </summary>
+        public int[] HertzTrack { get; set; }
+
         public bool IsMelscale { get; set; }
 
         /// <summary>

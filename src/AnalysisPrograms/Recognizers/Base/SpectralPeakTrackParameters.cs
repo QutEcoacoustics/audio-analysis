@@ -23,7 +23,7 @@ namespace AnalysisPrograms.Recognizers.Base
         /// This method returns spectral peak tracks enclosed in acoustic events.
         /// It averages dB log values incorrectly but it is faster than doing many log conversions.
         /// </summary>
-        public static (List<AcousticEvent>, double[]) GetSpectralPeakTracks(
+        public static (List<AcousticEvent> Events, double[] CombinedIntensity) GetSpectralPeakTracks(
             SpectrogramStandard sonogram,
             int minHz,
             int maxHz,
@@ -86,13 +86,22 @@ namespace AnalysisPrograms.Recognizers.Base
                         // calculate max and min bin IDs in the original spectrogram
                         int trackMinBin = track.BinIds.Min() + minBin;
                         int trackMaxBin = track.BinIds.Max() + minBin;
-                        double trackDuration = (track.BinIds.Length * frameStep) + frameOverStep;
 
                         //If track has length within duration bounds, then create an event
+                        double trackDuration = (track.BinIds.Length * frameStep) + frameOverStep;
                         if (trackDuration >= minDuration && trackDuration <= maxDuration)
                         {
                             var oblong = new Oblong(row, trackMinBin - 1, row + track.BinIds.Length - 1, trackMaxBin + 1);
                             var ae = new AcousticEvent(segmentStartOffset, oblong, nyquist, binCount, frameDuration, frameStep, frameCount);
+
+                            // convert binIds to Hertz
+                            var hertzTrack = new int[track.BinIds.Length];
+                            for (int i = 0; i < track.BinIds.Length; i++)
+                            {
+                                hertzTrack[i] = (int)Math.Round((track.BinIds[i] + minBin) * binWidth);
+                            }
+
+                            ae.HertzTrack = hertzTrack;
                             events.Add(ae);
 
                             // fill the intensity array
