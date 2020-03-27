@@ -271,12 +271,14 @@
 
             if (file == null)
             {
-                throw new ArgumentNullException(nameof(file));
+                throw new ArgumentNullException(
+                    nameof(file),
+                    $"Expected path to binary with file name {expectedFileName} but was supplied with null.");
             }
 
             if (!File.Exists(file.FullName))
             {
-                throw new FileNotFoundException("Could not find exe: " + file.FullName, file.FullName);
+                throw new FileNotFoundException("Could not find binary: " + file.FullName, file.FullName);
             }
 
             if (!file.Name.Contains(expectedFileName))

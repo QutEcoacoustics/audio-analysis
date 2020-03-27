@@ -41,6 +41,8 @@ namespace Acoustics.Tools.Audio
         // -w = regenerate .wav header (ignore RIFF data in file)
         */
 
+        public const string MissingBinary = "Converting from WavPack is not supported because we cannot find a wvunpack binary.";
+
         private const string ArgsDefault = " -m -q -w ";
         private const string ArgsSkip = " --skip={0} ";
         private const string ArgsUtil = " --until={0}{1} ";
@@ -53,10 +55,14 @@ namespace Acoustics.Tools.Audio
         /// The wav Unpack.
         /// </param>
         /// <exception cref="FileNotFoundException">
+        /// If the provided binary does not exist.
         /// </exception>
         /// <exception cref="ArgumentNullException">
+        /// If <paramref name="wavUnpack"/> is null.
         /// </exception>
-        /// <exception cref="ArgumentException">wavUnpack</exception>
+        /// <exception cref="ArgumentException">
+        /// If <paramref name="wavUnpack"/> does contain the string "wavUnpack".
+        /// </exception>
         public WavPackAudioUtility(FileInfo wavUnpack)
         {
             this.CheckExe(wavUnpack, "wvunpack");
@@ -73,10 +79,14 @@ namespace Acoustics.Tools.Audio
         /// The wav Unpack.
         /// </param>
         /// <exception cref="FileNotFoundException">
+        /// If the provided binary does not exist.
         /// </exception>
         /// <exception cref="ArgumentNullException">
+        /// If <paramref name="wavUnpack"/> is null.
         /// </exception>
-        /// <exception cref="ArgumentException">wavUnpack</exception>
+        /// <exception cref="ArgumentException">
+        /// If <paramref name="wavUnpack"/> does contain the string "wavUnpack".
+        /// </exception>
         public WavPackAudioUtility(FileInfo wavUnpack, DirectoryInfo temporaryFilesDirectory)
         {
             this.CheckExe(wavUnpack, "wvunpack");
@@ -128,7 +138,7 @@ namespace Acoustics.Tools.Audio
             // only deals with start and end, does not do anything with sampling, channels or bit rate.
             if (request.OffsetStart.HasValue || request.OffsetEnd.HasValue)
             {
-              
+
                 if (request.OffsetStart.HasValue && request.OffsetStart.Value > TimeSpan.Zero)
                 {
                     sb.AppendFormat(ArgsSkip, FormatTimeSpan(request.OffsetStart.Value));

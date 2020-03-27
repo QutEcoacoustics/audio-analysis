@@ -25,6 +25,7 @@ namespace AnalysisPrograms
         private int Execute(Arguments arguments)
         {
             var errors = new List<string>();
+            var warnings = new List<string>();
 
             Log.Info("Checking required executables and libraries can be found and loaded");
 
@@ -49,6 +50,11 @@ namespace AnalysisPrograms
                 errors.Add(ex.Message);
             }
 
+            if (AppConfigHelper.WvunpackExe == null)
+            {
+                warnings.Add("Cannot find wvunpack - we'll be unable to process any wavpack files.");
+            }
+
             if (MainEntry.CheckForDataAnnotations() is string message)
             {
                 errors.Add(message);
@@ -58,6 +64,11 @@ namespace AnalysisPrograms
             if (type != null)
             {
                 errors.Add($"We no longer use Mono with ${Meta.Name}. DO NOT prefix the {Meta.Name} prefix with `mono`.");
+            }
+
+            foreach (var warning in warnings)
+            {
+                Log.Warn(warning);
             }
 
             // don't have much more to check at the current time

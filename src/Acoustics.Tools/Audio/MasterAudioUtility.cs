@@ -310,6 +310,11 @@ namespace Acoustics.Tools.Audio
 
             if (mediaType == MediaTypes.MediaTypeWavpack)
             {
+                if (this.wvunpackUtility == null)
+                {
+                    throw new AudioFormatNotSupportedException(WavPackAudioUtility.MissingBinary);
+                }
+
                 info = this.Combine(this.wvunpackUtility.Info(source), this.ffmpegUtility.Info(source));
             }
             else if (mediaType == MediaTypes.MediaTypeMp3 || mediaType == MediaTypes.MediaTypeWav)
@@ -399,11 +404,19 @@ namespace Acoustics.Tools.Audio
         /// </param>
         protected override void CheckRequestValid(FileInfo source, string sourceMimeType, FileInfo output, string outputMediaType, AudioUtilityRequest request)
         {
-            // no restrictions
+            if (this.wvunpackUtility == null)
+            {
+                throw new AudioFormatNotSupportedException(WavPackAudioUtility.MissingBinary);
+            }
         }
 
         private FileInfo SegmentWavpackToWav(FileInfo source, AudioUtilityRequest request)
         {
+            if (this.wvunpackUtility == null)
+            {
+                throw new AudioFormatNotSupportedException(WavPackAudioUtility.MissingBinary);
+            }
+
             // use a temp file for wvunpack.
             var wavunpackTempFile = TempFileHelper.NewTempFile(this.TemporaryFilesDirectory, MediaTypes.GetExtension(MediaTypes.MediaTypeWav));
 
