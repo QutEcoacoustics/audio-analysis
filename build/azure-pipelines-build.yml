@@ -173,6 +173,7 @@ jobs:
             displayName: dotnet publish
 
           - task: ArchiveFiles@2
+            inputs:
               rootFolderOrFile: '$(Build.BinariesDirectory)'
               includeRootFolder: false
 
@@ -186,5 +187,3 @@ jobs:
                 artifactName: '${{ platform.rid }}_Debug'
               ${{ if ne(configuration, 'Debug') }}:
                 artifactName: '${{ platform.rid }}'
-              
-      
