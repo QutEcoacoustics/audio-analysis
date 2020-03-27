@@ -42,7 +42,7 @@ namespace Acoustics.Test.TestHelpers
                     $"The first argument of a {nameof(RuntimeIdentifierSpecificDataTestMethod)} must be a string representing an RID - but we got a null or empty string");
             }
 
-            if (!AppConfigHelper.WellKnownRuntimeIdentifiers.Contains(rid))
+            if (this.RuntimeIdentifierSource != RidType.Actual && !AppConfigHelper.WellKnownRuntimeIdentifiers.Contains(rid))
             {
                 throw new ArgumentException(
                     $"The first argument of a {nameof(RuntimeIdentifierSpecificDataTestMethod)} must be a string representing an RID - but we got <{rid}> which is not one of our well known RIDs");
@@ -51,17 +51,17 @@ namespace Acoustics.Test.TestHelpers
             var pseudo = AppConfigHelper.PseudoRuntimeIdentifier;
             var actual = AppConfigHelper.RuntimeIdentifier;
             var compiled = BuildMetadata.CompiledRuntimeIdentifer;
-            Trace.WriteLine($"RIDs: Pseudo={pseudo}, Actual={actual}, Compiled={compiled}. Using={this.RuntimeIdentifierSource}.");
 
             var actualRid = this.RuntimeIdentifierSource switch
             {
                 RidType.Actual => actual,
-                RidType.Compiled => string.IsNullOrEmpty(compiled)
-                    ? throw new ArgumentException($"BuildMetadata.CompiledRuntimeIdentifer was null or empty. Cannot use as {nameof(this.RuntimeIdentifierSource)}.")
-                    : compiled,
+                // compiled will be empty when the --runtime argument is not supplied
+                RidType.Compiled => string.IsNullOrEmpty(compiled) ? pseudo : compiled,
                 RidType.Pseudo => pseudo,
                 _ => throw new InvalidOperationException($"RidType {this.RuntimeIdentifierSource} is not supported"),
             };
+
+            Trace.WriteLine($"RIDs: Pseudo={pseudo}, Actual={actual}, Compiled={compiled}. Using={this.RuntimeIdentifierSource} which is {actualRid}.");
 
             if (rid != actualRid)
             {
