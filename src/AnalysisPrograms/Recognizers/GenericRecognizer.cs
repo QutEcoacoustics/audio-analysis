@@ -72,7 +72,10 @@ namespace AnalysisPrograms.Recognizers
                         break;
                     case SpectralPeakTrackParameters _:
                         algorithmName = "SpectralTracks";
-                        //throw new NotImplementedException("The harmonic algorithm has not been implemented yet");
+                        break;
+                    case ClickParameters _:
+                        algorithmName = "Click";
+                        throw new NotImplementedException("The Click algorithm has not been implemented yet");
                         break;
                     case Aed.AedConfiguration _:
                         algorithmName = "AED";
