@@ -41,7 +41,6 @@ jobs:
         steps:
           # - pwsh: 'Get-ChildItem Env:'
           #   displayName: debug environment variables
-
           - checkout: self
             clean: false
             fetchDepth: 100
@@ -166,14 +165,26 @@ jobs:
               arguments: >
                 --runtime ${{ platform.rid }}
                 --configuration ${{ configuration }}
-                --output $(Build.ArtifactStagingDirectory)
+                --output $(Build.BinariesDirectory)
                 --self-contained
               nobuild: true
-              zipAfterPublish: true
+              publishWebProjects: false
+              zipAfterPublish: false # does not seem to tar - we need to keep unix permissions
             displayName: dotnet publish
+
+          - task: ArchiveFiles@2
+              rootFolderOrFile: '$(Build.BinariesDirectory)'
+              includeRootFolder: false
+
+            displayName: Archive published app
 
           # this code takes all the files in $(Build.ArtifactStagingDirectory) and uploads them as an artifact of your build.
           - task: PublishBuildArtifacts@1
             inputs:
               pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-              artifactName: '${{ platform.rid }}_${{ configuration }}'
+              ${{ if eq(configuration, 'Debug') }}:
+                artifactName: '${{ platform.rid }}_Debug'
+              ${{ if ne(configuration, 'Debug') }}:
+                artifactName: '${{ platform.rid }}'
+              
+      
