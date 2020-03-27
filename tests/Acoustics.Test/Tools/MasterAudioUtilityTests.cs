@@ -343,7 +343,7 @@ namespace Acoustics.Test.Tools
         public void ValidatesNullExePaths()
         {
             TestHelper.ExceptionMatches<ArgumentNullException>(
-                () => new FfmpegAudioUtility(null,null), "Value cannot be null");
+                () => new FfmpegAudioUtility(null, null), "Value cannot be null");
 
             //TestHelper.ExceptionMatches<ArgumentNullException>(
             //    () => new Mp3SpltAudioUtility(null), "Value cannot be null");
@@ -358,11 +358,42 @@ namespace Acoustics.Test.Tools
         public void MasterAudioUtilityAllowsOptionalSupportForMp3splt()
         {
             // creation should normally fail but MasterAudioUtility was changed so that Mp3Splt was optional
-            var utility = new MasterAudioUtility(
+            new MasterAudioUtility(
                 (FfmpegAudioUtility)TestHelper.GetAudioUtilityFfmpeg(),
                 (WavPackAudioUtility)TestHelper.GetAudioUtilityWavunpack(),
                 (SoxAudioUtility)TestHelper.GetAudioUtilitySox(),
                 (FfmpegRawPcmAudioUtility)TestHelper.GetAudioUtilityFfmpegRawPcm());
+        }
+
+        [TestMethod]
+        public void MasterAudioUtilityAllowsOptionalSupportFoWavPack()
+        {
+            // creation should normally fail but MasterAudioUtility was changed so that WavPack was optional
+            new MasterAudioUtility(
+                (FfmpegAudioUtility)TestHelper.GetAudioUtilityFfmpeg(),
+                null,
+                (SoxAudioUtility)TestHelper.GetAudioUtilitySox(),
+                (FfmpegRawPcmAudioUtility)TestHelper.GetAudioUtilityFfmpegRawPcm());
+        }
+
+        [TestMethod]
+        public void MasterAudioUtilityCheckRequestValidFailsWhenWavpackIsMissing()
+        {
+            var utility = new MasterAudioUtility(
+                (FfmpegAudioUtility)TestHelper.GetAudioUtilityFfmpeg(),
+                null,
+                (SoxAudioUtility)TestHelper.GetAudioUtilitySox(),
+                (FfmpegRawPcmAudioUtility)TestHelper.GetAudioUtilityFfmpegRawPcm());
+
+            var source = PathHelper.GetTestAudioFile("Raw_audio_id_cd6e8ba1-11b4-4724-9562-f6ec893110aa.wv");
+
+            Assert.ThrowsException<AudioFormatNotSupportedException>(
+                () => utility.Info(source),
+                "Converting from WavPack is not supported because we cannot find a wvunpack binary.");
+
+            Assert.ThrowsException<AudioFormatNotSupportedException>(
+                () => utility.Modify(source, MediaTypes.MediaTypeWavpack, PathHelper.GetTempFile(MediaTypes.ExtWav), MediaTypes.MediaTypeWav, new AudioUtilityRequest()),
+                "Converting from WavPack is not supported because we cannot find a wvunpack binary.");
         }
 
         private static FileInfo GetAudioUtilityExe(string name)
@@ -498,7 +529,7 @@ namespace Acoustics.Test.Tools
         private static void SegmentsCorrectly(
             string filename, string mimetype, TimeSpan start, TimeSpan end, TimeSpan maxVariance)
         {
-            foreach (var util in new[] { TestHelper.GetAudioUtility()})
+            foreach (var util in new[] { TestHelper.GetAudioUtility() })
             {
                 var dir = PathHelper.GetTempDir();
 
