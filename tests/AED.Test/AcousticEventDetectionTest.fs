@@ -74,7 +74,9 @@ let testJoinVerticalLines () =
     testAll f
 
 [<Fact>]
-let aeToMatrixBounds () = chk (fun ae -> let m = aeToMatrix ae in m.NumRows = (height ae.Bounds) && m.NumCols = (width ae.Bounds))
+let aeToMatrixBounds () =
+    chk (
+        fun ae -> let m = aeToMatrix ae in m.NumRows = (height ae.Bounds) && m.NumCols = (width ae.Bounds))
     
 [<Fact>]
 let aeToMatrixElements () =

@@ -1,10 +1,10 @@
-﻿module FsCheckArbs
+module FsCheckArbs
 
 open FsCheck
 open Acoustics.AED.GetAcousticEvents
 open Acoustics.AED.Util
 
-let nonNeg = Arb.generate<int>|> Gen.map abs
+let nonNeg = Arb.generate<int> |> Gen.map abs
 
 let pos = nonNeg |> Gen.map ((+) 1)
 
@@ -25,12 +25,14 @@ type ArbitraryModifiers =
                 override x.Generator = Gen.map4 (fun l t w h -> lengthsToRect l t w h) nonNeg nonNeg pos pos
          }
     static member AcousticEvent () =
-        { new Arbitrary<AcousticEvent>()with
-            override x.Generator = gen { let! rect = Arb.generate
-                                         let r, b = right rect, bottom rect
-                                         let! c = Gen.choose (1, (height rect) * (width rect))                                    
-                                         let! elms = pairGen (Gen.choose (rect.Top, b)) (Gen.choose (rect.Left, r)) |> replicateGenM c 
-                                         return {Bounds=rect;Elements=Set.ofList elms}}} 
+        { new Arbitrary<AcousticEvent>() with
+            override x.Generator = gen { let! l = nonNeg
+                                         let! t = nonNeg
+                                         let! w = nonNeg
+                                         let! h = nonNeg
+                                         let! c = Gen.choose (1, w * h)                                    
+                                         let! elms = pairGen (Gen.choose (t, t + h)) (Gen.choose (l, l + w)) |> replicateGenM c 
+                                         return {Bounds=(lengthsToRect l t w h);Elements=Set.ofList elms}}} 
      
 let chk f = 
     Arb.register<ArbitraryModifiers>() |> ignore
