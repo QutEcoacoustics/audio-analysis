@@ -31,7 +31,7 @@ namespace Acoustics.Test.AnalysisPrograms
         //[DataRow(LinuxArm)]
         //[DataRow(LinuxArm64)]
         //[DataRow(WinArm64)]
-        public async Task DefaultCliWorks()
+        public async Task DefaultCliWorks(string rid)
         {
             using var console = new ConsoleRedirector();
             var code = await MainEntry.Main(Array.Empty<string>());
@@ -53,7 +53,7 @@ namespace Acoustics.Test.AnalysisPrograms
         //[DataRow(LinuxArm)]
         //[DataRow(LinuxArm64)]
         //[DataRow(WinArm64)]
-        public async Task DefaultHelpWorks()
+        public async Task DefaultHelpWorks(string rid)
         {
             using var console = new ConsoleRedirector();
             var code = await MainEntry.Main(new[] { "--help" });
@@ -76,7 +76,7 @@ namespace Acoustics.Test.AnalysisPrograms
         //[DataRow(LinuxArm)]
         //[DataRow(LinuxArm64)]
         //[DataRow(WinArm64)]
-        public async Task DefaultVersionWorks()
+        public async Task DefaultVersionWorks(string rid)
         {
             using var console = new ConsoleRedirector();
             var code = await MainEntry.Main(new[] { "--version" });
@@ -99,7 +99,7 @@ namespace Acoustics.Test.AnalysisPrograms
         //[DataRow(LinuxArm)]
         //[DataRow(LinuxArm64)]
         //[DataRow(WinArm64)]
-        public async Task CheckEnvironmentWorks()
+        public async Task CheckEnvironmentWorks(string rid)
         {
             using var console = new ConsoleRedirector();
             var code = await MainEntry.Main(new[] { "CheckEnvironment" });
