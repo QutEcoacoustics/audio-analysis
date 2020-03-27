@@ -28,6 +28,8 @@ namespace AnalysisPrograms.Recognizers
     /// </summary>
     public class GenericRecognizer : RecognizerBase
     {
+        private bool combineOverlappedEvents = false;
+
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         /// <inheritdoc />
@@ -44,6 +46,8 @@ namespace AnalysisPrograms.Recognizers
         {
             RuntimeHelpers.RunClassConstructor(typeof(GenericRecognizerConfig).TypeHandle);
             var result = ConfigFile.Deserialize<GenericRecognizerConfig>(file);
+
+            this.combineOverlappedEvents = result.CombineOverlappedEvents;
 
             // validation of configs can be done here
             // sanity check the algorithm
@@ -292,7 +296,10 @@ namespace AnalysisPrograms.Recognizers
             }
 
             // combine adjacent acoustic events
-            //allResults.Events = AcousticEvent.CombineOverlappingEvents(allResults.Events, segmentStartOffset);
+            if (this.combineOverlappedEvents)
+            {
+                allResults.Events = AcousticEvent.CombineOverlappingEvents(allResults.Events, segmentStartOffset);
+            }
 
             return allResults;
         }
@@ -359,6 +366,8 @@ namespace AnalysisPrograms.Recognizers
         /// <inheritdoc cref="RecognizerConfig"/> />
         public class GenericRecognizerConfig : RecognizerConfig, INamedProfiles<object>
         {
+            public bool CombineOverlappedEvents { get; set; }
+
             /// <inheritdoc />
             public Dictionary<string, object> Profiles { get; set; }
         }
