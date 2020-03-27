@@ -121,7 +121,7 @@ namespace Acoustics.Test.Shared
             }
         }
 
-        [RuntimeIdentifierSpecificDataTestMethod(RidType.Pseudo)]
+        [RuntimeIdentifierSpecificDataTestMethod(RidType.Compiled)]
         [DataRow(WinX64, false)]
         [DataRow(OsxX64, null)]
         [DataRow(LinuxX64, null)]
