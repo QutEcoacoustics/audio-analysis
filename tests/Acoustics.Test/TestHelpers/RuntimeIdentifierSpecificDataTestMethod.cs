@@ -56,7 +56,9 @@ namespace Acoustics.Test.TestHelpers
             var actualRid = this.RuntimeIdentifierSource switch
             {
                 RidType.Actual => actual,
-                RidType.Compiled => compiled,
+                RidType.Compiled => string.IsNullOrEmpty(compiled)
+                    ? throw new ArgumentException($"BuildMetadata.CompiledRuntimeIdentifer was null or empty. Cannot use as {nameof(this.RuntimeIdentifierSource)}.")
+                    : compiled,
                 RidType.Pseudo => pseudo,
                 _ => throw new InvalidOperationException($"RidType {this.RuntimeIdentifierSource} is not supported"),
             };
