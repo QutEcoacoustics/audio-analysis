@@ -21,7 +21,7 @@ namespace Acoustics.Test.AnalysisPrograms
     public class MainEntryTests
     {
         [DoNotParallelize]
-        [RuntimeIdentifierSpecificDataTestMethod(RidType.Compiled)]
+        [RuntimeIdentifierSpecificDataTestMethod(RidType.CompiledIfSelfContained)]
         [TestCategory("UnsupportedAzurePipelinesPlatform")]
         [DataRow(WinX64)]
         [DataRow(OsxX64)]
@@ -43,7 +43,7 @@ namespace Acoustics.Test.AnalysisPrograms
         }
 
         [DoNotParallelize]
-        [RuntimeIdentifierSpecificDataTestMethod(RidType.Compiled)]
+        [RuntimeIdentifierSpecificDataTestMethod(RidType.CompiledIfSelfContained)]
         [TestCategory("UnsupportedAzurePipelinesPlatform")]
         [DataRow(WinX64)]
         [DataRow(OsxX64)]
@@ -66,7 +66,7 @@ namespace Acoustics.Test.AnalysisPrograms
         }
 
         [DoNotParallelize]
-        [RuntimeIdentifierSpecificDataTestMethod(RidType.Compiled)]
+        [RuntimeIdentifierSpecificDataTestMethod(RidType.CompiledIfSelfContained)]
         [TestCategory("UnsupportedAzurePipelinesPlatform")]
         [DataRow(WinX64)]
         [DataRow(OsxX64)]
@@ -89,7 +89,7 @@ namespace Acoustics.Test.AnalysisPrograms
         }
 
         [DoNotParallelize]
-        [RuntimeIdentifierSpecificDataTestMethod(RidType.Compiled)]
+        [RuntimeIdentifierSpecificDataTestMethod(RidType.CompiledIfSelfContained)]
         [TestCategory("UnsupportedAzurePipelinesPlatform")]
         [DataRow(WinX64)]
         [DataRow(OsxX64)]

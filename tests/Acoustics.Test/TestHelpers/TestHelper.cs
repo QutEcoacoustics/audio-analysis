@@ -411,6 +411,11 @@ namespace Acoustics.Test.TestHelpers
                                                                               || dt1.Millisecond == dt2.Millisecond - 2);
         }
 
+        public static bool OnContinuousIntegrationServer()
+        {
+            return !GetEnvironmentVariable("TF_BUILD").IsNullOrEmpty() || !GetEnvironmentVariable("APPVEYOR").IsNullOrEmpty();
+        }
+
         /// <summary>
         /// Datetimes may not be exactly equal.
         /// </summary>
