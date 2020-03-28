@@ -324,16 +324,16 @@ namespace Acoustics.Test.Tools
             var randomFile = new FileInfo(@"X:\hello-my-dear\where-are-you\hey-its-adirectory\blah.exe");
 
             TestHelper.ExceptionMatches<FileNotFoundException>(
-                () => new FfmpegAudioUtility(randomFile, randomFile), "Could not find exe");
+                () => new FfmpegAudioUtility(randomFile, randomFile), "Could not find binary");
 
             //TestHelper.ExceptionMatches<FileNotFoundException>(
             //    () => new Mp3SpltAudioUtility(randomFile), "Could not find exe");
 
             TestHelper.ExceptionMatches<FileNotFoundException>(
-                () => new WavPackAudioUtility(randomFile), "Could not find exe");
+                () => new WavPackAudioUtility(randomFile), "Could not find binary");
 
             TestHelper.ExceptionMatches<FileNotFoundException>(
-                () => new SoxAudioUtility(randomFile), "Could not find exe");
+                () => new SoxAudioUtility(randomFile), "Could not find binary");
         }
 
         /// <summary>
@@ -343,15 +343,15 @@ namespace Acoustics.Test.Tools
         public void ValidatesNullExePaths()
         {
             TestHelper.ExceptionMatches<ArgumentNullException>(
-                () => new FfmpegAudioUtility(null, null), "Value cannot be null");
+                () => new FfmpegAudioUtility(null, null), "but was supplied with null");
 
             //TestHelper.ExceptionMatches<ArgumentNullException>(
-            //    () => new Mp3SpltAudioUtility(null), "Value cannot be null");
+            //    () => new Mp3SpltAudioUtility(null), "but was supplied with null");
 
             TestHelper.ExceptionMatches<ArgumentNullException>(
-                () => new WavPackAudioUtility(null), "Value cannot be null");
+                () => new WavPackAudioUtility(null), "but was supplied with null");
 
-            TestHelper.ExceptionMatches<ArgumentNullException>(() => new SoxAudioUtility(null), "Value cannot be null");
+            TestHelper.ExceptionMatches<ArgumentNullException>(() => new SoxAudioUtility(null), "but was supplied with null");
         }
 
         [TestMethod]

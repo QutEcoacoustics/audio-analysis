@@ -16,6 +16,7 @@ namespace Acoustics.Test.TestHelpers
     {
         Pseudo,
         Compiled,
+        CompiledIfSelfContained,
         Actual,
     }
 
@@ -52,16 +53,25 @@ namespace Acoustics.Test.TestHelpers
             var actual = AppConfigHelper.RuntimeIdentifier;
             var compiled = BuildMetadata.CompiledRuntimeIdentifer;
 
+            var compiledEmpty = compiled.IsNullOrEmpty();
+            var selfContained = BuildMetadata.CompiledAsSelfContained;
+
             var actualRid = this.RuntimeIdentifierSource switch
             {
                 RidType.Actual => actual,
+                RidType.Compiled => compiled,
+
                 // compiled will be empty when the --runtime argument is not supplied
-                RidType.Compiled => string.IsNullOrEmpty(compiled) ? pseudo : compiled,
+                RidType.CompiledIfSelfContained when selfContained && !compiledEmpty => compiled,
+                RidType.CompiledIfSelfContained when !selfContained && !compiledEmpty => compiled,
+                RidType.CompiledIfSelfContained when selfContained && compiledEmpty => throw new InvalidOperationException(
+                    $"Compiled RID is empty! Must be non-empty for mode {nameof(RidType.CompiledIfSelfContained)}."),
+                RidType.CompiledIfSelfContained when !selfContained && compiledEmpty => pseudo,
                 RidType.Pseudo => pseudo,
                 _ => throw new InvalidOperationException($"RidType {this.RuntimeIdentifierSource} is not supported"),
             };
 
-            Trace.WriteLine($"RIDs: Pseudo={pseudo}, Actual={actual}, Compiled={compiled}. Using={this.RuntimeIdentifierSource} which is {actualRid}.");
+            string debugMessage = $"RIDs: Pseudo={pseudo}, Actual={actual}, Compiled={compiled}. Using={this.RuntimeIdentifierSource} which is {actualRid}.";
 
             if (rid != actualRid)
             {
@@ -71,6 +81,7 @@ namespace Acoustics.Test.TestHelpers
                 {
                     new TestResult
                     {
+                        TestContextMessages = debugMessage,
                         Outcome = UnitTestOutcome.Inconclusive,
                         TestFailureException = new AssertInconclusiveException(message),
                     },

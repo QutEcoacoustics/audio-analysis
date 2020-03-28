@@ -21,7 +21,7 @@ namespace Acoustics.Test.TestHelpers
                 enableMemoryLogger: true,
                 enableFileLogger: false,
                 colorConsole: false,
-                defaultLevel: Level.Info,
+                defaultLevel: Level.Verbose,
                 quietConsole: true);
         }
     }
