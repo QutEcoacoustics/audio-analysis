@@ -6,7 +6,7 @@ param(
     
     [string]$configuration,
     [string]$self_contained,
-    [string]$runtime_indentifier
+    [string]$runtime_identifier
 )
 
 Push-Location
@@ -73,7 +73,7 @@ InformationalVersion=$informational_version
 GeneratedMetadata=$metadata_file
 CacheWarning=$cache_warning
 MsBuildSelfContained=$self_contained
-MsBuildRuntimeIdentifer=$runtime_identifer
+MsBuildRuntimeIdentifer=$runtime_identifier
 MsBuildConfiguration=$configuration
 "@
 
