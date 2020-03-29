@@ -86,7 +86,8 @@ namespace Acoustics.Test.TestHelpers
                     do
                     {
                         Task.Delay(100).Wait();
-                    } while (this.waitingFor == null);
+                    }
+                    while (this.waitingFor == null);
                 }
             }
 
