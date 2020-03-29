@@ -21,7 +21,7 @@ namespace Acoustics.Test.TestHelpers
     /// </summary>
     public static class TestHelper
     {
-        public static Dictionary<string, AudioUtilityInfo> AudioDetails = new Dictionary<string, AudioUtilityInfo>
+        public static readonly IReadOnlyDictionary<string, AudioUtilityInfo> AudioDetails = new Dictionary<string, AudioUtilityInfo>
         {
                 {
                     "06Sibylla.asf",
@@ -274,6 +274,8 @@ namespace Acoustics.Test.TestHelpers
                 },
         };
 
+        public static bool OnContinuousIntegrationServer => !GetEnvironmentVariable("TF_BUILD").IsNullOrEmpty() || !GetEnvironmentVariable("APPVEYOR").IsNullOrEmpty();
+
         /// <summary>
         /// Tests that an exception is thrown, and that it is of
         /// the correct type, with the correct error message.
@@ -409,11 +411,6 @@ namespace Acoustics.Test.TestHelpers
                                                                               dt1.Millisecond == dt2.Millisecond
                                                                               || dt1.Millisecond == dt2.Millisecond + 2
                                                                               || dt1.Millisecond == dt2.Millisecond - 2);
-        }
-
-        public static bool OnContinuousIntegrationServer()
-        {
-            return !GetEnvironmentVariable("TF_BUILD").IsNullOrEmpty() || !GetEnvironmentVariable("APPVEYOR").IsNullOrEmpty();
         }
 
         /// <summary>

@@ -11,10 +11,10 @@ namespace Acoustics.Test.Shared.LoggingTests
     using System.Reflection;
     using System.Threading.Tasks;
     using Acoustics.Shared.Logging;
+    using Acoustics.Test.TestHelpers;
     using log4net;
     using log4net.Core;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
 
     [TestClass]
     [DoNotParallelize]
@@ -98,7 +98,7 @@ namespace Acoustics.Test.Shared.LoggingTests
             // its cleaning logic
             do
             {
-                var log = new Logging(false, Level.Info, quietConsole: false);
+                _ = new Logging(false, Level.Info, quietConsole: false);
                 delta--;
             }
             while (delta > 0);
@@ -108,9 +108,16 @@ namespace Acoustics.Test.Shared.LoggingTests
 
             // get count
             files = Directory.GetFiles(logDirectory);
+
+            // sometimes the CI can be busy
+            if (TestHelper.OnContinuousIntegrationServer && files.Length != 50)
+            {
+                Trace.WriteLine("Waiting again for test files to be deleted...");
+                await Task.Delay(5.Seconds());
+            }
+
             Assert.AreEqual(50, files.Length);
         }
-
 
         [TestMethod]
         public void TestNumberOfLoggingRepositories()

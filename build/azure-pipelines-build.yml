@@ -131,6 +131,7 @@ jobs:
               arguments: >
                 --runtime ${{ platform.rid }}
                 --configuration ${{ configuration }}
+                --logger "console;verbosity=detailed"
                 --logger trx
                 --collect:"XPlat Code Coverage"
                 --
@@ -145,7 +146,7 @@ jobs:
               arguments: install --tool-path . dotnet-reportgenerator-globaltool
             displayName: Install ReportGenerator tool
 
-          - script: >
+          - pwsh: >
               ./reportgenerator
               -reports:$(Agent.TempDirectory)/**/coverage.cobertura.xml
               -targetdir:$(Build.SourcesDirectory)/coverlet/reports
