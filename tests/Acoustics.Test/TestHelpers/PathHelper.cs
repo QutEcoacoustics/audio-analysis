@@ -130,7 +130,7 @@ namespace Acoustics.Test.TestHelpers
                 "bin",
                 BuildMetadata.CompiledConfiguration,
                 "netcoreapp3.1",
-                BuildMetadata.CompiledAsSelfContained ? AppConfigHelper.PseudoRuntimeIdentifier : string.Empty);
+                BuildMetadata.CompiledAsSelfContained ? BuildMetadata.CompiledRuntimeIdentifer : string.Empty);
 
             testContext = context;
 
