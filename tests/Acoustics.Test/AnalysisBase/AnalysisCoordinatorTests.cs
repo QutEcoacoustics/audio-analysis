@@ -882,7 +882,12 @@ namespace Acoustics.Test.AnalysisBase
 
             // complete
             dummyAnalyzer.Pump(false);
-            task.Wait(10.0.Seconds());
+            do
+            {
+                task.Wait(1.0.Seconds());
+                dummyAnalyzer.Pump(false);
+            }
+            while (!task.IsCompleted);
 
             this.AssertFilesAreAsExpected(4, states[4], paths);
 
