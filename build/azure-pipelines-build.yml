@@ -193,6 +193,6 @@ jobs:
             inputs:
               pathtoPublish: '$(Build.ArtifactStagingDirectory)'
               ${{ if eq(configuration, 'Debug') }}:
-                artifactName: '${{ coalesce(platform.rid, 'any') }}_Debug'
+                artifactName: ${{ coalesce(platform.rid, 'any') }}_Debug
               ${{ if ne(configuration, 'Debug') }}:
-                artifactName: '${{ coalesce(platform.rid, 'any') }}'
+                artifactName: ${{ coalesce(platform.rid, 'any') }}
