@@ -1,8 +1,7 @@
-Contributing to audio-analysis
-=========================
+# Contributing to audio-analysis
 
-Best Practices
---------------
+
+## Best Practices
 
 - Set the git `autocrlf` config setting. See
   <https://help.github.com/articles/dealing-with-line-endings/#global-settings-for-line-endings> for instructions.
@@ -34,17 +33,23 @@ Best Practices
             - in a filename: use ISO8601 duration formatting
 
 
-Required Software
------------------
+## Required Software
 
 The **required** software for developing new code (not running the program) includes:
 
-- A PowerShell Core (version 6+) install
+- **PowerShell Core** (version 6+)
     - You can install it from here: https://github.com/powershell/powershell#get-powershell
-- The latest, stable, .NET Core SDK
-    - You can download it from here: https://dotnet.microsoft.com/download/dotnet-core/
+- **.NET Core SDK**
+    - We aim to use the latest stable version
+    - You can verify the version our project is using by looking in the [global.json](./global.json) file
+    - You can download it from here: <https://dotnet.microsoft.com/download/dotnet-core/>
+        - Note: you want the _Build apps - SDK_ download
+    - Alternately, use one of the dotnet-install scripts from the [./build/](./build) folder
+        - e.g. On Windows in PowerShell: ./build/dotnet-install.ps1
+        - e.g. On Max/Linux in Bash: ./build/dotnet-install.sh
+
 - An IDE:
-    - Visual Studio 2019 (Windows only)
+    - **Visual Studio 2019** (Windows only)
         - Install features:
             - C# Development
             - .NET Core SDK for Visual Studio 2019
@@ -53,14 +58,19 @@ The **required** software for developing new code (not running the program) incl
         - [Optional] Resharper Ulitmate (Academic License)
         - Install these plugins (_ReSharper_ menu > _Extension Manager_)
           - ReSpeller Free
-    - VS Code (recommended for Mac and Linux)
-        - Install the recommended extensions
-    - JetBrains Rider ()
-- a recent `git` executable on PATH
-    - https://git-scm.com/downloads
+    - **VS Code** (recommended for Mac and Linux)
+        - Install from here: <https://code.visualstudio.com/>
+        - Open the `ap.code-workspace`
+        - Install the recommended workspace extensions
+    - **JetBrains Rider** (Windows only)
+- **Git**
+    - A recent version of the `git` executable must be on your PATH (the standard install should do this)
+    - <https://git-scm.com/downloads>
+- **Git LFS**
+    - <https://git-lfs.github.com/>
 
-Binary Large Objects (BLOBs)
-----------------------------
+## Binary Large Objects (BLOBs)
+
 
 We use [git-lfs](https://git-lfs.github.com/) to store BLOBs for testing audio
 file converters. If you want to run the unit tests you need to have git-lfs 
@@ -69,8 +79,23 @@ installed.
 Not all BLOBs are stored in git-lfs. See the `.gitattributes` file to list
 what files are included.
 
-Third party contributions
--------------------------
+You can check the status of LFS files with the command `git lfs status`.
+
+### AP001
+
+If you cloned the repository before LFS was installed you will need to:
+
+1. Install Git LFS
+2. `cd` to the audio-analysis directory
+3. Run `git lfs install` to set  up Git LFS
+4. Run `git lfs pull` to download the LFS BLOBs
+5. Use `git lfs ls-files` to verify the files have been restored.
+  
+  > An asterisk (`*`) after the OID indicates a full object, a minus (`-`) indicates an
+LFS pointer.
+
+
+## Third party contributions
 
 Third party contributions should be made by:
 
@@ -78,8 +103,7 @@ Third party contributions should be made by:
 - making changes in a branch
 - submitting a pull-request to merge those changes from your-fork and branch, to our copy and master branch
 
-Help wanted
-------------
+## Help wanted
 
 We mark the most straightforward issues as "up for grabs". This set of issues is the place to start if you are interested
 in contributing but new to the codebase.
@@ -87,8 +111,7 @@ in contributing but new to the codebase.
 - [QutEcoacoustics/audio-analysis - "up for grabs"](https://github.com/QutEcoacoustics/audio-analysis/labels/up%20for%20grabs)
 
 
-Contribution "Bar"
-------------------
+## Contribution "Bar"
 
 Project maintainers will merge changes that improve the product significantly and broadly and that align with our roadmap.
 
@@ -96,8 +119,7 @@ Contributions must also satisfy the other published guidelines defined in this d
 
 We will gladly accept any documentation or script enhancements.
 
-DOs and DON'Ts
---------------
+## DOs and DON'Ts
 
 Please do:
 
@@ -120,8 +142,7 @@ Please do not:
   discussion before proceeding.
 * **DON'T** submit PRs that alter licensing related files.
 
-Commit Messages
----------------
+## Commit Messages
 
 Please format commit messages as follows (based on [A Note About Git Commit Messages](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html)):
 
@@ -135,20 +156,18 @@ If the change fixes an issue, leave another blank line after the final
 paragraph and indicate which issue is fixed in the specific format
 below.
 
-Fix #42
+Fixes #42
 ```
 
 Also do your best to factor commits appropriately, not too large with unrelated things in the same commit, and not too
 small with the same small change applied N times in N different commits.
 
-File Headers
-------------
+## File Headers
 
 StyleCop automatically suggest an appropriate file header. Please use it at the top of all new files.
 
 
-Copying Files from Other Projects
----------------------------------
+## Copying Files from Other Projects
 
 We sometimes use files from other projects, typically where a binary distribution does not exist or would be inconvenient.
 
@@ -157,8 +176,7 @@ The following rules must be followed for PRs that include files from another pro
 - The license of the file is [permissive](https://en.wikipedia.org/wiki/Permissive_free_software_licence).
 - The license of the file is left in-tact.
 
-Porting Files from Other Projects
----------------------------------
+## Porting Files from Other Projects
 
 There are many good algorithms implemented in other languages that would benefit our project.
 The rules for porting an R file to C#, for example, are the same as would be used for copying the same file, as
