@@ -7,6 +7,7 @@ namespace Acoustics.Test.Tools
     using System;
     using System.Collections.Generic;
     using System.Globalization;
+    using System.IO;
     using System.Linq;
     using System.Threading;
     using Acoustics.Shared;
@@ -221,7 +222,7 @@ namespace Acoustics.Test.Tools
 
             var source = TestHelper.GetAudioFile(file);
 
-            if (util.SupportsMp3)
+            if (!Path.GetExtension(file).EndsWith(MediaTypes.ExtMp3) || util.SupportsMp3)
             {
                 var info = util.Info(source);
 
@@ -231,7 +232,7 @@ namespace Acoustics.Test.Tools
             }
             else
             {
-                Assert.ThrowsException<AudioFormatNotSupportedException>(
+                Assert.ThrowsException<NotSupportedException>(
                     () => util.Info(source),
                     "cannot be processed. Valid formats are: wav (audio/wav), flac (audio/flac).");
             }

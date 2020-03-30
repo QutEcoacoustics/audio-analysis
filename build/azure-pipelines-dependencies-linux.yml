@@ -6,3 +6,4 @@ steps:
       displayName: Install SoX
     - script: |
         sudo apt-get install -y wavpack
+      displayName: Install WavPack

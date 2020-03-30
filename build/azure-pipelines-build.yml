@@ -77,7 +77,7 @@ jobs:
               path: $(NUGET_PACKAGES)
             displayName: Cache NuGet packages
 
-          - ${{ if startsWith(platform.rid, 'linux') }}:
+          - ${{ if startsWith(platform.pool, 'ubuntu') }}:
             - template: azure-pipelines-dependencies-linux.yml
 
           - pwsh: |
@@ -108,7 +108,7 @@ jobs:
               command: build
               versioningScheme: 'off'
               arguments: --configuration ${{ configuration }} --no-restore $(runtimeArgument)
-            displayName: Build solution (${{ configuration }}, ${{ platform.rid }})
+            displayName: Build solution (${{ configuration }}, ${{ coalesce(platform.rid, 'any') }})
 
           # https://github.com/microsoft/vstest/issues/2202 -- need to remove --no-build to make tests work on linux
           - task: DotNetCoreCLI@2
@@ -116,7 +116,7 @@ jobs:
               command: test
               projects: tests/Acoustics.Test/Acoustics.Test.csproj
               publishTestResults: true
-              testRunTitle: "Acoustics.Test for ${{ platform.rid }} ${{ configuration }}"
+              testRunTitle: "Acoustics.Test for ${{ coalesce(platform.rid, 'any') }} ${{ configuration }}"
               arguments: >
                 $(runtimeArgument)
                 --configuration ${{ configuration }}

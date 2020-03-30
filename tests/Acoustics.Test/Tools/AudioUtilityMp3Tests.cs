@@ -19,15 +19,6 @@ namespace Acoustics.Test.Tools
         [PlatformSpecificTestMethod(OSX)]
         public void SegmentsMp3NotAvailableOnOsxWithSox()
         {
-            var expected = new AudioUtilityInfo
-            {
-                Duration = TimeSpan.FromSeconds(30),
-                SampleRate = 11025,
-                ChannelCount = 1,
-                MediaType = MediaTypes.MediaTypeMp3,
-                BitsPerSecond = 16000,
-            };
-
             var request = new AudioUtilityRequest
             {
                 MixDownToMono = true,
@@ -41,7 +32,7 @@ namespace Acoustics.Test.Tools
             var source = TestHelper.GetAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3");
             var output = PathHelper.GetTempFile(MediaTypes.ExtMp3);
 
-            Assert.ThrowsException<AudioFormatNotSupportedException>(
+            Assert.ThrowsException<NotSupportedException>(
                 () => util.Info(source),
                 "cannot be processed. Valid formats are: wav (audio/wav), flac (audio/flac).");
 
