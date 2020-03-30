@@ -36,9 +36,9 @@ namespace Acoustics.Test.Tools
                 () => util.Info(source),
                 "cannot be processed. Valid formats are: wav (audio/wav), flac (audio/flac).");
 
-            Assert.ThrowsException<AudioFormatNotSupportedException>(
+            Assert.ThrowsException<NotSupportedException>(
                 () => util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request),
-                "Working with MP3 in SoX is not supported on OSX.");
+                "cannot be processed. Valid formats are: wav (audio/wav), flac (audio/flac)");
         }
 
         [PlatformSpecificTestMethod(NotOSX)]
