@@ -21,6 +21,7 @@
   </PropertyGroup>
   <Import Project="..\AP.VersionBuild.targets" />
   <Import Project="..\AP.CopyFiles.targets" />
+  <Import Project="..\AP.RequireLfsAssets.targets" />
   <ItemGroup>
     <Compile Include="..\AssemblyMetadata.Generated.cs" Link="Properties\AssemblyMetadata.Generated.cs" />
   </ItemGroup>
