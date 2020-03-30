@@ -13,11 +13,11 @@ namespace Acoustics.Test.Tools
     using System.IO;
     using System.Threading;
     using Acoustics.Shared;
+    using Acoustics.Test.TestHelpers;
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
     using Acoustics.Tools.Wav;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
 
     [TestClass]
     public class SoxUtilityTests : OutputDirectoryTest

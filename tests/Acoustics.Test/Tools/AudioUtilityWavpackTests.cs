@@ -1,11 +1,15 @@
-﻿namespace Acoustics.Test.Tools
+﻿// <copyright file="AudioUtilityWavpackTests.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace Acoustics.Test.Tools
 {
     using System;
     using System.IO;
     using Acoustics.Shared;
+    using Acoustics.Test.TestHelpers;
     using Acoustics.Tools;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
 
     /// <summary>
     /// The audio utility wavpack tests.
