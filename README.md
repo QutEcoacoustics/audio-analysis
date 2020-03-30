@@ -46,9 +46,7 @@ citations will printed in the console and in the log file.
 Weekly versions of AnalysisPrograms.exe are now built automatically at midnight Monday night.
 You can get copies from the [Releases](https://github.com/QutBioacoustics/audio-analysis/releases) page.
 
-Per-commit (the very latest) builds can be found from the AppVeyor
-[artifacts](https://ci.appveyor.com/project/QUTEcoacousticsResearchGroup/audio-analysis/build/artifacts)
-page.
+Per-commit (the very latest) builds can be found from the Azure Pipelines page.
 
 # License
 
