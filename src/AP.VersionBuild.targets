@@ -22,7 +22,7 @@
     <Message Text="[APVersionBeforeBuild] BuildDate: $(BuildDate)" Importance="High" />
     <Message Text="[APVersionBeforeBuild] SelfContained: $(MsBuildSelfContained), Build RuntimeIdentifier:$(MsBuildRuntimeIdentifer)" Importance="High" />
     <Message Text="[APVersionBeforeBuild] git_version.ps1 stdout:    %(VersionMetadata.Identity)" Importance="High" Condition="$(GeneratedMetadata) == ''"/>
-    <Error Text="AP Version script failed to set MsBuildRuntimeIdentifer. This value is needed for correct function in compiled code" Condition="$(MsBuildRuntimeIdentifer) == '' And  $(SelfContained)" />
+    <Error Text="AP Version script failed to set MsBuildRuntimeIdentifer. This value is needed for correct function in compiled code" Condition="$(MsBuildRuntimeIdentifer) == '' And $(SelfContained)" />
     <Error Text="AP Version metadata generation failed. Check you have PowerShell 6+ &amp; Git installed and available on the system PATH." Condition="$(GeneratedMetadata) == ''"/>
   </Target>
 </Project>

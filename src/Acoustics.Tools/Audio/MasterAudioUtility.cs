@@ -317,7 +317,11 @@ namespace Acoustics.Tools.Audio
 
                 info = this.Combine(this.wvunpackUtility.Info(source), this.ffmpegUtility.Info(source));
             }
-            else if (mediaType == MediaTypes.MediaTypeMp3 || mediaType == MediaTypes.MediaTypeWav)
+            else if (mediaType == MediaTypes.MediaTypeMp3 && this.soxUtility.SupportsMp3)
+            {
+                info = this.Combine(this.soxUtility.Info(source), this.ffmpegUtility.Info(source));
+            }
+            else if (mediaType == MediaTypes.MediaTypeWav)
             {
                 info = this.Combine(this.soxUtility.Info(source), this.ffmpegUtility.Info(source));
             }

@@ -1,16 +1,56 @@
+// <copyright file="AudioUtilityMp3Tests.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
 namespace Acoustics.Test.Tools
 {
     using System;
     using System.IO;
     using Acoustics.Shared;
+    using Acoustics.Test.TestHelpers;
     using Acoustics.Tools;
+    using Acoustics.Tools.Audio;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
+    using static Acoustics.Test.TestHelpers.PlatformSpecificTestMethod;
 
     [TestClass]
     public class AudioUtilityMp3Tests
     {
-        [TestMethod]
+        [PlatformSpecificTestMethod(OSX)]
+        public void SegmentsMp3NotAvailableOnOsxWithSox()
+        {
+            var expected = new AudioUtilityInfo
+            {
+                Duration = TimeSpan.FromSeconds(30),
+                SampleRate = 11025,
+                ChannelCount = 1,
+                MediaType = MediaTypes.MediaTypeMp3,
+                BitsPerSecond = 16000,
+            };
+
+            var request = new AudioUtilityRequest
+            {
+                MixDownToMono = true,
+                OffsetStart = TimeSpan.FromSeconds(20),
+                OffsetEnd = TimeSpan.FromSeconds(50),
+                TargetSampleRate = 11025,
+            };
+
+            var util = TestHelper.GetAudioUtilitySox();
+
+            var source = TestHelper.GetAudioFile("Currawongs_curlew_West_Knoll_Bees_20091102-183000.mp3");
+            var output = PathHelper.GetTempFile(MediaTypes.ExtMp3);
+
+            Assert.ThrowsException<AudioFormatNotSupportedException>(
+                () => util.Info(source),
+                "Working with MP3 in SoX is not supported on OSX.");
+
+            Assert.ThrowsException<AudioFormatNotSupportedException>(
+                () => util.Modify(source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension), request),
+                "Working with MP3 in SoX is not supported on OSX.");
+        }
+
+        [PlatformSpecificTestMethod(NotOSX)]
         public void SegmentsMp3Correctly1Sox()
         {
             var expected = new AudioUtilityInfo
@@ -44,7 +84,7 @@ namespace Acoustics.Test.Tools
             TestHelper.CheckAudioUtilityInfo(expected, actual);
         }
 
-        [TestMethod]
+        [PlatformSpecificTestMethod(NotOSX)]
         public void SegmentsMp3Correctly2Sox()
         {
             var expected = new AudioUtilityInfo
@@ -77,7 +117,7 @@ namespace Acoustics.Test.Tools
             TestHelper.CheckAudioUtilityInfo(expected, actual);
         }
 
-        [TestMethod]
+        [PlatformSpecificTestMethod(NotOSX)]
         public void SegmentsMp3Correctly3Sox()
         {
             var expected = new AudioUtilityInfo
@@ -111,7 +151,7 @@ namespace Acoustics.Test.Tools
             TestHelper.CheckAudioUtilityInfo(expected, actual);
         }
 
-        [TestMethod]
+        [PlatformSpecificTestMethod(NotOSX)]
         public void SegmentsMp3Correctly4Sox()
         {
             var expected = new AudioUtilityInfo
@@ -145,7 +185,7 @@ namespace Acoustics.Test.Tools
             TestHelper.CheckAudioUtilityInfo(expected, actual);
         }
 
-        [TestMethod]
+        [PlatformSpecificTestMethod(NotOSX)]
         public void SegmentsMp3Correctly5Sox()
         {
             var expected = new AudioUtilityInfo
@@ -178,7 +218,7 @@ namespace Acoustics.Test.Tools
             TestHelper.CheckAudioUtilityInfo(expected, actual);
         }
 
-        [TestMethod]
+        [PlatformSpecificTestMethod(NotOSX)]
         public void SegmentsMp3Correctly6Sox()
         {
             var expected = new AudioUtilityInfo

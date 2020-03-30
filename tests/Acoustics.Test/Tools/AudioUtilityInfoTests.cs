@@ -164,14 +164,14 @@ namespace Acoustics.Test.Tools
         [Ignore("deprecated audio tool")]
         public void InfoWorksShnTool(string file)
         {
-        //    var util = TestHelper.GetAudioUtilityShntool();
+            //    var util = TestHelper.GetAudioUtilityShntool();
 
-        //    var source = TestHelper.GetAudioFile(file);
-        //    var info = util.Info(source);
+            //    var source = TestHelper.GetAudioFile(file);
+            //    var info = util.Info(source);
 
-        //    var expected = TestHelper.AudioDetails[file];
+            //    var expected = TestHelper.AudioDetails[file];
 
-        //    TestHelper.CheckAudioUtilityInfo(expected, info);
+            //    TestHelper.CheckAudioUtilityInfo(expected, info);
         }
 
         [DataTestMethod]
@@ -237,10 +237,12 @@ namespace Acoustics.Test.Tools
         {
             var util = TestHelper.GetAudioUtilitySox();
 
+            var mp3Supported = (util as SoxAudioUtility).SupportsMp3 ? ", mp3 (audio/mpeg)" : string.Empty;
+
             var source = TestHelper.GetAudioFile(file);
             TestHelper.ExceptionMatches<NotSupportedException>(
                 () => util.Info(source),
-                "cannot be processed.  Valid formats are: wav (audio/wav), mp3 (audio/mpeg), flac (audio/flac).");
+                $"cannot be processed.  Valid formats are: wav (audio/wav), flac (audio/flac){mp3Supported}.");
         }
 
         [DataTestMethod]

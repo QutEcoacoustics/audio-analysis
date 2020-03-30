@@ -17,6 +17,8 @@ namespace Acoustics.Tools.Audio
     /// </summary>
     public class SoxAudioUtility : AbstractAudioUtility, IAudioUtility
     {
+        public const string Mp3NotSupportedOnOSX = "Working with MP3 in SoX is not supported on OSX.";
+
         private readonly bool enableShortNameHack;
         /*
          * Some things to test out/try:
@@ -130,10 +132,23 @@ namespace Acoustics.Tools.Audio
         /// </summary>
         public SoxResampleQuality? ResampleQuality { get; private set; }
 
+        public bool SupportsMp3 => !AppConfigHelper.IsMacOsX;
+
         /// <summary>
         /// Gets the valid source media types.
         /// </summary>
-        protected override IEnumerable<string> ValidSourceMediaTypes => new[] { MediaTypes.MediaTypeWav, MediaTypes.MediaTypeMp3, MediaTypes.MediaTypeFlacAudio };
+        protected override IEnumerable<string> ValidSourceMediaTypes
+        {
+            get
+            {
+                yield return MediaTypes.MediaTypeWav;
+                yield return MediaTypes.MediaTypeFlacAudio;
+                if (this.SupportsMp3)
+                {
+                    yield return MediaTypes.MediaTypeMp3;
+                }
+            }
+        }
 
         /// <summary>
         /// Gets the invalid source media types.
@@ -143,7 +158,17 @@ namespace Acoustics.Tools.Audio
         /// <summary>
         /// Gets the valid output media types.
         /// </summary>
-        protected override IEnumerable<string> ValidOutputMediaTypes => new[] { MediaTypes.MediaTypeWav, MediaTypes.MediaTypeMp3 };
+        protected override IEnumerable<string> ValidOutputMediaTypes
+        {
+            get
+            {
+                yield return MediaTypes.MediaTypeWav;
+                if (this.SupportsMp3)
+                {
+                    yield return MediaTypes.MediaTypeMp3;
+                }
+            }
+        }
 
         /// <summary>
         /// Gets the invalid output media types.
@@ -448,6 +473,11 @@ namespace Acoustics.Tools.Audio
 
         protected override void CheckRequestValid(FileInfo source, string sourceMimeType, FileInfo output, string outputMediaType, AudioUtilityRequest request)
         {
+            if (AppConfigHelper.IsMacOsX && (sourceMimeType == MediaTypes.MediaTypeMp3 || outputMediaType == MediaTypes.MediaTypeMp3))
+            {
+                throw new AudioFormatNotSupportedException(Mp3NotSupportedOnOSX);
+            }
+
             AudioUtilityInfo info = null;
 
             if (request?.BitDepth != null)
