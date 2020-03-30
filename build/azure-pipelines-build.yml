@@ -26,6 +26,10 @@ parameters:
     - rid: osx-x64
       pool: macos-latest
       configurations: [debug, release]
+        
+    - rid: ~ # framework dependent build
+      pool: ubuntu-latest
+      configurations: [release]
   # cross-product not supported
   # https://github.com/microsoft/azure-pipelines-yaml/issues/20
 
@@ -33,11 +37,15 @@ jobs:
   - ${{ each platform in parameters.platforms }}:
     - ${{ each configuration in platform.configurations }}:
       - job:
-        displayName: Build ${{ format('{0}_{1}_{2}', platform.rid, platform.pool, configuration) }}
+        displayName: Build ${{ format('{0}_{1}_{2}', coalesce(platform.rid, 'any'), platform.pool, configuration) }}
         continueOnError: ${{ coalesce(platform.unsupportedAzurePipelinesPlatform, 'false') }}
         pool:
           vmImage: ${{ platform.pool }}
-      
+        variables:
+          ${{ if eq(null, platform.rid) }}:
+            runtimeArgument: ''
+          ${{ ne(null, platform.rid) }}:
+            runtimeArgument: --runtime ${{ platform.rid }}
         steps:
           # - pwsh: 'Get-ChildItem Env:'
           #   displayName: debug environment variables
@@ -99,7 +107,7 @@ jobs:
             inputs:
               command: build
               versioningScheme: 'off'
-              arguments: --configuration ${{ configuration }} --no-restore --runtime ${{ platform.rid }}
+              arguments: --configuration ${{ configuration }} --no-restore $(runtimeArgument)
             displayName: Build solution (${{ configuration }}, ${{ platform.rid }})
 
           # https://github.com/microsoft/vstest/issues/2202 -- need to remove --no-build to make tests work on linux
@@ -110,7 +118,7 @@ jobs:
               publishTestResults: true
               testRunTitle: "Acoustics.Test for ${{ platform.rid }} ${{ configuration }}"
               arguments: >
-                --runtime ${{ platform.rid }}
+                $(runtimeArgument)
                 --configuration ${{ configuration }}
                 --settings tests/Acoustics.Test/.runsettings
                 --logger trx
@@ -129,7 +137,7 @@ jobs:
               publishTestResults: true
               testRunTitle: "AED.Test for ${{ platform.rid }} ${{ configuration }}"
               arguments: >
-                --runtime ${{ platform.rid }}
+                $(runtimeArgument)
                 --configuration ${{ configuration }}
                 --logger "console;verbosity=detailed"
                 --logger trx
@@ -164,7 +172,7 @@ jobs:
               command: publish
               projects: src/AnalysisPrograms/AnalysisPrograms.csproj
               arguments: >
-                --runtime ${{ platform.rid }}
+                $(runtimeArgument)
                 --configuration ${{ configuration }}
                 --output $(Build.BinariesDirectory)
                 --self-contained
@@ -185,6 +193,6 @@ jobs:
             inputs:
               pathtoPublish: '$(Build.ArtifactStagingDirectory)'
               ${{ if eq(configuration, 'Debug') }}:
-                artifactName: '${{ platform.rid }}_Debug'
+                artifactName: '${{ coalesce(platform.rid, 'any') }}_Debug'
               ${{ if ne(configuration, 'Debug') }}:
-                artifactName: '${{ platform.rid }}'
+                artifactName: '${{ coalesce(platform.rid, 'any') }}'
