@@ -288,7 +288,7 @@ namespace Acoustics.Test.AnalysisPrograms.SourcePreparers
 
                 Assert.IsTrue(actual.IsSegmentSet);
                 Assert.AreEqual(expectedStart, actual.SegmentStartOffset.Value.TotalSeconds);
-                Assert.AreEqual(expectedEnd, actual.SegmentEndOffset.Value.TotalSeconds);
+                Assert.AreEqual(expectedEnd, actual.SegmentEndOffset.Value.TotalSeconds, 0.1);
             }
         }
     }

@@ -12,16 +12,14 @@ namespace Acoustics.Tools.Audio
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using Shared;
-    using Shared.Contracts;
+    using Acoustics.Shared;
+    using Acoustics.Shared.Contracts;
 
     /// <summary>
     /// Combined audio utility that makes use of the most appropriate audio utility for the task.
     /// </summary>
     public class MasterAudioUtility : AbstractAudioUtility, IAudioUtility
     {
-        private static bool missingMp3SpltWarned = false;
-
         private readonly WavPackAudioUtility wvunpackUtility;
 
         private readonly FfmpegAudioUtility ffmpegUtility;
@@ -67,13 +65,11 @@ namespace Acoustics.Tools.Audio
         /// </summary>
         /// <param name="ffmpegUtility">ffmpeg utility.
         /// </param>
-        /// <param name="mp3SpltUtility">mp3splt utility.
-        /// </param>
         /// <param name="wvunpackUtility">wxunpack utility.
         /// </param>
         /// <param name="soxUtility">sox utility.
         /// </param>
-        /// <param name="ffmpegRawPcmUtility">The ffmpeg utility for converting raw PCM data</param>
+        /// <param name="ffmpegRawPcmUtility">The ffmpeg utility for converting raw PCM data.</param>
         /// <param name="temporaryFilesDirectory">Directory for temporary files.</param>
         public MasterAudioUtility(
             FfmpegAudioUtility ffmpegUtility,
