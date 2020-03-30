@@ -176,8 +176,10 @@ namespace AudioAnalysisTools
         /// <summary> Gets or sets score normalised in range [0,1]. NOTE: Max is set = to five times user supplied threshold.</summary>
         public double ScoreNormalised { get; set; }
 
-        /// <summary> Gets max Possible Score: set = to 5x user supplied threshold. An arbitrary value used for score normalisation.</summary>
-        public double Score_MaxPossible { get; private set; }
+        /// <summary> Gets max Possible Score: set = to 5x user supplied threshold.
+        /// An arbitrary value used for score normalisation - it displays well in plot.
+        /// </summary>
+        public double Score_MaxPossible { get; set; }
 
         public double Score_MaxInEvent { get; set; }
 
@@ -1205,6 +1207,7 @@ namespace AudioAnalysisTools
 
         /// <summary>
         /// A general method to convert an array of score values to a list of AcousticEvents.
+        /// NOTE: The score array is assumed to be temporal i.e. each element of the array is derived from a time frame.
         /// The method uses the passed scoreThreshold in order to calculate a normalised score.
         /// Max possible score := threshold * 5.
         /// normalised score := score / maxPossibleScore.

@@ -230,7 +230,6 @@ namespace AnalysisPrograms.Recognizers
                         }
                         else if (profileConfig is SpectralPeakTrackParameters tp)
                         {
-                            //get the array of intensity values minus intensity in side/buffer bands.
                             double[] decibelArray;
                             (acousticEvents, decibelArray) = SpectralPeakTrackParameters.GetSpectralPeakTracks(
                                 sonogram,
@@ -243,6 +242,22 @@ namespace AnalysisPrograms.Recognizers
                                 segmentStartOffset);
 
                             var plot = PreparePlot(decibelArray, $"{profileName} (SpectralPeaks:dB Intensity)", tp.DecibelThreshold.Value);
+                            plots.Add(plot);
+                        }
+                        else if (profileConfig is ClickParameters cp)
+                        {
+                            double[] decibelArray;
+                            (acousticEvents, decibelArray) = ClickParameters.GetClicks(
+                                sonogram,
+                                cp.MinHertz.Value,
+                                cp.MaxHertz.Value,
+                                sonogram.NyquistFrequency,
+                                cp.DecibelThreshold.Value,
+                                cp.MinBandwidthHertz.Value,
+                                cp.MaxBandwidthHertz.Value,
+                                segmentStartOffset);
+
+                            var plot = PreparePlot(decibelArray, $"{profileName} (Click:dB Intensity)", cp.DecibelThreshold.Value);
                             plots.Add(plot);
                         }
                         else
