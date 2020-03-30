@@ -6,6 +6,7 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Reflection;
     using System.Threading.Tasks;
     using Acoustics.Shared;
@@ -53,6 +54,11 @@ namespace AnalysisPrograms
             if (AppConfigHelper.WvunpackExe == null)
             {
                 warnings.Add("Cannot find wvunpack - we'll be unable to process any wavpack files.");
+            }
+
+            if (!new SoxAudioUtility(new FileInfo(AppConfigHelper.SoxExe)).SupportsMp3)
+            {
+                warnings.Add(SoxAudioUtility.Mp3NotSupportedOnOSX);
             }
 
             if (MainEntry.CheckForDataAnnotations() is string message)

@@ -62,7 +62,7 @@ namespace Acoustics.Test.TestHelpers
             {
                 message = message == null ? string.Empty : message + "\n";
                 Assert.Fail(
-                    $"{message}Actual delta ({actualDelta}) between expected value ({expected:O}) and actual value ({actual:O}) was not less than {delta}");
+                    $"{message}Actual delta ({actualDelta}) between expected value ({expected}) and actual value ({actual}) was not less than {delta}");
             }
         }
 
@@ -217,8 +217,8 @@ namespace Acoustics.Test.TestHelpers
             var exists = Directory.Exists(Path.GetFullPath(path));
             if (!exists)
             {
-                 PathDiagnostics.PathExistsOrDiff(path, out var diff);
-                 Assert.Fail($"Expected path {path} to exist but it could not be found. Path diagnostics:\n{diff.Messages}");
+                PathDiagnostics.PathExistsOrDiff(path, out var diff);
+                Assert.Fail($"Expected path {path} to exist but it could not be found. Path diagnostics:\n{diff.Messages}");
             }
         }
 
@@ -232,8 +232,8 @@ namespace Acoustics.Test.TestHelpers
             var exists = File.Exists(Path.GetFullPath(path));
             if (!exists)
             {
-                 PathDiagnostics.PathExistsOrDiff(path, out var diff);
-                 Assert.Fail($"Expected path {path} to exist but it could not be found. Path diagnostics:\n{diff.Messages}");
+                PathDiagnostics.PathExistsOrDiff(path, out var diff);
+                Assert.Fail($"Expected path {path} to exist but it could not be found. Path diagnostics:\n{diff.Messages}");
             }
         }
 

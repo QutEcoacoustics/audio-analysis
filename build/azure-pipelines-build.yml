@@ -27,7 +27,7 @@ parameters:
       pool: macos-latest
       configurations: [debug, release]
         
-    - rid: ~ # framework dependent build
+    - rid: '' # framework dependent build
       pool: ubuntu-latest
       configurations: [release]
   # cross-product not supported

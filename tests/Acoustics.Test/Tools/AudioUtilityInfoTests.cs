@@ -1,3 +1,7 @@
+// <copyright file="AudioUtilityInfoTests.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
 namespace Acoustics.Test.Tools
 {
     using System;
@@ -6,9 +10,9 @@ namespace Acoustics.Test.Tools
     using System.Linq;
     using System.Threading;
     using Acoustics.Shared;
+    using Acoustics.Test.TestHelpers;
     using Acoustics.Tools.Audio;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
 
     [TestClass]
     public class AudioUtilityInfoTests
@@ -213,14 +217,24 @@ namespace Acoustics.Test.Tools
         [DataRow("4min test.mp3")]
         public void InfoWorksSoxTool(string file)
         {
-            var util = TestHelper.GetAudioUtilitySox();
+            var util = TestHelper.GetAudioUtilitySox() as SoxAudioUtility;
 
             var source = TestHelper.GetAudioFile(file);
-            var info = util.Info(source);
 
-            var expected = TestHelper.AudioDetails[file];
+            if (util.SupportsMp3)
+            {
+                var info = util.Info(source);
 
-            TestHelper.CheckAudioUtilityInfo(expected, info);
+                var expected = TestHelper.AudioDetails[file];
+
+                TestHelper.CheckAudioUtilityInfo(expected, info);
+            }
+            else
+            {
+                Assert.ThrowsException<AudioFormatNotSupportedException>(
+                    () => util.Info(source),
+                    "cannot be processed. Valid formats are: wav (audio/wav), flac (audio/flac).");
+            }
         }
 
         [TestMethod]

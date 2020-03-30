@@ -11,6 +11,7 @@ namespace Acoustics.Test.AnalysisPrograms
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Test.TestHelpers;
+    using Acoustics.Tools.Audio;
     using global::AnalysisPrograms;
     using global::AnalysisPrograms.Production.Arguments;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -110,7 +111,12 @@ namespace Acoustics.Test.AnalysisPrograms
 
             this.AssertContainsCopyright(console.Lines);
             this.AssertContainsGitHashAndVersion(console.Lines);
-            StringAssert.Contains(console.Lines[4], "SUCCESS - Valid environment");
+            if (IsMacOsX)
+            {
+                StringAssert.Contains(console.Lines[4], SoxAudioUtility.Mp3NotSupportedOnOSX);
+            }
+
+            StringAssert.Contains(console.Lines[^2], "SUCCESS - Valid environment");
         }
 
         [TestMethod]

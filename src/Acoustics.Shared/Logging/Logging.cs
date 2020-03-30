@@ -20,7 +20,7 @@ namespace Acoustics.Shared.Logging
     using log4net.Util;
     using static log4net.Appender.ManagedColoredConsoleAppender;
 
-    public class Logging : IDisposable
+    public class Logging : IDisposable, IAsyncDisposable
     {
         public const string CleanLogger = "CleanLogger";
         public const string LogFileOnly = "LogFileOnly";
@@ -40,6 +40,7 @@ namespace Acoustics.Shared.Logging
         private readonly AppenderSkeleton standardConsoleAppender;
         private readonly AppenderSkeleton cleanConsoleAppender;
         private readonly Hierarchy repository;
+        private readonly ValueTask cleanFilesTask;
 
         static Logging()
         {
@@ -204,7 +205,7 @@ namespace Acoustics.Shared.Logging
                 // We'll never know if this fails or not, the exception is captured in the task
                 // that we do NOT await. We do however log any exceptions.
                 // ReSharper disable once AssignmentIsFullyDiscarded
-                _ = this.CleanLogs(this.LogFilePath);
+                this.cleanFilesTask = this.CleanLogs(this.LogFilePath);
             }
         }
 
@@ -276,18 +277,23 @@ namespace Acoustics.Shared.Logging
             LoggedConsole.Log.Info("Clean log INFO");
         }
 
+        public async ValueTask DisposeAsync()
+        {
+            await this.cleanFilesTask;
+        }
+
         /// <summary>
         /// Rolling log file appender has no concept of cleaning up logs with a date stamp in their name.
         /// This we have to clean them manually.
         /// </summary>
         /// <returns>A task.</returns>
-        private async Task CleanLogs(string logFilePath)
+        private async ValueTask CleanLogs(string logFilePath)
         {
             Contract.RequiresNotNull(logFilePath);
             const int threshold = 60;
             int target = 50;
 
-            void CleanFiles()
+            async ValueTask CleanFilesAsync()
             {
                 var logsPath = Path.GetDirectoryName(logFilePath) ??
                                throw new InvalidOperationException("Could not resolve logs directory path: " + logFilePath);
@@ -347,7 +353,7 @@ namespace Acoustics.Shared.Logging
             try
             {
                 // ReSharper disable once RedundantCast
-                await Task.Run((Action)CleanFiles);
+                await CleanFilesAsync();
             }
             catch (Exception ex)
             {
