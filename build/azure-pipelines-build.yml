@@ -44,7 +44,7 @@ jobs:
         variables:
           ${{ if eq('', platform.rid) }}:
             runtimeArgument: ''
-          ${{ ne('', platform.rid) }}:
+          ${{ if ne('', platform.rid) }}:
             runtimeArgument: --runtime ${{ platform.rid }}
         steps:
           # - pwsh: 'Get-ChildItem Env:'
