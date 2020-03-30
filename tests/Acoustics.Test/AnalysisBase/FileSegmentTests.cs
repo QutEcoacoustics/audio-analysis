@@ -70,7 +70,7 @@ namespace Acoustics.Test.AnalysisBase
             Assert.AreEqual(null, s.SegmentEndOffset);
             Assert.AreEqual(0, s.StartOffsetSeconds);
             Assert.AreEqual(info.Duration.Value.TotalSeconds, s.EndOffsetSeconds, 1.0);
-            Assert.That.AreEqual(info.Duration.Value, s.TargetFileDuration.Value, TimeSpan.FromMilliseconds(0.1));
+            Assert.That.AreEqual(info.Duration.Value, s.TargetFileDuration.Value, 0.1.Seconds());
             Assert.AreEqual(info.SampleRate, s.TargetFileSampleRate);
             Assert.AreEqual("Currawongs_curlew_West_Knoll_Bees_20091102-183000", s.SourceMetadata.Identifier);
             Assert.IsNull(s.TargetFileStartDate);
