@@ -108,7 +108,7 @@ The prerequisites must be installed first.
 1. Download the _Release_ Zip file from one of these links:
     - [Stable](https://github.com/QutEcoacoustics/audio-analysis/releases/latest)
     - [Weekly](https://github.com/QutEcoacoustics/audio-analysis/releases)
-    - [Continuous](https://ci.appveyor.com/project/QUTEcoacousticsResearchGroup/audio-analysis/build/artifacts)
+    - [Continuous](https://dev.azure.com/QutEcoacoustics/audio-analysis/_build/latest?definitionId=3&branchName=master
 1. Extract the contents to a directory on your computer
     - It can be installed in any directory
     - We typically extract to a directory named `C:\AP` or `/AP` on Linux
