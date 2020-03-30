@@ -26,8 +26,8 @@ namespace Acoustics.Test.AnalysisPrograms
         [DataRow(WinX64)]
         [DataRow(OsxX64)]
         [DataRow(LinuxX64)]
-        [DataRow(LinuxMuslX64)]
 
+        //[DataRow(LinuxMuslX64)]
         //[DataRow(LinuxArm)]
         //[DataRow(LinuxArm64)]
         //[DataRow(WinArm64)]
