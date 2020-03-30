@@ -42,9 +42,9 @@ jobs:
         pool:
           vmImage: ${{ platform.pool }}
         variables:
-          ${{ if eq(null, platform.rid) }}:
+          ${{ if eq('', platform.rid) }}:
             runtimeArgument: ''
-          ${{ ne(null, platform.rid) }}:
+          ${{ ne('', platform.rid) }}:
             runtimeArgument: --runtime ${{ platform.rid }}
         steps:
           # - pwsh: 'Get-ChildItem Env:'
