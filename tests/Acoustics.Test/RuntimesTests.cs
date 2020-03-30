@@ -18,7 +18,7 @@ namespace Acoustics.Test
     [TestCategory("Runtime")]
     public class RuntimesTests
     {
-        [RuntimeIdentifierSpecificDataTestMethod(RidType.Compiled)]
+        [RuntimeIdentifierSpecificDataTestMethod(RidType.CompiledIfSelfContained)]
         [DataRow(WinX64, "win-x64/native/e_sqlite3.dll")]
         [DataRow(WinArm64, "win-arm64/native/e_sqlite3.dll")]
         [DataRow(OsxX64, "osx-x64/native/libe_sqlite3.dylib")]
@@ -44,7 +44,7 @@ namespace Acoustics.Test
 #pragma warning restore IDE0035, CS0162
         }
 
-        [RuntimeIdentifierSpecificDataTestMethod(RidType.Compiled)]
+        [RuntimeIdentifierSpecificDataTestMethod(RidType.CompiledIfSelfContained)]
         [DataRow(WinX64, "win-x64/lib/netstandard2.0/Mono.Posix.NETStandard.dll")]
         [DataRow(OsxX64, "osx-x64/lib/netstandard2.0/Mono.Posix.NETStandard.dll")]
         [DataRow(LinuxX64, "linux-x64/lib/netstandard2.0/Mono.Posix.NETStandard.dll")]

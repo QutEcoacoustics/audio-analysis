@@ -6,11 +6,12 @@ namespace Acoustics.Test.AnalysisPrograms.Production
 {
     using System;
     using System.IO;
+    using System.IO.Abstractions;
+    using Acoustics.Shared.Contracts;
+    using Acoustics.Test.TestHelpers;
     using global::AnalysisPrograms.Production;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
-    using Acoustics.Shared.Contracts;
-    using System.IO.Abstractions;
+
     //using Zio.FileSystems.Community.SqliteFileSystem;
 
     [TestClass]
@@ -25,7 +26,6 @@ namespace Acoustics.Test.AnalysisPrograms.Production
 
             Assert.IsInstanceOfType(fs, typeof(FileSystem));
         }
-
 
         [TestMethod]
         [Ignore("Broken to resolve .NET Core dependencies. https://github.com/QutEcoacoustics/audio-analysis/issues/289")]

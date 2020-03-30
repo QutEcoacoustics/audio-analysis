@@ -98,7 +98,7 @@ namespace Acoustics.Test.Shared.LoggingTests
             // its cleaning logic
             do
             {
-                _ = new Logging(false, Level.Info, quietConsole: false);
+                new Logging(false, Level.Info, quietConsole: false).Dispose();
                 delta--;
             }
             while (delta > 0);

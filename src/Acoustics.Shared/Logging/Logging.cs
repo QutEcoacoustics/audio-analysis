@@ -24,10 +24,11 @@ namespace Acoustics.Shared.Logging
     {
         public const string CleanLogger = "CleanLogger";
         public const string LogFileOnly = "LogFileOnly";
-        private const string LogPrefix = "log_";
 
         public static readonly Assembly RootNamespace = typeof(Logging).Assembly;
         public static readonly string LogFolder = Path.Combine(AppConfigHelper.ExecutingAssemblyDirectory, "Logs");
+
+        private const string LogPrefix = "log_";
 
         private readonly Logger rootLogger;
 
@@ -227,7 +228,7 @@ namespace Acoustics.Shared.Logging
         /// Initializes the logging system.
         /// </summary>
         /// <param name="defaultLevel">The default level to set for the root logger.</param>
-        /// <param name="quietConsole">If True limits the level on the appenders to <see cref="Level.Error"/></param>
+        /// <param name="quietConsole">If True limits the level on the appenders to <see cref="Level.Error"/>.</param>
         public void ModifyVerbosity(Level defaultLevel, bool quietConsole)
         {
             this.repository.Threshold = defaultLevel;
@@ -300,7 +301,7 @@ namespace Acoustics.Shared.Logging
 
                         // assuming a format of log_20180717T130822Z.1.txt
                         int prefixLength = LogPrefix.Length;
-                        var datePart = name.Substring(prefixLength, name.IndexOf(".", StringComparison.Ordinal) - prefixLength);
+                        var datePart = name[prefixLength..name.IndexOf(".", StringComparison.Ordinal)];
                         var success = DateTime.TryParseExact(
                             datePart,
                             "yyyyMMddTHHmmssZ",
@@ -350,7 +351,7 @@ namespace Acoustics.Shared.Logging
             }
             catch (Exception ex)
             {
-                LoggedConsole.WriteFatalLine("Log cleaning failed, this is a bug, please report it.", ex);
+                Console.WriteLine($"Log cleaning failed, this is a bug, please report it. {ex.Message}, {ex}");
             }
         }
     }
