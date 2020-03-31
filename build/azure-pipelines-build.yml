@@ -211,11 +211,11 @@ jobs:
               includeRootFolder: false
               ${{ if startsWith(platform.pool, 'windows') }}:
                 archiveType: zip
-                archiveFile: '$(Build.ArtifactStagingDirectory)/AP_$(platformTag)$(configurationTag)_$(Date:yyyyMMdd)$(Rev:.r).zip'
+                archiveFile: '$(Build.ArtifactStagingDirectory)/AP_$(platformTag)$(configurationTag)_$(Build.DefinitionName).zip'
               ${{ if not(startsWith(platform.pool, 'windows')) }}:
                 archiveType: tar
                 tarCompression: xz
-                archiveFile: '$(Build.ArtifactStagingDirectory)/AP_$(platformTag)$(configurationTag)_$(Date:yyyyMMdd)$(Rev:.r).tar.xz'
+                archiveFile: '$(Build.ArtifactStagingDirectory)/AP_$(platformTag)$(configurationTag)_$(Build.DefinitionName).tar.xz'
 
             displayName: Archive published app
 
