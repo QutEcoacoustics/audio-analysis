@@ -575,10 +575,7 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        /// Returns the fractional overlap of two events.
-        /// Translate time/freq dimensions to coordinates in a matrix.
-        /// Freq dimension = bins   = matrix columns. Origin is top left - as per matrix in the sonogram class.
-        /// Time dimension = frames = matrix rows.
+        /// Combines overlapping events in the passed List of events and returns a reduced list.
         /// </summary>
         public static List<AcousticEvent> CombineOverlappingEvents(List<AcousticEvent> events, TimeSpan segmentStartOffset)
         {
@@ -593,6 +590,35 @@ namespace AudioAnalysisTools
                 {
                     if (EventsOverlapInTime(events[i], events[j]) && EventsOverlapInFrequency(events[i], events[j]))
                     {
+                        events[j] = AcousticEvent.MergeTwoEvents(events[i], events[j], segmentStartOffset);
+                        events.RemoveAt(i);
+                        break;
+                    }
+                }
+            }
+
+            return events;
+        }
+
+        /// <summary>
+        /// Combines events that have similar bottom and top frequency bounds and whose start times are within the passed time range.
+        /// </summary>
+        public static List<AcousticEvent> CombineSimilarProximalEvents(List<AcousticEvent> events, TimeSpan startDifference, int hertzDifference)
+        {
+            if (events.Count < 2)
+            {
+                return events;
+            }
+
+            for (int i = events.Count - 1; i >= 0; i--)
+            {
+                for (int j = i - 1; j >= 0; j--)
+                {
+                    bool eventStartsAreProximal = Math.Abs(events[i].EventStartSeconds - events[j].EventStartSeconds) < startDifference.TotalSeconds;
+                    bool eventAreInSimilarFreqBand = Math.Abs(events[i].LowFrequencyHertz - events[j].LowFrequencyHertz) < hertzDifference && Math.Abs(events[i].HighFrequencyHertz - events[j].HighFrequencyHertz) < hertzDifference;
+                    if (eventStartsAreProximal && eventAreInSimilarFreqBand)
+                    {
+                        var segmentStartOffset = TimeSpan.FromSeconds(events[i].SegmentStartSeconds);
                         events[j] = AcousticEvent.MergeTwoEvents(events[i], events[j], segmentStartOffset);
                         events.RemoveAt(i);
                         break;

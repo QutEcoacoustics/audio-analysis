@@ -479,7 +479,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             var outputDirectory = new DirectoryInfo("C:\\temp");
             GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "Click");
 
-            Assert.AreEqual(6, allResults.Events.Count);
+            Assert.AreEqual(2, allResults.Events.Count);
 
             var @event = allResults.Events[0];
             Assert.AreEqual(10.0, @event.EventStartSeconds, 0.1);
@@ -487,7 +487,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             Assert.AreEqual(6474, @event.LowFrequencyHertz);
             Assert.AreEqual(10781, @event.HighFrequencyHertz);
 
-            @event = allResults.Events[5];
+            @event = allResults.Events[1];
             Assert.AreEqual(11.2, @event.EventStartSeconds, 0.1);
             Assert.AreEqual(11.24, @event.EventEndSeconds, 0.1);
             Assert.AreEqual(6474, @event.LowFrequencyHertz);

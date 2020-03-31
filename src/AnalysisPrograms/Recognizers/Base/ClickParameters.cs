@@ -67,16 +67,16 @@ namespace AnalysisPrograms.Recognizers.Base
                 {
                     // THis is where the profile of a click is defined
                     // A click requires sudden onset, with maximum amplitude followed by decay.
-                    //if (sonogramData[t - 1, bin] > decibelThreshold || sonogramData[t, bin] < sonogramData[t + 1, bin])
-                    //{
-                    //    continue;
-                    //}
-
-                    // THis is where the profile of a vertical ridge is defined
-                    if (sonogramData[t, bin] < sonogramData[t - 1, bin] || sonogramData[t, bin] < sonogramData[t + 1, bin])
+                    if (sonogramData[t - 1, bin] > decibelThreshold || sonogramData[t, bin] < sonogramData[t + 1, bin])
                     {
                         continue;
                     }
+
+                    // THis is where the profile of a vertical ridge is defined
+                    //if (sonogramData[t, bin] < sonogramData[t - 1, bin] || sonogramData[t, bin] < sonogramData[t + 1, bin])
+                    //{
+                    //    continue;
+                    //}
 
                     clickIntensity[bin - minBin] = sonogramData[t, bin];
                     //clickIntensity[bin - minBin] = sonogramData[t, bin] - sonogramData[t - 1, bin];
@@ -88,8 +88,7 @@ namespace AnalysisPrograms.Recognizers.Base
                     continue;
                 }
 
-                //extract the events based on bandwidth and threshhold.
-                // Note: This method does NOT do prior smoothing of the click array.
+                // Extract the events based on bandwidth and threshhold.
                 var acousticEvents = ConvertSpectralArrayToClickEvents(
                     clickIntensity,
                     minHz,
@@ -110,10 +109,12 @@ namespace AnalysisPrograms.Recognizers.Base
 
                 // add new events to list of events
                 events.AddRange(acousticEvents);
-            } //end for all time frames
+            }
 
-            // combine adjacent acoustic events
-            //events = AcousticEvent.CombineOverlappingEvents(events, segmentStartOffset);
+            // combine proximal events that occupy similar frequency band
+            var startDifference = TimeSpan.FromSeconds(1.0);
+            var hertzDifference = 100;
+            events = AcousticEvent.CombineSimilarProximalEvents(events, startDifference, hertzDifference);
 
             return (events, temporalIntensityArray);
         }
