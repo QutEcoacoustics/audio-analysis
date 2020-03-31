@@ -7,6 +7,7 @@ variables:
 
 # Run on all commits,  except for some folders
 trigger:
+  batch: true
   branches:
     include:
     - '*'
@@ -20,12 +21,5 @@ stages:
   - stage: build
     jobs:
       - template: build/azure-pipelines-build.yml
-  # - stage: build
-  #   jobs:
-  #     - template: build/azure-pipelines-build.yml
-  # - stage: test
-  #   jobs:
-  #     - template: build/azure-pipelines-test.yml
-  # - stage: release
-  #   jobs:
-  #     - template: build/azure-pipelines-release.yml
+  #- stage: release
+      
