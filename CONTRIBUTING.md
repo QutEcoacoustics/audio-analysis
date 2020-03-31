@@ -31,7 +31,11 @@
         - if a `TimeSpan` needs to be formatted
             - in a log: the default formatting is acceptable
             - in a filename: use ISO8601 duration formatting
+- New code or bug fixes must be covered by unit tests.
+  Our project has a historically bad relationship with unit testing and we want to try
+  and improve on this.
 
+  [![codecov](https://codecov.io/gh/QutEcoacoustics/audio-analysis/branch/master/graph/badge.svg)](https://codecov.io/gh/QutEcoacoustics/audio-analysis)
 
 ## Required Software
 
