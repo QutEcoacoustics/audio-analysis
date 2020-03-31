@@ -6,12 +6,10 @@ namespace AnalysisPrograms.Recognizers.Base
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using Acoustics.Shared;
     using AudioAnalysisTools;
     using AudioAnalysisTools.StandardSpectrograms;
-    using TowseyLibrary;
-
-    // NOTE WARNING! THIS CLASS IS CURRENTLY UNDER CONSTRUCTION AND IS NOT READY FOR USE.
 
     /// <summary>
     /// Parameters needed from a config file to detect click components.
@@ -51,6 +49,7 @@ namespace AnalysisPrograms.Recognizers.Base
             double binWidth = nyquist / (double)binCount;
             int minBin = (int)Math.Round(minHz / binWidth);
             int maxBin = (int)Math.Round(maxHz / binWidth);
+            int bandwidthBinCount = maxBin - minBin + 1;
 
             // list of accumulated acoustic events
             var events = new List<AcousticEvent>();
@@ -59,25 +58,35 @@ namespace AnalysisPrograms.Recognizers.Base
             // for all time frames except 1st and last allowing for edge effects.
             for (int t = 1; t < frameCount - 1; t++)
             {
-                // set up an intensity array for the frequency bin.
-                double[] clickIntensity = new double[frameCount];
+                // set up an intensity array for all frequency bins in this frame.
+                double[] clickIntensity = new double[bandwidthBinCount];
 
                 // buffer zone around click is one frame wide.
                 // for all frequency bins except top and bottom in this time frame
                 for (int bin = minBin; bin < maxBin; bin++)
                 {
-                    // A click requires sudden onset.
-                    if (sonogramData[t - 1, bin] > decibelThreshold || sonogramData[t, bin] < sonogramData[t + 1, bin])
+                    // THis is where the profile of a click is defined
+                    // A click requires sudden onset, with maximum amplitude followed by decay.
+                    //if (sonogramData[t - 1, bin] > decibelThreshold || sonogramData[t, bin] < sonogramData[t + 1, bin])
+                    //{
+                    //    continue;
+                    //}
+
+                    // THis is where the profile of a vertical ridge is defined
+                    if (sonogramData[t, bin] < sonogramData[t - 1, bin] || sonogramData[t, bin] < sonogramData[t + 1, bin])
                     {
                         continue;
                     }
 
-                    clickIntensity[bin] = sonogramData[t, bin] - sonogramData[t - 1, bin];
-                    clickIntensity[bin] = Math.Max(0.0, clickIntensity[bin]);
+                    clickIntensity[bin - minBin] = sonogramData[t, bin];
+                    //clickIntensity[bin - minBin] = sonogramData[t, bin] - sonogramData[t - 1, bin];
+                    clickIntensity[bin - minBin] = Math.Max(0.0, clickIntensity[bin - minBin]);
                 }
 
-                // smooth the decibel array to allow for brief gaps.
-                clickIntensity = DataTools.filterMovingAverageOdd(clickIntensity, 5);
+                if (clickIntensity.Max() < decibelThreshold)
+                {
+                    continue;
+                }
 
                 //extract the events based on bandwidth and threshhold.
                 // Note: This method does NOT do prior smoothing of the click array.
@@ -96,7 +105,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 foreach (var ae in acousticEvents)
                 {
                     var avClickIntensity = ae.Score;
-                    temporalIntensityArray[t] += temporalIntensityArray[t];
+                    temporalIntensityArray[t] += avClickIntensity;
                 }
 
                 // add new events to list of events
@@ -145,8 +154,8 @@ namespace AnalysisPrograms.Recognizers.Base
             int bottomFrequency = minHz; // units = Hertz
             int bottomBin = 0;
 
-            // pass over all frequency bins
-            for (int i = 0; i < binCount; i++)
+            // pass over all frequency bins except last two due to edge effect later.
+            for (int i = 0; i < binCount - 2; i++)
             {
                 if (isHit == false && clickIntensityArray[i] >= scoreThreshold)
                 {
@@ -158,11 +167,19 @@ namespace AnalysisPrograms.Recognizers.Base
                 else // check for the high frequency end of a click event
                 if (isHit && clickIntensityArray[i] <= scoreThreshold)
                 {
-                    // this is the upper Hz end of an event, so initialise it
+                    // now check if there is acoustic intensity in next two frequncy bins
+                    double avIntensity = (clickIntensityArray[i] + clickIntensityArray[i + 1] + clickIntensityArray[i + 2]) / 3;
+
+                    if (avIntensity >= scoreThreshold)
+                    {
+                        // this is not top of click - it continues through higer frequency bins.
+                        continue;
+                    }
+
+                    // bin (i - 1) is the upper Hz end of an event, so initialise it
                     isHit = false;
-                    double topBin = i * freqBinWidth;
-                    double binWidth = topBin - bottomBin + 1;
-                    double hzBandwidth = binWidth * (int)Math.Round(binWidth * freqBinWidth);
+                    double eventBinWidth = i - bottomBin;
+                    double hzBandwidth = (int)Math.Round(eventBinWidth * freqBinWidth);
 
                     //skip events having wrong bandwidth
                     if (hzBandwidth < minBandwidth || hzBandwidth > maxBandwidth)
@@ -177,9 +194,10 @@ namespace AnalysisPrograms.Recognizers.Base
                         av += clickIntensityArray[n];
                     }
 
-                    av /= i - bottomBin + 1;
+                    av /= eventBinWidth;
 
-                    // Initialize the event.   TimeSpan segmentStartOffset, double eventStartSegmentRelative, double eventDuration,
+                    // Initialize the event with: TimeSpan segmentStartOffset, double eventStartSegmentRelative, double eventDuration, etc
+                    // Click events are assumed to be two frames duration.
                     double eventDuration = frameOffset * 2;
                     double startTimeRelativeSegment = frameOffset * frameNumber;
                     var ev = new AcousticEvent(segmentStartOffset, startTimeRelativeSegment, eventDuration, bottomFrequency, bottomFrequency + hzBandwidth);

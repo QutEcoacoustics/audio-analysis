@@ -79,7 +79,7 @@ namespace AnalysisPrograms.Recognizers
                         break;
                     case ClickParameters _:
                         algorithmName = "Click";
-                        throw new NotImplementedException("The Click algorithm has not been implemented yet");
+                        //throw new NotImplementedException("The Click algorithm has not been implemented yet");
                         break;
                     case Aed.AedConfiguration _:
                         algorithmName = "AED";
@@ -136,7 +136,12 @@ namespace AnalysisPrograms.Recognizers
                 Log.Debug($"Using the {profileName} algorithm... ");
                 if (profileConfig is CommonParameters parameters)
                 {
-                    if (profileConfig is BlobParameters || profileConfig is OscillationParameters || profileConfig is WhistleParameters || profileConfig is HarmonicParameters || profileConfig is SpectralPeakTrackParameters)
+                    if (profileConfig is BlobParameters
+                        || profileConfig is OscillationParameters
+                        || profileConfig is WhistleParameters
+                        || profileConfig is HarmonicParameters
+                        || profileConfig is SpectralPeakTrackParameters
+                        || profileConfig is ClickParameters)
                     {
                         sonogram = new SpectrogramStandard(ParametersToSonogramConfig(parameters), audioRecording.WavReader);
 

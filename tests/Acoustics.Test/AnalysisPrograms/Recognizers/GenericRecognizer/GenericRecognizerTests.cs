@@ -410,9 +410,9 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             // Set up the recognizer parameters.
             var windowSize = 512;
             var windowStep = 512;
-            var minHertz = 5000;
+            var minHertz = 6000;
             var maxHertz = 11000;
-            var minBandwidthHertz = 1000;
+            var minBandwidthHertz = 100;
             var maxBandwidthHertz = 5000;
             var decibelThreshold = 2.0;
 
@@ -479,19 +479,19 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             var outputDirectory = new DirectoryInfo("C:\\temp");
             GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "Click");
 
-            Assert.AreEqual(23, allResults.Events.Count);
+            Assert.AreEqual(6, allResults.Events.Count);
 
-            var @event = allResults.Events[4];
-            Assert.AreEqual(2.0, @event.EventStartSeconds, 0.1);
-            Assert.AreEqual(2.5, @event.EventEndSeconds, 0.1);
-            Assert.AreEqual(1680, @event.LowFrequencyHertz);
-            Assert.AreEqual(2110, @event.HighFrequencyHertz);
+            var @event = allResults.Events[0];
+            Assert.AreEqual(10.0, @event.EventStartSeconds, 0.1);
+            Assert.AreEqual(10.1, @event.EventEndSeconds, 0.1);
+            Assert.AreEqual(6474, @event.LowFrequencyHertz);
+            Assert.AreEqual(10781, @event.HighFrequencyHertz);
 
-            @event = allResults.Events[11];
-            Assert.AreEqual(6.0, @event.EventStartSeconds, 0.1);
-            Assert.AreEqual(6.6, @event.EventEndSeconds, 0.1);
-            Assert.AreEqual(2110, @event.LowFrequencyHertz);
-            Assert.AreEqual(2584, @event.HighFrequencyHertz);
+            @event = allResults.Events[5];
+            Assert.AreEqual(11.2, @event.EventStartSeconds, 0.1);
+            Assert.AreEqual(11.24, @event.EventEndSeconds, 0.1);
+            Assert.AreEqual(6474, @event.LowFrequencyHertz);
+            Assert.AreEqual(7335, @event.HighFrequencyHertz);
         }
 
         public SpectrogramStandard CreateArtificialSpectrogramToTestTracksAndHarmonics(SonogramConfig config)
@@ -633,6 +633,19 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             {
                 amplitudeSpectrogram[clickFrame, i] = 9.0;
                 amplitudeSpectrogram[clickFrame + 1, i] = 6.0;
+            }
+
+            // Draw a series of clicks similar to bird kek-kek
+            clickFrame = (int)Math.Round(framesPerSecond * 11);
+            startBin = 150;
+            endBin = 170;
+            for (int i = startBin; i < endBin; i++)
+            {
+                amplitudeSpectrogram[clickFrame, i] = 6.0;
+                amplitudeSpectrogram[clickFrame + 2, i] = 6.0;
+                amplitudeSpectrogram[clickFrame + 4, i] = 6.0;
+                amplitudeSpectrogram[clickFrame + 6, i] = 6.0;
+                amplitudeSpectrogram[clickFrame + 8, i] = 6.0;
             }
 
             var spectrogram = new SpectrogramStandard(config)

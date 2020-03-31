@@ -469,7 +469,8 @@ namespace AudioAnalysisTools
             double duration = this.TimeEnd - this.TimeStart;
             if (duration >= 0.0 && framesPerSecond >= 0.0)
             {
-                t1 = (int)Math.Round(this.TimeStart * framesPerSecond);
+                // -1 because want to draw red line in frame prior to the event start and not cover the event.
+                t1 = (int)Math.Round(this.TimeStart * framesPerSecond) - 1;
 
                 t2 = (int)Math.Round(this.TimeEnd * framesPerSecond);
             }
