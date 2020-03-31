@@ -44,8 +44,10 @@ jobs:
         variables:
           ${{ if eq('', platform.rid) }}:
             runtimeArgument: ''
+            selfContainedArgument: ''
           ${{ if ne('', platform.rid) }}:
             runtimeArgument: --runtime ${{ platform.rid }}
+            selfContainedArgument: --self-contained
         steps:
           # - pwsh: 'Get-ChildItem Env:'
           #   displayName: debug environment variables
@@ -175,7 +177,7 @@ jobs:
                 $(runtimeArgument)
                 --configuration ${{ configuration }}
                 --output $(Build.BinariesDirectory)
-                --self-contained
+                $(selfContainedArgument)
               nobuild: true
               publishWebProjects: false
               zipAfterPublish: false # does not seem to tar - we need to keep unix permissions

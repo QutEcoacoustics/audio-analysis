@@ -881,6 +881,7 @@ namespace Acoustics.Test.AnalysisBase
             this.AssertFilesAreAsExpected(3, states[3], paths);
 
             // complete
+            // TODO: remove this rubbish and stick in a IoC file system for testing!
             dummyAnalyzer.Pump(false);
             do
             {
@@ -888,6 +889,7 @@ namespace Acoustics.Test.AnalysisBase
                 dummyAnalyzer.Pump(false);
             }
             while (!task.IsCompleted);
+            task.Wait(1.0.Seconds());
 
             this.AssertFilesAreAsExpected(4, states[4], paths);
 
