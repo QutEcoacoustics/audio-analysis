@@ -3,6 +3,16 @@
   <RunConfiguration>
     <ResultsDirectory>../../tests/Results</ResultsDirectory>
   </RunConfiguration>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <Format>json,cobertura,opencover</Format>
+          <!-- <MergeWith></MergeWith> -->
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
   <!-- MSTest adapter -->
   <MSTest>
     <CaptureTraceOutput>true</CaptureTraceOutput>

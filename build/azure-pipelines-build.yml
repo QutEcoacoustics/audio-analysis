@@ -42,12 +42,18 @@ jobs:
         pool:
           vmImage: ${{ platform.pool }}
         variables:
+          ${{ if eq(configuration, 'Debug') }}:
+            configurationTag: _Debug
+          ${{ if ne(configuration, 'Debug') }}:
+            configurationTag: ''
           ${{ if eq('', platform.rid) }}:
             runtimeArgument: ''
             selfContainedArgument: ''
+            platformTag: any
           ${{ if ne('', platform.rid) }}:
             runtimeArgument: --runtime ${{ platform.rid }}
             selfContainedArgument: --self-contained
+            platformTag: ${{ platform.rid }}
         steps:
           # - pwsh: 'Get-ChildItem Env:'
           #   displayName: debug environment variables
@@ -138,12 +144,13 @@ jobs:
               projects: tests/AED.Test/AED.Test.fsproj
               publishTestResults: true
               testRunTitle: "AED.Test for ${{ platform.rid }} ${{ configuration }}"
+              # TODO: merge code coverage reports
+              #--collect:"XPlat Code Coverage" temporarily disabling code coverage because I can't work out to merge
+              # coverage reports
               arguments: >
                 $(runtimeArgument)
                 --configuration ${{ configuration }}
-                --logger "console;verbosity=detailed"
                 --logger trx
-                --collect:"XPlat Code Coverage"
                 --
                 RunConfiguration.DisableAppDomain=true
             displayName: Run AED.Test
@@ -161,7 +168,7 @@ jobs:
               -reports:$(Agent.TempDirectory)/**/coverage.cobertura.xml
               -targetdir:$(Build.SourcesDirectory)/coverlet/reports
               -reporttypes:"Cobertura"
-            displayName: Create reports
+            displayName: Create reports covertura reports
 
           - task: PublishCodeCoverageResults@1
             inputs:
@@ -170,9 +177,22 @@ jobs:
             displayName: 'Publish code coverage'
 
           - task: DotNetCoreCLI@2
+            condition: succeededOrFailed()
+            inputs:
+              command: custom
+              custom: tool
+              arguments: install --global Codecov.Tool
+            displayName: Install CodeCov Tool
+          
+          - pwsh: codecov -f $(Agent.TempDirectory)/**/coverage.opencover.xml -t $(CODECOV_TOKEN)
+            displayName: Upload CodeCov report
+
+          - task: DotNetCoreCLI@2
             inputs:
               command: publish
               projects: src/AnalysisPrograms/AnalysisPrograms.csproj
+              # seems to place in a sub-folder named after project. e.g. $(Build.BinariesDirectory)/AnalysisPrograms
+              #                                                                 /home/vsts/work/1/b/AnalysisPrograms
               arguments: >
                 $(runtimeArgument)
                 --configuration ${{ configuration }}
@@ -180,13 +200,22 @@ jobs:
                 $(selfContainedArgument)
               nobuild: true
               publishWebProjects: false
-              zipAfterPublish: false # does not seem to tar - we need to keep unix permissions
+              # does not seem to tar - we need to keep unix permissions
+              zipAfterPublish: false
             displayName: dotnet publish
 
           - task: ArchiveFiles@2
             inputs:
-              rootFolderOrFile: '$(Build.BinariesDirectory)'
+              # $(Build.BinariesDirectory) == /home/vsts/work/1/b
+              rootFolderOrFile: '$(Build.BinariesDirectory)/AnalysisPrograms'
               includeRootFolder: false
+              ${{ if startsWith(platform.pool, 'windows') }}:
+                archiveType: zip
+                archiveFile: '$(Build.ArtifactStagingDirectory)/AP_$(platformTag)$(configurationTag)_$(Date:yyyyMMdd)$(Rev:.r).zip'
+              ${{ if not(startsWith(platform.pool, 'windows'))) }}:
+                archiveType: tar
+                tarCompression: xz
+                archiveFile: '$(Build.ArtifactStagingDirectory)/AP_$(platformTag)$(configurationTag)_$(Date:yyyyMMdd)$(Rev:.r).tar.xz'
 
             displayName: Archive published app
 
@@ -194,7 +223,5 @@ jobs:
           - task: PublishBuildArtifacts@1
             inputs:
               pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-              ${{ if eq(configuration, 'Debug') }}:
-                artifactName: ${{ coalesce(platform.rid, 'any') }}_Debug
-              ${{ if ne(configuration, 'Debug') }}:
-                artifactName: ${{ coalesce(platform.rid, 'any') }}
+              artifactName: $(platformTag)$(configurationTag)
+
