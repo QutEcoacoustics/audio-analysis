@@ -75,18 +75,28 @@ namespace AnalysisPrograms.Recognizers
                         algorithmName = "Harmonics";
                         break;
                     case SpectralPeakTrackParameters _:
-                        algorithmName = "SpectralTracks";
+                        algorithmName = "SpectralTrack";
+                        break;
+                    case VerticalTrackParameters _:
+                        algorithmName = "VerticalTrack";
                         break;
                     case ClickParameters _:
                         algorithmName = "Click";
-                        //throw new NotImplementedException("The Click algorithm has not been implemented yet");
                         break;
                     case Aed.AedConfiguration _:
                         algorithmName = "AED";
                         break;
+                    //throw new NotImplementedException("The XXXX algorithm has not yet been implemented!");
                     default:
                         var allowedAlgorithms =
-                            $"{nameof(BlobParameters)}, {nameof(OscillationParameters)}, {nameof(WhistleParameters)}, {nameof(HarmonicParameters)}, {nameof(Aed.AedConfiguration)}";
+                            $"{nameof(BlobParameters)}," +
+                            $"{nameof(OscillationParameters)}," +
+                            $"{nameof(WhistleParameters)}," +
+                            $"{nameof(HarmonicParameters)}," +
+                            $"{nameof(SpectralPeakTrackParameters)}," +
+                            $"{nameof(VerticalTrackParameters)}," +
+                            $"{nameof(ClickParameters)}," +
+                            $"{nameof(Aed.AedConfiguration)}";
                         throw new ConfigFileException($"The algorithm type in profile {profileName} is not recognized. It must be one of {allowedAlgorithms}");
                 }
             }
@@ -141,6 +151,7 @@ namespace AnalysisPrograms.Recognizers
                         || profileConfig is WhistleParameters
                         || profileConfig is HarmonicParameters
                         || profileConfig is SpectralPeakTrackParameters
+                        || profileConfig is VerticalTrackParameters
                         || profileConfig is ClickParameters)
                     {
                         sonogram = new SpectrogramStandard(ParametersToSonogramConfig(parameters), audioRecording.WavReader);
@@ -263,6 +274,22 @@ namespace AnalysisPrograms.Recognizers
                                 segmentStartOffset);
 
                             var plot = PreparePlot(decibelArray, $"{profileName} (Click:dB Intensity)", cp.DecibelThreshold.Value);
+                            plots.Add(plot);
+                        }
+                        else if (profileConfig is VerticalTrackParameters vtp)
+                        {
+                            double[] decibelArray;
+                            (acousticEvents, decibelArray) = VerticalTrackParameters.GetVerticalTracks(
+                                sonogram,
+                                vtp.MinHertz.Value,
+                                vtp.MaxHertz.Value,
+                                sonogram.NyquistFrequency,
+                                vtp.DecibelThreshold.Value,
+                                vtp.MinBandwidthHertz.Value,
+                                vtp.MaxBandwidthHertz.Value,
+                                segmentStartOffset);
+
+                            var plot = PreparePlot(decibelArray, $"{profileName} (VerticalTrack:dB Intensity)", vtp.DecibelThreshold.Value);
                             plots.Add(plot);
                         }
                         else

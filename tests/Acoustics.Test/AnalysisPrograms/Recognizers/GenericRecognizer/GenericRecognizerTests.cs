@@ -488,7 +488,97 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             Assert.AreEqual(10781, @event.HighFrequencyHertz);
 
             @event = allResults.Events[1];
-            Assert.AreEqual(11.2, @event.EventStartSeconds, 0.1);
+            Assert.AreEqual(11.0, @event.EventStartSeconds, 0.1);
+            Assert.AreEqual(11.24, @event.EventEndSeconds, 0.1);
+            Assert.AreEqual(6474, @event.LowFrequencyHertz);
+            Assert.AreEqual(7335, @event.HighFrequencyHertz);
+        }
+
+        [TestMethod]
+        public void TestVerticalTrackAlgorithm()
+        {
+            // Set up the recognizer parameters.
+            var windowSize = 512;
+            var windowStep = 512;
+            var minHertz = 6000;
+            var maxHertz = 11000;
+            var minBandwidthHertz = 100;
+            var maxBandwidthHertz = 5000;
+            var decibelThreshold = 2.0;
+
+            //Set up the virtual recording.
+            int samplerate = 22050;
+            double signalDuration = 13.0; //seconds
+
+            // set up the config for a virtual spectrogram.
+            var sonoConfig = new SonogramConfig()
+            {
+                WindowSize = windowSize,
+                WindowStep = windowStep,
+                WindowOverlap = 0.0, // this must be set
+                WindowFunction = WindowFunctions.HANNING.ToString(),
+                NoiseReductionType = NoiseReductionType.Standard,
+                NoiseReductionParameter = 0.0,
+                Duration = TimeSpan.FromSeconds(signalDuration),
+                SampleRate = samplerate,
+            };
+
+            var spectrogram = this.CreateArtificialSpectrogramToTestTracksAndHarmonics(sonoConfig);
+
+            //var image1 = SpectrogramTools.GetSonogramPlusCharts(spectrogram, null, null, null);
+            //results.Sonogram.GetImage().Save(this.outputDirectory + "\\debug.png");
+
+            var segmentStartOffset = TimeSpan.Zero;
+            var plots = new List<Plot>();
+            double[] dBArray;
+            List<AcousticEvent> acousticEvents;
+            (acousticEvents, dBArray) = VerticalTrackParameters.GetVerticalTracks(
+                spectrogram,
+                minHertz,
+                maxHertz,
+                spectrogram.NyquistFrequency,
+                decibelThreshold,
+                minBandwidthHertz,
+                maxBandwidthHertz,
+                segmentStartOffset);
+
+            // draw a plot of max decibels in each frame
+            double decibelNormalizationMax = 3 * decibelThreshold;
+            var dBThreshold = decibelThreshold / decibelNormalizationMax;
+            var normalisedDecibelArray = DataTools.NormaliseInZeroOne(dBArray, 0, decibelNormalizationMax);
+            var plot1 = new Plot("decibel max", normalisedDecibelArray, dBThreshold);
+            plots.Add(plot1);
+
+            var allResults = new RecognizerResults()
+            {
+                Events = new List<AcousticEvent>(),
+                Hits = null,
+                ScoreTrack = null,
+                Plots = new List<Plot>(),
+                Sonogram = null,
+            };
+
+            // combine the results i.e. add the events list of call events.
+            allResults.Events.AddRange(acousticEvents);
+            allResults.Plots.AddRange(plots);
+
+            // effectively keeps only the *last* sonogram produced
+            allResults.Sonogram = spectrogram;
+
+            // DEBUG PURPOSES COMMENT NEXT LINE
+            var outputDirectory = new DirectoryInfo("C:\\temp");
+            GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "VerticalTracks");
+
+            Assert.AreEqual(2, allResults.Events.Count);
+
+            var @event = allResults.Events[0];
+            Assert.AreEqual(10.0, @event.EventStartSeconds, 0.1);
+            Assert.AreEqual(10.1, @event.EventEndSeconds, 0.1);
+            Assert.AreEqual(6474, @event.LowFrequencyHertz);
+            Assert.AreEqual(10781, @event.HighFrequencyHertz);
+
+            @event = allResults.Events[1];
+            Assert.AreEqual(11.0, @event.EventStartSeconds, 0.1);
             Assert.AreEqual(11.24, @event.EventEndSeconds, 0.1);
             Assert.AreEqual(6474, @event.LowFrequencyHertz);
             Assert.AreEqual(7335, @event.HighFrequencyHertz);
