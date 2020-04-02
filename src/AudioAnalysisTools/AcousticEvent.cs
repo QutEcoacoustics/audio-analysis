@@ -141,6 +141,13 @@ namespace AudioAnalysisTools
         /// </summary>
         public int[] HertzTrack { get; set; }
 
+        /// <summary>
+        /// Gets or sets and array of time values in seconds.
+        /// For events of type VerticalTrack, this arrays stores the time frame for each frequency bin of the event.
+        /// i.e. it defines the track.
+        /// </summary>
+        public double[] TimeTrack { get; set; }
+
         public bool IsMelscale { get; set; }
 
         /// <summary>

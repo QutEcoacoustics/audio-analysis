@@ -10,6 +10,7 @@ namespace AnalysisPrograms.Recognizers.Base
     using Acoustics.Shared;
     using AudioAnalysisTools;
     using AudioAnalysisTools.StandardSpectrograms;
+    using TowseyLibrary;
 
     /// <summary>
     /// Parameters needed from a config file to detect vertical track components i.e. events which are completed within very few time frames, i.e. whips and near clicks.
@@ -32,7 +33,7 @@ namespace AnalysisPrograms.Recognizers.Base
         /// They would typically be only a few time-frames duration.
         /// THis method averages dB log values incorrectly but it is faster than doing many log conversions and is accurate enough for the purpose.
         /// </summary>
-        public static (List<AcousticEvent> Events, double[] Intensity) GetVerticalTracks(
+        public static (List<AcousticEvent> Events, double[] CombinedIntensity) GetVerticalTracks(
             SpectrogramStandard sonogram,
             int minHz,
             int maxHz,
@@ -45,63 +46,84 @@ namespace AnalysisPrograms.Recognizers.Base
             var sonogramData = sonogram.Data;
             int frameCount = sonogramData.GetLength(0);
             int binCount = sonogramData.GetLength(1);
+            var frameDuration = sonogram.FrameDuration;
+            var frameStep = sonogram.FrameStep;
+            var frameOverStep = frameDuration - frameStep;
 
             double binWidth = nyquist / (double)binCount;
             int minBin = (int)Math.Round(minHz / binWidth);
             int maxBin = (int)Math.Round(maxHz / binWidth);
-            int bandwidthBinCount = maxBin - minBin + 1;
+            //int bandwidthBinCount = maxBin - minBin + 1;
 
             // list of accumulated acoustic events
             var events = new List<AcousticEvent>();
             var temporalIntensityArray = new double[frameCount];
 
-            // for all time frames except 1st and last allowing for edge effects.
-            for (int t = 1; t < frameCount - 1; t++)
+            //Find all frame peaks and place in peaks matrix
+            var peaks = new double[frameCount, binCount];
+            for (int row = 1; row < frameCount - 1; row++)
             {
-                // set up an intensity array for all frequency bins in this frame.
-                double[] trackIntensity = new double[bandwidthBinCount];
-
-                // for all frequency bins except top and bottom in this time frame
-                for (int bin = minBin; bin < maxBin; bin++)
+                for (int col = minBin; col < maxBin; col++)
                 {
-                    // This is where the profile of a vertical ridge-track is defined
-                    if (sonogramData[t, bin] < sonogramData[t - 1, bin] || sonogramData[t, bin] < sonogramData[t + 1, bin])
+                    if (sonogramData[row, col] < decibelThreshold)
                     {
                         continue;
                     }
 
-                    trackIntensity[bin - minBin] = sonogramData[t, bin];
-                    //trackIntensity[bin - minBin] = sonogramData[t, bin] - sonogramData[t - 1, bin];
-                    trackIntensity[bin - minBin] = Math.Max(0.0, trackIntensity[bin - minBin]);
+                    // if given matrix element is greater than in frame either side
+                    bool isPeak = (sonogramData[row, col] > sonogramData[row - 1, col]) && (sonogramData[row, col] > sonogramData[row + 1, col]);
+                    if (isPeak)
+                    {
+                        peaks[row, col] = sonogramData[row, col];
+                    }
                 }
-
-                if (trackIntensity.Max() < decibelThreshold)
-                {
-                    continue;
-                }
-
-                // Extract the events based on bandwidth and threshhold.
-                var acousticEvents = ConvertSpectralArrayToVerticalTrackEvents(
-                    trackIntensity,
-                    minHz,
-                    sonogram.FramesPerSecond,
-                    sonogram.FBinWidth,
-                    decibelThreshold,
-                    minBandwidthHertz,
-                    maxBandwidthHertz,
-                    t,
-                    segmentStartOffset);
-
-                // add each event score to combined temporal intensity array
-                foreach (var ae in acousticEvents)
-                {
-                    var avClickIntensity = ae.Score;
-                    temporalIntensityArray[t] += avClickIntensity;
-                }
-
-                // add new events to list of events
-                events.AddRange(acousticEvents);
             }
+
+            // Look for track starts and initialise them as events.
+            // Cannot include edge rows & columns because of edge effects.
+            // each row is a time frame which is a spectrum
+            var combinedIntensityArray = new double[frameCount];
+            for (int row = 1; row < frameCount - 1; row++)
+            {
+                // columns are frequency bins
+                for (int col = minBin; col < maxBin; col++)
+                {
+                    // Visit each frame peak in order.
+                    if (peaks[row, col] < decibelThreshold)
+                    {
+                        continue;
+                    }
+
+                    // Each frame peak may be start of a possible vertical track
+                    var track = GetVerticalTrack(peaks, row, col, maxBin, decibelThreshold);
+
+                    // calculate first and last of the frame IDs in the original spectrogram
+                    int trackStartFrame = track.GetStartFrame();
+                    int trackEndFrame = track.GetStartFrame();
+
+                    //If track has lies within the correct bandWidth range, then create an event
+                    int trackBandWidth = track.GetTrackBandWidthHertz(binWidth);
+                    if (trackBandWidth >= minBandwidthHertz && trackBandWidth <= maxBandwidthHertz)
+                    {
+                        // get the oblong and init an event
+                        double trackDuration = ((trackEndFrame - trackStartFrame) * frameStep) + frameOverStep;
+                        var oblong = new Oblong(trackStartFrame, col, trackEndFrame, track.GetTopFreqBin());
+                        var ae = new AcousticEvent(segmentStartOffset, oblong, nyquist, binCount, frameDuration, frameStep, frameCount);
+
+                        // convert frameIds to Seconds
+                        var secondsTrack = track.GetTrackAsTimeSequenceSeconds(frameStep);
+                        ae.TimeTrack = secondsTrack;
+                        events.Add(ae);
+
+                        // fill the intensity array
+                        var amplitudeArray = track.GetAmplitudeOverTimeFrames();
+                        for (int i = 0; i < amplitudeArray.Length; i++)
+                        {
+                            combinedIntensityArray[row + i] += amplitudeArray[i];
+                        }
+                    }
+                } // end cols
+            } // end frames
 
             // combine proximal events that occupy similar frequency band
             var startDifference = TimeSpan.FromSeconds(0.5);
@@ -113,6 +135,73 @@ namespace AnalysisPrograms.Recognizers.Base
             events = AcousticEvent.CombineOverlappingEvents(events, segmentStartOffset);
 
             return (events, temporalIntensityArray);
+        }
+
+        public static SpectralTrack GetVerticalTrack(double[,] peaks, int startRow, int startBin, int maxBin, double threshold)
+        {
+            var track = new SpectralTrack(startRow, startBin, peaks[startRow, startBin]);
+
+            // set the start point in peaks matrix to zero to prevent return to this point.
+            peaks[startRow, startBin] = 0.0;
+
+            int row = startRow;
+            for (int bin = startBin + 1; bin < maxBin - 1; bin++)
+            {
+                if (row <= 0)
+                {
+                    // arrived back at start of recording - track has come to end
+                    return track;
+                }
+
+                if (bin >= maxBin)
+                {
+                    // arrived at top of the requested frequency band - track has come to end
+                    return track;
+                }
+
+                // explore options for track vertical
+                double optionStraight = Math.Max(peaks[row, bin] + peaks[row, bin + 1], peaks[row, bin] + peaks[row - 1, bin + 1]);
+                optionStraight = Math.Max(optionStraight, peaks[row, bin] + peaks[row + 1, bin + 1]);
+
+                // option for track with negative slope
+                double optionDown = Math.Max(peaks[row - 1, bin] + peaks[row - 1, bin + 1], peaks[row - 1, bin - 1] + peaks[row - 2, bin + 1]);
+                optionDown = Math.Max(optionDown, peaks[row - 1, bin - 1] + peaks[row - 1, bin + 1]);
+
+                // option for track with positive slope
+                double optionUp = Math.Max(peaks[row + 1, bin] + peaks[row + 1, bin + 1], peaks[row + 1, bin + 1] + peaks[row + 2, bin + 1]);
+                optionUp = Math.Max(optionUp, peaks[row + 1, bin] + peaks[row + 2, bin + 1]);
+
+                // get max of the three next possible steps
+                double[] options = { optionStraight, optionDown, optionUp };
+                var maxId = DataTools.GetMaxIndex(options);
+
+                // Check if track has come to an end - average value of the two values is less than threshold.
+                var maxValue = options[maxId] / 2;
+                if (maxValue < threshold)
+                {
+                    return track;
+                }
+
+                // else set visited values to zero so as not to revisit.....
+                peaks[row - 1, bin] = 0.0;
+                peaks[row, bin] = 0.0;
+                peaks[row + 1, bin] = 0.0;
+
+                // and go to the new time frame
+                if (maxId == 1)
+                {
+                    row--;
+                }
+                else
+                if (maxId == 2)
+                {
+                    row++;
+                }
+
+                track.SetPoint(row, bin, maxValue);
+            }
+
+            return track;
         }
 
         /// <summary>

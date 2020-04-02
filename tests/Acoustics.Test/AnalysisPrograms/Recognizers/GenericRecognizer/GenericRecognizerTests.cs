@@ -494,6 +494,10 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             Assert.AreEqual(7335, @event.HighFrequencyHertz);
         }
 
+        /// <summary>
+        /// This test is currently identical to the Click test.
+        /// It needs to be improved by incorporating whips into the artificial spectrogram.
+        /// </summary>
         [TestMethod]
         public void TestVerticalTrackAlgorithm()
         {
@@ -574,14 +578,14 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             var @event = allResults.Events[0];
             Assert.AreEqual(10.0, @event.EventStartSeconds, 0.1);
             Assert.AreEqual(10.1, @event.EventEndSeconds, 0.1);
-            Assert.AreEqual(6474, @event.LowFrequencyHertz);
-            Assert.AreEqual(10781, @event.HighFrequencyHertz);
+            Assert.AreEqual(6460, @event.LowFrequencyHertz);
+            Assert.AreEqual(10724, @event.HighFrequencyHertz);
 
             @event = allResults.Events[1];
             Assert.AreEqual(11.0, @event.EventStartSeconds, 0.1);
             Assert.AreEqual(11.24, @event.EventEndSeconds, 0.1);
-            Assert.AreEqual(6474, @event.LowFrequencyHertz);
-            Assert.AreEqual(7335, @event.HighFrequencyHertz);
+            Assert.AreEqual(6460, @event.LowFrequencyHertz);
+            Assert.AreEqual(7278, @event.HighFrequencyHertz);
         }
 
         public SpectrogramStandard CreateArtificialSpectrogramToTestTracksAndHarmonics(SonogramConfig config)
