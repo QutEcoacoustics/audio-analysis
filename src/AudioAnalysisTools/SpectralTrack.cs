@@ -67,7 +67,7 @@ namespace AudioAnalysisTools
 
         public int GetTrackFrameCount()
         {
-            return this.frameIds.Max() - this.frameIds.Max() + 1;
+            return this.frameIds.Max() - this.frameIds.Min() + 1;
         }
 
         public double GetTrackDurationSeconds(double frameStepSeconds)

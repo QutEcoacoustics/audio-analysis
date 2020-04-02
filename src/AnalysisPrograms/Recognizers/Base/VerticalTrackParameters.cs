@@ -83,7 +83,7 @@ namespace AnalysisPrograms.Recognizers.Base
             // Cannot include edge rows & columns because of edge effects.
             // each row is a time frame which is a spectrum
             var combinedIntensityArray = new double[frameCount];
-            for (int row = 1; row < frameCount - 1; row++)
+            for (int row = 2; row < frameCount - 2; row++)
             {
                 // columns are frequency bins
                 for (int col = minBin; col < maxBin; col++)
@@ -143,9 +143,10 @@ namespace AnalysisPrograms.Recognizers.Base
 
             // set the start point in peaks matrix to zero to prevent return to this point.
             peaks[startRow, startBin] = 0.0;
-
             int row = startRow;
-            for (int bin = startBin + 1; bin < maxBin - 1; bin++)
+
+            // Avoid row edge effects.
+            for (int bin = startBin + 2; bin < maxBin - 2; bin++)
             {
                 if (row <= 0)
                 {
