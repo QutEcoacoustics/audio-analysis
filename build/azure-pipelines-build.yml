@@ -109,7 +109,7 @@ jobs:
               nugetConfigPath: NuGet.config
             displayName: Restore solution dependencies
 
-          - pwsh: src/git_version.ps1 -build_type ${{ configuration }} -set_ci | Tee-Object '$(Build.ArtifactStagingDirectory)/AP_version_vars.txt'
+          - pwsh: src/git_version.ps1 -configuration ${{ configuration }} -self_contained $(selfContainedArgument) -runtime_identifier $(runtimeArgument) -set_ci | Tee-Object '$(Build.ArtifactStagingDirectory)/AP_version_vars.txt'
             displayName: run git_version.ps1 script
             name: git_version
 
@@ -142,7 +142,8 @@ jobs:
           - task: PublishTestResults@2
             inputs:
               testResultFormat: VSTest
-              testResultFiles: '$(Agent.TempDirectory)/Acoustics.Test_Results/**/*.trx'
+              testResultFiles: '**/*.trx'
+              searchFolder: $(Agent.TempDirectory)/Acoustics.Test_Results
               testRunTitle: "Acoustics.Test for ${{ platform.rid }} ${{ configuration }}"
               buildConfig: ${{ configuration }}
               buildPlatform: $(platformTag)
@@ -169,7 +170,8 @@ jobs:
           - task: PublishTestResults@2
             inputs:
               testResultFormat: VSTest
-              testResultFiles: '$(Agent.TempDirectory)/AED.Test_Results/**/*.trx'
+              testResultFiles: '**/*.trx'
+              searchFolder: $(Agent.TempDirectory)/AED.Test_Results
               testRunTitle: ".Test for ${{ platform.rid }} ${{ configuration }}"
               buildConfig: ${{ configuration }}
               buildPlatform: $(platformTag)

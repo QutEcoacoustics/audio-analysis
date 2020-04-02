@@ -3,6 +3,15 @@
   <RunConfiguration>
     <ResultsDirectory>../../tests/Results</ResultsDirectory>
   </RunConfiguration>
+  <LoggerRunSettings>
+    <Loggers>
+      <Logger friendlyName="console">
+        <Configuration>
+          <verbosity>detailed</verbosity>
+        </Configuration>
+      </Logger>
+    </Loggers>
+  </LoggerRunSettings>
   <DataCollectionRunSettings>
     <DataCollectors>
       <DataCollector friendlyName="XPlat code coverage">

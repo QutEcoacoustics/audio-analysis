@@ -5,6 +5,7 @@
 namespace Acoustics.Test.Shared
 {
     using System;
+    using System.Diagnostics;
     using System.Linq;
     using System.Runtime.InteropServices;
     using Acoustics.Shared;
@@ -16,7 +17,7 @@ namespace Acoustics.Test.Shared
     {
         public const string TestFile = "very_large_file_20170522-180007Z.flac";
 
-        [TestMethod]
+        [RetryTestMethod(2)]
         public void ProcessRunnerDoesNotDeadlock()
         {
             var result = Enumerable.Range(0, 100).AsParallel().Select(this.RunFfprobe).ToArray();
@@ -24,13 +25,13 @@ namespace Acoustics.Test.Shared
             Assert.IsTrue(result.All());
         }
 
-        [TestMethod]
+        [RetryTestMethod(2)]
         public void ProcessRunnerSimple()
         {
             this.RunFfprobe(0);
         }
 
-        [TestMethod]
+        [RetryTestMethod(2)]
         public void ProcessRunnerTimeOutDoesNotDeadlock()
         {
             var result = Enumerable.Range(0, 100).AsParallel().Select(this.RunFfprobeIndefinite).ToArray();
@@ -38,7 +39,7 @@ namespace Acoustics.Test.Shared
             Assert.IsTrue(result.All());
         }
 
-        [TestMethod]
+        [RetryTestMethod(2)]
         public void ProcessRunnerTimeOutSimple()
         {
             this.RunFfprobeIndefinite(0);
