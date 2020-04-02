@@ -5,7 +5,8 @@ schedules:
   - cron: 0 0 * * 0
     displayName: Weekly Release
     branches:
-      include: master
+      include:
+        - master
 
 
 variables:
@@ -34,33 +35,58 @@ stages:
       - template: build/azure-pipelines-build.yml
   - stage: release
     jobs:
-      displayName: Release
-      variables:
-        manualRelease: $( contains(variables['Build.SourceVersionMessage'], '[release]')
-        weeklyRelease: $( eq(variables['Build.Reason'],'Schedule'))
-      steps:
-        - pwsh: Write-Host "##vso[task.complete result=Canceled;]Skipping release"
-          # cancel the job, if
-          # it is not a weekly release
-          # and 
-          # it is not a manual release
-          condition: and(ne(weeklyRelease, true), ne(manualRelease, true)) 
-          displayName: Cancel the release unless we want it to continue
-        
-          # downloads to $(System.ArtifactsDirectory)
-        - task: DownloadBuildArtifacts@0
-          inputs:
-            buildType: current
-            downloadType: all
-          displayName: Download previous build artefacts
+      - job:
+        displayName: Release
+        variables:
+          manualRelease: $( contains(variables['Build.SourceVersionMessage'], '[release]')
+          weeklyRelease: $( eq(variables['Build.Reason'],'Schedule'))
+        steps:
+          - pwsh: Write-Host "##vso[task.complete result=Canceled;]Skipping release"
+            # cancel the job, if
+            # it is not a weekly release
+            # and 
+            # it is not a manual release
+            condition: and(ne(weeklyRelease, true), ne(manualRelease, true)) 
+            displayName: Cancel the release unless we want it to continue
 
-        - pwsh: |
-            Get-ChildItem -recurse $(System.ArtifactsDirectory)
-            Get-Content $(System.ArtifactsDirectory)/AP_version_vars.txt | Write-Output
-          displayName: Reconstitute variables
+          - checkout: self
+            clean: true
+            fetchDepth: 200
+            lfs: false
+            persistCredentials: true
+            displayName: "Shallow cloning repo"
+          
+            # downloads to $(System.ArtifactsDirectory)
+          - task: DownloadBuildArtifacts@0
+            inputs:
+              buildType: current
+              downloadType: all
+            displayName: Download previous build artefacts
 
-        - pwsh: ./build/
-          env:
-            GREN_GITHUB_TOKEN: $(GREN_GITHUB_TOKEN)
-          displayName: Generate release notes
+          - pwsh: |
+              Get-ChildItem -recurse $(System.ArtifactsDirectory)
+              Get-Content $(System.ArtifactsDirectory)/AP_version_vars.txt | Write-Output
+            displayName: Reconstitute variables
+
+          - pwsh: ./build/release_notes.ps1 v$(AP_Version) -update_changelog
+            displayName: Generate release notes
+
+          - pwsh: git add CHANGELOG.md; git commit -m "Update changelog for v$(AP_Version)" -m "[skip_ci]"
+            displayName: Commit changelog
+
+          - task: GitHubRelease@0
+            inputs:
+              action: create
+              tagSource: auto
+              tag: v$(AP_Version)
+              title: $(AP_ReleaseTitle)
+              releaseNotesSource: inputs
+              releaseNotes: $(AP_ReleaseMessage)
+              assets: |
+                $(Build.ArtifactsDirectory)/**/*.zip
+                $(Build.ArtifactsDirectory)/**/*.tar.xz
+              isDraft: true
+              isPreRelease: true
+
+            
           

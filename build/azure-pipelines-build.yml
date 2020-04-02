@@ -60,7 +60,7 @@ jobs:
           #   displayName: debug environment variables
           - checkout: self
             clean: false
-            fetchDepth: 100
+            fetchDepth: 200
             lfs: false
             persistCredentials: true
             displayName: "Shallow cloning repo"
@@ -140,13 +140,13 @@ jobs:
             displayName: Run Acoustics.Test
 
           - task: PublishTestResults@2
-              inputs:
-                testResultFormat: VSTest
-                testResultFiles: '$(Agent.TempDirectory)/Acoustics.Test_Results/**/*.trx'
-                testRunTitle: "Acoustics.Test for ${{ platform.rid }} ${{ configuration }}"
-                buildConfig: ${{ configuration }}
-                buildPlatform: $(platformTag)
-                publishRunAttachments: true
+            inputs:
+              testResultFormat: VSTest
+              testResultFiles: '$(Agent.TempDirectory)/Acoustics.Test_Results/**/*.trx'
+              testRunTitle: "Acoustics.Test for ${{ platform.rid }} ${{ configuration }}"
+              buildConfig: ${{ configuration }}
+              buildPlatform: $(platformTag)
+              publishRunAttachments: true
             condition: succeededOrFailed()
             displayName: Publish Acoustics.Tests results
 
@@ -162,18 +162,18 @@ jobs:
               --results-directory '$(Agent.TempDirectory)/AED.Test_Results'
               --
               RunConfiguration.DisableAppDomain=true
-          # run even if other tests failed
-          condition: succeededOrFailed()
-          displayName: Run AED.Test
+            # run even if other tests failed
+            condition: succeededOrFailed()
+            displayName: Run AED.Test
 
           - task: PublishTestResults@2
-              inputs:
-                testResultFormat: VSTest
-                testResultFiles: '$(Agent.TempDirectory)/AED.Test_Results/**/*.trx'
-                testRunTitle: ".Test for ${{ platform.rid }} ${{ configuration }}"
-                buildConfig: ${{ configuration }}
-                buildPlatform: $(platformTag)
-                publishRunAttachments: true
+            inputs:
+              testResultFormat: VSTest
+              testResultFiles: '$(Agent.TempDirectory)/AED.Test_Results/**/*.trx'
+              testRunTitle: ".Test for ${{ platform.rid }} ${{ configuration }}"
+              buildConfig: ${{ configuration }}
+              buildPlatform: $(platformTag)
+              publishRunAttachments: true
             condition: succeededOrFailed()
             displayName: Publish AED.Tests results
 

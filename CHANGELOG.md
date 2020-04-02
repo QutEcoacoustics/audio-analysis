@@ -1,8 +1,16 @@
 # Changelog
 
 ## Unreleased
+
 <!--manual-content-insert-here-->
 
+**MAJOR CHANGE: Now runs on .NET Core**
+
+They way you use AnalysisPrograms will not be the same if you are on Linux
+or MaxOSX. You will no longer need to install mono, or prefix commands with
+`mono`. Please see our
+[installing](https://github.com/QutEcoacoustics/audio-analysis/blob/master/docs/installing.md)
+documentation for more details!
 
 <!--generated-content-insert-here-->
 
