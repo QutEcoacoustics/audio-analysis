@@ -40,7 +40,7 @@ namespace AnalysisPrograms.Recognizers.Base
             double binWidth = nyquist / (double)binCount;
             int minBin = (int)Math.Round(minHz / binWidth);
             int maxBin = (int)Math.Round(maxHz / binWidth);
-            int bandWidth = maxBin - minBin + 1;
+            int bandwidthBinCount = maxBin - minBin + 1;
             var frameDuration = sonogram.FrameDuration;
             var frameStep = sonogram.FrameStep;
             var frameOverStep = frameDuration - frameStep;
@@ -52,10 +52,10 @@ namespace AnalysisPrograms.Recognizers.Base
             var band = MatrixTools.Submatrix(sonogramData, 0, minBin, frameCount - 1, maxBin);
 
             //Find all spectral peaks and place in peaks matrix
-            var peaks = new double[frameCount, bandWidth];
+            var peaks = new double[frameCount, bandwidthBinCount];
             for (int row = 0; row < frameCount; row++)
             {
-                for (int col = 1; col < bandWidth - 1; col++)
+                for (int col = 1; col < bandwidthBinCount - 1; col++)
                 {
                     if (band[row, col] < decibelThreshold)
                     {
@@ -70,14 +70,15 @@ namespace AnalysisPrograms.Recognizers.Base
                 }
             }
 
-            //Look for track starts and initialise them as events.
-            // Cannot used edge rows & columns because of edge effects.
+            // Look for track starts and initialise them as events.
+            // Cannot include edge rows & columns because of edge effects.
             var combinedIntensityArray = new double[frameCount];
             for (int row = 0; row < frameCount; row++)
             {
-                for (int col = 3; col < bandWidth - 3; col++)
+                for (int col = 3; col < bandwidthBinCount - 3; col++)
                 {
-                    // if this spectral peak is possible start of a track
+                    // Visit each spectral peak in order.
+                    // Each spectral peak may be start of possible track
                     if (peaks[row, col] >= decibelThreshold)
                     {
                         //have the beginning of a potential track
