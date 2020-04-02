@@ -82,11 +82,11 @@ namespace AnalysisPrograms.Recognizers.Base
             // Look for track starts and initialise them as events.
             // Cannot include edge rows & columns because of edge effects.
             // each row is a time frame which is a spectrum
-            var combinedIntensityArray = new double[frameCount];
-            for (int row = 2; row < frameCount - 2; row++)
+            // columns are frequency bins
+            for (int col = minBin; col < maxBin; col++)
             {
-                // columns are frequency bins
-                for (int col = minBin; col < maxBin; col++)
+                var combinedIntensityArray = new double[frameCount];
+                for (int row = 2; row < frameCount - 2; row++)
                 {
                     // Visit each frame peak in order.
                     if (peaks[row, col] < decibelThreshold)
@@ -122,8 +122,8 @@ namespace AnalysisPrograms.Recognizers.Base
                             combinedIntensityArray[row + i] += amplitudeArray[i];
                         }
                     }
-                } // end cols
-            } // end frames
+                } // frames
+            } // end cols
 
             // combine proximal events that occupy similar frequency band
             var startDifference = TimeSpan.FromSeconds(0.5);
