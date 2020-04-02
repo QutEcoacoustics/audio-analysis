@@ -1,12 +1,11 @@
 #!/usr/bin/env pwsh
-
 #Requires -Version 6
 
 param(
-    
     [string]$configuration,
     [string]$self_contained,
-    [string]$runtime_identifier
+    [string]$runtime_identifier,
+    [switch]$set_ci = $false
 )
 
 Push-Location
@@ -17,7 +16,7 @@ $now = [System.DateTimeOffset]::UtcNow
 
 # cache files in debug release
 $cache_warning = ""
-if ($build_type -ieq "Debug") {
+if ($build_type -ieq "Debug" -and !$set_ci) {
     $cache_warning = "// GENERATED_VALUES_MAY_BE_CACHED_IN_DEBUG_BUILD"
     $last_write = (Get-Item $metadata_file).LastWriteTimeUtc
     if (($now - $last_write) -lt [timespan]::FromMinutes(5)) {
@@ -30,7 +29,7 @@ $self_contained = if ($self_contained -eq 'true') { 'true' } else { 'false' }
 
 $commit_hash = git show -s --format="%H"
 
-$branch = git rev-parse --abbrev-ref HEAD
+$branch = git symbolic-ref --short -q HEAD
 
 $describe = git describe --dirty --abbrev --long --always
 
@@ -56,25 +55,33 @@ $content = Get-Content -Raw $template_file
 $templated = $ExecutionContext.InvokeCommand.ExpandString($content)
 $templated | Out-File $metadata_file -Force -Encoding utf8NoBOM
 
+# if we're on the CI, register these variables
+$prefix = ''
+$seperator = '='
+if ($set_ci) {
+    $prefix = "##vso[task.setvariable variable=AP_"
+    $seperator = ";isoutput=true]"
+}
+
 $props = @"
-Year=$short_year
-Month=$short_month
-BuildDate=$build_date
-BuildNumber=$build_number
-CommitHash=$commit_hash
-CommitHashShort=$describe_hash
-Branch=$branch
-LastTag=$describe_tag
-CommitsSinceLastTag=$describe_commit_count
-TagsThisMonth=$tag_count_this_month
-IsDirty=$is_dirty
-Version=$version
-InformationalVersion=$informational_version
-GeneratedMetadata=$metadata_file
-CacheWarning=$cache_warning
-MsBuildSelfContained=$self_contained
-MsBuildRuntimeIdentifer=$runtime_identifier
-MsBuildConfiguration=$configuration
+${prefix}Year${seperator}$short_year
+${prefix}Month${seperator}$short_month
+${prefix}BuildDate${seperator}$build_date
+${prefix}BuildNumber${seperator}$build_number
+${prefix}CommitHash${seperator}$commit_hash
+${prefix}CommitHashShort${seperator}$describe_hash
+${prefix}Branch${seperator}$branch
+${prefix}LastTag${seperator}$describe_tag
+${prefix}CommitsSinceLastTag${seperator}$describe_commit_count
+${prefix}TagsThisMonth${seperator}$tag_count_this_month
+${prefix}IsDirty${seperator}$is_dirty
+${prefix}Version${seperator}$version
+${prefix}InformationalVersion${seperator}$informational_version
+${prefix}GeneratedMetadata${seperator}$metadata_file
+${prefix}CacheWarning${seperator}$cache_warning
+${prefix}MsBuildSelfContained${seperator}$self_contained
+${prefix}MsBuildRuntimeIdentifer${seperator}$runtime_identifier
+${prefix}MsBuildConfiguration${seperator}$configuration
 "@
 
 Write-Output $props

@@ -7,7 +7,7 @@
     <DataCollectors>
       <DataCollector friendlyName="XPlat code coverage">
         <Configuration>
-          <Format>json,cobertura,opencover</Format>
+          <Format>cobertura,opencover</Format>
           <!-- <MergeWith></MergeWith> -->
         </Configuration>
       </DataCollector>

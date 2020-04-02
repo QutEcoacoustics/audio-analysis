@@ -1,16 +1,27 @@
 name: $(Date:yyyyMMdd)$(Rev:.r)
 
+schedules:
+  # at midnight every monday (UTC)
+  - cron: 0 0 * * 0
+    displayName: Weekly Release
+    branches:
+      include: master
+
+
 variables:
   build: '$(Build.BuildID)'
   system.debug: true
   NUGET_PACKAGES: $(Pipeline.Workspace)/.nuget/packages
+  CI: true
 
 # Run on all commits,  except for some folders
 trigger:
   batch: true
   branches:
     include:
-    - '*'
+      - '*'
+    exclude:
+      - refs/tags/*
   paths:
     exclude:
     - docs/*
@@ -21,5 +32,35 @@ stages:
   - stage: build
     jobs:
       - template: build/azure-pipelines-build.yml
-  #- stage: release
-      
+  - stage: release
+    jobs:
+      displayName: Release
+      variables:
+        manualRelease: $( contains(variables['Build.SourceVersionMessage'], '[release]')
+        weeklyRelease: $( eq(variables['Build.Reason'],'Schedule'))
+      steps:
+        - pwsh: Write-Host "##vso[task.complete result=Canceled;]Skipping release"
+          # cancel the job, if
+          # it is not a weekly release
+          # and 
+          # it is not a manual release
+          condition: and(ne(weeklyRelease, true), ne(manualRelease, true)) 
+          displayName: Cancel the release unless we want it to continue
+        
+          # downloads to $(System.ArtifactsDirectory)
+        - task: DownloadBuildArtifacts@0
+          inputs:
+            buildType: current
+            downloadType: all
+          displayName: Download previous build artefacts
+
+        - pwsh: |
+            Get-ChildItem -recurse $(System.ArtifactsDirectory)
+            Get-Content $(System.ArtifactsDirectory)/AP_version_vars.txt | Write-Output
+          displayName: Reconstitute variables
+
+        - pwsh: ./build/
+          env:
+            GREN_GITHUB_TOKEN: $(GREN_GITHUB_TOKEN)
+          displayName: Generate release notes
+          

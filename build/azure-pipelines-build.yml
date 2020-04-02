@@ -33,6 +33,7 @@ parameters:
   # cross-product not supported
   # https://github.com/microsoft/azure-pipelines-yaml/issues/20
 
+# useful article on directory layout: https://github.com/microsoft/azure-pipelines-agent/blob/master/docs/jobdirectories.md#build
 jobs:
   - ${{ each platform in parameters.platforms }}:
     - ${{ each configuration in platform.configurations }}:
@@ -108,8 +109,14 @@ jobs:
               nugetConfigPath: NuGet.config
             displayName: Restore solution dependencies
 
-          - pwsh: src/git_version.ps1 -build_type ${{ configuration }}
-            displayName: debug git_version.ps1 script
+          - pwsh: src/git_version.ps1 -build_type ${{ configuration }} -set_ci | Tee-Object '$(Build.ArtifactStagingDirectory)/AP_version_vars.txt'
+            displayName: run git_version.ps1 script
+            name: git_version
+
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(Build.ArtifactStagingDirectory)/AP_version_vars.txt'
+              artifactName: AP_$(platformTag)$(configurationTag)
 
           - task: DotNetCoreCLI@2
             inputs:
@@ -119,40 +126,56 @@ jobs:
             displayName: Build solution (${{ configuration }}, ${{ coalesce(platform.rid, 'any') }})
 
           # https://github.com/microsoft/vstest/issues/2202 -- need to remove --no-build to make tests work on linux
-          - task: DotNetCoreCLI@2
-            inputs:
-              command: test
-              projects: tests/Acoustics.Test/Acoustics.Test.csproj
-              publishTestResults: true
-              testRunTitle: "Acoustics.Test for ${{ coalesce(platform.rid, 'any') }} ${{ configuration }}"
-              arguments: >
-                $(runtimeArgument)
-                --configuration ${{ configuration }}
-                --settings tests/Acoustics.Test/.runsettings
-                --logger trx
-                --collect:"XPlat Code Coverage"
-                --
-                RunConfiguration.DisableAppDomain=true
+          - pwsh: >
+              dotnet test
+              tests/Acoustics.Test/Acoustics.Test.csproj
+              $(runtimeArgument)
+              --configuration ${{ configuration }}
+              --logger trx
+              --settings tests/Acoustics.Test/.runsettings
+              --collect:"XPlat Code Coverage"
+              --results-directory '$(Agent.TempDirectory)/Acoustics.Test_Results'
+              --
+              RunConfiguration.DisableAppDomain=true
             displayName: Run Acoustics.Test
 
-          # https://github.com/microsoft/vstest/issues/2202 -- need to remove --no-build to make tests work on linux
-          - task: DotNetCoreCLI@2
-            # run even if other tests failed
+          - task: PublishTestResults@2
+              inputs:
+                testResultFormat: VSTest
+                testResultFiles: '$(Agent.TempDirectory)/Acoustics.Test_Results/**/*.trx'
+                testRunTitle: "Acoustics.Test for ${{ platform.rid }} ${{ configuration }}"
+                buildConfig: ${{ configuration }}
+                buildPlatform: $(platformTag)
+                publishRunAttachments: true
             condition: succeededOrFailed()
-            inputs:
-              command: test
-              projects: tests/AED.Test/AED.Test.fsproj
-              publishTestResults: true
-              testRunTitle: "AED.Test for ${{ platform.rid }} ${{ configuration }}"
-              arguments: >
-                $(runtimeArgument)
-                --configuration ${{ configuration }}
-                --logger trx
-                --settings tests/AED.Test/.runsettings
-                --collect:"XPlat Code Coverage"
-                --
-                RunConfiguration.DisableAppDomain=true
-            displayName: Run AED.Test
+            displayName: Publish Acoustics.Tests results
+
+          # https://github.com/microsoft/vstest/issues/2202 -- need to remove --no-build to make tests work on linux
+          - pwsh: >
+              dotnet test
+              tests/AED.Test/AED.Test.fsproj
+              $(runtimeArgument)
+              --configuration ${{ configuration }}
+              --logger trx
+              --settings tests/AED.Test/.runsettings
+              --collect:"XPlat Code Coverage"
+              --results-directory '$(Agent.TempDirectory)/AED.Test_Results'
+              --
+              RunConfiguration.DisableAppDomain=true
+          # run even if other tests failed
+          condition: succeededOrFailed()
+          displayName: Run AED.Test
+
+          - task: PublishTestResults@2
+              inputs:
+                testResultFormat: VSTest
+                testResultFiles: '$(Agent.TempDirectory)/AED.Test_Results/**/*.trx'
+                testRunTitle: ".Test for ${{ platform.rid }} ${{ configuration }}"
+                buildConfig: ${{ configuration }}
+                buildPlatform: $(platformTag)
+                publishRunAttachments: true
+            condition: succeededOrFailed()
+            displayName: Publish AED.Tests results
 
           - task: DotNetCoreCLI@2
             condition: succeededOrFailed()
@@ -162,19 +185,22 @@ jobs:
               arguments: install --tool-path . dotnet-reportgenerator-globaltool
             displayName: Install ReportGenerator tool
 
-          # e.g. /home/vsts/work/_temp/68a005a0-e79f-46ca-a524-52abd13b3678/coverage.cobertura.xml
+          # e.g. /home/vsts/work/_temp/Acoustics.Test_Results/<guid>/coverage.cobertura.xml
+          # e.g. /home/vsts/work/_temp/AED.Test_Results/<guid>/coverage.cobertura.xml
           # e.g. /home/vsts/work/1/s/coverlet/reports
           - pwsh: >
               ./reportgenerator
-              -reports:$(Agent.TempDirectory)/**/coverage.cobertura.xml
-              -targetdir:$(Build.SourcesDirectory)/coverlet/reports
+              -reports:$(Agent.TempDirectory)/*Test_Results/**/coverage.cobertura.xml
+              -sourcedirs:$(Build.SourcesDirectory)
+              -targetdir:'$(Agent.TempDirectory)/coverlet/reports'
               -reporttypes:"Cobertura"
-            displayName: Create reports cobertura reports
+              -verbosity:verbose
+            displayName: Create cobertura reports
 
           - task: PublishCodeCoverageResults@1
             inputs:
               codeCoverageTool: Cobertura
-              summaryFileLocation: $(Build.SourcesDirectory)/coverlet/reports/Cobertura.xml
+              summaryFileLocation: $(Agent.TempDirectory)/coverlet/reports/Cobertura.xml
             displayName: 'Publish code coverage'
 
           - task: DotNetCoreCLI@2
@@ -185,7 +211,7 @@ jobs:
               arguments: install --global Codecov.Tool
             displayName: Install CodeCov Tool
           
-          - pwsh: codecov -f $(Agent.TempDirectory)/**/coverage.opencover.xml -t $(CODECOV_TOKEN)
+          - pwsh: codecov -f $(Agent.TempDirectory)/*Test_Results/**/coverage.opencover.xml -t $(CODECOV_TOKEN)
             displayName: Upload CodeCov report
 
           - task: DotNetCoreCLI@2
@@ -212,11 +238,11 @@ jobs:
               includeRootFolder: false
               ${{ if startsWith(platform.pool, 'windows') }}:
                 archiveType: zip
-                archiveFile: '$(Build.ArtifactStagingDirectory)/AP_$(platformTag)$(configurationTag)_$(Build.DefinitionName).zip'
+                archiveFile: '$(Build.ArtifactStagingDirectory)/AP_$(platformTag)$(configurationTag)_$(Build.BuildNumber).zip'
               ${{ if not(startsWith(platform.pool, 'windows')) }}:
                 archiveType: tar
                 tarCompression: xz
-                archiveFile: '$(Build.ArtifactStagingDirectory)/AP_$(platformTag)$(configurationTag)_$(Build.DefinitionName).tar.xz'
+                archiveFile: '$(Build.ArtifactStagingDirectory)/AP_$(platformTag)$(configurationTag)_$(Build.BuildNumber).tar.xz'
 
             displayName: Archive published app
 

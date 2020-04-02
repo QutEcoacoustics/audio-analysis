@@ -223,4 +223,9 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# FSharp
 .ionide/symbolCache.db
+
+# dotnet global tools
+.store

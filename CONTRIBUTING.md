@@ -36,6 +36,9 @@
   and improve on this.
 
   [![codecov](https://codecov.io/gh/QutEcoacoustics/audio-analysis/branch/master/graph/badge.svg)](https://codecov.io/gh/QutEcoacoustics/audio-analysis)
+- Try to structure commit messages in a format recognised by our release note generator
+  [![Automated Release Notes by gren](https://img.shields.io/badge/%F0%9F%A4%96-release%20notes-00B2EE.svg)](https://github-tools.github.io/github-release-notes/)
+
 
 ## Required Software
 
