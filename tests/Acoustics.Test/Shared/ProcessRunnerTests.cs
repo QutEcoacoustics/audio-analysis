@@ -115,18 +115,20 @@ namespace Acoustics.Test.Shared
             var dest = PathHelper.GetTempFile(this.TestOutputDirectory, ".mp3");
             using (ProcessRunner runner = new ProcessRunner(AppConfigHelper.FfmpegExe))
             {
-                runner.WaitForExitMilliseconds = 1000;
+                runner.WaitForExitMilliseconds = 500;
                 runner.WaitForExit = true;
                 runner.MaxRetries = 1;
 
                 Assert.ThrowsException<ProcessRunner.ProcessMaximumRetriesException>(() =>
                 {
                     runner.Run($@"-i ""{path}"" -ar 8000 ""{dest}""", this.TestOutputDirectory.FullName);
+
+                    Assert.Fail($"Process running finished without timing out - this should not happen. Exit code: {runner.ExitCode}.\nStdout:\n{runner.StandardOutput}\nStdErr\n{runner.ErrorOutput}");
                 });
 
                 Assert.AreEqual(0, runner.StandardOutput.Length);
                 Assert.IsTrue(
-                    runner.ErrorOutput.Length > 1500,
+                    runner.ErrorOutput.Length > 1000,
                     $"Expected stderr to at least include ffmpeg header but it was only {runner.ErrorOutput.Length} chars. Index: {index}. StdErr:\n{runner.ErrorOutput}");
 
                 if (AppConfigHelper.IsWindows)

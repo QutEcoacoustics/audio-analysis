@@ -32,7 +32,6 @@ namespace Acoustics.Test.TestHelpers
 
             var result = new List<TestResult>();
 
-            var success = false;
             for (int count = 0; count < retryCount; count++)
             {
                 var testResults = base.Execute(testMethod);
@@ -41,18 +40,19 @@ namespace Acoustics.Test.TestHelpers
                 var failed = testResults.FirstOrDefault((tr) => tr.Outcome == UnitTestOutcome.Failed);
                 if (failed != null)
                 {
-                    failed.TestContextMessages += $"Test iteration  {count + 1} of {retryCount} failed. Attempting to run again.";
-                    failed.Outcome = UnitTestOutcome.Inconclusive;
+                    var isLast = count + 1 == retryCount;
+                    var retryString = isLast ? " Attempting to run again." : " Exhausted retries, remaining failed.";
+                    failed.TestContextMessages += $"Test iteration {count + 1} of {retryCount} failed.{retryString}";
+
+                    if (!isLast)
+                    {
+                        failed.Outcome = UnitTestOutcome.Inconclusive;
+                    }
+
                     continue;
                 }
 
-                success = true;
                 break;
-            }
-
-            if (!success)
-            {
-                result[^1].Outcome = UnitTestOutcome.Failed;
             }
 
             return result.ToArray();

@@ -144,7 +144,7 @@ jobs:
           - task: PublishTestResults@2
             inputs:
               testResultFormat: VSTest
-              testResultFiles: '**/*.trx'
+              testResultsFiles: '**/*.trx'
               searchFolder: $(Agent.TempDirectory)/Acoustics.Test_Results
               testRunTitle: "Acoustics.Test for ${{ platform.rid }} ${{ configuration }}"
               buildConfig: ${{ configuration }}
@@ -172,7 +172,7 @@ jobs:
           - task: PublishTestResults@2
             inputs:
               testResultFormat: VSTest
-              testResultFiles: '**/*.trx'
+              testResultsFiles: '**/*.trx'
               searchFolder: $(Agent.TempDirectory)/AED.Test_Results
               testRunTitle: ".Test for ${{ platform.rid }} ${{ configuration }}"
               buildConfig: ${{ configuration }}
