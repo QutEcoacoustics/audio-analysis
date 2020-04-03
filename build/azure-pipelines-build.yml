@@ -50,10 +50,12 @@ jobs:
           ${{ if eq('', platform.rid) }}:
             runtimeArgument: ''
             selfContainedArgument: ''
+            isSelfContained: 'false'
             platformTag: any
           ${{ if ne('', platform.rid) }}:
             runtimeArgument: --runtime ${{ platform.rid }}
             selfContainedArgument: --self-contained
+            isSelfContained: 'true'
             platformTag: ${{ platform.rid }}
         steps:
           # - pwsh: 'Get-ChildItem Env:'
@@ -109,7 +111,7 @@ jobs:
               nugetConfigPath: NuGet.config
             displayName: Restore solution dependencies
 
-          - pwsh: src/git_version.ps1 -configuration ${{ configuration }} -self_contained $(selfContainedArgument) -runtime_identifier $(runtimeArgument) -set_ci | Tee-Object '$(Build.ArtifactStagingDirectory)/AP_version_vars.txt'
+          - pwsh: src/git_version.ps1 -configuration ${{ configuration }} -self_contained '$(isSelfContained)' -runtime_identifier '$(runtimeArgument)' -set_ci | Tee-Object '$(Build.ArtifactStagingDirectory)/AP_version_vars.txt'
             displayName: run git_version.ps1 script
             name: git_version
 
