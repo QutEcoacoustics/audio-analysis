@@ -48,68 +48,67 @@ namespace AnalysisPrograms.Recognizers.Base
             // list of accumulated acoustic events
             var events = new List<AcousticEvent>();
 
-            //Get the required frequency band
-            var band = MatrixTools.Submatrix(sonogramData, 0, minBin, frameCount - 1, maxBin);
-
             //Find all spectral peaks and place in peaks matrix
             var peaks = new double[frameCount, bandwidthBinCount];
             for (int row = 0; row < frameCount; row++)
             {
-                for (int col = 1; col < bandwidthBinCount - 1; col++)
+                for (int col = minBin - 1; col < maxBin - 1; col++)
                 {
-                    if (band[row, col] < decibelThreshold)
+                    if (sonogramData[row, col] < decibelThreshold)
                     {
                         continue;
                     }
 
-                    bool isPeak = (band[row, col] > band[row, col - 1]) && (band[row, col] > band[row, col + 1]);
+                    // if given matrix element is greater than in freq bin either side
+                    bool isPeak = (sonogramData[row, col] > sonogramData[row, col - 1]) && (sonogramData[row, col] > sonogramData[row, col + 1]);
                     if (isPeak)
                     {
-                        peaks[row, col] = band[row, col];
+                        peaks[row, col] = sonogramData[row, col];
                     }
                 }
             }
 
             // Look for track starts and initialise them as events.
             // Cannot include edge rows & columns because of edge effects.
+            // Each row is a time frame which is a spectrum. Each column is a frequency bin
             var combinedIntensityArray = new double[frameCount];
             for (int row = 0; row < frameCount; row++)
             {
                 for (int col = 3; col < bandwidthBinCount - 3; col++)
                 {
-                    // Visit each spectral peak in order.
-                    // Each spectral peak may be start of possible track
-                    if (peaks[row, col] >= decibelThreshold)
+                    // Visit each spectral peak in order. Each may be start of possible track
+                    if (peaks[row, col] < decibelThreshold)
                     {
-                        //have the beginning of a potential track
-                        (int[] BinIds, double[] Amplitude) track = GetTrack(peaks, row, col, decibelThreshold);
+                        continue;
+                    }
 
-                        // calculate max and min bin IDs in the original spectrogram
-                        int trackMinBin = track.BinIds.Min() + minBin;
-                        int trackMaxBin = track.BinIds.Max() + minBin;
+                    //have the beginning of a potential track
+                    var track = GetTrack(peaks, row, col, decibelThreshold);
 
-                        //If track has length within duration bounds, then create an event
-                        double trackDuration = (track.BinIds.Length * frameStep) + frameOverStep;
-                        if (trackDuration >= minDuration && trackDuration <= maxDuration)
+                    int trackStartFrame = track.GetStartFrame();
+                    int trackEndFrame = track.GetEndFrame();
+                    double trackDuration = ((trackEndFrame - trackStartFrame) * frameStep) + frameOverStep;
+
+                    // calculate max and min bin IDs in the original spectrogram
+                    int trackBottomBin = track.GetBottomFreqBin();
+                    int trackTopBin = track.GetTopFreqBin();
+
+                    //If track has length within duration bounds, then create an event
+                    if (trackDuration >= minDuration && trackDuration <= maxDuration)
+                    {
+                        var oblong = new Oblong(track.GetStartFrame(), trackBottomBin, track.GetEndFrame(), trackTopBin);
+                        var ae = new AcousticEvent(segmentStartOffset, oblong, nyquist, binCount, frameDuration, frameStep, frameCount)
                         {
-                            var oblong = new Oblong(row, trackMinBin - 1, row + track.BinIds.Length - 1, trackMaxBin + 1);
-                            var ae = new AcousticEvent(segmentStartOffset, oblong, nyquist, binCount, frameDuration, frameStep, frameCount);
-
                             // convert binIds to Hertz
-                            var hertzTrack = new int[track.BinIds.Length];
-                            for (int i = 0; i < track.BinIds.Length; i++)
-                            {
-                                hertzTrack[i] = (int)Math.Round((track.BinIds[i] + minBin) * binWidth);
-                            }
+                            HertzTrack = track.GetTrackAsSequenceOfHertzValues(binWidth),
+                        };
+                        events.Add(ae);
 
-                            ae.HertzTrack = hertzTrack;
-                            events.Add(ae);
-
-                            // fill the intensity array
-                            for (int i = 0; i < track.Amplitude.Length; i++)
-                            {
-                                combinedIntensityArray[row + i] += track.Amplitude[i];
-                            }
+                        // fill the intensity array
+                        var amplitudeTrack = track.GetAmplitudeOverTimeFrames();
+                        for (int i = 0; i < amplitudeTrack.Length; i++)
+                        {
+                            combinedIntensityArray[row + i] += amplitudeTrack[i];
                         }
                     }
                 }
@@ -118,21 +117,14 @@ namespace AnalysisPrograms.Recognizers.Base
             return (events, combinedIntensityArray);
         }
 
-        public static (int[] BinIds, double[] Amplitude) GetTrack(double[,] peaks, int startRow, int startCol, double threshold)
+        public static SpectralTrack GetTrack(double[,] peaks, int startRow, int startBin, double threshold)
         {
-            var binIds = new List<int>
-            {
-                startCol,
-            };
-            var ampltd = new List<double>
-            {
-                peaks[startRow, startCol],
-            };
+            var track = new SpectralTrack(startRow, startBin, peaks[startRow, startBin]);
 
-            // set the start point to zero to prevent return to this point.
-            peaks[startRow, startCol] = 0.0;
+            // set the start point in peaks matrix to zero to prevent return to this point.
+            peaks[startRow, startBin] = 0.0;
 
-            int bin = startCol;
+            int bin = startBin;
             for (int row = startRow + 1; row < peaks.GetLength(0) - 2; row++)
             {
                 //cannot take bin value less than 3 because of edge effects.
@@ -205,11 +197,10 @@ namespace AnalysisPrograms.Recognizers.Base
                     bin += 2;
                 }
 
-                binIds.Add(bin);
-                ampltd.Add(maxValue);
+                track.SetPoint(row, bin, maxValue);
             }
 
-            return (binIds.ToArray(), ampltd.ToArray());
+            return track;
         }
     }
 }

@@ -45,6 +45,11 @@ namespace AudioAnalysisTools
             this.amplitudeSequence.Add(amplitude);
         }
 
+        public int PointCount()
+        {
+            return this.frameIds.Count;
+        }
+
         public int GetStartFrame()
         {
             return this.frameIds.Min();
@@ -119,13 +124,26 @@ namespace AudioAnalysisTools
             return secondsTrack;
         }
 
-        public double[] GetTrackAsFrequencySequenceHertz(double hertzPerBin)
+        /// <summary>
+        /// Returns an array that has the same number of time frames as the track.
+        /// Each element contains the highest frequency (Hertz) for that time frame.
+        /// NOTE: For tracks that include extreme frequency modulation (e.g. clicks and vertical tracks),
+        ///       this method returns the highest frequency value in each time frame.
+        /// </summary>
+        /// <param name="hertzPerBin">the frequency scale.</param>
+        /// <returns>An array of Hertz values.</returns>
+        public int[] GetTrackAsSequenceOfHertzValues(double hertzPerBin)
         {
-            int binCount = this.GetTrackFreqBinCount();
-            var hertzTrack = new double[binCount];
-            for (int i = 0; i < binCount; i++)
+            int pointCount = this.frameIds.Count;
+            var hertzTrack = new int[this.GetTrackFrameCount()];
+            for (int i = 0; i < pointCount; i++)
             {
-                hertzTrack[i] = (int)Math.Round(this.freqBinIds[i] * hertzPerBin);
+                int frameId = this.frameIds[i];
+                int frequency = (int)Math.Round(this.freqBinIds[i] * hertzPerBin);
+                if (hertzTrack[frameId] < frequency)
+                {
+                    hertzTrack[frameId] = frequency;
+                }
             }
 
             return hertzTrack;
@@ -139,8 +157,6 @@ namespace AudioAnalysisTools
         {
             var frameCount = this.GetTrackFrameCount();
             int startFrame = this.GetStartFrame();
-            //double startTime = startFrame * frameStepSeconds;
-            //int frameCount = this.GetTrackFrameCount();
             var amplitudeArray = new double[frameCount];
 
             // add in amplitude values

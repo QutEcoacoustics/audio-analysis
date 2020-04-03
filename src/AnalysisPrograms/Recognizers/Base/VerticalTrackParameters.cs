@@ -53,7 +53,6 @@ namespace AnalysisPrograms.Recognizers.Base
             double binWidth = nyquist / (double)binCount;
             int minBin = (int)Math.Round(minHz / binWidth);
             int maxBin = (int)Math.Round(maxHz / binWidth);
-            //int bandwidthBinCount = maxBin - minBin + 1;
 
             // list of accumulated acoustic events
             var events = new List<AcousticEvent>();
@@ -81,25 +80,28 @@ namespace AnalysisPrograms.Recognizers.Base
 
             // Look for track starts and initialise them as events.
             // Cannot include edge rows & columns because of edge effects.
-            // each row is a time frame which is a spectrum
-            // columns are frequency bins
+            // Each row is a time frame which is a spectrum. Each column is a frequency bin
+            var combinedIntensityArray = new double[frameCount];
             for (int col = minBin; col < maxBin; col++)
             {
-                var combinedIntensityArray = new double[frameCount];
                 for (int row = 2; row < frameCount - 2; row++)
                 {
-                    // Visit each frame peak in order.
+                    // Visit each frame peak in order. Each may be start of possible track
                     if (peaks[row, col] < decibelThreshold)
                     {
                         continue;
                     }
 
-                    // Each frame peak may be start of a possible vertical track
+                    //have the beginning of a potential track
                     var track = GetVerticalTrack(peaks, row, col, maxBin, decibelThreshold);
 
                     // calculate first and last of the frame IDs in the original spectrogram
                     int trackStartFrame = track.GetStartFrame();
-                    int trackEndFrame = track.GetStartFrame();
+                    int trackEndFrame = track.GetEndFrame();
+
+                    // next two for debug purposes
+                    //int trackMinBin = track.GetBottomFreqBin();
+                    //int trackTopBin = track.GetTopFreqBin();
 
                     //If track has lies within the correct bandWidth range, then create an event
                     int trackBandWidth = track.GetTrackBandWidthHertz(binWidth);
@@ -122,8 +124,8 @@ namespace AnalysisPrograms.Recognizers.Base
                             combinedIntensityArray[row + i] += amplitudeArray[i];
                         }
                     }
-                } // frames
-            } // end cols
+                } // rows/frames
+            } // end cols/bins
 
             // combine proximal events that occupy similar frequency band
             var startDifference = TimeSpan.FromSeconds(0.5);
@@ -132,6 +134,7 @@ namespace AnalysisPrograms.Recognizers.Base
 
             // now combine overlapping events. THis will help in some cases to combine related events.
             // but can produce some spurious results.
+            events = AcousticEvent.CombineOverlappingEvents(events, segmentStartOffset);
             events = AcousticEvent.CombineOverlappingEvents(events, segmentStartOffset);
 
             return (events, temporalIntensityArray);
@@ -145,12 +148,13 @@ namespace AnalysisPrograms.Recognizers.Base
             peaks[startRow, startBin] = 0.0;
             int row = startRow;
 
-            // Avoid row edge effects.
-            for (int bin = startBin + 2; bin < maxBin - 2; bin++)
+            for (int bin = startBin; bin < maxBin - 1; bin++)
             {
-                if (row <= 0)
+                // Avoid row edge effects.
+                if (row < 2 || row > peaks.GetLength(0) - 3)
                 {
-                    // arrived back at start of recording - track has come to end
+                    // arrived back at start of recording or end of recording.
+                    // The track has come to end
                     return track;
                 }
 
@@ -164,12 +168,12 @@ namespace AnalysisPrograms.Recognizers.Base
                 double optionStraight = Math.Max(peaks[row, bin] + peaks[row, bin + 1], peaks[row, bin] + peaks[row - 1, bin + 1]);
                 optionStraight = Math.Max(optionStraight, peaks[row, bin] + peaks[row + 1, bin + 1]);
 
-                // option for track with negative slope
-                double optionDown = Math.Max(peaks[row - 1, bin] + peaks[row - 1, bin + 1], peaks[row - 1, bin - 1] + peaks[row - 2, bin + 1]);
-                optionDown = Math.Max(optionDown, peaks[row - 1, bin - 1] + peaks[row - 1, bin + 1]);
+                // option for track with negative slope i.e. return to previous row/frame.
+                double optionDown = Math.Max(peaks[row - 1, bin] + peaks[row - 1, bin + 1], peaks[row - 1, bin] + peaks[row - 2, bin + 1]);
+                optionDown = Math.Max(optionDown, peaks[row - 1, bin] + peaks[row - 1, bin + 1]);
 
                 // option for track with positive slope
-                double optionUp = Math.Max(peaks[row + 1, bin] + peaks[row + 1, bin + 1], peaks[row + 1, bin + 1] + peaks[row + 2, bin + 1]);
+                double optionUp = Math.Max(peaks[row + 1, bin] + peaks[row + 1, bin + 1], peaks[row + 1, bin] + peaks[row + 2, bin + 1]);
                 optionUp = Math.Max(optionUp, peaks[row + 1, bin] + peaks[row + 2, bin + 1]);
 
                 // get max of the three next possible steps
