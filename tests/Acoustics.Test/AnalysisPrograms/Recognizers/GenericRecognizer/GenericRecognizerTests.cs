@@ -394,14 +394,14 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             var @event = allResults.Events[4];
             Assert.AreEqual(2.0, @event.EventStartSeconds, 0.1);
             Assert.AreEqual(2.5, @event.EventEndSeconds, 0.1);
-            Assert.AreEqual(1680, @event.LowFrequencyHertz);
-            Assert.AreEqual(2110, @event.HighFrequencyHertz);
+            Assert.AreEqual(1723, @event.LowFrequencyHertz);
+            Assert.AreEqual(2067, @event.HighFrequencyHertz);
 
             @event = allResults.Events[11];
             Assert.AreEqual(6.0, @event.EventStartSeconds, 0.1);
-            Assert.AreEqual(6.6, @event.EventEndSeconds, 0.1);
-            Assert.AreEqual(2110, @event.LowFrequencyHertz);
-            Assert.AreEqual(2584, @event.HighFrequencyHertz);
+            Assert.AreEqual(6.5, @event.EventEndSeconds, 0.1);
+            Assert.AreEqual(2153, @event.LowFrequencyHertz);
+            Assert.AreEqual(2541, @event.HighFrequencyHertz);
         }
 
         [TestMethod]
@@ -495,8 +495,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
         }
 
         /// <summary>
-        /// This test is currently identical to the Click test.
-        /// It needs to be improved by incorporating whips into the artificial spectrogram.
+        /// This tests the vertical tracks recognizer on the same artifical spectrogram as used for spectral tracks and harmonics.
         /// </summary>
         [TestMethod]
         public void TestVerticalTrackAlgorithm()
@@ -569,9 +568,9 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             // effectively keeps only the *last* sonogram produced
             allResults.Sonogram = spectrogram;
 
-            // DEBUG PURPOSES COMMENT NEXT LINE
+            // DEBUG PURPOSES ONLY - COMMENT NEXT LINE
             var outputDirectory = new DirectoryInfo("C:\\temp");
-            GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "VerticalTracks");
+            GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "VerticalTracks1");
 
             Assert.AreEqual(2, allResults.Events.Count);
 
@@ -586,6 +585,47 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             Assert.AreEqual(11.24, @event.EventEndSeconds, 0.1);
             Assert.AreEqual(6460, @event.LowFrequencyHertz);
             Assert.AreEqual(7278, @event.HighFrequencyHertz);
+
+            // do a SECOND TEST of the vertical tracks
+            minHertz = 500;
+            maxHertz = 6000;
+            minBandwidthHertz = 200;
+            maxBandwidthHertz = 5000;
+            (acousticEvents, dBArray) = VerticalTrackParameters.GetVerticalTracks(
+                spectrogram,
+                minHertz,
+                maxHertz,
+                spectrogram.NyquistFrequency,
+                decibelThreshold,
+                minBandwidthHertz,
+                maxBandwidthHertz,
+                segmentStartOffset);
+
+            // draw a plot of max decibels in each frame
+            normalisedDecibelArray = DataTools.NormaliseInZeroOne(dBArray, 0, decibelNormalizationMax);
+            var plot2 = new Plot("decibel max", normalisedDecibelArray, dBThreshold);
+            plots.Add(plot2);
+
+            var allResults2 = new RecognizerResults()
+            {
+                Events = new List<AcousticEvent>(),
+                Hits = null,
+                ScoreTrack = null,
+                Plots = new List<Plot>(),
+                Sonogram = null,
+            };
+
+            // combine the results i.e. add the events list of call events.
+            allResults2.Events.AddRange(acousticEvents);
+            allResults2.Plots.AddRange(plots);
+
+            // effectively keeps only the *last* sonogram produced
+            allResults2.Sonogram = spectrogram;
+
+            // DEBUG PURPOSES ONLY - COMMENT NEXT LINE
+            GenericRecognizer.SaveDebugSpectrogram(allResults2, null, outputDirectory, "VerticalTracks2");
+
+            Assert.AreEqual(5, allResults2.Events.Count);
         }
 
         public SpectrogramStandard CreateArtificialSpectrogramToTestTracksAndHarmonics(SonogramConfig config)
