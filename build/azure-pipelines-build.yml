@@ -141,13 +141,17 @@ jobs:
               RunConfiguration.DisableAppDomain=true
             displayName: Run Acoustics.Test
 
+          - pwsh: |
+              GetChild-Item -Recursive $(Agent.TempDirectory)/Acoustics.Test_Results
+              Get-Content $(Agent.TempDirectory)/Acoustics.Test_Results/*.trx
+
           - task: PublishTestResults@2
             inputs:
               testResultFormat: VSTest
               testResultsFiles: '**/*.trx'
               searchFolder: $(Agent.TempDirectory)/Acoustics.Test_Results
               testRunTitle: "Acoustics.Test for ${{ platform.rid }} ${{ configuration }}"
-              buildConfig: ${{ configuration }}
+              buildConfiguration: ${{ configuration }}
               buildPlatform: $(platformTag)
               publishRunAttachments: true
             condition: succeededOrFailed()

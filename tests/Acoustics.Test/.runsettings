@@ -7,7 +7,7 @@
     <Loggers>
       <Logger friendlyName="console">
         <Configuration>
-          <verbosity>detailed</verbosity>
+          <!-- <verbosity>detailed</verbosity> -->
         </Configuration>
       </Logger>
     </Loggers>

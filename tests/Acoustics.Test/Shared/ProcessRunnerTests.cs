@@ -34,7 +34,7 @@ namespace Acoustics.Test.Shared
         [RetryTestMethod(2)]
         public void ProcessRunnerTimeOutDoesNotDeadlock()
         {
-            var result = Enumerable.Range(0, 100).AsParallel().Select(this.RunFfprobeIndefinite).ToArray();
+            var result = Enumerable.Range(0, 100).AsParallel().Select(this.RunFfmpegIndefinite).ToArray();
 
             Assert.IsTrue(result.All());
         }
@@ -42,7 +42,7 @@ namespace Acoustics.Test.Shared
         [RetryTestMethod(2)]
         public void ProcessRunnerTimeOutSimple()
         {
-            this.RunFfprobeIndefinite(0);
+            this.RunFfmpegIndefinite(0);
         }
 
         [TestMethod]
@@ -109,7 +109,7 @@ namespace Acoustics.Test.Shared
             return result;
         }
 
-        private bool RunFfprobeIndefinite(int index)
+        private bool RunFfmpegIndefinite(int index)
         {
             var path = PathHelper.ResolveAssetPath(TestFile);
             var dest = PathHelper.GetTempFile(this.TestOutputDirectory, ".mp3");
@@ -121,7 +121,7 @@ namespace Acoustics.Test.Shared
 
                 Assert.ThrowsException<ProcessRunner.ProcessMaximumRetriesException>(() =>
                 {
-                    runner.Run($@"-i ""{path}"" -ar 8000 ""{dest}""", this.TestOutputDirectory.FullName);
+                    runner.Run($@"-y -i ""{path}"" -ar 8000 ""{dest}""", this.TestOutputDirectory.FullName);
 
                     Assert.Fail($"Process running finished without timing out - this should not happen. Exit code: {runner.ExitCode}.\nStdout:\n{runner.StandardOutput}\nStdErr\n{runner.ErrorOutput}");
                 });
