@@ -63,6 +63,7 @@ Profiles:
         ComponentName: Oscillation
         SpeciesName: Artificial
 
+CombineOverlappedEvents: false
 
 # Common settings
 #Standard: &STANDARD

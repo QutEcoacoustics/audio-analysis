@@ -99,8 +99,8 @@ namespace AnalysisPrograms.Recognizers.Base
                         var oblong = new Oblong(track.GetStartFrame(), trackBottomBin, track.GetEndFrame(), trackTopBin);
                         var ae = new AcousticEvent(segmentStartOffset, oblong, nyquist, binCount, frameDuration, frameStep, frameCount)
                         {
-                            // convert binIds to Hertz
-                            HertzTrack = track.GetTrackAsSequenceOfHertzValues(binWidth),
+                            // get the track as matrix
+                            TheTrack = track.GetTrackAsMatrix(frameStep, binWidth),
                         };
                         events.Add(ae);
 
@@ -113,6 +113,15 @@ namespace AnalysisPrograms.Recognizers.Base
                     }
                 }
             }
+
+            // combine proximal events that occupy similar frequency band
+            var startDifference = TimeSpan.FromSeconds(0.5);
+            var hertzDifference = 500;
+            events = AcousticEvent.CombinePotentialStackedTracks(events, startDifference, hertzDifference);
+
+            // now combine overlapping events. THis will help in some cases to combine related events.
+            // but can produce some spurious results.
+            events = AcousticEvent.CombineOverlappingEvents(events, segmentStartOffset);
 
             return (events, combinedIntensityArray);
         }

@@ -110,11 +110,12 @@ namespace AnalysisPrograms.Recognizers.Base
                         // get the oblong and init an event
                         double trackDuration = ((trackEndFrame - trackStartFrame) * frameStep) + frameOverStep;
                         var oblong = new Oblong(trackStartFrame, col, trackEndFrame, track.GetTopFreqBin());
-                        var ae = new AcousticEvent(segmentStartOffset, oblong, nyquist, binCount, frameDuration, frameStep, frameCount);
+                        var ae = new AcousticEvent(segmentStartOffset, oblong, nyquist, binCount, frameDuration, frameStep, frameCount)
+                        {
+                            // get the track as matrix
+                            TheTrack = track.GetTrackAsMatrix(frameStep, binWidth),
+                        };
 
-                        // convert frameIds to Seconds
-                        var secondsTrack = track.GetTrackAsTimeSequenceSeconds(frameStep);
-                        ae.TimeTrack = secondsTrack;
                         events.Add(ae);
 
                         // fill the intensity array
@@ -134,7 +135,6 @@ namespace AnalysisPrograms.Recognizers.Base
 
             // now combine overlapping events. THis will help in some cases to combine related events.
             // but can produce some spurious results.
-            events = AcousticEvent.CombineOverlappingEvents(events, segmentStartOffset);
             events = AcousticEvent.CombineOverlappingEvents(events, segmentStartOffset);
 
             return (events, temporalIntensityArray);

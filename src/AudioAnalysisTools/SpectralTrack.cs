@@ -110,18 +110,23 @@ namespace AudioAnalysisTools
             return (int)Math.Round(this.GetTrackFreqBinCount() * hertzPerBin);
         }
 
-        public double[] GetTrackAsTimeSequenceSeconds(double frameStepSeconds)
+        /// <summary>
+        /// returns the track as a matrix of seconds, Hertz and amplitude values.
+        /// </summary>
+        /// <param name="frameStepSeconds">the time scale.</param>
+        /// <param name="hertzPerBin">The frequqwency scale.</param>
+        /// <returns>The track matrix.</returns>
+        public double[,] GetTrackAsMatrix(double frameStepSeconds, double hertzPerBin)
         {
-            var secondsTrack = new double[this.GetTrackFrameCount()];
-            int startFrame = this.GetStartFrame();
-            double startTime = startFrame * frameStepSeconds;
-            for (int i = 0; i < this.frameIds.Count; i++)
+            var trackMatrix = new double[this.PointCount(), 3];
+            for (int i = 0; i < this.PointCount(); i++)
             {
-                int elapsedFrames = this.frameIds[i] - startFrame;
-                secondsTrack[elapsedFrames] = startTime + (elapsedFrames * frameStepSeconds);
+                trackMatrix[i, 0] = this.frameIds[i] * frameStepSeconds;
+                trackMatrix[i, 1] = this.freqBinIds[i] * hertzPerBin;
+                trackMatrix[i, 2] = this.amplitudeSequence[i];
             }
 
-            return secondsTrack;
+            return trackMatrix;
         }
 
         /// <summary>

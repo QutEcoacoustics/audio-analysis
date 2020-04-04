@@ -135,18 +135,10 @@ namespace AudioAnalysisTools
         public double Bandwidth => this.HighFrequencyHertz - this.LowFrequencyHertz + 1;
 
         /// <summary>
-        /// Gets or sets and array of frequency values.
-        /// For events of type SpectralTrack, this arrays stores the dominant frequency for each frame of the event.
+        /// Gets or sets a matrix representing the track.
         /// i.e. it defines the track.
         /// </summary>
-        public int[] HertzTrack { get; set; }
-
-        /// <summary>
-        /// Gets or sets and array of time values in seconds.
-        /// For events of type VerticalTrack, this arrays stores the time frame for each frequency bin of the event.
-        /// i.e. it defines the track.
-        /// </summary>
-        public double[] TimeTrack { get; set; }
+        public double[,] TheTrack { get; set; }
 
         public bool IsMelscale { get; set; }
 
@@ -624,6 +616,38 @@ namespace AudioAnalysisTools
                     bool eventStartsAreProximal = Math.Abs(events[i].EventStartSeconds - events[j].EventStartSeconds) < startDifference.TotalSeconds;
                     bool eventAreInSimilarFreqBand = Math.Abs(events[i].LowFrequencyHertz - events[j].LowFrequencyHertz) < hertzDifference && Math.Abs(events[i].HighFrequencyHertz - events[j].HighFrequencyHertz) < hertzDifference;
                     if (eventStartsAreProximal && eventAreInSimilarFreqBand)
+                    {
+                        var segmentStartOffset = TimeSpan.FromSeconds(events[i].SegmentStartSeconds);
+                        events[j] = AcousticEvent.MergeTwoEvents(events[i], events[j], segmentStartOffset);
+                        events.RemoveAt(i);
+                        break;
+                    }
+                }
+            }
+
+            return events;
+        }
+
+        /// <summary>
+        /// Combines events that are possible stacked harmonics, that is, they are coincident (have similar start and end times)
+        /// AND stacked (their maxima are within the passed frequency gap).
+        /// </summary>
+        public static List<AcousticEvent> CombinePotentialStackedTracks(List<AcousticEvent> events, TimeSpan timeDifference, int hertzDifference)
+        {
+            if (events.Count < 2)
+            {
+                return events;
+            }
+
+            for (int i = events.Count - 1; i >= 0; i--)
+            {
+                for (int j = i - 1; j >= 0; j--)
+                {
+                    bool eventsStartTogether = Math.Abs(events[i].EventStartSeconds - events[j].EventStartSeconds) < timeDifference.TotalSeconds;
+                    bool eventsEndTogether = Math.Abs(events[i].EventEndSeconds - events[j].EventEndSeconds) < timeDifference.TotalSeconds;
+                    bool eventsAreCoincident = eventsStartTogether && eventsEndTogether;
+                    bool eventsAreStacked = Math.Abs(events[i].HighFrequencyHertz - events[j].LowFrequencyHertz) < hertzDifference || Math.Abs(events[j].HighFrequencyHertz - events[i].LowFrequencyHertz) < hertzDifference;
+                    if (eventsAreCoincident && eventsAreStacked)
                     {
                         var segmentStartOffset = TimeSpan.FromSeconds(events[i].SegmentStartSeconds);
                         events[j] = AcousticEvent.MergeTwoEvents(events[i], events[j], segmentStartOffset);
