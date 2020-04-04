@@ -29,7 +29,7 @@ $self_contained = if ($self_contained -eq 'true') { 'true' } else { 'false' }
 
 $commit_hash = git show -s --format="%H"
 
-$branch = git symbolic-ref --short -q HEAD
+$branch = ((git log -n 1 --pretty=%d HEAD) | Select-String ", ([^,]*)\)").Matches[0].Groups[1].Value
 
 $describe = git describe --dirty --abbrev --long --always
 

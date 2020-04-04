@@ -35,20 +35,33 @@ stages:
       - template: build/azure-pipelines-build.yml
   - stage: release
     jobs:
+      # this is really all quite ridiculous, but $(Build.SourceVersionMessage)
+      # is not defined until the step stage so, and only if source is checked out *sigh*
+      - job:
+        displayName: Check if a release is needed
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - checkout: none
+          - pwsh: |
+              $commit = Invoke-RestMethod -Method Get -Uri "https://api.github.com/repos/$(Build.Repository.Name)/commits/$(Build.SourceVersion)" -Headers @{Authorization="token ${env:AU
+              DIO_ANALYSIS_CI}"}
+              $commit_message = $commit.commit.message
+              Write-Output "Analyzing commit message for [release] tag:`n$commit_message"
+              $is_manual_release = $commit_message -ilike '*\[release\]*'
+              $is_weekly_release = '$(Build.Reason)' -ieq 'Schedule'
+              $should_release = $is_weekly_release -or $is_manual_release
+              Write-Output "##vso[task.setvariable variable=isManualRelease;isOutput=true]$is_manual_release"
+              Write-Output "##vso[task.setvariable variable=isWeeklyRelease;isOutput=true]$is_weekly_release"
+              Write-Output "##vso[task.setvariable variable=shouldRelease;isOutput=true]$should_release"
+            env:
+              AUDIO_ANALYSIS_CI: $(AUDIO_ANALYSIS_CI)
       - job:
         displayName: Release
-        variables:
-          manualRelease: $( contains(variables['Build.SourceVersionMessage'], '[release]')
-          weeklyRelease: $( eq(variables['Build.Reason'],'Schedule'))
+        condition: eq(variables['shouldRelease'], 'true')
+        pool:
+          vmImage: ubuntu-latest
         steps:
-          - pwsh: Write-Host "##vso[task.complete result=Canceled;]Skipping release"
-            # cancel the job, if
-            # it is not a weekly release
-            # and 
-            # it is not a manual release
-            condition: and(ne(weeklyRelease, true), ne(manualRelease, true)) 
-            displayName: Cancel the release unless we want it to continue
-
           - checkout: self
             clean: true
             fetchDepth: 200
@@ -56,16 +69,19 @@ stages:
             persistCredentials: true
             displayName: "Shallow cloning repo"
           
-            # downloads to $(System.ArtifactsDirectory)
+          # downloads to $(System.ArtifactsDirectory)
           - task: DownloadBuildArtifacts@0
             inputs:
               buildType: current
               downloadType: all
+              # avoid downloading cod coverage report
+              itemPattern: '**/*.(xz|zip|txt)'
             displayName: Download previous build artefacts
 
+          # every build produced version vars, just pick the one from any
           - pwsh: |
               Get-ChildItem -recurse $(System.ArtifactsDirectory)
-              Get-Content $(System.ArtifactsDirectory)/AP_version_vars.txt | Write-Output
+              Get-Content $(System.ArtifactsDirectory)/any/AP_version_vars.txt | Write-Output
             displayName: Reconstitute variables
 
           - pwsh: ./build/release_notes.ps1 v$(AP_Version) -update_changelog
