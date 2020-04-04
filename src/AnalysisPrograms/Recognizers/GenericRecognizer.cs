@@ -255,6 +255,7 @@ namespace AnalysisPrograms.Recognizers
                                 tp.DecibelThreshold.Value,
                                 tp.MinDuration.Value,
                                 tp.MaxDuration.Value,
+                                tp.CombinePossibleHarmonics,
                                 segmentStartOffset);
 
                             var plot = PreparePlot(decibelArray, $"{profileName} (SpectralPeaks:dB Intensity)", tp.DecibelThreshold.Value);
@@ -271,6 +272,7 @@ namespace AnalysisPrograms.Recognizers
                                 cp.DecibelThreshold.Value,
                                 cp.MinBandwidthHertz.Value,
                                 cp.MaxBandwidthHertz.Value,
+                                cp.CombineProximalSimilarEvents,
                                 segmentStartOffset);
 
                             var plot = PreparePlot(decibelArray, $"{profileName} (Click:dB Intensity)", cp.DecibelThreshold.Value);
@@ -287,6 +289,7 @@ namespace AnalysisPrograms.Recognizers
                                 vtp.DecibelThreshold.Value,
                                 vtp.MinBandwidthHertz.Value,
                                 vtp.MaxBandwidthHertz.Value,
+                                vtp.CombineProximalSimilarEvents,
                                 segmentStartOffset);
 
                             var plot = PreparePlot(decibelArray, $"{profileName} (VerticalTrack:dB Intensity)", vtp.DecibelThreshold.Value);

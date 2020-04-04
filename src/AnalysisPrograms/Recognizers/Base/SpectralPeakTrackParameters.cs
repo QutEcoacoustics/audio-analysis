@@ -20,6 +20,17 @@ namespace AnalysisPrograms.Recognizers.Base
     public class SpectralPeakTrackParameters : CommonParameters
     {
         /// <summary>
+        /// Gets or sets a value indicating whether coincident tracks stacked on top of one another are to be combined.
+        /// Coincident means the tracks' start and end times are not greater than the specified seconds interval.
+        /// Stacked means that the frequency gap between each of the stacked tracks does not exceed the specified Hertz interval.
+        /// </summary>
+        public bool CombinePossibleHarmonics { get; set; }
+
+        public TimeSpan StartDifference { get; set; }
+
+        public int HertzGap { get; set; }
+
+        /// <summary>
         /// This method returns spectral peak tracks enclosed in acoustic events.
         /// It averages dB log values incorrectly but it is faster than doing many log conversions.
         /// </summary>
@@ -31,6 +42,7 @@ namespace AnalysisPrograms.Recognizers.Base
             double decibelThreshold,
             double minDuration,
             double maxDuration,
+            bool combinePossibleHarmonics,
             TimeSpan segmentStartOffset)
         {
             var sonogramData = sonogram.Data;
@@ -114,14 +126,14 @@ namespace AnalysisPrograms.Recognizers.Base
                 }
             }
 
-            // combine proximal events that occupy similar frequency band
-            var startDifference = TimeSpan.FromSeconds(0.5);
-            var hertzDifference = 500;
-            events = AcousticEvent.CombinePotentialStackedTracks(events, startDifference, hertzDifference);
-
-            // now combine overlapping events. THis will help in some cases to combine related events.
-            // but can produce some spurious results.
-            events = AcousticEvent.CombineOverlappingEvents(events, segmentStartOffset);
+            // Combine coincident events that are stacked one above other.
+            // This will help in some cases to combine related events.
+            var startDifference = TimeSpan.FromSeconds(0.2);
+            var hertzGap = 200;
+            if (combinePossibleHarmonics)
+            {
+                events = AcousticEvent.CombinePotentialStackedTracks(events, startDifference, hertzGap);
+            }
 
             return (events, combinedIntensityArray);
         }

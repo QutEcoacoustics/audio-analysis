@@ -29,6 +29,17 @@ namespace AnalysisPrograms.Recognizers.Base
         public int? MaxBandwidthHertz { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether proximal similar vertical tracks are to be combined.
+        /// Proximal means track time starts are not separated by more than the specified seconds interval.
+        /// Similar means that track frequency bounds do not differ by more than the specified Hertz interval.
+        /// </summary>
+        public bool CombineProximalSimilarEvents { get; set; }
+
+        public TimeSpan StartDifference { get; set; }
+
+        public int HertzDifference { get; set; }
+
+        /// <summary>
         /// EXPANATION: A vertical track is a near click or rapidly frequency-modulated tone. A good example is the whip component of the whip-bird call.
         /// They would typically be only a few time-frames duration.
         /// THis method averages dB log values incorrectly but it is faster than doing many log conversions and is accurate enough for the purpose.
@@ -41,6 +52,7 @@ namespace AnalysisPrograms.Recognizers.Base
             double decibelThreshold,
             int minBandwidthHertz,
             int maxBandwidthHertz,
+            bool combineProximalSimilarEvents,
             TimeSpan segmentStartOffset)
         {
             var sonogramData = sonogram.Data;
@@ -129,13 +141,12 @@ namespace AnalysisPrograms.Recognizers.Base
             } // end cols/bins
 
             // combine proximal events that occupy similar frequency band
-            var startDifference = TimeSpan.FromSeconds(0.5);
-            var hertzDifference = 500;
-            events = AcousticEvent.CombineSimilarProximalEvents(events, startDifference, hertzDifference);
-
-            // now combine overlapping events. THis will help in some cases to combine related events.
-            // but can produce some spurious results.
-            events = AcousticEvent.CombineOverlappingEvents(events, segmentStartOffset);
+            if (combineProximalSimilarEvents)
+            {
+                TimeSpan startDifference = TimeSpan.FromSeconds(0.5);
+                int hertzDifference = 500;
+                events = AcousticEvent.CombineSimilarProximalEvents(events, startDifference, hertzDifference);
+            }
 
             return (events, temporalIntensityArray);
         }

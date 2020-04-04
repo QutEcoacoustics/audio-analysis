@@ -28,6 +28,17 @@ namespace AnalysisPrograms.Recognizers.Base
         public int? MaxBandwidthHertz { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether proximal similar clicks are to be combined.
+        /// Proximal means the clicks' time starts are not separated by more than the specified seconds interval.
+        /// Similar means that the clicks' frequency bounds do not differ by more than the specified Hertz interval.
+        /// </summary>
+        public bool CombineProximalSimilarEvents { get; set; }
+
+        public TimeSpan StartDifference { get; set; }
+
+        public int HertzDifference { get; set; }
+
+        /// <summary>
         /// A click is a sharp onset broadband sound of brief duration. Geometrically it is similar to a vertical whistle.
         /// THis method averages dB log values incorrectly but it is faster than doing many log conversions.
         /// This method is used to find acoustic events and is accurate enough for the purpose.
@@ -40,6 +51,7 @@ namespace AnalysisPrograms.Recognizers.Base
             double decibelThreshold,
             int minBandwidthHertz,
             int maxBandwidthHertz,
+            bool combineProximalSimilarEvents,
             TimeSpan segmentStartOffset)
         {
             var sonogramData = sonogram.Data;
@@ -114,7 +126,10 @@ namespace AnalysisPrograms.Recognizers.Base
             // combine proximal events that occupy similar frequency band
             var startDifference = TimeSpan.FromSeconds(1.0);
             var hertzDifference = 100;
-            events = AcousticEvent.CombineSimilarProximalEvents(events, startDifference, hertzDifference);
+            if (combineProximalSimilarEvents)
+            {
+                events = AcousticEvent.CombineSimilarProximalEvents(events, startDifference, hertzDifference);
+            }
 
             return (events, temporalIntensityArray);
         }

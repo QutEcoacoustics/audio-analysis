@@ -325,6 +325,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             var minDuration = 0.2;
             var maxDuration = 1.1;
             var decibelThreshold = 2.0;
+            var combinePossibleHarmonics = true;
 
             //Set up the virtual recording.
             int samplerate = 22050;
@@ -360,6 +361,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
                 decibelThreshold,
                 minDuration,
                 maxDuration,
+                combinePossibleHarmonics,
                 segmentStartOffset);
 
             // draw a plot of max decibels in each frame
@@ -415,6 +417,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             var minBandwidthHertz = 100;
             var maxBandwidthHertz = 5000;
             var decibelThreshold = 2.0;
+            var combineProximalSimilarEvents = true;
 
             //Set up the virtual recording.
             int samplerate = 22050;
@@ -450,6 +453,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
                 decibelThreshold,
                 minBandwidthHertz,
                 maxBandwidthHertz,
+                combineProximalSimilarEvents,
                 segmentStartOffset);
 
             // draw a plot of max decibels in each frame
@@ -508,6 +512,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             var minBandwidthHertz = 100;
             var maxBandwidthHertz = 5000;
             var decibelThreshold = 2.0;
+            var combineProximalSimilarEvents = true;
 
             //Set up the virtual recording.
             int samplerate = 22050;
@@ -543,6 +548,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
                 decibelThreshold,
                 minBandwidthHertz,
                 maxBandwidthHertz,
+                combineProximalSimilarEvents,
                 segmentStartOffset);
 
             // draw a plot of max decibels in each frame
@@ -599,6 +605,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
                 decibelThreshold,
                 minBandwidthHertz,
                 maxBandwidthHertz,
+                combineProximalSimilarEvents,
                 segmentStartOffset);
 
             // draw a plot of max decibels in each frame
