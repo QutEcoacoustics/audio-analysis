@@ -48,9 +48,9 @@ stages:
               $commit_message = $commit.commit.message
               Write-Output "Analyzing commit message for [release] tag:`n$commit_message"
               $is_manual_release = $commit_message -ilike '*`[release`]*'
-              $ap_do_release = '$[AP_DO_RELEASE]'
-              Write-Output "AP_DO_RELEASE: $ap_do_release"
-              $is_variable_release = $ap_do_release.Length -gt 0
+              $ci_do_release = $env:CI_DO_RELEASE
+              Write-Output "CI_DO_RELEASE: $ci_do_release"
+              $is_variable_release = $ci_do_release.Length -gt 0
               $is_weekly_release = '$(Build.Reason)' -ieq 'Schedule'
               $should_release = $is_weekly_release -or $is_manual_release -or $is_variable_release
               Write-Output "##vso[task.setvariable variable=isManualRelease;isOutput=true]$is_manual_release"
@@ -61,8 +61,9 @@ stages:
             displayName: Get commit message and calculate release variables
             env:
               AUDIO_ANALYSIS_CI: $(AUDIO_ANALYSIS_CI)
+              CI_DO_RELEASE: $[CI_DO_RELEASE]
       - job: doRelease
-        dpendsOn: checkRelease
+        dependsOn: checkRelease
         displayName: Release
         condition: eq(dependencies.checkRelease.outputs['calculateVariables.shouldRelease'], 'true')
         pool:
@@ -81,7 +82,7 @@ stages:
               buildType: current
               downloadType: all
               # avoid downloading cod coverage report
-              itemPattern: '**/*.(xz|zip|txt)'
+              itemPattern: '**/*.+(xz|zip|txt)'
             displayName: Download previous build artifacts
 
           # every build produced version vars, just pick the one from any
@@ -90,11 +91,14 @@ stages:
               Get-Content $(System.ArtifactsDirectory)/any/AP_version_vars.txt | Write-Output
             displayName: Reconstitute variables
 
-          - pwsh: ./build/release_notes.ps1 v$(AP_Version) -update_changelog
-            displayName: Generate release notes
-
-          - pwsh: git add CHANGELOG.md; git commit -m "Update changelog for v$(AP_Version)" -m "[skip_ci]"
-            displayName: Commit changelog
+          - pwsh: |
+              git checkout $env:BUILD_SOURCEBRANCH
+              ./build/release_notes.ps1 v${env:AP_Version} -update_changelog
+              git add CHANGELOG.md
+              git commit -m "Update changelog for v${env:AP_Version}" -m "[skip_ci]"
+            env:
+              AP_Version: $(AP_Version)
+            displayName: Generate release notes, commit changelog
 
           - task: GitHubRelease@0
             inputs:
@@ -109,6 +113,3 @@ stages:
                 $(Build.ArtifactsDirectory)/**/*.tar.xz
               isDraft: true
               isPreRelease: true
-
-            
-          
