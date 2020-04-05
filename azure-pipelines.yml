@@ -61,7 +61,8 @@ stages:
             displayName: Get commit message and calculate release variables
             env:
               AUDIO_ANALYSIS_CI: $(AUDIO_ANALYSIS_CI)
-      - job:
+      - job: doRelease
+        dpendsOn: checkRelease
         displayName: Release
         condition: eq(dependencies.checkRelease.outputs['calculateVariables.shouldRelease'], 'true')
         pool:
