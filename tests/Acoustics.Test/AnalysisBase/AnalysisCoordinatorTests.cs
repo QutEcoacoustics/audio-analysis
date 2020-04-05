@@ -882,11 +882,11 @@ namespace Acoustics.Test.AnalysisBase
 
             // complete
             // TODO: remove this rubbish and stick in a IoC file system for testing!
-            dummyAnalyzer.Pump();
+            dummyAnalyzer.Pump(false);
             do
             {
-                task.Wait(1.0.Seconds());
-                dummyAnalyzer.Pump();
+                Thread.Sleep(0.5.Seconds());
+                dummyAnalyzer.Pump(false);
             }
             while (!task.IsCompleted);
             task.Wait(1.0.Seconds());
