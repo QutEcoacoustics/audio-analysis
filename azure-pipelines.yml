@@ -47,11 +47,15 @@ stages:
               $commit = Invoke-RestMethod -Method Get -Uri "https://api.github.com/repos/$(Build.Repository.Name)/commits/$(Build.SourceVersion)" -Headers @{Authorization="token ${env:AUDIO_ANALYSIS_CI}"}
               $commit_message = $commit.commit.message
               Write-Output "Analyzing commit message for [release] tag:`n$commit_message"
-              $is_manual_release = $commit_message -ilike '*\[release\]*'
+              $is_manual_release = $commit_message -ilike '*`[release`]*'
+              $ap_do_release = '$(AP_DO_RELEASE)'
+              Write-Output "AP_DO_RELEASE: $ap_do_release"
+              $is_variable_release = $ap_do_release.Length -gt 0
               $is_weekly_release = '$(Build.Reason)' -ieq 'Schedule'
-              $should_release = $is_weekly_release -or $is_manual_release
+              $should_release = $is_weekly_release -or $is_manual_release -or $is_variable_release
               Write-Output "##vso[task.setvariable variable=isManualRelease;isOutput=true]$is_manual_release"
               Write-Output "##vso[task.setvariable variable=isWeeklyRelease;isOutput=true]$is_weekly_release"
+              Write-Output "##vso[task.setvariable variable=isVariableRelease;isOutput=true]$is_variable_release"
               Write-Output "##vso[task.setvariable variable=shouldRelease;isOutput=true]$should_release"
             env:
               AUDIO_ANALYSIS_CI: $(AUDIO_ANALYSIS_CI)
@@ -75,7 +79,7 @@ stages:
               downloadType: all
               # avoid downloading cod coverage report
               itemPattern: '**/*.(xz|zip|txt)'
-            displayName: Download previous build artefacts
+            displayName: Download previous build artifacts
 
           # every build produced version vars, just pick the one from any
           - pwsh: |

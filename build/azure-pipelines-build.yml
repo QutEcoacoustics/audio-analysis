@@ -132,6 +132,7 @@ jobs:
               --settings tests/Acoustics.Test/.runsettings
               --collect:"XPlat Code Coverage"
               --results-directory '$(Agent.TempDirectory)/Acoustics.Test_Results'
+              --filter "RuntimesTests"
               --
               RunConfiguration.DisableAppDomain=true
             displayName: Run Acoustics.Test
