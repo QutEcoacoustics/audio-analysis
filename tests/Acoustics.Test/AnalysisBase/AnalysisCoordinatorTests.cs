@@ -172,7 +172,7 @@ namespace Acoustics.Test.AnalysisBase
             });
         }
 
-        [TestMethod]
+        [RetryTestMethod(3)]
         public void Test_Save_Unique_Temp()
         {
             var states = new[]
@@ -231,7 +231,7 @@ namespace Acoustics.Test.AnalysisBase
             this.TestAnalysisCoordinatorPaths(wav: SaveBehavior.Always, unique: true, temp: this.TestTemp, states: states);
         }
 
-        [TestMethod]
+        [RetryTestMethod(3)]
         public void Test_Never_Unique_Temp()
         {
             var states = new[]
@@ -285,7 +285,7 @@ namespace Acoustics.Test.AnalysisBase
             this.TestAnalysisCoordinatorPaths(wav: SaveBehavior.Never, unique: true, temp: this.TestTemp, states: states);
         }
 
-        [TestMethod]
+        [RetryTestMethod(3)]
         public void Test_Save_Same_Temp()
         {
             var states = new[]
@@ -335,7 +335,7 @@ namespace Acoustics.Test.AnalysisBase
             this.TestAnalysisCoordinatorPaths(wav: SaveBehavior.Always, unique: false, temp: this.TestTemp, states: states);
         }
 
-        [TestMethod]
+        [RetryTestMethod(3)]
         public void Test_Never_Same_Temp()
         {
             var states = new[]
@@ -364,7 +364,7 @@ namespace Acoustics.Test.AnalysisBase
             this.TestAnalysisCoordinatorPaths(wav: SaveBehavior.Never, unique: false, temp: this.TestTemp, states: states);
         }
 
-        [TestMethod]
+        [RetryTestMethod(3)]
         public void Test_Save_Unique_Null()
         {
             var states = new[]
@@ -421,7 +421,7 @@ namespace Acoustics.Test.AnalysisBase
             this.TestAnalysisCoordinatorPaths(wav: SaveBehavior.Always, unique: true, temp: null, states: states);
         }
 
-        [TestMethod]
+        [RetryTestMethod(3)]
         public void Test_Never_Unique_Null()
         {
             var states = new[]
@@ -457,7 +457,7 @@ namespace Acoustics.Test.AnalysisBase
             this.TestAnalysisCoordinatorPaths(wav: SaveBehavior.Never, unique: true, temp: null, states: states);
         }
 
-        [TestMethod]
+        [RetryTestMethod(3)]
         public void Test_Save_Same_Null()
         {
             var states = new[]
@@ -505,7 +505,7 @@ namespace Acoustics.Test.AnalysisBase
             this.TestAnalysisCoordinatorPaths(wav: SaveBehavior.Always, unique: false, temp: null, states: states);
         }
 
-        [TestMethod]
+        [RetryTestMethod(3)]
         public void Test_Never_Same_Null()
         {
             var states = new[]
@@ -534,7 +534,7 @@ namespace Acoustics.Test.AnalysisBase
             this.TestAnalysisCoordinatorPaths(wav: SaveBehavior.Never, unique: false, temp: null, states: states);
         }
 
-        [TestMethod]
+        [RetryTestMethod(3)]
         public void Test_Save_Unique_Output()
         {
             var states = new[]
@@ -611,7 +611,7 @@ namespace Acoustics.Test.AnalysisBase
                 states: states);
         }
 
-        [TestMethod]
+        [RetryTestMethod(3)]
         public void Test_Never_Unique_Output()
         {
             var states = new[]
@@ -675,7 +675,7 @@ namespace Acoustics.Test.AnalysisBase
             this.TestAnalysisCoordinatorPaths(wav: SaveBehavior.Never, unique: true, temp: this.AnalysisOutput, states: states);
         }
 
-        [TestMethod]
+        [RetryTestMethod(3)]
         public void Test_Save_Same_Output()
         {
             var states = new[]
@@ -735,7 +735,7 @@ namespace Acoustics.Test.AnalysisBase
             this.TestAnalysisCoordinatorPaths(wav: SaveBehavior.Always, unique: false, temp: this.AnalysisOutput, states: states);
         }
 
-        [TestMethod]
+        [RetryTestMethod(3)]
         public void Test_Never_Same_Output()
         {
             var states = new[]
@@ -882,11 +882,11 @@ namespace Acoustics.Test.AnalysisBase
 
             // complete
             // TODO: remove this rubbish and stick in a IoC file system for testing!
-            dummyAnalyzer.Pump(false);
+            dummyAnalyzer.Pump();
             do
             {
                 task.Wait(1.0.Seconds());
-                dummyAnalyzer.Pump(false);
+                dummyAnalyzer.Pump();
             }
             while (!task.IsCompleted);
             task.Wait(1.0.Seconds());
