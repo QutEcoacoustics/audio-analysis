@@ -115,11 +115,6 @@ jobs:
             displayName: run git_version.ps1 script
             name: git_version
 
-          - task: PublishPipelineArtifact@1
-            inputs:
-              targetPath: '$(Build.ArtifactStagingDirectory)/AP_version_vars.txt'
-              artifactName: $(platformTag)$(configurationTag)
-
           - task: DotNetCoreCLI@2
             inputs:
               command: build
