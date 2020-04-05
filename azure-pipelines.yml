@@ -44,8 +44,7 @@ stages:
         steps:
           - checkout: none
           - pwsh: |
-              $commit = Invoke-RestMethod -Method Get -Uri "https://api.github.com/repos/$(Build.Repository.Name)/commits/$(Build.SourceVersion)" -Headers @{Authorization="token ${env:AU
-              DIO_ANALYSIS_CI}"}
+              $commit = Invoke-RestMethod -Method Get -Uri "https://api.github.com/repos/$(Build.Repository.Name)/commits/$(Build.SourceVersion)" -Headers @{Authorization="token ${env:AUDIO_ANALYSIS_CI}"}
               $commit_message = $commit.commit.message
               Write-Output "Analyzing commit message for [release] tag:`n$commit_message"
               $is_manual_release = $commit_message -ilike '*\[release\]*'
