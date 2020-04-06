@@ -29,7 +29,7 @@ $self_contained = if ($self_contained -eq 'true') { 'true' } else { 'false' }
 
 $commit_hash = git show -s --format="%H"
 
-$branch = ((git log -n 1 --pretty=%d HEAD) | Select-String ", ([^,]*)\)").Matches[0].Groups[1].Value
+$branch = ((git log -n 1 --pretty=%d HEAD) | Select-String "-> ([\w-]+)").Matches[0].Groups[1].Value
 
 $describe = git describe --dirty --abbrev --long --always
 
@@ -60,7 +60,7 @@ $prefix = ''
 $seperator = '='
 if ($set_ci) {
     $prefix = "##vso[task.setvariable variable=AP_"
-    $seperator = ";isoutput=true]"
+    $seperator = "]"
 }
 
 $props = @"

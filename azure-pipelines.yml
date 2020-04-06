@@ -92,12 +92,13 @@ stages:
             displayName: Reconstitute variables
 
           - pwsh: |
-              git checkout $env:BUILD_SOURCEBRANCH
-              ./build/release_notes.ps1 v${env:AP_Version} -update_changelog
+              git checkout $env:BUILD_SOURCEBRANCHNAME
+              Get-ChildItem env:
+              ./build/release_notes.ps1 v${env:AP_Version} '$(System.ArtifactsDirectory)/release_notes.txt' -update_changelog
+              git config --global user.email "ecoaocustics@qut.edu.au"
+              git config --global user.name "QUT Ecoaocustics"
               git add CHANGELOG.md
               git commit -m "Update changelog for v${env:AP_Version}" -m "[skip_ci]"
-            env:
-              AP_Version: $(AP_Version)
             displayName: Generate release notes, commit changelog
 
           - task: GitHubRelease@0
@@ -106,8 +107,8 @@ stages:
               tagSource: auto
               tag: v$(AP_Version)
               title: $(AP_ReleaseTitle)
-              releaseNotesSource: inputs
-              releaseNotes: $(AP_ReleaseMessage)
+              releaseNotesSource: file
+              releaseNotesFile: '$(System.ArtifactsDirectory)/release_notes.txt'
               assets: |
                 $(Build.ArtifactsDirectory)/**/*.zip
                 $(Build.ArtifactsDirectory)/**/*.tar.xz

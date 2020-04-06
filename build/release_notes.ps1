@@ -3,11 +3,17 @@
 param(
     [Parameter(Position = 0, mandatory = $true)]
     $tag_name,
+    [Parameter(Position = 1, mandatory = $true)]
+    $output_file,
     [switch]$update_changelog
 )
 
 $ErrorActionPreference = "Stop"
 $DebugPreference = 'Continue'
+
+Write-Debug "`$tag_name:$tag_name"
+Write-Debug "`$output_file:$output_file"
+Write-Debug "`$update_changelog:$update_changelog"
 
 function formatIssueList {
     process {
@@ -22,6 +28,19 @@ function formatIssueList {
         }
 
         return "- " + ($_.Title -replace " - ", $issue_string)
+    }
+}
+
+function script:exec {
+    [CmdletBinding()]
+
+    param(
+        [Parameter(Position = 0, Mandatory = 1)][scriptblock]$cmd,
+        [Parameter(Position = 1, Mandatory = 0)][string]$errorMessage = ("Error executing command: {0}" -f $cmd)
+    )
+    & $cmd
+    if ($lastexitcode -ne 0) {
+        throw $errorMessage
     }
 }
 
@@ -84,8 +103,7 @@ $commit_list
 
 $changelog_changes = "$changelog_title`n`n$release_message"
 if ($update_changelog) {
-    $replace = "<!--manual-content-insert-here-->`n`n`n`n<!--generated-con
-    tent-insert-here-->`n`n$changelog_changes"
+    $replace = "<!--manual-content-insert-here-->`n`n`n`n<!--generated-content-insert-here-->`n`n$changelog_changes"
     $changelog -replace $changelog_regex, $replace | Out-File $changelog_path -Encoding utf8NoBOM
 }
 else {
@@ -97,10 +115,8 @@ else {
 # $env:ApReleaseTitle = $release_title
 
 Write-Debug "Release message:`n$release_title`n$release_message"
-
-
-
 Write-Debug "commit count: $($commits.Count)"
 
 Write-Output "##vso[task.setvariable variable=AP_ReleaseTitle]$release_title"
-Write-Output "##vso[task.setvariable variable=AP_ReleaseMessage]$release_message"
+Write-Output "Writing release notes to $output_file"
+$release_message | Out-File $output_file -Encoding utf8NoBOM
