@@ -29,9 +29,10 @@ $self_contained = if ($self_contained -eq 'true') { 'true' } else { 'false' }
 
 $commit_hash = git show -s --format="%H"
 
-$git_log = git log -n 1 --pretty=%d HEAD
-Write-output "git log output: $git_log"
-$branch = ($git_log | Select-String "-> ([\w-]+)").Matches[0].Groups[1].Value
+$rev_head = git rev-parse HEAD
+$branches = git for-each-ref --format='%(objectname) %(refname:short)' refs/heads | Where-Object { $_.StartsWith($rev_head) } | ForEach-Object { ($_ -split ' ')[1] }
+Write-output "git brnaches: $($branches -join ' ')"
+$branch = $branches -join ' '
 Write-output "branch: $branch"
 
 $describe = git describe --dirty --abbrev --long --always
