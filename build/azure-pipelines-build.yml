@@ -238,11 +238,11 @@ jobs:
               includeRootFolder: false
               ${{ if startsWith(platform.pool, 'windows') }}:
                 archiveType: zip
-                archiveFile: '$(Build.ArtifactStagingDirectory)/AP_$(platformTag)$(configurationTag)_$(Build.BuildNumber).zip'
+                archiveFile: '$(Build.ArtifactStagingDirectory)/AP_$(platformTag)$(configurationTag)_v$(AP_Version).zip'
               ${{ if not(startsWith(platform.pool, 'windows')) }}:
                 archiveType: tar
                 tarCompression: xz
-                archiveFile: '$(Build.ArtifactStagingDirectory)/AP_$(platformTag)$(configurationTag)_$(Build.BuildNumber).tar.xz'
+                archiveFile: '$(Build.ArtifactStagingDirectory)/AP_$(platformTag)$(configurationTag)_v$(AP_Version).tar.xz'
 
             displayName: Archive published app
 

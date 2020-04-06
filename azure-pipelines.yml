@@ -93,15 +93,15 @@ stages:
 
           - pwsh: |
               git checkout $env:BUILD_SOURCEBRANCHNAME
-              ./build/release_notes.ps1 v$AP_VERSION '$(System.ArtifactsDirectory)/release_notes.txt' -update_changelog
+              ./build/release_notes.ps1 v${env:AP_VERSION} '$(System.ArtifactsDirectory)/release_notes.txt' -update_changelog
               Get-ChildItem env:
               git config --global user.email "ecoacoustics@qut.edu.au"
               git config --global user.name "QUT Ecoacoustics"
               git add CHANGELOG.md
-              git commit -m "Update changelog for v$AP_VERSION" -m "[skip_ci]"
-              git tag -a -m git tag -a -m "Version $AP_VERSION" "v$AP_VERSION" 
+              git commit -m "Update changelog for v${env:AP_VERSION}" -m "[skip ci]"
+              git tag -a -m "Version ${env:AP_VERSION}" "v${env:AP_VERSION}" 
               git push --follow-tags
-            displayName: Generate release notes, commit changelog
+            displayName: Generate release notes, commit changelog, and tag
 
           - task: GitHubRelease@0
             inputs:
