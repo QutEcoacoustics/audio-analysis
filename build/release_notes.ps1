@@ -24,7 +24,8 @@ function formatIssueList {
             " - "
         }
         else {
-            $issues | Join-String { "[$_](https://github.com/QutEcoacoustics/audio-analysis/issues/" + $_.TrimStart("#") + ")" } -Separator ", " -OutputPrefix " - (" -OutputSuffix ")`n  "
+            # disabled code "nice" hard wrap because markdown was rendering with a newline in github release notes
+            $issues | Join-String { "[$_](https://github.com/QutEcoacoustics/audio-analysis/issues/" + $_.TrimStart("#") + ")" } -Separator ", " -OutputPrefix " - (" -OutputSuffix ") "
         }
 
         return "- " + ($_.Title -replace " - ", $issue_string)

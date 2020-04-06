@@ -50,7 +50,7 @@ stages:
               $is_manual_release = $commit_message -ilike '*`[release`]*'
               $ci_do_release = $env:CI_DO_RELEASE
               Write-Output "CI_DO_RELEASE: $ci_do_release"
-              $is_variable_release = $ci_do_release.Length -gt 0
+              $is_variable_release = $null -ne $ci_do_release -and $ci_do_release -ne ''
               $is_weekly_release = '$(Build.Reason)' -ieq 'Schedule'
               $should_release = $is_weekly_release -or $is_manual_release -or $is_variable_release
               Write-Output "##vso[task.setvariable variable=isManualRelease;isOutput=true]$is_manual_release"
@@ -61,7 +61,6 @@ stages:
             displayName: Get commit message and calculate release variables
             env:
               AUDIO_ANALYSIS_CI: $(AUDIO_ANALYSIS_CI)
-              CI_DO_RELEASE: $[CI_DO_RELEASE]
       - job: doRelease
         dependsOn: checkRelease
         displayName: Release
@@ -93,24 +92,32 @@ stages:
 
           - pwsh: |
               git checkout $env:BUILD_SOURCEBRANCHNAME
+              ./build/release_notes.ps1 v${env:AP_VERSION} '$(System.ArtifactsDirectory)/release_notes.txt' -update_changelog
               Get-ChildItem env:
-              ./build/release_notes.ps1 v${env:AP_Version} '$(System.ArtifactsDirectory)/release_notes.txt' -update_changelog
-              git config --global user.email "ecoaocustics@qut.edu.au"
-              git config --global user.name "QUT Ecoaocustics"
+              git config --global user.email "ecoacoustics@qut.edu.au"
+              git config --global user.name "QUT Ecoacoustics"
               git add CHANGELOG.md
-              git commit -m "Update changelog for v${env:AP_Version}" -m "[skip_ci]"
-            displayName: Generate release notes, commit changelog
+              git commit -m "Update changelog for v${env:AP_VERSION}" -m "[skip ci]"
+              git tag -a -m "Version ${env:AP_VERSION}" "v${env:AP_VERSION}" 
+              git push --follow-tags
+              $release_target = git rev-parse --verify HEAD
+              Write-Output "##vso[task.setvariable variable=AP_ReleaseTarget]$release_target"
+            displayName: Generate release notes, commit changelog, tag, and push
 
           - task: GitHubRelease@0
             inputs:
+              # managed here https://dev.azure.com/QutEcoacoustics/audio-analysis/_settings/adminservices
+              gitHubConnection: github.com_atruskie
               action: create
-              tagSource: auto
+              tagSource: manual
+              target: $(AP_ReleaseTarget)
               tag: v$(AP_Version)
               title: $(AP_ReleaseTitle)
               releaseNotesSource: file
               releaseNotesFile: '$(System.ArtifactsDirectory)/release_notes.txt'
               assets: |
-                $(Build.ArtifactsDirectory)/**/*.zip
-                $(Build.ArtifactsDirectory)/**/*.tar.xz
+                $(System.ArtifactsDirectory)/**/*.zip
+                $(System.ArtifactsDirectory)/**/*.tar.xz
               isDraft: true
               isPreRelease: true
+              addChangeLog: false
