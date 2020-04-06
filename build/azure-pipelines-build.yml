@@ -111,7 +111,7 @@ jobs:
               nugetConfigPath: NuGet.config
             displayName: Restore solution dependencies
 
-          - pwsh: src/git_version.ps1 -configuration ${{ configuration }} -self_contained '$(isSelfContained)' -runtime_identifier '$(runtimeArgument)' -set_ci | Tee-Object '$(Build.ArtifactStagingDirectory)/AP_version_vars.txt'
+          - pwsh: src/git_version.ps1 -configuration ${{ configuration }} -self_contained '$(isSelfContained)' -runtime_identifier '${{ platform.rid }}' -set_ci | Tee-Object '$(Build.ArtifactStagingDirectory)/AP_version_vars.txt'
             displayName: run git_version.ps1 script
             name: git_version
 

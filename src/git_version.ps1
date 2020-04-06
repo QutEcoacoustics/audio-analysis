@@ -29,7 +29,10 @@ $self_contained = if ($self_contained -eq 'true') { 'true' } else { 'false' }
 
 $commit_hash = git show -s --format="%H"
 
-$branch = ((git log -n 1 --pretty=%d HEAD) | Select-String "-> ([\w-]+)").Matches[0].Groups[1].Value
+$git_log = git log -n 1 --pretty=%d HEAD
+Write-output "git log output: $git_log"
+$branch = ($git_log | Select-String "-> ([\w-]+)").Matches[0].Groups[1].Value
+Write-output "branch: $branch"
 
 $describe = git describe --dirty --abbrev --long --always
 
