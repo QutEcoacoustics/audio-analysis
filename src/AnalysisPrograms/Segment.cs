@@ -116,9 +116,10 @@ namespace AnalysisPrograms
             //string str = String.Format("#RecordingName\tDuration(sec)\t#Ev\tCompT(ms)\t%hiFrames\n{0}\t{1}\t{2}\t{3}\t{4}\n", fname, sigDuration, count, analysisDuration.TotalMilliseconds, pcHIF);
             //StringBuilder sb = new StringBuilder(str);
             //StringBuilder sb = new StringBuilder();
-            string str = string.Format("{0}\t{1}\t{2}\t{3}", fname, sigDuration, count, pcHIF);
-            StringBuilder sb = AcousticEvent.WriteEvents(predictedEvents, str);
-            FileTools.WriteTextFile(opPath.FullName, sb.ToString());
+            throw new NotSupportedException("Broken in merge");
+            //string str = string.Format("{0}\t{1}\t{2}\t{3}", fname, sigDuration, count, pcHIF);
+            //StringBuilder sb = AcousticEvent.WriteEvents(predictedEvents, str);
+            //FileTools.WriteTextFile(opPath.FullName, sb.ToString());
 
             //draw images of sonograms
             string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath.Name) + ".png";
