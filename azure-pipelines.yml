@@ -11,7 +11,7 @@ schedules:
 
 variables:
   build: '$(Build.BuildID)'
-  system.debug: true
+  #system.debug: true
   NUGET_PACKAGES: $(Pipeline.Workspace)/.nuget/packages
   CI: true
 
@@ -93,7 +93,6 @@ stages:
           - pwsh: |
               git checkout $env:BUILD_SOURCEBRANCHNAME
               ./build/release_notes.ps1 v${env:AP_VERSION} '$(System.ArtifactsDirectory)/release_notes.txt' -update_changelog
-              Get-ChildItem env:
               git config --global user.email "ecoacoustics@qut.edu.au"
               git config --global user.name "QUT Ecoacoustics"
               git add CHANGELOG.md
@@ -118,6 +117,6 @@ stages:
               assets: |
                 $(System.ArtifactsDirectory)/**/*.zip
                 $(System.ArtifactsDirectory)/**/*.tar.xz
-              isDraft: true
+              isDraft: false
               isPreRelease: true
               addChangeLog: false
