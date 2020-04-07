@@ -112,7 +112,7 @@ namespace AnalysisPrograms.Recognizers.Base
                         var ae = new AcousticEvent(segmentStartOffset, oblong, nyquist, binCount, frameDuration, frameStep, frameCount)
                         {
                             // get the track as matrix
-                            TheTrack = track.GetTrackAsMatrix(frameStep, binWidth),
+                            TheTrack = track,
                         };
                         events.Add(ae);
 
@@ -140,7 +140,7 @@ namespace AnalysisPrograms.Recognizers.Base
 
         public static SpectralTrack GetTrack(double[,] peaks, int startRow, int startBin, double threshold)
         {
-            var track = new SpectralTrack(startRow, startBin, peaks[startRow, startBin]);
+            var track = new SpectralTrack(SpectralTrackType.HorizontalTrack, startRow, startBin, peaks[startRow, startBin]);
 
             // set the start point in peaks matrix to zero to prevent return to this point.
             peaks[startRow, startBin] = 0.0;

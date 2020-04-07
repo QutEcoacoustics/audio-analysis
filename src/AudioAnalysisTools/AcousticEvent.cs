@@ -135,10 +135,9 @@ namespace AudioAnalysisTools
         public double Bandwidth => this.HighFrequencyHertz - this.LowFrequencyHertz + 1;
 
         /// <summary>
-        /// Gets or sets a matrix representing the track.
-        /// i.e. it defines the track.
+        /// Gets or sets a horizontal or vertical spectral track.
         /// </summary>
-        public double[,] TheTrack { get; set; }
+        public SpectralTrack TheTrack { get; set; }
 
         public bool IsMelscale { get; set; }
 
