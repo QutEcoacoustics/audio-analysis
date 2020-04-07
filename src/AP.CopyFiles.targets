@@ -5,23 +5,23 @@
   </PropertyGroup>
   <!-- Register the Roboto font as a resource to copy -->
   <ItemGroup>
-    <ContentWithTargetPath  
+    <ContentWithTargetPath
       Include="$(MSBuildThisFileDirectory)..\lib\Roboto\*"
       CopyToOutputDirectory="PreserveNewest"
       TargetPath="fonts\Roboto\%(Filename)%(Extension)"/>
   </ItemGroup>
-  
+
   <!-- Register our task that as something to run after standard build target -->
   <Target Name="APCopyFilesAfterBuild" AfterTargets="Build">
     <!-- Copy our audio tools from lib to build dir -->
     <Message Text="[APCopyFilesAfterBuild]: Scanning for lib files and config files" Importance="High" />
     <Message Text="[APCopyFilesAfterBuild]: Copying to $(TargetDir)" Importance="High" />
     <ItemGroup>
-      <AudioTools Include="$(MSBuildThisFileDirectory)..\lib\audio-utils\**\*.*" />
+      <BuildAudioTools Include="$(MSBuildThisFileDirectory)..\lib\audio-utils\**\*.*" />
       <ConfigFiles Include="$(MSBuildThisFileDirectory)AnalysisConfigFiles\**\*" />
     </ItemGroup>
     <Message Text="[APCopyFilesAfterBuild]: Copying audio-utils files to '$(TargetDir)\audio-utils" Importance="High" />
-    <Copy SourceFiles="@(AudioTools)"
+    <Copy SourceFiles="@(BuildAudioTools)"
         DestinationFolder="$(TargetDir)\audio-utils\%(RecursiveDir)"
         SkipUnchangedFiles="true" />
     <Message Text="[APCopyFilesAfterBuild]: Copying config files to '$(TargetDir)\ConfigFiles'" Importance="High" />
@@ -35,11 +35,11 @@
     <Message Text="[APCopyFilesAfterPublish]: Copying to $(PublishDir)" Importance="High" />
     <Message Text="[APCopyFilesAfterPublish]: Runtime $(RuntimeIdentifier)" Importance="High" />
     <ItemGroup>
-      <AudioTools Include="$(MSBuildThisFileDirectory)..\lib\audio-utils\$(RuntimeIdentifier)\**\*.*" />
+      <PublishAudioTools Include="$(MSBuildThisFileDirectory)..\lib\audio-utils\$(RuntimeIdentifier)\**\*.*" />
       <ConfigFiles Include="$(MSBuildThisFileDirectory)AnalysisConfigFiles\**\*" />
     </ItemGroup>
     <Message Text="[APCopyFilesAfterPublish]: Copying audio-utils files to '$(PublishDir)audio-utils\$(RuntimeIdentifier)" Importance="High" />
-    <Copy SourceFiles="@(AudioTools)"
+    <Copy SourceFiles="@(PublishAudioTools)"
         DestinationFolder="$(PublishDir)audio-utils\$(RuntimeIdentifier)\%(RecursiveDir)"
         SkipUnchangedFiles="true" />
     <Message Text="[APCopyFilesAfterPublish]: Copying config files to '$(PublishDir)ConfigFiles'" Importance="High" />

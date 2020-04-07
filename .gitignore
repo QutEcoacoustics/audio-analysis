@@ -229,3 +229,5 @@ Temporary Items
 
 # dotnet global tools
 .store
+.fake
+.ionide
