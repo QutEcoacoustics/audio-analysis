@@ -336,35 +336,6 @@ namespace AnalysisPrograms.Recognizers.Base
             double eventThreshold)
         {
             var image = SpectrogramTools.GetSonogramPlusCharts(sonogram, predictedEvents, scores, hits);
-
-            //const bool doHighlightSubband = false;
-            //const bool add1KHzLines = true;
-            //var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1KHzLines, doMelScale: false));
-            //image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-            //image.AddTrack(ImageTrack.GetSegmentationTrack(sonogram));
-
-            //if (scores != null)
-            //{
-            //    foreach (var plot in scores)
-            //    {
-            //        image.AddTrack(ImageTrack.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title));
-            //    }
-            //}
-
-            //if (hits != null)
-            //{
-            //    image.OverlayRedTransparency(hits);
-            //}
-
-            //if (predictedEvents != null && predictedEvents.Count > 0)
-            //{
-            //    image.AddEvents(
-            //        predictedEvents,
-            //        sonogram.NyquistFrequency,
-            //        sonogram.Configuration.FreqBinCount,
-            //        sonogram.FramesPerSecond);
-            //}
-
             return image;
         }
 

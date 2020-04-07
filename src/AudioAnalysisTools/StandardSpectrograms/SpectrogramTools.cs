@@ -125,8 +125,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
             if (hits != null)
             {
                 spectrogram = Image_MultiTrack.OverlayScoresAsRedTransparency(spectrogram, hits);
-                //OverlayRedTransparency(bmp, this.SuperimposedRedTransparency);
-                //this.SonogramImage = this.OverlayRedTransparency((Image<Rgb24>)this.SonogramImage);
             }
 
             int pixelWidth = spectrogram.Width;
@@ -638,14 +636,14 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         public static double[,] ExtractFreqSubband(double[,] m, int minHz, int maxHz, bool doMelscale, int binCount, double binWidth)
         {
-            AcousticEvent.Freq2BinIDs(doMelscale, minHz, maxHz, binCount, binWidth, out var c1, out var c2);
+            AcousticEvent.ConvertHertzToFrequencyBin(doMelscale, minHz, maxHz, binCount, binWidth, out var c1, out var c2);
             return DataTools.Submatrix(m, 0, c1, m.GetLength(0) - 1, c2);
         }
 
         public static double[] ExtractModalNoiseSubband(double[] modalNoise, int minHz, int maxHz, bool doMelScale, int nyquist, double binWidth)
         {
             //extract subband modal noise profile
-            AcousticEvent.Freq2BinIDs(doMelScale, minHz, maxHz, nyquist, binWidth, out var c1, out var c2);
+            AcousticEvent.ConvertHertzToFrequencyBin(doMelScale, minHz, maxHz, nyquist, binWidth, out var c1, out var c2);
             int subbandCount = c2 - c1 + 1;
             var subband = new double[subbandCount];
             for (int i = 0; i < subbandCount; i++)

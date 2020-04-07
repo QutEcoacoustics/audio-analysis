@@ -5,7 +5,7 @@
 namespace AudioAnalysisTools.StandardSpectrograms
 {
     using System;
-    using DSP;
+    using AudioAnalysisTools.DSP;
     using TowseyLibrary;
 
     public class SpectrogramSettings
@@ -16,6 +16,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// </summary>
         public string SourceFileName { get; set; }
 
+        /// <summary>
+        /// Gets or sets the window or frame size. 512 is usually a suitable choice for recordings of the environment.
+        /// </summary>
         public int WindowSize { get; set; } = 512;
 
         public double WindowOverlap { get; set; } = 0.0;
@@ -26,8 +29,18 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// </summary>
         public int WindowStep { get; set; } = 512;
 
-        public string WindowFunction { get; set; } = WindowFunctions.HAMMING.ToString();
+        /// <summary>
+        /// Gets or sets the default FFT Window function to the Hanning window.
+        /// THe Hanning window was made default in March 2020 because it was found to produce better spectrograms
+        /// in cases where the recording is resampled up or down.
+        /// </summary>
+        public string WindowFunction { get; set; } = WindowFunctions.HANNING.ToString();
 
+        /// <summary>
+        /// Gets or sets the smoothing window.
+        /// Following the FFT, each spectrum is smoothed with a moving average filter to reduce its variance.
+        /// We do the minimum smoothing in order to retain spectral definition.
+        /// </summary>
         public int SmoothingWindow { get; set; } = 3;
 
         public bool DoMelScale { get; set; } = false;
@@ -49,6 +62,10 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         public double MaxAmplitude { get; set; }
 
+        /// <summary>
+        /// Gets or sets the maximum frequency that can be represented given the signals sampling rate.
+        /// The Nyquist is half the SR.
+        /// </summary>
         public int NyquistFrequency { get; set; }
 
         public TimeSpan Duration { get; set; }
@@ -56,7 +73,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         public int FrameCount { get; set; }
 
         /// <summary>
-        /// Gets or sets duration of full frame or window in seconds
+        /// Gets or sets duration of full frame or window in seconds.
         /// </summary>
         public TimeSpan FrameDuration { get; set; }
 
@@ -64,9 +81,15 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         public double FBinWidth { get; set; }
 
-        //this.FBinWidth = this.NyquistFrequency / (double) this.FreqBinCount;
+        /// <summary>
+        /// Gets or sets the real value difference between two adjacent values of the 16, 24 bit signed integer,
+        /// used to represent the signal amplitude in the range -1 to +1.
+        /// </summary>
         public double Epsilon { get; set; }
 
+        /// <summary>
+        /// Gets or sets the signal power added by using the chosen FFT window function.
+        /// </summary>
         public double WindowPower { get; set; }
 
         /// <summary>

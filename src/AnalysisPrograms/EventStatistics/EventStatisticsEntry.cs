@@ -49,7 +49,7 @@ namespace AnalysisPrograms.EventStatistics
                 Log.Warn($"Config file {config.FullName} not found... attempting to resolve config file");
 
                 // we use  the original input string - Using FileInfo fullname always produces an
-                // absolute path wrt to pwd... we don't want to prematurely make assumptions:
+                // absolute path relative to pwd... we don't want to prematurely make assumptions:
                 // e.g. We require a missing absolute path to fail... that wouldn't work with .Name
                 // e.g. We require a relative path to try and resolve, using .FullName would fail the first absolute
                 //    check inside ResolveConfigFile

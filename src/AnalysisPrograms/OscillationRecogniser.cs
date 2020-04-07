@@ -12,6 +12,7 @@ namespace AnalysisPrograms
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
+    using Acoustics.Shared.Csv;
     using AudioAnalysisTools;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
@@ -126,15 +127,10 @@ namespace AnalysisPrograms
                 pcHIF = 100 * hifCount / sonogram.FrameCount;
             }
 
-            //write event count to results file.
-            double sigDuration = sonogram.Duration.TotalSeconds;
+            // write event count to results file.
             string fname = recordingFile.BaseName();
-            int count = predictedEvents.Count;
 
-            //string str = String.Format("#RecordingName\tDuration(sec)\t#Ev\tCompT(ms)\t%hiFrames\n{0}\t{1}\t{2}\t{3}\t{4}\n", fname, sigDuration, count, analysisDuration.TotalMilliseconds, pcHIF);
-            string str = string.Format("{0}\t{1}\t{2}\t{3}\t{4}", fname, sigDuration, count, analysisDuration.TotalMilliseconds, pcHIF);
-            StringBuilder sb = AcousticEvent.WriteEvents(predictedEvents, str);
-            FileTools.WriteTextFile(opPath, sb.ToString());
+            Csv.WriteToCsv(opPath.ToFileInfo(), predictedEvents);
 
             //draw images of sonograms
             string imagePath = outputDir + fname + ".png";

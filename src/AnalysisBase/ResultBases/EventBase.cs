@@ -19,7 +19,7 @@ namespace AnalysisBase.ResultBases
         private double eventStartSeconds;
 
         /// <summary>
-        /// Gets or sets the time the current audio segment is offset from the start of the file/recording.
+        /// Gets or sets the time (in seconds) from start of the file/recording to start of the current audio segment.
         /// </summary>
         /// <remarks>
         /// <see cref="EventStartSeconds"/> will always be greater than or equal to <see cref="SegmentStartSeconds"/>.
@@ -36,7 +36,7 @@ namespace AnalysisBase.ResultBases
         /// </summary>
         /// <remarks>
         /// 2017-09: This field USED to be offset relative to the current segment.
-        /// 2017-09: This field is NOW equivalent to <see cref="ResultBase.ResultStartSeconds"/>
+        /// 2017-09: This field is NOW equivalent to <see cref="ResultBase.ResultStartSeconds"/>.
         /// </remarks>
         public virtual double EventStartSeconds
         {
@@ -60,6 +60,13 @@ namespace AnalysisBase.ResultBases
         /// </summary>
         public virtual double? LowFrequencyHertz { get; protected set; }
 
+        /// <summary>
+        /// Sets both the Segment start and the Event start.
+        /// <paramref name="segmentStart"/> is measured relative to the start of the recording.
+        /// <paramref name="eventStartSegmentRelative"/> is measured relative to the start of the segment.
+        /// This method sets both <see cref="SegmentStartSeconds"/> and <see cref="EventStartSeconds"/> which
+        /// are both measured relative to the start of the recording.
+        /// </summary>
         protected void SetEventStartRelative(TimeSpan segmentStart, double eventStartSegmentRelative)
         {
             this.SegmentStartSeconds = segmentStart.TotalSeconds;
