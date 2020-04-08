@@ -100,8 +100,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// </summary>
         public double CalculateYAxisTickInterval(double sampleRate, double frameWidth)
         {
-                double freqBinWidth = sampleRate / frameWidth;
-                return (int)Math.Round(this.YAxisTicInterval / freqBinWidth);
+            double freqBinWidth = sampleRate / frameWidth;
+            return (int)Math.Round(this.YAxisTicInterval / freqBinWidth);
         }
 
         /// <summary>

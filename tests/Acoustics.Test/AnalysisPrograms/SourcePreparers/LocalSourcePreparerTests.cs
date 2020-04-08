@@ -1,14 +1,18 @@
+// <copyright file="LocalSourcePreparerTests.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
 namespace Acoustics.Test.AnalysisPrograms.SourcePreparers
 {
     using System;
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
+    using Acoustics.Test.TestHelpers;
     using global::AnalysisBase;
     using global::AnalysisBase.Segment;
     using global::AnalysisPrograms.SourcePreparers;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
 
     [TestClass]
     public class LocalSourcePreparerTests
@@ -153,7 +157,6 @@ namespace Acoustics.Test.AnalysisPrograms.SourcePreparers
                     {
                         var fileSegment = new FileSegment(this.sourceFile, TimeAlignment.TrimBoth);
                     });
-
         }
 
         [TestMethod]

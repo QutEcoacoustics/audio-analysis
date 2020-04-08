@@ -24,19 +24,19 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.ImageSharp;
-    using DSP;
-    using Indices;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.Indices;
+    using AudioAnalysisTools.LongDurationSpectrograms.Zooming;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using StandardSpectrograms;
     using TowseyLibrary;
-    using Zooming;
     using Path = System.IO.Path;
 
     public static class ZoomFocusedSpectrograms
@@ -307,15 +307,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// <summary>
         /// This method can add in the absolute recording start time. However currently disabled.
         /// </summary>
-        /// <param name="config">v</param>
-        /// <param name="indexGenerationData">indexGenerationData</param>
-        /// <param name="startTimeOfData">startTimeOfData</param>
-        /// <param name="compressionFactor">compressionFactor</param>
-        /// <param name="frameData">frameData</param>
-        /// <param name="indexData">indexData</param>
-        /// <param name="focalTime">focalTime</param>
-        /// <param name="frameScale">frameScale</param>
-        /// <param name="imageWidth">imageWidth</param>
+        /// <param name="config">v.</param>
+        /// <param name="indexGenerationData">indexGenerationData.</param>
+        /// <param name="startTimeOfData">startTimeOfData.</param>
+        /// <param name="compressionFactor">compressionFactor.</param>
+        /// <param name="frameData">frameData.</param>
+        /// <param name="indexData">indexData.</param>
+        /// <param name="focalTime">focalTime.</param>
+        /// <param name="frameScale">frameScale.</param>
+        /// <param name="imageWidth">imageWidth.</param>
         public static Image DrawFrameSpectrogramAtScale(
             LdSpectrogramConfig config,
             IndexGenerationData indexGenerationData,
@@ -368,7 +368,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     Pen pen = new Pen(Color.Red, 1);
                     g2.DrawLine(pen, x1, 0, x1, spectrogramImage.Height);
                 }
-
             });
 
             int nyquist = 22050 / 2; // default
@@ -491,9 +490,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         /// <summary>
         /// A FALSE-COLOUR VERSION OF DECIBEL SPECTROGRAM
-        ///         Taken and adapted from Spectrogram Image 5 in the method of CLASS Audio2InputForConvCNN.cs:
+        ///         Taken and adapted from Spectrogram Image 5 in the method of CLASS Audio2InputForConvCNN.cs:.
         /// </summary>
-        /// <param name="dbSpectrogramData">the sonogram data (NOT noise reduced) </param>
+        /// <param name="dbSpectrogramData">the sonogram data (NOT noise reduced). </param>
         public static Image<Rgb24> DrawStandardSpectrogramInFalseColour(double[,] dbSpectrogramData)
         {
             // Do NOISE REDUCTION

@@ -7,11 +7,11 @@ namespace AnalysisBase
     using System;
     using System.IO;
     using Acoustics.Shared.Contracts;
-    using Segment;
+    using AnalysisBase.Segment;
     using static Acoustics.Shared.FilenameHelpers;
 
     /// <summary>
-    /// Contains settings specific to the current block of audio that will be analyzed
+    /// Contains settings specific to the current block of audio that will be analyzed.
     /// </summary>
     public class SegmentSettingsBase
     {
@@ -68,7 +68,7 @@ namespace AnalysisBase
         public FileInfo SegmentAudioFile => this.PreparedFile.Source;
 
         /// <summary>
-        /// Gets or sets the events file for the analysis.
+        /// Gets the events file for the analysis.
         /// </summary>
         public FileInfo SegmentEventsFile { get; }
 

@@ -12,7 +12,7 @@ namespace AnalysisBase
     using System;
 
     /// <summary>
-    /// Determines if data should be saved per segment
+    /// Determines if data should be saved per segment.
     /// </summary>
     public enum SaveBehavior
     {

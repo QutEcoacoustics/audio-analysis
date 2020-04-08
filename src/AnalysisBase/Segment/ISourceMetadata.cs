@@ -7,7 +7,7 @@ namespace AnalysisBase.Segment
     using System;
 
     /// <summary>
-    /// Information about a source audio object
+    /// Information about a source audio object.
     /// </summary>
     internal interface ISourceMetadata
     {

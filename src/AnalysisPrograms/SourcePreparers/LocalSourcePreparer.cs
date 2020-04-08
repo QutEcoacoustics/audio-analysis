@@ -294,9 +294,6 @@ namespace AnalysisPrograms.SourcePreparers
         /// <param name="targetSampleRateHz">
         ///     The target Sample Rate Hz.
         /// </param>
-        /// <param name="temporaryFilesDirectory"></param>
-        /// <param name="channelSelection"></param>
-        /// <param name="mixDownToMono"></param>
         /// <returns>
         /// The prepared file. The returned FileSegment will have the targetFile and OriginalFileDuration set -
         /// these are the path to the segmented file and the duration of the segmented file.

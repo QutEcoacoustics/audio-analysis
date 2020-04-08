@@ -113,7 +113,7 @@ namespace AudioAnalysisTools
         /// <param name="minOscilFreq">minimum oscillation freq.</param>
         /// <param name="maxOscilFreq">maximum oscillation freq.</param>
         /// <param name="dctThreshold">threshold - do not accept a DCT coefficient if its value is less than this threshold.</param>
-        public static double[,] DetectOscillations(SpectrogramStandard sonogram, int minHz, int maxHz,double dctDuration, int minOscilFreq, int maxOscilFreq, double dctThreshold)
+        public static double[,] DetectOscillations(SpectrogramStandard sonogram, int minHz, int maxHz, double dctDuration, int minOscilFreq, int maxOscilFreq, double dctThreshold)
         {
             int minBin = (int)(minHz / sonogram.FBinWidth);
             int maxBin = (int)(maxHz / sonogram.FBinWidth);

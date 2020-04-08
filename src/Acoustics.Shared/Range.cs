@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="Range.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -21,10 +21,10 @@ namespace Acoustics.Shared
          * Note bit 1 is on the right.
          */
 #pragma warning disable SA1025 // Code should not contain multiple whitespace in a row
-        Open                = 0b0_1,
+        Open = 0b0_1,
         LeftClosedRightOpen = 0b0_0,
         LeftOpenRightClosed = 0b1_1,
-        Closed              = 0b1_0,
+        Closed = 0b1_0,
 #pragma warning restore SA1025 // Code should not contain multiple whitespace in a row
 
         Exclusive = Open,
@@ -307,21 +307,21 @@ namespace Acoustics.Shared
             switch (comparison)
             {
                 case -1:
-                {
-                    break;
-                }
+                    {
+                        break;
+                    }
 
                 case 0:
-                {
-                    result = isMaximumInclusive;
-                    break;
-                }
+                    {
+                        result = isMaximumInclusive;
+                        break;
+                    }
 
                 case 1:
-                {
-                    result = true;
-                    break;
-                }
+                    {
+                        result = true;
+                        break;
+                    }
             }
 
             return result;
@@ -330,6 +330,5 @@ namespace Acoustics.Shared
         private bool IsBothMinimumInclusive(Range<T> other) => this.IsMinimumInclusive && other.IsMinimumInclusive;
 
         private bool IsBothMaximumInclusive(Range<T> other) => this.IsMaximumInclusive && other.IsMaximumInclusive;
-
     }
 }

@@ -1,4 +1,4 @@
-﻿// <copyright file="ZoomTiledSpectrogramTests.cs" company="QutEcoacoustics">
+// <copyright file="ZoomTiledSpectrogramTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -15,12 +15,12 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms.Zooming
     {
         /// <summary>
         /// This method tests how far back we have to pad the first tile of a recording.
-        /// It's pretty complicated. 
+        /// It's pretty complicated.
         /// All tiles start from midnight UTC each day. Then a natural number of tiles
         /// fits within the day. The number of tiles with a day changes accoding to scale.
-        /// 
+        ///
         /// And then you add the subtly of timezone offsets (and rolling back past midnight).
-        /// 
+        ///
         /// We're only test a tile width of 180px because that is only what is used in prod
         /// at the moment.
         /// </summary>
@@ -29,21 +29,21 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms.Zooming
         [DataRow("2014-05-29T08:13:58.000+10:00", 180, 60.0, "2014-05-29T07:00:00.000+10:00")]
         [DataRow("2014-05-29T00:00:00.000+10:00", 180, 60.0, "2014-05-28T22:00:00.000+10:00")]
 
-        [DataRow("2014-05-29T08:13:58.000+10:00", 180, 1.0,  "2014-05-29T08:12:00.000+10:00")]
+        [DataRow("2014-05-29T08:13:58.000+10:00", 180, 1.0, "2014-05-29T08:12:00.000+10:00")]
 
         [DataRow("2014-05-29T08:13:58.000+10:00", 180, 0.10, "2014-05-29T08:13:48.000+10:00")]
 
-        [DataRow("2012-10-19T00:00:00.000+10:00", 180, 1.6,  "2012-10-18T14:00:00.000+00:00")]
-        [DataRow("2012-10-19T04:00:00.000+10:00", 180, 1.6,  "2012-10-18T18:00:00.000+00:00")]
-        [DataRow("2012-10-19T08:00:00.000+10:00", 180, 1.6,  "2012-10-18T22:00:00.000+00:00")]
-        [DataRow("2012-10-19T12:00:00.000+10:00", 180, 1.6,  "2012-10-19T02:00:00.000+00:00")]
-        [DataRow("2012-10-19T16:00:00.000+10:00", 180, 1.6,  "2012-10-19T06:00:00.000+00:00")]
-        [DataRow("2012-10-19T20:00:00.000+10:00", 180, 1.6,  "2012-10-19T10:00:00.000+00:00")]
+        [DataRow("2012-10-19T00:00:00.000+10:00", 180, 1.6, "2012-10-18T14:00:00.000+00:00")]
+        [DataRow("2012-10-19T04:00:00.000+10:00", 180, 1.6, "2012-10-18T18:00:00.000+00:00")]
+        [DataRow("2012-10-19T08:00:00.000+10:00", 180, 1.6, "2012-10-18T22:00:00.000+00:00")]
+        [DataRow("2012-10-19T12:00:00.000+10:00", 180, 1.6, "2012-10-19T02:00:00.000+00:00")]
+        [DataRow("2012-10-19T16:00:00.000+10:00", 180, 1.6, "2012-10-19T06:00:00.000+00:00")]
+        [DataRow("2012-10-19T20:00:00.000+10:00", 180, 1.6, "2012-10-19T10:00:00.000+00:00")]
 
-        [DataRow("2012-10-19T10:00:00.000+10:00", 180, 1.6,  "2012-10-19T00:00:00.000+00:00")]
+        [DataRow("2012-10-19T10:00:00.000+10:00", 180, 1.6, "2012-10-19T00:00:00.000+00:00")]
 
-        [DataRow("2012-10-19T13:57:36.000+10:00", 180, 1.6,  "2012-10-19T13:55:12.000+10:00")]
-        [DataRow("2012-10-19T13:59:59.000+10:00", 180, 1.6,  "2012-10-19T13:55:12.000+10:00")]
+        [DataRow("2012-10-19T13:57:36.000+10:00", 180, 1.6, "2012-10-19T13:55:12.000+10:00")]
+        [DataRow("2012-10-19T13:59:59.000+10:00", 180, 1.6, "2012-10-19T13:55:12.000+10:00")]
 
         [DataRow("2014-05-27T02:13:58.000+10:00", 180, 3.2, "2014-05-26T16:09:36.000+00:00")]
         [DataRow("2014-05-27T02:09:58.000+10:00", 180, 3.2, "2014-05-26T16:09:36.000+00:00")]
@@ -75,7 +75,6 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms.Zooming
 
             var expected = DateTimeOffset.Parse(expectedDate);
             Assert.AreEqual(expected, actual);
-
         }
     }
 }

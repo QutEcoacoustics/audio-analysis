@@ -22,7 +22,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// Actually the constructor of this class calls the BaseSonogram constructor that does NOT include a call to Make().
         /// Consequently this method should never be called. Just a place filler.
         /// </summary>
-        /// <param name="amplitudeM">amplitude sonogram</param>
+        /// <param name="amplitudeM">amplitude sonogram.</param>
         public override void Make(double[,] amplitudeM)
         {
         }

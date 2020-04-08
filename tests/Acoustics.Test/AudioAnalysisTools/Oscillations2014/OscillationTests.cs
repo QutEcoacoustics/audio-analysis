@@ -6,16 +6,16 @@ namespace Acoustics.Test.AudioAnalysisTools.Oscillations2014
 {
     using System.IO;
     using Acoustics.Shared;
+    using Acoustics.Test.TestHelpers;
     using global::AudioAnalysisTools;
     using global::AudioAnalysisTools.WavTools;
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using SixLabors.ImageSharp;
-    using TestHelpers;
     using Path = System.IO.Path;
 
     /// <summary>
-    /// Test for drawing of Oscillation Spectrogram
+    /// Test for drawing of Oscillation Spectrogram.
     /// </summary>
     [TestClass]
     public class OscillationTests
@@ -55,9 +55,10 @@ namespace Acoustics.Test.AudioAnalysisTools.Oscillations2014
         }
 
         /// <summary>
-        /// Test for drawing of two Oscillation Spectrograms using different algorithms
+        /// Test for drawing of two Oscillation Spectrograms using different algorithms.
         /// </summary>
         [TestMethod]
+
         // [Ignore("The update from 864f7a491e2ea0e938161bd390c1c931ecbdf63c possibly broke this test and I do not know how to repair it.
         // TODO @towsey")]
         public void TwoOscillationTests()

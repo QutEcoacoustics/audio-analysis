@@ -6,7 +6,6 @@ namespace AnalysisPrograms.StandardizedFeatures
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
@@ -20,6 +19,7 @@ namespace AnalysisPrograms.StandardizedFeatures
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.WavTools;
     using log4net;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
     using TowseyLibrary;

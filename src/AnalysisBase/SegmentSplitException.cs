@@ -12,7 +12,7 @@ namespace AnalysisBase
     /// </summary>
     public class SegmentSplitException : Exception
     {
-        /// <inheritdoc />
+        /// <inheritdoc cref="Exception(string?)" />
         public SegmentSplitException(string message)
             : base(message)
         {

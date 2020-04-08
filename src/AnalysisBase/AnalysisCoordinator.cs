@@ -19,13 +19,13 @@ namespace AnalysisBase
     using System.Threading;
     using System.Threading.Tasks;
     using Acoustics.Shared.Contracts;
+    using AnalysisBase.Segment;
     using log4net;
-    using Segment;
 
     /// <summary>
     /// Prepares, runs and completes analyses.
     ///
-    /// *** DO NOT CHANGE THIS CLASS UNLESS INSTRUCTED TOO ***
+    /// *** DO NOT CHANGE THIS CLASS UNLESS INSTRUCTED TOO ***.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -55,12 +55,10 @@ namespace AnalysisBase
         /// Initializes a new instance of the <see cref="AnalysisCoordinator"/> class but also allows for advanced
         /// channel mapping options.
         /// </summary>
-        /// <param name="sourcePreparer">The source preparer to use</param>
-        /// <param name="saveIntermediateWavFiles">Defines when intermediate WAVE files should be saved</param>
-        /// <param name="saveImageFiles">Defines when intermediate image files should be saved</param>
-        /// <param name="saveIntermediateDataFiles">Defines if intermediate data files should be saved</param>
-        /// <param name="isParallel">Whether or not to run the analysis with multiple threads</param>
-        /// <param name="uniqueDirectoryPerSegment">Whether or not to create unique directories per segment (in both temp and output directories)</param>
+        /// <param name="sourcePreparer">The source preparer to use.</param>
+        /// <param name="saveIntermediateWavFiles">Defines when intermediate WAVE files should be saved.</param>
+        /// <param name="isParallel">Whether or not to run the analysis with multiple threads.</param>
+        /// <param name="uniqueDirectoryPerSegment">Whether or not to create unique directories per segment (in both temp and output directories).</param>
         public AnalysisCoordinator(
             ISourcePreparer sourcePreparer,
             SaveBehavior saveIntermediateWavFiles,
@@ -161,7 +159,7 @@ namespace AnalysisBase
         /// <summary>
         /// Analyze one or more file segments using the same analysis and settings.
         /// Note each segment could be sourced from separate original audio files!
-        /// If using a remote source preparer the segments could even be downloaded from a remote source!
+        /// If using a remote source preparer the segments could even be downloaded from a remote source!.
         /// </summary>
         /// <param name="segments">
         /// The file Segments.
@@ -265,7 +263,7 @@ namespace AnalysisBase
             AnalysisSettings settings)
         {
             // ensure all segments are valid and have source metadata set
-            double duration = 0; 
+            double duration = 0;
             foreach (var segment in segments)
             {
                 var segmentDuration = segment.EndOffsetSeconds - segment.StartOffsetSeconds;
@@ -506,12 +504,6 @@ namespace AnalysisBase
         /// Create a directory for an analysis to be run.
         /// Will be in the form [analysisId][sep][token][sep][...files...].
         /// </summary>
-        /// <param name="analysisBaseDirectory">
-        /// The analysis Base Directory.
-        /// </param>
-        /// <param name="analysisIdentifier">
-        /// Analysis Identifier.
-        /// </param>
         /// <param name="unique">Whether or not we are using the unique folder scheme.</param>
         /// <returns>
         /// The created directory.
@@ -569,7 +561,7 @@ namespace AnalysisBase
 
             // much dodgy, such parallelism, so dining philosopher...
             int finished = 0;
-            
+
             void DelegateBody(ISegment<TSource> item, ParallelLoopState state, long index)
             {
                 Interlocked.Increment(ref currentConcurrency);

@@ -6,21 +6,20 @@ namespace AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.Globalization;
     using System.IO;
     using System.Linq;
-    using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.ImageSharp;
-    using DSP;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
     using MathNet.Numerics.LinearAlgebra;
     using MathNet.Numerics.LinearAlgebra.Double;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using StandardSpectrograms;
     using TowseyLibrary;
-    using WavTools;
     using Path = System.IO.Path;
 
     /// <summary>
@@ -57,7 +56,7 @@ namespace AudioAnalysisTools
         public static double DefaultSensitivityThreshold = 0.4;
 
         /// <summary>
-        /// In line class used to return results from the static method Oscillations2014.GetFreqVsOscillationsDataAndImage();
+        /// In line class used to return results from the static method Oscillations2014.GetFreqVsOscillationsDataAndImage().
         /// </summary>
         public class FreqVsOscillationsResult
         {
@@ -82,6 +81,7 @@ namespace AudioAnalysisTools
         {
             {
                 var sourceRecording = @"C:\Work\GitHub\audio-analysis\tests\Fixtures\Recordings\BAC2_20071008-085040.wav".ToFileInfo();
+
                 //var sourceRecording = @"C:\Work\GitHub\audio-analysis\tests\Fixtures\Recordings\BAC2_20071008-085040_seconds30to32.wav".ToFileInfo();
                 //var sourceRecording = @"C:\Work\GitHub\audio-analysis\tests\Fixtures\Recordings\BAC2_20071008-085040_seconds45to46.wav".ToFileInfo();
                 //var sourceRecording = @"C:\Work\GitHub\audio-analysis\tests\Fixtures\Recordings\BAC2_20071008-085040_seconds49to49.wav".ToFileInfo();
@@ -89,6 +89,7 @@ namespace AudioAnalysisTools
                 var sourceName = Path.GetFileNameWithoutExtension(sourceRecording.Name);
                 var fileName1 = sourceName + ".FreqOscilSpectrogram7";
                 var fileName2 = sourceName + ".FreqOscilDataMatrix7";
+
                 //var fileName3 = sourceName + ".SpectralIndex7.OSC";
 
                 var expectedResultsDir = new DirectoryInfo(Path.Combine(output.FullName, TestTools.ExpectedResultsDir));
@@ -132,12 +133,13 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        /// test method for getting a spectral index of oscillation values
+        /// test method for getting a spectral index of oscillation values.
         /// </summary>
         public static void TESTMETHOD_GetSpectralIndex_Osc()
         {
             // 1. set up the resources
             var sourceRecording = @"C:\Work\GitHub\audio-analysis\tests\Fixtures\Recordings\BAC2_20071008-085040.wav".ToFileInfo();
+
             //var sourceRecording = @"C:\Work\GitHub\audio-analysis\tests\Fixtures\Recordings\BAC2_20071008-085040_seconds30to32.wav".ToFileInfo();
             //var sourceRecording = @"C:\Work\GitHub\audio-analysis\tests\Fixtures\Recordings\BAC2_20071008-085040_seconds45to46.wav".ToFileInfo();
             //var sourceRecording = @"C:\Work\GitHub\audio-analysis\tests\Fixtures\Recordings\BAC2_20071008-085040_seconds49to49.wav".ToFileInfo();
@@ -194,7 +196,7 @@ namespace AudioAnalysisTools
                 [AnalysisKeys.AddSegmentationTrack] = "true",
                 [AnalysisKeys.OscilDetection2014SampleLength] = DefaultSampleLength.ToString(CultureInfo.CurrentCulture),
                 [AnalysisKeys.OscilDetection2014SensitivityThreshold] = DefaultSensitivityThreshold.ToString(CultureInfo.CurrentCulture),
-        };
+            };
 
             // print out the sonogram parameters
             LoggedConsole.WriteLine("\nPARAMETERS");
@@ -220,8 +222,8 @@ namespace AudioAnalysisTools
                 // ####################################################################
 
                 [AnalysisKeys.ResampleRate] = configuration[AnalysisKeys.ResampleRate] ?? "22050",
-                [AnalysisKeys.AddAxes] = (configuration.GetBoolOrNull(AnalysisKeys.AddAxes) ?? true ).ToString(),
-                [AnalysisKeys.AddSegmentationTrack] = (configuration.GetBoolOrNull(AnalysisKeys.AddSegmentationTrack) ?? true ).ToString(),
+                [AnalysisKeys.AddAxes] = (configuration.GetBoolOrNull(AnalysisKeys.AddAxes) ?? true).ToString(),
+                [AnalysisKeys.AddSegmentationTrack] = (configuration.GetBoolOrNull(AnalysisKeys.AddSegmentationTrack) ?? true).ToString(),
                 [AnalysisKeys.AddTimeScale] = configuration[AnalysisKeys.AddTimeScale] ?? "true",
                 [AnalysisKeys.AddAxes] = configuration[AnalysisKeys.AddAxes] ?? "true",
             };
@@ -344,7 +346,7 @@ namespace AudioAnalysisTools
         /// <summary>
         /// Only call this method for short recordings.
         /// If accumulating data for long recordings then call the method for long recordings - i.e.
-        /// double[] spectralIndex = GenerateOscillationDataAndImages(FileInfo audioSegment, Dictionary configDict, false, false);
+        /// double[] spectralIndex = GenerateOscillationDataAndImages(FileInfo audioSegment, Dictionary configDict, false, false).
         /// </summary>
         public static FreqVsOscillationsResult GetFreqVsOscillationsDataAndImage(BaseSonogram sonogram, string algorithmName)
         {
@@ -383,12 +385,12 @@ namespace AudioAnalysisTools
         /// The y-axis scale = frequency bins as per normal spectrogram.
         /// The x-axis scale is oscillations per second.
         /// </summary>
-        /// <param name="freqOscilMatrix">the input frequency/oscillations matrix</param>
-        /// <param name="framesPerSecond">to give the time scale</param>
-        /// <param name="freqBinWidth">to give the frequency scale</param>
-        /// <param name="sampleLength">to allow calculation of the oscillations scale</param>
+        /// <param name="freqOscilMatrix">the input frequency/oscillations matrix.</param>
+        /// <param name="framesPerSecond">to give the time scale.</param>
+        /// <param name="freqBinWidth">to give the frequency scale.</param>
+        /// <param name="sampleLength">to allow calculation of the oscillations scale.</param>
         /// <param name="algorithmName">the algorithm used to compute the oscillations.</param>
-        /// <returns>bitmap image</returns>
+        /// <returns>bitmap image.</returns>
         public static Image<Rgb24> GetFreqVsOscillationsImage(double[,] freqOscilMatrix, double framesPerSecond, double freqBinWidth, int sampleLength, string algorithmName)
         {
             // remove the high cycles/sec end of the matrix because nothing really happens here.
@@ -435,7 +437,7 @@ namespace AudioAnalysisTools
             image = ImageTools.DrawXaxisScale(image, 15, cycleInterval, xTicInterval, 10, -xOffset);
 
             var titleBar = DrawTitleBarOfOscillationSpectrogram(algorithmName, image.Width);
-            var imageList = new [] { titleBar, image };
+            var imageList = new[] { titleBar, image };
             var compositeBmp = (Image<Rgb24>)ImageTools.CombineImagesVertically(imageList);
             return compositeBmp;
         }
@@ -458,14 +460,14 @@ namespace AudioAnalysisTools
                 }
                 else // get average of three bins
                     if (bin == freqBinCount - 1)
-                    {
-                        subM = MatrixTools.Submatrix(spectrogram, 0, bin - 2, frameCount - 1, bin);
-                    }
-                    else
-                    {
-                        // get average of three bins
-                        subM = MatrixTools.Submatrix(spectrogram, 0, bin - 1, frameCount - 1, bin + 1);
-                    }
+                {
+                    subM = MatrixTools.Submatrix(spectrogram, 0, bin - 2, frameCount - 1, bin);
+                }
+                else
+                {
+                    // get average of three bins
+                    subM = MatrixTools.Submatrix(spectrogram, 0, bin - 1, frameCount - 1, bin + 1);
+                }
 
                 var freqBin = MatrixTools.GetRowAverages(subM);
 
@@ -511,8 +513,8 @@ namespace AudioAnalysisTools
         /// Returns a matrix whose columns consist of autocorrelations of freq bin samples.
         /// The columns are non-overlapping.
         /// </summary>
-        /// <param name="signal">an array corresponding to one frequency bin</param>
-        /// <param name="sampleLength">the length of a sample or patch (non-overllapping) for which xcerrelation is obtained</param>
+        /// <param name="signal">an array corresponding to one frequency bin.</param>
+        /// <param name="sampleLength">the length of a sample or patch (non-overllapping) for which xcerrelation is obtained.</param>
         public static double[,] GetXcorrByTimeMatrix(double[] signal, int sampleLength)
         {
             // NormaliseMatrixValues freq bin values to z-score. This is required else get spurious results
@@ -550,11 +552,11 @@ namespace AudioAnalysisTools
         /// #
         ///  NOTE: There should only be one dominant oscillation in any one freq band at one time.
         ///        Birds with oscillating calls do call simultaneously, but this technique will only pick up the dominant call.
-        /// #
+        /// #.
         /// </summary>
-        /// <param name="xCorrByTimeMatrix">double[,] xCorrelationsByTime = new double[sampleLength, sampleCount]; </param>
-        /// <param name="sensitivity">can't remember what this does</param>
-        /// <param name="binNumber">only used when debugging</param>
+        /// <param name="xCorrByTimeMatrix">double[,] xCorrelationsByTime = new double[sampleLength, sampleCount]. </param>
+        /// <param name="sensitivity">can't remember what this does.</param>
+        /// <param name="binNumber">only used when debugging.</param>
         public static double[] GetOscillationArrayUsingSvdAndFft(double[,] xCorrByTimeMatrix, double sensitivity, int binNumber)
         {
             int xCorrLength = xCorrByTimeMatrix.GetLength(0);
@@ -670,11 +672,11 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        /// returns an oscillation array for a single frequency bin
+        /// returns an oscillation array for a single frequency bin.
         /// </summary>
-        /// <param name="xCorrByTimeMatrix">derived from single frequency bin</param>
-        /// <param name="sensitivity">a threshold used to ignore low ascillation intensities</param>
-        /// <returns>vector of oscillation values</returns>
+        /// <param name="xCorrByTimeMatrix">derived from single frequency bin.</param>
+        /// <param name="sensitivity">a threshold used to ignore low ascillation intensities.</param>
+        /// <returns>vector of oscillation values.</returns>
         public static double[] GetOscillationArrayUsingFft(double[,] xCorrByTimeMatrix, double sensitivity)
         {
             int xCorrLength = xCorrByTimeMatrix.GetLength(0);
@@ -906,7 +908,7 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        /// returns oscillations using the DCT
+        /// returns oscillations using the DCT.
         /// </summary>
         public static void GetOscillationUsingDct(double[] array, double framesPerSecond, double[,] cosines, out double oscilFreq, out double period, out double intenisty)
         {
@@ -939,11 +941,11 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        ///  Adjusts sample length i.e. patch size for short recordings
+        ///  Adjusts sample length i.e. patch size for short recordings.
         /// </summary>
-        /// <param name="framecount">number of frames in the frequency bin to be processed</param>
-        /// <param name="sampleLength">the number of frames to be included in each patch</param>
-        /// <returns>appropriately reduced patch size</returns>
+        /// <param name="framecount">number of frames in the frequency bin to be processed.</param>
+        /// <param name="sampleLength">the number of frames to be included in each patch.</param>
+        /// <returns>appropriately reduced patch size.</returns>
         public static int AdjustSampleSize(int framecount, int sampleLength)
         {
             if (framecount < sampleLength * 4)
@@ -963,8 +965,6 @@ namespace AudioAnalysisTools
 
             return sampleLength;
         }
-
-
 
         private static Image<Rgb24> DrawTitleBarOfOscillationSpectrogram(string algorithmName, int width)
         {

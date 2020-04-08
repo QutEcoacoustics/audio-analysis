@@ -1,10 +1,14 @@
+// <copyright file="SoxSpectrogramUtility.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
 namespace Acoustics.Tools.Audio
 {
     using System;
     using System.Diagnostics;
     using System.IO;
 
-    using Shared;
+    using Acoustics.Shared;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.Advanced;
     using SixLabors.ImageSharp.PixelFormats;
@@ -95,7 +99,10 @@ namespace Acoustics.Tools.Audio
 
             var audioUtilRequest = new AudioUtilityRequest
             {
-                OffsetStart = request.Start, OffsetEnd = request.End, MixDownToMono = true, TargetSampleRate = 22050
+                OffsetStart = request.Start,
+                OffsetEnd = request.End,
+                MixDownToMono = true,
+                TargetSampleRate = 22050
             };
 
             this.audioUtility.Modify(source, sourceMimeType, wavFile, MediaTypes.MediaTypeWav, audioUtilRequest);
@@ -137,7 +144,6 @@ namespace Acoustics.Tools.Audio
                     width,
                     request.Height ?? sourceRectangle.Height);
 
-
                 var destRectangle = new Rectangle(0, 0, requestedImage.Width, requestedImage.Height);
                 requestedImage.DrawImage(sourceImage, destRectangle, sourceRectangle);
 
@@ -166,7 +172,6 @@ namespace Acoustics.Tools.Audio
                 {
                     requestedImage.Save(output.FullName, encoder);
                 }
-
             }
 
             originalSoxFile.Delete();
@@ -209,8 +214,6 @@ a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
 "C:\Work\Software Dev\svn-trunk\Extra Assemblies\sox\sox.exe" -V "C:\Work\Software Dev\test-audio\cane toad_20120523_082701.wav" -n rate 22050 spectrogram -m -l -a -q 249 -Z 0 -z 150 -y 257 -X 43.0664 -o "cane toad_20120523_082701.png" -w hann
              * " -V \"{0}\"  -n rate 22050 spectrogram -m -l -a -q 249 -Z 0 -z 150 -y 257 -X 43.0664 -o \"{1}\" -w hann",
     */
-
-
         }
     }
 }

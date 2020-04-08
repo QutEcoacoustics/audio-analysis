@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="EnumerableExtensionsTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -139,7 +139,7 @@ namespace Acoustics.Test
         [TestMethod]
         public void TestWindowedFunctionSingleItem()
         {
-            var input = new[] { 3};
+            var input = new[] { 3 };
 
             var windowed = input.Windowed(2);
             Assert.AreEqual(0, windowed.Count());
@@ -160,8 +160,6 @@ namespace Acoustics.Test
             Assert.AreEqual(expected.Length, windowed.Count());
             windowed.ForEach((ints, i) => CollectionAssert.AreEqual(expected[i], ints));
         }
-
-
 
         [TestMethod]
         public void TestWindowedOrDefaultFunction()
@@ -192,7 +190,6 @@ namespace Acoustics.Test
             windowed.ForEach((ints, i) => CollectionAssert.AreEqual(expected[i], ints));
         }
 
-
         [TestMethod]
         public void TestWindowedOrDefaultFunctionSize3()
         {
@@ -212,7 +209,7 @@ namespace Acoustics.Test
         [TestMethod]
         public void TestWindowedOrDefaultFunctionSize4()
         {
-            var input = new[] { 3, 4, 5, 6};
+            var input = new[] { 3, 4, 5, 6 };
             int[][] expected =
                 {
                     new[] { 0, 0, 0, 3 }, new[] { 0, 0, 3, 4 },

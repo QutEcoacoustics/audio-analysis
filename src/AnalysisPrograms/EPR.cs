@@ -10,12 +10,12 @@ namespace AnalysisPrograms
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
+    using AnalysisPrograms.Production.Arguments;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using McMaster.Extensions.CommandLineUtils;
-    using Production.Arguments;
     using TowseyLibrary;
 
     /// <summary>
@@ -117,44 +117,6 @@ namespace AnalysisPrograms
     ///
     ///
     ///
-    /// ###############################################################################################################
-    /// HOW TO CALL F# METHODS FROM C# CODE.
-    /// Use: Can call Brad's F# methods for AED and EPR, especially the spidering method.
-    ///
-    /// var binaryMatrix = ConvertSpectrogram2Binary(spectrogram, threshold);
-    /// var matrix       = Microsoft.FSharp.Math.MatrixModule.ofArray2D(binaryMatrix);
-    /// var aeList       = Acoustics.AED.GetAcousticEvents.getAcousticEvents(matrix);
-    ///
-    /// more info here:
-    /// http://stackoverflow.com/questions/271966/about-using-f-to-create-a-matrix-assembly-usable-from-c
-    ///
-    /// More generally can use F# for matrix manipulations as follows:
-    ///
-    /// using System;
-    /// using System.Text;
-    /// using Microsoft.FSharp.Math;
-    ///
-    /// namespace CSharp
-    /// {
-    ///   class Program
-    ///   {
-    ///     static void Main(string[] args)
-    ///     {
-    ///       // declare two matrices in C# type
-    ///       double[,] x = { { 1.0, 2.0 }, { 4.0, 5.0 } };
-    ///       double[,] y = { { 1.0, 2.0 }, { 7.0, 8.0 } };
-    ///       // convert the two matrices to F# type
-    ///       Matrix<double> m1 = MatrixModule.of_array2(x);
-    ///       Matrix<double> m2 = MatrixModule.of_array2(y);
-    ///       // perform the F# operation
-    ///       var mp = m1 * m2;
-    ///       // convert the F# output back to C# type.
-    ///       var output = mp.ToArray2();
-    ///       LoggedConsole.WriteLine(output.ToString());
-    ///       Console.ReadKey();
-    ///     }
-    /// }
-    ///         [Obsolete("See https://github.com/QutBioacoustics/audio-analysis/issues/134")]
     /// </summary>
     public class EPR
     {
@@ -222,10 +184,10 @@ namespace AnalysisPrograms
             int maxHz = int.Parse(dict["MAX_HZ"]);
 
             // oscillation OD parameters
-            double dctDuration = double.Parse(dict[OscillationRecogniser.key_DCT_DURATION]);   // 2.0; // seconds
-            double dctThreshold = double.Parse(dict[OscillationRecogniser.key_DCT_THRESHOLD]);  // 0.5;
-            int minOscilFreq = int.Parse(dict[OscillationRecogniser.key_MIN_OSCIL_FREQ]);  // 4;
-            int maxOscilFreq = int.Parse(dict[OscillationRecogniser.key_MAX_OSCIL_FREQ]);  // 5;
+            double dctDuration = double.Parse(dict[OscillationRecogniser.Key_DCT_DURATION]);   // 2.0; // seconds
+            double dctThreshold = double.Parse(dict[OscillationRecogniser.Key_DCT_THRESHOLD]);  // 0.5;
+            int minOscilFreq = int.Parse(dict[OscillationRecogniser.Key_MIN_OSCIL_FREQ]);  // 4;
+            int maxOscilFreq = int.Parse(dict[OscillationRecogniser.Key_MAX_OSCIL_FREQ]);  // 5;
             bool normaliseDCT = false;
 
             // iii initialize the sonogram config class.
@@ -238,9 +200,10 @@ namespace AnalysisPrograms
             // iv: generate the sonogram
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
 
-            Log.WriteLine("Frames: Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f2}%, Offset={3:f1}ms, Frames/s={4:f1}",
-                                       sonogram.Configuration.WindowSize, sonogram.FrameCount, sonogram.FrameDuration * 1000,
-                                       sonogram.FrameStep * 1000, sonogram.FramesPerSecond, frameOverlap);
+            Log.WriteLine(
+                "Frames: Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f2}%, Offset={3:f1}ms, Frames/s={4:f1}",
+                sonogram.Configuration.WindowSize, sonogram.FrameCount, sonogram.FrameDuration * 1000,
+                sonogram.FrameStep * 1000, sonogram.FramesPerSecond, frameOverlap);
             int binCount = (int)(maxHz / sonogram.FBinWidth) - (int)(minHz / sonogram.FBinWidth) + 1;
             Log.WriteIfVerbose("Freq band: {0} Hz - {1} Hz. (Freq bin count = {2})", minHz, maxHz, binCount);
 
@@ -267,8 +230,14 @@ namespace AnalysisPrograms
 
             // #############################################################################################################################################
             // vi: look for oscillation at required OR for ground parrots.
-            double[] odScores = Oscillations2010.DetectOscillationsInScoreArray(dBArray, dctDuration, sonogram.FramesPerSecond, dctThreshold,
-                                                    normaliseDCT, minOscilFreq, maxOscilFreq);
+            double[] odScores = Oscillations2010.DetectOscillationsInScoreArray(
+                dBArray,
+                dctDuration,
+                sonogram.FramesPerSecond,
+                dctThreshold,
+                normaliseDCT,
+                minOscilFreq,
+                maxOscilFreq);
 
             //odScores = SNR.NoiseSubtractMode(odScores, out Q, out SD);
             double maxOD = 1.0;
@@ -355,9 +324,6 @@ namespace AnalysisPrograms
         /// <summary>
         /// reutrns the difference between the maximum dB value in a retangular location and the average of the boundary dB values.
         /// </summary>
-        /// <param name="sonogram"></param>
-        /// <param name="ob"></param>
-        /// <returns></returns>
         public static double GetLocationScore(BaseSonogram sonogram, Oblong ob)
         {
             double max = -double.MaxValue;

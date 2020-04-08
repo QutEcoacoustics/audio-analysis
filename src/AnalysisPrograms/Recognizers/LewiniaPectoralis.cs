@@ -12,19 +12,19 @@ namespace AnalysisPrograms.Recognizers
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Reflection;
     using Acoustics.Shared.ConfigFile;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
+    using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-    using Base;
     using log4net;
+    using SixLabors.ImageSharp;
     using TowseyLibrary;
     using static Acoustics.Shared.FilenameHelpers;
 
@@ -175,6 +175,7 @@ namespace AnalysisPrograms.Recognizers
                 {
                     var imageName = AnalysisResultName(recording.BaseName, this.SpeciesName, "png", "DebugSpectrogram");
                     var debugPath = outputDirectory.Combine(imageName);
+
                     //debugImage.Save(debugPath.FullName);
                 }
 
@@ -217,14 +218,8 @@ namespace AnalysisPrograms.Recognizers
         }
 
         /// <summary>
-        /// THE KEY ANALYSIS METHOD
+        /// THE KEY ANALYSIS METHOD.
         /// </summary>
-        /// <param name="recording"></param>
-        /// <param name="sonoConfig"></param>
-        /// <param name="lrConfig"></param>
-        /// <param name="returnDebugImage"></param>
-        /// <param name="segmentStartOffset"></param>
-        /// <returns></returns>
         private static Tuple<BaseSonogram, double[,], double[], List<AcousticEvent>, Image> Analysis(
             AudioRecording recording,
             SonogramConfig sonoConfig,
@@ -390,7 +385,7 @@ namespace AnalysisPrograms.Recognizers
             }
         }
 
-        private static Image DrawDebugImage(BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> scores, double[,] hits)
+        private static new Image DrawDebugImage(BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> scores, double[,] hits)
         {
             const bool doHighlightSubband = false;
             const bool add1KHzLines = true;

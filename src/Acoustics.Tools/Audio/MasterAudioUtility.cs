@@ -506,6 +506,7 @@ namespace Acoustics.Tools.Audio
                 throw new InvalidOperationException(
                     $"Source files must be the same: {info.SourceFile} != {extra.SourceFile}.");
             }
+
             if (info.SourceFile != null)
             {
                 result.SourceFile = info.SourceFile;
@@ -595,5 +596,4 @@ namespace Acoustics.Tools.Audio
             return result;
         }
     }
-
 }

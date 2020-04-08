@@ -1,4 +1,4 @@
-// <copyright file="PcaWhiteningTest.cs" company="QutEcoacoustics">
+// <copyright file="KmeansClusteringTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -6,21 +6,20 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using Accord.MachineLearning;
     using Accord.Math;
-    using Acoustics.Shared;
     using Acoustics.Shared.Csv;
     using Acoustics.Shared.ImageSharp;
+    using Acoustics.Test.TestHelpers;
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.StandardSpectrograms;
     using global::AudioAnalysisTools.WavTools;
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
-    using TestHelpers;
     using Path = System.IO.Path;
 
     [TestClass]

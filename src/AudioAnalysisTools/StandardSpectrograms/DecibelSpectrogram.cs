@@ -4,21 +4,21 @@
 
 namespace AudioAnalysisTools.StandardSpectrograms
 {
-    using SixLabors.ImageSharp;
     using Acoustics.Tools.Wav;
-    using DSP;
+    using AudioAnalysisTools.DSP;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
 
     /// <summary>
-    /// There are two constructors
+    /// There are two constructors.
     /// </summary>
     public class DecibelSpectrogram
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="DecibelSpectrogram"/> class.
         /// This constructor requires config and audio objects
-        /// It creates an amplitude spectrogram
+        /// It creates an amplitude spectrogram.
         /// </summary>
         public DecibelSpectrogram(SpectrogramSettings config, WavReader wav)
             : this(new AmplitudeSpectrogram(config, wav))
@@ -85,10 +85,10 @@ namespace AudioAnalysisTools.StandardSpectrograms
             //the spectrogram data matrix
             int featureCount = sg.Data.GetLength(1);
             this.Data = new double[frameCount, featureCount];
-            for (int i = 0; i < frameCount; i++) //each row of matrix is a frame
-            {
-                for (int j = 0; j < featureCount; j++) //each col of matrix is a feature
-                {
+            // each row of matrix is a frame
+            for (int i = 0; i < frameCount; i++)            {
+                // each col of matrix is a feature
+                for (int j = 0; j < featureCount; j++)                {
                     this.Data[i, j] = sg.Data[startFrame + i, j];
                 }
             }
@@ -100,12 +100,12 @@ namespace AudioAnalysisTools.StandardSpectrograms
         public SpectrogramAttributes Attributes { get; set; }
 
         /// <summary>
-        /// Gets or sets the spectrogram data matrix of doubles
+        /// Gets or sets the spectrogram data matrix of doubles.
         /// </summary>
         public double[,] Data { get; set; }
 
         /// <summary>
-        /// Gets or sets instance of class SNR that stores info about signal energy and dB per frame
+        /// Gets or sets instance of class SNR that stores info about signal energy and dB per frame.
         /// </summary>
         public SNR SnrData { get; set; }
 
@@ -117,14 +117,14 @@ namespace AudioAnalysisTools.StandardSpectrograms
         // TODO The following properties need to be calculated within the DecibelSpectrogram class.
 
         /// <summary>
-        /// Gets or sets decibels per signal frame
+        /// Gets or sets decibels per signal frame.
         /// </summary>
         public double[] DecibelsPerFrame { get; set; }
 
         public double[] DecibelsNormalised { get; set; }
 
         /// <summary>
-        /// Gets or sets decibel reference with which to NormaliseMatrixValues the dB values for MFCCs
+        /// Gets or sets decibel reference with which to NormaliseMatrixValues the dB values for MFCCs.
         /// </summary>
         public double DecibelReference { get; protected set; }
 

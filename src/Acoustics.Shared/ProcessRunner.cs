@@ -33,7 +33,7 @@ namespace Acoustics.Shared
         /// Initializes a new instance of the <see cref="ProcessRunner"/> class.
         /// </summary>
         /// <remarks>
-        /// The <code>KillProcessOnWaitTimeout</code> flag was removed to control complexity.
+        /// The. <code>KillProcessOnWaitTimeout</code> flag was removed to control complexity.
         /// </remarks>
         /// <param name="filePath">
         /// The file path.
@@ -84,7 +84,7 @@ namespace Acoustics.Shared
         /// Gets or sets wait for the set number of milliseconds for the process to exit.
         /// </summary>
         /// <remarks>
-        /// The default value <code>-1</code>, or any value less than <code>0</code>,
+        /// The default value. <code>-1</code>, or any value less than. <code>0</code>,
         /// means we will wait indefinitely for process exit.
         /// </remarks>
         public int WaitForExitMilliseconds { get; set; } = -1;
@@ -380,7 +380,7 @@ namespace Acoustics.Shared
                     // https://msdn.microsoft.com/en-us/library/ty0d8k56(v=vs.110).aspx
                     // When standard output has been redirected to asynchronous event handlers,
                     // it is possible that output processing will not have completed when this method returns.
-                    // To ensure that asynchronous event handling has been completed, call the WaitForExit() 
+                    // To ensure that asynchronous event handling has been completed, call the WaitForExit()
                     // overload that takes no parameter after receiving a true from this overload.
                     if (exited)
                     {

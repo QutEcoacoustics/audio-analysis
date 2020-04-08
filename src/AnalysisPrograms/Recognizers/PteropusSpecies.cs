@@ -1,10 +1,6 @@
-// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="PteropusSpecies.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
-// <summary>
-//   This is a recognizer for the Australian Flying Fox.
-//   Since there are several species, this project is started using only the generic name for Flying Foxes.
 
 // As of August 2019, the Flying Fox TERRITORIAL CALL recogniser employs the following steps:
 // 1. Break long recordings into one-minute segments.
@@ -60,7 +56,7 @@ namespace AnalysisPrograms.Recognizers
 
         // The default window for Pteropus sp. Need to be fixed for accurately detecting wing beat oscillations.
         private static readonly int DefaultWindow = 512;
-        
+
         public override string Author => "Towsey";
 
         public override string SpeciesName => "PteropusSpecies";
@@ -231,6 +227,7 @@ namespace AnalysisPrograms.Recognizers
         private static List<AcousticEvent> FilterEventsForSpectralProfile(List<AcousticEvent> events, BaseSonogram sonogram)
         {
             double[,] spectrogramData = sonogram.Data;
+
             //int colCount = spectrogramData.GetLength(1);
 
             // The following freq bins are used to demarcate freq bands for spectral tests below.
@@ -243,6 +240,7 @@ namespace AnalysisPrograms.Recognizers
             foreach (AcousticEvent ae in events)
             {
                 int startFrame = ae.Oblong.RowTop;
+
                 //int endFrame = ae.Oblong.RowBottom;
 
                 // get all the frames of the acoustic event
@@ -254,6 +252,7 @@ namespace AnalysisPrograms.Recognizers
                 var normalisedSpectrum = DataTools.normalise(spectrum);
                 normalisedSpectrum = DataTools.filterMovingAverageOdd(normalisedSpectrum, 11);
                 var maxId = DataTools.GetMaxIndex(normalisedSpectrum);
+
                 //var hzMax = (int)Math.Ceiling(maxId * sonogram.FBinWidth);
 
                 // Do TESTS to determine if event has spectrum matching a Flying fox.
@@ -312,6 +311,7 @@ namespace AnalysisPrograms.Recognizers
         private static RecognizerResults WingBeats(AudioRecording audioRecording, Config configuration, string profileName, TimeSpan segmentStartOffset)
         {
             ConfigFile.TryGetProfile(configuration, profileName, out var profile);
+
             // get the common properties
             string speciesName = configuration[AnalysisKeys.SpeciesName] ?? "Pteropus species";
             string abbreviatedSpeciesName = configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "Pteropus";
@@ -362,6 +362,7 @@ namespace AnalysisPrograms.Recognizers
                 (SpectrogramStandard)sonogram,
                 minHz,
                 maxHz,
+
                 //decibelThreshold,
                 dctDuration,
                 (int)Math.Floor(minOscFreq),

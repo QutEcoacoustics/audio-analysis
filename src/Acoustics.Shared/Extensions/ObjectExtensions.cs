@@ -9,7 +9,7 @@ namespace System
 
 // ReSharper restore CheckNamespace
 {
-    using Collections.Generic;
+    using System.Collections.Generic;
     using JetBrains.Annotations;
 
     /// <summary>

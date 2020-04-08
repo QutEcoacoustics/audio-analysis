@@ -17,12 +17,12 @@ namespace AnalysisBase
 
     using Acoustics.Shared.ConfigFile;
 
-    using ResultBases;
+    using AnalysisBase.ResultBases;
 
     /// <summary>
     /// Interface a compatible analysis must implement.
     /// This is a strong typed version of <c>IAnalyser</c> intentionally removed from the old inheritance tree.
-    /// DO NOT MODIFY THIS FILE UNLESS INSTRUCTED TO!
+    /// DO NOT MODIFY THIS FILE UNLESS INSTRUCTED TO!.
     /// </summary>
     public interface IAnalyser2
     {
@@ -47,7 +47,7 @@ namespace AnalysisBase
         AnalysisSettings DefaultSettings { get; }
 
         /// <summary>
-        /// An (optional) method for returning a strongly typed config file
+        /// An (optional) method for returning a strongly typed config file.
         /// </summary>
         /// <param name="file">The file that represents the config to read.</param>
         /// <returns>Ideally a strongly typed config, but as a fallback, a base <see cref="Config"/> can be returned.</returns>
@@ -90,7 +90,6 @@ namespace AnalysisBase
         /// Ensures abstract types are downcast by the analyzer and written to file.
         /// </summary>
         /// <param name="destination">The file to write to.</param>
-        /// <param name="fileNameBase"></param>
         /// <param name="results">The results to write.</param>
         List<FileInfo> WriteSpectrumIndicesFiles(DirectoryInfo destination, string fileNameBase, IEnumerable<SpectralIndexBase> results);
 

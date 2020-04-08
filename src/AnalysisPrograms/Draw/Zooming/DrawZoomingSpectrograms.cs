@@ -6,12 +6,10 @@
 namespace AnalysisPrograms.Draw.Zooming
 {
     using System;
+    using AnalysisPrograms.Production;
     using AudioAnalysisTools.LongDurationSpectrograms;
     using AudioAnalysisTools.LongDurationSpectrograms.Zooming;
     using log4net;
-    using Production;
-
-    using Acoustics.Shared.Contracts;
 
     /// <summary>
     /// Renders index data as false color images at various scales, with various styles.

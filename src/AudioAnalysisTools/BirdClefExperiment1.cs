@@ -6,11 +6,11 @@ namespace AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using System.Text;
-    using Indices;
+    using AudioAnalysisTools.Indices;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
     using Path = System.IO.Path;
@@ -190,8 +190,8 @@ namespace AudioAnalysisTools
 
             if (doDeltaFeatures)
             {
-                    totalFeatureCount *= 2;
-                    LoggedConsole.WriteLine("    Total Delta Feature Count = " + totalFeatureCount);
+                totalFeatureCount *= 2;
+                LoggedConsole.WriteLine("    Total Delta Feature Count = " + totalFeatureCount);
             }
 
             // one matrix row per species
@@ -419,8 +419,6 @@ namespace AudioAnalysisTools
         /// Normalisation and Concatentation of spectra:
         /// can be done in three ways ie (i) Unit length (ii) Unit Area (iii) Unit bounds i.e. 0,1.
         /// </summary>
-        /// <param name="arguments"></param>
-        /// <param name="output"></param>
         public static void Normalise(Arguments arguments, Output output)
         {
             var keyArray = FEATURE_KEYS.Split(',');
@@ -456,9 +454,6 @@ namespace AudioAnalysisTools
         /// Normalises the parts of a concatenated vector separately.
         /// Finally does a unit length norm in prepration for a dot product to give cosine similairty.
         /// </summary>
-        /// <param name="ipVector"></param>
-        /// <param name="parts"></param>
-        /// <returns></returns>
         public static double[] NormaliseVector(double[] ipVector, double[] weights)
         {
             int partCount = weights.Length;
@@ -497,7 +492,6 @@ namespace AudioAnalysisTools
         /// This done using Cosine similarity. Could also use Euclidian distance.
         /// </summary>
         /// <param name=""></param>
-        /// <param name=""></param>
         public static void CalculateSimilarityScores(Arguments arguments, Output output)
         {
             int speciesCount = arguments.SpeciesCount;
@@ -521,7 +515,6 @@ namespace AudioAnalysisTools
         /// <summary>
         /// Produce a CONFUSION MATRIX and a RANK ORDER MATRIX.
         /// </summary>
-        /// <param name=""></param>
         /// <param name=""></param>
         public static void CalculateAccuracy(Arguments arguments, Output output)
         {
@@ -562,7 +555,7 @@ namespace AudioAnalysisTools
             int diagonalSum = 0;
             for (int r = 0; r < speciesCount; r++)
             {
-                    diagonalSum += output.ConfusionMatrix[r, r];
+                diagonalSum += output.ConfusionMatrix[r, r];
             }
 
             LoggedConsole.WriteLine("Diagonal Sum = " + diagonalSum);
@@ -579,10 +572,8 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        /// Construct datasets for WEKA machine learning
+        /// Construct datasets for WEKA machine learning.
         /// </summary>
-        /// <param name="arguments"></param>
-        /// <param name="output"></param>
         public static void ConstructWekaDatasets(Arguments arguments, Output output)
         {
             // write the similarity score data set
@@ -795,14 +786,8 @@ namespace AudioAnalysisTools
 
         /// <summary>
         /// reduces the dimensionality of a vector by max pooling.
-        /// Used specifically for representation of spectral frames in Herve Glotin work
+        /// Used specifically for representation of spectral frames in Herve Glotin work.
         /// </summary>
-        /// <param name="vector"></param>
-        /// <param name="startBin"></param>
-        /// <param name="maxOf2Bin"></param>
-        /// <param name="maxOf3Bin"></param>
-        /// <param name="endBin"></param>
-        /// <returns></returns>
         public static double[] MaxPoolingLimited(double[] vector, int startBin, int maxOf2Bin, int maxOf3Bin, int endBin)
         {
             double value = 0.0;

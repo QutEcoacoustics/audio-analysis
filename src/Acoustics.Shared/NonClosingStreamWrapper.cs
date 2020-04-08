@@ -15,10 +15,11 @@ namespace Acoustics.Shared
     public sealed class NonClosingStreamWrapper : Stream
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="NonClosingStreamWrapper"/> class.
         /// Creates a new instance of the class, wrapping the specified stream.
         /// </summary>
         /// <param name="stream">The stream to wrap. Must not be null.</param>
-        /// <exception cref="ArgumentNullException">stream is null</exception>
+        /// <exception cref="ArgumentNullException">stream is null.</exception>
         public NonClosingStreamWrapper(Stream stream)
         {
             if (stream == null)
@@ -30,12 +31,12 @@ namespace Acoustics.Shared
         }
 
         /// <summary>
-        /// Gets stream wrapped by this wrapper
+        /// Gets stream wrapped by this wrapper.
         /// </summary>
         public Stream BaseStream { get; }
 
         /// <summary>
-        /// Whether this stream has been closed or not
+        /// Whether this stream has been closed or not.
         /// </summary>
         private bool closed = false;
 
@@ -170,7 +171,7 @@ namespace Acoustics.Shared
         /// <summary>
         /// Throws a NotSupportedException.
         /// </summary>
-        /// <returns>n/a</returns>
+        /// <returns>n/a.</returns>
         public override object InitializeLifetimeService()
         {
             throw new NotSupportedException();

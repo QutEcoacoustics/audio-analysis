@@ -10,18 +10,18 @@ namespace AnalysisPrograms.Recognizers
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.IO;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
+    using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-    using Base;
+    using SixLabors.ImageSharp;
     using TowseyLibrary;
     using Path = System.IO.Path;
 
@@ -75,13 +75,6 @@ namespace AnalysisPrograms.Recognizers
         /// <summary>
         /// Do your analysis. This method is called once per segment (typically one-minute segments).
         /// </summary>
-        /// <param name="audioRecording"></param>
-        /// <param name="configuration"></param>
-        /// <param name="segmentStartOffset"></param>
-        /// <param name="getSpectralIndexes"></param>
-        /// <param name="outputDirectory"></param>
-        /// <param name="imageWidth"></param>
-        /// <returns></returns>
         public override RecognizerResults Recognize(AudioRecording audioRecording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
             // The next line actually calculates the high resolution indices!
@@ -184,7 +177,6 @@ namespace AnalysisPrograms.Recognizers
             int hzBuffer = 100;
             int dominantBin = (int)Math.Round(dominantFrequency / herzPerBin);
             int binBuffer = (int)Math.Round(hzBuffer / herzPerBin);
-            ;
             int dominantBinMin = dominantBin - binBuffer;
             int dominantBinMax = dominantBin + binBuffer;
 
@@ -285,7 +277,7 @@ namespace AnalysisPrograms.Recognizers
                     Score = eventScore,
 
                     // remove name because it hides spectral content in display of the event.
-                    Name = "",
+                    Name = string.Empty,
                 };
                 newEvent.SetTimeAndFreqScales(framesPerSec, herzPerBin);
 
@@ -305,8 +297,9 @@ namespace AnalysisPrograms.Recognizers
                 var debugPlot = new Plot(this.DisplayName, normalisedScores, normalisedThreshold);
                 var debugPlots = new List<Plot> { debugPlot, plot };
                 var debugImage = DisplayDebugImage(sonogram, potentialEvents, debugPlots, hits);
-                var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(audioRecording.BaseName),
-                                                        this.Identifier, "png", "DebugSpectrogram"));
+                var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(
+                    Path.GetFileNameWithoutExtension(audioRecording.BaseName),
+                    this.Identifier, "png", "DebugSpectrogram"));
                 debugImage.Save(debugPath.FullName);
             }
 
@@ -331,11 +324,6 @@ namespace AnalysisPrograms.Recognizers
         /// 2: If frame passes amplitude test, then calculate a similarity cosine score for that frame. Simlarity score is wrt a template matrix.
         /// 3: If similarity score exceeds threshold, then assign event score based on the amplitude.
         /// </summary>
-        /// <param name="recording"></param>
-        /// <param name="configuration"></param>
-        /// <param name="outputDirectory"></param>
-        /// <param name="segmentStartOffset"></param>
-        /// <returns></returns>
         internal RecognizerResults Algorithm2(AudioRecording recording, Config configuration, DirectoryInfo outputDirectory, TimeSpan segmentStartOffset)
         {
             double noiseReductionParameter = configuration.GetDoubleOrNull("BgNoiseThreshold") ?? 0.1;
@@ -501,7 +489,7 @@ namespace AnalysisPrograms.Recognizers
                     Score = amplitudeScores[s],
 
                     // remove name because it hides spectral content in display of the event.
-                    Name = "",
+                    Name = string.Empty,
                 };
                 newEvent.SetTimeAndFreqScales(framesPerSec, herzPerBin);
 
@@ -544,8 +532,7 @@ namespace AnalysisPrograms.Recognizers
         /// Constructs a simple template for the L.convex call.
         /// Assume that the passed value of callBinWidth > 22.
         /// </summary>
-        /// <param name="callBinWidth">Typical value = 25</param>
-        /// <returns></returns>
+        /// <param name="callBinWidth">Typical value = 25.</param>
         public static List<double[]> GetTemplatesForAlgorithm1(int callBinWidth)
         {
             var templates = new List<double[]>();
@@ -575,9 +562,7 @@ namespace AnalysisPrograms.Recognizers
         /// <summary>
         /// Constructs a simple template for the P. ornatum call.
         /// </summary>
-        /// <param name="callFrameWidth"></param>
-        /// <param name="callBinWidth">Typical value = 25</param>
-        /// <returns></returns>
+        /// <param name="callBinWidth">Typical value = 25.</param>
         public static List<double[,]> GetTemplatesForAlgorithm2(out int callFrameWidth, out int callBinWidth)
         {
             callFrameWidth = 5;

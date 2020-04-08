@@ -6,10 +6,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.IO;
-
     using Acoustics.Shared.ConfigFile;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
     using Path = System.IO.Path;
@@ -274,7 +273,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// double tStatThreshold = 1.645; // 0.05% confidence @ df=infinity
         /// double[] table_df_inf = { 0.25, 0.51, 0.67, 0.85, 1.05, 1.282, 1.645, 1.96, 2.326, 2.576, 3.09, 3.291 };
         /// double[] table_df_15 =  { 0.26, 0.53, 0.69, 0.87, 1.07, 1.341, 1.753, 2.13, 2.602, 2.947, 3.73, 4.073 };
-        /// double[] alpha =        { 0.40, 0.30, 0.25, 0.20, 0.15, 0.10,  0.05,  0.025, 0.01, 0.005, 0.001, 0.0005 };
+        /// double[] alpha =        { 0.40, 0.30, 0.25, 0.20, 0.15, 0.10,  0.05,  0.025, 0.01, 0.005, 0.001, 0.0005 }.
         /// </summary>
         public static Image DrawTStatisticSpectrogram(double[,] tStatMatrix)
         {

@@ -9,7 +9,6 @@ namespace Acoustics.Test.Tools
     using Acoustics.Shared;
     using Acoustics.Test.TestHelpers;
     using Acoustics.Tools;
-    using Acoustics.Tools.Audio;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using static Acoustics.Test.TestHelpers.PlatformSpecificTestMethod;
 

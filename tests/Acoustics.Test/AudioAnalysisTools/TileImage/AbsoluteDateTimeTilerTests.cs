@@ -8,7 +8,6 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using Acoustics.Shared.Contracts;
     using Acoustics.Test.TestHelpers;
     using global::AudioAnalysisTools.LongDurationSpectrograms;
     using global::AudioAnalysisTools.LongDurationSpectrograms.Zooming;
@@ -17,7 +16,6 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using Drawing = Acoustics.Shared.ImageSharp.Drawing;
 
     [TestClass]
     public class AbsoluteDateTimeTilerTests

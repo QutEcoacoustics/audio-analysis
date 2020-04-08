@@ -74,12 +74,10 @@ namespace TowseyLibrary
 
             var key = this[keyString];
 
-
             if (key is double[] doublearray)
             {
                 return doublearray;
             }
-
 
             if (key is List<double> doublelist)
             {

@@ -16,8 +16,8 @@ namespace AnalysisBase
     using Acoustics.Shared;
     using Acoustics.Shared.Contracts;
     using Acoustics.Tools.Audio;
+    using AnalysisBase.Segment;
     using log4net;
-    using Segment;
 
     /// <summary>
     /// Represents a segment of a target file. It can also store the parent file that a new segment has been derived
@@ -128,7 +128,7 @@ namespace AnalysisBase
             IAudioUtility utility = null)
         {
             Contract.Requires(source != null);
-            
+
             this.dateBehavior = FileDateBehavior.Required;
             this.Source = source;
             this.Alignment = TimeAlignment.None;
@@ -192,7 +192,7 @@ namespace AnalysisBase
         public TimeSpan? SegmentEndOffset { get; set; }
 
         /// <summary>
-        /// Gets ISegmentSet - whether or not either of the segment properties have been set.
+        /// Gets a value indicating whether gets ISegmentSet - whether or not either of the segment properties have been set.
         /// </summary>
         public bool IsSegmentSet => this.SegmentStartOffset.HasValue || this.SegmentEndOffset.HasValue;
 
@@ -208,7 +208,7 @@ namespace AnalysisBase
         public int? TargetFileSampleRate => this.SourceMetadata?.SampleRate;
 
         /// <summary>
-        /// Gets the TargetFileStartDate
+        /// Gets the TargetFileStartDate.
         /// </summary>
         public DateTimeOffset? TargetFileStartDate => this.SourceMetadata?.RecordedDate;
 
@@ -307,7 +307,6 @@ namespace AnalysisBase
         /// <summary>
         /// Returns a friendly string representation of this object.
         /// </summary>
-        /// <returns></returns>
         public override string ToString()
         {
             return string.Format(
@@ -342,7 +341,6 @@ namespace AnalysisBase
                 // last modified timestamp. This method ultimately proved unreliable and inefficient.
                 // Support was removed for this edge case mid 2017.
             }
-
 
             if (this.dateBehavior == FileDateBehavior.Required)
             {

@@ -1,8 +1,13 @@
+// <copyright file="RemoteSourcePreparerTests.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
 namespace Acoustics.Test.AnalysisPrograms.SourcePreparers
 {
     using System;
     using System.Linq;
     using Acoustics.Shared;
+    using Acoustics.Test.TestHelpers.Factories;
     using global::AcousticWorkbench;
     using global::AcousticWorkbench.Models;
     using global::AnalysisBase;
@@ -10,7 +15,6 @@ namespace Acoustics.Test.AnalysisPrograms.SourcePreparers
     using global::AnalysisPrograms.AcousticWorkbench.Orchestration;
     using global::AnalysisPrograms.SourcePreparers;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers.Factories;
 
     [TestClass]
     public class RemoteSourcePreparerTests

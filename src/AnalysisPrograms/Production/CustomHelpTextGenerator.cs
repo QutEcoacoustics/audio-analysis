@@ -53,7 +53,6 @@ namespace AnalysisPrograms.Production
             }
 
             base.GenerateFooter(application, output);
-
         }
 
         protected override void GenerateHeader(CommandLineApplication application, TextWriter output)

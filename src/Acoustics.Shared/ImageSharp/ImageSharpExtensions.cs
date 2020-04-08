@@ -96,9 +96,6 @@ namespace SixLabors.ImageSharp
         /// <param name="removeBottomRow">
         /// True to remove the DC Value (bottom row of pixels).
         /// </param>
-        /// <exception cref="ImageTooLargeForGraphicsException">
-        /// Graphics error drawing spectrogram.
-        /// </exception>
         /// <returns>
         /// Modified image.
         /// </returns>
@@ -211,7 +208,6 @@ namespace SixLabors.ImageSharp
         public static void DrawLine(this IImageProcessingContext context, Pen pen, int x1, int y1, int x2, int y2)
         {
             context.DrawLines(pen, new PointF(x1, y1), new PointF(x2, y2));
-
         }
 
         public static void DrawRectangle(this IImageProcessingContext context, Pen pen, int x, int y, int width, int height)
@@ -241,7 +237,7 @@ namespace SixLabors.ImageSharp
         ///       for this <see cref='System.Drawing.Color'/> .
         /// </summary>
         /// <remarks>
-        /// Implementation from https://referencesource.microsoft.com/#System.Drawing/commonui/System/Drawing/Color.cs,23adaaa39209cc1f
+        /// Implementation from https://referencesource.microsoft.com/#System.Drawing/commonui/System/Drawing/Color.cs,23adaaa39209cc1f.
         /// </remarks>
         public static float GetBrightness(this Rgb24 pixel)
         {
@@ -376,7 +372,6 @@ namespace SixLabors.ImageSharp
                 .Rotate(-90));
 
             context.DrawImage(image, location, PixelColorBlendingMode.Normal, PixelAlphaCompositionMode.SrcAtop, 1);
-
         }
 
         /// <summary>

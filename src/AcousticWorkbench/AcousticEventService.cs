@@ -6,7 +6,7 @@ namespace AcousticWorkbench
 {
     using System.Linq;
     using System.Threading.Tasks;
-    using Models;
+    using AcousticWorkbench.Models;
 
     public class AcousticEventService : Service
     {

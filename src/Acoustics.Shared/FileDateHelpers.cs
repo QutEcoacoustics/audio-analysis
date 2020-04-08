@@ -116,7 +116,6 @@ namespace Acoustics.Shared
         /// sorts a list of files by the date assumed to be encoded in their file names
         /// and then returns the list as a sorted dictionary with file DateTime as the keys.
         /// </summary>
-        /// <param name="files">The files to filter.</param>
         /// <param name="offsetHint">If you know what timezone you should have, specify a hint to enable parsing of ambiguous dates.</param>
         /// <returns>A sorted dictionary FileInfo objects mapped to parsed dates.</returns>
         public static SortedDictionary<DateTimeOffset, T> FilterObjectsForDates<T>(IEnumerable<T> objects, Func<T, FileSystemInfo> pathSelector, Func<T, DateTimeOffset?> overrideSelector, TimeSpan? offsetHint = null)

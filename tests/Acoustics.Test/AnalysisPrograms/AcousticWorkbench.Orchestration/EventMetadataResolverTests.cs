@@ -7,9 +7,9 @@ namespace Acoustics.Test.AnalysisPrograms.AcousticWorkbench.Orchestration
     using System;
     using System.Linq;
     using Acoustics.Shared;
+    using Acoustics.Test.TestHelpers.Factories;
     using global::AnalysisPrograms.AcousticWorkbench.Orchestration;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers.Factories;
 
     [TestClass]
     public class EventMetadataResolverTests

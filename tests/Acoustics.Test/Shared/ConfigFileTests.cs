@@ -19,7 +19,6 @@ namespace Acoustics.Test.Shared
     using Acoustics.Test.TestHelpers;
     using global::AnalysisPrograms;
     using global::AudioAnalysisTools.Indices;
-    using log4net.Appender;
     using log4net.Core;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -359,7 +358,6 @@ namespace Acoustics.Test.Shared
                 Assert.AreEqual(1, Regex.Matches(actualEvents[0].RenderedMessage, expectedContent).Count);
                 StringAssert.DoesNotMatch(actualEvents[0].RenderedMessage, new Regex("\"RankOrder\""));
             }
-
         }
 
         [TestMethod]

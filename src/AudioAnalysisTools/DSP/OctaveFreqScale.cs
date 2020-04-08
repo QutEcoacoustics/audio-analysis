@@ -6,10 +6,10 @@ namespace AudioAnalysisTools.DSP
 {
     using System;
     using System.Collections.Generic;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
     using MathNet.Numerics;
-    using StandardSpectrograms;
     using TowseyLibrary;
-    using WavTools;
 
     public static class OctaveFreqScale
     {
@@ -132,7 +132,7 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// Converts a spectrogram having linear freq scale to one having an Octave freq scale.
         /// Note that the sample rate (sr) and the frame size both need to be apporpriate to the choice of FreqScaleType.
-        /// TODO: SHOULD DEVELOP A SEPARATE UNIT TEST for this method
+        /// TODO: SHOULD DEVELOP A SEPARATE UNIT TEST for this method.
         /// </summary>
         public static double[,] ConvertLinearSpectrogramToOctaveFreqScale(double[,] inputSpgram, FrequencyScale freqScale)
         {
@@ -203,11 +203,11 @@ namespace AudioAnalysisTools.DSP
         ///     See notes in the MFCCStuff.DecibelSpectra for further exp[lanaitons. These normalisations were adapted from MatLab MFCC code.
         /// (2) Then reduce the linear scale toan octave scale depending on the sr and required number of bins or filters.
         /// </summary>
-        /// <param name="amplitudeM"> the amplitude spectra </param>
-        /// <param name="windowPower">value for window power normalisation</param>
-        /// <param name="sampleRate">to NormaliseMatrixValues for the sampling rate</param>
+        /// <param name="amplitudeM"> the amplitude spectra. </param>
+        /// <param name="windowPower">value for window power normalisation.</param>
+        /// <param name="sampleRate">to NormaliseMatrixValues for the sampling rate.</param>
         /// <param name="epsilon">small value to avoid log of zero.</param>
-        /// <param name="freqScale">the kind of frequency scale</param>
+        /// <param name="freqScale">the kind of frequency scale.</param>
         public static double[,] PowerSpectra(double[,] amplitudeM, double windowPower, int sampleRate, double epsilon, FrequencyScale freqScale)
         {
             int frameCount = amplitudeM.GetLength(0);
@@ -330,7 +330,7 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// Converts a single linear spectrum to octave scale spectrum
+        /// Converts a single linear spectrum to octave scale spectrum.
         /// </summary>
         public static double[] OctaveSpectrum(int[,] octaveBinBounds, double[] linearSpectrum)
         {
@@ -499,7 +499,7 @@ namespace AudioAnalysisTools.DSP
         /// 125      46
         /// 250      93
         /// 500     186
-        /// 1000    372
+        /// 1000    372.
         /// </summary>
         public static double[] GetLinearFreqScale(int nyquist, int binCount)
         {
@@ -565,7 +565,7 @@ namespace AudioAnalysisTools.DSP
         /// Write code for simple test. Different spectra tried so far:
         /// (1) Uniform spectrum = 1.0
         /// (2) Ramp spectrum
-        /// (3) SPike spectrum
+        /// (3) SPike spectrum.
         /// </summary>
         public static double[] GetSimpleTestSpectrum(int sr, int frameSize)
         {

@@ -6,8 +6,6 @@ namespace Acoustics.Shared.Contracts
 {
     using System;
     using System.Diagnostics;
-    using System.IO;
-    using Acoustics.Shared.ConfigFile;
     using JetBrains.Annotations;
 
     /// <summary>
@@ -20,9 +18,9 @@ namespace Acoustics.Shared.Contracts
         /// <summary>
         /// Require the supplied value to be not null, otherwise throw a argument null exception.
         /// </summary>
-        /// <param name="value">Whether or not the exception should be thrown</param>
-        /// <param name="name">The name of the argument that was null</param>
-        /// <param name="message">The message to add to the exception if the check fails</param>
+        /// <param name="value">Whether or not the exception should be thrown.</param>
+        /// <param name="name">The name of the argument that was null.</param>
+        /// <param name="message">The message to add to the exception if the check fails.</param>
         [DebuggerHidden]
         [ContractAnnotation("value:null => halt")]
         public static void RequiresNotNull(object value, string name = "", string message = "Precondition failed - value was null")
@@ -36,9 +34,9 @@ namespace Acoustics.Shared.Contracts
         /// <summary>
         /// Ensures the supplied value to be not null, otherwise throw a argument null exception.
         /// </summary>
-        /// <param name="value">Whether or not the exception should be thrown</param>
-        /// <param name="name">The name of the argument that was null</param>
-        /// <param name="message">The message to add to the exception if the check fails</param>
+        /// <param name="value">Whether or not the exception should be thrown.</param>
+        /// <param name="name">The name of the argument that was null.</param>
+        /// <param name="message">The message to add to the exception if the check fails.</param>
         [DebuggerHidden]
         [ContractAnnotation("value:null => halt")]
         public static void EnsuresNotNull(object value, string name = "", string message = "Postcondition failed - value was null")
@@ -52,9 +50,9 @@ namespace Acoustics.Shared.Contracts
         /// <summary>
         /// Require the supplied boolean to be true, otherwise throw an exception.
         /// </summary>
-        /// <typeparam name="T">The type of exception to throw</typeparam>
-        /// <param name="result">Whether or not the exception should be thrown</param>
-        /// <param name="message">The message to add to the exception if the check fails</param>
+        /// <typeparam name="T">The type of exception to throw.</typeparam>
+        /// <param name="result">Whether or not the exception should be thrown.</param>
+        /// <param name="message">The message to add to the exception if the check fails.</param>
         [DebuggerHidden]
         [ContractAnnotation("result:false => halt")]
         public static void Requires<T>(bool result, string message = "Precondition failed")
@@ -69,9 +67,9 @@ namespace Acoustics.Shared.Contracts
         /// <summary>
         /// Require the supplied boolean to be true, otherwise throw an exception.
         /// </summary>
-        /// <typeparam name="T">The type of exception to throw</typeparam>
-        /// <param name="result">Whether or not the exception should be thrown</param>
-        /// <param name="args">The arguments to supply to the exception's constructor</param>
+        /// <typeparam name="T">The type of exception to throw.</typeparam>
+        /// <param name="result">Whether or not the exception should be thrown.</param>
+        /// <param name="args">The arguments to supply to the exception's constructor.</param>
         [DebuggerHidden]
         [ContractAnnotation("result:false => halt")]
         public static void Requires<T>(bool result, params object[] args)
@@ -93,9 +91,9 @@ namespace Acoustics.Shared.Contracts
         /// This is a mirror of <see cref="Requires{T}(bool,string)"/> and behaves identically.
         /// If you wish to check a condition at the end of your method, move the <see cref="Ensures{T}"/> call there.
         /// </summary>
-        /// <typeparam name="T">The type of exception to throw</typeparam>
-        /// <param name="result">Whether or not the exception should be thrown</param>
-        /// <param name="message">The message to add to the exception if the check fails</param>
+        /// <typeparam name="T">The type of exception to throw.</typeparam>
+        /// <param name="result">Whether or not the exception should be thrown.</param>
+        /// <param name="message">The message to add to the exception if the check fails.</param>
         [DebuggerHidden]
         [ContractAnnotation("result:false => halt")]
         public static void Ensures<T>(bool result, string message = "Precondition failed")
@@ -110,8 +108,8 @@ namespace Acoustics.Shared.Contracts
         /// <summary>
         /// Require the supplied boolean to be true, otherwise throw an <see cref="ArgumentException"/>.
         /// </summary>
-        /// <param name="result">Whether or not the exception should be thrown</param>
-        /// <param name="message">The message to add to the exception if the check fails</param>
+        /// <param name="result">Whether or not the exception should be thrown.</param>
+        /// <param name="message">The message to add to the exception if the check fails.</param>
         [DebuggerHidden]
         [ContractAnnotation("result:false => halt")]
         public static void Requires(bool result, string message = "Precondition failed")
@@ -127,8 +125,8 @@ namespace Acoustics.Shared.Contracts
         /// This is a mirror of <see cref="Requires"/> and behaves identically.
         /// If you wish to check a condition at the end of your method, move the <see cref="Ensures"/> call there.
         /// </summary>
-        /// <param name="result">Whether or not the exception should be thrown</param>
-        /// <param name="message">The message to add to the exception if the check fails</param>
+        /// <param name="result">Whether or not the exception should be thrown.</param>
+        /// <param name="message">The message to add to the exception if the check fails.</param>
         [DebuggerHidden]
         [ContractAnnotation("result:false => halt")]
         public static void Ensures(bool result, string message = "Precondition failed")

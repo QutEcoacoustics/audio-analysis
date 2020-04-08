@@ -7,25 +7,24 @@ namespace AnalysisPrograms
     using System;
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
-
+    using AnalysisPrograms.Production.Arguments;
+    using AnalysisPrograms.Production.Validation;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using McMaster.Extensions.CommandLineUtils;
-    using Production.Arguments;
-    using Production.Validation;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
     using Path = System.IO.Path;
 
     /// <summary>
-    /// Call this class by using the activity (first command line argument) "Create4Sonograms"
+    /// Call this class by using the activity (first command line argument) "Create4Sonograms".
     /// </summary>
     public static class Create4Sonograms
     {

@@ -13,9 +13,9 @@ namespace AnalysisPrograms.SourcePreparers
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Tools;
-    using AcousticWorkbench.Orchestration;
     using AnalysisBase;
     using AnalysisBase.Segment;
+    using AnalysisPrograms.AcousticWorkbench.Orchestration;
     using global::AcousticWorkbench;
     using global::AcousticWorkbench.Models;
     using log4net;
@@ -187,10 +187,6 @@ namespace AnalysisPrograms.SourcePreparers
         /// <param name="targetSampleRateHz">
         ///     The target Sample Rate Hz.
         /// </param>
-        /// <param name="temporaryFilesDirectory"></param>
-        /// <param name="channelSelection"></param>
-        /// <param name="mixDownToMono"></param>
-        /// <exception cref="RemoteSourcePreparerException"></exception>
         /// <returns>
         /// The prepared file. The returned FileSegment will have the targetFile and OriginalFileDuration set -
         /// these are the path to the segmented file and the duration of the segmented file.

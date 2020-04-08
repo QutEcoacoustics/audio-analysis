@@ -9,7 +9,7 @@ namespace AudioAnalysisTools.DSP
     using TowseyLibrary;
 
     /// <summary>
-    /// contains info re noise profile of an entire spectrogram
+    /// contains info re noise profile of an entire spectrogram.
     /// </summary>
     public class NoiseProfile
     {
@@ -41,8 +41,8 @@ namespace AudioAnalysisTools.DSP
         /// Assumes the passed matrix is a spectrogram. i.e. rows=frames, cols=freq bins.
         /// Returns the noise profile over freq bins. i.e. one noise value per freq bin.
         /// </summary>
-        /// <param name="matrix">the spectrogram with origin top-left</param>
-        /// <param name="sdCount">number of standard deviations</param>
+        /// <param name="matrix">the spectrogram with origin top-left.</param>
+        /// <param name="sdCount">number of standard deviations.</param>
         public static NoiseProfile CalculateModalNoiseProfile(double[,] matrix, double sdCount)
         {
             int colCount = matrix.GetLength(1);
@@ -79,7 +79,7 @@ namespace AudioAnalysisTools.DSP
         /// Returns the noise profile over freq bins. i.e. one noise value per freq bin.
         /// Note that NoiseThresholds array is identical to NoiseMedian array.
         /// </summary>
-        /// <param name="matrix">the spectrogram with origin top-left</param>
+        /// <param name="matrix">the spectrogram with origin top-left.</param>
         public static NoiseProfile CalculateMeanNoiseProfile(double[,] matrix)
         {
             int colCount = matrix.GetLength(1);
@@ -112,7 +112,7 @@ namespace AudioAnalysisTools.DSP
         /// Returns the noise profile over freq bins. i.e. one noise value per freq bin.
         /// Note that NoiseThresholds array is identical to NoiseMedian array.
         /// </summary>
-        /// <param name="matrix">the spectrogram with origin top-left</param>
+        /// <param name="matrix">the spectrogram with origin top-left.</param>
         public static NoiseProfile CalculateMedianNoiseProfile(double[,] matrix)
         {
             return CalculatePercentileNoiseProfile(matrix, 50);
@@ -142,7 +142,6 @@ namespace AudioAnalysisTools.DSP
             };
             return profile;
             */
-
         }
 
         public static NoiseProfile CalculatePercentileNoiseProfile(double[,] matrix, int percentile)
@@ -275,7 +274,7 @@ namespace AudioAnalysisTools.DSP
         /// IMPORTANT: this method assumes that the first N frames (N=frameCount) DO NOT contain signal.
         /// </summary>
         /// <param name="matrix">the spectrogram rotated with origin is top-left.</param>
-        /// <param name="firstNFramesCount">the first N rows of the spectrogram</param>
+        /// <param name="firstNFramesCount">the first N rows of the spectrogram.</param>
         public static double[] CalculateModalNoiseUsingStartFrames(double[,] matrix, int firstNFramesCount)
         {
             if (firstNFramesCount < 1)

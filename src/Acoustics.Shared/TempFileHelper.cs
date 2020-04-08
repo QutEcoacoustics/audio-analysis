@@ -7,7 +7,7 @@ namespace Acoustics.Shared
     using System.IO;
     using System.Security.Cryptography;
     using System.Text;
-    using Contracts;
+    using Acoustics.Shared.Contracts;
 
     public static class TempFileHelper
     {
@@ -72,7 +72,6 @@ namespace Acoustics.Shared
         /// File will not exist.
         /// </summary>
         /// <param name="tempDir">Temporary directory.</param>
-        /// <param name="ext">File extension (without dot).</param>
         /// <returns>File with extension.</returns>
         public static FileInfo NewTempFile(DirectoryInfo tempDir, string extension)
         {
@@ -121,10 +120,9 @@ namespace Acoustics.Shared
         /// returning colliding filenames because *we* trimmed the extension off the file.
         /// <para>
         /// This is a modification of the original method that can be found here:
-        /// http://referencesource.microsoft.com/#mscorlib/system/io/path.cs,efb113f637a6bb47
+        /// http://referencesource.microsoft.com/#mscorlib/system/io/path.cs,efb113f637a6bb47.
         /// </para>
         /// </summary>
-        /// <returns></returns>
         private static string GetStrongerRandomFileName(bool extension = true)
         {
             lock (new object())
@@ -151,10 +149,8 @@ namespace Acoustics.Shared
             };
 
         /// <summary>
-        /// Modified form of http://referencesource.microsoft.com/#mscorlib/system/io/path.cs,78811508e2f49ab8
+        /// Modified form of http://referencesource.microsoft.com/#mscorlib/system/io/path.cs,78811508e2f49ab8.
         /// </summary>
-        /// <param name="buff"></param>
-        /// <returns></returns>
         private static string ToBase32StringSuitableForDirName(byte[] buff)
         {
             // This routine is optimised to be used with buffs of length 20

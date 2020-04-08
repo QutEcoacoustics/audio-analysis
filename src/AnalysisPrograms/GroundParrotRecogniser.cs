@@ -11,23 +11,23 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using System.Reflection;
     using System.Threading.Tasks;
+    using Acoustics.AED;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
+    using AnalysisPrograms.Production;
+    using AnalysisPrograms.Production.Arguments;
     using AudioAnalysisTools;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
-    using Production;
-    using Production.Arguments;
-    using Acoustics.AED;
+    using SixLabors.ImageSharp;
     using TowseyLibrary;
     using Path = System.IO.Path;
 
@@ -64,7 +64,7 @@ namespace AnalysisPrograms
         /// Col1: start of the rectangle in seconds from beginning of the recording
         /// Col2: end   of the rectangle in seconds from beginning of the recording
         /// Col3: maximum freq (Hz) of the rectangle
-        /// Col4: minimum freq (Hz) of the rectangle
+        /// Col4: minimum freq (Hz) of the rectangle.
         /// </summary>
         private static readonly double[,] GroundParrotTemplate1 =
             {
@@ -121,22 +121,8 @@ namespace AnalysisPrograms
         /// <param name="wavFilePath">
         ///     The wav file path.
         /// </param>
-        /// <param name="aedConfiguration"></param>
         /// <param name="eprNormalisedMinScore">
         ///     The epr Normalised Min Score.
-        /// </param>
-        /// <param name="segmentStartOffset"></param>
-        /// <param name="intensityThreshold">
-        /// The intensity Threshold.
-        /// </param>
-        /// <param name="bandPassFilterMaximum">
-        /// The band Pass Filter Maximum.
-        /// </param>
-        /// <param name="bandPassFilterMinimum">
-        /// The band Pass Filter Minimum.
-        /// </param>
-        /// <param name="smallAreaThreshold">
-        /// The small Area Threshold.
         /// </param>
         /// <returns>
         /// Tuple containing base Sonogram and list of acoustic events.
@@ -223,18 +209,17 @@ namespace AnalysisPrograms
         /// <summary>
         /// Get epr parameters from init file.
         /// </summary>
-        /// <param name="configuration">The Config configuration object to read</param>
+        /// <param name="configuration">The Config configuration object to read.</param>
         internal static double GetEprParametersFromConfigFileOrDefaults(Config configuration)
         {
             return configuration.GetDoubleOrNull(KeyNormalizedMinScore) ?? Default.eprNormalisedMinScore;
         }
 
         /// <summary>
-        /// Takes the template defined by Birgit and converts it to integer bins using the user supplied time & hz scales
+        /// Takes the template defined by Birgit and converts it to integer bins using the user supplied time &amp; hz scales.
         /// </summary>
         /// <param name="timeScale">seconds per frame.</param>
-        /// <param name="hzScale">herz per freq bin</param>
-        /// <returns></returns>
+        /// <param name="hzScale">herz per freq bin.</param>
         public static int[,] ReadGroundParrotTemplateAsMatrix(double timeScale, int hzScale)
         {
             int rows = GroundParrotTemplate1.GetLength(0);
@@ -304,10 +289,10 @@ namespace AnalysisPrograms
             Tuple<BaseSonogram, List<AcousticEvent>> results = Detect(audioFile, aedConfig, eprNormalizedMinScore, segmentSettings.SegmentStartOffset);
 
             var analysisResults = new AnalysisResult2(analysisSettings, segmentSettings, results.Item1.Duration)
-                                      {
-                                          AnalysisIdentifier = this.Identifier,
-                                          Events = results.Item2.ToArray(),
-                                      };
+            {
+                AnalysisIdentifier = this.Identifier,
+                Events = results.Item2.ToArray(),
+            };
             BaseSonogram sonogram = results.Item1;
 
             if (analysisSettings.AnalysisDataSaveBehavior)

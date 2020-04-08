@@ -35,7 +35,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using SixLabors.ImageSharp;
     using System.Globalization;
     using System.IO;
     using System.Linq;
@@ -48,9 +47,9 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     using AudioAnalysisTools.StandardSpectrograms;
     using log4net;
     using SixLabors.Fonts;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using StandardSpectrograms;
     using TowseyLibrary;
     using Path = System.IO.Path;
 
@@ -194,13 +193,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     this.FreqScale = new FrequencyScale(fst);
                     throw new ArgumentException("Mel Scale is not yet implemented");
 
-                    //break;
+                //break;
                 case "Linear62Octaves7Tones31Nyquist11025":
                     fst = FreqScaleType.Linear62Octaves7Tones31Nyquist11025;
                     this.FreqScale = new FrequencyScale(fst);
                     throw new ArgumentException("Linear62Octaves7Tones31Nyquist11025 Scale is not yet implemented");
 
-                    //break;
+                //break;
                 case "Linear125Octaves6Tones30Nyquist11025":
                     fst = FreqScaleType.Linear125Octaves6Tones30Nyquist11025;
                     this.FreqScale = new FrequencyScale(fst);
@@ -210,7 +209,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     this.FreqScale = new FrequencyScale(fst);
                     throw new ArgumentException("Octaves24Nyquist32000 Scale is not yet implemented");
 
-                    //break;
+                //break;
                 case "Linear125Octaves7Tones28Nyquist32000":
                     fst = FreqScaleType.Linear125Octaves7Tones28Nyquist32000;
                     this.FreqScale = new FrequencyScale(fst);
@@ -852,7 +851,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         /// <summary>
         /// Assume calling method has done all the reality checks.
-        /// Assume the Index Calculation Duration = 60 seconds
+        /// Assume the Index Calculation Duration = 60 seconds.
         /// </summary>
         public static Image DrawGreyscaleSpectrogramOfIndex(string key, double[,] matrix)
         {
@@ -895,7 +894,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 {
                     g.DrawText(text, stringFont, Color.Wheat, new PointF(x2, 3));
                 }
-
             });
 
             return bmp;
@@ -1036,7 +1034,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             colorScale.Mutate(gr =>
             {
 
-
                 int offset = width + 1;
                 if (width < 5)
                 {
@@ -1046,7 +1043,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 Image<Rgb24> colorBmp = new Image<Rgb24>(width - 1, ht);
                 colorBmp.Mutate(gr2 =>
                 {
-
 
                     Color c = Color.FromRgb(250, 15, 250);
                     gr2.Clear(c);
@@ -1086,7 +1082,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     gr2.Clear(c);
                     x += offset;
                     gr.DrawImage(colorBmp, new Point(x, 0), 1);
-
                 });
             });
 

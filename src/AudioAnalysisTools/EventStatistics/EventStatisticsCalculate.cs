@@ -7,9 +7,9 @@ namespace AudioAnalysisTools.EventStatistics
     using System;
     using System.Linq;
     using Acoustics.Shared;
-    using DSP;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.WavTools;
     using TowseyLibrary;
-    using WavTools;
 
     public static class EventStatisticsCalculate
     {
@@ -48,12 +48,12 @@ namespace AudioAnalysisTools.EventStatistics
         /// AND that the passed recording is of sufficient duration to obtain reliable BGN noise profile
         /// BUT not so long as to cause memory constipation.
         /// </remarks>
-        /// <param name="recording">as type AudioRecording which contains the event</param>
-        /// <param name="temporalTarget">Both start and end bounds - relative to the supplied recording</param>
-        /// <param name="spectralTarget">both bottom and top bounds in Hertz</param>
-        /// <param name="config">parameters that determine the outcome of the analysis</param>
-        /// <param name="segmentStartOffset">How long since the start of the recording this event occurred</param>
-        /// <returns>an instance of EventStatistics</returns>
+        /// <param name="recording">as type AudioRecording which contains the event.</param>
+        /// <param name="temporalTarget">Both start and end bounds - relative to the supplied recording.</param>
+        /// <param name="spectralTarget">both bottom and top bounds in Hertz.</param>
+        /// <param name="config">parameters that determine the outcome of the analysis.</param>
+        /// <param name="segmentStartOffset">How long since the start of the recording this event occurred.</param>
+        /// <returns>an instance of EventStatistics.</returns>
         public static EventStatistics AnalyzeAudioEvent(
             AudioRecording recording,
             Range<TimeSpan> temporalTarget,

@@ -14,11 +14,6 @@ namespace Acoustics.Shared
         /// Will grow the range around the center of the current range if possible.
         /// Will not fail, and will return as much range as possible, without exceeding limits.
         /// </summary>
-        /// <param name="range"></param>
-        /// <param name="limits"></param>
-        /// <param name="growAmount"></param>
-        /// <param name="roundDigits"></param>
-        /// <returns></returns>
         public static Range<double> Grow(
             this Range<double> range,
             Range<double> limits,

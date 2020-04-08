@@ -11,12 +11,11 @@
 namespace System
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
+    using System.Linq.Expressions;
+    using System.Reflection;
     using System.Text;
-
-    using Collections.Generic;
-    using Linq.Expressions;
-    using Reflection;
 
     public static class ReflectionExtensions
     {
@@ -88,7 +87,6 @@ namespace System
         /// <typeparam name="TModel">The type of the model.</typeparam>
         /// <typeparam name="T"></typeparam>
         /// <param name="expression">The expression.</param>
-        /// <returns></returns>
         private static MemberExpression GetMemberExpression<TModel, T>(this Expression<Func<TModel, T>> expression)
         {
             // This method was taken from FluentNHibernate.Utils.ReflectionHelper.cs and modified.

@@ -6,12 +6,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
+    using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
-    using Indices;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
     using TowseyLibrary;
@@ -72,7 +72,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// Read them into a dictionary
         /// MOST RECENT METHOD TO CONCATENATE Spectral INDEX.CSV FILES - Early September 2015.
         /// It is designed to deal with Yvonne's case where want to concatenate files distributed over arbitrary directories.
-        /// It only merges files for the passed fixed date. i.e only 24 hours
+        /// It only merges files for the passed fixed date. i.e only 24 hours.
         /// </summary>
         public static void DrawSpectralIndexFiles(
             Dictionary<string, double[,]> dictionary,
@@ -200,7 +200,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// RECENT METHOD TO CONCATENATE Spectral INDEX.CSV FILES - August 2015. Revised Septermber 2016
         /// Was written to deal with  EDDIE GAME PNG data where the files to be concatenated are all in one top level directory.
         /// This method merges all files of spectral indices in the passed directories.
-        /// The total length of the concatenated files can exceed 24 hours - limited by memory!
+        /// The total length of the concatenated files can exceed 24 hours - limited by memory!.
         /// </summary>
         public static Dictionary<string, double[,]> ConcatenateAllSpectralIndexFiles(DirectoryInfo[] directories, string[] keys, IndexGenerationData indexGenerationData)
         {
@@ -261,7 +261,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         /// Call this method from Sandpit or where ever!
         ///
         /// IMPORTANT NOTE: This method does NOT check to see if the images are in temporal order.
-        ///                 A SORT line should be inserted somewhere
+        ///                 A SORT line should be inserted somewhere.
         /// </summary>
         public static void StitchPartialSpectrograms()
         {

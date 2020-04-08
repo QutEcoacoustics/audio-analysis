@@ -1,14 +1,18 @@
+// <copyright file="PezoporusOccidentalis.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
 using System;
 
 namespace AnalysisPrograms.Recognizers
 {
     using System.IO;
     using Acoustics.Shared.ConfigFile;
+    using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.WavTools;
-    using Base;
 
-    public class PezoporusOccidentalis: RecognizerBase
+    public class PezoporusOccidentalis : RecognizerBase
     {
         public override string Author { get; }
 

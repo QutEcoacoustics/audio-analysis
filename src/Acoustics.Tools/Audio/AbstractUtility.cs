@@ -1,4 +1,8 @@
-﻿namespace Acoustics.Tools.Audio
+// <copyright file="AbstractUtility.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace Acoustics.Tools.Audio
 {
     using System;
     using System.Collections.Generic;
@@ -7,8 +11,8 @@
     using System.IO;
     using System.Linq;
     using System.Text;
+    using Acoustics.Shared;
     using log4net;
-    using Shared;
 
     /// <summary>
     /// Base abstract class for all audio and spectrogram utilities.
@@ -86,9 +90,6 @@
         /// <param name="outputMimeType">
         /// The output Mime Type.
         /// </param>
-        /// <exception cref="ArgumentException">
-        /// </exception>
-        /// <exception cref="ArgumentNullException"></exception>
         protected void ValidateMimeTypeExtension(FileInfo source, string sourceMimeType, FileInfo output, string outputMimeType)
         {
             if (source == null)
@@ -135,9 +136,6 @@
         /// <param name="sourceMimeType">
         /// The source mime type.
         /// </param>
-        /// <exception cref="ArgumentException">
-        /// </exception>
-        /// <exception cref="ArgumentNullException"></exception>
         protected void ValidateMimeTypeExtension(FileInfo source, string sourceMimeType)
         {
             if (source == null)
@@ -168,7 +166,6 @@
             {
                 throw new ArgumentException($"Media type {sourceMimeType} is not recognised.");
             }
-
         }
 
         /// <summary>
@@ -260,7 +257,7 @@
         /// Could not find exe.
         /// </exception>
         /// <exception cref="ArgumentException">
-        /// file
+        /// file.
         /// </exception>
         protected void CheckExe(FileInfo file, string expectedFileName)
         {
@@ -417,8 +414,8 @@
         /// <param name="file">
         /// The file.
         /// </param>
-        /// <exception cref="ArgumentNullException">file</exception>
-        /// <exception cref="ArgumentException">file</exception>
+        /// <exception cref="ArgumentNullException">file.</exception>
+        /// <exception cref="ArgumentException">file.</exception>
         protected void CheckFile(FileInfo file)
         {
             file.Refresh();
@@ -445,7 +442,6 @@
         /// <param name="value">
         /// The value.
         /// </param>
-        /// <exception cref="ArgumentException">The value.</exception>
         protected void CheckMp3BitRate(int value)
         {
             // https://en.wikipedia.org/wiki/MP3#Bit_rate
@@ -465,9 +461,6 @@
         /// <param name="value">
         /// The value.
         /// </param>
-        /// <exception cref="ArgumentException">
-        /// The value.
-        /// </exception>
         protected void CheckMp3SampleRate(int value)
         {
             // https://en.wikipedia.org/wiki/MP3#Bit_rate
@@ -538,9 +531,11 @@
                 {
                     if (this.Log.IsDebugEnabled)
                     {
-                        this.Log.DebugFormat("Property '{0}' value '{1}' was found in '{2}', returning null.",
+                        this.Log.DebugFormat(
+                            "Property '{0}' value '{1}' was found in '{2}', returning null.",
                             propertyName, text, string.Join(", ", expectedNonNumeric));
                     }
+
                     return null;
                 }
 
@@ -549,6 +544,7 @@
 
             return parsed;
         }
+
         protected double? ParseDoubleStringWithException(string text, string propertyName, IEnumerable<string> expectedNonNumeric = null)
         {
             if (!double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed))
@@ -557,9 +553,11 @@
                 {
                     if (this.Log.IsDebugEnabled)
                     {
-                        this.Log.DebugFormat("Property '{0}' value '{1}' was found in '{2}', returning null.",
+                        this.Log.DebugFormat(
+                            "Property '{0}' value '{1}' was found in '{2}', returning null.",
                             propertyName, text, string.Join(", ", expectedNonNumeric));
                     }
+
                     return null;
                 }
 
@@ -568,6 +566,5 @@
 
             return parsed;
         }
-
     }
 }

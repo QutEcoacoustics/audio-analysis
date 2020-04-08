@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="AcousticEntropy.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -10,7 +10,7 @@
 namespace AudioAnalysisTools
 {
     using System;
-    using StandardSpectrograms;
+    using AudioAnalysisTools.StandardSpectrograms;
     using TowseyLibrary;
 
     public static class AcousticEntropy
@@ -40,10 +40,10 @@ namespace AudioAnalysisTools
         /// 2. the entropy of the variance spectrum.
         /// 3. the entropy of the Coeff of Variation spectrum.
         /// </summary>
-        /// <param name="amplitudeSpectrogram">matrix</param>
-        /// <param name="lowerBinBound">lower bin bound to be included in calculation of summary index</param>
-        /// <param name="reducedFreqBinCount">total bin count to be included in calculation of summary index</param>
-        /// <returns>two doubles</returns>
+        /// <param name="amplitudeSpectrogram">matrix.</param>
+        /// <param name="lowerBinBound">lower bin bound to be included in calculation of summary index.</param>
+        /// <param name="reducedFreqBinCount">total bin count to be included in calculation of summary index.</param>
+        /// <returns>two doubles.</returns>
         public static Tuple<double, double, double> CalculateSpectralEntropies(double[,] amplitudeSpectrogram, int lowerBinBound, int reducedFreqBinCount)
         {
             // iv: ENTROPY OF AVERAGE SPECTRUM - at this point the spectrogram is a noise reduced amplitude spectrogram

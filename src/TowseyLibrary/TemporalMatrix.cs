@@ -20,11 +20,9 @@ namespace TowseyLibrary
         public double[,] Matrix { get; set; }
 
         /// <summary>
-        /// CONSTRUCTOR
+        /// Initializes a new instance of the <see cref="TemporalMatrix"/> class.
+        /// CONSTRUCTOR.
         /// </summary>
-        /// <param name="temporalDirection"></param>
-        /// <param name="m"></param>
-        /// <param name="dataScale"></param>
         public TemporalMatrix(string temporalDirection, double[,] m, TimeSpan dataScale)
         {
             if (temporalDirection.Equals("rows") || temporalDirection.Equals("columns"))
@@ -57,7 +55,7 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// changes temporal dimension from rows to columns or vice-versa
+        /// changes temporal dimension from rows to columns or vice-versa.
         /// </summary>
         public void SwapTemporalDimension()
         {
@@ -304,9 +302,6 @@ namespace TowseyLibrary
         /// This method assumes that the matrix spectrograms are oriented so that the rows = spectra
         /// and the columns = freq bins, i.e. rotated 90 degrees from normal orientation.
         /// </summary>
-        /// <param name="matrix"></param>
-        /// <param name="compressionFactor"></param>
-        /// <returns></returns>
         public static double[,] CompressFrameSpectrograms(double[,] matrix, int compressionFactor)
         {
             int rowCount = matrix.GetLength(0);

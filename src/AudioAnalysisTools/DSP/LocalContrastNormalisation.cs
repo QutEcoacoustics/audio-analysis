@@ -24,12 +24,9 @@ namespace AudioAnalysisTools.DSP
         /// which effectively normalises by both subtraction and division.
         /// This method is based on formula given by LeCun. Python code at the bottom of this class is the actual
         /// code used by LeCun which appears to do something different.
-        /// Wish I knew Python!
+        /// Wish I knew Python!.
         ///
         /// </summary>
-        /// <param name="inputM"></param>
-        /// <param name="fieldSize"></param>
-        /// <returns></returns>
         public static double[,] ComputeLCN(double[,] inputM, int fieldSize)
         {
             /*
@@ -46,7 +43,7 @@ namespace AudioAnalysisTools.DSP
 
             int frameWidth = fieldSize / 2;
 
-            /// add frame around matrix to compensate for edge effects.
+            // add frame around matrix to compensate for edge effects.
             double[,] framedM = MatrixTools.FrameMatrixWithZeros(inputM, frameWidth);
 
             // output matrix is same size as input.

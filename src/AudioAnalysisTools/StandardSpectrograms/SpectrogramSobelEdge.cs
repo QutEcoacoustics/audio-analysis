@@ -5,7 +5,7 @@
 namespace AudioAnalysisTools.StandardSpectrograms
 {
     using Acoustics.Tools.Wav;
-    using DSP;
+    using AudioAnalysisTools.DSP;
     using TowseyLibrary;
 
     public class SpectrogramSobelEdge : BaseSonogram

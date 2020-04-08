@@ -6,11 +6,11 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.Linq;
     using Acoustics.Shared;
     using Acoustics.Shared.Contracts;
-    using Indices;
+    using AudioAnalysisTools.Indices;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
 

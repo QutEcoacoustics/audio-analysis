@@ -11,7 +11,6 @@ namespace AnalysisPrograms.Recognizers.Base
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using System.Threading;
@@ -24,6 +23,7 @@ namespace AnalysisPrograms.Recognizers.Base
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
 
@@ -231,7 +231,7 @@ namespace AnalysisPrograms.Recognizers.Base
             if (saveTwoMapsSpectrograms)
             {
                 opImage = DrawLongDurationSpectrograms.DrawFalseColourSpectrograms(ldfcSpectrogramArguments, fileStem, dictionaryOfSpectra);
-                var opImages = new [] { opImage, scoreTrack };
+                var opImages = new[] { opImage, scoreTrack };
                 opImage = ImageTools.CombineImagesVertically(opImages);
                 var fileName = FilenameHelpers.AnalysisResultPath(output, fileStem, "TwoMaps", ".png");
                 opImage.Save(fileName);
@@ -242,9 +242,6 @@ namespace AnalysisPrograms.Recognizers.Base
         /// Compress high resolution indices - intended to be used when summarizing results.
         /// Summarize method not yet written.
         /// </summary>
-        /// <param name="analysisResults"></param>
-        /// <param name="indexResults"></param>
-        /// <param name="highResolutionParsedConfiguration"></param>
         private void SummarizeHighResolutionIndices(
             AnalysisResult2 analysisResults,
             IndexCalculateResult[] indexResults,

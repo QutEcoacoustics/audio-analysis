@@ -25,9 +25,9 @@ namespace Acoustics.Test.TestHelpers
             get
             {
                 yield return new object[] { "RRGGBBYEEE", new[] { R, R, G, G, B, B, Y, E, E, E } };
-                yield return new object[] { "R10",        new[] { R, R, R, R, R, R, R, R, R, R } };
+                yield return new object[] { "R10", new[] { R, R, R, R, R, R, R, R, R, R } };
                 yield return new object[] { "Y1R1G1B1RGBY1R1G1", new[] { Y, R, G, B, R, G, B, Y, R, G } };
-                yield return new object[] { "", new[] { E, E, E, E, E, E, E, E, E, E } };
+                yield return new object[] { string.Empty, new[] { E, E, E, E, E, E, E, E, E, E } };
                 yield return new object[] { "R3", new[] { R, R, R, E, E, E, E, E, E, E } };
                 yield return new object[] { "(RGB)3Y", new[] { R, G, B, R, G, B, R, G, B, Y } };
                 yield return new object[] { "(R2BY2)2", new[] { R, R, B, Y, Y, R, R, B, Y, Y } };

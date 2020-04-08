@@ -13,7 +13,6 @@ namespace AnalysisPrograms
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -30,12 +29,11 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.TileImage;
     using AudioAnalysisTools.WavTools;
     using log4net;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
-    using Acoustics.Shared.Contracts;
-
-    using SpectrogramType = AudioAnalysisTools.LongDurationSpectrograms.SpectrogramType;
     using Path = System.IO.Path;
+    using SpectrogramType = AudioAnalysisTools.LongDurationSpectrograms.SpectrogramType;
 
     public class AcousticIndices : IAnalyser2
     {
@@ -277,22 +275,22 @@ namespace AnalysisPrograms
              * FrameStep is NOT used when calculating Summary and Spectral indices.
              */
             var indexConfigData = new IndexGenerationData()
-                {
-                    RecordingExtension = inputFileSegment.Source.Extension,
-                    RecordingBasename = basename,
-                    RecordingStartDate = inputFileSegment.TargetFileStartDate,
-                    RecordingDuration = inputFileSegment.TargetFileDuration.Value,
-                    SampleRateOriginal = inputFileSegment.TargetFileSampleRate.Value,
-                    SampleRateResampled = sampleRate,
-                    FrameLength = frameWidth,
-                    FrameStep = settings.Configuration.GetIntOrNull(AnalysisKeys.FrameStep) ?? frameWidth,
-                    IndexCalculationDuration = acousticIndicesConfig.IndexCalculationDurationTimeSpan,
-                    BgNoiseNeighbourhood = acousticIndicesConfig.BgNoiseBuffer,
-                    AnalysisStartOffset = inputFileSegment.SegmentStartOffset ?? TimeSpan.Zero,
-                    MaximumSegmentDuration = settings.AnalysisMaxSegmentDuration,
-                    BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF,
-                    LongDurationSpectrogramConfig = ldSpectrogramConfig,
-                };
+            {
+                RecordingExtension = inputFileSegment.Source.Extension,
+                RecordingBasename = basename,
+                RecordingStartDate = inputFileSegment.TargetFileStartDate,
+                RecordingDuration = inputFileSegment.TargetFileDuration.Value,
+                SampleRateOriginal = inputFileSegment.TargetFileSampleRate.Value,
+                SampleRateResampled = sampleRate,
+                FrameLength = frameWidth,
+                FrameStep = settings.Configuration.GetIntOrNull(AnalysisKeys.FrameStep) ?? frameWidth,
+                IndexCalculationDuration = acousticIndicesConfig.IndexCalculationDurationTimeSpan,
+                BgNoiseNeighbourhood = acousticIndicesConfig.BgNoiseBuffer,
+                AnalysisStartOffset = inputFileSegment.SegmentStartOffset ?? TimeSpan.Zero,
+                MaximumSegmentDuration = settings.AnalysisMaxSegmentDuration,
+                BackgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF,
+                LongDurationSpectrogramConfig = ldSpectrogramConfig,
+            };
             var icdPath = FilenameHelpers.AnalysisResultPath(
                 resultsDirectory,
                 basename,

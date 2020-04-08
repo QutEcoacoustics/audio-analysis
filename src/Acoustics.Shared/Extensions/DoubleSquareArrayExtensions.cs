@@ -10,7 +10,7 @@
 // ReSharper disable once CheckNamespace
 namespace System
 {
-    using Drawing;
+    using System.Drawing;
     using Acoustics.Shared.Contracts;
 
     /// <summary>
@@ -227,7 +227,7 @@ namespace System
 
         /// <summary>
         /// retrieving a full column of a matrix
-        /// columnIndex is the column we want to access
+        /// columnIndex is the column we want to access.
         /// </summary>
         public static T[] GetColumn<T>(this T[,] matrix, int columnIndex)
         {
@@ -242,7 +242,7 @@ namespace System
 
         /// <summary>
         /// retrieving a full row of a matrix
-        /// rowIndex is the row we want to access
+        /// rowIndex is the row we want to access.
         /// </summary>
         public static T[] GetRow<T>(this T[,] matrix, int rowIndex)
         {
@@ -266,7 +266,7 @@ namespace System
         }
 
         /// <summary>
-        /// adding a 2D-array to another 2D-array either by "column" or by "row"
+        /// adding a 2D-array to another 2D-array either by "column" or by "row".
         /// </summary>
 
         public static void AddToArray<T>(this T[,] result, T[,] array, MergingDirection mergingDirection, int start = 0)

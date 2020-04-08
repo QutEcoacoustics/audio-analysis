@@ -1,4 +1,4 @@
-﻿// <copyright file="ExtensionsIO.cs" company="QutEcoacoustics">
+// <copyright file="ExtensionsIO.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -18,13 +18,8 @@ namespace System.IO
         /// <param name="destination">
         /// The destination.
         /// </param>
-        /// <param name="bufferSize">
-        /// The buffer size.
-        /// </param>
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="ArgumentException"></exception>
         /// <remarks>
-        /// http://stackoverflow.com/questions/1933742/how-is-the-stream-copytostream-method-implemented-in-net-4
+        /// http://stackoverflow.com/questions/1933742/how-is-the-stream-copytostream-method-implemented-in-net-4.
         /// </remarks>
         public static void CopyToStream(this Stream source, Stream destination)
         {

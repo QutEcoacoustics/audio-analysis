@@ -18,8 +18,6 @@ namespace Acoustics.Test.AudioAnalysisTools.StandardSpectrograms
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
-    using SixLabors.ImageSharp.Processing;
-    using Path = System.IO.Path;
 
     /// <summary>
     /// Test methods for the various standard Sonograms or Spectrograms

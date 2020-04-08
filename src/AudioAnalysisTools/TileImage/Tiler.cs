@@ -113,7 +113,7 @@ namespace AudioAnalysisTools.TileImage
         /// The super tile currently being operated on.
         /// </param>
         /// <param name="next">
-        /// The next super tile that will be processed (positive x-dimension)
+        /// The next super tile that will be processed (positive x-dimension).
         /// </param>
         public virtual void Tile(ISuperTile previous, ISuperTile current, ISuperTile next)
         {
@@ -205,119 +205,118 @@ namespace AudioAnalysisTools.TileImage
                         this.profile.TileWidth,
                         this.profile.TileHeight);
 
+                    var subsection = new Rectangle
+                    {
+                        X = superTileLeft,
+                        Y = superTileTop,
+                        Width = this.profile.TileWidth,
+                        Height = this.profile.TileHeight,
+                    };
+                    ImageComponent[] fragments = GetImageParts(superTileRectangle, subsection);
 
-                        var subsection = new Rectangle
-                                             {
-                                                 X = superTileLeft,
-                                                 Y = superTileTop,
-                                                 Width = this.profile.TileWidth,
-                                                 Height = this.profile.TileHeight,
-                                             };
-                        ImageComponent[] fragments = GetImageParts(superTileRectangle, subsection);
-
-                        // check if this tiler has already written this tile
-                        var renderedBefore = this.tileNameHistory.ContainsKey(name);
-                        if (renderedBefore)
+                    // check if this tiler has already written this tile
+                    var renderedBefore = this.tileNameHistory.ContainsKey(name);
+                    if (renderedBefore)
+                    {
+                        // if the exact whole image is being drawn again, throw exception
+                        // otherwise continue, do not draw image again
+                        if (fragments.Length == 1)
                         {
-                            // if the exact whole image is being drawn again, throw exception
-                            // otherwise continue, do not draw image again
-                            if (fragments.Length == 1)
+                            if (fragments[0].XBias != TileBias.Neutral)
                             {
-                                if (fragments[0].XBias != TileBias.Neutral)
-                                {
-                                    throw new InvalidOperationException(
-                                        "This program is really not working at all - this should never happen");
-                                }
-
-                                throw new DuplicateTileException(name, current);
+                                throw new InvalidOperationException(
+                                    "This program is really not working at all - this should never happen");
                             }
 
-                            var holes = this.tileNameHistory[name];
-                            if ((holes.Item1 && previous == null) || (holes.Item2 && next == null))
+                            throw new DuplicateTileException(name, current);
+                        }
+
+                        var holes = this.tileNameHistory[name];
+                        if ((holes.Item1 && previous == null) || (holes.Item2 && next == null))
+                        {
+                            // if the tile was previously rendered with missing fragments
+                            // then this is a duplicate
+                            throw new DuplicateTileException(name, current);
+                        }
+                        else
+                        {
+                            // otherwise, tile should have been fully rendered
+                            // skip
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        // true if it is possible that an adjacent supertile is missing
+                        this.tileNameHistory.Add(name, Tuple.Create(previous == null, next == null));
+                    }
+
+                    // now paint on destination image
+                    // 4 possible sources: nothing (transparent), current, next image (along X-axis), previous image (along x-axis)
+                    foreach (ImageComponent imageComponent in fragments)
+                    {
+                        if (imageComponent.YBias != TileBias.Neutral)
+                        {
+                            throw new NotImplementedException(
+                                "Currently no support has been implemented for drawing from supertiles that are not aligned with the current tile on the y-axis");
+                        }
+
+                        var destinationRect =
+                            new Rectangle(
+                                new Point(
+                                    imageComponent.Fragment.X - superTileLeft,
+                                    imageComponent.Fragment.Y - superTileTop),
+                                imageComponent.Fragment.Size);
+
+                        var sourceRect =
+                            new Rectangle(
+                                new Point(
+                                    imageComponent.Fragment.Location.X - (superTileOffsetInLayerX - paddingX),
+                                    imageComponent.Fragment.Location.Y - (superTileOffsetInLayerY - paddingY)),
+                                imageComponent.Fragment.Size);
+
+                        if (imageComponent.XBias == TileBias.Negative)
+                        {
+                            // two cases here: edge of layer (paint transparent padding)
+                            // or grab previous section from image
+                            if (previous == null)
                             {
-                                // if the tile was previously rendered with missing fragments
-                                // then this is a duplicate
-                                throw new DuplicateTileException(name, current);
+                                // start of stream, paint transparency
+                                // default background for the tile is transparent,
+                                // no need to paint that again
                             }
                             else
                             {
-                                // otherwise, tile should have been fully rendered
-                                // skip
-                                continue;
+                                // paint a fraction from the previous image
+                                // here, we shift the co-ordinate system one-super-tile's width right
+                                sourceRect.X = sourceRect.X + width;
+                                tileImage.DrawImage(previous.Image, destinationRect, sourceRect);
+                            }
+                        }
+                        else if (imageComponent.XBias == TileBias.Positive)
+                        {
+                            // two cases here: edge of layer reached (paint transparent padding)
+                            // or grab next section from image
+                            if (next == null)
+                            {
+                                // end of stream, paint transparency
+                                // default background for the tile is transparent,
+                                // no need to paint that again
+                            }
+                            else
+                            {
+                                // paint a fraction from the next image
+                                // here, we shift the co-ordinate system one-super-tile's width left
+                                sourceRect.X = sourceRect.X - width;
+                                tileImage.DrawImage(next.Image, destinationRect, sourceRect);
                             }
                         }
                         else
                         {
-                            // true if it is possible that an adjacent supertile is missing
-                            this.tileNameHistory.Add(name, Tuple.Create(previous == null,  next == null));
+                            // neutral
+                            tileImage.DrawImage(current.Image, destinationRect, sourceRect);
                         }
-
-                        // now paint on destination image
-                        // 4 possible sources: nothing (transparent), current, next image (along X-axis), previous image (along x-axis)
-                        foreach (ImageComponent imageComponent in fragments)
-                        {
-                            if (imageComponent.YBias != TileBias.Neutral)
-                            {
-                                throw new NotImplementedException(
-                                    "Currently no support has been implemented for drawing from supertiles that are not aligned with the current tile on the y-axis");
-                            }
-
-                            var destinationRect =
-                                new Rectangle(
-                                    new Point(
-                                        imageComponent.Fragment.X - superTileLeft,
-                                        imageComponent.Fragment.Y - superTileTop),
-                                    imageComponent.Fragment.Size);
-
-                            var sourceRect =
-                                new Rectangle(
-                                    new Point(
-                                        imageComponent.Fragment.Location.X - (superTileOffsetInLayerX - paddingX),
-                                        imageComponent.Fragment.Location.Y - (superTileOffsetInLayerY - paddingY)),
-                                    imageComponent.Fragment.Size);
-
-                            if (imageComponent.XBias == TileBias.Negative)
-                            {
-                                // two cases here: edge of layer (paint transparent padding)
-                                // or grab previous section from image
-                                if (previous == null)
-                                {
-                                    // start of stream, paint transparency
-                                    // default background for the tile is transparent,
-                                    // no need to paint that again
-                                }
-                                else
-                                {
-                                    // paint a fraction from the previous image
-                                    // here, we shift the co-ordinate system one-super-tile's width right
-                                    sourceRect.X = sourceRect.X + width;
-                                    tileImage.DrawImage(previous.Image, destinationRect, sourceRect);
-                                }
-                            }
-                            else if (imageComponent.XBias == TileBias.Positive)
-                            {
-                                // two cases here: edge of layer reached (paint transparent padding)
-                                // or grab next section from image
-                                if (next == null)
-                                {
-                                    // end of stream, paint transparency
-                                    // default background for the tile is transparent,
-                                    // no need to paint that again
-                                }
-                                else
-                                {
-                                    // paint a fraction from the next image
-                                    // here, we shift the co-ordinate system one-super-tile's width left
-                                    sourceRect.X = sourceRect.X - width;
-                                    tileImage.DrawImage(next.Image, destinationRect, sourceRect);
-                                }
-                            }
-                            else
-                            {
-                                // neutral
-                                tileImage.DrawImage(current.Image, destinationRect, sourceRect);
-                            }
-                        }
+                    }
 
                     // write tile to disk
                     string outputTilePath = this.output.CombinePath(name + "." + MediaTypes.ExtPng);
@@ -341,7 +340,7 @@ namespace AudioAnalysisTools.TileImage
         }
 
         /// <summary>
-        /// Returns a set of rectangles that can be used to compose a baseRectangle
+        /// Returns a set of rectangles that can be used to compose a baseRectangle.
         /// </summary>
         /// <param name="baseRectangle">
         /// The base Rectangle.
@@ -540,7 +539,7 @@ namespace AudioAnalysisTools.TileImage
 
         /// <summary>
         /// Aligns a supertile into a layer for one dimension only
-        ///     tiles are aligned to the center of the layer
+        ///     tiles are aligned to the center of the layer.
         /// </summary>
         /// <param name="layerLength">
         /// The layer Width.
@@ -638,16 +637,16 @@ namespace AudioAnalysisTools.TileImage
 
                 results.Add(
                     new Layer(scaleIndex)
-                        {
-                            XNormalizedScale = xNormalizedScale,
-                            YNormalizedScale = yNormalizedScale,
-                            XScale = xScale,
-                            YScale = yScale,
-                            Width = xLayerLength,
-                            Height = yLayerLength,
-                            XTiles = xTiles,
-                            YTiles = yTiles,
-                        });
+                    {
+                        XNormalizedScale = xNormalizedScale,
+                        YNormalizedScale = yNormalizedScale,
+                        XScale = xScale,
+                        YScale = yScale,
+                        Width = xLayerLength,
+                        Height = yLayerLength,
+                        XTiles = xTiles,
+                        YTiles = yTiles,
+                    });
 
                 scaleIndex++;
             }

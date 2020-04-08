@@ -1,4 +1,4 @@
-// <copyright file="LdSpectrogramStitching.cs" company="QutEcoacoustics">
+// <copyright file="LdSpectrogramStitchingTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -7,9 +7,9 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms
     using System;
     using System.IO;
     using System.Linq;
+    using Acoustics.Test.TestHelpers;
     using global::AudioAnalysisTools.LongDurationSpectrograms;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
 
     [TestClass]
     public class LdSpectrogramStitchingTests
@@ -20,7 +20,6 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms
         public void Setup()
         {
             this.outputDirectory = PathHelper.GetTempDir();
-
         }
 
         [TestCleanup]

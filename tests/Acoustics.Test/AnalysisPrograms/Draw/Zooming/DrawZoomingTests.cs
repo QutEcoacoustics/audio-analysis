@@ -1,4 +1,4 @@
-// <copyright file="TestAnalyzeLongRecording.cs" company="QutEcoacoustics">
+// <copyright file="DrawZoomingTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -8,11 +8,11 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
+    using Acoustics.Test.TestHelpers;
     using global::AnalysisPrograms.AnalyseLongRecordings;
     using global::AnalysisPrograms.Draw.Zooming;
     using global::AudioAnalysisTools.LongDurationSpectrograms.Zooming;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
 
     [TestClass]
     public class DrawZoomingTests : OutputDirectoryTest
@@ -51,7 +51,7 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
         }
 
         /// <summary>
-        /// Tests the rendering of zooming spectrograms for a minute of audio indices
+        /// Tests the rendering of zooming spectrograms for a minute of audio indices.
         /// </summary>
         [TestMethod]
         public void TestGenerateTilesFailsWithInvalidScales()
@@ -72,12 +72,12 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
                 // generate the zooming spectrograms
                 DrawZoomingSpectrograms.Execute(
                     new DrawZoomingSpectrograms.Arguments()
-                        {
-                            Output = this.TestOutputDirectory.FullName,
-                            SourceDirectory = indicesDirectory.FullName,
-                            SpectrogramZoomingConfig = newConfigFile.FullName,
-                            ZoomAction = DrawZoomingSpectrograms.Arguments.ZoomActionType.Tile,
-                        });
+                    {
+                        Output = this.TestOutputDirectory.FullName,
+                        SourceDirectory = indicesDirectory.FullName,
+                        SpectrogramZoomingConfig = newConfigFile.FullName,
+                        ZoomAction = DrawZoomingSpectrograms.Arguments.ZoomActionType.Tile,
+                    });
             }
 
             Assert.ThrowsException<InvalidScaleException>(() => SetupAndRun(0.125));
@@ -88,7 +88,7 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
         }
 
         /// <summary>
-        /// Tests the rendering of zooming spectrograms for a minute of audio indices
+        /// Tests the rendering of zooming spectrograms for a minute of audio indices.
         /// </summary>
         [TestMethod]
         public void TestGenerateTiles()
@@ -123,7 +123,7 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.Zooming
         }
 
         /// <summary>
-        /// Tests the rendering of zooming spectrograms for a minute of audio indices
+        /// Tests the rendering of zooming spectrograms for a minute of audio indices.
         /// </summary>
         [TestMethod]
         [Ignore("Broken to resolve .NET Core dependencies. https://github.com/QutEcoacoustics/audio-analysis/issues/289")]

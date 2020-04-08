@@ -1,3 +1,7 @@
+// <copyright file="TestHelper.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
 namespace Acoustics.Test.TestHelpers
 {
     using System;
@@ -112,6 +116,7 @@ namespace Acoustics.Test.TestHelpers
                             ChannelCount = 1,
                             BitsPerSecond = 66400,
                             MediaType = MediaTypes.MediaTypeWebMAudio,
+
                             //BitsPerSample = 32 // only relevant to PCM data
                         }
                 },
@@ -135,6 +140,7 @@ namespace Acoustics.Test.TestHelpers
                             ChannelCount = 1,
                             BitsPerSecond = 171000,
                             MediaType = MediaTypes.MediaTypeWavpack,
+
                             //BitsPerSample = 16,
                         }
                 },
@@ -147,6 +153,7 @@ namespace Acoustics.Test.TestHelpers
                             ChannelCount = 1,
                             BitsPerSecond = 158000,
                             MediaType = MediaTypes.MediaTypeWavpack,
+
                             //BitsPerSample = 16,
                         }
                 },
@@ -183,6 +190,7 @@ namespace Acoustics.Test.TestHelpers
                             ChannelCount = 4,
                             BitsPerSecond = 125000,
                             MediaType = MediaTypes.MediaTypeMp3,
+
                             //BitsPerSample = 16,
                         }
                 },
@@ -221,6 +229,7 @@ namespace Acoustics.Test.TestHelpers
                             ChannelCount = 4,
                             BitsPerSecond = 1275000,
                             MediaType = MediaTypes.MediaTypeWavpack,
+
                             //BitsPerSample = 16,
                         }
                 },
@@ -245,6 +254,7 @@ namespace Acoustics.Test.TestHelpers
                             ChannelCount = 2,
                             BitsPerSecond = 64100,
                             MediaType = MediaTypes.MediaTypeMp3,
+
                             //BitsPerSample = 16,
                         }
                 },
@@ -257,6 +267,7 @@ namespace Acoustics.Test.TestHelpers
                             ChannelCount = 1,
                             BitsPerSecond = 128000,
                             MediaType = MediaTypes.MediaTypeMp3,
+
                             //BitsPerSample = 16,
                         }
                 },
@@ -391,6 +402,7 @@ namespace Acoustics.Test.TestHelpers
         {
             ExceptionMatches<T>(testCode, expectedExceptionPartialString);
         }
+
         /// <summary>
         /// Datetimes may not be exactly equal.
         /// </summary>

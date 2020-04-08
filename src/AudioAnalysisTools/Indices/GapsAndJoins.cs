@@ -6,11 +6,11 @@ namespace AudioAnalysisTools.Indices
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
     using Acoustics.Shared.ImageSharp;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
     using TowseyLibrary;
@@ -53,7 +53,7 @@ namespace AudioAnalysisTools.Indices
         private static readonly string gapDescriptionMissingData = "No Recording";
         private static readonly string gapDescriptionZeroSignal = "ERROR: Zero Signal";
         private static readonly string gapDescriptionInvalidValue = "Invalid Index Value";
-        public static string gapDescriptionFileJoin = "File Join";
+        public static string GapDescriptionFileJoin = "File Join";
 
         public string GapDescription { get; set; }
 
@@ -137,6 +137,7 @@ namespace AudioAnalysisTools.Indices
 
             // initialise starting conditions for loop
             string missingRow = IndexMatrices.MissingRowString;
+
             //int previousRank = -1;
             GapsAndJoins gap = null;
             bool isGap = false;
@@ -217,7 +218,7 @@ namespace AudioAnalysisTools.Indices
                     var fileJoin = new GapsAndJoins
                     {
                         StartPosition = index,
-                        GapDescription = gapDescriptionFileJoin,
+                        GapDescription = GapDescriptionFileJoin,
                         GapRendering = gapRendering,
                         EndPosition = index, // this renders to one pixel width.
                     };
@@ -239,8 +240,8 @@ namespace AudioAnalysisTools.Indices
         /// TODO: should do a unit test. Argument should be an a array of zeros with two insertions of short runs of ones.
         /// //    One of the runs should terminate the array. e.g. 000000000000000000000000000000001111110000000000000000000000001111111111111.
         /// </summary>
-        /// <param name="summaryIndices">array of summary indices</param>
-        /// <returns>a list of erroneous segments</returns>
+        /// <param name="summaryIndices">array of summary indices.</param>
+        /// <returns>a list of erroneous segments.</returns>
         public static List<GapsAndJoins> DataIntegrityCheckForZeroSignal(IEnumerable<SummaryIndexValues> summaryIndices)
         {
             const double tolerance = 0.0001;
@@ -296,7 +297,7 @@ namespace AudioAnalysisTools.Indices
         /// TODO Other data integrity tests can be inserted in the future.
         /// </summary>
         /// <param name="summaryIndices">Dictionary of the currently calculated summary indices.</param>
-        /// <returns>a list of erroneous segments</returns>
+        /// <returns>a list of erroneous segments.</returns>
         public static List<GapsAndJoins> DataIntegrityCheckIndexValues(Dictionary<string, double[]> summaryIndices)
         {
             int errorStart;
@@ -451,7 +452,6 @@ namespace AudioAnalysisTools.Indices
 
         public static Image<Rgb24> DrawGapPatches(Image<Rgb24> bmp, List<GapsAndJoins> errorList, string errorDescription, int height, bool textInVerticalOrientation)
         {
-        
 
             // assume errors are in temporal order and pull out in reverse order
             for (int i = errorList.Count - 1; i >= 0; i--)
@@ -488,16 +488,17 @@ namespace AudioAnalysisTools.Indices
 
         public static Image<Rgb24> DrawFileJoins(Image<Rgb24> bmp, List<GapsAndJoins> errorList)
         {
-            
+
             var pen = new Pen(Color.HotPink, 1);
 
             // assume errors are in temporal order and pull out in reverse order
             for (int i = errorList.Count - 1; i >= 0; i--)
             {
                 var error = errorList[i];
-                if (error.GapDescription.Equals(gapDescriptionFileJoin))
+                if (error.GapDescription.Equals(GapDescriptionFileJoin))
                 {
-                    bmp.Mutate(g => { 
+                    bmp.Mutate(g =>
+                    {
                         g.DrawLine(pen, error.StartPosition, 0, error.StartPosition, bmp.Height);
                     });
                 }
@@ -557,10 +558,10 @@ namespace AudioAnalysisTools.Indices
 
             // create new image
             Image<Rgb24> newBmp = new Image<Rgb24>(width - gapWidth, ht);
-            newBmp.Mutate(g => 
+            newBmp.Mutate(g =>
             {
                 Rectangle srcRect = new Rectangle(0, 0, gapStart, ht);
-                
+
                 g.DrawImage(source.Clone(x => x.Crop(srcRect)), new Point(0, 0), 1);
 
                 // copy image after the gap

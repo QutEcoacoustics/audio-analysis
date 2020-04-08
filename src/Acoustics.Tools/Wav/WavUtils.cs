@@ -1,4 +1,8 @@
-﻿namespace Acoustics.Tools.Wav
+// <copyright file="WavUtils.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace Acoustics.Tools.Wav
 {
     using System;
     using System.IO;
@@ -192,8 +196,6 @@
         /// <returns>
         /// Samples of first channel.
         /// </returns>
-        /// <exception cref="NotSupportedException">
-        /// </exception>
         public static double[] ReadSamples(this Stream wavSource, WavAudioInfo wavInfo)
         {
             var sampleLength = (int)wavInfo.Frames;
@@ -239,8 +241,6 @@
 
             return samples;
         }
-
-
 
         /// <summary>
         /// Get samples per channel. The first channel (mono if it is the only channel) is usually the left.

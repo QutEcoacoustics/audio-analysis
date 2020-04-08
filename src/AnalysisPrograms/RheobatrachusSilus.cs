@@ -1,4 +1,4 @@
-﻿// <copyright file="RheobatrachusSilus.cs" company="QutEcoacoustics">
+// <copyright file="RheobatrachusSilus.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -20,7 +20,7 @@ namespace AnalysisPrograms
     public class RheobatrachusSilus
     {
         /// <summary>
-        /// ################ THE KEY ANALYSIS METHOD
+        /// ################ THE KEY ANALYSIS METHOD.
         /// </summary>
         public static Tuple<BaseSonogram, double[,], List<Plot>, List<AcousticEvent>, TimeSpan> Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict, TimeSpan segmentStartOffset)
         {
@@ -125,7 +125,8 @@ namespace AnalysisPrograms
                     continue;
                 }
 
-                for (int j = 0; j < sampleLength; j++) //lay down score for sample length
+                // lay down score for sample length
+                for (int j = 0; j < sampleLength; j++)
                 {
                     if (intensity[start + j] < spectrum[maxId])
                     {

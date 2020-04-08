@@ -1,4 +1,4 @@
-// <copyright file="SpectrogramSettings.cs" company="QutEcoacoustics">
+// <copyright file="FeatureLearning.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -9,8 +9,8 @@ namespace AudioAnalysisTools.DSP
     using System.IO;
     using System.Linq;
     using Accord.Math;
-    using StandardSpectrograms;
-    using WavTools;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
 
     /// <summary>
     /// This class is designed to learn bases (cluster centroids) through feature learning process.
@@ -19,7 +19,7 @@ namespace AudioAnalysisTools.DSP
     {
         /// <summary>
         /// Apply feature learning process on a set of patch sampling set in an unsupervised manner
-        /// Output clusters
+        /// Output clusters.
         /// </summary>
         public static List<KmeansClustering.Output> UnsupervisedFeatureLearning(FeatureLearningSettings config, string inputPath)
         {
@@ -157,7 +157,7 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// This method downsamples the input matrix (x,y) by a factor of n on the temporal scale (x) using max pooling
+        /// This method downsamples the input matrix (x,y) by a factor of n on the temporal scale (x) using max pooling.
         /// </summary>
         public static double[,] MaxPooling(double[,] matrix, int factor)
         {
@@ -191,7 +191,8 @@ namespace AudioAnalysisTools.DSP
         /// a 2D-array that contains file name, the second number and the corresponding frame numbers in each file.
         /// At the moment, this method only handles single-frames as patches (PatchHeight = 1).
         /// </summary>
-        public static List<KmeansClustering.Output> SemisupervisedFeatureLearning(FeatureLearningSettings config,
+        public static List<KmeansClustering.Output> SemisupervisedFeatureLearning(
+            FeatureLearningSettings config,
             string inputPath, string[,] frameInfo)
         {
             // making a dictionary of frame info as file name and second number as key, and start and end frame number as value.

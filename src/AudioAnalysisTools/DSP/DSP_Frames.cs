@@ -77,7 +77,7 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// Returns the start and end index of all frames in a long audio signal
+        /// Returns the start and end index of all frames in a long audio signal.
         /// </summary>
         public static int[,] FrameStartEnds(int dataLength, int frameSize, int frameStep)
         {

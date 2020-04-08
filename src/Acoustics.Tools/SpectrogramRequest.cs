@@ -49,8 +49,6 @@ namespace Acoustics.Tools
         /// <summary>
         /// Gets CalculatedWidth.
         /// </summary>
-        /// <exception cref="InvalidOperationException">
-        /// </exception>
         public int CalculatedWidth
         {
             get

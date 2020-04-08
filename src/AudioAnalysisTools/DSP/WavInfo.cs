@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="WavInfo.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -38,46 +38,41 @@ namespace AudioAnalysisTools.DSP
         public short BytesPerSample { get; set; }
 
         /// <summary>
-        /// Gets or sets
+        /// Gets or sets.
         /// </summary>
         public short CompressionCode { get; set; }
 
         /// <summary>
-        /// Gets or sets
+        /// Gets or sets.
         /// </summary>
         public int BytesPerSecond { get; set; }
 
         /// <summary>
-        /// Gets or sets
+        /// Gets or sets.
         /// </summary>
         public double[] Samples { get; set; }
 
         /// <summary>
-        /// Gets or sets
+        /// Gets or sets.
         /// </summary>
         public short[][] SamplesSplit { get; set; }
 
         /// <summary>
-        /// Gets or sets
+        /// Gets or sets.
         /// </summary>
         public TimeSpan Duration { get; set; }
 
         /// <summary>
-        /// Gets
+        /// Gets.
         /// </summary>
         public double Epsilon => Math.Pow(0.5, this.BitsPerSample - 1);
 
         public int Frames { get; set; }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="WavInfo"/> class.
         /// Create a sine wave.
         /// </summary>
-        /// <param name="freq"></param>
-        /// <param name="amp"></param>
-        /// <param name="phase"></param>
-        /// <param name="duration"></param>
-        /// <param name="sampleRate"></param>
-        /// <returns></returns>
         public WavInfo(double freq, double amp, double phase, TimeSpan duration, int sampleRate)
         {
             int length = (int)Math.Floor(duration.TotalSeconds * sampleRate);
@@ -96,13 +91,9 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="WavInfo"/> class.
         /// Create a Sine wav with multiple frequencies.
         /// </summary>
-        /// <param name="freq"></param>
-        /// <param name="amp"></param>
-        /// <param name="phase"></param>
-        /// <param name="duration"></param>
-        /// <param name="sampleRate"></param>
         public WavInfo(double[] freq, double amp, double phase, TimeSpan duration, int sampleRate)
         {
             int length = (int)Math.Floor(duration.TotalSeconds * sampleRate);
@@ -126,6 +117,7 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="WavInfo"/> class.
         /// Create a wav info using data, channels, bits per sample and sample rate.
         /// </summary>
         /// <param name="rawData">Raw samples.</param>
@@ -178,8 +170,6 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         ///
         /// </summary>
-        /// <param name="wavInfo"></param>
-        /// <returns></returns>
         public static double CalculateMaximumAmplitude(WavInfo wavInfo)
         {
             // Max expects at least 1 item in array.

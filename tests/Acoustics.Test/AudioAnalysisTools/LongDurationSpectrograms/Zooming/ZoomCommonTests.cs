@@ -6,14 +6,12 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms.Zooming
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using Acoustics.Test.TestHelpers;
-
     using global::AudioAnalysisTools.Indices;
     using global::AudioAnalysisTools.LongDurationSpectrograms;
     using global::AudioAnalysisTools.LongDurationSpectrograms.Zooming;
-
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
 
     [TestClass]
@@ -67,12 +65,12 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms.Zooming
             };
 
             var generationData = new IndexGenerationData()
-                                     {
-                                         IndexCalculationDuration = dataScale,
-                                         FrameLength = 512,
-                                         FrameStep = 0,
-                                         RecordingDuration = recordingDuration,
-                                     };
+            {
+                IndexCalculationDuration = dataScale,
+                FrameLength = 512,
+                FrameStep = 0,
+                RecordingDuration = recordingDuration,
+            };
             var indexProperties =
                 IndexProperties.GetIndexProperties(PathHelper.ResolveConfigFile("IndexPropertiesConfig.yml"));
 

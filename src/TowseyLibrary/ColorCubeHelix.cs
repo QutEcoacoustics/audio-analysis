@@ -11,7 +11,7 @@ namespace TowseyLibrary
 
     /// <summary>
     ///     Code for CUBEHELIX adapted from JavaScript code obtained from following website:
-    ///     <c>https://www.mrao.cam.ac.uk/~dag/CUBEHELIX/</c>
+    ///     <c>https://www.mrao.cam.ac.uk/~dag/CUBEHELIX/</c>.
     /// </summary>
     public class ColorCubeHelix
     {
@@ -46,7 +46,7 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// This method assumes that the intensity lies in [0,1]
+        /// This method assumes that the intensity lies in [0,1].
         /// </summary>
         /// <param name="intensity">
         /// </param>
@@ -64,7 +64,7 @@ namespace TowseyLibrary
         ///     Assumes some form of normalization already done.
         /// </summary>
         /// <param name="matrix">
-        /// the data
+        /// the data.
         /// </param>
         /// <returns>
         /// The <see cref="Image"/>.

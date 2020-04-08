@@ -74,9 +74,6 @@ namespace AudioAnalysisTools.Indices
         /// Reads through multiple directories to read multiple files of spectral indices.
         /// The spectral indices are combined day-wise into pivot-tables which are written to file.
         /// </summary>
-        /// <param name="indexPropertiesConfig"></param>
-        /// <param name="inputDirInfo"></param>
-        /// <param name="opDir"></param>
         public static void ReadAllSpectralIndicesAndWriteToDataTable(FileInfo indexPropertiesConfig, DirectoryInfo inputDirInfo, DirectoryInfo opDir)
         {
             Dictionary<string, IndexProperties> dictIP = IndexProperties.GetIndexProperties(indexPropertiesConfig);
@@ -193,8 +190,8 @@ namespace AudioAnalysisTools.Indices
         /// <summary>
         /// Reads a single csv file in form of table and returns a dictionary of spectral indices.
         /// </summary>
-        /// <param name="csvFileName">path to file containing a table of spectral index values</param>
-        /// <returns>dictionary of matrices</returns>
+        /// <param name="csvFileName">path to file containing a table of spectral index values.</param>
+        /// <returns>dictionary of matrices.</returns>
         public static Dictionary<string, double[,]> ReadPivotTableToSpectralIndices(string csvFileName)
         {
             // MICHAEL: the new Csv class can read this in, and optionally transpose as it reads

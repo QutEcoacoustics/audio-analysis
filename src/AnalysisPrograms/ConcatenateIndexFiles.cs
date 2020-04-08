@@ -24,7 +24,6 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.IO.Compression;
     using System.Linq;
@@ -43,13 +42,10 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.StandardSpectrograms;
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
-    using Production;
-    using Production.Arguments;
-    using Production.Validation;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
     using TowseyLibrary;
-    using Acoustics.Shared.Contracts;
     using Path = System.IO.Path;
 
     /// <summary>
@@ -213,6 +209,7 @@ namespace AnalysisPrograms
             // 1. PATTERN SEARCH FOR CORRECT SUBDIRECTORIES
             // Assumes that the required subdirectories have the given FILTER/SiteName somewhere in their path.
             var searchOption = SearchOption.AllDirectories;
+
             //var searchOption = SearchOption.TopDirectoryOnly;
             var subDirectories = LdSpectrogramStitching.GetSubDirectoriesForSiteData(inputDirs, arguments.DirectoryFilter, searchOption);
             if (subDirectories.Length == 0)
@@ -580,7 +577,7 @@ namespace AnalysisPrograms
                         var recognizerTrack = GraphsAndCharts.DrawGraph("Canetoad events", normalisedScores, 32);
                         var imageFilePath = Path.Combine(resultsDir.FullName, outputFileStem + "_" + dateString + "__2Maps" + ".png");
                         var twoMaps = Image.Load<Rgb24>(imageFilePath);
-                        var imageList = new [] { twoMaps, recognizerTrack };
+                        var imageList = new[] { twoMaps, recognizerTrack };
                         var compositeBmp = (Image<Rgb24>)ImageTools.CombineImagesVertically(imageList);
                         var imagePath2 = Path.Combine(resultsDir.FullName, outputFileStem + "_" + dateString + ".png");
                         compositeBmp.Save(imagePath2);
@@ -677,7 +674,7 @@ namespace AnalysisPrograms
 
             //create composite image
             var compositeBmpYscale = (Image<Rgb24>)ImageTools.CombineImagesVertically(imageList);
-            var finalImages = new [] { compositeBmpYscale, compositeBmp, compositeBmpYscale };
+            var finalImages = new[] { compositeBmpYscale, compositeBmp, compositeBmpYscale };
             var finalComposite = (Image<Rgb24>)ImageTools.CombineImagesInLine(finalImages);
 
             // add title bar
@@ -691,7 +688,7 @@ namespace AnalysisPrograms
                 canvas.Clear(Color.Gray);
             });
 
-            var titledImages = new []{ titleBmp, spacer, finalComposite };
+            var titledImages = new[] { titleBmp, spacer, finalComposite };
             finalComposite = (Image<Rgb24>)ImageTools.CombineImagesVertically(titledImages);
 
             finalComposite.Save(Path.Combine(outputDirectory.FullName, opFileStem + ".png"));
@@ -711,7 +708,7 @@ namespace AnalysisPrograms
                 {
                     if (smt.Date == dto)
                     {
-                        foreach (KeyValuePair<string, DateTimeOffset> kvp in smt.dictionary)
+                        foreach (KeyValuePair<string, DateTimeOffset> kvp in smt.Dictionary)
                         {
                             string key = kvp.Key;
                             DateTimeOffset dto2 = kvp.Value;
@@ -774,7 +771,7 @@ namespace AnalysisPrograms
             Image<Rgb24> timeBmp1 = ImageTrack.DrawTimeRelativeTrack(duration, indexArray.Length, trackHeight);
             Image<Rgb24> timeBmp2 = ImageTrack.DrawTimeTrack(duration, startTime, indexArray.Length, trackHeight);
 
-            var imageList = new [] { titleBar, timeBmp1, image, timeBmp2 };
+            var imageList = new[] { titleBar, timeBmp1, image, timeBmp2 };
             var compositeBmp = (Image<Rgb24>)ImageTools.CombineImagesVertically(imageList);
 
             string imagePath = Path.Combine(outputDirectory.FullName, opFileStem + ".png");

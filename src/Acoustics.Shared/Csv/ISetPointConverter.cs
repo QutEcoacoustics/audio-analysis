@@ -11,12 +11,12 @@ namespace Acoustics.Shared.Csv
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.Text;
-    using Contracts;
+    using Acoustics.Shared.Contracts;
     using CsvHelper;
     using CsvHelper.Configuration;
     using CsvHelper.TypeConversion;
+    using SixLabors.ImageSharp;
 
     public class CsvSetPointConverter : ITypeConverter
     {

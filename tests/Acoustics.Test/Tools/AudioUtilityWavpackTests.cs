@@ -1,4 +1,4 @@
-﻿// <copyright file="AudioUtilityWavpackTests.cs" company="QutEcoacoustics">
+// <copyright file="AudioUtilityWavpackTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -132,6 +132,7 @@ namespace Acoustics.Test.Tools
                 MixDownToMono = false,
                 OffsetStart = TimeSpan.FromSeconds(15),
                 OffsetEnd = TimeSpan.FromSeconds(75),
+
                 //SampleRate = 11025
             };
 

@@ -13,7 +13,7 @@ namespace AnalysisPrograms.AcousticWorkbench.Orchestration
     using System.Threading.Tasks.Dataflow;
     using Acoustics.Shared;
     using Acoustics.Shared.Contracts;
-    using EventStatistics;
+    using AnalysisPrograms.EventStatistics;
     using global::AcousticWorkbench;
     using global::AcousticWorkbench.Models;
     using log4net;

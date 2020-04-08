@@ -323,7 +323,7 @@ namespace AnalysisPrograms.Recognizers
         /// <summary>
         /// THis method can be modified if want to do something non-standard with the output spectrogram.
         /// </summary>
-        static void SaveDebugSpectrogram(RecognizerResults results, Config genericConfig, DirectoryInfo outputDirectory, string baseName)
+        private static void SaveDebugSpectrogram(RecognizerResults results, Config genericConfig, DirectoryInfo outputDirectory, string baseName)
         {
             var image3 = SpectrogramTools.GetSonogramPlusCharts(results.Sonogram, results.Events, results.Plots, null);
 

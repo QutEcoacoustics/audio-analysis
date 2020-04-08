@@ -152,10 +152,6 @@ namespace TowseyLibrary
         /// Steps through the passed array and checks each segment for a grating pattern having period = 2 signal samples.
         /// Use this method when the array to be scanned has already been reduced by some method.
         /// </summary>
-        /// <param name="array"></param>
-        /// <param name="step"></param>
-        /// <param name="segmentLength"></param>
-        /// <returns></returns>
         public static double[] ScanArrayForGridPattern(double[] array, int step, int segmentLength)
         {
             int length = array.Length;
@@ -187,11 +183,7 @@ namespace TowseyLibrary
         /// Then the reduced segment is passed to check for a grating pattern having period = 2 signal samples.
         /// Use this method when the array to be scanned will be reduced on the fly.
         /// </summary>
-        /// <param name="array"></param>
-        /// <param name="step"></param>
-        /// <param name="numberOfCycles"></param>
-        /// <param name="cyclePeriod">NB! MUST BE AN EVEN NUMBER!!!</param>
-        /// <returns></returns>
+        /// <param name="cyclePeriod">NB! MUST BE AN EVEN NUMBER!!!.</param>
         public static double[] ScanArrayForGratingPattern(double[] array, int step, int numberOfCycles, int cyclePeriod)
         {
             //noise reduce the array to get acoustic events
@@ -251,37 +243,32 @@ namespace TowseyLibrary
             reducedSegment = new double[reducedLength];
             for (int x = 0; x < reducedLength; x++)
             {
-                    //################# Two ways to reduce:
-                    //################ (1) by average of the period or (2) by max of the period
-                    double sum = 0;
-                    for (int c = 0; c < halfPeriod; c++)
+                //################# Two ways to reduce:
+                //################ (1) by average of the period or (2) by max of the period
+                double sum = 0;
+                for (int c = 0; c < halfPeriod; c++)
                 {
                     sum += array[(x * halfPeriod) + c];
                 }
 
-                    reducedSegment[x] = sum / cyclePeriod;
+                reducedSegment[x] = sum / cyclePeriod;
 
-                    //################ (2)
-                    //double max = -Double.MaxValue;
-                    //for (int c = 0; c < halfPeriod; c++)
-                    //{
-                    //    double value = extract[(x * halfPeriod) + c];
-                    //    if (max < value) max = value;
-                    //}
-                    //reducedSegment[x] = max;
+                //################ (2)
+                //double max = -Double.MaxValue;
+                //for (int c = 0; c < halfPeriod; c++)
+                //{
+                //    double value = extract[(x * halfPeriod) + c];
+                //    if (max < value) max = value;
+                //}
+                //reducedSegment[x] = max;
             }
 
             return reducedSegment;
         }
 
         /// <summary>
-        /// returns the period scores for a range of periods to be found in the passed array
+        /// returns the period scores for a range of periods to be found in the passed array.
         /// </summary>
-        /// <param name="array"></param>
-        /// <param name="minPeriod"></param>
-        /// <param name="maxPeriod"></param>
-        /// <param name="intensityThreshold"></param>
-        /// <returns></returns>
         public static double[][] ScanArrayForGratingPattern(double[] array, int minPeriod, int maxPeriod, int numberOfCycles, int step)
         {
             int minHalfPeriod = minPeriod / 2;
@@ -374,7 +361,7 @@ namespace TowseyLibrary
             return list;
         } //ExtractPeriodicEvents()
 
-        ///used for testing purposes
+        // used for testing purposes
         public static double[] GetPeriodicSignal(int cyclePeriod, int numberOfCycles)
         {
             //double[] template = { 1.0, 0.0, 1.1, 0.1, 1.2, 0.2, 1.3, 0.3 };

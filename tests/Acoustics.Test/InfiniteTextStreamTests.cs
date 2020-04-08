@@ -9,8 +9,8 @@ namespace Acoustics.Test
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
+    using Acoustics.Test.TestHelpers;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
 
     [TestClass]
     [DoNotParallelize]

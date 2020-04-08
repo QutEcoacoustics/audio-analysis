@@ -19,18 +19,17 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Reflection;
-    using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.ImageSharp;
-    using Indices;
+    using AudioAnalysisTools.Indices;
+    using AudioAnalysisTools.StandardSpectrograms;
     using log4net;
     using SixLabors.Fonts;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using StandardSpectrograms;
     using TowseyLibrary;
     using Path = System.IO.Path;
 
@@ -367,7 +366,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         {
             SunAndMoon.AddSunRiseSetLinesToImage((Image<Rgb24>)bmp1, sunriseSetData, 0, 365, 1); // assume full year and 1px/day
 
-            
             var pen = new Pen(Color.White, 1);
             var stringFont = Drawing.Arial12;
             var str = $"Freq = {herzValue} Hz";
@@ -388,7 +386,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var xAxisTicInterval = TimeSpan.FromMinutes(60); // assume 60 pixels per hour
             var timeScale24Hour = ImageTrack.DrawTimeTrack(fullDuration, startOffset, xAxisTicInterval, bmp1.Width, trackHeight, "hours");
 
-            var imageList = new [] { titleBar, timeScale24Hour, bmp1, timeScale24Hour };
+            var imageList = new[] { titleBar, timeScale24Hour, bmp1, timeScale24Hour };
             var compositeBmp = ImageTools.CombineImagesVertically(imageList);
             if (compositeBmp == null)
             {
@@ -399,7 +397,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             Image<Rgb24> timeScale12Months = ImageTrack.DrawYearScaleVertical(40, trackHeight);
             Image<Rgb24> freqScaleImage = DrawFreqScale_vertical(40, trackHeight, herzValue, nyquistFreq);
 
-            imageList = new [] { timeScale12Months, compositeBmp, freqScaleImage };
+            imageList = new[] { timeScale12Months, compositeBmp, freqScaleImage };
             compositeBmp = ImageTools.CombineImagesInLine(imageList);
 
             return compositeBmp;
@@ -429,7 +427,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 g.DrawLine(whitePen, xoffset, yoffset, trackWidth, yoffset);
                 g.DrawLine(whitePen, xoffset, yoffset - 1, trackWidth, yoffset - 1);
 
-                for (int i = 1; i <= gridCount; i++) //for pixels in the line
+                // for pixels in the line
+                for (int i = 1; i <= gridCount; i++)
                 {
                     int y = trackHeight - (int)Math.Round(i * gridInterval);
                     g.DrawLine(whitePen, xoffset, y, trackWidth, y);
@@ -492,7 +491,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             const int trackHeight = 20;
             var timeScale12Months = ImageTrack.DrawYearScale_horizontal(imageWidth, trackHeight);
-            var imageList = new [] { titleBar, timeScale12Months, bmp1, timeScale12Months };
+            var imageList = new[] { titleBar, timeScale12Months, bmp1, timeScale12Months };
             var compositeBmp = ImageTools.CombineImagesVertically(imageList);
 
             //imageWidth = compositeBmp.Height;
@@ -518,7 +517,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             var lines = FileTools.ReadTextFile(sunriseSetData.FullName);
 
-            for (int i = 1; i <= 365; i++) // skip header
+            //  skip header
+            for (int i = 1; i <= 365; i++)
             {
                 string[] fields = lines[i].Split(',');
 
@@ -547,7 +547,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
         /// <summary>
         /// This method reads a single file containg a single day of index values.
-        /// The method assumes that the file name has following structure:  XXXXX_YYYYMMDD.SpectralIndices.PivotTable.csv
+        /// The method assumes that the file name has following structure:  XXXXX_YYYYMMDD.SpectralIndices.PivotTable.csv.
         /// </summary>
         public static List<string> GetDaySlice(DirectoryInfo dataTableDir, int year, int dayOfYear)
         {

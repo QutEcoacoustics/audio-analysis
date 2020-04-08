@@ -1,10 +1,13 @@
+// <copyright file="AnalysisResult.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
 namespace AnalysisBase
 {
-    using System.Data;
-    using System.Collections.Generic;
-    using System.IO;
     using System;
-
+    using System.Collections.Generic;
+    using System.Data;
+    using System.IO;
 
     /// <summary>
     /// Analysis Results.
@@ -77,10 +80,9 @@ namespace AnalysisBase
         public Dictionary<int, string> DisplayItems { get; private set; }
 
         /// <summary>
-        /// Gets or sets OutputFiles.
+        /// Gets OutputFiles.
         /// </summary>
         public Dictionary<string, FileInfo> OutputFiles { get; private set; }
-
 
         /// <summary>
         /// Gets or sets the location of the events file for this analysis.
@@ -106,7 +108,6 @@ namespace AnalysisBase
         /// Gets or sets the offset of the segment from the original entire audio file.
         /// </summary>
         public TimeSpan SegmentStartOffset { get; set; }
-
 
         ///// <summary>
         ///// Different summary indices, typically calculated from one minute of recording

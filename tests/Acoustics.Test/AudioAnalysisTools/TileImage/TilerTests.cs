@@ -10,7 +10,6 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Linq;
-    using Acoustics.Shared.Contracts;
     using Acoustics.Test.TestHelpers;
     using global::AudioAnalysisTools.LongDurationSpectrograms;
     using global::AudioAnalysisTools.TileImage;

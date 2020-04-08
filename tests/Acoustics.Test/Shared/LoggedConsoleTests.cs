@@ -7,9 +7,9 @@ namespace Acoustics.Test.Shared
     using System;
     using System.IO;
     using System.Threading.Tasks;
+    using Acoustics.Test.TestHelpers;
     using log4net.Core;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Acoustics.Test.TestHelpers;
 
     [TestClass]
     [DoNotParallelize]
@@ -92,6 +92,7 @@ namespace Acoustics.Test.Shared
 
                     var actual = stringWriter.ToString();
                     StringAssert.Contains(actual, "Enter your name:");
+
                     //StringAssert.Contains(actual, "anthony:");
 
                     Assert.AreEqual("anthony", task.Result);
@@ -138,8 +139,6 @@ namespace Acoustics.Test.Shared
                     () => LoggedConsole.Prompt("Enter your name:", timeout: TimeSpan.FromMilliseconds(500)),
                     "Timed out waiting for user input to prompt:");
             }
-
-
         }
     }
 }

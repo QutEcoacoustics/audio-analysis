@@ -8,7 +8,6 @@ namespace AnalysisPrograms.Production.Arguments
     using System.IO;
     using McMaster.Extensions.CommandLineUtils;
 
-
     public abstract class SourceArguments
         : SubCommandBase
     {

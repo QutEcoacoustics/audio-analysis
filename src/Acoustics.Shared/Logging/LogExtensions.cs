@@ -39,7 +39,7 @@ namespace log4net
 
         /// <summary>
         /// Log a message object with the <see cref="F:LogExtensions.SuccessLevel"/> level -
-        /// equivalent to <see cref="F:log4net.Core.Level.Notice"/>
+        /// equivalent to <see cref="F:log4net.Core.Level.Notice"/>.
         /// </summary>
         /// <param name="log">
         /// The log.
@@ -54,9 +54,9 @@ namespace log4net
 
         /// <summary>
         /// Log a message object with the <see cref="F:LogExtensions.SuccessLevel"/> level -
-        /// equivalent to <see cref="F:log4net.Core.Level.Notice"/>
+        /// equivalent to <see cref="F:log4net.Core.Level.Notice"/>.
         /// </summary>
-        /// <param name="log">The logger to use</param>
+        /// <param name="log">The logger to use.</param>
         /// <param name="format">
         /// The string format.
         /// </param>
@@ -104,7 +104,7 @@ namespace log4net
         ///             as a parameter.
         /// Verbose is the most detailed log level.
         /// </summary>
-        /// <param name="log">The logger to use</param>
+        /// <param name="log">The logger to use.</param>
         /// <param name="message">The message object to log.</param>
         /// <param name="exception">The exception to log, including its stack trace.</param>
         /// <remarks>
@@ -118,10 +118,10 @@ namespace log4net
         }
 
         /// <summary>
-        /// Gets a value indicating whether the Verbose logging level is enabled
+        /// Gets a value indicating whether the Verbose logging level is enabled.
         /// </summary>
-        /// <param name="log">The logger to use</param>
-        /// <returns>True if the Verbose logging level is enabled</returns>
+        /// <param name="log">The logger to use.</param>
+        /// <returns>True if the Verbose logging level is enabled.</returns>
         public static bool IsVerboseEnabled(this ILog log)
         {
             return log.Logger.IsEnabledFor(Level.Verbose);
@@ -133,7 +133,7 @@ namespace log4net
         ///             as a parameter.
         /// Verbose is the most detailed log level.
         /// </summary>
-        /// <param name="log">The logger to use</param>
+        /// <param name="log">The logger to use.</param>
         /// <param name="message">The message object to log.</param>
         /// <remarks>
         /// <para>
@@ -166,7 +166,7 @@ namespace log4net
         ///             as a parameter.
         /// Trace is the most detailed log level.
         /// </summary>
-        /// <param name="log">The logger to use</param>
+        /// <param name="log">The logger to use.</param>
         /// <param name="message">The message object to log.</param><param name="exception">The exception to log, including its stack trace.</param>
         /// <remarks>
         /// <para>

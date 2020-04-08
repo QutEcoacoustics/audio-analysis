@@ -8,13 +8,13 @@ namespace AudioAnalysisTools.DSP
     using System.Collections.Generic;
     using System.Linq;
     using Acoustics.Tools.Wav;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
     using SixLabors.ImageSharp;
-    using StandardSpectrograms;
     using TowseyLibrary;
-    using WavTools;
 
     /// <summary>
-    /// digital signal processing FILTERS methods
+    /// digital signal processing FILTERS methods.
     /// </summary>
     public static partial class DspFilters
     {
@@ -171,9 +171,9 @@ namespace AudioAnalysisTools.DSP
         /// Phase is not taken into account.
         /// Generate Cos waves rather than Sin because amplitude should return to 1.0 if done correctly.
         /// </summary>
-        /// <param name="sampleRate">sr of output signal</param>
-        /// <param name="duration">signal duration in seconds</param>
-        /// <param name="freq">an array of frequency harmonics in Hertz</param>
+        /// <param name="sampleRate">sr of output signal.</param>
+        /// <param name="duration">signal duration in seconds.</param>
+        /// <param name="freq">an array of frequency harmonics in Hertz.</param>
         public static double[] GetSignalOfAddedCosines(int sampleRate, double duration, int[] freq)
         {
             double amplitude = 0.999 / freq.Length;
@@ -265,13 +265,13 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// converts passed arguments into step decay and step radians ie radians per sample or OMEGA
+        /// converts passed arguments into step decay and step radians ie radians per sample or OMEGA.
         /// </summary>
-        /// <param name="signal">the signal</param>
-        /// <param name="sf">sampling frequency</param>
-        /// <param name="tHalf">half life in seconds</param>
-        /// <param name="period">of the cycle of interest</param>
-        /// <param name="filterDuration">length of filter in seconds</param>
+        /// <param name="signal">the signal.</param>
+        /// <param name="sf">sampling frequency.</param>
+        /// <param name="tHalf">half life in seconds.</param>
+        /// <param name="period">of the cycle of interest.</param>
+        /// <param name="filterDuration">length of filter in seconds.</param>
         public static double[] Filter_DecayingSinusoid(double[] signal, double sf, double tHalf, double period, double filterDuration)
         {
             double samplesPerTHalf = tHalf * sf;
@@ -341,9 +341,9 @@ namespace AudioAnalysisTools.DSP
         /// FIR filters are always stable, while IIR filters may be unstable.
         /// This filter is linear, causal and time-invariant.
         /// </summary>
-        /// <param name="signal">input signal</param>
-        /// <param name="filterCoeff">filter coefficients</param>
-        /// <returns>the filtered signal</returns>
+        /// <param name="signal">input signal.</param>
+        /// <param name="filterCoeff">filter coefficients.</param>
+        /// <returns>the filtered signal.</returns>
         public static double[] FIR_Filter(double[] signal, double[] filterCoeff)
         {
             int signalLength = signal.Length;

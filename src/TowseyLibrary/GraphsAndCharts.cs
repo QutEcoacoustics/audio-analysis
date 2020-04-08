@@ -8,7 +8,6 @@ namespace TowseyLibrary
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using Acoustics.Shared;
     using Acoustics.Shared.ImageSharp;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
@@ -32,7 +31,7 @@ namespace TowseyLibrary
                     { "mode", mode },
                     { "sd", sd },
                 };
-                var image = DrawHistogram(plot.title, histogram,  95, statistics, imageWidth,  height);
+                var image = DrawHistogram(plot.title, histogram, 95, statistics, imageWidth, height);
                 imageList.Add(image);
             }
 
@@ -202,7 +201,6 @@ namespace TowseyLibrary
             {
                 g2.DrawLine(pen1, 0, bmp2.Height - 1, imageWidth, bmp2.Height - 1);
                 g2.DrawText(label, stringFont, Color.Wheat, new PointF(4, 3));
-
             });
 
             Image<Rgb24>[] images = { bmp2, bmp1 };
@@ -233,7 +231,6 @@ namespace TowseyLibrary
 
             //Font stringFont = Drawing.Tahoma9;
             //SizeF stringSize = new SizeF();
-
 
             var bmp1 = new Image<Rgb24>(imageWidth, imageHeight);
             bmp1.Mutate(g1 =>

@@ -12,9 +12,9 @@ namespace AnalysisPrograms.EventStatistics
     using System.ComponentModel.DataAnnotations;
     using System.IO;
     using System.Threading.Tasks;
+    using AnalysisPrograms.Production.Arguments;
+    using AnalysisPrograms.Production.Validation;
     using McMaster.Extensions.CommandLineUtils;
-    using Production.Arguments;
-    using Production.Validation;
 
     public partial class EventStatisticsEntry
     {

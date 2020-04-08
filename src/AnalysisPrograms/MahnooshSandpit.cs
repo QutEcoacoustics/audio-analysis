@@ -1,4 +1,4 @@
-// <copyright file="UnsupervisedFeatureLearningTest.cs" company="QutEcoacoustics">
+// <copyright file="MahnooshSandpit.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -6,7 +6,6 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
@@ -15,11 +14,12 @@ namespace AnalysisPrograms
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
     using Acoustics.Shared.ImageSharp;
+    using AnalysisPrograms.Production.Arguments;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using McMaster.Extensions.CommandLineUtils;
-    using Production.Arguments;
+    using SixLabors.ImageSharp;
     using TowseyLibrary;
     using Path = System.IO.Path;
 
@@ -34,6 +34,7 @@ namespace AnalysisPrograms
             var inputDir = @"D:\Mahnoosh\Liz\Least_Bittern\";
             var inputPath = Path.Combine(inputDir, "TrainSet\\one_min_recordings");
             var trainSetPath = Path.Combine(inputDir, "TrainSet\\train_data");
+
             // var testSetPath = Path.Combine(inputDir, "TestSet");
             var configPath = @"D:\Mahnoosh\Liz\Least_Bittern\FeatureLearningConfig.yml";
             var resultDir = Path.Combine(inputDir, "FeatureLearning");
@@ -259,6 +260,7 @@ namespace AnalysisPrograms
             LoggedConsole.WriteLine("feature extraction process...");
             var inputDir = @"D:\Mahnoosh\Liz\Least_Bittern\";
             var resultDir = Path.Combine(inputDir, "FeatureLearning");
+
             //var trainSetPath = Path.Combine(inputDir, "TrainSet");
             var testSetPath = Path.Combine(inputDir, "TestSet\\one_min_recordings");
             var configPath = @"D:\Mahnoosh\Liz\Least_Bittern\FeatureLearningConfig.yml";
@@ -285,7 +287,7 @@ namespace AnalysisPrograms
 
         public static void GenerateSpectrograms()
         {
-            var recordingDir = @"M:\Liz\SupervisedPatchSamplingSet\Recordings\"; 
+            var recordingDir = @"M:\Liz\SupervisedPatchSamplingSet\Recordings\";
             var resultDir = @"M:\Liz\SupervisedPatchSamplingSet\";
 
             // check whether there is any file in the folder/subfolders

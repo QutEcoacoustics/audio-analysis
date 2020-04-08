@@ -6,13 +6,13 @@ namespace AnalysisPrograms.Production.Arguments
 {
     using System.Threading.Tasks;
     using Acoustics.Shared;
-    using AnalyseLongRecordings;
+    using AnalysisPrograms.AnalyseLongRecordings;
     using AnalysisPrograms.Draw.RibbonPlots;
+    using AnalysisPrograms.Draw.Zooming;
+    using AnalysisPrograms.EventStatistics;
+    using AnalysisPrograms.Recognizers.Base;
     using AnalysisPrograms.SpectrogramGenerator;
-    using Draw.Zooming;
-    using EventStatistics;
     using McMaster.Extensions.CommandLineUtils;
-    using Recognizers.Base;
 
     [Command(
         Meta.Name,

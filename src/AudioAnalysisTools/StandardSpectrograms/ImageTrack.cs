@@ -5,16 +5,15 @@
 namespace AudioAnalysisTools.StandardSpectrograms
 {
     using System;
-    using SixLabors.ImageSharp;
+    using System.Linq;
+    using Acoustics.Shared.ImageSharp;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.WavTools;
     using SixLabors.Fonts;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
     using TowseyLibrary;
-    using Acoustics.Shared;
-    using Acoustics.Shared.ImageSharp;
-    using System.Linq;
 
     public enum TrackType
     {
@@ -71,14 +70,16 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         public double ScoreMin
         {
-            get { return this.scoreMin; } set { this.scoreMin = value; }
+            get { return this.scoreMin; }
+            set { this.scoreMin = value; }
         }
 
         public double scoreMax = 10.0; //default max score displayed in score track of image
 
         public double ScoreMax
         {
-            get { return this.scoreMax; } set { this.scoreMax = value; }
+            get { return this.scoreMax; }
+            set { this.scoreMax = value; }
         }
 
         public double ScoreThreshold { get; set; }
@@ -112,10 +113,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
         public int GarbageID { get; set; } = 0;
 
         /// <summary>
-        /// CONSTRUCTOR
+        /// Initializes a new instance of the <see cref="ImageTrack"/> class.
+        /// CONSTRUCTOR.
         /// </summary>
-        /// <param name="type"></param>
-        /// <param name="data"></param>
         public ImageTrack(TrackType type, int[] data)
         {
             this.TrackType = type;
@@ -135,11 +135,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
         }
 
         /// <summary>
-        /// used for showing the singal envelope track
+        /// Initializes a new instance of the <see cref="ImageTrack"/> class.
+        /// used for showing the singal envelope track.
         /// </summary>
-        /// <param name="type"></param>
-        /// <param name="data1"></param>
-        /// <param name="data2"></param>
         public ImageTrack(TrackType type, double[] data1, double[] data2)
         {
             this.TrackType = type;
@@ -241,7 +239,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             //if ((title != null) && (title.Length != 0)) DrawTrackTitle(bmp, title);  //add a score track
         }
 
-        /// adds title to bottom of bmp which is assume to be a track.
+        // adds title to bottom of bmp which is assume to be a track.
         public Image<Rgb24> DrawTrackTitle(Image<Rgb24> bmp, string title)
         {
             bmp.Mutate(g =>
@@ -252,7 +250,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         }
 
         /// <summary>
-        /// paints a track of symbol colours derived from symbol ID
+        /// paints a track of symbol colours derived from symbol ID.
         /// </summary>
         public Image<Rgb24> DrawSyllablesTrack(Image<Rgb24> bmp)
         {
@@ -542,7 +540,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 //paint white and leave a black vertical histogram bar
                 for (int z = 0; z < id; z++)
                 {
-                    bmp[x, this.topOffset + z]  = white;
+                    bmp[x, this.topOffset + z] = white;
                 }
 
                 for (int z = id; z < this.Height; z++)
@@ -568,10 +566,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
         }
 
         /// <summary>
-        /// assumes that max signal value = 1.0 and min sig value = -1.0 i.e. wav file values
+        /// assumes that max signal value = 1.0 and min sig value = -1.0 i.e. wav file values.
         /// </summary>
-        /// <param name="bmp"></param>
-        /// <returns></returns>
         public Image<Rgb24> DrawWaveEnvelopeTrack(Image<Rgb24> bmp)
         {
             int halfHeight = this.Height / 2;
@@ -597,11 +593,11 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 }
                 else
                     if (this.doubleMatrix[1, w] > 0.99)
-                    {
-                        bmp[w, this.topOffset] = Color.OrangeRed;
-                        bmp[w, this.topOffset + 1] = Color.OrangeRed;
-                        bmp[w, this.topOffset + 2] = Color.OrangeRed;
-                    }
+                {
+                    bmp[w, this.topOffset] = Color.OrangeRed;
+                    bmp[w, this.topOffset + 1] = Color.OrangeRed;
+                    bmp[w, this.topOffset + 2] = Color.OrangeRed;
+                }
 
                 //bmp[w, this.topOffset] = Color.OrangeRed;
                 //bmp[w, this.bottomOffset - 1] = Color.OrangeRed;
@@ -613,9 +609,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// <summary>
         /// adds time track to a sonogram at the vertical position determined by topOffset.
         /// </summary>
-        /// <param name="bmp"></param>
-        /// <param name="topOffset"></param>
-        /// <returns></returns>
         public Image<Rgb24> DrawTimeTrack(Image<Rgb24> bmp)
         {
             int width = bmp.Width;
@@ -668,10 +661,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
         }
 
         /// <summary>
-        /// assumes that max signal value = 1.0 and min sig value = -1.0 i.e. wav file values
+        /// assumes that max signal value = 1.0 and min sig value = -1.0 i.e. wav file values.
         /// </summary>
-        /// <param name="bmp"></param>
-        /// <returns></returns>
         public static Image<Rgb24> DrawWaveEnvelopeTrack(double[,] envelope)
         {
             int height = DefaultHeight;
@@ -703,11 +694,11 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 }
                 else
                     if (envelope[1, w] > 0.99)
-                    {
-                        bmp[w, 0] = Color.OrangeRed;
-                        bmp[w, 1] = Color.OrangeRed;
-                        bmp[w, 2] = Color.OrangeRed;
-                    }
+                {
+                    bmp[w, 0] = Color.OrangeRed;
+                    bmp[w, 1] = Color.OrangeRed;
+                    bmp[w, 2] = Color.OrangeRed;
+                }
 
                 //bmp[w, this.topOffset, Color.OrangeRed);
                 //bmp[w, this.bottomOffset - 1, Color.OrangeRed);
@@ -717,7 +708,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         }
 
         /// <summary>
-        /// This method assumes that the passed decibel array has been normalised
+        /// This method assumes that the passed decibel array has been normalised.
         /// </summary>
         public static Image<Rgb24> DrawDecibelTrack(double[] data, int imageWidth, double segmentationThreshold_k1, double segmentationThreshold_k2)
         {
@@ -729,7 +720,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
             }
 
             var bmp = new Image<Rgb24>(imageWidth, DefaultHeight);
-            bmp.Mutate(g => {
+            bmp.Mutate(g =>
+            {
                 g.FillRectangle(new SolidBrush(Color.White), 0, 0, imageWidth, DefaultHeight);
             });
 
@@ -851,7 +843,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
             }
 
             // surround the whole by a frame
-            segmentBmp.Mutate(g => {
+            segmentBmp.Mutate(g =>
+            {
                 g.DrawImage(stateBmp, 0, 1);
                 g.DrawRectangle(new Pen(Color.Black, 1), 0, 0, imageWidth, DefaultHeight);
             });
@@ -860,10 +853,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
         }
 
         /// <summary>
-        /// ASSUME that passed decibel array has been normalised
+        /// ASSUME that passed decibel array has been normalised.
         /// </summary>
-        /// <param name="sg"></param>
-        /// <returns></returns>
         public static ImageTrack GetDecibelTrack(BaseSonogram sg)
         {
             var track = new ImageTrack(TrackType.deciBels, sg.DecibelsNormalised);
@@ -871,10 +862,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
         }
 
         /// <summary>
-        /// ASSUME that passed decibel array has been normalised
+        /// ASSUME that passed decibel array has been normalised.
         /// </summary>
-        /// <param name="sg"></param>
-        /// <returns></returns>
         public static ImageTrack GetSegmentationTrack(BaseSonogram sg)
         {
             var track = new ImageTrack(TrackType.segmentation, sg.DecibelsNormalised);
@@ -954,19 +943,16 @@ namespace AudioAnalysisTools.StandardSpectrograms
         }
 
         /// <summary>
-        /// used to draw richness indices
+        /// used to draw richness indices.
         /// </summary>
-        /// <param name="scores"></param>
-        /// <param name="scoreMin"></param>
-        /// <param name="scoreMax"></param>
-        /// <param name="scoreThreshold"></param>
-        /// <returns></returns>
         public static void DrawScoreTrack(Image<Rgb24> bmp, double[] array, int yOffset, int trackHeight, double minVal, double maxVal, double threshold, string title)
         {
             Color[] grayScale = ImageTools.GrayScale();
             int imageWidth = array.Length;
             double range = maxVal - minVal;
-            for (int x = 0; x < imageWidth; x++) //for pixels in the line
+
+            // for pixels in the line
+            for (int x = 0; x < imageWidth; x++)
             {
                 // NormaliseMatrixValues and bound the value - use min bound, max and 255 image intensity range
                 double value = (array[x] - minVal) / range;
@@ -997,13 +983,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
         }
 
         /// <summary>
-        /// used to draw score track or any array of values
+        /// used to draw score track or any array of values.
         /// </summary>
-        /// <param name="scores"></param>
-        /// <param name="scoreMin"></param>
-        /// <param name="scoreMax"></param>
-        /// <param name="scoreThreshold"></param>
-        /// <returns></returns>
         public static Image<Rgb24> DrawGrayScaleScoreTrack(double[] array, double minVal, double maxVal, double threshold, string title)
         {
             int trackHeight = IndexDisplay.DefaultTrackHeight;
@@ -1012,7 +993,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
             Image<Rgb24> bmp = new Image<Rgb24>(imageWidth, trackHeight);
 
             double range = maxVal - minVal;
-            for (int x = 0; x < imageWidth; x++) //for pixels in the line
+
+            // for pixels in the line
+            for (int x = 0; x < imageWidth; x++)
             {
                 // NormaliseMatrixValues and bound the value - use min bound, max and 255 image intensity range
                 double value = (array[x] - minVal) / range;
@@ -1048,11 +1031,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// used to draw score track of an array of values
         /// The values in array MUST lie in [0,1].
         /// </summary>
-        /// <param name="scores"></param>
-        /// <param name="scoreMin"></param>
-        /// <param name="scoreMax"></param>
-        /// <param name="scoreThreshold"></param>
-        /// <returns></returns>
         public static Image<Rgb24> DrawBarScoreTrack(double[] order, double[] array, int trackWidth, double threshold, string title)
         {
             int trackHeight = IndexDisplay.DefaultTrackHeight;
@@ -1061,11 +1039,13 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             //int imageWidth = array.Length;
             Image<Rgb24> bmp = new Image<Rgb24>(trackWidth, trackHeight);
-            bmp.Mutate(g => {
+            bmp.Mutate(g =>
+            {
                 g.Clear(grayScale[240]);
             });
 
-            for (int i = 0; i < array.Length; i++) //for pixels in the line
+            // for pixels in the line
+            for (int i = 0; i < array.Length; i++)
             {
                 int x = (int)order[i];
                 double value = array[i];
@@ -1094,13 +1074,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
         }
 
         /// <summary>
-        /// used to draw coloured score track or any array of values
+        /// used to draw coloured score track or any array of values.
         /// </summary>
-        /// <param name="scores"></param>
-        /// <param name="scoreMin"></param>
-        /// <param name="scoreMax"></param>
-        /// <param name="scoreThreshold"></param>
-        /// <returns></returns>
         public static Image<Rgb24> DrawColourScoreTrack(double[] order, double[] array, int trackWidth, int trackHeight, double threshold, string title)
         {
             Color[] colorScale = { Color.LightGray, Color.Gray, Color.Orange, Color.Red, Color.Purple };
@@ -1108,7 +1083,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
             bmp.Mutate(g => { g.Clear(Color.FromRgb(240, 240, 240)); });
 
             //double range = maxVal - minVal;
-            for (int i = 0; i < array.Length; i++) //for pixels in the line
+            // for pixels in the line
+            for (int i = 0; i < array.Length; i++)
             {
                 int x = (int)order[i];
 
@@ -1173,11 +1149,10 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// This method is used for long duration spectrograms.
         /// It could be generalised for any time track.
         /// </summary>
-        /// <param name="fullDuration">time span of entire time track to be drawn</param>
-        /// <param name="dateTime">date and time at start of the track </param>
-        /// <param name="trackWidth">X pixel dimension</param>
-        /// <param name="trackHeight">Y pixel dimension</param>
-        /// <returns></returns>
+        /// <param name="fullDuration">time span of entire time track to be drawn.</param>
+        /// <param name="dateTime">date and time at start of the track. </param>
+        /// <param name="trackWidth">X pixel dimension.</param>
+        /// <param name="trackHeight">Y pixel dimension.</param>
         public static Image<Rgb24> DrawTimeTrack(TimeSpan fullDuration, DateTimeOffset? dateTime, int trackWidth, int trackHeight)
         {
             // if null date time then just send back relative
@@ -1297,7 +1272,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 Pen whitePen = new Pen(Color.White, 1);
                 Font stringFont = Drawing.Arial9;
 
-                for (int x = 0; x < trackWidth; x++) //for pixels in the line
+                // for pixels in the line
+                for (int x = 0; x < trackWidth; x++)
                 {
                     min++;
                     if (min % XaxisScale != 0)
@@ -1321,7 +1297,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 g.DrawLine(whitePen, trackWidth, 0, trackWidth, trackHeight - 1); //draw right end boundary
 
                 g.DrawText(title, stringFont, Color.White, new PointF(trackWidth - 30, 2));
-
             });
 
             return bmp;
@@ -1433,14 +1408,17 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 double interval = daysInYear / (double)12;
 
                 string[] months =
-                    { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+                    {
+                        "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+                    };
 
                 Pen whitePen = new Pen(Color.White, 1);
 
                 //Pen grayPen = new Pen(Color.Gray, 1);
                 Font stringFont = Drawing.Arial9;
 
-                for (int i = 0; i < 12; i++) //for pixels in the line
+                // for pixels in the line
+                for (int i = 0; i < 12; i++)
                 {
                     int Y = (int)Math.Round(offset + (i * interval));
 
@@ -1464,7 +1442,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
                 // g.DrawText(title, stringFont, Color.White, new PointF(duration + 4, 3));
             });
-            
+
             return bmp;
         }
 
@@ -1480,7 +1458,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 double interval = daysInYear / (double)12;
 
                 string[] months =
-                    { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+                    {
+                        "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+                    };
 
                 Pen whitePen = new Pen(Color.White, 1);
 
@@ -1543,9 +1523,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
                     // minor tic
                     if (mod1sec <= secondsPerPixel)
-                    {
-                        ba[x] = 1;
-                    }
+                {
+                    ba[x] = 1;
+                }
             }
 
             return ba; //byte array
@@ -1638,8 +1618,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
         {
             int trackHeight = HeightOfTimeScale;
             var bmp = Drawing.NewImage(trackWidth, trackHeight, Color.White);
-            
-            
 
             double elapsedTime = offsetMinute.TotalSeconds;
             double pixelDuration = xAxisPixelDuration.TotalSeconds;

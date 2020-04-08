@@ -18,14 +18,14 @@ namespace AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
-    using DSP;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
     using NeuralNets;
-    using StandardSpectrograms;
+    using SixLabors.ImageSharp;
     using TowseyLibrary;
-    using WavTools;
     using Path = System.IO.Path;
 
     public static class SpectralClustering
@@ -102,7 +102,7 @@ namespace AudioAnalysisTools
 
         /// <summary>
         /// Clusters the spectra in a spectrogram. USED to determine the spectral diversity and persistence of spectral types.
-        /// The spectrogram is passed as a matrix. Note that the spectrogram is in amplitude values in [0, 1];
+        /// The spectrogram is passed as a matrix. Note that the spectrogram is in amplitude values in [0, 1].
         /// </summary>
         public static ClusterInfo ClusterAnalysis(List<double[]> trainingData, double wtThreshold, int hitThreshold, bool[] selectedFrames)
         {
@@ -256,10 +256,10 @@ namespace AudioAnalysisTools
         /// Create a new spectrogram of same size as the passed spectrogram.
         /// Later on it is superimposed on a detailed spectrogram.
         /// </summary>
-        /// <param name="spectrogram">spectrogram used to derive spectral richness indices. Orientation is row=frame</param>
+        /// <param name="spectrogram">spectrogram used to derive spectral richness indices. Orientation is row=frame.</param>
         /// <param name="lowerBinBound">bottom N freq bins are excluded because likely to contain traffic and wind noise.</param>
-        /// <param name="clusterInfo">information about accumulated clusters</param>
-        /// <param name="data">training data</param>
+        /// <param name="clusterInfo">information about accumulated clusters.</param>
+        /// <param name="data">training data.</param>
         public static int[,] AssembleClusterSpectrogram(double[,] spectrogram, int lowerBinBound, ClusterInfo clusterInfo, TrainingDataInfo data)
         {
             // the weight vector for each cluster - a list of double-arrays
@@ -360,10 +360,10 @@ namespace AudioAnalysisTools
         /// IMPORTANT NOTE: The passed spectrogram MUST be already noise reduced.
         /// This clustering algorithm is a highly reduced version of binary ART, Adaptive resonance Theory, designed for speed.
         /// </summary>
-        /// <param name="spectrogram">a collection of spectra that are to be clustered</param>
-        /// <param name="lowerBinBound">lower end of the bird-band</param>
-        /// <param name="upperBinBound">upper end of the bird-band</param>
-        /// <param name="binaryThreshold">used to convert real value spectrum to binary</param>
+        /// <param name="spectrogram">a collection of spectra that are to be clustered.</param>
+        /// <param name="lowerBinBound">lower end of the bird-band.</param>
+        /// <param name="upperBinBound">upper end of the bird-band.</param>
+        /// <param name="binaryThreshold">used to convert real value spectrum to binary.</param>
         public static ClusterInfo ClusterTheSpectra(double[,] spectrogram, int lowerBinBound, int upperBinBound, double binaryThreshold)
         {
             // Use verbose only when debugging

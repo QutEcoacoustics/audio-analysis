@@ -14,7 +14,6 @@ namespace AudioAnalysisTools.DSP
     /// while an "infinite impulse response" filter (IIR) uses
     /// both the input signal and previous samples of the output signal.
     /// FIR filters are always stable, while IIR filters may be unstable.
-
     /// </summary>
     public class DSP_IIRFilter
     {
@@ -22,10 +21,8 @@ namespace AudioAnalysisTools.DSP
         /// method to convert string codes to a specific IIR filter.
         /// FOR EACH NEW FILTER ADD LINE HERE AND WRITE NEW METHOD TO CREATE FILTER
         ///
-        /// IMPORTANT: These filters assume a SAMPLE RATE = 22050!!!!!!!!!!!!!
+        /// IMPORTANT: These filters assume a SAMPLE RATE = 22050!!!!!!!!!!!!!.
         /// </summary>
-        /// <param name="filterName"></param>
-        /// <returns></returns>
         public static Tuple<int, double[], double[], double> CreateFilter(string filterName)
         {
             if (filterName.StartsWith("Chebyshev_Highpass_400"))
@@ -48,16 +45,16 @@ namespace AudioAnalysisTools.DSP
                 return Chebyshev_Lowpass_5000();
             }
             else
-                {
-                    LoggedConsole.WriteLine("\nWARNING! There is no filter with name: " + filterName);
-                    Console.ReadLine();
-                }
+            {
+                LoggedConsole.WriteLine("\nWARNING! There is no filter with name: " + filterName);
+                Console.ReadLine();
+            }
 
             return null;
         }
 
         /// <summary>
-        /// Create a Chebyshev_Highpass filter, shoulder=400, order=9; ripple=-0.1dB; sr=22050
+        /// Create a Chebyshev_Highpass filter, shoulder=400, order=9; ripple=-0.1dB; sr=22050.
         /// </summary>
         public static Tuple<int, double[], double[], double> Chebyshev_Highpass_400(/*no variables to pass*/)
         {
@@ -91,7 +88,7 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// Create a Chebyshev_lowpass filter, shoulder=1000, order=9; ripple=-0.1dB; sr=22050
+        /// Create a Chebyshev_lowpass filter, shoulder=1000, order=9; ripple=-0.1dB; sr=22050.
         /// </summary>
         public static Tuple<int, double[], double[], double> Chebyshev_Lowpass_1000(/*no variables to pass*/)
         {
@@ -126,7 +123,7 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// Create a Chebyshev_lowpass filter, shoulder=3000, order=9; ripple=-0.1dB; sr=22050
+        /// Create a Chebyshev_lowpass filter, shoulder=3000, order=9; ripple=-0.1dB; sr=22050.
         /// </summary>
         public static Tuple<int, double[], double[], double> Chebyshev_Lowpass_3000(/*no variables to pass*/)
         {
@@ -204,27 +201,26 @@ namespace AudioAnalysisTools.DSP
 
         public int order { get; set; }
 
-        public double gain;
+        public double Gain;
 
         /// <summary>
-        /// CONSTRUCTOR 1
+        /// Initializes a new instance of the <see cref="DSP_IIRFilter"/> class.
+        /// CONSTRUCTOR 1.
         /// </summary>
-        /// <param name="filterName"></param>
         public DSP_IIRFilter(string filterName)
         {
             var iir = CreateFilter(filterName);
             this.order = iir.Item1;
             this.a = iir.Item2;
             this.b = iir.Item3;
-            this.gain = iir.Item4;
+            this.Gain = iir.Item4;
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="DSP_IIRFilter"/> class.
         /// CONSTRUCTOR 2
-        /// Pass your own filter coefficients
+        /// Pass your own filter coefficients.
         /// </summary>
-        /// <param name="a"></param>
-        /// <param name="b"></param>
         public DSP_IIRFilter(double[] a, double[] b)
         {
             this.a = a;
@@ -294,7 +290,8 @@ namespace AudioAnalysisTools.DSP
 
             /* end of initial part */
 
-            for (i = size; i < np; i++) //length of signal
+            // length of signal
+            for (i = size; i < np; i++)
             {
                 y[i] += this.a[0] * x[i];
                 for (j = 1; j < size; j++)
@@ -311,7 +308,7 @@ namespace AudioAnalysisTools.DSP
             //adjust for gain
             //the factor of 2.30 is an approximate value to make up the difference between theoretical gain and my observed gain.
             //that is after correction the area under curve of impulse reponse should be close to 1.0.
-            double myGain = this.gain * 2.30;
+            double myGain = this.Gain * 2.30;
             for (i = 0; i < np; i++)
             {
                 y[i] /= myGain;
@@ -358,7 +355,9 @@ namespace AudioAnalysisTools.DSP
 
                 //DataTools.writeArray(y);
                 double myGain = 0.0;
-                for (int i = 0; i < y.Length; i++) //length of signal
+
+                // length of signal
+                for (int i = 0; i < y.Length; i++)
                 {
                     myGain += Math.Abs(y[i]);
 
@@ -378,11 +377,8 @@ namespace AudioAnalysisTools.DSP
         }//end Main
 
         /// <summary>
-        /// This method implements a crude form of high pass filtering
+        /// This method implements a crude form of high pass filtering.
         /// </summary>
-        /// <param name="inputSignal"></param>
-        /// <param name="windowLength"></param>
-        /// <param name="outputSignal"></param>
         public static void ApplyMovingAvHighPassFilter(double[] inputSignal, int windowLength, out double[] outputSignal)
         {
             double[] smoothed = DataTools.filterMovingAverageOdd(inputSignal, windowLength);

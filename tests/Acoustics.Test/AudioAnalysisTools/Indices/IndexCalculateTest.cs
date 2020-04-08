@@ -8,6 +8,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
     using System.IO;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
+    using Acoustics.Test.TestHelpers;
     using global::AnalysisPrograms;
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.Indices;
@@ -15,7 +16,6 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using SixLabors.ImageSharp;
-    using TestHelpers;
     using Path = System.IO.Path;
 
     /// <summary>
@@ -24,7 +24,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
     /// (2) simpler tests are better
     /// (3) use an appropriate serialisation format
     /// (4) for binary large objects(BLOBs) make sure git-lfs is tracking them
-    /// See this commit for dealing with BLOBs: https://github.com/QutBioacoustics/audio-analysis/commit/55142089c8eb65d46e2f96f1d2f9a30d89b62710
+    /// See this commit for dealing with BLOBs: https://github.com/QutBioacoustics/audio-analysis/commit/55142089c8eb65d46e2f96f1d2f9a30d89b62710.
     /// </summary>
     [TestClass]
     public class IndexCalculateTest
@@ -45,7 +45,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
         }
 
         /// <summary>
-        /// Test the various summary indices
+        /// Test the various summary indices.
         /// </summary>
         [TestMethod]
         public void TestOfSummaryIndices()
@@ -102,7 +102,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
         }
 
         /// <summary>
-        /// Test the various spectral indices
+        /// Test the various spectral indices.
         /// </summary>
         [TestMethod]
         public void TestOfSpectralIndices()

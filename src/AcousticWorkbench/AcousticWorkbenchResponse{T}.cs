@@ -10,9 +10,9 @@ namespace AcousticWorkbench
     using Newtonsoft.Json.Linq;
 
     //    [JsonObject(NamingStrategyType = typeof(SnakeCaseNamingStrategy))]
-//    public abstract class RubyJsonObject
-//    {
-//    }
+    //    public abstract class RubyJsonObject
+    //    {
+    //    }
 
     public class AcousticWorkbenchResponse<T>
     {

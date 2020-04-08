@@ -6,9 +6,9 @@ namespace AudioAnalysisTools.Indices
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using Acoustics.Shared;
     using AnalysisBase.ResultBases;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
 
@@ -63,7 +63,7 @@ namespace AudioAnalysisTools.Indices
         /// Assumes frequency component is in fist index (i.e. frequency is rows) and time in second index (time is columns).
         /// </summary>
         /// <param name="dictionaryOfSpectra">
-        /// The dictionary to convert to spectral index base
+        /// The dictionary to convert to spectral index base.
         /// </param>
         public static SpectralIndexValues[] ImportFromDictionary(Dictionary<string, double[,]> dictionaryOfSpectra)
         {

@@ -11,7 +11,7 @@ namespace TowseyLibrary
     {
         NONE, HAMMING, HANNING,
     }
-;
+
 
     public sealed class FFT
     {
@@ -29,16 +29,16 @@ namespace TowseyLibrary
 
         public double[] WindowWeights { get; private set; }
 
-        public FFT(int windowSize) : this(windowSize, null)
+        public FFT(int windowSize)
+            : this(windowSize, null)
         {
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="FFT"/> class.
         /// wrapper for FFT.
         /// Window Power equals sum of squared window values. Default window is Hamming.
         /// </summary>
-        /// <param name="windowSize"></param>
-        /// <param name="w"></param>
         public FFT(int windowSize, WindowFunc w)
         {
             if (!IsPowerOf2(windowSize))
@@ -76,9 +76,8 @@ namespace TowseyLibrary
         /// cdata contains the real and imaginary terms of the coefficients representing cos and sin components respectively.
         /// cdata is symmetrical about terms 512 & 513. Can ignore all coefficients 512 and above .
         /// </summary>
-        /// <param name="data">a single frame of signal values</param>
-        /// <param name="coeffCount">number of coefficients to return</param>
-        /// <returns></returns>
+        /// <param name="data">a single frame of signal values.</param>
+        /// <param name="coeffCount">number of coefficients to return.</param>
         public double[] Invoke(double[] data)
         {
             double[] cdata = new double[2 * this.WindowSize]; //to contain the complex coefficients
@@ -103,7 +102,9 @@ namespace TowseyLibrary
             four1(cdata); //array contains real and imaginary values
 
             double[] f = new double[this.CoeffCount]; //array to contain amplitude data
-            for (int i = 0; i < this.CoeffCount; i++) //calculate amplitude
+
+            // calculate amplitude
+            for (int i = 0; i < this.CoeffCount; i++)
             {
                 //f[i] = hypot(cdata[2 * i], cdata[2 * i + 1]);
                 //f[i] = (cdata[2 * i] * cdata[2 * i]) + (cdata[2 * i + 1] * cdata[2 * i + 1]);
@@ -137,7 +138,9 @@ namespace TowseyLibrary
             four1(cdata);
 
             double[] f = new double[this.CoeffCount]; //array to contain amplitude data
-            for (int i = 0; i < this.CoeffCount; i++) //calculate amplitude
+
+            // calculate amplitude
+            for (int i = 0; i < this.CoeffCount; i++)
             {
                 f[i] = hypot(cdata[2 * i], cdata[(2 * i) + 1]);
             }
@@ -228,10 +231,8 @@ namespace TowseyLibrary
         /// <summary>
         /// This .NET FFT library was downloaded from  http://www.mathdotnet.com/Iridium.aspx
         /// The documentation and various examples of code are available at http://www.mathdotnet.com/doc/IridiumFFT.ashx
-        /// WARNING: THIS METHOD HAS NOT BEEN RECENTLY TESTED
+        /// WARNING: THIS METHOD HAS NOT BEEN RECENTLY TESTED.
         /// </summary>
-        /// <param name="data"></param>
-        /// <returns></returns>
         public double[] InvokeDotNetFFT(double[] data)
         {
             if (this.WindowSize != data.Length)
@@ -276,9 +277,9 @@ namespace TowseyLibrary
 
         /// <summary>
         /// The Hamming window reduces the immediate adjacent sidelobes (conmpared to the Hanning) but at the expense of increased
-        /// distal side-lobes. See <https://en.wikipedia.org/wiki/Window_function>
+        /// distal side-lobes. See. <https://en.wikipedia.org/wiki/Window_function>
         /// </summary>
-        public static readonly WindowFunc Hamming = delegate(int n, int N)
+        public static readonly WindowFunc Hamming = delegate (int n, int N)
         {
             double x = 2.0 * Math.PI * n / (N - 1);
 
@@ -299,7 +300,7 @@ namespace TowseyLibrary
                 throw new ArgumentOutOfRangeException("sigma");
             }
 
-            return delegate(int n, int N)
+            return delegate (int n, int N)
             {
                 double num = n - (0.5 * (N - 1));
                 double den = sigma * 0.5 * (N - 1);
@@ -308,17 +309,17 @@ namespace TowseyLibrary
             };
         }
 
-        public static readonly WindowFunc Lanczos = delegate(int n, int N)
+        public static readonly WindowFunc Lanczos = delegate (int n, int N)
         {
             double x = (2.0 * n / (N - 1)) - 1.0;
             return x != 0.0 ? Math.Sin(x) / x : 1.0;
         };
 
-        public static readonly WindowFunc Nuttall = delegate(int n, int N) { return lrw(0.355768, 0.487396, 0.144232, 0.012604, n, N); };
+        public static readonly WindowFunc Nuttall = delegate (int n, int N) { return lrw(0.355768, 0.487396, 0.144232, 0.012604, n, N); };
 
-        public static readonly WindowFunc BlackmanHarris = delegate(int n, int N) { return lrw(0.35875, 0.48829, 0.14128, 0.01168, n, N); };
+        public static readonly WindowFunc BlackmanHarris = delegate (int n, int N) { return lrw(0.35875, 0.48829, 0.14128, 0.01168, n, N); };
 
-        public static readonly WindowFunc BlackmanNuttall = delegate(int n, int N) { return lrw(0.3635819, 0.4891775, 0.1365995, 0.0106411, n, N); };
+        public static readonly WindowFunc BlackmanNuttall = delegate (int n, int N) { return lrw(0.3635819, 0.4891775, 0.1365995, 0.0106411, n, N); };
 
         private static double lrw(double a0, double a1, double a2, double a3, int n, int N)
         {
@@ -328,7 +329,7 @@ namespace TowseyLibrary
             return a0 - (a1 * c1) + (a2 * c2) - (a3 * c3);
         }
 
-        public static readonly WindowFunc FlatTop = delegate(int n, int N)
+        public static readonly WindowFunc FlatTop = delegate (int n, int N)
         {
             double c1 = Math.Cos(2.0 * Math.PI * n / (N - 1));
             double c2 = Math.Cos(4.0 * Math.PI * n / (N - 1));

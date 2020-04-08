@@ -1,4 +1,4 @@
-﻿// <copyright file="PcaWhitening.cs" company="QutEcoacoustics">
+// <copyright file="PcaWhitening.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -97,7 +97,7 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// Build the Projection Matrix
         /// To do so, we need eigenVectors and the number of columns of the projected data
-        /// which is the number of outputs (principle components) used to transform the data
+        /// which is the number of outputs (principle components) used to transform the data.
         /// </summary>
         public static double[,] GetProjectionMatrix(double[,] eigenVector, int numberOfOutputs)
         {
@@ -147,7 +147,7 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// reconstruct the spectrogram using sequential patches and the projection matrix
+        /// reconstruct the spectrogram using sequential patches and the projection matrix.
         /// </summary>
         public static double[,] ReconstructSpectrogram(double[,] projectionMatrix, double[,] sequentialPatchMatrix, double[,] eigenVectors, int numberOfComponents)
         {
@@ -165,7 +165,7 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// 10-percentile Noise Reduction
+        /// 10-percentile Noise Reduction.
         /// </summary>
         public static double[,] NoiseReduction(double[,] matrix)
         {

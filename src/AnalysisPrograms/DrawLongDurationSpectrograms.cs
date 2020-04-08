@@ -26,13 +26,15 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.Csv;
     using Acoustics.Shared.ImageSharp;
+    using AnalysisPrograms.Production;
+    using AnalysisPrograms.Production.Arguments;
+    using AnalysisPrograms.Production.Validation;
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.LongDurationSpectrograms;
@@ -40,13 +42,10 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.StandardSpectrograms;
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
-    using Production;
-    using Production.Arguments;
-    using Production.Validation;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
     using TowseyLibrary;
-    using Acoustics.Shared.Contracts;
     using Path = System.IO.Path;
 
     /// <summary>
@@ -63,7 +62,7 @@ namespace AnalysisPrograms
     /// audiofilecheck - Writes information about audio files to a csv file.
     /// snr - Calls SnrAnalysis.Execute():  Calculates signal to noise ratio.
     /// audiocutter - Cuts audio into segments of desired length and format
-    /// createfoursonograms
+    /// createfoursonograms.
     /// </summary>
     public static class DrawLongDurationSpectrograms
     {
@@ -257,7 +256,7 @@ namespace AnalysisPrograms
                     g1.DrawLine(new Pen(Color.Black, 1), 0, 0, width, 0); //draw upper boundary
                     g1.DrawLine(new Pen(Color.Black, 1), 0, 1, width, 1); //draw upper boundary
                 });
-                var imagearray = new [] { label, image };
+                var imagearray = new[] { label, image };
                 var labelledImage = ImageTools.CombineImagesInLine(imagearray);
                 list.Add(labelledImage);
             } //foreach key
@@ -333,7 +332,7 @@ namespace AnalysisPrograms
 
             colorMap = args.ColourMap2 ?? LDSpectrogramRGB.DefaultColorMap2;
             var image2 = cs1.DrawFalseColorSpectrogramChromeless("NEGATIVE", colorMap, blueEnhanceParameter);
-            var list = new [] { titleImage, image1, timeScale, image2 };
+            var list = new[] { titleImage, image1, timeScale, image2 };
             var combinedImage = ImageTools.CombineImagesVertically(list);
             return combinedImage;
         }

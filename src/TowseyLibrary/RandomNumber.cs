@@ -35,7 +35,7 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// generates numbers 0 to max-1
+        /// generates numbers 0 to max-1.
         /// </summary>
         public int GetInt(int max)
         {
@@ -43,7 +43,7 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// generates numbers 1 - 100
+        /// generates numbers 1 - 100.
         /// </summary>
         public int GetRandomPercent()
         {
@@ -73,7 +73,8 @@ namespace TowseyLibrary
                 randomArray[i] = i;   // integers in ascending order
             }
 
-            for (int k = N - 1; k >= 0; k--) // in decending order
+            //  in decending order
+            for (int k = N - 1; k >= 0; k--)
             {
                 R = rn.GetInt(k);                 // a random integer between 0 and k
                 valueAtIndexK = randomArray[k];  // swap the numbers in position K and romdon  position R
@@ -87,7 +88,7 @@ namespace TowseyLibrary
         /// <summary>
         /// IMPORTANT - THIS METHOD NEEDS WORK!!
         /// returns the passed array but with the elements in a random order
-        /// see method above which was originally written for FuzzyART in 1995
+        /// see method above which was originally written for FuzzyART in 1995.
         /// </summary>
         public static int[] RandomizeArray(int[] array, int seed)
         {
@@ -107,7 +108,7 @@ namespace TowseyLibrary
 
         /// <summary>
         /// returns the passed array but with the elements in a random order
-        /// see method above which was originally written for FuzzyART in 1995
+        /// see method above which was originally written for FuzzyART in 1995.
         /// </summary>
         public static double[] RandomizeArray(double[] array, int seed)
         {
@@ -115,7 +116,9 @@ namespace TowseyLibrary
             double[] rArray = new double[L];
 
             int[] numberOrder = RandomizeNumberOrder(L, seed);
-            for (int i = 0; i < L; i++) // select instances at random without replacement
+
+            //  select instances at random without replacement
+            for (int i = 0; i < L; i++)
             {
                 rArray[i] = array[numberOrder[i]];
             }
@@ -182,7 +185,7 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// generates numbers 1 - 100
+        /// generates numbers 1 - 100.
         /// </summary>
         public static void GetRandomDistancesInEuclidianSpace(int trialCount, int dimensions)
         {

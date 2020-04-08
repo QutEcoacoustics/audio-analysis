@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="AbstractStrongAnalyser.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -15,7 +15,7 @@ namespace AnalysisBase
 
     using Acoustics.Shared.ConfigFile;
 
-    using ResultBases;
+    using AnalysisBase.ResultBases;
 
     /// <summary>
     /// Provides sensible defaults for some of the functionality required by <c>IAnalyser2</c>.
@@ -110,18 +110,17 @@ namespace AnalysisBase
             for (int i = 0; i < eventsPerUnitTime.Length; i++)
             {
                 var newIndex = new EventIndex
-                                   {
-                                       ResultStartSeconds = unitTime.Multiply(i).TotalSeconds,
-                                       EventsTotal = eventsPerUnitTime[i],
-                                       EventsTotalThresholded = bigEvsPerUnitTime[i],
-                                       SegmentDurationSeconds = unitTime.TotalSeconds,
-                                   };
+                {
+                    ResultStartSeconds = unitTime.Multiply(i).TotalSeconds,
+                    EventsTotal = eventsPerUnitTime[i],
+                    EventsTotalThresholded = bigEvsPerUnitTime[i],
+                    SegmentDurationSeconds = unitTime.TotalSeconds,
+                };
 
                 indices[i] = newIndex;
             }
 
             return indices;
-
         }
 
         /// <inheritdoc/>

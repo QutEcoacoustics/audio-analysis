@@ -1,11 +1,15 @@
-﻿namespace Acoustics.Tools.Wav
+// <copyright file="WavStreamReader.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace Acoustics.Tools.Wav
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
 
-    using Shared;
+    using Acoustics.Shared;
 
     /// <summary>
     /// Wave audio Stream wrapper.
@@ -81,7 +85,7 @@
         /// <paramref name="file"/> is <c>null</c>.
         /// </exception>
         /// <exception cref="ArgumentException">
-        /// file
+        /// file.
         /// </exception>
         public WavStreamReader(FileInfo file)
         {
@@ -143,7 +147,6 @@
         /// <summary>
         /// Gets all samples.
         /// </summary>
-        /// <exception cref="InvalidOperationException"></exception>
         public double[] Samples
         {
             get
@@ -160,8 +163,6 @@
         /// <summary>
         /// Gets GetDataChunk.
         /// </summary>
-        /// <exception cref="InvalidOperationException">
-        /// </exception>
         public WavChunk GetDataChunk
         {
             get
@@ -268,7 +269,6 @@
             {
                 samples[index] = ReadSample(wavStream, wavInfo);
             }
-
 
             // if samples is odd, padding of 1 byte
             ////if (sampleLength % 2 != 0)

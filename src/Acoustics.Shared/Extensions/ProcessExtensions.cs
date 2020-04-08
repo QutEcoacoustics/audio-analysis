@@ -24,7 +24,7 @@ namespace System
         public struct ParentProcessUtilities
         {
 #if DEBUG
-            #pragma warning disable SA1310
+#pragma warning disable SA1310
             // These members must match PROCESS_BASIC_INFORMATION
             internal IntPtr Reserved1;
 
@@ -37,7 +37,7 @@ namespace System
             internal IntPtr UniqueProcessId;
 
             internal IntPtr InheritedFromUniqueProcessId;
-            #pragma warning restore
+#pragma warning restore
 
             // TODO This import is windows only, replace with .NET Core API
             [DllImport("ntdll.dll")]
@@ -48,7 +48,7 @@ namespace System
                 int processInformationLength,
                 out int returnLength);
 
-            #pragma warning disable SA1202
+#pragma warning disable SA1202
             /// <summary>
             /// !WARNING Windows OS only
             /// Gets the parent process of the current process.
@@ -103,7 +103,7 @@ namespace System
                     return null;
                 }
             }
-            #pragma warning restore
+#pragma warning restore
 #endif
         }
     }

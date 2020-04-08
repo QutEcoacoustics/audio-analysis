@@ -95,7 +95,7 @@ namespace Acoustics.Shared.Extensions
         public static Color NextColor(this Random random, byte alpha = 255)
         {
             var value = random.Next();
-            var  bytes = BitConverter.GetBytes(value);
+            var bytes = BitConverter.GetBytes(value);
 
             return Color.FromRgba(bytes[0], bytes[1], bytes[2], alpha);
         }

@@ -6,17 +6,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
 {
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.IO;
     using System.Linq;
-
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Contracts;
-    using Indices;
-
+    using AudioAnalysisTools.Indices;
     using log4net;
-
-    using Acoustics.Shared.Contracts;
-    using System.IO;
 
     public class ZoomParameters
     {

@@ -1,4 +1,4 @@
-﻿// <copyright file="MFCCStuff.cs" company="QutEcoacoustics">
+// <copyright file="MFCCStuff.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -18,13 +18,13 @@ namespace AudioAnalysisTools.DSP
         /// NOTE 4: The decibels value is a ratio. Here the ratio is implied.
         ///         dB = 10*log(amplitude ^2) but in this method adjust power to account for power of Hamming window and SR.
         /// NOTE 5: THIS METHOD ASSUMES THAT THE LAST BIN IS THE NYQUIST FREQ BIN
-        ///  NOTE 6: THIS METHOD ASSUMES THAT THE FIRST BIN IS THE MEAN or DC FREQ BIN
+        ///  NOTE 6: THIS METHOD ASSUMES THAT THE FIRST BIN IS THE MEAN or DC FREQ BIN.
         /// </summary>
-        /// <param name="amplitudeM"> the amplitude spectra </param>
-        /// <param name="windowPower">value for window power normalisation</param>
-        /// <param name="sampleRate">to NormaliseMatrixValues for the sampling rate</param>
+        /// <param name="amplitudeM"> the amplitude spectra. </param>
+        /// <param name="windowPower">value for window power normalisation.</param>
+        /// <param name="sampleRate">to NormaliseMatrixValues for the sampling rate.</param>
         /// <param name="epsilon">small value to avoid log of zero.</param>
-        /// <returns>a spectrogram of decibel values</returns>
+        /// <returns>a spectrogram of decibel values.</returns>
         public static double[,] DecibelSpectra(double[,] amplitudeM, double windowPower, int sampleRate, double epsilon)
         {
             int frameCount = amplitudeM.GetLength(0);
@@ -132,9 +132,9 @@ namespace AudioAnalysisTools.DSP
                 }
                 else
                     if (state[i] == 2)
-                    {
-                        //LoggedConsole.WriteLine("count["+i+"]="+count);
-                        if (sig == false && count < syllableGap)
+                {
+                    //LoggedConsole.WriteLine("count["+i+"]="+count);
+                    if (sig == false && count < syllableGap)
                     {
                         for (int j = 1; j <= count; j++)
                         {
@@ -142,9 +142,9 @@ namespace AudioAnalysisTools.DSP
                         }
                     }
 
-                        sig = true;
-                        count = 0;
-                    }
+                    sig = true;
+                    count = 0;
+                }
             }
 
             return state;
@@ -211,10 +211,9 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// Converts a Mel value to Herz
+        /// Converts a Mel value to Herz.
         /// </summary>
-        /// <param name="m">the Mel value</param>
-        /// <returns>the Herz value</returns>
+        /// <returns>the Herz value.</returns>
         public static double InverseMel(double mel)
         {
             if (mel <= 1000)
@@ -229,10 +228,10 @@ namespace AudioAnalysisTools.DSP
         /// this method calculates a user customised version of the fixed mel frequency convernsion in
         /// the method Mel(double f).
         /// </summary>
-        /// <param name="f">this is the linear frequncy in Herz</param>
-        /// <param name="c">this value = 2595.0 in the standard Mel transform</param>
-        /// <param name="div">this value = 700 in the standard Mel transform</param>
-        /// <returns>Mel frequency</returns>
+        /// <param name="f">this is the linear frequncy in Herz.</param>
+        /// <param name="c">this value = 2595.0 in the standard Mel transform.</param>
+        /// <param name="div">this value = 700 in the standard Mel transform.</param>
+        /// <returns>Mel frequency.</returns>
         public static double HerzTranform(double f, double c, double div)
         {
             return c * Math.Log10(1.0 + (f / div));
@@ -248,11 +247,11 @@ namespace AudioAnalysisTools.DSP
         /// Performs linear integral as opposed to Mel integral
         /// The first step is to calculate the number of filters for the required frequency sub-band.
         /// </summary>
-        /// <param name="matrix">the sonogram</param>
-        /// <param name="filterBankCount">number of filters over full freq range 0 Hz - Nyquist</param>
-        /// <param name="nyquist">max frequency in original spectra</param>
-        /// <param name="minFreq">min freq in passed sonogram matrix</param>
-        /// <param name="maxFreq">max freq in passed sonogram matrix</param>
+        /// <param name="matrix">the sonogram.</param>
+        /// <param name="filterBankCount">number of filters over full freq range 0 Hz - Nyquist.</param>
+        /// <param name="nyquist">max frequency in original spectra.</param>
+        /// <param name="minFreq">min freq in passed sonogram matrix.</param>
+        /// <param name="maxFreq">max freq in passed sonogram matrix.</param>
         public static double[,] LinearFilterBank(double[,] matrix, int filterBankCount, double nyquist, int minFreq, int maxFreq)
         {
             int freqRange = maxFreq - minFreq;
@@ -326,11 +325,11 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// Does MelFilterBank for passed sonogram matrix.
         /// IMPORTANT !!!!! Assumes that min freq of passed sonogram matrix = 0 Hz and maxFreq = Nyquist.
-        /// Uses Greg's MelIntegral
+        /// Uses Greg's MelIntegral.
         /// </summary>
-        /// <param name="matrix">the sonogram</param>
-        /// <param name="filterBankCount">number of filters over full freq range 0 Hz - Nyquist</param>
-        /// <param name="nyquist">max frequency in original spectra</param>
+        /// <param name="matrix">the sonogram.</param>
+        /// <param name="filterBankCount">number of filters over full freq range 0 Hz - Nyquist.</param>
+        /// <param name="nyquist">max frequency in original spectra.</param>
         public static double[,] MelFilterBank(double[,] matrix, int filterBankCount, double nyquist)
         {
             int rowCount = matrix.GetLength(0); //number of spectra or time steps
@@ -399,11 +398,11 @@ namespace AudioAnalysisTools.DSP
         /// Uses Greg's MelIntegral
         /// The first step is to calculate the number of filters for the required frequency sub-band.
         /// </summary>
-        /// <param name="matrix">the sonogram</param>
-        /// <param name="filterBankCount">number of filters over full freq range 0 Hz - Nyquist</param>
-        /// <param name="nyquist">max frequency in original spectra</param>
-        /// <param name="minFreq">min freq in the passed sonogram matrix</param>
-        /// <param name="maxFreq">max freq in the passed sonogram matrix</param>
+        /// <param name="matrix">the sonogram.</param>
+        /// <param name="filterBankCount">number of filters over full freq range 0 Hz - Nyquist.</param>
+        /// <param name="nyquist">max frequency in original spectra.</param>
+        /// <param name="minFreq">min freq in the passed sonogram matrix.</param>
+        /// <param name="maxFreq">max freq in the passed sonogram matrix.</param>
         public static double[,] MelFilterBank(double[,] matrix, int filterBankCount, double nyquist, int minFreq, int maxFreq)
         {
             double freqRange = maxFreq - minFreq;
@@ -555,10 +554,10 @@ namespace AudioAnalysisTools.DSP
         //}
 
         /// <summary>
-        /// cosines
+        /// cosines.
         /// </summary>
-        /// <param name="spectrumLength">Same as bin count or filter bank count ie length of spectrum = N</param>
-        /// <param name="coeffCount">count of coefficients</param>
+        /// <param name="spectrumLength">Same as bin count or filter bank count ie length of spectrum = N.</param>
+        /// <param name="coeffCount">count of coefficients.</param>
         public static double[,] Cosines(int spectrumLength, int coeffCount)
         {
             double[,] cosines = new double[coeffCount + 1, spectrumLength]; //get an extra coefficient because do not want DC coeff
@@ -716,7 +715,7 @@ namespace AudioAnalysisTools.DSP
         } //AcousticVectors()
 
         /// <summary>
-        /// returns full feature vector from the passed matrix of energy+cepstral+delta+deltaDelta coefficients
+        /// returns full feature vector from the passed matrix of energy+cepstral+delta+deltaDelta coefficients.
         /// </summary>
         public static double[] GetTriAcousticVector(double[,] cepstralM, int timeId, int deltaT)
         {

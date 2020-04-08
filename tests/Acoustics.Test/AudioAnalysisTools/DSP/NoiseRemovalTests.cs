@@ -6,18 +6,18 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 {
     using System.IO;
     using Acoustics.Shared;
+    using Acoustics.Test.TestHelpers;
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.WavTools;
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
 
     /// <summary>
     /// Test methods for noise removal from signals and their spectrograms.
     /// Only one test is implemented for Modal noise removal using the method of Lamel et al.
     /// TODO There are several more tests that could be implemented for various methods of noise removal.
     /// See the NoiseProfile class
-    /// 
+    ///
     /// One additional noise removal method is LOCAL CONRAST Normalisation.
     /// LCN over frequency bins is better and faster than standard noise removal.
     ///   double neighbourhoodSeconds = 0.25;
@@ -25,7 +25,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
     ///   double lcnContrastLevel = 0.5; // was previously 0.1
     ///   LoggedConsole.WriteLine("LCN: FramesPerSecond (Prior to LCN) = {0}", sonogram.FramesPerSecond);
     ///   LoggedConsole.WriteLine("LCN: Neighbourhood of {0} seconds = {1} frames", neighbourhoodSeconds, neighbourhoodFrames);
-    ///   sonogram.Data = NoiseRemoval_Briggs.NoiseReduction_byLCNDivision(sonogram.Data, neighbourhoodFrames, lcnContrastLevel);
+    ///   sonogram.Data = NoiseRemoval_Briggs.NoiseReduction_byLCNDivision(sonogram.Data, neighbourhoodFrames, lcnContrastLevel).
     /// </summary>
     [TestClass]
     public class NoiseRemovalTests

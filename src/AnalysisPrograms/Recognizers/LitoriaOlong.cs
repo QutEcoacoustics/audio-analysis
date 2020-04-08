@@ -15,17 +15,17 @@ namespace AnalysisPrograms.Recognizers
     using Acoustics.Shared.ConfigFile;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
+    using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-    using Base;
     using log4net;
     using TowseyLibrary;
 
     /// <summary>
-    /// This is a recognizer for the Litoria olong
+    /// This is a recognizer for the Litoria olong.
     /// </summary>
     internal class LitoriaOlong : RecognizerBase
     {
@@ -55,13 +55,6 @@ namespace AnalysisPrograms.Recognizers
         /// <summary>
         /// Do your analysis. This method is called once per segment (typically one-minute segments).
         /// </summary>
-        /// <param name="recording"></param>
-        /// <param name="configuration"></param>
-        /// <param name="segmentStartOffset"></param>
-        /// <param name="getSpectralIndexes"></param>
-        /// <param name="outputDirectory"></param>
-        /// <param name="imageWidth"></param>
-        /// <returns></returns>
         public override RecognizerResults Recognize(AudioRecording recording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
             // WARNING: TODO TODO TODO = this method simply duplicates the CANETOAD analyser!!!!!!!!!!!!!!!!!!!!! ###################

@@ -8,11 +8,10 @@ namespace AnalysisPrograms
     using System.ComponentModel.DataAnnotations;
     using System.Threading.Tasks;
     using Acoustics.Shared.ConfigFile;
-
+    using AnalysisPrograms.Production.Arguments;
+    using AnalysisPrograms.Production.Validation;
     using AudioAnalysisTools.LongDurationSpectrograms;
     using McMaster.Extensions.CommandLineUtils;
-    using Production.Arguments;
-    using Production.Validation;
 
     public static class DifferenceSpectrogram
     {

@@ -9,10 +9,8 @@ namespace Acoustics.Shared
     using System.Linq;
     using System.Text.RegularExpressions;
 
-    using Acoustics.Shared.Contracts;
-
     /// <summary>
-    /// A set of helper methods used to create/read consistently encoded filenames
+    /// A set of helper methods used to create/read consistently encoded filenames.
     /// </summary>
     public static class FilenameHelpers
     {
@@ -84,7 +82,7 @@ namespace Acoustics.Shared
                 {
                     if (segment.IsNullOrEmpty())
                     {
-                        continue;;
+                        continue;
                     }
 
                     result = result + SegmentSeparator + segment;
@@ -157,7 +155,7 @@ namespace Acoustics.Shared
 
         /// <summary>
         /// Matches a very specific format:
-        /// e.g. "4c77b524-1857-4550-afaa-c0ebe5e3960a_20101013_003000+1000_Towsey.Acoustic.ACI.csv"
+        /// e.g. "4c77b524-1857-4550-afaa-c0ebe5e3960a_20101013_003000+1000_Towsey.Acoustic.ACI.csv".
         /// </summary>
         public static bool TryParseOldStyleCsvFileName(string filename, out string analysisTag)
         {

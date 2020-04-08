@@ -4,7 +4,6 @@
 
 namespace Acoustics.Test.TestHelpers
 {
-    using System;
     using System.IO;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -20,14 +19,14 @@ namespace Acoustics.Test.TestHelpers
 
         /// <summary>
         /// Gets a directory that is shared by all tests in the current class.
-        /// e.g. C:\Work\Github\audio-analysis\TestResults\Deploy_Anthony 2020-02-27 16_56_40\In\Acoustics.Shared.ImageTests
+        /// e.g. C:\Work\Github\audio-analysis\TestResults\Deploy_Anthony 2020-02-27 16_56_40\In\Acoustics.Shared.ImageTests.
         /// </summary>
         protected DirectoryInfo ClassOutputDirectory =>
             this.classOutputDirectory ??= PathHelper.ClassOutputDirectory(this.TestContext);
 
         /// <summary>
         /// Gets a directory scoped to only the current test
-        /// e.g. C:\Work\Github\audio-analysis\TestResults\Deploy_Anthony 2020-02-27 16_56_40\In\Acoustics.Shared.ImageTests\TestImageTest
+        /// e.g. C:\Work\Github\audio-analysis\TestResults\Deploy_Anthony 2020-02-27 16_56_40\In\Acoustics.Shared.ImageTests\TestImageTest.
         /// </summary>
         protected DirectoryInfo TestOutputDirectory =>
             this.testOutputDirectory ??= PathHelper.TestOutputDirectory(this.TestContext);

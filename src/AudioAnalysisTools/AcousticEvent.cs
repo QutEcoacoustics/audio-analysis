@@ -24,7 +24,6 @@ namespace AudioAnalysisTools
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
     using TowseyLibrary;
-    using static Acoustics.Shared.ImageSharp.Drawing;
 
     public class AcousticEvent : EventBase
     {
@@ -199,7 +198,7 @@ namespace AudioAnalysisTools
         public double DominantFreq { get; set; } // the dominant freq in the event - used for frog calls
 
         /// <summary>
-        /// Gets or sets a value that can be used to filter or tag some members of a list of acoustic events.
+        /// Gets or sets a value indicating whether gets or sets a value that can be used to filter or tag some members of a list of acoustic events.
         /// Was used for constructing data sets.
         /// </summary>
         public bool Tag { get; set; }
@@ -1022,8 +1021,8 @@ namespace AudioAnalysisTools
             resultsText = sb.ToString();
         }
 
-//##############################################################################################################################################
-//  THE NEXT THREE METHODS CONVERT AN ARRAY OF SCORE VALUES (USUALLY INTENSITY VALUES IN A SUB-BAND) TO ACOUSTIC EVENTS.
+        //##############################################################################################################################################
+        //  THE NEXT THREE METHODS CONVERT AN ARRAY OF SCORE VALUES (USUALLY INTENSITY VALUES IN A SUB-BAND) TO ACOUSTIC EVENTS.
 
         public static List<AcousticEvent> ConvertIntensityArray2Events(
             double[] values,
@@ -1055,34 +1054,34 @@ namespace AudioAnalysisTools
                 }
                 else //check for the end of an event
                     if (isHit && values[i] <= scoreThreshold)
+                {
+                    //this is end of an event, so initialise it
+                    isHit = false;
+                    double endTime = i * frameOffset;
+                    double duration = endTime - startTime;
+
+                    //if (duration < minDuration) continue; //skip events with duration shorter than threshold
+                    if (duration < minDuration || duration > maxDuration)
                     {
-                        //this is end of an event, so initialise it
-                        isHit = false;
-                        double endTime = i * frameOffset;
-                        double duration = endTime - startTime;
-
-                        //if (duration < minDuration) continue; //skip events with duration shorter than threshold
-                        if (duration < minDuration || duration > maxDuration)
-                        {
-                            continue; //skip events with duration shorter than threshold
-                        }
-
-                        AcousticEvent ev = new AcousticEvent(segmentStartOffset, startTime, duration, minHz, maxHz)
-                        {
-                            Name = "Acoustic Segment", //default name
-                        };
-                        ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
-
-                        //obtain average intensity score.
-                        double av = 0.0;
-                        for (int n = startFrame; n <= i; n++)
-                        {
-                            av += values[n];
-                        }
-
-                        ev.Score = av / (i - startFrame + 1);
-                        events.Add(ev);
+                        continue; //skip events with duration shorter than threshold
                     }
+
+                    AcousticEvent ev = new AcousticEvent(segmentStartOffset, startTime, duration, minHz, maxHz)
+                    {
+                        Name = "Acoustic Segment", //default name
+                    };
+                    ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
+
+                    //obtain average intensity score.
+                    double av = 0.0;
+                    for (int n = startFrame; n <= i; n++)
+                    {
+                        av += values[n];
+                    }
+
+                    ev.Score = av / (i - startFrame + 1);
+                    events.Add(ev);
+                }
             }
 
             return events;

@@ -10,22 +10,21 @@ namespace AnalysisPrograms.Recognizers
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using System.Reflection;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
-
     using AnalysisBase;
     using AnalysisBase.ResultBases;
+    using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-    using Base;
     using log4net;
+    using SixLabors.ImageSharp;
     using TowseyLibrary;
     using Path = System.IO.Path;
 
@@ -530,8 +529,8 @@ namespace AnalysisPrograms.Recognizers
         /// <summary>
         /// Constructs a simple template for the L.convex call.
         /// </summary>
-        /// <param name="callBinWidth">Typical value = 25</param>
-        /// <param name="binSilenceBuffer">buffer above and below call that should be silent</param>
+        /// <param name="callBinWidth">Typical value = 25.</param>
+        /// <param name="binSilenceBuffer">buffer above and below call that should be silent.</param>
         private static List<double[]> GetLconvexTemplates(int callBinWidth, int binSilenceBuffer)
         {
             var templates = new List<double[]>();

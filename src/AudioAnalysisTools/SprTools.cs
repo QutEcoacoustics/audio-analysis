@@ -14,17 +14,14 @@ namespace AudioAnalysisTools
         //char[] code = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q' }; //10 degree jumps
         //90 degree angle = symbol 'i'   i.e. the vertical
         //int resolutionAngle = 10;
-        public static char[] code = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l' };   //15 degree jumps
+        public static char[] Code = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l' };   //15 degree jumps
 
         //90 degree angle = symbol 'g' i.e. the vertical
         public const int resolutionAngle = 15;
 
         /// <summary>
-        /// returns the angle difference between two angle symbols
+        /// returns the angle difference between two angle symbols.
         /// </summary>
-        /// <param name="c1"></param>
-        /// <param name="c2"></param>
-        /// <returns></returns>
         public static int SymbolDifference(char c1, char c2)
         {
             if (c1 == c2)
@@ -107,7 +104,7 @@ namespace AudioAnalysisTools
                                 int col = c + (int)(sinAngle * j);
                                 if (intensity > intensityScores[row, col])
                                 {
-                                    symbolic[row, col] = code[degrees / resolutionAngle];
+                                    symbolic[row, col] = Code[degrees / resolutionAngle];
                                 }
                             } // line length
                         }
@@ -124,7 +121,6 @@ namespace AudioAnalysisTools
         /// Cleans up a symbolic matrix.
         /// Removes a symbol if it is isolated.
         /// </summary>
-        /// <param name="inputM"></param>
         public static void CleanSymbolicTracks(char[,] inputM)
         {
             int rows = inputM.GetLength(0);
@@ -151,8 +147,6 @@ namespace AudioAnalysisTools
         /// <summary>
         /// counts the symbols in an SPR template. Exclude the '-' char which is just background instaed of space.
         /// </summary>
-        /// <param name="templateMatrix"></param>
-        /// <returns></returns>
         public static int CountTemplateChars(char[,] templateMatrix)
         {
             int rows = templateMatrix.GetLength(0);

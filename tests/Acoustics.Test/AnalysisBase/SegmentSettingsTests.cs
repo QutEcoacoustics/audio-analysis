@@ -6,9 +6,9 @@ namespace Acoustics.Test.AnalysisBase
 {
     using System;
     using System.IO;
+    using Acoustics.Test.TestHelpers;
     using global::AnalysisBase;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
 
     [TestClass]
     public class SegmentSettingsTests : OutputDirectoryTest
@@ -55,11 +55,11 @@ namespace Acoustics.Test.AnalysisBase
             Assert.ThrowsException<ArgumentNullException>(
                 () =>
                 {
-                   this.segmentSettings = new SegmentSettings<FileInfo>(
-                        null,
-                        this.segment,
-                        (this.analysisSettings.AnalysisOutputDirectory, this.analysisSettings.AnalysisTempDirectory),
-                        this.preparedSegment);
+                    this.segmentSettings = new SegmentSettings<FileInfo>(
+                         null,
+                         this.segment,
+                         (this.analysisSettings.AnalysisOutputDirectory, this.analysisSettings.AnalysisTempDirectory),
+                         this.preparedSegment);
                 });
         }
 
@@ -69,11 +69,11 @@ namespace Acoustics.Test.AnalysisBase
             Assert.ThrowsException<ArgumentNullException>(
                 () =>
                 {
-                   this.segmentSettings = new SegmentSettings<FileInfo>(
-                        this.analysisSettings,
-                        null,
-                        (this.analysisSettings.AnalysisOutputDirectory, this.analysisSettings.AnalysisTempDirectory),
-                        this.preparedSegment);
+                    this.segmentSettings = new SegmentSettings<FileInfo>(
+                         this.analysisSettings,
+                         null,
+                         (this.analysisSettings.AnalysisOutputDirectory, this.analysisSettings.AnalysisTempDirectory),
+                         this.preparedSegment);
                 });
         }
 
@@ -83,11 +83,11 @@ namespace Acoustics.Test.AnalysisBase
             Assert.ThrowsException<ArgumentNullException>(
                 () =>
                 {
-                   this.segmentSettings = new SegmentSettings<FileInfo>(
-                        this.analysisSettings,
-                        this.segment,
-                        (null, null),
-                        this.preparedSegment);
+                    this.segmentSettings = new SegmentSettings<FileInfo>(
+                         this.analysisSettings,
+                         this.segment,
+                         (null, null),
+                         this.preparedSegment);
                 });
         }
 
@@ -97,11 +97,11 @@ namespace Acoustics.Test.AnalysisBase
             Assert.ThrowsException<ArgumentNullException>(
                 () =>
                 {
-                   this.segmentSettings = new SegmentSettings<FileInfo>(
-                        this.analysisSettings,
-                        this.segment,
-                        (this.analysisSettings.AnalysisOutputDirectory, this.analysisSettings.AnalysisTempDirectory),
-                        null);
+                    this.segmentSettings = new SegmentSettings<FileInfo>(
+                         this.analysisSettings,
+                         this.segment,
+                         (this.analysisSettings.AnalysisOutputDirectory, this.analysisSettings.AnalysisTempDirectory),
+                         null);
                 });
         }
 

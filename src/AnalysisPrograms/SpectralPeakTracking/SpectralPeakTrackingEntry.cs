@@ -8,11 +8,11 @@ namespace AnalysisPrograms.SpectralPeakTracking
     using System.IO;
     using System.Threading.Tasks;
     using Acoustics.Shared.ConfigFile;
+    using AnalysisPrograms.Production.Arguments;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using McMaster.Extensions.CommandLineUtils;
-    using Production.Arguments;
 
     public static class SpectralPeakTrackingEntry
     {
@@ -43,8 +43,8 @@ namespace AnalysisPrograms.SpectralPeakTracking
             // output the results
 
             var configPath = @"SpectralPeakTrackingConfig.yml";
-            var recordingPath = @"";
-            var imagePath = @"";
+            var recordingPath = string.Empty;
+            var imagePath = string.Empty;
 
             var configFile = configPath.ToFileInfo();
 
@@ -80,14 +80,13 @@ namespace AnalysisPrograms.SpectralPeakTracking
 
             //var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
             var amplitudeSpectrogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
+
             // Broken in merge b7e03070a9cd72ab0632789a3412967a6cc54cd6
             //var energySpectrogram = new EnergySpectrogram(amplitudeSpectrogram);
             var decibelSpectrogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
 
             double frameStepSize = sonoConfig.GetFrameOffset();
             double stepDuration = frameStepSize / (nyquist * 2);
-
-
 
             // Noise Reduction to be added
 

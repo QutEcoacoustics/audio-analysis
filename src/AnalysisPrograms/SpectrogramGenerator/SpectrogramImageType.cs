@@ -5,13 +5,13 @@
 namespace AnalysisPrograms.SpectrogramGenerator
 {
     public enum SpectrogramImageType
-        {
-            Waveform = 0,
-            DecibelSpectrogram = 1,
-            DecibelSpectrogramNoiseReduced = 2,
-            Experimental = 3,
-            DifferenceSpectrogram = 4,
-            CepstralSpectrogram = 5,
-            AmplitudeSpectrogramLocalContrastNormalization = 6,
-        }
+    {
+        Waveform = 0,
+        DecibelSpectrogram = 1,
+        DecibelSpectrogramNoiseReduced = 2,
+        Experimental = 3,
+        DifferenceSpectrogram = 4,
+        CepstralSpectrogram = 5,
+        AmplitudeSpectrogramLocalContrastNormalization = 6,
+    }
 }

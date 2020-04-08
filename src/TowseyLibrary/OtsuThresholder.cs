@@ -11,7 +11,7 @@ namespace TowseyLibrary
 
     /// <summary>
     /// Go to following link for info on Otsu threshold
-    /// http://www.labbookpages.co.uk/software/imgProc/otsuThreshold.html
+    /// http://www.labbookpages.co.uk/software/imgProc/otsuThreshold.html.
     /// </summary>
     public class OtsuThresholder
     {
@@ -31,7 +31,6 @@ namespace TowseyLibrary
         /// <summary>
         ///
         /// </summary>
-        /// <param name="arguments"></param>
         public static void Execute(Arguments arguments)
         {
             string date = "# DATE AND TIME: " + DateTime.Now;
@@ -101,7 +100,8 @@ namespace TowseyLibrary
         private int threshold;
 
         /// <summary>
-        /// CONSTRUCTOR
+        /// Initializes a new instance of the <see cref="OtsuThresholder"/> class.
+        /// CONSTRUCTOR.
         /// </summary>
         public OtsuThresholder()
         {
@@ -292,9 +292,9 @@ namespace TowseyLibrary
                 {
                     var color = image[c, r];
 
-                   // alpha = imData.data[i + 3];
-                   // https://en.wikipedia.org/wiki/Grayscale
-                   //       gray = red*0.2126  +  green*0.7152  +  blue*.0722;
+                    // alpha = imData.data[i + 3];
+                    // https://en.wikipedia.org/wiki/Grayscale
+                    //       gray = red*0.2126  +  green*0.7152  +  blue*.0722;
                     m[r, c] = (byte)Math.Round((color.R * 0.2126) + (color.G * 0.7152) + (color.B * 0.0722));
                 }
             }
@@ -339,29 +339,29 @@ namespace TowseyLibrary
         }
 
         private static Image<Rgb24> CreateHistogramFrame(OtsuThresholder thresholder, int width, int height)
-    {
-        width = 256; // histogram is one byte width.
-
-        int[] histData = thresholder.GetHistData();
-        int max = thresholder.getMaxLevelValue();
-        int threshold = thresholder.getThreshold();
-        var image = new Image<Rgb24>(width, height);
-
-        for (int col = 0; col < width; col++)
         {
-            //int ptr = (numPixels - width) + col;
-            int val = height * histData[col] / max;
+            width = 256; // histogram is one byte width.
 
-            if (col == threshold)
+            int[] histData = thresholder.GetHistData();
+            int max = thresholder.getMaxLevelValue();
+            int threshold = thresholder.getThreshold();
+            var image = new Image<Rgb24>(width, height);
+
+            for (int col = 0; col < width; col++)
             {
-                for (int i = 0; i < height; i++)
+                //int ptr = (numPixels - width) + col;
+                int val = height * histData[col] / max;
+
+                if (col == threshold)
+                {
+                    for (int i = 0; i < height; i++)
                     {
                         image[col, i] = Color.Red;
                     }
                 }
-            else
-            {
-                for (int i = 1; i <= val; i++)
+                else
+                {
+                    for (int i = 1; i <= val; i++)
                     {
                         image[col, height - i] = Color.Black;
                     }
@@ -369,14 +369,14 @@ namespace TowseyLibrary
                     //histPlotData[ptr] = (byte)((val < i) ? (byte)255 : 0);
                 }
 
-            for (int i = 0; i < height; i++)
+                for (int i = 0; i < height; i++)
                 {
                     image[0, i] = Color.Gray;
                 }
             }
 
-        return image;
-    }
+            return image;
+        }
 
         public static void GetOtsuThreshold(byte[,] matrix, out byte[,] m2, out int threshold)
         {
@@ -421,9 +421,7 @@ namespace TowseyLibrary
 
         /// <summary>
         /// </summary>
-        /// <param name="m">The spectral sonogram passes as matrix of doubles</param>
-        /// <param name="opByteMatrix"></param>
-        /// <returns></returns>
+        /// <param name="m">The spectral sonogram passes as matrix of doubles.</param>
         public static void DoLocalOtsuThresholding(double[,] m, out byte[,] opByteMatrix)
         {
             int byteThreshold = 30;
@@ -440,9 +438,11 @@ namespace TowseyLibrary
             var bd1 = DataTools.GetByteDistribution(ipByteMatrix);
             opByteMatrix = new byte[rowCount, colCount];
 
-            for (int col = freqBinNh; col < colCount - freqBinNh; col++) //for all cols i.e. freq bins
+            // for all cols i.e. freq bins
+            for (int col = freqBinNh; col < colCount - freqBinNh; col++)
             {
-                for (int row = temporalNh; row < rowCount - temporalNh; row++) //for all rows i.e. frames
+                // for all rows i.e. frames
+                for (int row = temporalNh; row < rowCount - temporalNh; row++)
                 {
                     var localMatrix = MatrixTools.Submatrix(ipByteMatrix, row - temporalNh, col - freqBinNh, row + temporalNh, col + freqBinNh);
 

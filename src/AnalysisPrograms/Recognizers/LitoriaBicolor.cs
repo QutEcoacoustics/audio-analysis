@@ -11,20 +11,20 @@ namespace AnalysisPrograms.Recognizers
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Reflection;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
+    using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-    using Base;
     using log4net;
+    using SixLabors.ImageSharp;
     using TowseyLibrary;
     using Path = System.IO.Path;
 
@@ -72,13 +72,6 @@ namespace AnalysisPrograms.Recognizers
         /// <summary>
         /// Do your analysis. This method is called once per segment (typically one-minute segments).
         /// </summary>
-        /// <param name="recording"></param>
-        /// <param name="configuration"></param>
-        /// <param name="segmentStartOffset"></param>
-        /// <param name="getSpectralIndexes"></param>
-        /// <param name="outputDirectory"></param>
-        /// <param name="imageWidth"></param>
-        /// <returns></returns>
         public override RecognizerResults Recognize(AudioRecording recording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
             var recognizerConfig = new LitoriaBicolorConfig();
@@ -165,12 +158,6 @@ namespace AnalysisPrograms.Recognizers
         /// <summary>
         /// THE KEY ANALYSIS METHOD.
         /// </summary>
-        /// <param name="recording"></param>
-        /// <param name="sonoConfig"></param>
-        /// <param name="lbConfig"></param>
-        /// <param name="drawDebugImage"></param>
-        /// <param name="segmentStartOffset"></param>
-        /// <returns></returns>
         public static Tuple<BaseSonogram, double[,], double[], List<AcousticEvent>, Image> Analysis(
             AudioRecording recording,
             SonogramConfig sonoConfig,
@@ -281,7 +268,8 @@ namespace AnalysisPrograms.Recognizers
                         continue;
                     }
 
-                    for (int j = 0; j < dctLength; j++) //lay down score for sample length
+                    // lay down score for sample length
+                    for (int j = 0; j < dctLength; j++)
                     {
                         if (scores[i + j] < intensity)
                         {

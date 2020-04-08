@@ -1,10 +1,14 @@
-﻿namespace AnalysisBase
+// <copyright file="ISourcePreparer.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
+namespace AnalysisBase
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Threading.Tasks;
-    using Segment;
+    using AnalysisBase.Segment;
 
     /// <summary>
     /// Interface for preparing source files.
@@ -61,8 +65,6 @@
         /// <param name="temporaryFilesDirectory">
         ///     The directory for temporary files.
         /// </param>
-        /// <param name="channelSelection"></param>
-        /// <param name="mixDownToMono"></param>
         /// <returns>
         /// The prepared file.
         /// </returns>

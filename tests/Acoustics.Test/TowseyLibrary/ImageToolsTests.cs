@@ -4,7 +4,6 @@
 
 namespace Acoustics.Test.TowseyLibrary
 {
-    using Acoustics.Shared;
     using Acoustics.Shared.ImageSharp;
     using Acoustics.Test.TestHelpers;
     using global::TowseyLibrary;

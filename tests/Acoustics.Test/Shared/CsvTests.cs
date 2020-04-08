@@ -296,6 +296,7 @@ namespace Acoustics.Test.Shared
 
             // test reflection is working
             var actual = Meta.GetTypesFromQutAssemblies<ClassMap>().ToArray();
+
             // Trace.WriteLine("Actual classmaps:\n" + actual.FormatList());
             // Trace.WriteLine("Actual assemblies:\n" + Meta.QutAssemblies.Select(x => x.FullName).FormatList());
 

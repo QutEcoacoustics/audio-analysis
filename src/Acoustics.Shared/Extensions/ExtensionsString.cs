@@ -325,7 +325,7 @@ namespace System
         /// True if <paramref name="source"/> contains <paramref name="toCheck"/> using <paramref name="comp"/>, otherwise false.
         /// </returns>
         /// <remarks>
-        /// from: http://stackoverflow.com/questions/444798/case-insensitive-containsstring
+        /// from: http://stackoverflow.com/questions/444798/case-insensitive-containsstring.
         /// </remarks>
         public static bool Contains(this string source, string toCheck, StringComparison comp)
         {

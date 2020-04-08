@@ -1,4 +1,4 @@
-// <copyright file="SpectralIndexValuesForContentDescription.cs" company="QutEcoacoustics">
+// <copyright file="SpectralIndexValuesforContentDescription.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -6,8 +6,8 @@ namespace AudioAnalysisTools.Indices
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using AnalysisBase.ResultBases;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
 
     //
@@ -57,7 +57,6 @@ namespace AudioAnalysisTools.Indices
             var combinedImage = ImageTools.CombineImagesVertically(images);
             return combinedImage;
         }
-        
 
         // 1:
         public double[] ACI { get; set; }

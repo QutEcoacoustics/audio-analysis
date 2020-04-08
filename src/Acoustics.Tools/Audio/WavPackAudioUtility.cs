@@ -1,3 +1,7 @@
+// <copyright file="WavPackAudioUtility.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
 namespace Acoustics.Tools.Audio
 {
     using System;
@@ -7,7 +11,7 @@ namespace Acoustics.Tools.Audio
     using System.Text;
     using System.Text.RegularExpressions;
 
-    using Shared;
+    using Acoustics.Shared;
 
     /// <summary>
     /// Audio utility implemented using wav(un)pack.

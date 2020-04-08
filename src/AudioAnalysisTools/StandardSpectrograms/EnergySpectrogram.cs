@@ -9,13 +9,13 @@ namespace AudioAnalysisTools.StandardSpectrograms
     using TowseyLibrary;
 
     /// <summary>
-    /// There are two CONSTRUCTORS
+    /// There are two CONSTRUCTORS.
     /// </summary>
     public class EnergySpectrogram
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="EnergySpectrogram"/> class.
-        /// Use this constructor when you have config and audio objects
+        /// Use this constructor when you have config and audio objects.
         /// </summary>
         public EnergySpectrogram(SpectrogramSettings config, WavReader wav)
             : this(new AmplitudeSpectrogram(config, wav))
@@ -37,7 +37,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         /// <summary>
         /// Gets or sets the spectrogram data matrix of doubles
-        /// Note matrix orientation: ROWS = spectra;  COLUMNS = frequency bins
+        /// Note matrix orientation: ROWS = spectra;  COLUMNS = frequency bins.
         /// </summary>
         public double[,] Data { get; set; }
 
@@ -68,7 +68,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
             var psd = MatrixTools.GetColumnAverages(this.Data);
             var logPsd = DataTools.LogValues(psd);
             return logPsd;
-
         }
     }
 }

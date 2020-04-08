@@ -6,7 +6,6 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.Linq;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
@@ -17,6 +16,7 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms
     using global::AudioAnalysisTools.LongDurationSpectrograms;
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
 
     [TestClass]
@@ -98,8 +98,8 @@ namespace Acoustics.Test.AudioAnalysisTools.LongDurationSpectrograms
             Assert.That.PixelIsColor(new Point(2, 2), Color.FromRgb(128, 128, 128), image);
 
             // empty values are rendered as white because of `doReverseColour`
-            Assert.That.ImageRegionIsColor(Rectangle.FromLTRB(0,0, 1,5), Color.FromRgb(255, 255, 255), image);
-            Assert.That.ImageRegionIsColor(Rectangle.FromLTRB(4,0, 5,5), Color.FromRgb(255, 255, 255), image);
+            Assert.That.ImageRegionIsColor(Rectangle.FromLTRB(0, 0, 1, 5), Color.FromRgb(255, 255, 255), image);
+            Assert.That.ImageRegionIsColor(Rectangle.FromLTRB(4, 0, 5, 5), Color.FromRgb(255, 255, 255), image);
         }
     }
 }

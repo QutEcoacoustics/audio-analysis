@@ -10,17 +10,17 @@ namespace AnalysisPrograms
     using System.Data;
     using System.IO;
     using System.Threading.Tasks;
+    using AnalysisPrograms.Production;
+    using AnalysisPrograms.Production.Arguments;
+    using AnalysisPrograms.Production.Validation;
     using AudioAnalysisTools;
     using McMaster.Extensions.CommandLineUtils;
-    using Production;
-    using Production.Arguments;
-    using Production.Validation;
     using TowseyLibrary;
 
     /// <summary>
     /// SEPARATE PROCESSING TASK FOR KIWI OUTPUT
     /// little spotted kiwi calls from Andrew @ Victoria university.
-    /// Signed off: Michael Towsey 27th July 2012
+    /// Signed off: Michael Towsey 27th July 2012.
     /// </summary>
     [Obsolete]
     public class LSKiwiROC
@@ -127,11 +127,11 @@ namespace AnalysisPrograms
                 AnalysisKeys.EventStartMin,
                 AnalysisKeys.EventStartSec,
                 AnalysisKeys.EventIntensity,
-                LSKiwiHelper.key_GRID_SCORE,
-                LSKiwiHelper.key_DELTA_SCORE,
-                LSKiwiHelper.key_CHIRP_SCORE,
-                LSKiwiHelper.key_PEAKS_SNR_SCORE,
-                LSKiwiHelper.key_BANDWIDTH_SCORE,
+                LSKiwiHelper.Key_GRID_SCORE,
+                LSKiwiHelper.Key_DELTA_SCORE,
+                LSKiwiHelper.Key_CHIRP_SCORE,
+                LSKiwiHelper.Key_PEAKS_SNR_SCORE,
+                LSKiwiHelper.Key_BANDWIDTH_SCORE,
                 AnalysisKeys.EventScore,
                 AnalysisKeys.EventNormscore,
                 header_predictedSex,
@@ -173,11 +173,11 @@ namespace AnalysisPrograms
                 //double snrScore = (double)myRow[LSKiwiHelper.key_PEAKS_SNR_SCORE];
                 //double sdPeakScore = (double)myRow[LSKiwiHelper.key_PEAKS_STD_SCORE]; //standard deviation of peak snr's
                 //double periodicityScore = (double)myRow[LSKiwiHelper.key_DELTA_SCORE];
-                double gridScore = (double)myRow[LSKiwiHelper.key_GRID_SCORE];
-                double deltScore = (double)myRow[LSKiwiHelper.key_DELTA_SCORE];
-                double chrpScore = (double)myRow[LSKiwiHelper.key_CHIRP_SCORE];
-                double peakSnrScore = (double)myRow[LSKiwiHelper.key_PEAKS_SNR_SCORE]; //average peak
-                double bandWidthScore = (double)myRow[LSKiwiHelper.key_BANDWIDTH_SCORE];
+                double gridScore = (double)myRow[LSKiwiHelper.Key_GRID_SCORE];
+                double deltScore = (double)myRow[LSKiwiHelper.Key_DELTA_SCORE];
+                double chrpScore = (double)myRow[LSKiwiHelper.Key_CHIRP_SCORE];
+                double peakSnrScore = (double)myRow[LSKiwiHelper.Key_PEAKS_SNR_SCORE]; //average peak
+                double bandWidthScore = (double)myRow[LSKiwiHelper.Key_BANDWIDTH_SCORE];
 
                 //double comboScore   = (double)myRow[LSKiwiHelper.key_COMBO_SCORE];
                 double eventScore = (double)myRow[AnalysisKeys.EventScore];
@@ -205,11 +205,11 @@ namespace AnalysisPrograms
                 opRow[AnalysisKeys.EventStartMin] = startMin;
                 opRow[AnalysisKeys.EventStartSec] = startSecOffset;
                 opRow[AnalysisKeys.EventIntensity] = intensityScore;
-                opRow[LSKiwiHelper.key_GRID_SCORE] = gridScore;
-                opRow[LSKiwiHelper.key_DELTA_SCORE] = deltScore;
-                opRow[LSKiwiHelper.key_CHIRP_SCORE] = chrpScore;
-                opRow[LSKiwiHelper.key_PEAKS_SNR_SCORE] = peakSnrScore;
-                opRow[LSKiwiHelper.key_BANDWIDTH_SCORE] = bandWidthScore;
+                opRow[LSKiwiHelper.Key_GRID_SCORE] = gridScore;
+                opRow[LSKiwiHelper.Key_DELTA_SCORE] = deltScore;
+                opRow[LSKiwiHelper.Key_CHIRP_SCORE] = chrpScore;
+                opRow[LSKiwiHelper.Key_PEAKS_SNR_SCORE] = peakSnrScore;
+                opRow[LSKiwiHelper.Key_BANDWIDTH_SCORE] = bandWidthScore;
 
                 //opRow[LSKiwiHelper.key_COMBO_SCORE]     = comboScore;
                 opRow[AnalysisKeys.EventScore] = eventScore;
@@ -226,7 +226,9 @@ namespace AnalysisPrograms
                 {
                     double trueStart = (double)trueEvent["Begin Time (s)"];
                     string trueSex = (string)trueEvent["Sex"];
-                    if (trueStart >= myStartSecAbs - 10 && trueStart <= myStartSecAbs + 20 && predictedSex == trueSex) //myStart is close to trueStart AND same sex THERFORE TRUE POSTIIVE
+
+                    // myStart is close to trueStart AND same sex THERFORE TRUE POSTIIVE
+                    if (trueStart >= myStartSecAbs - 10 && trueStart <= myStartSecAbs + 20 && predictedSex == trueSex)
                     {
                         isTP = true;
                         trueEvent["Begin Time (s)"] = double.NaN; //mark so that will not use again
@@ -302,22 +304,22 @@ namespace AnalysisPrograms
                 string feature = rule[0];
                 string op = rule[1];
                 double value = double.Parse(rule[2]);
-                if (feature == LSKiwiHelper.key_BANDWIDTH_SCORE && op == "LT" && (double)acousticEvent[LSKiwiHelper.key_BANDWIDTH_SCORE] < value)
+                if (feature == LSKiwiHelper.Key_BANDWIDTH_SCORE && op == "LT" && (double)acousticEvent[LSKiwiHelper.Key_BANDWIDTH_SCORE] < value)
                 {
                     return null;
                 }
                 else
-                    if (feature == LSKiwiHelper.key_INTENSITY_SCORE && op == "LT" && (double)acousticEvent[LSKiwiHelper.key_INTENSITY_SCORE] > value)
+                    if (feature == LSKiwiHelper.Key_INTENSITY_SCORE && op == "LT" && (double)acousticEvent[LSKiwiHelper.Key_INTENSITY_SCORE] > value)
                 {
                     return null;
                 }
                 else
-                        if (feature == LSKiwiHelper.key_SNR_SCORE && op == "LT" && (double)acousticEvent[LSKiwiHelper.key_SNR_SCORE] < value)
+                        if (feature == LSKiwiHelper.Key_SNR_SCORE && op == "LT" && (double)acousticEvent[LSKiwiHelper.Key_SNR_SCORE] < value)
                 {
                     return null;
                 }
                 else
-                            if (feature == LSKiwiHelper.key_DELTA_SCORE && op == "LT" && (double)acousticEvent[LSKiwiHelper.key_DELTA_SCORE] > value)
+                            if (feature == LSKiwiHelper.Key_DELTA_SCORE && op == "LT" && (double)acousticEvent[LSKiwiHelper.Key_DELTA_SCORE] > value)
                 {
                     return null;
                 }
@@ -328,11 +330,8 @@ namespace AnalysisPrograms
 
         /// <summary>
         /// Calculates an ROC score for the predictions and tags provided in the passed data table.
-        /// First order the data by appropriate score as per the sort string
+        /// First order the data by appropriate score as per the sort string.
         /// </summary>
-        /// <param name="dt"></param>
-        /// <param name="countOfTargetPositives"></param>
-        /// <param name="predictionCount"></param>
         public static void ROCCurve(DataTable dt, int totalPositiveCount, int totalNegativeCount, string sortString)
         {
             dt = DataTableTools.SortTable(dt, sortString);
@@ -437,14 +436,14 @@ namespace AnalysisPrograms
             nameContent.Add(string.Format("{0}: ignore", AnalysisKeys.EventStartMin));
             nameContent.Add(string.Format("{0}: ignore", AnalysisKeys.EventStartSec));
             nameContent.Add(string.Format("{0}: ignore", "Quality"));
-            nameContent.Add(string.Format("{0}: continuous", LSKiwiHelper.key_INTENSITY_SCORE));
-            nameContent.Add(string.Format("{0}: continuous", LSKiwiHelper.key_GRID_SCORE));
-            nameContent.Add(string.Format("{0}: continuous", LSKiwiHelper.key_DELTA_SCORE));
-            nameContent.Add(string.Format("{0}: continuous", LSKiwiHelper.key_CHIRP_SCORE));
-            nameContent.Add(string.Format("{0}: continuous", LSKiwiHelper.key_PEAKS_SNR_SCORE));
-            nameContent.Add(string.Format("{0}: continuous", LSKiwiHelper.key_BANDWIDTH_SCORE));
-            nameContent.Add(string.Format("{0}: continuous", LSKiwiHelper.key_COMBO_SCORE));
-            nameContent.Add(string.Format("{0}: continuous", LSKiwiHelper.key_EVENT_NORMSCORE));
+            nameContent.Add(string.Format("{0}: continuous", LSKiwiHelper.Key_INTENSITY_SCORE));
+            nameContent.Add(string.Format("{0}: continuous", LSKiwiHelper.Key_GRID_SCORE));
+            nameContent.Add(string.Format("{0}: continuous", LSKiwiHelper.Key_DELTA_SCORE));
+            nameContent.Add(string.Format("{0}: continuous", LSKiwiHelper.Key_CHIRP_SCORE));
+            nameContent.Add(string.Format("{0}: continuous", LSKiwiHelper.Key_PEAKS_SNR_SCORE));
+            nameContent.Add(string.Format("{0}: continuous", LSKiwiHelper.Key_BANDWIDTH_SCORE));
+            nameContent.Add(string.Format("{0}: continuous", LSKiwiHelper.Key_COMBO_SCORE));
+            nameContent.Add(string.Format("{0}: continuous", LSKiwiHelper.Key_EVENT_NORMSCORE));
             FileTools.WriteTextFile(namesFilePath, nameContent);
 
             var dataContent = new List<string>();
@@ -454,24 +453,17 @@ namespace AnalysisPrograms
                 double startMin = (double)row[AnalysisKeys.EventStartMin];
                 double startSec = (double)row[AnalysisKeys.EventStartSec];
                 double intensityScore;
-                try
-                {
-                    intensityScore = (double)row[AnalysisKeys.EventIntensity];
-                }
-                catch (Exception ex)
-                {
-                    //intensityScore = 0.0;
-                    continue;
-                }
+
+                intensityScore = dt.Columns.Contains(AnalysisKeys.EventIntensity) ? (double)row[AnalysisKeys.EventIntensity] : 0;
 
                 //string quality        = ((int)row["Quality"]).ToString();
                 string quality = "--";
-                double gridScore = (double)row[LSKiwiHelper.key_GRID_SCORE];
-                double deltScore = (double)row[LSKiwiHelper.key_DELTA_SCORE];
-                double chrpScore = (double)row[LSKiwiHelper.key_CHIRP_SCORE];
-                double peakSnrScore = (double)row[LSKiwiHelper.key_PEAKS_SNR_SCORE]; //average peak
-                double bandWidthScore = (double)row[LSKiwiHelper.key_BANDWIDTH_SCORE];
-                double comboScore = (double)row[LSKiwiHelper.key_COMBO_SCORE];
+                double gridScore = (double)row[LSKiwiHelper.Key_GRID_SCORE];
+                double deltScore = (double)row[LSKiwiHelper.Key_DELTA_SCORE];
+                double chrpScore = (double)row[LSKiwiHelper.Key_CHIRP_SCORE];
+                double peakSnrScore = (double)row[LSKiwiHelper.Key_PEAKS_SNR_SCORE]; //average peak
+                double bandWidthScore = (double)row[LSKiwiHelper.Key_BANDWIDTH_SCORE];
+                double comboScore = (double)row[LSKiwiHelper.Key_COMBO_SCORE];
                 double normScore = (double)row[AnalysisKeys.EventNormscore];
 
                 string name = (string)row["truSex"];

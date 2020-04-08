@@ -22,13 +22,13 @@ namespace AnalysisPrograms.Recognizers.Base
 
         /// <summary>
         /// Gets or sets the minimum OSCILLATIONS PER SECOND
-        /// Ignore oscillation rates below the min & above the max threshold.
+        /// Ignore oscillation rates below the min &amp; above the max threshold.
         /// </summary>
         public int MinOscillationFrequency { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum OSCILLATIONS PER SECOND
-        /// Ignore oscillation rates below the min & above the max threshold.
+        /// Ignore oscillation rates below the min &amp; above the max threshold.
         /// </summary>
         public int MaxOscillationFrequency { get; set; }
 

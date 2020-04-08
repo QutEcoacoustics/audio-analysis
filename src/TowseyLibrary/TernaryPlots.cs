@@ -6,10 +6,9 @@ namespace TowseyLibrary
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.Linq;
-    using Acoustics.Shared;
     using Acoustics.Shared.ImageSharp;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.Processing;
 
     public static class TernaryPlots
@@ -18,9 +17,8 @@ namespace TowseyLibrary
         /// Draws a ternary plot from the passed data.
         /// Assumes that the passed matrix values are all normalised in [0,1].
         /// </summary>
-        /// <param name="matrixDictionary">dicitonary of matrices - each matrix is one index</param>
+        /// <param name="matrixDictionary">dicitonary of matrices - each matrix is one index.</param>
         /// <param name="keys">The names of the three indices/attributes. Also used as keys to dicitonary of matrices.</param>
-        /// <returns></returns>
         public static Image DrawTernaryPlot(Dictionary<string, double[,]> matrixDictionary, string[] keys)
         {
             int rowCount = matrixDictionary[keys[0]].GetLength(0);
@@ -34,7 +32,7 @@ namespace TowseyLibrary
 
             double[] triplet = new double[3];
             string label1 = "Ternary Plot: ";
-            string label2 = "";
+            string label2 = string.Empty;
             for (int r = 0; r < rowCount; r++)
             {
                 for (int c = 0; c < colCount; c++)

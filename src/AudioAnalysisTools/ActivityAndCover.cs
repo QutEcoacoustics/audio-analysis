@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="ActivityAndCover.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -76,11 +76,11 @@ namespace AudioAnalysisTools
         /// <summary>
         /// Returns the number of active frames and acoustic events and their average duration in milliseconds
         /// Only counts an event if it is LONGER than one frame.
-        /// Count events as number of transitions from active to non-active frame
+        /// Count events as number of transitions from active to non-active frame.
         /// </summary>
-        /// <param name="dBarray">array of DB values</param>
-        /// <param name="frameStepDuration">frame duration in seconds</param>
-        /// <param name="dbThreshold">thrshold in decibels</param>
+        /// <param name="dBarray">array of DB values.</param>
+        /// <param name="frameStepDuration">frame duration in seconds.</param>
+        /// <param name="dbThreshold">thrshold in decibels.</param>
         public static SummaryActivity CalculateActivity(double[] dBarray, TimeSpan frameStepDuration, double dbThreshold)
         {
             // minimum frame length for recognition of a valid event

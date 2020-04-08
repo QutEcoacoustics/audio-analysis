@@ -6,10 +6,10 @@ namespace AudioAnalysisTools
 {
     using System.Collections.Generic;
     using System.Linq;
-    using DSP;
-    using StandardSpectrograms;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
     using TowseyLibrary;
-    using WavTools;
 
     /// <summary>
     /// Finds and stores info about spectral peak tracks ie whistles and chirps in the passed spectrogram.
@@ -20,7 +20,7 @@ namespace AudioAnalysisTools
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SpectralPeakTracks"/> class.
-        /// CONSTRUCTOR NOTE: Orientation of passed spectrogram is: row = spectral frames, columns = frequency bins
+        /// CONSTRUCTOR NOTE: Orientation of passed spectrogram is: row = spectral frames, columns = frequency bins.
         /// </summary>
         public SpectralPeakTracks(double[,] dBSpectrogram, double peakThreshold)
         {
@@ -39,7 +39,7 @@ namespace AudioAnalysisTools
         //public TimeSpan AvTrackDuration { get; private set; }
 
         /// <summary>
-        /// Gets average number of tracks per frame
+        /// Gets average number of tracks per frame.
         /// </summary>
         public double TrackDensity { get; private set; }
 
@@ -49,22 +49,22 @@ namespace AudioAnalysisTools
         public double[] SptSpectrum { get; private set; }
 
         /// <summary>
-        /// Gets spectrum of horizontal ridges
+        /// Gets spectrum of horizontal ridges.
         /// </summary>
         public double[] RhzSpectrum { get; private set; }
 
         /// <summary>
-        /// Gets spectrum of vertical ridges
+        /// Gets spectrum of vertical ridges.
         /// </summary>
         public double[] RvtSpectrum { get; private set; }
 
         /// <summary>
-        /// Gets spectrum of positive slope ridges
+        /// Gets spectrum of positive slope ridges.
         /// </summary>
         public double[] RpsSpectrum { get; private set; }
 
         /// <summary>
-        /// gets spectrum of negative slope ridges
+        /// gets spectrum of negative slope ridges.
         /// </summary>
         public double[] RngSpectrum { get; private set; }
 
@@ -267,9 +267,9 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        /// Calculates spectral peak tracks
+        /// Calculates spectral peak tracks.
         /// </summary>
-        /// <param name="dBSpectrogram"> typically a decibel noise-reduced spectrogram</param>
+        /// <param name="dBSpectrogram"> typically a decibel noise-reduced spectrogram.</param>
         /// <param name="dBThreshold">threshold for spectral peak to be a valid peak.</param>
         public void GetPeakTracksSpectrum(double[,] dBSpectrogram, double dBThreshold)
         {
@@ -345,16 +345,16 @@ namespace AudioAnalysisTools
                         && dBSpectrogram[row, col] > dBSpectrogram[row, col - 1]
                         && dBSpectrogram[row, col] > dBSpectrogram[row, col + 2]
                         && dBSpectrogram[row, col] > dBSpectrogram[row, col - 2])
-                        /*
-                        && ((dBSpectrogram[row, col] - dBSpectrogram[row, col + 3])
-                        && ((dBSpectrogram[row, col] - dBSpectrogram[row, col - 3])
-                        if (((dBSpectrogram[row, col] - dBSpectrogram[row, col + 1]) > 0.0)
-                        && ((dBSpectrogram[row, col] - dBSpectrogram[row, col - 1]) > 0.0)
-                        && ((dBSpectrogram[row, col] - dBSpectrogram[row, col + 2]) > dBThreshold)
-                        && ((dBSpectrogram[row, col] - dBSpectrogram[row, col - 2]) > dBThreshold)
-                        && ((dBSpectrogram[row, col] - dBSpectrogram[row, col + 3]) > dBThreshold)
-                        && ((dBSpectrogram[row, col] - dBSpectrogram[row, col - 3]) > dBThreshold))
-                       */
+                    /*
+                    && ((dBSpectrogram[row, col] - dBSpectrogram[row, col + 3])
+                    && ((dBSpectrogram[row, col] - dBSpectrogram[row, col - 3])
+                    if (((dBSpectrogram[row, col] - dBSpectrogram[row, col + 1]) > 0.0)
+                    && ((dBSpectrogram[row, col] - dBSpectrogram[row, col - 1]) > 0.0)
+                    && ((dBSpectrogram[row, col] - dBSpectrogram[row, col + 2]) > dBThreshold)
+                    && ((dBSpectrogram[row, col] - dBSpectrogram[row, col - 2]) > dBThreshold)
+                    && ((dBSpectrogram[row, col] - dBSpectrogram[row, col + 3]) > dBThreshold)
+                    && ((dBSpectrogram[row, col] - dBSpectrogram[row, col - 3]) > dBThreshold))
+                   */
                     {
                         // localpeaks[row, col] = dBSpectrogram[row, col] - ((dBSpectrogram[row, col+2] + dBSpectrogram[row, col-2]) * 0.5);
                         localpeaks[row, col] = dBSpectrogram[row, col];
@@ -371,7 +371,7 @@ namespace AudioAnalysisTools
         /// because need to recalculate background noise etc.
         /// Otherwise the constructor of this class is called: sptInfo = new SpectralPeakTracks(decibelSpectrogram, peakThreshold);
         /// NOTE: We require a noise reduced decibel spectrogram
-        /// FreqBinWidth can be accessed, if required, through dspOutput1.FreqBinWidth,
+        /// FreqBinWidth can be accessed, if required, through dspOutput1.FreqBinWidth.
         /// </summary>
         public static SpectralPeakTracks CalculateSpectralPeakTracks(AudioRecording recording, int sampleStart, int sampleEnd, int frameSize, bool octaveScale, double peakThreshold)
         {

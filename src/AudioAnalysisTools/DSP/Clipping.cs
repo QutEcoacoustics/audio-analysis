@@ -1,4 +1,4 @@
-﻿// <copyright file="Clipping.cs" company="QutEcoacoustics">
+// <copyright file="Clipping.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -22,12 +22,12 @@ namespace AudioAnalysisTools.DSP
         /// Downsampling reduces the maximum signal value and removes a lot of clipping.
         /// This method was debugged on a highly clipped recording but hwich had been downsampled.
         /// </summary>
-        /// <param name="signal">the original signal</param>
-        /// <param name="envelope">and its envelope</param>
-        /// <param name="frameStepSize">frame step originally used to calcualte the envelope</param>
+        /// <param name="signal">the original signal.</param>
+        /// <param name="envelope">and its envelope.</param>
+        /// <param name="frameStepSize">frame step originally used to calcualte the envelope.</param>
         /// <param name="epsilon">used to estimate how close wave form must be to max in order to be clipped.</param>
-        /// <param name="highAmplitudeCount">returned high amplitude count</param>
-        /// <param name="clipCount">returned clip count</param>
+        /// <param name="highAmplitudeCount">returned high amplitude count.</param>
+        /// <param name="clipCount">returned clip count.</param>
         public static void GetClippingCount(double[] signal, double[] envelope, int frameStepSize, double epsilon, out int highAmplitudeCount, out int clipCount)
         {
             // initialise values

@@ -17,8 +17,6 @@ namespace Acoustics.Shared
     using YamlDotNet.Core;
     using YamlDotNet.Serialization;
 
-    using Acoustics.Shared.Contracts;
-
     public static class Yaml
     {
         private static readonly Dictionary<string, Type> TagMappings = new Dictionary<string, Type>();

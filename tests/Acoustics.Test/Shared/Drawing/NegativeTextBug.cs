@@ -33,7 +33,7 @@ namespace Acoustics.Test.Shared.Drawing
 
             // first make sure the text rectangle actually overlaps
             var destArea = new RectangleF(PointF.Empty, this.Actual.Size());
-            var textArea = TextMeasurer.MeasureBounds(text, new RendererOptions(Drawing.Arial10,  new Point(-10, 3)));
+            var textArea = TextMeasurer.MeasureBounds(text, new RendererOptions(Drawing.Arial10, new Point(-10, 3)));
             Assert.IsTrue(destArea.IntersectsWith(textArea.AsRect()));
 
             // THIS SHOULD IDEALLY NOT THROW

@@ -11,16 +11,17 @@ namespace AnalysisPrograms
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using System.Reflection;
     using System.Threading.Tasks;
+    using Acoustics.AED;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
+    using AnalysisPrograms.Production.Arguments;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
@@ -28,8 +29,7 @@ namespace AnalysisPrograms
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
     using Microsoft.FSharp.Core;
-    using Production.Arguments;
-    using Acoustics.AED;
+    using SixLabors.ImageSharp;
     using TowseyLibrary;
 
     /// <summary>
@@ -138,10 +138,10 @@ namespace AnalysisPrograms
             }
 
             var config = new SonogramConfig
-                              {
-                                  NoiseReductionType = aedConfiguration.NoiseReductionType,
-                                  NoiseReductionParameter = aedConfiguration.NoiseReductionParameter,
-                              };
+            {
+                NoiseReductionType = aedConfiguration.NoiseReductionType,
+                NoiseReductionParameter = aedConfiguration.NoiseReductionParameter,
+            };
             var sonogram = (BaseSonogram)new SpectrogramStandard(config, recording.WavReader);
 
             AcousticEvent[] events = CallAed(sonogram, aedConfiguration, segmentStartOffset, segmentDuration);
@@ -152,13 +152,13 @@ namespace AnalysisPrograms
         public static AcousticEvent[] CallAed(BaseSonogram sonogram, AedConfiguration aedConfiguration, TimeSpan segmentStartOffset, TimeSpan segmentDuration)
         {
             Log.Info("AED start");
-            
+
             var aedOptions = new AedOptions(sonogram.Configuration.NyquistFreq)
-                                 {
-                                     IntensityThreshold = aedConfiguration.IntensityThreshold,
-                                     SmallAreaThreshold = aedConfiguration.SmallAreaThreshold,
-                                     DoNoiseRemoval = aedConfiguration.NoiseReductionType == NoiseReductionType.None,
-                                 };
+            {
+                IntensityThreshold = aedConfiguration.IntensityThreshold,
+                SmallAreaThreshold = aedConfiguration.SmallAreaThreshold,
+                DoNoiseRemoval = aedConfiguration.NoiseReductionType == NoiseReductionType.None,
+            };
 
             if (aedConfiguration.BandpassMinimum.HasValue && aedConfiguration.BandpassMaximum.HasValue)
             {
@@ -169,7 +169,7 @@ namespace AnalysisPrograms
                 aedOptions.BandPassFilter = new FSharpOption<Tuple<double, double>>(bandPassFilter);
             }
 
-            IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(aedOptions,   sonogram.Data);
+            IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(aedOptions, sonogram.Data);
             Log.Info("AED finished");
 
             var events = oblongs.Select(
@@ -293,18 +293,18 @@ namespace AnalysisPrograms
             }
 
             return new AedConfiguration()
-                       {
-                           IntensityThreshold = configuration.GetDouble(nameof(AedConfiguration.IntensityThreshold)),
-                           SmallAreaThreshold = configuration.GetInt(nameof(AedConfiguration.SmallAreaThreshold)),
-                           BandpassMinimum = configuration.GetIntOrNull(nameof(AedConfiguration.BandpassMinimum)),
-                           BandpassMaximum = configuration.GetIntOrNull(nameof(AedConfiguration.BandpassMaximum)),
-                           IncludeHitElementsInOutput = configuration.GetBoolOrNull(nameof(AedConfiguration.IncludeHitElementsInOutput)) ?? false,
-                           AedEventColor = configuration[nameof(AedConfiguration.AedEventColor)].ParseAsColor(),
-                           AedHitColor = configuration[nameof(AedConfiguration.AedHitColor)].ParseAsColor(),
-                           ResampleRate = configuration.GetInt(nameof(AedConfiguration.ResampleRate)),
-                           NoiseReductionType = noiseReduction,
-                           NoiseReductionParameter = configuration.GetDouble(AnalysisKeys.NoiseBgThreshold),
-                       };
+            {
+                IntensityThreshold = configuration.GetDouble(nameof(AedConfiguration.IntensityThreshold)),
+                SmallAreaThreshold = configuration.GetInt(nameof(AedConfiguration.SmallAreaThreshold)),
+                BandpassMinimum = configuration.GetIntOrNull(nameof(AedConfiguration.BandpassMinimum)),
+                BandpassMaximum = configuration.GetIntOrNull(nameof(AedConfiguration.BandpassMaximum)),
+                IncludeHitElementsInOutput = configuration.GetBoolOrNull(nameof(AedConfiguration.IncludeHitElementsInOutput)) ?? false,
+                AedEventColor = configuration[nameof(AedConfiguration.AedEventColor)].ParseAsColor(),
+                AedHitColor = configuration[nameof(AedConfiguration.AedHitColor)].ParseAsColor(),
+                ResampleRate = configuration.GetInt(nameof(AedConfiguration.ResampleRate)),
+                NoiseReductionType = noiseReduction,
+                NoiseReductionParameter = configuration.GetDouble(AnalysisKeys.NoiseBgThreshold),
+            };
         }
 
         public override void SummariseResults(

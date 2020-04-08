@@ -1,5 +1,5 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="YamlTests.cs" company="QutEcoacoustics">
+// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="JsonTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
@@ -74,6 +74,5 @@ namespace Acoustics.Test.Shared
             [JsonConverter(typeof(Json.LegacyTimeSpanDataConverter))]
             public double B { get; set; }
         }
-
     }
 }

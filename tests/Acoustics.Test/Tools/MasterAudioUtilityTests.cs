@@ -10,10 +10,10 @@ namespace Acoustics.Test.Tools
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
+    using Acoustics.Test.TestHelpers;
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
 
     /// <summary>
     /// The master audio utility tests.
@@ -501,7 +501,6 @@ namespace Acoustics.Test.Tools
                         Assert.IsTrue(codec == MediaTypes.ExtUnknown);
                     }
                 }
-
             }
         }
 

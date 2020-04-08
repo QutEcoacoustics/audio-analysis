@@ -36,7 +36,7 @@ namespace TowseyLibrary
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Oblong"/> class.
-        /// CONSTRUCTOR
+        /// CONSTRUCTOR.
         /// </summary>
         /// <param name="row1">
         /// </param>
@@ -53,7 +53,7 @@ namespace TowseyLibrary
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Oblong"/> class.
-        /// CONSTRUCTOR
+        /// CONSTRUCTOR.
         /// </summary>
         /// <param name="row1">
         /// </param>
@@ -63,7 +63,6 @@ namespace TowseyLibrary
         /// </param>
         /// <param name="col2">
         /// </param>
-        /// <param name="hitElements"></param>
         public Oblong(int row1, int col1, int row2, int col2, ISet<Point> hitElements)
         {
             this.RowTop = row1;
@@ -82,7 +81,7 @@ namespace TowseyLibrary
         public static int MaxCol { get; set; } = 256;
 
         /// <summary>
-        ///     Gets location of Oblong's centre column in parent matrix
+        ///     Gets location of Oblong's centre column in parent matrix.
         /// </summary>
         public int ColCentroid => this.ColumnLeft + ((this.ColumnRight - this.ColumnLeft + 1) / 2);
 
@@ -93,29 +92,29 @@ namespace TowseyLibrary
         public int RowWidth { get; private set; }
 
         /// <summary>
-        /// Gets or sets the location of Oblong's left most column in parent matrix
+        /// Gets or sets the location of Oblong's left most column in parent matrix.
         /// </summary>
         public int ColumnLeft { get; set; }
 
         /// <summary>
-        /// Gets or sets the location of Oblong's right most column in parent matrix
+        /// Gets or sets the location of Oblong's right most column in parent matrix.
         /// </summary>
         public int ColumnRight { get; set; }
 
         /// <summary>
-        /// Gets or sets the collection of points that form the perimeter of the oblong
+        /// Gets or sets the collection of points that form the perimeter of the oblong.
         /// </summary>
         public ISet<Point> HitElements { get; set; }
 
         public int Category { get; set; }
 
         /// <summary>
-        /// Gets or sets the location of Oblong's top row in parent matrix
+        /// Gets or sets the location of Oblong's top row in parent matrix.
         /// </summary>
         public int RowTop { get; set; }
 
         /// <summary>
-        /// Gets or sets the location of Oblong's bottom row in parent matrix
+        /// Gets or sets the location of Oblong's bottom row in parent matrix.
         /// </summary>
         public int RowBottom { get; set; }
 
@@ -141,15 +140,6 @@ namespace TowseyLibrary
         /// returns a list of shapes that represent the averages of shapes in each category dervied
         ///     from FuzzyART clustering.
         /// </summary>
-        /// <param name="shapes">
-        /// </param>
-        /// <param name="categories">
-        /// </param>
-        /// <param name="categoryCount">
-        /// </param>
-        /// <returns>
-        /// The <see cref="List"/>.
-        /// </returns>
         public static List<Oblong> CategoryShapes(List<Oblong> shapes, int[] categories, int categoryCount)
         {
             if (shapes == null)
@@ -269,13 +259,6 @@ namespace TowseyLibrary
         ///     whose rows are time frames and whose columns are freq bins.
         ///     The returned distribution is therefore over freq domain.
         /// </summary>
-        /// <param name="shapes">
-        /// </param>
-        /// <param name="binCount">
-        /// </param>
-        /// <returns>
-        /// The <see cref="int[]"/>.
-        /// </returns>
         public static int[] Distribution(List<Oblong> shapes, int binCount)
         {
             if (shapes == null)
@@ -504,7 +487,7 @@ namespace TowseyLibrary
                     break; // break inner loop if get to here
                 }
 
- // inner loop
+                // inner loop
             }
 
             return shapes;
@@ -544,10 +527,10 @@ namespace TowseyLibrary
                     }
                 }
 
- // inner loop
+                // inner loop
             }
 
- // outer loop
+            // outer loop
             return shapes;
         }
 
@@ -722,7 +705,7 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// assume that the input matrix is purely binary, i.e. zeros and ones
+        /// assume that the input matrix is purely binary, i.e. zeros and ones.
         /// </summary>
         /// <param name="matrix">
         /// </param>
@@ -818,7 +801,7 @@ namespace TowseyLibrary
         {
             var list2 = new List<Oblong>();
             list2.AddRange(list1);
-            list2.Sort(delegate(Oblong x, Oblong y) { return x.ColCentroid.CompareTo(y.ColCentroid); });
+            list2.Sort(delegate (Oblong x, Oblong y) { return x.ColCentroid.CompareTo(y.ColCentroid); });
             return list2;
         }
 
@@ -1071,7 +1054,7 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// MAIN METHOD FOR UNIT TESTING
+        /// MAIN METHOD FOR UNIT TESTING.
         /// </summary>
         private static void Main()
         {
@@ -1107,7 +1090,7 @@ namespace TowseyLibrary
                 LoggedConsole.WriteLine("Distance=" + dist);
             }
 
- // end test1
+            // end test1
 
             bool doit2 = false;
             if (doit2)
@@ -1158,7 +1141,7 @@ namespace TowseyLibrary
                 LoggedConsole.WriteLine("s1 and s2 overlap =" + overlapped);
             }
 
- // end test2
+            // end test2
 
             if (true)
             {
@@ -1199,7 +1182,7 @@ namespace TowseyLibrary
                 }
             }
 
- // end test3
+            // end test3
 
             // if (false) //test Method()
             // {
@@ -1240,7 +1223,7 @@ namespace TowseyLibrary
                 FM[0] = 0;
             }
 
-                // else FM[0] = LinearInterpolate(x1, y1, x2, y2, x3);
+            // else FM[0] = LinearInterpolate(x1, y1, x2, y2, x3);
             else
             {
                 x1 = 0;
@@ -1273,25 +1256,25 @@ namespace TowseyLibrary
                 }
                 else // row below mode of membership function
                     if (row < this.colCentroidFuzzySet[i])
-                    {
-                        x1 = this.colCentroidFuzzySet[i - 1];
-                        x2 = this.colCentroidFuzzySet[i];
-                        y1 = 0.0;
-                        y2 = 1.0;
-                        FM[i] = LinearInterpolate(x1, y1, x2, y2, row);
-                    }
-                    else // row above mode of membership function
+                {
+                    x1 = this.colCentroidFuzzySet[i - 1];
+                    x2 = this.colCentroidFuzzySet[i];
+                    y1 = 0.0;
+                    y2 = 1.0;
+                    FM[i] = LinearInterpolate(x1, y1, x2, y2, row);
+                }
+                else // row above mode of membership function
                         if (row >= this.colCentroidFuzzySet[i])
-                        {
-                            x1 = this.colCentroidFuzzySet[i];
-                            x2 = this.colCentroidFuzzySet[i + 1];
-                            y1 = 1.0;
-                            y2 = 0.0;
-                            FM[i] = LinearInterpolate(x1, y1, x2, y2, row);
-                        }
+                {
+                    x1 = this.colCentroidFuzzySet[i];
+                    x2 = this.colCentroidFuzzySet[i + 1];
+                    y1 = 1.0;
+                    y2 = 0.0;
+                    FM[i] = LinearInterpolate(x1, y1, x2, y2, row);
+                }
             }
 
- // end for loop
+            // end for loop
 
             // LoggedConsole.WriteLine("For row "+row+" memberships are:");
             // DataTools.writeArray(FM);

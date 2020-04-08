@@ -5,7 +5,6 @@
 namespace AudioAnalysisTools.StandardSpectrograms
 {
     using System;
-    using System.IO;
     using Acoustics.Tools.Wav;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.WavTools;

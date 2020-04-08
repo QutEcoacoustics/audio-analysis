@@ -9,9 +9,9 @@ namespace AnalysisPrograms
     using System.Text;
     using System.Threading.Tasks;
     using AnalysisBase;
+    using AnalysisPrograms.Production.Arguments;
+    using AnalysisPrograms.Recognizers.Base;
     using McMaster.Extensions.CommandLineUtils;
-    using Production.Arguments;
-    using Recognizers.Base;
 
     [Command(
         "AnalysesAvailable",
@@ -22,7 +22,7 @@ namespace AnalysisPrograms
         /// <summary>
         /// Writes all recognised IAnalysers to Console.
         /// 1. Returns list of available analyses
-        /// Signed off: Anthony Truskinger 2016
+        /// Signed off: Anthony Truskinger 2016.
         /// </summary>
         public override Task<int> Execute(CommandLineApplication app)
         {

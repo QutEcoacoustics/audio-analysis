@@ -11,11 +11,10 @@ namespace TowseyLibrary
         /// <summary>
         ///
         /// </summary>
-        /// <param name="Ox">X coordinate of origin</param>
-        /// <param name="Oy">Y coordinate of origin</param>
-        /// <param name="theta">the angle in radians</param>
-        /// <param name="distance">the distance as integer</param>
-        /// <returns></returns>
+        /// <param name="Ox">X coordinate of origin.</param>
+        /// <param name="Oy">Y coordinate of origin.</param>
+        /// <param name="theta">the angle in radians.</param>
+        /// <param name="distance">the distance as integer.</param>
         public static double[] GetPolarCoordinates(int Ox, int Oy, double theta, int distance)
         {
             double[] p = new double[2];

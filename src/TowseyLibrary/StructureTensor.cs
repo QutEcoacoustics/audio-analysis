@@ -43,7 +43,7 @@ namespace TowseyLibrary
             /// </summary>
             public double RidgeDirection { get; set; }
             /// <summary>
-            /// Gets or sets difference in gradient directions (in radians) on left and right side of ridge
+            /// Gets or sets difference in gradient directions (in radians) on left and right side of ridge.
             /// </summary>
             public double DirectionDifference { get; set; }
 
@@ -57,7 +57,7 @@ namespace TowseyLibrary
             /// </summary>
             public byte RidgeDirectionCategory { get; set; }
             /// <summary>
-            /// Gets or sets average of the eigen vector dominances
+            /// Gets or sets average of the eigen vector dominances.
             /// </summary>
             public double AvDominance { get; set; }
 
@@ -69,8 +69,6 @@ namespace TowseyLibrary
         /// Pass both the original image and structure tensor because need to calculate derivatives as well as eigenvalues.
         /// Cannot easily derive the partial derivatives from the structure tensor because have lost the sign info.
         /// </summary>
-        /// <param name="avImage"></param>
-        /// <param name="avStructureTensor"></param>
         public static StructureTensorResult GetStructureTensorInfo(double[,] avImage, double[,] avStructureTensor)
         {
             int rowCount = avStructureTensor.GetLength(0);
@@ -196,21 +194,21 @@ namespace TowseyLibrary
             {
                          {
                             dxdx0, dydx0,
-                        },
+                         },
                          {
                             dydx0, dydy1,
-                        },
-                      };
+                         },
+            };
             double[] eigenvalues1 = CalculateEigenValues(stM1);
             double[,] stM2 =
             {
                          {
                             dxdx2, dydx2,
-                        },
+                         },
                          {
                             dydx2, dydy3,
-                        },
-                      };
+                         },
+            };
             double[] eigenvalues2 = CalculateEigenValues(stM2);
 
             double ridgeMagnitude = (dx0 + dx2) / 2;
@@ -303,8 +301,8 @@ namespace TowseyLibrary
             },
             {
                                     10.0, 0.0,
-                                },
-                                };
+            },
+            };
 
             var structureTensorMatrix = CalculateStructureTensor(image);
 
@@ -315,33 +313,33 @@ namespace TowseyLibrary
         ///  used to test ridge detection using structure tensor.
         /// </summary>
         public static void Test2StructureTensor()
+        {
+            // create a local image matrix
+            double[,] image =
             {
-               // create a local image matrix
-                double[,] image =
-                {
                 {
                     0.1, 0.1, 0.1, 10.1, 0.1, 0.1, 0.1,
                 },
                 {
                                         0.1, 0.1, 0.1, 10.0, 0.1, 0.1, 0.1,
-                                    },
+                },
                 {
                                         0.1, 0.1, 0.1,  9.5, 0.1, 0.1, 0.1,
-                                    },
+                },
                 {
                                         0.1, 0.1, 0.1, 10.0, 0.1, 0.1, 0.1,
-                                    },
+                },
                 {
                                         0.1, 0.1, 0.1,  9.9, 0.1, 0.1, 0.1,
-                                    },
+                },
                 {
                                         0.1, 0.1, 0.1, 10.0, 0.1, 0.1, 0.1,
-                                    },
+                },
                 {
                                         0.1, 0.1, 0.1, 10.2, 0.1, 0.1, 0.1,
-                                    },
-                                  };
-                RidgeTensorResult result = RidgeDetection_VerticalDirection(image);
-            }
+                },
+            };
+            RidgeTensorResult result = RidgeDetection_VerticalDirection(image);
+        }
     }
 }

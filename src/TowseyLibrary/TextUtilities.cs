@@ -11,14 +11,14 @@ namespace TowseyLibrary
     using System.Collections.Generic;
     using System.Text;
 
-/**
- * <p>Title: Miscellaneous Text Processing Utilities</p>
- * <p>Description: Collection of miscellaneous tools for processing text.
- * All the methods are STATIC
- * </p>
- * @author Michael Towsey
- * @version 1.0
- */
+    /**
+     * <p>Title: Miscellaneous Text Processing Utilities.</p>
+     * <p>Description: Collection of miscellaneous tools for processing text.
+     * All the methods are STATIC.
+     * </p>
+     * @author Michael Towsey
+     * @version 1.0
+     */
     public class TextUtilities
     {
         //the following three constants are used by the SplitString() method;
@@ -76,9 +76,6 @@ namespace TowseyLibrary
         /// <summary>
         /// returns a dictionary of counts of character N-grams in a string.
         /// </summary>
-        /// <param name="str"></param>
-        /// <param name="ngramValue"></param>
-        /// <returns></returns>
         public static Dictionary<string, int> GetNgrams(string str, int ngramValue)
         {
             int N = ngramValue - 1; // length of N-gram beyond current position
@@ -108,6 +105,7 @@ namespace TowseyLibrary
          * @param v vector of strings
          * @return the concatenated string
          */
+
         //static public String ConcatenateVectorOfStrings(ArrayList v)
         //{
         //    StringBuilder str = new StringBuilder(" ");
@@ -125,6 +123,7 @@ namespace TowseyLibrary
          * @param v vector of strings
          * @return the string
          */
+
         //static public String Vector2String(ArrayList v)
         //{
         //    StringBuilder str = new StringBuilder("");
@@ -315,81 +314,81 @@ namespace TowseyLibrary
             return min;
         }
 
-    //*****************************
-    // Compute Levenshtein distance
-    //*****************************
-    /**
-     * Computes the Levenshtein edit distance between two strings.
-     * i.e. the number of discrete character edits that must be made to convert
-     * one string into another.
-     * @param s the source string
-     * @param t the target string
-     * @return the Int32 edit distance
-     */
+        //*****************************
+        // Compute Levenshtein distance
+        //*****************************
+        /**
+         * Computes the Levenshtein edit distance between two strings.
+         * i.e. the number of discrete character edits that must be made to convert
+         * one string into another.
+         * @param s the source string
+         * @param t the target string
+         * @return the Int32 edit distance
+         */
         public static int LD(string s, string t)
-    {
-        int[,] d;     // matrix
-        int n;         // mapLength of source string
-        int m;         // mapLength of target string
-        int i;         // iterates through s
-        int j;         // iterates through t
-        char s_i;      // ith character of s
-        char t_j;      // jth character of t
-        int cost;      // cost
-
-        // Step 1
-        n = s.Length;
-        m = t.Length;
-        if (n == 0)
         {
-            return m;
-        }
+            int[,] d;     // matrix
+            int n;         // mapLength of source string
+            int m;         // mapLength of target string
+            int i;         // iterates through s
+            int j;         // iterates through t
+            char s_i;      // ith character of s
+            char t_j;      // jth character of t
+            int cost;      // cost
 
-        if (m == 0)
-        {
-            return n;
-        }
-
-        // Step 2
-        d = new int[n + 1, m + 1];  // init the matrix
-        for (i = 0; i <= n; i++)
-        {
-            d[i, 0] = i;
-        }
-
-        for (j = 0; j <= m; j++)
-        {
-            d[0, j] = j;
-        }
-
-        // Step 3
-        for (i = 1; i <= n; i++)
-        {
-            s_i = s[i - 1];
-
-            // Step 4
-            for (j = 1; j <= m; j++)
+            // Step 1
+            n = s.Length;
+            m = t.Length;
+            if (n == 0)
             {
-                t_j = t[j - 1];
-
-                // Step 5
-                if (s_i == t_j)
-                {
-                    cost = 0;
-                }
-                else
-                {
-                    cost = 1;
-                }
-
-                // Step 6
-                d[i, j] = Minimum (d[i - 1, j] + 1, d[i, j - 1] + 1, d[i - 1, j - 1] + cost);
+                return m;
             }
-        }//end step 3
 
-        // Step 7
-        return d[n, m];
-    }//end method LD()
+            if (m == 0)
+            {
+                return n;
+            }
+
+            // Step 2
+            d = new int[n + 1, m + 1];  // init the matrix
+            for (i = 0; i <= n; i++)
+            {
+                d[i, 0] = i;
+            }
+
+            for (j = 0; j <= m; j++)
+            {
+                d[0, j] = j;
+            }
+
+            // Step 3
+            for (i = 1; i <= n; i++)
+            {
+                s_i = s[i - 1];
+
+                // Step 4
+                for (j = 1; j <= m; j++)
+                {
+                    t_j = t[j - 1];
+
+                    // Step 5
+                    if (s_i == t_j)
+                    {
+                        cost = 0;
+                    }
+                    else
+                    {
+                        cost = 1;
+                    }
+
+                    // Step 6
+                    d[i, j] = Minimum(d[i - 1, j] + 1, d[i, j - 1] + 1, d[i - 1, j - 1] + cost);
+                }
+            }//end step 3
+
+            // Step 7
+            return d[n, m];
+        }//end method LD()
 
         //=============================================================================
 
@@ -403,6 +402,7 @@ namespace TowseyLibrary
          * @param s2 string 2
          * @return cosine similarity as a double
          */
+
         //static public double cosNgramSimilarity(String s1, String s2)
         //{
         //    int ngramValue = 5; //mapLength of character n-grams used to calculate similarity of strings
@@ -449,6 +449,7 @@ namespace TowseyLibrary
          * @param word the word to be trimmed
          * @return the trimmed word
          */
+
         //static public String trimPunctuation(String word)
         //{
         //    int count = word.length();
@@ -624,6 +625,7 @@ namespace TowseyLibrary
          * @param locale
          * @return a vector of word bounds
          */
+
         //static public ArrayList getWordBounds(String text, Locale locale)
         //{
         //    Vector words = new Vector();
@@ -676,26 +678,27 @@ namespace TowseyLibrary
          * @param locale - language of the document
          * @return an Nx2 matrix of Int32s marking sentence bounds
          */
-  //      static public int[,] getSentenceBounds(String text, Locale locale)
-  //{
-  //   Vector sb = new Vector();
-  //   BreakIterator boundary = BreakIterator.getSentenceInstance(locale);
-  //   boundary.setText(text);
-  //   int start = boundary.first();
-  //   for (int end = boundary.next(); end != BreakIterator.DONE;
-  //          start = end, end = boundary.next())
-  //   { int[] bound = new int[2];
-  //     bound[0]=start;
-  //     bound[1]=end;
-  //     sb.add(bound);
-  //     //LoggedConsole.WriteLine("s="+text.substring(geneStart,geneEnd));
-  //   }
 
-  //   int[,] sentenceBounds = new int[sb.size(),2];
-  //   for (int i=0; i< sb.size(); i++) sentenceBounds[i] = (int[])sb.get(i);
+        //      static public int[,] getSentenceBounds(String text, Locale locale)
+        //{
+        //   Vector sb = new Vector();
+        //   BreakIterator boundary = BreakIterator.getSentenceInstance(locale);
+        //   boundary.setText(text);
+        //   int start = boundary.first();
+        //   for (int end = boundary.next(); end != BreakIterator.DONE;
+        //          start = end, end = boundary.next())
+        //   { int[] bound = new int[2];
+        //     bound[0]=start;
+        //     bound[1]=end;
+        //     sb.add(bound);
+        //     //LoggedConsole.WriteLine("s="+text.substring(geneStart,geneEnd));
+        //   }
 
-  //   return sentenceBounds;
-  //}
+        //   int[,] sentenceBounds = new int[sb.size(),2];
+        //   for (int i=0; i< sb.size(); i++) sentenceBounds[i] = (int[])sb.get(i);
+
+        //   return sentenceBounds;
+        //}
 
         //=============================================================================
         public static string removeFirstWord(string str)
@@ -720,99 +723,100 @@ namespace TowseyLibrary
          * @param splitType three types of split are possible
          * @return a matrix of word bounds
          */
-  //      static public int[,] SplitString(String text, Locale locale, int splitType)
-  //{ Vector v = new Vector();  // to contain word boundaries
-  //  BreakIterator wb = BreakIterator.getWordInstance(locale);
-  //  wb.setText(text);
-  //  int last = wb.following(0); // get location of next boundary
 
-  //if (splitType == SPLIT_ON_WORDS_ONLY) //words will contain all non-space characters
-  //{
-  //  // return first word only if it starts with a letter.
-  //  if (Character.isLetter(text.charAt(0)))
-  //  { //LoggedConsole.WriteLine(text.substring(0, last));
-  //    int[] loc = {0, last};
-  //    v.add(loc);
-  //    //LoggedConsole.WriteLine(text.substring(loc[0], loc[1]));
-  //  }
-  //  int current = wb.next();
-  //  while (current != BreakIterator.DONE)
-  //  {
-  //     for (int p = last; p < current; p++)
-  //     {  if (Character.isLetter(text.charAt(p)))
-  //        {
-  //           //LoggedConsole.WriteLine(text.substring(last, current));
-  //           int[] loc = {last, current};
-  //           v.add(loc);
-  //           //LoggedConsole.WriteLine(text.substring(loc[0], loc[1]));
-  //           break;
-  //        }
-  //     }
-  //     last = current;
-  //     current = wb.next();
-  //  }  // geneEnd of while loop
-  //}
-  //else
-  //if (splitType == SPLIT_ON_WORDS_NUMBERS) //words will contain only letters and digits
-  //{
-  //  // return first word only if it starts with a letter or digit.
-  //  if (Character.isLetterOrDigit(text.charAt(0)))
-  //  { //LoggedConsole.WriteLine(text.substring(0, last));
-  //    int[] loc = {0, last};
-  //    v.add(loc);
-  //    //LoggedConsole.WriteLine(text.substring(loc[0], loc[1]));
-  //  }
-  //  int current = wb.next();
-  //  while (current != BreakIterator.DONE)
-  //  {
-  //     for (int p = last; p < current; p++)
-  //     {  if (Character.isLetterOrDigit(text.charAt(p)))
-  //        {
-  //           //LoggedConsole.WriteLine(text.substring(last, current));
-  //           int[] loc = {last, current};
-  //           v.add(loc);
-  //           //LoggedConsole.WriteLine(text.substring(loc[0], loc[1]));
-  //           break;
-  //        }
-  //     }
-  //     last = current;
-  //     current = wb.next();
-  //  }  // geneEnd of while loop
-  //}
-  //else
-  //if (splitType == SPLIT_ON_SPACE_ONLY) //words will contain only letters
-  //{ boolean isSpace = true;  // set state variable
-  //  char c;
-  //  int start = 0;
-  //  for (int i=0; i<text.length(); i++)
-  //  { c = text.charAt(i);
-  //    if ((! Character.isWhitespace(c))&&(isSpace)) //found geneStart of a word
-  //    { isSpace = false;
-  //      start = i;
-  //      //LoggedConsole.WriteLine(text.substring(loc[0], loc[1]));
-  //    }
-  //    else
-  //    if ((Character.isWhitespace(c))&&(! isSpace))  // found geneEnd of word
-  //    { isSpace = true;
-  //      int[] loc = {start, i}; // geneEnd of a word
-  //      v.add(loc);   // add word bounds to vector
-  //      //LoggedConsole.WriteLine(text.substring(loc[0], loc[1]));
-  //    } // geneEnd if
-  //  } // geneEnd for one pass through text
-  //  if (! isSpace) // ie the last char was not a space
-  //  { int[] loc = {start, text.length()}; // geneEnd of a word
-  //    v.add(loc);   // add word bounds to vector
-  //  }
+        //      static public int[,] SplitString(String text, Locale locale, int splitType)
+        //{ Vector v = new Vector();  // to contain word boundaries
+        //  BreakIterator wb = BreakIterator.getWordInstance(locale);
+        //  wb.setText(text);
+        //  int last = wb.following(0); // get location of next boundary
 
-  //} //geneEnd of for split type
+        //if (splitType == SPLIT_ON_WORDS_ONLY) //words will contain all non-space characters
+        //{
+        //  // return first word only if it starts with a letter.
+        //  if (Character.isLetter(text.charAt(0)))
+        //  { //LoggedConsole.WriteLine(text.substring(0, last));
+        //    int[] loc = {0, last};
+        //    v.add(loc);
+        //    //LoggedConsole.WriteLine(text.substring(loc[0], loc[1]));
+        //  }
+        //  int current = wb.next();
+        //  while (current != BreakIterator.DONE)
+        //  {
+        //     for (int p = last; p < current; p++)
+        //     {  if (Character.isLetter(text.charAt(p)))
+        //        {
+        //           //LoggedConsole.WriteLine(text.substring(last, current));
+        //           int[] loc = {last, current};
+        //           v.add(loc);
+        //           //LoggedConsole.WriteLine(text.substring(loc[0], loc[1]));
+        //           break;
+        //        }
+        //     }
+        //     last = current;
+        //     current = wb.next();
+        //  }  // geneEnd of while loop
+        //}
+        //else
+        //if (splitType == SPLIT_ON_WORDS_NUMBERS) //words will contain only letters and digits
+        //{
+        //  // return first word only if it starts with a letter or digit.
+        //  if (Character.isLetterOrDigit(text.charAt(0)))
+        //  { //LoggedConsole.WriteLine(text.substring(0, last));
+        //    int[] loc = {0, last};
+        //    v.add(loc);
+        //    //LoggedConsole.WriteLine(text.substring(loc[0], loc[1]));
+        //  }
+        //  int current = wb.next();
+        //  while (current != BreakIterator.DONE)
+        //  {
+        //     for (int p = last; p < current; p++)
+        //     {  if (Character.isLetterOrDigit(text.charAt(p)))
+        //        {
+        //           //LoggedConsole.WriteLine(text.substring(last, current));
+        //           int[] loc = {last, current};
+        //           v.add(loc);
+        //           //LoggedConsole.WriteLine(text.substring(loc[0], loc[1]));
+        //           break;
+        //        }
+        //     }
+        //     last = current;
+        //     current = wb.next();
+        //  }  // geneEnd of while loop
+        //}
+        //else
+        //if (splitType == SPLIT_ON_SPACE_ONLY) //words will contain only letters
+        //{ boolean isSpace = true;  // set state variable
+        //  char c;
+        //  int start = 0;
+        //  for (int i=0; i<text.length(); i++)
+        //  { c = text.charAt(i);
+        //    if ((! Character.isWhitespace(c))&&(isSpace)) //found geneStart of a word
+        //    { isSpace = false;
+        //      start = i;
+        //      //LoggedConsole.WriteLine(text.substring(loc[0], loc[1]));
+        //    }
+        //    else
+        //    if ((Character.isWhitespace(c))&&(! isSpace))  // found geneEnd of word
+        //    { isSpace = true;
+        //      int[] loc = {start, i}; // geneEnd of a word
+        //      v.add(loc);   // add word bounds to vector
+        //      //LoggedConsole.WriteLine(text.substring(loc[0], loc[1]));
+        //    } // geneEnd if
+        //  } // geneEnd for one pass through text
+        //  if (! isSpace) // ie the last char was not a space
+        //  { int[] loc = {start, text.length()}; // geneEnd of a word
+        //    v.add(loc);   // add word bounds to vector
+        //  }
 
-  //  int[,] wordLoc = new int[v.size(),2];
-  //  for (int i=0; i<v.size(); i++)
-  //  { wordLoc[i] = (int[])v.get(i);
-  //    //LoggedConsole.WriteLine("word"+i+"="+text.substring(wordLoc[i,0], wordLoc[i,1]) + "_");
-  //  }
-  //  return wordLoc;
-  //}
+        //} //geneEnd of for split type
+
+        //  int[,] wordLoc = new int[v.size(),2];
+        //  for (int i=0; i<v.size(); i++)
+        //  { wordLoc[i] = (int[])v.get(i);
+        //    //LoggedConsole.WriteLine("word"+i+"="+text.substring(wordLoc[i,0], wordLoc[i,1]) + "_");
+        //  }
+        //  return wordLoc;
+        //}
 
         //=============================================================================
 
@@ -841,22 +845,22 @@ namespace TowseyLibrary
          * @return a matrix of words, BEFORE words in row1, AFTER words in row2
          */
         public static string[,] getWordsInNeighbourhood(int N, int start, int end, string text)
-  {
-        string[,] words = new string[2, N];
-        ArrayList vb = getWordsBefore(N, start, text);
-        ArrayList va = getWordsAfter(N, end, text);
+        {
+            string[,] words = new string[2, N];
+            ArrayList vb = getWordsBefore(N, start, text);
+            ArrayList va = getWordsAfter(N, end, text);
 
-    //NOTE: it may happen that the size of the vectors vb and va is not equal
-    //        because we are near the beginning or geneEnd of the text.
-    //        In this case, we fill the matrix position with an empty string.
-    //for (int i=0; i<N; i++)
-    //{ if(i < vb.Count) words[0,i] = (String) vb.get(i);
-    //  else              words[0,i] = "";
-    //if (i < va.Count) words[1, i] = (String)va.get(i);
-    //  else              words[1,i] = "";
-    //}
-        return words;
-  }
+            //NOTE: it may happen that the size of the vectors vb and va is not equal
+            //        because we are near the beginning or geneEnd of the text.
+            //        In this case, we fill the matrix position with an empty string.
+            //for (int i=0; i<N; i++)
+            //{ if(i < vb.Count) words[0,i] = (String) vb.get(i);
+            //  else              words[0,i] = "";
+            //if (i < va.Count) words[1, i] = (String)va.get(i);
+            //  else              words[1,i] = "";
+            //}
+            return words;
+        }
 
         //=============================================================================
 
@@ -953,7 +957,7 @@ namespace TowseyLibrary
          * NOTE: if N > document mapLength, then the last word is returned.
          * @param N the character index
          * @param wordLoc - array of word bounds
-         * @return - the required index into the word array
+         * @return - the required index into the word array.
          */
         public static int getWordIndex(int N, int[,] wordLoc)
         {
@@ -1012,8 +1016,8 @@ namespace TowseyLibrary
 
                 // if geneStart of current word is after N then jump back a word
                 if (wordLoc[i, 0] > N)
-                {
-                    while (i > 0 && wordLoc[i, 0] > N)
+            {
+                while (i > 0 && wordLoc[i, 0] > N)
                 {
                     i--;
                 }
@@ -1035,6 +1039,7 @@ namespace TowseyLibrary
          * @param locale
          * @return HashMap containing word frequencies.
          */
+
         //static public Hashtable getWordFrequencies(String text, Locale locale)
         //{
         //    int[,] wordLoc = SplitString(text, locale, SPLIT_ON_WORDS_NUMBERS);
@@ -1053,32 +1058,32 @@ namespace TowseyLibrary
 
         //=============================================================================
         public static void main(string[] args)
-  {
-//    LoggedConsole.WriteLine("cc="+getCharCount('c', "can you count ot crissc"));
-//    LoggedConsole.WriteLine("trim="+ trimPunctuation("'l'"));
-//    String text = "THis$$ begin%s ### a\n\tnew 2000 ma.cro-era for John O'Neil's' dog - after long ni7777ght!!  ";
-////    LoggedConsole.WriteLine("words before="+getWordsBefore(9, 30, text));
-////    LoggedConsole.WriteLine("words after="+getWordsAfter(8, 30, text));
-////    String[,] words = getWordsInNeighbourhood(3, 27, 30, text);
-////    for (int i=0; i<3; i++) LoggedConsole.WriteLine(" "+words[0,i]);
-////    for (int i=0; i<3; i++) LoggedConsole.WriteLine(" "+words[1,i]);
+        {
+            //    LoggedConsole.WriteLine("cc="+getCharCount('c', "can you count ot crissc"));
+            //    LoggedConsole.WriteLine("trim="+ trimPunctuation("'l'"));
+            //    String text = "THis$$ begin%s ### a\n\tnew 2000 ma.cro-era for John O'Neil's' dog - after long ni7777ght!!  ";
+            ////    LoggedConsole.WriteLine("words before="+getWordsBefore(9, 30, text));
+            ////    LoggedConsole.WriteLine("words after="+getWordsAfter(8, 30, text));
+            ////    String[,] words = getWordsInNeighbourhood(3, 27, 30, text);
+            ////    for (int i=0; i<3; i++) LoggedConsole.WriteLine(" "+words[0,i]);
+            ////    for (int i=0; i<3; i++) LoggedConsole.WriteLine(" "+words[1,i]);
 
-//    Locale locale = new Locale("en","US");
-////    int[,] words = SplitString(text, locale, SPLIT_ON_SPACE_ONLY);
-////    int[,] words = SplitString(text, locale, SPLIT_ON_WORDS_NUMBERS);
-//    int[,] words = SplitString(text, locale, SPLIT_ON_WORDS_ONLY);
-//    for (int i=0; i<words.length; i++) LoggedConsole.WriteLine(" "+text.substring(words[i,0],words[i,1])+"_");
+            //    Locale locale = new Locale("en","US");
+            ////    int[,] words = SplitString(text, locale, SPLIT_ON_SPACE_ONLY);
+            ////    int[,] words = SplitString(text, locale, SPLIT_ON_WORDS_NUMBERS);
+            //    int[,] words = SplitString(text, locale, SPLIT_ON_WORDS_ONLY);
+            //    for (int i=0; i<words.length; i++) LoggedConsole.WriteLine(" "+text.substring(words[i,0],words[i,1])+"_");
 
-//    LoggedConsole.WriteLine("\nTEST OF WORD NEIGHBOURHOODS");
-//    String txt = "\"This is a story\", said Bill A.B.C. Adam-Smith.\nAnd \"why? \"Because Adam's hat 01.01.03, that is the 1. January, is John's birthday. \n \nAnd that is why!\", says Mr. O'Neil's aunt.\n";
-//    words = SplitString(txt, locale, TextUtilities.SPLIT_ON_WORDS_NUMBERS);
-////    for (int i=0; i<words.mapLength; i++) LoggedConsole.WriteLine("_"+txt.substring(words[i,0],words[i,1])+"_");
-//    int N = -1;
-//    int index = getWordIndex(N, words);
-//    LoggedConsole.WriteLine("word index for char "+N+" = "+ index+" word="+txt.substring(words[index,0],words[index,1]));
+            //    LoggedConsole.WriteLine("\nTEST OF WORD NEIGHBOURHOODS");
+            //    String txt = "\"This is a story\", said Bill A.B.C. Adam-Smith.\nAnd \"why? \"Because Adam's hat 01.01.03, that is the 1. January, is John's birthday. \n \nAnd that is why!\", says Mr. O'Neil's aunt.\n";
+            //    words = SplitString(txt, locale, TextUtilities.SPLIT_ON_WORDS_NUMBERS);
+            ////    for (int i=0; i<words.mapLength; i++) LoggedConsole.WriteLine("_"+txt.substring(words[i,0],words[i,1])+"_");
+            //    int N = -1;
+            //    int index = getWordIndex(N, words);
+            //    LoggedConsole.WriteLine("word index for char "+N+" = "+ index+" word="+txt.substring(words[index,0],words[index,1]));
 
-//    LoggedConsole.WriteLine("FINISHED TEXT UTILITIES");
-//    System.exit(0);
-  }//end main method
+            //    LoggedConsole.WriteLine("FINISHED TEXT UTILITIES");
+            //    System.exit(0);
+        }//end main method
     } //end class
 } //end namespace

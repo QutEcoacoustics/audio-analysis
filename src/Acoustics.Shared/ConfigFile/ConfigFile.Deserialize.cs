@@ -76,16 +76,16 @@ namespace Acoustics.Shared.ConfigFile
         /// </summary>
         /// <remarks>
         /// Support exists for processing recursive config file (where a <see cref="Config"/> objected is nested in another
-        /// <see cref="Config"/>
+        /// <see cref="Config"/>.
         /// </remarks>
-        /// <typeparam name="T">The type to deserialize</typeparam>
+        /// <typeparam name="T">The type to deserialize.</typeparam>
         /// <param name="path">
-        /// The path to the config file to read (will be expanded with <see cref="Path.GetFullPath"/>
+        /// The path to the config file to read (will be expanded with <see cref="Path.GetFullPath"/>.
         /// </param>
         /// <param name="factory">
         /// A factory used to create a new config if <typeparamref name="T"/> is exactly the type <see cref="Config"/>.
         /// </param>
-        /// <returns>The config object, or a cached copy after the first call</returns>
+        /// <returns>The config object, or a cached copy after the first call.</returns>
         private static T LoadAndCache<T>(string path, Func<T> factory)
             where T : IConfig
         {

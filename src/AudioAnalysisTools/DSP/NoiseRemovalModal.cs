@@ -5,10 +5,9 @@
 namespace AudioAnalysisTools.DSP
 {
     using System;
+    using AudioAnalysisTools.StandardSpectrograms;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
-    using StandardSpectrograms;
-
     using TowseyLibrary;
 
     public static class NoiseRemovalModal
@@ -17,12 +16,12 @@ namespace AudioAnalysisTools.DSP
         /// This method produces four spectrograms using four different values of neighbour hood decibel threshold.
         /// It can be used for test purposes.
         /// </summary>
-        /// <param name="deciBelSpectrogram">the noisy decibel spectrogram</param>
-        /// <param name="xAxisInterval">x-axis tic interval</param>
-        /// <param name="stepDuration">the x-axis times scale</param>
-        /// <param name="nyquist">max freq value</param>
-        /// <param name="hzInterval">y-axis frequency scale</param>
-        /// <returns>Image containing four sepctrograms</returns>
+        /// <param name="deciBelSpectrogram">the noisy decibel spectrogram.</param>
+        /// <param name="xAxisInterval">x-axis tic interval.</param>
+        /// <param name="stepDuration">the x-axis times scale.</param>
+        /// <param name="nyquist">max freq value.</param>
+        /// <param name="hzInterval">y-axis frequency scale.</param>
+        /// <returns>Image containing four sepctrograms.</returns>
         public static Image ModalNoiseRemovalAndGetSonograms(
             double[,] deciBelSpectrogram,
             TimeSpan xAxisInterval,
@@ -71,15 +70,15 @@ namespace AudioAnalysisTools.DSP
         /// The algorithm is described in Lamel et al, 1981.
         /// USED TO SEGMENT A RECORDING INTO SILENCE AND VOCALISATION
         /// NOTE: noiseThreshold is passed as decibels. Original Lamel algorithm ONLY SEARCHES in range min to 10dB above min.
-        /// 
+        ///
         /// This method debugged on 7 Aug 2018 using following command line arguments:
-        /// audio2csv Y:\TheNatureConservency\Myanmar\20180517\site112\2018_02_14_Bar5\20180214_Bar5\20180214_101121_Bar5.wav Towsey.Acoustic.yml C:\Temp... -m True
+        /// audio2csv Y:\TheNatureConservency\Myanmar\20180517\site112\2018_02_14_Bar5\20180214_Bar5\20180214_101121_Bar5.wav Towsey.Acoustic.yml C:\Temp... -m True.
         /// </summary>
-        /// <param name="dBarray">signal in decibel values</param>
-        /// <param name="minDb">minimum value in the passed array of decibel values</param>
-        /// <param name="maxDb">maximum value in the passed array of decibel values</param>
-        /// <param name="modeNoise">modal or background noise in decibels</param>
-        /// <param name="sdNoise">estimated sd of the noies - assuming noise to be guassian</param>
+        /// <param name="dBarray">signal in decibel values.</param>
+        /// <param name="minDb">minimum value in the passed array of decibel values.</param>
+        /// <param name="maxDb">maximum value in the passed array of decibel values.</param>
+        /// <param name="modeNoise">modal or background noise in decibels.</param>
+        /// <param name="sdNoise">estimated sd of the noies - assuming noise to be guassian.</param>
         public static void CalculateNoiseUsingLamelsAlgorithm(
             double[] dBarray,
             out double minDb,
@@ -165,8 +164,8 @@ namespace AudioAnalysisTools.DSP
         /// These are converted to decibels before passing to the LAMEL method.
         /// NOTE: The returned background noise value ignores the SD part of the Gaussian noise model.
         /// </summary>
-        /// <param name="signalEnvelope">Amplitude values</param>
-        /// <returns>Modal noise value in decibels</returns>
+        /// <param name="signalEnvelope">Amplitude values.</param>
+        /// <returns>Modal noise value in decibels.</returns>
         public static double CalculateBackgroundNoise(double[] signalEnvelope)
         {
             var dBarray = SNR.Signal2Decibels(signalEnvelope);

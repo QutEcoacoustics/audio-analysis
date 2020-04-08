@@ -6,10 +6,9 @@ namespace AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.IO;
-    using Acoustics.Shared;
     using Acoustics.Shared.ImageSharp;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
     using TowseyLibrary;
@@ -31,18 +30,16 @@ namespace AudioAnalysisTools
             //public DateTimeOffset Sunrise { get; set; }
             //public DateTimeOffset Sunset { get; set; }
 
-            public Dictionary<string, DateTimeOffset> dictionary = new Dictionary<string, DateTimeOffset>();
+            public Dictionary<string, DateTimeOffset> Dictionary = new Dictionary<string, DateTimeOffset>();
         }
 
         public static FileInfo BrisbaneSunriseDatafile = @"C:\SensorNetworks\OutputDataSets\SunRiseSet\SunriseSet2013Brisbane.csv".ToFileInfo();
 
         /// <summary>
         /// The data for establishing the exact startDTO for the phase of moon in 2010 was obtained at the folowing website:
-        /// http://www.timeanddate.com/moon/phases/australia/brisbane
+        /// http://www.timeanddate.com/moon/phases/australia/brisbane.
         ///
         /// </summary>
-        /// <param name="dto"></param>
-        /// <returns></returns>
         public static double GetPhaseOfMoon(DateTimeOffset dto)
         {
             double lunarCycle = 29.53; // one lunar cycle in days
@@ -69,8 +66,6 @@ namespace AudioAnalysisTools
         /// <summary>
         /// the moon phsae value is assumed to be between 0 and 1. 0 = new moon. 1 = newmoon. 0.5 = full moon.
         /// </summary>
-        /// <param name="phase"></param>
-        /// <returns></returns>
         public static string ConvertMoonPhaseToString(double phase)
         {
             string moon = "New moon";
@@ -116,10 +111,6 @@ namespace AudioAnalysisTools
         /// TODO TODO  work on this method using website and javascript referred to by Anthony. (suncalc.net)
         /// This method requires a properly formatted csv file containing sunrise/sunset data.
         /// </summary>
-        /// <param name="width"></param>
-        /// <param name="dateTimeOffset"></param>
-        /// <param name="sunriseDatafile"></param>
-        /// <returns></returns>
         public static Image<Rgb24> AddSunTrackToImage(int width, DateTimeOffset? dateTimeOffset, FileInfo sunriseDatafile)
         {
             // AT: I DON'T UNDERSTAND THIS CODE! I CAN'T FIX IT
@@ -160,10 +151,6 @@ namespace AudioAnalysisTools
         /// <summary>
         /// This method assumes that the argument "dayValue" will not take zero value i.e. dayValue=1 represents January 1st.
         /// </summary>
-        /// <param name="width"></param>
-        /// <param name="sunriseSetData"></param>
-        /// <param name="dayValue"></param>
-        /// <returns></returns>
         public static Image<Rgb24> AddSunTrackToImage(int width, FileInfo sunriseSetData, int year, int dayValue, string moonPhase = null)
         {
             int trackHeight = 18;
@@ -255,7 +242,9 @@ namespace AudioAnalysisTools
         {
             List<string> lines = FileTools.ReadTextFile(sunriseSetData.FullName);
             int imageRow = 0;
-            for (int i = startdayOfYear; i <= endDayOfYear; i++) // skip header
+
+            //  skip header
+            for (int i = startdayOfYear; i <= endDayOfYear; i++)
             {
                 string[] fields = lines[i].Split(',');
 
@@ -273,7 +262,7 @@ namespace AudioAnalysisTools
                 for (int px = 0; px < pixelStep; px++)
                 {
                     image[sunriseMinute, imageRow] = Color.White;
-                    image[sunsetMinute,  imageRow] = Color.White;
+                    image[sunsetMinute, imageRow] = Color.White;
                     imageRow++;
                 }
 
@@ -308,10 +297,8 @@ namespace AudioAnalysisTools
 
         /// <summary>
         /// This method is a quick and dirty hack to rad in some tidal info about Georgia Coast and add into spectrogram images.
-        /// The method is not efficient - just enough to the job done!
+        /// The method is not efficient - just enough to the job done!.
         /// </summary>
-        /// <param name="file"></param>
-        /// <returns></returns>
         public static SunMoonTides[] ReadGeorgiaTidalInformation(FileInfo file)
         {
             List<string> lines = FileTools.ReadTextFile(file.FullName);
@@ -319,7 +306,8 @@ namespace AudioAnalysisTools
             var list = new List<SunMoonTides>();
             var tides = new SunMoonTides();
 
-            for (int i = 1; i < lineCount; i++) // skip header
+            //  skip header
+            for (int i = 1; i < lineCount; i++)
             {
                 if (lines[i].Length < 6)
                 {
@@ -346,7 +334,7 @@ namespace AudioAnalysisTools
                 string time = fields[2];
                 string ampm = fields[3];
                 string est = fields[4];
-                if (time == "")
+                if (time == string.Empty)
                 {
                     time = fields[3];
                     ampm = fields[4];
@@ -377,25 +365,25 @@ namespace AudioAnalysisTools
                 if (fields[fields.Length - 1] == SunMoonTides.SUNRISE)
                 {
                     //var dto = new DateTimeOffset();
-                    tides.dictionary.Add(SunMoonTides.SUNRISE, dto);
+                    tides.Dictionary.Add(SunMoonTides.SUNRISE, dto);
                 }
                 else
                 if (fields[fields.Length - 1] == SunMoonTides.SUNSET)
                 {
                     //var dto = new DateTimeOffset();
-                    tides.dictionary.Add(SunMoonTides.SUNRISE, dto);
+                    tides.Dictionary.Add(SunMoonTides.SUNRISE, dto);
                 }
                 else
                 if (fields[fields.Length - 2] == "Low" && fields[fields.Length - 1] == "Tide")
                 {
                     //var dto = new DateTimeOffset();
-                    tides.dictionary.Add(SunMoonTides.LOWTIDE, dto);
+                    tides.Dictionary.Add(SunMoonTides.LOWTIDE, dto);
                 }
                 else
                 if (fields[fields.Length - 2] == "High" && fields[fields.Length - 1] == "Tide")
                 {
                     //var dto = new DateTimeOffset();
-                    tides.dictionary.Add(SunMoonTides.HIGHTIDE, dto);
+                    tides.Dictionary.Add(SunMoonTides.HIGHTIDE, dto);
                 }
 
                 list.Add(tides);

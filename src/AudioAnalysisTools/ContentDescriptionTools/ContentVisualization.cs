@@ -6,12 +6,11 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.IO;
-    using Acoustics.Shared;
     using Acoustics.Shared.ImageSharp;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
     using TowseyLibrary;
@@ -51,7 +50,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
 
                 // need to rotate spectrogram to get correct orientation.
                 bmp.RotateFlip(RotateFlipType.Rotate270FlipNone);
-                
+
                 // draw grid lines and add axis scales
                 var xAxisPixelDuration = TimeSpan.FromSeconds(60);
                 var fullDuration = TimeSpan.FromTicks(xAxisPixelDuration.Ticks * bmp.Width);

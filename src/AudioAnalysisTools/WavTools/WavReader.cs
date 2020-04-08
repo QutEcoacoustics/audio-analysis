@@ -34,7 +34,7 @@ namespace AudioAnalysisTools.WavTools
         /// <summary>
         /// Initializes a new instance of the <see cref="TowseyWavReader"/> class.
         /// CONSTRUCTOR 1
-        /// signal passed as file name
+        /// signal passed as file name.
         /// </summary>
         public TowseyWavReader(string wavPath)
         {
@@ -48,7 +48,7 @@ namespace AudioAnalysisTools.WavTools
         /// <summary>
         /// Initializes a new instance of the <see cref="TowseyWavReader"/> class.
         /// CONSTRUCTOR 2
-        /// signal passed as an array of bytes
+        /// signal passed as an array of bytes.
         /// </summary>
         public TowseyWavReader(byte[] wavData)
         {
@@ -59,7 +59,7 @@ namespace AudioAnalysisTools.WavTools
         /// <summary>
         /// Initializes a new instance of the <see cref="TowseyWavReader"/> class.
         /// CONSTRUCTOR 3
-        /// signal passed as an array of bytes
+        /// signal passed as an array of bytes.
         /// </summary>
         public TowseyWavReader(byte[] wavBytes, string wavFName)
         {
@@ -71,10 +71,8 @@ namespace AudioAnalysisTools.WavTools
         /// <summary>
         /// Initializes a new instance of the <see cref="TowseyWavReader"/> class.
         /// CONSTRUCTOR 4
-        /// signal passed as an array of doubles
+        /// signal passed as an array of doubles.
         /// </summary>
-        /// <param name="rawData"></param>
-        /// <param name="sampleRate"></param>
         public TowseyWavReader(double[] rawData, int sampleRate, string sigName)
         {
             this.Samples = rawData;

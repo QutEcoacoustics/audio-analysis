@@ -17,11 +17,11 @@ namespace AudioAnalysisTools.Indices
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Reflection;
-    using DSP;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
     using log4net;
-    using StandardSpectrograms;
     using TowseyLibrary;
-    using WavTools;
 
     /// <summary>
     /// Core class that calculates indices.
@@ -40,9 +40,9 @@ namespace AudioAnalysisTools.Indices
         /// <param name="indexProperties">info about index value distributions. Used when drawing false-colour spectrograms. </param>
         /// <param name="sampleRateOfOriginalAudioFile"> That is, prior to being resample to the default of 22050.</param>
         /// <param name="segmentStartOffset"> Time elapsed from absolute start of total recording and start of the passed recording segment i.e. line37. </param>
-        /// <param name="config"> Config variable containing info about the configuration for index calculation</param>
-        /// <param name="returnSonogramInfo"> boolean with default value = false </param>
-        /// <returns> An IndexCalculateResult </returns>
+        /// <param name="config"> Config variable containing info about the configuration for index calculation.</param>
+        /// <param name="returnSonogramInfo"> boolean with default value = false. </param>
+        /// <returns> An IndexCalculateResult. </returns>
         [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1305:FieldNamesMustNotUseHungarianNotation", Justification = "Reviewed. Suppression is OK here.")]
         public static IndexCalculateResult Analysis(
             AudioRecording recording,

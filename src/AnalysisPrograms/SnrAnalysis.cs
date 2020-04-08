@@ -5,19 +5,19 @@
 namespace AnalysisPrograms
 {
     using System;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Tools;
+    using AnalysisPrograms.Production.Arguments;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using McMaster.Extensions.CommandLineUtils;
-    using Production.Arguments;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
     using Path = System.IO.Path;

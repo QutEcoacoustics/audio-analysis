@@ -5,10 +5,9 @@
 namespace AudioAnalysisTools.LongDurationSpectrograms
 {
     using System;
-    using SixLabors.ImageSharp;
     using System.IO;
-
     using Acoustics.Shared.ConfigFile;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
     using Path = System.IO.Path;
@@ -233,7 +232,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 }
             }
 
-            return new []{ spg1Image, spg2Image};
+            return new[] { spg1Image, spg2Image };
         }
     }
 }

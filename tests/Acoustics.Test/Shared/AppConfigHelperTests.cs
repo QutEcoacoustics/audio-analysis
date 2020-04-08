@@ -5,9 +5,7 @@
 namespace Acoustics.Test.Shared
 {
     using System;
-    using System.Diagnostics;
     using System.IO;
-    using System.Runtime.InteropServices;
     using Acoustics.Shared;
     using Acoustics.Test.TestHelpers;
     using Microsoft.VisualStudio.TestTools.UnitTesting;

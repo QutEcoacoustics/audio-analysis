@@ -4,14 +4,15 @@
 
 namespace System
 {
-    using Reflection;
+    using System.Reflection;
 
     public static class ExceptionsExtensions
     {
         public static void PreserveStackTrace(this Exception exception)
         {
-            MethodInfo preserveStackTrace = typeof(Exception).GetMethod("InternalPreserveStackTrace",
-              BindingFlags.Instance | BindingFlags.NonPublic);
+            MethodInfo preserveStackTrace = typeof(Exception).GetMethod(
+                "InternalPreserveStackTrace",
+                BindingFlags.Instance | BindingFlags.NonPublic);
             preserveStackTrace.Invoke(exception, null);
         }
     }

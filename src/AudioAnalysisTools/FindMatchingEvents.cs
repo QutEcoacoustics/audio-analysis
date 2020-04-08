@@ -6,11 +6,11 @@ namespace AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.Text;
-    using DSP;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
-    using StandardSpectrograms;
     using TowseyLibrary;
 
     public class FindMatchingEvents
@@ -92,14 +92,7 @@ namespace AudioAnalysisTools
         /// Use this method to find match in sonogram to a symbolic definition of a bird call.
         /// That is, the template should be matrix of binary or trinary values.
         /// </summary>
-        /// <param name="template"></param>
-        /// <param name="dynamicRange"></param>
-        /// <param name="sonogram"></param>
-        /// <param name="segments"></param>
-        /// <param name="minHz"></param>
-        /// <param name="maxHz"></param>
         /// <param name="dBThreshold">Not used in calculation. Only used to speed up loop over the spectrogram.</param>
-        /// <returns></returns>
         public static Tuple<double[]> Execute_Bi_or_TrinaryMatch(double[,] template, SpectrogramStandard sonogram,
                                                                          List<AcousticEvent> segments, int minHz, int maxHz, double dBThreshold)
         {
@@ -216,14 +209,6 @@ namespace AudioAnalysisTools
         /// Use this method to find match in sonogram to a symbolic definition of a bird call.
         /// That is, the template should be matrix of binary or trinary values.
         /// </summary>
-        /// <param name="template"></param>
-        /// <param name="dynamicRange"></param>
-        /// <param name="sonogram"></param>
-        /// <param name="segments"></param>
-        /// <param name="minHz"></param>
-        /// <param name="maxHz"></param>
-        /// <param name="dBThreshold"></param>
-        /// <returns></returns>
         public static Tuple<double[]> Execute_Spr_Match(char[,] template, SpectrogramStandard sonogram,
                                                                List<AcousticEvent> segments, int minHz, int maxHz, double dBThreshold)
         {
@@ -289,7 +274,8 @@ namespace AudioAnalysisTools
                         double offSum = 0.0;
 
                         // calculate onSum and offSum
-                        for (int j = 0; j < templateFreqBins; j++) //freq axis
+                        // freq axis
+                        for (int j = 0; j < templateFreqBins; j++)
                         {
                             for (int i = 0; i < templateFrames; i++)
                             {
@@ -303,13 +289,13 @@ namespace AudioAnalysisTools
                                     offSum += sonogram.Data[r + i, c + j];
                                 }
                                 else
-                                    {
-                                        //char ColumnLeft = charogram[r + i, c + j];
-                                        //char ColumnRight = template[i, j];
-                                        //int difference = (int)ColumnLeft - (int)ColumnRight;
-                                        int diff = SprTools.SymbolDifference(charogram[r + i, c + j], template[i, j]);
-                                        onSum += (90 - diff) / (double)90 * sonogram.Data[r + i, c + j];
-                                    }
+                                {
+                                    //char ColumnLeft = charogram[r + i, c + j];
+                                    //char ColumnRight = template[i, j];
+                                    //int difference = (int)ColumnLeft - (int)ColumnRight;
+                                    int diff = SprTools.SymbolDifference(charogram[r + i, c + j], template[i, j]);
+                                    onSum += (90 - diff) / (double)90 * sonogram.Data[r + i, c + j];
+                                }
                             }
                         } // calculate similarity
 
@@ -362,7 +348,8 @@ namespace AudioAnalysisTools
             double offSum = 0.0;
 
             // calculate onSum and offSum
-            for (int j = 0; j < templateFreqBins; j++) //freq axis
+            // freq axis
+            for (int j = 0; j < templateFreqBins; j++)
             {
                 for (int i = 0; i < templateFrames; i++)
                 {
@@ -376,15 +363,15 @@ namespace AudioAnalysisTools
                         offSum += dataMatrix[i, j];
                     }
                     else
-                        {
-                            //char ColumnLeft = charogram[i, j];
-                            //char ColumnRight = template[i, j];
-                            //int difference = (int)ColumnLeft - (int)ColumnRight;
-                            int diff = SprTools.SymbolDifference(charogram[i, j], template[i, j]);
+                    {
+                        //char ColumnLeft = charogram[i, j];
+                        //char ColumnRight = template[i, j];
+                        //int difference = (int)ColumnLeft - (int)ColumnRight;
+                        int diff = SprTools.SymbolDifference(charogram[i, j], template[i, j]);
 
-                            //LoggedConsole.WriteLine("{0},{1}  diff={2}", i,j, diff);
-                            onSum += (90 - diff) / (double)90 * dataMatrix[i, j];
-                        }
+                        //LoggedConsole.WriteLine("{0},{1}  diff={2}", i,j, diff);
+                        onSum += (90 - diff) / (double)90 * dataMatrix[i, j];
+                    }
                 }
             } // calculate similarity
 
@@ -419,8 +406,6 @@ namespace AudioAnalysisTools
         /// Change the -1 cells by a ratio.
         /// The purpose is to use the normalised matrix for pattern matching such that the matrix returns a zero value for uniform background noise.
         /// </summary>
-        /// <param name="target"></param>
-        /// <returns></returns>
         public static Tuple<double[,], int, int> NormaliseBiTrinaryMatrix(double[,] target)
         {
             int rows = target.GetLength(0);
@@ -469,14 +454,6 @@ namespace AudioAnalysisTools
         /// First set target and source to same dynamic range.
         /// Then NormaliseMatrixValues target and source to unit-length.
         /// </summary>
-        /// <param name="target"></param>
-        /// <param name="dynamicRange"></param>
-        /// <param name="sonogram"></param>
-        /// <param name="segments"></param>
-        /// <param name="minHz"></param>
-        /// <param name="maxHz"></param>
-        /// <param name="minDuration"></param>
-        /// <returns></returns>
         public static Tuple<double[]> Execute_StewartGage(double[,] target, double dynamicRange, SpectrogramStandard sonogram,
                                     List<AcousticEvent> segments, int minHz, int maxHz, double minDuration)
         {

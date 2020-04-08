@@ -15,7 +15,7 @@ namespace TowseyLibrary
     using System.Linq;
 
     /// <summary>
-    /// Configuration files: this class is a wrapper around a Dictionary
+    /// Configuration files: this class is a wrapper around a Dictionary.
     /// </summary>
     [Obsolete]
     public class ConfigDictionary
@@ -36,6 +36,7 @@ namespace TowseyLibrary
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="ConfigDictionary"/> class.
         /// The configuration.
         /// </summary>
         /// <param name="files">
@@ -44,11 +45,13 @@ namespace TowseyLibrary
         /// <exception cref="ArgumentNullException">
         /// Argument is null.
         /// </exception>
-        public ConfigDictionary(params string[] files) : this(files.Select(x => new FileInfo(x)).ToArray())
+        public ConfigDictionary(params string[] files)
+            : this(files.Select(x => new FileInfo(x)).ToArray())
         {
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="ConfigDictionary"/> class.
         /// The configuration.
         /// </summary>
         /// <param name="files">
@@ -184,11 +187,8 @@ namespace TowseyLibrary
 
         /// <summary>
         /// THIS ONLY WORKS IF ONLY HAVE KV PAIRS IN CONFIG FILE.
-        /// IF HAVE COMMENTS ETC USE
-        /// Dictionary<string,string> dict = FileTools.ReadPropertiesFile(file))
+        /// IF HAVE COMMENTS ETC USE. <code>Dictionary{string,string} dict = FileTools.ReadPropertiesFile(file))</code>
         /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
         public static Dictionary<string, string> ReadKVPFile2Dictionary(string path)
         {
             Dictionary<string, string> dict = File.ReadAllLines(path).ToList().Select(s => s.Split('=')).ToDictionary(k => k[0], v => v[1]);

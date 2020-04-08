@@ -7,9 +7,9 @@ namespace AudioAnalysisTools.DSP
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using StandardSpectrograms;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
     using TowseyLibrary;
-    using WavTools;
 
     // IMPORTANT NOTE: If you are converting Hertz to Mel scale, this conversion must be done BEFORE noise reduction
 
@@ -56,7 +56,7 @@ namespace AudioAnalysisTools.DSP
         /// Reference logEnergies for signal segmentation, energy normalisation etc
         /// MinLogEnergyReference was changed from -6.0 to -8.0 on 6th August 2018 to accommodate signals with extended zero values.
         /// Typical noise value using Jason Wimmer original handheld recorders was = -4.5 = -45dB
-        /// Typical noise value for quiet recordings with SM4 = -8.0 or -9.0, i.e. -80 to -90 dB
+        /// Typical noise value for quiet recordings with SM4 = -8.0 or -9.0, i.e. -80 to -90 dB.
         /// </summary>
         public const double MinLogEnergyReference = -8.0;
         public const double MaxLogEnergyReference = 0.0;     // = Math.Log10(1.00) which assumes max frame amplitude = 1.0
@@ -75,8 +75,8 @@ namespace AudioAnalysisTools.DSP
         /// CONSTRUCTOR
         /// This constructor is called once from DSP_Frames.ExtractEnvelopeAndAmplSpectrogram().
         /// </summary>
-        /// <param name="signal">signal </param>
-        /// <param name="frameIDs">the start and end index of every frame</param>
+        /// <param name="signal">signal. </param>
+        /// <param name="frameIDs">the start and end index of every frame.</param>
         public SNR(double[] signal, int[,] frameIDs)
         {
             var logEnergy = CalculateLogEnergyOfsignalFrames(signal, frameIDs);
@@ -149,7 +149,7 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// NormaliseMatrixValues the power values using the passed reference decibel level.
         /// NOTE: This method assumes that the energy values are in decibels and that they have been scaled
-        /// so that the modal noise value = 0 dB. Simply truncate all values below this to zero dB
+        /// so that the modal noise value = 0 dB. Simply truncate all values below this to zero dB.
         /// </summary>
         public static double[] NormaliseDecibelArray_ZeroOne(double[] dB, double maxDecibels)
         {
@@ -369,10 +369,10 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// returns a spectrogram with reduced number of frequency bins
+        /// returns a spectrogram with reduced number of frequency bins.
         /// </summary>
-        /// <param name="inSpectro">input spectrogram</param>
-        /// <param name="subbandCount">numbre of req bands in output spectrogram</param>
+        /// <param name="inSpectro">input spectrogram.</param>
+        /// <param name="subbandCount">numbre of req bands in output spectrogram.</param>
         public static double[,] ReduceFreqBinsInSpectrogram(double[,] inSpectro, int subbandCount)
         {
             int frameCount = inSpectro.GetLength(0);
@@ -461,12 +461,12 @@ namespace AudioAnalysisTools.DSP
         // STATIC METHODS TO DO WITH SUBBAND of a SPECTROGRAM
         // #######################################################################################################################################################
 
-        /// <param name="sonogram">sonogram of signal - values in dB</param>
-        /// <param name="minHz">min of freq band to sample</param>
-        /// <param name="maxHz">max of freq band to sample</param>
-        /// <param name="nyquist">signal nyquist - used to caluclate hz per bin</param>
-        /// <param name="smoothDuration">window width (in seconds) to smooth sig intenisty</param>
-        /// <param name="framesPerSec">time scale of the sonogram</param>
+        /// <param name="sonogram">sonogram of signal - values in dB.</param>
+        /// <param name="minHz">min of freq band to sample.</param>
+        /// <param name="maxHz">max of freq band to sample.</param>
+        /// <param name="nyquist">signal nyquist - used to caluclate hz per bin.</param>
+        /// <param name="smoothDuration">window width (in seconds) to smooth sig intenisty.</param>
+        /// <param name="framesPerSec">time scale of the sonogram.</param>
         public static Tuple<double[], double, double> SubbandIntensity_NoiseReduced(
             double[,] sonogram, int minHz, int maxHz, int nyquist, double smoothDuration, double framesPerSec)
         {
@@ -743,7 +743,7 @@ namespace AudioAnalysisTools.DSP
 
         /// <summary>
         /// This method written 18-09-2014 to process Xueyan's query recordings.
-        /// Calculate the SNR statistics for each recording and then write info back to csv file
+        /// Calculate the SNR statistics for each recording and then write info back to csv file.
         /// </summary>
         public static SnrStatistics Calculate_SNR_ShortRecording(FileInfo sourceRecording, Dictionary<string, string> configDict, TimeSpan start, TimeSpan duration, int minHz, int maxHz, double threshold)
         {
@@ -774,7 +774,7 @@ namespace AudioAnalysisTools.DSP
         /// Calculates the average and standard deviation of the noise and then calculates a noise threshold.
         /// Then subtracts threshold noise from the signal - so now zero dB = threshold noise
         /// Sets default values for min dB value and the noise threshold. 10 dB is a default used by Lamel et al.
-        /// RETURNS: 1) noise reduced decibel array; 2) Q - the modal BG level; 3) min value 4) max value; 5) snr; and 6) SD of the noise
+        /// RETURNS: 1) noise reduced decibel array; 2) Q - the modal BG level; 3) min value 4) max value; 5) snr; and 6) SD of the noise.
         /// </summary>
         ///
         public static BackgroundNoise SubtractBackgroundNoiseFromWaveform_dB(double[] dBarray, double sdCount)
@@ -806,7 +806,7 @@ namespace AudioAnalysisTools.DSP
         /// this method sets upper limit to 66% of range of intensity values.
         /// ASSUMES ADDITIVE MODEL with GAUSSIAN NOISE.
         /// Values below zero set equal to zero.
-        /// This method can be called for any array of signal values but is PRESUMED TO BE A WAVEFORM or FREQ BIN OF HISTOGRAM
+        /// This method can be called for any array of signal values but is PRESUMED TO BE A WAVEFORM or FREQ BIN OF HISTOGRAM.
         /// </summary>
         public static BackgroundNoise SubtractBackgroundNoiseFromSignal(double[] array, double sdCount)
         {
@@ -851,15 +851,15 @@ namespace AudioAnalysisTools.DSP
             double threshold = mode + (noiseSd * sdCount);
             double snr = max - threshold;
             return new BackgroundNoise()
-                       {
-                           NoiseReducedSignal = null,
-                           NoiseMode = mode,
-                           MinDb = min,
-                           MaxDb = max,
-                           Snr = snr,
-                           NoiseSd = noiseSd,
-                           NoiseThreshold = threshold,
-                       };
+            {
+                NoiseReducedSignal = null,
+                NoiseMode = mode,
+                MinDb = min,
+                MaxDb = max,
+                Snr = snr,
+                NoiseSd = noiseSd,
+                NoiseThreshold = threshold,
+            };
         }
 
         /// <summary>
@@ -1042,7 +1042,7 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// expects a spectrogram in dB values
         /// IMPORTANT: Mel scale conversion should be done before noise reduction
-        /// Uses default values for severity of noise reduction and neighbourhood threshold
+        /// Uses default values for severity of noise reduction and neighbourhood threshold.
         /// </summary>
         public static double[,] NoiseReduce_Standard(double[,] matrix)
         {
@@ -1058,7 +1058,7 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// expects a spectrogram in dB values
+        /// expects a spectrogram in dB values.
         /// </summary>
         public static double[,] NoiseReduce_Standard(double[,] matrix, double[] noiseProfile, double nhBackgroundThreshold)
         {
@@ -1069,7 +1069,7 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// IMPORTANT: Mel scale conversion should be done before noise reduction
+        /// IMPORTANT: Mel scale conversion should be done before noise reduction.
         /// </summary>
         public static double[,] NoiseReduce_FixedRange(double[,] matrix, double dynamicRange, double sdCount)
         {
@@ -1095,7 +1095,7 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// The passed matrix is the decibel spectrogram
+        /// The passed matrix is the decibel spectrogram.
         /// </summary>
         public static double[,] NoiseReduce_Mean(double[,] matrix, double nhBackgroundThreshold)
         {
@@ -1108,7 +1108,7 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// The passed matrix is the decibel spectrogram
+        /// The passed matrix is the decibel spectrogram.
         /// </summary>
         public static double[,] NoiseReduce_Median(double[,] matrix, double nhBackgroundThreshold)
         {
@@ -1133,9 +1133,11 @@ namespace AudioAnalysisTools.DSP
             int colCount = matrix.GetLength(1);
             double[,] outM = new double[rowCount, colCount]; //to contain noise reduced matrix
 
-            for (int col = 0; col < colCount; col++) //for all cols i.e. freq bins
+            // for all cols i.e. freq bins
+            for (int col = 0; col < colCount; col++)
             {
-                for (int y = 0; y < rowCount; y++) //for all rows
+                // for all rows
+                for (int y = 0; y < rowCount; y++)
                 {
                     outM[y, col] = matrix[y, col] - noiseProfile[col];
                     if (outM[y, col] < backgroundThreshold)
@@ -1207,9 +1209,9 @@ namespace AudioAnalysisTools.DSP
         /// All intensity values are shifted so that the max intensity value = maxDB parameter.
         /// All values which fall below the minDB parameter are then set = to minDB.
         /// </summary>
-        /// <param name="m">The spectral sonogram passes as matrix of doubles</param>
-        /// <param name="minDb">minimum decibel value</param>
-        /// <param name="maxDb">maximum decibel value</param>
+        /// <param name="m">The spectral sonogram passes as matrix of doubles.</param>
+        /// <param name="minDb">minimum decibel value.</param>
+        /// <param name="maxDb">maximum decibel value.</param>
         public static double[,] SetDynamicRange(double[,] m, double minDb, double maxDb)
         {
             DataTools.MinMax(m, out var minIntensity, out var maxIntensity);
@@ -1234,13 +1236,13 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// SetLocalBounds
+        /// SetLocalBounds.
         /// </summary>
-        /// <param name="m">The spectral sonogram passes as matrix of doubles</param>
-        /// <param name="minPercentileBound">minimum decibel value</param>
-        /// <param name="maxPercentileBound">maximum decibel value</param>
-        /// <param name="temporalNh">buffer in temporal dimension</param>
-        /// <param name="freqBinNh">buffer in frequency dimension</param>
+        /// <param name="m">The spectral sonogram passes as matrix of doubles.</param>
+        /// <param name="minPercentileBound">minimum decibel value.</param>
+        /// <param name="maxPercentileBound">maximum decibel value.</param>
+        /// <param name="temporalNh">buffer in temporal dimension.</param>
+        /// <param name="freqBinNh">buffer in frequency dimension.</param>
         public static double[,] SetLocalBounds(double[,] m, int minPercentileBound, int maxPercentileBound, int temporalNh, int freqBinNh)
         {
             int binCount = 100; // histogram width is adjusted to length of signal
@@ -1248,9 +1250,11 @@ namespace AudioAnalysisTools.DSP
             int colCount = m.GetLength(1);
             double[,] normM = new double[rowCount, colCount];
 
-            for (int col = freqBinNh; col < colCount - freqBinNh; col++) //for all cols i.e. freq bins
+            // for all cols i.e. freq bins
+            for (int col = freqBinNh; col < colCount - freqBinNh; col++)
             {
-                for (int row = temporalNh; row < rowCount - temporalNh; row++) //for all rows i.e. frames
+                // for all rows i.e. frames
+                for (int row = temporalNh; row < rowCount - temporalNh; row++)
                 {
                     var localMatrix = MatrixTools.Submatrix(m, row - temporalNh, col - freqBinNh, row + temporalNh, col + freqBinNh);
                     int[] histo = Histogram.Histo(localMatrix, binCount, out var binWidth, out var minIntensity, out var maxIntensity);
@@ -1273,8 +1277,8 @@ namespace AudioAnalysisTools.DSP
         /// This method sets a sonogram pixel value = minimum value in sonogram if average pixel value in its neighbourhood is less than min+threshold.
         /// Typically would expect min value in sonogram = zero.
         /// </summary>
-        /// <param name="matrix">the sonogram</param>
-        /// <param name="nhThreshold">user defined threshold. Typically in range 2-4 dB</param>
+        /// <param name="matrix">the sonogram.</param>
+        /// <param name="nhThreshold">user defined threshold. Typically in range 2-4 dB.</param>
         public static double[,] RemoveNeighbourhoodBackgroundNoise(double[,] matrix, double nhThreshold)
         {
             if (nhThreshold < 0.000001)
@@ -1378,7 +1382,7 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// used to store info about the SNR in a signal using db units
+        /// used to store info about the SNR in a signal using db units.
         /// </summary>
         public class SnrStatistics
         {
@@ -1391,12 +1395,12 @@ namespace AudioAnalysisTools.DSP
             public TimeSpan ExtractDuration { get; set; }
 
             /// <summary>
-            /// Gets or sets decibel threshold used to calculate cover and average SNR
+            /// Gets or sets decibel threshold used to calculate cover and average SNR.
             /// </summary>
             public double Threshold { get; set; }
 
             /// <summary>
-            /// Gets or sets maximum dB value in the signal or spectrogram - relative to zero dB background
+            /// Gets or sets maximum dB value in the signal or spectrogram - relative to zero dB background.
             /// </summary>
             public double Snr { get; set; }
 

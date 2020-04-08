@@ -5,15 +5,14 @@
 namespace AudioAnalysisTools.DSP
 {
     using System;
-    using SixLabors.ImageSharp;
     using System.IO;
-    using Acoustics.Shared;
     using Acoustics.Shared.ImageSharp;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using StandardSpectrograms;
     using TowseyLibrary;
-    using WavTools;
     using Path = System.IO.Path;
 
     // IMPORTANT NOTE: If you are converting Herz scale from LINEAR to MEL or OCTAVE, this conversion MUST be done BEFORE noise reduction
@@ -40,7 +39,7 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// Initializes a new instance of the <see cref="FrequencyScale"/> class.
         /// CONSTRUCTOR
-        /// Calling this constructor assumes a full-scale linear freq scale is required
+        /// Calling this constructor assumes a full-scale linear freq scale is required.
         /// </summary>
         public FrequencyScale(int nyquist, int frameSize, int hertzGridInterval)
         {
@@ -57,7 +56,7 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// Initializes a new instance of the <see cref="FrequencyScale"/> class.
         /// CONSTRUCTOR
-        /// Calling this constructor assumes either Linear or Mel is required but not Octave
+        /// Calling this constructor assumes either Linear or Mel is required but not Octave.
         /// </summary>
         public FrequencyScale(FreqScaleType type, int nyquist, int frameSize, int finalBinCount, int hertzGridInterval)
         {
@@ -83,7 +82,7 @@ namespace AudioAnalysisTools.DSP
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FrequencyScale"/> class.
-        /// CONSTRUCTOR
+        /// CONSTRUCTOR.
         /// </summary>
         public FrequencyScale(FreqScaleType fst)
         {
@@ -118,22 +117,22 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// Gets or sets half the sample rate
+        /// Gets or sets half the sample rate.
         /// </summary>
         public int Nyquist { get; set; }
 
         /// <summary>
-        /// Gets or sets frame size for the FFT
+        /// Gets or sets frame size for the FFT.
         /// </summary>
         public int WindowSize { get; set; }
 
         /// <summary>
-        /// Gets or sets step size for the FFT window
+        /// Gets or sets step size for the FFT window.
         /// </summary>
         public int FrameStep { get; set; }
 
         /// <summary>
-        /// Gets or sets number of frequency bins in the final spectrogram
+        /// Gets or sets number of frequency bins in the final spectrogram.
         /// </summary>
         public int FinalBinCount { get; set; }
 
@@ -143,38 +142,38 @@ namespace AudioAnalysisTools.DSP
         public FreqScaleType ScaleType { get; set; }
 
         /// <summary>
-        /// Gets or sets herz interval between gridlines when using a linear or mel scale
+        /// Gets or sets herz interval between gridlines when using a linear or mel scale.
         /// </summary>
         public int HertzGridInterval { get; set; }
 
         /// <summary>
-        /// Gets or sets top end of the linear part of an Octave Scale spectrogram
+        /// Gets or sets top end of the linear part of an Octave Scale spectrogram.
         /// </summary>
         public int LinearBound { get; set; }
 
         /// <summary>
-        /// Gets or sets number of octave to appear above the linear part of scale
+        /// Gets or sets number of octave to appear above the linear part of scale.
         /// </summary>
         public int OctaveCount { get; set; }
 
         /// <summary>
-        /// Gets or sets number of bands or tones per octave
+        /// Gets or sets number of bands or tones per octave.
         /// </summary>
         public int ToneCount { get; set; }
 
         /// <summary>
         /// Gets or sets the bin bounds of the frequency bands for octave scale
-        /// bin id in first column and the Hz value in second column of matrix
+        /// bin id in first column and the Hz value in second column of matrix.
         /// </summary>
         public int[,] BinBounds { get; set; }
 
         /// <summary>
-        /// Gets or sets the location of gridlines (first column) and the Hz value for the grid lines (second column of matrix)
+        /// Gets or sets the location of gridlines (first column) and the Hz value for the grid lines (second column of matrix).
         /// </summary>
         public int[,] GridLineLocations { get; set; }
 
         /// <summary>
-        /// returns the binId for the grid line closest to the passed frequency
+        /// returns the binId for the grid line closest to the passed frequency.
         /// </summary>
         public int GetBinIdForHerzValue(int herzValue)
         {
@@ -195,7 +194,7 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// returns the binId for the grid line closest to the passed frequency
+        /// returns the binId for the grid line closest to the passed frequency.
         /// </summary>
         public int GetBinIdInReducedSpectrogramForHerzValue(int herzValue)
         {
@@ -216,7 +215,7 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// Returns an [N, 2] matrix with bin ID in column 1 and lower Herz bound in column 2
+        /// Returns an [N, 2] matrix with bin ID in column 1 and lower Herz bound in column 2.
         /// </summary>
         public int[,] GetLinearBinBounds()
         {
@@ -233,7 +232,7 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// Returns an [N, 2] matrix with bin ID in column 1 and lower Herz bound in column 2 but on Mel scale
+        /// Returns an [N, 2] matrix with bin ID in column 1 and lower Herz bound in column 2 but on Mel scale.
         /// </summary>
         public int[,] GetMelBinBounds()
         {
@@ -310,7 +309,7 @@ namespace AudioAnalysisTools.DSP
         /// THIS METHOD NEEDS TO BE DEBUGGED.  HAS NOT BEEN USED IN YEARS!
         /// Use this method to generate grid lines for mel scale image
         /// Currently this method is only called from BaseSonogram.GetImage() when bool doMelScale = true;
-        /// Frequencyscale.Draw1kHzLines(Image<Rgb24> bmp, bool doMelScale, int nyquist, double freqBinWidth)
+        /// Frequencyscale.Draw1kHzLines(Image.<Rgb24> bmp, bool doMelScale, int nyquist, double freqBinWidth)
         /// </summary>
         public static int[,] GetMelGridLineLocations(int gridIntervalInHertz, int nyquistFreq, int melBinCount)
         {
@@ -353,7 +352,7 @@ namespace AudioAnalysisTools.DSP
                 for (int n = 5; n < minimumSpectrogramWidth; n++)
                 {
                     var bgnColour = bmp[m, n];
-                    
+
                     brightness += bgnColour.GetBrightness();
                     pixelCount++;
                 }
@@ -369,8 +368,6 @@ namespace AudioAnalysisTools.DSP
             int width = bmp.Width;
             int height = bmp.Height;
             int bandCount = gridLineLocations.GetLength(0);
-
-            
 
             // draw the grid line for each frequency band
             for (int b = 0; b < bandCount; b++)
@@ -637,7 +634,7 @@ namespace AudioAnalysisTools.DSP
         /// 24 BIT JASCO RECORDINGS from GBR must be converted to 16 bit.
         /// ffmpeg -i source_file.wav -sample_fmt s16 out_file.wav
         /// e.g. ". C:\Work\Github\audio-analysis\Extra Assemblies\ffmpeg\ffmpeg.exe" -i "C:\SensorNetworks\WavFiles\MarineRecordings\JascoGBR\AMAR119-00000139.00000139.Chan_1-24bps.1375012796.2013-07-28-11-59-56.wav" -sample_fmt s16 "C:\SensorNetworks\Output\OctaveFreqScale\JascoeMarineGBR116bit.wav"
-        /// ffmpeg binaries are in C:\Work\Github\audio-analysis\Extra Assemblies\ffmpeg
+        /// ffmpeg binaries are in C:\Work\Github\audio-analysis\Extra Assemblies\ffmpeg.
         /// </summary>
         public static void TESTMETHOD_OctaveFrequencyScale2()
         {

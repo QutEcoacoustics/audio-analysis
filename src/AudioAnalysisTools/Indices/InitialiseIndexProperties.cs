@@ -14,7 +14,7 @@ namespace AudioAnalysisTools.Indices
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using DSP;
+    using AudioAnalysisTools.DSP;
 
     /*
     /// TO CREATE AND IMPLEMENT A NEW ACOUSTIC INDEX (BOTH SUMMARY AND SPECTRAL INDICES), DO THE FOLLOWING:

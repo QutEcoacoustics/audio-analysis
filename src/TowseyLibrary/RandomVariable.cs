@@ -19,7 +19,8 @@ namespace TowseyLibrary
         private readonly RandomNumber R;
 
         /// <summary>
-        /// CONSTRUCTOR
+        /// Initializes a new instance of the <see cref="RandomVariable"/> class.
+        /// CONSTRUCTOR.
         /// </summary>
         public RandomVariable()
         {
@@ -27,10 +28,9 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// CONSTRUCTOR
+        /// Initializes a new instance of the <see cref="RandomVariable"/> class.
+        /// CONSTRUCTOR.
         /// </summary>
-        /// <param name="mean"></param>
-        /// <param name="SD"></param>
         public RandomVariable(double mean, double SD)
         {
             this.mean = mean;

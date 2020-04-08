@@ -23,7 +23,7 @@ namespace AnalysisBase
     /// </summary>
     /// <remarks>
     /// <para>
-    /// All members in this class are prefixed either with <code>Segment</code> or <code>Analysis</code>.
+    /// All members in this class are prefixed either with. <code>Segment</code> or. <code>Analysis</code>.
     /// Members prefixed with Segment change per segment.
     /// Members prefixed with Analysis are invariant for the Analysis.
     /// </para>
@@ -206,7 +206,7 @@ namespace AnalysisBase
         /// Gets or sets an object that can be used to store arbitrary configuration or options.
         /// This is useful for passing information between BeforeAnalyze and Analyze.
         /// DO NOT STORE MUTABLE STATE IN THIS OBJECT.
-        /// The object provided must be serializable!
+        /// The object provided must be serializable!.
         /// </summary>
         public object AnalysisAnalyzerSpecificConfiguration { get; set; }
 

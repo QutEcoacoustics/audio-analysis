@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="CalcSunTimes.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -43,13 +43,13 @@ namespace Acoustics.Shared
 
         public abstract class Coords
         {
-            protected internal int mDegrees = 0;
-            protected internal int mMinutes = 0;
-            protected internal int mSeconds = 0;
+            protected internal int MDegrees = 0;
+            protected internal int MMinutes = 0;
+            protected internal int MSeconds = 0;
 
             public double ToDouble()
             {
-                return this.Sign() * (this.mDegrees + ((double)this.mMinutes / 60) + ((double)this.mSeconds / 3600));
+                return this.Sign() * (this.MDegrees + ((double)this.MMinutes / 60) + ((double)this.MSeconds / 3600));
             }
 
             protected internal abstract int Sign();
@@ -63,19 +63,19 @@ namespace Acoustics.Shared
                 South,
             }
 
-            protected internal Direction mDirection = Direction.North;
+            protected internal Direction MDirection = Direction.North;
 
             public LatitudeCoords(int degrees, int minutes, int seconds, Direction direction)
             {
-                this.mDegrees = degrees;
-                this.mMinutes = minutes;
-                this.mSeconds = seconds;
-                this.mDirection = direction;
+                this.MDegrees = degrees;
+                this.MMinutes = minutes;
+                this.MSeconds = seconds;
+                this.MDirection = direction;
             }
 
             protected internal override int Sign()
             {
-                return this.mDirection == Direction.North ? 1 : -1;
+                return this.MDirection == Direction.North ? 1 : -1;
             }
         }
 
@@ -87,19 +87,19 @@ namespace Acoustics.Shared
                 West,
             }
 
-            protected internal Direction mDirection = Direction.East;
+            protected internal Direction MDirection = Direction.East;
 
             public LongitudeCoords(int degrees, int minutes, int seconds, Direction direction)
             {
-                this.mDegrees = degrees;
-                this.mMinutes = minutes;
-                this.mSeconds = seconds;
-                this.mDirection = direction;
+                this.MDegrees = degrees;
+                this.MMinutes = minutes;
+                this.MSeconds = seconds;
+                this.MDirection = direction;
             }
 
             protected internal override int Sign()
             {
-                return this.mDirection == Direction.East ? 1 : -1;
+                return this.MDirection == Direction.East ? 1 : -1;
             }
         }
 
@@ -109,10 +109,10 @@ namespace Acoustics.Shared
         /// <param name="lat">Latitude coordinates.</param>
         /// <param name="lon">Longitude coordinates.</param>
         /// <param name="date">Date for which to calculate.</param>
-        /// <param name="riseTime">Sunrise time (output)</param>
-        /// <param name="setTime">Sunset time (output)</param>
-        /// <param name="isSunrise">Whether or not the sun rises at that day</param>
-        /// <param name="isSunset">Whether or not the sun sets at that day</param>
+        /// <param name="riseTime">Sunrise time (output).</param>
+        /// <param name="setTime">Sunset time (output).</param>
+        /// <param name="isSunrise">Whether or not the sun rises at that day.</param>
+        /// <param name="isSunset">Whether or not the sun sets at that day.</param>
         public bool CalculateSunRiseSetTimes(LatitudeCoords lat, LongitudeCoords lon, DateTime date,
                                                 ref DateTime riseTime, ref DateTime setTime,
                                                 ref bool isSunrise, ref bool isSunset)
@@ -126,10 +126,10 @@ namespace Acoustics.Shared
         /// <param name="lat">Latitude in decimal notation.</param>
         /// <param name="lon">Longitude in decimal notation.</param>
         /// <param name="date">Date for which to calculate.</param>
-        /// <param name="riseTime">Sunrise time (output)</param>
-        /// <param name="setTime">Sunset time (output)</param>
-        /// <param name="isSunrise">Whether or not the sun rises at that day</param>
-        /// <param name="isSunset">Whether or not the sun sets at that day</param>
+        /// <param name="riseTime">Sunrise time (output).</param>
+        /// <param name="setTime">Sunset time (output).</param>
+        /// <param name="isSunrise">Whether or not the sun rises at that day.</param>
+        /// <param name="isSunset">Whether or not the sun sets at that day.</param>
         public bool CalculateSunRiseSetTimes(double lat, double lon, DateTime date,
                                                 ref DateTime riseTime, ref DateTime setTime,
                                                 ref bool isSunrise, ref bool isSunset)

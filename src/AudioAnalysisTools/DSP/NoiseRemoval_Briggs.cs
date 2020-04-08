@@ -6,8 +6,8 @@ namespace AudioAnalysisTools.DSP
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using AudioAnalysisTools.StandardSpectrograms;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
 
@@ -20,9 +20,6 @@ namespace AudioAnalysisTools.DSP
         /// Then divide cell energy by the profile value.
         /// This method was adapted from a paper by Briggs.
         /// </summary>
-        /// <param name="matrix"></param>
-        /// <param name="percentileThreshold"></param>
-        /// <returns></returns>
         public static double[,] NoiseReduction_byDivision(double[,] matrix, int percentileThreshold)
         {
             double[] profile = NoiseProfile.GetNoiseProfile_fromLowestPercentileFrames(matrix, percentileThreshold);
@@ -35,7 +32,8 @@ namespace AudioAnalysisTools.DSP
             int colCount = matrix.GetLength(1);
             double[,] outM = new double[rowCount, colCount]; //to contain noise reduced matrix
 
-            for (int col = 0; col < colCount; col++) //for all cols i.e. freq bins
+            // for all cols i.e. freq bins
+            for (int col = 0; col < colCount; col++)
             {
                 double denominator = profile[col];
                 if (denominator < epsilon)
@@ -43,7 +41,8 @@ namespace AudioAnalysisTools.DSP
                     denominator = epsilon;
                 }
 
-                for (int y = 0; y < rowCount; y++) //for all rows
+                // for all rows
+                for (int y = 0; y < rowCount; y++)
                 {
                     outM[y, col] = matrix[y, col] / denominator;
                 } //end for all rows
@@ -60,9 +59,6 @@ namespace AudioAnalysisTools.DSP
         /// Same method as above except take square root of the cell energy divided by the noise.
         /// Taking the square root has the effect of reducing image contrast.
         /// </summary>
-        /// <param name="matrix"></param>
-        /// <param name="percentileThreshold"></param>
-        /// <returns></returns>
         public static double[,] NoiseReduction_byDivisionAndSqrRoot(double[,] matrix, int percentileThreshold)
         {
             double[] profile = NoiseProfile.GetNoiseProfile_fromLowestPercentileFrames(matrix, percentileThreshold);
@@ -75,7 +71,8 @@ namespace AudioAnalysisTools.DSP
             int colCount = matrix.GetLength(1);
             double[,] outM = new double[rowCount, colCount]; //to contain noise reduced matrix
 
-            for (int col = 0; col < colCount; col++) //for all cols i.e. freq bins
+            // for all cols i.e. freq bins
+            for (int col = 0; col < colCount; col++)
             {
                 double denominator = profile[col];
                 if (denominator < epsilon)
@@ -83,7 +80,8 @@ namespace AudioAnalysisTools.DSP
                     denominator = epsilon;
                 }
 
-                for (int y = 0; y < rowCount; y++) //for all rows
+                // for all rows
+                for (int y = 0; y < rowCount; y++)
                 {
                     outM[y, col] = Math.Sqrt(matrix[y, col] / denominator);
                 } //end for all rows
@@ -137,10 +135,8 @@ namespace AudioAnalysisTools.DSP
         /// Taking square-root of top line results in too much background.
         /// The algorithm is not overly sensitive to the neighbourhood size.
         /// </summary>
-        /// <param name="matrix"></param>
-        /// <param name="neighbourhood">suitable vaues are odd numbers 9 - 59</param>
+        /// <param name="neighbourhood">suitable vaues are odd numbers 9 - 59.</param>
         /// <param name="contrastLevel">Suitable values are 0.1 to 1.0.</param>
-        /// <returns></returns>
         public static double[,] NoiseReduction_byLCNDivision(double[,] matrix, int neighbourhood, double contrastLevel)
         {
             int rowCount = matrix.GetLength(0);
@@ -156,7 +152,8 @@ namespace AudioAnalysisTools.DSP
                 double[] localVariance = NormalDist.CalculateLocalVariance(column, neighbourhood);
 
                 // NormaliseMatrixValues with local column variance
-                for (int y = 0; y < rowCount; y++) //for all rows
+                // for all rows
+                for (int y = 0; y < rowCount; y++)
                 {
                     //outM[y, col] = matrix[y, col] / (contrastLevel + localVariance[y]);
                     outM[y, col] = matrix[y, col] / (contrastLevel + Math.Sqrt(localVariance[y]));
@@ -181,11 +178,6 @@ namespace AudioAnalysisTools.DSP
         /// A low contrastLevel = 0.1 give more grey image.
         /// A high contrastLevel = 1.0 give mostly white high contrast image.
         /// </summary>
-        /// <param name="matrix"></param>
-        /// <param name="lowPercent"></param>
-        /// <param name="neighbourhood"></param>
-        /// <param name="contrastLevel"></param>
-        /// <returns></returns>
         public static double[,] NoiseReduction_ShortRecordings_SubtractAndLCN(double[,] matrix, int lowPercent, int neighbourhood, double contrastLevel)
         {
             double[] noiseProfile = NoiseProfile.GetNoiseProfile_BinWiseFromLowestPercentileCells(matrix, lowPercent);
@@ -203,7 +195,8 @@ namespace AudioAnalysisTools.DSP
                 double[] localVariance = NormalDist.CalculateLocalVariance(column, neighbourhood);
 
                 // NormaliseMatrixValues with local column variance
-                for (int y = 0; y < rowCount; y++) //for all rows
+                // for all rows
+                for (int y = 0; y < rowCount; y++)
                 {
                     //outM[y, col] = matrix[y, col] / (contrastLevel + localVariance[y]);
                     outM[y, col] = (matrix[y, col] - noiseProfile[col]) / (contrastLevel + Math.Sqrt(localVariance[y]));
@@ -213,7 +206,7 @@ namespace AudioAnalysisTools.DSP
             return outM;
         }
 
-// #########################################################################################################################################################
+        // #########################################################################################################################################################
 
         public static double[,] BriggsNoiseFilterAndGetMask(double[,] matrix, int percentileThreshold, double binaryThreshold)
         {
@@ -243,7 +236,7 @@ namespace AudioAnalysisTools.DSP
             //double[,] m = NoiseRemoval_Briggs.BriggsNoiseFilter(matrix, percentileThreshold);
             double[,] m = NoiseReduction_byDivisionAndSqrRoot(matrix, percentileThreshold);
 
-           var images = new List<Image<Rgb24>>();
+            var images = new List<Image<Rgb24>>();
 
             string title = "TITLE ONE";
             var image1 = DrawSonogram(m, recordingDuration, X_AxisInterval, stepDuration, nyquist, herzInterval, title);

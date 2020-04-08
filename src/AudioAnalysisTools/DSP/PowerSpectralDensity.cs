@@ -1,4 +1,4 @@
-﻿// <copyright file="UnsupervisedFeatureLearningTest.cs" company="QutEcoacoustics">
+// <copyright file="PowerSpectralDensity.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -12,7 +12,7 @@ namespace AudioAnalysisTools.DSP
     {
         /// <summary>
         /// Square the FFT coefficients >> this gives an energy spectrogram.
-        /// MatrixTools.SquareValues is doing the same!
+        /// MatrixTools.SquareValues is doing the same!.
         /// </summary>
         public static double[,] GetEnergyValues(double[,] fftCoefficients)
         {
@@ -30,7 +30,7 @@ namespace AudioAnalysisTools.DSP
 
         /// <summary>
         /// Take average of the energy values in each frequency bin to obtain power spectrum or PSD.
-        /// SpectrogramTools.CalculateAvgSpectrumFromEnergySpectrogram is doing the same!
+        /// SpectrogramTools.CalculateAvgSpectrumFromEnergySpectrogram is doing the same!.
         /// </summary>
         public static double[] GetPowerSpectrum(double[,] energySpectrogram)
         {

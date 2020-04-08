@@ -4,11 +4,11 @@
 
 namespace System.Xml.Linq
 {
-    using IO;
-    using Serialization;
     using System;
+    using System.IO;
     using System.Linq;
-    using Text;
+    using System.Text;
+    using System.Xml.Serialization;
 
     /// <summary>
     /// Xml Extension methods.
@@ -95,7 +95,7 @@ namespace System.Xml.Linq
         /// </param>
         /// <remarks>
         /// Extension methods for the .NET 3.5 System.Xml.Linq namespace.
-        /// From: http://seattlesoftware.wordpress.com/2009/03/13/get-the-xpath-to-an-xml-element-xelement/
+        /// From: http://seattlesoftware.wordpress.com/2009/03/13/get-the-xpath-to-an-xml-element-xelement/.
         /// </remarks>
         /// <returns>
         /// The absolute x path.
@@ -134,7 +134,7 @@ namespace System.Xml.Linq
         /// </param>
         /// <remarks>
         /// Extension methods for the .NET 3.5 System.Xml.Linq namespace.
-        /// From: http://seattlesoftware.wordpress.com/2009/03/13/get-the-xpath-to-an-xml-element-xelement/
+        /// From: http://seattlesoftware.wordpress.com/2009/03/13/get-the-xpath-to-an-xml-element-xelement/.
         /// </remarks>
         /// <returns>
         /// The index position.

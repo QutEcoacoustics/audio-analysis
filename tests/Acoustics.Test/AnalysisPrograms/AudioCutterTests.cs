@@ -262,8 +262,8 @@ namespace Acoustics.Test.AnalysisPrograms
         {
             var files = targetDirectory.GetFiles().ToArray();
             Assert.AreEqual(10, files.Length);
-            CollectionAssert.That.Contains(files,  $"f969b39d-2705-42fc-992c-252a776f1af3_090705-0600_0-60.{expectedExtension}", FileInfoMapper);
-            CollectionAssert.That.Contains(files,  $"f969b39d-2705-42fc-992c-252a776f1af3_090705-0600_540-600.{expectedExtension}", FileInfoMapper);
+            CollectionAssert.That.Contains(files, $"f969b39d-2705-42fc-992c-252a776f1af3_090705-0600_0-60.{expectedExtension}", FileInfoMapper);
+            CollectionAssert.That.Contains(files, $"f969b39d-2705-42fc-992c-252a776f1af3_090705-0600_540-600.{expectedExtension}", FileInfoMapper);
             return files;
         }
     }

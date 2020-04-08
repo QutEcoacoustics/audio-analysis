@@ -6,7 +6,6 @@ namespace TowseyLibrary
 {
     using System;
     using System.Collections.Generic;
-    using Acoustics.Shared;
     using Acoustics.Shared.ImageSharp;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
@@ -53,7 +52,8 @@ namespace TowseyLibrary
         public Image<Rgb24> DrawPlot(int height)
         {
             var image = new Image<Rgb24>(this.data.Length, height);
-            image.Mutate(g => {
+            image.Mutate(g =>
+            {
                 g.Clear(Color.LightGray);
             });
 

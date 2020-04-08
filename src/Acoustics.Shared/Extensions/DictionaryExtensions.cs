@@ -24,7 +24,7 @@ namespace System.Collections.Generic
                 items.Add(entry.Key.ToString() + "=" + entry.Value.ToString());
             }
 
-            return "{" + string.Join(",",  items) + "}";
+            return "{" + string.Join(",", items) + "}";
         }
 
         public static TValue FirstValue<TKey, TValue>(this Dictionary<TKey, TValue> dictionary)

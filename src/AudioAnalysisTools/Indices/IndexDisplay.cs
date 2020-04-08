@@ -6,17 +6,16 @@ namespace AudioAnalysisTools.Indices
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using System.Reflection;
     using System.Text;
-    using Acoustics.Shared;
     using Acoustics.Shared.ImageSharp;
     using AnalysisBase.ResultBases;
-    using StandardSpectrograms;
+    using AudioAnalysisTools.LongDurationSpectrograms;
+    using AudioAnalysisTools.StandardSpectrograms;
     using log4net;
-    using LongDurationSpectrograms;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
     using TowseyLibrary;
@@ -136,6 +135,7 @@ namespace AudioAnalysisTools.Indices
             }
 
             var listOfBitmaps = bitmapList
+
             //    .OrderBy(tuple => tuple.Item1.Order) // don't order because want to preserve alternating gray/white rows.
                 .Select(tuple => tuple.Item2)
                 .Where(b => b != null).ToList();

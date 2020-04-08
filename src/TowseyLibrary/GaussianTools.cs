@@ -13,8 +13,6 @@ namespace TowseyLibrary
         /// This formula derived from code of LeCun.
         /// See python code at the bottom of the class LocalContrastNormalisation.
         /// </summary>
-        /// <param name="side"></param>
-        /// <returns></returns>
         public static double[,] Gaussian_filter(int side)
         {
             double sigma = 2.0;
@@ -47,10 +45,6 @@ namespace TowseyLibrary
         /// This formula derived from code of LeCun.
         /// See python code at the bottom of the class LocalContrastNormalisation.
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="sigma"></param>
-        /// <returns></returns>
         public static double Gauss(int x, int y, double sigma)
         {
             double Z = 2 * Math.PI * sigma * sigma;

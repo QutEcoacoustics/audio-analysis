@@ -45,7 +45,7 @@ namespace Acoustics.Test.TestHelpers
         /// Returns the next character from the "stream".
         /// Never returns -1 (which would denote the end of the stream).
         /// </summary>
-        /// <returns>A character as an int</returns>
+        /// <returns>A character as an int.</returns>
         public override int Read()
         {
             var read = this.next;

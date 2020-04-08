@@ -12,7 +12,7 @@ namespace TowseyLibrary
     /// An implementation of wavelet pack decomposition (WPD) using the Haar wavelet.
     /// For details on the Haar wavelet, and the source for the details in this code,
     /// read "WAVELETS FOR KIDS, A Tutorial Introduction", by Brani Vidakovic and Peter Mueller, Duke University.
-    /// WARNING: This article on the Haar wavelet is NOT for kids!
+    /// WARNING: This article on the Haar wavelet is NOT for kids!.
     /// </summary>
     public class WaveletPacketDecomposition
     {
@@ -23,9 +23,9 @@ namespace TowseyLibrary
         private readonly List<BinVector> listOfBinVectors;
 
         /// <summary>
-        /// Assume the signal is power of 2 in length
+        /// Initializes a new instance of the <see cref="WaveletPacketDecomposition"/> class.
+        /// Assume the signal is power of 2 in length.
         /// </summary>
-        /// <param name="signal"></param>
         public WaveletPacketDecomposition(double[] signal)
         {
             if (!DataTools.IsPowerOfTwo((ulong)signal.Length))
@@ -40,10 +40,8 @@ namespace TowseyLibrary
 
         /// <summary>
         /// assume tree is full decomposed WPD tree.
-        /// Assume original signal is power of 2 in length
+        /// Assume original signal is power of 2 in length.
         /// </summary>
-        /// <param name="list"></param>
-        /// <returns></returns>
         public double[,] GetWPDSignalTree()
         {
             int nodeCount = this.listOfBinVectors.Count;
@@ -53,16 +51,16 @@ namespace TowseyLibrary
 
             foreach (BinVector bv in this.listOfBinVectors)
             {
-                int level = bv.levelNumber;
-                int bin = bv.binNumber;
-                int start = (bin - 1) * bv.binLength;
-                double[] signal = bv.signal;
+                int level = bv.LevelNumber;
+                int bin = bv.BinNumber;
+                int start = (bin - 1) * bv.BinLength;
+                double[] signal = bv.Signal;
 
                 // NormaliseMatrixValues each row
                 //signal = DataTools.NormaliseMatrixValues(signal);
                 for (int i = 0; i < signal.Length; i++)
                 {
-                    wpdTree[level - 1, start + i] = bv.signal[i];
+                    wpdTree[level - 1, start + i] = bv.Signal[i];
                 }
             }
 
@@ -71,10 +69,8 @@ namespace TowseyLibrary
 
         /// <summary>
         /// assume tree is full decomposed WPD tree.
-        /// Assume original signal is power of 2 in length
+        /// Assume original signal is power of 2 in length.
         /// </summary>
-        /// <param name="list"></param>
-        /// <returns></returns>
         public double[] GetWPDEnergyVector()
         {
             int nodeCount = this.listOfBinVectors.Count;
@@ -82,7 +78,7 @@ namespace TowseyLibrary
 
             foreach (BinVector bv in this.listOfBinVectors)
             {
-                wpdEnergyVector[bv.sequenceNumber - 1] = bv.energy;
+                wpdEnergyVector[bv.SequenceNumber - 1] = bv.Energy;
             }
 
             return wpdEnergyVector;
@@ -105,55 +101,55 @@ namespace TowseyLibrary
         /// </summary>
         public class BinVector
         {
-            public int levelNumber;
-            public int binNumber;
-            public int sequenceNumber;
-            public double[] signal;
-            public double energy;
-            public int binLength;
-            public BinVector parent;
-            public BinVector childApprox;
-            public BinVector childDetail;
+            public int LevelNumber;
+            public int BinNumber;
+            public int SequenceNumber;
+            public double[] Signal;
+            public double Energy;
+            public int BinLength;
+            public BinVector Parent;
+            public BinVector ChildApprox;
+            public BinVector ChildDetail;
 
             public BinVector(int _levelNumber, int _binNumber, double[] _signal)
             {
-                this.levelNumber = _levelNumber;
-                this.binNumber = _binNumber;
-                this.sequenceNumber = (int)Math.Pow(2, _levelNumber - 1) - 1 + _binNumber;
-                this.signal = _signal;
-                this.binLength = 0;
+                this.LevelNumber = _levelNumber;
+                this.BinNumber = _binNumber;
+                this.SequenceNumber = (int)Math.Pow(2, _levelNumber - 1) - 1 + _binNumber;
+                this.Signal = _signal;
+                this.BinLength = 0;
                 if (_signal != null)
                 {
-                    this.binLength = _signal.Length;
+                    this.BinLength = _signal.Length;
                 }
 
-                this.energy = 0.0;
+                this.Energy = 0.0;
                 if (_signal != null)
                 {
-                    this.energy = this.CalculateEnergy();
+                    this.Energy = this.CalculateEnergy();
                 }
             }
 
             private double CalculateEnergy()
             {
                 double E = 0.0;
-                for (int i = 0; i < this.signal.Length; i++)
+                for (int i = 0; i < this.Signal.Length; i++)
                 {
-                    E += this.signal[i] * this.signal[i];
+                    E += this.Signal[i] * this.Signal[i];
                 }
 
-                return E / this.signal.Length;
+                return E / this.Signal.Length;
             }
 
             private int CalculateBinNumberOfApproxChild()
             {
-                int number = (2 * this.sequenceNumber) - (int)Math.Pow(2.0, this.levelNumber) + 1;
+                int number = (2 * this.SequenceNumber) - (int)Math.Pow(2.0, this.LevelNumber) + 1;
                 return number;
             }
 
             private int CalculateBinNumberOfDetailChild()
             {
-                int number = (2 * this.sequenceNumber) - (int)Math.Pow(2.0, this.levelNumber) + 1;
+                int number = (2 * this.SequenceNumber) - (int)Math.Pow(2.0, this.LevelNumber) + 1;
                 return number + 1;
             }
         } // END of class BinVector each of which is a node in the WPD tree.
@@ -163,14 +159,12 @@ namespace TowseyLibrary
         /// <summary>
         ///
         /// </summary>
-        /// <param name="signal"></param>
-        /// <returns></returns>
         public static List<BinVector> GetTreeOfBinVectors(double[] signal)
         {
             var list = new List<BinVector>();
             BinVector sigBin = new BinVector(1, 1, signal);
-            sigBin.childApprox = null;
-            sigBin.childDetail = null;
+            sigBin.ChildApprox = null;
+            sigBin.ChildDetail = null;
 
             list.Add(sigBin);
 
@@ -184,19 +178,16 @@ namespace TowseyLibrary
         /// It performs a depth first calculation of the wavelet coefficients.
         /// Depth first search terminates when the bin vector contains only one element.
         /// </summary>
-        /// <param name="list"></param>
-        /// <param name="bv"></param>
-        /// <returns></returns>
         public static List<BinVector> GetTreeOfBinVectors(List<BinVector> list, BinVector bv)
         {
-            int level = bv.levelNumber;
-            int bin = bv.binNumber;
+            int level = bv.LevelNumber;
+            int bin = bv.BinNumber;
 
             // display info about nodes
             // Console.WriteLine("nodeCount={0}   level={1}   bin={2}  seqNum={3}  sigLength={4}", list.Count, level, bin, bv.sequenceNumber, bv.signal.Length);
 
-            double[] approxVector = LowPassAndDecimate(bv.signal);
-            double[] detailVector = HiPassAndDecimate(bv.signal);
+            double[] approxVector = LowPassAndDecimate(bv.Signal);
+            double[] detailVector = HiPassAndDecimate(bv.Signal);
 
             if (approxVector == null || approxVector == null)
             {
@@ -205,11 +196,11 @@ namespace TowseyLibrary
             }
 
             BinVector approxBin = new BinVector(level + 1, (2 * bin) - 1, approxVector);
-            approxBin.parent = bv;
-            bv.childApprox = approxBin;
+            approxBin.Parent = bv;
+            bv.ChildApprox = approxBin;
             BinVector detailBin = new BinVector(level + 1, 2 * bin, detailVector);
-            detailBin.parent = bv;
-            bv.childDetail = detailBin;
+            detailBin.Parent = bv;
+            bv.ChildDetail = detailBin;
 
             list.Add(approxBin);
             GetTreeOfBinVectors(list, approxBin);
@@ -223,10 +214,6 @@ namespace TowseyLibrary
         /// <summary>
         ///
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="fftWindowWidth"></param>
-        /// <param name="wpdLevelNumber"></param>
-        /// <returns></returns>
         public static double[,] GetFrequencyByOscillationsMatrix(double[] signal, int fftWindowWidth, int wpdLevelNumber)
         {
             // produce spectrogram
@@ -256,9 +243,7 @@ namespace TowseyLibrary
         /// In other words, the standard deviation is calculated from the bottom row of coeficients but is increased for the higher rows.
         /// THis is because the coefficients in the lower rows have a lower SNR.
         /// </summary>
-        /// <param name="n">level number</param>
-        /// <param name="coefficients"></param>
-        /// <returns></returns>
+        /// <param name="n">level number.</param>
         public static double CalculateUniversalThreshold(int n, double[] coefficients)
         {
             double factor = Math.Sqrt(2 * Math.Log10(n));
@@ -276,9 +261,6 @@ namespace TowseyLibrary
         /// Returns a matrix whose columns consist of the bottom row of the WPD tree for each WPD window of length 2^L where L= levelNumber.
         /// The WPD windows do not overlap.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="levelNumber"></param>
-        /// <returns></returns>
         public static double[,] GetWPDSpectralSequence(double[] signal, int levelNumber)
         {
             int windowWidth = (int)Math.Pow(2, levelNumber);
@@ -330,9 +312,6 @@ namespace TowseyLibrary
         /// Returns a matrix whose columns consist of the energy vector derived from the WPD tree for each WPD window of length 2^L where L= levelNumber.
         /// The WPD windows do not overlap.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="levelNumber"></param>
-        /// <returns></returns>
         public static double[,] GetWPDEnergySequence(double[] signal, int levelNumber)
         {
             int windowWidth = (int)Math.Pow(2, levelNumber);
@@ -356,10 +335,8 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// implements the Haar low pass filter
+        /// implements the Haar low pass filter.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <returns></returns>
         public static double[] LowPassAndDecimate(double[] signal)
         {
             int sigLength = signal.Length;
@@ -381,10 +358,8 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// implements the Haar high pass filter
+        /// implements the Haar high pass filter.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <returns></returns>
         public static double[] HiPassAndDecimate(double[] signal)
         {
             int sigLength = signal.Length;

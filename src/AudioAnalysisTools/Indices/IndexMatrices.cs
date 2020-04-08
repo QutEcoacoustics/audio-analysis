@@ -18,12 +18,11 @@ namespace AudioAnalysisTools.Indices
     using Acoustics.Shared;
     using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Csv;
-    using DSP;
-    using StandardSpectrograms;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
     using log4net;
-    using TowseyLibrary;
-    using Acoustics.Shared.Contracts;
     using MoreLinq;
+    using TowseyLibrary;
 
     public static class IndexMatrices
     {

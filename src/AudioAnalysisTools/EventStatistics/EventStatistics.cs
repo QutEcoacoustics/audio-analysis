@@ -13,7 +13,7 @@ namespace AudioAnalysisTools.EventStatistics
     using CsvHelper.Configuration;
 
     /// <summary>
-    /// The data class that holds event statistics
+    /// The data class that holds event statistics.
     /// </summary>
     /// <remarks>
     /// Note that EventBase already has getters/setters for:
@@ -68,7 +68,7 @@ namespace AudioAnalysisTools.EventStatistics
 
         /// <summary>
         /// Gets or sets the relative location of the temporal max within the acoustic event.
-        /// E.g. if temporal max is half way through the event then TemporalMaxRelative = 0.5
+        /// E.g. if temporal max is half way through the event then TemporalMaxRelative = 0.5.
         /// </summary>
         public double TemporalMaxRelative { get; set; }
 
@@ -93,7 +93,7 @@ namespace AudioAnalysisTools.EventStatistics
         /// <summary>
         /// Gets or sets the SpectralCentroid.
         /// The SpectralCentroid is a measure of the "brightness" of a sound event, that is, the relative amount of high freq content compared to low freq content.
-        /// Note that this SpectralCentroid is calculated from a weighted average of decibel values and NOT power values
+        /// Note that this SpectralCentroid is calculated from a weighted average of decibel values and NOT power values.
         /// </summary>
         public int SpectralCentroid { get; set; }
 
@@ -133,7 +133,7 @@ namespace AudioAnalysisTools.EventStatistics
         /// class comparison.
         /// </summary>
         /// <param name="other">An object to compare with this instance.</param>
-        /// <returns>A value that indicates the relative order of the objects being compared</returns>
+        /// <returns>A value that indicates the relative order of the objects being compared.</returns>
         public override int CompareTo(ResultBase other)
         {
             if (other is EventStatistics otherEventStatistics)

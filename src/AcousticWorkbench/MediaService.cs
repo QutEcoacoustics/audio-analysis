@@ -8,7 +8,7 @@ namespace AcousticWorkbench
     using System.IO;
     using System.Net.Http;
     using System.Threading.Tasks;
-    using Models;
+    using AcousticWorkbench.Models;
 
     public partial class MediaService : Service
     {

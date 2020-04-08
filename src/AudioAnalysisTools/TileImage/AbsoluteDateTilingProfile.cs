@@ -11,9 +11,9 @@ namespace AudioAnalysisTools.TileImage
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.Globalization;
     using Acoustics.Shared;
+    using SixLabors.ImageSharp;
 
     public class AbsoluteDateTilingProfile : TilingProfile
     {
@@ -61,7 +61,7 @@ namespace AudioAnalysisTools.TileImage
             var zoomIndex = (double)this.GetZoomIndex(calculatedLayers, selectedLayer);
 
             var basename = FilenameHelpers.AnalysisResultName(
-                this.prefix, this.tag, null,  formattedDateTime, zoomIndex.ToString(CultureInfo.InvariantCulture));
+                this.prefix, this.tag, null, formattedDateTime, zoomIndex.ToString(CultureInfo.InvariantCulture));
             return basename;
         }
     }

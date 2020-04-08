@@ -13,22 +13,22 @@ namespace AnalysisPrograms.Recognizers
 {
     using System;
     using System.Collections.Generic;
-
-    //using Acoustics.Shared.Csv;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Reflection;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
+    using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-    using Base;
     using log4net;
+
+    //using Acoustics.Shared.Csv;
+    using SixLabors.ImageSharp;
     using TowseyLibrary;
 
     /// <summary>
@@ -75,13 +75,6 @@ namespace AnalysisPrograms.Recognizers
         /// <summary>
         /// Do your analysis. This method is called once per segment (typically one-minute segments).
         /// </summary>
-        /// <param name="recording"></param>
-        /// <param name="configuration"></param>
-        /// <param name="segmentStartOffset"></param>
-        /// <param name="getSpectralIndexes"></param>
-        /// <param name="outputDirectory"></param>
-        /// <param name="imageWidth"></param>
-        /// <returns></returns>
         public override RecognizerResults Recognize(AudioRecording recording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
             var recognizerConfig = new LitoriaWatjulumConfig();
@@ -172,12 +165,6 @@ namespace AnalysisPrograms.Recognizers
         ///
         ///  See Anthony's ExempliGratia.Recognize() method in order to see how to use methods for config profiles.
         ///  </summary>
-        /// <param name="recording"></param>
-        /// <param name="sonoConfig"></param>
-        /// <param name="lwConfig"></param>
-        /// <param name="returnDebugImage"></param>
-        /// <param name="segmentStartOffset"></param>
-        /// <returns></returns>
         private static Tuple<BaseSonogram, double[,], double[], List<AcousticEvent>, Image> Analysis(
             AudioRecording recording,
             SonogramConfig sonoConfig,
@@ -289,7 +276,8 @@ namespace AnalysisPrograms.Recognizers
                         continue;
                     }
 
-                    for (int j = 0; j < dctLength; j++) //lay down score for sample length
+                    // lay down score for sample length
+                    for (int j = 0; j < dctLength; j++)
                     {
                         if (scores[i + j] < intensity)
                         {
@@ -344,11 +332,11 @@ namespace AnalysisPrograms.Recognizers
                 // add abbreviatedSpeciesName into event
                 //if (maximumIntensity >= intensityThreshold)
                 //{
-                    ae2.Name = $"{lwConfig.AbbreviatedSpeciesName}.{lwConfig.ProfileNames[1]}";
+                ae2.Name = $"{lwConfig.AbbreviatedSpeciesName}.{lwConfig.ProfileNames[1]}";
 
-                    //ae2.Score_MaxInEvent = maximumIntensity;
-                    ae2.Profile = lwConfig.ProfileNames[1];
-                    confirmedEvents.Add(ae2);
+                //ae2.Score_MaxInEvent = maximumIntensity;
+                ae2.Profile = lwConfig.ProfileNames[1];
+                confirmedEvents.Add(ae2);
 
                 //}
             }

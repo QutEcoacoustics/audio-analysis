@@ -11,17 +11,17 @@ namespace AnalysisPrograms
 {
     using System;
     using System.ComponentModel.DataAnnotations;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Threading.Tasks;
+    using Acoustics.AED;
+    using AnalysisPrograms.Production.Arguments;
+    using AnalysisPrograms.Production.Validation;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using McMaster.Extensions.CommandLineUtils;
     using Microsoft.FSharp.Math;
-    using Production.Arguments;
-    using Production.Validation;
-    using Acoustics.AED;
+    using SixLabors.ImageSharp;
     using TowseyLibrary;
 
     public class SPT
@@ -42,7 +42,7 @@ namespace AnalysisPrograms
             [Option(Description = "A directory to write output to")]
             [DirectoryExistsOrCreate(createIfNotExists: true)]
             [LegalFilePath]
-            public string Output{ get; set; }
+            public string Output { get; set; }
 
             [Option(Description = "Intensity Threshold")]
             [Required]
@@ -79,10 +79,10 @@ namespace AnalysisPrograms
             }
 
             var config = new SonogramConfig
-                             {
-                                 NoiseReductionType = NoiseReductionType.Standard,
-                                 NoiseReductionParameter = 3.5,
-                             };
+            {
+                NoiseReductionType = NoiseReductionType.Standard,
+                NoiseReductionParameter = 3.5,
+            };
             var sonogram = (BaseSonogram)new SpectrogramStandard(config, recording.WavReader);
 
             var result = doSPT(sonogram, intensityThreshold, smallLengthThreshold);
@@ -106,12 +106,11 @@ namespace AnalysisPrograms
 
         /// <summary>
         /// Performs Spectral Peak Tracking on a recording
-        /// Returns a matrix derived from the sonogram
+        /// Returns a matrix derived from the sonogram.
         /// </summary>
-        /// <param name="sonogram">the sonogram</param>
-        /// <param name="intensityThreshold">Intensity threshold in decibels above backgorund</param>
-        /// <param name="smallLengthThreshold">remove event swhose length is less than this threshold</param>
-        /// <returns></returns>
+        /// <param name="sonogram">the sonogram.</param>
+        /// <param name="intensityThreshold">Intensity threshold in decibels above backgorund.</param>
+        /// <param name="smallLengthThreshold">remove event swhose length is less than this threshold.</param>
         public static Tuple<double[,]> doSPT(BaseSonogram sonogram, double intensityThreshold, int smallLengthThreshold)
         {
             // Sonograms in Matlab (which F# AED was modelled on) are orientated the opposite way
@@ -138,22 +137,20 @@ namespace AnalysisPrograms
 
         /// <summary>
         /// Performs Spectral Peak Tracking on a recording
-        /// Returns a matrix derived from the passed sonogram.Data()
+        /// Returns a matrix derived from the passed sonogram.Data().
         /// </summary>
-        /// <param name="sonogram">the sonogram</param>
-        /// <param name="intensityThreshold">Intensity threshold in decibels above backgorund</param>
-        /// <param name="smallLengthThreshold">remove event swhose length is less than this threshold</param>
-        /// <returns></returns>
+        /// <param name="intensityThreshold">Intensity threshold in decibels above backgorund.</param>
+        /// <param name="smallLengthThreshold">remove event swhose length is less than this threshold.</param>
         public static Tuple<double[,]> doSPT(double[,] matrix, double intensityThreshold, int smallLengthThreshold)
         {
             // Sonograms in Matlab (which F# AED was modelled on) are orientated the opposite way
             var m = MatrixModule.transpose(MatrixModule.ofArray2D(matrix));
 
-           // Log.WriteLine("Wiener filter start");
-           // var w = Matlab.wiener2(7, m);
+            // Log.WriteLine("Wiener filter start");
+            // var w = Matlab.wiener2(7, m);
 
-           // Log.WriteLine("Remove subband mode intensities start");
-           // var s = AcousticEventDetection.removeSubbandModeIntensities(w);
+            // Log.WriteLine("Remove subband mode intensities start");
+            // var s = AcousticEventDetection.removeSubbandModeIntensities(w);
 
             Log.WriteLine("SPT start");
             int nh = 3;

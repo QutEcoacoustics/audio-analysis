@@ -6,7 +6,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 {
     using System;
     using Acoustics.Tools.Wav;
-    using DSP;
+    using AudioAnalysisTools.DSP;
     using TowseyLibrary;
 
     public class SpectrogramStandard : BaseSonogram
@@ -98,9 +98,12 @@ namespace AudioAnalysisTools.StandardSpectrograms
             //the spectrogram data matrix
             int featureCount = sg.Data.GetLength(1);
             this.Data = new double[frameCount, featureCount];
-            for (int i = 0; i < frameCount; i++) //each row of matrix is a frame
+
+            // each row of matrix is a frame
+            for (int i = 0; i < frameCount; i++)
             {
-                for (int j = 0; j < featureCount; j++) //each col of matrix is a feature
+                // each col of matrix is a feature
+                for (int j = 0; j < featureCount; j++)
                 {
                     this.Data[i, j] = sg.Data[startFrame + i, j];
                 }
@@ -133,7 +136,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         /// <summary>
         /// Normalise the dynamic range of spectrogram between 0dB and value of DynamicRange.
-        /// Also must adjust the SNR.DecibelsInSubband and this.DecibelsNormalised
+        /// Also must adjust the SNR.DecibelsInSubband and this.DecibelsNormalised.
         /// </summary>
         public void NormaliseDynamicRange(double dynamicRange)
         {

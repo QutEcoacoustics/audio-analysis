@@ -12,7 +12,7 @@ namespace QutSensors.Shared
     /// The result class the holds the analysis results.
     /// </summary>
     /// <remarks>
-    /// From: http://www.codeproject.com/KB/recipes/DescriptiveStatisticClass.aspx
+    /// From: http://www.codeproject.com/KB/recipes/DescriptiveStatisticClass.aspx.
     /// </remarks>
     public class StatDescriptiveResult
     {
@@ -107,9 +107,9 @@ namespace QutSensors.Shared
         public double Variance;
 
         /// <summary>
-        /// SortedData is used to calculate percentiles
+        /// SortedData is used to calculate percentiles.
         /// </summary>
-        internal double[] sortedData;
+        internal double[] SortedData;
 
         /// <summary>
         /// Calcuate Percentile.
@@ -122,7 +122,7 @@ namespace QutSensors.Shared
         /// </returns>
         public double Percentile(double percent)
         {
-            return StatDescriptive.Percentile(this.sortedData, percent);
+            return StatDescriptive.Percentile(this.SortedData, percent);
         }
 
         public override string ToString()
@@ -153,7 +153,7 @@ namespace QutSensors.Shared
     /// Descriptive class.
     /// </summary>
     /// <remarks>
-    /// From: http://www.codeproject.com/KB/recipes/DescriptiveStatisticClass.aspx
+    /// From: http://www.codeproject.com/KB/recipes/DescriptiveStatisticClass.aspx.
     /// </remarks>
     public class StatDescriptive
     {
@@ -302,8 +302,8 @@ namespace QutSensors.Shared
 
             // copy the sorted data to result object so that
             // user can calculate percentile easily
-            this.Result.sortedData = new double[this.data.Length];
-            this.sortedData.CopyTo(this.Result.sortedData, 0);
+            this.Result.SortedData = new double[this.data.Length];
+            this.sortedData.CopyTo(this.Result.SortedData, 0);
 
             this.Result.FirstQuartile = Percentile(this.sortedData, 25);
             this.Result.ThirdQuartile = Percentile(this.sortedData, 75);

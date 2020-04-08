@@ -41,7 +41,7 @@ namespace Acoustics.Test.TestHelpers
         ///                { Color.FromRgb(0, 0, 0), 0.7 },
         ///                { Color.FromRgb(255, 255, 255), 0.3 },
         ///            };
-        /// ImageAssert.ImageRegionHasColors(new Rectangle(0, 24, 210, 3),  expectedColors, actualImage1, 0.07);
+        /// ImageAssert.ImageRegionHasColors(new Rectangle(0, 24, 210, 3),  expectedColors, actualImage1, 0.07).
         /// </example>
         public static void ImageRegionHasColors(
             this Assert assert,

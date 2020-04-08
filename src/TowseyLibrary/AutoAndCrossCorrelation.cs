@@ -134,12 +134,9 @@ out double[] r)
             return xr;
         }
 
-            /// <summary>
-            /// returns the fft spectrum of a cross-correlation function.
-            /// </summary>
-            /// <param name="v1"></param>
-            /// <param name="v2"></param>
-            /// <returns></returns>
+        /// <summary>
+        /// returns the fft spectrum of a cross-correlation function.
+        /// </summary>
         public static double[] CrossCorr(double[] v1, double[] v2)
         {
             int n = v1.Length; // assume both vectors of same length
@@ -186,9 +183,6 @@ out double[] r)
         /// Pearsons correlation coefficient.
         /// Equals the covariance normalised by the sd's.
         /// </summary>
-        /// <param name="seriesX"></param>
-        /// <param name="seriesY"></param>
-        /// <returns></returns>
         public static double CorrelationCoefficient(double[] seriesX, double[] seriesY)
         {
             NormalDist.AverageAndSD(seriesX, out var meanX, out var sdX);
@@ -239,7 +233,9 @@ out double[] r)
             int stepCount = n / step;
             var intensity = new double[stepCount];     // an array of period intensity
             var periodicity = new double[stepCount];     // an array of the periodicity values
-            for (int i = 0; i < stepCount; i++) // step through the array
+
+            //  step through the array
+            for (int i = 0; i < stepCount; i++)
             {
                 int start = i * step;
                 double[] subarray = DataTools.Subarray(array, start, segmentLength);
@@ -301,7 +297,8 @@ out double[] r)
                     continue;
                 }
 
-                for (int j = 0; j < sampleLength; j++) // lay down score for sample length
+                //  lay down score for sample length
+                for (int j = 0; j < sampleLength; j++)
                 {
                     if (intensity[start + j] < spectrum[maxId])
                     {
@@ -411,10 +408,6 @@ out double[] r)
         /// It returns an array twice length of input array.
         /// The first and last entries of the returned array will not be written to and contain zeros.
         /// </summary>
-        /// <param name="X"></param>
-        /// <param name="minLag"></param>
-        /// <param name="maxLag"></param>
-        /// <returns></returns>
         public static double[] MyCrossCorrelation(double[] x1, double[] x2)
         {
             int length = x1.Length;
@@ -437,7 +430,8 @@ out double[] r)
                 // Console.WriteLine(count);
             }
 
-            for (int lag = 1; lag < length - 1; lag++) // -1 here because the output array is even length.
+            //  -1 here because the output array is even length.
+            for (int lag = 1; lag < length - 1; lag++)
             {
                 double leftShiftSum = 0.0;
                 int count = 0;
@@ -457,9 +451,8 @@ out double[] r)
         }
 
         /// <summary>
-        /// A Java version of autocorrelation
+        /// A Java version of autocorrelation.
         /// </summary>
-        /// <param name="size"></param>
         public static double[] AutoCorrelationOldJavaVersion(double[] X)
         {
             int size = X.Length;

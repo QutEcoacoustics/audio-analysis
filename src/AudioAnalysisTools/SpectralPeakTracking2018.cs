@@ -6,12 +6,12 @@ namespace AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
+    using AudioAnalysisTools.StandardSpectrograms;
     using SixLabors.ImageSharp;
-    using StandardSpectrograms;
     using TowseyLibrary;
 
     /// <summary>
-    /// This class contain the pure algorithm that finds spectral peak tracks from a db spectrogram and settings
+    /// This class contain the pure algorithm that finds spectral peak tracks from a db spectrogram and settings.
     /// </summary>
     public static class SpectralPeakTracking2018
     {
@@ -51,7 +51,7 @@ namespace AudioAnalysisTools
 
             // find a track of peaks in a pre-defined set of boundaries
             var peakTrackInfo = SpectralPeakTracking(spectrogram, SpectralPeakArray, timePerFrame, hertzPerFreqBin);
-            
+
             /*
             // Do Spectral Peak Tracking
             // debug this
@@ -68,6 +68,7 @@ namespace AudioAnalysisTools
             {
                 TargetPeakBinsIndex = localPeaksAndBands.Item1,
                 BandIndex = localPeaksAndBands.Item2,
+
                 //SpecTracks = spectralTracks,
                 peakTrackInfoList = peakTrackInfo,
             };
@@ -76,7 +77,7 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        /// outputs an array of peak bins indices per frame
+        /// outputs an array of peak bins indices per frame.
         /// </summary>
         public static int[] GetPeakBinsIndex(double[,] matrix, int minFreqBin, int maxFreqBin)
         {
@@ -195,6 +196,7 @@ namespace AudioAnalysisTools
                     startY = SpectralPeakArray[i] - 2;
                     endX = startX + 17;
                     endY = startY + 4;
+
                     //double[,] targetMatrix = GetArbitraryMatrix(spectrogram, startY, endY, startX, endX);
 
                     if (endX < spectrogram.GetLength(0) && endY < spectrogram.GetLength(1))
@@ -242,11 +244,10 @@ namespace AudioAnalysisTools
             }
 
             return peakTrackInfoList;
-
         }
 
         /// <summary>
-        /// outputs the average energy within a specified band
+        /// outputs the average energy within a specified band.
         /// </summary>
         public static double CalculateAverageEnergy(double[] spectrum, int minInd, int maxInd)
         {
@@ -323,6 +324,7 @@ namespace AudioAnalysisTools
                 int colIndex = pointsOfInterest[i][1];
                 hits[rowIndex, colIndex] = 1.0; // matrix[rowIndex, colIndex]
             }
+
             /*
             // bands
             for (int i = 0; i < bandIndex.GetLength(0); i++)

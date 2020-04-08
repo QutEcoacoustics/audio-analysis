@@ -1,4 +1,4 @@
-﻿// <copyright file="SvdAndPca.cs" company="QutEcoacoustics">
+// <copyright file="SvdAndPca.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -13,7 +13,7 @@ namespace TowseyLibrary
     /// contains methods and test example to do Singular Value decomposition and Principal Components Analysis
     ///
     /// IMPORTANT NOTE: The underlying storage of the Matrix class is a one dimensional array in column-major order (column by column).
-    ///                 NOT Row by row!!
+    ///                 NOT Row by row!!.
     ///
     ///
     /// </summary>
@@ -29,7 +29,7 @@ namespace TowseyLibrary
         ///     Note 1: the transpose of V is used in the decomposition, and that the diagonal matrix S is typically stored as a vector.
         ///     Note 2: the values on the diagonal of S are the square-root of the eigenvalues.
         ///
-        /// THESE TWO METHODS HAVE BEEN TESTED ON TOY EXAMPLES AND returned correct values
+        /// THESE TWO METHODS HAVE BEEN TESTED ON TOY EXAMPLES AND returned correct values.
         /// </summary>
         public static double[] SingularValueDecompositionVector(double[,] matrix)
         {
@@ -62,7 +62,7 @@ namespace TowseyLibrary
         ///                                { 3.0, -1.0 },
         ///                                { -1.0, 3.0 }
         ///                            };
-        /// eigen values are correct ie, 2.0, 4.0; but in the wrong order
+        /// eigen values are correct ie, 2.0, 4.0; but in the wrong order.
         /// </summary>
         public static Tuple<double[], double[,]> EigenVectors(double[,] matrix)
         {
@@ -117,7 +117,7 @@ namespace TowseyLibrary
                                         {
                                             -1.0, 3.0,
                                         },
-                                    };
+            };
             EigenVectors(matrix1);
 
             //double[,] matrix2 = {
@@ -139,7 +139,7 @@ namespace TowseyLibrary
                                         {
                                             0, 0,
                                         },
-                                     };
+            };
             var tuple = SingularValueDecompositionOutput(matrix2);
             Vector<double> sdValues = tuple.Item1;
             Matrix<double> uMatrix = tuple.Item2;
@@ -190,7 +190,7 @@ namespace TowseyLibrary
                                         {
                                             0.0, 10.0, 0.0, 0.0, 7.0,
                                         },
-                                };
+            };
 
             /*       WORDS   ||       DOCUMENTS
              *        doctor { 2.0, 0.0, 8.0, 6.0, 0.0 },
@@ -306,7 +306,7 @@ namespace TowseyLibrary
                                 {
                                     -1.0,  20.0,
                                 },
-                            };
+            };
 
             // e1=e2=0.333333
             //double[,] M = {

@@ -11,12 +11,10 @@ namespace AnalysisPrograms
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
-
+    using AnalysisPrograms.Production;
     using AnalysisPrograms.Production.Arguments;
-
+    using AnalysisPrograms.Production.Validation;
     using McMaster.Extensions.CommandLineUtils;
-    using Production;
-    using Production.Validation;
     using TowseyLibrary;
 
     public class SpeciesAccumulationStats
@@ -31,13 +29,13 @@ namespace AnalysisPrograms
         public int S100 { get; set; }
 
         //these variables are for stats from a single run
-        public double percentRecognitionWith10Samples = 0;
-        public double percentRecognitionWith30Samples = 0;
-        public double percentRecognitionWith60Samples = 0;
-        public double percentRecognitionWith90Samples = 0;
-        public double percentRecognitionWith120Samples = 0;
-        public double percentRecognitionWith180Samples = 0;
-        public double percentRecognitionWith240Samples = 0;
+        public double PercentRecognitionWith10Samples = 0;
+        public double PercentRecognitionWith30Samples = 0;
+        public double PercentRecognitionWith60Samples = 0;
+        public double PercentRecognitionWith90Samples = 0;
+        public double PercentRecognitionWith120Samples = 0;
+        public double PercentRecognitionWith180Samples = 0;
+        public double PercentRecognitionWith240Samples = 0;
 
         public void StoreStatisticsForSingleAccumulationCurve(int[] accumulationCurve, int totalSpeciesCount)
         {
@@ -83,22 +81,22 @@ namespace AnalysisPrograms
             }
 
             //% of total species identified with N samples
-            this.percentRecognitionWith10Samples = (int)Math.Round(accumulationCurve[10 - 1] * 100 / (double)totalSpeciesCount);
-            this.percentRecognitionWith30Samples = (int)Math.Round(accumulationCurve[30 - 1] * 100 / (double)totalSpeciesCount);
-            this.percentRecognitionWith60Samples = (int)Math.Round(accumulationCurve[60 - 1] * 100 / (double)totalSpeciesCount);
-            this.percentRecognitionWith90Samples = (int)Math.Round(accumulationCurve[90 - 1] * 100 / (double)totalSpeciesCount);
-            this.percentRecognitionWith120Samples = (int)Math.Round(accumulationCurve[120 - 1] * 100 / (double)totalSpeciesCount);
-            this.percentRecognitionWith180Samples = (int)Math.Round(accumulationCurve[180 - 1] * 100 / (double)totalSpeciesCount);
-            this.percentRecognitionWith240Samples = (int)Math.Round(accumulationCurve[240 - 1] * 100 / (double)totalSpeciesCount);
+            this.PercentRecognitionWith10Samples = (int)Math.Round(accumulationCurve[10 - 1] * 100 / (double)totalSpeciesCount);
+            this.PercentRecognitionWith30Samples = (int)Math.Round(accumulationCurve[30 - 1] * 100 / (double)totalSpeciesCount);
+            this.PercentRecognitionWith60Samples = (int)Math.Round(accumulationCurve[60 - 1] * 100 / (double)totalSpeciesCount);
+            this.PercentRecognitionWith90Samples = (int)Math.Round(accumulationCurve[90 - 1] * 100 / (double)totalSpeciesCount);
+            this.PercentRecognitionWith120Samples = (int)Math.Round(accumulationCurve[120 - 1] * 100 / (double)totalSpeciesCount);
+            this.PercentRecognitionWith180Samples = (int)Math.Round(accumulationCurve[180 - 1] * 100 / (double)totalSpeciesCount);
+            this.PercentRecognitionWith240Samples = (int)Math.Round(accumulationCurve[240 - 1] * 100 / (double)totalSpeciesCount);
         }
 
         public void WriteStats()
         {
             LoggedConsole.WriteLine("s25={0}\t  s50={1}\t  s75={2}\t  s100={3}", this.S25, this.S50, this.S75, this.S100);
             LoggedConsole.WriteLine("samples\t10\t30\t60\t90\t120\t180\t240");
-            LoggedConsole.WriteLine("percent\t{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}", this.percentRecognitionWith10Samples, this.percentRecognitionWith30Samples,
-                this.percentRecognitionWith60Samples, this.percentRecognitionWith90Samples, this.percentRecognitionWith120Samples,
-                this.percentRecognitionWith180Samples, this.percentRecognitionWith240Samples);
+            LoggedConsole.WriteLine("percent\t{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}", this.PercentRecognitionWith10Samples, this.PercentRecognitionWith30Samples,
+                this.PercentRecognitionWith60Samples, this.PercentRecognitionWith90Samples, this.PercentRecognitionWith120Samples,
+                this.PercentRecognitionWith180Samples, this.PercentRecognitionWith240Samples);
         }
 
         public static void WriteArrayStats(List<SpeciesAccumulationStats> list)
@@ -107,7 +105,7 @@ namespace AnalysisPrograms
             double[] array = new double[reps];
             for (int i = 0; i < reps; i++)
             {
-                array[i] = list[i].percentRecognitionWith10Samples;
+                array[i] = list[i].PercentRecognitionWith10Samples;
             }
 
             NormalDist.AverageAndSD(array, out var av10, out var sd10);
@@ -115,7 +113,7 @@ namespace AnalysisPrograms
             array = new double[reps];
             for (int i = 0; i < reps; i++)
             {
-                array[i] = list[i].percentRecognitionWith30Samples;
+                array[i] = list[i].PercentRecognitionWith30Samples;
             }
 
             NormalDist.AverageAndSD(array, out var av30, out var sd30);
@@ -123,7 +121,7 @@ namespace AnalysisPrograms
             array = new double[reps];
             for (int i = 0; i < reps; i++)
             {
-                array[i] = list[i].percentRecognitionWith60Samples;
+                array[i] = list[i].PercentRecognitionWith60Samples;
             }
 
             NormalDist.AverageAndSD(array, out var av60, out var sd60);
@@ -131,7 +129,7 @@ namespace AnalysisPrograms
             array = new double[reps];
             for (int i = 0; i < reps; i++)
             {
-                array[i] = list[i].percentRecognitionWith90Samples;
+                array[i] = list[i].PercentRecognitionWith90Samples;
             }
 
             NormalDist.AverageAndSD(array, out var av90, out var sd90);
@@ -139,7 +137,7 @@ namespace AnalysisPrograms
             array = new double[reps];
             for (int i = 0; i < reps; i++)
             {
-                array[i] = list[i].percentRecognitionWith120Samples;
+                array[i] = list[i].PercentRecognitionWith120Samples;
             }
 
             NormalDist.AverageAndSD(array, out var av120, out var sd120);
@@ -147,7 +145,7 @@ namespace AnalysisPrograms
             array = new double[reps];
             for (int i = 0; i < reps; i++)
             {
-                array[i] = list[i].percentRecognitionWith180Samples;
+                array[i] = list[i].PercentRecognitionWith180Samples;
             }
 
             NormalDist.AverageAndSD(array, out var av180, out var sd180);
@@ -155,7 +153,7 @@ namespace AnalysisPrograms
             array = new double[reps];
             for (int i = 0; i < reps; i++)
             {
-                array[i] = list[i].percentRecognitionWith240Samples;
+                array[i] = list[i].PercentRecognitionWith240Samples;
             }
 
             NormalDist.AverageAndSD(array, out var av240, out var sd240);
@@ -364,7 +362,8 @@ namespace AnalysisPrograms
                 int N = callMatrix.GetLength(0); //maximum Sample Number
 
                 //int C = occurenceMatrix.GetLength(1); //total species count
-                for (int i = 0; i < trialCount; i++) //DO REPEATED TRIALS
+                // DO REPEATED TRIALS
+                for (int i = 0; i < trialCount; i++)
                 {
                     int[] randomOrder = RandomNumber.RandomizeNumberOrder(N, seed1 + i);
                     int[] accumulationCurve = GetAccumulationCurve(callMatrix, randomOrder);
@@ -377,13 +376,13 @@ namespace AnalysisPrograms
                     s50array[i] = stats.S50;
                     s75array[i] = stats.S75;
                     s100array[i] = stats.S100;
-                    samples10[i] = stats.percentRecognitionWith10Samples;
-                    samples30[i] = stats.percentRecognitionWith30Samples;
-                    samples60[i] = stats.percentRecognitionWith60Samples;
-                    samples90[i] = stats.percentRecognitionWith90Samples;
-                    samples120[i] = stats.percentRecognitionWith120Samples;
-                    samples180[i] = stats.percentRecognitionWith180Samples;
-                    samples240[i] = stats.percentRecognitionWith240Samples;
+                    samples10[i] = stats.PercentRecognitionWith10Samples;
+                    samples30[i] = stats.PercentRecognitionWith30Samples;
+                    samples60[i] = stats.PercentRecognitionWith60Samples;
+                    samples90[i] = stats.PercentRecognitionWith90Samples;
+                    samples120[i] = stats.PercentRecognitionWith120Samples;
+                    samples180[i] = stats.PercentRecognitionWith180Samples;
+                    samples240[i] = stats.PercentRecognitionWith240Samples;
 
                     if (i % 100 == 0)
                     {
@@ -435,7 +434,8 @@ namespace AnalysisPrograms
                 int[] s100array = new int[trialCount];
                 double[] fixedsampleArray = new double[trialCount];
 
-                for (int i = 0; i < trialCount; i++) //DO REPEATED TRIALS
+                // DO REPEATED TRIALS
+                for (int i = 0; i < trialCount; i++)
                 {
                     int[] randomOrder = RandomNumber.RandomizeNumberOrder(N, seed1 + i);
                     for (int r = 0; r < randomOrder.Length; r++)
@@ -452,7 +452,7 @@ namespace AnalysisPrograms
                     s50array[i] = stats.S50;
                     s75array[i] = stats.S75;
                     s100array[i] = stats.S100;
-                    fixedsampleArray[i] = stats.percentRecognitionWith60Samples;
+                    fixedsampleArray[i] = stats.PercentRecognitionWith60Samples;
                     if (i % 100 == 0)
                     {
                         LoggedConsole.WriteLine("trial " + i);
@@ -497,9 +497,9 @@ namespace AnalysisPrograms
                 int[] rankOrder = GetRankOrder(table);
 
                 // OPTION 3: REVERSE THE RANKING - end up only using for H(temporal)
-//                bool doReverseOrder = false;
-//                if (doReverseOrder)
-//                    rankOrder = DataTools.reverseArray(rankOrder);
+                //                bool doReverseOrder = false;
+                //                if (doReverseOrder)
+                //                    rankOrder = DataTools.reverseArray(rankOrder);
 
                 // OPTION 4: SAMPLE IN RANK ORDER
                 //int[] finalSamplingOrder = rankOrder;
@@ -607,7 +607,7 @@ namespace AnalysisPrograms
         /// returns the row indices for a single column of an array, ranked by value.
         /// Used to order the sampling of an acoustic recording split into one minute chunks.
         /// </summary>
-        /// <returns>array of index locations in descending order</returns>
+        /// <returns>array of index locations in descending order.</returns>
         public static int[] GetRankOrder(string fileName, int colNumber)
         {
             double[] array = CsvTools.ReadColumnOfCsvFile(fileName, colNumber, out var header1);
@@ -679,8 +679,9 @@ namespace AnalysisPrograms
             double wt5 = 0.4; //number of clusters
             double wt6 = 0.1; //av cluster duration
 
-            LoggedConsole.WriteLine("Index weights:  {0}={1}; {2}={3}; {4}={5}; {6}={7}; {8}={9}; {10}={11}",
-                                               header1, wt1, header2, wt2, header3, wt3, header4, wt4, header5, wt5, header6, wt6);
+            LoggedConsole.WriteLine(
+                "Index weights:  {0}={1}; {2}={3}; {4}={5}; {6}={7}; {8}={9}; {10}={11}",
+                header1, wt1, header2, wt2, header3, wt3, header4, wt4, header5, wt5, header6, wt6);
             LoggedConsole.WriteLine("Chorus Bias wt  =" + chorusBiasWeight);
             LoggedConsole.WriteLine("BG threshold    =" + bgThreshold + " dB");
             LoggedConsole.WriteLine("BG var threshold=" + bgVarianceThreshold + " dB");
@@ -753,13 +754,13 @@ namespace AnalysisPrograms
             // {1:count,2:avAmp,3:snr,4:actSnr,5:bg,6:act,7:seg#,8:segDur,9:hf,10:mf,11:lf,12:Ht,13:Hm,14:Hs,15:Hv,16:ACI,17:clust#,18:"avClustDur19:3g#,20:av3gRep,21:SpPkTr,22:SpPkTrDur,23:call#
             // FEATURE SET XX..... 1 feature ... equivalent to single unweighted feature
             //                   { 0.1,  0.2,  0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2 }; // 21 indices
-            double[] weights = { 0.0,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.1, 0.0, 0.1, 0.1, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 }; // FS20 - 5 indices - wt16 is adjustment to max cluster count = 10
+            double[] weights = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.1, 0.0, 0.1, 0.1, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0 }; // FS20 - 5 indices - wt16 is adjustment to max cluster count = 10
 
             //double[] weights = { 0.0,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 3.89, 14.98, 0.0,-9.66, 25.64, 0.19, 0.0, 0.0, 0.0, 0.0, 0.0, -14.84 }; // FS27 - 5 regressed indices
             //double[] weights = { 0.0,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2, 0.2, 0.2, 0.0, 0.2, 0.2, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0 };     // FS20 - 5 indices - wt16 is adjustment to max cluster count = 10
 
             //                   {  1,    2,    3,   4,    5,  0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6,  1.7, 1.8, 0.0, 0.0, 0.0, 0.0 }; // 21 indices
-            double[] minValues = { 0.0, -50.0,  3.0, 0.0, -50.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.2,  0.0,  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+            double[] minValues = { 0.0, -50.0, 3.0, 0.0, -50.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
             double[] maxValues = { 1.0, -5.0, 30.0, 1.0, -5.0, 1.0, 200, 500, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.8, 20.0, 200.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 };
 
             int wtCount = weights.Length;
@@ -802,7 +803,7 @@ namespace AnalysisPrograms
         public static void OptimsedRankOrder(DataTable table, byte[,] callMatrix, int speciesCount)
         {
             //                   {  1,    2,    3,   4,    5,  0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6,  1.7,   1.8, 0.0, 0.0, 0.0, 0.0 };
-            double[] minValues = { 0.0, -50.0, 3.0, 0.0, -50.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.2,  0.0,   0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+            double[] minValues = { 0.0, -50.0, 3.0, 0.0, -50.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
             double[] maxValues = { 1.0, -5.0, 30.0, 1.0, -5.0, 1.0, 200, 500, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.8, 20.0, 200.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 };
 
             var columns = DataTableTools.ListOfColumnValues(table); // extract columns from table as list
@@ -832,51 +833,61 @@ namespace AnalysisPrograms
                     {
                         for (int m = range; m >= 0; m--)
                         {
-               //             for (int n = range; n >= 0; n--)
-               //             {
-                                weights[16] = i / (double)range; //clust#
-                                weights[15] = j / (double)range; //aci
-                                weights[14] = k / (double)range; //Hv
-                                weights[13] = m / (double)range; //Hs
+                            //             for (int n = range; n >= 0; n--)
+                            //             {
+                            weights[16] = i / (double)range; //clust#
+                            weights[15] = j / (double)range; //aci
+                            weights[14] = k / (double)range; //Hv
+                            weights[13] = m / (double)range; //Hs
 
-              //                  weights[11]  = n / (double)range; //Ht
-              //                  weights[7] = n / (double)range; //segDur
+                            //                  weights[11]  = n / (double)range; //Ht
+                            //                  weights[7] = n / (double)range; //segDur
 
-                                double[] combined = new double[rowCount];
-                                int count = 0;
-                                for (int r = 0; r < rowCount; r++)
+                            double[] combined = new double[rowCount];
+                            int count = 0;
+                            for (int r = 0; r < rowCount; r++)
+                            {
+                                double weightedSum = 0.0;
+                                for (int c = 0; c < weights.Length; c++)
                                 {
-                                    double weightedSum = 0.0;
-                                    for (int c = 0; c < weights.Length; c++)
-                                    {
-                                        weightedSum += weights[c] * columns[c][r];
-                                    }
-
-                                    combined[count] = weightedSum; // +weights[wtCount - 1]; //  *chorusBias[count] * bgBias[count]
-                                    count++;
+                                    weightedSum += weights[c] * columns[c][r];
                                 }
 
-                                // CHORUS BIAS
-                                //double chorusBiasWeight = 1.1; // bias value ie bias towards the dawn chorus
-                                //combined = AdjustForChorusBias(combined, chorusBiasWeight);
+                                combined[count] = weightedSum; // +weights[wtCount - 1]; //  *chorusBias[count] * bgBias[count]
+                                count++;
+                            }
 
-                                var results2 = DataTools.SortArray(combined);
+                            // CHORUS BIAS
+                            //double chorusBiasWeight = 1.1; // bias value ie bias towards the dawn chorus
+                            //combined = AdjustForChorusBias(combined, chorusBiasWeight);
 
-                                int[] rankOrder = results2.Item1;
-                                int[] accumulationCurve = GetAccumulationCurve(callMatrix, rankOrder);
-                                SpeciesAccumulationStats stats = new SpeciesAccumulationStats();
-                                stats.StoreStatisticsForSingleAccumulationCurve(accumulationCurve, speciesCount);
-                                double score = stats.percentRecognitionWith60Samples; // weighted x2
-                                score += +stats.percentRecognitionWith60Samples + stats.percentRecognitionWith120Samples; // +stats.percentRecognitionWith120Samples;
-                                if (score >= maxScore)
-                                {
-                                    Console.WriteLine("Score={0:f1}   60samples>{1}%   amp(wt1)={2}  act(wt5)={3}  seg#(wt6)={4}  Ht(wt11)={5}   Hs(wt13)={6}  Hv(wt14)={7}  ACI(wt15)={8}  SpD(wt16)={9}",
-                                        maxScore, stats.percentRecognitionWith60Samples, weights[1], weights[5],   weights[6],    weights[11],   weights[13],  weights[14],  weights[15],   weights[16]);
+                            var results2 = DataTools.SortArray(combined);
 
-                                    maxScore = score;
-                                } // if (score >= maxScore)
+                            int[] rankOrder = results2.Item1;
+                            int[] accumulationCurve = GetAccumulationCurve(callMatrix, rankOrder);
+                            SpeciesAccumulationStats stats = new SpeciesAccumulationStats();
+                            stats.StoreStatisticsForSingleAccumulationCurve(accumulationCurve, speciesCount);
+                            double score = stats.PercentRecognitionWith60Samples; // weighted x2
+                            score += +stats.PercentRecognitionWith60Samples + stats.PercentRecognitionWith120Samples; // +stats.percentRecognitionWith120Samples;
+                            if (score >= maxScore)
+                            {
+                                Console.WriteLine(
+                                    "Score={0:f1}   60samples>{1}%   amp(wt1)={2}  act(wt5)={3}  seg#(wt6)={4}  Ht(wt11)={5}   Hs(wt13)={6}  Hv(wt14)={7}  ACI(wt15)={8}  SpD(wt16)={9}",
+                                    maxScore,
+                                    stats.PercentRecognitionWith60Samples,
+                                    weights[1],
+                                    weights[5],
+                                    weights[6],
+                                    weights[11],
+                                    weights[13],
+                                    weights[14],
+                                    weights[15],
+                                    weights[16]);
 
-             //               } // n
+                                maxScore = score;
+                            } // if (score >= maxScore)
+
+                            //               } // n
                         } // m
                     } // k
                 } // j
@@ -923,7 +934,9 @@ namespace AnalysisPrograms
             int oneHourCount = bgArray.Length / resolution;
 
             double[] bgVariance = new double[bgArray.Length];
-            for (int b = 0; b < resolution; b++) //over all onr hour blocks
+
+            // over all onr hour blocks
+            for (int b = 0; b < resolution; b++)
             {
                 double[] oneHourArray = new double[oneHourCount];
                 for (int i = 0; i < oneHourCount; i++)
@@ -1035,7 +1048,9 @@ namespace AnalysisPrograms
 
             int columnNumber = endColumn - startColumn + 1;
             byte[,] callMatrix = new byte[text.Count - 1, columnNumber];
-            for (int i = 1; i < text.Count; i++) //skip header
+
+            // skip header
+            for (int i = 1; i < text.Count; i++)
             {
                 line = text[i].Split(',');                    // read and split the line
                 for (int j = startColumn; j <= endColumn; j++)

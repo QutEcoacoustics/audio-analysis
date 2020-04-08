@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="AnalysisResult2.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -14,7 +14,7 @@ namespace AnalysisBase
     using System.Collections.Generic;
     using System.IO;
 
-    using ResultBases;
+    using AnalysisBase.ResultBases;
 
     /// <summary>
     /// The strong typed analysis results.
@@ -52,7 +52,7 @@ namespace AnalysisBase
 
         /// <summary>
         /// Gets or sets event results.
-        /// Should typically contain many results
+        /// Should typically contain many results.
         /// </summary>
         public EventBase[] Events { get; set; }
 

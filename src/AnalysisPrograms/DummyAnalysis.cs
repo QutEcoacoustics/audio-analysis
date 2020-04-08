@@ -15,14 +15,14 @@ namespace AnalysisPrograms
     using System.Reflection;
     using System.Threading;
     using System.Threading.Tasks;
+    using AnalysisPrograms.Production;
+    using AnalysisPrograms.Production.Arguments;
+    using AnalysisPrograms.Production.Validation;
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
-    using Production;
-    using Production.Arguments;
-    using Production.Validation;
 
     /// <summary>
-    /// The purpose of this analyser is to make inter-program parallelisation easier to develop
+    /// The purpose of this analyser is to make inter-program parallelisation easier to develop.
     /// </summary>
     public class DummyAnalysis
     {
@@ -101,6 +101,7 @@ namespace AnalysisPrograms
             var task = Task.WhenAll(durations.Select((d, i) => ConcurrentTask(d, i)));
 
             var result = await LoggedConsole.WriteWaitingLineAndWait(task);
+
             //Parallel.ForEach(durations, ParallelTask);
 
             Log.Info("Completed all work: " + result.Aggregate(string.Empty, (s, l) => s + ", " + l));

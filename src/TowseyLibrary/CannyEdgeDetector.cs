@@ -1,3 +1,6 @@
+// <copyright file="CannyEdgeDetector.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
 // https://raw.githubusercontent.com/mdavid/aforge.net/de003385a06afcbaace9e03961f8d2f2f4f4d178/Sources/Imaging/Filters/Edge%20Detectors/CannyEdgeDetector.cs
 // Adapted by Anthony Truskinger to work with an ImageSharp image construct. Not ideal in any way!
 //
@@ -24,17 +27,17 @@ namespace AForge.Imaging.Filters
     /// Base class for filters, which require source image backup to make them applicable to
     /// source image (or its part) directly.
     /// </summary>
-    /// 
+    ///
     /// <remarks><para>The base class is used for filters, which can not do
     /// direct manipulations with source image. To make effect of in-place filtering,
     /// these filters create a background copy of the original image (done by this
     /// base class) and then do manipulations with it putting result back to the original
     /// source image.</para>
-    /// 
+    ///
     /// <para><note>The background copy of the source image is created only in the case of in-place
     /// filtering. Otherwise background copy is not created - source image is processed and result is
     /// put to destination image.</note></para>
-    /// 
+    ///
     /// <para>The base class is for those filters, which support as filtering entire image, as
     /// partial filtering of specified rectangle only.</para>
     /// </remarks>
@@ -45,12 +48,12 @@ namespace AForge.Imaging.Filters
         /// <summary>
         /// Apply filter to an image.
         /// </summary>
-        /// 
+        ///
         /// <param name="imageData">Source image to apply filter to.</param>
-        /// 
+        ///
         /// <returns>Returns filter's result obtained by applying the filter to
         /// the source image.</returns>
-        /// 
+        ///
         /// <remarks>The filter accepts bitmap data as input and returns the result
         /// of image processing filter as new image. The source image data are kept
         /// unchanged.</remarks>
@@ -74,27 +77,25 @@ namespace AForge.Imaging.Filters
             return dstImage;
         }
 
-
         /// <summary>
         /// Process the filter on the specified image.
         /// </summary>
-        /// 
+        ///
         /// <param name="sourceData">Source image data.</param>
         /// <param name="destinationData">Destination image data.</param>
         /// <param name="rect">Image rectangle for processing by the filter.</param>
-        /// 
+        ///
         protected abstract void ProcessFilter(Image<Rgb24> sourceData, Image<L8> destinationData, Rectangle rect);
     }
-
 
     /// <summary>
     /// Canny edge detector.
     /// </summary>
-    /// 
+    ///
     /// <remarks><para>The filter searches for objects' edges by applying Canny edge detector.
     /// The implementation follows
     /// <a href="http://www.pages.drexel.edu/~weg22/can_tut.html">Bill Green's Canny edge detection tutorial</a>.</para>
-    /// 
+    ///
     /// <para><note>The implemented canny edge detector has one difference with the above linked algorithm.
     /// The difference is in hysteresis step, which is a bit simplified (getting faster as a result). On the
     /// hysteresis step each pixel is compared with two threshold values: <see cref="HighThreshold"/> and
@@ -104,9 +105,9 @@ namespace AForge.Imaging.Filters
     /// has value greater or equal to <see cref="HighThreshold"/>; otherwise it is none edge pixel. In the case
     /// if pixel's value is less than <see cref="LowThreshold"/>, then it is marked as none edge immediately.
     /// </note></para>
-    /// 
+    ///
     /// <para>The filter accepts 8 bpp grayscale images for processing.</para>
-    /// 
+    ///
     /// <para>Sample usage:</para>
     /// <code>
     /// // create filter
@@ -114,63 +115,63 @@ namespace AForge.Imaging.Filters
     /// // apply the filter
     /// filter.ApplyInPlace( image );
     /// </code>
-    /// 
+    ///
     /// <para><b>Initial image:</b></para>
     /// <img src="img/imaging/sample2.jpg" width="320" height="240" />
     /// <para><b>Result image:</b></para>
     /// <img src="img/imaging/canny_edges.png" width="320" height="240" />
     /// </remarks>
-    /// 
+    ///
     public class CannyEdgeDetector : BaseUsingCopyPartialFilter
     {
         private readonly GaussianBlurProcessor gaussianFilter;
 
         /// <summary>
-        /// Low threshold.
+        /// Gets or sets low threshold.
         /// </summary>
-        /// 
+        ///
         /// <remarks><para>Low threshold value used for hysteresis
         /// (see  <a href="http://www.pages.drexel.edu/~weg22/can_tut.html">tutorial</a>
         /// for more information).</para>
-        /// 
+        ///
         /// <para>Default value is set to <b>20</b>.</para>
         /// </remarks>
-        /// 
+        ///
         public byte LowThreshold { get; set; } = 20;
 
         /// <summary>
-        /// High threshold.
+        /// Gets or sets high threshold.
         /// </summary>
-        /// 
+        ///
         /// <remarks><para>High threshold value used for hysteresis
         /// (see  <a href="http://www.pages.drexel.edu/~weg22/can_tut.html">tutorial</a>
         /// for more information).</para>
-        /// 
+        ///
         /// <para>Default value is set to <b>100</b>.</para>
         /// </remarks>
-        /// 
+        ///
         public byte HighThreshold { get; set; } = 100;
 
         /// <summary>
-        /// Gaussian sigma.
+        /// Gets gaussian sigma.
         /// </summary>
-        /// 
+        ///
         /// <remarks>Sigma value for <see cref="GaussianBlur.Sigma">Gaussian bluring</see>.</remarks>
-        /// 
+        ///
         public float GaussianSigma => this.gaussianFilter.Sigma;
 
         /// <summary>
-        /// Gaussian size.
+        /// Gets gaussian size.
         /// </summary>
-        /// 
+        ///
         /// <remarks>Size of <see cref="GaussianBlur.Size">Gaussian kernel</see>.</remarks>
-        /// 
+        ///
         public int GaussianSize => this.gaussianFilter.Radius;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CannyEdgeDetector"/> class.
         /// </summary>
-        /// 
+        ///
         public CannyEdgeDetector(float gaussianSigma = GaussianBlurProcessor.DefaultSigma, int? gaussianRadius = null)
         {
             if (gaussianRadius.NotNull())
@@ -186,11 +187,12 @@ namespace AForge.Imaging.Filters
         /// <summary>
         /// Initializes a new instance of the <see cref="CannyEdgeDetector"/> class.
         /// </summary>
-        /// 
+        ///
         /// <param name="lowThreshold">Low threshold.</param>
         /// <param name="highThreshold">High threshold.</param>
-        /// 
-        public CannyEdgeDetector(byte lowThreshold, byte highThreshold) : this()
+        ///
+        public CannyEdgeDetector(byte lowThreshold, byte highThreshold)
+            : this()
         {
             this.LowThreshold = lowThreshold;
             this.HighThreshold = highThreshold;
@@ -199,11 +201,11 @@ namespace AForge.Imaging.Filters
         /// <summary>
         /// Initializes a new instance of the <see cref="CannyEdgeDetector"/> class.
         /// </summary>
-        /// 
+        ///
         /// <param name="lowThreshold">Low threshold.</param>
         /// <param name="highThreshold">High threshold.</param>
         /// <param name="sigma">Gaussian sigma.</param>
-        /// 
+        ///
         public CannyEdgeDetector(byte lowThreshold, byte highThreshold, float sigma, int radius)
             : this(sigma, radius)
         {
@@ -214,11 +216,11 @@ namespace AForge.Imaging.Filters
         /// <summary>
         /// Process the filter on the specified image.
         /// </summary>
-        /// 
+        ///
         /// <param name="source">Source image data.</param>
         /// <param name="destination">Destination image data.</param>
         /// <param name="rect">Image rectangle for processing by the filter.</param>
-        /// 
+        ///
         protected override void ProcessFilter(Image<Rgb24> source, Image<L8> destination, Rectangle rect)
         {
             // processing start and stop X,Y positions
@@ -230,12 +232,12 @@ namespace AForge.Imaging.Filters
             int width = rect.Width - 2;
             int height = rect.Height - 2;
 
-
             int dstOffset = rect.Width + 2;
             int srcOffset = rect.Width + 2;
 
             // pixel's value and gradients
             int gx, gy;
+
             //
             double orientation, toAngle = 180.0 / System.Math.PI;
             float leftPixel = 0, rightPixel = 0;
@@ -246,10 +248,10 @@ namespace AForge.Imaging.Filters
 
             // orientation array
             byte[] orients = new byte[width * height];
+
             // gradients array
             float[,] gradients = new float[source.Width, source.Height];
             float maxGradient = float.NegativeInfinity;
-
 
             // STEP 2 - calculate magnitude and edge orientation
             int p = 0;
@@ -290,6 +292,7 @@ namespace AForge.Imaging.Filters
                         {
                             orientation = 180 - System.Math.Atan(-div) * toAngle;
                         }
+
                         // handle angles of the 1st and 3rd quads
                         else
                         {
@@ -354,6 +357,7 @@ namespace AForge.Imaging.Filters
                             rightPixel = gradients[x - 1, y - 1];
                             break;
                     }
+
                     // compare current pixels value with adjacent pixels
                     if ((gradients[x, y] < leftPixel) || (gradients[x, y] < rightPixel))
                     {

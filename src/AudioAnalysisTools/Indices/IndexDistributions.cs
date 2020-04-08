@@ -10,14 +10,12 @@
 namespace AudioAnalysisTools.Indices
 {
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
-
-    using Acoustics.Shared.Contracts;
 
     public static class IndexDistributions
     {

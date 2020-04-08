@@ -43,7 +43,8 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
         private static readonly Func<SpectrogramImageType[], string> Name = x => x.Select(x => (int)x).Join("_");
 
         public SpectrogramGeneratorTests()
-            //: base(WriteTestOutput.Always)
+
+        //: base(WriteTestOutput.Always)
         {
         }
 

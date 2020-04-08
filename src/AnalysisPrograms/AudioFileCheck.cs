@@ -14,10 +14,10 @@ namespace AnalysisPrograms
     using System.Threading.Tasks;
     using Acoustics.Shared.Contracts;
     using Acoustics.Tools.Audio;
+    using AnalysisPrograms.Production;
+    using AnalysisPrograms.Production.Arguments;
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
-    using Production;
-    using Production.Arguments;
 
     public class AudioFileCheck
     {
@@ -81,7 +81,8 @@ namespace AnalysisPrograms
             var mau = new MasterAudioUtility();
             var stopwatch = new Stopwatch();
 
-            var headers = "\"" + string.Join("\", \"",
+            var headers = "\"" + string.Join(
+                "\", \"",
                 "SourceFile",
                 "SampleRate (hertz)",
                 "BitsPerSecond",
@@ -114,7 +115,8 @@ namespace AnalysisPrograms
 
                         Console.WriteLine("info: {1} hash: {2} for {0}.", file.Name, infoTime, stopwatch.Elapsed);
 
-                        var output = string.Format("{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}",
+                        var output = string.Format(
+                            "{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}",
                             CsvSafeString(info.SourceFile != null ? info.SourceFile.ToString() : string.Empty),
                             CsvSafeString(info.SampleRate.HasValue ? info.SampleRate.Value.ToString() : string.Empty),
                             CsvSafeString(info.BitsPerSecond.HasValue ? info.BitsPerSecond.Value.ToString() : string.Empty),

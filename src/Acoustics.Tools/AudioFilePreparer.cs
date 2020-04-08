@@ -1,3 +1,7 @@
+// <copyright file="AudioFilePreparer.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
 namespace Acoustics.Tools
 {
     using System;
@@ -5,8 +9,8 @@ namespace Acoustics.Tools
     using System.Globalization;
     using System.IO;
 
-    using Shared;
-    using Audio;
+    using Acoustics.Shared;
+    using Acoustics.Tools.Audio;
 
     /// <summary>
     /// The audio file preparer.
@@ -77,12 +81,6 @@ namespace Acoustics.Tools
         /// <summary>
         /// The prepare file.
         /// </summary>
-        /// <param name="sourceF">
-        ///   The source f.
-        /// </param>
-        /// <param name="outputF">
-        ///   The output f.
-        /// </param>
         /// <param name="request">
         ///   The request.
         /// </param>
@@ -106,10 +104,10 @@ namespace Acoustics.Tools
                 request);
 
             var result = new AudioUtilityModifiedInfo
-                {
-                    TargetInfo = audioUtility.Info(outputFile),
-                    SourceInfo = audioUtility.Info(sourceFile),
-                };
+            {
+                TargetInfo = audioUtility.Info(outputFile),
+                SourceInfo = audioUtility.Info(sourceFile),
+            };
             return result;
         }
 

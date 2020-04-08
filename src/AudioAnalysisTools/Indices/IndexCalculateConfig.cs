@@ -7,7 +7,7 @@ namespace AudioAnalysisTools.Indices
     using System;
     using AudioAnalysisTools.DSP;
     using Equ;
-    
+
     using log4net;
     using Newtonsoft.Json;
     using ObjectCloner.Extensions;
@@ -178,7 +178,6 @@ namespace AudioAnalysisTools.Indices
         /// The default, 0, implies no operation.
         /// </remarks>
         public int MelScale { get; set; }
-
 
         public bool Equals(IndexCalculateConfig other)
         {

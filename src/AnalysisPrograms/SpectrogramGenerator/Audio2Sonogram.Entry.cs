@@ -1,5 +1,5 @@
 // --------------------------------------------------------------------------------------------------------------------
-// <copyright file="Audio2Sonogram.cs" company="QutEcoacoustics">
+// <copyright file="Audio2Sonogram.Entry.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
@@ -12,24 +12,17 @@ namespace AnalysisPrograms.SpectrogramGenerator
 {
     using System;
     using System.IO;
-    using System.Linq;
     using System.Reflection;
     using System.Threading.Tasks;
-    using Acoustics.Shared.ColorScales;
     using Acoustics.Shared.ConfigFile;
-    using Acoustics.Shared.ImageSharp;
     using AnalysisPrograms.Production.Arguments;
     using AnalysisPrograms.Production.Validation;
-    using AudioAnalysisTools;
-    using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
-    using SixLabors.ImageSharp.Processing;
-    using TowseyLibrary;
     using Path = System.IO.Path;
 
     /// <summary>
@@ -40,7 +33,6 @@ namespace AnalysisPrograms.SpectrogramGenerator
         public const string CommandName = "Audio2Sonogram";
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
 
         [Command(
             Name = CommandName,

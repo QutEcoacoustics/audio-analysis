@@ -4,7 +4,7 @@
 
 namespace System.Threading.Tasks
 {
-    using Diagnostics;
+    using System.Diagnostics;
 
     public static class TaskExtensions
     {

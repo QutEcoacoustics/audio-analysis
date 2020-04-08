@@ -29,7 +29,7 @@ namespace Acoustics.Test.TestHelpers
         /// In #DEBUG 100 items are returned if count is not specified.
         /// In #RELEASE the full set is returned if count is not specified.
         /// </summary>
-        /// <returns>The full subset in RELEASE or a random subset in DEBUG</returns>
+        /// <returns>The full subset in RELEASE or a random subset in DEBUG.</returns>
         public static IEnumerable<T> DebugGetFixedRandomSubset<T>(this IEnumerable<T> set, int? count)
         {
             System.Random random;

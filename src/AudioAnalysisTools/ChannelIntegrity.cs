@@ -32,9 +32,9 @@ namespace AudioAnalysisTools
     using Acoustics.Tools;
     using Acoustics.Tools.Wav;
     using AnalysisBase.ResultBases;
-    using DSP;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.WavTools;
     using TowseyLibrary;
-    using WavTools;
 
     public static class ChannelIntegrity
     {
@@ -84,13 +84,13 @@ namespace AudioAnalysisTools
             //you'd then use wavreader on the resulting preparedFile
             //the channel select functionality does not currently exist in AnalyzeLongRecording.   I need to add it.
             var request = new AudioUtilityRequest
-                {
-                    OffsetStart = args.StartOffset,
-                    OffsetEnd = args.EndOffset,
-                    TargetSampleRate = args.SamplingRate,
-                    Channels = new[] { 1, 2 },
-                    MixDownToMono = false,
-                };
+            {
+                OffsetStart = args.StartOffset,
+                OffsetEnd = args.EndOffset,
+                TargetSampleRate = args.SamplingRate,
+                Channels = new[] { 1, 2 },
+                MixDownToMono = false,
+            };
             var audioFile = AudioFilePreparer.PrepareFile(args.OpDir, ipFile, args.OutputMediaType, request, args.OpDir).TargetInfo.SourceFile;
 
             var wavReader = new WavReader(audioFile);
@@ -237,10 +237,8 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        /// Tried this but first attempt did not seem to provide discriminative information
+        /// Tried this but first attempt did not seem to provide discriminative information.
         /// </summary>
-        /// <param name="samplesL"></param>
-        /// <param name="samplesR"></param>
         public static void ChannelMeanAndSD(double[] samplesL, double[] samplesR)
         {
             NormalDist.AverageAndSD(samplesL, out var mean1, out var stde1);

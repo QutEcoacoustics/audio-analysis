@@ -123,10 +123,8 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// setup skeleton of new table with same headers and column types as passed table
+        /// setup skeleton of new table with same headers and column types as passed table.
         /// </summary>
-        /// <param name="dt"></param>
-        /// <returns></returns>
         public static DataTable CreateTable(DataTable dt)
         {
             var headers = new List<string>();
@@ -193,9 +191,6 @@ namespace TowseyLibrary
         /// sorts all the rows in a table without filtering
         /// The empty string is the filtering term.
         /// </summary>
-        /// <param name="dt"></param>
-        /// <param name="sortString"></param>
-        /// <returns></returns>
         public static DataRow[] SortRows(DataTable dt, string sortString)
         {
             DataRow[] rows = dt.Select(string.Empty, sortString);
@@ -206,9 +201,6 @@ namespace TowseyLibrary
         /// sorts all the rows in a table without filtering
         /// The empty string is the filtering term.
         /// </summary>
-        /// <param name="dt"></param>
-        /// <param name="sortString"></param>
-        /// <returns></returns>
         public static DataTable SortTable(DataTable dt, string sortString)
         {
             DataRow[] rows = SortRows(dt, sortString);
@@ -284,11 +276,8 @@ namespace TowseyLibrary
 
         // #######################################################################################################################
         /// <summary>
-        /// NOT DEBUGGED!!!!!
+        /// NOT DEBUGGED!!!!!.
         /// </summary>
-        /// <param name="dt"></param>
-        /// <param name="colName"></param>
-        /// <param name="value"></param>
         public static void DeleteRows(DataTable dt, string colName, string value)
         {
             var rows = dt.Select(colName + " != " + value);
@@ -485,8 +474,6 @@ namespace TowseyLibrary
         /// <summary>
         /// normalises the column values in a data table to values in [0,1].
         /// </summary>
-        /// <param name="dt"></param>
-        /// <returns></returns>
         public static DataTable NormaliseColumnValues(DataTable dt)
         {
             if (dt == null)
@@ -524,8 +511,6 @@ namespace TowseyLibrary
         /// <summary>
         /// normalises the column values in a data table to values in [0,1].
         /// </summary>
-        /// <param name="dt"></param>
-        /// <returns></returns>
         public static DataTable NormaliseColumnValues(DataTable dt, double[] minValue, double[] maxValue)
         {
             if (dt == null)
@@ -549,8 +534,6 @@ namespace TowseyLibrary
         /// <summary>
         /// normalises the column values in a data table to values in [0,1].
         /// </summary>
-        /// <param name="dt"></param>
-        /// <returns></returns>
         public static List<double[]> NormaliseColumnValues(List<double[]> columns, double[] minValue, double[] maxValue)
         {
             if (columns == null || columns.Count == 0)
@@ -587,21 +570,21 @@ namespace TowseyLibrary
         }
 
         public static void WriteTable2Console(DataTable dt)
-       {
-           if (dt == null)
+        {
+            if (dt == null)
             {
                 return;
             }
 
-           string[] headers = GetColumnNames(dt);
-           foreach (string name in headers)
+            string[] headers = GetColumnNames(dt);
+            foreach (string name in headers)
             {
                 LoggedConsole.Write(" {0,-10}", name);
             }
 
-           LoggedConsole.WriteLine();
-           var rows = dt.Rows;
-           foreach (DataRow row in rows)
+            LoggedConsole.WriteLine();
+            var rows = dt.Rows;
+            foreach (DataRow row in rows)
             {
                 for (int i = 0; i < headers.Length; i++)
                 {
@@ -610,29 +593,29 @@ namespace TowseyLibrary
 
                 LoggedConsole.WriteLine();
             }
-       }
+        }
 
         public static void WriteTable2ConsoleInLongLayout(DataTable dt)
-       {
-           if (dt == null)
+        {
+            if (dt == null)
             {
                 return;
             }
 
-           string[] headers = GetColumnNames(dt);
-           Console.WriteLine("===========================================");
-           foreach (DataRow row in dt.Rows)
-           {
-               //Object[] array = row.ItemArray;
-               foreach (string name in headers)
+            string[] headers = GetColumnNames(dt);
+            Console.WriteLine("===========================================");
+            foreach (DataRow row in dt.Rows)
+            {
+                //Object[] array = row.ItemArray;
+                foreach (string name in headers)
                 {
                     Console.WriteLine("   {0} = {1}", name, row[name].ToString());
                 }
 
-               Console.WriteLine();
-           }
+                Console.WriteLine();
+            }
 
-           Console.WriteLine("===========================================");
-       }
+            Console.WriteLine("===========================================");
+        }
     } //class
 }

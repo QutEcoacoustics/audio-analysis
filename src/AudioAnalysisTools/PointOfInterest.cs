@@ -102,7 +102,7 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        /// Gets or sets the spectral intensity at the given point
+        /// Gets or sets the spectral intensity at the given point.
         /// </summary>
         public double Intensity { get; set; }
 
@@ -122,16 +122,13 @@ namespace AudioAnalysisTools
         public int OrientationCategory { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether gets or sets boolean - is POI a local maximum?
+        /// Gets or sets a value indicating whether gets or sets boolean - is POI a local maximum?.
         /// </summary>
         public bool IsLocalMaximum { get; set; }
 
         /// <summary>
-        /// Draw a box from a point at top left with radius width and radius length
+        /// Draw a box from a point at top left with radius width and radius length.
         /// </summary>
-        /// <param name="graphics"></param>
-        /// <param name="pointsOfInterest"></param>
-        /// <param name="radius"></param>
         public void DrawBox(IImageProcessingContext context, IEnumerable<PointOfInterest> pointsOfInterest, int radius)
         {
             foreach (PointOfInterest poi in pointsOfInterest)
@@ -170,7 +167,7 @@ namespace AudioAnalysisTools
             //orientation = indexMax * Math.PI / (double)8;
 
             Color color = this.DrawColor;
-            bmp[x, y] =  color;
+            bmp[x, y] = color;
             if (!multiPixel)
             {
                 return;
@@ -200,36 +197,36 @@ namespace AudioAnalysisTools
                     }
                     else
                         if (orientationCategory == 3)
-                        {
-                            bmp[x, y - 1] = color;
-                            bmp[x, y + 1] = color;
-                            bmp[x, y + 2] = color;
-                        }
-                        else
+                    {
+                        bmp[x, y - 1] = color;
+                        bmp[x, y + 1] = color;
+                        bmp[x, y + 2] = color;
+                    }
+                    else
                             if (orientationCategory == 4)
-                            {
-                                bmp[x, y - 1] = color;
-                                bmp[x, y + 1] = color;
-                                bmp[x, y + 2] = color;
-                            }
-                            else if (orientationCategory == 5)
-                            {
-                                bmp[x, y - 1] = color;
-                                bmp[x, y + 1] = color;
-                                bmp[x, y + 2] = color;
-                            }
-                            else if (orientationCategory == 6)
-                            {
-                                bmp[x + 2, y + 2] = color;
-                                bmp[x + 1, y + 1] = color;
-                                bmp[x - 1, y - 1] = color;
-                            }
-                            else if (orientationCategory == 7)
-                            {
-                                bmp[x + 2, y] = color;
-                                bmp[x + 1, y] = color;
-                                bmp[x - 1, y] = color;
-                            }
+                    {
+                        bmp[x, y - 1] = color;
+                        bmp[x, y + 1] = color;
+                        bmp[x, y + 2] = color;
+                    }
+                    else if (orientationCategory == 5)
+                    {
+                        bmp[x, y - 1] = color;
+                        bmp[x, y + 1] = color;
+                        bmp[x, y + 2] = color;
+                    }
+                    else if (orientationCategory == 6)
+                    {
+                        bmp[x + 2, y + 2] = color;
+                        bmp[x + 1, y + 1] = color;
+                        bmp[x - 1, y - 1] = color;
+                    }
+                    else if (orientationCategory == 7)
+                    {
+                        bmp[x + 2, y] = color;
+                        bmp[x + 1, y] = color;
+                        bmp[x - 1, y] = color;
+                    }
                 }
             }
         }
@@ -237,8 +234,6 @@ namespace AudioAnalysisTools
         /// <summary>
         /// Currently, I can only refine the ridge orientation up to 12 possibilities.
         /// </summary>
-        /// <param name="bmp"></param>
-        /// <param name="spectrogramHeight"></param>
         public void DrawRefinedOrientationPoint(Image<Rgb24> bmp, int spectrogramHeight)
         {
             int x = (int)Math.Round(this.TimeLocation.TotalSeconds / this.TimeScale.TotalSeconds);
@@ -344,26 +339,26 @@ namespace AudioAnalysisTools
                         {
                             color = Color.Blue;
                         }
-                            else if (orientationCategory == 5)
-                            {
-                                color = Color.LightBlue;
-                            }
-                            else if (orientationCategory == 6)
-                            {
-                                color = Color.Purple;
-                            }
-                            else if (orientationCategory == 7)
-                            {
-                                color = Color.Magenta;
-                            }
-                            else if (orientationCategory == 8)
-                            {
-                                color = Color.BlueViolet;
-                            }
-                            else
-                            {
-                                color = Color.White;
-                            }
+                        else if (orientationCategory == 5)
+                        {
+                            color = Color.LightBlue;
+                        }
+                        else if (orientationCategory == 6)
+                        {
+                            color = Color.Purple;
+                        }
+                        else if (orientationCategory == 7)
+                        {
+                            color = Color.Magenta;
+                        }
+                        else if (orientationCategory == 8)
+                        {
+                            color = Color.BlueViolet;
+                        }
+                        else
+                        {
+                            color = Color.White;
+                        }
                     }
                 }
             } // if (orientationCategory == 0) else
@@ -517,46 +512,46 @@ namespace AudioAnalysisTools
                         }
                         else
                             if (orientation == 3)
-                            {
-                                m[r - 1, c] = orientation + 1;
-                                m[r + 1, c] = orientation + 1;
+                        {
+                            m[r - 1, c] = orientation + 1;
+                            m[r + 1, c] = orientation + 1;
 
-                                //m[x + 2, y] = orientation + 1;
-                                //m[x, y - 1] = orientation + 1;
-                                //m[x, y + 1] = orientation + 1;
-                                //m[x, y + 2] = orientation + 1;
-                            }
-                            else
+                            //m[x + 2, y] = orientation + 1;
+                            //m[x, y - 1] = orientation + 1;
+                            //m[x, y + 1] = orientation + 1;
+                            //m[x, y + 2] = orientation + 1;
+                        }
+                        else
                                 if (orientation == 4)
-                                {
-                                    m[r - 1, c] = orientation + 1;
-                                    m[r + 1, c] = orientation + 1;
+                        {
+                            m[r - 1, c] = orientation + 1;
+                            m[r + 1, c] = orientation + 1;
 
-                                    //m[x + 2, y] = orientation + 1;
-                                }
-                                else if (orientation == 5)
-                                {
-                                    m[r - 1, c] = orientation + 1;
-                                    m[r + 1, c] = orientation + 1;
+                            //m[x + 2, y] = orientation + 1;
+                        }
+                        else if (orientation == 5)
+                        {
+                            m[r - 1, c] = orientation + 1;
+                            m[r + 1, c] = orientation + 1;
 
-                                    //m[r + 2, c] = orientation + 1;
-                                }
-                                else if (orientation == 6)
-                                {
-                                    //m[r + 2, c + 2] = orientation + 1;
-                                    m[r + 1, c + 1] = orientation + 1;
-                                    m[r - 1, c - 1] = orientation + 1;
-                                }
-                                else if (orientation == 7)
-                                {
-                                    m[r, c - 1] = orientation + 1;
-                                    m[r, c + 1] = orientation + 1;
+                            //m[r + 2, c] = orientation + 1;
+                        }
+                        else if (orientation == 6)
+                        {
+                            //m[r + 2, c + 2] = orientation + 1;
+                            m[r + 1, c + 1] = orientation + 1;
+                            m[r - 1, c - 1] = orientation + 1;
+                        }
+                        else if (orientation == 7)
+                        {
+                            m[r, c - 1] = orientation + 1;
+                            m[r, c + 1] = orientation + 1;
 
-                                    //m[r, c + 2] = orientation + 1;
-                                    //m[x + 2, y] = orientation + 1;
-                                    //m[x + 1, y] = orientation + 1;
-                                    //m[x - 1, y] = orientation + 1;
-                                }
+                            //m[r, c + 2] = orientation + 1;
+                            //m[x + 2, y] = orientation + 1;
+                            //m[x + 1, y] = orientation + 1;
+                            //m[x - 1, y] = orientation + 1;
+                        }
                     }
                 }
             } // foreach
@@ -566,7 +561,8 @@ namespace AudioAnalysisTools
 
         public static void RemovePOIsFromList(List<PointOfInterest> list, double[,] m)
         {
-            for (int i = list.Count - 1; i >= 0; i--) //each (PointOfInterest poi in list)
+            // each (PointOfInterest poi in list)
+            for (int i = list.Count - 1; i >= 0; i--)
             {
                 if (m[list[i].Point.Y, list[i].Point.X] == 0.0)
                 {
@@ -577,7 +573,8 @@ namespace AudioAnalysisTools
 
         public static void RemoveLowIntensityPOIs(List<PointOfInterest> list, double threshold)
         {
-            for (int i = list.Count - 1; i >= 0; i--) //each (PointOfInterest poi in list)
+            // each (PointOfInterest poi in list)
+            for (int i = list.Count - 1; i >= 0; i--)
             {
                 if (list[i].Intensity < threshold)
                 {

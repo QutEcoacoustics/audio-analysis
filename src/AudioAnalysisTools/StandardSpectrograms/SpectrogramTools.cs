@@ -11,13 +11,10 @@ namespace AudioAnalysisTools.StandardSpectrograms
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
-    using System.IO;
-    using Accord;
-    using Acoustics.Shared;
     using Acoustics.Shared.Contracts;
-    using DSP;
-    using LongDurationSpectrograms;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.LongDurationSpectrograms;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.ColorSpaces;
     using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
@@ -27,11 +24,11 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// <summary>
         /// Used to normalise a spectrogram in 0,1.
         /// </summary>
-        /// <param name="matrix">the spectrogram data</param>
-        /// <param name="truncateMin">set all values above to 1.0</param>
-        /// <param name="truncateMax">set all values below to zero</param>
-        /// <param name="backgroundFilterCoeff">used to de-emphisize the background</param>
-        /// <returns>a normalised matrix of spectrogram data</returns>
+        /// <param name="matrix">the spectrogram data.</param>
+        /// <param name="truncateMin">set all values above to 1.0.</param>
+        /// <param name="truncateMax">set all values below to zero.</param>
+        /// <param name="backgroundFilterCoeff">used to de-emphisize the background.</param>
+        /// <returns>a normalised matrix of spectrogram data.</returns>
         public static double[,] NormaliseSpectrogramMatrix(double[,] matrix, double truncateMin, double truncateMax, double backgroundFilterCoeff)
         {
             double[,] m = MatrixTools.NormaliseInZeroOne(matrix, truncateMin, truncateMax);
@@ -163,10 +160,10 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// Used to convert a standard decibel spectrogram into a colour version using
         /// a colour rendering for three separate properties.
         /// </summary>
-        /// <param name="dbSpectrogramData">the raw decibel spectrogram data - assigned to red channel</param>
-        /// <param name="nrSpectrogramData">the noise reduced decibel spectrogram data - assigned to green channel</param>
-        /// <param name="hits">assigned to ridge colours</param>
-        /// <returns>coloured-rendered spectrogram as image</returns>
+        /// <param name="dbSpectrogramData">the raw decibel spectrogram data - assigned to red channel.</param>
+        /// <param name="nrSpectrogramData">the noise reduced decibel spectrogram data - assigned to green channel.</param>
+        /// <param name="hits">assigned to ridge colours.</param>
+        /// <returns>coloured-rendered spectrogram as image.</returns>
         public static Image<Rgb24> CreateFalseColourDecibelSpectrogram(double[,] dbSpectrogramData, double[,] nrSpectrogramData, byte[,] hits)
         {
             double truncateMin = -120.0;
@@ -252,10 +249,10 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// Also uses the spectral "hits" data for highlighting the spectrogram.
         /// ### IMPORTANT WARNING!!!! THIS METHOD ASSUMES THAT BOTH SPECTRAL MATRICES HAVE BEEN NORMALISED IN [0,1].
         /// </summary>
-        /// <param name="dbSpectrogramNorm">the raw decibel spectrogram data - assigned to red channel</param>
-        /// <param name="nrSpectrogramNorm">the noise reduced decibel spectrogram data - assigned to green channel</param>
-        /// <param name="hits">assigned to ridge colours</param>
-        /// <returns>coloured-rendered spectrogram as image</returns>
+        /// <param name="dbSpectrogramNorm">the raw decibel spectrogram data - assigned to red channel.</param>
+        /// <param name="nrSpectrogramNorm">the noise reduced decibel spectrogram data - assigned to green channel.</param>
+        /// <param name="hits">assigned to ridge colours.</param>
+        /// <returns>coloured-rendered spectrogram as image.</returns>
         public static Image<Rgb24> CreateFalseColourDecibelSpectrogramForZooming(double[,] dbSpectrogramNorm, double[,] nrSpectrogramNorm, byte[,] hits)
         {
             int width = dbSpectrogramNorm.GetLength(0);
@@ -288,10 +285,10 @@ namespace AudioAnalysisTools.StandardSpectrograms
                         {
                             colourId += 20;
                             if (colourId > 255)
-                        {
-                            colourId = 255;
+                            {
+                                colourId = 255;
+                            }
                         }
-                    }
 
                         colour = cch.GetColorFromPallette(colourId);
                     }
@@ -460,7 +457,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         }
 
         /// <summary>
-        /// Use this method to average a decibel spectrogram
+        /// Use this method to average a decibel spectrogram.
         /// </summary>
         public static double[] CalculateAvgDecibelSpectrumFromDecibelSpectrogram(double[,] spectrogram)
         {
@@ -480,10 +477,10 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// Here is some test data for this method: array = new[] { 96.0, 100.0, 90.0, 97.0 };
         /// The return value should = 96.988 dB
         /// First need to calculate the original value i.e. exponential or antilog.
-        /// See also DataTools.AntiLogBase10(double value);
+        /// See also DataTools.AntiLogBase10(double value).
         /// </summary>
-        /// <param name="array">an array of decibel values</param>
-        /// <returns>a decibel value</returns>
+        /// <param name="array">an array of decibel values.</param>
+        /// <returns>a decibel value.</returns>
         public static double AverageAnArrayOfDecibelValues(double[] array)
         {
             int count = array.Length;
@@ -514,8 +511,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
         ///
         /// As well as calculating the av power spectrum, this method also returns a variance spectrum and a spectrum of the Coeff of Variation = var/mean.
         /// </summary>
-        /// <param name="amplitudeSpectrogram">this is an amplitude spectrum. Must square values to get power</param>
-        /// <returns>three spectral indices</returns>
+        /// <param name="amplitudeSpectrogram">this is an amplitude spectrum. Must square values to get power.</param>
+        /// <returns>three spectral indices.</returns>
         public static Tuple<double[], double[], double[]> CalculateAvgSpectrumAndVarianceSpectrumFromAmplitudeSpectrogram(double[,] amplitudeSpectrogram)
         {
             int frameCount = amplitudeSpectrogram.GetLength(0);
@@ -547,12 +544,12 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// This method assumes P.D. Welch's method has been used to calculate the PSD.
         /// See method above: CalculateAvgSpectrumAndVarianceSpectrumFromAmplitudeSpectrogram().
         /// </summary>
-        /// <param name="psd">power spectral density</param>
-        /// <param name="samplerate">original sample rate of the recording. Only used to get nyquist</param>
-        /// <param name="lowBound">low ndsi bound</param>
-        /// <param name="midBound">mid ndsi bound</param>
-        /// <param name="topBound">top ndsi bound</param>
-        /// <returns>ndsi</returns>
+        /// <param name="psd">power spectral density.</param>
+        /// <param name="samplerate">original sample rate of the recording. Only used to get nyquist.</param>
+        /// <param name="lowBound">low ndsi bound.</param>
+        /// <param name="midBound">mid ndsi bound.</param>
+        /// <param name="topBound">top ndsi bound.</param>
+        /// <returns>ndsi.</returns>
         public static double CalculateNdsi(double[] psd, int samplerate, int lowBound, int midBound, int topBound)
         {
             int nyquist = samplerate / 2;
@@ -661,11 +658,11 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// <summary>
         /// Only calls method to draw frequency lines but may in future want to add the times scale.
         /// </summary>
-        /// <param name="bmp">the spectrogram image</param>
-        /// <param name="startOffset">start Offset</param>
-        /// <param name="fullDuration">full Duration</param>
-        /// <param name="xAxisTicInterval">xAxis Tic Interval</param>
-        /// <param name="freqScale">freq Scale</param>
+        /// <param name="bmp">the spectrogram image.</param>
+        /// <param name="startOffset">start Offset.</param>
+        /// <param name="fullDuration">full Duration.</param>
+        /// <param name="xAxisTicInterval">xAxis Tic Interval.</param>
+        /// <param name="freqScale">freq Scale.</param>
         public static void DrawGridLinesOnImage(Image<Rgb24> bmp, TimeSpan startOffset, TimeSpan fullDuration, TimeSpan xAxisTicInterval, FrequencyScale freqScale)
         {
             FrequencyScale.DrawFrequencyLinesOnImage(bmp, freqScale, includeLabels: true);
@@ -697,7 +694,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
         // #######################################################################################################################################
         // ### ABOVE METHODS DRAW TIME GRID LINES ON SPECTROGRAMS ####################################################################################
         // #######################################################################################################################################
-
 
         public static Image<Rgb24> GetImageFullyAnnotated(Image<Rgb24> image, string title, int[,] gridLineLocations, TimeSpan duration)
         {

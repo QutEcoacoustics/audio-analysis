@@ -4,7 +4,6 @@
 
 namespace Acoustics.Test.AudioAnalysisTools.Indices
 {
-    using System.IO;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Test.TestHelpers;
     using global::AnalysisBase;

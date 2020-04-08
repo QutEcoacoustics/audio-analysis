@@ -8,29 +8,28 @@ namespace AnalysisPrograms
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Text;
     using System.Threading.Tasks;
+    using AnalysisPrograms.Production.Arguments;
     using AudioAnalysisTools;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using McMaster.Extensions.CommandLineUtils;
-    using Production.Arguments;
     using TowseyLibrary;
 
     public class Segment
     {
         //Keys to recognise identifiers in PARAMETERS - INI file.
         //public static string key_FILE_EXT    = "FILE_EXT";
-        public static string key_MIN_HZ = "MIN_HZ";
-        public static string key_MAX_HZ = "MAX_HZ";
-        public static string key_FRAME_OVERLAP = "FRAME_OVERLAP";
-        public static string key_SMOOTH_WINDOW = "SMOOTH_WINDOW";
-        public static string key_MIN_DURATION = "MIN_DURATION";
-        public static string key_MAX_DURATION = "MAX_DURATION";
-        public static string key_THRESHOLD = "THRESHOLD";
-        public static string key_DRAW_SONOGRAMS = "DRAW_SONOGRAMS";
+        public static string Key_MIN_HZ = "MIN_HZ";
+        public static string Key_MAX_HZ = "MAX_HZ";
+        public static string Key_FRAME_OVERLAP = "FRAME_OVERLAP";
+        public static string Key_SMOOTH_WINDOW = "SMOOTH_WINDOW";
+        public static string Key_MIN_DURATION = "MIN_DURATION";
+        public static string Key_MAX_DURATION = "MAX_DURATION";
+        public static string Key_THRESHOLD = "THRESHOLD";
+        public static string Key_DRAW_SONOGRAMS = "DRAW_SONOGRAMS";
 
-        public static string eventsFile = "events.txt";
+        public static string EventsFile = "events.txt";
 
         public const string CommandName = "Segment";
 
@@ -68,14 +67,14 @@ namespace AnalysisPrograms
             Dictionary<string, string> dict = config.GetTable();
             Dictionary<string, string>.KeyCollection keys = dict.Keys;
 
-            int minHz = int.Parse(dict[key_MIN_HZ]);
-            int maxHz = int.Parse(dict[key_MAX_HZ]);
-            double frameOverlap = double.Parse(dict[key_FRAME_OVERLAP]);
-            double smoothWindow = double.Parse(dict[key_SMOOTH_WINDOW]);   //smoothing window (seconds) before segmentation
-            double thresholdSD = double.Parse(dict[key_THRESHOLD]);       //segmentation threshold in noise SD
-            double minDuration = double.Parse(dict[key_MIN_DURATION]);    //min duration of segment & width of smoothing window in seconds
-            double maxDuration = double.Parse(dict[key_MAX_DURATION]);    //max duration of segment in seconds
-            int DRAW_SONOGRAMS = int.Parse(dict[key_DRAW_SONOGRAMS]);   //options to draw sonogram
+            int minHz = int.Parse(dict[Key_MIN_HZ]);
+            int maxHz = int.Parse(dict[Key_MAX_HZ]);
+            double frameOverlap = double.Parse(dict[Key_FRAME_OVERLAP]);
+            double smoothWindow = double.Parse(dict[Key_SMOOTH_WINDOW]);   //smoothing window (seconds) before segmentation
+            double thresholdSD = double.Parse(dict[Key_THRESHOLD]);       //segmentation threshold in noise SD
+            double minDuration = double.Parse(dict[Key_MIN_DURATION]);    //min duration of segment & width of smoothing window in seconds
+            double maxDuration = double.Parse(dict[Key_MAX_DURATION]);    //max duration of segment in seconds
+            int DRAW_SONOGRAMS = int.Parse(dict[Key_DRAW_SONOGRAMS]);   //options to draw sonogram
 
             Log.WriteIfVerbose("# Freq band: {0} Hz - {1} Hz.)", minHz, maxHz);
             Log.WriteIfVerbose("# Smoothing Window: {0}s.", smoothWindow);
@@ -94,9 +93,10 @@ namespace AnalysisPrograms
             var dBThreshold = results.Item5;
             var intensity = results.Item6;
             Log.WriteLine("# Signal:  Duration={0}, Sample Rate={1}", sonogram.Duration, sonogram.SampleRate);
-            Log.WriteLine("# Frames:  Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f0}%, Offset={3:f1}ms, Frames/s={4:f1}",
-                                       sonogram.Configuration.WindowSize, sonogram.FrameCount, sonogram.FrameDuration * 1000,
-                                       sonogram.FrameStep * 1000, sonogram.FramesPerSecond, frameOverlap);
+            Log.WriteLine(
+                "# Frames:  Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f0}%, Offset={3:f1}ms, Frames/s={4:f1}",
+                sonogram.Configuration.WindowSize, sonogram.FrameCount, sonogram.FrameDuration * 1000,
+                sonogram.FrameStep * 1000, sonogram.FramesPerSecond, frameOverlap);
             int binCount = (int)(maxHz / sonogram.FBinWidth) - (int)(minHz / sonogram.FBinWidth) + 1;
             Log.WriteLine("# FreqBand: {0} Hz - {1} Hz. (Freq bin count = {2})", minHz, maxHz, binCount);
             Log.WriteLine("# Intensity array - noise removal: Q={0:f1}dB. 1SD={1:f3}dB. Threshold={2:f3}dB.", Q, oneSD_dB, dBThreshold);
@@ -117,6 +117,7 @@ namespace AnalysisPrograms
             //StringBuilder sb = new StringBuilder(str);
             //StringBuilder sb = new StringBuilder();
             throw new NotSupportedException("Broken in merge");
+
             //string str = string.Format("{0}\t{1}\t{2}\t{3}", fname, sigDuration, count, pcHIF);
             //StringBuilder sb = AcousticEvent.WriteEvents(predictedEvents, str);
             //FileTools.WriteTextFile(opPath.FullName, sb.ToString());
@@ -139,18 +140,9 @@ namespace AnalysisPrograms
             Log.WriteLine("# Finished recording:- " + recordingPath.Name);
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="wavPath"></param>
-        /// <param name="minHz"></param>
-        /// <param name="maxHz"></param>
-        /// <param name="frameOverlap"></param>
-        /// <param name="threshold"></param>
-        /// <param name="minDuration">used for smoothing intensity as well as for removing short events</param>
-        /// <param name="maxDuration"></param>
-        /// <returns></returns>
-        public static Tuple<BaseSonogram, List<AcousticEvent>, double, double, double, double[]> Execute_Segmentation(FileInfo wavPath,
+        /// <param name="minDuration">used for smoothing intensity as well as for removing short events.</param>
+        public static Tuple<BaseSonogram, List<AcousticEvent>, double, double, double, double[]> Execute_Segmentation(
+            FileInfo wavPath,
             int minHz, int maxHz, double frameOverlap, double smoothWindow, double thresholdSD, double minDuration, double maxDuration)
         {
             //i: GET RECORDING

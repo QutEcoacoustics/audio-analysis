@@ -7,10 +7,10 @@ namespace AnalysisPrograms.Draw.Zooming
 {
     using System.ComponentModel.DataAnnotations;
     using System.Threading.Tasks;
+    using AnalysisPrograms.Production;
+    using AnalysisPrograms.Production.Arguments;
+    using AnalysisPrograms.Production.Validation;
     using McMaster.Extensions.CommandLineUtils;
-    using Production;
-    using Production.Arguments;
-    using Production.Validation;
 
     public static partial class DrawZoomingSpectrograms
     {

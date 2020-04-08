@@ -1,4 +1,4 @@
-﻿// <copyright file="EventStatisticsAnalysis.cs" company="QutEcoacoustics">
+// <copyright file="EventStatisticsAnalysis.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -12,9 +12,9 @@ namespace AnalysisPrograms.EventStatistics
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Contracts;
     using Acoustics.Shared.Csv;
-    using AcousticWorkbench.Orchestration;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
+    using AnalysisPrograms.AcousticWorkbench.Orchestration;
     using AudioAnalysisTools.EventStatistics;
     using AudioAnalysisTools.WavTools;
     using global::AcousticWorkbench;

@@ -6,7 +6,7 @@ namespace AudioAnalysisTools
 {
     using System;
     using Accord.Math;
-    using DSP;
+    using AudioAnalysisTools.DSP;
     using TowseyLibrary;
 
     public class CrossCorrelation
@@ -108,9 +108,6 @@ namespace AudioAnalysisTools
         /// This method assume the matrix is derived from a spectrogram rotated so that the matrix rows are spectral columns of sonogram.
         ///
         /// </summary>
-        /// <param name="m"></param>
-        /// <param name="amplitudeThreshold"></param>
-        /// <returns></returns>
         public static Tuple<double[], double[]> DetectBarsInTheRowsOfaMatrix(double[,] m, double threshold, int zeroBinCount)
         {
             int rowCount = m.GetLength(0);
@@ -164,7 +161,7 @@ namespace AudioAnalysisTools
         /// <param name="callSpan">Minimum length of call of interest.</param>
         /// <returns>a tuple.</returns>
         public static Tuple<double[], double[], double[]> DetectHarmonicsInSonogramMatrix(double[,] m, double dBThreshold, int callSpan)
-         {
+        {
             int rowCount = m.GetLength(0);
             int colCount = m.GetLength(1);
             var intensity = new double[rowCount];     //an array of period intensity
@@ -196,7 +193,7 @@ namespace AudioAnalysisTools
                 double period = 0.0;
                 if (maxId != 0)
                 {
-                   period = 2 * colCount / (double)maxId;
+                    period = 2 * colCount / (double)maxId;
                 }
 
                 periodicity[t] = period;

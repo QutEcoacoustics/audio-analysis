@@ -10,9 +10,9 @@
 namespace AudioAnalysisTools.LongDurationSpectrograms
 {
     using System;
+    using AudioAnalysisTools.TileImage;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
-    using TileImage;
 
     public enum SpectrogramType
     {
@@ -64,6 +64,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public TimeSpan TimeOffset { get; }
 
         double ISuperTile.Scale =>
+
                 // round scale to counter IEEE float rounding issues
                 // ReSharper disable once ArrangeAccessorOwnerBody
                 Math.Round(this.Scale.TotalSeconds, 10);

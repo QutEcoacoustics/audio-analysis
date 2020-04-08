@@ -1,4 +1,4 @@
-﻿// <copyright file="AudioUtilityFfmpegPcmRawTests.cs" company="QutEcoacoustics">
+// <copyright file="AudioUtilityFfmpegPcmRawTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -7,10 +7,10 @@ namespace Acoustics.Test.Tools
     using System;
     using System.IO;
     using Acoustics.Shared;
+    using Acoustics.Test.TestHelpers;
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
 
     /// <summary>
     /// The audio utility wavpack tests.
@@ -186,12 +186,12 @@ namespace Acoustics.Test.Tools
             TestHelper.ExceptionMatches<BitDepthOperationNotImplemented>(
                 () =>
                 {
-                  tester.InvokeCheckRequestValid(
-                        this.source,
-                        MediaTypes.GetMediaType(this.source.Extension),
-                        this.output,
-                        MediaTypes.GetMediaType(this.output.Extension),
-                        request);
+                    tester.InvokeCheckRequestValid(
+                          this.source,
+                          MediaTypes.GetMediaType(this.source.Extension),
+                          this.output,
+                          MediaTypes.GetMediaType(this.output.Extension),
+                          request);
                 },
                 "Supplied bit depth of 64");
         }

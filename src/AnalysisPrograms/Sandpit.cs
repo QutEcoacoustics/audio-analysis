@@ -69,7 +69,6 @@ namespace AnalysisPrograms
 
                 //Test_DrawFourSpectrograms();
 
-
                 //ExtractSpectralFeatures();
                 //HerveGlotinMethods();
                 //KarlHeinzFrommolt();

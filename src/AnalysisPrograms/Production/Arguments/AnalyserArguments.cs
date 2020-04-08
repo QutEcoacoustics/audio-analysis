@@ -6,8 +6,8 @@ namespace AnalysisPrograms.Production.Arguments
 {
     using System.IO;
     using AnalysisBase;
+    using AnalysisPrograms.Production.Validation;
     using McMaster.Extensions.CommandLineUtils;
-    using Validation;
 
     public abstract class AnalyserArguments
         : SourceConfigOutputDirArguments

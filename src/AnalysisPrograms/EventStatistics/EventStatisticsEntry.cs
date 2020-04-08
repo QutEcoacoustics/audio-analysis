@@ -11,15 +11,15 @@ namespace AnalysisPrograms.EventStatistics
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
-    using AcousticWorkbench.Orchestration;
     using AnalysisBase;
     using AnalysisBase.Segment;
+    using AnalysisPrograms.AcousticWorkbench.Orchestration;
+    using AnalysisPrograms.Production;
+    using AnalysisPrograms.SourcePreparers;
     using AudioAnalysisTools.EventStatistics;
     using global::AcousticWorkbench;
     using global::AcousticWorkbench.Models;
     using log4net;
-    using Production;
-    using SourcePreparers;
 
     public partial class EventStatisticsEntry
     {

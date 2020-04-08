@@ -11,21 +11,21 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
+    using AnalysisPrograms.Production;
+    using AnalysisPrograms.Production.Arguments;
+    using AnalysisPrograms.Production.Validation;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using McMaster.Extensions.CommandLineUtils;
-    using Production;
-    using Production.Arguments;
-    using Production.Validation;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
     using Path = System.IO.Path;
@@ -279,11 +279,8 @@ namespace AnalysisPrograms
         }
 
         /// <summary>
-        /// Puts title bar, X & Y axes and gridlines on the passed sonogram.
+        /// Puts title bar, X &amp; Y axes and gridlines on the passed sonogram.
         /// </summary>
-        /// <param name="sonogram"></param>
-        /// <param name="title"></param>
-        /// <returns></returns>
         private static Image AnnotateSonogram(BaseSonogram sonogram, string title)
         {
             var image = sonogram.GetImageFullyAnnotated(title);
@@ -291,5 +288,3 @@ namespace AnalysisPrograms
         }
     }
 }
-
-

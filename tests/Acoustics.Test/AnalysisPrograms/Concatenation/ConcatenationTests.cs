@@ -5,7 +5,6 @@
 namespace Acoustics.Test.AnalysisPrograms.Concatenation
 {
     using System;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.IO.Compression;
     using System.Linq;
@@ -16,6 +15,7 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
     using global::AudioAnalysisTools.LongDurationSpectrograms;
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using Path = System.IO.Path;
 
@@ -308,22 +308,22 @@ namespace Acoustics.Test.AnalysisPrograms.Concatenation
             const string ark01 = "Ark01";
 
             var arguments = new ConcatenateIndexFiles.Arguments
-                {
-                    InputDataDirectories = new[] { newZealandArk01IndicesDirectory },
-                    OutputDirectory = this.TestOutputDirectory,
-                    DirectoryFilter = "*.wav",
-                    FileStemName = ark01,
-                    StartDate = null,
-                    EndDate = null,
-                    IndexPropertiesConfig = PathHelper.ResolveConfigFile("IndexPropertiesConfig.yml").FullName,
-                    FalseColourSpectrogramConfig = PathHelper.ResolveConfigFile("SpectrogramFalseColourConfig.yml").FullName,
-                    ColorMap1 = null,
-                    ColorMap2 = null,
-                    ConcatenateEverythingYouCanLayYourHandsOn = false,
-                    GapRendering = gapRendering,
-                    TimeSpanOffsetHint = TimeSpan.FromHours(12),
-                    DrawImages = true,
-                };
+            {
+                InputDataDirectories = new[] { newZealandArk01IndicesDirectory },
+                OutputDirectory = this.TestOutputDirectory,
+                DirectoryFilter = "*.wav",
+                FileStemName = ark01,
+                StartDate = null,
+                EndDate = null,
+                IndexPropertiesConfig = PathHelper.ResolveConfigFile("IndexPropertiesConfig.yml").FullName,
+                FalseColourSpectrogramConfig = PathHelper.ResolveConfigFile("SpectrogramFalseColourConfig.yml").FullName,
+                ColorMap1 = null,
+                ColorMap2 = null,
+                ConcatenateEverythingYouCanLayYourHandsOn = false,
+                GapRendering = gapRendering,
+                TimeSpanOffsetHint = TimeSpan.FromHours(12),
+                DrawImages = true,
+            };
 
             ConcatenateIndexFiles.Execute(arguments);
 

@@ -20,11 +20,10 @@ namespace AnalysisPrograms.Recognizers.Base
     using Acoustics.Tools;
     using AnalysisBase;
     using AnalysisBase.Extensions;
-
     using AnalysisPrograms.AnalyseLongRecordings;
+    using AnalysisPrograms.Production.Arguments;
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
-    using Production.Arguments;
 
     public class RecognizerEntry
     {
@@ -53,7 +52,7 @@ namespace AnalysisPrograms.Recognizers.Base
         private static readonly ILog Log = LogManager.GetLogger(typeof(RecognizerEntry));
 
         /// <summary>
-        /// This entrypoint should be used for testing short files (less than 2 minutes)
+        /// This entrypoint should be used for testing short files (less than 2 minutes).
         /// </summary>
         public static void Execute(Arguments arguments)
         {

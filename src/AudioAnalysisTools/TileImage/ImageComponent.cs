@@ -31,7 +31,7 @@ namespace AudioAnalysisTools.TileImage
         /// Represents the image this rectangle needs to be drawn from.
         /// -1: image before on x axis
         /// 0: current image
-        /// 1: next image on x axis
+        /// 1: next image on x axis.
         /// </summary>
         public TileBias XBias { get; set; }
 
@@ -40,7 +40,7 @@ namespace AudioAnalysisTools.TileImage
         /// Represents the image this rectangle needs to be drawn from.
         /// -1: image before on y axis
         /// 0: current image
-        /// 1: next image on y axis
+        /// 1: next image on y axis.
         /// </summary>
         public TileBias YBias { get; set; }
     }

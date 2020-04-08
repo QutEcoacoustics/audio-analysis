@@ -6,10 +6,10 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.IO;
     using Acoustics.Shared;
     using Acoustics.Shared.ImageSharp;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
     using TowseyLibrary;
@@ -239,7 +239,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             // init the output image
             var opImage = Drawing.NewImage(imageWidth, imageHt, Color.Black);
-            
+
             // construct cluster histogram
             for (int lineNumber = 0; lineNumber < lineCount; lineNumber++)
             {
@@ -289,7 +289,6 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     }
                 }
 
-                
                 // cycle through the nodes and get the column images.
                 // the purpose is to draw the column images in order of node number
                 for (int n = 0; n < nodeCount; n++)
@@ -315,8 +314,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     //gr.DrawLine(blackPen, opColumn - 1, imageHt - trackheight, opColumn - 1, imageHt - 10);
                 }
 
-                    //FileInfo fi = new FileInfo(topLevelDirectory + name);
-                    //Console.WriteLine("Reading file: " + fi.Name);
+                //FileInfo fi = new FileInfo(topLevelDirectory + name);
+                //Console.WriteLine("Reading file: " + fi.Name);
 
                 if (id >= clusterCount - 1)
                 {
@@ -429,7 +428,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             }
 
             Console.WriteLine("Reading file: " + fi.Name);
-            Image<Rgb24> ipImage =Image.Load<Rgb24>(fi.FullName);
+            Image<Rgb24> ipImage = Image.Load<Rgb24>(fi.FullName);
             int imageWidth = ipImage.Width;
             int imageHt = ipImage.Height;
 
@@ -455,7 +454,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     {
                         // get image column
                         Rectangle rectangle = new Rectangle(minutesArray[m] - 1, 0, 1, imageHt);
-                        Image<Rgb24> column = ipImage.Clone(x =>x.Crop(rectangle));
+                        Image<Rgb24> column = ipImage.Clone(x => x.Crop(rectangle));
                         gr.DrawImage(column, new Point(opColumnNumber, 0), 1);
                         opColumnNumber++;
                     }
@@ -469,7 +468,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     // draw Cluster ID at bottom of the image
                     if (minutesArray.Length > 3)
                     {
-                        Image<Rgb24> clusterIDImage = new Image<Rgb24>(minutesArray.Length,
+                        Image<Rgb24> clusterIDImage = new Image<Rgb24>(
+                            minutesArray.Length,
                             SpectrogramConstants.HEIGHT_OF_TITLE_BAR - 6);
                         clusterIDImage.Mutate(g2 => { g2.Clear(Color.Black); });
                         gr.DrawImage(clusterIDImage, new Point(clusterStartColumn, imageHt - 19), 1);
@@ -488,7 +488,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
         public static Image DrawTitleBarOfClusterSpectrogram(string title, int width)
         {
             var bmp = Drawing.NewImage(width, SpectrogramConstants.HEIGHT_OF_TITLE_BAR - 3, Color.Black);
-            
+
             Pen pen = new Pen(Color.White, 1);
             var stringFont = Drawing.Arial12Bold;
 

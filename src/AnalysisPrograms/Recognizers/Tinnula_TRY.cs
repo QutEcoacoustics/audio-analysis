@@ -10,20 +10,20 @@ namespace AnalysisPrograms.Recognizers
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Reflection;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
+    using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-    using Base;
     using log4net;
+    using SixLabors.ImageSharp;
     using TowseyLibrary;
     using Path = System.IO.Path;
 
@@ -64,13 +64,6 @@ namespace AnalysisPrograms.Recognizers
         /// <summary>
         /// Do your analysis. This method is called once per segment (typically one-minute segments).
         /// </summary>
-        /// <param name="audioRecording"></param>
-        /// <param name="configuration"></param>
-        /// <param name="segmentStartOffset"></param>
-        /// <param name="getSpectralIndexes"></param>
-        /// <param name="outputDirectory"></param>
-        /// <param name="imageWidth"></param>
-        /// <returns></returns>
         public override RecognizerResults Recognize(AudioRecording audioRecording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
             RecognizerResults results = this.Gruntwork(audioRecording, configuration, outputDirectory, segmentStartOffset);
@@ -173,7 +166,11 @@ namespace AnalysisPrograms.Recognizers
 
             // Find average amplitude
 
-            double[] amplitudeArray = MatrixTools.GetRowAveragesOfSubmatrix(sonogram.Data, 0, binMin, rowCount - 1,
+            double[] amplitudeArray = MatrixTools.GetRowAveragesOfSubmatrix(
+                sonogram.Data,
+                0,
+                binMin,
+                rowCount - 1,
                 binMax);
 
             var highPassFilteredSignal = DspFilters.SubtractBaseline(amplitudeArray, 7);
@@ -236,7 +233,7 @@ namespace AnalysisPrograms.Recognizers
                 newEvent.DominantFreq = avDominantFreq;
                 newEvent.Score = eventScore;
                 newEvent.SetTimeAndFreqScales(framesPerSec, sonogram.FBinWidth);
-                newEvent.Name = ""; // remove name because it hides spectral content of the event.
+                newEvent.Name = string.Empty; // remove name because it hides spectral content of the event.
 
                 potentialEvents.Add(newEvent);
             }
@@ -293,8 +290,7 @@ namespace AnalysisPrograms.Recognizers
         /// Constructs a simple template for the L.convex call.
         /// Assume that the passed value of callBinWidth > 22.
         /// </summary>
-        /// <param name="callBinWidth">Typical value = 13</param>
-        /// <returns></returns>
+        /// <param name="callBinWidth">Typical value = 13.</param>
         public static List<double[]> GetCtinnulaTemplates(int callBinWidth)
         {
             var templates = new List<double[]>();

@@ -23,7 +23,7 @@ namespace Acoustics.Shared.ColorScales
     [SuppressMessage("ReSharper", "StringLiteralTypo", Justification = "Hex color codes causing false positives")]
     public static partial class ColorBrewer
     {
-        public static QualitativePalettes Qualitative { get;  } = new QualitativePalettes();
+        public static QualitativePalettes Qualitative { get; } = new QualitativePalettes();
 
         public static SequentialSingleHuePalettes SequentialSingleHue { get; } = new SequentialSingleHuePalettes();
 

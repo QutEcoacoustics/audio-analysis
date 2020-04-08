@@ -14,7 +14,6 @@ namespace AudioAnalysisTools.Indices
     using AudioAnalysisTools.LongDurationSpectrograms;
     using log4net;
     using Newtonsoft.Json;
-    using Acoustics.Shared.Contracts;
 
     public class IndexGenerationData
     {
@@ -53,7 +52,7 @@ namespace AudioAnalysisTools.Indices
         public DateTimeOffset? RecordingStartDate { get; set; }
 
         /// <summary>
-        /// Gets or sets how far into the recording the analysis was started
+        /// Gets or sets how far into the recording the analysis was started.
         /// </summary>
         public TimeSpan AnalysisStartOffset { get; set; }
 
@@ -74,7 +73,7 @@ namespace AudioAnalysisTools.Indices
         /// Gets or sets the default is the entire segment i.e. typically of one minute duration.  However, as of January 2015, this is not fixed.
         /// User must enter the time span over which indices are calculated.
         /// If IndexCalculationDuration is set to a brief duration such as 0.2 seconds, then
-        /// the backgroundnoise will be calculated from N seconds before the current subsegment to N seconds after => N secs + subseg duration + N secs
+        /// the backgroundnoise will be calculated from N seconds before the current subsegment to N seconds after => N secs + subseg duration + N secs.
         /// </summary>
         public TimeSpan BgNoiseNeighbourhood { get; set; }
 

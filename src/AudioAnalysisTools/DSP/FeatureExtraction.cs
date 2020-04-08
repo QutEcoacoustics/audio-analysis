@@ -1,4 +1,4 @@
-﻿// <copyright file="SpectrogramSettings.cs" company="QutEcoacoustics">
+// <copyright file="FeatureExtraction.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -12,10 +12,10 @@ namespace AudioAnalysisTools.DSP
     using Accord.Math;
     using Accord.Statistics;
     using Acoustics.Shared.Csv;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
     using NeuralNets;
-    using StandardSpectrograms;
     using TowseyLibrary;
-    using WavTools;
 
     /// <summary>
     /// This class is designed to extract clustering features for target input recordings.
@@ -25,7 +25,7 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// Apply feature learning process on a set of target (1-minute) recordings (inputPath)
         /// according to the a set of centroids learned using feature learning process.
-        /// Output feature vectors (outputPath)
+        /// Output feature vectors (outputPath).
         /// </summary>
         public static void UnsupervisedFeatureExtraction(FeatureLearningSettings config, List<double[][]> allCentroids,
             string inputPath, string outputPath)
@@ -352,7 +352,7 @@ namespace AudioAnalysisTools.DSP
             // First, concatenate mean, max, std for each second.
             // Then, write the features of each pre-defined frequency band into a separate CSV file.
             var filesName = allFilesMeanFeatureVectors.Keys.ToArray();
-            var minFeatures = allFilesMinFeatureVectors.Values.ToArray(); 
+            var minFeatures = allFilesMinFeatureVectors.Values.ToArray();
             var meanFeatures = allFilesMeanFeatureVectors.Values.ToArray();
             var maxFeatures = allFilesMaxFeatureVectors.Values.ToArray();
             var stdFeatures = allFilesStdFeatureVectors.Values.ToArray();

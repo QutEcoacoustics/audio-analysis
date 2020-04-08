@@ -10,14 +10,13 @@ namespace AnalysisPrograms
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Text;
     using System.Threading.Tasks;
     using Acoustics.Shared.Csv;
+    using AnalysisPrograms.Production.Arguments;
     using AudioAnalysisTools;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using McMaster.Extensions.CommandLineUtils;
-    using Production.Arguments;
     using TowseyLibrary;
 
     public class OscillationRecogniser
@@ -39,20 +38,20 @@ namespace AnalysisPrograms
 
         //Keys to recognise identifiers in PARAMETERS - INI file.
         //public static string key_FILE_EXT        = "FILE_EXT";
-        public static string key_DO_SEGMENTATION = "DO_SEGMENTATION";
-        public static string key_MIN_HZ = "MIN_HZ";
-        public static string key_MAX_HZ = "MAX_HZ";
-        public static string key_FRAME_OVERLAP = "FRAME_OVERLAP";
-        public static string key_DCT_DURATION = "DCT_DURATION";
-        public static string key_DCT_THRESHOLD = "DCT_THRESHOLD";
-        public static string key_MIN_OSCIL_FREQ = "MIN_OSCIL_FREQ";
-        public static string key_MAX_OSCIL_FREQ = "MAX_OSCIL_FREQ";
-        public static string key_MIN_DURATION = "MIN_DURATION";
-        public static string key_MAX_DURATION = "MAX_DURATION";
-        public static string key_EVENT_THRESHOLD = "EVENT_THRESHOLD";
-        public static string key_DRAW_SONOGRAMS = "DRAW_SONOGRAMS";
+        public static string Key_DO_SEGMENTATION = "DO_SEGMENTATION";
+        public static string Key_MIN_HZ = "MIN_HZ";
+        public static string Key_MAX_HZ = "MAX_HZ";
+        public static string Key_FRAME_OVERLAP = "FRAME_OVERLAP";
+        public static string Key_DCT_DURATION = "DCT_DURATION";
+        public static string Key_DCT_THRESHOLD = "DCT_THRESHOLD";
+        public static string Key_MIN_OSCIL_FREQ = "MIN_OSCIL_FREQ";
+        public static string Key_MAX_OSCIL_FREQ = "MAX_OSCIL_FREQ";
+        public static string Key_MIN_DURATION = "MIN_DURATION";
+        public static string Key_MAX_DURATION = "MAX_DURATION";
+        public static string Key_EVENT_THRESHOLD = "EVENT_THRESHOLD";
+        public static string Key_DRAW_SONOGRAMS = "DRAW_SONOGRAMS";
 
-        public static string eventsFile = "events.txt";
+        public static string EventsFile = "events.txt";
 
         public const string CommandName = "Od";
 
@@ -88,30 +87,41 @@ namespace AnalysisPrograms
             Dictionary<string, string> dict = config.GetTable();
             Dictionary<string, string>.KeyCollection keys = dict.Keys;
 
-            bool doSegmentation = bool.Parse(dict[key_DO_SEGMENTATION]);
-            int minHz = int.Parse(dict[key_MIN_HZ]);
-            int maxHz = int.Parse(dict[key_MAX_HZ]);
-            double frameOverlap = double.Parse(dict[key_FRAME_OVERLAP]);
-            double dctDuration = double.Parse(dict[key_DCT_DURATION]);       //duration of DCT in seconds
-            double dctThreshold = double.Parse(dict[key_DCT_THRESHOLD]);      //minimum acceptable value of a DCT coefficient
-            int minOscilFreq = int.Parse(dict[key_MIN_OSCIL_FREQ]);      //ignore oscillations below this threshold freq
-            int maxOscilFreq = int.Parse(dict[key_MAX_OSCIL_FREQ]);      //ignore oscillations above this threshold freq
-            double minDuration = double.Parse(dict[key_MIN_DURATION]);       //min duration of event in seconds
-            double maxDuration = double.Parse(dict[key_MAX_DURATION]);       //max duration of event in seconds
-            double eventThreshold = double.Parse(dict[key_EVENT_THRESHOLD]);  //min score for an acceptable event
-            int DRAW_SONOGRAMS = int.Parse(dict[key_DRAW_SONOGRAMS]);      //options to draw sonogram
+            bool doSegmentation = bool.Parse(dict[Key_DO_SEGMENTATION]);
+            int minHz = int.Parse(dict[Key_MIN_HZ]);
+            int maxHz = int.Parse(dict[Key_MAX_HZ]);
+            double frameOverlap = double.Parse(dict[Key_FRAME_OVERLAP]);
+            double dctDuration = double.Parse(dict[Key_DCT_DURATION]);       //duration of DCT in seconds
+            double dctThreshold = double.Parse(dict[Key_DCT_THRESHOLD]);      //minimum acceptable value of a DCT coefficient
+            int minOscilFreq = int.Parse(dict[Key_MIN_OSCIL_FREQ]);      //ignore oscillations below this threshold freq
+            int maxOscilFreq = int.Parse(dict[Key_MAX_OSCIL_FREQ]);      //ignore oscillations above this threshold freq
+            double minDuration = double.Parse(dict[Key_MIN_DURATION]);       //min duration of event in seconds
+            double maxDuration = double.Parse(dict[Key_MAX_DURATION]);       //max duration of event in seconds
+            double eventThreshold = double.Parse(dict[Key_EVENT_THRESHOLD]);  //min score for an acceptable event
+            int DRAW_SONOGRAMS = int.Parse(dict[Key_DRAW_SONOGRAMS]);      //options to draw sonogram
 
             Log.WriteIfVerbose("Freq band: {0} Hz - {1} Hz.)", minHz, maxHz);
             Log.WriteIfVerbose("Oscill bounds: " + minOscilFreq + " - " + maxOscilFreq + " Hz");
             Log.WriteIfVerbose("minAmplitude = " + dctThreshold);
             Log.WriteIfVerbose("Duration bounds: " + minDuration + " - " + maxDuration + " seconds");
 
-//#############################################################################################################################################
-            var results = Execute_ODDetect(recordingFile, doSegmentation, minHz, maxHz, frameOverlap, dctDuration, dctThreshold,
-                                           minOscilFreq, maxOscilFreq, eventThreshold, minDuration,  maxDuration);
+            //#############################################################################################################################################
+            var results = Execute_ODDetect(
+                recordingFile,
+                doSegmentation,
+                minHz,
+                maxHz,
+                frameOverlap,
+                dctDuration,
+                dctThreshold,
+                minOscilFreq,
+                maxOscilFreq,
+                eventThreshold,
+                minDuration,
+                maxDuration);
             Log.WriteLine("# Finished detecting oscillation events.");
 
-//#############################################################################################################################################
+            //#############################################################################################################################################
 
             var sonogram = results.Item1;
             var hits = results.Item2;
@@ -147,7 +157,8 @@ namespace AnalysisPrograms
             Log.WriteLine("# Finished recording:- " + recordingFile.Name);
         }
 
-        public static Tuple<BaseSonogram, double[,], double[], List<AcousticEvent>, double[], TimeSpan> Execute_ODDetect(FileInfo wavPath,
+        public static Tuple<BaseSonogram, double[,], double[], List<AcousticEvent>, double[], TimeSpan> Execute_ODDetect(
+            FileInfo wavPath,
             bool doSegmentation, int minHz, int maxHz, double frameOverlap, double dctDuration, double dctThreshold, int minOscilFreq, int maxOscilFreq,
             double eventThreshold, double minDuration, double maxDuration)
         {
@@ -165,9 +176,14 @@ namespace AnalysisPrograms
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
 
             Log.WriteLine("Signal: Duration={0}, Sample Rate={1}", sonogram.Duration, sr);
-            Log.WriteLine("Frames: Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f0}%, Offset={3:f1}ms, Frames/s={4:f1}",
-                                       sonogram.Configuration.WindowSize, sonogram.FrameCount, sonogram.FrameDuration * 1000,
-                                       sonogram.FrameStep * 1000, sonogram.FramesPerSecond, frameOverlap);
+            Log.WriteLine(
+                "Frames: Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f0}%, Offset={3:f1}ms, Frames/s={4:f1}",
+                sonogram.Configuration.WindowSize,
+                sonogram.FrameCount,
+                sonogram.FrameDuration * 1000,
+                sonogram.FrameStep * 1000,
+                sonogram.FramesPerSecond,
+                frameOverlap);
             int binCount = (int)(maxHz / sonogram.FBinWidth) - (int)(minHz / sonogram.FBinWidth) + 1;
             Log.WriteIfVerbose("Freq band: {0} Hz - {1} Hz. (Freq bin count = {2})", minHz, maxHz, binCount);
 

@@ -5,7 +5,7 @@
 namespace AcousticWorkbench
 {
     using System.Threading.Tasks;
-    using Models;
+    using AcousticWorkbench.Models;
 
     public class AudioRecordingService : Service
     {

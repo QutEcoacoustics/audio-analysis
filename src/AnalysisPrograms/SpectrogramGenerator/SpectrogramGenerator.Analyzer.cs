@@ -1,3 +1,7 @@
+// <copyright file="SpectrogramGenerator.Analyzer.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
 namespace AnalysisPrograms.SpectrogramGenerator
 {
     using System;
@@ -6,18 +10,11 @@ namespace AnalysisPrograms.SpectrogramGenerator
     using System.Reflection;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
-    using Acoustics.Shared.ImageSharp;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
-    using AudioAnalysisTools;
-    using AudioAnalysisTools.DSP;
-    using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using log4net;
     using SixLabors.ImageSharp;
-    using SixLabors.ImageSharp.PixelFormats;
-    using SixLabors.ImageSharp.Processing;
-    using TowseyLibrary;
 
     /// <summary>
     /// This analyzer simply generates short (i.e. one minute) spectrograms and outputs them to CSV files.

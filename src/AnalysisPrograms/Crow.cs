@@ -1,4 +1,4 @@
-﻿// <copyright file="Crow.cs" company="QutEcoacoustics">
+// <copyright file="Crow.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -19,7 +19,7 @@ namespace AnalysisPrograms
     public class Crow
     {
         /// <summary>
-        /// The CORE ANALYSIS METHOD
+        /// The CORE ANALYSIS METHOD.
         /// </summary>
         public static Tuple<BaseSonogram, double[,], Plot, List<AcousticEvent>, TimeSpan> Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict, TimeSpan segmentStartOffset)
         {

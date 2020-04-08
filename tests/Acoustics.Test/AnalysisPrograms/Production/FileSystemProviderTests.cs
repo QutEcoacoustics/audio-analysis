@@ -7,7 +7,6 @@ namespace Acoustics.Test.AnalysisPrograms.Production
     using System;
     using System.IO;
     using System.IO.Abstractions;
-    using Acoustics.Shared.Contracts;
     using Acoustics.Test.TestHelpers;
     using global::AnalysisPrograms.Production;
     using Microsoft.VisualStudio.TestTools.UnitTesting;

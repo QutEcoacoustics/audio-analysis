@@ -303,10 +303,11 @@ namespace TowseyLibrary
         public static void TestGetNthPercentileBin()
         {
             int[] distribution = new int[100];
+
             // distribution[0] = 1;
             // distribution[99] = 1;
 
-            for(int i = 0; i < 100; i++)
+            for (int i = 0; i < 100; i++)
             {
                 // distribution[i] = 0;
                 distribution[i] = 1;

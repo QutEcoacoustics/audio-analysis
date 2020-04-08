@@ -8,10 +8,9 @@ namespace AnalysisPrograms.Production.Arguments
     using System.ComponentModel.DataAnnotations;
     using System.IO;
     using Acoustics.Shared.ConfigFile;
-
     using AnalysisBase;
+    using AnalysisPrograms.Production.Validation;
     using McMaster.Extensions.CommandLineUtils;
-    using Validation;
 
     public abstract class SourceConfigOutputDirArguments
         : SourceAndConfigArguments
@@ -33,8 +32,8 @@ namespace AnalysisPrograms.Production.Arguments
         /// <param name="outputIntermediate">
         /// The output Intermediate switch - true to use the default writing behavior.
         /// </param>
-        /// <param name="resultSubDirectory">Path to further nest results</param>
-        /// <param name="configuration">The configuration object to use</param>
+        /// <param name="resultSubDirectory">Path to further nest results.</param>
+        /// <param name="configuration">The configuration object to use.</param>
         /// <returns>
         /// An AnalysisSettings object.
         /// </returns>

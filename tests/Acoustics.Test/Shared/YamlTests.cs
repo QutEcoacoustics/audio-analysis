@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="YamlTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -13,8 +13,6 @@ namespace Acoustics.Test.Shared
     using Acoustics.Shared;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-    using Acoustics.Shared.Contracts;
 
     [TestClass]
     public class YamlTests
@@ -130,17 +128,17 @@ EventThreshold: 0.2
 ";
 
         private static readonly YamlTestDataClass TestObject = new YamlTestDataClass
-            {
-                TestFile = "C:\\Temp\\test.tmp",
-                SomeProperty = "Hello world",
-            };
+        {
+            TestFile = "C:\\Temp\\test.tmp",
+            SomeProperty = "Hello world",
+        };
 
         private readonly YamlTestWrapperClass wrapperTestCase = new YamlTestWrapperClass
-            {
-                InfoA = new YamlTestDataClass { SomeProperty = "Hello world", TestFile = "C:\\Temp\\test.tmp" },
-                InfoB = new YamlTestDataClass { SomeProperty = "A different Hello", TestFile = "C:\\Temp\\test.tmp" },
-                InfoC = new YamlTestDataClass { SomeProperty = "Hello world", TestFile = "C:\\Temp\\a_different_test.tmp" },
-            };
+        {
+            InfoA = new YamlTestDataClass { SomeProperty = "Hello world", TestFile = "C:\\Temp\\test.tmp" },
+            InfoB = new YamlTestDataClass { SomeProperty = "A different Hello", TestFile = "C:\\Temp\\test.tmp" },
+            InfoC = new YamlTestDataClass { SomeProperty = "Hello world", TestFile = "C:\\Temp\\a_different_test.tmp" },
+        };
 
         private FileInfo testDocument;
 

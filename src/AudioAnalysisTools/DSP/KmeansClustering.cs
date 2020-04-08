@@ -60,7 +60,7 @@ namespace AudioAnalysisTools.DSP
 
         /// <summary>
         /// Draw cluster image directly from a csv file containing the clusters' centroids (Michael's code)
-        /// The output image is not correct yet, so I commented the method for now!
+        /// The output image is not correct yet, so I commented the method for now!.
         /// </summary>
         /*
         public static void DrawClusterImage(int patchWidth, int patchHeight, int[] sortOrder)
@@ -139,7 +139,7 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// reconstruct the spectrogram using centroids
+        /// reconstruct the spectrogram using centroids.
         /// </summary>
         public static double[,] ReconstructSpectrogram(double[,] sequentialPatchMatrix, KMeansClusterCollection clusters)
         {

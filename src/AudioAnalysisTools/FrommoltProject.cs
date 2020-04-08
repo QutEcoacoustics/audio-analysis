@@ -6,12 +6,11 @@ namespace AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.IO;
-    using Acoustics.Shared;
     using Acoustics.Shared.ImageSharp;
-    using Indices;
+    using AudioAnalysisTools.Indices;
     using SixLabors.Fonts;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
     using TowseyLibrary;
@@ -132,7 +131,8 @@ namespace AudioAnalysisTools
             int width = 1;
             int height = image.Height;
             Image<Rgb24> spacerImage = new Image<Rgb24>(width, height);
-            spacerImage.Mutate(g => {
+            spacerImage.Mutate(g =>
+            {
                 g.Clear(Color.DarkGray);
             });
 

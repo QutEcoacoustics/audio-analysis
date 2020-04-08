@@ -1,7 +1,10 @@
+// <copyright file="TestImage.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
 namespace Acoustics.Test.TestHelpers
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
@@ -340,7 +343,7 @@ namespace Acoustics.Test.TestHelpers
 
                 if (edge.HasFlag(Edge.Right))
                 {
-                    cursor = new Point( this.image.Width, cursor.Y);
+                    cursor = new Point(this.image.Width, cursor.Y);
                 }
 
                 if (edge.HasFlag(Edge.Left))

@@ -7,16 +7,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.IO;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.ImageSharp;
     using AudioAnalysisTools.Indices;
-
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-
     using TowseyLibrary;
     using Path = System.IO.Path;
 
@@ -323,7 +321,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                             colour = colourChart["+99.9%"];
                         }
 
- // 99.9% conf
+                        // 99.9% conf
                         else
                         {
                             if (zScore > 2.33)
@@ -331,7 +329,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                 colour = colourChart["+99.0%"];
                             }
 
- // 99.0% conf
+                            // 99.0% conf
                             else
                             {
                                 if (zScore > 1.65)
@@ -339,7 +337,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                     colour = colourChart["+95.0%"];
                                 }
 
- // 95% conf
+                                // 95% conf
                                 else
                                 {
                                     if (zScore < 0.0)
@@ -356,7 +354,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                             }
                         }
 
- // if() else
+                        // if() else
                         bmp[col, row] = colour;
                     }
                     else
@@ -366,7 +364,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                             colour = colourChart["-99.9%"];
                         }
 
- // 99.9% conf
+                        // 99.9% conf
                         else
                         {
                             if (zScore > 2.33)
@@ -374,7 +372,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                 colour = colourChart["-99.0%"];
                             }
 
- // 99.0% conf
+                            // 99.0% conf
                             else
                             {
                                 if (zScore > 1.65)
@@ -382,7 +380,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                                     colour = colourChart["-95.0%"];
                                 }
 
- // 95% conf
+                                // 95% conf
                                 else
                                 {
                                     if (zScore < 0.0)
@@ -400,20 +398,20 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                             }
                         }
 
- // if() else
+                        // if() else
                         bmp[col, row] = colour;
                     }
                 }
 
- // all rows
+                // all rows
             }
 
- // all rows
+            // all rows
 
             return bmp;
         }
 
- // DrawDistanceSpectrogram()
+        // DrawDistanceSpectrogram()
 
         public static Image<Rgb24> DrawTitleBarOfEuclidianDistanceSpectrogram(
             string name1,

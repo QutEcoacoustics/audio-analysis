@@ -6,7 +6,6 @@ namespace AnalysisPrograms.ContentDescription
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -20,6 +19,7 @@ namespace AnalysisPrograms.ContentDescription
     using AudioAnalysisTools.LongDurationSpectrograms;
     using AudioAnalysisTools.WavTools;
     using log4net;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
     using Path = System.IO.Path;
@@ -112,6 +112,7 @@ namespace AnalysisPrograms.ContentDescription
             // DO THE CONTENT DESCRIPTION FOR ONE MINUTE HERE
             // First get acoustic indices for one minute, convert to Dictionary and normalize the values.
             var indicesDictionary = segmentResults.AsArray().ToTwoDimensionalArray(SpectralIndexValuesForContentDescription.CachedSelectors);
+
             //var indicesDictionary = IndexCalculateSixOnly.ConvertIndicesToDictionary(segmentResults);
             foreach (string key in ContentSignatures.IndexNames)
             {
@@ -146,6 +147,7 @@ namespace AnalysisPrograms.ContentDescription
             };
 
             analysisResults.SpectralIndices[0].ResultStartSeconds = segmentSettings.SegmentStartOffset.TotalSeconds;
+
             //spectralIndexBase.ResultStartSeconds >= result.SegmentStartOffset.TotalSeconds,
 
             return analysisResults;

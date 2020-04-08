@@ -74,13 +74,6 @@ namespace AnalysisPrograms.Recognizers
         /// <summary>
         /// Do your analysis. This method is called once per segment (typically one-minute segments).
         /// </summary>
-        /// <param name="recording"></param>
-        /// <param name="configuration"></param>
-        /// <param name="segmentStartOffset"></param>
-        /// <param name="getSpectralIndexes"></param>
-        /// <param name="outputDirectory"></param>
-        /// <param name="imageWidth"></param>
-        /// <returns></returns>
         public override RecognizerResults Recognize(AudioRecording recording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
             var recognizerConfig = new CriniaRemotaConfig();
@@ -222,9 +215,9 @@ namespace AnalysisPrograms.Recognizers
             // do a recognizer test.
             if (MainEntry.InDEBUG)
             {
-               // var testDir = new DirectoryInfo(outputDirectory.Parent.Parent.FullName);
-               // TestTools.RecognizerScoresTest(recording.BaseName, testDir, recognizerConfig.AnalysisName, peakScores);
-               // AcousticEvent.TestToCompareEvents(recording.BaseName, testDir, recognizerConfig.AnalysisName, prunedEvents);
+                // var testDir = new DirectoryInfo(outputDirectory.Parent.Parent.FullName);
+                // TestTools.RecognizerScoresTest(recording.BaseName, testDir, recognizerConfig.AnalysisName, peakScores);
+                // AcousticEvent.TestToCompareEvents(recording.BaseName, testDir, recognizerConfig.AnalysisName, prunedEvents);
             }
 
             var plot = new Plot(this.DisplayName, peakScores, recognizerConfig.EventThreshold);
@@ -248,7 +241,7 @@ namespace AnalysisPrograms.Recognizers
             }
 
             return new RecognizerResults
-                       {
+            {
                 Sonogram = sonogram,
                 Hits = hits,
                 Plots = plot.AsList(),

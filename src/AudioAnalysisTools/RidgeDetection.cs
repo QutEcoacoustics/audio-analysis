@@ -1,4 +1,4 @@
-﻿// <copyright file="RidgeDetection.cs" company="QutEcoacoustics">
+// <copyright file="RidgeDetection.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -125,7 +125,7 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        /// returns four matrices containing the values of ridges in four directions
+        /// returns four matrices containing the values of ridges in four directions.
         /// </summary>
         public static List<double[,]> Sobel5X5RidgeDetection_Version2(double[,] matrix)
         {
@@ -399,9 +399,6 @@ namespace AudioAnalysisTools
         /// <summary>
         /// matrix is assumed to be a spectrogram image spectrogram, whose rows are freq bins and columns are time frames.
         /// </summary>
-        /// <param name="matrix"></param>
-        /// <param name="magnitudeThreshold"></param>
-        /// <returns></returns>
         public static byte[,] StructureTensorRidgeDetection(double[,] matrix, double magnitudeThreshold, double dominanceThreshold)
         {
             //int ridgeLength = ridgeConfiguration.RidgeMatrixLength;
@@ -437,17 +434,17 @@ namespace AudioAnalysisTools
                     //here are the rules for deciding whether have ridge or not.
                     if (result.AvMagnitude > magnitudeThreshold && result.AvDominance > dominanceThreshold)
                     {
-                            hits[r, c] = result.RidgeDirectionCategory;
-                            hits[r - 1, c] = result.RidgeDirectionCategory;
-                            hits[r + 1, c] = result.RidgeDirectionCategory;
+                        hits[r, c] = result.RidgeDirectionCategory;
+                        hits[r - 1, c] = result.RidgeDirectionCategory;
+                        hits[r + 1, c] = result.RidgeDirectionCategory;
                     }
                 }
             }
 
-            /// filter out some redundant ridges
+            // filter out some redundant ridges
             //var prunedPoiList = ImageTools.PruneAdjacentTracks(poiList, rows, cols);
             //var prunedPoiList1 = ImageTools.IntraPruneAdjacentTracks(prunedPoiList, rows, cols);
-            ////var filteredPoiList = ImageAnalysisTools.RemoveIsolatedPoi(prunedPoiList1, rows, cols, ridgeConfiguration.FilterRidgeMatrixLength, ridgeConfiguration.MinimumNumberInRidgeInMatrix);
+            //var filteredPoiList = ImageAnalysisTools.RemoveIsolatedPoi(prunedPoiList1, rows, cols, ridgeConfiguration.FilterRidgeMatrixLength, ridgeConfiguration.MinimumNumberInRidgeInMatrix);
             //var filteredPoiList = ImageTools.FilterRidges(prunedPoiList1, rows, cols, ridgeConfiguration.FilterRidgeMatrixLength, ridgeConfiguration.MinimumNumberInRidgeInMatrix);
             return hits;
         }
@@ -459,8 +456,6 @@ namespace AudioAnalysisTools
         /// <summary>
         ///
         /// </summary>
-        /// <param name="matrix"></param>
-        /// <returns></returns>
         public static byte[,] IdentifySpectralRidges(double[,] matrix, double threshold)
         {
             var binary1 = IdentifyHorizontalRidges(matrix, threshold);
@@ -499,7 +494,9 @@ namespace AudioAnalysisTools
 
             //A: CONVERT MATRIX to BINARY FORM INDICATING SPECTRAL RIDGES
             var binary = new byte[rows, cols];
-            for (int r = 0; r < rows; r++) //row at a time, each row = one frame.
+
+            // row at a time, each row = one frame.
+            for (int r = 0; r < rows; r++)
             {
                 double[] row = DataTools.GetRow(matrix, r);
                 row = DataTools.filterMovingAverage(row, 3); //## SMOOTH FREQ BIN - high value breaks up vertical tracks
@@ -530,7 +527,9 @@ namespace AudioAnalysisTools
 
             //A: CONVERT MATRIX to BINARY FORM INDICATING SPECTRAL RIDGES
             var binary = new byte[rows, cols];
-            for (int r = 2; r < rows - 2; r++) //row at a time, each row = one frame.
+
+            // row at a time, each row = one frame.
+            for (int r = 2; r < rows - 2; r++)
             {
                 for (int c = 2; c < cols - 2; c++)
                 {
@@ -561,16 +560,16 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        ///JOINS DISCONNECTED RIDGES
+        ///JOINS DISCONNECTED RIDGES.
         /// </summary>
-        /// <returns></returns>
         public static byte[,] JoinDisconnectedRidgesInMatrix(byte[,] hits, double[,] matrix, double threshold)
         {
             int rows = hits.GetLength(0);
             int cols = hits.GetLength(1);
             byte[,] newM = new byte[rows, cols];
 
-            for (int r = 0; r < rows - 3; r++) //row at a time, each row = one frame.
+            // row at a time, each row = one frame.
+            for (int r = 0; r < rows - 3; r++)
             {
                 for (int c = 3; c < cols - 3; c++)
                 {
@@ -673,9 +672,7 @@ namespace AudioAnalysisTools
         /// CONVERTs a binary matrix of spectral peak tracks to an output matrix containing the acoustic intensity
         /// in the neighbourhood of those peak tracks.
         /// </summary>
-        /// <param name="binary">The spectral peak tracks</param>
-        /// <param name="matrix">The original sonogram</param>
-        /// <returns></returns>
+        /// <param name="binary">The spectral peak tracks.</param>
         public static double[,] SpectralRidges2Intensity(byte[,] binary, double[,] sonogram)
         {
             //speak track neighbourhood
@@ -689,7 +686,8 @@ namespace AudioAnalysisTools
             double[,] outM = new double[rows, cols];
 
             //initialise the output matrix/sonogram to the minimum acoustic intensity
-            for (int r = 0; r < rows; r++) //init matrix to min
+            // init matrix to min
+            for (int r = 0; r < rows; r++)
             {
                 for (int c = 0; c < cols; c++)
                 {
@@ -698,7 +696,9 @@ namespace AudioAnalysisTools
             }
 
             double localdb;
-            for (int r = rNH; r < rows - rNH; r++) //row at a time, each row = one frame.
+
+            // row at a time, each row = one frame.
+            for (int r = rNH; r < rows - rNH; r++)
             {
                 for (int c = cNH; c < cols - cNH; c++)
                 {
@@ -739,7 +739,9 @@ namespace AudioAnalysisTools
 
             //A: CONVERT MATRIX to BINARY FORM INDICATING SPECTRAL PEAKS
             double[,] binary = new double[rows, cols];
-            for (int r = 2; r < rows - 2; r++) //row at a time, each row = one frame.
+
+            // row at a time, each row = one frame.
+            for (int r = 2; r < rows - 2; r++)
             {
                 for (int c = 2; c < cols - 2; c++)
                 {

@@ -12,7 +12,7 @@ namespace TowseyLibrary
     /// An implementation of Continuous Wavelet Transform (CWT) using the Haar wavelet.
     /// For details on the Haar wavelet, and the source for the details in this code,
     /// read "WAVELETS FOR KIDS, A Tutorial Introduction", by Brani Vidakovic and Peter Mueller, Duke University.
-    /// WARNING: This article on the Haar wavelet is NOT for kids!
+    /// WARNING: This article on the Haar wavelet is NOT for kids!.
     /// </summary>
     public class WaveletTransformContinuous
     {
@@ -23,9 +23,9 @@ namespace TowseyLibrary
         private double[] Signal { get; set; }
 
         /// <summary>
-        /// The signal can be any length. Need not be power of 2 in length
+        /// Initializes a new instance of the <see cref="WaveletTransformContinuous"/> class.
+        /// The signal can be any length. Need not be power of 2 in length.
         /// </summary>
-        /// <param name="signal"></param>
         public WaveletTransformContinuous(double[] signal, int maxScale)
         {
             //if(! DataTools.IsPowerOfTwo((ulong)signal.Length))
@@ -158,10 +158,6 @@ namespace TowseyLibrary
         /// <summary>
         ///
         /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="fftWindowWidth"></param>
-        /// <param name="wpdLevelNumber"></param>
-        /// <returns></returns>
         public static double[,] GetFrequencyByOscillationsMatrix(double[] signal, int fftWindowWidth, int wpdLevelNumber)
         {
             // produce spectrogram
@@ -184,10 +180,8 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// implements the Haar low pass filter
+        /// implements the Haar low pass filter.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <returns></returns>
         public static double[] LowPassAndDecimate(double[] signal)
         {
             int sigLength = signal.Length;
@@ -209,10 +203,8 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// implements the Haar high pass filter
+        /// implements the Haar high pass filter.
         /// </summary>
-        /// <param name="signal"></param>
-        /// <returns></returns>
         public static double[] HiPassAndDecimate(double[] signal)
         {
             int sigLength = signal.Length;
@@ -358,8 +350,6 @@ namespace TowseyLibrary
         ///     b is a coefficient of the wavelet sequence and a a coefficient of the scaling sequence.
         ///     N is the wavelet index, i.e., 2 for D2.
         /// </summary>
-        /// <param name="Daubechies_DN"></param>
-        /// <returns></returns>
         public static double[] GetWaveletCoefficients(double[] Daubechies_DN)
         {
             int N = Daubechies_DN.Length;

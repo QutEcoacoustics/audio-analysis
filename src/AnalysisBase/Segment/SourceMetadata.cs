@@ -13,8 +13,8 @@ namespace AnalysisBase.Segment
         /// Initializes a new instance of the <see cref="SourceMetadata"/> class.
         /// </summary>
         /// <param name="duration">The duration of the source audio object.</param>
-        /// <param name="sampleRate">The sample rate of the source audio object</param>
-        /// <param name="identifier">A unique textual identifier</param>
+        /// <param name="sampleRate">The sample rate of the source audio object.</param>
+        /// <param name="identifier">A unique textual identifier.</param>
         /// <param name="recordedDate">The Date the audio recording was recorded.</param>
         public SourceMetadata(TimeSpan duration, int sampleRate, string identifier, DateTimeOffset? recordedDate)
         {

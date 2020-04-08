@@ -88,7 +88,7 @@ namespace BTR.Core.Linq
 
     /// <summary>
     /// Expression visitor
-    /// (from http://blogs.msdn.com/mattwar/archive/2007/07/31/linq-building-an-iqueryable-provider-part-ii.aspx)
+    /// (from http://blogs.msdn.com/mattwar/archive/2007/07/31/linq-building-an-iqueryable-provider-part-ii.aspx).
     /// </summary>
     public abstract class ExpressionVisitor
     {

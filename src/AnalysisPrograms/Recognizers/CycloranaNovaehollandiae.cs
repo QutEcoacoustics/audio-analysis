@@ -15,20 +15,20 @@ namespace AnalysisPrograms.Recognizers
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Reflection;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
+    using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-    using Base;
     using log4net;
+    using SixLabors.ImageSharp;
     using TowseyLibrary;
     using Path = System.IO.Path;
 
@@ -126,15 +126,15 @@ namespace AnalysisPrograms.Recognizers
 
             // i: MAKE SONOGRAM
             var sonoConfig = new SonogramConfig
-                {
-                    SourceFName = recording.BaseName,
-                    WindowSize = frameSize,
-                    WindowOverlap = windowOverlap,
+            {
+                SourceFName = recording.BaseName,
+                WindowSize = frameSize,
+                WindowOverlap = windowOverlap,
 
-                    //NoiseReductionType = NoiseReductionType.NONE,
-                    NoiseReductionType = NoiseReductionType.Standard,
-                    NoiseReductionParameter = 0.1,
-                };
+                //NoiseReductionType = NoiseReductionType.NONE,
+                NoiseReductionType = NoiseReductionType.Standard,
+                NoiseReductionParameter = 0.1,
+            };
 
             TimeSpan recordingDuration = recording.Duration;
             int sr = recording.SampleRate;

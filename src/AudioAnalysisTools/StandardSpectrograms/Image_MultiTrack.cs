@@ -43,7 +43,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Image_MultiTrack"/> class.
-        /// CONSTRUCTOR
+        /// CONSTRUCTOR.
         /// </summary>
         public Image_MultiTrack(Image<Rgb24> image)
         {
@@ -272,7 +272,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         /// <summary>
         /// superimposes a matrix of scores on top of a sonogram.
-        /// Only draws lines on every second row so that the underling sonogram can be discerned
+        /// Only draws lines on every second row so that the underling sonogram can be discerned.
         /// </summary>
         public void OverlayMatrix(IImageProcessingContext g)
         {
@@ -285,7 +285,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             //ImageTools.DrawMatrix(DataTools.MatrixRotate90Anticlockwise(this.SuperimposedMatrix), @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev1\superimposed1.png", false);
 
-            for (int c = 1; c < cols; c++) // traverse columns - skip DC column
+            //  traverse columns - skip DC column
+            for (int c = 1; c < cols; c++)
             {
                 for (int r = 0; r < rows; r++)
                 {
@@ -308,7 +309,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         /// <summary>
         /// superimposes a matrix of scores on top of a sonogram.
-        /// Only draws lines on every second row so that the underling sonogram can be discerned
+        /// Only draws lines on every second row so that the underling sonogram can be discerned.
         /// </summary>
         public Image<Rgb24> OverlayMatrix(Image<Rgb24> bmp)
         {
@@ -488,7 +489,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         /// <summary>
         /// superimposes a matrix of scores on top of a sonogram. USES RAINBOW PALLETTE
-        /// ASSUME MATRIX consists of integers >=0;
+        /// ASSUME MATRIX consists of integers >=0.
         /// </summary>
         private void OverlayDiscreteColorMatrix(IImageProcessingContext g)
         {

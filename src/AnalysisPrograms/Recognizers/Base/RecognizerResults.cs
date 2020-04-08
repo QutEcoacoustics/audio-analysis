@@ -11,9 +11,9 @@ namespace AnalysisPrograms.Recognizers.Base
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using AudioAnalysisTools;
     using AudioAnalysisTools.StandardSpectrograms;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
 
@@ -39,7 +39,7 @@ namespace AnalysisPrograms.Recognizers.Base
 
         /// <summary>
         /// Gets or sets a list of plots.
-        /// Used by the multi recognizer
+        /// Used by the multi recognizer.
         /// </summary>
         public List<Plot> Plots
         {

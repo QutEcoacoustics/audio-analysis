@@ -8,13 +8,13 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
     using System.Collections.Generic;
     using System.IO;
     using Acoustics.Shared;
+    using Acoustics.Test.TestHelpers;
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.StandardSpectrograms;
     using global::AudioAnalysisTools.WavTools;
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using SixLabors.ImageSharp;
-    using TestHelpers;
     using Path = System.IO.Path;
 
     /// <summary>
@@ -23,7 +23,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
     /// (1) small tests are better
     /// (2) simpler tests are better
     /// (3) use an appropriate serialisation format
-    /// (4) for binary large objects(BLOBs) make sure git-lfs is tracking them
+    /// (4) for binary large objects(BLOBs) make sure git-lfs is tracking them.
     /// </summary>
     [TestClass]
     public class FrequencyScaleTests
@@ -291,7 +291,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
         /// 24 BIT JASCO RECORDINGS from GBR must be converted to 16 bit.
         /// ffmpeg -i source_file.wav -sample_fmt s16 out_file.wav
         /// e.g. ". C:\Work\Github\audio-analysis\Extra Assemblies\ffmpeg\ffmpeg.exe" -i "C:\SensorNetworks\WavFiles\MarineRecordings\JascoGBR\AMAR119-00000139.00000139.Chan_1-24bps.1375012796.2013-07-28-11-59-56.wav" -sample_fmt s16 "C:\SensorNetworks\Output\OctaveFreqScale\JascoeMarineGBR116bit.wav"
-        /// ffmpeg binaries are in C:\Work\Github\audio-analysis\Extra Assemblies\ffmpeg
+        /// ffmpeg binaries are in C:\Work\Github\audio-analysis\Extra Assemblies\ffmpeg.
         /// </summary>
         [TestMethod]
         public void OctaveFrequencyScale2()

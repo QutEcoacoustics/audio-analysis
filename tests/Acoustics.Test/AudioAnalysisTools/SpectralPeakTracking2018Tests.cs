@@ -11,6 +11,7 @@ namespace Acoustics.Test.AudioAnalysisTools
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Csv;
+    using Acoustics.Test.TestHelpers;
     using global::AnalysisPrograms.SpectralPeakTracking;
     using global::AudioAnalysisTools;
     using global::AudioAnalysisTools.DSP;
@@ -18,7 +19,6 @@ namespace Acoustics.Test.AudioAnalysisTools
     using global::AudioAnalysisTools.WavTools;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using SixLabors.ImageSharp;
-    using TestHelpers;
 
     [TestClass]
     public class SpectralPeakTracking2018Tests
@@ -77,6 +77,7 @@ namespace Acoustics.Test.AudioAnalysisTools
             var configPath = "SpectralPeakTrackingConfig.yml";
             var recordingPath = "SM27 22 Sep 2018 3.30 am.wav";
             var imagePath = "image_whistle_peaks_1500_3500_100_250_6.bmp";
+
             //var trackImagePath = @"trackImage.bmp";
             var pathToCsvFile = "PeakTrackInfo_SM27 22 Sep 2018 3.30 am.csv";
 
@@ -107,16 +108,17 @@ namespace Acoustics.Test.AudioAnalysisTools
             {
                 WindowSize = frameSize,
                 WindowOverlap = frameOverlap,
+
                 //DoMelScale = (scaleType == FreqScaleType.Mel) ? true : false,
                 //MelBinCount = (scaleType == FreqScaleType.Mel) ? finalBinCount : frameSize / 2,
                 NoiseReductionType = NoiseReductionType.None,
             };
 
-
             var sonoConfig = new SonogramConfig()
             {
                 WindowSize = frameSize,
                 WindowOverlap = frameOverlap,
+
                 //DoMelScale = (scaleType == FreqScaleType.Mel) ? true : false,
                 //MelBinCount = (scaleType == FreqScaleType.Mel) ? finalBinCount : frameSize / 2,
                 NoiseReductionType = NoiseReductionType.None,
@@ -168,7 +170,6 @@ namespace Acoustics.Test.AudioAnalysisTools
             // draw spectral tracks
             //var trackImage = SpectralPeakTracking2018.DrawTracks(decibelSpectrogram, hits, output.SpecTracks);
             //trackImage.Save(trackImagePath, ImageFormat.Bmp);
-
         }
     }
 }

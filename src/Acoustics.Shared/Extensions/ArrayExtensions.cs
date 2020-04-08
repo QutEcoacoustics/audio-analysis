@@ -10,22 +10,22 @@
 // ReSharper disable once CheckNamespace
 namespace System
 {
-    using Diagnostics;
+    using System.Diagnostics;
 
     public static class ArrayExtensions
     {
-         /// <summary>
-         /// A helper method designed to fill an array with the specified values.
-         /// Modifies the array in place, return value is only for fluent method calling.
-         /// Fast is a bit of a misnomer - this operation is only faster after about a million elements!
-         /// </summary>
-         /// <remarks>
-         /// https://github.com/mykohsu/Extensions/blob/master/ArrayExtensions.cs
-         /// Inspired from several Stack Overflow discussions and an implementation by David Walker at http://coding.grax.com/2011/11/initialize-array-to-value-in-c-very.html
-         /// </remarks>
-         /// <typeparam name="T">They type of the array.</typeparam>
-         /// <param name="destinationArray">The array being filled.</param>
-         /// <param name="value">The value[s] to insert into the array.</param>
+        /// <summary>
+        /// A helper method designed to fill an array with the specified values.
+        /// Modifies the array in place, return value is only for fluent method calling.
+        /// Fast is a bit of a misnomer - this operation is only faster after about a million elements!.
+        /// </summary>
+        /// <remarks>
+        /// https://github.com/mykohsu/Extensions/blob/master/ArrayExtensions.cs
+        /// Inspired from several Stack Overflow discussions and an implementation by David Walker at http://coding.grax.com/2011/11/initialize-array-to-value-in-c-very.html.
+        /// </remarks>
+        /// <typeparam name="T">They type of the array.</typeparam>
+        /// <param name="destinationArray">The array being filled.</param>
+        /// <param name="value">The value[s] to insert into the array.</param>
         public static T[] FastFill<T>(this T[] destinationArray, params T[] value)
         {
             if (destinationArray == null)
@@ -45,8 +45,8 @@ namespace System
             int copyLength;
 
             for (copyLength = value.Length; copyLength < arrayToFillHalfLength; copyLength <<= 1)
-             {
-                 Array.Copy(destinationArray, 0, destinationArray, copyLength, copyLength);
+            {
+                Array.Copy(destinationArray, 0, destinationArray, copyLength, copyLength);
             }
 
             Array.Copy(destinationArray, 0, destinationArray, copyLength, destinationArray.Length - copyLength);
@@ -60,7 +60,7 @@ namespace System
         /// </summary>
         /// <remarks>
         /// https://github.com/mykohsu/Extensions/blob/master/ArrayExtensions.cs
-        /// Inspired from several Stack Overflow discussions and an implementation by David Walker at http://coding.grax.com/2011/11/initialize-array-to-value-in-c-very.html
+        /// Inspired from several Stack Overflow discussions and an implementation by David Walker at http://coding.grax.com/2011/11/initialize-array-to-value-in-c-very.html.
         /// </remarks>
         /// <typeparam name="T">They type of the array.</typeparam>
         /// <param name="destinationArray">The array being filled.</param>
@@ -146,7 +146,7 @@ namespace System
         }
 
         /// <summary>
-        /// retrieving the max value of a vector
+        /// retrieving the max value of a vector.
         /// </summary>
         public static double GetMaxValue(this double[] data)
         {
@@ -163,7 +163,7 @@ namespace System
         }
 
         /// <summary>
-        /// retrieving the min value of a vector
+        /// retrieving the min value of a vector.
         /// </summary>
         public static double GetMinValue(this double[] data)
         {

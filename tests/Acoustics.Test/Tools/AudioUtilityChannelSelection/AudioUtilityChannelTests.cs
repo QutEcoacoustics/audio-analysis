@@ -5,7 +5,7 @@
 // <summary>
 //   Defines the AudioUtilityChannelTests type.
 //
-//   Our SoX implementations supports advanced functionality for processing channels. 
+//   Our SoX implementations supports advanced functionality for processing channels.
 //   Here add tests to make sure they behave as expected
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
@@ -15,15 +15,15 @@ namespace Acoustics.Test.Tools.AudioUtilityChannelSelection
     using System;
     using System.IO;
     using Acoustics.Shared;
+    using Acoustics.Test.TestHelpers;
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
     using Acoustics.Tools.Wav;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using ObjectCloner.Extensions;
-    using TestHelpers;
 
     [TestClass]
-    public class AudioUtilityChannelTests 
+    public class AudioUtilityChannelTests
     {
         private const string FourChannelFile = "4channelsPureTones.wav";
         private const string FourChannelFileOgg = "4channelsPureTones.ogg";

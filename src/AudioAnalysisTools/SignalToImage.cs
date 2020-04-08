@@ -5,13 +5,13 @@
 namespace AudioAnalysisTools
 {
     using System;
-    using SixLabors.ImageSharp;
     using System.Linq;
     using Acoustics.Tools.Wav;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.WavTools;
     using MathNet.Numerics.IntegralTransforms;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
-    using StandardSpectrograms;
-    using WavTools;
 
     /// <summary>
     /// Interface for converting signal represented by bytes into an image.
@@ -361,7 +361,7 @@ namespace AudioAnalysisTools
         /// The window Overlap.
         /// </param>
         /// <exception cref="ArgumentException">
-        /// Signal must produce at least two frames!
+        /// Signal must produce at least two frames!.
         /// </exception>
         /// <returns>
         /// The frame start ends.
@@ -534,9 +534,6 @@ namespace AudioAnalysisTools
         /// <param name="windowWeights">
         /// The window Weights.
         /// </param>
-        /// <param name="rft">
-        /// The RealFourierTransformation.
-        /// </param>
         /// <returns>
         /// Transformed samples.
         /// </returns>
@@ -605,7 +602,8 @@ namespace AudioAnalysisTools
             double[,] spectra = new double[frameCount, binCount];
 
             //calculate power of the DC value - first column of matrix
-            for (int i = 0; i < frameCount; i++) //foreach time step or frame
+            // foreach time step or frame
+            for (int i = 0; i < frameCount; i++)
             {
                 if (amplitudeM[i, 0] < epsilon)
                 {
@@ -622,7 +620,8 @@ namespace AudioAnalysisTools
             //calculate power in frequency bins - must multiply by 2 to accomodate two spectral components, ie positive and neg freq.
             for (int j = 1; j < binCount - 1; j++)
             {
-                for (int i = 0; i < frameCount; i++) //foreach time step or frame
+                // foreach time step or frame
+                for (int i = 0; i < frameCount; i++)
                 {
                     if (amplitudeM[i, j] < epsilon)
                     {
@@ -638,7 +637,8 @@ namespace AudioAnalysisTools
             } //end of all freq bins
 
             //calculate power of the Nyquist freq bin - last column of matrix
-            for (int i = 0; i < frameCount; i++) //foreach time step or frame
+            // foreach time step or frame
+            for (int i = 0; i < frameCount; i++)
             {
                 //calculate power of the DC value
                 if (amplitudeM[i, binCount - 1] < epsilon)
@@ -695,7 +695,8 @@ namespace AudioAnalysisTools
             double[,] submatrix = Submatrix(matrix, 0, 0, rowCount - 1, bandWidth);
             double[] modalNoise = new double[colCount];
 
-            for (int col = 0; col < colCount; col++) // for all cols i.e. freq bins
+            //  for all cols i.e. freq bins
+            for (int col = 0; col < colCount; col++)
             {
                 // construct new submatrix to calculate modal noise
                 int start = col - halfWidth;   //extend range of submatrix below col for smoother changes
@@ -734,12 +735,6 @@ namespace AudioAnalysisTools
         /// Assume that RowTop less than RowBottom, ColumnLeft less than ColumnRight.
         /// Row, column indices start at 0.
         /// </summary>
-        /// <param name="M"></param>
-        /// <param name="r1"></param>
-        /// <param name="c1"></param>
-        /// <param name="r2"></param>
-        /// <param name="c2"></param>
-        /// <returns></returns>
         private static double[,] Submatrix(double[,] M, int r1, int c1, int r2, int c2)
         {
             int smRows = r2 - r1 + 1;
@@ -761,12 +756,6 @@ namespace AudioAnalysisTools
         /// <summary>
         ///
         /// </summary>
-        /// <param name="data"></param>
-        /// <param name="binCount"></param>
-        /// <param name="min"></param>
-        /// <param name="max"></param>
-        /// <param name="binWidth"></param>
-        /// <returns></returns>
         private static int[] Histo(double[,] data, int binCount, double min, double max, double binWidth)
         {
             int rows = data.GetLength(0);
@@ -913,6 +902,7 @@ namespace AudioAnalysisTools
             int fftBins = data.GetLength(1);
 
             throw new NotSupportedException("Broken in .NET core port");
+
             //var bmp = UnsafeImage.GetImage(data, fftBins, width);
 
             return null;

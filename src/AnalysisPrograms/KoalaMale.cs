@@ -8,7 +8,6 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
@@ -19,6 +18,7 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
+    using SixLabors.ImageSharp;
     using TowseyLibrary;
 
     /// <summary>
@@ -81,16 +81,11 @@ namespace AnalysisPrograms
         }
 
         /// <summary>
-        /// THE KEY ANALYSIS METHOD
+        /// THE KEY ANALYSIS METHOD.
         /// </summary>
-        /// <param name="segmentOfSourceFile">
-        ///     The file to process.
-        /// </param>
         /// <param name="configDict">
         ///     The configuration for the analysis.
         /// </param>
-        /// <param name="value"></param>
-        /// <param name="segmentStartOffset"></param>
         /// <returns>
         /// The results of the analysis.
         /// </returns>
@@ -133,12 +128,12 @@ namespace AnalysisPrograms
 
             // i: MAKE SONOGRAM
             var sonoConfig = new SonogramConfig
-                                 {
-                                     SourceFName = recording.BaseName,
-                                     WindowSize = FrameSize,
-                                     WindowOverlap = windowOverlap,
-                                     NoiseReductionType = NoiseReductionType.None,
-                                 };
+            {
+                SourceFName = recording.BaseName,
+                WindowSize = FrameSize,
+                WindowOverlap = windowOverlap,
+                NoiseReductionType = NoiseReductionType.None,
+            };
 
             ////sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
             TimeSpan recordingDuration = recording.Duration;
@@ -197,13 +192,13 @@ namespace AnalysisPrograms
             var plot = new Plot(AnalysisName, scores, eventThreshold);
 
             return new KoalaMaleResults
-                       {
-                           Events = events,
-                           Hits = hits,
-                           Plot = plot,
-                           RecordingtDuration = recordingDuration,
-                           Sonogram = sonogram,
-                       };
+            {
+                Events = events,
+                Hits = hits,
+                Plot = plot,
+                RecordingtDuration = recordingDuration,
+                Sonogram = sonogram,
+            };
         }
 
         /// <summary>
@@ -285,9 +280,9 @@ namespace AnalysisPrograms
             Plot scores = results.Plot;
 
             var analysisResults = new AnalysisResult2(analysisSettings, segmentSettings, results.RecordingtDuration)
-                                      {
-                                          AnalysisIdentifier = this.Identifier,
-                                      };
+            {
+                AnalysisIdentifier = this.Identifier,
+            };
 
             analysisResults.Events = results.Events.ToArray();
 

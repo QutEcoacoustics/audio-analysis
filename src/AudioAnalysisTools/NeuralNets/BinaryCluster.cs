@@ -19,7 +19,7 @@ namespace NeuralNets
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BinaryCluster"/> class.
-        /// CONSTRUCTOR
+        /// CONSTRUCTOR.
         /// </summary>
         public BinaryCluster(int ipSize, int opSize)
         {
@@ -39,7 +39,7 @@ namespace NeuralNets
 
         /// <summary>
         /// Initialise Uncommitted array := true
-        /// Initialize weight array
+        /// Initialize weight array.
         /// </summary>
         public void InitialiseWtArrays(List<double[]> trainingData, int[] randomIntegers, int initialClusterCount)
         {
@@ -169,13 +169,14 @@ namespace NeuralNets
         /// Output for any OP node = AND_OR_Similarity with input.
         ///
         /// Output = 1 - fractional Hamming distance
-        ///        = 1 - (hammingDistance / (double)this.IPSize)
+        ///        = 1 - (hammingDistance / (double)this.IPSize).
         /// </summary>
         public double[] PropagateIP2OP(double[] IP)
         {
             double[] OP = new double[this.OPSize];
 
-            for (int F2uNo = 0; F2uNo < this.OPSize; F2uNo++) //{for all F2 nodes}
+            // {for all F2 nodes}
+            for (int F2uNo = 0; F2uNo < this.OPSize; F2uNo++)
             {
                 // only calculate OPs of committed nodes
                 if (this.committedNode[F2uNo])
@@ -201,10 +202,9 @@ namespace NeuralNets
         }
 
         /// <summary>
-        /// original Pascal header was: Procedure ChangeWtsFuzzyART(var index:word);
+        /// original Pascal header was: Procedure ChangeWtsFuzzyART(var index:word).
         ///
         /// </summary>
-        /// <param name="index"></param>
         public int ChangeWts(double[] IP, double[] OP)
         {
             //double magnitudeOfIP = this.IPSize;   //{NOTE:- fuzzy mag of complement coded IP vector, |I| = F1size/2}
@@ -260,9 +260,8 @@ namespace NeuralNets
         }
 
         /// <summary>
-        /// returns -1 if all F2 nodes committed
+        /// returns -1 if all F2 nodes committed.
         /// </summary>
-        /// <returns></returns>
         public int GetIndexOfFirstUncommittedNode()
         {
             int length = this.committedNode.Length;
@@ -283,10 +282,8 @@ namespace NeuralNets
         }
 
         /// <summary>
-        /// sets wts of first uncommitted node to the current IP vector
+        /// sets wts of first uncommitted node to the current IP vector.
         /// </summary>
-        /// <param name="IP"></param>
-        /// <returns></returns>
         public int ChangeWtsOfFirstUncommittedNode(double[] IP)
         {
             int index = this.GetIndexOfFirstUncommittedNode();
@@ -310,7 +307,7 @@ namespace NeuralNets
 
         /// <summary>
         /// change weights of a committed node
-        /// if beta = 1 then fast learning, if beta = 0 then leader learning ie no change of wts
+        /// if beta = 1 then fast learning, if beta = 0 then leader learning ie no change of wts.
         /// </summary>
         public void ChangeWtsOfCommittedNode(double[] IP, int index)
         {
@@ -390,7 +387,7 @@ namespace NeuralNets
         /// <summary>
         /// removes wtVectors from a list where two threshold conditions not satisfied:
         /// 1) Sum of positive wts must exceed weight threshold
-        /// 2) Cluster size (i.e. total number of frames hit by wtVector) must exceed threshold
+        /// 2) Cluster size (i.e. total number of frames hit by wtVector) must exceed threshold.
         /// </summary>
         public static Tuple<int[], List<double[]>> PruneClusters(List<double[]> wtVectors, int[] clusterHits, double wtThreshold, int hitThreshold)
         {
@@ -476,16 +473,16 @@ namespace NeuralNets
                 }
                 else
                     if (clusterSizes[i] <= hitThreshold) //set null
-                    {
-                        wtVectors[i] = null;
-                        continue;
-                    }
-                    else
+                {
+                    wtVectors[i] = null;
+                    continue;
+                }
+                else
                         if (clusterIsolatedHits[i] * 100 / clusterSizes[i] > 90) //calculate percent of isloated hits
-                        {
-                            wtVectors[i] = null;
-                            continue;
-                        }
+                {
+                    wtVectors[i] = null;
+                    continue;
+                }
 
                 clusterCountFinal++; //count number of remaining clusters
 
@@ -505,7 +502,7 @@ namespace NeuralNets
 
         /// <summary>
         /// returns a value between 0-1
-        /// 1- fractional Hamming Distance
+        /// 1- fractional Hamming Distance.
         /// </summary>
         public static double HammingSimilarity(double[] v1, double[] v2)
         {
@@ -518,7 +515,7 @@ namespace NeuralNets
         /// The AND count is always less than or equal to OR count and therefore
         /// the returned values must lie in 0,1.
         /// Is equivalent to average of recall and precision if one of the vectors is considered a target.
-        /// Method assumes that both vectors are of the same length
+        /// Method assumes that both vectors are of the same length.
         /// </summary>
         public static double AND_OR_Similarity(double[] v1, double[] v2)
         {
@@ -579,8 +576,8 @@ namespace NeuralNets
         /// <summary>
         /// Sums the weights over all the clusters.
         /// </summary>
-        /// <param name="clusterWts">a list of wt vectors. Each weight corresponds to a compressed freq band</param>
-        /// <returns>a reduced spectrum of wts</returns>
+        /// <param name="clusterWts">a list of wt vectors. Each weight corresponds to a compressed freq band.</param>
+        /// <returns>a reduced spectrum of wts.</returns>
         public static double[] GetClusterSpectrum(List<double[]> clusterWts)
         {
             int spectrumLength = clusterWts[0].Length;

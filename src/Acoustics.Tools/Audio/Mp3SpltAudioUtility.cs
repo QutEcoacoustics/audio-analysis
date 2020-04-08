@@ -1,3 +1,7 @@
+// <copyright file="Mp3SpltAudioUtility.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
 namespace Acoustics.Tools.Audio
 {
     using System;
@@ -8,7 +12,7 @@ namespace Acoustics.Tools.Audio
     using System.Text;
     using System.Text.RegularExpressions;
 
-    using Shared;
+    using Acoustics.Shared;
 
     /// <summary>
     /// Mp3 split audio utility.
@@ -563,7 +567,6 @@ Hundredths (optional): Must be between 0 and 99. Use them for higher precision.
             /// Gets or sets Start.
             /// </summary>
             public long? Start { get; set; }
-
         }
     }
 }

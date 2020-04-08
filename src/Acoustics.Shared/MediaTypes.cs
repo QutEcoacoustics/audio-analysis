@@ -424,7 +424,7 @@ namespace Acoustics.Shared
         /// </summary>
         public const string MediaTypeMpg = "video/mpeg";
 
-                            // : MPEG-1 video with multiplexed audio; Defined in RFC 2045 and RFC 2046
+        // : MPEG-1 video with multiplexed audio; Defined in RFC 2045 and RFC 2046
 
         /// <summary>
         /// The media type ogg audio.
@@ -449,7 +449,7 @@ namespace Acoustics.Shared
         /// </summary>
         public const string MediaTypeOggVideo = "video/ogg";
 
-                            // : Ogg Theora or other video (with audio); Defined in RFC 5334
+        // : Ogg Theora or other video (with audio); Defined in RFC 5334
 
         /// <summary>
         /// The media type pcm.
@@ -466,14 +466,14 @@ namespace Acoustics.Shared
         /// </summary>
         public const string MediaTypePjpeg = "image/pjpeg";
 
-                            // : JPEG JFIF image; Associated with Internet Explorer; Listed in ms775147(v=vs.85) - Progressive JPEG, initiated before global browser support for progressive JPEGs (Microsoft and Firefox).
+        // : JPEG JFIF image; Associated with Internet Explorer; Listed in ms775147(v=vs.85) - Progressive JPEG, initiated before global browser support for progressive JPEGs (Microsoft and Firefox).
 
         /// <summary>
         /// The media type png.
         /// </summary>
         public const string MediaTypePng = "image/png";
 
-                            // : Portable Network Graphics; Registered,[8] Defined in RFC 2083
+        // : Portable Network Graphics; Registered,[8] Defined in RFC 2083
 
         /// <summary>
         /// The media type qt.
@@ -485,14 +485,14 @@ namespace Acoustics.Shared
         /// </summary>
         public const string MediaTypeReal = "audio/vnd.rn-realaudio";
 
-                            // : RealAudio; Documented in RealPlayer Customer Support Answer 2559
+        // : RealAudio; Documented in RealPlayer Customer Support Answer 2559
 
         /// <summary>
         /// The media type svg.
         /// </summary>
         public const string MediaTypeSvg = "image/svg+xml";
 
-                            // : SVG vector image; Defined in SVG Tiny 1.2 Specification Appendix M
+        // : SVG vector image; Defined in SVG Tiny 1.2 Specification Appendix M
 
         /// <summary>
         /// The media type text plain.
@@ -504,7 +504,7 @@ namespace Acoustics.Shared
         /// </summary>
         public const string MediaTypeTiff = "image/tiff";
 
-                            // : Tag Image File Format (only for Baseline TIFF); Defined in RFC 3302
+        // : Tag Image File Format (only for Baseline TIFF); Defined in RFC 3302
 
         /// <summary>
         /// The media type vcard.

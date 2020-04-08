@@ -13,7 +13,6 @@ namespace AnalysisPrograms.AnalyseLongRecordings
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
     using System.Diagnostics;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
@@ -22,12 +21,13 @@ namespace AnalysisPrograms.AnalyseLongRecordings
     using Acoustics.Tools.Audio;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
+    using AnalysisPrograms.Production;
+    using AnalysisPrograms.SourcePreparers;
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
     using log4net;
-    using Production;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
-    using SourcePreparers;
     using Path = System.IO.Path;
 
     public partial class AnalyseLongRecording
@@ -39,7 +39,7 @@ namespace AnalysisPrograms.AnalyseLongRecordings
         /// <summary>
         /// 2. Analyses long audio recording (mp3 or wav) as per passed config file. Outputs an events.csv file AND an
         /// indices.csv file
-        /// Signed off: Michael Towsey 4th December 2012
+        /// Signed off: Michael Towsey 4th December 2012.
         /// </summary>
         public static void Execute(Arguments arguments)
         {

@@ -1,10 +1,6 @@
-// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="PulseTrain.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
-// <summary>
-//  This class contains methods to recognise pulse trains.
-// It is an alternative to using the Oscillations class.
 
 namespace TowseyLibrary
 {

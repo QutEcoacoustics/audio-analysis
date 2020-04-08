@@ -5,12 +5,12 @@
 namespace AudioAnalysisTools.DSP
 {
     using System;
-    using SixLabors.ImageSharp;
     using System.Linq;
     using System.Numerics;
 
     // this is needed for the class ComplexExtensions which does the calculation of the magnitude of a complex number.
     using MathNet.Numerics.IntegralTransforms;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
 
     //using MathNet.Numerics.ComplexExtensions;
@@ -26,8 +26,6 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// Performs a 2D-Fourier transform on data in the passed Matrix/image.
         /// </summary>
-        /// <param name="M"></param>
-        /// <returns></returns>
         public static double[,] FFT2Dimensional(double[,] M)
         {
             // Step 1: convert matrix to complex array
@@ -58,8 +56,6 @@ namespace AudioAnalysisTools.DSP
         /// The output vector is now assumed to be a vector of Complex numbers,
         /// with the real values in the even positions and the imaginary numbers in the odd positions.
         /// </summary>
-        /// <param name="M"></param>
-        /// <returns></returns>
         public static double[] Matrix2PaddedVector(double[,] M)
         {
             int rowCount = M.GetLength(0);
@@ -88,8 +84,8 @@ namespace AudioAnalysisTools.DSP
         /// This method was created to replicate the functionality of <see cref="Matrix2PaddedVector(double[,])"/>
         /// to support a changed MathNet API.
         /// </remarks>
-        /// <param name="M">The input matrix</param>
-        /// <returns>A flattened <see cref="M"/> as a vactor</returns>
+        /// <param name="M">The input matrix.</param>
+        /// <returns>A flattened <see cref="M"/> as a vactor.</returns>
         public static Complex[] Matrix2ComplexVector(double[,] M)
         {
             int rowCount = M.GetLength(0);
@@ -111,9 +107,6 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// First construct complex sampleData, then calculate the magnitude of sampleData.
         /// </summary>
-        /// <param name="sampleData"></param>
-        /// <param name="dims"></param>
-        /// <returns></returns>
         public static double[,] FFT2DOutput2MatrixOfMagnitude(double[] sampleData, int[] dims)
         {
             // After 2D-FFT transformation, the sampleData array now has alternating real and imaginary values.
@@ -162,8 +155,6 @@ namespace AudioAnalysisTools.DSP
         /// This has the effect of shifting the low frequency coefficients into the centre of the matrix and the high frequency
         /// coefficients are shifted to the edge of the image.
         /// </summary>
-        /// <param name="matrix"></param>
-        /// <returns></returns>
         public static double[,] fftShift(double[,] matrix)
         {
             var rowCount = matrix.GetLength(0);
@@ -212,8 +203,6 @@ namespace AudioAnalysisTools.DSP
         /// reads an image into a matrix.
         /// Takes weighted average of the RGB colours in each pixel.
         /// </summary>
-        /// <param name="imageFilePath"></param>
-        /// <returns></returns>
         public static double[,] GetImageDataAsGrayIntensity(string imageFilePath, bool reversed)
         {
             Image<Rgb24> image = Image.Load<Rgb24>(imageFilePath);

@@ -213,7 +213,7 @@ namespace AnalysisPrograms.Draw.RibbonPlots
 
             var bucketDate = stats.Start;
             var textGraphics = new TextGraphicsOptions()
-                { HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center };
+            { HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center };
             var textColor = Color.Black;
             var voidColor = Color.Gray;
             for (var b = 0; b < stats.Buckets; b++)
@@ -293,6 +293,7 @@ namespace AnalysisPrograms.Draw.RibbonPlots
                         left = ribbonLeft;
                         var rest = source.Clone(context =>
                             context.Crop(new Rectangle(split, 0, ribbonWidth - split, source.Height)));
+
                         // TODO: Fix at some point. Using default configuration with parallelism there is some kind of batching bug that causes a crash
                         image.Mutate(Drawing.NoParallelConfiguration, x => x.DrawImage(rest, new Point(left, top), options));
                     }

@@ -5,7 +5,6 @@
 namespace Acoustics.Test.TestHelpers
 {
     using System;
-    using System.Linq;
     using System.Runtime.InteropServices;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 

@@ -16,17 +16,17 @@ namespace AnalysisPrograms.Recognizers
     using Acoustics.Shared.ConfigFile;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
+    using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-    using Base;
     using log4net;
     using TowseyLibrary;
 
     /// <summary>
-    /// This is a template recognizer
+    /// This is a template recognizer.
     /// </summary>
     internal class ExempliGratia : RecognizerBase
     {
@@ -56,13 +56,6 @@ namespace AnalysisPrograms.Recognizers
         /// <summary>
         /// Do your analysis. This method is called once per segment (typically one-minute segments).
         /// </summary>
-        /// <param name="audioRecording"></param>
-        /// <param name="configuration"></param>
-        /// <param name="segmentStartOffset"></param>
-        /// <param name="getSpectralIndexes"></param>
-        /// <param name="outputDirectory"></param>
-        /// <param name="imageWidth"></param>
-        /// <returns></returns>
         public override RecognizerResults Recognize(AudioRecording audioRecording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
             // Get a value from the config file - with a backup default
@@ -86,16 +79,16 @@ namespace AnalysisPrograms.Recognizers
             bool hasProfiles = ConfigFile.HasProfiles(configuration);
 
             //Config profile = ConfigFile.GetProfile<Config, Aed.AedConfiguration>(configuration, "Groote");
-            Config profile2;
+            //Config profile2;
 
             //bool success = ConfigFile.TryGetProfile(configuration, "FemaleRelease", out profile2);
             //string[] profileNames = ConfigFile.GetProfileNames<Config>(configuration);
-//            IEnumerable<(string Name, object Profile)> allProfiles = ConfigFile.GetAllProfiles<IProfile<object>>(configuration);
-//            foreach (var profile in allProfiles)
-//            {
-//                object currentProfile = profile.Profile;
-//                Log.Info(profile.Name + ": " + ((int)currentProfile.MinHz).ToString());
-//            }
+            //            IEnumerable<(string Name, object Profile)> allProfiles = ConfigFile.GetAllProfiles<IProfile<object>>(configuration);
+            //            foreach (var profile in allProfiles)
+            //            {
+            //                object currentProfile = profile.Profile;
+            //                Log.Info(profile.Name + ": " + ((int)currentProfile.MinHz).ToString());
+            //            }
 
             // Profile example: running the same algorithm on every profile with different settings (regional variation)
             /*
@@ -169,7 +162,7 @@ namespace AnalysisPrograms.Recognizers
             }
             */
 
-        // get samples
+            // get samples
             var samples = audioRecording.WavReader.Samples;
 
             // make a spectrogram

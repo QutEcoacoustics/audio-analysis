@@ -12,11 +12,11 @@ namespace AnalysisPrograms
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using Acoustics.Tools.Audio;
+    using AnalysisPrograms.Production;
+    using AnalysisPrograms.Production.Arguments;
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
     using McMaster.Extensions.CommandLineUtils.Abstractions;
-    using Production;
-    using Production.Arguments;
 
     public class FileRenamer
     {

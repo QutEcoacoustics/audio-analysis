@@ -5,12 +5,12 @@
 namespace AudioAnalysisTools.WavTools
 {
     using System;
-    using SixLabors.ImageSharp;
     using System.IO;
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
     using Acoustics.Tools.Wav;
-    using DSP;
+    using AudioAnalysisTools.DSP;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
     using Path = System.IO.Path;
@@ -81,7 +81,7 @@ namespace AudioAnalysisTools.WavTools
         }
 
         /// <summary>
-        /// Gets the file name without the extension
+        /// Gets the file name without the extension.
         /// </summary>
         public string BaseName { get; private set; }
 
@@ -149,7 +149,7 @@ namespace AudioAnalysisTools.WavTools
         public WavReader WavReader { get; }
 
         /// <summary>
-        /// Gets returns Time Span of the recording
+        /// Gets returns Time Span of the recording.
         /// </summary>
         public TimeSpan Duration => this.WavReader.Time;
 
@@ -166,7 +166,7 @@ namespace AudioAnalysisTools.WavTools
         }
 
         /// <summary>
-        /// returns the wave form representation of the signal
+        /// returns the wave form representation of the signal.
         /// </summary>
         public double[,] GetWaveForm(int length)
         {
@@ -358,11 +358,11 @@ namespace AudioAnalysisTools.WavTools
                 sourceFile,
                 new FileInfo(opPath),
                 new AudioUtilityRequest
-                    {
-                        TargetSampleRate = resampleRate,
-                        OffsetStart = TimeSpan.FromMilliseconds(startMilliseconds),
-                        OffsetEnd = TimeSpan.FromMilliseconds(endMilliseconds),
-                    });
+                {
+                    TargetSampleRate = resampleRate,
+                    OffsetStart = TimeSpan.FromMilliseconds(startMilliseconds),
+                    OffsetEnd = TimeSpan.FromMilliseconds(endMilliseconds),
+                });
 
             return new AudioRecording(opPath);
         }
@@ -385,13 +385,13 @@ namespace AudioAnalysisTools.WavTools
                 fiSource,
                 fiOutputSegment,
                 new AudioUtilityRequest
-                    {
-                        TargetSampleRate = sampleRate,
-                        OffsetStart = TimeSpan.FromMilliseconds(startMilliseconds),
-                        OffsetEnd = TimeSpan.FromMilliseconds(endMilliseconds),
-                        ////Channel = 2 // set channel number or mixdowntomono=true  BUT NOT BOTH!!!
-                        ////MixDownToMono  =true
-                    });
+                {
+                    TargetSampleRate = sampleRate,
+                    OffsetStart = TimeSpan.FromMilliseconds(startMilliseconds),
+                    OffsetEnd = TimeSpan.FromMilliseconds(endMilliseconds),
+                    ////Channel = 2 // set channel number or mixdowntomono=true  BUT NOT BOTH!!!
+                    ////MixDownToMono  =true
+                });
         }
 
         public static FileInfo CreateTemporaryAudioFile(FileInfo sourceRecording, DirectoryInfo outDir, int resampleRate)

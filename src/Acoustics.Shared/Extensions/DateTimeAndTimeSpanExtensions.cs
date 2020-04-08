@@ -11,8 +11,8 @@
 namespace System
 {
     using Acoustics.Shared;
-    using Collections.Generic;
-    using Linq;
+    using System.Collections.Generic;
+    using System.Linq;
 
     /// <summary>
     /// Extensions for the <c>DateTime</c> and <c>TimeSpan</c> structs.

@@ -49,7 +49,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
         /// Gets an array containing names of spectral indices that are not wanted. They are used to remove unwanted selectors.
         /// This is a temporary arrangement to utilize existing code.
         /// TODO Eventually separate out template results so do not have to use the AnalysisResult2 class.
-        /// ToDO: this should now be deleteable
+        /// ToDO: this should now be deleteable.
         /// </summary>
         public static string[] UnusedIndexNames { get; } = { "CVR", "DIF", "RHZ", "RVT", "RPS", "RNG", "R3D", "SPT", "SUM" };
 

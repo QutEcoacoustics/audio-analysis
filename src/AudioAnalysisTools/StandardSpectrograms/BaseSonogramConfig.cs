@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="BaseSonogramConfig.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -12,7 +12,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using DSP;
+    using AudioAnalysisTools.DSP;
     using TowseyLibrary;
 
     [Serializable]
@@ -40,7 +40,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         private int sampleRate = 0;
 
         /// <summary>
-        /// Gets or sets the channel to extract from the WavReader
+        /// Gets or sets the channel to extract from the WavReader.
         /// </summary>
         public int Channel { get; set; } = 0;
 
@@ -84,14 +84,14 @@ namespace AudioAnalysisTools.StandardSpectrograms
         public MfccConfiguration mfccConfig { get; set; }
 
         /// <summary>
-        /// For linear frequency scale assume that the freq bin count = half the frame size.
+        /// Gets for linear frequency scale assume that the freq bin count = half the frame size.
         /// </summary>
         public int FreqBinCount => this.WindowSize / 2;  // other half is phase info
 
         public bool DoMelScale { get; set; }
 
         /// <summary>
-        /// For linear frequency scale assume that the freq bin count = half the frame size.
+        /// Gets or sets for linear frequency scale assume that the freq bin count = half the frame size.
         /// But with Mel scale, the user can set arbitrary number of mel bins.
         /// By default, MelBincount can be set = FreqBinCount.
         /// </summary>
@@ -130,14 +130,14 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SonogramConfig"/> class.
-        /// Default Constructor - initialises a configuration with the default values
+        /// Default Constructor - initialises a configuration with the default values.
         /// </summary>
         public SonogramConfig()
         {
             var config = new ConfigDictionary();
 
             config.SetPair(ConfigKeys.Windowing.Key_SampleRate, "0");
-            config.SetPair(ConfigKeys.Windowing.Key_WindowSize,    DEFAULT_WINDOW_SIZE.ToString());
+            config.SetPair(ConfigKeys.Windowing.Key_WindowSize, DEFAULT_WINDOW_SIZE.ToString());
             config.SetPair(ConfigKeys.Windowing.Key_WindowOverlap, DEFAULT_WINDOW_OVERLAP.ToString());
 
             config.SetPair(ConfigKeys.EndpointDetection.Key_K1SegmentationThreshold, "3.5");
@@ -165,7 +165,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// <summary>
         /// Initializes a new instance of the <see cref="SonogramConfig"/> class.
         /// CONSTRUCTOR
-        /// Initialises sonogram config with key-value-pairs in the passed ConfigDictionary
+        /// Initialises sonogram config with key-value-pairs in the passed ConfigDictionary.
         /// </summary>
         public SonogramConfig(ConfigDictionary config)
         {
@@ -175,7 +175,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// <summary>
         /// Initializes a new instance of the <see cref="SonogramConfig"/> class.
         /// CONSTRUCTOR
-        /// Initialises sonogram config with key-value-pairs in the passed dictionary
+        /// Initialises sonogram config with key-value-pairs in the passed dictionary.
         /// </summary>
         public SonogramConfig(Dictionary<string, string> dictionary)
         {
@@ -191,9 +191,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         /// <summary>
         /// DoSnr = true;
-        /// DoFullBandwidth = false;
+        /// DoFullBandwidth = false.
         /// </summary>
-        /// <param name="config">read from file</param>
+        /// <param name="config">read from file.</param>
         private void Initialize(ConfigDictionary config)
         {
             if (config == null)
@@ -239,9 +239,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         /// <summary>
         /// DoSnr = true;
-        /// DoFullBandwidth = false;
+        /// DoFullBandwidth = false.
         /// </summary>
-        /// <param name="configDict">Dictionary of config values</param>
+        /// <param name="configDict">Dictionary of config values.</param>
         private void Initialize(Dictionary<string, string> configDict)
         {
             this.CallName = configDict[ConfigKeys.Recording.Key_RecordingCallName];
@@ -324,9 +324,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         /// <summary>
         /// returns duration of a full frame or window in seconds
-        /// Assumes that the Window size is already available
+        /// Assumes that the Window size is already available.
         /// </summary>
-        /// <returns>seconds</returns>
+        /// <returns>seconds.</returns>
         public double GetFrameDuration(int sampleRate)
         {
             return this.WindowSize / (double)sampleRate;

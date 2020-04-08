@@ -9,9 +9,9 @@ namespace AudioAnalysisTools.Indices
     using System.Collections.Generic;
     using System.Linq;
     using AnalysisBase.ResultBases;
-    using DSP;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
     using FastMember;
-    using StandardSpectrograms;
     using TowseyLibrary;
 
     public class IndexCalculateResult
@@ -32,22 +32,22 @@ namespace AudioAnalysisTools.Indices
             this.AmplitudeSpectrogram = null;
 
             this.SummaryIndexValues = new SummaryIndexValues(durationOfResult, indexProperties)
-                                          {
-                                              // give the results object an offset value so it can be sorted.
-                                              ResultStartSeconds =
+            {
+                // give the results object an offset value so it can be sorted.
+                ResultStartSeconds =
                                                   subsegmentOffsetFromStartOfSource.TotalSeconds,
-                                              SegmentDurationSeconds =
+                SegmentDurationSeconds =
                                                   durationOfResult.TotalSeconds,
-                                          };
+            };
 
             this.SpectralIndexValues = new SpectralIndexValues(freqBinCount, indexProperties, configuration)
-                                           {
-                                               // give the results object an offset value so it can be sorted.
-                                               ResultStartSeconds =
+            {
+                // give the results object an offset value so it can be sorted.
+                ResultStartSeconds =
                                                    subsegmentOffsetFromStartOfSource.TotalSeconds,
-                                               SegmentDurationSeconds =
+                SegmentDurationSeconds =
                                                    durationOfResult.TotalSeconds,
-                                           };
+            };
         }
 
         public List<SpectralTrack> Tracks { get; set; }
@@ -125,6 +125,7 @@ namespace AudioAnalysisTools.Indices
             {
                 { GapsAndJoins.KeyZeroSignal, summaryIndices.Select(x => x.ZeroSignal).ToArray() },
                 { "ClippingIndex", summaryIndices.Select(x => x.ClippingIndex).ToArray() },
+
                 //{ "HighAmplitudeIndex", summaryIndices.Select(x => x.HighAmplitudeIndex).ToArray() },
                 //{ "AvgSignalAmplitude", summaryIndices.Select(x => x.AvgSignalAmplitude).ToArray() },
                 { "BackgroundNoise", summaryIndices.Select(x => x.BackgroundNoise).ToArray() },

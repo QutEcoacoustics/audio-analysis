@@ -6,8 +6,8 @@ namespace AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
-    using DSP;
-    using StandardSpectrograms;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.StandardSpectrograms;
     using TowseyLibrary;
 
     public static class HarmonicAnalysis
@@ -18,13 +18,12 @@ namespace AudioAnalysisTools
         /// 2) a list of acoustic events
         /// 3) a matrix of hits corresonding to the spectrogram.
         /// </summary>
-        /// <param name="sonogram">sonogram derived from the recording</param>
-        /// <param name="minHz">min bound freq band to search</param>
-        /// <param name="maxHz">max bound freq band to search</param>
-        /// <param name="harmonicCount">expected number of harmonics in the frequency band</param>
-        /// <param name="amplitudeThreshold">ignore harmonics with an amplitude less than this minimum dB</param>
-        /// <param name="minDuration">look for events of this duration</param>
-        /// <param name="maxDuration">look for events of this duration</param>
+        /// <param name="sonogram">sonogram derived from the recording.</param>
+        /// <param name="minHz">min bound freq band to search.</param>
+        /// <param name="maxHz">max bound freq band to search.</param>
+        /// <param name="harmonicCount">expected number of harmonics in the frequency band.</param>
+        /// <param name="amplitudeThreshold">ignore harmonics with an amplitude less than this minimum dB.</param>
+        /// <param name="maxDuration">look for events of this duration.</param>
         public static Tuple<double[], double[,]> Execute(SpectrogramStandard sonogram, int minHz, int maxHz, int harmonicCount, double amplitudeThreshold)
         {
             int minBin = (int)(minHz / sonogram.FBinWidth);
@@ -109,9 +108,7 @@ namespace AudioAnalysisTools
         /// Also calculates the average amplitude of the peaks to each succeeding trough.
         /// </summary>
         /// <param name="values">Spectral values in the frequency band.</param>
-        /// <param name="expectedPeriod">Use supplied parameter. Expected number of harmonic tracks in the frequency band.</param>
         /// <param name="row">This argument is NOT used. Is included only for debugging purposes.</param>
-        /// <returns></returns>
         public static Tuple<double, int, bool[]> CountHarmonicTracks(double[] values, int expectedHarmonicCount)
         {
             int L = values.Length;
@@ -198,19 +195,10 @@ namespace AudioAnalysisTools
         /// <summary>
         /// This method did not work much better than the DCT method - see below.
         /// Looks for a series of harmonic tracks at fixed freq intervals.
-        /// Problem is that the harmonic tracks are not necessarily at fixed intervals
+        /// Problem is that the harmonic tracks are not necessarily at fixed intervals.
         /// </summary>
-        /// <param name="matrix"></param>
-        /// <param name="minBin"></param>
-        /// <param name="maxBin"></param>
-        /// <param name="hzWidth"></param>
-        /// <param name="minPeriod"></param>
-        /// <param name="maxPeriod"></param>
-        /// <param name="minHarmonicPeriod"></param>
-        /// <param name="amplitudeThreshold"></param>
-        /// <returns></returns>
         public static Tuple<double[], double[,]> DetectHarmonicsUsingFormantGap(double[,] matrix, int minBin, int maxBin, int hzWidth,
-            int minPeriod, int maxPeriod,  int minHarmonicPeriod, double amplitudeThreshold)
+            int minPeriod, int maxPeriod, int minHarmonicPeriod, double amplitudeThreshold)
         {
             int binBand = maxBin - minBin + 1; // DCT spans N freq bins
 
@@ -267,15 +255,6 @@ namespace AudioAnalysisTools
         /// Tried this but it is suitable only when there is guarantee of numerous spectral tracks as in the vowels of human speech.
         /// It yields SPURIOUS RESULTS where there is only one whistle track.
         /// </summary>
-        /// <param name="matrix"></param>
-        /// <param name="minBin"></param>
-        /// <param name="maxBin"></param>
-        /// <param name="hzWidth"></param>
-        /// <param name="normaliseDCT"></param>
-        /// <param name="minPeriod"></param>
-        /// <param name="maxPeriod"></param>
-        /// <param name="dctThreshold"></param>
-        /// <returns></returns>
         public static double[,] DetectHarmonicsUsingDCT(double[,] matrix, int minBin, int maxBin, int hzWidth, bool normaliseDCT, int minPeriod, int maxPeriod, double dctThreshold)
         {
             int dctLength = maxBin - minBin + 1; //DCT spans N freq bins

@@ -69,7 +69,7 @@ namespace System
         /// Scales a unit double value, that is in the interval [0.0, 1.0] to a byte [0, 255]
         /// value between 0 and 255, clamping out of bound values and rounding away from zero.
         /// </summary>
-        /// <param name="value">The value</param>
+        /// <param name="value">The value.</param>
         /// <returns>The clamped and rounded value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static byte ScaleUnitToByte(this double value)

@@ -165,7 +165,7 @@ namespace TowseyLibrary
             }
             else
                 if (dimName == this.dimNames[1]) // Y dimension
-                {
+            {
                 matrix = new float[this.Xdim, this.Zdim];
                 for (int X = 0; X < this.Xdim; X++)
                 {
@@ -179,18 +179,18 @@ namespace TowseyLibrary
             }
             else
                     if (dimName == this.dimNames[2]) // Z dimension
+            {
+                matrix = new float[this.Xdim, this.Ydim];
+                for (int X = 0; X < this.Xdim; X++)
+                {
+                    for (int Y = 0; Y < this.Ydim; Y++)
                     {
-                    matrix = new float[this.Xdim, this.Ydim];
-                    for (int X = 0; X < this.Xdim; X++)
-                    {
-                        for (int Y = 0; Y < this.Ydim; Y++)
-                        {
-                            matrix[X, Y] = this.array3D[X, Y, index];
-                        }
+                        matrix[X, Y] = this.array3D[X, Y, index];
                     }
-
-                    return matrix;
                 }
+
+                return matrix;
+            }
 
             return null;
         }
@@ -209,26 +209,26 @@ namespace TowseyLibrary
             }
             else
                 if (dimName == this.dimNames[1]) // Y dimension
+            {
+                for (int X = 0; X < this.Xdim; X++)
                 {
-                    for (int X = 0; X < this.Xdim; X++)
+                    for (int Z = 0; Z < this.Zdim; Z++)
                     {
-                        for (int Z = 0; Z < this.Zdim; Z++)
-                        {
-                            this.array3D[X, index, Z] = matrix[X, Z];
-                        }
+                        this.array3D[X, index, Z] = matrix[X, Z];
                     }
                 }
-                else
+            }
+            else
                     if (dimName == this.dimNames[2]) // Z dimension
+            {
+                for (int X = 0; X < this.Xdim; X++)
+                {
+                    for (int Y = 0; Y < this.Ydim; Y++)
                     {
-                        for (int X = 0; X < this.Xdim; X++)
-                        {
-                            for (int Y = 0; Y < this.Ydim; Y++)
-                            {
-                                this.array3D[X, Y, index] = matrix[X, Y];
-                            }
-                        }
+                        this.array3D[X, Y, index] = matrix[X, Y];
                     }
+                }
+            }
         }
 
         public static void Write3DMatrix(Matrix3D M)

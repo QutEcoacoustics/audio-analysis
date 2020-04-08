@@ -10,7 +10,6 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
     using Acoustics.Shared;
     using Acoustics.Test.TestHelpers;
     using Acoustics.Tools;
-    using global::AnalysisBase;
     using global::AnalysisPrograms;
     using global::AnalysisPrograms.Recognizers;
     using global::AnalysisPrograms.Recognizers.Base;

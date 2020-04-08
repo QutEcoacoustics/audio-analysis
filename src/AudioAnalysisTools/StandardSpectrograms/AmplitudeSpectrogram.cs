@@ -6,11 +6,11 @@ namespace AudioAnalysisTools.StandardSpectrograms
 {
     using System;
     using Acoustics.Tools.Wav;
-    using DSP;
-    using WavTools;
+    using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.WavTools;
 
     /// <summary>
-    /// This class is designed to produce a full-bandwidth amplitude spectrogram
+    /// This class is designed to produce a full-bandwidth amplitude spectrogram.
     /// </summary>
     public class AmplitudeSpectrogram
     {
@@ -64,7 +64,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         public SpectrogramAttributes Attributes { get; set; }
 
         /// <summary>
-        /// Gets or sets the spectrogram data matrix of doubles
+        /// Gets or sets the spectrogram data matrix of doubles.
         /// </summary>
         public double[,] Data { get; set; }
     }

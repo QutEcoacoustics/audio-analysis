@@ -7,21 +7,21 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
     using Acoustics.Shared.Contracts;
     using Acoustics.Shared.ImageSharp;
-    using Indices;
+    using AudioAnalysisTools.Indices;
+    using AudioAnalysisTools.TileImage;
     using log4net;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using TileImage;
     using TowseyLibrary;
-    using SpectrogramType = LongDurationSpectrograms.SpectrogramType;
     using Path = System.IO.Path;
+    using SpectrogramType = AudioAnalysisTools.LongDurationSpectrograms.SpectrogramType;
 
     public static class ZoomTiledSpectrograms
     {
@@ -412,7 +412,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
         }
 
         /// <summary>
-        /// Draws FC index spectrograms for an entire row
+        /// Draws FC index spectrograms for an entire row.
         /// </summary>
         public static TimeOffsetSingleLayerSuperTile[] DrawSuperTilesAtScaleFromIndexSpectrograms(
             LdSpectrogramConfig analysisConfig,
@@ -560,7 +560,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms.Zooming
             var image = Drawing.NewImage(ldSpectrogram.Width, ldSpectrogram.Height, Color.DarkGray);
 
             var xOffset = (int)(offsetTime.Ticks / imageScale.Ticks);
-            image.Mutate(g1 => {
+            image.Mutate(g1 =>
+            {
                 g1.DrawImage(ldSpectrogram, new Point(xOffset, 0), 1);
             });
 

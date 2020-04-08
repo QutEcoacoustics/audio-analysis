@@ -14,7 +14,6 @@ namespace Acoustics.Shared
 
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
-    using Acoustics.Shared.Contracts;
 
     public static class Json
     {

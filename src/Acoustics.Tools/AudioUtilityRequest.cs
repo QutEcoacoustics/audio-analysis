@@ -7,7 +7,7 @@ namespace Acoustics.Tools
     using System;
     using System.Globalization;
     using System.Linq;
-    using Audio;
+    using Acoustics.Tools.Audio;
 
     /// <summary>
     /// Audio Utility request.
@@ -30,13 +30,13 @@ namespace Acoustics.Tools
         public int? TargetSampleRate { get; set; }
 
         /// <summary>
-        /// Gets or sets the bit depth. Valid values = 8, 16, 24, 32
+        /// Gets or sets the bit depth. Valid values = 8, 16, 24, 32.
         /// </summary>
         public int? BitDepth { get; set; }
 
         /// <summary>
         /// Gets or sets the target channel numbers (eg. 1,2,3,{1,2},{1,2,3,4} ... ).
-        /// Channels are 1-indexed!
+        /// Channels are 1-indexed!.
         /// </summary>
         public int[] Channels { get; set; }
 

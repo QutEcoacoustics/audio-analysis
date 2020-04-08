@@ -66,10 +66,10 @@ namespace TowseyLibrary
                 },
                 {
                         0.5, 0.6, 0.7, 0.8, 0.9, 1.0,
-                    },
+                },
                 {
                         0.9, 1.0, 1.1, 1.2, 1.3, 1.4,
-                    },
+                },
                 };
                 WriteMatrix2File(matrix, fName);
                 LoggedConsole.WriteLine("Wrote following matrix to file " + fName);
@@ -270,10 +270,10 @@ namespace TowseyLibrary
                 File.Copy(path.FullName, path + "OLD.txt", true); //overwrite
             }
 
-//            int count = array.Count;
-//            using (TextWriter writer = new StreamWriter(path))
-//                foreach (string line in array)
-//                    writer.WriteLine(line);
+            //            int count = array.Count;
+            //            using (TextWriter writer = new StreamWriter(path))
+            //                foreach (string line in array)
+            //                    writer.WriteLine(line);
 
             File.WriteAllLines(path.FullName, array);
         }
@@ -387,10 +387,8 @@ namespace TowseyLibrary
 
         /// <summary>
         /// THis method adds another column to an existing .csv file containing columns of data.
-        /// It assumes that the number of elements in the list are same as rows in the existing file
+        /// It assumes that the number of elements in the list are same as rows in the existing file.
         /// </summary>
-        /// <param name="fPath"></param>
-        /// <param name="list"></param>
         public static void AddArrayAdjacentToExistingArrays(string fPath, double[] array)
         {
             var oldList = File.Exists(fPath) ? ReadTextFile(fPath) : new List<string>();
@@ -419,7 +417,7 @@ namespace TowseyLibrary
         }// end AddArrayAdjacentToExistingArrays()
 
         /// <summary>
-        /// reads a file of doubles assuming one value per line with no punctuation
+        /// reads a file of doubles assuming one value per line with no punctuation.
         /// </summary>
         public static double[] ReadDoubles2Vector(string fName)
         {
@@ -439,10 +437,8 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// reads a text file of doubles formatted in rows and columns
+        /// reads a text file of doubles formatted in rows and columns.
         /// </summary>
-        /// <param name="fName"></param>
-        /// <returns></returns>
         public static double[,] ReadDoubles2Matrix(string fName)
         {
             var lines = ReadTextFile(fName);
@@ -624,12 +620,12 @@ namespace TowseyLibrary
 
         public static string PathCombine(params string[] paths)
         {
-            return paths.Aggregate("", (s1, s2) => Path.Combine(s1, s2));
+            return paths.Aggregate(string.Empty, (s1, s2) => Path.Combine(s1, s2));
         }
 
         public static string UrlCombine(params string[] segments)
         {
-            return segments.Aggregate("", (a, b) =>
+            return segments.Aggregate(string.Empty, (a, b) =>
             {
                 if (string.IsNullOrEmpty(a))
                 {

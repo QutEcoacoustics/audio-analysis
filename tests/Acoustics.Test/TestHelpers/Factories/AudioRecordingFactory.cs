@@ -7,7 +7,7 @@ namespace Acoustics.Test.TestHelpers.Factories
     using Acoustics.Shared;
     using Acoustics.Shared.Extensions;
     using global::AcousticWorkbench.Models;
-    using Random = TestHelpers.Random;
+    using Random = Acoustics.Test.TestHelpers.Random;
 
     public static class AudioRecordingFactory
     {

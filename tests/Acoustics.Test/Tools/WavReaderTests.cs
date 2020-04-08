@@ -12,12 +12,12 @@ namespace Acoustics.Test.Tools
     using System;
     using System.Linq;
     using Acoustics.Shared;
+    using Acoustics.Test.TestHelpers;
     using Acoustics.Tools;
     using Acoustics.Tools.Audio;
     using Acoustics.Tools.Wav;
     using global::AudioAnalysisTools.DSP;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using TestHelpers;
 
     [TestClass]
     public class WavReaderTests
@@ -69,7 +69,6 @@ namespace Acoustics.Test.Tools
                 for (int i = 0; i < reader.BlockCount; i++)
                 {
                     channels[c][i] = reader[i, c];
-
                 }
 
                 TestHelper.AssertFrequencyInSignal(reader, channels[c], new[] { expectedFrequencies[c] });

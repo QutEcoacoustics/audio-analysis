@@ -38,7 +38,7 @@ namespace NeuralNets
         }
 
         /// <summary>
-        /// multiple repeats of training using VQ algorithm
+        /// multiple repeats of training using VQ algorithm.
         /// </summary>
         public void Train()
         {
@@ -60,9 +60,8 @@ namespace NeuralNets
         }
 
         /// <summary>
-        /// train once with VQ until error less than some condition
+        /// train once with VQ until error less than some condition.
         /// </summary>
-        /// <returns></returns>
         public double TrainOnce()
         {
             double previousError = double.MaxValue;

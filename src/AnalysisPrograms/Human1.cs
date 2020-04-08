@@ -1,4 +1,4 @@
-﻿// <copyright file="Human1.cs" company="QutEcoacoustics">
+// <copyright file="Human1.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -20,7 +20,7 @@ namespace AnalysisPrograms
 
         /// <summary>
         /// THIS IS THE CORE DETECTION METHOD
-        /// Detects the human voice
+        /// Detects the human voice.
         /// </summary>
         public static Tuple<BaseSonogram, double[,], Plot, List<AcousticEvent>, TimeSpan> Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict, TimeSpan segmentStartOffset)
         {

@@ -16,20 +16,20 @@ namespace NeuralNets
         public double[] Centroid { get; private set; } //centroid of the cluster
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="Cluster"/> class.
         /// CONSTRUCTOR
-        /// Init with list of vectors
+        /// Init with list of vectors.
         /// </summary>
-        /// <param name="list"></param>
         public Cluster(List<double[]> list)
         {
             this.Vectors = list;
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="Cluster"/> class.
         /// CONSTRUCTOR
-        /// Init with centroid
+        /// Init with centroid.
         /// </summary>
-        /// <param name="list"></param>
         public Cluster(double[] vector)
         {
             this.Centroid = vector;
@@ -83,11 +83,9 @@ namespace NeuralNets
         }
 
         /// <summary>
-        /// calculate euclidian distance of vector from centroid
+        /// calculate euclidian distance of vector from centroid.
         /// </summary>
-        /// <param name="vector"></param>
-        /// <returns></returns>
-        public double DistanceFromCentroid( double[] vector)
+        public double DistanceFromCentroid(double[] vector)
         {
             double dist = 0.0;
             for (int i = 0; i < vector.Length; i++)

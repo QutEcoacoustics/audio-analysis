@@ -6,19 +6,18 @@ namespace AnalysisPrograms
 {
     using System;
     using System.ComponentModel.DataAnnotations;
-    using SixLabors.ImageSharp;
     using System.Threading.Tasks;
     using Acoustics.Shared;
+    using AnalysisPrograms.Production.Arguments;
+    using AnalysisPrograms.Production.Validation;
     using AudioAnalysisTools.Indices;
     using McMaster.Extensions.CommandLineUtils;
-    using Production.Arguments;
-    using Production.Validation;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
-    using Acoustics.Shared.Contracts;
 
     /// <summary>
     /// 4. Produces a tracks image of column values in a csv file - one track per csv column.
-    /// Signed off: Michael Towsey 27th July 2012
+    /// Signed off: Michael Towsey 27th July 2012.
     /// </summary>
     public class DrawSummaryIndexTracks
     {
@@ -56,11 +55,8 @@ namespace AnalysisPrograms
         }
 
         /// <summary>
-        /// Loads a csv file of summary indices, normalises the values for visualisation and displays a TracksImage
+        /// Loads a csv file of summary indices, normalises the values for visualisation and displays a TracksImage.
         /// </summary>
-        /// <param name="arguments"></param>
-        /// <exception cref="InvalidOperationException"></exception>
-        /// <returns></returns>
         public static void Main(Arguments arguments)
         {
             bool verbose = true;

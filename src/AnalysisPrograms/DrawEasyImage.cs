@@ -11,24 +11,23 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
-    using Acoustics.Shared;
     using Acoustics.Shared.ImageSharp;
+    using AnalysisPrograms.Production.Arguments;
     using AudioAnalysisTools;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using McMaster.Extensions.CommandLineUtils;
-    using Production.Arguments;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
     using TowseyLibrary;
     using Path = System.IO.Path;
 
     /// <summary>
-    /// First argument on command line to call this action is "drawEasyImage"
+    /// First argument on command line to call this action is "drawEasyImage".
     /// </summary>
     public static class DrawEasyImage
     {
@@ -346,6 +345,7 @@ namespace AnalysisPrograms
                     }
                 } // over days
             });
+
             // draw on civil dawn and dusk lines
             int startdayOfYear = ((DateTimeOffset)startDate).DayOfYear;
             int endDayOfYear = ((DateTimeOffset)endDate).DayOfYear;
@@ -353,10 +353,10 @@ namespace AnalysisPrograms
 
             // add the time scales
             Image<Rgb24> timeBmp1 = ImageTrack.DrawTimeRelativeTrack(oneDay, graphWidth, trackHeight);
-            var imageList = new [] { timeBmp1, bitmap, timeBmp1 };
+            var imageList = new[] { timeBmp1, bitmap, timeBmp1 };
             Image<Rgb24> compositeBmp1 = (Image<Rgb24>)ImageTools.CombineImagesVertically(imageList);
 
-            imageList = new [] { yAxisScale, compositeBmp1 };
+            imageList = new[] { yAxisScale, compositeBmp1 };
             Image<Rgb24> compositeBmp2 = (Image<Rgb24>)ImageTools.CombineImagesInLine(imageList);
 
             // indices used for image
@@ -365,7 +365,7 @@ namespace AnalysisPrograms
             string endString = $"{endDate.Value.Year}/{endDate.Value.Month}/{endDate.Value.Day}";
             string title = $"EASY:   {arguments.FileStemName}    From {startString} to {endString}                          Indices: {indicesDescription}";
             Image<Rgb24> titleBar = ImageTrack.DrawTitleTrack(compositeBmp2.Width, trackHeight, title);
-            imageList = new [] { titleBar, compositeBmp2 };
+            imageList = new[] { titleBar, compositeBmp2 };
             compositeBmp2 = (Image<Rgb24>)ImageTools.CombineImagesVertically(imageList);
             var outputFileName = Path.Combine(opDir.FullName, arguments.FileStemName + "." + rep + ".EASY.png");
             compositeBmp2.Save(outputFileName);

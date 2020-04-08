@@ -13,7 +13,6 @@ namespace AnalysisPrograms
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Reflection;
     using System.Text.RegularExpressions;
@@ -25,6 +24,8 @@ namespace AnalysisPrograms
     using Acoustics.Tools.Audio;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
+    using AnalysisPrograms.Production;
+    using AnalysisPrograms.Production.Arguments;
     using AnalysisPrograms.SpectrogramGenerator;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
@@ -32,15 +33,14 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.WavTools;
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
-    using Production;
-    using Production.Arguments;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
     using Path = System.IO.Path;
 
     /// <summary>
     /// Use the following paths for the command line for the 'audio2sonogram' task.
-    /// audio2InputForConvCNN "Path to CSV file" @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Mangalam.Sonogram.yml"  "Output directory" true
+    /// audio2InputForConvCNN "Path to CSV file" @"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Mangalam.Sonogram.yml"  "Output directory" true.
     /// </summary>
     public class Audio2InputForConvCnn
     {
@@ -65,7 +65,7 @@ namespace AnalysisPrograms
         }
 
         /// <summary>
-        /// This is the entrypoint for generating ConCNN spectrograms - one at a time
+        /// This is the entrypoint for generating ConCNN spectrograms - one at a time.
         /// </summary>
         public static void Execute(Arguments arguments)
         {
@@ -112,7 +112,7 @@ namespace AnalysisPrograms
 
         /// <summary>
         /// This method written 18-09-2014 to process Mangalam's CNN recordings.
-        /// Calculate the SNR statistics for each recording and then write info back to csv file
+        /// Calculate the SNR statistics for each recording and then write info back to csv file.
         /// </summary>
         public static void Main(Arguments arguments)
         {
@@ -422,7 +422,7 @@ namespace AnalysisPrograms
         }
 
         /// <summary>
-        /// In line class used to store a single record read from a line of the csv file;
+        /// In line class used to store a single record read from a line of the csv file.
         /// </summary>
         public class CsvDataRecord
         {
@@ -573,38 +573,38 @@ namespace AnalysisPrograms
         }
 
         /// <summary>
-        /// In line class used to return results from the static method Audio2InputForConvCNN.GenerateFourSpectrogramImages();
+        /// In line class used to return results from the static method Audio2InputForConvCNN.GenerateFourSpectrogramImages().
         /// </summary>
         public class AudioToSonogramResult
         {
             /// <summary>
-            /// Gets or sets iD of the event included in the recording segment
+            /// Gets or sets iD of the event included in the recording segment.
             /// </summary>
             public int AudioEventId { get; set; }
 
             /// <summary>
-            /// Gets or sets name of site where recording was made
+            /// Gets or sets name of site where recording was made.
             /// </summary>
             public string SiteName { get; set; }
 
             /// <summary>
-            /// Gets or sets class label for this recording
+            /// Gets or sets class label for this recording.
             /// </summary>
             public string CommonTags { get; set; }
 
             /// <summary>
-            /// Gets or sets path to spectrogram images of this recording
+            /// Gets or sets path to spectrogram images of this recording.
             /// </summary>
             public FileInfo SpectrogramFile { get; set; }
 
             /// <summary>
-            /// Gets or sets snr information for this recording
+            /// Gets or sets snr information for this recording.
             /// </summary>
             public SNR.SnrStatistics SnrStatistics { get; set; }
 
             /// <summary>
             /// CONSTRUCT the header for csv file
-            ///  audio_event_id,site_name,common_tags,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTThirdSNR,path
+            ///  audio_event_id,site_name,common_tags,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTThirdSNR,path.
             /// </summary>
             public string WriteResultAsLineOfCsv()
             {
@@ -622,10 +622,10 @@ namespace AnalysisPrograms
             /// <summary>
             /// CONSTRUCT the header for the above csv file
             /// Following line is headers from Anthony's returned csv file
-            /// "audio_event_id,audio_recording_id,audio_recording_uuid,projects,site_name,event_start_date_utc,event_duration_seconds,common_tags,species_tags,other_tags,path,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTHalfSNR";
+            /// "audio_event_id,audio_recording_id,audio_recording_uuid,projects,site_name,event_start_date_utc,event_duration_seconds,common_tags,species_tags,other_tags,path,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTHalfSNR".
             /// <para>
             /// Following line is header for these results.
-            ///  audio_event_id,site_name,common_tags,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTThirdSNR,path
+            ///  audio_event_id,site_name,common_tags,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTThirdSNR,path.
             /// </para>
             /// </summary>
             public static string GetCsvHeader()

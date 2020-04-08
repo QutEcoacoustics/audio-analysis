@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="ConfigurationClasses.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -12,11 +12,11 @@ namespace AudioAnalysisTools
     using System;
     using System.IO;
     using Acoustics.Shared;
-    using DSP;
+    using AudioAnalysisTools.DSP;
     using TowseyLibrary;
 
     /// <summary>
-    /// Defined string constants for keys in config tables
+    /// Defined string constants for keys in config tables.
     /// </summary>
     public static class ConfigKeys
     {
@@ -135,7 +135,7 @@ namespace AudioAnalysisTools
     }
 
     /// <summary>
-    /// SETS PARAMETERS CONCERNING ENERGY, END-POINT DETECTION AND SEGMENTATION
+    /// SETS PARAMETERS CONCERNING ENERGY, END-POINT DETECTION AND SEGMENTATION.
     /// </summary>
     [Serializable]
     public static class EndpointDetectionConfiguration
@@ -190,7 +190,7 @@ namespace AudioAnalysisTools
         /// SEGMENTATION_THRESHOLD_K1=3.5
         /// SEGMENTATION_THRESHOLD_K2=6.0
         /// K1_K2_LATENCY=0.05
-        /// VOCAL_DELAY=0.2
+        /// VOCAL_DELAY=0.2.
         /// </summary>
         public static int[] DetermineVocalisationEndpoints(double[] dbArray, double frameStep)
         {

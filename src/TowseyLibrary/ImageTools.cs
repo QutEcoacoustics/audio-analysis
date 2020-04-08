@@ -9,7 +9,6 @@ namespace TowseyLibrary
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using Acoustics.Shared;
     using Acoustics.Shared.ImageSharp;
     using AForge.Imaging.Filters;
     using MathNet.Numerics.LinearAlgebra;
@@ -18,7 +17,6 @@ namespace TowseyLibrary
     using SixLabors.ImageSharp.ColorSpaces.Conversion;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-
 
     public enum Kernal
     {
@@ -124,10 +122,10 @@ namespace TowseyLibrary
         },
         {
                                                 0.1, 0.2, 0.1,
-                                            },
+        },
         {
                                                 0.1, 0.1, 0.1,
-                                            },
+        },
         };
 
         private static readonly double[,] highPassKernal1 =
@@ -141,7 +139,7 @@ namespace TowseyLibrary
         {
             -1.0, -1.0, -1.0,
         },
-    };
+        };
 
         private static readonly double[,] highPassKernal2 =
         {
@@ -150,16 +148,16 @@ namespace TowseyLibrary
         },
         {
                                                 -0.3, -0.3, -0.3, -0.3, -0.3,
-                                            },
+        },
         {
                                                 -0.3, -0.3,  9.7, -0.3, -0.3,
-                                            },
+        },
         {
                                                 -0.3, -0.3, -0.3, -0.3, -0.3,
-                                            },
+        },
         {
                                                 -0.3, -0.3, -0.3, -0.3, -0.3,
-                                            },
+        },
         };
 
         private static readonly double[,] vertLineKernal =
@@ -173,7 +171,7 @@ namespace TowseyLibrary
         {
             -0.5, 1.0, -0.5,
         },
-    };
+        };
 
         private static readonly double[,] horiLineKernal3 =
         {
@@ -186,7 +184,7 @@ namespace TowseyLibrary
         {
             -0.5, -0.5, -0.5,
         },
-    };
+        };
 
         private static readonly double[,] horiLineKernal5 =
         {
@@ -199,7 +197,7 @@ namespace TowseyLibrary
         {
             -0.5, -0.5, -0.5, -0.5, -0.5,
         },
-    };
+        };
 
         private static readonly double[,] diagLineKernal1 =
         {
@@ -212,7 +210,7 @@ namespace TowseyLibrary
         {
             -1.0, -1.0, 2.0,
         },
-    };
+        };
 
         private static readonly double[,] diagLineKernal2 =
         {
@@ -225,7 +223,7 @@ namespace TowseyLibrary
         {
             2.0, -1.0, -1.0,
         },
-    };
+        };
 
         private static readonly double[,] Laplace1Kernal =
         {
@@ -238,7 +236,7 @@ namespace TowseyLibrary
         {
             0.0, -1.0, 0.0,
         },
-    };
+        };
 
         private static readonly double[,] Laplace2Kernal =
         {
@@ -251,7 +249,7 @@ namespace TowseyLibrary
         {
             -1.0, -1.0, -1.0,
         },
-    };
+        };
 
         private static readonly double[,] Laplace3Kernal =
         {
@@ -264,7 +262,7 @@ namespace TowseyLibrary
         {
             1.0, -2.0, 1.0,
         },
-    };
+        };
 
         private static readonly double[,] Laplace4Kernal =
         {
@@ -277,7 +275,7 @@ namespace TowseyLibrary
         {
             -1.0, -1.0, -1.0,
         },
-    }; //subtracts original
+        }; //subtracts original
 
         private static readonly double[,] grid2 =
         {
@@ -286,7 +284,7 @@ namespace TowseyLibrary
         },
         {
                                                 -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5,
-                                            },
+        },
 
 //                                            { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
 //                                            { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
@@ -294,7 +292,7 @@ namespace TowseyLibrary
 //                                            { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
         {
                                                 -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5,
-                                            },
+        },
         };
 
         //static double[,] grid2Wave =      { { -0.5, 1.0, -1.5, 2.0, -1.5, 1.0, -0.5},
@@ -307,22 +305,22 @@ namespace TowseyLibrary
         },
         {
                                                 -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5,
-                                            },
+        },
         {
                                                 -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5,
-                                            },
+        },
         {
                                                 -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5,
-                                            },
+        },
         {
                                                 -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5,
-                                            },
+        },
         {
                                                 -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5,
-                                            },
+        },
         {
                                                 -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5,
-                                            },
+        },
         };
 
         private static readonly double[,] grid4 =
@@ -332,22 +330,22 @@ namespace TowseyLibrary
         },
         {
                                                 -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375,
-                                            },
+        },
         {
                                                 -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375,
-                                            },
+        },
         {
                                                 -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375,
-                                            },
+        },
         {
                                                 -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375,
-                                            },
+        },
         {
                                                 -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375,
-                                            },
+        },
         {
                                                 -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375,
-                                            },
+        },
         };
 
         private static readonly double[,] grid2Wave =
@@ -357,22 +355,22 @@ namespace TowseyLibrary
         },
         {
                                                 1.0,  1.0,  1.0,
-                                            },
+        },
         {
                                                 -1.5, -1.5, -1.5,
-                                            },
+        },
         {
                                                 2.0,  2.0,  2.0,
-                                            },
+        },
         {
                                                 -1.5, -1.5, -1.5,
-                                            },
+        },
         {
                                                 1.0,  1.0,  1.0,
-                                            },
+        },
         {
                                                 -0.5, -0.5, -0.5,
-                                            },
+        },
         };
 
         private static readonly double[,] grid3Wave =
@@ -382,28 +380,28 @@ namespace TowseyLibrary
         },
         {
                                                 1.0,  1.0,  1.0,
-                                            },
+        },
         {
                                                 -0.5, -0.5, -0.5,
-                                            },
+        },
         {
                                                 -1.0, -1.0, -1.0,
-                                            },
+        },
         {
                                                 2.0,  2.0,  2.0,
-                                            },
+        },
         {
                                                 -1.0, -1.0, -1.0,
-                                            },
+        },
         {
                                                 -0.5, -0.5, -0.5,
-                                            },
+        },
         {
                                                 1.0,  1.0,  1.0,
-                                            },
+        },
         {
                                                 -0.5, -0.5, -0.5,
-                                            },
+        },
         };
 
         public static double[,] SobelX =
@@ -413,10 +411,10 @@ namespace TowseyLibrary
         },
         {
                                                 -2.0,  0.0,  -2.0,
-                                            },
+        },
         {
                                                 -1.0,  0.0,  1.0,
-                                            },
+        },
         };
 
         public static double[,] SobelY =
@@ -426,10 +424,10 @@ namespace TowseyLibrary
         },
         {
                                                 0.0,  0.0,  0.0,
-                                            },
+        },
         {
                                                 -1.0, -2.0, -1.0,
-                                            },
+        },
         };
 
         public static Image<Rgb24> ReadImage2Image(string fileName)
@@ -499,36 +497,48 @@ namespace TowseyLibrary
             //SWITCH KERNALS
             switch (name)
             {
-                case Kernal.LowPass: kernal = lowPassKernal;
+                case Kernal.LowPass:
+                    kernal = lowPassKernal;
                     break;
-                case Kernal.HighPass1: kernal = highPassKernal1;
+                case Kernal.HighPass1:
+                    kernal = highPassKernal1;
                     break;
-                case Kernal.HighPass2: kernal = highPassKernal2;
+                case Kernal.HighPass2:
+                    kernal = highPassKernal2;
                     LoggedConsole.WriteLine("Applied highPassKernal2 Kernal");
                     break;
-                case Kernal.HorizontalLine3: kernal = horiLineKernal3;
+                case Kernal.HorizontalLine3:
+                    kernal = horiLineKernal3;
                     break;
-                case Kernal.HorizontalLine5: kernal = horiLineKernal5;
+                case Kernal.HorizontalLine5:
+                    kernal = horiLineKernal5;
                     LoggedConsole.WriteLine("Applied Horizontal Line5 Kernal");
                     break;
-                case Kernal.VerticalLine: kernal = vertLineKernal;
+                case Kernal.VerticalLine:
+                    kernal = vertLineKernal;
                     break;
-                case Kernal.DiagLine1: kernal = diagLineKernal1;
+                case Kernal.DiagLine1:
+                    kernal = diagLineKernal1;
                     LoggedConsole.WriteLine("Applied diagLine1 Kernal");
                     break;
-                case Kernal.DiagLine2: kernal = diagLineKernal2;
+                case Kernal.DiagLine2:
+                    kernal = diagLineKernal2;
                     LoggedConsole.WriteLine("Applied diagLine2 Kernal");
                     break;
-                case Kernal.Laplace1: kernal = Laplace1Kernal;
+                case Kernal.Laplace1:
+                    kernal = Laplace1Kernal;
                     LoggedConsole.WriteLine("Applied Laplace1 Kernal");
                     break;
-                case Kernal.Laplace2: kernal = Laplace2Kernal;
+                case Kernal.Laplace2:
+                    kernal = Laplace2Kernal;
                     LoggedConsole.WriteLine("Applied Laplace2 Kernal");
                     break;
-                case Kernal.Laplace3: kernal = Laplace3Kernal;
+                case Kernal.Laplace3:
+                    kernal = Laplace3Kernal;
                     LoggedConsole.WriteLine("Applied Laplace3 Kernal");
                     break;
-                case Kernal.Laplace4: kernal = Laplace4Kernal;
+                case Kernal.Laplace4:
+                    kernal = Laplace4Kernal;
                     LoggedConsole.WriteLine("Applied Laplace4 Kernal");
                     break;
 
@@ -615,19 +625,24 @@ namespace TowseyLibrary
             //SWITCH KERNALS
             switch (name)
             {
-                case Kernal.Grid2: kernal = grid2;
+                case Kernal.Grid2:
+                    kernal = grid2;
                     LoggedConsole.WriteLine("Applied Grid Kernal 2");
                     break;
-                case Kernal.Grid3: kernal = grid3;
+                case Kernal.Grid3:
+                    kernal = grid3;
                     LoggedConsole.WriteLine("Applied Grid Kernal 2");
                     break;
-                case Kernal.Grid4: kernal = grid4;
+                case Kernal.Grid4:
+                    kernal = grid4;
                     LoggedConsole.WriteLine("Applied Grid Kernal 2");
                     break;
-                case Kernal.Grid2Wave: kernal = grid2Wave;
+                case Kernal.Grid2Wave:
+                    kernal = grid2Wave;
                     LoggedConsole.WriteLine("Applied Grid Wave Kernal 2");
                     break;
-                case Kernal.Grid3Wave: kernal = grid3Wave;
+                case Kernal.Grid3Wave:
+                    kernal = grid3Wave;
                     LoggedConsole.WriteLine("Applied Grid Wave Kernal 3");
                     break;
 
@@ -712,10 +727,6 @@ namespace TowseyLibrary
         /// The row and column is chosen randomly and then the reuired number of consecutive pixels is transferred.
         /// These noise matrices are used to obtain statistics for cross-correlation coefficients.
         /// </summary>
-        /// <param name="m"></param>
-        /// <param name="kRows"></param>
-        /// <param name="kCols"></param>
-        /// <returns></returns>
         public static double[,] GetNoise(double[,] m, int kRows, int kCols)
         {
             int mHeight = m.GetLength(0);
@@ -836,9 +847,6 @@ namespace TowseyLibrary
         /// Spurious results will occur if have negative values or values > 1.
         /// Should NormaliseMatrixValues matrix first if these conditions do not apply.
         /// </summary>
-        /// <param name="M"></param>
-        /// <param name="fractionalStretching"></param>
-        /// <returns></returns>
         public static double[,] ContrastStretching(double[,] M, double fractionalStretching)
         {
             int rowCount = M.GetLength(0);
@@ -908,11 +916,9 @@ namespace TowseyLibrary
         /// The author references the following Afroge source code
         /// http://www.aforgenet.com/framework/features/edge_detectors_filters.html
         /// See the below link for how to set the thresholds etc
-        /// http://homepages.inf.ed.ac.uk/rbf/HIPR2/canny.htm
+        /// http://homepages.inf.ed.ac.uk/rbf/HIPR2/canny.htm.
         ///
         /// </summary>
-        /// <param name="bmp"></param>
-        /// <returns></returns>
         public static Image CannyEdgeDetection(Image<Rgb24> bmp, byte lowThreshold, byte highThreshold)
         {
 
@@ -934,8 +940,6 @@ namespace TowseyLibrary
         /// This version of Sobel's edge detection taken from  Graig A. Lindley, Practical Image Processing
         /// which includes C code.
         /// </summary>
-        /// <param name="m"></param>
-        /// <returns></returns>
         public static double[,] SobelEdgeDetection(double[,] m, double relThreshold)
         {
             //define indices into grid using Lindley notation
@@ -1025,8 +1029,6 @@ namespace TowseyLibrary
         /// This version of Sobel's edge detection taken from  Graig A. Lindley, Practical Image Processing
         /// which includes C code.
         /// </summary>
-        /// <param name="m"></param>
-        /// <returns></returns>
         public static double[,] SobelRidgeDetection(double[,] m)
         {
             //define indices into grid using Lindley notation
@@ -1140,10 +1142,8 @@ namespace TowseyLibrary
         /// This version of Sobel's edge detection taken from  Graig A. Lindley, Practical Image Processing
         /// which includes C code.
         /// HOWEVER MODIFED TO PROCESS 5x5 matrix
-        /// MATRIX must be square with odd number dimensions
+        /// MATRIX must be square with odd number dimensions.
         /// </summary>
-        /// <param name="m"></param>
-        /// <returns></returns>
         public static void SobelRidgeDetection(double[,] m, out bool isRidge, out double magnitude, out double direction)
         {
             //for clarity, give matrix elements LETTERS using Lindley notation
@@ -1277,7 +1277,7 @@ namespace TowseyLibrary
         /// <summary>
         /// This version of Sobel's edge detection taken from  Graig A. Lindley, Practical Image Processing which includes C code.
         /// HOWEVER MODIFED TO PROCESS 5x5 matrix
-        /// MATRIX must be square with odd number dimensions
+        /// MATRIX must be square with odd number dimensions.
         /// </summary>
         public static void Sobel5X5RidgeDetection(double[,] m, out bool isRidge, out double magnitude, out int direction)
         {
@@ -1412,7 +1412,7 @@ namespace TowseyLibrary
         /// This modifies Sobel's ridge detection by using mexican hat filter.
         /// The mexican hat is the difference of two gaussians on different scales.
         /// DoG is used in image processing to find ridges.
-        /// MATRIX must be square with odd number dimensions
+        /// MATRIX must be square with odd number dimensions.
         /// </summary>
         public static void MexicanHat5X5RidgeDetection(double[,] m, out bool isRidge, out double magnitude, out int direction)
         {
@@ -1439,17 +1439,17 @@ namespace TowseyLibrary
             },
             {
                                             -0.3, -0.3, -0.3, -0.3, -0.3,
-                                        },
+            },
             {
                                             1.0, 1.0, 1.0, 1.0, 1.0,
-                                        },
+            },
             {
                                             -0.3, -0.3, -0.3, -0.3, -0.3,
-                                        },
+            },
             {
                                             -0.2, -0.2, -0.2, -0.2, -0.2,
-                                        },
-                                      };
+            },
+            };
             double[,] ridgeDir1Mask =
             {
             {
@@ -1457,17 +1457,17 @@ namespace TowseyLibrary
             },
             {
                                             -0.2, -0.2, -0.3, 1.0, -0.3,
-                                        },
+            },
             {
                                             -0.2, -0.3, 1.0, -0.3, -0.2,
-                                        },
+            },
             {
                                             -0.3, 1.0, -0.3, -0.2, -0.2,
-                                        },
+            },
             {
                                             0.8, -0.3, -0.2, -0.2, -0.1,
-                                        },
-                                      };
+            },
+            };
             double[,] ridgeDir2Mask =
             {
             {
@@ -1475,17 +1475,17 @@ namespace TowseyLibrary
             },
             {
                                             -0.2, -0.3, 1.0, -0.3, -0.2,
-                                        },
+            },
             {
                                             -0.2, -0.3, 1.0, -0.3, -0.2,
-                                        },
+            },
             {
                                             -0.2, -0.3, 1.0, -0.3, -0.2,
-                                        },
+            },
             {
                                             -0.2, -0.3, 1.0, -0.3, -0.2,
-                                        },
-                                      };
+            },
+            };
             double[,] ridgeDir3Mask =
             {
             {
@@ -1493,17 +1493,17 @@ namespace TowseyLibrary
             },
             {
                                             -0.3, 1.0, -0.3, -0.2, -0.2,
-                                        },
+            },
             {
                                             -0.2, -0.3, 1.0, -0.3, -0.2,
-                                        },
+            },
             {
                                             -0.2, -0.2, -0.3, 1.0, -0.3,
-                                        },
+            },
             {
                                             -0.1, -0.2, -0.2, -0.3, 0.8,
-                                        },
-                                      };
+            },
+            };
 
             double[] ridgeMagnitudes = new double[4];
             ridgeMagnitudes[0] = MatrixTools.DotProduct(ridgeDir0Mask, m);
@@ -1545,17 +1545,17 @@ namespace TowseyLibrary
             },
             {
                                             -0.1, -0.1, 0.4, -0.1, -0.1,
-                                        },
+            },
             {
                                             -0.1, -0.1, 0.4, 0.4, 0.4,
-                                        },
+            },
             {
                                             -0.1, -0.1, -0.1, -0.1, -0.1,
-                                        },
+            },
             {
                                             -0.1, -0.1, -0.1, -0.1, -0.1,
-                                        },
-                                      };
+            },
+            };
             double[,] ridgeDir1Mask =
             {
             {
@@ -1563,17 +1563,17 @@ namespace TowseyLibrary
             },
             {
                                             -0.1, 0.4, -0.1, 0.4, -0.1,
-                                        },
+            },
             {
                                             -0.1, -0.1, 0.4, -0.1, -0.1,
-                                        },
+            },
             {
                                             -0.1, -0.1, -0.1, -0.1, -0.1,
-                                        },
+            },
             {
                                             -0.1, -0.1, -0.1, -0.1, -0.1,
-                                        },
-                                      };
+            },
+            };
             double[,] ridgeDir2Mask =
             {
             {
@@ -1581,17 +1581,17 @@ namespace TowseyLibrary
             },
             {
                                             -0.1, -0.1, 0.4, -0.1, -0.1,
-                                        },
+            },
             {
                                             0.4, 0.4, 0.4, -0.1, -0.1,
-                                        },
+            },
             {
                                             -0.1, -0.1, -0.1, -0.1, -0.1,
-                                        },
+            },
             {
                                             -0.1, -0.1, -0.1, -0.1, -0.1,
-                                        },
-                                      };
+            },
+            };
             double[,] ridgeDir3Mask =
             {
             {
@@ -1599,17 +1599,17 @@ namespace TowseyLibrary
             },
             {
                                             -0.1, 0.4, -0.1, -0.1, -0.1,
-                                        },
+            },
             {
                                             -0.1, -0.1, 0.4, -0.1, -0.1,
-                                        },
+            },
             {
                                             -0.1, 0.4, -0.1, -0.1, -0.1,
-                                        },
+            },
             {
                                             0.4, -0.1, -0.1, -0.1, -0.1,
-                                        },
-                                      };
+            },
+            };
             double[,] ridgeDir4Mask =
             {
             {
@@ -1617,17 +1617,17 @@ namespace TowseyLibrary
             },
             {
                                             -0.1, -0.1, -0.1, -0.1, -0.1,
-                                        },
+            },
             {
                                             0.4, 0.4, 0.4, -0.1, -0.1,
-                                        },
+            },
             {
                                             -0.1, -0.1, 0.4, -0.1, -0.1,
-                                        },
+            },
             {
                                             -0.1, -0.1, 0.4, -0.1, -0.1,
-                                        },
-                                      };
+            },
+            };
             double[,] ridgeDir5Mask =
             {
             {
@@ -1635,17 +1635,17 @@ namespace TowseyLibrary
             },
             {
                                             -0.1, -0.1, -0.1, -0.1, -0.1,
-                                        },
+            },
             {
                                             -0.1, -0.1, 0.4, -0.1, -0.1,
-                                        },
+            },
             {
                                             -0.1, 0.4, -0.1, 0.4, -0.1,
-                                        },
+            },
             {
                                             0.4, -0.1, -0.1, -0.1, 0.4,
-                                        },
-                                      };
+            },
+            };
             double[,] ridgeDir6Mask =
             {
             {
@@ -1653,17 +1653,17 @@ namespace TowseyLibrary
             },
             {
                                             -0.1, -0.1, -0.1, -0.1, -0.1,
-                                        },
+            },
             {
                                             -0.1, -0.1, 0.4, 0.4, 0.4,
-                                        },
+            },
             {
                                             -0.1, -0.1, 0.4, -0.1, -0.1,
-                                        },
+            },
             {
                                             -0.1, -0.1, 0.4, -0.1, -0.1,
-                                        },
-                                      };
+            },
+            };
             double[,] ridgeDir7Mask =
             {
             {
@@ -1671,17 +1671,17 @@ namespace TowseyLibrary
             },
             {
                                             -0.1, -0.1, -0.1, 0.4, -0.1,
-                                        },
+            },
             {
                                             -0.1, -0.1, 0.4, -0.1, -0.1,
-                                        },
+            },
             {
                                             -0.1, -0.1, -0.1, 0.4, -0.1,
-                                        },
+            },
             {
                                             -0.1, -0.1, -0.1, -0.1, 0.4,
-                                        },
-                                      };
+            },
+            };
 
             double[] cornerMagnitudes = new double[8];
             cornerMagnitudes[0] = MatrixTools.DotProduct(ridgeDir0Mask, m);
@@ -1703,7 +1703,7 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// Reverses a 256 grey scale image
+        /// Reverses a 256 grey scale image.
         /// </summary>
         public static double[,] Reverse256GreyScale(double[,] m)
         {
@@ -1723,9 +1723,9 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// blurs an image using a square neighbourhood
+        /// blurs an image using a square neighbourhood.
         /// </summary>
-        /// <param name="matrix">the image ot be blurred</param>
+        /// <param name="matrix">the image ot be blurred.</param>
         /// <param name="nh">Note that neighbourhood is distance either side of central pixel.</param>
         public static double[,] Blur(double[,] matrix, int nh)
         {
@@ -1767,9 +1767,9 @@ namespace TowseyLibrary
         /// blurs and image using a rectangular neighbourhood.
         /// Note that in this method neighbourhood dimensions are full side or window.
         /// </summary>
-        /// <param name="matrix">image to be blurred</param>
-        /// <param name="cWindow">column Window i.e. x-dimension</param>
-        /// <param name="rWindow">row Window i.e. y-dimension</param>
+        /// <param name="matrix">image to be blurred.</param>
+        /// <param name="cWindow">column Window i.e. x-dimension.</param>
+        /// <param name="rWindow">row Window i.e. y-dimension.</param>
         public static double[,] Blur(double[,] matrix, int cWindow, int rWindow)
         {
             if (cWindow <= 1 && rWindow <= 1)
@@ -1839,7 +1839,7 @@ namespace TowseyLibrary
 
         /// <summary>
         /// returns the upper and lower thresholds for the pass upper and lower percentile cuts of matrix M
-        /// Used for some of the noise reduciton algorithms
+        /// Used for some of the noise reduciton algorithms.
         /// </summary>
         public static void PercentileThresholds(double[,] M, double lowerCut, double upperCut, out double lowerThreshold, out double upperThreshold)
         {
@@ -2083,7 +2083,7 @@ namespace TowseyLibrary
         /// <summary>
         /// Returns matrix after convolving with Gaussian blur.
         /// The blurring is in 2D, first blurred in x-direction, then in y-direction.
-        /// Blurring function is {0.006,0.061, 0.242,0.383,0.242,0.061,0.006}
+        /// Blurring function is {0.006,0.061, 0.242,0.383,0.242,0.061,0.006}.
         /// </summary>
         public static double[,] GaussianBlur_5cell(double[,] matrix)
         {
@@ -2112,9 +2112,12 @@ namespace TowseyLibrary
 
             // then convolve in y-dimension, i.e. along a col
             double[,] M2 = (double[,])M1.Clone();
-            for (int r = edge; r < height - edge; r++) //for all rows
+
+            // for all rows
+            for (int r = edge; r < height - edge; r++)
             {
-                for (int c = edge; c < width - edge; c++) //for all cols
+                // for all cols
+                for (int c = edge; c < width - edge; c++)
                 {
                     double sum = 0.0;
                     for (int i = 0; i < bf.Length; i++)
@@ -2133,8 +2136,6 @@ namespace TowseyLibrary
         /// Detect high intensity / high energy regions in an image using blurring
         /// followed by rules involving positive and negative gradients.
         /// </summary>
-        /// <param name="matrix"></param>
-        /// <returns></returns>
         public static double[,] DetectHighEnergyRegions1(double[,] matrix)
         {
             double gradThreshold = 1.2;
@@ -2162,7 +2163,8 @@ namespace TowseyLibrary
                 M[1, x] = 0.0; //patch in second time step with zero gradient
             }
 
-            for (int b = 0; b < bandCount; b++) //for all bands
+            // for all bands
+            for (int b = 0; b < bandCount; b++)
             {
                 int start = (int)((b - 1) * bandWidth);   //extend range of submatrix below b for smoother changes
                 if (start < 0)
@@ -2229,8 +2231,6 @@ namespace TowseyLibrary
         /// Detect high intensity / high energy regions in an image using blurring
         /// followed by bandwise thresholding.
         /// </summary>
-        /// <param name="matrix"></param>
-        /// <returns></returns>
         public static double[,] DetectHighEnergyRegions3(double[,] matrix)
         {
             double lowerShoulder = 0.3;   //used to increase/decrease the intensity threshold from modal value
@@ -2249,7 +2249,8 @@ namespace TowseyLibrary
             double[,] subMatrix = DataTools.Submatrix(blurM, 0, 0, height - 1, bandWidth);
             PercentileThresholds(subMatrix, lowerShoulder, upperShoulder, out var lowerThreshold, out var upperThreshold);
 
-            for (int col = 0; col < width; col++) //for all cols
+            // for all cols
+            for (int col = 0; col < width; col++)
             {
                 int start = col - halfWidth;   //extend range of submatrix below col for smoother changes
                 if (start < 0)
@@ -2394,9 +2395,11 @@ namespace TowseyLibrary
             ArrayList shapes = new ArrayList();
 
             //transfer m2 lines spectrogram to temporary matrix and merge adjacent high energy objects
-            for (int y = 0; y < height; y++) //row at a time
+            // row at a time
+            for (int y = 0; y < height; y++)
             {
-                for (int x = 0; x < width; x++) //transfer values to tmpM
+                // transfer values to tmpM
+                for (int x = 0; x < width; x++)
                 {
                     if (m2[y, x] == 0.0)
                     {
@@ -2534,9 +2537,11 @@ namespace TowseyLibrary
             ArrayList shapes = new ArrayList();
 
             //transfer m2 lines spectrogram to temporary matrix and join adjacent high energy objects
-            for (int y = 0; y < height; y++) //row at a time
+            // row at a time
+            for (int y = 0; y < height; y++)
             {
-                for (int x = 0; x < width; x++) //transfer values to tmpM
+                // transfer values to tmpM
+                for (int x = 0; x < width; x++)
                 {
                     if (m2[y, x] == 0.0)
                     {
@@ -2651,7 +2656,7 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// Returns a binary matrix containing high energy lines in the oriignal spectrogram
+        /// Returns a binary matrix containing high energy lines in the oriignal spectrogram.
         /// </summary>
         public static double[,] Shapes_lines(double[,] matrix)
         {
@@ -2675,10 +2680,8 @@ namespace TowseyLibrary
 
         /// <summary>
         /// Returns a binary matrix containing high energy lines in the original spectrogram
-        /// calculates the threshold bandwise
+        /// calculates the threshold bandwise.
         /// </summary>
-        /// <param name="matrix"></param>
-        /// <returns></returns>
         public static double[,] Shapes_lines_bandwise(double[,] matrix)
         {
             double lowerShoulder = 0.7;   //used to increase or decrease the threshold from modal value
@@ -2699,7 +2702,8 @@ namespace TowseyLibrary
             double[,] subMatrix = DataTools.Submatrix(tmpM, 0, 0, height - 1, bandWidth);
             PercentileThresholds(subMatrix, lowerShoulder, upperShoulder, out var lowerThreshold, out var upperThreshold);
 
-            for (int col = 2; col < width; col++) // for all cols
+            //  for all cols
+            for (int col = 2; col < width; col++)
             {
                 int start = col - halfWidth; //extend range of submatrix below col for smoother changes
                 if (start < 0)
@@ -2903,7 +2907,7 @@ namespace TowseyLibrary
         public static List<Pen> GetRedGradientPalette()
         {
             var pens = new List<Pen>();
-            for (byte c = 0; c < 256; c++)
+            for (byte c = 0; c < (byte)255; c++)
             {
                 pens.Add(new Pen(Color.FromRgb(255, c, c), 1f));
             }
@@ -2915,8 +2919,6 @@ namespace TowseyLibrary
         /// returns a palette of a variety of coluor.
         /// Used for displaying clusters identified by colour.
         /// </summary>
-        /// <param name="paletteSize"></param>
-        /// <returns></returns>
         public static List<Pen> GetColorPalette(int paletteSize)
         {
             var pens = new List<Pen>();
@@ -2978,7 +2980,8 @@ namespace TowseyLibrary
             }
 
             Image<Rgb24> colorBmp = new Image<Rgb24>(width - 1, ht);
-            Color c;
+
+            //Color c;
             int x = 0;
 
             for (int i = 0; i < colourCount; i++)
@@ -3037,7 +3040,7 @@ namespace TowseyLibrary
         /// Normalises the matrix between zero and one.
         /// Then draws the reversed matrix and saves image to passed path.
         /// </summary>
-        /// <param name="matrix">the data</param>
+        /// <param name="matrix">the data.</param>
         public static void DrawReversedMDNMatrix(Matrix<double> matrix, string pathName)
         {
             double[,] matrix1 = matrix.ToArray();
@@ -3049,7 +3052,7 @@ namespace TowseyLibrary
         /// Normalises the matrix between zero and one.
         /// Then draws the reversed matrix and saves image to passed path.
         /// </summary>
-        /// <param name="matrix">the data</param>
+        /// <param name="matrix">the data.</param>
         public static void DrawReversedMatrix(double[,] matrix, string pathName)
         {
             Image bmp = DrawReversedMatrix(matrix);
@@ -3081,9 +3084,9 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// Draws matrix and save image
+        /// Draws matrix and save image.
         /// </summary>
-        /// <param name="vector">the data</param>
+        /// <param name="vector">the data.</param>
         public static void DrawMatrix(double[] vector, string pathName)
         {
             double[,] matrix = new double[1, vector.Length];
@@ -3097,10 +3100,9 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// Draws matrix and save image
+        /// Draws matrix and save image.
         /// </summary>
-        /// <param name="matrix">the data</param>
-        /// <param name="pathName"></param>
+        /// <param name="matrix">the data.</param>
         public static void DrawMatrix(double[,] matrix, string pathName)
         {
             Image<Rgb24> bmp = DrawNormalisedMatrix(matrix);
@@ -3114,10 +3116,9 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// Draws matrix after first normalising the data
+        /// Draws matrix after first normalising the data.
         /// </summary>
-        /// <param name="matrix">the data</param>
-        /// <param name="pathName"></param>
+        /// <param name="matrix">the data.</param>
         public static Image<Rgb24> DrawNormalisedMatrix(double[,] matrix)
         {
             double[,] norm = DataTools.normalise(matrix);
@@ -3131,9 +3132,9 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// Draws matrix after first normalising the data
+        /// Draws matrix after first normalising the data.
         /// </summary>
-        /// <param name="matrix">the data</param>
+        /// <param name="matrix">the data.</param>
         public static Image<Rgb24> DrawReversedMatrix(double[,] matrix)
         {
             double[,] norm = DataTools.normalise(matrix);
@@ -3144,8 +3145,7 @@ namespace TowseyLibrary
         /// Draws matrix without normkalising the values in the matrix.
         /// Assume some form of normalisation already done.
         /// </summary>
-        /// <param name="matrix">the data</param>
-        /// <param name="pathName"></param>
+        /// <param name="matrix">the data.</param>
         public static Image<Rgb24> DrawReversedMatrixWithoutNormalisation(double[,] matrix)
         {
             int rows = matrix.GetLength(0); //number of rows
@@ -3182,7 +3182,7 @@ namespace TowseyLibrary
                         greyId = 255 - greyId; // reverse image - want high values in black, low values in white
                     }
 
-                    bmp[c, r] =  grayScale[greyId];
+                    bmp[c, r] = grayScale[greyId];
                 }//end all columns
             }
 
@@ -3193,7 +3193,7 @@ namespace TowseyLibrary
         /// Draws matrix without normkalising the values in the matrix.
         /// Assume some form of normalisation already done.
         /// </summary>
-        /// <param name="matrix">the data</param>
+        /// <param name="matrix">the data.</param>
         public static Image<Rgb24> DrawMatrixWithoutNormalisation(double[,] matrix)
         {
             int rows = matrix.GetLength(0); //number of rows
@@ -3255,7 +3255,7 @@ namespace TowseyLibrary
                         }
                     }
 
-                    bmp[c, r] =  grayScale[greyId];
+                    bmp[c, r] = grayScale[greyId];
                 } //end all columns
             } //end all rows
 
@@ -3320,7 +3320,7 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// Draws horizontal gridlines on Image
+        /// Draws horizontal gridlines on Image.
         /// </summary>
         public static Image<Rgb24> DrawYaxisScale(Image<Rgb24> image, int scaleWidth, double yInterval, double yTicInterval, int yOffset)
         {
@@ -3328,12 +3328,13 @@ namespace TowseyLibrary
             var pen = new Pen(Color.White, 1f);
             var font = Drawing.Arial10;
 
-            image.Mutate(g => { 
-                
+            image.Mutate(g =>
+            {
+
                 for (int i = 1; i <= ticCount; i++)
                 {
                     int y1 = image.Height - (int)(i * yTicInterval) + yOffset;
-                    
+
                     g.DrawLine(pen, 0, y1, image.Width - 1, y1);
                     string value = Math.Round(yInterval * i).ToString();
                     g.DrawText(value, font, Color.White, new PointF(2, y1 + 1));
@@ -3355,7 +3356,7 @@ namespace TowseyLibrary
                 g.DrawRectangle(pen, 0, 0, scaleWidth - 1, image.Height - 1);
             });
 
-            var array = new Image<Rgb24>[] {yAxisImage, image};
+            var array = new Image<Rgb24>[] { yAxisImage, image };
             return CombineImagesInLine(array);
         }
 
@@ -3369,7 +3370,8 @@ namespace TowseyLibrary
             var pen = new Pen(Color.White, 1f);
             var font = Drawing.Arial10;
 
-            image.Mutate(g => {
+            image.Mutate(g =>
+            {
                 // draw on the grid lines
                 for (int i = 1; i <= ticCount; i++)
                 {
@@ -3405,7 +3407,7 @@ namespace TowseyLibrary
         /// <summary>
         /// Draws matrix but automatically determines the scale to fit 1000x1000 pixel image.
         /// </summary>
-        /// <param name="matrix">the data</param>
+        /// <param name="matrix">the data.</param>
         public static void DrawMatrix(double[,] matrix, string pathName, bool doScale)
         {
             int rows = matrix.GetLength(0);
@@ -3474,7 +3476,7 @@ namespace TowseyLibrary
         /// <summary>
         /// Draws colour matrix but automatically determines the scale to fit 1000x1000 pixel image.
         /// </summary>
-        /// <param name="matrix">the data</param>
+        /// <param name="matrix">the data.</param>
         public static Image DrawMatrixInColour(double[,] matrix, bool doScale)
         {
             int xscale = 10;
@@ -3498,41 +3500,41 @@ namespace TowseyLibrary
 
             // Can comment next two lines if want black
             var converter = new ColorSpaceConverter();
-            bmp.Mutate(g => { 
-            g.Clear(Color.Gray);
-
-            for (int r = 0; r < rows; r++)
+            bmp.Mutate(g =>
             {
-                for (int c = 0; c < cols; c++)
+                g.Clear(Color.Gray);
+
+                for (int r = 0; r < rows; r++)
                 {
-                    int xOffset = cellWidth * c;
-                    int yOffset = cellWidth * r;
-
-                    // use HSV colour space
-                    int hue = topColour - (int)Math.Floor(hueRange * norm[r]);
-
-                    // double saturation = 0.75 + (norm[r, c] * 0.25);
-                    // double saturation = norm[r, c] * 0.5;
-                    // double saturation = (1 - norm[r, c]) * 0.5;
-                    double saturation = 1.0;
-                    var myHsv = new Hsv(hue, (float)saturation, 1.0f);
-                    var myRgb = converter.ToRgb(myHsv);
-
-                    // use black as background zero colour rather than blue
-                    if (myRgb.B < 255.0)
+                    for (int c = 0; c < cols; c++)
                     {
-                        var colour =  new Rgb(myRgb.R, myRgb.G, myRgb.B / 3);
-                        for (int x = 0; x < cellWidth; x++)
+                        int xOffset = cellWidth * c;
+                        int yOffset = cellWidth * r;
+
+                        // use HSV colour space
+                        int hue = topColour - (int)Math.Floor(hueRange * norm[r]);
+
+                        // double saturation = 0.75 + (norm[r, c] * 0.25);
+                        // double saturation = norm[r, c] * 0.5;
+                        // double saturation = (1 - norm[r, c]) * 0.5;
+                        double saturation = 1.0;
+                        var myHsv = new Hsv(hue, (float)saturation, 1.0f);
+                        var myRgb = converter.ToRgb(myHsv);
+
+                        // use black as background zero colour rather than blue
+                        if (myRgb.B < 255.0)
                         {
-                            for (int y = 0; y < cellWidth; y++)
+                            var colour = new Rgb(myRgb.R, myRgb.G, myRgb.B / 3);
+                            for (int x = 0; x < cellWidth; x++)
                             {
-                                bmp[xOffset + x, yOffset + y] = colour;
+                                for (int y = 0; y < cellWidth; y++)
+                                {
+                                    bmp[xOffset + x, yOffset + y] = colour;
+                                }
                             }
                         }
                     }
                 }
-            }
-
             });
 
             return bmp;
@@ -3546,11 +3548,11 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// This method assumes that the vector has already been normalised by some means such that all values lie between 0.0 and 1.0
+        /// This method assumes that the vector has already been normalised by some means such that all values lie between 0.0 and 1.0.
         /// </summary>
-        /// <param name="vector">the vector of normalised values</param>
-        /// <param name="cellWidth">the width of the image</param>
-        /// <param name="cellHeight">the height of each image row</param>
+        /// <param name="vector">the vector of normalised values.</param>
+        /// <param name="cellWidth">the width of the image.</param>
+        /// <param name="cellHeight">the height of each image row.</param>
         public static Image<Rgb24> DrawVectorInGrayScaleWithoutNormalisation(double[] vector, int cellWidth, int cellHeight, bool reverse)
         {
             int rows = vector.Length;
@@ -3621,7 +3623,7 @@ namespace TowseyLibrary
                     // double saturation = norm[r, c] * 0.5;
                     // double saturation = (1 - norm[r, c]) * 0.5;
                     double saturation = 1.0;
-                    var myHsv = new Hsv(hue,(float)saturation, 1.0f);
+                    var myHsv = new Hsv(hue, (float)saturation, 1.0f);
                     var myRgb = converter.ToRgb(myHsv);
 
                     // use black as background zero colour rather than blue
@@ -3651,7 +3653,7 @@ namespace TowseyLibrary
         /// <summary>
         /// Draws matrix according to user defined scale.
         /// </summary>
-        /// <param name="matrix">the data</param>
+        /// <param name="matrix">the data.</param>
         /// <param name="xPixelsPerCell">X axis scale - pixels per cell.</param>
         /// <param name="yPixelsPerCell">Y axis scale - pixels per cell.</param>
         /// <param name="reverse">determines black on white or white on black.</param>
@@ -3976,7 +3978,6 @@ namespace TowseyLibrary
             }
 
             return histogram.ToDictionary(kvp => kvp.Key, kvp => kvp.Value / (double)sum);
-            ;
         }
     }
 }

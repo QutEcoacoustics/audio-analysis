@@ -89,13 +89,13 @@ namespace Acoustics.Shared
 
         public override IEnumerator<int> GetEnumerator()
         {
-                int rowCounter = -1;
-                foreach (var currentItem in this.objectMatrix)
-                {
-                    rowCounter++;
-                    this.Current = this.selector(currentItem);
-                    yield return rowCounter;
-                }
+            int rowCounter = -1;
+            foreach (var currentItem in this.objectMatrix)
+            {
+                rowCounter++;
+                this.Current = this.selector(currentItem);
+                yield return rowCounter;
+            }
         }
 
         public override int Columns { get; protected set; }
@@ -187,7 +187,7 @@ namespace Acoustics.Shared
 
                 if (this.dimensionality == TwoDimensionalArray.Rotate90ClockWise)
                 {
-                    return this.matrix[this.Columns - 1 - c,  r];
+                    return this.matrix[this.Columns - 1 - c, r];
                 }
 
                 if (this.dimensionality == TwoDimensionalArray.Rotate90AntiClockWise)

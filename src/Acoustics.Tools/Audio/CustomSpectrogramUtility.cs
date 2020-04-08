@@ -1,16 +1,19 @@
+// <copyright file="CustomSpectrogramUtility.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
+
 namespace Acoustics.Tools.Audio
 {
     using System;
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
-
+    using Acoustics.Shared;
+    using Acoustics.Tools.Wav;
     using MathNet.Numerics.IntegralTransforms;
-    using Shared;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.Advanced;
     using SixLabors.ImageSharp.PixelFormats;
-    using Wav;
 
     /// <summary>
     /// Signal to Image used by web site.
@@ -165,7 +168,6 @@ namespace Acoustics.Tools.Audio
                 {
                     requestedImage.Save(output.FullName, encoder);
                 }
-
             }
 
             tempFile.Delete();
@@ -345,7 +347,7 @@ namespace Acoustics.Tools.Audio
         /// The window Overlap.
         /// </param>
         /// <exception cref="ArgumentException">
-        /// Signal must produce at least two frames!
+        /// Signal must produce at least two frames!.
         /// </exception>
         /// <returns>
         /// The frame start ends.
@@ -518,9 +520,6 @@ namespace Acoustics.Tools.Audio
         /// <param name="windowWeights">
         /// The window Weights.
         /// </param>
-        /// <param name="rft">
-        /// The RealFourierTransformation.
-        /// </param>
         /// <returns>
         /// Transformed samples.
         /// </returns>
@@ -588,8 +587,9 @@ namespace Acoustics.Tools.Audio
 
             double[,] spectra = new double[frameCount, binCount];
 
-            //calculate power of the DC value - first column of matrix
-            for (int i = 0; i < frameCount; i++)//foreach time step or frame
+            // calculate power of the DC value - first column of matrix
+            // foreach time step or frame
+            for (int i = 0; i < frameCount; i++) 
             {
                 if (amplitudeM[i, 0] < epsilon)
                 {
@@ -599,14 +599,15 @@ namespace Acoustics.Tools.Audio
                 {
                     spectra[i, 0] = 10 * Math.Log10(amplitudeM[i, 0] * amplitudeM[i, 0] / windowPower / sampleRate);
                 }
+
                 //spectra[i, 0] = amplitudeM[i, 0] * amplitudeM[i, 0] / windowPower; //calculates power
             }
-
 
             //calculate power in frequency bins - must multiply by 2 to accomodate two spectral components, ie positive and neg freq.
             for (int j = 1; j < binCount - 1; j++)
             {
-                for (int i = 0; i < frameCount; i++)//foreach time step or frame
+                // foreach time step or frame
+                for (int i = 0; i < frameCount; i++)
                 {
                     if (amplitudeM[i, j] < epsilon)
                     {
@@ -616,13 +617,14 @@ namespace Acoustics.Tools.Audio
                     {
                         spectra[i, j] = 10 * Math.Log10(amplitudeM[i, j] * amplitudeM[i, j] * 2 / windowPower / sampleRate);
                     }
+
                     //spectra[i, j] = amplitudeM[i, j] * amplitudeM[i, j] * 2 / windowPower; //calculates power
                 }//end of all frames
             } //end of all freq bins
 
-
-            //calculate power of the Nyquist freq bin - last column of matrix
-            for (int i = 0; i < frameCount; i++)//foreach time step or frame
+            // calculate power of the Nyquist freq bin - last column of matrix
+            // foreach time step or frame
+            for (int i = 0; i < frameCount; i++)
             {
                 //calculate power of the DC value
                 if (amplitudeM[i, binCount - 1] < epsilon)
@@ -633,9 +635,9 @@ namespace Acoustics.Tools.Audio
                 {
                     spectra[i, binCount - 1] = 10 * Math.Log10(amplitudeM[i, binCount - 1] * amplitudeM[i, binCount - 1] / windowPower / sampleRate);
                 }
+
                 //spectra[i, 0] = amplitudeM[i, 0] * amplitudeM[i, 0] / windowPower; //calculates power
             }
-
 
             return spectra;
         }
@@ -658,11 +660,12 @@ namespace Acoustics.Tools.Audio
             int binCount = 64;  // number of pixel intensity bins
             double upperLimitForMode = 0.666; // sets upper limit to modal noise bin. Higher values = more severe noise removal.
             int binLimit = (int)(binCount * upperLimitForMode);
-            //*******************************************************************************************************************
 
+            //*******************************************************************************************************************
 
             MinMax(matrix, out var minIntensity, out var maxIntensity);
             double binWidth = (maxIntensity - minIntensity) / binCount;  // width of an intensity bin
+
             // LoggedConsole.WriteLine("minIntensity=" + minIntensity + "  maxIntensity=" + maxIntensity + "  binWidth=" + binWidth);
 
             int rowCount = matrix.GetLength(0);
@@ -678,7 +681,8 @@ namespace Acoustics.Tools.Audio
             double[,] submatrix = Submatrix(matrix, 0, 0, rowCount - 1, bandWidth);
             double[] modalNoise = new double[colCount];
 
-            for (int col = 0; col < colCount; col++) // for all cols i.e. freq bins
+            // for all cols i.e. freq bins
+            for (int col = 0; col < colCount; col++)
             {
                 // construct new submatrix to calculate modal noise
                 int start = col - halfWidth;   //extend range of submatrix below col for smoother changes
@@ -695,6 +699,7 @@ namespace Acoustics.Tools.Audio
 
                 submatrix = Submatrix(matrix, 0, start, rowCount - 1, stop);
                 int[] histo = Histo(submatrix, binCount, minIntensity, maxIntensity, binWidth);
+
                 //DataTools.writeBarGraph(histo);
                 double[] smoothHisto = FilterMovingAverage(histo, 7);
                 GetMaxIndex(smoothHisto, out var maxindex); //this is mode of histogram
@@ -704,8 +709,10 @@ namespace Acoustics.Tools.Audio
                 }
 
                 modalNoise[col] = minIntensity + maxindex * binWidth;
+
                 //LoggedConsole.WriteLine("  modal index=" + maxindex + "  modalIntensity=" + modalIntensity.ToString("F3"));
             }//end for all cols
+
             return modalNoise;
         }
 
@@ -749,12 +756,6 @@ namespace Acoustics.Tools.Audio
         /// Assume that r1 less than r2, c1 less than c2.
         /// Row, column indices start at 0.
         /// </summary>
-        /// <param name="M"></param>
-        /// <param name="r1"></param>
-        /// <param name="c1"></param>
-        /// <param name="r2"></param>
-        /// <param name="c2"></param>
-        /// <returns></returns>
         private static double[,] Submatrix(double[,] M, int r1, int c1, int r2, int c2)
         {
             int smRows = r2 - r1 + 1;
@@ -769,18 +770,10 @@ namespace Acoustics.Tools.Audio
                     sm[i, j] = M[r1 + i, c1 + j];
                 }
             }
+
             return sm;
         }
 
-        /// <summary>
-        ///
-        /// </summary>
-        /// <param name="data"></param>
-        /// <param name="binCount"></param>
-        /// <param name="min"></param>
-        /// <param name="max"></param>
-        /// <param name="binWidth"></param>
-        /// <returns></returns>
         private static int[] Histo(double[,] data, int binCount, double min, double max, double binWidth)
         {
             int rows = data.GetLength(0);
@@ -845,6 +838,7 @@ namespace Acoustics.Tools.Audio
             {
                 sum = 0.0;
                 for (int j = 0; j < width; j++) { sum += signal[i - edge + j]; }
+
                 //sum = signal[i-1]+signal[i]+signal[i+1];
                 fs[i] = sum / width;
             }
@@ -856,6 +850,7 @@ namespace Acoustics.Tools.Audio
                 for (int j = i; j < length; j++) { sum += signal[j]; }
                 fs[i] = sum / (length - i);
             }
+
             return fs;
         }
 
@@ -924,6 +919,5 @@ namespace Acoustics.Tools.Audio
 
             return image;
         }
-
     }
 }

@@ -107,6 +107,5 @@ namespace AnalysisPrograms
                 return Task.FromResult(instance.Execute(this));
             }
         }
-
     }
 }

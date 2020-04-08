@@ -1,4 +1,4 @@
-﻿// <copyright file="PatchSampling.cs" company="QutEcoacoustics">
+// <copyright file="PatchSampling.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -8,8 +8,8 @@ namespace AudioAnalysisTools.DSP
     using System.Collections.Generic;
     using System.Linq;
     using Accord.Math;
+    using AudioAnalysisTools.WavTools;
     using TowseyLibrary;
-    using WavTools;
 
     public static class PatchSampling
     {
@@ -58,7 +58,7 @@ namespace AudioAnalysisTools.DSP
                 {
                     if (samplingMethod == SamplingMethod.OverlappedRandom)
                     {
-                       patches = GetOverlappedRandomPatches(spectrogram, patchWidth, patchHeight, numberOfPatches);
+                        patches = GetOverlappedRandomPatches(spectrogram, patchWidth, patchHeight, numberOfPatches);
                     }
                 }
             }
@@ -88,7 +88,7 @@ namespace AudioAnalysisTools.DSP
 
         /// <summary>
         /// construct the original matrix from a list of sequential patches
-        /// all vectors in list are of the same length
+        /// all vectors in list are of the same length.
         /// </summary>
         public static double[,] ConcatenateGridOfPatches(List<double[,]> list, int columnSize, int patchWidth, int patchHeight)
         {
@@ -123,7 +123,7 @@ namespace AudioAnalysisTools.DSP
 
         /// <summary>
         /// converts a spectrogram matrix to submatrices by dividing the column of input matrix to
-        /// different freq bands with equal size. Output submatrices have same number of rows and same number 
+        /// different freq bands with equal size. Output submatrices have same number of rows and same number
         /// of columns. numberOfBands as an input parameter indicates how many output bands are needed.
         /// </summary>
         public static List<double[,]> GetFreqBandMatrices(double[,] matrix, int numberOfBands)
@@ -263,7 +263,7 @@ namespace AudioAnalysisTools.DSP
 
         /// <summary>
         /// convert a list of patch matrices to one matrix by row
-        /// patch matrices can have different row numbers but must have the same column number
+        /// patch matrices can have different row numbers but must have the same column number.
         /// </summary>
         public static double[,] ListOf2DArrayToOne2DArray(List<double[,]> listOfPatchMatrices)
         {
@@ -287,7 +287,7 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// Adding a row of zero/one to 2D array
+        /// Adding a row of zero/one to 2D array.
         /// </summary>
         public static double[,] AddRow(double[,] matrix)
         {
@@ -324,7 +324,7 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// Generate non-overlapping sequential patches from a <paramref name="matrix"/>
+        /// Generate non-overlapping sequential patches from a <paramref name="matrix"/>.
         /// </summary>
         private static List<double[]> GetSequentialPatches(double[,] matrix, int patchWidth, int patchHeight)
         {
@@ -349,7 +349,7 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// Generate non-overlapping random patches from a matrix
+        /// Generate non-overlapping random patches from a matrix.
         /// </summary>
         private static List<double[]> GetRandomPatches(double[,] matrix, int patchWidth, int patchHeight, int numberOfPatches)
         {
@@ -392,7 +392,7 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// Generate overlapped random patches from a matrix
+        /// Generate overlapped random patches from a matrix.
         /// </summary>
         private static List<double[]> GetOverlappedRandomPatches(double[,] matrix, int patchWidth, int patchHeight, int numberOfPatches)
         {
@@ -445,7 +445,7 @@ namespace AudioAnalysisTools.DSP
 
         /// <summary>
         /// cut audio to subsegments of desired length.
-        /// return list of subsegments
+        /// return list of subsegments.
         /// </summary>
         public static List<AudioRecording> GetSubsegmentsSamples(AudioRecording recording, double subsegmentDurationInSeconds, double frameStep)
         {

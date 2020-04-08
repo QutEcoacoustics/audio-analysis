@@ -11,7 +11,7 @@ namespace Acoustics.Tools
 {
     using System;
 
-    using Shared;
+    using Acoustics.Shared;
 
     /// <summary>
     /// Audio Reading Request.

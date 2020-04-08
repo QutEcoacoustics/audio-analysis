@@ -18,12 +18,12 @@ namespace AnalysisPrograms.Recognizers
     using Acoustics.Shared.Csv;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
+    using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-    using Base;
     using log4net;
     using TowseyLibrary;
 
@@ -65,13 +65,6 @@ namespace AnalysisPrograms.Recognizers
         /// <summary>
         /// Do your analysis. This method is called once per segment (typically one-minute segments).
         /// </summary>
-        /// <param name="recording"></param>
-        /// <param name="configuration"></param>
-        /// <param name="segmentStartOffset"></param>
-        /// <param name="getSpectralIndexes"></param>
-        /// <param name="outputDirectory"></param>
-        /// <param name="imageWidth"></param>
-        /// <returns></returns>
         public override RecognizerResults Recognize(AudioRecording recording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
             // common properties
@@ -213,10 +206,10 @@ namespace AnalysisPrograms.Recognizers
             if (false)
             {
                 if (MainEntry.InDEBUG)
-            {
-                RecognizerTest(scores, new FileInfo(recording.FilePath));
-                RecognizerTest(prunedEvents, new FileInfo(recording.FilePath));
-            }
+                {
+                    RecognizerTest(scores, new FileInfo(recording.FilePath));
+                    RecognizerTest(prunedEvents, new FileInfo(recording.FilePath));
+                }
             }
 
             var plot = new Plot(this.DisplayName, scores, eventThreshold);
@@ -235,8 +228,6 @@ namespace AnalysisPrograms.Recognizers
         /// This test checks a score array (array of doubles) against a standard or benchmark previously stored.
         /// If the benchmark file does not exist then the passed score array is written to become the benchmark.
         /// </summary>
-        /// <param name="scoreArray"></param>
-        /// <param name="wavFile"></param>
         public static void RecognizerTest(double[] scoreArray, FileInfo wavFile)
         {
             Log.Info("# TESTING: Starting benchmark test for the Canetoad recognizer:");
@@ -284,8 +275,6 @@ namespace AnalysisPrograms.Recognizers
         /// If a benchmark does exist the current array is first written to file and then both
         /// current (test) file and the benchmark file are read as text files and compared.
         /// </summary>
-        /// <param name="events"></param>
-        /// <param name="wavFile"></param>
         public static void RecognizerTest(IEnumerable<EventBase> events, FileInfo wavFile)
         {
             Log.Info("# TESTING: Starting benchmark test for the Canetoad recognizer:");

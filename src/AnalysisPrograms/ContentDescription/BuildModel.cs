@@ -7,13 +7,13 @@ namespace AnalysisPrograms.ContentDescription
     using System;
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Threading.Tasks;
     using Acoustics.Shared;
     using AnalysisPrograms.Production.Arguments;
     using AudioAnalysisTools.ContentDescriptionTools;
     using McMaster.Extensions.CommandLineUtils;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
     using Path = System.IO.Path;
@@ -62,6 +62,7 @@ namespace AnalysisPrograms.ContentDescription
             [Argument(
                 2,
                 Description = "Optional argument: Path to a txt file containing list of pre-calculated test data files.")]
+
             //[Required]
             [FileExists]
             [LegalFilePath]
@@ -70,6 +71,7 @@ namespace AnalysisPrograms.ContentDescription
             [Argument(
                 3,
                 Description = "Optional argument: Image of LDFC spectrogram consistent with the data-files listed in previous argument.")]
+
             //[Required]
             //[DirectoryExistsOrCreate(createIfNotExists: true)]
             [FileExists]

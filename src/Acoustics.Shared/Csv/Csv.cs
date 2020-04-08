@@ -26,7 +26,7 @@ namespace Acoustics.Shared.Csv
     /// <summary>
     /// Generic methods for reading and writing Csv file.
     /// .
-    /// *** DO NOT CHANGE THIS CLASS UNLESS INSTRUCTED TOO ***
+    /// *** DO NOT CHANGE THIS CLASS UNLESS INSTRUCTED TOO ***.
     /// </summary>
     public static class Csv
     {
@@ -168,9 +168,8 @@ Member Name: {tce.MemberMapData.Member.Name}
 
                     throw new FormatException(newMessage, tce);
                 }
-                
-                throw;
 
+                throw;
             }
         }
 
@@ -224,15 +223,13 @@ Member Name: {tce.MemberMapData.Member.Name}
             var headers = reader.Context.HeaderRecord;
             if (includeRowIndex && headers[0] != "Index")
             {
-                throw new CsvHelperException(reader.Context,"Expected an index header and there was none");
+                throw new CsvHelperException(reader.Context, "Expected an index header and there was none");
             }
 
             if (!includeRowIndex && headers[0] == "Index")
             {
                 throw new CsvHelperException(reader.Context, "Did not expect an index header and there was one");
             }
-
-            
 
             var rowIndex = includeRowIndex ? 1 : 0;
             columnCount = headers.Length - rowIndex;

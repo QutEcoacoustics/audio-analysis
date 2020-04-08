@@ -14,7 +14,6 @@ namespace AnalysisPrograms
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using SixLabors.ImageSharp;
     using System.IO;
     using System.Reflection;
     using System.Threading.Tasks;
@@ -25,6 +24,7 @@ namespace AnalysisPrograms
     using Acoustics.Tools.Audio;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
+    using AnalysisPrograms.Production.Arguments;
     using AnalysisPrograms.SpectrogramGenerator;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
@@ -32,7 +32,7 @@ namespace AnalysisPrograms
     using AudioAnalysisTools.WavTools;
     using log4net;
     using McMaster.Extensions.CommandLineUtils;
-    using Production.Arguments;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
     using Path = System.IO.Path;
@@ -145,13 +145,14 @@ namespace AnalysisPrograms
 
             // CONSTRUCT the outputline for csv file
             //  fileName,Threshold,Snr,FractionOfFramesGTThreshold,FractionOfFramesGTThirdSNR,path
-            string line = string.Format("{0},{1},{2},{3:f2},{4:f2},{5:f2},{6:f1},{7:f3},{8:f3},{9:f3},{10}",
-                                        record.WavFileName, record.LowFrequencyHertz, record.HighFrequencyHertz,
-                                        record.EventStartSeconds.TotalSeconds, record.EventEndSeconds.TotalSeconds,
-                                        result.SnrStatistics.ExtractDuration.TotalSeconds,
-                                        result.SnrStatistics.Threshold, result.SnrStatistics.Snr,
-                                        result.SnrStatistics.FractionOfFramesExceedingThreshold, result.SnrStatistics.FractionOfFramesExceedingOneThirdSnr,
-                                        result.SpectrogramFile.FullName);
+            string line = string.Format(
+                "{0},{1},{2},{3:f2},{4:f2},{5:f2},{6:f1},{7:f3},{8:f3},{9:f3},{10}",
+                record.WavFileName, record.LowFrequencyHertz, record.HighFrequencyHertz,
+                record.EventStartSeconds.TotalSeconds, record.EventEndSeconds.TotalSeconds,
+                result.SnrStatistics.ExtractDuration.TotalSeconds,
+                result.SnrStatistics.Threshold, result.SnrStatistics.Snr,
+                result.SnrStatistics.FractionOfFramesExceedingThreshold, result.SnrStatistics.FractionOfFramesExceedingOneThirdSnr,
+                result.SpectrogramFile.FullName);
 
             // It is helpful to write to the output file as we go, so as to keep a record of where we are up to.
             // This requires to open and close the output file at each iteration
@@ -223,7 +224,7 @@ namespace AnalysisPrograms
         }
 
         /// <summary>
-        /// In line class used to store a single record read from a line of the csv file;
+        /// In line class used to store a single record read from a line of the csv file.
         /// </summary>
         public class CsvDataRecord
         {
@@ -249,12 +250,12 @@ namespace AnalysisPrograms
                 for (int i = 0; i < fields.Length; i++)
                 {
                     string word = fields[i];
-                    while ( word.StartsWith("\"") || word.StartsWith(" "))
+                    while (word.StartsWith("\"") || word.StartsWith(" "))
                     {
                         word = word.Substring(1, word.Length - 1);
                     }
 
-                    while ( word.EndsWith("\"") || word.EndsWith(" "))
+                    while (word.EndsWith("\"") || word.EndsWith(" "))
                     {
                         word = word.Substring(0, word.Length - 1);
                     }
@@ -339,7 +340,7 @@ namespace AnalysisPrograms
         }
 
         /// <summary>
-        /// In line class used to return results from the static method GenerateFourSpectrogramImages();
+        /// In line class used to return results from the static method GenerateFourSpectrogramImages().
         /// </summary>
         public class AudioToSonogramResult
         {

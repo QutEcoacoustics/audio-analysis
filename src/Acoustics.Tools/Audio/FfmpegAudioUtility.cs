@@ -9,7 +9,7 @@ namespace Acoustics.Tools.Audio
     using System.IO;
     using System.Linq;
     using System.Text;
-    using Shared;
+    using Acoustics.Shared;
 
     /// <summary>
     /// Audio utility implemented using ffmpeg.
@@ -77,9 +77,6 @@ namespace Acoustics.Tools.Audio
         /// The ffmpeg exe.
         /// </param>
         /// <param name="ffprobeExe">The ffprobe exe.</param>
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="FileNotFoundException"></exception>
-        /// <exception cref="ArgumentException"></exception>
         public FfmpegAudioUtility(FileInfo ffmpegExe, FileInfo ffprobeExe)
         {
             this.CheckExe(ffprobeExe, "ffprobe");
@@ -98,10 +95,7 @@ namespace Acoustics.Tools.Audio
         /// The ffmpeg exe.
         /// </param>
         /// <param name="ffprobeExe">The ffprobe exe.</param>
-        /// /// <param name="tempDir">Directory for temporary files.</param>
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="FileNotFoundException"></exception>
-        /// <exception cref="ArgumentException"></exception>
+        /// ///
         public FfmpegAudioUtility(FileInfo ffmpegExe, FileInfo ffprobeExe, DirectoryInfo temporaryFilesDirectory)
         {
             this.CheckExe(ffprobeExe, "ffprobe");
@@ -339,6 +333,7 @@ namespace Acoustics.Tools.Audio
             }
 
             result.MediaType = this.GetMediaType(result.RawData, source.Extension);
+
             //FfmpegFormatToMediaType(result.RawData, source.Extension);
 
             return result;
@@ -669,10 +664,11 @@ namespace Acoustics.Tools.Audio
                             return MediaTypes.MediaTypeWma;
                         }
                         else
-                        { 
+                        {
                             // .asf
                             return MediaTypes.MediaTypeAsf;
                         }
+
                     case "mp3" when codecLongName == "MP3 (MPEG audio layer 3)" && formatName == "mp3" && formatLongName == "MP2/3 (MPEG audio layer 2/3)":
                         return MediaTypes.MediaTypeMp3;
                     case "pcm_s16le" when codecLongName == "PCM signed 16-bit little-endian" && codecTag == "0x0001" && formatName == "wav" && formatLongName == "WAV / WAVE (Waveform Audio)":
@@ -695,7 +691,8 @@ namespace Acoustics.Tools.Audio
 
             if (this.Log.IsWarnEnabled)
             {
-                this.Log.WarnFormat("Unrecognised media. Extension: {0}, Codec Name: {1}, Codec Long Name: {2}, Codec Type: {3} " +
+                this.Log.WarnFormat(
+                    "Unrecognised media. Extension: {0}, Codec Name: {1}, Codec Long Name: {2}, Codec Type: {3} " +
                 "Codec Tag String: {4}, Codec Tag: {5}, Sample Format: {6}, Format Name: {7}, Format Long Name: {8}.",
                     ext, codecName, codecLongName, codecType, codecTagString, codecTag, sampleFmt, formatName, formatLongName);
             }

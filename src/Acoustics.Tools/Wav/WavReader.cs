@@ -12,7 +12,7 @@ namespace Acoustics.Tools.Wav
     using System;
     using System.IO;
     using System.Text;
-    using Shared.Contracts;
+    using Acoustics.Shared.Contracts;
 
     /// <summary>
     /// Wave Reader.
@@ -53,7 +53,7 @@ namespace Acoustics.Tools.Wav
 
         /// <summary>
         /// Initializes a new instance of the <see cref="WavReader"/> class.
-        /// This method assumes channel samples are interleaved!
+        /// This method assumes channel samples are interleaved!.
         /// </summary>
         /// <param name="rawData">
         /// The raw data with interleaved samples from each channel.
@@ -93,7 +93,7 @@ namespace Acoustics.Tools.Wav
         /// 64 (0x0040)     ITU G.721 ADPCM
         /// 80 (0x0050)     MPEG
         /// 65,534 (0xFFFE) WAVE_FORMAT_EXTENSIBLE
-        /// 65,535 (0xFFFF) Experimental
+        /// 65,535 (0xFFFF) Experimental.
         /// </summary>
         public enum WaveFormat : ushort
         {
@@ -152,7 +152,7 @@ namespace Acoustics.Tools.Wav
 
         /// <summary>
         /// Gets BlockCount - the number of blocks of data (each channel has one sample).
-        /// Defined in http://www-mmsp.ece.mcgill.ca/documents/audioformats/wave/wave.html
+        /// Defined in http://www-mmsp.ece.mcgill.ca/documents/audioformats/wave/wave.html.
         /// </summary>
         public int BlockCount => this.samples.Length / this.Channels;
 
@@ -177,7 +177,7 @@ namespace Acoustics.Tools.Wav
 
         /// <summary>
         /// Gets the total number of samples for each channel.
-        /// An alias for BlockCount
+        /// An alias for BlockCount.
         /// </summary>
         public int Length => this.BlockCount;
 
@@ -187,7 +187,7 @@ namespace Acoustics.Tools.Wav
         public int SampleRate { get; protected set; }
 
         /// <summary>
-        /// Gets or sets the samples.
+        /// Gets the samples.
         /// </summary>
         public double[] Samples
         {
@@ -223,9 +223,9 @@ namespace Acoustics.Tools.Wav
         /// <summary>
         /// Gets or sets values from samples.
         /// </summary>
-        /// <param name="index">The sample to operate on</param>
-        /// <param name="channel">The channel to operate on</param>
-        /// <returns>A sample for the selected index and channel</returns>
+        /// <param name="index">The sample to operate on.</param>
+        /// <param name="channel">The channel to operate on.</param>
+        /// <returns>A sample for the selected index and channel.</returns>
         public double this[int index, int channel]
         {
             get
@@ -251,8 +251,8 @@ namespace Acoustics.Tools.Wav
         /// Calculates the smallest possible representable value for an integer of size <c>bitDepth</c>
         /// hat has been rescaled to the range [-1,1].
         /// </summary>
-        /// <param name="bitDepth">The bit depth of the integer the range was represented in before rescaling</param>
-        /// <returns>The smallest distinguishable value for data that was stored as an integer before rescaling</returns>
+        /// <param name="bitDepth">The bit depth of the integer the range was represented in before rescaling.</param>
+        /// <returns>The smallest distinguishable value for data that was stored as an integer before rescaling.</returns>
         public static double CalculateEpsilonForRescaledInteger(int bitDepth)
         {
             return Math.Pow(0.5, bitDepth - 1);
@@ -318,7 +318,7 @@ namespace Acoustics.Tools.Wav
         /// Get the zero-indexed channel data from channel <c>c</c>.
         /// </summary>
         /// <param name="c">The zero-indexed channel to get.</param>
-        /// <returns>the requested channel</returns>
+        /// <returns>the requested channel.</returns>
         public double[] GetChannel(int c)
         {
             Contract.Requires<IndexOutOfRangeException>(c >= 0);
@@ -352,8 +352,8 @@ namespace Acoustics.Tools.Wav
         /// <exception cref="NotSupportedException">
         /// Bits per sample other than 8, 16, 24 and 32.
         /// </exception>
-        /// <exception cref="ArgumentException">Thrown if the data provided is less than 12 bytes</exception>
-        /// <exception cref="InvalidOperationException">For various unsupported or erroneous WAV formats</exception>
+        /// <exception cref="ArgumentException">Thrown if the data provided is less than 12 bytes.</exception>
+        /// <exception cref="InvalidOperationException">For various unsupported or erroneous WAV formats.</exception>
         private void ParseData(byte[] data)
         {
             if (data.Length < 12)
@@ -534,6 +534,7 @@ namespace Acoustics.Tools.Wav
                             // skip the rest
                             offset = formatOffset + chunkSize;
                         }
+
                         break;
 
                     case "data":
@@ -608,6 +609,7 @@ namespace Acoustics.Tools.Wav
                                 offset++;
                             }
                         }
+
                         break;
 
                     default:

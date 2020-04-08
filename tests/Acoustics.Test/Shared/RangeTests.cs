@@ -218,13 +218,13 @@ namespace Acoustics.Test.Shared
         [DataRow(110, 115.0, 00, 120, null, 55, 120)]
         [DataRow(15.0, 25.0, 00, 060, null, 0, 60)]
         [DataRow(30.0, 40.0, 20, 050, null, 20, 50)]
-        [DataRow(60.0, 540,  00, 600, null, 30, 570)]
+        [DataRow(60.0, 540, 00, 600, null, 30, 570)]
         [DataRow(37.123, 39.999, 0, 120, 0, 7, 70)]
         [DataRow(37.123, 39.999, 0, 120, 1, 7.1, 70)]
 
         // expected magnitude is size (1.232) plus growth, subtracted from end limit.
 #pragma warning disable SA1139 // Use literal suffix notation instead of casting
-        [DataRow(3593.853, 3595.085, 0.0, 3595, 0,  3535 - (int)1.232, 3595)]
+        [DataRow(3593.853, 3595.085, 0.0, 3595, 0, 3535 - (int)1.232, 3595)]
 #pragma warning restore SA1139 // Use literal suffix notation instead of casting
         public void DoubleGrowWorks(double a1, double a2, double b1, double b2, int? roundDigits, double c1, double c2)
         {
@@ -326,13 +326,13 @@ namespace Acoustics.Test.Shared
         }
 
         [DataTestMethod]
-        [DataRow(100, 300, 150, 400, true,  100, 400)]
-        [DataRow(-30, -10, -90, -20, true,  -90, -10)]
+        [DataRow(100, 300, 150, 400, true, 100, 400)]
+        [DataRow(-30, -10, -90, -20, true, -90, -10)]
         [DataRow(100, 300, 400, 500, false, 0.0, 0.0)]
-        [DataRow(0.1, 0.6, 0.61, 1.0, false,  0, 0.0)]
+        [DataRow(0.1, 0.6, 0.61, 1.0, false, 0, 0.0)]
         [DataRow(double.NegativeInfinity, double.PositiveInfinity, 300, 400, true, double.NegativeInfinity, double.PositiveInfinity)]
         [DataRow(300, 400, double.NegativeInfinity, double.PositiveInfinity, true, double.NegativeInfinity, double.PositiveInfinity)]
-        [DataRow(200, 400, 400, 600, true,  200, 600)]
+        [DataRow(200, 400, 400, 600, true, 200, 600)]
         public void DoubleTryGetUnionWithWorks(double a1, double a2, double b1, double b2, bool success, double c1, double c2)
         {
             var a = a1.To(a2);

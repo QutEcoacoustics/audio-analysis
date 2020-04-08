@@ -172,7 +172,6 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             // DO THE TESTS of energy array info
 
-
             // first write to here and move binary file to resources folder.
             // var averageArrayFile = new FileInfo(this.outputDirectory + @"\BAC2_20071008-085040_AvSigArray.bin");
             // Binary.Serialize(averageArrayFile, avArray);
@@ -200,7 +199,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             // uncomment this to update the binary data. Should be rarely needed
             // AT: Updated 2017-02-15 because FFT library changed in 864f7a491e2ea0e938161bd390c1c931ecbdf63c
             //Binary.Serialize(frameDecibelsFile, frameDecibels);
-            
+
             var expectedFrameDecibels = Binary.Deserialize<double[]>(frameDecibelsFile);
             CollectionAssert.That.AreEqual(expectedFrameDecibels, frameDecibels, Delta);
 

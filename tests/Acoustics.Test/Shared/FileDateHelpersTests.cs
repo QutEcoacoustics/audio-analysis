@@ -46,13 +46,17 @@ namespace Acoustics.Test
                 "sdncv*_-T&^%34jd_20140301_-085031+_blah_T-suffix.ext",
                 "sdncv*_-T&^%34jd_20140301_-085031:_blah_T-suffix.ext",
                 "sdncv*_-T&^%34jd_20140301_-085031-_blah_T-suffix.ext",
+
                 // don't support colons in filenames
                 "sdncv*_-T&^%34jd_20140301_085031+06:30blah_T-suffix.mp3",
+
                 // do not support ambiguous dates
                 "20150727133138.wav", "blah_T-suffix20140301085031.mp3", "SERF_20130314_000021_000.wav",
                 "20150727T133138.wav",
+
                 // do not allow invalid offsets
                 "blah_T-suffix20140301-085031-7s:dncv*_-T&^%34jd.ext",
+
                 // require at least a time seperator
                 "20150727133138.mp3", "blah_T-suffix20140301085031:dncv*_-T&^%34jd.ext",
             };

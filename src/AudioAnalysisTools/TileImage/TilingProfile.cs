@@ -10,8 +10,8 @@
 namespace AudioAnalysisTools.TileImage
 {
     using System.Collections.Generic;
-    using SixLabors.ImageSharp;
     using Acoustics.Shared;
+    using SixLabors.ImageSharp;
 
     public abstract class TilingProfile
     {

@@ -81,7 +81,8 @@ namespace TowseyLibrary
                 }
             }
 
-            for (int i = 1; i < listA.Count; i++) //skip first line
+            // skip first line
+            for (int i = 1; i < listA.Count; i++)
             {
                 if (string.Compare(listA[i], listB[i]) != 0) // if (listA[i] != listB[i])
                 {

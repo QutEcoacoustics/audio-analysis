@@ -1,4 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="ArdeaInsignis.cs" company="QutEcoacoustics">
 //  All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
@@ -18,12 +18,12 @@ namespace AnalysisPrograms.Recognizers
     using Acoustics.Shared.Csv;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
+    using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
-    using Base;
     using log4net;
     using TowseyLibrary;
 
@@ -268,8 +268,8 @@ namespace AnalysisPrograms.Recognizers
         /// Constructs a list of simple template for the White Herron oscillation call.
         /// each template is a vector of real values representing acoustic intensity.
         /// </summary>
-        /// <param name="callBinWidth">Typical value = 13</param>
-        /// <returns>list of templates</returns>
+        /// <param name="callBinWidth">Typical value = 13.</param>
+        /// <returns>list of templates.</returns>
         public static List<double[]> GetTemplatesForAlgorithm1(int callBinWidth)
         {
             var templates = new List<double[]>();
@@ -357,8 +357,8 @@ namespace AnalysisPrograms.Recognizers
         /// This test checks a score array (array of doubles) against a standard or benchmark previously stored.
         /// If the benchmark file does not exist then the passed score array is written to become the benchmark.
         /// </summary>
-        /// <param name="scoreArray">scoreArray</param>
-        /// <param name="wavFile">wavFile</param>
+        /// <param name="scoreArray">scoreArray.</param>
+        /// <param name="wavFile">wavFile.</param>
         public static void RecognizerTest(double[] scoreArray, FileInfo wavFile)
         {
             Log.Info("# TESTING: Starting benchmark test for the Bhutan Herron recognizer:");
@@ -407,8 +407,8 @@ namespace AnalysisPrograms.Recognizers
         /// If a benchmark does exist the current array is first written to file and then both
         /// current (test) file and the benchmark file are read as text files and compared.
         /// </summary>
-        /// <param name="events">a list of acoustic events</param>
-        /// <param name="wavFile">path of wav file</param>
+        /// <param name="events">a list of acoustic events.</param>
+        /// <param name="wavFile">path of wav file.</param>
         public static void RecognizerTest(IEnumerable<EventBase> events, FileInfo wavFile)
         {
             Log.Info("# TESTING: Starting benchmark test for the ArdeaInsignis recognizer:");

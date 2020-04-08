@@ -134,7 +134,7 @@ namespace AudioAnalysisTools.WavTools
 
             //process the recording name
             recordingName = recordingName.Replace('/', '_');
-            recordingName = recordingName.Replace("+", "");
+            recordingName = recordingName.Replace("+", string.Empty);
             LoggedConsole.WriteLine("Get recording:- " + recordingName);
             fileName = Path.GetFileNameWithoutExtension(recordingName);
 

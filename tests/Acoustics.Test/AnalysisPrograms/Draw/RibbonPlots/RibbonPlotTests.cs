@@ -111,7 +111,7 @@ namespace Acoustics.Test.AnalysisPrograms.Draw.RibbonPlots
                 .EndRepeat()
                 .Finish(this.TestOutputDirectory.CombineFile("expectedRibbons1.png"));
 
-            Assert.That.ImageContainsExpected(expectedRibbons1, new Point(Left, 0),  image1);
+            Assert.That.ImageContainsExpected(expectedRibbons1, new Point(Left, 0), image1);
 
             // 6 days image, second color map
             var image2 = Image.Load<Rgb24>(File.ReadAllBytes(plot2.FullName));

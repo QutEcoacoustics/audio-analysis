@@ -15,9 +15,9 @@ namespace AnalysisPrograms
     using Acoustics.Shared.Csv;
     using AnalysisBase;
     using AnalysisBase.ResultBases;
+    using AnalysisPrograms.Production;
     using AudioAnalysisTools;
     using AudioAnalysisTools.WavTools;
-    using Production;
 
     public class ChannelIntegrityAnalyzer : AbstractStrongAnalyser
     {
@@ -39,9 +39,9 @@ namespace AnalysisPrograms
             analysisResults.AnalysisIdentifier = this.Identifier;
 
             var result = new ChannelIntegrityIndices()
-                {
-                    ResultStartSeconds = segmentSettings.SegmentStartOffset.TotalSeconds,
-                };
+            {
+                ResultStartSeconds = segmentSettings.SegmentStartOffset.TotalSeconds,
+            };
 
             // do some sanity checks
             if (recording.WavReader.Channels != 2)
@@ -54,9 +54,18 @@ namespace AnalysisPrograms
             double[] channelRight = recording.WavReader.GetChannel(1);
             double epsilon = recording.WavReader.Epsilon;
 
-            ChannelIntegrity.SimilarityIndex(channelLeft, channelRight, epsilon, sampleRate, out var similarityIndex,
-                                              out var decibelIndex, out var avDecibelBias, out var medianDecibelBias,
-                                              out var lowDecibelBias, out var midDecibelBias, out var highDecibelBias);
+            ChannelIntegrity.SimilarityIndex(
+                channelLeft,
+                channelRight,
+                epsilon,
+                sampleRate,
+                out var similarityIndex,
+                out var decibelIndex,
+                out var avDecibelBias,
+                out var medianDecibelBias,
+                out var lowDecibelBias,
+                out var midDecibelBias,
+                out var highDecibelBias);
 
             //double similarityIndex = ChannelIntegrity.SimilarityIndex(channelLeft, channelRight, epsilon, sampleRate.Value);
             result.ChannelSimilarity = similarityIndex;

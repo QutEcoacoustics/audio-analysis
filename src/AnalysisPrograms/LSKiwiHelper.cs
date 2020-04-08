@@ -12,25 +12,25 @@ namespace AnalysisPrograms
     public static class LSKiwiHelper
     {
         //KEYS TO PARAMETERS IN CONFIG FILE
-        public static string key_MIN_HZ_MALE = "MIN_HZ_MALE";
-        public static string key_MAX_HZ_MALE = "MAX_HZ_MALE";
-        public static string key_MIN_HZ_FEMALE = "MIN_HZ_FEMALE";
-        public static string key_MAX_HZ_FEMALE = "MAX_HZ_FEMALE";
-        public static string key_FILTER_EVENTS = "DO_FILTER_EVENTS";
+        public static string Key_MIN_HZ_MALE = "MIN_HZ_MALE";
+        public static string Key_MAX_HZ_MALE = "MAX_HZ_MALE";
+        public static string Key_MIN_HZ_FEMALE = "MIN_HZ_FEMALE";
+        public static string Key_MAX_HZ_FEMALE = "MAX_HZ_FEMALE";
+        public static string Key_FILTER_EVENTS = "DO_FILTER_EVENTS";
 
         //HEADER KEYS
-        public static string key_EVENT_NAME = AnalysisKeys.EventName;
-        public static string key_INTENSITY_SCORE = AnalysisKeys.EventIntensity;
-        public static string key_EVENT_NORMSCORE = AnalysisKeys.EventNormscore;
-        public static string key_SNR_SCORE = AnalysisKeys.KeySnrScore;
+        public static string Key_EVENT_NAME = AnalysisKeys.EventName;
+        public static string Key_INTENSITY_SCORE = AnalysisKeys.EventIntensity;
+        public static string Key_EVENT_NORMSCORE = AnalysisKeys.EventNormscore;
+        public static string Key_SNR_SCORE = AnalysisKeys.KeySnrScore;
 
-        public static string key_CHIRP_SCORE = "ChirpScore";
-        public static string key_DELTA_SCORE = "DeltaPeriodScore";
-        public static string key_GRID_SCORE = "GridScore";
-        public static string key_PEAKS_SNR_SCORE = "PeaksSnrScore";
-        public static string key_PEAKS_STD_SCORE = "PeaksStdScore";
-        public static string key_BANDWIDTH_SCORE = "BandwidthScore";
-        public static string key_COMBO_SCORE = "ComboScore";
+        public static string Key_CHIRP_SCORE = "ChirpScore";
+        public static string Key_DELTA_SCORE = "DeltaPeriodScore";
+        public static string Key_GRID_SCORE = "GridScore";
+        public static string Key_PEAKS_SNR_SCORE = "PeaksSnrScore";
+        public static string Key_PEAKS_STD_SCORE = "PeaksStdScore";
+        public static string Key_BANDWIDTH_SCORE = "BandwidthScore";
+        public static string Key_COMBO_SCORE = "ComboScore";
 
         //public static string[] DefaultRulesLSKiwi2 = {
         //                                   "EXCLUDE_IF_RULE="+LSKiwiHelper.key_BANDWIDTH_SCORE+"_LT_0.3",
@@ -118,6 +118,7 @@ namespace AnalysisPrograms
                 string feature = rule[0];
                 string op = rule[1];
                 double value = double.Parse(rule[2]);
+
                 //if (feature == key_BANDWIDTH_SCORE)
                 //{
                 //    if ((op == "LT" && ae.kiwi_bandWidthScore < value) || (op == "GT" && ae.kiwi_bandWidthScore > value))
@@ -161,19 +162,21 @@ namespace AnalysisPrograms
         }
 
         public static DataTable MergeAdjacentPredictions(DataTable dt)
-       {
-           //DataTable newTable = DataTableTools.CreateTable(dt);
-           string sortString = AnalysisKeys.EventStartAbs + " ASC";
-           dt = DataTableTools.SortTable(dt, sortString);
-           int rowCount = dt.Rows.Count;
-           for (int i = rowCount - 2; i >= 0; i--) //work from end to beginning
-           {
-               DataRow row1 = dt.Rows[i];
-               DataRow row2 = dt.Rows[i + 1];
-               string name1 = (string)row1[AnalysisKeys.EventName];
-               string name2 = (string)row2[AnalysisKeys.EventName];
-               string predictedSex1;
-               if (name1.EndsWith("(m)"))
+        {
+            //DataTable newTable = DataTableTools.CreateTable(dt);
+            string sortString = AnalysisKeys.EventStartAbs + " ASC";
+            dt = DataTableTools.SortTable(dt, sortString);
+            int rowCount = dt.Rows.Count;
+
+            // work from end to beginning
+            for (int i = rowCount - 2; i >= 0; i--)
+            {
+                DataRow row1 = dt.Rows[i];
+                DataRow row2 = dt.Rows[i + 1];
+                string name1 = (string)row1[AnalysisKeys.EventName];
+                string name2 = (string)row2[AnalysisKeys.EventName];
+                string predictedSex1;
+                if (name1.EndsWith("(m)"))
                 {
                     predictedSex1 = "M";
                 }
@@ -186,8 +189,8 @@ namespace AnalysisPrograms
                     predictedSex1 = null;
                 }
 
-               string predictedSex2;
-               if (name2.EndsWith("(m)"))
+                string predictedSex2;
+                if (name2.EndsWith("(m)"))
                 {
                     predictedSex2 = "M";
                 }
@@ -200,16 +203,16 @@ namespace AnalysisPrograms
                     predictedSex2 = null;
                 }
 
-               double start1 = (double)row1[AnalysisKeys.EventStartAbs];
-               double start2 = (double)row2[AnalysisKeys.EventStartAbs];
+                double start1 = (double)row1[AnalysisKeys.EventStartAbs];
+                double start2 = (double)row2[AnalysisKeys.EventStartAbs];
 
-               if (start2 - start1 < 15.0 && predictedSex1 == predictedSex2)
+                if (start2 - start1 < 15.0 && predictedSex1 == predictedSex2)
                 {
                     dt.Rows.Remove(row2);
                 }
             }
 
-           return dt;
-       }
+            return dt;
+        }
     } // class LSKiwiHelper
 }
