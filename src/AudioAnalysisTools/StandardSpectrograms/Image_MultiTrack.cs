@@ -148,13 +148,13 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// This means it cannot handle recording sonograms longer than 2 minutes.
         /// Therefore call a recursive method to draw the image.
         /// </summary>
-        public Image<Rgba32> GetImage()
+        public Image<Rgb24> GetImage()
         {
             // Calculate total height of the bmp
             var height = this.CalculateImageHeight();
 
             // set up a new image having the correct dimensions
-            var imageToReturn = new Image<Rgba32>(this.SonogramImage.Width, height);
+            var imageToReturn = new Image<Rgb24>(this.SonogramImage.Width, height);
 
             // need to do this before get Graphics because cannot PutPixels into Graphics object.
             if (this.SuperimposedRedTransparency != null)
@@ -175,11 +175,12 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 // draw events first because their rectangles can cover other features
                 if (this.EventList != null)
                 {
-                    var hitImage = new Image<Rgba32>(imageToReturn.Width, height);
+                    var hitImage = new Image<Rgb24>(imageToReturn.Width, height);
 
                     //hitImage.MakeTransparent();
                     foreach (AcousticEvent e in this.EventList)
                     {
+                        // TODO TODO Fix this call. I am having problem with managing SixLabors.ImageSharp
                         e.DrawEvent(hitImage, this.framesPerSecond, this.freqBinWidth, this.SonogramImage.Height);
                     }
 
@@ -199,12 +200,11 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     }
                 }
 
-                // draw spectral tracks COMMENTED OUT APRIL 2020. Could be revived when finished repourposing SpectralTrack class.
                 if (this.SpectralTracks != null)
                 {
                     foreach (SpectralTrack t in this.SpectralTracks)
                     {
-                        t.DrawTrack(g, this.framesPerSecond, this.freqBinWidth, this.SonogramImage.Height);
+                        t.DrawTrack(this.SonogramImage, this.framesPerSecond, this.freqBinWidth);
                     }
                 }
 

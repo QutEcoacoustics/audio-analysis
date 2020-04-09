@@ -455,6 +455,14 @@ namespace AudioAnalysisTools
             var borderPen = new Pen(this.BorderColour, 1);
             var scorePen = new Pen(this.ScoreColour, 1);
 
+            if (this.TheTrack != null)
+            {
+                // currently this call assumes that the Track[frame, bin[ elements correspond to the pixels of the passed spectrogram.
+                // That is, there is no rescaling of the time and frequency axes.
+                this.TheTrack.DrawTrack(imageToReturn, framesPerSecond, freqBinWidth);
+                return;
+            }
+
             // calculate top and bottom freq bins
             int minFreqBin = (int)Math.Floor(this.LowFrequencyHertz / freqBinWidth);
             int maxFreqBin = (int)Math.Ceiling(this.HighFrequencyHertz / freqBinWidth);
@@ -480,6 +488,8 @@ namespace AudioAnalysisTools
             }
 
             imageToReturn.Mutate(g => g.NoAA().DrawRectangle(borderPen, t1, y1, t2, y2));
+
+            //draw on the elements from the hit matrix
             if (this.HitElements != null)
             {
                 foreach (var hitElement in this.HitElements)
