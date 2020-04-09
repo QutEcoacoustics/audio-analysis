@@ -9,7 +9,6 @@ namespace SixLabors.ImageSharp
     using System.Globalization;
     using System.IO;
     using System.Text.RegularExpressions;
-    using Acoustics.Shared;
     using Acoustics.Shared.ImageSharp;
     using SixLabors.Fonts;
     using SixLabors.ImageSharp;
@@ -484,5 +483,7 @@ namespace SixLabors.ImageSharp
 
             image.Mutate(x => x.RotateFlip(r, f));
         }
+
+
     }
 }

@@ -202,6 +202,23 @@ namespace Acoustics.Shared.ImageSharp
                 this.context.Draw(Drawing.NoAntiAlias, pen, r);
             }
 
+            /// <summary>
+            /// Draws a <paramref name="thickness"/> thick (1px by default)
+            /// bordered rectangle with no fill with anti-aliasing disabled.
+            /// </summary>
+            public void DrawRectangle(Color color, int x1, int y1, int x2, int y2, float thickness = 1f)
+            {
+                var r = RectangleF.FromLTRB(x1, y1, x2, y2);
+                r.Offset(Offset);
+                this.context.Draw(Drawing.NoAntiAlias, color, thickness, r);
+            }
+
+            public void DrawRectangle(Pen border, RectangleF rectangle)
+            {
+                rectangle.Offset(Offset);
+                this.context.Draw(Drawing.NoAntiAlias, border, rectangle);
+            }
+
             public void FillRectangle(IBrush brush, int x1, int y1, int x2, int y2)
             {
                 var r = RectangleF.FromLTRB(x1, y1, x2, y2);

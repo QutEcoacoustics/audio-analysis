@@ -29,7 +29,7 @@ namespace AudioAnalysisTools.EventStatistics
     {
         public EventStatistics()
         {
-            base.LowFrequencyHertz = 0;
+            this.LowFrequencyHertz = 0;
         }
 
         public long? AudioEventId { get; set; }
@@ -72,11 +72,7 @@ namespace AudioAnalysisTools.EventStatistics
         /// </summary>
         public double TemporalMaxRelative { get; set; }
 
-        public new double LowFrequencyHertz
-        {
-            get { return base.LowFrequencyHertz.Value; }
-            set { base.LowFrequencyHertz = value; }
-        }
+        public new double LowFrequencyHertz { get; set; }
 
         /// <summary>
         /// Gets or sets the top frequency bound of the acoustic event in Hertz
@@ -179,7 +175,7 @@ namespace AudioAnalysisTools.EventStatistics
                         propertyMap.Ignore();
                     }
 
-                    if (name == nameof(EventBase.LowFrequencyHertz) &&
+                    if (name == nameof(EventStatistics.LowFrequencyHertz) &&
                         propertyMap.Data.Member.DeclaringType == typeof(EventBase))
                     {
                         propertyMap.Ignore();

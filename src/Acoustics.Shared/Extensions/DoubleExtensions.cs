@@ -10,7 +10,6 @@
 // ReSharper disable once CheckNamespace
 namespace System
 {
-    using System;
     using System.Runtime.CompilerServices;
 
     public static class DoubleExtensions

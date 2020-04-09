@@ -18,6 +18,7 @@ namespace AudioAnalysisTools
     using Acoustics.Shared.ImageSharp;
     using AnalysisBase.ResultBases;
     using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.Events.Interfaces;
     using AudioAnalysisTools.StandardSpectrograms;
     using CsvHelper.Configuration;
     using SixLabors.ImageSharp;
@@ -25,7 +26,7 @@ namespace AudioAnalysisTools
     using SixLabors.ImageSharp.Processing;
     using TowseyLibrary;
 
-    public class AcousticEvent : EventBase
+    public class AcousticEvent : EventBase, ISpectralEvent, ITemporalEvent
     {
         public static readonly Color DefaultBorderColor = Color.Crimson;
 
@@ -112,18 +113,7 @@ namespace AudioAnalysisTools
         /// Gets or sets units = Hertz.
         /// Proxied to EventBase.MinHz.
         /// </summary>
-        public new double LowFrequencyHertz
-        {
-            get
-            {
-                return base.LowFrequencyHertz ?? default;
-            }
-
-            set
-            {
-                base.LowFrequencyHertz = value;
-            }
-        }
+        public double LowFrequencyHertz { get; set; }
 
         /// <summary>Gets or sets units = Hertz.</summary>
         public double HighFrequencyHertz { get; set; }

@@ -48,17 +48,9 @@ namespace AnalysisBase.ResultBases
             set
             {
                 this.eventStartSeconds = value;
-                base.ResultStartSeconds = value;
+                this.ResultStartSeconds = value;
             }
         }
-
-        /// <summary>
-        /// Gets or sets the bottom frequency bound of the acoustic event.
-        /// NOTE: When MinHz is set to null, this indicates that the event is broad band or has undefined frequency. The event is an instant.
-        ///       When MinHz has a value, this indicates the event is a point in time/frequency space.
-        ///       Implementers may implement their own MaxHz if needed.
-        /// </summary>
-        public virtual double? LowFrequencyHertz { get; protected set; }
 
         /// <summary>
         /// Sets both the Segment start and the Event start.

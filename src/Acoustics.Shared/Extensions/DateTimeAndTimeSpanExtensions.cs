@@ -10,9 +10,9 @@
 // ReSharper disable once CheckNamespace
 namespace System
 {
-    using Acoustics.Shared;
     using System.Collections.Generic;
     using System.Linq;
+    using Acoustics.Shared;
 
     /// <summary>
     /// Extensions for the <c>DateTime</c> and <c>TimeSpan</c> structs.

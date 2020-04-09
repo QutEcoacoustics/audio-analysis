@@ -2,10 +2,9 @@
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
-using System;
-
 namespace AnalysisPrograms.Recognizers
 {
+    using System;
     using System.IO;
     using Acoustics.Shared.ConfigFile;
     using AnalysisPrograms.Recognizers.Base;
