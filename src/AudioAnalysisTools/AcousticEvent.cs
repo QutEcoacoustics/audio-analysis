@@ -123,6 +123,11 @@ namespace AudioAnalysisTools
         /// </summary>
         public double Bandwidth => this.HighFrequencyHertz - this.LowFrequencyHertz + 1;
 
+        /// <summary>
+        /// Gets or sets a horizontal or vertical spectral track.
+        /// </summary>
+        public SpectralTrack TheTrack { get; set; }
+
         public bool IsMelscale { get; set; }
 
         /// <summary>
@@ -158,8 +163,10 @@ namespace AudioAnalysisTools
         /// <summary> Gets or sets score normalised in range [0,1]. NOTE: Max is set = to five times user supplied threshold.</summary>
         public double ScoreNormalised { get; set; }
 
-        /// <summary> Gets max Possible Score: set = to 5x user supplied threshold. An arbitrary value used for score normalisation.</summary>
-        public double Score_MaxPossible { get; private set; }
+        /// <summary> Gets max Possible Score: set = to 5x user supplied threshold.
+        /// An arbitrary value used for score normalisation - it displays well in plot.
+        /// </summary>
+        public double Score_MaxPossible { get; set; }
 
         public double Score_MaxInEvent { get; set; }
 
@@ -437,6 +444,14 @@ namespace AudioAnalysisTools
             var borderPen = new Pen(this.BorderColour, 1);
             var scorePen = new Pen(this.ScoreColour, 1);
 
+            if (this.TheTrack != null)
+            {
+                // currently this call assumes that the Track[frame, bin[ elements correspond to the pixels of the passed spectrogram.
+                // That is, there is no rescaling of the time and frequency axes.
+                this.TheTrack.DrawTrack(imageToReturn, framesPerSecond, freqBinWidth);
+                return;
+            }
+
             // calculate top and bottom freq bins
             int minFreqBin = (int)Math.Floor(this.LowFrequencyHertz / freqBinWidth);
             int maxFreqBin = (int)Math.Ceiling(this.HighFrequencyHertz / freqBinWidth);
@@ -449,7 +464,8 @@ namespace AudioAnalysisTools
             double duration = this.TimeEnd - this.TimeStart;
             if (duration >= 0.0 && framesPerSecond >= 0.0)
             {
-                t1 = (int)Math.Round(this.TimeStart * framesPerSecond);
+                // -1 because want to draw red line in frame prior to the event start and not cover the event.
+                t1 = (int)Math.Round(this.TimeStart * framesPerSecond) - 1;
 
                 t2 = (int)Math.Round(this.TimeEnd * framesPerSecond);
             }
@@ -461,6 +477,8 @@ namespace AudioAnalysisTools
             }
 
             imageToReturn.Mutate(g => g.NoAA().DrawRectangle(borderPen, t1, y1, t2, y2));
+
+            //draw on the elements from the hit matrix
             if (this.HitElements != null)
             {
                 foreach (var hitElement in this.HitElements)
@@ -554,10 +572,7 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        /// Returns the fractional overlap of two events.
-        /// Translate time/freq dimensions to coordinates in a matrix.
-        /// Freq dimension = bins   = matrix columns. Origin is top left - as per matrix in the sonogram class.
-        /// Time dimension = frames = matrix rows.
+        /// Combines overlapping events in the passed List of events and returns a reduced list.
         /// </summary>
         public static List<AcousticEvent> CombineOverlappingEvents(List<AcousticEvent> events, TimeSpan segmentStartOffset)
         {
@@ -572,6 +587,67 @@ namespace AudioAnalysisTools
                 {
                     if (EventsOverlapInTime(events[i], events[j]) && EventsOverlapInFrequency(events[i], events[j]))
                     {
+                        events[j] = AcousticEvent.MergeTwoEvents(events[i], events[j], segmentStartOffset);
+                        events.RemoveAt(i);
+                        break;
+                    }
+                }
+            }
+
+            return events;
+        }
+
+        /// <summary>
+        /// Combines events that have similar bottom and top frequency bounds and whose start times are within the passed time range.
+        /// </summary>
+        public static List<AcousticEvent> CombineSimilarProximalEvents(List<AcousticEvent> events, TimeSpan startDifference, int hertzDifference)
+        {
+            if (events.Count < 2)
+            {
+                return events;
+            }
+
+            for (int i = events.Count - 1; i >= 0; i--)
+            {
+                for (int j = i - 1; j >= 0; j--)
+                {
+                    bool eventStartsAreProximal = Math.Abs(events[i].EventStartSeconds - events[j].EventStartSeconds) < startDifference.TotalSeconds;
+                    bool eventAreInSimilarFreqBand = Math.Abs(events[i].LowFrequencyHertz - events[j].LowFrequencyHertz) < hertzDifference && Math.Abs(events[i].HighFrequencyHertz - events[j].HighFrequencyHertz) < hertzDifference;
+                    if (eventStartsAreProximal && eventAreInSimilarFreqBand)
+                    {
+                        var segmentStartOffset = TimeSpan.FromSeconds(events[i].SegmentStartSeconds);
+                        events[j] = AcousticEvent.MergeTwoEvents(events[i], events[j], segmentStartOffset);
+                        events.RemoveAt(i);
+                        break;
+                    }
+                }
+            }
+
+            return events;
+        }
+
+        /// <summary>
+        /// Combines events that are possible stacked harmonics, that is, they are coincident (have similar start and end times)
+        /// AND stacked (their maxima are within the passed frequency gap).
+        /// </summary>
+        public static List<AcousticEvent> CombinePotentialStackedTracks(List<AcousticEvent> events, TimeSpan timeDifference, int hertzDifference)
+        {
+            if (events.Count < 2)
+            {
+                return events;
+            }
+
+            for (int i = events.Count - 1; i >= 0; i--)
+            {
+                for (int j = i - 1; j >= 0; j--)
+                {
+                    bool eventsStartTogether = Math.Abs(events[i].EventStartSeconds - events[j].EventStartSeconds) < timeDifference.TotalSeconds;
+                    bool eventsEndTogether = Math.Abs(events[i].EventEndSeconds - events[j].EventEndSeconds) < timeDifference.TotalSeconds;
+                    bool eventsAreCoincident = eventsStartTogether && eventsEndTogether;
+                    bool eventsAreStacked = Math.Abs(events[i].HighFrequencyHertz - events[j].LowFrequencyHertz) < hertzDifference || Math.Abs(events[j].HighFrequencyHertz - events[i].LowFrequencyHertz) < hertzDifference;
+                    if (eventsAreCoincident && eventsAreStacked)
+                    {
+                        var segmentStartOffset = TimeSpan.FromSeconds(events[i].SegmentStartSeconds);
                         events[j] = AcousticEvent.MergeTwoEvents(events[i], events[j], segmentStartOffset);
                         events.RemoveAt(i);
                         break;
@@ -1187,6 +1263,7 @@ namespace AudioAnalysisTools
 
         /// <summary>
         /// A general method to convert an array of score values to a list of AcousticEvents.
+        /// NOTE: The score array is assumed to be temporal i.e. each element of the array is derived from a time frame.
         /// The method uses the passed scoreThreshold in order to calculate a normalised score.
         /// Max possible score := threshold * 5.
         /// normalised score := score / maxPossibleScore.

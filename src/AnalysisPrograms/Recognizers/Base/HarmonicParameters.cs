@@ -12,33 +12,12 @@ namespace AnalysisPrograms.Recognizers.Base
     using TowseyLibrary;
 
     /// <summary>
-    /// TODO TODO: THIS METHOD IS WORK IN PROGESS AND CURRENTLY DOES YIELD A SUCCESSFUL RESULT. To BE FURTHER WORKED ON!!.
     /// Parameters needed from a config file to detect the stacked harmonic components of a soundscape.
     /// This can also be used for recognizing the harmonics of non-biological sounds such as from turbines, motor-bikes, compressors and other hi-revving motors.
     /// </summary>
     [YamlTypeTag(typeof(HarmonicParameters))]
     public class HarmonicParameters : CommonParameters
     {
-        //ComponentName: Harmonic
-        //SpeciesName: Curlew
-        //FrameSize: 512
-        //FrameStep: 512
-        //WindowFunction: HANNING
-        //BgNoiseThreshold: 0.0
-        //# min and max of the freq band to search
-        //MinHertz: 1000
-        //MaxHertz: 6500
-        //MinDuration: 0.5
-        //MaxDuration: 3.0
-        //DecibelThreshold: 1.5
-        //# Parameters for the finding formants.
-        //# duration of DCT in seconds
-        //#DctDuration: 0.5
-        //# minimum acceptable value of a DCT coefficient
-        //DctThreshold: 0.5
-        //MinFormantGap: 800
-        //MaxFormantGap: 2200
-
         /// <summary>
         /// Gets or sets the dctThreshold.
         /// </summary>
@@ -54,12 +33,8 @@ namespace AnalysisPrograms.Recognizers.Base
         /// </summary>
         public int? MaxFormantGap { get; set; }
 
-        //#IntensityThreshold: 0.15
-        //# Event threshold - Determines FP / FN trade-off for events.
-        //EventThreshold: 0.2
-
-        public static (List<AcousticEvent>, double[]) GetComponentsWithHarmonics(
-            SpectrogramStandard sonogram,
+        public static (List<AcousticEvent>, double[], double[]) GetComponentsWithHarmonics(
+            SpectrogramStandard spectrogram,
             int minHz,
             int maxHz,
             int nyquist,
@@ -75,21 +50,20 @@ namespace AnalysisPrograms.Recognizers.Base
             // Event threshold - Determines FP / FN trade-off for events.
             //double eventThreshold = 0.2;
 
-            var sonogramData = sonogram.Data;
+            var sonogramData = spectrogram.Data;
             int frameCount = sonogramData.GetLength(0);
             int binCount = sonogramData.GetLength(1);
 
             double freqBinWidth = nyquist / (double)binCount;
             int minBin = (int)Math.Round(minHz / freqBinWidth);
             int maxBin = (int)Math.Round(maxHz / freqBinWidth);
-            int bandWidthBins = maxBin - minBin + 1;
 
             // extract the sub-band
-            double[,] subMatrix = MatrixTools.Submatrix(sonogram.Data, 0, minBin, frameCount - 1, maxBin);
+            double[,] subMatrix = MatrixTools.Submatrix(spectrogram.Data, 0, minBin, frameCount - 1, maxBin);
 
             //ii: DETECT HARMONICS
             // now look for harmonics in search band using the Xcorrelation-DCT method.
-            var results = CrossCorrelation.DetectHarmonicsInSonogramMatrix(subMatrix, decibelThreshold);
+            var results = CrossCorrelation.DetectHarmonicsInSpectrogramData(subMatrix, decibelThreshold);
 
             // set up score arrays
             double[] dBArray = results.Item1;
@@ -105,7 +79,8 @@ namespace AnalysisPrograms.Recognizers.Base
 
                 //ignore locations with incorrect formant gap
                 int maxId = maxIndexArray[r];
-                double freqBinGap = 2 * bandWidthBins / (double)maxId;
+                int bandBinCount = maxBin - minBin + 1;
+                double freqBinGap = 2 * bandBinCount / (double)maxId;
                 double formantGap = freqBinGap * freqBinWidth;
                 if (formantGap < minFormantGap || formantGap > maxFormantGap)
                 {
@@ -114,7 +89,7 @@ namespace AnalysisPrograms.Recognizers.Base
             }
 
             // smooth the harmonicIntensityScores array to allow for brief gaps.
-            harmonicIntensityScores = DataTools.filterMovingAverageOdd(harmonicIntensityScores, 5);
+            harmonicIntensityScores = DataTools.filterMovingAverageOdd(harmonicIntensityScores, 3);
 
             //extract the events based on length and threshhold.
             // Note: This method does NOT do prior smoothing of the score array.
@@ -122,14 +97,22 @@ namespace AnalysisPrograms.Recognizers.Base
                     harmonicIntensityScores,
                     minHz,
                     maxHz,
-                    sonogram.FramesPerSecond,
-                    sonogram.FBinWidth,
-                    decibelThreshold,
+                    spectrogram.FramesPerSecond,
+                    spectrogram.FBinWidth,
+                    dctThreshold,
                     minDuration,
                     maxDuration,
                     segmentStartOffset);
 
-            return (acousticEvents, harmonicIntensityScores);
+            // add in temporary names to the events
+            // These can be altered later.
+            foreach (var ev in acousticEvents)
+            {
+                 ev.SpeciesName = "NoName";
+                 ev.Name = "Harmonics";
+            }
+
+            return (acousticEvents, dBArray, harmonicIntensityScores);
         }
     }
 }

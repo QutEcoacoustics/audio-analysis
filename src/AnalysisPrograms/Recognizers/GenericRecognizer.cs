@@ -28,6 +28,8 @@ namespace AnalysisPrograms.Recognizers
     /// </summary>
     public class GenericRecognizer : RecognizerBase
     {
+        private bool combineOverlappedEvents = false;
+
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         /// <inheritdoc />
@@ -44,6 +46,8 @@ namespace AnalysisPrograms.Recognizers
         {
             RuntimeHelpers.RunClassConstructor(typeof(GenericRecognizerConfig).TypeHandle);
             var result = ConfigFile.Deserialize<GenericRecognizerConfig>(file);
+
+            this.combineOverlappedEvents = result.CombineOverlappedEvents;
 
             // validation of configs can be done here
             // sanity check the algorithm
@@ -69,14 +73,30 @@ namespace AnalysisPrograms.Recognizers
                         break;
                     case HarmonicParameters _:
                         algorithmName = "Harmonics";
-                        throw new NotImplementedException("The harmonic algorithm has not been implemented yet");
+                        break;
+                    case SpectralPeakTrackParameters _:
+                        algorithmName = "SpectralTrack";
+                        break;
+                    case VerticalTrackParameters _:
+                        algorithmName = "VerticalTrack";
+                        break;
+                    case ClickParameters _:
+                        algorithmName = "Click";
                         break;
                     case Aed.AedConfiguration _:
                         algorithmName = "AED";
                         break;
+                    //throw new NotImplementedException("The XXXX algorithm has not yet been implemented!");
                     default:
                         var allowedAlgorithms =
-                            $"{nameof(BlobParameters)}, {nameof(OscillationParameters)}, {nameof(WhistleParameters)}, {nameof(HarmonicParameters)}, {nameof(Aed.AedConfiguration)}";
+                            $"{nameof(BlobParameters)}," +
+                            $"{nameof(OscillationParameters)}," +
+                            $"{nameof(WhistleParameters)}," +
+                            $"{nameof(HarmonicParameters)}," +
+                            $"{nameof(SpectralPeakTrackParameters)}," +
+                            $"{nameof(VerticalTrackParameters)}," +
+                            $"{nameof(ClickParameters)}," +
+                            $"{nameof(Aed.AedConfiguration)}";
                         throw new ConfigFileException($"The algorithm type in profile {profileName} is not recognized. It must be one of {allowedAlgorithms}");
                 }
             }
@@ -126,7 +146,13 @@ namespace AnalysisPrograms.Recognizers
                 Log.Debug($"Using the {profileName} algorithm... ");
                 if (profileConfig is CommonParameters parameters)
                 {
-                    if (profileConfig is BlobParameters || profileConfig is OscillationParameters || profileConfig is WhistleParameters || profileConfig is HarmonicParameters)
+                    if (profileConfig is BlobParameters
+                        || profileConfig is OscillationParameters
+                        || profileConfig is WhistleParameters
+                        || profileConfig is HarmonicParameters
+                        || profileConfig is SpectralPeakTrackParameters
+                        || profileConfig is VerticalTrackParameters
+                        || profileConfig is ClickParameters)
                     {
                         sonogram = new SpectrogramStandard(ParametersToSonogramConfig(parameters), audioRecording.WavReader);
 
@@ -200,9 +226,9 @@ namespace AnalysisPrograms.Recognizers
                         }
                         else if (profileConfig is HarmonicParameters hp)
                         {
-                            //get the array of intensity values minus intensity in side/buffer bands.
-                            double[] scoreArray;
-                            (acousticEvents, scoreArray) = HarmonicParameters.GetComponentsWithHarmonics(
+                            double[] decibelMaxArray;
+                            double[] harmonicIntensityScores;
+                            (acousticEvents, decibelMaxArray, harmonicIntensityScores) = HarmonicParameters.GetComponentsWithHarmonics(
                                 sonogram,
                                 hp.MinHertz.Value,
                                 hp.MaxHertz.Value,
@@ -215,7 +241,58 @@ namespace AnalysisPrograms.Recognizers
                                 hp.MaxFormantGap.Value,
                                 segmentStartOffset);
 
-                            var plot = PreparePlot(scoreArray, $"{profileName} (Harmonics:dB Intensity)", hp.DecibelThreshold.Value);
+                            var plot = PreparePlot(harmonicIntensityScores, $"{profileName} (Harmonics:dct intensity)", hp.DctThreshold.Value);
+                            plots.Add(plot);
+                        }
+                        else if (profileConfig is SpectralPeakTrackParameters tp)
+                        {
+                            double[] decibelArray;
+                            (acousticEvents, decibelArray) = SpectralPeakTrackParameters.GetSpectralPeakTracks(
+                                sonogram,
+                                tp.MinHertz.Value,
+                                tp.MaxHertz.Value,
+                                sonogram.NyquistFrequency,
+                                tp.DecibelThreshold.Value,
+                                tp.MinDuration.Value,
+                                tp.MaxDuration.Value,
+                                tp.CombinePossibleHarmonics,
+                                segmentStartOffset);
+
+                            var plot = PreparePlot(decibelArray, $"{profileName} (SpectralPeaks:dB Intensity)", tp.DecibelThreshold.Value);
+                            plots.Add(plot);
+                        }
+                        else if (profileConfig is ClickParameters cp)
+                        {
+                            double[] decibelArray;
+                            (acousticEvents, decibelArray) = ClickParameters.GetClicks(
+                                sonogram,
+                                cp.MinHertz.Value,
+                                cp.MaxHertz.Value,
+                                sonogram.NyquistFrequency,
+                                cp.DecibelThreshold.Value,
+                                cp.MinBandwidthHertz.Value,
+                                cp.MaxBandwidthHertz.Value,
+                                cp.CombineProximalSimilarEvents,
+                                segmentStartOffset);
+
+                            var plot = PreparePlot(decibelArray, $"{profileName} (Click:dB Intensity)", cp.DecibelThreshold.Value);
+                            plots.Add(plot);
+                        }
+                        else if (profileConfig is VerticalTrackParameters vtp)
+                        {
+                            double[] decibelArray;
+                            (acousticEvents, decibelArray) = VerticalTrackParameters.GetVerticalTracks(
+                                sonogram,
+                                vtp.MinHertz.Value,
+                                vtp.MaxHertz.Value,
+                                sonogram.NyquistFrequency,
+                                vtp.DecibelThreshold.Value,
+                                vtp.MinBandwidthHertz.Value,
+                                vtp.MaxBandwidthHertz.Value,
+                                vtp.CombineProximalSimilarEvents,
+                                segmentStartOffset);
+
+                            var plot = PreparePlot(decibelArray, $"{profileName} (VerticalTrack:dB Intensity)", vtp.DecibelThreshold.Value);
                             plots.Add(plot);
                         }
                         else
@@ -268,6 +345,12 @@ namespace AnalysisPrograms.Recognizers
                 //SaveDebugSpectrogram(allResults, genericConfig, outputDirectory, "name");
             }
 
+            // combine adjacent acoustic events
+            if (this.combineOverlappedEvents)
+            {
+                allResults.Events = AcousticEvent.CombineOverlappingEvents(allResults.Events, segmentStartOffset);
+            }
+
             return allResults;
         }
 
@@ -290,14 +373,14 @@ namespace AnalysisPrograms.Recognizers
 
         private static SonogramConfig ParametersToSonogramConfig(CommonParameters common)
         {
+            int windowSize = (int)common.FrameSize;
+            int windowStep = (int)common.FrameStep;
             return new SonogramConfig()
             {
-                //WindowOverlap = (WindowSize - WindowStep) / (double)WindowSize,
-                WindowSize = (int)common.FrameSize,
-                WindowStep = (int)common.FrameStep,
-
-                // Default window is Hamming. Alternative is to use Hanning. Can sometimes be better.
-                WindowFunction = (string)common.WindowFunction,   //WindowFunctions.HANNING.ToString(),
+                WindowSize = windowSize,
+                WindowStep = windowStep,
+                WindowOverlap = (windowSize - windowStep) / (double)windowSize,
+                WindowFunction = (string)common.WindowFunction,
                 NoiseReductionType = NoiseReductionType.Standard,
                 NoiseReductionParameter = common.BgNoiseThreshold ?? 0.0,
             };
@@ -323,7 +406,7 @@ namespace AnalysisPrograms.Recognizers
         /// <summary>
         /// THis method can be modified if want to do something non-standard with the output spectrogram.
         /// </summary>
-        private static void SaveDebugSpectrogram(RecognizerResults results, Config genericConfig, DirectoryInfo outputDirectory, string baseName)
+        public static void SaveDebugSpectrogram(RecognizerResults results, Config genericConfig, DirectoryInfo outputDirectory, string baseName)
         {
             var image3 = SpectrogramTools.GetSonogramPlusCharts(results.Sonogram, results.Events, results.Plots, null);
 
@@ -333,6 +416,8 @@ namespace AnalysisPrograms.Recognizers
         /// <inheritdoc cref="RecognizerConfig"/> />
         public class GenericRecognizerConfig : RecognizerConfig, INamedProfiles<object>
         {
+            public bool CombineOverlappedEvents { get; set; }
+
             /// <inheritdoc />
             public Dictionary<string, object> Profiles { get; set; }
         }

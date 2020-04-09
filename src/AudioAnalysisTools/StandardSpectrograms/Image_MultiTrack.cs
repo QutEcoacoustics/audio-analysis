@@ -13,33 +13,13 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
     public class Image_MultiTrack : IDisposable
     {
-        public Image<Rgb24> SonogramImage { get; private set; }
-
         private readonly List<ImageTrack> tracks = new List<ImageTrack>();
-
-        public IEnumerable<ImageTrack> Tracks => this.tracks;
-
-        public IEnumerable<AcousticEvent> eventList { get; set; }
-
-        public List<SpectralTrack> spectralTracks { get; set; }
-
-        public double[,] SuperimposedMatrix { get; set; }
-
-        public double[,] SuperimposedRedTransparency { get; set; }
-
-        public double[,] SuperimposedRainbowTransparency { get; set; }
-
-        public int[,] SuperimposedDiscreteColorMatrix { get; set; }
-
         private double superImposedMaxScore;
-        private int[] FreqHits;
+        private int[] freqHits;
         private int nyquistFreq; //sets the frequency scale for drawing events
         private int freqBinCount;
         private double freqBinWidth;
         private double framesPerSecond;
-
-        //private Point[] points;
-        public List<PointOfInterest> Points { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Image_MultiTrack"/> class.
@@ -51,18 +31,37 @@ namespace AudioAnalysisTools.StandardSpectrograms
             this.Points = new List<PointOfInterest>();
         }
 
+        public Image<Rgb24> SonogramImage { get; private set; }
+
+        public IEnumerable<ImageTrack> Tracks => this.tracks;
+
+        public IEnumerable<AcousticEvent> EventList { get; set; }
+
+        public List<SpectralTrack> SpectralTracks { get; set; }
+
+        public double[,] SuperimposedMatrix { get; set; }
+
+        public double[,] SuperimposedRedTransparency { get; set; }
+
+        public double[,] SuperimposedRainbowTransparency { get; set; }
+
+        public int[,] SuperimposedDiscreteColorMatrix { get; set; }
+
+        //private Point[] points;
+        public List<PointOfInterest> Points { get; set; }
+
         public void AddTrack(ImageTrack track)
         {
             this.tracks.Add(track);
         }
 
-        public void AddEvents(IEnumerable<AcousticEvent> _list, int _nyquist, int _freqBinCount, double _framesPerSecond)
+        public void AddEvents(IEnumerable<AcousticEvent> list, int nyquist, int freqBinCount, double framesPerSecond)
         {
-            this.eventList = _list;
-            this.nyquistFreq = _nyquist;
-            this.freqBinCount = _freqBinCount;
-            this.framesPerSecond = _framesPerSecond;
-            this.freqBinWidth = _nyquist / (double)_freqBinCount;
+            this.EventList = list;
+            this.nyquistFreq = nyquist;
+            this.freqBinCount = freqBinCount;
+            this.framesPerSecond = framesPerSecond;
+            this.freqBinWidth = nyquist / (double)freqBinCount;
         }
 
         public void AddPoints(IEnumerable<PointOfInterest> points)
@@ -115,15 +114,15 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         public void AddFreqHitValues(int[] f, int nyquist)
         {
-            this.FreqHits = f;
+            this.freqHits = f;
             this.nyquistFreq = nyquist;
         }
 
-        public void AddTracks(List<SpectralTrack> _tracks, double _framesPerSecond, double _freqBinWidth)
+        public void AddTracks(List<SpectralTrack> tracks, double framesPerSecond, double freqBinWidth)
         {
-            this.freqBinWidth = _freqBinWidth;
-            this.framesPerSecond = _framesPerSecond;
-            this.spectralTracks = _tracks;
+            this.freqBinWidth = freqBinWidth;
+            this.framesPerSecond = framesPerSecond;
+            this.SpectralTracks = tracks;
         }
 
         /// <summary>
@@ -149,13 +148,13 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// This means it cannot handle recording sonograms longer than 2 minutes.
         /// Therefore call a recursive method to draw the image.
         /// </summary>
-        public Image<Rgba32> GetImage()
+        public Image<Rgb24> GetImage()
         {
             // Calculate total height of the bmp
             var height = this.CalculateImageHeight();
 
             // set up a new image having the correct dimensions
-            var imageToReturn = new Image<Rgba32>(this.SonogramImage.Width, height);
+            var imageToReturn = new Image<Rgb24>(this.SonogramImage.Width, height);
 
             // need to do this before get Graphics because cannot PutPixels into Graphics object.
             if (this.SuperimposedRedTransparency != null)
@@ -174,13 +173,14 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 g.DrawImage(this.SonogramImage, 1f);
 
                 // draw events first because their rectangles can cover other features
-                if (this.eventList != null)
+                if (this.EventList != null)
                 {
-                    var hitImage = new Image<Rgba32>(imageToReturn.Width, height);
+                    var hitImage = new Image<Rgb24>(imageToReturn.Width, height);
 
                     //hitImage.MakeTransparent();
-                    foreach (AcousticEvent e in this.eventList)
+                    foreach (AcousticEvent e in this.EventList)
                     {
+                        // TODO TODO Fix this call. I am having problem with managing SixLabors.ImageSharp
                         e.DrawEvent(hitImage, this.framesPerSecond, this.freqBinWidth, this.SonogramImage.Height);
                     }
 
@@ -200,16 +200,15 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     }
                 }
 
-                // draw spectral tracks
-                if (this.spectralTracks != null)
+                if (this.SpectralTracks != null)
                 {
-                    foreach (SpectralTrack t in this.spectralTracks)
+                    foreach (SpectralTrack t in this.SpectralTracks)
                     {
-                        t.DrawTrack(g, this.framesPerSecond, this.freqBinWidth, this.SonogramImage.Height);
+                        t.DrawTrack(this.SonogramImage, this.framesPerSecond, this.freqBinWidth);
                     }
                 }
 
-                if (this.FreqHits != null)
+                if (this.freqHits != null)
                 {
                     this.DrawFreqHits(g);
                 }
@@ -251,17 +250,17 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         public void DrawFreqHits(IImageProcessingContext g)
         {
-            int L = this.FreqHits.Length;
+            int length = this.freqHits.Length;
             Pen p1 = new Pen(Color.Red, 1);
 
-            for (int x = 0; x < L; x++)
+            for (int x = 0; x < length; x++)
             {
-                if (this.FreqHits[x] <= 0)
+                if (this.freqHits[x] <= 0)
                 {
                     continue;
                 }
 
-                int y = (int)(this.SonogramImage.Height * (1 - (this.FreqHits[x] / (double)this.nyquistFreq)));
+                int y = (int)(this.SonogramImage.Height * (1 - (this.freqHits[x] / (double)this.nyquistFreq)));
 
                 //g.DrawRectangle(p1, x, y, x + 1, y + 1);
                 g.DrawLine(p1, x, y, x, y + 1);
@@ -285,7 +284,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             //ImageTools.DrawMatrix(DataTools.MatrixRotate90Anticlockwise(this.SuperimposedMatrix), @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev1\superimposed1.png", false);
 
-            //  traverse columns - skip DC column
+            // traverse columns - skip DC column
             for (int c = 1; c < cols; c++)
             {
                 for (int r = 0; r < rows; r++)
@@ -305,7 +304,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
                 //c++; //only draw on every second row.
             }
-        } //OverlayMatrix()
+        }
 
         /// <summary>
         /// superimposes a matrix of scores on top of a sonogram.
@@ -488,7 +487,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         } //OverlayRainbowTransparency()
 
         /// <summary>
-        /// superimposes a matrix of scores on top of a sonogram. USES RAINBOW PALLETTE
+        /// superimposes a matrix of scores on top of a sonogram. USES RAINBOW PALLETTE.
         /// ASSUME MATRIX consists of integers >=0.
         /// </summary>
         private void OverlayDiscreteColorMatrix(IImageProcessingContext g)
@@ -534,8 +533,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         public void Dispose()
         {
-            this.eventList = null;
+            this.EventList = null;
             this.SonogramImage.Dispose();
         }
-    } //end class
+    }
 }

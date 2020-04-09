@@ -13,10 +13,13 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
     using global::AnalysisPrograms;
     using global::AnalysisPrograms.Recognizers;
     using global::AnalysisPrograms.Recognizers.Base;
+    using global::AudioAnalysisTools;
     using global::AudioAnalysisTools.DSP;
+    using global::AudioAnalysisTools.StandardSpectrograms;
     using global::AudioAnalysisTools.WavTools;
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using SixLabors.ImageSharp;
 
     [TestClass]
     public class GenericRecognizerTests : OutputDirectoryTest
@@ -192,6 +195,604 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             Assert.AreEqual("TestWhistle", @event.Profile);
             Assert.AreEqual("NoName", @event.SpeciesName);
             Assert.AreEqual("Whistle400Hz", @event.Name);
+        }
+
+        [TestMethod]
+        public void TestHarmonicsAlgorithm()
+        {
+            // Set up the recognizer parameters.
+            var windowSize = 512;
+            var windowStep = 512;
+            var minHertz = 500;
+            var maxHertz = 5000;
+            var dctThreshold = 0.15;
+            var minFormantGap = 400;
+            var maxFormantGap = 1200;
+            var minDuration = 0.2;
+            var maxDuration = 1.1;
+            var decibelThreshold = 2.0;
+
+            //Set up the virtual recording.
+            int samplerate = 22050;
+            double signalDuration = 13.0; //seconds
+
+            // set up the config for a virtual spectrogram.
+            var sonoConfig = new SonogramConfig()
+            {
+                WindowSize = windowSize,
+                WindowStep = windowStep,
+                WindowOverlap = 0.0, // this must be set
+                WindowFunction = WindowFunctions.HANNING.ToString(),
+                NoiseReductionType = NoiseReductionType.Standard,
+                NoiseReductionParameter = 0.0,
+                Duration = TimeSpan.FromSeconds(signalDuration),
+                SampleRate = samplerate,
+            };
+
+            var spectrogram = this.CreateArtificialSpectrogramToTestTracksAndHarmonics(sonoConfig);
+
+            //var image1 = SpectrogramTools.GetSonogramPlusCharts(spectrogram, null, null, null);
+            //results.Sonogram.GetImage().Save(this.outputDirectory + "\\debug.png");
+
+            //var results = recognizer.Recognize(recording, sonoConfig, 100.Seconds(), null, this.TestOutputDirectory, null);
+            //get the array of intensity values minus intensity in side/buffer bands.
+            var segmentStartOffset = TimeSpan.Zero;
+            var plots = new List<Plot>();
+            double[] dBArray;
+            double[] harmonicIntensityScores;
+            List<AcousticEvent> acousticEvents;
+            (acousticEvents, dBArray, harmonicIntensityScores) = HarmonicParameters.GetComponentsWithHarmonics(
+                spectrogram,
+                minHertz,
+                maxHertz,
+                spectrogram.NyquistFrequency,
+                decibelThreshold,
+                dctThreshold,
+                minDuration,
+                maxDuration,
+                minFormantGap,
+                maxFormantGap,
+                segmentStartOffset);
+
+            // draw a plot of max decibels in each frame
+            double decibelNormalizationMax = 3 * decibelThreshold;
+            var dBThreshold = decibelThreshold / decibelNormalizationMax;
+            var normalisedDecibelArray = DataTools.NormaliseInZeroOne(dBArray, 0, decibelNormalizationMax);
+            var plot1 = new Plot("decibel max", normalisedDecibelArray, dBThreshold);
+            plots.Add(plot1);
+
+            // draw a plot of dct intensity
+            double intensityNormalizationMax = 3 * dctThreshold;
+            var eventThreshold = dctThreshold / intensityNormalizationMax;
+            var normalisedIntensityArray = DataTools.NormaliseInZeroOne(harmonicIntensityScores, 0, intensityNormalizationMax);
+            var plot2 = new Plot("dct intensity", normalisedIntensityArray, eventThreshold);
+            plots.Add(plot2);
+
+            var allResults = new RecognizerResults()
+            {
+                Events = new List<AcousticEvent>(),
+                Hits = null,
+                ScoreTrack = null,
+                Plots = new List<Plot>(),
+                Sonogram = null,
+            };
+
+            // combine the results i.e. add the events list of call events.
+            allResults.Events.AddRange(acousticEvents);
+            allResults.Plots.AddRange(plots);
+
+            // effectively keeps only the *last* sonogram produced
+            allResults.Sonogram = spectrogram;
+
+            // DEBUG PURPOSES COMMENT NEXT LINE
+            //var outputDirectory = new DirectoryInfo("C:\\temp");
+            //GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "name");
+
+            Assert.AreEqual(4, allResults.Events.Count);
+
+            var @event = allResults.Events[0];
+            Assert.AreEqual("NoName", @event.SpeciesName);
+            Assert.AreEqual("Harmonics", @event.Name);
+            Assert.AreEqual(3.0, @event.EventStartSeconds, 0.1);
+            Assert.AreEqual(4.0, @event.EventEndSeconds, 0.1);
+            Assert.AreEqual(500, @event.LowFrequencyHertz);
+            Assert.AreEqual(5000, @event.HighFrequencyHertz);
+
+            @event = allResults.Events[1];
+            Assert.AreEqual(5.2, @event.EventStartSeconds, 0.1);
+            Assert.AreEqual(5.5, @event.EventEndSeconds, 0.1);
+
+            @event = allResults.Events[2];
+            Assert.AreEqual(7.0, @event.EventStartSeconds, 0.1);
+            Assert.AreEqual(8.0, @event.EventEndSeconds, 0.1);
+
+            @event = allResults.Events[3];
+            Assert.AreEqual(11.3, @event.EventStartSeconds, 0.1);
+            Assert.AreEqual(11.6, @event.EventEndSeconds, 0.1);
+        }
+
+        [TestMethod]
+        public void TestSpectralPeakTracksAlgorithm()
+        {
+            // Set up the recognizer parameters.
+            var windowSize = 512;
+            var windowStep = 512;
+            var minHertz = 500;
+            var maxHertz = 6000;
+            var minDuration = 0.2;
+            var maxDuration = 1.1;
+            var decibelThreshold = 2.0;
+            var combinePossibleHarmonics = true;
+
+            //Set up the virtual recording.
+            int samplerate = 22050;
+            double signalDuration = 13.0; //seconds
+
+            // set up the config for a virtual spectrogram.
+            var sonoConfig = new SonogramConfig()
+            {
+                WindowSize = windowSize,
+                WindowStep = windowStep,
+                WindowOverlap = 0.0, // this must be set
+                WindowFunction = WindowFunctions.HANNING.ToString(),
+                NoiseReductionType = NoiseReductionType.Standard,
+                NoiseReductionParameter = 0.0,
+                Duration = TimeSpan.FromSeconds(signalDuration),
+                SampleRate = samplerate,
+            };
+
+            var spectrogram = this.CreateArtificialSpectrogramToTestTracksAndHarmonics(sonoConfig);
+
+            //var image1 = SpectrogramTools.GetSonogramPlusCharts(spectrogram, null, null, null);
+            //results.Sonogram.GetImage().Save(this.outputDirectory + "\\debug.png");
+
+            var segmentStartOffset = TimeSpan.Zero;
+            var plots = new List<Plot>();
+            double[] dBArray;
+            List<AcousticEvent> acousticEvents;
+            (acousticEvents, dBArray) = SpectralPeakTrackParameters.GetSpectralPeakTracks(
+                spectrogram,
+                minHertz,
+                maxHertz,
+                spectrogram.NyquistFrequency,
+                decibelThreshold,
+                minDuration,
+                maxDuration,
+                combinePossibleHarmonics,
+                segmentStartOffset);
+
+            // draw a plot of max decibels in each frame
+            double decibelNormalizationMax = 3 * decibelThreshold;
+            var dBThreshold = decibelThreshold / decibelNormalizationMax;
+            var normalisedDecibelArray = DataTools.NormaliseInZeroOne(dBArray, 0, decibelNormalizationMax);
+            var plot1 = new Plot("decibel max", normalisedDecibelArray, dBThreshold);
+            plots.Add(plot1);
+
+            var allResults = new RecognizerResults()
+            {
+                Events = new List<AcousticEvent>(),
+                Hits = null,
+                ScoreTrack = null,
+                Plots = new List<Plot>(),
+                Sonogram = null,
+            };
+
+            // combine the results i.e. add the events list of call events.
+            allResults.Events.AddRange(acousticEvents);
+            allResults.Plots.AddRange(plots);
+
+            // effectively keeps only the *last* sonogram produced
+            allResults.Sonogram = spectrogram;
+
+            // DEBUG PURPOSES COMMENT NEXT LINE
+            var outputDirectory = new DirectoryInfo("C:\\temp");
+            GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "track");
+
+            Assert.AreEqual(23, allResults.Events.Count);
+
+            var @event = allResults.Events[4];
+            Assert.AreEqual(2.0, @event.EventStartSeconds, 0.1);
+            Assert.AreEqual(2.5, @event.EventEndSeconds, 0.1);
+            Assert.AreEqual(1723, @event.LowFrequencyHertz);
+            Assert.AreEqual(2067, @event.HighFrequencyHertz);
+
+            @event = allResults.Events[11];
+            Assert.AreEqual(6.0, @event.EventStartSeconds, 0.1);
+            Assert.AreEqual(6.5, @event.EventEndSeconds, 0.1);
+            Assert.AreEqual(2153, @event.LowFrequencyHertz);
+            Assert.AreEqual(2541, @event.HighFrequencyHertz);
+        }
+
+        [TestMethod]
+        public void TestClickAlgorithm()
+        {
+            // Set up the recognizer parameters.
+            var windowSize = 512;
+            var windowStep = 512;
+            var minHertz = 6000;
+            var maxHertz = 11000;
+            var minBandwidthHertz = 100;
+            var maxBandwidthHertz = 5000;
+            var decibelThreshold = 2.0;
+            var combineProximalSimilarEvents = true;
+
+            //Set up the virtual recording.
+            int samplerate = 22050;
+            double signalDuration = 13.0; //seconds
+
+            // set up the config for a virtual spectrogram.
+            var sonoConfig = new SonogramConfig()
+            {
+                WindowSize = windowSize,
+                WindowStep = windowStep,
+                WindowOverlap = 0.0, // this must be set
+                WindowFunction = WindowFunctions.HANNING.ToString(),
+                NoiseReductionType = NoiseReductionType.Standard,
+                NoiseReductionParameter = 0.0,
+                Duration = TimeSpan.FromSeconds(signalDuration),
+                SampleRate = samplerate,
+            };
+
+            var spectrogram = this.CreateArtificialSpectrogramToTestTracksAndHarmonics(sonoConfig);
+
+            //var image1 = SpectrogramTools.GetSonogramPlusCharts(spectrogram, null, null, null);
+            //results.Sonogram.GetImage().Save(this.outputDirectory + "\\debug.png");
+
+            var segmentStartOffset = TimeSpan.Zero;
+            var plots = new List<Plot>();
+            double[] dBArray;
+            List<AcousticEvent> acousticEvents;
+            (acousticEvents, dBArray) = ClickParameters.GetClicks(
+                spectrogram,
+                minHertz,
+                maxHertz,
+                spectrogram.NyquistFrequency,
+                decibelThreshold,
+                minBandwidthHertz,
+                maxBandwidthHertz,
+                combineProximalSimilarEvents,
+                segmentStartOffset);
+
+            // draw a plot of max decibels in each frame
+            double decibelNormalizationMax = 3 * decibelThreshold;
+            var dBThreshold = decibelThreshold / decibelNormalizationMax;
+            var normalisedDecibelArray = DataTools.NormaliseInZeroOne(dBArray, 0, decibelNormalizationMax);
+            var plot1 = new Plot("decibel max", normalisedDecibelArray, dBThreshold);
+            plots.Add(plot1);
+
+            var allResults = new RecognizerResults()
+            {
+                Events = new List<AcousticEvent>(),
+                Hits = null,
+                ScoreTrack = null,
+                Plots = new List<Plot>(),
+                Sonogram = null,
+            };
+
+            // combine the results i.e. add the events list of call events.
+            allResults.Events.AddRange(acousticEvents);
+            allResults.Plots.AddRange(plots);
+
+            // effectively keeps only the *last* sonogram produced
+            allResults.Sonogram = spectrogram;
+
+            // DEBUG PURPOSES COMMENT NEXT LINE
+            var outputDirectory = new DirectoryInfo("C:\\temp");
+            GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "Click");
+
+            Assert.AreEqual(2, allResults.Events.Count);
+
+            var @event = allResults.Events[0];
+            Assert.AreEqual(10.0, @event.EventStartSeconds, 0.1);
+            Assert.AreEqual(10.1, @event.EventEndSeconds, 0.1);
+            Assert.AreEqual(6474, @event.LowFrequencyHertz);
+            Assert.AreEqual(10781, @event.HighFrequencyHertz);
+
+            @event = allResults.Events[1];
+            Assert.AreEqual(11.0, @event.EventStartSeconds, 0.1);
+            Assert.AreEqual(11.24, @event.EventEndSeconds, 0.1);
+            Assert.AreEqual(6474, @event.LowFrequencyHertz);
+            Assert.AreEqual(7335, @event.HighFrequencyHertz);
+        }
+
+        /// <summary>
+        /// This tests the vertical tracks recognizer on the same artifical spectrogram as used for spectral tracks and harmonics.
+        /// </summary>
+        [TestMethod]
+        public void TestVerticalTrackAlgorithm()
+        {
+            // Set up the recognizer parameters.
+            var windowSize = 512;
+            var windowStep = 512;
+            var minHertz = 6000;
+            var maxHertz = 11000;
+            var minBandwidthHertz = 100;
+            var maxBandwidthHertz = 5000;
+            var decibelThreshold = 2.0;
+            var combineProximalSimilarEvents = true;
+
+            //Set up the virtual recording.
+            int samplerate = 22050;
+            double signalDuration = 13.0; //seconds
+
+            // set up the config for a virtual spectrogram.
+            var sonoConfig = new SonogramConfig()
+            {
+                WindowSize = windowSize,
+                WindowStep = windowStep,
+                WindowOverlap = 0.0, // this must be set
+                WindowFunction = WindowFunctions.HANNING.ToString(),
+                NoiseReductionType = NoiseReductionType.Standard,
+                NoiseReductionParameter = 0.0,
+                Duration = TimeSpan.FromSeconds(signalDuration),
+                SampleRate = samplerate,
+            };
+
+            var spectrogram = this.CreateArtificialSpectrogramToTestTracksAndHarmonics(sonoConfig);
+
+            //var image1 = SpectrogramTools.GetSonogramPlusCharts(spectrogram, null, null, null);
+            //results.Sonogram.GetImage().Save(this.outputDirectory + "\\debug.png");
+
+            var segmentStartOffset = TimeSpan.Zero;
+            var plots = new List<Plot>();
+            double[] dBArray;
+            List<AcousticEvent> acousticEvents;
+            (acousticEvents, dBArray) = VerticalTrackParameters.GetVerticalTracks(
+                spectrogram,
+                minHertz,
+                maxHertz,
+                spectrogram.NyquistFrequency,
+                decibelThreshold,
+                minBandwidthHertz,
+                maxBandwidthHertz,
+                combineProximalSimilarEvents,
+                segmentStartOffset);
+
+            // draw a plot of max decibels in each frame
+            double decibelNormalizationMax = 3 * decibelThreshold;
+            var dBThreshold = decibelThreshold / decibelNormalizationMax;
+            var normalisedDecibelArray = DataTools.NormaliseInZeroOne(dBArray, 0, decibelNormalizationMax);
+            var plot1 = new Plot("decibel max", normalisedDecibelArray, dBThreshold);
+            plots.Add(plot1);
+
+            var allResults = new RecognizerResults()
+            {
+                Events = new List<AcousticEvent>(),
+                Hits = null,
+                ScoreTrack = null,
+                Plots = new List<Plot>(),
+                Sonogram = null,
+            };
+
+            // combine the results i.e. add the events list of call events.
+            allResults.Events.AddRange(acousticEvents);
+            allResults.Plots.AddRange(plots);
+
+            // effectively keeps only the *last* sonogram produced
+            allResults.Sonogram = spectrogram;
+
+            // DEBUG PURPOSES ONLY - COMMENT NEXT LINE
+            var outputDirectory = new DirectoryInfo("C:\\temp");
+            GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "VerticalTracks1");
+
+            Assert.AreEqual(2, allResults.Events.Count);
+
+            var @event = allResults.Events[0];
+            Assert.AreEqual(10.0, @event.EventStartSeconds, 0.1);
+            Assert.AreEqual(10.1, @event.EventEndSeconds, 0.1);
+            Assert.AreEqual(6460, @event.LowFrequencyHertz);
+            Assert.AreEqual(10724, @event.HighFrequencyHertz);
+
+            @event = allResults.Events[1];
+            Assert.AreEqual(11.0, @event.EventStartSeconds, 0.1);
+            Assert.AreEqual(11.24, @event.EventEndSeconds, 0.1);
+            Assert.AreEqual(6460, @event.LowFrequencyHertz);
+            Assert.AreEqual(7278, @event.HighFrequencyHertz);
+
+            // do a SECOND TEST of the vertical tracks
+            minHertz = 500;
+            maxHertz = 6000;
+            minBandwidthHertz = 200;
+            maxBandwidthHertz = 5000;
+            (acousticEvents, dBArray) = VerticalTrackParameters.GetVerticalTracks(
+                spectrogram,
+                minHertz,
+                maxHertz,
+                spectrogram.NyquistFrequency,
+                decibelThreshold,
+                minBandwidthHertz,
+                maxBandwidthHertz,
+                combineProximalSimilarEvents,
+                segmentStartOffset);
+
+            // draw a plot of max decibels in each frame
+            normalisedDecibelArray = DataTools.NormaliseInZeroOne(dBArray, 0, decibelNormalizationMax);
+            var plot2 = new Plot("decibel max", normalisedDecibelArray, dBThreshold);
+            plots.Add(plot2);
+
+            var allResults2 = new RecognizerResults()
+            {
+                Events = new List<AcousticEvent>(),
+                Hits = null,
+                ScoreTrack = null,
+                Plots = new List<Plot>(),
+                Sonogram = null,
+            };
+
+            // combine the results i.e. add the events list of call events.
+            allResults2.Events.AddRange(acousticEvents);
+            allResults2.Plots.AddRange(plots);
+
+            // effectively keeps only the *last* sonogram produced
+            allResults2.Sonogram = spectrogram;
+
+            // DEBUG PURPOSES ONLY - COMMENT NEXT LINE
+            GenericRecognizer.SaveDebugSpectrogram(allResults2, null, outputDirectory, "VerticalTracks2");
+
+            Assert.AreEqual(5, allResults2.Events.Count);
+        }
+
+        public SpectrogramStandard CreateArtificialSpectrogramToTestTracksAndHarmonics(SonogramConfig config)
+        {
+            int samplerate = config.SampleRate;
+            double signalDuration = config.Duration.TotalSeconds;
+            int windowSize = config.WindowSize;
+            int frameCount = (int)Math.Floor(samplerate * signalDuration / windowSize);
+            int binCount = windowSize / 2;
+
+            // set up the spectrogram with stacked harmonics
+            var amplitudeSpectrogram = new double[frameCount, binCount];
+            double framesPerSecond = samplerate / (double)windowSize;
+            double hertzPerBin = samplerate / (double)windowSize;
+
+            // draw first set of harmonics
+            int bottomHertz = 1000;
+            int bottomBin = (int)Math.Round(bottomHertz / hertzPerBin);
+            int formantGap = 300;
+            int binGap = (int)Math.Round(formantGap / hertzPerBin);
+            int startframe = (int)Math.Round(framesPerSecond);
+            int endframe = (int)Math.Round(framesPerSecond * 2);
+            for (int frame = startframe; frame < endframe; frame++)
+            {
+                amplitudeSpectrogram[frame, bottomBin] = 6.0;
+                amplitudeSpectrogram[frame, bottomBin + binGap] = 6.0;
+                amplitudeSpectrogram[frame, bottomBin + binGap + binGap] = 6.0;
+            }
+
+            // draw second set of harmonics
+            formantGap = 600;
+            binGap = (int)Math.Round(formantGap / hertzPerBin);
+            startframe = (int)Math.Round(framesPerSecond * 3);
+            endframe = (int)Math.Round(framesPerSecond * 4);
+            for (int frame = startframe; frame < endframe; frame++)
+            {
+                amplitudeSpectrogram[frame, bottomBin] = 3.0;
+                amplitudeSpectrogram[frame, bottomBin + binGap] = 3.0;
+                amplitudeSpectrogram[frame, bottomBin + binGap + binGap] = 3.0;
+            }
+
+            // draw third set of harmonics
+            formantGap = 300;
+            binGap = (int)Math.Round(formantGap / hertzPerBin);
+            startframe = (int)Math.Round(framesPerSecond * 5) - 1;
+            endframe = (int)Math.Round(framesPerSecond * 6);
+            int offset = 0;
+            for (int frame = startframe; frame < endframe; frame++)
+            {
+                amplitudeSpectrogram[frame, bottomBin] = 9.0;
+                amplitudeSpectrogram[frame, bottomBin + binGap + offset] = 9.0;
+                amplitudeSpectrogram[frame, bottomBin + binGap + binGap + offset + offset] = 9.0;
+                amplitudeSpectrogram[frame, bottomBin + binGap + binGap + offset + offset + 1] = 6.0;
+                offset++;
+            }
+
+            // draw fourth set of harmonics
+            formantGap = 1000;
+            binGap = (int)Math.Round(formantGap / hertzPerBin);
+            startframe = (int)Math.Round(framesPerSecond * 7);
+            endframe = (int)Math.Round(framesPerSecond * 8);
+            for (int frame = startframe; frame < endframe; frame++)
+            {
+                amplitudeSpectrogram[frame, bottomBin] = 6.0;
+                amplitudeSpectrogram[frame, bottomBin + binGap] = 9.0;
+                amplitudeSpectrogram[frame, bottomBin + binGap + binGap] = 6.0;
+            }
+
+            // draw fifth set of harmonics
+            formantGap = 1500;
+            binGap = (int)Math.Round(formantGap / hertzPerBin);
+            startframe = (int)Math.Round(framesPerSecond * 9);
+            endframe = (int)Math.Round(framesPerSecond * 10);
+            for (int frame = startframe; frame < endframe; frame++)
+            {
+                amplitudeSpectrogram[frame, bottomBin] = 9.0;
+                amplitudeSpectrogram[frame, bottomBin + binGap] = 9.0;
+                amplitudeSpectrogram[frame, bottomBin + binGap + binGap] = 9.0;
+            }
+
+            // draw sixth set of harmonics
+            formantGap = 1800;
+            binGap = (int)Math.Round(formantGap / hertzPerBin);
+            startframe = (int)Math.Round(framesPerSecond * 11) - 1;
+            endframe = (int)Math.Round(framesPerSecond * 12);
+            offset = 0;
+            for (int frame = startframe; frame < endframe; frame++)
+            {
+                amplitudeSpectrogram[frame, bottomBin] = 9.0;
+                amplitudeSpectrogram[frame, bottomBin + binGap - offset] = 9.0;
+                amplitudeSpectrogram[frame, bottomBin + binGap + binGap - offset - offset - 1] = 3.0;
+                amplitudeSpectrogram[frame, bottomBin + binGap + binGap - offset - offset] = 9.0;
+                offset++;
+            }
+
+            // draw a set of sequential tracks
+            for (int i = 0; i < 15; i++)
+            {
+                // track that starts in very first time frame
+                amplitudeSpectrogram[i, 50] = 6.0;
+
+                // track that goes to end of spectrogram
+                amplitudeSpectrogram[frameCount - 1 - i, 50] = 6.0;
+            }
+
+            //boobook owl look-alike
+            startframe = (int)Math.Round(framesPerSecond * 2) + 3;
+            var startBin = 40;
+            for (int i = 0; i < 9; i++)
+            {
+                amplitudeSpectrogram[startframe + i, startBin + i] = 9.0;
+                amplitudeSpectrogram[startframe + 16 - i, startBin + i] = 6.0;
+            }
+
+            startframe = (int)Math.Round(framesPerSecond * 6) + 3;
+            startBin = 50;
+            for (int i = 0; i < 10; i++)
+            {
+                amplitudeSpectrogram[startframe + i, startBin + i] = 6.0;
+                amplitudeSpectrogram[startframe + 20 - i, startBin + i] = 9.0;
+            }
+
+            startframe = (int)Math.Round(framesPerSecond * 10) + 3;
+            startBin = 50;
+            for (int i = 0; i < 8; i++)
+            {
+                amplitudeSpectrogram[startframe + i, startBin + i] = 9.0;
+                amplitudeSpectrogram[startframe + 16 - i, startBin + i] = 9.0;
+            }
+
+            amplitudeSpectrogram[startframe + 8, startBin + 8] = 6.0;
+            amplitudeSpectrogram[startframe + 8, startBin + 7] = 9.0;
+
+            // draw a click
+            var clickFrame = (int)Math.Round(framesPerSecond * 10) + 3;
+            startBin = 150;
+            var endBin = 250;
+            for (int i = startBin; i < endBin; i++)
+            {
+                amplitudeSpectrogram[clickFrame, i] = 9.0;
+                amplitudeSpectrogram[clickFrame + 1, i] = 6.0;
+            }
+
+            // Draw a series of clicks similar to bird kek-kek
+            clickFrame = (int)Math.Round(framesPerSecond * 11);
+            startBin = 150;
+            endBin = 170;
+            for (int i = startBin; i < endBin; i++)
+            {
+                amplitudeSpectrogram[clickFrame, i] = 6.0;
+                amplitudeSpectrogram[clickFrame + 2, i] = 6.0;
+                amplitudeSpectrogram[clickFrame + 4, i] = 6.0;
+                amplitudeSpectrogram[clickFrame + 6, i] = 6.0;
+                amplitudeSpectrogram[clickFrame + 8, i] = 6.0;
+            }
+
+            var spectrogram = new SpectrogramStandard(config)
+            {
+                SampleRate = samplerate,
+                Data = amplitudeSpectrogram,
+            };
+
+            return spectrogram;
         }
 
         [TestMethod]
