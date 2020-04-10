@@ -33,51 +33,73 @@
             - in a filename: use ISO8601 duration formatting
 - New code or bug fixes must be covered by unit tests.
   Our project has a historically bad relationship with unit testing and we want to try
-  and improve on this.
-
+  and improve on this.  
   [![codecov](https://codecov.io/gh/QutEcoacoustics/audio-analysis/branch/master/graph/badge.svg)](https://codecov.io/gh/QutEcoacoustics/audio-analysis)
-- Try to structure commit messages in a format recognised by our release note generator
-  [![Automated Release Notes by gren](https://img.shields.io/badge/%F0%9F%A4%96-release%20notes-00B2EE.svg)](https://github-tools.github.io/github-release-notes/)
+
 
 
 ## Required Software
 
 The **required** software for developing new code (not running the program) includes:
 
-- **PowerShell Core** (version 6+)
-    - You can install it from here: https://github.com/powershell/powershell#get-powershell
-- **.NET Core SDK**
-    - We aim to use the latest stable version
-    - You can verify the version our project is using by looking in the [global.json](./global.json) file
-    - You can download it from here: <https://dotnet.microsoft.com/download/dotnet-core/>
-        - Note: you want the _Build apps - SDK_ download
-    - Alternately, use one of the dotnet-install scripts from the [./build/](./build) folder
-        - e.g. On Windows in PowerShell: ./build/dotnet-install.ps1
-        - e.g. On Max/Linux in Bash: ./build/dotnet-install.sh
+### 1. **PowerShell Core** (version 6+)
 
-- An IDE:
-    - **Visual Studio 2019** (Windows only)
-        - Install features:
-            - C# Development
-            - .NET Core SDK for Visual Studio 2019
-        - If you're at a university that has an Office365 Subscription you can download software from https://azureforeducation.microsoft.com/devtools
-        - The [community edition](https://visualstudio.microsoft.com/vs/) of Visual Studio should work fine and is totally free
-        - [Optional] Resharper Ulitmate (Academic License)
-        - Install these plugins (_ReSharper_ menu > _Extension Manager_)
-          - ReSpeller Free
-    - **VS Code** (recommended for Mac and Linux)
-        - Install from here: <https://code.visualstudio.com/>
-        - Open the `ap.code-workspace`
-        - Install the recommended workspace extensions
-    - **JetBrains Rider** (Windows only)
-- **Git**
-    - A recent version of the `git` executable must be on your PATH (the standard install should do this)
-    - <https://git-scm.com/downloads>
-- **Git LFS**
-    - <https://git-lfs.github.com/>
+You can install it from here: https://github.com/powershell/powershell#get-powershell
+
+### 2. A **.NET Core SDK**
+
+- We aim to use the latest stable version
+- You can verify the version our project is using by looking in the [global.json](./global.json) file
+
+Recommended choice is to run the `dotnet-install` script in the [./build/](./build) folder.
+
+PowerShell:
+```powershell
+> ./build/dotnet-install.ps1
+```
+
+Bash:
+```shell
+$ ./build/dotnet-install.sh
+```
+
+Alternately, you can download a SDK from here: <https://dotnet.microsoft.com/download/dotnet-core/>. Note: you want the _Build apps - SDK_ download.
+
+If you receive the following error message, you need to update your SDK:
+
+> Unable to locate the .NET Core SDK. Check that it is installed and that the version specified in global.json (if any) matches the installed version.
+
+### 3. An IDE (code editor)
+
+There are three options:
+
+1. **Visual Studio 2019** (Windows only)
+    - Install features:
+        - C# Development
+        - .NET Core SDK for Visual Studio 2019
+    - If you're at a university that has an Office365 Subscription you can download software from https://azureforeducation.microsoft.com/devtools
+    - The [community edition](https://visualstudio.microsoft.com/vs/) of Visual Studio should work fine and is totally free
+    - [Optional] Resharper Ulitmate (Academic License)
+    - Install these plugins (_ReSharper_ menu > _Extension Manager_)
+      - ReSpeller Free
+2. **VS Code** (recommended for Mac and Linux, works on Windows too)
+    - Install from here: <https://code.visualstudio.com/>
+    - Open the `ap.code-workspace`
+    - Install the recommended workspace extensions
+3. **JetBrains Rider** (Windows only)
+
+### 4. **Git**
+
+A recent version of the `git` executable must be on your `PATH` (the standard install should do this).
+
+<https://git-scm.com/downloads>
+
+### 5. **Git LFS**
+
+<https://git-lfs.github.com/>
+
 
 ## Binary Large Objects (BLOBs)
-
 
 We use [git-lfs](https://git-lfs.github.com/) to store BLOBs for testing audio
 file converters. If you want to run the unit tests you need to have git-lfs 

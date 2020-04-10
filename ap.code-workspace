@@ -32,5 +32,24 @@
         "omnisharp.enableEditorConfigSupport": true,
         "editor.formatOnType": true,
         "editor.formatOnSave": true,
+        "workbench.colorCustomizations": {
+            "activityBar.background": "#65e126",
+            "activityBar.activeBackground": "#65e126",
+            "activityBar.activeBorder": "#5788e8",
+            "activityBar.foreground": "#15202b",
+            "activityBar.inactiveForeground": "#15202b99",
+            "activityBarBadge.background": "#5788e8",
+            "activityBarBadge.foreground": "#15202b",
+            "titleBar.activeBackground": "#50ba1a",
+            "titleBar.inactiveBackground": "#50ba1a99",
+            "titleBar.activeForeground": "#15202b",
+            "titleBar.inactiveForeground": "#15202b99",
+            "statusBar.background": "#50ba1a",
+            "statusBarItem.hoverBackground": "#3d8d14",
+            "statusBar.foreground": "#15202b",
+            "statusBar.border": "#50ba1a",
+            "titleBar.border": "#50ba1a"
+        },
+        "peacock.remoteColor": "#50ba1a",
     }
 }
