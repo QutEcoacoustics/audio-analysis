@@ -50,13 +50,13 @@ namespace Acoustics.Test.AnalysisPrograms.SourcePreparers
             // try again, but with a segment that is small enough
             segment = new RemoteSegment(
                 this.audioRecording,
-                0.0.To(this.settings.AnalysisMaxSegmentDuration.Value.TotalSeconds));
+                0.0.AsIntervalTo(this.settings.AnalysisMaxSegmentDuration.Value.TotalSeconds));
 
             var analysisSegments = this.preparer.CalculateSegments(new[] { segment }, this.settings).ToArray();
 
             var expected = new[]
             {
-                (0.0, 60.0).AsRange(),
+                (0.0, 60.0).AsInterval(),
             };
 
             AssertSegmentsAreEqual(analysisSegments, expected, this.audioRecording);
@@ -71,11 +71,11 @@ namespace Acoustics.Test.AnalysisPrograms.SourcePreparers
 
             var expected = new[]
             {
-                (0.0, 60.0).AsRange(),
-                (60.0, 120.0).AsRange(),
-                (120.0, 180.0).AsRange(),
-                (180.0, 240.0).AsRange(),
-                (240.0, 240.113).AsRange(),
+                (0.0, 60.0).AsInterval(),
+                (60.0, 120.0).AsInterval(),
+                (120.0, 180.0).AsInterval(),
+                (180.0, 240.0).AsInterval(),
+                (240.0, 240.113).AsInterval(),
             };
 
             AssertSegmentsAreEqual(analysisSegments, expected, this.audioRecording);
@@ -84,14 +84,14 @@ namespace Acoustics.Test.AnalysisPrograms.SourcePreparers
         [TestMethod]
         public void ShouldHonorLimits()
         {
-            var segment = new RemoteSegment(this.audioRecording, 60.0.To(180.0));
+            var segment = new RemoteSegment(this.audioRecording, 60.0.AsIntervalTo(180.0));
 
             var analysisSegments = this.preparer.CalculateSegments(new[] { segment }, this.settings).ToArray();
 
             var expected = new[]
             {
-                (60.0, 120.0).AsRange(),
-                (120.0, 180.0).AsRange(),
+                (60.0, 120.0).AsInterval(),
+                (120.0, 180.0).AsInterval(),
             };
 
             AssertSegmentsAreEqual(analysisSegments, expected, this.audioRecording);
@@ -108,17 +108,17 @@ namespace Acoustics.Test.AnalysisPrograms.SourcePreparers
 
             var expected = new[]
             {
-                (0.0, 60.0 + 30.0).AsRange(),
-                (60.0, 120.0 + 30.0).AsRange(),
-                (120.0, 180.0 + 30.0).AsRange(),
-                (180.0, 240.0 + 0.113).AsRange(),
-                (240.0, 240.113).AsRange(),
+                (0.0, 60.0 + 30.0).AsInterval(),
+                (60.0, 120.0 + 30.0).AsInterval(),
+                (120.0, 180.0 + 30.0).AsInterval(),
+                (180.0, 240.0 + 0.113).AsInterval(),
+                (240.0, 240.113).AsInterval(),
             };
 
             AssertSegmentsAreEqual(analysisSegments, expected, this.audioRecording);
         }
 
-        private static void AssertSegmentsAreEqual(ISegment<AudioRecording>[] acutals, Range<double>[] expected, AudioRecording source)
+        private static void AssertSegmentsAreEqual(ISegment<AudioRecording>[] acutals, Interval<double>[] expected, AudioRecording source)
         {
             for (int i = 0; i < acutals.Length; i++)
             {

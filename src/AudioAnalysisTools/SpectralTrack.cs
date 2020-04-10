@@ -7,11 +7,9 @@ namespace AudioAnalysisTools
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using AudioAnalysisTools.StandardSpectrograms;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using TowseyLibrary;
 
     /// <summary>
     /// Currently (07 April 2020), the only need to distinguish track types is when they are drawn on a spectrogram. See method DrawTrack();.

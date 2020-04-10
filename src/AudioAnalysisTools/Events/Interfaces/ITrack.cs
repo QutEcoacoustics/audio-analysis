@@ -6,7 +6,7 @@ namespace AudioAnalysisTools.Events.Interfaces
 {
     using AudioAnalysisTools.Events.Drawing;
 
-    public interface ITrack: IPointData, IDrawableEvent
+    public interface ITrack : IPointData, IDrawableEvent
     {
     }
 }

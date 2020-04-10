@@ -56,8 +56,8 @@ namespace AudioAnalysisTools.EventStatistics
         /// <returns>an instance of EventStatistics.</returns>
         public static EventStatistics AnalyzeAudioEvent(
             AudioRecording recording,
-            Range<TimeSpan> temporalTarget,
-            Range<double> spectralTarget,
+            Interval<TimeSpan> temporalTarget,
+            Interval<double> spectralTarget,
             EventStatisticsConfiguration config,
             TimeSpan segmentStartOffset)
         {
@@ -77,7 +77,7 @@ namespace AudioAnalysisTools.EventStatistics
 
             if (!recording
                 .Duration
-                .AsRangeFromZero(Topology.Inclusive)
+                .AsIntervalFromZero(Topology.Inclusive)
                 .Contains(localTemporalTarget))
             {
                 stats.Error = true;

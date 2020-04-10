@@ -42,4 +42,7 @@
     <ProjectReference Include="..\..\src\Acoustics.Tools\Acoustics.Tools.csproj" />
     <ProjectReference Include="..\..\src\AcousticWorkbench\AcousticWorkbench.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Shared\Collections\" />
+  </ItemGroup>
 </Project>

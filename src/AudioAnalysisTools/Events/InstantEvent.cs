@@ -4,19 +4,21 @@
 
 namespace AudioAnalysisTools.Events
 {
-    using System;
-    using AnalysisBase.ResultBases;
     using AudioAnalysisTools.Events.Drawing;
     using AudioAnalysisTools.Events.Interfaces;
-    using SixLabors.ImageSharp.PixelFormats;
+    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.Processing;
 
-    public class InstantEvent : EventBase, IInstantEvent, IDrawableEvent
+    public class InstantEvent : EventCommon, IInstantEvent
     {
-        public void Draw<T>(IImageProcessingContext graphics, EventRenderingOptions options)
-            where T : struct, IPixel<T>
+        public override void Draw<T>(IImageProcessingContext graphics, EventRenderingOptions options)
         {
-            throw new NotImplementedException();
+            // simply draw a full-height line
+            var startPixel = options.Converters.SecondsToPixels(this.EventStartSeconds);
+            graphics.NoAA().DrawLine(
+                options.Border,
+                new PointF(startPixel, 0),
+                new PointF(startPixel, graphics.GetCurrentSize().Height));
         }
     }
 }

@@ -21,23 +21,23 @@ namespace Acoustics.Test.AnalysisPrograms.AcousticWorkbench.Orchestration
 
             var segments = new RemoteSegmentWithData[]
             {
-                new RemoteSegmentWithData(audioRecording, new Range<double>(0, 60), 1.AsArray<object>()),
-                new RemoteSegmentWithData(audioRecording, new Range<double>(0, 60), 2.AsArray<object>()),
-                new RemoteSegmentWithData(audioRecording, new Range<double>(33, 93), 3.AsArray<object>()),
-                new RemoteSegmentWithData(audioRecording, new Range<double>(100.375, 160.375), 4.AsArray<object>()),
-                new RemoteSegmentWithData(audioRecording, new Range<double>(100.375, 160.375), 5.AsArray<object>()),
-                new RemoteSegmentWithData(audioRecording, new Range<double>(900, 960), 6.AsArray<object>()),
-                new RemoteSegmentWithData(audioRecording, new Range<double>(0, 60), 7.AsArray<object>()),
+                new RemoteSegmentWithData(audioRecording, new Interval<double>(0, 60), 1.AsArray<object>()),
+                new RemoteSegmentWithData(audioRecording, new Interval<double>(0, 60), 2.AsArray<object>()),
+                new RemoteSegmentWithData(audioRecording, new Interval<double>(33, 93), 3.AsArray<object>()),
+                new RemoteSegmentWithData(audioRecording, new Interval<double>(100.375, 160.375), 4.AsArray<object>()),
+                new RemoteSegmentWithData(audioRecording, new Interval<double>(100.375, 160.375), 5.AsArray<object>()),
+                new RemoteSegmentWithData(audioRecording, new Interval<double>(900, 960), 6.AsArray<object>()),
+                new RemoteSegmentWithData(audioRecording, new Interval<double>(0, 60), 7.AsArray<object>()),
             };
 
             var actual = EventMetadataResolver.DedupeSegments(segments);
 
             var expected = new RemoteSegmentWithData[]
             {
-                new RemoteSegmentWithData(audioRecording, new Range<double>(0, 60), new object[] { 1, 2, 7 }),
-                new RemoteSegmentWithData(audioRecording, new Range<double>(33, 93), 3.AsArray<object>()),
-                new RemoteSegmentWithData(audioRecording, new Range<double>(100.375, 160.375), new object[] { 4, 5 }),
-                new RemoteSegmentWithData(audioRecording, new Range<double>(900, 960), 6.AsArray<object>()),
+                new RemoteSegmentWithData(audioRecording, new Interval<double>(0, 60), new object[] { 1, 2, 7 }),
+                new RemoteSegmentWithData(audioRecording, new Interval<double>(33, 93), 3.AsArray<object>()),
+                new RemoteSegmentWithData(audioRecording, new Interval<double>(100.375, 160.375), new object[] { 4, 5 }),
+                new RemoteSegmentWithData(audioRecording, new Interval<double>(900, 960), 6.AsArray<object>()),
             };
 
             Assert.AreEqual(expected.Length, actual.Length);

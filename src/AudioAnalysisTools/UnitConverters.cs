@@ -6,6 +6,7 @@ namespace AudioAnalysisTools
 {
     using Acoustics.Shared;
     using AudioAnalysisTools.Events.Interfaces;
+    using AudioAnalysisTools.Scales;
     using SixLabors.ImageSharp;
 
     public class UnitConverters
@@ -63,6 +64,13 @@ namespace AudioAnalysisTools
             return new PointF(
                 (float)this.TemporalScale.To(@event.EventStartSeconds),
                 (float)this.SpectralScale.To(@event.LowFrequencyHertz));
+        }
+
+        public PointF GetPoint(ISpectralPoint point)
+        {
+            return new PointF(
+                (float)this.TemporalScale.To(point.Seconds.Minimum),
+                (float)this.SpectralScale.To(point.Hertz.Minimum));
         }
 
         public SizeF GetSize(ISpectralEvent @event)

@@ -1,5 +1,5 @@
 // --------------------------------------------------------------------------------------------------------------------
-// <copyright file="Range.cs" company="QutEcoacoustics">
+// <copyright file="Interval.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
@@ -10,6 +10,7 @@
 namespace Acoustics.Shared
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
 
     public enum Topology : byte
     {
@@ -36,22 +37,21 @@ namespace Acoustics.Shared
     }
 
     /// <summary>
-    /// Represents a range between two points on the same dimenson.
-    /// This type does not encode any notion of endpoint clusivity - we do not know if a range is left-open, right-open,
-    /// open, or closed.
+    /// Represents a interval between two points on the same dimension.
+    /// Encoding boundness is left up to the type used.
     /// </summary>
     /// <typeparam name="T">
-    /// The type used to represent the points in this range.
+    /// The type used to represent the points in this interval.
     /// </typeparam>
-    public readonly struct Range<T> : IEquatable<Range<T>>, IComparable<Range<T>>
+    public readonly struct Interval<T> : IEquatable<Interval<T>>, IComparable<Interval<T>>
         where T : struct, IComparable<T>
     {
-        public Range(T minimum, T maximum)
+        public Interval(T minimum, T maximum)
         {
             if (minimum.CompareTo(maximum) == 1)
             {
                 throw new ArgumentException(
-                    $"Range's minimum ({minimum}) must be less than the maximum ({maximum})",
+                    $"{nameof(Interval<T>)}'s minimum ({minimum}) must be less than the maximum ({maximum})",
                     nameof(minimum));
             }
 
@@ -60,12 +60,12 @@ namespace Acoustics.Shared
             this.Topology = Topology.Default;
         }
 
-        public Range(T minimum, T maximum, Topology topology)
+        public Interval(T minimum, T maximum, Topology topology)
         {
             if (minimum.CompareTo(maximum) == 1)
             {
                 throw new ArgumentException(
-                    $"Range's minimum ({minimum}) must be less than the maximum ({maximum})",
+                    $"{nameof(Interval<T>)}'s minimum ({minimum}) must be less than the maximum ({maximum})",
                     nameof(minimum));
             }
 
@@ -91,19 +91,37 @@ namespace Acoustics.Shared
 
         public bool IsEmpty => this.Minimum.Equals(this.Maximum);
 
+        public bool IsDegenerate => this.IsEmpty;
+
+        public bool IsProper => !this.IsEmpty;
+
         public bool IsDefault => this.Equals(default);
 
         public bool IsMinimumInclusive => this.Topology == Topology.LeftClosedRightOpen || this.Topology == Topology.Closed;
 
         public bool IsMaximumInclusive => this.Topology == Topology.LeftOpenRightClosed || this.Topology == Topology.Closed;
 
+        public bool IsOpen => this.Topology == Topology.Open;
+
+        public bool IsClosed => this.Topology == Topology.Closed;
+
+        public static implicit operator Interval<T>((T Minimum, T Maximum) item)
+        {
+            return new Interval<T>(item.Minimum, item.Maximum);
+        }
+
+        public static implicit operator Interval<T>((T Minimum, T Maximum, Topology Topology) item)
+        {
+            return new Interval<T>(item.Minimum, item.Maximum, item.Topology);
+        }
+
         /// <summary>
         /// Equals operator.
         /// </summary>
-        /// <param name="first">The first range.</param>
-        /// <param name="second">The second range.</param>
+        /// <param name="first">The first interval.</param>
+        /// <param name="second">The second interval.</param>
         /// <returns>True if equal, otherwise false.</returns>
-        public static bool operator ==(Range<T> first, Range<T> second)
+        public static bool operator ==(Interval<T> first, Interval<T> second)
         {
             return first.Equals(second);
         }
@@ -120,7 +138,7 @@ namespace Acoustics.Shared
         /// <returns>
         /// True if not equals, otherwise false.
         /// </returns>
-        public static bool operator !=(Range<T> first, Range<T> second)
+        public static bool operator !=(Interval<T> first, Interval<T> second)
         {
             return !(first == second);
         }
@@ -131,43 +149,49 @@ namespace Acoustics.Shared
                    ScalarEqualOrLessThanAnchor(scalar, this.Maximum, this.IsMaximumInclusive);
         }
 
-        public bool Contains(Range<T> range)
+        public bool Contains(Interval<T> interval)
         {
             return ScalarEqualOrGreaterThanAnchor(
-                       range.Minimum,
+                       interval.Minimum,
                        this.Minimum,
-                       this.IsMinimumInclusive || (!this.IsMinimumInclusive && !range.IsMinimumInclusive))
+                       this.IsMinimumInclusive || (!this.IsMinimumInclusive && !interval.IsMinimumInclusive))
                    && ScalarEqualOrLessThanAnchor(
-                       range.Maximum,
+                       interval.Maximum,
                        this.Maximum,
-                       this.IsMaximumInclusive || (!this.IsMaximumInclusive && !range.IsMaximumInclusive));
+                       this.IsMaximumInclusive || (!this.IsMaximumInclusive && !interval.IsMaximumInclusive));
         }
 
-        public bool IntersectsWith(Range<T> range)
+        public bool IntersectsWith(Interval<T> interval)
         {
             return ScalarEqualOrGreaterThanAnchor(
-                       range.Maximum,
+                       interval.Maximum,
                        this.Minimum,
-                       range.IsMaximumInclusive || this.IsMinimumInclusive) &&
+                       interval.IsMaximumInclusive || this.IsMinimumInclusive) &&
                    ScalarEqualOrLessThanAnchor(
-                       range.Minimum,
+                       interval.Minimum,
                        this.Maximum,
-                       range.IsMinimumInclusive || this.IsMaximumInclusive);
+                       interval.IsMinimumInclusive || this.IsMaximumInclusive);
         }
 
-        public bool TryGetUnion(Range<T> range, out Range<T> union)
+        public bool TryGetUnion(Interval<T> interval, out Interval<T> union)
         {
-            if (this.IntersectsWith(range))
+            if (this.IntersectsWith(interval))
             {
-                T newMin = this.Minimum.CompareTo(range.Minimum) < 0 ? this.Minimum : range.Minimum;
-                T newMax = this.Maximum.CompareTo(range.Maximum) > 0 ? this.Maximum : range.Maximum;
+                T newMin = this.Minimum.CompareTo(interval.Minimum) < 0 ? this.Minimum : interval.Minimum;
+                T newMax = this.Maximum.CompareTo(interval.Maximum) > 0 ? this.Maximum : interval.Maximum;
 
-                union = new Range<T>(newMin, newMax, this.CombineTopology(range));
+                union = new Interval<T>(newMin, newMax, this.CombineTopology(interval));
                 return true;
             }
 
             union = default;
             return false;
+        }
+
+        public void Deconstruct(out T minimum, out T maximum)
+        {
+            minimum = this.Minimum;
+            maximum = this.Maximum;
         }
 
         /// <summary>
@@ -179,7 +203,7 @@ namespace Acoustics.Shared
         /// <param name="other">
         /// An object to compare with this object.
         /// </param>
-        public bool Equals(Range<T> other)
+        public bool Equals(Interval<T> other)
         {
             return this.Minimum.Equals(other.Minimum) && this.Maximum.Equals(other.Maximum) && this.Topology == other.Topology;
         }
@@ -195,12 +219,12 @@ namespace Acoustics.Shared
         /// </returns>
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj))
+            if (obj is null)
             {
                 return false;
             }
 
-            return obj is Range<T> range && this.Equals(range);
+            return obj is Interval<T> interval && this.Equals(interval);
         }
 
         /// <summary>
@@ -221,8 +245,7 @@ namespace Acoustics.Shared
         }
 
         /// <summary>
-        /// Gets string representation of the Range.
-        /// Note: our range has no notion of inclusive or exclusive endpoints, thus the square bracket notation is
+        /// Gets string representation of the Interval.
         /// technially incorrectly representing this value.
         /// </summary>
         /// <returns>
@@ -232,10 +255,10 @@ namespace Acoustics.Shared
         {
             var left = this.IsMinimumInclusive ? "[" : "(";
             var right = this.IsMaximumInclusive ? "]" : ")";
-            return $"Range: {left}{this.Minimum}, {this.Maximum}{right}";
+            return $"{nameof(Interval<T>)}: {left}{this.Minimum}, {this.Maximum}{right}";
         }
 
-        public int CompareTo(Range<T> other)
+        public int CompareTo(Interval<T> other)
         {
             var minimumComparison = this.Minimum.CompareTo(other.Minimum);
 
@@ -247,7 +270,7 @@ namespace Acoustics.Shared
             return this.Maximum.CompareTo(other.Maximum);
         }
 
-        public Topology CombineTopology(Range<T> second)
+        public Topology CombineTopology(Interval<T> second)
         {
             if (this.Topology == second.Topology)
             {
@@ -327,8 +350,8 @@ namespace Acoustics.Shared
             return result;
         }
 
-        private bool IsBothMinimumInclusive(Range<T> other) => this.IsMinimumInclusive && other.IsMinimumInclusive;
+        private bool IsBothMinimumInclusive(Interval<T> other) => this.IsMinimumInclusive && other.IsMinimumInclusive;
 
-        private bool IsBothMaximumInclusive(Range<T> other) => this.IsMaximumInclusive && other.IsMaximumInclusive;
+        private bool IsBothMaximumInclusive(Interval<T> other) => this.IsMaximumInclusive && other.IsMaximumInclusive;
     }
 }

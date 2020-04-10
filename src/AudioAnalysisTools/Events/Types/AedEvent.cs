@@ -5,10 +5,20 @@
 namespace AudioAnalysisTools.Events
 {
     using System.Collections.Generic;
+    using AudioAnalysisTools.Events.Drawing;
+    using SixLabors.ImageSharp.Processing;
 
     public class AedEvent : SpectralEvent, IPointData
     {
 
-        public ISet<ISpectralPoint> Points => throw new System.NotImplementedException();
+        public ISet<ISpectralPoint> Points { get; } = new HashSet<ISpectralPoint>();
+
+        public override void Draw<T>(IImageProcessingContext graphics, EventRenderingOptions options)
+        {
+            ((IPointData)this).DrawPointsAsFill(graphics, options);
+
+            //  base drawing (border)
+            base.Draw<T>(graphics, options);
+        }
     }
 }

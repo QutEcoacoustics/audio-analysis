@@ -76,7 +76,7 @@ namespace Acoustics.Shared.Extensions
             return new DateTimeOffset(randomTick, (TimeSpan)minimum?.Offset);
         }
 
-        public static Range<double> NextRange(this Random random, double min = 0, double max = 1.0)
+        public static Interval<double> NextRange(this Random random, double min = 0, double max = 1.0)
         {
             var delta = max - min;
             var a = (random.NextDouble() * delta) + min;
@@ -84,11 +84,11 @@ namespace Acoustics.Shared.Extensions
 
             if (a < b)
             {
-                return new Range<double>(a, b);
+                return new Interval<double>(a, b);
             }
             else
             {
-                return new Range<double>(b, a);
+                return new Interval<double>(b, a);
             }
         }
 

@@ -46,11 +46,11 @@ namespace Acoustics.Test.AnalysisPrograms.SourcePreparers
 
             var expected = new[]
             {
-                (0.0, 60.0).AsRange(),
-                (60.0, 120.0).AsRange(),
-                (120.0, 180.0).AsRange(),
-                (180.0, 240.0).AsRange(),
-                (240.0, 240.113).AsRange(),
+                (0.0, 60.0).AsInterval(),
+                (60.0, 120.0).AsInterval(),
+                (120.0, 180.0).AsInterval(),
+                (180.0, 240.0).AsInterval(),
+                (240.0, 240.113).AsInterval(),
             };
 
             for (int i = 0; i < analysisSegments.Length; i++)
@@ -69,16 +69,18 @@ namespace Acoustics.Test.AnalysisPrograms.SourcePreparers
         public void ShouldHonorLimits()
         {
             var source = TestHelper.AudioDetails[this.sourceFile.Name];
-            var fileSegment = new FileSegment(this.sourceFile, source.SampleRate.Value, source.Duration.Value);
-            fileSegment.SegmentStartOffset = TimeSpan.FromMinutes(1);
-            fileSegment.SegmentEndOffset = TimeSpan.FromMinutes(3);
+            var fileSegment = new FileSegment(this.sourceFile, source.SampleRate.Value, source.Duration.Value)
+            {
+                SegmentStartOffset = TimeSpan.FromMinutes(1),
+                SegmentEndOffset = TimeSpan.FromMinutes(3),
+            };
 
             var analysisSegments = this.preparer.CalculateSegments(new[] { fileSegment }, this.settings).ToArray();
 
             var expected = new[]
             {
-                (60.0, 120.0).AsRange(),
-                (120.0, 180.0).AsRange(),
+                (60.0, 120.0).AsInterval(),
+                (120.0, 180.0).AsInterval(),
             };
 
             AssertSegmentsAreEqual(analysisSegments, expected);
@@ -96,11 +98,11 @@ namespace Acoustics.Test.AnalysisPrograms.SourcePreparers
 
             var expected = new[]
             {
-                (0.0, 60.0 + 30.0).AsRange(),
-                (60.0, 120.0 + 30.0).AsRange(),
-                (120.0, 180.0 + 30.0).AsRange(),
-                (180.0, 240.0 + 0.113).AsRange(),
-                (240.0, 240.113).AsRange(),
+                (0.0, 60.0 + 30.0).AsInterval(),
+                (60.0, 120.0 + 30.0).AsInterval(),
+                (120.0, 180.0 + 30.0).AsInterval(),
+                (180.0, 240.0 + 0.113).AsInterval(),
+                (240.0, 240.113).AsInterval(),
             };
 
             AssertSegmentsAreEqual(analysisSegments, expected);
@@ -118,10 +120,10 @@ namespace Acoustics.Test.AnalysisPrograms.SourcePreparers
 
             var expected = new[]
             {
-                (0.0, 60.0).AsRange(),
-                (60.0, 120.0).AsRange(),
-                (120.0, 180.0).AsRange(),
-                (180.0, 240.0).AsRange(),
+                (0.0, 60.0).AsInterval(),
+                (60.0, 120.0).AsInterval(),
+                (120.0, 180.0).AsInterval(),
+                (180.0, 240.0).AsInterval(),
             };
             AssertSegmentsAreEqual(analysisSegments, expected);
         }
@@ -138,11 +140,11 @@ namespace Acoustics.Test.AnalysisPrograms.SourcePreparers
 
             var expected = new[]
             {
-                (0.0, 60.0).AsRange(),
-                (60.0, 120.0).AsRange(),
-                (120.0, 180.0).AsRange(),
-                (180.0, 240.0).AsRange(),
-                (240.0, 240.112993).AsRange(),
+                (0.0, 60.0).AsInterval(),
+                (60.0, 120.0).AsInterval(),
+                (120.0, 180.0).AsInterval(),
+                (180.0, 240.0).AsInterval(),
+                (240.0, 240.112993).AsInterval(),
             };
 
             AssertSegmentsAreEqual(analysisSegments, expected);
@@ -167,17 +169,18 @@ namespace Acoustics.Test.AnalysisPrograms.SourcePreparers
             var newFile = this.testDirectory.CombineFile("4minute test_20161006-013012Z.mp3");
             this.sourceFile.CopyTo(newFile.FullName);
 
-            var fileSegment = new FileSegment(newFile, TimeAlignment.TrimBoth);
-
-            fileSegment.SegmentStartOffset = TimeSpan.FromMinutes(1);
-            fileSegment.SegmentEndOffset = TimeSpan.FromMinutes(3);
+            var fileSegment = new FileSegment(newFile, TimeAlignment.TrimBoth)
+            {
+                SegmentStartOffset = TimeSpan.FromMinutes(1),
+                SegmentEndOffset = TimeSpan.FromMinutes(3)
+            };
 
             var analysisSegments = this.preparer.CalculateSegments(new[] { fileSegment }, this.settings).ToArray();
 
             var d = 48.0;
             var expected = new[]
             {
-                (60.0 + d, 120.0 + d).AsRange(),
+                (60.0 + d, 120.0 + d).AsInterval(),
             };
 
             AssertSegmentsAreEqual(analysisSegments, expected);
@@ -198,9 +201,9 @@ namespace Acoustics.Test.AnalysisPrograms.SourcePreparers
             var d = 48.0;
             var expected = new[]
             {
-                (0.0 + d, 60.0 + d).AsRange(),
-                (60.0 + d, 120.0 + d).AsRange(),
-                (120.0 + d, 180.0 + d).AsRange(),
+                (0.0 + d, 60.0 + d).AsInterval(),
+                (60.0 + d, 120.0 + d).AsInterval(),
+                (120.0 + d, 180.0 + d).AsInterval(),
             };
 
             AssertSegmentsAreEqual(analysisSegments, expected);
@@ -221,11 +224,11 @@ namespace Acoustics.Test.AnalysisPrograms.SourcePreparers
             var d = 48.0;
             var expected = new[]
             {
-                (0.0,  d).AsRange(),
-                (0.0 + d, 60.0 + d).AsRange(),
-                (60.0 + d, 120.0 + d).AsRange(),
-                (120.0 + d, 180.0 + d).AsRange(),
-                (180.0 + d, 240.112993).AsRange(),
+                (0.0,  d).AsInterval(),
+                (0.0 + d, 60.0 + d).AsInterval(),
+                (60.0 + d, 120.0 + d).AsInterval(),
+                (120.0 + d, 180.0 + d).AsInterval(),
+                (180.0 + d, 240.112993).AsInterval(),
             };
 
             AssertSegmentsAreEqual(analysisSegments, expected);
@@ -246,10 +249,10 @@ namespace Acoustics.Test.AnalysisPrograms.SourcePreparers
             var d = 48.0;
             var expected = new[]
             {
-                (0.0 + d, 60.0 + d).AsRange(),
-                (60.0 + d, 120.0 + d).AsRange(),
-                (120.0 + d, 180.0 + d).AsRange(),
-                (180.0 + d, 240.112993).AsRange(),
+                (0.0 + d, 60.0 + d).AsInterval(),
+                (60.0 + d, 120.0 + d).AsInterval(),
+                (120.0 + d, 180.0 + d).AsInterval(),
+                (180.0 + d, 240.112993).AsInterval(),
             };
 
             AssertSegmentsAreEqual(analysisSegments, expected);
@@ -270,16 +273,16 @@ namespace Acoustics.Test.AnalysisPrograms.SourcePreparers
             var d = 48.0;
             var expected = new[]
             {
-                (0.0, d).AsRange(),
-                (0.0 + d, 60.0 + d).AsRange(),
-                (60.0 + d, 120.0 + d).AsRange(),
-                (120.0 + d, 180.0 + d).AsRange(),
+                (0.0, d).AsInterval(),
+                (0.0 + d, 60.0 + d).AsInterval(),
+                (60.0 + d, 120.0 + d).AsInterval(),
+                (120.0 + d, 180.0 + d).AsInterval(),
             };
 
             AssertSegmentsAreEqual(analysisSegments, expected);
         }
 
-        private static void AssertSegmentsAreEqual(ISegment<FileInfo>[] acutal, Range<double>[] expected)
+        private static void AssertSegmentsAreEqual(ISegment<FileInfo>[] acutal, Interval<double>[] expected)
         {
             Assert.AreEqual(acutal.Length, expected.Length, "The number of segments in actual and expected do not match");
 

@@ -9,25 +9,35 @@ namespace AudioAnalysisTools
     using System.Linq;
     using AnalysisBase.ResultBases;
     using AudioAnalysisTools.Events;
+    using AudioAnalysisTools.Events.Drawing;
+    using AudioAnalysisTools.Events.Interfaces;
+    using SixLabors.ImageSharp.Processing;
 
     public class CompositeEvent : SpectralEvent
     {
-        public List<EventBase> ComponentEvents { get; set; } = new List<EventBase>();
+        public List<EventCommon> ComponentEvents { get; set; } = new List<EventCommon>();
 
         public override double EventStartSeconds =>
             this.ComponentEvents.Min(x => x.EventStartSeconds);
 
-        // TODO rest
+        public override double EventEndSeconds =>
+            this.ComponentEvents.Max(x => (x as ITemporalEvent)?.EventEndSeconds) ?? double.PositiveInfinity;
 
-        //public override void Draw()
-        //{
-        //    foreach(var @event in this.ComponentEvents)
-        //    {
-        //        @event.Draw();
-        //    }
+        public override double LowFrequencyHertz =>
+            this.ComponentEvents.Min(x => (x as ISpectralEvent)?.LowFrequencyHertz) ?? 0;
 
-        //    // draw a border around all of it
-        //    //DrawRectangle(this.EventStartSeconds, this.)
-        //}
+        public override double HighFrequencyHertz =>
+            this.ComponentEvents.Max(x => (x as ISpectralEvent)?.HighFrequencyHertz) ?? double.PositiveInfinity;
+
+        public override void Draw<T>(IImageProcessingContext graphics, EventRenderingOptions options)
+        {
+            foreach (var @event in this.ComponentEvents)
+            {
+                @event.Draw<T>(graphics, options);
+            }
+
+            // draw a border around all of it
+            base.Draw<T>(graphics, options);
+        }
     }
 }

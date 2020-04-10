@@ -188,11 +188,11 @@ namespace AnalysisPrograms.AcousticWorkbench.Orchestration
             // now generate the segments
             // we need to floor the duration to ensure later rounding does round past the limit of the recording
             Log.Verbose($"Audio recording duration {audioRecording.DurationSeconds} will be floored");
-            var limit = audioRecording.DurationSeconds.Floor().AsRangeFromZero();
+            var limit = audioRecording.DurationSeconds.Floor().AsIntervalFromZero();
             var results = new List<RemoteSegmentWithData>(20);
             foreach (var importedEvent in events)
             {
-                var target = (importedEvent.EventStartSeconds.Value, importedEvent.EventEndSeconds.Value).AsRange();
+                var target = (importedEvent.EventStartSeconds.Value, importedEvent.EventEndSeconds.Value).AsInterval();
 
                 // determine how much padding is required (dynamically scales with event size
                 var padding = this.AnalysisDurationSeconds(target.Size());

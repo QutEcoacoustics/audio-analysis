@@ -8,19 +8,17 @@ namespace AudioAnalysisTools.Events
     using AudioAnalysisTools.Events.Drawing;
     using AudioAnalysisTools.Events.Interfaces;
     using SixLabors.ImageSharp;
-    using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
 
-    public class SpectralEvent : EventBase, ISpectralEvent, ITemporalEvent, IDrawableEvent
+    public class SpectralEvent : EventCommon, ISpectralEvent, ITemporalEvent
     {
-        public double EventEndSeconds { get; set; }
+        public virtual double EventEndSeconds { get; set; }
 
-        public double HighFrequencyHertz { get; set; }
+        public virtual double HighFrequencyHertz { get; set; }
 
-        public double LowFrequencyHertz { get; set; }
+        public virtual double LowFrequencyHertz { get; set; }
 
-        public virtual void Draw<T>(IImageProcessingContext graphics, EventRenderingOptions options)
-            where T : struct, IPixel<T>
+        public override void Draw<T>(IImageProcessingContext graphics, EventRenderingOptions options)
         {
             // draw a border around this event
             var border = options.Converters.GetPixelRectangle(this);
@@ -29,6 +27,5 @@ namespace AudioAnalysisTools.Events
             // draw event title
             // TODO
         }
-
     }
 }

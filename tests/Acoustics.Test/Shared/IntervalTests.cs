@@ -1,4 +1,4 @@
-// <copyright file="RangeTests.cs" company="QutEcoacoustics">
+// <copyright file="IntervalTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -9,7 +9,7 @@ namespace Acoustics.Test.Shared
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class RangeTests
+    public class IntervalTests
     {
         [TestMethod]
         public void EnsuresMinimumIsLessThanMaximum()
@@ -17,34 +17,52 @@ namespace Acoustics.Test.Shared
             Assert.ThrowsException<ArgumentException>(
                 () =>
                 {
-                    new Range<int>(10, 3);
+                    new Interval<int>(10, 3);
                 });
 
             Assert.ThrowsException<ArgumentException>(
                 () =>
                 {
-                    new Range<double>(-10, -40);
+                    new Interval<double>(-10, -40);
                 });
 
             Assert.ThrowsException<ArgumentException>(
                 () =>
                 {
-                    new Range<TimeSpan>(10.Seconds(), 3.Seconds());
+                    new Interval<TimeSpan>(10.Seconds(), 3.Seconds());
                 });
 
             Assert.ThrowsException<ArgumentException>(
                 () =>
                 {
-                    new Range<double>(double.Epsilon, 0.0);
+                    new Interval<double>(double.Epsilon, 0.0);
                 });
+        }
+
+        [TestMethod]
+        public void ImplicitCastConstructionWorks()
+        {
+            var a = new Interval<double>(5, 10);
+            Interval<double> b = (5, 10);
+
+            Assert.AreEqual(a, b);
+        }
+
+        [TestMethod]
+        public void ImplicitCastConstructionWithTopologyWorks()
+        {
+            var a = new Interval<double>(5, 10, Topology.LeftClosedRightOpen);
+            Interval<double> b = (5, 10, Topology.LeftClosedRightOpen);
+
+            Assert.AreEqual(a, b);
         }
 
         [TestMethod]
         public void EqualityOperatorWorks()
         {
-            var a = new Range<double>(5, 10);
-            var b = new Range<double>(5, 10);
-            var c = new Range<double>(5, 10.004);
+            var a = new Interval<double>(5, 10);
+            var b = new Interval<double>(5, 10);
+            var c = new Interval<double>(5, 10.004);
 
             Assert.IsTrue(a == b);
             Assert.IsFalse(a == c);
@@ -53,20 +71,29 @@ namespace Acoustics.Test.Shared
         [TestMethod]
         public void InequalityOperatorWorks()
         {
-            var a = new Range<double>(5, 10);
-            var b = new Range<double>(5, 10);
-            var c = new Range<double>(5, 10.004);
+            var a = new Interval<double>(5, 10);
+            var b = new Interval<double>(5, 10);
+            var c = new Interval<double>(5, 10.004);
 
             Assert.IsTrue(a != c);
             Assert.IsFalse(a != b);
         }
 
         [TestMethod]
+        public void DeconstructionWorks()
+        {
+            var (min, max) = new Interval<double>(5, 10);
+
+            Assert.AreEqual(5, min);
+            Assert.AreEqual(10, max);
+        }
+
+        [TestMethod]
         public void GetHashCodeWorks()
         {
-            var a = new Range<double>(5, 10);
-            var b = new Range<double>(5, 10);
-            var c = new Range<double>(5, 10.004);
+            var a = new Interval<double>(5, 10);
+            var b = new Interval<double>(5, 10);
+            var c = new Interval<double>(5, 10.004);
 
             Assert.AreEqual(a.GetHashCode(), b.GetHashCode());
             Assert.AreNotEqual(a.GetHashCode(), c.GetHashCode());
@@ -75,15 +102,15 @@ namespace Acoustics.Test.Shared
         [TestMethod]
         public void ToStringWorks()
         {
-            var a = new Range<double>(5, 10);
-            var b = new Range<double>(5, 10, Topology.Open);
-            var c = new Range<double>(5, 10.004, Topology.Closed);
-            var d = new Range<double>(5, 10.004, Topology.LeftOpenRightClosed);
+            var a = new Interval<double>(5, 10);
+            var b = new Interval<double>(5, 10, Topology.Open);
+            var c = new Interval<double>(5, 10.004, Topology.Closed);
+            var d = new Interval<double>(5, 10.004, Topology.LeftOpenRightClosed);
 
-            Assert.AreEqual("Range: [5, 10)", a.ToString());
-            Assert.AreEqual("Range: (5, 10)", b.ToString());
-            Assert.AreEqual("Range: [5, 10.004]", c.ToString());
-            Assert.AreEqual("Range: (5, 10.004]", d.ToString());
+            Assert.AreEqual("Interval: [5, 10)", a.ToString());
+            Assert.AreEqual("Interval: (5, 10)", b.ToString());
+            Assert.AreEqual("Interval: [5, 10.004]", c.ToString());
+            Assert.AreEqual("Interval: (5, 10.004]", d.ToString());
         }
 
         [DataTestMethod]
@@ -94,16 +121,39 @@ namespace Acoustics.Test.Shared
         [DataRow(5, 50, 5, 30, 1)]
         public void CompareToWorks(double a1, double a2, double b1, double b2, int order)
         {
-            var a = (a1, a2).AsRange();
-            var b = (b1, b2).AsRange();
+            var a = (a1, a2).AsInterval();
+            var b = (b1, b2).AsInterval();
 
             Assert.AreEqual(order, a.CompareTo(b));
         }
 
         [TestMethod]
+        public void IsEmptyWorks()
+        {
+            var a = new Interval<double>(5, 5);
+
+            Assert.IsTrue(a.IsEmpty);
+            Assert.IsTrue(a.IsDegenerate);
+            Assert.IsFalse(a.IsProper);
+        }
+
+        [DataTestMethod]
+        [DataRow(Topology.Open, true, false)]
+        [DataRow(Topology.Closed, false, true)]
+        [DataRow(Topology.LeftClosedRightOpen, false, false)]
+        [DataRow(Topology.LeftOpenRightClosed, false, false)]
+        public void IsOpenAndIsClosedWork(Topology topology, bool open, bool closed)
+        {
+            var a = new Interval<double>(5, 5, topology);
+
+            Assert.AreEqual(open, a.IsOpen);
+            Assert.AreEqual(closed, a.IsClosed);
+        }
+
+        [TestMethod]
         public void DoubleCenterWorks()
         {
-            var a = new Range<double>(5, 10);
+            var a = new Interval<double>(5, 10);
 
             Assert.AreEqual(7.5, a.Center());
         }
@@ -111,7 +161,7 @@ namespace Acoustics.Test.Shared
         [TestMethod]
         public void TimeSpanCenterWorks()
         {
-            var a = new Range<double>(5, 10);
+            var a = new Interval<double>(5, 10);
 
             Assert.AreEqual(7.5, a.Center());
         }
@@ -119,7 +169,7 @@ namespace Acoustics.Test.Shared
         [TestMethod]
         public void DoubleSizeWorks()
         {
-            var a = new Range<double>(5, 10);
+            var a = new Interval<double>(5, 10);
 
             Assert.AreEqual(5.0, a.Size());
         }
@@ -127,7 +177,7 @@ namespace Acoustics.Test.Shared
         [TestMethod]
         public void TimeSpanSizeWorks()
         {
-            var a = new Range<TimeSpan>(5.Seconds(), 10.Seconds());
+            var a = new Interval<TimeSpan>(5.Seconds(), 10.Seconds());
 
             Assert.AreEqual(5.0.Seconds(), a.Size());
         }
@@ -135,67 +185,67 @@ namespace Acoustics.Test.Shared
         [TestMethod]
         public void DoubleShiftWorks()
         {
-            var a = new Range<double>(5, 10);
+            var a = new Interval<double>(5, 10);
 
-            Assert.AreEqual((20.0, 25.0).AsRange(), a.Shift(15));
-            Assert.AreEqual((-310.0, -305.0).AsRange(), a.Shift(-315));
+            Assert.AreEqual((20.0, 25.0).AsInterval(), a.Shift(15));
+            Assert.AreEqual((-310.0, -305.0).AsInterval(), a.Shift(-315));
         }
 
         [TestMethod]
         public void TimeSpanShiftWorks()
         {
-            var a = new Range<TimeSpan>(5.Seconds(), 10.Seconds());
+            var a = new Interval<TimeSpan>(5.Seconds(), 10.Seconds());
 
-            Assert.AreEqual((20.Seconds(), 25.Seconds()).AsRange(), a.Shift(15.Seconds()));
-            Assert.AreEqual((-310.Seconds(), -305.Seconds()).AsRange(), a.Shift(-315.Seconds()));
+            Assert.AreEqual((20.Seconds(), 25.Seconds()).AsInterval(), a.Shift(15.Seconds()));
+            Assert.AreEqual((-310.Seconds(), -305.Seconds()).AsInterval(), a.Shift(-315.Seconds()));
         }
 
         [TestMethod]
         public void DoubleAddWorks()
         {
-            var a = new Range<double>(5, 10);
-            var b = new Range<double>(3, 15);
-            var c = new Range<double>(15, 100);
+            var a = new Interval<double>(5, 10);
+            var b = new Interval<double>(3, 15);
+            var c = new Interval<double>(15, 100);
 
-            Assert.AreEqual((8.0, 25.0).AsRange(), a.Add(b));
-            Assert.AreEqual((20.0, 110.0).AsRange(), a.Add(c));
+            Assert.AreEqual((8.0, 25.0).AsInterval(), a.Add(b));
+            Assert.AreEqual((20.0, 110.0).AsInterval(), a.Add(c));
         }
 
         [TestMethod]
         public void DoubleSubtractWorks()
         {
-            var a = new Range<double>(5, 10);
-            var b = new Range<double>(3, 15);
-            var c = new Range<double>(15, 100);
+            var a = new Interval<double>(5, 10);
+            var b = new Interval<double>(3, 15);
+            var c = new Interval<double>(15, 100);
 
-            Assert.AreEqual((-10.0, 7.0).AsRange(), a.Subtract(b));
-            Assert.AreEqual((-95.0, -5.0).AsRange(), a.Subtract(c));
+            Assert.AreEqual((-10.0, 7.0).AsInterval(), a.Subtract(b));
+            Assert.AreEqual((-95.0, -5.0).AsInterval(), a.Subtract(c));
         }
 
         [TestMethod]
         public void DoubleMultiplyWorks()
         {
-            var a = new Range<double>(5, 10);
-            var b = new Range<double>(3, 15);
-            var c = new Range<double>(15, 100);
+            var a = new Interval<double>(5, 10);
+            var b = new Interval<double>(3, 15);
+            var c = new Interval<double>(15, 100);
 
-            Assert.AreEqual((15.0, 150.0).AsRange(), a.Multiply(b));
-            Assert.AreEqual((75.0, 1000.0).AsRange(), a.Multiply(c));
+            Assert.AreEqual((15.0, 150.0).AsInterval(), a.Multiply(b));
+            Assert.AreEqual((75.0, 1000.0).AsInterval(), a.Multiply(c));
         }
 
         [TestMethod]
         public void DoubleDivideWorks()
         {
-            var a = new Range<double>(5, 10);
-            var b = new Range<double>(3, 15); // [1/15, 1/3]
-            var c = new Range<double>(15, 100); // [1/100, 1/15]
+            var a = new Interval<double>(5, 10);
+            var b = new Interval<double>(3, 15); // [1/15, 1/3]
+            var c = new Interval<double>(15, 100); // [1/100, 1/15]
 
             var abActual = a.Divide(b);
-            var abExpected = (1 / 3.0, 10 / 3.0).AsRange();
+            var abExpected = (1 / 3.0, 10 / 3.0).AsInterval();
             Assert.AreEqual(abExpected.Minimum, abActual.Minimum, 0.0000000000001);
             Assert.AreEqual(abExpected.Maximum, abActual.Maximum, 0.0000000000001);
             var acActual = a.Divide(c);
-            var acExpected = (0.05, 10.0 / 15.0).AsRange();
+            var acExpected = (0.05, 10.0 / 15.0).AsInterval();
             Assert.AreEqual(acExpected.Minimum, acActual.Minimum, 0.0000000000001);
             Assert.AreEqual(acExpected.Maximum, acActual.Maximum, 0.0000000000001);
         }
@@ -203,13 +253,13 @@ namespace Acoustics.Test.Shared
         [TestMethod]
         public void DoubleInvertWorks()
         {
-            var a = new Range<double>(5, 10);
-            var b = new Range<double>(-3, 0);
-            var c = new Range<double>(0, 100);
+            var a = new Interval<double>(5, 10);
+            var b = new Interval<double>(-3, 0);
+            var c = new Interval<double>(0, 100);
 
-            Assert.AreEqual((1.0 / 10, 1.0 / 5).AsRange(), a.Invert());
-            Assert.AreEqual((double.NegativeInfinity, 1.0 / -3).AsRange(), b.Invert());
-            Assert.AreEqual((1.0 / 100.0, double.PositiveInfinity).AsRange(), c.Invert());
+            Assert.AreEqual((1.0 / 10, 1.0 / 5).AsInterval(), a.Invert());
+            Assert.AreEqual((double.NegativeInfinity, 1.0 / -3).AsInterval(), b.Invert());
+            Assert.AreEqual((1.0 / 100.0, double.PositiveInfinity).AsInterval(), c.Invert());
         }
 
         [DataTestMethod]
@@ -228,9 +278,9 @@ namespace Acoustics.Test.Shared
 #pragma warning restore SA1139 // Use literal suffix notation instead of casting
         public void DoubleGrowWorks(double a1, double a2, double b1, double b2, int? roundDigits, double c1, double c2)
         {
-            var target = a1.To(a2);
-            var limit = b1.To(b2);
-            var expected = c1.To(c2);
+            var target = a1.AsIntervalTo(a2);
+            var limit = b1.AsIntervalTo(b2);
+            var expected = c1.AsIntervalTo(c2);
 
             var actual = target.Grow(limit, 60.0, roundDigits);
 
@@ -252,7 +302,7 @@ namespace Acoustics.Test.Shared
         [DataRow(100, 300, 300, Topology.LeftOpenRightClosed, true)]
         public void DoubleContainsWorks(double a1, double a2, double scalar, Topology? type, bool result)
         {
-            var range = a1.To(a2, type ?? Topology.Default);
+            var range = a1.AsIntervalTo(a2, type ?? Topology.Default);
 
             var actual = type.HasValue ? range.Contains(scalar, type.Value) : range.Contains(scalar);
 
@@ -277,8 +327,8 @@ namespace Acoustics.Test.Shared
         [DataRow(100, 300, 300, 400, Topology.LeftOpenRightClosed, true)]
         public void DoubleIntersectsWithWorks(double a1, double a2, double b1, double b2, Topology? type, bool result)
         {
-            var a = a1.To(a2, type ?? Topology.Default);
-            var b = b1.To(b2);
+            var a = a1.AsIntervalTo(a2, type ?? Topology.Default);
+            var b = b1.AsIntervalTo(b2);
 
             var actual = a.IntersectsWith(b);
 
@@ -313,8 +363,8 @@ namespace Acoustics.Test.Shared
         [DataRow(100, 300, 101, 300, Topology.LeftOpenRightClosed, true, false)]
         public void DoubleContainsIntervalWorks(double a1, double a2, double b1, double b2, Topology? type, bool result, bool reverseResult)
         {
-            var a = a1.To(a2, type ?? Topology.Default);
-            var b = b1.To(b2);
+            var a = a1.AsIntervalTo(a2, type ?? Topology.Default);
+            var b = b1.AsIntervalTo(b2);
 
             var actual = a.Contains(b);
 
@@ -335,9 +385,9 @@ namespace Acoustics.Test.Shared
         [DataRow(200, 400, 400, 600, true, 200, 600)]
         public void DoubleTryGetUnionWithWorks(double a1, double a2, double b1, double b2, bool success, double c1, double c2)
         {
-            var a = a1.To(a2);
-            var b = b1.To(b2);
-            var expected = c1.To(c2);
+            var a = a1.AsIntervalTo(a2);
+            var b = b1.AsIntervalTo(b2);
+            var expected = c1.AsIntervalTo(c2);
 
             var actualSuccess = a.TryGetUnion(b, out var actual);
 
@@ -358,7 +408,7 @@ namespace Acoustics.Test.Shared
         [DataRow(0.0, double.Epsilon, false)]
         public void DoubleIsEmptyWithWorks(double a1, double a2, bool expected)
         {
-            var a = a1.To(a2);
+            var a = a1.AsIntervalTo(a2);
 
             var actual = a.IsEmpty;
 
@@ -372,7 +422,7 @@ namespace Acoustics.Test.Shared
         [DataRow(0.0, double.Epsilon, false)]
         public void DoubleIsDefaultWithWorks(double a1, double a2, bool expected)
         {
-            var a = a1.To(a2);
+            var a = a1.AsIntervalTo(a2);
 
             var actual = a.IsDefault;
 
@@ -382,7 +432,7 @@ namespace Acoustics.Test.Shared
         [TestMethod]
         public void DefaultTopologyWorks()
         {
-            var actual = default(Range<double>);
+            var actual = default(Interval<double>);
             Assert.AreEqual(0, actual.Minimum);
             Assert.AreEqual(0, actual.Maximum);
             Assert.AreEqual(Topology.Default, actual.Topology);

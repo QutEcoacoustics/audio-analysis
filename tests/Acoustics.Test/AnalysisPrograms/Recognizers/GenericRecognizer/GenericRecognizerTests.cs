@@ -19,7 +19,6 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
     using global::AudioAnalysisTools.WavTools;
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using SixLabors.ImageSharp;
 
     [TestClass]
     public class GenericRecognizerTests : OutputDirectoryTest

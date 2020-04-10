@@ -6,15 +6,7 @@ namespace AudioAnalysisTools.Events.Interfaces
 {
     using AnalysisBase.ResultBases;
 
-    public interface ISpectralEvent : IInstantEvent, ITemporalEvent
+    public interface ISpectralEvent : ITemporalEvent, ISpectralBand
     {
-        /// <summary>
-        /// Gets the bottom frequency bound of the acoustic event.
-        /// </summary>
-        double LowFrequencyHertz { get; }
-
-        double HighFrequencyHertz { get; }
-
-        double BandWidth => this.HighFrequencyHertz - this.LowFrequencyHertz;
     }
 }

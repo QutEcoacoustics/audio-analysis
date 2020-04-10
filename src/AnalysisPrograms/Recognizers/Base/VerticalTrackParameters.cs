@@ -6,7 +6,6 @@ namespace AnalysisPrograms.Recognizers.Base
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using Acoustics.Shared;
     using AudioAnalysisTools;
     using AudioAnalysisTools.StandardSpectrograms;

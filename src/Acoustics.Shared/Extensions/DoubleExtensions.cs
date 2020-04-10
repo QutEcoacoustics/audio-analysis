@@ -48,22 +48,6 @@ namespace System
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static double Floor(this double d) => Math.Floor(d);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static double Clamp(this double value, double min, double max)
-        {
-            if (value > max)
-            {
-                return max;
-            }
-
-            if (value < min)
-            {
-                return min;
-            }
-
-            return value;
-        }
-
         /// <summary>
         /// Scales a unit double value, that is in the interval [0.0, 1.0] to a byte [0, 255]
         /// value between 0 and 255, clamping out of bound values and rounding away from zero.

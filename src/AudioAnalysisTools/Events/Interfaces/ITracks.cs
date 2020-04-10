@@ -4,8 +4,8 @@
 
 namespace AudioAnalysisTools
 {
-    using AudioAnalysisTools.Events.Interfaces;
     using System.Collections.Generic;
+    using AudioAnalysisTools.Events.Interfaces;
 
     public interface ITracks
     {

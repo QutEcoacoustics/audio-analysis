@@ -29,19 +29,19 @@ namespace Acoustics.Test.AnalysisPrograms.AcousticWorkbench.Orchestration.Tests
             this.recordingA = AudioRecordingFactory.Create(123);
             this.recordingB = AudioRecordingFactory.Create(123);
             this.recordingC = AudioRecordingFactory.Create(321);
-            var offsets = 0.0.To(60);
+            var offsets = 0.0.AsIntervalTo(60);
 
             this.actualA = new RemoteSegment(this.recordingA, offsets);
             this.actualB = new RemoteSegment(this.recordingB, offsets);
             this.actualC = new RemoteSegment(this.recordingC, offsets);
-            this.actualD = new RemoteSegment(this.recordingC, 60.0.To(120.0));
+            this.actualD = new RemoteSegment(this.recordingC, 60.0.AsIntervalTo(120.0));
         }
 
         [TestMethod]
         public void RemoteSegmentTest()
         {
             var recording = AudioRecordingFactory.Create();
-            var offsets = 0.0.To(60);
+            var offsets = 0.0.AsIntervalTo(60);
 
             var actual = new RemoteSegment(recording, offsets);
 
@@ -63,7 +63,7 @@ namespace Acoustics.Test.AnalysisPrograms.AcousticWorkbench.Orchestration.Tests
             var actual = new RemoteSegment(recording);
 
             Assert.AreEqual(recording, actual.Source);
-            Assert.AreEqual(0.0.To(recording.DurationSeconds), actual.Offsets);
+            Assert.AreEqual(0.0.AsIntervalTo(recording.DurationSeconds), actual.Offsets);
             Assert.AreEqual(0.0, actual.StartOffsetSeconds);
             Assert.AreEqual(recording.DurationSeconds, actual.EndOffsetSeconds);
             Assert.AreEqual(recording.DurationSeconds, actual.SourceMetadata.Duration.TotalSeconds);

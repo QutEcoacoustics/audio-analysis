@@ -48,8 +48,8 @@ namespace Acoustics.Test.AudioAnalysisTools.EventStatistics
             var stats =
                 EventStatisticsCalculate.AnalyzeAudioEvent(
                     recording,
-                    (start, end).AsRange(),
-                    (lowFreq, topFreq).AsRange(),
+                    (start, end).AsInterval(),
+                    (lowFreq, topFreq).AsInterval(),
                     statsConfig,
                     segmentOffset);
 

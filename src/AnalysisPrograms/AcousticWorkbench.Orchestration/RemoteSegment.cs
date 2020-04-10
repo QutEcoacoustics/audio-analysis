@@ -21,7 +21,7 @@ namespace AnalysisPrograms.AcousticWorkbench.Orchestration
     {
         private readonly AudioRecording recording;
 
-        public RemoteSegment(AudioRecording source, Range<double> offsets)
+        public RemoteSegment(AudioRecording source, Interval<double> offsets)
         {
             this.Source = source;
             this.Offsets = offsets;
@@ -34,7 +34,7 @@ namespace AnalysisPrograms.AcousticWorkbench.Orchestration
         }
 
         public RemoteSegment(AudioRecording source, double startOffsetSeconds, double endOffsetSeconds)
-            : this(source, new Range<double>(startOffsetSeconds, endOffsetSeconds))
+            : this(source, new Interval<double>(startOffsetSeconds, endOffsetSeconds))
         {
         }
 
@@ -43,7 +43,7 @@ namespace AnalysisPrograms.AcousticWorkbench.Orchestration
         {
         }
 
-        public Range<double> Offsets { get; }
+        public Interval<double> Offsets { get; }
 
         public AudioRecording Source { get; }
 
@@ -88,7 +88,7 @@ namespace AnalysisPrograms.AcousticWorkbench.Orchestration
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj))
+            if (obj is null)
             {
                 return false;
             }
@@ -109,12 +109,12 @@ namespace AnalysisPrograms.AcousticWorkbench.Orchestration
 
     public class RemoteSegmentWithData : RemoteSegment
     {
-        public RemoteSegmentWithData(AudioRecording source, Range<double> offsets, object[] data)
+        public RemoteSegmentWithData(AudioRecording source, Interval<double> offsets, object[] data)
             : this(source, offsets, (IList<object>)data)
         {
         }
 
-        public RemoteSegmentWithData(AudioRecording source, Range<double> offsets, IList<object> data)
+        public RemoteSegmentWithData(AudioRecording source, Interval<double> offsets, IList<object> data)
             : base(source, offsets.Minimum, offsets.Maximum)
         {
             this.Data = new ReadOnlyCollection<object>(data);
@@ -124,7 +124,7 @@ namespace AnalysisPrograms.AcousticWorkbench.Orchestration
 
         public new ISegment<AudioRecording> SplitSegment(double newStart, double newEnd)
         {
-            return new RemoteSegmentWithData(this.Source, (newStart, newEnd).AsRange(), this.Data.ToList());
+            return new RemoteSegmentWithData(this.Source, (newStart, newEnd).AsInterval(), this.Data.ToList());
         }
 
         public override string ToString()

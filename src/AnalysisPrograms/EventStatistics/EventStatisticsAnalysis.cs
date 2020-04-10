@@ -70,10 +70,10 @@ namespace AnalysisPrograms.EventStatistics
             {
                 var importedEvent = (ImportedEvent)importedEventObject;
 
-                var temporalRange = new Range<TimeSpan>(
+                var temporalRange = new Interval<TimeSpan>(
                     importedEvent.EventStartSeconds.Value.Seconds(),
                     importedEvent.EventEndSeconds.Value.Seconds());
-                var spectralRange = new Range<double>(
+                var spectralRange = new Interval<double>(
                     importedEvent.LowFrequencyHertz.Value,
                     importedEvent.HighFrequencyHertz.Value);
 

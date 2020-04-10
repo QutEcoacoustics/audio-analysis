@@ -6,13 +6,18 @@ namespace AudioAnalysisTools
 {
     using System;
     using Acoustics.Shared;
+    using Acoustics.Shared.ImageSharp;
 
-    public interface ISpectralPoint : IEquatable<ISpectralPoint>
+    public interface ISpectralPoint : IEquatable<ISpectralPoint>, IInterval2<double, double>
     {
-        Acoustics.Shared.Range<double> Seconds { get; }
+        Interval<double> Seconds { get; }
 
-        Acoustics.Shared.Range<double> Hertz { get; }
+        Interval<double> Hertz { get; }
 
         double Value { get; }
+
+        Interval<double> IInterval2<double, double>.X => this.Seconds;
+
+        Interval<double> IInterval2<double, double>.Y => this.Hertz;
     }
 }

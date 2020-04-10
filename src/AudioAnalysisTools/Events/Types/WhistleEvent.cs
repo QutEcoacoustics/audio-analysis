@@ -8,7 +8,6 @@ namespace AudioAnalysisTools
     using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Drawing;
     using AudioAnalysisTools.Events.Interfaces;
-    using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.Processing;
 
     public class WhistleEvent : SpectralEvent, ITrack

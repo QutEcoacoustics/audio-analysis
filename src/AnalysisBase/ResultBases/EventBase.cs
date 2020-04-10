@@ -24,7 +24,7 @@ namespace AnalysisBase.ResultBases
         /// <remarks>
         /// <see cref="EventStartSeconds"/> will always be greater than or equal to <see cref="SegmentStartSeconds"/>.
         /// </remarks>
-        public double SegmentStartSeconds { get; set; }
+        public virtual double SegmentStartSeconds { get;  set; }
 
         //AudioAnalysisTools.Keys.EVENT_SCORE,
         public double Score { get; set; }
