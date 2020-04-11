@@ -56,7 +56,7 @@ namespace Acoustics.Test.TestHelpers
         [TestMethod]
         public void TestFillPattern()
         {
-            this.Expected = Image.Load<Rgb24>(PathHelper.ResolveAssetPath("diagnosticBitmap.bmp"));
+            this.ExpectedImage = Image.Load<Rgb24>(PathHelper.ResolveAssetPath("diagnosticBitmap.bmp"));
 
             var pattern = @"
 R100
@@ -67,7 +67,7 @@ R100
 ⬇7
 39×W100
 R100";
-            this.Actual = new TestImage(100, 100, pattern, Color.Black).Finish();
+            this.ActualImage = new TestImage(100, 100, pattern, Color.Black).Finish();
 
             this.AssertImagesEqual();
         }

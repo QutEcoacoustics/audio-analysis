@@ -11,6 +11,8 @@ namespace AudioAnalysisTools
 
     public class UnitConverters
     {
+        public static readonly Size RightBottomBorderOffset = new Size(-1, -1);
+
         public UnitConverters(
             double segmentStartOffset, double segmentDuration, double nyquistFrequency, int imageWidth, int imageHeight)
         {
@@ -41,6 +43,17 @@ namespace AudioAnalysisTools
         /// </remarks>
         public LinearScale SpectralScale { get; }
 
+        /// <summary>
+        /// Gets a rectangle suitable for drawing a border.
+        /// </summary>
+        /// <remarks>
+        /// The border will be drawn inside the edge of the @event's area.
+        /// Top and left are floored to pixel boundaries.
+        /// Width and height are rounded up and then 1 pixel is subtracted from each
+        /// so the border resides inside the event perimeter.
+        /// </remarks>
+        /// <param name="@event">The event to get the border for.</param>
+        /// <returns>The rectangle representing the border.</returns>
         public RectangleF GetPixelRectangle(ISpectralEvent @event)
         {
             // todo: optimise
@@ -55,29 +68,56 @@ namespace AudioAnalysisTools
             return new RectangleF(
                 (float)this.TemporalScale.To(point.Seconds.Minimum),
                 (float)this.SpectralScale.To(point.Hertz.Minimum),
-                (float)this.TemporalScale.ToDelta(point.Seconds.Size()),
-                (float)this.SpectralScale.ToDelta(point.Hertz.Size()));
+                (float)this.TemporalScale.ToMagnitude(point.Seconds.Size()),
+                (float)this.SpectralScale.ToMagnitude(point.Hertz.Size()));
         }
 
+        /// <summary>
+        /// Gets the top and left of an event, in a fashion suitable for drawing.
+        /// </summary>
+        /// <remarks>
+        /// Top and left are floored to pixel boundaries.
+        /// </remarks>
+        /// <param name="event">The event to get the point for.</param>
+        /// <returns>The point.</returns>
         public PointF GetPoint(ISpectralEvent @event)
         {
-            return new PointF(
+            var raw = new PointF(
                 (float)this.TemporalScale.To(@event.EventStartSeconds),
-                (float)this.SpectralScale.To(@event.LowFrequencyHertz));
+                (float)this.SpectralScale.To(@event.HighFrequencyHertz));
+
+            return Point.Truncate(raw);
         }
 
         public PointF GetPoint(ISpectralPoint point)
         {
+            // TODO: this should probably be rounded
+            // and rounding operation should be _round_ rather than truncate or ceiling
+            // because we want the point to be in the "center" of the point even if an
+            // image's dimensions change.
+
             return new PointF(
                 (float)this.TemporalScale.To(point.Seconds.Minimum),
                 (float)this.SpectralScale.To(point.Hertz.Minimum));
         }
 
+        /// <summary>
+        /// Gets the width and height of an event, in a fashion suitable for drawing.
+        /// </summary>
+        /// <remarks>
+        /// Width and height are rounded up and then 1 pixel is subtracted from each
+        /// so the border resides inside the event perimeter.
+        /// </remarks>
+        /// <param name="event">The event to get the size for.</param>
+        /// <returns>The size.</returns>
         public SizeF GetSize(ISpectralEvent @event)
         {
-            var width = this.TemporalScale.ToDelta(@event.Duration);
-            var height = this.SpectralScale.ToDelta(@event.BandWidth);
-            return new SizeF((float)width, (float)height);
+            var width = this.TemporalScale.ToMagnitude(@event.EventDurationSeconds);
+            var height = this.SpectralScale.ToMagnitude(@event.BandWidthHertz);
+            var raw = new SizeF((float)width, (float)height);
+            var rounded = Size.Round(raw);
+
+            return rounded + RightBottomBorderOffset;
         }
 
         public float SecondsToPixels(double seconds) => (float)this.TemporalScale.To(seconds);

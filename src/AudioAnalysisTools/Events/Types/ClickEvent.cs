@@ -12,7 +12,7 @@ namespace AudioAnalysisTools
     {
 
 
-        public override void Draw<T>(IImageProcessingContext graphics, EventRenderingOptions options)
+        public override void Draw(IImageProcessingContext graphics, EventRenderingOptions options)
         {
             // TODO: render click event
 

@@ -6,6 +6,9 @@ namespace AudioAnalysisTools.Scales
 {
     using System;
 
+    /// <summary>
+    /// A class that converts between two linear ranges.
+    /// </summary>
     public class LinearScale
     {
         private readonly double d1;
@@ -16,11 +19,27 @@ namespace AudioAnalysisTools.Scales
         private readonly double rd;
         private readonly bool clamp;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LinearScale"/> class.
+        /// </summary>
+        /// <remakrs>
+        /// Should be able to handle mapping a domain where x1 ≤ x &lt; x2
+        /// to a range where y1 > y ≥ y2 (an inverted mapping).
+        /// </remakrs>
+        /// <param name="domain">The range to consider the domain (the input).</param>
+        /// <param name="range">The range to consider the range (the output).</param>
         public LinearScale((double Low, double High) domain, (double Low, double High) range)
             : this(domain, range, false)
         {
         }
 
+#pragma warning disable CS1584 // XML comment has syntactically incorrect cref attribute
+        /// <inheritdoc cref="LinearScale.LinearScale((double Low, double High), (double Low, double High))"/>
+        /// <remarks>
+        /// If <paramref name="clamp"/> is <value>true</value> then round-tripping of values is not supported.
+        /// </remarks>
+        /// <param name="clamp">Whether or not to clamp the values to the end points.</param>
+#pragma warning restore CS1584 // XML comment has syntactically incorrect cref attribute
         public LinearScale((double Low, double High) domain, (double Low, double High) range, bool clamp)
         {
             this.d1 = domain.Low;
@@ -32,32 +51,52 @@ namespace AudioAnalysisTools.Scales
             this.clamp = clamp;
         }
 
-        // TODO: optimised implementation is possible
+        /// <summary>
+        /// Converts a value from the domain into its range equivalent.
+        /// </summary>
+        /// <param name="x">The domain value.</param>
+        /// <returns>The equivalent range value.</returns>
         public double To(double x)
         {
+            // TODO: optimised implementation is possible
             var normal = (x - this.d1) / this.dd;
             var r = (normal * this.rd) + this.r1;
             return this.clamp ? r.Clamp(this.r1, this.r2) : r;
         }
 
-        public double ToDelta(double xDelta)
+        /// <summary>
+        /// Converts a domain magnitude into a range magnitude.
+        /// </summary>
+        /// <param name="xMagnitude">The domain magnitude.</param>
+        /// <returns>The equivalent range magnitude.</returns>
+        public double ToMagnitude(double xMagnitude)
         {
-            var normalDelta = xDelta / this.dd;
-            return normalDelta * this.rd;
+            var normalDelta = xMagnitude / this.dd;
+            return Math.Abs(normalDelta * this.rd);
         }
 
-        // TODO: optimised implementation is possible
+        /// <summary>
+        /// Converts a value from the range into its domain equivalent.
+        /// </summary>
+        /// <param name="y">The range value.</param>
+        /// <returns>The equivalent domain value.</returns>
         public double From(double y)
         {
+            // TODO: optimised implementation is possible
             var normal = (y - this.r1) / this.rd;
-            return (normal * this.dd) + this.d1;
+            var d = (normal * this.dd) + this.d1;
+            return this.clamp ? d.Clamp(this.d1, this.d2) : d;
         }
 
-        public double FromDelta(double yDelta)
+        /// <summary>
+        /// Converts a range magnitude into a domain magnitude.
+        /// </summary>
+        /// <param name="yMagnitude">The range magnitude.</param>
+        /// <returns>The equivalent domain magnitude.</returns>
+        public double FromMagnitude(double yMagnitude)
         {
-            var normalDelta = yDelta / this.rd;
-            var d = normalDelta * this.dd;
-            return this.clamp ? d.Clamp(this.d1, this.d2) : d;
+            var normalDelta = yMagnitude / this.rd;
+            return Math.Abs(normalDelta * this.dd);
         }
     }
 }

@@ -148,7 +148,7 @@ namespace Acoustics.Shared.ImageSharp
         /// </summary>
         public class NoAA
         {
-            private static readonly PointF Offset = new PointF(0.0f, 0.5f);
+            public static readonly PointF Bug28Offset = new PointF(0.0f, 0.5f);
             private readonly IImageProcessingContext context;
 
             public NoAA(IImageProcessingContext context)
@@ -158,8 +158,8 @@ namespace Acoustics.Shared.ImageSharp
 
             public void DrawLine(IPen pen, int x1, int y1, int x2, int y2)
             {
-                var a = new PointF(x1, y1) + Offset;
-                var b = new PointF(x2, y2) + Offset;
+                var a = new PointF(x1, y1) + Bug28Offset;
+                var b = new PointF(x2, y2) + Bug28Offset;
 
                 this.context.DrawLines(
                     Drawing.NoAntiAlias,
@@ -172,7 +172,7 @@ namespace Acoustics.Shared.ImageSharp
             {
                 for (int i = 0; i < points.Length; i++)
                 {
-                    points[i].Offset(Offset);
+                    points[i].Offset(Bug28Offset);
                 }
 
                 this.context.DrawLines(
@@ -185,7 +185,7 @@ namespace Acoustics.Shared.ImageSharp
             {
                 for (int i = 0; i < points.Length; i++)
                 {
-                    points[i].Offset(Offset);
+                    points[i].Offset(Bug28Offset);
                 }
 
                 this.context.DrawLines(
@@ -198,7 +198,7 @@ namespace Acoustics.Shared.ImageSharp
             public void DrawRectangle(Pen pen, int x1, int y1, int x2, int y2)
             {
                 var r = RectangleF.FromLTRB(x1, y1, x2, y2);
-                r.Offset(Offset);
+                r.Offset(Bug28Offset);
                 this.context.Draw(Drawing.NoAntiAlias, pen, r);
             }
 
@@ -209,20 +209,20 @@ namespace Acoustics.Shared.ImageSharp
             public void DrawRectangle(Color color, int x1, int y1, int x2, int y2, float thickness = 1f)
             {
                 var r = RectangleF.FromLTRB(x1, y1, x2, y2);
-                r.Offset(Offset);
+                r.Offset(Bug28Offset);
                 this.context.Draw(Drawing.NoAntiAlias, color, thickness, r);
             }
 
             public void DrawRectangle(Pen border, RectangleF rectangle)
             {
-                rectangle.Offset(Offset);
+                rectangle.Offset(Bug28Offset);
                 this.context.Draw(Drawing.NoAntiAlias, border, rectangle);
             }
 
             public void FillRectangle(IBrush brush, int x1, int y1, int x2, int y2)
             {
                 var r = RectangleF.FromLTRB(x1, y1, x2, y2);
-                r.Offset(Offset);
+                r.Offset(Bug28Offset);
                 this.context.Fill(Drawing.NoAntiAlias, brush, r);
             }
         }

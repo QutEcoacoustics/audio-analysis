@@ -10,6 +10,6 @@ namespace AnalysisBase.ResultBases
     {
         double EventEndSeconds { get; }
 
-        double Duration => this.EventEndSeconds - this.EventStartSeconds;
+        double EventDurationSeconds { get; }
     }
 }

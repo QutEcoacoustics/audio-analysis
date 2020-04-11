@@ -291,6 +291,18 @@ namespace AudioAnalysisTools
         /// </summary>
         public string Profile { get; set; }
 
+        double ITemporalEvent.EventEndSeconds => this.EventEndSeconds;
+
+        double ITemporalEvent.EventDurationSeconds => this.EventDurationSeconds;
+
+        double IInstantEvent.EventStartSeconds => this.EventStartSeconds;
+
+        double ISpectralBand.LowFrequencyHertz => this.LowFrequencyHertz;
+
+        double ISpectralBand.HighFrequencyHertz => this.HighFrequencyHertz;
+
+        double ISpectralBand.BandWidthHertz => this.Bandwidth;
+
         //public void DoMelScale(bool doMelscale, int freqBinCount)
         //{
         //    this.IsMelscale = doMelscale;

@@ -107,10 +107,10 @@ namespace Acoustics.Test.AudioAnalysisTools
                 ev.DrawEvent(substituteSonogram, framesPerSecond, freqBinWidth, 256);
             }
 
-            this.Actual = substituteSonogram;
+            this.ActualImage = substituteSonogram;
 
             // BUG: this asset is faulty. See https://github.com/QutEcoacoustics/audio-analysis/issues/300#issuecomment-601537263
-            this.Expected = Image.Load<Rgb24>(PathHelper.ResolveAssetPath("EventTests_SuperimposeEventsOnImage.png"));
+            this.ExpectedImage = Image.Load<Rgb24>(PathHelper.ResolveAssetPath("EventTests_SuperimposeEventsOnImage.png"));
             this.AssertImagesEqual();
         }
     }

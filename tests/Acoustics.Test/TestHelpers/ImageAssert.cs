@@ -172,7 +172,7 @@ namespace Acoustics.Test.TestHelpers
                     $@"Images are not equal - total delta {normalizedDifference} is not less than tolerance {tolerance}.
 Difference are:
 {deltaStrings}
-(and {differences.Count} more..)
+(and {Math.Max(0, differences.Count - 10)}  more..)
 
 {message}";
                 Assert.Fail(assertReason);
@@ -194,7 +194,7 @@ Difference are:
                     $@"Images are not equal - total delta {normalizedDifference} is not less than tolerance {tolerance}.
 Difference are:
 {deltaStrings}
-(and {differences.Count} more..)
+(and {Math.Max(0, differences.Count - 10)} more..)
 
 {message}";
                 Assert.Fail(assertReason);
