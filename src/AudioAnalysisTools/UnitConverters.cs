@@ -8,11 +8,11 @@ namespace AudioAnalysisTools
     using AudioAnalysisTools.Events.Interfaces;
     using AudioAnalysisTools.Scales;
     using SixLabors.ImageSharp;
+    using System;
 
     public class UnitConverters
     {
-        public UnitConverters(
-            double segmentStartOffset, double segmentDuration, double nyquistFrequency, int imageWidth, int imageHeight)
+        public UnitConverters(double segmentStartOffset, double segmentDuration, double nyquistFrequency, int imageWidth, int imageHeight)
         {
             this.SegmentStartOffset = segmentStartOffset;
             this.TemporalScale = new LinearScale(
@@ -23,7 +23,77 @@ namespace AudioAnalysisTools
                 (imageHeight, 0.0)); // invert y-axis
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UnitConverters"/> class.
+        /// Use this constructor or the next one when you have sample rate of recording from which spectrogram is derived.
+        /// This constructor assumes that the step size equals the frame size.
+        /// Enables calculations independent of the image size.
+        /// </summary>
+        /// <param name="segmentStartOffset">Start time in seconds of the current recording segment.</param>
+        /// <param name="sampleRate">Sample rate of the recording segment.</param>
+        /// <param name="frameSize">The window or frame size.</param>
+        public UnitConverters(double segmentStartOffset, int sampleRate, int frameSize)
+        {
+            this.SegmentStartOffset = segmentStartOffset;
+            this.SampleRate = sampleRate;
+            this.FrameSize = frameSize;
+            this.StepSize = frameSize;
+            this.FrameOverlap = 0.0;
+            this.NyquistFrequency = sampleRate / 2;
+            int totalBinCount = frameSize / 2;
+
+            this.TimeScale = new LinearTemporalScale(sampleRate, frameSize, frameSize);
+            this.SpectralScale = new LinearScale((0.0, this.NyquistFrequency), (totalBinCount, 0.0)); // invert y-axis
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UnitConverters"/> class.
+        /// Use this constructor or the next one when you have sample rate of recording from which spectrogram is derived.
+        /// Enables calculations independent of the image size.
+        /// </summary>
+        /// <param name="segmentStartOffset">Start time in seconds of the current recording segment.</param>
+        /// <param name="sampleRate">Sample rate of the recording segment.</param>
+        /// <param name="frameSize">The window or frame size.</param>
+        /// <param name="stepSize">THe step size which is LTE frame size.</param>
+        public UnitConverters(double segmentStartOffset, int sampleRate, int frameSize, int stepSize)
+            : this(segmentStartOffset, sampleRate, frameSize)
+        {
+            this.StepSize = stepSize;
+            this.FrameOverlap = 1 - (stepSize / (double)frameSize);
+            int totalBinCount = frameSize / 2;
+            this.TimeScale = new LinearTemporalScale(sampleRate, frameSize, stepSize);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UnitConverters"/> class.
+        /// Use this constructor or the above when you have sample rate of recording from which spectrogram is derived.
+        /// Enables calculations independent of the image size.
+        /// Supplied with the frame overlap rather than the step size.
+        /// </summary>
+        /// <param name="segmentStartOffset">Start time in seconds of the current recording segment.</param>
+        /// <param name="sampleRate">Sample rate of the recording segment.</param>
+        /// <param name="frameSize">The window or frame size.</param>
+        /// <param name="frameOverlap">Fractional overlap of frames.</param>
+        public UnitConverters(double segmentStartOffset, int sampleRate, int frameSize, double frameOverlap)
+            : this(segmentStartOffset, sampleRate, frameSize)
+        {
+            this.FrameOverlap = frameOverlap;
+            this.StepSize = (int)Math.Round(frameSize * (1 - frameOverlap));
+            int totalBinCount = frameSize / 2;
+            this.TimeScale = new LinearTemporalScale(sampleRate, frameSize, this.StepSize);
+        }
+
         public double SegmentStartOffset { get; }
+
+        public int SampleRate { get; }
+
+        public int FrameSize { get; }
+
+        public int StepSize { get; }
+
+        public double FrameOverlap { get; }
+
+        public int NyquistFrequency { get; }
 
         /// <summary>
         /// Gets the temporal scale.
@@ -32,6 +102,14 @@ namespace AudioAnalysisTools
         /// Measured in seconds per pixel.
         /// </remarks>
         public LinearScale TemporalScale { get; }
+
+        /// <summary>
+        /// Gets the temporal scale.
+        /// </summary>
+        /// <remarks>
+        /// Measured in seconds per pixel.
+        /// </remarks>
+        public LinearTemporalScale TimeScale { get; }
 
         /// <summary>
         /// Gets the spectral scale.
@@ -91,5 +169,10 @@ namespace AudioAnalysisTools
         public double SegmentRelativeToRecordingRelative(double seconds) => seconds - this.SegmentStartOffset;
 
         public double RecordingRelativeToSegmentRelative(double seconds) => seconds + this.SegmentStartOffset;
+
+        public double LinearScale_SecondsDurationFromFrameCount(int frameCount)
+        {
+            return this.TimeScale.GetSecondsDurationFromFrameCount(frameCount);
+        }
     }
 }
