@@ -126,7 +126,7 @@ namespace AudioAnalysisTools
         /// <summary>
         /// Gets or sets a horizontal or vertical spectral track.
         /// </summary>
-        public SpectralTrack TheTrack { get; set; }
+        public SpectralTrack_TO_BE_REMOVED TheTrack { get; set; }
 
         public bool IsMelscale { get; set; }
 

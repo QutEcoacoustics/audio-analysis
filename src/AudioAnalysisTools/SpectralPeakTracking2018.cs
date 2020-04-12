@@ -375,7 +375,7 @@ namespace AudioAnalysisTools
         /// <summary>
         /// draw the spectrogram with spectral tracks.
         /// </summary>
-        public static Image DrawTracks(BaseSonogram sonogram, double[,] hits, List<SpectralTrack> tracks)
+        public static Image DrawTracks(BaseSonogram sonogram, double[,] hits, List<SpectralTrack_TO_BE_REMOVED> tracks)
         {
             Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage());
             image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));

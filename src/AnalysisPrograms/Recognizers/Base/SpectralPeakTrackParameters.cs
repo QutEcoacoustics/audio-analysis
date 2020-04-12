@@ -136,9 +136,9 @@ namespace AnalysisPrograms.Recognizers.Base
             return (events, combinedIntensityArray);
         }
 
-        public static SpectralTrack GetTrack(double[,] peaks, int startRow, int startBin, double threshold)
+        public static SpectralTrack_TO_BE_REMOVED GetTrack(double[,] peaks, int startRow, int startBin, double threshold)
         {
-            var track = new SpectralTrack(SpectralTrackType.HorizontalTrack, startRow, startBin, peaks[startRow, startBin]);
+            var track = new SpectralTrack_TO_BE_REMOVED(SpectralTrackType.HorizontalTrack, startRow, startBin, peaks[startRow, startBin]);
 
             // set the start point in peaks matrix to zero to prevent return to this point.
             peaks[startRow, startBin] = 0.0;

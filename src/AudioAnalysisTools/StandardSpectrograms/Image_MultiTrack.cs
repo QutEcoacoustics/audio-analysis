@@ -37,7 +37,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         public IEnumerable<AcousticEvent> EventList { get; set; }
 
-        public List<SpectralTrack> SpectralTracks { get; set; }
+        public List<SpectralTrack_TO_BE_REMOVED> SpectralTracks { get; set; }
 
         public double[,] SuperimposedMatrix { get; set; }
 
@@ -118,7 +118,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             this.nyquistFreq = nyquist;
         }
 
-        public void AddTracks(List<SpectralTrack> tracks, double framesPerSecond, double freqBinWidth)
+        public void AddTracks(List<SpectralTrack_TO_BE_REMOVED> tracks, double framesPerSecond, double freqBinWidth)
         {
             this.freqBinWidth = freqBinWidth;
             this.framesPerSecond = framesPerSecond;
@@ -202,7 +202,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
                 if (this.SpectralTracks != null)
                 {
-                    foreach (SpectralTrack t in this.SpectralTracks)
+                    foreach (SpectralTrack_TO_BE_REMOVED t in this.SpectralTracks)
                     {
                         t.DrawTrack(this.SonogramImage, this.framesPerSecond, this.freqBinWidth);
                     }

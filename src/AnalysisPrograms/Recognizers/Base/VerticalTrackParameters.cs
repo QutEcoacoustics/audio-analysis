@@ -150,9 +150,9 @@ namespace AnalysisPrograms.Recognizers.Base
             return (events, temporalIntensityArray);
         }
 
-        public static SpectralTrack GetVerticalTrack(double[,] peaks, int startRow, int startBin, int maxBin, double threshold)
+        public static SpectralTrack_TO_BE_REMOVED GetVerticalTrack(double[,] peaks, int startRow, int startBin, int maxBin, double threshold)
         {
-            var track = new SpectralTrack(SpectralTrackType.VerticalTrack, startRow, startBin, peaks[startRow, startBin]);
+            var track = new SpectralTrack_TO_BE_REMOVED(SpectralTrackType.VerticalTrack, startRow, startBin, peaks[startRow, startBin]);
 
             // set the start point in peaks matrix to zero to prevent return to this point.
             peaks[startRow, startBin] = 0.0;

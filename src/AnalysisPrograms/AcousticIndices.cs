@@ -134,7 +134,7 @@ namespace AnalysisPrograms
                 acousticIndicesConfiguration);
 
             var trackScores = new List<Plot>(subsegmentResults.Length);
-            var tracks = new List<SpectralTrack>(subsegmentResults.Length);
+            var tracks = new List<SpectralTrack_TO_BE_REMOVED>(subsegmentResults.Length);
 
             analysisResults.SummaryIndices = new SummaryIndexBase[subsegmentResults.Length];
             analysisResults.SpectralIndices = new SpectralIndexBase[subsegmentResults.Length];
@@ -391,7 +391,7 @@ namespace AnalysisPrograms
             tiler.Tile(tile);
         }
 
-        private static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, List<Plot> scores, List<SpectralTrack> tracks)
+        private static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, List<Plot> scores, List<SpectralTrack_TO_BE_REMOVED> tracks)
         {
             Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage());
             image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));

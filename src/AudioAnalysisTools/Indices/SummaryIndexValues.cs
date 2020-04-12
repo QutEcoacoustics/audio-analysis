@@ -50,7 +50,7 @@ namespace AudioAnalysisTools.Indices
             };
         }
 
-        public List<SpectralTrack> Tracks { get; set; }
+        public List<SpectralTrack_TO_BE_REMOVED> Tracks { get; set; }
 
         public SummaryIndexValues SummaryIndexValues { get; private set; }
 
