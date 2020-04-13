@@ -4,11 +4,11 @@
 
 namespace AudioAnalysisTools
 {
+    using System;
     using Acoustics.Shared;
     using AudioAnalysisTools.Events.Interfaces;
     using AudioAnalysisTools.Scales;
     using SixLabors.ImageSharp;
-    using System;
 
     public class UnitConverters
     {
@@ -41,9 +41,9 @@ namespace AudioAnalysisTools
             this.FrameOverlap = 0.0;
             this.NyquistFrequency = sampleRate / 2;
             int totalBinCount = frameSize / 2;
-
-            this.TimeScale = new LinearTemporalScale(sampleRate, frameSize, frameSize);
-            this.SpectralScale = new LinearScale((0.0, this.NyquistFrequency), (totalBinCount, 0.0)); // invert y-axis
+            this.HertzPerFreqBin = this.NyquistFrequency / totalBinCount;
+            this.SecondsPerFrame = frameSize / (double)sampleRate;
+            this.SecondsPerFrameStep = frameSize / (double)sampleRate;
         }
 
         /// <summary>
@@ -60,8 +60,8 @@ namespace AudioAnalysisTools
         {
             this.StepSize = stepSize;
             this.FrameOverlap = 1 - (stepSize / (double)frameSize);
-            int totalBinCount = frameSize / 2;
-            this.TimeScale = new LinearTemporalScale(sampleRate, frameSize, stepSize);
+            this.SecondsPerFrame = frameSize / (double)sampleRate;
+            this.SecondsPerFrameStep = stepSize / (double)sampleRate;
         }
 
         /// <summary>
@@ -79,8 +79,8 @@ namespace AudioAnalysisTools
         {
             this.FrameOverlap = frameOverlap;
             this.StepSize = (int)Math.Round(frameSize * (1 - frameOverlap));
-            int totalBinCount = frameSize / 2;
-            this.TimeScale = new LinearTemporalScale(sampleRate, frameSize, this.StepSize);
+            this.SecondsPerFrame = frameSize / (double)sampleRate;
+            this.SecondsPerFrameStep = this.StepSize / (double)sampleRate;
         }
 
         public double SegmentStartOffset { get; }
@@ -95,6 +95,12 @@ namespace AudioAnalysisTools
 
         public int NyquistFrequency { get; }
 
+        public double SecondsPerFrame { get; }
+
+        public double SecondsPerFrameStep { get; }
+
+        public double HertzPerFreqBin { get; }
+
         /// <summary>
         /// Gets the temporal scale.
         /// </summary>
@@ -104,12 +110,12 @@ namespace AudioAnalysisTools
         public LinearScale TemporalScale { get; }
 
         /// <summary>
-        /// Gets the temporal scale.
+        /// Gets the temporal scale in second units.
         /// </summary>
         /// <remarks>
-        /// Measured in seconds per pixel.
+        /// Measured in seconds per spectrogram frame.
         /// </remarks>
-        public LinearTemporalScale TimeScale { get; }
+        public LinearSecondsScale SecondsScale { get; }
 
         /// <summary>
         /// Gets the spectral scale.
@@ -170,9 +176,38 @@ namespace AudioAnalysisTools
 
         public double RecordingRelativeToSegmentRelative(double seconds) => seconds + this.SegmentStartOffset;
 
-        public double LinearScale_SecondsDurationFromFrameCount(int frameCount)
+        //public double SecondsDurationFromFrameCount(int frameCount)
+        //{
+        //    return this.SecondsScale.GetSecondsDurationFromFrameCount(frameCount);
+        //}
+
+        //public int FrameCountFromSecondsDuration(double secondsDuration)
+        //{
+        //    return this.SecondsScale.GetFrameCountFromSecondsDuration(secondsDuration);
+        //}
+
+        /// <summary>
+        /// Returns the duration in seconds of the passed number of frames.
+        /// NOTE: In the case where frames are overlapped, the last frame in any sequence is longer than the frame step.
+        /// This correction becomes sgnificant when the frameCount is small.
+        /// </summary>
+        /// <param name="frameCount">The number of frames.</param>
+        /// <returns>Duration inseconds.</returns>
+        public double GetSecondsDurationFromFrameCount(int frameCount)
         {
-            return this.TimeScale.GetSecondsDurationFromFrameCount(frameCount);
+            return ((frameCount - 1) * this.SecondsPerFrameStep) + this.SecondsPerFrame;
+        }
+
+        /// <summary>
+        /// Returns the number of frames for the passed duration in seconds.
+        /// TODO: Yet to be determined whether the exact frame count should be round, floor or celing.
+        /// </summary>
+        /// <param name="seconds">The elapsed time.</param>
+        /// <returns>The number of frames.</returns>
+        public int GetFrameCountFromSecondsDuration(double seconds)
+        {
+            int stepsMinusOne = (int)Math.Round((seconds - this.SecondsPerFrame) / this.SecondsPerFrameStep);
+            return 1 + stepsMinusOne;
         }
     }
 }
