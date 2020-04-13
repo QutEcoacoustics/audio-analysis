@@ -245,5 +245,15 @@ namespace AudioAnalysisTools
             int stepsMinusOne = (int)Math.Round((seconds - this.SecondsPerFrame) / this.SecondsPerFrameStep);
             return 1 + stepsMinusOne;
         }
+
+        public int GetFreqBinFromHertz(double hertz)
+        {
+            return (int)Math.Round(hertz / this.HertzPerFreqBin);
+        }
+
+        public double GetHertzFromFreqBin(int bin)
+        {
+            return bin * this.HertzPerFreqBin;
+        }
     }
 }

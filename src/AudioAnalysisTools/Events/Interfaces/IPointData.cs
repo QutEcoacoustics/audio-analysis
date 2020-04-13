@@ -14,6 +14,12 @@ namespace AudioAnalysisTools
 
     public interface IPointData
     {
+        /// <summary>
+        /// Gets a collection of spectral points.
+        /// </summary>
+        /// <remarks>
+        /// Use a HashSet for unsorted data and use a sorted set for sorted data.
+        /// </remarks>
         public System.Collections.Generic.ISet<ISpectralPoint> Points { get; }
 
         public void DrawPointsAsFill(IImageProcessingContext graphics, EventRenderingOptions options)
