@@ -9,6 +9,9 @@ namespace AudioAnalysisTools
     using AudioAnalysisTools.Events.Drawing;
     using SixLabors.ImageSharp.Processing;
 
+    /// <summary>
+    /// Am acoustic event that also includes data about the content identified by the event.
+    /// </summary>
     public class BlobEvent : SpectralEvent, IPointData
     {
         public BlobEvent()

@@ -11,8 +11,6 @@ namespace AudioAnalysisTools
 
     public class UnitConverters
     {
-        public static readonly Size RightBottomBorderOffset = new Size(-1, -1);
-
         public UnitConverters(
             double segmentStartOffset, double segmentDuration, double nyquistFrequency, int imageWidth, int imageHeight)
         {
@@ -44,13 +42,12 @@ namespace AudioAnalysisTools
         public LinearScale SpectralScale { get; }
 
         /// <summary>
-        /// Gets a rectangle suitable for drawing a border.
+        /// Gets a rectangle suitable for drawing.
         /// </summary>
         /// <remarks>
-        /// The border will be drawn inside the edge of the @event's area.
         /// Top and left are floored to pixel boundaries.
-        /// Width and height are rounded up and then 1 pixel is subtracted from each
-        /// so the border resides inside the event perimeter.
+        /// Width and height are rounded up.
+        /// **No border pixels are substracted from width or height!**.
         /// </remarks>
         /// <param name="@event">The event to get the border for.</param>
         /// <returns>The rectangle representing the border.</returns>
@@ -102,11 +99,10 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        /// Gets the width and height of an event, in a fashion suitable for drawing.
+        /// Gets the width and height of an event.
         /// </summary>
         /// <remarks>
-        /// Width and height are rounded up and then 1 pixel is subtracted from each
-        /// so the border resides inside the event perimeter.
+        /// Width and height are rounded up.
         /// </remarks>
         /// <param name="event">The event to get the size for.</param>
         /// <returns>The size.</returns>
@@ -117,7 +113,7 @@ namespace AudioAnalysisTools
             var raw = new SizeF((float)width, (float)height);
             var rounded = Size.Round(raw);
 
-            return rounded + RightBottomBorderOffset;
+            return rounded;
         }
 
         public float SecondsToPixels(double seconds) => (float)this.TemporalScale.To(seconds);

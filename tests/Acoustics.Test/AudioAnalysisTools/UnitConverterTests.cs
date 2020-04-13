@@ -31,8 +31,8 @@ namespace Acoustics.Test.AudioAnalysisTools
             // assert
             Assert.AreEqual(10, rect.Left);
             Assert.AreEqual(10, rect.Top);
-            Assert.AreEqual(80 + UnitConverters.RightBottomBorderOffset.Width, rect.Width);
-            Assert.AreEqual(80 + UnitConverters.RightBottomBorderOffset.Height, rect.Height);
+            Assert.AreEqual(80, rect.Width);
+            Assert.AreEqual(80, rect.Height);
 
         }
     }

@@ -141,5 +141,59 @@ namespace Acoustics.Test.Shared.Drawing
 
             this.AssertImagesEqual();
         }
+
+        [TestMethod]
+        public void TestNoAADrawBorderInset1Px()
+        {
+            var specification = @"
+⬇1
+1×ER98E
+96×ERE96RE
+1×ER98E
+⬇1
+";
+            this.ExpectedImage = this.blankExpected.FillPattern(specification).Finish();
+
+            var rect = new Rectangle(1, 1, 98, 98);
+            this.ActualImage.Mutate(x => x.NoAA().DrawBorderInset(TestPenOne, rect));
+
+            this.AssertImagesEqual();
+        }
+
+        [TestMethod]
+        public void TestNoAADrawBorderInset2Px()
+        {
+            var specification = @"
+⬇1
+2×ERRR94EEE
+94×ERRE94RRE
+2×ER98E
+⬇1
+";
+            this.ExpectedImage = this.blankExpected.FillPattern(specification).Finish();
+
+            var rect = new Rectangle(1, 1, 98, 98);
+            this.ActualImage.Mutate(x => x.NoAA().DrawBorderInset(TestPenTwo, rect));
+
+            this.AssertImagesEqual();
+        }
+
+        [TestMethod]
+        public void TestNoAADrawBorderInset3Px()
+        {
+            var specification = @"
+⬇1
+3×ERRR92RRRE
+92×ERRRE92RRRE
+3×ERRR92RRRE
+⬇1
+";
+            this.ExpectedImage = this.blankExpected.FillPattern(specification).Finish();
+
+            var rect = new Rectangle(1, 1, 98, 98);
+            this.ActualImage.Mutate(x => x.NoAA().DrawBorderInset(TestPenThree, rect));
+
+            this.AssertImagesEqual();
+        }
     }
 }

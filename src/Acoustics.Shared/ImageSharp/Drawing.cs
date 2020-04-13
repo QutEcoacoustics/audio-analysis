@@ -148,7 +148,9 @@ namespace Acoustics.Shared.ImageSharp
         /// </summary>
         public class NoAA
         {
+            public const float bottomRightCornerBug = 0.5f;
             public static readonly PointF Bug28Offset = new PointF(0.0f, 0.5f);
+            
             private readonly IImageProcessingContext context;
 
             public NoAA(IImageProcessingContext context)
@@ -217,6 +219,48 @@ namespace Acoustics.Shared.ImageSharp
             {
                 rectangle.Offset(Bug28Offset);
                 this.context.Draw(Drawing.NoAntiAlias, border, rectangle);
+            }
+
+            /// <summary>
+            /// Draws a border line on the inside perimiter of rectangle.
+            /// ImageSharp by default draws lines split either side of the imaginary
+            /// center line.
+            /// </summary>
+            /// <remarks>
+            ///  ImageSharp's Draw Rectangle is unpredictable and buggy, especially for
+            ///  non-antialiased operations. See <see cref="Acoustics.Test.Shared.DrawingRectangleCornerBugTest"/>.
+            ///  This method instead draws four lines as the border.
+            /// </remarks>
+            public void DrawBorderInset(Pen border, RectangleF rectangle)
+            {
+                // rounder border thickness
+                border = new Pen(
+                    border.StrokeFill,
+                    (float)Math.Round(border.StrokeWidth),
+                    border.StrokePattern.ToArray());
+
+                // first round rectangle to nice coordinates
+                var rect = Rectangle.Round(rectangle);
+
+                // construct point coordinats, offset by pen width inset into rectangle.
+                var penOffset = (float)Math.Ceiling(border.StrokeWidth / 2);
+
+                // top and left by default draw in the correct bins so we need to compensate for that
+                const float topLeftBinOffset = 1f;
+
+                float left = rect.Left + penOffset - topLeftBinOffset + Bug28Offset.X;
+                float top = rect.Top + penOffset - topLeftBinOffset + Bug28Offset.Y;
+                float right = rect.Right - penOffset + Bug28Offset.X;
+                float bottom = rect.Bottom - penOffset + Bug28Offset.Y + bottomRightCornerBug;
+
+                this.context.DrawLines(
+                    NoAntiAlias,
+                    border,
+                    new PointF(left, top),
+                    new PointF(right, top),
+                    new PointF(right, bottom),
+                    new PointF(left, bottom),
+                    new PointF(left, top));
             }
 
             public void FillRectangle(IBrush brush, int x1, int y1, int x2, int y2)
