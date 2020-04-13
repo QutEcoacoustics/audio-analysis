@@ -81,7 +81,7 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
 
             var result = GenerateSpectrogramImages(testFile, config, null);
 
-            this.Actual = result.CompositeImage;
+            this.ActualImage = result.CompositeImage;
 
             // by default all visualizations are enabled
             Assert.That.ImageIsSize(Width, All.Sum(x => x.Value), result.CompositeImage);
@@ -106,7 +106,7 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
             //var path = this.TestOutputDirectory.CombineFile($"audio2sonogram_{flag}.png");
             //result.CompositeImage.Save(path);
 
-            this.Actual = result.CompositeImage;
+            this.ActualImage = result.CompositeImage;
             this.ExtraName = Name(images);
 
             // get expected height
@@ -124,7 +124,7 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
                     .Finish();
                 this.SaveExtraImage("expected_" + spectrogramImageType, expected);
 
-                Assert.That.ImageContainsExpected(expected, new Point(0, y), this.Actual);
+                Assert.That.ImageContainsExpected(expected, new Point(0, y), this.ActualImage);
 
                 // jump up expected width of image
                 y += All[spectrogramImageType];

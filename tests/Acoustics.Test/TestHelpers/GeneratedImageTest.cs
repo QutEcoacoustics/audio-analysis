@@ -33,16 +33,16 @@ namespace Acoustics.Test.TestHelpers
         {
             this.WriteImages = writeImages;
             this.WriteDelta = writeDelta;
-            this.Actual = baseActual;
+            this.ActualImage = baseActual;
         }
 
         protected WriteTestOutput WriteImages { get; }
 
         protected WriteTestOutput WriteDelta { get; }
 
-        protected Image<T> Actual { get; set; }
+        protected Image<T> ActualImage { get; set; }
 
-        protected Image<T> Expected { get; set; }
+        protected Image<T> ExpectedImage { get; set; }
 
         /// <summary>
         /// Gets or sets extra string tokens to insert into saved imaged file names.
@@ -54,7 +54,7 @@ namespace Acoustics.Test.TestHelpers
         [TestCleanup]
         public void TestCleanup()
         {
-            if (this.Actual == null)
+            if (this.ActualImage == null)
             {
                 this.TestContext.WriteLine("The actual image is null, so skipping all of GeneratedImageTest cleanup, save, and delta functions");
                 return;
@@ -62,22 +62,22 @@ namespace Acoustics.Test.TestHelpers
 
             if (this.ShouldWrite(this.WriteImages))
             {
-                this.SaveImage("actual", this.Actual);
-                this.SaveImage("expected", this.Expected);
+                this.SaveImage("actual", this.ActualImage);
+                this.SaveImage("expected", this.ExpectedImage);
             }
 
             if (this.ShouldWrite(this.WriteDelta))
             {
-                if (this.Expected == null)
+                if (this.ExpectedImage == null)
                 {
                     this.TestContext.WriteLine($"Skipping writing delta image because `Expected` is null - cannot delta between actual and null!");
                     return;
                 }
 
-                var delta = this.Expected.Clone(
+                var delta = this.ExpectedImage.Clone(
                     x =>
                     {
-                        var deltaProcessor = new DeltaImageProcessor<T>(this.Actual);
+                        var deltaProcessor = new DeltaImageProcessor<T>(this.ActualImage);
                         x.ApplyProcessor(deltaProcessor);
                     });
                 this.SaveImage("delta", delta);
@@ -86,7 +86,7 @@ namespace Acoustics.Test.TestHelpers
 
         protected void AssertImagesEqual(double tolerance = 0.0)
         {
-            Assert.That.ImageMatches(this.Expected, this.Actual, tolerance);
+            Assert.That.ImageMatches(this.ExpectedImage, this.ActualImage, tolerance);
         }
 
         protected void SaveExtraImage(string token, Image<T> image)

@@ -18,7 +18,13 @@ namespace AudioAnalysisTools.Events
 
         public virtual double LowFrequencyHertz { get; set; }
 
-        public override void Draw<T>(IImageProcessingContext graphics, EventRenderingOptions options)
+        public double EventDurationSeconds => this.EventEndSeconds - this.EventStartSeconds;
+
+        public double BandWidthHertz => this.HighFrequencyHertz - this.LowFrequencyHertz;
+
+        //public double Duration => base.Duration;
+
+        public override void Draw(IImageProcessingContext graphics, EventRenderingOptions options)
         {
             // draw a border around this event
             var border = options.Converters.GetPixelRectangle(this);

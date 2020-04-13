@@ -269,6 +269,18 @@ namespace Acoustics.Test.TestHelpers
             return this;
         }
 
+        public TestImage GoTo(int x, int y)
+        {
+            Point Action(Point cursor, IImageProcessingContext context)
+            {
+                cursor = new Point(x, y);
+                return cursor;
+            }
+
+            this.operations.Add(Action);
+            return this;
+        }
+
         public TestImage Move(int x, int y)
         {
             Point Action(Point cursor, IImageProcessingContext context)

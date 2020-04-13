@@ -6,6 +6,6 @@ namespace AudioAnalysisTools.Events.Interfaces
 {
     public interface IInstantEvent
     {
-        double EventStartSeconds { get; set; }
+        double EventStartSeconds { get; }
     }
 }

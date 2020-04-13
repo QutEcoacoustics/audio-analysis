@@ -11,7 +11,7 @@ namespace AudioAnalysisTools.Events
 
     public class InstantEvent : EventCommon, IInstantEvent
     {
-        public override void Draw<T>(IImageProcessingContext graphics, EventRenderingOptions options)
+        public override void Draw(IImageProcessingContext graphics, EventRenderingOptions options)
         {
             // simply draw a full-height line
             var startPixel = options.Converters.SecondsToPixels(this.EventStartSeconds);

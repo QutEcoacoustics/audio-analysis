@@ -6,13 +6,15 @@ namespace AudioAnalysisTools
 {
     using System.Collections.Generic;
     using System.Linq;
+    using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Drawing;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.Processing;
+    using Towel.DataStructures;
 
     public interface IPointData
     {
-        public ISet<ISpectralPoint> Points { get; }
+        public System.Collections.Generic.ISet<ISpectralPoint> Points { get; }
 
         public void DrawPointsAsFill(IImageProcessingContext graphics, EventRenderingOptions options)
         {
@@ -24,6 +26,19 @@ namespace AudioAnalysisTools
                 var area = options.Converters.GetPixelRectangle(point);
                 graphics.Fill(options.Fill, area);
             }
+
+            //var tree = new OmnitreeBoundsLinked<ISpectralPoint, double, double>(
+            //    (ISpectralPoint value, out double minX, out double maxX, out double minY, out double maxY) =>
+            //    {
+            //        minX = value.Seconds.Minimum;
+            //        maxX = value.Seconds.Maximum;
+            //        minY = value.Hertz.Minimum;
+            //        maxY = value.Hertz.Maximum;
+            //    }
+            //    );
+
+            //tree.Add(new SpectralPoint((5.1, 5.2), (510, 520), 0.9));
+            //tree.
         }
 
         public void DrawPointsAsPath(IImageProcessingContext graphics, EventRenderingOptions options)

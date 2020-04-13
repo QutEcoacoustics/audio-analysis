@@ -38,13 +38,13 @@ namespace Acoustics.Test.AudioAnalysisTools.Scales
         [DataRow(500, 1.0)]
         [DataRow(250, 0.5)]
         [DataRow(1000, 2.0)]
-        public void LinearScaleConvertsToAndFromWidths(double domain, double range)
+        public void LinearScaleConvertsToAndFromMagnitudes(double domain, double range)
         {
-            var r = this.scale.ToDelta(domain);
+            var r = this.scale.ToMagnitude(domain);
 
             Assert.AreEqual(range, r);
 
-            var d = this.scale.FromDelta(r);
+            var d = this.scale.FromMagnitude(r);
 
             Assert.AreEqual(domain, d);
         }
@@ -79,6 +79,22 @@ namespace Acoustics.Test.AudioAnalysisTools.Scales
             Assert.AreEqual(range, r);
 
             var d = this.invertedRangeScale.From(r);
+
+            Assert.AreEqual(domain, d);
+        }
+
+        [DataTestMethod]
+        [DataRow(11025, 512)]
+        [DataRow(11025 / 2.0, 256)]
+        [DataRow(11.025, 0.512)]
+        [DataRow(22050, 1024)]
+        public void LinearScaleConvertsToAndFromMagnitudesInverted(double domain, double range)
+        {
+            var r = this.invertedRangeScale.ToMagnitude(domain);
+
+            Assert.AreEqual(range, r);
+
+            var d = this.invertedRangeScale.FromMagnitude(r);
 
             Assert.AreEqual(domain, d);
         }

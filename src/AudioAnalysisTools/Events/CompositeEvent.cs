@@ -29,15 +29,15 @@ namespace AudioAnalysisTools
         public override double HighFrequencyHertz =>
             this.ComponentEvents.Max(x => (x as ISpectralEvent)?.HighFrequencyHertz) ?? double.PositiveInfinity;
 
-        public override void Draw<T>(IImageProcessingContext graphics, EventRenderingOptions options)
+        public override void Draw(IImageProcessingContext graphics, EventRenderingOptions options)
         {
             foreach (var @event in this.ComponentEvents)
             {
-                @event.Draw<T>(graphics, options);
+                @event.Draw(graphics, options);
             }
 
             // draw a border around all of it
-            base.Draw<T>(graphics, options);
+            base.Draw(graphics, options);
         }
     }
 }

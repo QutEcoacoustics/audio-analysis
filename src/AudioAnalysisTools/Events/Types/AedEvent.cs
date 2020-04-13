@@ -13,12 +13,12 @@ namespace AudioAnalysisTools.Events
 
         public ISet<ISpectralPoint> Points { get; } = new HashSet<ISpectralPoint>();
 
-        public override void Draw<T>(IImageProcessingContext graphics, EventRenderingOptions options)
+        public override void Draw(IImageProcessingContext graphics, EventRenderingOptions options)
         {
             ((IPointData)this).DrawPointsAsFill(graphics, options);
 
             //  base drawing (border)
-            base.Draw<T>(graphics, options);
+            base.Draw(graphics, options);
         }
     }
 }

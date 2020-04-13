@@ -22,12 +22,12 @@ namespace AudioAnalysisTools
 
         public ITrack Track { get; private set; }
 
-        public override void Draw<T>(IImageProcessingContext graphics, EventRenderingOptions options)
+        public override void Draw(IImageProcessingContext graphics, EventRenderingOptions options)
         {
-            this.Track.Draw<T>(graphics, options);
+            this.Track.Draw(graphics, options);
 
             //  base drawing (border)
-            base.Draw<T>(graphics, options);
+            base.Draw(graphics, options);
         }
     }
 }

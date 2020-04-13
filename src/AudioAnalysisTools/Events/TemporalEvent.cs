@@ -14,7 +14,9 @@ namespace AudioAnalysisTools
     {
         public double EventEndSeconds { get; set; }
 
-        public override void Draw<T>(IImageProcessingContext graphics, EventRenderingOptions options)
+        public double EventDurationSeconds => this.EventEndSeconds - this.EventStartSeconds;
+
+        public override void Draw(IImageProcessingContext graphics, EventRenderingOptions options)
         {
             // simply draw a full-height lines either side of the vent
             var startPixel = options.Converters.SecondsToPixels(this.EventStartSeconds);

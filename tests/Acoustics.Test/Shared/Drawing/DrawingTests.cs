@@ -28,16 +28,16 @@ namespace Acoustics.Test.Shared.Drawing
         public DrawingTests()
             : base()
         {
-            this.Actual = new Image<Rgb24>(Configuration.Default, 100, 100, Color.Black);
+            this.ActualImage = new Image<Rgb24>(Configuration.Default, 100, 100, Color.Black);
             this.blankExpected = new TestImage(100, 100, Color.Black);
         }
 
         [TestMethod]
         public void TestDrawingTextWithRoboto()
         {
-            this.Expected = Image.Load<Rgb24>(PathHelper.ResolveAssetPath("roboto_font_test.png"));
+            this.ExpectedImage = Image.Load<Rgb24>(PathHelper.ResolveAssetPath("roboto_font_test.png"));
 
-            this.Actual.Mutate(x => x.DrawTextSafe("Hello World", Drawing.GetFont(Drawing.Roboto, 18f), Color.White, new PointF(1f, 50f)));
+            this.ActualImage.Mutate(x => x.DrawTextSafe("Hello World", Drawing.GetFont(Drawing.Roboto, 18f), Color.White, new PointF(1f, 50f)));
 
             this.AssertImagesEqual();
         }
@@ -52,9 +52,9 @@ namespace Acoustics.Test.Shared.Drawing
                 return;
             }
 
-            this.Expected = Image.Load<Rgb24>(PathHelper.ResolveAssetPath("roboto_font_test.png"));
+            this.ExpectedImage = Image.Load<Rgb24>(PathHelper.ResolveAssetPath("roboto_font_test.png"));
 
-            this.Actual.Mutate(x => x.DrawTextSafe("Hello World", Drawing.GetFont(Drawing.Arial, 18f), Color.White, new PointF(1f, 50f)));
+            this.ActualImage.Mutate(x => x.DrawTextSafe("Hello World", Drawing.GetFont(Drawing.Arial, 18f), Color.White, new PointF(1f, 50f)));
 
             this.AssertImagesEqual();
         }
@@ -69,9 +69,9 @@ namespace Acoustics.Test.Shared.Drawing
                 return;
             }
 
-            this.Expected = Image.Load<Rgb24>(PathHelper.ResolveAssetPath("roboto_font_test.png"));
+            this.ExpectedImage = Image.Load<Rgb24>(PathHelper.ResolveAssetPath("roboto_font_test.png"));
 
-            this.Actual.Mutate(x => x.DrawTextSafe("Hello World", Drawing.GetFont(Drawing.Tahoma, 18f), Color.White, new PointF(1f, 50f)));
+            this.ActualImage.Mutate(x => x.DrawTextSafe("Hello World", Drawing.GetFont(Drawing.Tahoma, 18f), Color.White, new PointF(1f, 50f)));
 
             this.AssertImagesEqual();
         }
@@ -80,9 +80,9 @@ namespace Acoustics.Test.Shared.Drawing
         public void TestNoAADrawLine1Px()
         {
             // red line at top, 100px wide
-            this.Expected = this.blankExpected.FillPattern("R100").Finish();
+            this.ExpectedImage = this.blankExpected.FillPattern("R100").Finish();
 
-            this.Actual.Mutate(x => x.NoAA().DrawLine(TestPenOne, 0, 0, 100, 0));
+            this.ActualImage.Mutate(x => x.NoAA().DrawLine(TestPenOne, 0, 0, 100, 0));
 
             this.AssertImagesEqual();
         }
@@ -91,9 +91,9 @@ namespace Acoustics.Test.Shared.Drawing
         public void TestNoAADrawLineMiddle1Px()
         {
             // red line, 50px down, 100px wide
-            this.Expected = this.blankExpected.FillPattern("⬇50\nR100").Finish();
+            this.ExpectedImage = this.blankExpected.FillPattern("⬇50\nR100").Finish();
 
-            this.Actual.Mutate(x => x.NoAA().DrawLine(TestPenOne, 0, 50, 100, 50));
+            this.ActualImage.Mutate(x => x.NoAA().DrawLine(TestPenOne, 0, 50, 100, 50));
 
             this.AssertImagesEqual();
         }
@@ -102,9 +102,9 @@ namespace Acoustics.Test.Shared.Drawing
         public void TestNoAADrawLine2Px()
         {
             // red line at top, 1px high (because line spills over top border, 1px above, 1 below), 100px wide
-            this.Expected = this.blankExpected.FillPattern("R100").Finish();
+            this.ExpectedImage = this.blankExpected.FillPattern("R100").Finish();
 
-            this.Actual.Mutate(x => x.NoAA().DrawLine(TestPenTwo, 0, 0, 100, 0));
+            this.ActualImage.Mutate(x => x.NoAA().DrawLine(TestPenTwo, 0, 0, 100, 0));
 
             this.AssertImagesEqual();
         }
@@ -113,9 +113,9 @@ namespace Acoustics.Test.Shared.Drawing
         public void TestNoAADrawLineMiddle2Px()
         {
             // red line, 49px down, 2px high, 100px wide
-            this.Expected = this.blankExpected.FillPattern("⬇49\n2×R100").Finish();
+            this.ExpectedImage = this.blankExpected.FillPattern("⬇49\n2×R100").Finish();
 
-            this.Actual.Mutate(x => x.NoAA().DrawLine(TestPenTwo, 0, 50, 100, 50));
+            this.ActualImage.Mutate(x => x.NoAA().DrawLine(TestPenTwo, 0, 50, 100, 50));
 
             this.AssertImagesEqual();
         }
@@ -124,9 +124,9 @@ namespace Acoustics.Test.Shared.Drawing
         public void TestNoAADrawLine3Px()
         {
             // red line at top, 2px high (because line spills over top border, 1px above, 2 below), 100px wide
-            this.Expected = this.blankExpected.FillPattern("2×R100").Finish();
+            this.ExpectedImage = this.blankExpected.FillPattern("2×R100").Finish();
 
-            this.Actual.Mutate(x => x.NoAA().DrawLine(TestPenThree, 0, 0, 100, 0));
+            this.ActualImage.Mutate(x => x.NoAA().DrawLine(TestPenThree, 0, 0, 100, 0));
 
             this.AssertImagesEqual();
         }
@@ -135,9 +135,63 @@ namespace Acoustics.Test.Shared.Drawing
         public void TestNoAADrawLineMiddle3Px()
         {
             // red line, 49px down, 2px high, 100px wide
-            this.Expected = this.blankExpected.FillPattern("⬇49\n3×R100").Finish();
+            this.ExpectedImage = this.blankExpected.FillPattern("⬇49\n3×R100").Finish();
 
-            this.Actual.Mutate(x => x.NoAA().DrawLine(TestPenThree, 0, 50, 100, 50));
+            this.ActualImage.Mutate(x => x.NoAA().DrawLine(TestPenThree, 0, 50, 100, 50));
+
+            this.AssertImagesEqual();
+        }
+
+        [TestMethod]
+        public void TestNoAADrawBorderInset1Px()
+        {
+            var specification = @"
+⬇1
+1×ER98E
+96×ERE96RE
+1×ER98E
+⬇1
+";
+            this.ExpectedImage = this.blankExpected.FillPattern(specification).Finish();
+
+            var rect = new Rectangle(1, 1, 98, 98);
+            this.ActualImage.Mutate(x => x.NoAA().DrawBorderInset(TestPenOne, rect));
+
+            this.AssertImagesEqual();
+        }
+
+        [TestMethod]
+        public void TestNoAADrawBorderInset2Px()
+        {
+            var specification = @"
+⬇1
+2×ERRR94EEE
+94×ERRE94RRE
+2×ER98E
+⬇1
+";
+            this.ExpectedImage = this.blankExpected.FillPattern(specification).Finish();
+
+            var rect = new Rectangle(1, 1, 98, 98);
+            this.ActualImage.Mutate(x => x.NoAA().DrawBorderInset(TestPenTwo, rect));
+
+            this.AssertImagesEqual();
+        }
+
+        [TestMethod]
+        public void TestNoAADrawBorderInset3Px()
+        {
+            var specification = @"
+⬇1
+3×ERRR92RRRE
+92×ERRRE92RRRE
+3×ERRR92RRRE
+⬇1
+";
+            this.ExpectedImage = this.blankExpected.FillPattern(specification).Finish();
+
+            var rect = new Rectangle(1, 1, 98, 98);
+            this.ActualImage.Mutate(x => x.NoAA().DrawBorderInset(TestPenThree, rect));
 
             this.AssertImagesEqual();
         }

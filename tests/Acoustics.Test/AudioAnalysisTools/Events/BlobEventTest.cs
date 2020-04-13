@@ -14,11 +14,12 @@ namespace Acoustics.Test.AudioAnalysisTools.Events
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
+    using System.Collections.Generic;
 
     [TestClass]
-    public class SpectralEventTest : GeneratedImageTest<Rgb24>
+    public class BlobEventTest : GeneratedImageTest<Rgb24>
     {
-        public SpectralEventTest()
+        public BlobEventTest()
         {
             this.ActualImage = Drawing.NewImage(100, 100, Color.Black);
         }
@@ -26,7 +27,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Events
         [TestMethod]
         public void DerivedPropertiesTest()
         {
-            var @event = new SpectralEvent()
+            var @event = new BlobEvent()
             {
                 EventEndSeconds = 9,
                 EventStartSeconds = 1,
@@ -34,9 +35,11 @@ namespace Acoustics.Test.AudioAnalysisTools.Events
                 LowFrequencyHertz = 100,
             };
 
+            @event.Points.Add(new SpectralPoint((5.1, 5.2), (510, 520), 0.9));
+
             Assert.AreEqual(8, @event.EventDurationSeconds);
             Assert.AreEqual(800, @event.BandWidthHertz);
-
+            Assert.AreEqual(1, @event.Points.Count);
         }
 
         [TestMethod]
@@ -50,15 +53,33 @@ E10R80E10
 E10R80E10
 ⬇10
 ";
-            this.ExpectedImage = TestImage.Create(100, 100, Color.Black, specification);
+            var p = PixelOperations<Rgb24>.Instance.GetPixelBlender(new GraphicsOptions());
 
-            var @event = new SpectralEvent()
+            this.ExpectedImage = new TestImage(100, 100, Color.Black)
+                .FillPattern(specification)
+
+                // the point 5.1 seconds and 520 Hz should match 51, 48
+                .GoTo(51, 48)
+                .Fill(1, 1, p.Blend(Color.Black, Color.Red, 0.5f))
+                .GoTo(52, 49)
+                .Fill(2, 1, p.Blend(Color.Black, Color.Red, 0.5f))
+                .Finish();
+
+            var @event = new BlobEvent()
             {
                 EventEndSeconds = 9,
                 EventStartSeconds = 1,
                 HighFrequencyHertz = 900,
                 LowFrequencyHertz = 100,
             };
+
+            @event.Points.Add(new SpectralPoint((5.1, 5.2), (510, 520), 0.9));
+
+            @event.Points.Add(new SpectralPoint((5.2, 5.3), (500, 510), 0.9));
+
+            // double wide, overlaps with previous
+            @event.Points.Add(new SpectralPoint((5.2, 5.4), (500, 510), 0.9));
+
             var options = new EventRenderingOptions(new UnitConverters(0, 10, 1000, 100, 100));
 
             // act

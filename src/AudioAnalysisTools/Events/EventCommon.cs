@@ -16,9 +16,6 @@ namespace AudioAnalysisTools.Events
         /// </summary>
         /// <param name="graphics">The image prcessing context to draw an event on.</param>
         /// <param name="options">The options associated with this render request.</param>
-        public abstract void Draw<T>(IImageProcessingContext graphics, EventRenderingOptions options)
-            where T : struct, IPixel<T>;
-
-
+        public abstract void Draw(IImageProcessingContext graphics, EventRenderingOptions options);
     }
 }
