@@ -40,6 +40,9 @@ namespace Acoustics.Test.AudioAnalysisTools.Events.Tracks
             // this test returns the top side of the 9th freq bin.
             // Bin width = 10 Hz.
             Assert.AreEqual(100, track.HighFreqHertz);
+
+            Assert.AreEqual(0.3, track.TrackDurationSeconds, 0.01);
+            Assert.AreEqual(50, track.TrackBandWidthHertz);
         }
 
         [TestMethod]
@@ -102,6 +105,48 @@ namespace Acoustics.Test.AudioAnalysisTools.Events.Tracks
             // this test returns the top side of the 9th freq bin.
             // Bin width = 10 Hz.
             Assert.AreEqual(100, track.HighFreqHertz);
+        }
+
+        [TestMethod]
+        public void TestTrackAsSequenceOfHertzValues()
+        {
+            var converter = new UnitConverters(
+                segmentStartOffset: 60,
+                sampleRate: 1000,
+                frameSize: 100,
+                frameOverlap: 0.5);
+
+            //Create new track with flat and vertical parts
+            // frame duration = 0.1 seconds.
+            // Bin width = 10 Hz.
+            var track = new Track(converter);
+            track.SetPoint(5, 5, 1);
+            track.SetPoint(6, 5, 2);
+            track.SetPoint(7, 6, 3);
+            track.SetPoint(8, 7, 4);
+            track.SetPoint(9, 9, 5);
+            track.SetPoint(9, 12, 6);
+            track.SetPoint(9, 15, 7);
+
+            var hertzTrack = track.GetTrackFrequencyProfile();
+            Assert.AreEqual(4, hertzTrack.Length);
+            double[] expectedArray = { 0, 10, 10, 80};
+            CollectionAssert.AreEqual(expectedArray, hertzTrack);
+
+            //Create new track that apparently goes backwards in time!
+            track = new Track(converter);
+            track.SetPoint(10, 4, 1);
+            track.SetPoint(9, 5, 2);
+            track.SetPoint(8, 6, 3);
+            track.SetPoint(7, 7, 4);
+            track.SetPoint(6, 9, 5);
+            track.SetPoint(5, 12, 6);
+            track.SetPoint(5, 15, 7);
+
+            hertzTrack = track.GetTrackFrequencyProfile();
+            Assert.AreEqual(5, hertzTrack.Length);
+            double[] expectedArray2 = { -60, -20, -10, -10, -10 };
+            CollectionAssert.AreEqual(expectedArray2, hertzTrack);
         }
     }
 }

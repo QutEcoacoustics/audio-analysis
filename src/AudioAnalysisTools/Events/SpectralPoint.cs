@@ -50,13 +50,18 @@ namespace AudioAnalysisTools.Events
             var otherPoint = (SpectralPoint)obj;
 
             int value1 = this.Seconds.CompareTo(otherPoint.Seconds);
-            int value2 = this.Hertz.CompareTo(otherPoint.Hertz);
-            if (value1 != 0 && value2 != 0)
+            if (value1 != 0)
             {
-                return 1;
+                return value1;
             }
 
-            return 0;
+            int value2 = this.Hertz.CompareTo(otherPoint.Hertz);
+            if (value2 != 0)
+            {
+                return value2;
+            }
+
+            return this.Value.CompareTo(otherPoint.Value);
         }
     }
 }

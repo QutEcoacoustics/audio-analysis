@@ -106,36 +106,25 @@ namespace AudioAnalysisTools.Events.Interfaces
         //}
 
         /// <summary>
-        /// returns the track as a matrix of seconds, Hertz and amplitude values.
-        /// </summary>
-        /// <param name="frameStepSeconds">the time scale.</param>
-        /// <param name="hertzPerBin">The frequqwency scale.</param>
-        /// <returns>The track matrix.</returns>
-        //public double[,] GetTrackAsMatrix(double frameStepSeconds, double hertzPerBin)
-        //{
-        //    var trackMatrix = new double[this.PointCount(), 3];
-        //    for (int i = 0; i < this.PointCount(); i++)
-        //    {
-        //        trackMatrix[i, 0] = this.frameIds[i] * frameStepSeconds;
-        //        trackMatrix[i, 1] = this.freqBinIds[i] * hertzPerBin;
-        //        trackMatrix[i, 2] = this.amplitudeSequence[i];
-        //    }
-
-        //    return trackMatrix;
-        //}
-
-        /// <summary>
         /// Returns an array that has the same number of time frames as the track.
         /// Each element contains the highest frequency (Hertz) for that time frame.
         /// NOTE: For tracks that include extreme frequency modulation (e.g. clicks and vertical tracks),
         ///       this method returns the highest frequency value in each time frame.
         /// </summary>
-        /// <param name="hertzPerBin">the frequency scale.</param>
         /// <returns>An array of Hertz values.</returns>
-        public double[] GetTrackAsSequenceOfHertzValues(double hertzPerBin)
+        public double[] GetTrackAsSequenceOfHertzValues()
         {
-            //int pointCount = this.PointCount;
+            //TODO
+            throw new NotImplementedException("Method not implemented.");
+        }
 
+        /// <summary>
+        /// Returns an array of Hertz difference values.
+        /// The array has length one less than the number of dicrete time frames in the track.
+        /// </summary>
+        /// <returns>An array of Hertz difference values.</returns>
+        public double[] GetTrackFrequencyProfile()
+        {
             // get points, group by start bucket, order by grouped key (start bucket) and then provide sequence of windowed pairs
             var sorted = this
                 .Points
@@ -155,44 +144,33 @@ namespace AudioAnalysisTools.Events.Interfaces
                 })
                 .ToArray();
             return sorted;
-            /*
-            var hertzTrack = new int[this.FrameCount];
-            for (int i = 0; i < pointCount; i++)
-            {
-                int frameId = this.frameIds[i];
-                int frequency = (int)Math.Round(this.freqBinIds[i] * hertzPerBin);
-                if (hertzTrack[frameId] < frequency)
-                {
-                    hertzTrack[frameId] = frequency;
-                }
-            }
-
-            return hertzTrack;*/
         }
 
-            /// <summary>
-            /// Returns the maximum amplitude in each time frame.
-            /// </summary>
-            /// <returns>an array of amplitude values.</returns>
-            //public double[] GetAmplitudeOverTimeFrames()
-            //{
-            //    var frameCount = this.GetTrackFrameCount();
-            //    int startFrame = this.GetStartFrame();
-            //    var amplitudeArray = new double[frameCount];
+        /*
+        /// <summary>
+        /// Returns the maximum amplitude in each time frame.
+        /// </summary>
+        public double[] GetAmplitudeOverTimeFrames()
+        {
+            var frameCount = this.GetTrackFrameCount();
+            int startFrame = this.GetStartFrame();
+            var amplitudeArray = new double[frameCount];
+            // add in amplitude values
+            for (int i = 0; i < this.amplitudeSequence.Count; i++)
+            {
+                int elapsedFrames = this.frameIds[i] - startFrame;
+                if (amplitudeArray[elapsedFrames] < this.amplitudeSequence[i])
+                {
+                    amplitudeArray[elapsedFrames] = this.amplitudeSequence[i];
+                }
+            }
+            return amplitudeArray;
+        }
+        */
 
-            //    // add in amplitude values
-            //    for (int i = 0; i < this.amplitudeSequence.Count; i++)
-            //    {
-            //        int elapsedFrames = this.frameIds[i] - startFrame;
-            //        if (amplitudeArray[elapsedFrames] < this.amplitudeSequence[i])
-            //        {
-            //            amplitudeArray[elapsedFrames] = this.amplitudeSequence[i];
-            //        }
-            //    }
-
-            //    return amplitudeArray;
-            //}
-
+        /// <summary>
+        /// Draws the track on an image given by its processing context.
+        /// </summary>
         public void Draw(IImageProcessingContext graphics, EventRenderingOptions options)
         {
             ((IPointData)this).DrawPointsAsPath(graphics, options);
