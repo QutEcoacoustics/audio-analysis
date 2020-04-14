@@ -64,7 +64,7 @@ namespace AudioAnalysisTools
             // todo: optimise
             return new RectangleF(
                 (float)this.TemporalScale.To(point.Seconds.Minimum),
-                (float)this.SpectralScale.To(point.Hertz.Minimum),
+                (float)this.SpectralScale.To(point.Hertz.Maximum),
                 (float)this.TemporalScale.ToMagnitude(point.Seconds.Size()),
                 (float)this.SpectralScale.ToMagnitude(point.Hertz.Size()));
         }
@@ -95,7 +95,7 @@ namespace AudioAnalysisTools
 
             return new PointF(
                 (float)this.TemporalScale.To(point.Seconds.Minimum),
-                (float)this.SpectralScale.To(point.Hertz.Minimum));
+                (float)this.SpectralScale.To(point.Hertz.Maximum));
         }
 
         /// <summary>

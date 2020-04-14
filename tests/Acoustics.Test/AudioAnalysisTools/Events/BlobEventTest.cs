@@ -63,7 +63,12 @@ E10R80E10
                 .Fill(1, 1, p.Blend(Color.Black, Color.Red, 0.5f))
                 .GoTo(52, 49)
                 .Fill(2, 1, p.Blend(Color.Black, Color.Red, 0.5f))
+                .GoTo(12, 87)
+                .Fill(1, 1, p.Blend(Color.Black, Color.Red, 0.5f))
                 .Finish();
+
+            // BUG: with DrawPointsAsFill: overlaps are painted twice
+            this.ExpectedImage[52, 49] = new Rgb24(192, 0, 0);
 
             var @event = new BlobEvent()
             {
@@ -80,6 +85,8 @@ E10R80E10
             // double wide, overlaps with previous
             @event.Points.Add(new SpectralPoint((5.2, 5.4), (500, 510), 0.9));
 
+            @event.Points.Add(new SpectralPoint((1.2, 1.3), (120, 130), 0.9));
+
             var options = new EventRenderingOptions(new UnitConverters(0, 10, 1000, 100, 100));
 
             // act
@@ -87,7 +94,7 @@ E10R80E10
             this.ActualImage.Mutate(x => @event.Draw(x, options));
 
             // assert
-            this.AssertImagesEqual(RectangleCornerBugTest.MissingCornerDelta);
+            this.AssertImagesEqual();
         }
     }
 }

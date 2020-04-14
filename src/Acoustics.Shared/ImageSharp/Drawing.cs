@@ -148,9 +148,8 @@ namespace Acoustics.Shared.ImageSharp
         /// </summary>
         public class NoAA
         {
-            public const float bottomRightCornerBug = 0.5f;
             public static readonly PointF Bug28Offset = new PointF(0.0f, 0.5f);
-            
+
             private readonly IImageProcessingContext context;
 
             public NoAA(IImageProcessingContext context)
@@ -236,24 +235,24 @@ namespace Acoustics.Shared.ImageSharp
                 // rounder border thickness
                 border = new Pen(
                     border.StrokeFill,
-                    (float)Math.Round(border.StrokeWidth),
+                    MathF.Round(border.StrokeWidth),
                     border.StrokePattern.ToArray());
 
                 // first round rectangle to nice coordinates
                 var rect = Rectangle.Round(rectangle);
 
                 // construct point coordinats, offset by pen width inset into rectangle.
-                var penOffset = (float)Math.Ceiling(border.StrokeWidth / 2);
+                var penOffset = MathF.Floor(border.StrokeWidth / 2f);
 
-                // top and left by default draw in the correct bins so we need to compensate for that
-                const float topLeftBinOffset = 1f;
+                // empircally found to satisfy tests - i have no idea why it works
+                var widthAdjustment = ((int)border.StrokeWidth % 2) == 0 ? 0.0f : -0.5f;
 
-                float left = rect.Left + penOffset - topLeftBinOffset + Bug28Offset.X;
-                float top = rect.Top + penOffset - topLeftBinOffset + Bug28Offset.Y;
-                float right = rect.Right - penOffset + Bug28Offset.X;
-                float bottom = rect.Bottom - penOffset + Bug28Offset.Y + bottomRightCornerBug;
+                float left = rect.Left + penOffset + 0.0f;
+                float top = rect.Top + penOffset + +Bug28Offset.Y;
+                float right = rect.Right - penOffset + widthAdjustment;
+                float bottom = rect.Bottom - penOffset + Bug28Offset.Y + widthAdjustment;
 
-                this.context.DrawLines(
+                this.context.DrawPolygon(
                     NoAntiAlias,
                     border,
                     new PointF(left, top),

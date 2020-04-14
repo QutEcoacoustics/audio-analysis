@@ -165,9 +165,9 @@ namespace Acoustics.Test.Shared.Drawing
         {
             var specification = @"
 ⬇1
-2×ERRR94EEE
+2×ERRR94RRE
 94×ERRE94RRE
-2×ER98E
+2×ERRR94RRE
 ⬇1
 ";
             this.ExpectedImage = this.blankExpected.FillPattern(specification).Finish();
@@ -183,9 +183,9 @@ namespace Acoustics.Test.Shared.Drawing
         {
             var specification = @"
 ⬇1
-3×ERRR92RRRE
+3×ERRRR92RRRE
 92×ERRRE92RRRE
-3×ERRR92RRRE
+3×ERRRR92RRRE
 ⬇1
 ";
             this.ExpectedImage = this.blankExpected.FillPattern(specification).Finish();

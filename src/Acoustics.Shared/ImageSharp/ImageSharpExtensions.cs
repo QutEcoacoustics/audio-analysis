@@ -8,6 +8,7 @@ namespace SixLabors.ImageSharp
     using System;
     using System.Globalization;
     using System.IO;
+    using System.Numerics;
     using System.Text.RegularExpressions;
     using Acoustics.Shared.ImageSharp;
     using SixLabors.Fonts;
@@ -224,6 +225,55 @@ namespace SixLabors.ImageSharp
         public static void Clear(this IImageProcessingContext context, Color color)
         {
             context.Fill(color);
+        }
+
+        /// <summary>
+        /// Fills a rectangle with color that blends with the background.
+        /// If the given <paramref name="brush"/> contains an alpha component,
+        /// that component will be used as the <c>BlendPercentage</c> value.
+        /// </summary>
+        /// <remarks>
+        /// Apparently blending pixels with transparency is not supported for Rgb24 images.
+        /// See the FillDoesNotBlendByDefault.Test smoke test.
+        /// </remarks>
+        /// <param name="context">The drawing context.</param>
+        /// <param name="brush">The brush to fill with.</param>
+        /// <param name="paths">If specified, a collection of regions to fill.</param>
+        public static void FillWithBlend(this IImageProcessingContext context, IBrush brush, params IPath[] paths)
+        {
+            const float Opaque = 1f;
+            var options = new GraphicsOptions();
+
+            if (brush is SolidBrush s)
+            {
+                var alpha = ((Vector4)s.Color).W;
+                if (alpha != Opaque)
+                {
+                    // move opacity from color to graphics layer
+                    options.BlendPercentage = alpha;
+                    brush = new SolidBrush(s.Color.WithAlpha(1));
+                }
+            }
+            else
+            {
+                throw new NotSupportedException("Can't handle non-solid brushed");
+            }
+
+            if (paths != null && paths.Length > 0)
+            {
+                context.Fill(options, brush, new PathCollection(paths));
+            }
+            else
+            {
+                context.Fill(options, brush);
+            }
+        }
+
+        /// <inheritdoc cref="FillWithBlend(IImageProcessingContext, IBrush, IPath[])"/>
+        /// <param name="region">A rectangular region to fill.</param>
+        public static void FillWithBlend(this IImageProcessingContext context, IBrush brush, RectangleF region)
+        {
+            FillWithBlend(context, brush, new RectangularPolygon(region));
         }
 
         public static int Area(this Rectangle rectangle)
