@@ -222,6 +222,16 @@ namespace AudioAnalysisTools
         //    return this.SecondsScale.GetFrameCountFromSecondsDuration(secondsDuration);
         //}
 
+        public double GetStartTimeInSecondsOfFrame(int frameId)
+        {
+            return frameId * this.SecondsPerFrameStep;
+        }
+
+        public double GetEndTimeInSecondsOfFrame(int frameId)
+        {
+            return this.GetStartTimeInSecondsOfFrame(frameId) + this.SecondsPerFrame;
+        }
+
         /// <summary>
         /// Returns the duration in seconds of the passed number of frames.
         /// NOTE: In the case where frames are overlapped, the last frame in any sequence is longer than the frame step.
@@ -231,19 +241,24 @@ namespace AudioAnalysisTools
         /// <returns>Duration inseconds.</returns>
         public double GetSecondsDurationFromFrameCount(int frameCount)
         {
-            return ((frameCount - 1) * this.SecondsPerFrameStep) + this.SecondsPerFrame;
+            double overstep = this.SecondsPerFrame - this.SecondsPerFrameStep;
+            return (frameCount * this.SecondsPerFrameStep) + overstep;
         }
 
         /// <summary>
         /// Returns the number of frames for the passed duration in seconds.
-        /// TODO: Yet to be determined whether the exact frame count should be round, floor or celing.
+        /// Do the calculations in signal samples.
+        /// TODO: Question should we do round or floor?.
         /// </summary>
         /// <param name="seconds">The elapsed time.</param>
         /// <returns>The number of frames.</returns>
         public int GetFrameCountFromSecondsDuration(double seconds)
         {
-            int stepsMinusOne = (int)Math.Round((seconds - this.SecondsPerFrame) / this.SecondsPerFrameStep);
-            return 1 + stepsMinusOne;
+            int overstep = this.FrameSize - this.StepSize;
+            double totalSamples = seconds * this.SampleRate;
+            double balance = totalSamples - overstep;
+            double frames = balance / this.StepSize;
+            return (int)Math.Floor(frames);
         }
 
         public int GetFreqBinFromHertz(double hertz)

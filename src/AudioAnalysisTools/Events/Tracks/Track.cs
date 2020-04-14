@@ -28,9 +28,9 @@ namespace AudioAnalysisTools.Events.Interfaces
 
         public int PointCount => this.Points.Count;
 
-        public double StartTimeSeconds => this.Points.Min(x => x.Seconds.Minimum);
+        public double StartTimeSeconds => this.converter.SegmentStartOffset + this.Points.Min(x => x.Seconds.Minimum);
 
-        public double EndTimeSeconds => this.Points.Max(x => x.Seconds.Maximum);
+        public double EndTimeSeconds => this.converter.SegmentStartOffset + this.Points.Max(x => x.Seconds.Maximum);
 
         public ISet<ISpectralPoint> Points { get; }
 
@@ -63,7 +63,7 @@ namespace AudioAnalysisTools.Events.Interfaces
         /// <param name="amplitude">The amplitude at given point.</param>
         public void SetPoint(int frame, int bin, double amplitude)
         {
-            var secondsStart = this.converter.GetSecondsDurationFromFrameCount(frame);
+            var secondsStart = this.converter.GetStartTimeInSecondsOfFrame(frame);
 
             var hertzLow = this.converter.GetHertzFromFreqBin(bin);
 

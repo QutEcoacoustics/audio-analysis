@@ -8,7 +8,7 @@ namespace AudioAnalysisTools
     using Acoustics.Shared;
     using Acoustics.Shared.ImageSharp;
 
-    public interface ISpectralPoint : IEquatable<ISpectralPoint>, IInterval2<double, double>
+    public interface ISpectralPoint : IEquatable<ISpectralPoint>, IComparable, IInterval2<double, double>
     {
         Interval<double> Seconds { get; }
 

@@ -36,5 +36,27 @@ namespace AudioAnalysisTools.Events
         {
             return HashCode.Combine(this.Seconds, this.Hertz, this.Value);
         }
+
+        /// <summary>
+        /// Compare all seconds and frequency values.
+        /// </summary>
+        public int CompareTo(object obj)
+        {
+            if (obj.Equals(null))
+            {
+                return 1;
+            }
+
+            var otherPoint = (SpectralPoint)obj;
+
+            int value1 = this.Seconds.CompareTo(otherPoint.Seconds);
+            int value2 = this.Hertz.CompareTo(otherPoint.Hertz);
+            if (value1 != 0 && value2 != 0)
+            {
+                return 1;
+            }
+
+            return 0;
+        }
     }
 }
