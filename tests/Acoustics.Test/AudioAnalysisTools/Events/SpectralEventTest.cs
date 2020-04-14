@@ -66,7 +66,7 @@ E10R80E10
             this.ActualImage.Mutate(x => @event.Draw(x, options));
 
             // assert
-            this.AssertImagesEqual(RectangleCornerBugTest.MissingCornerDelta);
+            this.AssertImagesEqual();
         }
     }
 }

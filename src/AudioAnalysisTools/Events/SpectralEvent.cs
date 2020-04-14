@@ -28,7 +28,7 @@ namespace AudioAnalysisTools.Events
         {
             // draw a border around this event
             var border = options.Converters.GetPixelRectangle(this);
-            graphics.NoAA().DrawRectangle(options.Border, border);
+            graphics.NoAA().DrawBorderInset(options.Border, border);
 
             // draw event title
             // TODO
