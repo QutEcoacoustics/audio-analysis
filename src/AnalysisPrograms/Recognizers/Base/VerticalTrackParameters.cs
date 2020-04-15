@@ -104,6 +104,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 var ae = new AcousticEvent(segmentStartOffset, track.StartTimeSeconds, track.TrackDurationSeconds, track.LowFreqHertz, track.HighFreqHertz)
                 {
                     TheTrack = track,
+                    SegmentDurationSeconds = frameCount * frameStep,
                 };
 
                 events.Add(ae);
