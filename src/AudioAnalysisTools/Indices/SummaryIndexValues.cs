@@ -10,6 +10,8 @@ namespace AudioAnalysisTools.Indices
     using System.Linq;
     using AnalysisBase.ResultBases;
     using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.Events.Interfaces;
+    using AudioAnalysisTools.Events.Tracks;
     using AudioAnalysisTools.StandardSpectrograms;
     using FastMember;
     using TowseyLibrary;
@@ -50,7 +52,7 @@ namespace AudioAnalysisTools.Indices
             };
         }
 
-        public List<SpectralTrack_TO_BE_REMOVED> Tracks { get; set; }
+        public List<Track> Tracks { get; set; }
 
         public SummaryIndexValues SummaryIndexValues { get; private set; }
 

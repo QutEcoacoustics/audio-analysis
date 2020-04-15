@@ -16,6 +16,8 @@ namespace AnalysisPrograms.StandardizedFeatures
     using AnalysisBase.ResultBases;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.Events.Interfaces;
+    using AudioAnalysisTools.Events.Tracks;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.WavTools;
     using log4net;
@@ -74,7 +76,7 @@ namespace AnalysisPrograms.StandardizedFeatures
             analysisResults.AnalysisIdentifier = this.Identifier;
 
             var trackScores = new List<Plot>(totalSubsegmentCount);
-            var tracks = new List<SpectralTrack_TO_BE_REMOVED>(totalSubsegmentCount);
+            var tracks = new List<Track>(totalSubsegmentCount);
 
             analysisResults.SummaryIndices = new SummaryIndexBase[totalSubsegmentCount];
             analysisResults.SpectralIndices = new SpectralIndexBase[totalSubsegmentCount];

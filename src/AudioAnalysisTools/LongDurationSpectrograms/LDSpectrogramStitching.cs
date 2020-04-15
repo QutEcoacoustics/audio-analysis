@@ -28,7 +28,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     /// It was written to deal with a set of recordings with protocol of Gianna Pavan (10 minutes every 30 minutes).
     ///
     /// The following Powershell command was constructed by Anthony to do the analysis and join the sequence of images so derived:
-    /// Y:\Italy_GianniPavan\Sassofratino1day | % {& "C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisPrograms\bin\Release\AnalysisPrograms.exe" audio2csv -so ($_.FullName) -o "Y:\Italy_GianniPavan\output" -c "C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.Parallel.yml" }
+    /// Y:\Italy_GianniPavan\Sassofratino1day | % {"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisPrograms\bin\Release\AnalysisPrograms.exe" audio2csv -so ($_.FullName) -o "Y:\Italy_GianniPavan\output" -c "C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.Parallel.yml" }
     /// where:
     ///         Y:\Italy_GianniPavan\Sassofratino1day   is the directory containing recordings
     ///         | = a pipe

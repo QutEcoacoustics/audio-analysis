@@ -74,7 +74,7 @@ namespace AnalysisPrograms.Recognizers
                     case HarmonicParameters _:
                         algorithmName = "Harmonics";
                         break;
-                    case SpectralPeakTrackParameters _:
+                    case HorizontalTrackParameters _:
                         algorithmName = "SpectralTrack";
                         break;
                     case VerticalTrackParameters _:
@@ -93,7 +93,7 @@ namespace AnalysisPrograms.Recognizers
                             $"{nameof(OscillationParameters)}," +
                             $"{nameof(WhistleParameters)}," +
                             $"{nameof(HarmonicParameters)}," +
-                            $"{nameof(SpectralPeakTrackParameters)}," +
+                            $"{nameof(HorizontalTrackParameters)}," +
                             $"{nameof(VerticalTrackParameters)}," +
                             $"{nameof(ClickParameters)}," +
                             $"{nameof(Aed.AedConfiguration)}";
@@ -150,7 +150,7 @@ namespace AnalysisPrograms.Recognizers
                         || profileConfig is OscillationParameters
                         || profileConfig is WhistleParameters
                         || profileConfig is HarmonicParameters
-                        || profileConfig is SpectralPeakTrackParameters
+                        || profileConfig is HorizontalTrackParameters
                         || profileConfig is VerticalTrackParameters
                         || profileConfig is ClickParameters)
                     {
@@ -244,10 +244,10 @@ namespace AnalysisPrograms.Recognizers
                             var plot = PreparePlot(harmonicIntensityScores, $"{profileName} (Harmonics:dct intensity)", hp.DctThreshold.Value);
                             plots.Add(plot);
                         }
-                        else if (profileConfig is SpectralPeakTrackParameters tp)
+                        else if (profileConfig is HorizontalTrackParameters tp)
                         {
                             double[] decibelArray;
-                            (acousticEvents, decibelArray) = SpectralPeakTrackParameters.GetSpectralPeakTracks(
+                            (acousticEvents, decibelArray) = HorizontalTrackParameters.GetSpectralPeakTracks(
                                 sonogram,
                                 tp.MinHertz.Value,
                                 tp.MaxHertz.Value,

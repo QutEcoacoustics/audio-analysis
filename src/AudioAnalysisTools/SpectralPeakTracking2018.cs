@@ -6,6 +6,8 @@ namespace AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
+    using AudioAnalysisTools.Events.Interfaces;
+    using AudioAnalysisTools.Events.Tracks;
     using AudioAnalysisTools.StandardSpectrograms;
     using SixLabors.ImageSharp;
     using TowseyLibrary;
@@ -375,7 +377,7 @@ namespace AudioAnalysisTools
         /// <summary>
         /// draw the spectrogram with spectral tracks.
         /// </summary>
-        public static Image DrawTracks(BaseSonogram sonogram, double[,] hits, List<SpectralTrack_TO_BE_REMOVED> tracks)
+        public static Image DrawTracks(BaseSonogram sonogram, double[,] hits, List<Track> tracks)
         {
             Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage());
             image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
