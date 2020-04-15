@@ -2,15 +2,22 @@
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
-namespace AudioAnalysisTools.Events.Interfaces
+namespace AudioAnalysisTools.Events.Tracks
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Acoustics.Shared;
     using AudioAnalysisTools.Events.Drawing;
-    using SixLabors.ImageSharp.PixelFormats;
+    using AudioAnalysisTools.Events.Interfaces;
     using SixLabors.ImageSharp.Processing;
+
+    public enum TrackType
+    {
+        Whistle,
+        HorizontalTrack,
+        VerticalTrack,
+        Click,
+    }
 
     public class Track : ITrack
     {
@@ -75,36 +82,6 @@ namespace AudioAnalysisTools.Events.Interfaces
             this.Points.Add(point);
         }
 
-        //public int GetStartFrame()
-        //{
-        //    return this.Points x => x.Seconds.Min();
-        //}
-
-        //public int GetEndFrame()
-        //{
-        //    return this.frameIds.Max();
-        //}
-
-        //public int GetTrackFrameCount()
-        //{
-        //    return this.frameIds.Max() - this.frameIds.Min() + 1;
-        //}
-
-        //public int GetBottomFreqBin()
-        //{
-        //    return this.freqBinIds.Min();
-        //}
-
-        //public int GetTopFreqBin()
-        //{
-        //    return this.freqBinIds.Max();
-        //}
-
-        //public int GetTrackFreqBinCount()
-        //{
-        //    return this.freqBinIds.Max() - this.freqBinIds.Min() + 1;
-        //}
-
         /// <summary>
         /// Returns an array that has the same number of time frames as the track.
         /// Each element contains the highest frequency (Hertz) for that time frame.
@@ -121,6 +98,7 @@ namespace AudioAnalysisTools.Events.Interfaces
         /// <summary>
         /// Returns an array of Hertz difference values.
         /// The array has length one less than the number of dicrete time frames in the track.
+        /// THis array can be used to compare simularity bewteen the shapes of tracks even if absolute frequency values are not similar.
         /// </summary>
         /// <returns>An array of Hertz difference values.</returns>
         public double[] GetTrackFrequencyProfile()
@@ -146,27 +124,27 @@ namespace AudioAnalysisTools.Events.Interfaces
             return sorted;
         }
 
-        /*
         /// <summary>
         /// Returns the maximum amplitude in each time frame.
         /// </summary>
         public double[] GetAmplitudeOverTimeFrames()
         {
-            var frameCount = this.GetTrackFrameCount();
-            int startFrame = this.GetStartFrame();
-            var amplitudeArray = new double[frameCount];
-            // add in amplitude values
-            for (int i = 0; i < this.amplitudeSequence.Count; i++)
-            {
-                int elapsedFrames = this.frameIds[i] - startFrame;
-                if (amplitudeArray[elapsedFrames] < this.amplitudeSequence[i])
+            // get points, group by start bucket, order by grouped key (start bucket)
+            var sorted = this
+                .Points
+                .GroupBy(g => g.Seconds)
+                .OrderBy(x => x.Key)
+                .Windowed(2)
+                .Select(pointPair =>
                 {
-                    amplitudeArray[elapsedFrames] = this.amplitudeSequence[i];
-                }
-            }
-            return amplitudeArray;
+                    var firstPoints = pointPair[0];
+                    var secondPoints = pointPair[1];
+                    var maxAmplitude = secondPoints.Max(y => y.Value);
+                    return maxAmplitude;
+                })
+                .ToArray();
+            return sorted;
         }
-        */
 
         /// <summary>
         /// Draws the track on an image given by its processing context.
@@ -175,5 +153,27 @@ namespace AudioAnalysisTools.Events.Interfaces
         {
             ((IPointData)this).DrawPointsAsPath(graphics, options);
         }
+
+        /*
+        public void DrawTrack<T>(Image<T> imageToReturn, double framesPerSecond, double freqBinWidth)
+            where T : unmanaged, IPixel<T>
+        {
+            switch (this.trackType)
+            {
+                case SpectralTrackType.VerticalTrack:
+                    this.DrawVerticalTrack(imageToReturn);
+                    break;
+                case SpectralTrackType.HorizontalTrack:
+                    this.DrawHorizontalTrack(imageToReturn, framesPerSecond, freqBinWidth);
+                    break;
+                case SpectralTrackType.Whistle:
+                    this.DrawWhistle(imageToReturn, framesPerSecond, freqBinWidth);
+                    break;
+                default:
+                    this.DrawDefaultTrack(imageToReturn, framesPerSecond, freqBinWidth);
+                    break;
+            }
+        }
+         */
     }
 }
