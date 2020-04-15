@@ -6,6 +6,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
 {
     using System;
     using System.Collections.Generic;
+    using AudioAnalysisTools.Events.Drawing;
+    using AudioAnalysisTools.Events.Interfaces;
+    using AudioAnalysisTools.Events.Tracks;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
@@ -37,7 +40,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         public IEnumerable<AcousticEvent> EventList { get; set; }
 
-        public List<SpectralTrack_TO_BE_REMOVED> SpectralTracks { get; set; }
+        public List<Track> SpectralTracks { get; set; }
 
         public double[,] SuperimposedMatrix { get; set; }
 
@@ -118,7 +121,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             this.nyquistFreq = nyquist;
         }
 
-        public void AddTracks(List<SpectralTrack_TO_BE_REMOVED> tracks, double framesPerSecond, double freqBinWidth)
+        public void AddTracks(List<Track> tracks, double framesPerSecond, double freqBinWidth)
         {
             this.freqBinWidth = freqBinWidth;
             this.framesPerSecond = framesPerSecond;
@@ -202,9 +205,18 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
                 if (this.SpectralTracks != null)
                 {
-                    foreach (SpectralTrack_TO_BE_REMOVED t in this.SpectralTracks)
+                    var converter = new UnitConverters(
+                        segmentStartOffset: 0.0,
+                        segmentDuration: this.framesPerSecond * this.SonogramImage.Width,
+                        nyquistFrequency: this.freqBinWidth * this.SonogramImage.Height,
+                        imageWidth: this.SonogramImage.Width,
+                        imageHeight: this.SonogramImage.Height);
+
+                    var renderingOptions = new EventRenderingOptions(converter);
+
+                    foreach (var t in this.SpectralTracks)
                     {
-                        t.DrawTrack(this.SonogramImage, this.framesPerSecond, this.freqBinWidth);
+                        t.Draw(g, renderingOptions);
                     }
                 }
 

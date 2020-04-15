@@ -18,7 +18,9 @@ namespace AudioAnalysisTools
     using Acoustics.Shared.ImageSharp;
     using AnalysisBase.ResultBases;
     using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.Events.Drawing;
     using AudioAnalysisTools.Events.Interfaces;
+    using AudioAnalysisTools.Events.Tracks;
     using AudioAnalysisTools.StandardSpectrograms;
     using CsvHelper.Configuration;
     using SixLabors.ImageSharp;
@@ -126,7 +128,7 @@ namespace AudioAnalysisTools
         /// <summary>
         /// Gets or sets a horizontal or vertical spectral track.
         /// </summary>
-        public SpectralTrack_TO_BE_REMOVED TheTrack { get; set; }
+        public Track TheTrack { get; set; }
 
         public bool IsMelscale { get; set; }
 
@@ -138,7 +140,7 @@ namespace AudioAnalysisTools
         /// </summary>
         public Oblong Oblong { get; set; }
 
-        /// <summary> Gets or sets required for conversions to & from MEL scale AND for drawing event on spectrum.</summary>
+        /// <summary> Gets or sets required for conversions to/from MEL scale AND for drawing event on spectrum.</summary>
         public int FreqBinCount { get; set; }
 
         /// <summary>
@@ -459,8 +461,20 @@ namespace AudioAnalysisTools
             if (this.TheTrack != null)
             {
                 // currently this call assumes that the Track[frame, bin[ elements correspond to the pixels of the passed spectrogram.
-                // That is, there is no rescaling of the time and frequency axes.
-                this.TheTrack.DrawTrack(imageToReturn, framesPerSecond, freqBinWidth);
+                // That is, there is no rescaling of the time and frequency axes
+                var converter = new UnitConverters(
+                    segmentStartOffset: this.SegmentStartSeconds,
+                    segmentDuration: this.SegmentDurationSeconds,
+                    nyquistFrequency: freqBinWidth * sonogramHeight,
+                    imageWidth: imageToReturn.Width,
+                    imageHeight: imageToReturn.Height);
+
+                var renderingOptions = new EventRenderingOptions(converter);
+                imageToReturn.Mutate(
+                    context =>
+                    {
+                        this.TheTrack.Draw(context, renderingOptions);
+                    });
                 return;
             }
 
