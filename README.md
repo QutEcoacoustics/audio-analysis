@@ -16,6 +16,7 @@ The source code for the QUT Ecoacoustics _AnalysisPrograms.exe_ (_AP.exe_) progr
 - See the **[Contributing guidelines](./CONTRIBUTING.md)** if you want to
   - Compile the code yourself
   - Make a contribution
+- [Let us know](https://github.com/QutEcoacoustics/audio-analysis/wiki/Projects-and-people-using-AP.exe) if you're using AP.exe 
 
 ## Description
 
