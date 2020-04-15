@@ -36,7 +36,6 @@ namespace Acoustics.Test.AudioAnalysisTools.Events
 
             Assert.AreEqual(8, @event.EventDurationSeconds);
             Assert.AreEqual(800, @event.BandWidthHertz);
-
         }
 
         [TestMethod]

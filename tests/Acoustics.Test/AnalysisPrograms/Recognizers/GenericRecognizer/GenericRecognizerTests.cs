@@ -349,7 +349,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             var plots = new List<Plot>();
             double[] dBArray;
             List<AcousticEvent> acousticEvents;
-            (acousticEvents, dBArray) = SpectralPeakTrackParameters.GetSpectralPeakTracks(
+            (acousticEvents, dBArray) = HorizontalTrackParameters.GetSpectralPeakTracks(
                 spectrogram,
                 minHertz,
                 maxHertz,
