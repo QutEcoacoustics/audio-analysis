@@ -15,7 +15,7 @@ namespace AudioAnalysisTools.Events
         {
             // simply draw a full-height line
             var startPixel = options.Converters.SecondsToPixels(this.EventStartSeconds);
-            graphics.NoAA().DrawLine(
+            graphics.NoAA().DrawLines(
                 options.Border,
                 new PointF(startPixel, 0),
                 new PointF(startPixel, graphics.GetCurrentSize().Height));

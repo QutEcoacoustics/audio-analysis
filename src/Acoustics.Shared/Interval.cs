@@ -253,9 +253,25 @@ namespace Acoustics.Shared
         /// </returns>
         public override string ToString()
         {
+            return this.ToString(false);
+        }
+
+        /// <summary>
+        /// Gets string representation of the Interval.
+        /// technially incorrectly representing this value.
+        /// </summary>
+        /// <param name="suppressName">
+        /// If true only prints interval data and not type name.
+        /// </param>
+        /// <returns>
+        /// String representation.
+        /// </returns>
+        public string ToString(bool suppressName)
+        {
             var left = this.IsMinimumInclusive ? "[" : "(";
             var right = this.IsMaximumInclusive ? "]" : ")";
-            return $"{nameof(Interval<T>)}: {left}{this.Minimum}, {this.Maximum}{right}";
+            var name = suppressName ? string.Empty : nameof(Interval<T>) + ": ";
+            return $"{name}{left}{this.Minimum}, {this.Maximum}{right}";
         }
 
         public int CompareTo(Interval<T> other)

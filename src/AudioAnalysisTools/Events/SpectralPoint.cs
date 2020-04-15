@@ -63,5 +63,10 @@ namespace AudioAnalysisTools.Events
 
             return this.Value.CompareTo(otherPoint.Value);
         }
+
+        public override string ToString()
+        {
+            return $"{nameof(SpectralPoint)}: {this.Seconds.ToString(true)} s, {this.Hertz.ToString(true)} Hz, {this.Value} value";
+        }
     }
 }

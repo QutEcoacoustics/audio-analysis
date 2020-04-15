@@ -15,7 +15,6 @@ namespace Acoustics.Test.Shared.Drawing
     [TestClass]
     public class NegativeTextBug : GeneratedImageTest<Rgb24>
     {
-
         public NegativeTextBug()
         {
             this.ActualImage = new Image<Rgb24>(Configuration.Default, 100, 100, Color.Black);
@@ -26,7 +25,7 @@ namespace Acoustics.Test.Shared.Drawing
         /// TODO BUG: see https://github.com/SixLabors/ImageSharp.Drawing/issues/30.
         /// </summary>
         [TestMethod]
-        [TestCategory("SpecialCase")]
+        [TestCategory("smoketest")]
         public void TextFailsToRender()
         {
             var text = "2016-12-10";

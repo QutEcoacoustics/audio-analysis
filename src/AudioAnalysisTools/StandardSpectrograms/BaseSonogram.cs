@@ -781,7 +781,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
                 if (tag.NotNull())
                 {
-                    g.NoAA().DrawLine(
+                    g.NoAA().DrawLines(
                         tag.Value,
                         1f,
                         new PointF(0, 0),

@@ -27,11 +27,12 @@ namespace Acoustics.Test.TestHelpers
             { 'O', Color.Orange },
             { 'W', Color.White },
             { 'E', Color.Black },
+            { '.', Color.Black },
         };
 
         private readonly Image<Rgb24> image;
         private readonly List<Func<Point, IImageProcessingContext, Point>> operations;
-        private readonly Stack<(int Repeats, int startIndex)> loops = new Stack<(int Repeats, int startIndex)>();
+        private readonly Stack<(int Repeats, int StartIndex)> loops = new Stack<(int Repeats, int StartIndex)>();
 
         public TestImage(int width, int height, Rgb24? backgroundColor)
         {
@@ -53,7 +54,7 @@ namespace Acoustics.Test.TestHelpers
 
         public Point Cursor { get; private set; }
 
-        public TestImage FillPattern(string specification)
+        public TestImage FillPattern(string specification, Color? defaultBackground = null)
         {
             Point Action(Point cursor, IImageProcessingContext context)
             {
@@ -96,7 +97,7 @@ namespace Acoustics.Test.TestHelpers
                     }
 
                     // now modify pixel buffer
-                    ParseLine(rest, ref buffer, DefaultBackground);
+                    ParseLine(rest, ref buffer, defaultBackground ?? DefaultBackground);
 
                     // finally repeat each buffer onto image rows
                     for (int r = 0; r < repeats; r++)
@@ -193,7 +194,7 @@ namespace Acoustics.Test.TestHelpers
 
                         break;
                     default:
-                        throw new InvalidOperationException("unknown or unexpected code: " + line[current]);
+                        throw new InvalidOperationException("unknown or unexpected code in TestImage specification string: " + line[current]);
                 }
             }
 

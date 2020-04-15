@@ -6,6 +6,7 @@ namespace Acoustics.Shared.ImageSharp
 {
     using System;
     using System.IO;
+    using System.Linq;
     using SixLabors.Fonts;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
@@ -140,7 +141,7 @@ namespace Acoustics.Shared.ImageSharp
 
         /// <summary>
         /// A specialized class the deals with drawing graphics without anti-aliasing.
-        /// It deal with two issues:
+        /// It deals with two issues:
         /// - Lines in ImageSharp are drawn on the centre pixel. Without AA they're drawn a pixel
         ///   off. This class draws all lines with +0.0,+0.5 coordinates.
         ///   See https://github.com/SixLabors/ImageSharp.Drawing/issues/28
@@ -159,41 +160,36 @@ namespace Acoustics.Shared.ImageSharp
 
             public void DrawLine(IPen pen, int x1, int y1, int x2, int y2)
             {
-                var a = new PointF(x1, y1) + Bug28Offset;
-                var b = new PointF(x2, y2) + Bug28Offset;
-
-                this.context.DrawLines(
-                    Drawing.NoAntiAlias,
-                    pen,
-                    a,
-                    b);
+                this.DrawLines(pen, new Point(x1, y1), new Point(x2, y2));
             }
 
-            public void DrawLine(IPen pen, params PointF[] points)
+            public void DrawLines(IPen pen, params PointF[] points)
             {
-                for (int i = 0; i < points.Length; i++)
+                // i've no idea why, but repeating the first point  and last point
+                // and adding random offsets in reduces visual errors in line drawing!
+                var slope = points[0].Y.CompareTo(points[^1].Y) switch
                 {
-                    points[i].Offset(Bug28Offset);
-                }
+                    -1 => 0.0f,
+                    0 => 0,
+                    1 => 0.5f,
+                    _ => throw new NotImplementedException(),
+                };
+                var offset = new PointF(slope, Bug28Offset.Y);
+                var modifiedPoints = points
+                    .Select(p => p + offset)
+                    .Prepend(points[0] + Bug28Offset)
+                    .Append(points[^1] + Bug28Offset)
+                    .ToArray();
 
                 this.context.DrawLines(
                     NoAntiAlias,
                     pen,
-                    points);
+                    modifiedPoints);
             }
 
-            public void DrawLine(Color color, float thickness, params PointF[] points)
+            public void DrawLines(Color color, float thickness, params PointF[] points)
             {
-                for (int i = 0; i < points.Length; i++)
-                {
-                    points[i].Offset(Bug28Offset);
-                }
-
-                this.context.DrawLines(
-                    NoAntiAlias,
-                    color,
-                    thickness,
-                    points);
+                this.DrawLines(new Pen(color, thickness), points);
             }
 
             public void DrawRectangle(Pen pen, int x1, int y1, int x2, int y2)

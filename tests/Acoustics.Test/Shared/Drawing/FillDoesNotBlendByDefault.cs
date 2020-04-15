@@ -28,34 +28,11 @@ namespace Acoustics.Test.Shared.Drawing
 
             // expected result
             //Assert.AreEqual(expectedColor, image[50, 50]);
-            Assert.AreEqual(new Rgb24(255, 0, 0), image[50, 50]);
-
             // fails with:     Assert.AreEqual failed. Expected:<Rgb24(128, 0, 0)>. Actual:<Rgb24(255, 0, 0)>.
 
-            // Actual (buggy?) result
-            // According to @JimBobSquarePants this is the expected bahviour
-            /*
+            Assert.AreEqual(new Rgb24(255, 0, 0), image[50, 50]);
 
-            > @atruskie You're expecting the wrong thing.
-            >
-            > You have a 24bit pixel image. Adjusting the opacity of the color you are blending will not make a difference since
-            > it will be converted to Rgb24. By  default the GraphicsOptions used by filling will have a color blending mode of
-            > PixelColorBlendingMode.Normal and alpha composition mode of PixelAlphaCompositionMode.SrcOverwhich will simply paint
-            > the color over the background since there is no alpha component.
-            >
-            > To get your expected result the background should have an alpha component. So use Rgba32.
-            >
-            > You should also dispose of your images once you have finished with them.
-
-            @JimBobSquarePants, thanks for the response. I really don't need an Rgba32 image. The image itself doesn't need any transparency.
-
-            Given that IImageProcessingContext is meant to be a pixel agnostic drawing interface, my question becomes, how do I fill a region with a 50% opacity colour? So setting BlendPercentage = 0.5f in graphics options does a fill with a blend. I admittedly don't understand the effects of PixelColorBlendingMode and PixelAlphaCompositionMode but I tried various values and it did not seem to have any effect.
-
-            However, may I suggest what I was expecting should work? Here's why:
-
-            System.Drawing and SkiaSharp act how I expect (caveat: I am no expert on anything). Example: https://gist.github.com/atruskie/02f6fb35d6967c57ed543d109e83736e
-            If a Rgb24 pixel blender encounters an Rgba32 pixel, it blends with the rgba32's opacity as I expect, so why doesn't that symmetry hold for image&fill? Example: https://gist.github.com/atruskie/f12f22830f79ba42943433edee964a53
-            */
+            // BUG: Blending does not occur with fill https://github.com/SixLabors/ImageSharp.Drawing/issues/38
 
             // thus we need our own method. see below
         }

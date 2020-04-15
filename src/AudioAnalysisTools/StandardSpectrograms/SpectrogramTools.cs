@@ -82,7 +82,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             {
                 spectrogram = Image_MultiTrack.OverlayScoresAsRedTransparency(spectrogram, hits);
 
-                // following line needs to be reworked if want to call OverlayRainbowTransparency(hits); 
+                // following line needs to be reworked if want to call OverlayRainbowTransparency(hits);
                 //image.OverlayRainbowTransparency(hits);
             }
 

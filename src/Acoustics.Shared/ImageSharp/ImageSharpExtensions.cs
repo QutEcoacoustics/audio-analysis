@@ -235,6 +235,7 @@ namespace SixLabors.ImageSharp
         /// <remarks>
         /// Apparently blending pixels with transparency is not supported for Rgb24 images.
         /// See the FillDoesNotBlendByDefault.Test smoke test.
+        /// BUG: Blending does not occur with fill https://github.com/SixLabors/ImageSharp.Drawing/issues/38.
         /// </remarks>
         /// <param name="context">The drawing context.</param>
         /// <param name="brush">The brush to fill with.</param>

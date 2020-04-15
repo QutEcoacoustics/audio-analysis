@@ -20,13 +20,13 @@ namespace AudioAnalysisTools
         {
             // simply draw a full-height lines either side of the vent
             var startPixel = options.Converters.SecondsToPixels(this.EventStartSeconds);
-            graphics.NoAA().DrawLine(
+            graphics.NoAA().DrawLines(
                 options.Border,
                 new PointF(startPixel, 0),
                 new PointF(startPixel, graphics.GetCurrentSize().Height));
 
             var endPixel = options.Converters.SecondsToPixels(this.EventEndSeconds);
-            graphics.NoAA().DrawLine(
+            graphics.NoAA().DrawLines(
                 options.Border,
                 new PointF(endPixel, 0),
                 new PointF(endPixel, graphics.GetCurrentSize().Height));

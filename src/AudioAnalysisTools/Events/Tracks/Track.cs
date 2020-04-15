@@ -27,10 +27,29 @@ namespace AudioAnalysisTools.Events.Tracks
         /// Initializes a new instance of the <see cref="Track"/> class.
         /// Constructor.
         /// </summary>
+        /// <param name="converter">
+        /// A reference to unit conversions this track class should use to
+        /// convert spectrogram data to real units.
+        /// </param>
         public Track(UnitConverters converter)
         {
             this.converter = converter;
             this.Points = new SortedSet<ISpectralPoint>();
+        }
+
+        /// <inheritdoc cref="Track.Track(UnitConverters)"/>
+        /// <param name="initialPoints">
+        /// A set of initial points to add into the point data collection.
+        /// </param>
+        public Track(
+            UnitConverters converter,
+            params (int Frame, int Bin, double Amplitude)[] initialPoints)
+            : this(converter)
+        {
+            foreach (var point in initialPoints)
+            {
+                this.SetPoint(point.Frame, point.Bin, point.Amplitude);
+            }
         }
 
         public int PointCount => this.Points.Count;
@@ -149,6 +168,11 @@ namespace AudioAnalysisTools.Events.Tracks
         /// <summary>
         /// Draws the track on an image given by its processing context.
         /// </summary>
+        /// <remarks>
+        /// Implementation is fairly simple. It sorts all points by the default IComparable method
+        /// which sorts points by time (ascending), frequency (ascending) and finally value.
+        /// The sorted collection is then used as a set of points to connect lines to.
+        /// </remarks>
         public void Draw(IImageProcessingContext graphics, EventRenderingOptions options)
         {
             ((IPointData)this).DrawPointsAsPath(graphics, options);

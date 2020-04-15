@@ -181,6 +181,16 @@ namespace AudioAnalysisTools
                 (float)this.SpectralScale.To(point.Hertz.Maximum));
         }
 
+        public PointF GetPointCentroid(ISpectralPoint point)
+        {
+            var centerX = point.Seconds.Center();
+            var centerY = point.Hertz.Center();
+
+            return new PointF(
+                (float)this.TemporalScale.To(centerX),
+                (float)this.SpectralScale.To(centerY));
+        }
+
         /// <summary>
         /// Gets the width and height of an event.
         /// </summary>
@@ -223,12 +233,12 @@ namespace AudioAnalysisTools
 
         public double GetStartTimeInSecondsOfFrame(int frameId)
         {
-            return frameId * this.SecondsPerFrameStep;
+            return this.SegmentStartOffset + (frameId * this.SecondsPerFrameStep);
         }
 
         public double GetEndTimeInSecondsOfFrame(int frameId)
         {
-            return this.GetStartTimeInSecondsOfFrame(frameId) + this.SecondsPerFrame;
+            return this.SegmentStartOffset + (this.GetStartTimeInSecondsOfFrame(frameId) + this.SecondsPerFrame);
         }
 
         /// <summary>

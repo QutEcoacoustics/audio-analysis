@@ -5,6 +5,7 @@
 namespace AudioAnalysisTools
 {
     using System.Linq;
+    using Acoustics.Shared.ImageSharp;
     using AudioAnalysisTools.Events.Drawing;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.Processing;
@@ -53,14 +54,19 @@ namespace AudioAnalysisTools
         public void DrawPointsAsPath(IImageProcessingContext graphics, EventRenderingOptions options)
         {
             // visits each point once
-            // assumes each point describes a line
+            // assumes each point pair describes a line
             // assumes a SortedSet is used (and that iteration order is signficant, unlike with HashSet)
             // TODO: maybe add an orderby?
-            var path = this.Points.Select(x => options.Converters.GetPoint(x)).ToArray();
+            var path = this
+                .Points
+                .OrderBy(x => x)
+                .Select(options.Converters.GetPoint)
+                .ToArray();
 
-            // note not using AA here
-            // note could base pen thickness off ISpectralPoint thickness for a more accurate representation
-            graphics.DrawLines(
+            // note: using AA here
+            // note: could base pen thickness off ISpectralPoint thickness for a more accurate representation
+            //graphics.Draw()
+            graphics.NoAA().DrawLines(
                 options.Border,
                 path);
         }

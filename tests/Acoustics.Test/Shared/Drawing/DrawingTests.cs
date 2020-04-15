@@ -11,6 +11,9 @@ namespace Acoustics.Test.Shared.Drawing
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
+    using System;
+    using System.Linq;
+    using System.Text;
 
     [TestClass]
     public class DrawingTests : GeneratedImageTest<Rgb24>

@@ -589,7 +589,7 @@ namespace Acoustics.Tools.Audio
 
             // calculate power of the DC value - first column of matrix
             // foreach time step or frame
-            for (int i = 0; i < frameCount; i++) 
+            for (int i = 0; i < frameCount; i++)
             {
                 if (amplitudeM[i, 0] < epsilon)
                 {

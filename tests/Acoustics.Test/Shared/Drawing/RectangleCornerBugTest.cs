@@ -22,6 +22,7 @@ namespace Acoustics.Test.Shared.Drawing
         public const double MissingCornerDelta = 9.727626E-08 + 0.00000001;
 
         [TestMethod]
+        [TestCategory("smoketest")]
         public void RectangleHasMissingBottomRightCorner()
         {
             var testImage = new Image<Rgb24>(Configuration.Default, 100, 100, Color.Black);
@@ -65,6 +66,7 @@ namespace Acoustics.Test.Shared.Drawing
         }
 
         [TestMethod]
+        [TestCategory("smoketest")]
         public void DrawTest()
         {
             // arrange

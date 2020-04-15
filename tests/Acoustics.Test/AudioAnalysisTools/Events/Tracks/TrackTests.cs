@@ -4,32 +4,43 @@
 
 namespace Acoustics.Test.AudioAnalysisTools.Events.Tracks
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Text;
     using global::AudioAnalysisTools;
-    using global::AudioAnalysisTools.Events.Interfaces;
     using global::AudioAnalysisTools.Events.Tracks;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
     public class TrackTests
     {
-        [TestMethod]
-        public void TestTrackProperties()
-        {
-            var converter = new UnitConverters(
+        /// <summary>
+        /// Each frame is 100 Hz, each bin is 0.05 seconds.
+        /// </summary>
+        public static readonly UnitConverters NiceTestConverter =
+            new UnitConverters(
                 segmentStartOffset: 60,
                 sampleRate: 1000,
                 frameSize: 100,
                 frameOverlap: 0.5);
 
-            var track = new Track(converter);
-            track.SetPoint(5, 5, 1);
-            track.SetPoint(6, 6, 2);
-            track.SetPoint(7, 7, 3);
-            track.SetPoint(8, 8, 4);
-            track.SetPoint(9, 9, 5);
+#pragma warning disable SA1310 // Field names should not contain underscore
+        /// <summary>
+        /// Get a track that is diagonal, increasing one unit
+        /// both in time and frequency for each subsequent point.
+        /// </summary>
+        public static readonly Track TestTrack_TimePositive_FrequencyPositive =
+            new Track(
+                NiceTestConverter,
+                (5, 5, 1),
+                (6, 6, 2),
+                (7, 7, 3),
+                (8, 8, 4),
+                (9, 9, 5));
+
+#pragma warning restore SA1310 // Field names should not contain underscore
+
+        [TestMethod]
+        public void TestTrackProperties()
+        {
+            var track = TestTrack_TimePositive_FrequencyPositive;
 
             Assert.AreEqual(5, track.PointCount);
 
@@ -53,14 +64,8 @@ namespace Acoustics.Test.AudioAnalysisTools.Events.Tracks
         [TestMethod]
         public void TestWhistleProperties()
         {
-            var converter = new UnitConverters(
-                segmentStartOffset: 60,
-                sampleRate: 1000,
-                frameSize: 100,
-                frameOverlap: 0.5);
-
             //create new track with whistle
-            var track = new Track(converter);
+            var track = new Track(NiceTestConverter);
             track.SetPoint(5, 5, 1);
             track.SetPoint(6, 5, 2);
             track.SetPoint(7, 5, 3);
@@ -84,14 +89,8 @@ namespace Acoustics.Test.AudioAnalysisTools.Events.Tracks
         [TestMethod]
         public void TestClickProperties()
         {
-            var converter = new UnitConverters(
-                segmentStartOffset: 60,
-                sampleRate: 1000,
-                frameSize: 100,
-                frameOverlap: 0.5);
-
             //Create new track with click
-            var track = new Track(converter);
+            var track = new Track(NiceTestConverter);
             track.SetPoint(5, 5, 1);
             track.SetPoint(5, 6, 2);
             track.SetPoint(5, 7, 3);
@@ -115,16 +114,10 @@ namespace Acoustics.Test.AudioAnalysisTools.Events.Tracks
         [TestMethod]
         public void TestTrackAsSequenceOfHertzValues()
         {
-            var converter = new UnitConverters(
-                segmentStartOffset: 60,
-                sampleRate: 1000,
-                frameSize: 100,
-                frameOverlap: 0.5);
-
-            //Create new track with flat and vertical parts
+            // Create new track with flat and vertical parts
             // frame duration = 0.1 seconds.
             // Bin width = 10 Hz.
-            var track = new Track(converter);
+            var track = new Track(NiceTestConverter);
             track.SetPoint(5, 5, 1);
             track.SetPoint(6, 5, 2);
             track.SetPoint(7, 6, 3);
@@ -138,8 +131,8 @@ namespace Acoustics.Test.AudioAnalysisTools.Events.Tracks
             double[] expectedArray = { 0, 10, 10, 80 };
             CollectionAssert.AreEqual(expectedArray, hertzTrack);
 
-            //Create new track that apparently goes backwards in time!
-            track = new Track(converter);
+            // Create new track that apparently goes backwards in time!
+            track = new Track(NiceTestConverter);
             track.SetPoint(10, 4, 1);
             track.SetPoint(9, 5, 2);
             track.SetPoint(8, 6, 3);
