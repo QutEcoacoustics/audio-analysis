@@ -102,11 +102,10 @@ namespace AudioAnalysisTools
         public double HertzPerFreqBin { get; }
 
         /// <summary>
-        /// Gets the temporal scale.
+        /// Gets the temporal scale. Measured in seconds per pixel.
+        /// <c>To</c> converts seconds to pixels.
+        /// <c>From</c> converts pixels to seconds.
         /// </summary>
-        /// <remarks>
-        /// Measured in seconds per pixel.
-        /// </remarks>
         public LinearScale TemporalScale { get; }
 
         /// <summary>
@@ -217,10 +216,10 @@ namespace AudioAnalysisTools
         //    return this.SecondsScale.GetSecondsDurationFromFrameCount(frameCount);
         //}
 
-        //public int FrameCountFromSecondsDuration(double secondsDuration)
-        //{
-        //    return this.SecondsScale.GetFrameCountFromSecondsDuration(secondsDuration);
-        //}
+        public int FrameFromStartTime(double startTime)
+        {
+            return (int)(startTime / this.SecondsPerFrameStep);
+        }
 
         public double GetStartTimeInSecondsOfFrame(int frameId)
         {
