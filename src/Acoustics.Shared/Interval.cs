@@ -251,10 +251,10 @@ namespace Acoustics.Shared
         /// <returns>
         /// String representation.
         /// </returns>
-        public override string ToString()
-        {
-            return this.ToString(false);
-        }
+        //public override string ToString(string v)
+        //{
+        //    return this.ToString(false);
+        //}
 
         /// <summary>
         /// Gets string representation of the Interval.

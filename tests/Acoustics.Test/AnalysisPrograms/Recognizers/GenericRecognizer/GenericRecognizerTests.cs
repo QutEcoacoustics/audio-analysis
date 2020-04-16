@@ -311,7 +311,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
         }
 
         [TestMethod]
-        public void TestSpectralPeakTracksAlgorithm()
+        public void TestFowardsTrackAlgorithm()
         {
             // Set up the recognizer parameters.
             var windowSize = 512;
@@ -349,7 +349,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             var plots = new List<Plot>();
             double[] dBArray;
             List<AcousticEvent> acousticEvents;
-            (acousticEvents, dBArray) = HorizontalTrackParameters.GetSpectralPeakTracks(
+            (acousticEvents, dBArray) = HorizontalTrackParameters.GetFowardTracks(
                 spectrogram,
                 minHertz,
                 maxHertz,
@@ -385,7 +385,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
 
             // DEBUG PURPOSES COMMENT NEXT LINE
             var outputDirectory = new DirectoryInfo("C:\\temp");
-            GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "track");
+            GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "FowardsTrack");
 
             Assert.AreEqual(23, allResults.Events.Count);
 
@@ -495,10 +495,10 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
         }
 
         /// <summary>
-        /// This tests the vertical tracks recognizer on the same artifical spectrogram as used for spectral tracks and harmonics.
+        /// Tests the upwards-track recognizer on the same artifical spectrogram as used for fowards-tracks and harmonics.
         /// </summary>
         [TestMethod]
-        public void TestVerticalTrackAlgorithm()
+        public void TestUpwardsTrackAlgorithm()
         {
             // Set up the recognizer parameters.
             var windowSize = 512;
@@ -579,14 +579,14 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             var @event = allResults.Events[0];
             Assert.AreEqual(10.0, @event.EventStartSeconds, 0.1);
             Assert.AreEqual(10.1, @event.EventEndSeconds, 0.1);
-            Assert.AreEqual(6460, @event.LowFrequencyHertz);
-            Assert.AreEqual(10724, @event.HighFrequencyHertz);
+            Assert.AreEqual(6450, @event.LowFrequencyHertz);
+            Assert.AreEqual(10750, @event.HighFrequencyHertz);
 
             @event = allResults.Events[1];
             Assert.AreEqual(11.0, @event.EventStartSeconds, 0.1);
             Assert.AreEqual(11.24, @event.EventEndSeconds, 0.1);
-            Assert.AreEqual(6460, @event.LowFrequencyHertz);
-            Assert.AreEqual(7278, @event.HighFrequencyHertz);
+            Assert.AreEqual(6450, @event.LowFrequencyHertz);
+            Assert.AreEqual(7310, @event.HighFrequencyHertz);
 
             // do a SECOND TEST of the vertical tracks
             minHertz = 500;

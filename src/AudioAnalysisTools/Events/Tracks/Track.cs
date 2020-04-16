@@ -13,10 +13,10 @@ namespace AudioAnalysisTools.Events.Tracks
 
     public enum TrackType
     {
-        Whistle,
-        HorizontalTrack,
-        VerticalTrack,
-        Click,
+        HorizontalTrack, // Sounds like single tone whistle.    Each track point advances one time step.    All points remain in the same frequency bin.
+        FowardTrack,     // Sounds like fluctuating tone/chirp. Each track point advances one time step.    Points may move up or down two frequency bins.
+        UpwardTrack,     // Sounds like whip.                   Each track point ascends one frequency bin. Points may move forwards or back one frame step.
+        VerticalTrack,   // Sounds like click.                  Each track point ascends one frequency bin. All points remain in the same time frame.
     }
 
     public class Track : ITrack
@@ -51,6 +51,8 @@ namespace AudioAnalysisTools.Events.Tracks
                 this.SetPoint(point.Frame, point.Bin, point.Amplitude);
             }
         }
+
+        public TrackType trackType { get; }
 
         public int PointCount => this.Points.Count;
 
@@ -99,6 +101,38 @@ namespace AudioAnalysisTools.Events.Tracks
                 amplitude);
 
             this.Points.Add(point);
+        }
+
+        /// <summary>
+        /// Does a sanity check on the conversion of frame/bins to real values and back again.
+        /// </summary>
+        /// <param name="frame">The frame number.</param>
+        /// <param name="bin">The freq bin number.</param>
+        public string CheckPoint(int frame, int bin)
+        {
+            var secondsStart = this.converter.GetStartTimeInSecondsOfFrame(frame);
+            var hertzLow = this.converter.GetHertzFromFreqBin(bin);
+            double amplitude = 1.0; // a filler.
+
+            var point = new SpectralPoint(
+                (secondsStart, secondsStart + this.converter.SecondsPerFrame),
+                (hertzLow, hertzLow + this.converter.HertzPerFreqBin),
+                amplitude);
+
+            var outFrame = this.converter.FrameFromStartTime(point.Seconds.Minimum);
+            var outBin = this.converter.GetFreqBinFromHertz(point.Hertz.Minimum);
+            var info = new string($"In frame:{frame}, In bin:{bin}, SecondsStart:{point.Seconds.Minimum.ToString("0.000")}, HertzLow:{point.Hertz.Minimum:F3}, Out frame:{outFrame}, Out bin: {outBin}");
+
+            if (frame != outFrame || bin != outBin)
+            {
+                LoggedConsole.WriteWarnLine("WARNING" + info);
+            }
+            else
+            {
+                LoggedConsole.WriteLine(info);
+            }
+
+            return info;
         }
 
         /// <summary>
@@ -175,29 +209,25 @@ namespace AudioAnalysisTools.Events.Tracks
         /// </remarks>
         public void Draw(IImageProcessingContext graphics, EventRenderingOptions options)
         {
-            ((IPointData)this).DrawPointsAsPath(graphics, options);
-        }
-
-        /*
-        public void DrawTrack<T>(Image<T> imageToReturn, double framesPerSecond, double freqBinWidth)
-            where T : unmanaged, IPixel<T>
-        {
             switch (this.trackType)
             {
-                case SpectralTrackType.VerticalTrack:
-                    this.DrawVerticalTrack(imageToReturn);
+                case TrackType.UpwardTrack:
+                    ((IPointData)this).DrawPointsAsPath(graphics, options);
                     break;
-                case SpectralTrackType.HorizontalTrack:
-                    this.DrawHorizontalTrack(imageToReturn, framesPerSecond, freqBinWidth);
+                case TrackType.HorizontalTrack:
+                    ((IPointData)this).DrawPointsAsPath(graphics, options);
                     break;
-                case SpectralTrackType.Whistle:
-                    this.DrawWhistle(imageToReturn, framesPerSecond, freqBinWidth);
+                case TrackType.VerticalTrack:
+                    ((IPointData)this).DrawPointsAsPath(graphics, options);
+                    break;
+                case TrackType.FowardTrack:
+                    ((IPointData)this).DrawPointsAsPath(graphics, options);
                     break;
                 default:
-                    this.DrawDefaultTrack(imageToReturn, framesPerSecond, freqBinWidth);
+                    //((IPointData)this).DrawPointsAsPath(graphics, options);
+                    ((IPointData)this).DrawPointsAsFill(graphics, options);
                     break;
             }
         }
-         */
     }
 }

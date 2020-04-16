@@ -59,7 +59,6 @@ namespace AnalysisPrograms.Recognizers.Base
             var sonogramData = sonogram.Data;
             int frameCount = sonogramData.GetLength(0);
             int binCount = sonogramData.GetLength(1);
-            var frameDuration = sonogram.FrameDuration;
             var frameStep = sonogram.FrameStep;
 
             double binWidth = nyquist / (double)binCount;
@@ -93,10 +92,9 @@ namespace AnalysisPrograms.Recognizers.Base
             }
 
             //NOTE: the Peaks matrix is same size as the sonogram.
-            var tracks = TrackExtractor.GetVerticalTracks(peaks, maxBin, minBandwidthHertz, maxBandwidthHertz, decibelThreshold, converter);
+            var tracks = TrackExtractor.GetVerticalTracks(peaks, minBin, maxBin, minBandwidthHertz, maxBandwidthHertz, decibelThreshold, converter);
 
             // initialise tracks as events and get the combined intensity array.
-            // list of accumulated acoustic events
             var events = new List<AcousticEvent>();
             var temporalIntensityArray = new double[frameCount];
             foreach (var track in tracks)

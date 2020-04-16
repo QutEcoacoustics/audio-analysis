@@ -10,7 +10,7 @@ namespace AudioAnalysisTools.Events.Tracks
 
     public static class TrackExtractor
     {
-        public static List<Track> GetHorizontalTracks(double[,] peaks, double minDuration, double maxDuration, double threshold, UnitConverters converter)
+        public static List<Track> GetFowardTracks(double[,] peaks, double minDuration, double maxDuration, double threshold, UnitConverters converter)
         {
             int frameCount = peaks.GetLength(0);
             int bandwidthBinCount = peaks.GetLength(1);
@@ -121,25 +121,30 @@ namespace AudioAnalysisTools.Events.Tracks
                 }
 
                 track.SetPoint(row, bin, maxValue);
+
+                // next line is for debug purposes
+                var info = track.CheckPoint(row, bin);
             }
 
             return track;
         }
 
-        public static List<Track> GetVerticalTracks(double[,] peaks, int maxBin, double minBandwidthHertz, double maxBandwidthHertz, double threshold, UnitConverters converter)
+        public static List<Track> GetVerticalTracks(double[,] peaks, int minBin, int maxBin, double minBandwidthHertz, double maxBandwidthHertz, double threshold, UnitConverters converter)
         {
             int frameCount = peaks.GetLength(0);
-            int bandwidthBinCount = peaks.GetLength(1);
-
             var tracks = new List<Track>();
 
             // Look for possible track starts and initialise as track.
-            // Cannot include edge rows & columns because of edge effects.
             // Each row is a time frame which is a spectrum. Each column is a frequency bin
             for (int row = 0; row < frameCount; row++)
             {
-                for (int col = 3; col < bandwidthBinCount - 3; col++)
+                for (int col = minBin; col < maxBin; col++)
                 {
+                    if (peaks[row, col] < threshold)
+                    {
+                        continue;
+                    }
+
                     // Visit each spectral peak in order. Each may be start of possible track
                     var track = GetVerticalTrack(peaks, row, col, maxBin, threshold, converter);
 
@@ -166,7 +171,7 @@ namespace AudioAnalysisTools.Events.Tracks
             for (int bin = startBin; bin < maxBin - 1; bin++)
             {
                 // Avoid row edge effects.
-                if (row < 2 || row > peaks.GetLength(0) - 3)
+                if (row < 1 || row > peaks.GetLength(0) - 1)
                 {
                     // arrived back at start of recording or end of recording.
                     // The track has come to end
@@ -219,6 +224,9 @@ namespace AudioAnalysisTools.Events.Tracks
                 }
 
                 track.SetPoint(row, bin, maxValue);
+
+                // next line is for debug purposes
+                var info = track.CheckPoint(row, bin);
             }
 
             return track;

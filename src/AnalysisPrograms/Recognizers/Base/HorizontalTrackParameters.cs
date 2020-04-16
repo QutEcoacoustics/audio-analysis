@@ -34,7 +34,7 @@ namespace AnalysisPrograms.Recognizers.Base
         /// This method returns spectral peak tracks enclosed in acoustic events.
         /// It averages dB log values incorrectly but it is faster than doing many log conversions.
         /// </summary>
-        public static (List<AcousticEvent> Events, double[] CombinedIntensity) GetSpectralPeakTracks(
+        public static (List<AcousticEvent> Events, double[] CombinedIntensity) GetFowardTracks(
             SpectrogramStandard sonogram,
             int minHz,
             int maxHz,
@@ -52,7 +52,6 @@ namespace AnalysisPrograms.Recognizers.Base
             double binWidth = nyquist / (double)binCount;
             int minBin = (int)Math.Round(minHz / binWidth);
             int maxBin = (int)Math.Round(maxHz / binWidth);
-            int bandwidthBinCount = maxBin - minBin + 1;
 
             var converter = new UnitConverters(
                 segmentStartOffset: segmentStartOffset.TotalSeconds,
@@ -61,10 +60,10 @@ namespace AnalysisPrograms.Recognizers.Base
                 frameOverlap: sonogram.Configuration.WindowOverlap);
 
             //Find all spectral peaks and place in peaks matrix
-            var peaks = new double[frameCount, bandwidthBinCount];
+            var peaks = new double[frameCount, binCount];
             for (int row = 0; row < frameCount; row++)
             {
-                for (int col = minBin - 1; col < maxBin - 1; col++)
+                for (int col = minBin + 1; col < maxBin - 1; col++)
                 {
                     if (sonogramData[row, col] < decibelThreshold)
                     {
@@ -80,7 +79,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 }
             }
 
-            var tracks = TrackExtractor.GetHorizontalTracks(peaks, minDuration, maxDuration, decibelThreshold, converter);
+            var tracks = TrackExtractor.GetFowardTracks(peaks, minDuration, maxDuration, decibelThreshold, converter);
 
             // initialise tracks as events and get the combined intensity array.
             // list of accumulated acoustic events
@@ -96,7 +95,9 @@ namespace AnalysisPrograms.Recognizers.Base
                 events.Add(ae);
 
                 // fill the intensity array
-                var startRow = ae.Oblong.ColumnLeft;
+                //var startRow = ae.Oblong.ColumnLeft;
+                //var amplitudeTrack = track.GetAmplitudeOverTimeFrames();
+                var startRow = converter.FrameFromStartTime(track.StartTimeSeconds);
                 var amplitudeTrack = track.GetAmplitudeOverTimeFrames();
                 for (int i = 0; i < amplitudeTrack.Length; i++)
                 {

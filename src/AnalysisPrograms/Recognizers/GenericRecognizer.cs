@@ -247,7 +247,7 @@ namespace AnalysisPrograms.Recognizers
                         else if (profileConfig is HorizontalTrackParameters tp)
                         {
                             double[] decibelArray;
-                            (acousticEvents, decibelArray) = HorizontalTrackParameters.GetSpectralPeakTracks(
+                            (acousticEvents, decibelArray) = HorizontalTrackParameters.GetFowardTracks(
                                 sonogram,
                                 tp.MinHertz.Value,
                                 tp.MaxHertz.Value,
