@@ -188,7 +188,7 @@ namespace AudioAnalysisTools.Events.Tracks
 
         /// <summary>
         /// Returns the maximum amplitude in each time frame.
-        /// TODO
+        /// TODO ############################################
         /// </summary>
         public double[] GetAmplitudeOverTimeFrames()
         {

@@ -311,7 +311,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
         }
 
         [TestMethod]
-        public void TestFowardTrackAlgorithm()
+        public void TestForwardTrackAlgorithm()
         {
             // Set up the recognizer parameters.
             var windowSize = 512;
@@ -598,7 +598,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             var windowStep = 512;
             var minHertz = 500;
             var maxHertz = 6000;
-            var minBandwidthHertz = 100;
+            var minBandwidthHertz = 200;
             var maxBandwidthHertz = 5000;
             var decibelThreshold = 2.0;
             var combineProximalSimilarEvents = false;
@@ -662,7 +662,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             var outputDirectory = new DirectoryInfo("C:\\temp");
             GenericRecognizer.SaveDebugSpectrogram(allResults2, null, outputDirectory, "UpwardTracks2");
 
-            Assert.AreEqual(5, allResults2.Events.Count);
+            Assert.AreEqual(10, allResults2.Events.Count);
         }
 
         public SpectrogramStandard CreateArtificialSpectrogramToTestTracksAndHarmonics(SonogramConfig config)

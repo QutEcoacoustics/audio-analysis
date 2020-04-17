@@ -10,7 +10,7 @@ namespace AudioAnalysisTools.Events.Tracks
 
     public static class TrackExtractor
     {
-        public static List<Track> GetFowardTracks(double[,] peaks, double minDuration, double maxDuration, double threshold, UnitConverters converter)
+        public static List<Track> GetForwardTracks(double[,] peaks, double minDuration, double maxDuration, double threshold, UnitConverters converter)
         {
             int frameCount = peaks.GetLength(0);
             int bandwidthBinCount = peaks.GetLength(1);
@@ -25,7 +25,7 @@ namespace AudioAnalysisTools.Events.Tracks
                 for (int col = 3; col < bandwidthBinCount - 3; col++)
                 {
                     // Visit each spectral peak in order. Each may be start of possible track
-                    var track = GetFowardTrack(peaks, row, col, threshold, converter);
+                    var track = GetForwardTrack(peaks, row, col, threshold, converter);
 
                     //If track has length within duration bounds, then add the track to list.
                     if (track.TrackDurationSeconds >= minDuration && track.TrackDurationSeconds <= maxDuration)
@@ -38,7 +38,7 @@ namespace AudioAnalysisTools.Events.Tracks
             return tracks;
         }
 
-        public static Track GetFowardTrack(double[,] peaks, int startRow, int startBin, double threshold, UnitConverters converter)
+        public static Track GetForwardTrack(double[,] peaks, int startRow, int startBin, double threshold, UnitConverters converter)
         {
             var track = new Track(converter, TrackType.FowardTrack);
             track.SetPoint(startRow, startBin, peaks[startRow, startBin]);
@@ -136,9 +136,10 @@ namespace AudioAnalysisTools.Events.Tracks
 
             // Look for possible track starts and initialise as track.
             // Each row is a time frame which is a spectrum. Each column is a frequency bin
-            for (int row = 0; row < frameCount; row++)
+            // We want to scane down each freq bin starting from the bottom bin.
+            for (int col = minBin; col < maxBin; col++)
             {
-                for (int col = minBin; col < maxBin; col++)
+                for (int row = 0; row < frameCount; row++)
                 {
                     if (peaks[row, col] < threshold)
                     {
@@ -167,8 +168,9 @@ namespace AudioAnalysisTools.Events.Tracks
             // set the start point in peaks matrix to zero to prevent return to this point.
             peaks[startRow, startBin] = 0.0;
 
+            //Now move to next higher freq bin.
             int row = startRow;
-            for (int bin = startBin; bin < maxBin - 1; bin++)
+            for (int bin = startBin + 1; bin < maxBin - 1; bin++)
             {
                 // Avoid row edge effects.
                 if (row < 1 || row > peaks.GetLength(0) - 1)

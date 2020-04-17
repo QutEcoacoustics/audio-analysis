@@ -88,7 +88,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 }
             }
 
-            var tracks = TrackExtractor.GetFowardTracks(peaks, minDuration, maxDuration, decibelThreshold, converter);
+            var tracks = TrackExtractor.GetForwardTracks(peaks, minDuration, maxDuration, decibelThreshold, converter);
 
             // initialise tracks as events and get the combined intensity array.
             // list of accumulated acoustic events
