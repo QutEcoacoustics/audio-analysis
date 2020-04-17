@@ -311,7 +311,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
         }
 
         [TestMethod]
-        public void TestFowardsTrackAlgorithm()
+        public void TestFowardTrackAlgorithm()
         {
             // Set up the recognizer parameters.
             var windowSize = 512;
@@ -349,11 +349,10 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             var plots = new List<Plot>();
             double[] dBArray;
             List<AcousticEvent> acousticEvents;
-            (acousticEvents, dBArray) = HorizontalTrackParameters.GetFowardTracks(
+            (acousticEvents, dBArray) = FowardTrackParameters.GetFowardTracks(
                 spectrogram,
                 minHertz,
                 maxHertz,
-                spectrogram.NyquistFrequency,
                 decibelThreshold,
                 minDuration,
                 maxDuration,
@@ -385,7 +384,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
 
             // DEBUG PURPOSES COMMENT NEXT LINE
             var outputDirectory = new DirectoryInfo("C:\\temp");
-            GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "FowardsTrack");
+            GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "FowardTrack");
 
             Assert.AreEqual(23, allResults.Events.Count);
 
@@ -495,7 +494,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
         }
 
         /// <summary>
-        /// Tests the upwards-track recognizer on the same artifical spectrogram as used for fowards-tracks and harmonics.
+        /// Tests the upward-track recognizer on the same artifical spectrogram as used for foward-tracks and harmonics.
         /// </summary>
         [TestMethod]
         public void TestUpwardsTrackAlgorithm()
@@ -536,11 +535,10 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             var plots = new List<Plot>();
             double[] dBArray;
             List<AcousticEvent> acousticEvents;
-            (acousticEvents, dBArray) = VerticalTrackParameters.GetVerticalTracks(
+            (acousticEvents, dBArray) = UpwardTrackParameters.GetUpwardTracks(
                 spectrogram,
                 minHertz,
                 maxHertz,
-                spectrogram.NyquistFrequency,
                 decibelThreshold,
                 minBandwidthHertz,
                 maxBandwidthHertz,
@@ -572,7 +570,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
 
             // DEBUG PURPOSES ONLY - COMMENT NEXT LINE
             var outputDirectory = new DirectoryInfo("C:\\temp");
-            GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "VerticalTracks1");
+            GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "UpwardTracks1");
 
             Assert.AreEqual(2, allResults.Events.Count);
 
@@ -591,13 +589,12 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             // do a SECOND TEST of the vertical tracks
             minHertz = 500;
             maxHertz = 6000;
-            minBandwidthHertz = 200;
+            minBandwidthHertz = 100;
             maxBandwidthHertz = 5000;
-            (acousticEvents, dBArray) = VerticalTrackParameters.GetVerticalTracks(
+            (acousticEvents, dBArray) = UpwardTrackParameters.GetUpwardTracks(
                 spectrogram,
                 minHertz,
                 maxHertz,
-                spectrogram.NyquistFrequency,
                 decibelThreshold,
                 minBandwidthHertz,
                 maxBandwidthHertz,
@@ -626,7 +623,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             allResults2.Sonogram = spectrogram;
 
             // DEBUG PURPOSES ONLY - COMMENT NEXT LINE
-            GenericRecognizer.SaveDebugSpectrogram(allResults2, null, outputDirectory, "VerticalTracks2");
+            GenericRecognizer.SaveDebugSpectrogram(allResults2, null, outputDirectory, "UpwardTracks2");
 
             Assert.AreEqual(5, allResults2.Events.Count);
         }

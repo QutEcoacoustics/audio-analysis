@@ -1,4 +1,4 @@
-// <copyright file="VerticalTrackParameters.cs" company="QutEcoacoustics">
+// <copyright file="UpwardTrackParameters.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -15,9 +15,10 @@ namespace AnalysisPrograms.Recognizers.Base
 
     /// <summary>
     /// Parameters needed from a config file to detect vertical track components i.e. events which are completed within very few time frames, i.e. whips and near clicks.
+    /// An UpwardTrack sounds like a whip. Each track point ascends one frequency bin. Points may move forwards or back one frame step.
     /// </summary>
-    [YamlTypeTag(typeof(VerticalTrackParameters))]
-    public class VerticalTrackParameters : CommonParameters
+    [YamlTypeTag(typeof(UpwardTrackParameters))]
+    public class UpwardTrackParameters : CommonParameters
     {
         /// <summary>
         /// Gets or sets the minimum bandwidth, units = Hertz.
@@ -45,11 +46,19 @@ namespace AnalysisPrograms.Recognizers.Base
         /// They would typically be only a few time-frames duration.
         /// THis method averages dB log values incorrectly but it is faster than doing many log conversions and is accurate enough for the purpose.
         /// </summary>
-        public static (List<AcousticEvent> Events, double[] CombinedIntensity) GetVerticalTracks(
+        /// <param name="sonogram">The spectrogram to be searched.</param>
+        /// <param name="minHz">Bottom of the frequency band to be searched.</param>
+        /// <param name="maxHz">Top of the frequency band to be searched.</param>
+        /// <param name="decibelThreshold">Ignore spectrogram cells below this amplitude.</param>
+        /// <param name="minBandwidthHertz">Minimum bandwidth (Hertz) of a valid event.</param>
+        /// <param name="maxBandwidthHertz">Maximum bandwidth (Hertz) of a valid event.</param>
+        /// <param name="combineProximalSimilarEvents">Combine tracks that are likely to be repeated chatter.</param>
+        /// <param name="segmentStartOffset">The start time of the current recording segment under analysis.</param>
+        /// <returns>A list of acoustic events containing foward tracks.</returns>
+        public static (List<AcousticEvent> Events, double[] CombinedIntensity) GetUpwardTracks(
             SpectrogramStandard sonogram,
             int minHz,
             int maxHz,
-            int nyquist,
             double decibelThreshold,
             int minBandwidthHertz,
             int maxBandwidthHertz,
@@ -60,7 +69,7 @@ namespace AnalysisPrograms.Recognizers.Base
             int frameCount = sonogramData.GetLength(0);
             int binCount = sonogramData.GetLength(1);
             var frameStep = sonogram.FrameStep;
-
+            int nyquist = sonogram.NyquistFrequency;
             double binWidth = nyquist / (double)binCount;
             int minBin = (int)Math.Round(minHz / binWidth);
             int maxBin = (int)Math.Round(maxHz / binWidth);
@@ -71,7 +80,8 @@ namespace AnalysisPrograms.Recognizers.Base
                 frameSize: sonogram.Configuration.WindowSize,
                 frameOverlap: sonogram.Configuration.WindowOverlap);
 
-            //Find all frame peaks and place in peaks matrix
+            // Find all frame peaks and place in peaks matrix
+            // avoid row edge effects.
             var peaks = new double[frameCount, binCount];
             for (int row = 1; row < frameCount - 1; row++)
             {
@@ -92,7 +102,7 @@ namespace AnalysisPrograms.Recognizers.Base
             }
 
             //NOTE: the Peaks matrix is same size as the sonogram.
-            var tracks = TrackExtractor.GetVerticalTracks(peaks, minBin, maxBin, minBandwidthHertz, maxBandwidthHertz, decibelThreshold, converter);
+            var tracks = TrackExtractor.GetUpwardTracks(peaks, minBin, maxBin, minBandwidthHertz, maxBandwidthHertz, decibelThreshold, converter);
 
             // initialise tracks as events and get the combined intensity array.
             var events = new List<AcousticEvent>();

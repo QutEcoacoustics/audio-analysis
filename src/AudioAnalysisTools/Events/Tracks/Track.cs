@@ -17,11 +17,14 @@ namespace AudioAnalysisTools.Events.Tracks
         FowardTrack,     // Sounds like fluctuating tone/chirp. Each track point advances one time step.    Points may move up or down two frequency bins.
         UpwardTrack,     // Sounds like whip.                   Each track point ascends one frequency bin. Points may move forwards or back one frame step.
         VerticalTrack,   // Sounds like click.                  Each track point ascends one frequency bin. All points remain in the same time frame.
+        MixedTrack,      // A track containing segments of two or more of the above. At present time, only created to accomodate test at TrackTests at Line 116.
     }
 
     public class Track : ITrack
     {
         private readonly UnitConverters converter;
+
+        private readonly TrackType trackType;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Track"/> class.
@@ -31,28 +34,29 @@ namespace AudioAnalysisTools.Events.Tracks
         /// A reference to unit conversions this track class should use to
         /// convert spectrogram data to real units.
         /// </param>
-        public Track(UnitConverters converter)
+        /// <param name="aTrackType"> The type of track - see enum above. </param>
+        public Track(UnitConverters converter, TrackType aTrackType)
         {
             this.converter = converter;
+            this.trackType = aTrackType;
             this.Points = new SortedSet<ISpectralPoint>();
         }
 
-        /// <inheritdoc cref="Track.Track(UnitConverters)"/>
+        /// <inheritdoc cref="Track.Track(UnitConverters, TrackType)"/>
         /// <param name="initialPoints">
         /// A set of initial points to add into the point data collection.
         /// </param>
         public Track(
             UnitConverters converter,
+            TrackType trackType,
             params (int Frame, int Bin, double Amplitude)[] initialPoints)
-            : this(converter)
+            : this(converter, trackType)
         {
             foreach (var point in initialPoints)
             {
                 this.SetPoint(point.Frame, point.Bin, point.Amplitude);
             }
         }
-
-        public TrackType trackType { get; }
 
         public int PointCount => this.Points.Count;
 
@@ -126,6 +130,7 @@ namespace AudioAnalysisTools.Events.Tracks
             if (frame != outFrame || bin != outBin)
             {
                 LoggedConsole.WriteWarnLine("WARNING" + info);
+                //throw new Exception("WARNING" + info);
             }
             else
             {
@@ -179,6 +184,7 @@ namespace AudioAnalysisTools.Events.Tracks
 
         /// <summary>
         /// Returns the maximum amplitude in each time frame.
+        /// TODO
         /// </summary>
         public double[] GetAmplitudeOverTimeFrames()
         {
@@ -221,11 +227,10 @@ namespace AudioAnalysisTools.Events.Tracks
                     ((IPointData)this).DrawPointsAsPath(graphics, options);
                     break;
                 case TrackType.FowardTrack:
-                    ((IPointData)this).DrawPointsAsPath(graphics, options);
+                    ((IPointData)this).DrawPointsAsFill(graphics, options);
                     break;
                 default:
-                    //((IPointData)this).DrawPointsAsPath(graphics, options);
-                    ((IPointData)this).DrawPointsAsFill(graphics, options);
+                    ((IPointData)this).DrawPointsAsPath(graphics, options);
                     break;
             }
         }

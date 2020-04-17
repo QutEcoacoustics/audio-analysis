@@ -28,9 +28,9 @@ namespace AnalysisPrograms.Recognizers
     /// </summary>
     public class GenericRecognizer : RecognizerBase
     {
-        private bool combineOverlappedEvents = false;
-
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
+        private bool combineOverlappedEvents = false;
 
         /// <inheritdoc />
         public override string Author => "Ecosounds";
@@ -51,7 +51,6 @@ namespace AnalysisPrograms.Recognizers
 
             // validation of configs can be done here
             // sanity check the algorithm
-            string algorithmName;
             foreach (var (profileName, profile) in result.Profiles)
             {
                 if (profile is CommonParameters c)
@@ -60,6 +59,7 @@ namespace AnalysisPrograms.Recognizers
                     c.MaxHertz.ConfigNotNull(nameof(c.MaxHertz), file);
                 }
 
+                string algorithmName;
                 switch (profile)
                 {
                     case BlobParameters _:
@@ -74,10 +74,10 @@ namespace AnalysisPrograms.Recognizers
                     case HarmonicParameters _:
                         algorithmName = "Harmonics";
                         break;
-                    case HorizontalTrackParameters _:
+                    case FowardTrackParameters _:
                         algorithmName = "SpectralTrack";
                         break;
-                    case VerticalTrackParameters _:
+                    case UpwardTrackParameters _:
                         algorithmName = "VerticalTrack";
                         break;
                     case ClickParameters _:
@@ -93,8 +93,8 @@ namespace AnalysisPrograms.Recognizers
                             $"{nameof(OscillationParameters)}," +
                             $"{nameof(WhistleParameters)}," +
                             $"{nameof(HarmonicParameters)}," +
-                            $"{nameof(HorizontalTrackParameters)}," +
-                            $"{nameof(VerticalTrackParameters)}," +
+                            $"{nameof(FowardTrackParameters)}," +
+                            $"{nameof(UpwardTrackParameters)}," +
                             $"{nameof(ClickParameters)}," +
                             $"{nameof(Aed.AedConfiguration)}";
                         throw new ConfigFileException($"The algorithm type in profile {profileName} is not recognized. It must be one of {allowedAlgorithms}");
@@ -150,8 +150,8 @@ namespace AnalysisPrograms.Recognizers
                         || profileConfig is OscillationParameters
                         || profileConfig is WhistleParameters
                         || profileConfig is HarmonicParameters
-                        || profileConfig is HorizontalTrackParameters
-                        || profileConfig is VerticalTrackParameters
+                        || profileConfig is FowardTrackParameters
+                        || profileConfig is UpwardTrackParameters
                         || profileConfig is ClickParameters)
                     {
                         sonogram = new SpectrogramStandard(ParametersToSonogramConfig(parameters), audioRecording.WavReader);
@@ -244,14 +244,13 @@ namespace AnalysisPrograms.Recognizers
                             var plot = PreparePlot(harmonicIntensityScores, $"{profileName} (Harmonics:dct intensity)", hp.DctThreshold.Value);
                             plots.Add(plot);
                         }
-                        else if (profileConfig is HorizontalTrackParameters tp)
+                        else if (profileConfig is FowardTrackParameters tp)
                         {
                             double[] decibelArray;
-                            (acousticEvents, decibelArray) = HorizontalTrackParameters.GetFowardTracks(
+                            (acousticEvents, decibelArray) = FowardTrackParameters.GetFowardTracks(
                                 sonogram,
                                 tp.MinHertz.Value,
                                 tp.MaxHertz.Value,
-                                sonogram.NyquistFrequency,
                                 tp.DecibelThreshold.Value,
                                 tp.MinDuration.Value,
                                 tp.MaxDuration.Value,
@@ -278,14 +277,13 @@ namespace AnalysisPrograms.Recognizers
                             var plot = PreparePlot(decibelArray, $"{profileName} (Click:dB Intensity)", cp.DecibelThreshold.Value);
                             plots.Add(plot);
                         }
-                        else if (profileConfig is VerticalTrackParameters vtp)
+                        else if (profileConfig is UpwardTrackParameters vtp)
                         {
                             double[] decibelArray;
-                            (acousticEvents, decibelArray) = VerticalTrackParameters.GetVerticalTracks(
+                            (acousticEvents, decibelArray) = UpwardTrackParameters.GetUpwardTracks(
                                 sonogram,
                                 vtp.MinHertz.Value,
                                 vtp.MaxHertz.Value,
-                                sonogram.NyquistFrequency,
                                 vtp.DecibelThreshold.Value,
                                 vtp.MinBandwidthHertz.Value,
                                 vtp.MaxBandwidthHertz.Value,

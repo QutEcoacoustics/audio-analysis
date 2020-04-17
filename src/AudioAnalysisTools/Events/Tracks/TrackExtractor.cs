@@ -25,7 +25,7 @@ namespace AudioAnalysisTools.Events.Tracks
                 for (int col = 3; col < bandwidthBinCount - 3; col++)
                 {
                     // Visit each spectral peak in order. Each may be start of possible track
-                    var track = GetHorizontalTrack(peaks, row, col, threshold, converter);
+                    var track = GetFowardTrack(peaks, row, col, threshold, converter);
 
                     //If track has length within duration bounds, then add the track to list.
                     if (track.TrackDurationSeconds >= minDuration && track.TrackDurationSeconds <= maxDuration)
@@ -38,9 +38,9 @@ namespace AudioAnalysisTools.Events.Tracks
             return tracks;
         }
 
-        public static Track GetHorizontalTrack(double[,] peaks, int startRow, int startBin, double threshold, UnitConverters converter)
+        public static Track GetFowardTrack(double[,] peaks, int startRow, int startBin, double threshold, UnitConverters converter)
         {
-            var track = new Track(converter);
+            var track = new Track(converter, TrackType.FowardTrack);
             track.SetPoint(startRow, startBin, peaks[startRow, startBin]);
 
             // set the start point in peaks matrix to zero to prevent return to this point.
@@ -87,7 +87,7 @@ namespace AudioAnalysisTools.Events.Tracks
                 var maxId = DataTools.GetMaxIndex(options);
 
                 // if track has come to an end
-                var maxValue = options[maxId] / 2;
+                var maxValue = options[maxId] / 2.0;
                 if (maxValue < threshold)
                 {
                     break;
@@ -129,7 +129,7 @@ namespace AudioAnalysisTools.Events.Tracks
             return track;
         }
 
-        public static List<Track> GetVerticalTracks(double[,] peaks, int minBin, int maxBin, double minBandwidthHertz, double maxBandwidthHertz, double threshold, UnitConverters converter)
+        public static List<Track> GetUpwardTracks(double[,] peaks, int minBin, int maxBin, double minBandwidthHertz, double maxBandwidthHertz, double threshold, UnitConverters converter)
         {
             int frameCount = peaks.GetLength(0);
             var tracks = new List<Track>();
@@ -146,9 +146,9 @@ namespace AudioAnalysisTools.Events.Tracks
                     }
 
                     // Visit each spectral peak in order. Each may be start of possible track
-                    var track = GetVerticalTrack(peaks, row, col, maxBin, threshold, converter);
+                    var track = GetUpwardTrack(peaks, row, col, maxBin, threshold, converter);
 
-                    //If track has lies within the correct bandWidth range, then create an event
+                    //If track lies within the correct bandWidth range, then return as track.
                     if (track.TrackBandWidthHertz >= minBandwidthHertz && track.TrackBandWidthHertz <= maxBandwidthHertz)
                     {
                         tracks.Add(track);
@@ -159,15 +159,15 @@ namespace AudioAnalysisTools.Events.Tracks
             return tracks;
         }
 
-        public static Track GetVerticalTrack(double[,] peaks, int startRow, int startBin, int maxBin, double threshold, UnitConverters converter)
+        public static Track GetUpwardTrack(double[,] peaks, int startRow, int startBin, int maxBin, double threshold, UnitConverters converter)
         {
-            var track = new Track(converter);
+            var track = new Track(converter, TrackType.UpwardTrack);
             track.SetPoint(startRow, startBin, peaks[startRow, startBin]);
 
             // set the start point in peaks matrix to zero to prevent return to this point.
             peaks[startRow, startBin] = 0.0;
-            int row = startRow;
 
+            int row = startRow;
             for (int bin = startBin; bin < maxBin - 1; bin++)
             {
                 // Avoid row edge effects.
@@ -184,24 +184,28 @@ namespace AudioAnalysisTools.Events.Tracks
                     return track;
                 }
 
-                // explore options for track vertical
-                double optionStraight = Math.Max(peaks[row, bin] + peaks[row, bin + 1], peaks[row, bin] + peaks[row - 1, bin + 1]);
-                optionStraight = Math.Max(optionStraight, peaks[row, bin] + peaks[row + 1, bin + 1]);
+                // explore options for track moving to next higher frequency bin
+                // We are looking for the option which has the highest combined amplitude.
+                double optionStraight = Math.Max(peaks[row, bin + 1], peaks[row - 1, bin + 1]);
+                optionStraight = Math.Max(optionStraight, peaks[row + 1, bin + 1]);
+                optionStraight = peaks[row, bin] + optionStraight;
 
                 // option for track with negative slope i.e. return to previous row/frame.
-                double optionDown = Math.Max(peaks[row - 1, bin] + peaks[row - 1, bin + 1], peaks[row - 1, bin] + peaks[row - 2, bin + 1]);
-                optionDown = Math.Max(optionDown, peaks[row - 1, bin] + peaks[row - 1, bin + 1]);
+                //double optionNeg = Math.Max(peaks[row - 1, bin + 1], peaks[row, bin + 1]);
+                double optionNeg = Math.Max(peaks[row - 1, bin + 1], peaks[row - 2, bin + 1]);
+                optionNeg = peaks[row - 1, bin] + optionNeg;
 
                 // option for track with positive slope
-                double optionUp = Math.Max(peaks[row + 1, bin] + peaks[row + 1, bin + 1], peaks[row + 1, bin] + peaks[row + 2, bin + 1]);
-                optionUp = Math.Max(optionUp, peaks[row + 1, bin] + peaks[row + 2, bin + 1]);
+                //double optionPos = Math.Max(peaks[row + 1, bin + 1], peaks[row, bin + 1]);
+                double optionPos = Math.Max(peaks[row + 1, bin + 1], peaks[row + 2, bin + 1]);
+                optionPos = peaks[row + 1, bin] + optionPos;
 
                 // get max of the three next possible steps
-                double[] options = { optionStraight, optionDown, optionUp };
-                var maxId = DataTools.GetMaxIndex(options);
+                double[] directionOptions = { optionStraight, optionNeg, optionPos };
+                var maxId = DataTools.GetMaxIndex(directionOptions);
 
                 // Check if track has come to an end - average value of the two values is less than threshold.
-                var maxValue = options[maxId] / 2;
+                var maxValue = directionOptions[maxId] / 2.0;
                 if (maxValue < threshold)
                 {
                     return track;

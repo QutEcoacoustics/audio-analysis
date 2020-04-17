@@ -29,6 +29,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Events.Tracks
         public static readonly Track TestTrack_TimePositive_FrequencyPositive =
             new Track(
                 NiceTestConverter,
+                TrackType.FowardTrack,
                 (5, 5, 1),
                 (6, 6, 2),
                 (7, 7, 3),
@@ -63,9 +64,9 @@ namespace Acoustics.Test.AudioAnalysisTools.Events.Tracks
 
         [TestMethod]
         public void TestWhistleProperties()
-        {
+        {            
             //create new track with whistle
-            var track = new Track(NiceTestConverter);
+            var track = new Track(NiceTestConverter, TrackType.HorizontalTrack);
             track.SetPoint(5, 5, 1);
             track.SetPoint(6, 5, 2);
             track.SetPoint(7, 5, 3);
@@ -90,7 +91,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Events.Tracks
         public void TestClickProperties()
         {
             //Create new track with click
-            var track = new Track(NiceTestConverter);
+            var track = new Track(NiceTestConverter, TrackType.VerticalTrack);
             track.SetPoint(5, 5, 1);
             track.SetPoint(5, 6, 2);
             track.SetPoint(5, 7, 3);
@@ -117,7 +118,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Events.Tracks
             // Create new track with flat and vertical parts
             // frame duration = 0.1 seconds.
             // Bin width = 10 Hz.
-            var track = new Track(NiceTestConverter);
+            var track = new Track(NiceTestConverter, TrackType.MixedTrack);
             track.SetPoint(5, 5, 1);
             track.SetPoint(6, 5, 2);
             track.SetPoint(7, 6, 3);
@@ -132,7 +133,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Events.Tracks
             CollectionAssert.AreEqual(expectedArray, hertzTrack);
 
             // Create new track that apparently goes backwards in time!
-            track = new Track(NiceTestConverter);
+            track = new Track(NiceTestConverter, TrackType.UpwardTrack);
             track.SetPoint(10, 4, 1);
             track.SetPoint(9, 5, 2);
             track.SetPoint(8, 6, 3);

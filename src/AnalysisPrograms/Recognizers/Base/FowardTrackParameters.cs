@@ -1,4 +1,4 @@
-// <copyright file="HorizontalTrackParameters.cs" company="QutEcoacoustics">
+// <copyright file="FowardTrackParameters.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -14,10 +14,11 @@ namespace AnalysisPrograms.Recognizers.Base
     using TowseyLibrary;
 
     /// <summary>
-    /// Parameters needed from a config file to detect spectral peak tracks.
+    /// Parameters needed from a config file to detect fowards spectral peak tracks.
+    /// A FowardTrack sounds like a fluctuating tone or technically, a chirp. Each track point advances one time step. Points may move up or down by at most two frequency bins.
     /// </summary>
-    [YamlTypeTag(typeof(HorizontalTrackParameters))]
-    public class HorizontalTrackParameters : CommonParameters
+    [YamlTypeTag(typeof(FowardTrackParameters))]
+    public class FowardTrackParameters : CommonParameters
     {
         /// <summary>
         /// Gets or sets a value indicating whether coincident tracks stacked on top of one another are to be combined.
@@ -31,14 +32,22 @@ namespace AnalysisPrograms.Recognizers.Base
         public int HertzGap { get; set; }
 
         /// <summary>
-        /// This method returns spectral peak tracks enclosed in acoustic events.
+        /// This method returns foward (spectral peak) tracks enclosed in acoustic events.
         /// It averages dB log values incorrectly but it is faster than doing many log conversions.
         /// </summary>
+        /// <param name="sonogram">The spectrogram to be searched.</param>
+        /// <param name="minHz">Bottom of the frequency band to be searched.</param>
+        /// <param name="maxHz">Top of the frequency band to be searched.</param>
+        /// <param name="decibelThreshold">Ignore spectrogram cells below this amplitude.</param>
+        /// <param name="minDuration">Minimum duration of a valid event.</param>
+        /// <param name="maxDuration">Maximum duration of a valid event.</param>
+        /// <param name="combinePossibleHarmonics">Combine tracks that are likely to be harmonics/formants.</param>
+        /// <param name="segmentStartOffset">The start time of the current recording segment under analysis.</param>
+        /// <returns>A list of acoustic events containing foward tracks.</returns>
         public static (List<AcousticEvent> Events, double[] CombinedIntensity) GetFowardTracks(
             SpectrogramStandard sonogram,
             int minHz,
             int maxHz,
-            int nyquist,
             double decibelThreshold,
             double minDuration,
             double maxDuration,
@@ -48,7 +57,7 @@ namespace AnalysisPrograms.Recognizers.Base
             var sonogramData = sonogram.Data;
             int frameCount = sonogramData.GetLength(0);
             int binCount = sonogramData.GetLength(1);
-
+            int nyquist = sonogram.NyquistFrequency;
             double binWidth = nyquist / (double)binCount;
             int minBin = (int)Math.Round(minHz / binWidth);
             int maxBin = (int)Math.Round(maxHz / binWidth);
