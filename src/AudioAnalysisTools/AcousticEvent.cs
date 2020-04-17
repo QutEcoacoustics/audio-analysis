@@ -126,9 +126,15 @@ namespace AudioAnalysisTools
         public double Bandwidth => this.HighFrequencyHertz - this.LowFrequencyHertz + 1;
 
         /// <summary>
-        /// Gets or sets a horizontal or vertical spectral track.
+        /// Gets or sets a spectral track.
         /// </summary>
         public Track TheTrack { get; set; }
+
+        /// <summary>
+        /// Gets or sets a list of tracks.
+        /// This will be used when two or more events containing single tracks are merged into one combined event.
+        /// </summary>
+        public List<Track> Tracks { get; set; }
 
         public bool IsMelscale { get; set; }
 

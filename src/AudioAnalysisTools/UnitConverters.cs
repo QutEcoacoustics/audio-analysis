@@ -221,14 +221,14 @@ namespace AudioAnalysisTools
 
         public double RecordingRelativeToSegmentRelative(double seconds) => seconds + this.SegmentStartOffset;
 
-        //public double SecondsDurationFromFrameCount(int frameCount)
-        //{
-        //    return this.SecondsScale.GetSecondsDurationFromFrameCount(frameCount);
-        //}
-
         public int FrameFromStartTime(double startTime)
         {
-            return (int)(startTime / this.SecondsPerFrameStep);
+            return (int)Math.Round((startTime - this.SegmentStartOffset) / this.SecondsPerFrameStep, MidpointRounding.AwayFromZero);
+        }
+
+        public int FrameFromEndTime(double endTime)
+        {
+            return (int)Math.Round((endTime - this.SegmentStartOffset - this.SecondsPerFrame) / this.SecondsPerFrameStep, MidpointRounding.AwayFromZero);
         }
 
         public double GetStartTimeInSecondsOfFrame(int frameId)
@@ -238,7 +238,7 @@ namespace AudioAnalysisTools
 
         public double GetEndTimeInSecondsOfFrame(int frameId)
         {
-            return this.SegmentStartOffset + (this.GetStartTimeInSecondsOfFrame(frameId) + this.SecondsPerFrame);
+            return this.GetStartTimeInSecondsOfFrame(frameId) + this.SecondsPerFrame;
         }
 
         /// <summary>

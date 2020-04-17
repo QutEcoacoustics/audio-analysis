@@ -208,6 +208,7 @@ namespace AudioAnalysisTools.Events.Tracks
                 var maxValue = directionOptions[maxId] / 2.0;
                 if (maxValue < threshold)
                 {
+                    peaks[row, bin] = 0.0;
                     return track;
                 }
 
@@ -230,7 +231,7 @@ namespace AudioAnalysisTools.Events.Tracks
                 track.SetPoint(row, bin, maxValue);
 
                 // next line is for debug purposes
-                var info = track.CheckPoint(row, bin);
+                //var info = track.CheckPoint(row, bin);
             }
 
             return track;

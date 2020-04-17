@@ -26,6 +26,8 @@ namespace AudioAnalysisTools.Events.Tracks
 
         private readonly TrackType trackType;
 
+        private readonly List<ISpectralPoint> _pointCopy;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Track"/> class.
         /// Constructor.
@@ -40,6 +42,7 @@ namespace AudioAnalysisTools.Events.Tracks
             this.converter = converter;
             this.trackType = aTrackType;
             this.Points = new SortedSet<ISpectralPoint>();
+            this._pointCopy = new List<ISpectralPoint>();
         }
 
         /// <inheritdoc cref="Track.Track(UnitConverters, TrackType)"/>
@@ -105,6 +108,7 @@ namespace AudioAnalysisTools.Events.Tracks
                 amplitude);
 
             this.Points.Add(point);
+            this._pointCopy.Add(point);
         }
 
         /// <summary>
@@ -130,7 +134,7 @@ namespace AudioAnalysisTools.Events.Tracks
             if (frame != outFrame || bin != outBin)
             {
                 LoggedConsole.WriteWarnLine("WARNING" + info);
-                //throw new Exception("WARNING" + info);
+                throw new Exception("WARNING" + info);
             }
             else
             {

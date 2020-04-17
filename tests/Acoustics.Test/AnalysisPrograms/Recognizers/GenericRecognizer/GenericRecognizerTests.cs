@@ -497,7 +497,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
         /// Tests the upward-track recognizer on the same artifical spectrogram as used for foward-tracks and harmonics.
         /// </summary>
         [TestMethod]
-        public void TestUpwardsTrackAlgorithm()
+        public void Test1UpwardsTrackAlgorithm()
         {
             // Set up the recognizer parameters.
             var windowSize = 512;
@@ -585,12 +585,48 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             Assert.AreEqual(11.24, @event.EventEndSeconds, 0.1);
             Assert.AreEqual(6450, @event.LowFrequencyHertz);
             Assert.AreEqual(7310, @event.HighFrequencyHertz);
+        }
+
+        /// <summary>
+        /// Tests the upward-track recognizer on the same artifical spectrogram as used for foward-tracks and harmonics.
+        /// </summary>
+        [TestMethod]
+        public void Test2UpwardsTrackAlgorithm()
+        {
+            // Set up the recognizer parameters.
+            var windowSize = 512;
+            var windowStep = 512;
+            var minHertz = 500;
+            var maxHertz = 6000;
+            var minBandwidthHertz = 100;
+            var maxBandwidthHertz = 5000;
+            var decibelThreshold = 2.0;
+            var combineProximalSimilarEvents = false;
+
+            //Set up the virtual recording.
+            var segmentStartOffset = TimeSpan.Zero;
+            int samplerate = 22050;
+            double signalDuration = 13.0; //seconds
+
+            // set up the config for a virtual spectrogram.
+            var sonoConfig = new SonogramConfig()
+            {
+                WindowSize = windowSize,
+                WindowStep = windowStep,
+                WindowOverlap = 0.0, // this must be set
+                WindowFunction = WindowFunctions.HANNING.ToString(),
+                NoiseReductionType = NoiseReductionType.Standard,
+                NoiseReductionParameter = 0.0,
+                Duration = TimeSpan.FromSeconds(signalDuration),
+                SampleRate = samplerate,
+            };
+
+            var spectrogram = this.CreateArtificialSpectrogramToTestTracksAndHarmonics(sonoConfig);
+            var plots = new List<Plot>();
 
             // do a SECOND TEST of the vertical tracks
-            minHertz = 500;
-            maxHertz = 6000;
-            minBandwidthHertz = 100;
-            maxBandwidthHertz = 5000;
+            double[] dBArray;
+            List<AcousticEvent> acousticEvents;
             (acousticEvents, dBArray) = UpwardTrackParameters.GetUpwardTracks(
                 spectrogram,
                 minHertz,
@@ -602,7 +638,9 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
                 segmentStartOffset);
 
             // draw a plot of max decibels in each frame
-            normalisedDecibelArray = DataTools.NormaliseInZeroOne(dBArray, 0, decibelNormalizationMax);
+            double decibelNormalizationMax = 3 * decibelThreshold;
+            var dBThreshold = decibelThreshold / decibelNormalizationMax;
+            var normalisedDecibelArray = DataTools.NormaliseInZeroOne(dBArray, 0, decibelNormalizationMax);
             var plot2 = new Plot("decibel max", normalisedDecibelArray, dBThreshold);
             plots.Add(plot2);
 
@@ -618,11 +656,10 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             // combine the results i.e. add the events list of call events.
             allResults2.Events.AddRange(acousticEvents);
             allResults2.Plots.AddRange(plots);
-
-            // effectively keeps only the *last* sonogram produced
             allResults2.Sonogram = spectrogram;
 
             // DEBUG PURPOSES ONLY - COMMENT NEXT LINE
+            var outputDirectory = new DirectoryInfo("C:\\temp");
             GenericRecognizer.SaveDebugSpectrogram(allResults2, null, outputDirectory, "UpwardTracks2");
 
             Assert.AreEqual(5, allResults2.Events.Count);
