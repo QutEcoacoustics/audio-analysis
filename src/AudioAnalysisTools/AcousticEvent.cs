@@ -126,17 +126,17 @@ namespace AudioAnalysisTools
         public double Bandwidth => this.HighFrequencyHertz - this.LowFrequencyHertz + 1;
 
         /// <summary>
-        /// Gets or sets a spectral track.
-        /// </summary>
-        public Track TheTrack { get; set; }
-
-        /// <summary>
         /// Gets or sets a list of tracks.
         /// This will be used when two or more events containing single tracks are merged into one combined event.
         /// </summary>
         public List<Track> Tracks { get; set; }
 
         public bool IsMelscale { get; set; }
+
+        /// <summary>
+        /// Gets or sets a spectral track.
+        /// </summary>
+        private List<Track> tracks;
 
         /// <summary>
         /// Gets or sets the bounds of an event with respect to the segment start
@@ -434,6 +434,29 @@ namespace AudioAnalysisTools
         /// </summary>
         public Rectangle GetEventAsRectangle() => new Rectangle(this.Oblong.ColumnLeft, this.Oblong.RowTop, this.Oblong.ColWidth, this.Oblong.RowWidth);
 
+        public void AddTracks(List<Track> newTracks)
+        {
+            // check there are tracks to add.
+            if (newTracks == null || newTracks.Count == 0)
+            {
+                return;
+            }
+
+            //check if there are existing tracks.
+            if (this.tracks == null)
+            {
+                this.tracks = new List<Track>();
+            }
+
+            // now add the new tracks
+            this.tracks.AddRange(newTracks);
+        }
+
+        public List<Track> GetTracks()
+        {
+            return this.tracks;
+        }
+
         /// <summary>
         /// Sets the passed score and also a value normalised between a min and a max.
         /// </summary>
@@ -464,7 +487,8 @@ namespace AudioAnalysisTools
             var borderPen = new Pen(this.BorderColour, 1);
             var scorePen = new Pen(this.ScoreColour, 1);
 
-            if (this.TheTrack != null)
+            // draw component tracks first but only if more than one track.
+            if (this.tracks != null && this.tracks.Count > 1)
             {
                 // currently this call assumes that the Track[frame, bin[ elements correspond to the pixels of the passed spectrogram.
                 // That is, there is no rescaling of the time and frequency axes
@@ -474,14 +498,18 @@ namespace AudioAnalysisTools
                     nyquistFrequency: freqBinWidth * sonogramHeight,
                     imageWidth: imageToReturn.Width,
                     imageHeight: imageToReturn.Height);
-
                 var renderingOptions = new EventRenderingOptions(converter);
-                imageToReturn.Mutate(
-                    context =>
-                    {
-                        this.TheTrack.Draw(context, renderingOptions);
-                    });
-                return;
+
+                foreach (var track in this.tracks)
+                {
+                    imageToReturn.Mutate(
+                        context =>
+                        {
+                            track.Draw(context, renderingOptions);
+                        });
+                }
+
+                //return;
             }
 
             // calculate top and bottom freq bins
@@ -698,6 +726,7 @@ namespace AudioAnalysisTools
             e1.SetEventPositionRelative(segmentStartOffset, minTime, maxTime);
             e1.LowFrequencyHertz = Math.Min(e1.LowFrequencyHertz, e2.LowFrequencyHertz);
             e1.HighFrequencyHertz = Math.Max(e1.HighFrequencyHertz, e2.HighFrequencyHertz);
+            e1.AddTracks(e2.GetTracks());
             e1.Score = Math.Max(e1.Score, e2.Score);
             e1.ScoreNormalised = Math.Max(e1.ScoreNormalised, e2.ScoreNormalised);
             e1.ResultStartSeconds = e1.EventStartSeconds;
