@@ -12,7 +12,6 @@ namespace AudioAnalysisTools
 
     public class WhistleEvent : SpectralEvent, ITrack
     {
-
         public WhistleEvent(ITrack spectralTrack)
         {
             this.Track = spectralTrack;
@@ -24,9 +23,14 @@ namespace AudioAnalysisTools
 
         public override void Draw(IImageProcessingContext graphics, EventRenderingOptions options)
         {
+            // foreach (var track in tracks) {
+            // track.Draw(...)
+            // }
+
             this.Track.Draw(graphics, options);
 
             //  base drawing (border)
+            // TODO: unless border is disabled
             base.Draw(graphics, options);
         }
     }

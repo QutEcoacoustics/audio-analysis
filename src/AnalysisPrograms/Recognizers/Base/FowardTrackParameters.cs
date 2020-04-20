@@ -96,11 +96,12 @@ namespace AnalysisPrograms.Recognizers.Base
             var combinedIntensityArray = new double[frameCount];
             foreach (var track in tracks)
             {
-                var ae = new AcousticEvent(segmentStartOffset, track.StartTimeSeconds, track.TrackDurationSeconds, track.LowFreqHertz, track.HighFreqHertz)
+                var ae = new AcousticEvent(segmentStartOffset, track.StartTimeSeconds, track.TrackDurationSeconds, track.LowFreqHertz, track.HighFreqHertz);
+                var tr = new List<Track>
                 {
-                    TheTrack = track,
+                    track,
                 };
-
+                ae.AddTracks(tr);
                 events.Add(ae);
 
                 // fill the intensity array

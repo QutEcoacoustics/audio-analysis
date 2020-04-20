@@ -111,10 +111,14 @@ namespace AnalysisPrograms.Recognizers.Base
             {
                 var ae = new AcousticEvent(segmentStartOffset, track.StartTimeSeconds, track.TrackDurationSeconds, track.LowFreqHertz, track.HighFreqHertz)
                 {
-                    TheTrack = track,
                     SegmentDurationSeconds = frameCount * frameStep,
                 };
 
+                var tr = new List<Track>
+                {
+                    track,
+                };
+                ae.AddTracks(tr);
                 events.Add(ae);
 
                 // fill the intensity array
@@ -137,5 +141,76 @@ namespace AnalysisPrograms.Recognizers.Base
 
             return (events, temporalIntensityArray);
         }
+
+        /*
+public static SpectralTrack_TO_BE_REMOVED GetVerticalTrack(double[,] peaks, int startRow, int startBin, int maxBin, double threshold)
+{
+var track = new SpectralTrack_TO_BE_REMOVED(SpectralTrackType.VerticalTrack, startRow, startBin, peaks[startRow, startBin]);
+
+// set the start point in peaks matrix to zero to prevent return to this point.
+peaks[startRow, startBin] = 0.0;
+int row = startRow;
+
+for (int bin = startBin; bin < maxBin - 1; bin++)
+{
+// Avoid row edge effects.
+if (row < 2 || row > peaks.GetLength(0) - 3)
+{
+    // arrived back at start of recording or end of recording.
+    // The track has come to end
+    return track;
+}
+
+if (bin >= maxBin)
+{
+    // arrived at top of the requested frequency band - track has come to end
+    return track;
+}
+
+// explore options for track vertical
+double optionStraight = Math.Max(peaks[row, bin] + peaks[row, bin + 1], peaks[row, bin] + peaks[row - 1, bin + 1]);
+optionStraight = Math.Max(optionStraight, peaks[row, bin] + peaks[row + 1, bin + 1]);
+
+// option for track with negative slope i.e. return to previous row/frame.
+double optionDown = Math.Max(peaks[row - 1, bin] + peaks[row - 1, bin + 1], peaks[row - 1, bin] + peaks[row - 2, bin + 1]);
+optionDown = Math.Max(optionDown, peaks[row - 1, bin] + peaks[row - 1, bin + 1]);
+
+// option for track with positive slope
+double optionUp = Math.Max(peaks[row + 1, bin] + peaks[row + 1, bin + 1], peaks[row + 1, bin] + peaks[row + 2, bin + 1]);
+optionUp = Math.Max(optionUp, peaks[row + 1, bin] + peaks[row + 2, bin + 1]);
+
+// get max of the three next possible steps
+double[] options = { optionStraight, optionDown, optionUp };
+var maxId = DataTools.GetMaxIndex(options);
+
+// Check if track has come to an end - average value of the two values is less than threshold.
+var maxValue = options[maxId] / 2;
+if (maxValue < threshold)
+{
+    return track;
+}
+
+// else set visited values to zero so as not to revisit.....
+peaks[row - 1, bin] = 0.0;
+peaks[row, bin] = 0.0;
+peaks[row + 1, bin] = 0.0;
+
+// and go to the new time frame
+if (maxId == 1)
+{
+    row--;
+}
+else
+if (maxId == 2)
+{
+    row++;
+}
+
+track.SetPoint(row, bin, maxValue);
+}
+
+return track;
+}
+*/
     }
 }
