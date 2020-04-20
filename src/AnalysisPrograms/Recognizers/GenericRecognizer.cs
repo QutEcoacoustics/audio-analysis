@@ -68,7 +68,7 @@ namespace AnalysisPrograms.Recognizers
                     case OscillationParameters _:
                         algorithmName = "Oscillation";
                         break;
-                    case WhistleParameters _:
+                    case OnebinTrackParameters _:
                         algorithmName = "Whistle";
                         break;
                     case HarmonicParameters _:
@@ -80,7 +80,7 @@ namespace AnalysisPrograms.Recognizers
                     case UpwardTrackParameters _:
                         algorithmName = "VerticalTrack";
                         break;
-                    case ClickParameters _:
+                    case OneframeTrackParameters _:
                         algorithmName = "Click";
                         break;
                     case Aed.AedConfiguration _:
@@ -91,11 +91,11 @@ namespace AnalysisPrograms.Recognizers
                         var allowedAlgorithms =
                             $"{nameof(BlobParameters)}," +
                             $"{nameof(OscillationParameters)}," +
-                            $"{nameof(WhistleParameters)}," +
+                            $"{nameof(OnebinTrackParameters)}," +
                             $"{nameof(HarmonicParameters)}," +
                             $"{nameof(FowardTrackParameters)}," +
                             $"{nameof(UpwardTrackParameters)}," +
-                            $"{nameof(ClickParameters)}," +
+                            $"{nameof(OneframeTrackParameters)}," +
                             $"{nameof(Aed.AedConfiguration)}";
                         throw new ConfigFileException($"The algorithm type in profile {profileName} is not recognized. It must be one of {allowedAlgorithms}");
                 }
@@ -148,37 +148,15 @@ namespace AnalysisPrograms.Recognizers
                 {
                     if (profileConfig is BlobParameters
                         || profileConfig is OscillationParameters
-                        || profileConfig is WhistleParameters
+                        || profileConfig is OnebinTrackParameters
                         || profileConfig is HarmonicParameters
                         || profileConfig is FowardTrackParameters
                         || profileConfig is UpwardTrackParameters
-                        || profileConfig is ClickParameters)
+                        || profileConfig is OneframeTrackParameters)
                     {
                         sonogram = new SpectrogramStandard(ParametersToSonogramConfig(parameters), audioRecording.WavReader);
 
-                        if (profileConfig is OscillationParameters op)
-                        {
-                            Oscillations2012.Execute(
-                                sonogram,
-                                op.MinHertz.Value,
-                                op.MaxHertz.Value,
-                                op.DctDuration,
-                                op.MinOscillationFrequency,
-                                op.MaxOscillationFrequency,
-                                op.DctThreshold,
-                                op.EventThreshold,
-                                op.MinDuration.Value,
-                                op.MaxDuration.Value,
-                                out var scores,
-                                out acousticEvents,
-                                out var hits,
-                                segmentStartOffset);
-
-                            //plots.Add(new Plot($"{profileName} (:OscillationScore)", scores, op.EventThreshold));
-                            var plot = PreparePlot(scores, $"{profileName} (:OscillationScore)", op.EventThreshold);
-                            plots.Add(plot);
-                        }
-                        else if (profileConfig is BlobParameters bp)
+                        if (profileConfig is BlobParameters bp)
                         {
                             //get the array of intensity values minus intensity in side/buffer bands.
                             //i.e. require silence in side-bands. Otherwise might simply be getting part of a broader band acoustic event.
@@ -207,21 +185,69 @@ namespace AnalysisPrograms.Recognizers
                                 sonogram.FramesPerSecond,
                                 sonogram.FBinWidth);
                         }
-                        else if (profileConfig is WhistleParameters wp)
+                        else if (profileConfig is OnebinTrackParameters wp)
                         {
                             //get the array of intensity values minus intensity in side/buffer bands.
                             double[] decibelArray;
-                            (acousticEvents, decibelArray) = WhistleParameters.GetWhistles(
+                            (acousticEvents, decibelArray) = OnebinTrackParameters.GetOnebinTracks(
                                 sonogram,
                                 wp.MinHertz.Value,
                                 wp.MaxHertz.Value,
-                                sonogram.NyquistFrequency,
                                 wp.DecibelThreshold.Value,
                                 wp.MinDuration.Value,
                                 wp.MaxDuration.Value,
+                                wp.CombinePossibleSequence,
                                 segmentStartOffset);
 
                             var plot = PreparePlot(decibelArray, $"{profileName} (Whistle:dB Intensity)", wp.DecibelThreshold.Value);
+                            plots.Add(plot);
+                        }
+                        else if (profileConfig is FowardTrackParameters tp)
+                        {
+                            double[] decibelArray;
+                            (acousticEvents, decibelArray) = FowardTrackParameters.GetFowardTracks(
+                                sonogram,
+                                tp.MinHertz.Value,
+                                tp.MaxHertz.Value,
+                                tp.DecibelThreshold.Value,
+                                tp.MinDuration.Value,
+                                tp.MaxDuration.Value,
+                                tp.CombinePossibleHarmonics,
+                                segmentStartOffset);
+
+                            var plot = PreparePlot(decibelArray, $"{profileName} (Chirps:dB Intensity)", tp.DecibelThreshold.Value);
+                            plots.Add(plot);
+                        }
+                        else if (profileConfig is OneframeTrackParameters cp)
+                        {
+                            double[] decibelArray;
+                            (acousticEvents, decibelArray) = OneframeTrackParameters.GetOneFrameTracks(
+                                sonogram,
+                                cp.MinHertz.Value,
+                                cp.MaxHertz.Value,
+                                cp.DecibelThreshold.Value,
+                                cp.MinBandwidthHertz.Value,
+                                cp.MaxBandwidthHertz.Value,
+                                cp.CombineProximalSimilarEvents,
+                                segmentStartOffset);
+
+                            var plot = PreparePlot(decibelArray, $"{profileName} (Clicks:dB Intensity)", cp.DecibelThreshold.Value);
+                            plots.Add(plot);
+                        }
+                        else if (profileConfig is UpwardTrackParameters vtp)
+                        {
+                            double[] decibelArray;
+                            (acousticEvents, decibelArray) = UpwardTrackParameters.GetUpwardTracks(
+                                sonogram,
+                                vtp.MinHertz.Value,
+                                vtp.MaxHertz.Value,
+                                vtp.DecibelThreshold.Value,
+                                vtp.MinBandwidthHertz.Value,
+                                vtp.MaxBandwidthHertz.Value,
+                                vtp.CombineProximalSimilarEvents,
+                                segmentStartOffset);
+
+                            var plot = PreparePlot(decibelArray, $"{profileName} (VerticalTrack:dB Intensity)", vtp.DecibelThreshold.Value);
                             plots.Add(plot);
                         }
                         else if (profileConfig is HarmonicParameters hp)
@@ -244,53 +270,26 @@ namespace AnalysisPrograms.Recognizers
                             var plot = PreparePlot(harmonicIntensityScores, $"{profileName} (Harmonics:dct intensity)", hp.DctThreshold.Value);
                             plots.Add(plot);
                         }
-                        else if (profileConfig is FowardTrackParameters tp)
+                        if (profileConfig is OscillationParameters op)
                         {
-                            double[] decibelArray;
-                            (acousticEvents, decibelArray) = FowardTrackParameters.GetFowardTracks(
+                            Oscillations2012.Execute(
                                 sonogram,
-                                tp.MinHertz.Value,
-                                tp.MaxHertz.Value,
-                                tp.DecibelThreshold.Value,
-                                tp.MinDuration.Value,
-                                tp.MaxDuration.Value,
-                                tp.CombinePossibleHarmonics,
+                                op.MinHertz.Value,
+                                op.MaxHertz.Value,
+                                op.DctDuration,
+                                op.MinOscillationFrequency,
+                                op.MaxOscillationFrequency,
+                                op.DctThreshold,
+                                op.EventThreshold,
+                                op.MinDuration.Value,
+                                op.MaxDuration.Value,
+                                out var scores,
+                                out acousticEvents,
+                                out var hits,
                                 segmentStartOffset);
 
-                            var plot = PreparePlot(decibelArray, $"{profileName} (SpectralPeaks:dB Intensity)", tp.DecibelThreshold.Value);
-                            plots.Add(plot);
-                        }
-                        else if (profileConfig is ClickParameters cp)
-                        {
-                            double[] decibelArray;
-                            (acousticEvents, decibelArray) = ClickParameters.GetClicks(
-                                sonogram,
-                                cp.MinHertz.Value,
-                                cp.MaxHertz.Value,
-                                sonogram.NyquistFrequency,
-                                cp.DecibelThreshold.Value,
-                                cp.MinBandwidthHertz.Value,
-                                cp.MaxBandwidthHertz.Value,
-                                cp.CombineProximalSimilarEvents,
-                                segmentStartOffset);
-
-                            var plot = PreparePlot(decibelArray, $"{profileName} (Click:dB Intensity)", cp.DecibelThreshold.Value);
-                            plots.Add(plot);
-                        }
-                        else if (profileConfig is UpwardTrackParameters vtp)
-                        {
-                            double[] decibelArray;
-                            (acousticEvents, decibelArray) = UpwardTrackParameters.GetUpwardTracks(
-                                sonogram,
-                                vtp.MinHertz.Value,
-                                vtp.MaxHertz.Value,
-                                vtp.DecibelThreshold.Value,
-                                vtp.MinBandwidthHertz.Value,
-                                vtp.MaxBandwidthHertz.Value,
-                                vtp.CombineProximalSimilarEvents,
-                                segmentStartOffset);
-
-                            var plot = PreparePlot(decibelArray, $"{profileName} (VerticalTrack:dB Intensity)", vtp.DecibelThreshold.Value);
+                            //plots.Add(new Plot($"{profileName} (:OscillationScore)", scores, op.EventThreshold));
+                            var plot = PreparePlot(scores, $"{profileName} (:OscillationScore)", op.EventThreshold);
                             plots.Add(plot);
                         }
                         else

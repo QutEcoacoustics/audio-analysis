@@ -44,7 +44,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
                     { "TestAed", new Aed.AedConfiguration() { BandpassMinimum = 12345 } },
                     { "TestOscillation", new OscillationParameters() { DecibelThreshold = 123 } },
                     { "TestBlob", new BlobParameters() { BottomHertzBuffer = 456 } },
-                    { "TestWhistle", new WhistleParameters() { TopHertzBuffer = 789 } },
+                    { "TestWhistle", new OnebinTrackParameters() { TopHertzBuffer = 789 } },
                 },
             };
 
@@ -71,12 +71,12 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             Assert.IsInstanceOfType(config2.Profiles["TestAed"], typeof(Aed.AedConfiguration));
             Assert.IsInstanceOfType(config2.Profiles["TestOscillation"], typeof(OscillationParameters));
             Assert.IsInstanceOfType(config2.Profiles["TestBlob"], typeof(BlobParameters));
-            Assert.IsInstanceOfType(config2.Profiles["TestWhistle"], typeof(WhistleParameters));
+            Assert.IsInstanceOfType(config2.Profiles["TestWhistle"], typeof(OnebinTrackParameters));
 
             Assert.AreEqual((config2.Profiles["TestAed"] as Aed.AedConfiguration)?.BandpassMinimum, 12345);
             Assert.AreEqual((config2.Profiles["TestOscillation"] as OscillationParameters)?.DecibelThreshold, 123);
             Assert.AreEqual((config2.Profiles["TestBlob"] as BlobParameters)?.BottomHertzBuffer, 456);
-            Assert.AreEqual((config2.Profiles["TestWhistle"] as WhistleParameters)?.TopHertzBuffer, 789);
+            Assert.AreEqual((config2.Profiles["TestWhistle"] as OnebinTrackParameters)?.TopHertzBuffer, 789);
         }
 
         [TestMethod]
@@ -158,7 +158,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
                 {
                     {
                         "TestWhistle",
-                        new WhistleParameters()
+                        new OnebinTrackParameters()
                         {
                             FrameSize = 512,
                             FrameStep = 512,
@@ -311,6 +311,95 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
         }
 
         [TestMethod]
+        public void TestOnebinTrackAlgorithm()
+        {
+            // Set up the recognizer parameters.
+            var windowSize = 512;
+            var windowStep = 512;
+            var minHertz = 500;
+            var maxHertz = 6000;
+            var minDuration = 0.2;
+            var maxDuration = 1.1;
+            var decibelThreshold = 2.0;
+            var combinePossibleHarmonics = true;
+
+            //Set up the virtual recording.
+            int samplerate = 22050;
+            double signalDuration = 13.0; //seconds
+
+            // set up the config for a virtual spectrogram.
+            var sonoConfig = new SonogramConfig()
+            {
+                WindowSize = windowSize,
+                WindowStep = windowStep,
+                WindowOverlap = 0.0, // this must be set
+                WindowFunction = WindowFunctions.HANNING.ToString(),
+                NoiseReductionType = NoiseReductionType.Standard,
+                NoiseReductionParameter = 0.0,
+                Duration = TimeSpan.FromSeconds(signalDuration),
+                SampleRate = samplerate,
+            };
+
+            var spectrogram = this.CreateArtificialSpectrogramToTestTracksAndHarmonics(sonoConfig);
+
+            //var image1 = SpectrogramTools.GetSonogramPlusCharts(spectrogram, null, null, null);
+            //results.Sonogram.GetImage().Save(this.outputDirectory + "\\debug.png");
+
+            var segmentStartOffset = TimeSpan.Zero;
+            var plots = new List<Plot>();
+            double[] dBArray;
+            List<AcousticEvent> acousticEvents;
+            (acousticEvents, dBArray) = OnebinTrackParameters.GetOnebinTracks(
+                spectrogram,
+                minHertz,
+                maxHertz,
+                decibelThreshold,
+                minDuration,
+                maxDuration,
+                combinePossibleHarmonics,
+                segmentStartOffset);
+
+            // draw a plot of max decibels in each frame
+            double decibelNormalizationMax = 3 * decibelThreshold;
+            var dBThreshold = decibelThreshold / decibelNormalizationMax;
+            var normalisedDecibelArray = DataTools.NormaliseInZeroOne(dBArray, 0, decibelNormalizationMax);
+            var plot1 = new Plot("decibel max", normalisedDecibelArray, dBThreshold);
+            plots.Add(plot1);
+
+            var allResults = new RecognizerResults()
+            {
+                Events = new List<AcousticEvent>(),
+                Hits = null,
+                ScoreTrack = null,
+                Plots = new List<Plot>(),
+                Sonogram = null,
+            };
+
+            // combine the results i.e. add the events list of call events.
+            allResults.Events.AddRange(acousticEvents);
+            allResults.Plots.AddRange(plots);
+            allResults.Sonogram = spectrogram;
+
+            // DEBUG PURPOSES COMMENT NEXT LINE
+            var outputDirectory = new DirectoryInfo("C:\\temp");
+            GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "WhistleTrack");
+
+            Assert.AreEqual(16, allResults.Events.Count);
+
+            var @event = allResults.Events[4];
+            Assert.AreEqual(2.0, @event.EventStartSeconds, 0.1);
+            Assert.AreEqual(2.5, @event.EventEndSeconds, 0.1);
+            Assert.AreEqual(1723, @event.LowFrequencyHertz);
+            Assert.AreEqual(2067, @event.HighFrequencyHertz);
+
+            @event = allResults.Events[11];
+            Assert.AreEqual(6.0, @event.EventStartSeconds, 0.1);
+            Assert.AreEqual(6.5, @event.EventEndSeconds, 0.1);
+            Assert.AreEqual(2153, @event.LowFrequencyHertz);
+            Assert.AreEqual(2541, @event.HighFrequencyHertz);
+        }
+
+        [TestMethod]
         public void TestForwardTrackAlgorithm()
         {
             // Set up the recognizer parameters.
@@ -402,7 +491,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
         }
 
         [TestMethod]
-        public void TestClickAlgorithm()
+        public void TestOneframeTrackAlgorithm()
         {
             // Set up the recognizer parameters.
             var windowSize = 512;
@@ -440,11 +529,10 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             var plots = new List<Plot>();
             double[] dBArray;
             List<AcousticEvent> acousticEvents;
-            (acousticEvents, dBArray) = ClickParameters.GetClicks(
+            (acousticEvents, dBArray) = OneframeTrackParameters.GetOneFrameTracks(
                 spectrogram,
                 minHertz,
                 maxHertz,
-                spectrogram.NyquistFrequency,
                 decibelThreshold,
                 minBandwidthHertz,
                 maxBandwidthHertz,
@@ -476,7 +564,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
 
             // DEBUG PURPOSES COMMENT NEXT LINE
             var outputDirectory = new DirectoryInfo("C:\\temp");
-            GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "Click");
+            GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "ClickTrack");
 
             Assert.AreEqual(2, allResults.Events.Count);
 

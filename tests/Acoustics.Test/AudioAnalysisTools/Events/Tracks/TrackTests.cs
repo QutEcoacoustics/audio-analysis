@@ -66,7 +66,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Events.Tracks
         public void TestWhistleProperties()
         {            
             //create new track with whistle
-            var track = new Track(NiceTestConverter, TrackType.HorizontalTrack);
+            var track = new Track(NiceTestConverter, TrackType.OneBinTrack);
             track.SetPoint(5, 5, 1);
             track.SetPoint(6, 5, 2);
             track.SetPoint(7, 5, 3);
@@ -91,7 +91,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Events.Tracks
         public void TestClickProperties()
         {
             //Create new track with click
-            var track = new Track(NiceTestConverter, TrackType.VerticalTrack);
+            var track = new Track(NiceTestConverter, TrackType.OneFrameTrack);
             track.SetPoint(5, 5, 1);
             track.SetPoint(5, 6, 2);
             track.SetPoint(5, 7, 3);

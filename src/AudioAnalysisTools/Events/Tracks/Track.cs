@@ -13,10 +13,10 @@ namespace AudioAnalysisTools.Events.Tracks
 
     public enum TrackType
     {
-        HorizontalTrack, // Sounds like single tone whistle.    Each track point advances one time step.    All points remain in the same frequency bin.
+        OneBinTrack,     // Sounds like single tone whistle.    Each track point advances one time step.    All points remain in the same frequency bin.
         FowardTrack,     // Sounds like fluctuating tone/chirp. Each track point advances one time step.    Points may move up or down two frequency bins.
         UpwardTrack,     // Sounds like whip.                   Each track point ascends one frequency bin. Points may move forwards or back one frame step.
-        VerticalTrack,   // Sounds like click.                  Each track point ascends one frequency bin. All points remain in the same time frame.
+        OneFrameTrack,   // Sounds like click.                  Each track point ascends one frequency bin. All points remain in the same time frame.
         MixedTrack,      // A track containing segments of two or more of the above. At present time, only created to accomodate test at TrackTests at Line 116.
     }
 
@@ -197,12 +197,9 @@ namespace AudioAnalysisTools.Events.Tracks
                 .Points
                 .GroupBy(g => g.Seconds)
                 .OrderBy(x => x.Key)
-                .Windowed(2)
-                .Select(pointPair =>
+                .Select(framePoints =>
                 {
-                    var firstPoints = pointPair[0];
-                    var secondPoints = pointPair[1];
-                    var maxAmplitude = secondPoints.Max(y => y.Value);
+                    var maxAmplitude = framePoints.Max(y => y.Value);
                     return maxAmplitude;
                 })
                 .ToArray();
@@ -222,16 +219,16 @@ namespace AudioAnalysisTools.Events.Tracks
             switch (this.trackType)
             {
                 case TrackType.UpwardTrack:
-                    ((IPointData)this).DrawPointsAsPath(graphics, options);
+                    ((IPointData)this).DrawPointsAsFillExperiment(graphics, options);
                     break;
-                case TrackType.HorizontalTrack:
-                    ((IPointData)this).DrawPointsAsPath(graphics, options);
+                case TrackType.OneBinTrack:
+                    ((IPointData)this).DrawPointsAsFillExperiment(graphics, options);
                     break;
-                case TrackType.VerticalTrack:
-                    ((IPointData)this).DrawPointsAsPath(graphics, options);
+                case TrackType.OneFrameTrack:
+                    ((IPointData)this).DrawPointsAsFillExperiment(graphics, options);
                     break;
                 case TrackType.FowardTrack:
-                    ((IPointData)this).DrawPointsAsFill(graphics, options);
+                    ((IPointData)this).DrawPointsAsFillExperiment(graphics, options);
                     break;
                 default:
                     ((IPointData)this).DrawPointsAsPath(graphics, options);
