@@ -1,4 +1,4 @@
-// <copyright file="ClickParameters.cs" company="QutEcoacoustics">
+﻿// <copyright file="OneframeTrackParameters.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -9,13 +9,14 @@ namespace AnalysisPrograms.Recognizers.Base
     using System.Linq;
     using Acoustics.Shared;
     using AudioAnalysisTools;
+    using AudioAnalysisTools.Events.Tracks;
     using AudioAnalysisTools.StandardSpectrograms;
 
     /// <summary>
     /// Parameters needed from a config file to detect click components.
     /// </summary>
-    [YamlTypeTag(typeof(ClickParameters))]
-    public class ClickParameters : CommonParameters
+    [YamlTypeTag(typeof(OneframeTrackParameters))]
+    public class OneframeTrackParameters : CommonParameters
     {
         /// <summary>
         /// Gets or sets the minimum bandwidth, units = Hertz.
@@ -34,20 +35,15 @@ namespace AnalysisPrograms.Recognizers.Base
         /// </summary>
         public bool CombineProximalSimilarEvents { get; set; }
 
-        public TimeSpan StartDifference { get; set; }
-
-        public int HertzDifference { get; set; }
-
         /// <summary>
         /// A click is a sharp onset broadband sound of brief duration. Geometrically it is similar to a vertical whistle.
         /// THis method averages dB log values incorrectly but it is faster than doing many log conversions.
         /// This method is used to find acoustic events and is accurate enough for the purpose.
         /// </summary>
-        public static (List<AcousticEvent> Events, double[] Intensity) GetClicks(
+        public static (List<AcousticEvent> Events, double[] Intensity) GetOneFrameTracks(
             SpectrogramStandard sonogram,
             int minHz,
             int maxHz,
-            int nyquist,
             double decibelThreshold,
             int minBandwidthHertz,
             int maxBandwidthHertz,
@@ -57,83 +53,85 @@ namespace AnalysisPrograms.Recognizers.Base
             var sonogramData = sonogram.Data;
             int frameCount = sonogramData.GetLength(0);
             int binCount = sonogramData.GetLength(1);
-
+            var frameStep = sonogram.FrameStep;
+            int nyquist = sonogram.NyquistFrequency;
             double binWidth = nyquist / (double)binCount;
             int minBin = (int)Math.Round(minHz / binWidth);
             int maxBin = (int)Math.Round(maxHz / binWidth);
-            int bandwidthBinCount = maxBin - minBin + 1;
 
-            // list of accumulated acoustic events
-            var events = new List<AcousticEvent>();
-            var temporalIntensityArray = new double[frameCount];
+            var converter = new UnitConverters(
+                segmentStartOffset: segmentStartOffset.TotalSeconds,
+                sampleRate: sonogram.SampleRate,
+                frameSize: sonogram.Configuration.WindowSize,
+                frameOverlap: sonogram.Configuration.WindowOverlap);
+
+            // Find all frame peaks and place in peaks matrix
+            // avoid row edge effects.
+            var peaks = new double[frameCount, binCount];
 
             // for all time frames except 1st and last allowing for edge effects.
             for (int t = 1; t < frameCount - 1; t++)
             {
-                // set up an intensity array for all frequency bins in this frame.
-                double[] clickIntensity = new double[bandwidthBinCount];
-
                 // buffer zone around click is one frame wide.
                 // for all frequency bins except top and bottom in this time frame
                 for (int bin = minBin; bin < maxBin; bin++)
                 {
-                    // THis is where the profile of a click is defined
-                    // A click requires sudden onset, with maximum amplitude followed by decay.
-                    if (sonogramData[t - 1, bin] > decibelThreshold || sonogramData[t, bin] < sonogramData[t + 1, bin])
+                    if (sonogramData[t, bin] < decibelThreshold)
                     {
                         continue;
                     }
 
-                    // THis is where the profile of a vertical ridge is defined
-                    //if (sonogramData[t, bin] < sonogramData[t - 1, bin] || sonogramData[t, bin] < sonogramData[t + 1, bin])
-                    //{
-                    //    continue;
-                    //}
-
-                    clickIntensity[bin - minBin] = sonogramData[t, bin];
-                    //clickIntensity[bin - minBin] = sonogramData[t, bin] - sonogramData[t - 1, bin];
-                    clickIntensity[bin - minBin] = Math.Max(0.0, clickIntensity[bin - minBin]);
+                    // THis is where the profile of a click is defined
+                    // A click requires sudden onset, with maximum amplitude followed by decay.
+                    bool isClickPeak = sonogramData[t - 1, bin] < decibelThreshold && sonogramData[t, bin] > sonogramData[t + 1, bin];
+                    if (isClickPeak)
+                    {
+                        peaks[t, bin] = sonogramData[t, bin];
+                    }
                 }
+            }
 
-                if (clickIntensity.Max() < decibelThreshold)
+            //NOTE: the Peaks matrix is same size as the sonogram.
+            var tracks = TrackExtractor.GetOneFrameTracks(peaks, minBin, maxBin, minBandwidthHertz, maxBandwidthHertz, decibelThreshold, converter);
+
+            // initialise tracks as events and get the combined intensity array.
+            var events = new List<AcousticEvent>();
+            var temporalIntensityArray = new double[frameCount];
+            foreach (var track in tracks)
+            {
+                var ae = new AcousticEvent(segmentStartOffset, track.StartTimeSeconds, track.TrackDurationSeconds, track.LowFreqHertz, track.HighFreqHertz)
                 {
-                    continue;
-                }
+                    SegmentDurationSeconds = frameCount * frameStep,
+                };
 
-                // Extract the events based on bandwidth and threshhold.
-                var acousticEvents = ConvertSpectralArrayToClickEvents(
-                    clickIntensity,
-                    minHz,
-                    sonogram.FramesPerSecond,
-                    sonogram.FBinWidth,
-                    decibelThreshold,
-                    minBandwidthHertz,
-                    maxBandwidthHertz,
-                    t,
-                    segmentStartOffset);
-
-                // add each event score to combined temporal intensity array
-                foreach (var ae in acousticEvents)
+                var tr = new List<Track>
                 {
-                    var avClickIntensity = ae.Score;
-                    temporalIntensityArray[t] += avClickIntensity;
-                }
+                    track,
+                };
+                ae.AddTracks(tr);
+                events.Add(ae);
 
-                // add new events to list of events
-                events.AddRange(acousticEvents);
+                // fill the intensity array
+                var startRow = converter.FrameFromStartTime(track.StartTimeSeconds);
+                var amplitudeTrack = track.GetAmplitudeOverTimeFrames();
+                for (int i = 0; i < amplitudeTrack.Length; i++)
+                {
+                    temporalIntensityArray[startRow + i] += amplitudeTrack[i];
+                }
             }
 
             // combine proximal events that occupy similar frequency band
-            var startDifference = TimeSpan.FromSeconds(1.0);
-            var hertzDifference = 100;
             if (combineProximalSimilarEvents)
             {
+                TimeSpan startDifference = TimeSpan.FromSeconds(0.5);
+                int hertzDifference = 500;
                 events = AcousticEvent.CombineSimilarProximalEvents(events, startDifference, hertzDifference);
             }
 
             return (events, temporalIntensityArray);
         }
 
+        /*
         /// <summary>
         /// A general method to convert an array of score values to a list of AcousticEvents.
         /// NOTE: The score array is assumed to be a spectrum of dB intensity.
@@ -246,5 +244,6 @@ namespace AnalysisPrograms.Recognizers.Base
 
             return events;
         }
+        */
     }
 }
