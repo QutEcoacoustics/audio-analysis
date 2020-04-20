@@ -129,7 +129,7 @@ namespace AudioAnalysisTools
         /// Gets or sets a list of tracks.
         /// This will be used when two or more events containing single tracks are merged into one combined event.
         /// </summary>
-        public List<Track> Tracks { get; set; }
+        //public List<Track> Tracks { get; set; }
 
         public bool IsMelscale { get; set; }
 
@@ -498,7 +498,10 @@ namespace AudioAnalysisTools
                     nyquistFrequency: freqBinWidth * sonogramHeight,
                     imageWidth: imageToReturn.Width,
                     imageHeight: imageToReturn.Height);
-                var renderingOptions = new EventRenderingOptions(converter);
+                var renderingOptions = new EventRenderingOptions(converter)
+                {
+                    Fill = new SolidBrush(Color.LimeGreen.WithAlpha(0.5f)),
+                };
 
                 foreach (var track in this.tracks)
                 {

@@ -37,6 +37,15 @@ namespace AudioAnalysisTools
 
             graphics.FillWithBlend(options.Fill, rects);
 
+            //graphics.Fill(
+            //    new GraphicsOptions()
+            //    {
+            //        BlendPercentage = 0.5f,
+            //        ColorBlendingMode = SixLabors.ImageSharp.PixelFormats.PixelColorBlendingMode.Multiply,
+            //    },
+            //    Color.FromRgb(0, 255, 0),
+            //    new RectangleF(0, 1, 1, 1));
+
             //var tree = new OmnitreeBoundsLinked<ISpectralPoint, double, double>(
             //    (ISpectralPoint value, out double minX, out double maxX, out double minY, out double maxY) =>
             //    {
@@ -49,6 +58,29 @@ namespace AudioAnalysisTools
 
             //tree.Add(new SpectralPoint((5.1, 5.2), (510, 520), 0.9));
             //tree.
+        }
+
+        public void DrawPointsAsFillExperiment(IImageProcessingContext graphics, EventRenderingOptions options)
+        {
+            var rects = this
+                .Points
+                .Select(p => new RectangularPolygon(options.Converters.GetPixelRectangle(p)))
+                .Cast<IPath>()
+                .ToArray();
+
+            foreach (var rect in rects)
+            {
+                graphics.Fill(
+                    new GraphicsOptions()
+                    {
+                        BlendPercentage = 1.0f,
+                        //ColorBlendingMode = SixLabors.ImageSharp.PixelFormats.PixelColorBlendingMode.Multiply,
+                        ColorBlendingMode = SixLabors.ImageSharp.PixelFormats.PixelColorBlendingMode.Overlay,
+                    },
+                    //Color.FromRgb(0, 255, 0),
+                    Color.LimeGreen,
+                    rect);
+            }
         }
 
         public void DrawPointsAsPath(IImageProcessingContext graphics, EventRenderingOptions options)
