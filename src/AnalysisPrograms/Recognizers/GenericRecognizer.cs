@@ -74,7 +74,7 @@ namespace AnalysisPrograms.Recognizers
                     case HarmonicParameters _:
                         algorithmName = "Harmonics";
                         break;
-                    case FowardTrackParameters _:
+                    case ForwardTrackParameters _:
                         algorithmName = "SpectralTrack";
                         break;
                     case UpwardTrackParameters _:
@@ -93,7 +93,7 @@ namespace AnalysisPrograms.Recognizers
                             $"{nameof(OscillationParameters)}," +
                             $"{nameof(OnebinTrackParameters)}," +
                             $"{nameof(HarmonicParameters)}," +
-                            $"{nameof(FowardTrackParameters)}," +
+                            $"{nameof(ForwardTrackParameters)}," +
                             $"{nameof(UpwardTrackParameters)}," +
                             $"{nameof(OneframeTrackParameters)}," +
                             $"{nameof(Aed.AedConfiguration)}";
@@ -150,7 +150,7 @@ namespace AnalysisPrograms.Recognizers
                         || profileConfig is OscillationParameters
                         || profileConfig is OnebinTrackParameters
                         || profileConfig is HarmonicParameters
-                        || profileConfig is FowardTrackParameters
+                        || profileConfig is ForwardTrackParameters
                         || profileConfig is UpwardTrackParameters
                         || profileConfig is OneframeTrackParameters)
                     {
@@ -202,10 +202,10 @@ namespace AnalysisPrograms.Recognizers
                             var plot = PreparePlot(decibelArray, $"{profileName} (Whistle:dB Intensity)", wp.DecibelThreshold.Value);
                             plots.Add(plot);
                         }
-                        else if (profileConfig is FowardTrackParameters tp)
+                        else if (profileConfig is ForwardTrackParameters tp)
                         {
                             double[] decibelArray;
-                            (acousticEvents, decibelArray) = FowardTrackParameters.GetFowardTracks(
+                            (acousticEvents, decibelArray) = ForwardTrackParameters.GetForwardTracks(
                                 sonogram,
                                 tp.MinHertz.Value,
                                 tp.MaxHertz.Value,
@@ -270,7 +270,7 @@ namespace AnalysisPrograms.Recognizers
                             var plot = PreparePlot(harmonicIntensityScores, $"{profileName} (Harmonics:dct intensity)", hp.DctThreshold.Value);
                             plots.Add(plot);
                         }
-                        if (profileConfig is OscillationParameters op)
+                        else if (profileConfig is OscillationParameters op)
                         {
                             Oscillations2012.Execute(
                                 sonogram,

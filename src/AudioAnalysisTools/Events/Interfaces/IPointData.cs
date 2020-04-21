@@ -73,7 +73,7 @@ namespace AudioAnalysisTools
                 graphics.Fill(
                     new GraphicsOptions()
                     {
-                        BlendPercentage = 1.0f,
+                        BlendPercentage = 0.8f,
                         //ColorBlendingMode = SixLabors.ImageSharp.PixelFormats.PixelColorBlendingMode.Multiply,
                         ColorBlendingMode = SixLabors.ImageSharp.PixelFormats.PixelColorBlendingMode.Overlay,
                     },
