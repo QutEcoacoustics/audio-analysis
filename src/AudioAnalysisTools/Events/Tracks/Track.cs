@@ -63,9 +63,11 @@ namespace AudioAnalysisTools.Events.Tracks
 
         public int PointCount => this.Points.Count;
 
-        public double StartTimeSeconds => this.converter.SegmentStartOffset + this.Points.Min(x => x.Seconds.Minimum);
+        //public double StartTimeSeconds => this.converter.SegmentStartOffset + this.Points.Min(x => x.Seconds.Minimum);
+        public double StartTimeSeconds => this.Points.Min(x => x.Seconds.Minimum);
 
-        public double EndTimeSeconds => this.converter.SegmentStartOffset + this.Points.Max(x => x.Seconds.Maximum);
+        //public double EndTimeSeconds => this.converter.SegmentStartOffset + this.Points.Max(x => x.Seconds.Maximum);
+        public double EndTimeSeconds => this.Points.Max(x => x.Seconds.Maximum);
 
         public ISet<ISpectralPoint> Points { get; }
 
