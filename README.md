@@ -6,7 +6,7 @@ The source code for the QUT Ecoacoustics _AnalysisPrograms.exe_ (_AP.exe_) progr
 
  - Come chat on [Gitter](https://gitter.im/QutEcoacoustics/audio-analysis) with us 🙂  
    [![Gitter](https://badges.gitter.im/QutEcoacoustics/audio-analysis.svg)](https://gitter.im/QutEcoacoustics/audio-analysis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
- - See the **[docs](./docs/README.md)** for instructions on
+ - See the **[docs](https://ap.qut.ecoacoustics.info/)** for instructions on
    - Downloading AnalysisPrograms.exe
    - Running the program
    - Understanding concepts
