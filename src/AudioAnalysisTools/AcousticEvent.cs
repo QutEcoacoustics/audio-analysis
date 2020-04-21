@@ -254,6 +254,29 @@ namespace AudioAnalysisTools
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AcousticEvent"/> class.
+        /// This constructor is passed a track.
+        /// NOTE: The track is already in time relative to recording start.
+        /// </summary>
+        public AcousticEvent(TimeSpan segmentStartOffset, Track track)
+            : this()
+        {
+            var eventStartSegmentRelative = track.StartTimeSeconds - segmentStartOffset.TotalSeconds;
+            var eventEndSegmentRelative = eventStartSegmentRelative + track.TrackDurationSeconds;
+            this.SetEventPositionRelative(segmentStartOffset, eventStartSegmentRelative, eventEndSegmentRelative);
+            this.LowFrequencyHertz = track.LowFreqHertz;
+            this.HighFrequencyHertz = track.HighFreqHertz;
+            //this.SegmentDurationSeconds = frameCount * frameStep;
+            this.tracks = new List<Track>
+            {
+                track,
+            };
+
+            // have no info to convert time/Hz values to coordinates
+            this.Oblong = null;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AcousticEvent"/> class.
         /// This constructor currently works ONLY for linear Hertz scale events.
         /// It requires the event bounds to provided (using Oblong) in terms of time frame and frequency bin counts.
         /// Scale information must also be provided to convert bounds into real values (seconds, Hertz).
