@@ -203,7 +203,7 @@ namespace AudioAnalysisTools
 
             var tuple = Tuple.Create(scores);
             return tuple;
-        }//Execute
+        }
 
         /// <summary>
         /// Use this method to find match in sonogram to a symbolic definition of a bird call.
@@ -510,7 +510,7 @@ namespace AudioAnalysisTools
 
             var tuple = Tuple.Create(scores);
             return tuple;
-        }//Execute
+        }
 
         public static Tuple<double[]> Execute_SobelEdges(double[,] target, double dynamicRange, SpectrogramStandard sonogram,
                                     List<AcousticEvent> segments, int minHz, int maxHz, double minDuration)
@@ -578,7 +578,7 @@ namespace AudioAnalysisTools
 
             var tuple = Tuple.Create(scores);
             return tuple;
-        }//Execute
+        }
 
         public static Tuple<double[]> Execute_MFCC_XCOR(double[,] target, double dynamicRange, SpectrogramStandard sonogram,
                                     List<AcousticEvent> segments, int minHz, int maxHz, double minDuration)
@@ -645,7 +645,7 @@ namespace AudioAnalysisTools
 
             var tuple = Tuple.Create(scores);
             return tuple;
-        }//Execute
+        }
 
         public static void WriteTemplate2Console(double[,] template)
         {

@@ -994,5 +994,5 @@ namespace NeuralNets
             //dispose (tstResult);       {array of record: class x tst Score results}
             //dispose (TstSetTargets);
         } //END of MAIN METHOD.
-    }// end class
-}//end namespace
+    }
+}

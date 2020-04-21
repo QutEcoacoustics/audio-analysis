@@ -810,7 +810,7 @@ namespace AnalysisPrograms
             } //end of pass over all frames
 
             return events;
-        }//end method ConvertScoreArray2Events()
+        }
 
         //this method assumes that the array has had backgroundnoise removed
         public static double CalculatePeakSnrScore(AcousticEvent ev, double[] dBarray)

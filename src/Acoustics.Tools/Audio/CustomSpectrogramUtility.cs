@@ -589,7 +589,7 @@ namespace Acoustics.Tools.Audio
 
             // calculate power of the DC value - first column of matrix
             // foreach time step or frame
-            for (int i = 0; i < frameCount; i++) 
+            for (int i = 0; i < frameCount; i++)
             {
                 if (amplitudeM[i, 0] < epsilon)
                 {
@@ -619,7 +619,7 @@ namespace Acoustics.Tools.Audio
                     }
 
                     //spectra[i, j] = amplitudeM[i, j] * amplitudeM[i, j] * 2 / windowPower; //calculates power
-                }//end of all frames
+                }
             } //end of all freq bins
 
             // calculate power of the Nyquist freq bin - last column of matrix
@@ -711,7 +711,7 @@ namespace Acoustics.Tools.Audio
                 modalNoise[col] = minIntensity + maxindex * binWidth;
 
                 //LoggedConsole.WriteLine("  modal index=" + maxindex + "  modalIntensity=" + modalIntensity.ToString("F3"));
-            }//end for all cols
+            }
 
             return modalNoise;
         }

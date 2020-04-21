@@ -92,7 +92,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     this.Data[i, j] = sg.Data[startFrame + i, j];
                 }
             }
-        }//end CONSTRUCTOR
+        }
         */
 
         public SpectrogramSettings Configuration { get; set; }

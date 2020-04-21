@@ -38,10 +38,10 @@ namespace AnalysisPrograms
         // kiwi "C:\SensorNetworks\WavFiles\Kiwi\KAPITI2_20100219_202900.wav"   "C:\SensorNetworks\WavFiles\Kiwi\Results\lskiwi_Params.txt"
         // kiwi "C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500.wav"     "C:\SensorNetworks\WavFiles\Kiwi\Results_TOWER_20100208_204500\lskiwi_Params.txt"
 
-        public const string SOURCE_RECORDING_PATH  = @"C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500.wav";
-        public const string WORKING_DIRECTORY      = @"C:\SensorNetworks\Output\LSKiwi2\Tower_20100208_204500\";
-        public const string OUTPUT_DIRECTORY       = WORKING_DIRECTORY + "Towsey.LSKiwi2";
-        public const string CONFIG_PATH            = @"C:\SensorNetworks\Output\LSKiwi2\Towsey.LSKiwi2.csv";
+        public const string SOURCE_RECORDING_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500.wav";
+        public const string WORKING_DIRECTORY = @"C:\SensorNetworks\Output\LSKiwi2\Tower_20100208_204500\";
+        public const string OUTPUT_DIRECTORY = WORKING_DIRECTORY + "Towsey.LSKiwi2";
+        public const string CONFIG_PATH = @"C:\SensorNetworks\Output\LSKiwi2\Towsey.LSKiwi2.csv";
 
         //public const string SOURCE_RECORDING_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\KAPITI2_20100219_202900.wav";
         //public const string WORKING_DIRECTORY = @"C:\SensorNetworks\WavFiles\Kiwi\Results_KAPITI2_20100219_202900\";
@@ -61,28 +61,28 @@ namespace AnalysisPrograms
         public const int DEFAULT_WINDOW_SIZE = 256;
 
         private const int COL_NUMBER = 15;
-        private static Type[] COL_TYPES       = new Type[COL_NUMBER];
-        private static string[] HEADERS       = new string[COL_NUMBER]; 
-        private static bool[] DISPLAY_COLUMN  = new bool[COL_NUMBER];
-        private static double[] COMBO_WEIGHTS = new double[COL_NUMBER]; 
+        private static Type[] COL_TYPES = new Type[COL_NUMBER];
+        private static string[] HEADERS = new string[COL_NUMBER];
+        private static bool[] DISPLAY_COLUMN = new bool[COL_NUMBER];
+        private static double[] COMBO_WEIGHTS = new double[COL_NUMBER];
 
-        public static System.Tuple<string[],Type[], bool[]> InitOutputTableColumns()
+        public static System.Tuple<string[], Type[], bool[]> InitOutputTableColumns()
         {
-            HEADERS[0] = "count";           COL_TYPES[0] = typeof(int);     DISPLAY_COLUMN[0] = false;
-            HEADERS[1] = "EvStartAbs";      COL_TYPES[1] = typeof(int);     DISPLAY_COLUMN[1] = false;
-            HEADERS[2] = "EvStartMin";      COL_TYPES[2] = typeof(int);     DISPLAY_COLUMN[2] = false;
-            HEADERS[3] = "EvStartSec";      COL_TYPES[3] = typeof(double);  DISPLAY_COLUMN[3] = false;
-            HEADERS[4] = "SegmentDur";      COL_TYPES[4] = typeof(string);  DISPLAY_COLUMN[4] = false;
-            HEADERS[5] = "Density";         COL_TYPES[5] = typeof(int);     DISPLAY_COLUMN[5] = true;
-            HEADERS[6] = "Label";           COL_TYPES[6] = typeof(string);  DISPLAY_COLUMN[6] = false;
-            HEADERS[7] = "EventDur";        COL_TYPES[7] = typeof(double);  DISPLAY_COLUMN[7] = false;
-            HEADERS[8] = "DurScore";        COL_TYPES[8] = typeof(double);  DISPLAY_COLUMN[8] = true;
-            HEADERS[9] = "HitSCore";        COL_TYPES[9] = typeof(double);  DISPLAY_COLUMN[9] = true;
-            HEADERS[10] = "SnrScore";       COL_TYPES[10] = typeof(double); DISPLAY_COLUMN[10] = true;
-            HEADERS[11] = "sdScore";        COL_TYPES[11] = typeof(double); DISPLAY_COLUMN[11] = true;
-            HEADERS[12] = "GapScore";       COL_TYPES[12] = typeof(double); DISPLAY_COLUMN[12] = true;
-            HEADERS[13] = "BWScore";        COL_TYPES[13] = typeof(double); DISPLAY_COLUMN[13] = true;
-            HEADERS[14] = "KiwiScore";      COL_TYPES[14] = typeof(double); DISPLAY_COLUMN[14] = true;
+            HEADERS[0] = "count"; COL_TYPES[0] = typeof(int); DISPLAY_COLUMN[0] = false;
+            HEADERS[1] = "EvStartAbs"; COL_TYPES[1] = typeof(int); DISPLAY_COLUMN[1] = false;
+            HEADERS[2] = "EvStartMin"; COL_TYPES[2] = typeof(int); DISPLAY_COLUMN[2] = false;
+            HEADERS[3] = "EvStartSec"; COL_TYPES[3] = typeof(double); DISPLAY_COLUMN[3] = false;
+            HEADERS[4] = "SegmentDur"; COL_TYPES[4] = typeof(string); DISPLAY_COLUMN[4] = false;
+            HEADERS[5] = "Density"; COL_TYPES[5] = typeof(int); DISPLAY_COLUMN[5] = true;
+            HEADERS[6] = "Label"; COL_TYPES[6] = typeof(string); DISPLAY_COLUMN[6] = false;
+            HEADERS[7] = "EventDur"; COL_TYPES[7] = typeof(double); DISPLAY_COLUMN[7] = false;
+            HEADERS[8] = "DurScore"; COL_TYPES[8] = typeof(double); DISPLAY_COLUMN[8] = true;
+            HEADERS[9] = "HitSCore"; COL_TYPES[9] = typeof(double); DISPLAY_COLUMN[9] = true;
+            HEADERS[10] = "SnrScore"; COL_TYPES[10] = typeof(double); DISPLAY_COLUMN[10] = true;
+            HEADERS[11] = "sdScore"; COL_TYPES[11] = typeof(double); DISPLAY_COLUMN[11] = true;
+            HEADERS[12] = "GapScore"; COL_TYPES[12] = typeof(double); DISPLAY_COLUMN[12] = true;
+            HEADERS[13] = "BWScore"; COL_TYPES[13] = typeof(double); DISPLAY_COLUMN[13] = true;
+            HEADERS[14] = "KiwiScore"; COL_TYPES[14] = typeof(double); DISPLAY_COLUMN[14] = true;
             return Tuple.Create(HEADERS, COL_TYPES, DISPLAY_COLUMN);
         }
 
@@ -96,41 +96,41 @@ namespace AnalysisPrograms
 
 
 
-        //Keys to recognise identifiers in PARAMETERS - INI file. 
+        //Keys to recognise identifiers in PARAMETERS - INI file.
         //public static string key_FILE_EXT        = "FILE_EXT";
         //public static string key_DO_SEGMENTATION = "DO_SEGMENTATION";
-        public static string key_SEGMENT_DURATION  = "SEGMENT_DURATION";
-        public static string key_SEGMENT_OVERLAP   = "SEGMENT_OVERLAP";
-        
-        public static string key_FRAME_LENGTH    = "FRAME_LENGTH";
-        public static string key_FRAME_OVERLAP   = "FRAME_OVERLAP";
-        public static string key_MIN_HZ_MALE     = "MIN_HZ_MALE";
-        public static string key_MAX_HZ_MALE     = "MAX_HZ_MALE";
-        public static string key_MIN_HZ_FEMALE   = "MIN_HZ_FEMALE";
-        public static string key_MAX_HZ_FEMALE   = "MAX_HZ_FEMALE";
-        public static string key_DCT_DURATION    = "DCT_DURATION";
-        public static string key_DCT_THRESHOLD   = "DCT_THRESHOLD";
+        public static string key_SEGMENT_DURATION = "SEGMENT_DURATION";
+        public static string key_SEGMENT_OVERLAP = "SEGMENT_OVERLAP";
+
+        public static string key_FRAME_LENGTH = "FRAME_LENGTH";
+        public static string key_FRAME_OVERLAP = "FRAME_OVERLAP";
+        public static string key_MIN_HZ_MALE = "MIN_HZ_MALE";
+        public static string key_MAX_HZ_MALE = "MAX_HZ_MALE";
+        public static string key_MIN_HZ_FEMALE = "MIN_HZ_FEMALE";
+        public static string key_MAX_HZ_FEMALE = "MAX_HZ_FEMALE";
+        public static string key_DCT_DURATION = "DCT_DURATION";
+        public static string key_DCT_THRESHOLD = "DCT_THRESHOLD";
         public static string key_MIN_PERIODICITY = "MIN_PERIOD";
         public static string key_MAX_PERIODICITY = "MAX_PERIOD";
-        public static string key_MIN_DURATION    = "MIN_DURATION";
-        public static string key_MAX_DURATION    = "MAX_DURATION";
+        public static string key_MIN_DURATION = "MIN_DURATION";
+        public static string key_MAX_DURATION = "MAX_DURATION";
 
 
 
         public static void Execute(string[] args)
         {
             string title = "# SOFTWARE TO DETECT CALLS OF THE LITTLE SPOTTED KIWI (Apteryx owenii)";
-            string date  = "# DATE AND TIME: " + DateTime.Now;
+            string date = "# DATE AND TIME: " + DateTime.Now;
             Log.WriteLine(title);
             Log.WriteLine(date);
 
             //GET COMMAND LINE ARGUMENTS
             Log.Verbosity = 1;
             string sourceRecordingPath = SOURCE_RECORDING_PATH;
-            string iniPath             = CONFIG_PATH;
-            string outputDir           = WORKING_DIRECTORY;
-            DirectoryInfo diOutputDir  = new DirectoryInfo(outputDir);
-            string tempSegmentPath     = Path.Combine(outputDir, "temp.wav"); //path location/name of extracted recording segment
+            string iniPath = CONFIG_PATH;
+            string outputDir = WORKING_DIRECTORY;
+            DirectoryInfo diOutputDir = new DirectoryInfo(outputDir);
+            string tempSegmentPath = Path.Combine(outputDir, "temp.wav"); //path location/name of extracted recording segment
 
             var fiSourceRecording = new FileInfo(sourceRecordingPath);
             var fiTempSegmentFile = new FileInfo(tempSegmentPath);
@@ -153,7 +153,7 @@ namespace AnalysisPrograms
             //WriteParameters(kiwiParams);
             Dictionary<string, string> kiwiCfg = ConfigDictionary.ReadPropertiesFile(iniPath);
             double segmentDuration = ConfigDictionary.GetDouble(LSKiwi1.key_SEGMENT_DURATION, kiwiCfg);
-            double segmentOverlap = ConfigDictionary.GetDouble(LSKiwi1.key_SEGMENT_OVERLAP, kiwiCfg); 
+            double segmentOverlap = ConfigDictionary.GetDouble(LSKiwi1.key_SEGMENT_OVERLAP, kiwiCfg);
 
             // Get the file time duration
             IAudioUtility audioUtility = new MasterAudioUtility();
@@ -193,11 +193,11 @@ namespace AnalysisPrograms
                     fiSourceRecording,
                     new FileInfo(tempSegmentPath),
                     new AudioUtilityRequest
-                        {
-                            SampleRate = resampleRate,
-                            OffsetStart = TimeSpan.FromMilliseconds(startMilliseconds),
-                            OffsetEnd = TimeSpan.FromMilliseconds(endMilliseconds)
-                        });
+                    {
+                        SampleRate = resampleRate,
+                        OffsetStart = TimeSpan.FromMilliseconds(startMilliseconds),
+                        OffsetEnd = TimeSpan.FromMilliseconds(endMilliseconds)
+                    });
                 AudioRecording recordingSegment = new AudioRecording(tempSegmentPath);
                 FileInfo fiSegmentAudioFile = new FileInfo(recordingSegment.FilePath);
                 TimeSpan ts = recordingSegment.Duration();
@@ -215,7 +215,7 @@ namespace AnalysisPrograms
 
                     //transfer acoustic event info to data table
                     Log.WriteLine("# Event count for minute {0} = {1}", startMinutes, results.Rows.Count);
-                    if (results != null) 
+                    if (results != null)
                     {
                         string sortString = "EvStartAbs ASC";   //SORT EVENTS BY THEIR START TIME
                         DataRow[] rows = DataTableTools.SortRows(results, sortString);
@@ -271,7 +271,7 @@ namespace AnalysisPrograms
             double minDuration = ConfigDictionary.GetDouble(LSKiwi1.key_MIN_DURATION, config); //minimum event duration to qualify as species call
             double maxDuration = ConfigDictionary.GetDouble(LSKiwi1.key_MAX_DURATION, config); //maximum event duration to qualify as species call
             double drawSonograms = ConfigDictionary.GetInt(Keys.SAVE_SONOGRAM_FILES, config);
-            double segmentDuration = ConfigDictionary.GetDouble(LSKiwi1.key_SEGMENT_DURATION, config); 
+            double segmentDuration = ConfigDictionary.GetDouble(LSKiwi1.key_SEGMENT_DURATION, config);
             double segmentStartMinute = segmentDuration * iter;
 
             AudioRecording recordingSegment = new AudioRecording(fiSegmentAudioFile.FullName);
@@ -291,9 +291,9 @@ namespace AnalysisPrograms
             if ((drawSonograms == 2) || ((drawSonograms == 1) && (predictedEvents.Count > 0))) saveSonogram = true;
             if (saveSonogram)
             {
-                string imagePath = Path.Combine(diOutputDir.FullName, Path.GetFileNameWithoutExtension(fiSegmentAudioFile.FullName) +"_"+ (int)segmentStartMinute+ "min.png");
+                string imagePath = Path.Combine(diOutputDir.FullName, Path.GetFileNameWithoutExtension(fiSegmentAudioFile.FullName) + "_" + (int)segmentStartMinute + "min.png");
                 Image image = DrawSonogram(sonogram, hits, scores, predictedEvents, eventThreshold);
-                image.Save(imagePath, ImageFormat.Png); 
+                image.Save(imagePath, ImageFormat.Png);
             }
 
             //write events to a data table to return.
@@ -373,9 +373,9 @@ namespace AnalysisPrograms
             //i: MAKE SONOGRAM
             //Log.WriteLine("Make sonogram.");
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
-            sonoConfig.SourceFName    = recording.FileName;
-            sonoConfig.WindowSize     = frameLength;
-            sonoConfig.WindowOverlap  = frameOverlap;
+            sonoConfig.SourceFName = recording.FileName;
+            sonoConfig.WindowSize = frameLength;
+            sonoConfig.WindowOverlap = frameOverlap;
             BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
             //DO NOT DO NOISE REMOVAL BECAUSE CAN LOSE SOME KIWI INFO
 
@@ -440,14 +440,14 @@ namespace AnalysisPrograms
         public static void ProcessKiwiEvents(List<AcousticEvent> events, string tag, double[] oscRate, double minDuration, double maxDuration, double[,] sonogramMatrix)
         {
             double[] band_dB = new double[sonogramMatrix.GetLength(0)];
-            int eventCol1   = events[0].oblong.c1; 
+            int eventCol1 = events[0].oblong.c1;
             int eventHeight = events[0].oblong.ColWidth; //assume all events in the list have the same event height
             for (int r = 0; r < band_dB.Length; r++)
             {
                 for (int c = 0; c < eventHeight; c++) band_dB[r] += sonogramMatrix[r, eventCol1 + c]; //event dB profile
             }
             for (int r = 0; r < band_dB.Length; r++) band_dB[r] /= eventHeight; //calculate average.
-            
+
             //calculate background noise and SD for the band
             double minDecibels = -110; //min dB to consider
             double noiseThreshold_dB = 20;
@@ -463,7 +463,7 @@ namespace AnalysisPrograms
 
                 //1: calculate score for duration. Value lies in [0,1]. Shape the ends.
                 double durationScore = 1.0;
-                if (ae.Duration < minDuration +  5) durationScore = (ae.Duration - minDuration) / 5;
+                if (ae.Duration < minDuration + 5) durationScore = (ae.Duration - minDuration) / 5;
                 else
                 if (ae.Duration > maxDuration - 10) durationScore = (maxDuration - ae.Duration) / 10;
 
@@ -473,31 +473,31 @@ namespace AnalysisPrograms
                 //3: calculate score for bandwidth of syllables
                 double bandWidthScore = CalculateKiwiBandWidthScore(ae, sonogramMatrix);
 
-                //4: get decibels through the event   
+                //4: get decibels through the event
                 double[] event_dB = new double[eventLength]; //dB profile for event
                 for (int r = 0; r < eventLength; r++) event_dB[r] = band_dB[ae.oblong.r1 + r]; //event dB profile
                 //DataTools.writeBarGraph(event_dB);
 
                 //5 : calculate score for snr and for change in inter-syllable distance over the event.
                 var tuple = KiwiPeakAnalysis(event_dB, modalNoise, SD_Noise, ae.FramesPerSecond);
-                double snrScore      = tuple.Item1;
-                double sdPeakScore   = tuple.Item2;
-                double gapScore      = tuple.Item3;
- 
+                double snrScore = tuple.Item1;
+                double sdPeakScore = tuple.Item2;
+                double gapScore = tuple.Item3;
+
                 //6: DERIVE A WEIGHTED COMBINATION SCORE
                 double comboScore = /*(hitScore * 0.00) +*/ (snrScore * 0.1) + (sdPeakScore * 0.1) + (gapScore * 0.3) + (bandWidthScore * 0.5); //weighted sum
 
                 //7 add score values to acoustic event
-                ae.kiwi_durationScore  = durationScore;
-                ae.kiwi_hitScore       = hitScore;
-                ae.kiwi_snrScore       = snrScore;
-                ae.kiwi_sdPeakScore    = sdPeakScore;
-                ae.kiwi_intensityScore       = gapScore;
+                ae.kiwi_durationScore = durationScore;
+                ae.kiwi_hitScore = hitScore;
+                ae.kiwi_snrScore = snrScore;
+                ae.kiwi_sdPeakScore = sdPeakScore;
+                ae.kiwi_intensityScore = gapScore;
                 ae.kiwi_bandWidthScore = bandWidthScore;
-                ae.Score               = comboScore;
-                ae.ScoreNormalised     = comboScore;
+                ae.Score = comboScore;
+                ae.ScoreNormalised = comboScore;
             } //foreach (AcousticEvent ae in events)
-        }//end method
+        }
 
 
 
@@ -510,11 +510,11 @@ namespace AnalysisPrograms
         public static System.Tuple<double, double, double> KiwiPeakAnalysis(double[] dbArray, double modalNoise, double SD_Noise, double framesPerSecond)
         {
             //1: SMOOTH the array.  Smoothing window of 1/4 second because shortest kiwi periodicity = 0.25 seconds
-            int smoothWindow = (int)Math.Ceiling(framesPerSecond * 0.25);  
+            int smoothWindow = (int)Math.Ceiling(framesPerSecond * 0.25);
             if (smoothWindow % 2 == 0) smoothWindow += 1; //make an odd number
             dbArray = DataTools.filterMovingAverage(dbArray, smoothWindow);
 
-            bool[] peaks   = DataTools.GetPeaks(dbArray);
+            bool[] peaks = DataTools.GetPeaks(dbArray);
 
             //remove peaks below the threshold AND make list of peaks > threshold
             double dBThreshold = modalNoise + (2.0 * SD_Noise); //threshold = 2* sd of the background noise in the entire recording
@@ -534,7 +534,7 @@ namespace AnalysisPrograms
             double snr_dB = avPeakDB - modalNoise;
             //normalise the snr score
             double snrScore = 0.0;
-            if (snr_dB > 9.0) snrScore = 1.0; else if (snr_dB > 1.0) snrScore = (snr_dB - 1) * 0.125; //two thresholds - 1 dB and 9 dB 
+            if (snr_dB > 9.0) snrScore = 1.0; else if (snr_dB > 1.0) snrScore = (snr_dB - 1) * 0.125; //two thresholds - 1 dB and 9 dB
             //normalise the standard deviation of the peak decibels
             if (peakCount < 3)
                 return System.Tuple.Create(snrScore, 0.0, 0.0); //no sd can be calculated with < 3 peaks
@@ -571,11 +571,11 @@ namespace AnalysisPrograms
                 double avGapLength_seconds = (gapLength / (double)observedFrameGaps.Length) / framesPerSecond;
                 gapScore = correctDeltaCount / (double)(observedFrameGaps.Length - 2);
                 if ((avGapLength_seconds < 0.2) || (avGapLength_seconds > 1.2)) gapScore = 0.0;
-                //else gapScore = (gapScore-0.5) * 2; 
+                //else gapScore = (gapScore-0.5) * 2;
             }
 
             //JUST IN CASE !!
-            if (Double.IsNaN(gapScore))      { gapScore = 0.0; Console.WriteLine("gapScore is NaN"); }    //####### DEBUG TODO - TOO MANY gapScores are NaN
+            if (Double.IsNaN(gapScore)) { gapScore = 0.0; Console.WriteLine("gapScore is NaN"); }    //####### DEBUG TODO - TOO MANY gapScores are NaN
             if (Double.IsInfinity(gapScore)) { gapScore = 0.0; Console.WriteLine("gapScore is Infinity"); }
             if (Double.IsNaN(snrScore)) { snrScore = 0.0; Console.WriteLine("snrScore is NaN"); }
             if (Double.IsNaN(sdPeakScore)) { sdPeakScore = 0.0; Console.WriteLine("sdPeakScore is NaN"); }
@@ -602,8 +602,8 @@ namespace AnalysisPrograms
             for (int r = 0; r < eventLength; r++)
             {
                 for (int c = 0; c < eventHt; c++) event_dB[r] += sonogramMatrix[ae.oblong.r1 + r, ae.oblong.c1 + c]; //event dB profile
-                for (int c = 0; c < halfHt; c++) upper_dB[r]  += sonogramMatrix[ae.oblong.r1 + r, ae.oblong.c2 + c + buffer];
-                for (int c = 0; c < halfHt; c++) lower_dB[r]  += sonogramMatrix[ae.oblong.r1 + r, ae.oblong.c1 - halfHt - buffer + c];
+                for (int c = 0; c < halfHt; c++) upper_dB[r] += sonogramMatrix[ae.oblong.r1 + r, ae.oblong.c2 + c + buffer];
+                for (int c = 0; c < halfHt; c++) lower_dB[r] += sonogramMatrix[ae.oblong.r1 + r, ae.oblong.c1 - halfHt - buffer + c];
                 //for (int c = 0; c < eventHt; c++) noiseReducedMatrix[ae.oblong.r1 + r, ae.oblong.c1 + c]     = 20.0; //mark matrix
                 //for (int c = 0; c < eventHt; c++) noiseReducedMatrix[ae.oblong.r1 + r, ae.oblong.c2 + 5 + c] = 40.0; //mark matrix
             }
@@ -735,11 +735,11 @@ namespace AnalysisPrograms
 
             var tuple = DataTools.Periodicity_MeanAndSD(event_dB);
             double mean = tuple.Item1;
-            double sd   = tuple.Item2;
+            double sd = tuple.Item2;
             int peakCount = tuple.Item3;
 
             double score = 0.0;
-            if (peakCount > (int)Math.Round(ae.Duration*1.2)) return score;
+            if (peakCount > (int)Math.Round(ae.Duration * 1.2)) return score;
 
             double ratio = sd / mean;
             if (ratio < 0.333) score = 1.0;
@@ -774,7 +774,7 @@ namespace AnalysisPrograms
         /// <returns></returns>
         public static DataTable ProcessDataTableForDisplayOfColumnValues(DataTable dt)
         {
-            List<double[]> columns    = DataTableTools.ListOfColumnValues(dt);
+            List<double[]> columns = DataTableTools.ListOfColumnValues(dt);
             List<double[]> newColumns = new List<double[]>();
             for (int i = 0; i < columns.Count; i++)
             {
@@ -803,7 +803,7 @@ namespace AnalysisPrograms
             foreach (var kiwiEvent in predictedEvents)
             {
                 int segmentStartSec = (int)(segmentStartMinute * 60);
-                int eventStartAbsoluteSec   = (int)(segmentStartSec + kiwiEvent.TimeStart);
+                int eventStartAbsoluteSec = (int)(segmentStartSec + kiwiEvent.TimeStart);
                 int eventStartMin = eventStartAbsoluteSec / 60;
                 int eventStartSec = eventStartAbsoluteSec % 60;
                 string segmentDuration = DataTools.Time_ConvertSecs2Mins(tsSegmentDuration.TotalSeconds);
@@ -842,7 +842,7 @@ namespace AnalysisPrograms
 
         //    //return last column as the one for color display
         //    string[] headers = DataTableTools.GetColumnNames(dt);
-        //    double[] array = DataTableTools.Column2ListOfDouble(dt, headers[headers.Length - 1]).ToArray(); 
+        //    double[] array = DataTableTools.Column2ListOfDouble(dt, headers[headers.Length - 1]).ToArray();
         //    return System.Tuple.Create(dt, array);
         //}
 
@@ -870,21 +870,21 @@ namespace AnalysisPrograms
             double kiwiScore = 0.0;
             foreach (DataRow kiwievent in dt.Rows)
             {
-                int eventStart        = (int)kiwievent["EvStartAbs"];
+                int eventStart = (int)kiwievent["EvStartAbs"];
                 double eventKiwiScore = (double)kiwievent["KiwiScore"];
                 if (eventKiwiScore > kiwiScore) kiwiScore = eventKiwiScore;
                 minuteStart = eventStart / timeScale;
-                
+
                 if (minuteStart > prevMinuteStart)
                 {
                     // fill in missing minutes
-                    for (int i = prevMinuteStart + 1; i < minuteStart; i++ ) 
+                    for (int i = prevMinuteStart + 1; i < minuteStart; i++)
                         newtable.Rows.Add(i, i, 0, 0, 0.0);
                     newtable.Rows.Add(minuteStart, minuteStart, eventcount, eventCountThresholded, kiwiScore);
                     prevMinuteStart = minuteStart;
                     eventcount = 1;
                     if (eventKiwiScore > scoreThreshold) eventCountThresholded = 1;
-                    else                                 eventCountThresholded = 0;
+                    else eventCountThresholded = 0;
                     kiwiScore = 0.0;
                 }
                 else
@@ -899,7 +899,7 @@ namespace AnalysisPrograms
         }
 
 
-        public static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, double[] scores, 
+        public static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, double[] scores,
                                          List<AcousticEvent> predictedEvents, double eventThreshold)
         {
             bool doHighlightSubband = false; bool add1kHzLines = true;
@@ -909,7 +909,7 @@ namespace AnalysisPrograms
             image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
             double maxScore = 16.0;
             image.AddSuperimposedMatrix(hits, maxScore);
-            image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond); 
+            image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
             return image.GetImage();
         }
 

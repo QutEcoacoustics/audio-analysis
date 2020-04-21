@@ -309,7 +309,7 @@ namespace AudioAnalysisTools.DSP
         /// THIS METHOD NEEDS TO BE DEBUGGED.  HAS NOT BEEN USED IN YEARS!
         /// Use this method to generate grid lines for mel scale image
         /// Currently this method is only called from BaseSonogram.GetImage() when bool doMelScale = true;
-        /// Frequencyscale.Draw1kHzLines(Image.<Rgb24> bmp, bool doMelScale, int nyquist, double freqBinWidth)
+        /// Frequencyscale.Draw1kHzLines(Image{Rgb24} bmp, bool doMelScale, int nyquist, double freqBinWidth).
         /// </summary>
         public static int[,] GetMelGridLineLocations(int gridIntervalInHertz, int nyquistFreq, int melBinCount)
         {

@@ -158,7 +158,7 @@ are used the most. Metrics help us prioritize new features or important bugs
 and they also justify continued investment into this software.
 
 We collect mostly anonymous information. All information collected is also
-embedded into the [log file](./logs) of each run so you can inspect it
+embedded into the [log file](./logs.md) of each run so you can inspect it
 yourself. AP.exe sends a payload to our metric collector similar
 to the following (entirely anonymous):
 

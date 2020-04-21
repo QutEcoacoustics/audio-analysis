@@ -62,7 +62,7 @@ namespace AnalysisBase
         /// </summary>
         public FileSegment(FileInfo source, int sampleRate, TimeSpan duration, FileDateBehavior dateBehavior)
         {
-            // when we should know eveyrthing about the file, we don't want to try and parse the date again...
+            // when we should know everything about the file, we don't want to try and parse the date again...
             // we either picked it up the first time or it is not available
             this.dateBehavior = dateBehavior;
             this.Source = source;
@@ -212,7 +212,10 @@ namespace AnalysisBase
         /// </summary>
         public DateTimeOffset? TargetFileStartDate => this.SourceMetadata?.RecordedDate;
 
-        /// <inheritdoc/>
+        /// <remarks>
+        /// Constructs a new instance of this <type>FileSegment</type> by copying
+        /// important attributes.
+        /// </remarks>
         public object Clone()
         {
             if (this.SourceMetadata == null)

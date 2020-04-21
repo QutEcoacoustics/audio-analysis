@@ -298,5 +298,5 @@ namespace AudioAnalysisTools.WavTools
             this.SampleRate /= interval;
             this.SampleCount = newL;
         }
-    }// end of class WavReader
+    }
 }

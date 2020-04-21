@@ -232,3 +232,8 @@ Temporary Items
 .fake
 .ionide
 .fake
+
+# docs
+_site
+.fake
+.ionide

@@ -1,0 +1,28 @@
+- name: Introduction
+  href: introduction.md
+- name: Supported Platforms
+  href: supported_platforms.md
+- name: Installing
+  href: installing.md
+
+- name: Command Line Interface
+  href: cli.md
+- name: Commands
+  href: commands.md
+- name: Config files
+  href: config_files.md
+- name: Dates
+  href: dates.md
+- name: FAQ
+  href: faq.md
+- name: Supported Audio Formats
+  href: formats.md
+
+- name: Versioning
+  href: versioning.md
+- name: Logs
+  href: logs.md
+- name: Adding to PATH
+  href: path.md
+- name: Reporting bugs
+  href: bug_report.md

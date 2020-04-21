@@ -1,0 +1,175 @@
+<!-- Note: any line breaks in this document will cause a rendering error in the markdown document it is inserted into -->
+<div class="panel panel-default">
+    <div class="panel-body">
+        <form id="assetChooser" class="form">
+            <fieldset id="osSet" class="form-group">
+                <legend>What operating system do you use?</legend>
+                <p>Common choices:</p>
+                <ul>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="os" value="win" checked>
+                            Windows
+                        </label>
+                    </div>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="os" value="linux">
+                            Linux
+                        </label>
+                    </div>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="os" value="osx">
+                            Mac OSX
+                        </label>
+                    </div>
+                </ul>
+                <p>Expert choices:</p>
+                <ul>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="os" value="linux-musl">
+                            Linux (Alpine)
+                            <br />
+                            <small>(choose for a container)</small>
+                        </label>
+                    </div>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="os" value="any">
+                            Any
+                            <br />
+                            <small>(choose for a run anywhere version, requires a dotnet core runtime install)</small>
+                        </label>
+                    </div>
+                </ul>
+            </fieldset>
+            <fieldset id="archSet">
+                <legend>What is your CPU architecture?</legend>
+                <ul>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="arch" value="x64" checked>
+                            Intel x86-64 (64-bit)
+                            <br />
+                            <small>This is a good default choice; nearly all computers, laptops, and servers use
+                                x86</small>
+                        </label>
+                    </div>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="arch" value="arm">
+                            Arm (32-bit)
+                            <br />
+                            <small>Choose this if you're using a Raspberry Pi</small>
+                        </label>
+                    </div>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="arch" value="arm64">
+                            Arm (64-bit)
+                            <br />
+                            <small>
+                                Choose this if you're using a Raspberry Pi with 64-bit Raspbian or any other ARM device
+                            </small>
+                        </label>
+                    </div>
+                </ul>
+                <div class="NOTE alert alert-info">
+                    <h5>Note</h5>
+                    <p>
+                        We do not support 32-bit operating systems or CPU architectures, except for Arm devices.
+                    </p>
+                </div>
+            </fieldset>
+            <fieldset id="debugSet">
+                <legend>Do you need to debug this?</legend>
+                <ul>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="debug" value="yes">
+                            Yes
+                        </label>
+                    </div>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="debug" value="no" checked>
+                            No
+                        </label>
+                    </div>
+                </ul>
+                <div class="NOTE alert alert-info">
+                    <h5>Note</h5>
+                    <p>
+                        For expert use only. A debug version will run <strong>slower</strong>.
+                    </p>
+                </div>
+            </fieldset>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4 class="panel-title">Asset name</h4>
+                </div>
+                <div class="panel-body">
+                    <pre id="assetName" class="well">
+                    </pre>
+                    <div id="anyWarning" class="WARN alert alert-warning">
+                        <h5>Warning</h5>
+                        <p>
+                            A .NET Core runtime must be installed and
+                            AnalysisPrograms must be invoked with a
+                            <code>dotnet</code> prefix.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script type="application/javascript">
+    document.addEventListener("DOMContentLoaded", () => {
+        var assetName = document.querySelector("#assetName");
+        var osSet = document.querySelector("#osSet");
+        var archSet = document.querySelector("#archSet");
+        var debugSet = document.querySelector("#debugSet");
+        var anyWarning = document.querySelector("#anyWarning");
+        function calculateAsset() {
+            var os = osSet.querySelector("input[name=os]:checked").value;
+            var arch = archSet.querySelector("input[name=arch]:checked").value;
+            var debug = debugSet.querySelector("input[name=debug]:checked").value == "yes";
+            var isAny = os == "any";
+            var isMusl = os == "linux-musl";
+            var isLinux = os == "linux";
+            var isOsx = os == "osx";
+            if (isOsx) {
+                archSet.querySelector("input[value=x64]").checked = true;
+            }
+            archSet.querySelector("input[value=arm]").disabled = !isLinux;
+            archSet.querySelector("input[value=arm64]").disabled = isOsx;
+            archSet.toggleAttribute("disabled", isAny || isMusl);
+            if (isAny || isMusl || isOsx) {
+                archSet.querySelector("input[value=x64]").checked = true;
+            }
+            var isX64 = arch == "x64";
+            var debugDisabled = isAny || isMusl || isOsx || !isX64;
+            debugSet.toggleAttribute("disabled", debugDisabled);
+            if (debugDisabled) {
+                debugSet.querySelector("input[value=no]").checked = true;
+            }
+            anyWarning.classList.toggle("hidden", !isAny);
+            // update with fresh values after rules applied
+            os = osSet.querySelector("input[name=os]:checked").value;
+            arch = archSet.querySelector("input[name=arch]:checked").value;
+            debug = debugSet.querySelector("input[name=debug]:checked").value == "yes";
+            var debugBit = debug ? "_Debug" : "";
+            var extension = os == "win" ? ".zip" : ".tar.gz"
+            var name = "AP_" + os + "-" + arch + debugBit + "_vXXX.XXX.XXX.XXX" + extension;
+            assetName.textContent = name;
+        };
+        var inputs = Array.from(document.querySelectorAll("#assetChooser input"));
+        inputs.forEach((input) => {
+            input.addEventListener("change", calculateAsset);
+        });
+        calculateAsset();
+    });
+</script>

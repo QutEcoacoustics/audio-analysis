@@ -101,7 +101,7 @@ namespace Acoustics.Shared.ImageSharp
         public static FontCollection BundledFonts => BundledFontCollection.Value;
 
         /// <summary>
-        /// Gets the requested font family or falls back to using <see cref="Roboto"/>.
+        /// Gets the requested font family or falls back to using <c>Roboto</c>.
         /// </summary>
         /// <param name="fontFamily">The name of the font family to get.</param>
         /// <param name="size">The requested size of the returned font.</param>
@@ -227,7 +227,7 @@ namespace Acoustics.Shared.ImageSharp
             /// </summary>
             /// <remarks>
             ///  ImageSharp's Draw Rectangle is unpredictable and buggy, especially for
-            ///  non-antialiased operations. See <see cref="Acoustics.Test.Shared.DrawingRectangleCornerBugTest"/>.
+            ///  non-antialiased operations. See <c>Acoustics.Test.Shared.Drawing.RectangleCornerBugTest</c>.
             ///  This method instead draws four lines as the border.
             /// </remarks>
             public void DrawBorderInset(Pen border, RectangleF rectangle)

@@ -1,0 +1,17 @@
+
+<script type="text/javascript" src="{{_rel}}styles/docfx.vendor.js"></script>
+<script type="text/javascript" src="{{_rel}}styles/docfx.js"></script>
+<script type="text/javascript" src="{{_rel}}styles/main.js"></script>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/8.5.0/mermaid.min.js"></script>
+<script>
+mermaid.parseError = function(err,hash){
+    console.warn('mermaid', err);
+};
+mermaid.init({
+    startOnLoad: true,
+    securityLevel: 'loose'
+},
+document.querySelectorAll("code.lang-mermaid"));
+</script>

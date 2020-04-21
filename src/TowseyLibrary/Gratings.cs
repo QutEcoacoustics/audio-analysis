@@ -115,10 +115,10 @@ namespace TowseyLibrary
                     //LoggedConsole.WriteLine("{0}\tscore: {1:f2}", iter, output[maxLocation]);
                     count++;
                 }
-            }//end iterations
+            }
 
             LoggedConsole.WriteLine("% correct = {0:f1}   Avg score = {1:f4}", 100 * count / (double)maxIterations, scoreSum / (double)maxIterations);
-        }//Test_ScanArrayForGridPattern1()
+        }
 
         public static double DetectPeriod2Grating(double[] v)
         {
@@ -400,5 +400,5 @@ namespace TowseyLibrary
             signal = DataTools.normalise(signal);
             return signal;
         }
-    }//class Gratings
+    }
 }

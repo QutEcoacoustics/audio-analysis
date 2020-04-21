@@ -928,5 +928,5 @@ namespace AudioAnalysisTools.DSP
 
             return fv;
         }
-    }//end of class Speech
+    }
 }

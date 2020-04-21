@@ -415,7 +415,7 @@ namespace AudioAnalysisTools
             } //end of pass over all frames
 
             return events;
-        }//end method ConvertODScores2Events()
+        }
 
         /// <summary>
         /// Calculates the optimal frame overlap for the given sample rate, frame width and max oscillation or pulse rate.

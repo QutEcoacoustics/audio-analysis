@@ -33,17 +33,17 @@ namespace AnalysisPrograms
         //felt "C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-003000.wav" C:\SensorNetworks\Output\FELT_Currawong\FELT_Currawong_Params.txt FELT_Currawong2_curatedBinary.txt
 
 
-        //Keys to recognise identifiers in PARAMETERS - INI file. 
-        public static string key_CALL_NAME       = "CALL_NAME";
+        //Keys to recognise identifiers in PARAMETERS - INI file.
+        public static string key_CALL_NAME = "CALL_NAME";
         public static string key_DO_SEGMENTATION = "DO_SEGMENTATION";
-        public static string key_MIN_HZ          = "MIN_HZ";
-        public static string key_MAX_HZ          = "MAX_HZ";
-        public static string key_FRAME_OVERLAP   = "FRAME_OVERLAP";
-        public static string key_SMOOTH_WINDOW   = "SMOOTH_WINDOW";
-        public static string key_MIN_DURATION    = "MIN_DURATION";
-        public static string key_DYNAMIC_RANGE   = "DYNAMIC_RANGE";
+        public static string key_MIN_HZ = "MIN_HZ";
+        public static string key_MAX_HZ = "MAX_HZ";
+        public static string key_FRAME_OVERLAP = "FRAME_OVERLAP";
+        public static string key_SMOOTH_WINDOW = "SMOOTH_WINDOW";
+        public static string key_MIN_DURATION = "MIN_DURATION";
+        public static string key_DYNAMIC_RANGE = "DYNAMIC_RANGE";
         public static string key_EVENT_THRESHOLD = "EVENT_THRESHOLD";
-        public static string key_DRAW_SONOGRAMS  = "DRAW_SONOGRAMS";
+        public static string key_DRAW_SONOGRAMS = "DRAW_SONOGRAMS";
 
         public static string eventsFile = "events.txt";
 
@@ -57,12 +57,12 @@ namespace AnalysisPrograms
             List<string> lines = FileTools.ReadTextFile(symbolPath);
             int rows = lines.Count;
             int cols = lines[0].Length;
-            var m = new double[rows,cols];
+            var m = new double[rows, cols];
             for (int r = 0; r < rows; r++)
             {
                 string line = lines[r];
                 for (int c = 0; c < cols; c++)
-                    if(line[c] == '+') m[r,c] = 1.0;
+                    if (line[c] == '+') m[r, c] = 1.0;
                     else if (line[c] == '-') m[r, c] = -1.0;
                     else if (line[c] == '0') m[r, c] = 0.0;
                     else
@@ -104,5 +104,5 @@ namespace AnalysisPrograms
             }
         }
 
-    }//end class
+    }
 }

@@ -25,7 +25,7 @@ namespace TowseyLibrary
 
         //vars required to set up Fuzzy Sets for row centroid feature
         static int maxCol = 512;
-        int countColCentroid_FS = 2; //number of fuzzy sets 
+        int countColCentroid_FS = 2; //number of fuzzy sets
         int[] colCentroid_FS;
 
 
@@ -70,8 +70,8 @@ namespace TowseyLibrary
         public int[] Centroid()
         {
             int[] centre = new int[2];
-            centre[0] = this.r1 + RowWidth/2;
-            centre[1] = this.c1 + ColWidth/2;
+            centre[0] = this.r1 + RowWidth / 2;
+            centre[1] = this.c1 + ColWidth / 2;
             return centre;
         }
 
@@ -96,13 +96,14 @@ namespace TowseyLibrary
             else return false;
         }
 
-        
+
         public bool Overlaps(Shape s2)
         {
             bool rowOverlap = false;
-            for(int i = s2.r1; i< s2.r2; i++) 
-            {   if(this.IncludesRow(i)) 
-                {   
+            for (int i = s2.r1; i < s2.r2; i++)
+            {
+                if (this.IncludesRow(i))
+                {
                     rowOverlap = true;
                     break;
                 }
@@ -116,7 +117,7 @@ namespace TowseyLibrary
                     break;
                 }
             }
-            if (rowOverlap && colOverlap) return true; 
+            if (rowOverlap && colOverlap) return true;
             else return false;
         }
 
@@ -157,7 +158,7 @@ namespace TowseyLibrary
         {
             int[] c1 = this.Centroid();
             int[] c2 = s2.Centroid();
-            int dx = c2[1] - c1[1]; 
+            int dx = c2[1] - c1[1];
             int dy = c2[0] - c1[0];
             double dist = Math.Sqrt((dx * dx) + (dy * dy));
             return dist;
@@ -193,12 +194,12 @@ namespace TowseyLibrary
             double[] fuzzyMemberships = FuzzySetMemberships(this.col_Centroid());
             for (int i = 0; i < countColCentroid_FS; i++) features[0] = fuzzyMemberships[i];
 
-            
-          //  features[0] = this.col_Centroid(); //column centroid
-          //  features[1] = this.col_Centroid(); //column centroid
-          //  features[2] = this.col_Centroid(); //column centroid
-            features[countColCentroid_FS]   = this.ColWidth; //column width
-            features[countColCentroid_FS+1] = this.RowWidth; //row width
+
+            //  features[0] = this.col_Centroid(); //column centroid
+            //  features[1] = this.col_Centroid(); //column centroid
+            //  features[2] = this.col_Centroid(); //column centroid
+            features[countColCentroid_FS] = this.ColWidth; //column width
+            features[countColCentroid_FS + 1] = this.RowWidth; //row width
             return features;
         }
         public double[] Features_Normalised()
@@ -209,7 +210,7 @@ namespace TowseyLibrary
             //features[0] /= (double)maxCols; //column centroid
             //features[1] /= (double)maxCols; //column centroid
             //features[2] /= (double)maxCols; //column centroid
-            features[countColCentroid_FS]    /= (double)Shape.maxCol; //column width
+            features[countColCentroid_FS] /= (double)Shape.maxCol; //column width
             features[countColCentroid_FS + 1] /= (double)maxRows; //row width
 
             for (int i = 0; i < featureCount; i++)
@@ -222,7 +223,7 @@ namespace TowseyLibrary
 
         private void FuzzySetCentres()
         {
-            int space = maxCol / (countColCentroid_FS-1);
+            int space = maxCol / (countColCentroid_FS - 1);
             colCentroid_FS = new int[countColCentroid_FS];
             colCentroid_FS[0] = 0;
             colCentroid_FS[countColCentroid_FS - 1] = maxCol;
@@ -253,14 +254,14 @@ namespace TowseyLibrary
             }
 
             //calculate membership of fuzzy set n;
-            if ((row > maxCol) || (row <= colCentroid_FS[n-2])) FM[n-1] = 0;
+            if ((row > maxCol) || (row <= colCentroid_FS[n - 2])) FM[n - 1] = 0;
             else
             {
                 x1 = colCentroid_FS[n - 2];
                 x2 = colCentroid_FS[n - 1];
                 y1 = 0.0;
                 y2 = 1.0;
-                FM[n-1] = LinearInterpolate(x1, y1, x2, y2, row);
+                FM[n - 1] = LinearInterpolate(x1, y1, x2, y2, row);
             }
 
             //calculate membership of fuzzy sets 1 to n-1;
@@ -269,23 +270,23 @@ namespace TowseyLibrary
                 if ((row >= colCentroid_FS[i + 1]) || (row <= colCentroid_FS[i - 1])) FM[i] = 0;
                 else //row below mode of membership function
                     if (row < colCentroid_FS[i])
-                    {
-                        x1 = colCentroid_FS[i - 1];
-                        x2 = colCentroid_FS[i];
-                        y1 = 0.0;
-                        y2 = 1.0;
-                        FM[i] = LinearInterpolate(x1, y1, x2, y2, row);
-                    }
-                    else //row above mode of membership function
+                {
+                    x1 = colCentroid_FS[i - 1];
+                    x2 = colCentroid_FS[i];
+                    y1 = 0.0;
+                    y2 = 1.0;
+                    FM[i] = LinearInterpolate(x1, y1, x2, y2, row);
+                }
+                else //row above mode of membership function
                         if (row >= colCentroid_FS[i])
-                        {
-                            x1 = colCentroid_FS[i];
-                            x2 = colCentroid_FS[i + 1];
-                            y1 = 1.0;
-                            y2 = 0.0;
-                            FM[i] = LinearInterpolate(x1, y1, x2, y2, row);
-                        }
-            }//end for loop
+                {
+                    x1 = colCentroid_FS[i];
+                    x2 = colCentroid_FS[i + 1];
+                    y1 = 1.0;
+                    y2 = 0.0;
+                    FM[i] = LinearInterpolate(x1, y1, x2, y2, row);
+                }
+            }
             //Console.WriteLine("For row "+row+" memberships are:");
             //DataTools.writeArray(FM);
             //Console.ReadLine();
@@ -294,7 +295,7 @@ namespace TowseyLibrary
 
         private static double LinearInterpolate(int x1, double y1, int x2, double y2, int x3)
         {
-            if((x3 < x1)||(x3 > x2)||(x1>x2))
+            if ((x3 < x1) || (x3 > x2) || (x1 > x2))
             {
                 Console.WriteLine("ERROR with Linear Interpolation! ((x3 < x1)||(x3 > x2)||(x1>x2))!!");
                 return Double.MaxValue;
@@ -320,7 +321,7 @@ namespace TowseyLibrary
 
 
         /// <summary>
-        /// 
+        ///
         /// assume that the input matrix is purely binary, i.e. zeros and ones
         /// </summary>
         /// <param name="matrix"></param>
@@ -337,7 +338,7 @@ namespace TowseyLibrary
             {
                 for (int y = 0; y < mHeight - 1; y++)
                 {
-                    if(matrix[y,x] != 1.0) continue; //not in an object
+                    if (matrix[y, x] != 1.0) continue; //not in an object
 
                     if (matrix[y + 1, x] != 1.0)
                     {
@@ -354,8 +355,8 @@ namespace TowseyLibrary
                     rowWidth--;//back off one place
                     int yCentre = y + (rowWidth / 2); //position in centre of shape
 
-                    if(InExistingShape(yCentre, x, shapes)) continue;
-                    
+                    if (InExistingShape(yCentre, x, shapes)) continue;
+
 
                     //explore shape in x dimension
                     int upDist = 0;
@@ -368,7 +369,7 @@ namespace TowseyLibrary
                     // initialise possible shape.
                     int col1 = x - dnDist + 1;
                     int colWidth = upDist + dnDist - 2;
-                    Shape shape = new Shape(y, col1, y + rowWidth - 1, col1 + colWidth -1);
+                    Shape shape = new Shape(y, col1, y + rowWidth - 1, col1 + colWidth - 1);
                     shape.RandomNumber = random.GetInt(200); //set random number for id and color purposes
 
                     int[] centroid = shape.Centroid();
@@ -406,7 +407,7 @@ namespace TowseyLibrary
         public static bool InExistingShape(int row, int col, ArrayList shapes)
         {
             if (shapes == null) return false;
-            foreach(Shape shape in shapes) if(shape.PointInside(row, col)) return true;
+            foreach (Shape shape in shapes) if (shape.PointInside(row, col)) return true;
             return false;
         }
 
@@ -414,7 +415,7 @@ namespace TowseyLibrary
         public static Shape GetShape(int row, int col, ArrayList shapes)
         {
             if (shapes == null) return null;
-            foreach(Shape shape in shapes) if(shape.PointInside(row, col)) return shape;
+            foreach (Shape shape in shapes) if (shape.PointInside(row, col)) return shape;
             return null;
         }
 
@@ -435,15 +436,15 @@ namespace TowseyLibrary
             //int min = Int32.MaxValue;
             //int[] histo = DataTools.Histo(areas, binCount, out binWidth, out min, out max);
             //DataTools.writeBarGraph(histo);
-            //int maxIndex; 
+            //int maxIndex;
             //DataTools.getMaxIndex(histo, out maxIndex);
             //int valueAtMaxindex = (int)((double)maxIndex*binWidth);
             //Console.WriteLine("Value AtMaxindex=" + valueAtMaxindex);
 
             int areaThreshold = 10;
 
-            for(int i=shapes.Count-1; i>=0; i--)
-            {    
+            for (int i = shapes.Count - 1; i >= 0; i--)
+            {
                 Shape s = (Shape)shapes[i];
                 if (s.Area() < areaThreshold) shapes.RemoveAt(i);
             }
@@ -453,7 +454,7 @@ namespace TowseyLibrary
 
         public static ArrayList MergeCloseShapes(ArrayList shapes)
         {
-            int distThreshold = 8; 
+            int distThreshold = 8;
 
             for (int i = shapes.Count - 1; i >= 0; i--)
             {
@@ -463,7 +464,7 @@ namespace TowseyLibrary
                     Shape s2 = (Shape)shapes[j];
                     double dist = s1.CentroidDistance(s2);
                     if (dist > distThreshold) continue;
-                    if(! s1.Overlaps(s2)) continue;
+                    if (!s1.Overlaps(s2)) continue;
                     s2.r1 = (s1.r1 + s2.r1) / 2;
                     s2.c1 = (s1.c1 + s2.c1) / 2;
                     s2.RowWidth = (s1.RowWidth + s2.RowWidth) / 2;
@@ -529,7 +530,7 @@ namespace TowseyLibrary
                     //Console.WriteLine("dx=" + dx);
                     if (Math.Abs(dx) > dxThreshold) continue; //too much centroid displacement
 
-                    if (((s1.ColWidth / (double)s2.ColWidth) > ratio) || ((s2.ColWidth / (double)s1.ColWidth) > ratio)) continue; //too much difference in shape width  
+                    if (((s1.ColWidth / (double)s2.ColWidth) > ratio) || ((s2.ColWidth / (double)s1.ColWidth) > ratio)) continue; //too much difference in shape width
 
                     //average the left and right column bounds
                     int s1w = s1.ColWidth;
@@ -553,7 +554,7 @@ namespace TowseyLibrary
                     shapes.RemoveAt(i);  //remove s1
                     //shapes[j] = s2;    //keep s2
                     break; //break inner loop if get to here
-                }//inner loop
+                }
             }
             return shapes;
         }
@@ -601,8 +602,8 @@ namespace TowseyLibrary
                         shapes[j] = Shape.Clone(s1);//copy s1 in place of s2
                         shapes.RemoveAt(i);  //remove s1
                     }
-                }//inner loop
-            }//outer loop
+                }
+            }
             return shapes;
         }
 
@@ -656,7 +657,7 @@ namespace TowseyLibrary
             if (shapes == null) return null;
             if (categories == null) return shapes;
 
-            for (int i=0; i< shapes.Count; i++)
+            for (int i = 0; i < shapes.Count; i++)
             {
                 Shape s = (Shape)shapes[i];
                 s.category = categories[i];
@@ -677,7 +678,7 @@ namespace TowseyLibrary
         /// <returns></returns>
         public static ArrayList CategoryShapes(ArrayList shapes, int[] categories, int categoryCount)
         {
-            if (shapes == null)     return null;
+            if (shapes == null) return null;
             if (categories == null) return null;
             if (categoryCount == 0) return null;
 
@@ -717,7 +718,7 @@ namespace TowseyLibrary
         {
             if (shapes == null) return null;
 
-            int binWidth = Shape.maxCol / binCount; 
+            int binWidth = Shape.maxCol / binCount;
 
             int[] distribution = new int[binCount];
             for (int i = 0; i < shapes.Count; i++)
@@ -734,10 +735,10 @@ namespace TowseyLibrary
         public static void WriteDistribution(int[] distribution)
         {
             int binCount = distribution.Length; //number of bins
-            Console.WriteLine("\nDistribution over "+binCount+" bins");
+            Console.WriteLine("\nDistribution over " + binCount + " bins");
             for (int i = 0; i < binCount; i++)
             {
-                Console.Write(i+"\t");
+                Console.Write(i + "\t");
             }
             Console.WriteLine();
             for (int i = 0; i < binCount; i++)
@@ -755,8 +756,8 @@ namespace TowseyLibrary
         //****************************************************************************************************************
         //****************************************************************************************************************
         //****************************************************************************************************************
-        //  MAIN METHOD FOR UNIT TESTING 
-        
+        //  MAIN METHOD FOR UNIT TESTING
+
 
         static void Main()
         {
@@ -782,7 +783,7 @@ namespace TowseyLibrary
                 Console.WriteLine("Centroid2: r=" + centroid2[0] + "  c=" + centroid2[1]);
                 Console.WriteLine("Area 2=" + s2.Area());
                 double dist = s1.CentroidDistance(s2);
-                Console.WriteLine("Distance="+dist);
+                Console.WriteLine("Distance=" + dist);
 
             } //end test1
 
@@ -812,8 +813,8 @@ namespace TowseyLibrary
 
                 int py = 23;
                 int px = 25;
-                bool inside = s1.PointInside(py,px);
-                Console.WriteLine("\nPoint ("+py+","+px+ ") inside s1 =" + inside);
+                bool inside = s1.PointInside(py, px);
+                Console.WriteLine("\nPoint (" + py + "," + px + ") inside s1 =" + inside);
                 inside = s2.PointInside(py, px);
                 Console.WriteLine("Point (" + py + "," + px + ") inside s2 =" + inside);
                 inside = s3.PointInside(py, px);
@@ -848,13 +849,13 @@ namespace TowseyLibrary
 
                 int dyThreshold = 6;
                 list = MergeShapesWhoseEndsOverlap(list, dyThreshold);
-                Console.WriteLine("List size="+list.Count);
+                Console.WriteLine("List size=" + list.Count);
                 foreach (Shape s in list)
                 {
                     s.WriteBounds();
                 }
 
-            
+
             } //end test3
 
 
@@ -866,10 +867,10 @@ namespace TowseyLibrary
 
             Console.WriteLine("\nFINISHED!!");
             Console.ReadLine();
-        }// end Main()
+        }
 
 
 
 
-    } //end class Shape 
+    } //end class Shape
 }

@@ -124,9 +124,9 @@ namespace TowseyLibrary
                         chi2 += numerator / expectedCounts[row, col];
                         df++;
                     }
-                }//for all columns
-            }//for all rows
-        }//end method ChiSquare()
+                }
+            }
+        }
 
         public static double ChiSquare_DFn(double chi2, int df)
         {
@@ -625,5 +625,5 @@ namespace TowseyLibrary
         {
             return unigramLogScore - bigramLogScore;
         }
-    }//end class
+    }
 }

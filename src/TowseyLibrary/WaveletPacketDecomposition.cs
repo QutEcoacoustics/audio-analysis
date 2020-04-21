@@ -237,7 +237,7 @@ namespace TowseyLibrary
 
         /// <summary>
         /// Returns a universal threshold which is used to zero small or insignificant wavelet coefficients.
-        /// See pages 15 & 16 of "Wavelets for kids"!!
+        /// See pages 15 &amp; 16 of "Wavelets for kids"!!
         /// The coefficients should be derived from the bottom row of the WPD tree.
         /// I think n = the level number of the coefficients being thresholded.
         /// In other words, the standard deviation is calculated from the bottom row of coeficients but is increased for the higher rows.

@@ -77,7 +77,6 @@ namespace AnalysisBase.ResultBases
             return this.ResultStartSeconds.CompareTo(other.ResultStartSeconds);
         }
 
-        /// <inheritdoc/>
         public virtual int CompareTo(object obj)
         {
             return this.CompareTo((ResultBase)obj);

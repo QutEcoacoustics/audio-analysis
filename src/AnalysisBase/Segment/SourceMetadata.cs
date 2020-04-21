@@ -6,7 +6,6 @@ namespace AnalysisBase.Segment
 {
     using System;
 
-    /// <inheritdoc cref="ISourceMetadata"/>
     public class SourceMetadata : ISourceMetadata
     {
         /// <summary>

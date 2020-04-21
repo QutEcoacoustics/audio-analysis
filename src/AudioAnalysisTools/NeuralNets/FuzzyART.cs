@@ -412,7 +412,7 @@ namespace NeuralNets
             }
 
             return vector;
-        }//end GetOneIPVector()
+        }
 
         /// <summary>
         /// Only calculate ouputs for committed nodes. THe uncommitted OPs remain = 0.
@@ -796,5 +796,5 @@ namespace NeuralNets
             int[] keepScore = fuzzyART.inputCategory;
             return keepScore;
         } //END of RepeatClusterWithFuzzyART.
-    }//end class
+    }
 }

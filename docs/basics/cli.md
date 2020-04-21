@@ -90,7 +90,7 @@ Valid verbosity values are:
 -   `Error` = 1 - show only errors
 -   `Warn` = 2 - show only warnings
 -   `Info` = 3 - the standard level
--   `Debug` = 4 - print some debug statements that show variable state and exta
+-   `Debug` = 4 - print some debug statements that show variable state and extra
     information
 -   `Trace` = 5 - print many more debugging statements with detailed variable
     values

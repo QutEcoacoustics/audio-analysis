@@ -175,7 +175,7 @@ out double[] r)
 
             var spectrum = fft.Invoke(xCorr);
             return spectrum;
-        }// CrossCorrelation()
+        }
 
         // =============================================================================
 

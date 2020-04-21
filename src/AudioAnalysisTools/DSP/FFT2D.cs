@@ -85,7 +85,7 @@ namespace AudioAnalysisTools.DSP
         /// to support a changed MathNet API.
         /// </remarks>
         /// <param name="M">The input matrix.</param>
-        /// <returns>A flattened <see cref="M"/> as a vactor.</returns>
+        /// <returns>A flattened <paramref name="M" /> as a vactor.</returns>
         public static Complex[] Matrix2ComplexVector(double[,] M)
         {
             int rowCount = M.GetLength(0);

@@ -12,17 +12,17 @@ namespace MarkovModels
     public class MarkovModel : BaseMM
     {
         const double minProb = 0.001;
-        const double minLog  = -3.0;
+        const double minLog = -3.0;
         const double stateDurationMax = 1.0; //seconds
         private static double fractionalNH = 0.30; //arbitrary neighbourhood around user defined periodicity
 
 
         private string name;
-        public  string Name { get { return name; } set { name = value; } }
+        public string Name { get { return name; } set { name = value; } }
         private MMType graphType;
-        public  MMType GraphType { get { return graphType; } set { graphType = value; } }
+        public MMType GraphType { get { return graphType; } set { graphType = value; } }
         private ScoreType scoreType;
-        public  ScoreType ScoreType { get { return scoreType; } set { scoreType = value; } }
+        public ScoreType ScoreType { get { return scoreType; } set { scoreType = value; } }
 
 
         //state initial and transition probabilities
@@ -113,11 +113,11 @@ namespace MarkovModels
 
         public void SetPeriodicityParameters(int period_ms)
         {
-            int period_frame           = (int)Math.Round(period_ms / this.DeltaT / (double)1000);
-            this.Periodicity_ms        = period_ms;
-            this.Periodicity_frames    = period_frame;
+            int period_frame = (int)Math.Round(period_ms / this.DeltaT / (double)1000);
+            this.Periodicity_ms = period_ms;
+            this.Periodicity_frames = period_frame;
             this.Periodicity_NH_frames = (int)Math.Floor(period_frame * MarkovModel.fractionalNH); //arbitrary NH
-            this.Periodicity_NH_ms     = (int)Math.Floor(period_ms * MarkovModel.fractionalNH); //arbitrary NH
+            this.Periodicity_NH_ms = (int)Math.Floor(period_ms * MarkovModel.fractionalNH); //arbitrary NH
             //Console.WriteLine("\tperiod_ms="    + period_ms    + "+/-" + this.Periodicity_NH_ms);
             //Console.WriteLine("\tperiod_frame=" + period_frame + "+/-" + this.Periodicity_NH_frames);
         }
@@ -173,7 +173,7 @@ namespace MarkovModels
             //debug output
             //Console.WriteLine("################# RESULT OF TRAINING");
             //WriteInfo(false);
-        }//end TrainModel()
+        }
 
 
 
@@ -184,12 +184,12 @@ namespace MarkovModels
             this.avWordLength = AverageVocalisationLength(sequences);// length in frames
             int gap = this.Gap_frames;
 
-			Log.WriteIfVerbose("\tCalculating two-state MM initial/unigram frequenices");
+            Log.WriteIfVerbose("\tCalculating two-state MM initial/unigram frequenices");
             int[] unigramCounts = new int[2];
-            unigramCounts[0] = this.Gap_frames;   unigramCounts[1] = (int)this.avWordLength;
+            unigramCounts[0] = this.Gap_frames; unigramCounts[1] = (int)this.avWordLength;
             double total = this.avWordLength + this.Gap_frames;
             double[] unigramProbs = new double[2];
-            unigramProbs[0] = this.Gap_frames / total; unigramProbs[1]  = this.avWordLength / total;
+            unigramProbs[0] = this.Gap_frames / total; unigramProbs[1] = this.avWordLength / total;
             this.initialStateProbs = unigramProbs;
             this.logInitialStateProbs = Convert2Log(unigramProbs);
 
@@ -199,10 +199,10 @@ namespace MarkovModels
             this.transitionMatrix_NullM = nullMatrix;
             this.logMatrix_NullM = Convert2Log(nullMatrix);
 
-			Log.WriteIfVerbose("\tCalculating two-state MM transition matrix.");
+            Log.WriteIfVerbose("\tCalculating two-state MM transition matrix.");
             double[,] Amatrix = new double[2, 2];
             Amatrix[0, 0] = (this.Gap_frames - 1) / (double)this.Gap_frames; Amatrix[0, 1] = 1 / (double)this.Gap_frames;
-            Amatrix[1, 0] = (this.avWordLength - 1) / this.avWordLength;     Amatrix[1, 1] = 1 / this.avWordLength;
+            Amatrix[1, 0] = (this.avWordLength - 1) / this.avWordLength; Amatrix[1, 1] = 1 / this.avWordLength;
             this.transitionMatrix_MM = Amatrix;
             this.logMatrix_MM = Convert2Log(Amatrix);
 
@@ -217,7 +217,7 @@ namespace MarkovModels
             //debug output
             //Console.WriteLine("################# RESULT OF TRAINING");
             //WriteInfo(true);
-        }//end TrainModel()
+        }
 
 
 
@@ -254,7 +254,7 @@ namespace MarkovModels
                         currentDuration = 1;
                     }
                 }
-            }//end over all sequences
+            }
 
             //DataTools.writeMatrix(stateDurationCounts);
 
@@ -269,7 +269,7 @@ namespace MarkovModels
                 density[0] = sum / (double)2;
                 for (int j = 1; j < (maxDuration - 1); j++) //for all durations
                 {
-                    sum = stateDurationCounts[i, j-1] + stateDurationCounts[i, j] + stateDurationCounts[i, j+1];
+                    sum = stateDurationCounts[i, j - 1] + stateDurationCounts[i, j] + stateDurationCounts[i, j + 1];
                     density[j] = sum / (double)3;
                 }
                 sum = stateDurationCounts[i, maxDuration - 2] + stateDurationCounts[i, maxDuration - 1];
@@ -277,7 +277,7 @@ namespace MarkovModels
 
                 density = DataTools.NormaliseProbabilites(density);
                 for (int j = 0; j < maxDuration; j++) stateDurationProbs[i, j] = density[j];
-            }//end of all states
+            }
             this.stateDurationLogProbs = Convert2Log(stateDurationProbs);
             //Console.WriteLine("##Duration bin count = " + this.durationBinCount + "  dim=[" + this.stateDurationProbs.GetLength(0) + "," + this.stateDurationProbs.GetLength(1) + "]");
             //Console.WriteLine("##Duration bin count = " + this.durationBinCount + "  dim=[" + this.logStateDurationProbs.GetLength(0) + "," + this.logStateDurationProbs.GetLength(1) + "]");
@@ -311,7 +311,7 @@ namespace MarkovModels
             pdf[duration1] = 1.0;
             for (int nh = 1; nh <= NH; nh++) //for all durations
             {
-                if (duration1 - nh >= 0)          pdf[duration1 - nh] = (NH - nh) / (double)NH;
+                if (duration1 - nh >= 0) pdf[duration1 - nh] = (NH - nh) / (double)NH;
                 if (duration1 + nh < maxDuration) pdf[duration1 + nh] = (NH - nh) / (double)NH;
             }
             //normalise pdf and transfer to matrix
@@ -325,13 +325,13 @@ namespace MarkovModels
             pdf[duration2] = 1.0;
             for (int nh = 1; nh < NH; nh++) //for all durations
             {
-                if (duration2 - nh >= 0)          pdf[duration2 - nh] = (NH - nh) / (double)NH;
+                if (duration2 - nh >= 0) pdf[duration2 - nh] = (NH - nh) / (double)NH;
                 if (duration2 + nh < maxDuration) pdf[duration2 + nh] = (NH - nh) / (double)NH;
             }
             //normalise pdf and transfer to matrix
             pdf = DataTools.NormaliseProbabilites(pdf);
             for (int j = 0; j < maxDuration; j++) probs[1, j] = pdf[j];
-            
+
 
             return probs;
         }
@@ -341,7 +341,7 @@ namespace MarkovModels
         {
             int vocalLength = (int)Math.Round(this.avWordLength);
             int L = intSequence.Length;
-            int garbageID = this.numberOfStates-1;
+            int garbageID = this.numberOfStates - 1;
 
 
             //calculate array of bigram scores
@@ -355,18 +355,18 @@ namespace MarkovModels
 
             //now calculate LLR scores
             hitCount = 0;
-            bestHit  = -Double.MaxValue;
+            bestHit = -Double.MaxValue;
             bestFrame = -1;
             scores = new double[L];
             for (int i = 1; i < L - vocalLength; i++) //get liklihood ratios
             {
-                if (intSequence[i] == 0)  continue;    //This is noise.   Looking for first frame of a vocalisation 
-                if (intSequence[i] == garbageID) continue; //This is garbage. Looking for first frame of a vocalisation 
+                if (intSequence[i] == 0) continue;    //This is noise.   Looking for first frame of a vocalisation
+                if (intSequence[i] == garbageID) continue; //This is garbage. Looking for first frame of a vocalisation
                 if (!((intSequence[i - 1] == 0) || (intSequence[i - 1] == garbageID))) continue; //frame prior to vocalisation should be noise or garbage
 
                 //calculate average bigram log score
                 double bigramLogScore = 0.0;
-                for (int j = 0; j < vocalLength; j++) bigramLogScore  += bigramScores[i + j];
+                for (int j = 0; j < vocalLength; j++) bigramLogScore += bigramScores[i + j];
                 bigramLogScore = bigramLogScore / (double)vocalLength;
 
                 //calculate average unigram log score
@@ -380,11 +380,11 @@ namespace MarkovModels
                 //scores[i] = likelihoodRatio;
                 if (likelihoodRatio > 1.0)
                 {
-                //    scores[i] = score;
-                //    //scores[i] = likelihoodRatio;
-                //    //scores[i] = Math.Log10(likelihoodRatio); //LLR
+                    //    scores[i] = score;
+                    //    //scores[i] = likelihoodRatio;
+                    //    //scores[i] = Math.Log10(likelihoodRatio); //LLR
 
-                //    //if (TowseyLib.LLR.ChiSquare_DF1(llrScores[i]) < 0.10) hitCount++;  //if CHI2 >= 3.84, p <= 0.05
+                    //    //if (TowseyLib.LLR.ChiSquare_DF1(llrScores[i]) < 0.10) hitCount++;  //if CHI2 >= 3.84, p <= 0.05
                     hitCount++;  //if CHI2 >= 3.84, p <= 0.05
                 }
 
@@ -397,7 +397,7 @@ namespace MarkovModels
             }
 
             //Console.WriteLine("##  hitCount=" + hitCount + "  bestHit=" + bestHit.ToString("F3") + "  bestFrame=" + bestFrame);
-        }//end ScanSequence()
+        }
 
 
         /// <summary>
@@ -426,8 +426,8 @@ namespace MarkovModels
             scores = new double[L];
             for (int i = 1; i < L - extractLength; i++) //parse sequence
             {
-                if (intSequence[i] == 0) continue;    //This is noise. Looking for first frame of a vocalisation 
-                if (intSequence[i] == garbageID) continue; //This is garbage. Looking for first frame of a vocalisation 
+                if (intSequence[i] == 0) continue;    //This is noise. Looking for first frame of a vocalisation
+                if (intSequence[i] == garbageID) continue; //This is garbage. Looking for first frame of a vocalisation
                 if (!((intSequence[i - 1] == 0) || (intSequence[i - 1] == garbageID))) continue; //frame prior to vocalisation should be noise or garbage
 
                 //extract sequence that is potential vocalisation
@@ -446,7 +446,7 @@ namespace MarkovModels
 
                 //Console.WriteLine(intSequence[i - 1] + "-" + intSequence[i]+"  count="+count+" biLogScore" + bigramLogScore.ToString("F2") + "  uniLogScore=" + unigramLogScore.ToString("F2"));
 
-                bigramLogScore  /= (double)count; //calculate average bigram  log score
+                bigramLogScore /= (double)count; //calculate average bigram  log score
                 unigramLogScore /= (double)count; //calculate average unigram log score
 
                 //scores[i] = DataTools.AntiLogBase10(bigramLogScore);
@@ -473,10 +473,10 @@ namespace MarkovModels
                     bestFrame = i;
                 }
                 //Console.WriteLine(i + "  bi=" + bigramLogScore.ToString("F2") + "  null=" + unigramLogScore.ToString("F2") + " LR=" + likelihoodRatio.ToString("F1") + "  count=" + hitCount);
-            }//end of scanning the entire sequence
+            }
 
             //Console.WriteLine("##  hitCount=" + hitCount + "  bestHit=" + bestHit.ToString("F3") + "  bestFrame=" + bestFrame);
-        }//end ScanSequence()
+        }
 
 
 
@@ -491,10 +491,10 @@ namespace MarkovModels
 
             hitCount = 0;
             double[] chi2Scores = new double[L];
-            for (int i = 1; i < L - vocalLength; i++) 
+            for (int i = 1; i < L - vocalLength; i++)
             {
-                if (intSequence[i] == 0) continue;    //This is noise.   Looking for first frame of a vocalisation 
-                if (intSequence[i] == garbageID) continue; //This is garbage. Looking for first frame of a vocalisation 
+                if (intSequence[i] == 0) continue;    //This is noise.   Looking for first frame of a vocalisation
+                if (intSequence[i] == garbageID) continue; //This is garbage. Looking for first frame of a vocalisation
                 if (!((intSequence[i - 1] == 0) || (intSequence[i - 1] == garbageID))) continue; //frame prior to vocalisation should be noise or garbage
 
                 //have the start of possible vocalisation. Get the sequence
@@ -506,7 +506,7 @@ namespace MarkovModels
                 Sequence2BigramCounts(subSeq, this.numberOfStates, out bigramCounts);
 
                 double chi2;
-                int df; 
+                int df;
                 LLR.ChiSquare(bigramCounts, this.transitionMatrix_MM, out chi2, out df);
 
                 if (df < 2) continue;
@@ -517,14 +517,14 @@ namespace MarkovModels
                 if (p > 0.95) hitCount++;  //if CHI2 >= 3.84, p <= 0.05
                 //Console.WriteLine(i + "  CHI2=" + chi2.ToString("F1") + "  df=" + df + "  p=" + p.ToString("F3") + "  count=" + hitCount);
             }
-        }//end ScanSequence()
+        }
 
 
 
         public void CalculateAvProbOfSequences(string[] exampleWords, out double logProb_MM, out double logProb_NM)
         {
             int examplecount = exampleWords.Length;
-            int  symbolCount = 0;
+            int symbolCount = 0;
             logProb_MM = 0.0; //markov model
             logProb_NM = 0.0; //null   model
 
@@ -552,11 +552,11 @@ namespace MarkovModels
 
 
         public void ProbOfSequence_StateDuration(int[] intSequence, out double bigramLogScore, out double unigramLogScore, out int count)
-        {            
+        {
             int L = intSequence.Length;
-            
+
             //start with Pi array - initial probs
-            bigramLogScore  = logInitialStateProbs[intSequence[0]];//unigram score
+            bigramLogScore = logInitialStateProbs[intSequence[0]];//unigram score
             unigramLogScore = logInitialStateProbs[intSequence[0]];
 
             //calculate null model's state duration distribution as a uniform pdf
@@ -596,8 +596,8 @@ namespace MarkovModels
 
                     currentDuration = 1; //reset current stateDurationProbs duration
                 }
-            }//end of sequence
-        }//end ProbOfSequence()
+            }
+        }
 
 
 
@@ -606,12 +606,12 @@ namespace MarkovModels
         {
             int L = intSequence.Length;
             for (int i = 0; i < L; i++) if (intSequence[i] > 1) intSequence[i] = 0; //convert sequence to binary
-            
+
             //######### MUST CONVERT INT SEQUENCE to BINARY 0s & 1s and then trim the final zeros.
 
 
             //start with Pi array - initial probs
-            bigramLogScore  = logInitialStateProbs[intSequence[0]];//unigram score
+            bigramLogScore = logInitialStateProbs[intSequence[0]];//unigram score
             unigramLogScore = logInitialStateProbs[intSequence[0]];
 
             //calculate null model's state duration distribution as a uniform pdf
@@ -630,7 +630,7 @@ namespace MarkovModels
                     if (j == L - 1) //come to end of sequence
                     //if ((j == L - 1) && (int1 == 1)) //come to end of sequence AND state=1
                     {
-                        bigramLogScore  += StateDurationLogProbability(currentDuration, int1);
+                        bigramLogScore += StateDurationLogProbability(currentDuration, int1);
                         unigramLogScore += logStateDurationProb_NM;  //null model score = uniform distribution
                         count++;
                         //Console.WriteLine(" j=" + j + "  endState=" + int1 + "  duration=" + currentDuration +"  +="+StateDurationLogProbability(currentDuration, int1).ToString("F2"));
@@ -643,17 +643,17 @@ namespace MarkovModels
                 }
                 else //change of state - score the duration and then state transition
                 {
-                    bigramLogScore  += StateDurationLogProbability(currentDuration, int1);
+                    bigramLogScore += StateDurationLogProbability(currentDuration, int1);
                     unigramLogScore += logStateDurationProb_NM;              //null model score = uniform distribution
                     //Console.Write(" j=" + j + "  endState=" + int1 + "  duration=" + currentDuration +"  +="+StateDurationLogProbability(currentDuration, int1).ToString("F2"));
-                    bigramLogScore  += this.logMatrix_MM[int1, int2];    //score the transition
+                    bigramLogScore += this.logMatrix_MM[int1, int2];    //score the transition
                     unigramLogScore += this.logInitialStateProbs[int2];  //score null model
                     //Console.WriteLine("   biLogScore" + bigramLogScore.ToString("F2") + "  uniLogScore=" + unigramLogScore.ToString("F2"));
                     count += 2;
                     currentDuration = 1; //reset current stateDurationProbs duration
                 }
-            }//end of sequence
-        }//end ProbOfSequence()
+            }
+        }
 
 
 
@@ -666,9 +666,9 @@ namespace MarkovModels
         /// <returns></returns>
         private double StateDurationLogProbability(int duration, int state)
         {
-        //    int bin = duration / MarkovModel.durationBinWidth;
-        //    if (bin >= this.durationBinCount) bin = this.durationBinCount - 1;
-        //    return this.stateDurationLogProbs[state, bin];
+            //    int bin = duration / MarkovModel.durationBinWidth;
+            //    if (bin >= this.durationBinCount) bin = this.durationBinCount - 1;
+            //    return this.stateDurationLogProbs[state, bin];
             return this.stateDurationLogProbs[state, duration];
         }
 
@@ -702,7 +702,7 @@ namespace MarkovModels
 
             //double LLR = Math.Log10(avProbOfDataGivenNullModel / avProbOfDataGivenMarkovModel);
             double LLR = Math.Log10(avProbOfDataGivenMarkovModel / avProbOfDataGivenNullModel);
-            Console.WriteLine("  LLR = " + LLR.ToString("F3") +" (Log likelihood of bigram vs unigram models)");
+            Console.WriteLine("  LLR = " + LLR.ToString("F3") + " (Log likelihood of bigram vs unigram models)");
 
         }
 
@@ -711,7 +711,7 @@ namespace MarkovModels
         {
             //Console.WriteLine("numberOfStates="+numberOfStates);
             int L = array.Length;
-            int[] unigramCounts   = new int[numberOfStates];
+            int[] unigramCounts = new int[numberOfStates];
             for (int i = 0; i < L; i++)
             {
                 if (array[i] >= numberOfStates) Console.WriteLine("################ MarkovModels.IntArray2LogUnigramFreqs() WARNING! array[i]=" + array[i]);
@@ -758,9 +758,9 @@ namespace MarkovModels
             {
 
                 bigramCounts[integerSequence[i], integerSequence[i - 1]] += 1;// count the bigrams
-                if (!((integerSequence[i] == 0) && (integerSequence[i-1] == 0))) transitionCount++;
+                if (!((integerSequence[i] == 0) && (integerSequence[i - 1] == 0))) transitionCount++;
             }
-            AMatrix = new double [stateCount, stateCount];
+            AMatrix = new double[stateCount, stateCount];
             for (int i = 0; i < stateCount; i++)
                 for (int j = 0; j < stateCount; j++)
                 {
@@ -787,11 +787,11 @@ namespace MarkovModels
         /// <summary>
         /// Calculates the unigram counts in a set of symbol sequences.
         /// Each symbol sequence represents an instance of a vocalisation.
-        /// All the vocalisations should be of the same type or class. 
+        /// All the vocalisations should be of the same type or class.
         /// First convert the symbol sequences to integer sequences.
         /// Then construct array of counts.
         /// Index zero is the noise symbol, 'n'.
-        /// Index (stateCount-1) is the garbage symbol. 
+        /// Index (stateCount-1) is the garbage symbol.
         /// </summary>
         /// <param name="examples"></param>
         /// <param name="stateCount"></param>
@@ -816,17 +816,17 @@ namespace MarkovModels
                     unigramCounts[int1] += 1;// count the bigrams
                     count++;
                 }
-            }//end over all sequences
-        }//end method
+            }
+        }
 
         /// <summary>
         /// Calculates the bigram counts in a set of symbol sequences.
         /// Each symbol sequence represents an instance of a vocalisation.
-        /// All the vocalisations should be of the same type or class. 
+        /// All the vocalisations should be of the same type or class.
         /// First convert the symbol sequences to integer sequences.
         /// Then construct matrix of counts.
         /// Index zero is the noise symbol, 'n'.
-        /// Index (stateCount-1) is the garbage symbol. 
+        /// Index (stateCount-1) is the garbage symbol.
         /// </summary>
         /// <param name="examples"></param>
         /// <param name="stateCount"></param>
@@ -852,16 +852,16 @@ namespace MarkovModels
                     bigramCounts[int1, int2] += 1;// count the bigrams
                     count++;
                 }
-            }//end over all sequences
-        }//end method
+            }
+        }
 
         /// <summary>
         /// Derives the transition matrix from a set of symbol sequences.
         /// Each symbol sequence represents an instance of a vocalisation.
-        /// All the vocalisations should be of the same type or class. 
+        /// All the vocalisations should be of the same type or class.
         /// First calculate a matrix of bigram counts.
         /// Index zero is the noise symbol, 'n'.
-        /// Index (stateCount-1) is the garbage symbol. 
+        /// Index (stateCount-1) is the garbage symbol.
         /// IMPORTANT!! a[i,j] = P[q(t)=Sj | q(t-1)=Si]
         /// Therefore when calculating transition probabilities, the rows must sum to 1.0
         /// </summary>
@@ -888,8 +888,8 @@ namespace MarkovModels
                 {
                     for (int j = 0; j < stateCount; j++) AMatrix[i, j] = bigramCounts[i, j] / (double)sum;
                 }
-            }//end all rows
-        }//end method
+            }
+        }
 
 
         /// <summary>
@@ -906,7 +906,7 @@ namespace MarkovModels
             for (int i = 0; i < rowCount; i++)
                 for (int j = 0; j < colCount; j++)
                 {
-                    if (AMatrix[i, j] < minProb) 
+                    if (AMatrix[i, j] < minProb)
                         logMatrix[i, j] = minLog;
                     else
                         logMatrix[i, j] = Math.Log10(AMatrix[i, j]);
@@ -921,7 +921,7 @@ namespace MarkovModels
             for (int i = 0; i < stateCount; i++)
             {
                 if (probArray[i] < minProb) logArray[i] = minLog;
-                else                        logArray[i] = Math.Log10(probArray[i]);
+                else logArray[i] = Math.Log10(probArray[i]);
             }
             return logArray;
         }
@@ -938,14 +938,14 @@ namespace MarkovModels
             unigramProbs = new double[stateCount];
 
             for (int i = 0; i < stateCount; i++)
-				unigramProbs[i] = unigramCounts[i] / (double)count;
+                unigramProbs[i] = unigramCounts[i] / (double)count;
 
             //init a transition matrix - each row is the same ie the unigram probs
             AMatrix = new double[stateCount, stateCount];
             for (int i = 0; i < stateCount; i++)
             {
                 for (int j = 0; j < stateCount; j++) AMatrix[i, j] = unigramProbs[j];
-            }//end all rows
+            }
         }
 
         public static int[] String2IntegerArray(string s, int stateCount)
@@ -971,12 +971,12 @@ namespace MarkovModels
             {
                 return (MMType)Enum.Parse(typeof(MMType), name);
             }
-			catch
+            catch
             {
                 return MMType.UNDEFINED;
             }
         }
-    }//end class MarkovModel
+    }
 
     public class TrainingSequences
     {
@@ -991,13 +991,13 @@ namespace MarkovModels
 
         public void AddSequence(string tag, string sequence)
         {
-			if (sequences == null) sequences = new List<string[]>();
+            if (sequences == null) sequences = new List<string[]>();
             if (tagList == null) tagList = new Hashtable();
 
-			string[] data = new string[] { tag, sequence };
+            string[] data = new string[] { tag, sequence };
             sequences.Add(data);
             if (!tagList.ContainsKey(tag))
-				tagList.Add(tag, 1);
+                tagList.Add(tag, 1);
         }
 
         public void AddSequences(string tag, string[] sequences)
@@ -1008,17 +1008,17 @@ namespace MarkovModels
 
         public string[] GetSequences(string label)
         {
-			return sequences.Where(d => d[0] == label).Select(d => d[1]).ToArray();
+            return sequences.Where(d => d[0] == label).Select(d => d[1]).ToArray();
         }
 
         public int GetSequenceCount(string label)
         {
-			return sequences.Where(d => d[0] == label).Count();
+            return sequences.Where(d => d[0] == label).Count();
         }
 
         public string[] GetSequences()
         {
-			return sequences.Select(d => d[1]).ToArray();
+            return sequences.Select(d => d[1]).ToArray();
         }
 
         public void WriteComposition()
@@ -1030,8 +1030,8 @@ namespace MarkovModels
                 int number = GetSequenceCount(tag);
                 Console.WriteLine("\t Word=" + tag + "  Number of examples=" + number);
                 string[] words = GetSequences(tag);
-                for (int i = 0; i < words.Length; i++) Console.WriteLine("\t  "+words[i]);                          
+                for (int i = 0; i < words.Length; i++) Console.WriteLine("\t  " + words[i]);
             }
         }
-    }//class TrainingSequences
-}//end Namespace
+    }
+}
