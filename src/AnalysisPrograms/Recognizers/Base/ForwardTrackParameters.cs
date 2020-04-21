@@ -1,4 +1,4 @@
-// <copyright file="FowardTrackParameters.cs" company="QutEcoacoustics">
+// <copyright file="ForwardTrackParameters.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -17,8 +17,8 @@ namespace AnalysisPrograms.Recognizers.Base
     /// Parameters needed from a config file to detect fowards spectral peak tracks.
     /// A FowardTrack sounds like a fluctuating tone or technically, a chirp. Each track point advances one time step. Points may move up or down by at most two frequency bins.
     /// </summary>
-    [YamlTypeTag(typeof(FowardTrackParameters))]
-    public class FowardTrackParameters : CommonParameters
+    [YamlTypeTag(typeof(ForwardTrackParameters))]
+    public class ForwardTrackParameters : CommonParameters
     {
         /// <summary>
         /// Gets or sets a value indicating whether coincident tracks stacked on top of one another are to be combined.
@@ -44,7 +44,7 @@ namespace AnalysisPrograms.Recognizers.Base
         /// <param name="combinePossibleHarmonics">Combine tracks that are likely to be harmonics/formants.</param>
         /// <param name="segmentStartOffset">The start time of the current recording segment under analysis.</param>
         /// <returns>A list of acoustic events containing foward tracks.</returns>
-        public static (List<AcousticEvent> Events, double[] CombinedIntensity) GetFowardTracks(
+        public static (List<AcousticEvent> Events, double[] CombinedIntensity) GetForwardTracks(
             SpectrogramStandard sonogram,
             int minHz,
             int maxHz,
@@ -96,22 +96,20 @@ namespace AnalysisPrograms.Recognizers.Base
             var combinedIntensityArray = new double[frameCount];
             foreach (var track in tracks)
             {
-                var ae = new AcousticEvent(segmentStartOffset, track.StartTimeSeconds, track.TrackDurationSeconds, track.LowFreqHertz, track.HighFreqHertz);
-                var tr = new List<Track>
+                var ae = new AcousticEvent(segmentStartOffset, track)
                 {
-                    track,
+                    SegmentDurationSeconds = frameCount * converter.StepSize,
                 };
-                ae.AddTracks(tr);
+
                 events.Add(ae);
 
                 // fill the intensity array
-                //var startRow = ae.Oblong.ColumnLeft;
-                //var amplitudeTrack = track.GetAmplitudeOverTimeFrames();
                 var startRow = converter.FrameFromStartTime(track.StartTimeSeconds);
                 var amplitudeTrack = track.GetAmplitudeOverTimeFrames();
                 for (int i = 0; i < amplitudeTrack.Length; i++)
                 {
-                    combinedIntensityArray[startRow + i] += amplitudeTrack[i];
+                    //combinedIntensityArray[startRow + i] += amplitudeTrack[i];
+                    combinedIntensityArray[startRow + i] = Math.Max(combinedIntensityArray[startRow + i], amplitudeTrack[i]);
                 }
             }
 
