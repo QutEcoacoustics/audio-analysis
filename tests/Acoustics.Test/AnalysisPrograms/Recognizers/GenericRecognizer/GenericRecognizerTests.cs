@@ -56,7 +56,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             CollectionAssert.Contains(lines, "  TestAed: !AedParameters");
             CollectionAssert.Contains(lines, "  TestOscillation: !OscillationParameters");
             CollectionAssert.Contains(lines, "  TestBlob: !BlobParameters");
-            CollectionAssert.Contains(lines, "  TestWhistle: !WhistleParameters");
+            CollectionAssert.Contains(lines, "  TestWhistle: !OnebinTrackParameters");
 
             //lines.ForEach(x => Trace.WriteLine(x));
 
@@ -188,9 +188,9 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
 
             // NOTE: The whistle algorithm assigns the top and bottom freq bounds of an event based on where it finds the whistle.
             //       Not on what the user has set.
-            //       In this test the margin of error has been set arbitrarily to 10.
-            Assert.AreEqual(340, @event.LowFrequencyHertz, 20.0);
-            Assert.AreEqual(560, @event.HighFrequencyHertz, 50.0);
+            //       In this test the margin of error has been set arbitrarily to width of one frequency bin.
+            Assert.AreEqual(430, @event.LowFrequencyHertz, 44.0);
+            Assert.AreEqual(516, @event.HighFrequencyHertz, 44.0);
             Assert.AreEqual("TestWhistle", @event.Profile);
             Assert.AreEqual("NoName", @event.SpeciesName);
             Assert.AreEqual("Whistle400Hz", @event.Name);
@@ -326,6 +326,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             //Set up the virtual recording.
             int samplerate = 22050;
             double signalDuration = 13.0; //seconds
+            var segmentStartOffset = TimeSpan.FromSeconds(60.0);
 
             // set up the config for a virtual spectrogram.
             var sonoConfig = new SonogramConfig()
@@ -345,7 +346,6 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             //var image1 = SpectrogramTools.GetSonogramPlusCharts(spectrogram, null, null, null);
             //results.Sonogram.GetImage().Save(this.outputDirectory + "\\debug.png");
 
-            var segmentStartOffset = TimeSpan.Zero;
             var plots = new List<Plot>();
             double[] dBArray;
             List<AcousticEvent> acousticEvents;
@@ -360,7 +360,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
                 segmentStartOffset);
 
             // draw a plot of max decibels in each frame
-            double decibelNormalizationMax = 3 * decibelThreshold;
+            double decibelNormalizationMax = 5 * decibelThreshold;
             var dBThreshold = decibelThreshold / decibelNormalizationMax;
             var normalisedDecibelArray = DataTools.NormaliseInZeroOne(dBArray, 0, decibelNormalizationMax);
             var plot1 = new Plot("decibel max", normalisedDecibelArray, dBThreshold);
@@ -384,19 +384,21 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             var outputDirectory = new DirectoryInfo("C:\\temp");
             GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "WhistleTrack");
 
-            Assert.AreEqual(16, allResults.Events.Count);
+            //NOTE: There are 16 whistles in the test spectrogram ...
+            // but three of them are too weak to be detected at this threshold.
+            Assert.AreEqual(13, allResults.Events.Count);
 
             var @event = allResults.Events[4];
-            Assert.AreEqual(2.0, @event.EventStartSeconds, 0.1);
-            Assert.AreEqual(2.5, @event.EventEndSeconds, 0.1);
-            Assert.AreEqual(1723, @event.LowFrequencyHertz);
-            Assert.AreEqual(2067, @event.HighFrequencyHertz);
+            Assert.AreEqual(60 + 5.0, @event.EventStartSeconds, 0.1);
+            Assert.AreEqual(60 + 6.0, @event.EventEndSeconds, 0.1);
+            Assert.AreEqual(989, @event.LowFrequencyHertz);
+            Assert.AreEqual(1032, @event.HighFrequencyHertz);
 
             @event = allResults.Events[11];
-            Assert.AreEqual(6.0, @event.EventStartSeconds, 0.1);
-            Assert.AreEqual(6.5, @event.EventEndSeconds, 0.1);
-            Assert.AreEqual(2153, @event.LowFrequencyHertz);
-            Assert.AreEqual(2541, @event.HighFrequencyHertz);
+            Assert.AreEqual(60 + 11.0, @event.EventStartSeconds, 0.1);
+            Assert.AreEqual(60 + 12.0, @event.EventEndSeconds, 0.1);
+            Assert.AreEqual(989, @event.LowFrequencyHertz);
+            Assert.AreEqual(1032, @event.HighFrequencyHertz);
         }
 
         [TestMethod]
@@ -410,7 +412,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             var minDuration = 0.2;
             var maxDuration = 1.1;
             var decibelThreshold = 2.0;
-            var combinePossibleHarmonics = true;
+            var combinePossibleHarmonics = false;
 
             //Set up the virtual recording.
             int samplerate = 22050;
@@ -438,7 +440,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             var plots = new List<Plot>();
             double[] dBArray;
             List<AcousticEvent> acousticEvents;
-            (acousticEvents, dBArray) = FowardTrackParameters.GetFowardTracks(
+            (acousticEvents, dBArray) = ForwardTrackParameters.GetForwardTracks(
                 spectrogram,
                 minHertz,
                 maxHertz,
@@ -449,7 +451,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
                 segmentStartOffset);
 
             // draw a plot of max decibels in each frame
-            double decibelNormalizationMax = 3 * decibelThreshold;
+            double decibelNormalizationMax = 5 * decibelThreshold;
             var dBThreshold = decibelThreshold / decibelNormalizationMax;
             var normalisedDecibelArray = DataTools.NormaliseInZeroOne(dBArray, 0, decibelNormalizationMax);
             var plot1 = new Plot("decibel max", normalisedDecibelArray, dBThreshold);
@@ -480,14 +482,14 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             var @event = allResults.Events[4];
             Assert.AreEqual(2.0, @event.EventStartSeconds, 0.1);
             Assert.AreEqual(2.5, @event.EventEndSeconds, 0.1);
-            Assert.AreEqual(1723, @event.LowFrequencyHertz);
-            Assert.AreEqual(2067, @event.HighFrequencyHertz);
+            Assert.AreEqual(1720, @event.LowFrequencyHertz);
+            Assert.AreEqual(2107, @event.HighFrequencyHertz);
 
             @event = allResults.Events[11];
             Assert.AreEqual(6.0, @event.EventStartSeconds, 0.1);
             Assert.AreEqual(6.5, @event.EventEndSeconds, 0.1);
-            Assert.AreEqual(2153, @event.LowFrequencyHertz);
-            Assert.AreEqual(2541, @event.HighFrequencyHertz);
+            Assert.AreEqual(2150, @event.LowFrequencyHertz);
+            Assert.AreEqual(2580, @event.HighFrequencyHertz);
         }
 
         [TestMethod]
@@ -540,7 +542,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
                 segmentStartOffset);
 
             // draw a plot of max decibels in each frame
-            double decibelNormalizationMax = 3 * decibelThreshold;
+            double decibelNormalizationMax = 5 * decibelThreshold;
             var dBThreshold = decibelThreshold / decibelNormalizationMax;
             var normalisedDecibelArray = DataTools.NormaliseInZeroOne(dBArray, 0, decibelNormalizationMax);
             var plot1 = new Plot("decibel max", normalisedDecibelArray, dBThreshold);
@@ -571,14 +573,14 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             var @event = allResults.Events[0];
             Assert.AreEqual(10.0, @event.EventStartSeconds, 0.1);
             Assert.AreEqual(10.1, @event.EventEndSeconds, 0.1);
-            Assert.AreEqual(6474, @event.LowFrequencyHertz);
-            Assert.AreEqual(10781, @event.HighFrequencyHertz);
+            Assert.AreEqual(6450, @event.LowFrequencyHertz);
+            Assert.AreEqual(10750, @event.HighFrequencyHertz);
 
             @event = allResults.Events[1];
             Assert.AreEqual(11.0, @event.EventStartSeconds, 0.1);
-            Assert.AreEqual(11.24, @event.EventEndSeconds, 0.1);
-            Assert.AreEqual(6474, @event.LowFrequencyHertz);
-            Assert.AreEqual(7335, @event.HighFrequencyHertz);
+            Assert.AreEqual(11.2, @event.EventEndSeconds, 0.1);
+            Assert.AreEqual(6450, @event.LowFrequencyHertz);
+            Assert.AreEqual(7310, @event.HighFrequencyHertz);
         }
 
         /// <summary>
@@ -634,7 +636,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
                 segmentStartOffset);
 
             // draw a plot of max decibels in each frame
-            double decibelNormalizationMax = 3 * decibelThreshold;
+            double decibelNormalizationMax = 5 * decibelThreshold;
             var dBThreshold = decibelThreshold / decibelNormalizationMax;
             var normalisedDecibelArray = DataTools.NormaliseInZeroOne(dBArray, 0, decibelNormalizationMax);
             var plot1 = new Plot("decibel max", normalisedDecibelArray, dBThreshold);
@@ -726,7 +728,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
                 segmentStartOffset);
 
             // draw a plot of max decibels in each frame
-            double decibelNormalizationMax = 3 * decibelThreshold;
+            double decibelNormalizationMax = 5 * decibelThreshold;
             var dBThreshold = decibelThreshold / decibelNormalizationMax;
             var normalisedDecibelArray = DataTools.NormaliseInZeroOne(dBArray, 0, decibelNormalizationMax);
             var plot2 = new Plot("decibel max", normalisedDecibelArray, dBThreshold);

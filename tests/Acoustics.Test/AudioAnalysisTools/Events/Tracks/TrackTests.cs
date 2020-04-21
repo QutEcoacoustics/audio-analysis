@@ -46,10 +46,10 @@ namespace Acoustics.Test.AudioAnalysisTools.Events.Tracks
             Assert.AreEqual(5, track.PointCount);
 
             // frame duration = 0.1 seconds. First frame = 5.
-            Assert.AreEqual(60 + 0.25, track.StartTimeSeconds);
+            Assert.AreEqual(60 + 0.25, track.StartTimeSeconds, 0.01);
 
             //Last frame = 9
-            Assert.AreEqual(60 + 0.55, track.EndTimeSeconds);
+            Assert.AreEqual(60 + 0.55, track.EndTimeSeconds, 0.01);
 
             //This test returns the bottom side of the 5th freq bin.
             Assert.AreEqual(50, track.LowFreqHertz);
@@ -64,7 +64,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Events.Tracks
 
         [TestMethod]
         public void TestWhistleProperties()
-        {            
+        {
             //create new track with whistle
             var track = new Track(NiceTestConverter, TrackType.OneBinTrack);
             track.SetPoint(5, 5, 1);
@@ -74,10 +74,10 @@ namespace Acoustics.Test.AudioAnalysisTools.Events.Tracks
             track.SetPoint(9, 5, 5);
 
             // frame duration = 0.1 seconds. First frame = 5.
-            Assert.AreEqual(60 + 0.25, track.StartTimeSeconds);
+            Assert.AreEqual(60 + 0.25, track.StartTimeSeconds, 0.001);
 
             //Last frame = 9
-            Assert.AreEqual(60 + 0.55, track.EndTimeSeconds);
+            Assert.AreEqual(60 + 0.55, track.EndTimeSeconds, 0.001);
 
             //This test returns the bottom side of the 5th freq bin.
             Assert.AreEqual(50, track.LowFreqHertz);
@@ -99,10 +99,10 @@ namespace Acoustics.Test.AudioAnalysisTools.Events.Tracks
             track.SetPoint(5, 9, 5);
 
             // frame duration = 0.1 seconds. First frame = 5.
-            Assert.AreEqual(60 + 0.25, track.StartTimeSeconds);
+            Assert.AreEqual(60 + 0.25, track.StartTimeSeconds, 0.001);
 
             //Last frame = 9
-            Assert.AreEqual(60 + 0.35, track.EndTimeSeconds);
+            Assert.AreEqual(60 + 0.35, track.EndTimeSeconds, 0.001);
 
             //This test returns the bottom side of the 5th freq bin.
             Assert.AreEqual(50, track.LowFreqHertz);
