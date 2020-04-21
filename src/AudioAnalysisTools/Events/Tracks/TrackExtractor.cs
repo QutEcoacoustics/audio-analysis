@@ -33,6 +33,11 @@ namespace AudioAnalysisTools.Events.Tracks
             {
                 for (int col = 3; col < bandwidthBinCount - 3; col++)
                 {
+                    if (peaks[row, col] < threshold)
+                    {
+                        continue;
+                    }
+
                     // Visit each spectral peak in order. Each may be start of possible whistle track
                     var track = GetOnebinTrack(peaks, row, col, threshold, converter);
 
@@ -60,7 +65,7 @@ namespace AudioAnalysisTools.Events.Tracks
             {
                 // explore track in vicinity.
                 int nhStart = Math.Max(row - 2, 0);
-                int nhEnd = Math.Min(row + 4, peaks.GetLength(0));
+                int nhEnd = Math.Min(row + 3, peaks.GetLength(0));
                 int nhWidth = nhEnd - nhStart + 1;
                 double avIntensity = 0.0;
                 for (int nh = nhStart; nh < nhEnd; nh++)
@@ -69,22 +74,19 @@ namespace AudioAnalysisTools.Events.Tracks
                 }
 
                 avIntensity /= (double)nhWidth;
+                track.SetPoint(row, bin, peaks[row, bin]);
 
                 // Set visited value to zero so as not to revisit.....
                 peaks[row, bin] = 0.0;
 
-                // if track has come to an end
+                // next line is for debug purposes
+                //var info = track.CheckPoint(row, bin);
 
                 // Check if track has come to an end - average value is less than threshold.
                 if (avIntensity < threshold)
                 {
                     return track;
                 }
-
-                track.SetPoint(row, bin, peaks[row, bin]);
-
-                // next line is for debug purposes
-                //var info = track.CheckPoint(row, bin);
             }
 
             return track;
@@ -93,7 +95,7 @@ namespace AudioAnalysisTools.Events.Tracks
         public static List<Track> GetForwardTracks(double[,] peaks, double minDuration, double maxDuration, double threshold, UnitConverters converter)
         {
             int frameCount = peaks.GetLength(0);
-            int bandwidthBinCount = peaks.GetLength(1);
+            int binCount = peaks.GetLength(1);
 
             var tracks = new List<Track>();
 
@@ -102,8 +104,13 @@ namespace AudioAnalysisTools.Events.Tracks
             // Each row is a time frame which is a spectrum. Each column is a frequency bin
             for (int row = 0; row < frameCount; row++)
             {
-                for (int col = 3; col < bandwidthBinCount - 3; col++)
+                for (int col = 3; col < binCount - 3; col++)
                 {
+                    if (peaks[row, col] < threshold)
+                    {
+                        continue;
+                    }
+
                     // Visit each spectral peak in order. Each may be start of possible track
                     var track = GetForwardTrack(peaks, row, col, threshold, converter);
 

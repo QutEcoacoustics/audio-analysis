@@ -109,16 +109,11 @@ namespace AnalysisPrograms.Recognizers.Base
             var temporalIntensityArray = new double[frameCount];
             foreach (var track in tracks)
             {
-                var ae = new AcousticEvent(segmentStartOffset, track.StartTimeSeconds, track.TrackDurationSeconds, track.LowFreqHertz, track.HighFreqHertz)
+                var ae = new AcousticEvent(segmentStartOffset, track)
                 {
                     SegmentDurationSeconds = frameCount * frameStep,
                 };
 
-                var tr = new List<Track>
-                {
-                    track,
-                };
-                ae.AddTracks(tr);
                 events.Add(ae);
 
                 // fill the intensity array

@@ -81,7 +81,7 @@ namespace AnalysisPrograms.Recognizers.Base
 
                     if (netAmplitude >= decibelThreshold)
                     {
-                        peaks[tf, bin] = Math.Max(0.0, netAmplitude);
+                        peaks[tf, bin] = sonogramData[tf, bin];
                     }
                 }
             }
@@ -162,12 +162,11 @@ namespace AnalysisPrograms.Recognizers.Base
             var combinedIntensityArray = new double[frameCount];
             foreach (var track in tracks)
             {
-                var ae = new AcousticEvent(segmentStartOffset, track.StartTimeSeconds, track.TrackDurationSeconds, track.LowFreqHertz, track.HighFreqHertz);
-                var tr = new List<Track>
+                var ae = new AcousticEvent(segmentStartOffset, track)
                 {
-                    track,
+                    SegmentDurationSeconds = frameCount * converter.StepSize,
                 };
-                ae.AddTracks(tr);
+
                 events.Add(ae);
 
                 // fill the intensity array
@@ -175,6 +174,7 @@ namespace AnalysisPrograms.Recognizers.Base
                 var amplitudeTrack = track.GetAmplitudeOverTimeFrames();
                 for (int i = 0; i < amplitudeTrack.Length; i++)
                 {
+                    //combinedIntensityArray[startRow + i] += amplitudeTrack[i];
                     combinedIntensityArray[startRow + i] = Math.Max(combinedIntensityArray[startRow + i], amplitudeTrack[i]);
                 }
             }
