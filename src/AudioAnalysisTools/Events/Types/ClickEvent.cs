@@ -6,25 +6,33 @@ namespace AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Drawing;
     using AudioAnalysisTools.Events.Interfaces;
     using AudioAnalysisTools.Events.Tracks;
     using SixLabors.ImageSharp.Processing;
 
-    public class ClickEvent : SpectralEvent, ITrack
+    public class ClickEvent : SpectralEvent, ITracks<Track>
     {
-        public ClickEvent(Track t)
-            : base(t.SegmentStartOffset, t.StartTimeSeconds, t.DurationSeconds, t.LowFreqHertz, t.HighFreqHertz)
+        public ClickEvent(Track click)
         {
-            this.Track = t;
+            this.Tracks.Add(click);
         }
 
-        public TimeSpan SegmentStartOffset => this.Track.SegmentStartOffset;
+        public List<Track> Tracks { get; private set; } = new List<Track>(1);
 
-        public ISet<ISpectralPoint> Points => this.Track.Points;
+        public override double EventStartSeconds =>
+            this.Tracks.Min(x => x.StartTimeSeconds);
 
-        public Track Track { get; private set; }
+        public override double EventEndSeconds =>
+            this.Tracks.Max(x => x.EndTimeSeconds);
+
+        public override double LowFrequencyHertz =>
+            this.Tracks.Min(x => x.LowFreqHertz);
+
+        public override double HighFrequencyHertz =>
+            this.Tracks.Max(x => x.HighFreqHertz);
 
         public override void Draw(IImageProcessingContext graphics, EventRenderingOptions options)
         {
@@ -32,7 +40,7 @@ namespace AudioAnalysisTools
             // track.Draw(...)
             // }
 
-            this.Track.Draw(graphics, options);
+            this.Tracks.First().Draw(graphics, options);
 
             //  base drawing (border)
             // TODO: unless border is disabled

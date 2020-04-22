@@ -11,12 +11,11 @@ namespace AudioAnalysisTools
 
     public class OscillationEvent : SpectralEvent
     {
-        public OscillationEvent(TimeSpan segmentStartOffset, double startTime, double duration, int minHz, int maxHz)
-            : base(segmentStartOffset, startTime, duration, minHz, maxHz)
+        public OscillationEvent()
         {
         }
 
-        //public TimeSpan SegmentStartOffset => this.Track.SegmentStartOffset;
+        // TODO: add extra metadata!!!
 
         public override void Draw(IImageProcessingContext graphics, EventRenderingOptions options)
         {

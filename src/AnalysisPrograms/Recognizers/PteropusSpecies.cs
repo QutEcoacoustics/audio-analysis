@@ -39,6 +39,7 @@ namespace AnalysisPrograms.Recognizers
     using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.Events.Types;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
@@ -372,9 +373,11 @@ namespace AnalysisPrograms.Recognizers
                 minDurationSeconds,
                 maxDurationSeconds,
                 out var scores,
-                out var acousticEvents,
+                out var oscillationEvents,
                 out var hits,
                 segmentStartOffset);
+
+            var acousticEvents = oscillationEvents.ConvertSpectralEventsToAcousticEvents();
 
             // prepare plots
             double intensityNormalisationMax = 3 * decibelThreshold;

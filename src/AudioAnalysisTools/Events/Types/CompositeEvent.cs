@@ -15,10 +15,9 @@ namespace AudioAnalysisTools.Events.Types
 
     public class CompositeEvent : SpectralEvent
     {
-        public CompositeEvent(List<SpectralEvent> se)
-            : base(TimeSpan.FromSeconds(se[0].SegmentStartSeconds), se[0].EventStartSeconds, se[0].EventDurationSeconds, se[0].LowFrequencyHertz, se[0].HighFrequencyHertz)
+        public CompositeEvent(List<EventCommon> events)
         {
-            // ######################################################### TODO TODO
+            this.ComponentEvents.AddRange(events);
         }
 
         public List<EventCommon> ComponentEvents { get; set; } = new List<EventCommon>();
@@ -41,7 +40,7 @@ namespace AudioAnalysisTools.Events.Types
             {
                 foreach (var @event in this.ComponentEvents)
                 {
-                    if (@event is ITracks eventWithTracks)
+                    if (@event is ITracks<ITrack> eventWithTracks)
                     {
                         foreach (var track in eventWithTracks.Tracks)
                         {

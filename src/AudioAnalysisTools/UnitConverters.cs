@@ -5,10 +5,13 @@
 namespace AudioAnalysisTools
 {
     using System;
+    using System.Collections.Generic;
     using Acoustics.Shared;
+    using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Interfaces;
     using AudioAnalysisTools.Scales;
     using SixLabors.ImageSharp;
+    using TowseyLibrary;
 
     public class UnitConverters
     {
@@ -278,6 +281,28 @@ namespace AudioAnalysisTools
         public double GetHertzFromFreqBin(int bin)
         {
             return bin * this.HertzPerFreqBin;
+        }
+
+        public double GetHertzHighFromFreqBin(int bin)
+        {
+            return (bin * this.HertzPerFreqBin) + this.HertzPerFreqBin;
+        }
+
+        public SpectralPoint ConvertPointToSpectralPoint(Point point, double value)
+        {
+            return new SpectralPoint(
+                (this.GetStartTimeInSecondsOfFrame(point.X), this.GetEndTimeInSecondsOfFrame(point.X)),
+                (this.GetHertzFromFreqBin(point.Y), this.GetHertzHighFromFreqBin(point.Y)),
+                value);
+        }
+
+        public void SetBounds<T>(T @event, Oblong source)
+            where T : SpectralEvent
+        {
+            @event.EventStartSeconds = this.GetStartTimeInSecondsOfFrame(source.RowTop);
+            @event.EventEndSeconds = this.GetEndTimeInSecondsOfFrame(source.RowBottom);
+            @event.LowFrequencyHertz = this.GetHertzFromFreqBin(source.ColumnLeft);
+            @event.HighFrequencyHertz = this.GetHertzFromFreqBin(source.ColumnRight);
         }
     }
 }

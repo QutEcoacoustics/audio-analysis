@@ -33,7 +33,7 @@ namespace AudioAnalysisTools
             double maxDuration,
             int smoothingWindow,
             out double[] dctScores,
-            out List<SpectralEvent> events,
+            out List<OscillationEvent> events,
             TimeSpan segmentStartOffset)
         {
             // smooth the frames to make oscillations more regular.

@@ -16,6 +16,7 @@ namespace AnalysisPrograms.Recognizers
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Reflection;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
@@ -24,6 +25,8 @@ namespace AnalysisPrograms.Recognizers
     using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.Events;
+    using AudioAnalysisTools.Events.Types;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
@@ -156,9 +159,11 @@ namespace AnalysisPrograms.Recognizers
                 maxDuration,
                 scoreSmoothingWindow,
                 out var scores,
-                out var acousticEvents,
+                out var oscillationEvents,
                 out var hits,
                 segmentStartOffset);
+
+            var acousticEvents = oscillationEvents.ConvertSpectralEventsToAcousticEvents();
 
             acousticEvents.ForEach(ae =>
             {

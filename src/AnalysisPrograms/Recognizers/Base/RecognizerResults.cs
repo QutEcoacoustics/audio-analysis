@@ -29,9 +29,9 @@ namespace AnalysisPrograms.Recognizers.Base
             this.Plots = new List<Plot>();
         }
 
-        public List<AcousticEvent> Events { get; set; }
+        public List<AcousticEvent> Events { get; set; } = new List<AcousticEvent>();
 
-        public List<EventCommon> NewEvents { get; set; }
+        public List<EventCommon> NewEvents { get; set; } = new List<EventCommon>();
 
         public double[,] Hits { get; set; }
 
@@ -60,12 +60,7 @@ namespace AnalysisPrograms.Recognizers.Base
 
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value), "Cannot be set to null");
-                }
-
-                this.plots = value;
+                this.plots = value ?? throw new ArgumentNullException(nameof(value), "Cannot be set to null");
             }
         }
     }

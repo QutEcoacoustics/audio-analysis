@@ -174,30 +174,34 @@ namespace AnalysisPrograms
             IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(aedOptions, sonogram.Data);
             Log.Info("AED finished");
 
+            var unitConverters = new UnitConverters(
+                segmentStartOffset.TotalSeconds,
+                sonogram.SampleRate,
+                sonogram.Configuration.WindowSize,
+                sonogram.Configuration.WindowOverlap);
+
             var events = oblongs.Select(
                 o =>
                 {
-                    if (!aedConfiguration.IncludeHitElementsInOutput)
+                    var blob = new BlobEvent()
                     {
-                        o.HitElements = null;
+                        SegmentDurationSeconds = segmentDuration.TotalSeconds,
+                        Name = "AED Event",
+                    };
+
+                    unitConverters.SetBounds(blob, o);
+
+                    if (aedConfiguration.IncludeHitElementsInOutput)
+                    {
+                        o.HitElements
+                            .Select(p => unitConverters.ConvertPointToSpectralPoint(p, 1.0))
+                            .ForEach(sp => blob.Points.Add(sp));
                     }
 
-                    var ae = AcousticEvent.InitializeAcousticEvent(
-                        segmentStartOffset,
-                        o,
-                        sonogram.NyquistFrequency,
-                        sonogram.Configuration.FreqBinCount,
-                        sonogram.FrameDuration,
-                        sonogram.FrameStep,
-                        sonogram.FrameCount);
+                    return blob;
+                });
 
-                    ae.BorderColour = aedConfiguration.AedEventColor;
-                    ae.HitColour = aedConfiguration.AedHitColor;
-                    ae.SegmentDurationSeconds = segmentDuration.TotalSeconds;
-
-                    return EventConverters.ConvertAcousticEventToSpectralEvent(ae);
-                }).ToArray();
-            return events;
+            return events.ToArray();
         }
 
         public static Image DrawSonogram(BaseSonogram sonogram, IEnumerable<SpectralEvent> events)

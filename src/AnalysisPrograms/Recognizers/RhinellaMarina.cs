@@ -21,6 +21,7 @@ namespace AnalysisPrograms.Recognizers
     using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.Events.Types;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
@@ -165,12 +166,13 @@ namespace AnalysisPrograms.Recognizers
                 minDurationOfAdvertCall,
                 maxDuration,
                 out var scores,
-                out var events,
+                out var oscillationEvents,
                 out var hits,
                 segmentStartOffset);
 
             // DEBUG: Following line used to search for where indeterminism creeps into the event detection
             //FileTools.AddArrayAdjacentToExistingArrays(Path.Combine(outputDirectory.FullName, recording.BaseName+"_ScoreArray.csv"), scores);
+            var events = oscillationEvents.ConvertSpectralEventsToAcousticEvents();
 
             var prunedEvents = new List<AcousticEvent>();
 

@@ -16,6 +16,7 @@ namespace AnalysisPrograms.Recognizers
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Events;
+    using AudioAnalysisTools.Events.Tracks;
     using AudioAnalysisTools.Events.Types;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
@@ -88,7 +89,6 @@ namespace AnalysisPrograms.Recognizers
                     case Aed.AedConfiguration _:
                         algorithmName = "AED";
                         break;
-                    //throw new NotImplementedException("The XXXX algorithm has not yet been implemented!");
                     default:
                         var allowedAlgorithms =
                             $"{nameof(BlobParameters)}," +
@@ -188,7 +188,7 @@ namespace AnalysisPrograms.Recognizers
                                 TimeSpan.FromSeconds(bp.MaxDuration.Value),
                                 sonogram.FramesPerSecond,
                                 sonogram.FBinWidth);
-                            spectralEvents = EventConverters.ConvertAcousticEventsToSpectralEvents(acEvents);
+                            spectralEvents = acEvents.ConvertAcousticEventsToSpectralEvents();
                         }
                         else if (profileConfig is OnebinTrackParameters wp)
                         {
@@ -210,14 +210,9 @@ namespace AnalysisPrograms.Recognizers
                         else if (profileConfig is ForwardTrackParameters tp)
                         {
                             double[] decibelArray;
-                            (spectralEvents, decibelArray) = ForwardTrackParameters.GetForwardTracks(
+                            (spectralEvents, decibelArray) = TrackExtractor.GetForwardTracks(
                                 sonogram,
-                                tp.MinHertz.Value,
-                                tp.MaxHertz.Value,
-                                tp.DecibelThreshold.Value,
-                                tp.MinDuration.Value,
-                                tp.MaxDuration.Value,
-                                tp.CombinePossibleHarmonics,
+                                tp,
                                 segmentStartOffset);
 
                             var plot = PreparePlot(decibelArray, $"{profileName} (Chirps:dB Intensity)", tp.DecibelThreshold.Value);
@@ -289,10 +284,11 @@ namespace AnalysisPrograms.Recognizers
                                 op.MinDuration.Value,
                                 op.MaxDuration.Value,
                                 out var scores,
-                                out spectralEvents,
+                                out var oscillationEvents,
                                 out var hits,
                                 segmentStartOffset);
 
+                            spectralEvents = new List<SpectralEvent>(oscillationEvents);
                             //plots.Add(new Plot($"{profileName} (:OscillationScore)", scores, op.EventThreshold));
                             var plot = PreparePlot(scores, $"{profileName} (:OscillationScore)", op.EventThreshold);
                             plots.Add(plot);

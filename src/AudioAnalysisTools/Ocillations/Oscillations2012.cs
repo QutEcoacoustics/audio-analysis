@@ -33,7 +33,7 @@ namespace AudioAnalysisTools
             double minDuration,
             double maxDuration,
             out double[] scores,
-            out List<SpectralEvent> events,
+            out List<OscillationEvent> events,
             out double[,] hits,
             TimeSpan segmentStartOffset)
         {
@@ -58,7 +58,7 @@ namespace AudioAnalysisTools
             double maxDuration,
             int smoothingWindow,
             out double[] scores,
-            out List<SpectralEvent> events,
+            out List<OscillationEvent> events,
             out double[,] hits,
             TimeSpan segmentStartOffset)
         {
@@ -329,7 +329,7 @@ namespace AudioAnalysisTools
         /// <param name="maxDurationThreshold">max threshold.</param>
         /// <param name="fileName">name of source file to be added to AcousticEvent class.</param>
         /// <param name="segmentStartOffset">time offset.</param>
-        public static List<SpectralEvent> ConvertOscillationScores2Events(
+        public static List<OscillationEvent> ConvertOscillationScores2Events(
             double[] scores,
             double[] oscFreq,
             int minHz,
@@ -350,7 +350,7 @@ namespace AudioAnalysisTools
             //int minBin = (int)(minHz / freqBinWidth);
             //int maxBin = (int)(maxHz / freqBinWidth);
             //int binCount = maxBin - minBin + 1;
-            var events = new List<SpectralEvent>();
+            var events = new List<OscillationEvent>();
             bool isHit = false;
             double frameOffset = 1 / framesPerSec;
             double startTime = 0.0;
@@ -385,10 +385,14 @@ namespace AudioAnalysisTools
                     }
 
                     //this is end of an event, so initialise it
-                    var ev = new OscillationEvent(segmentStartOffset, startTime, duration, minHz, maxHz)
+                    var ev = new OscillationEvent()
                     {
                         //##########################################################################################
                         //Name = "Oscillation", //default name
+                        EventStartSeconds = segmentStartOffset.TotalSeconds + startTime,
+                        EventEndSeconds = segmentStartOffset.TotalSeconds + startTime + duration,
+                        LowFrequencyHertz = minHz,
+                        HighFrequencyHertz = maxHz,
                         FileName = fileName,
                     };
 

@@ -4,6 +4,8 @@
 
 namespace AudioAnalysisTools.Events.Tracks
 {
+    using AnalysisPrograms.Recognizers.Base;
+    using AudioAnalysisTools.StandardSpectrograms;
     using System;
     using System.Collections.Generic;
     using TowseyLibrary;
@@ -407,6 +409,89 @@ namespace AudioAnalysisTools.Events.Tracks
             }
 
             return track;
+        }
+
+        /// <summary>
+        /// This method returns foward (spectral peak) tracks enclosed in acoustic events.
+        /// It averages dB log values incorrectly but it is faster than doing many log conversions.
+        /// </summary>
+        /// <param name="sonogram">The spectrogram to be searched.</param>
+        /// <returns>A list of acoustic events containing foward tracks.</returns>
+        public static (List<SpectralEvent> Events, double[] CombinedIntensity) GetForwardTracks(
+            SpectrogramStandard sonogram,
+            ForwardTrackParameters parameters,
+            TimeSpan segmentStartOffset)
+        {
+            var sonogramData = sonogram.Data;
+            int frameCount = sonogramData.GetLength(0);
+            int binCount = sonogramData.GetLength(1);
+            int nyquist = sonogram.NyquistFrequency;
+            double binWidth = nyquist / (double)binCount;
+            int minBin = (int)Math.Round(parameters.MinHertz.Value / binWidth);
+            int maxBin = (int)Math.Round(parameters.MaxHertz.Value / binWidth);
+
+            var converter = new UnitConverters(
+                segmentStartOffset: segmentStartOffset.TotalSeconds,
+                sampleRate: sonogram.SampleRate,
+                frameSize: sonogram.Configuration.WindowSize,
+                frameOverlap: sonogram.Configuration.WindowOverlap);
+
+            //Find all spectral peaks and place in peaks matrix
+            var peaks = new double[frameCount, binCount];
+            for (int row = 0; row < frameCount; row++)
+            {
+                for (int col = minBin + 1; col < maxBin - 1; col++)
+                {
+                    if (sonogramData[row, col] < parameters.DecibelThreshold)
+                    {
+                        continue;
+                    }
+
+                    // if given matrix element is greater than in freq bin either side
+                    bool isPeak = (sonogramData[row, col] > sonogramData[row, col - 1]) && (sonogramData[row, col] > sonogramData[row, col + 1]);
+                    if (isPeak)
+                    {
+                        peaks[row, col] = sonogramData[row, col];
+                    }
+                }
+            }
+
+            var tracks = TrackExtractor.GetForwardTracks(peaks, parameters.MinDuration.Value, parameters.MaxDuration.Value, parameters.DecibelThreshold.Value, converter);
+
+            // initialise tracks as events and get the combined intensity array.
+            // list of accumulated acoustic events
+            var events = new List<SpectralEvent>();
+            var combinedIntensityArray = new double[frameCount];
+            foreach (var track in tracks)
+            {
+                var ae = new ChirpEvent(track)
+                {
+                    SegmentDurationSeconds = frameCount * converter.StepSize,
+                };
+
+                events.Add(ae);
+
+                // fill the intensity array
+                var startRow = converter.FrameFromStartTime(track.StartTimeSeconds);
+                var amplitudeTrack = track.GetAmplitudeOverTimeFrames();
+                for (int i = 0; i < amplitudeTrack.Length; i++)
+                {
+                    //combinedIntensityArray[startRow + i] += amplitudeTrack[i];
+                    combinedIntensityArray[startRow + i] = Math.Max(combinedIntensityArray[startRow + i], amplitudeTrack[i]);
+                }
+            }
+
+            // Combine coincident events that are stacked one above other.
+            // This will help in some cases to combine related events.
+            var startDifference = TimeSpan.FromSeconds(0.2);
+            var hertzGap = 200;
+            if (parameters.CombinePossibleHarmonics)
+            {
+                //######################################################################################### TODO TODO
+                //events = CompositeEvent.CombinePotentialStackedTracks(events, startDifference, hertzGap);
+            }
+
+            return (events, combinedIntensityArray);
         }
     }
 }

@@ -12,10 +12,24 @@ namespace AudioAnalysisTools.Events
     public abstract class EventCommon : EventBase, IDrawableEvent
     {
         // PUT OTHER EVENT DATA HERE
+
+        /// <summary>
+        /// Gets or sets the name for this event.
+        /// The name should be a friendly name.
+        /// </summary>
         public string Name { get; set; }
 
+        /// <summary>
+        /// Gets or sets the profile used to create this event.
+        /// If a profile was not used this value should be null.
+        /// </summary>
         public string Profile { get; set; }
 
+        /// <summary>
+        /// Gets the component name for this event.
+        /// The component name should indicate what type of event this.
+        /// E.g. a click, a whistle, a stacked harmonic, ...
+        /// </summary>
         public string ComponentName => this.GetType().Name;
 
         //ae.Name = parameters.ComponentName;

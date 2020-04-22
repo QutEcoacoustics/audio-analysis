@@ -12,11 +12,6 @@ namespace AnalysisPrograms.Recognizers.Base
     public abstract class CommonParameters
     {
         /// <summary>
-        /// Gets or sets the name to give to a detected component.
-        /// </summary>
-        public string ComponentName { get; set; }
-
-        /// <summary>
         /// Gets or sets the name species name to give to a component.
         /// Leave blank if you're don't want an event to have a species name.
         /// </summary>

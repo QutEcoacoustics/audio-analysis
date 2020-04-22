@@ -6,20 +6,32 @@ namespace AudioAnalysisTools.Events.Types
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Drawing;
     using AudioAnalysisTools.Events.Interfaces;
     using AudioAnalysisTools.Events.Tracks;
     using SixLabors.ImageSharp.Processing;
 
-    public class ChatterEvent : SpectralEvent, ITracks
+    public class ChatterEvent : SpectralEvent, ITracks<Track>
     {
-        public ChatterEvent(List<Track> ce)
-            : base(ce[0].SegmentStartOffset, ce[0].StartTimeSeconds, ce[0].DurationSeconds, ce[0].LowFreqHertz, ce[0].HighFreqHertz)
+        public ChatterEvent(List<Track> chitters)
         {
-            //this.Tracks = ce;
+            this.Tracks = chitters;
         }
 
-        public List<ITrack> Tracks { get; }
+        public List<Track> Tracks { get; }
+
+        public override double EventStartSeconds =>
+            this.Tracks.Min(x => x.StartTimeSeconds);
+
+        public override double EventEndSeconds =>
+            this.Tracks.Max(x => x.EndTimeSeconds);
+
+        public override double LowFrequencyHertz =>
+            this.Tracks.Min(x => x.LowFreqHertz);
+
+        public override double HighFrequencyHertz =>
+            this.Tracks.Max(x => x.HighFreqHertz);
     }
 }

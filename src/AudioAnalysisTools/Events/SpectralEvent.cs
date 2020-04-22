@@ -15,12 +15,6 @@ namespace AudioAnalysisTools.Events
     {
         public SpectralEvent()
         {
-
-        }
-
-        public SpectralEvent(TimeSpan segmentStartOffset, double startTime, double duration, double minHz, double maxHz)
-        {
-            //############################################################################################# TODO
         }
 
         public virtual double EventEndSeconds { get; set; }

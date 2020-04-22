@@ -16,6 +16,7 @@ namespace AnalysisPrograms
     using AnalysisBase.ResultBases;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.Events.Types;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using SixLabors.ImageSharp;
@@ -166,9 +167,11 @@ namespace AnalysisPrograms
                 minDuration,
                 maxDuration,
                 out var scores,
-                out var events,
+                out var oscillationEvents,
                 out var hits,
                 segmentStartOffset);
+
+            var events = oscillationEvents.ConvertSpectralEventsToAcousticEvents();
 
             // remove isolated koala events - this is to remove false positive identifications
             events = FilterMaleKoalaEvents(events);

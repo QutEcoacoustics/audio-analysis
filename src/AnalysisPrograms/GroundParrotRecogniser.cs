@@ -23,6 +23,8 @@ namespace AnalysisPrograms
     using AnalysisPrograms.Production;
     using AnalysisPrograms.Production.Arguments;
     using AudioAnalysisTools;
+    using AudioAnalysisTools.Events;
+    using AudioAnalysisTools.Events.Types;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using log4net;
@@ -129,9 +131,9 @@ namespace AnalysisPrograms
         /// </returns>
         public static Tuple<BaseSonogram, List<AcousticEvent>> Detect(FileInfo wavFilePath, Aed.AedConfiguration aedConfiguration, double eprNormalisedMinScore, TimeSpan segmentStartOffset)
         {
-            Tuple<AcousticEvent[], AudioRecording, BaseSonogram> aed = Aed.Detect(wavFilePath, aedConfiguration, segmentStartOffset);
+            Tuple<SpectralEvent[], AudioRecording, BaseSonogram> aed = Aed.Detect(wavFilePath, aedConfiguration, segmentStartOffset);
 
-            var events = aed.Item1.Select(ae => Util.fcornersToRect(ae.TimeStart, ae.TimeEnd, ae.HighFrequencyHertz, ae.LowFrequencyHertz)).ToList();
+            var events = aed.Item1.Select(se => se.ConvertSpectralEventToAcousticEvent()).Select(ae => Util.fcornersToRect(ae.TimeStart, ae.TimeEnd, ae.HighFrequencyHertz, ae.LowFrequencyHertz)).ToList();
 
             Log.Debug("EPR start");
 
@@ -198,7 +200,7 @@ namespace AnalysisPrograms
             string wavFilePath = input.FullName;
             BaseSonogram sonogram = result.Item1;
             string imagePath = Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(wavFilePath) + ".png");
-            var image = Aed.DrawSonogram(sonogram, eprEvents);
+            var image = Aed.DrawSonogram(sonogram, eprEvents.ConvertAcousticEventsToSpectralEvents());
             image.Save(imagePath);
 
             //ProcessingTypes.SaveAeCsv(eprEvents, outputFolder, wavFilePath);
@@ -309,7 +311,7 @@ namespace AnalysisPrograms
             // save image of sonograms
             if (analysisSettings.AnalysisImageSaveBehavior.ShouldSave(analysisResults.Events.Length))
             {
-                Image image = Aed.DrawSonogram(sonogram, results.Item2);
+                Image image = Aed.DrawSonogram(sonogram, results.Item2.ConvertAcousticEventsToSpectralEvents());
                 image.Save(segmentSettings.SegmentImageFile.FullName);
                 analysisResults.ImageFile = segmentSettings.SegmentImageFile;
             }

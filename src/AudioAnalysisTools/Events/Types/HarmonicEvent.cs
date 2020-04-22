@@ -11,13 +11,6 @@ namespace AudioAnalysisTools
 
     public class HarmonicEvent : SpectralEvent
     {
-        public HarmonicEvent(TimeSpan segmentStartOffset, double startTime, double duration, int minHz, int maxHz)
-            : base(segmentStartOffset, startTime, duration, minHz, maxHz)
-        {
-        }
-
-        //public TimeSpan SegmentStartOffset => this.Track.SegmentStartOffset;
-
         public override void Draw(IImageProcessingContext graphics, EventRenderingOptions options)
         {
             // foreach (var track in tracks) {

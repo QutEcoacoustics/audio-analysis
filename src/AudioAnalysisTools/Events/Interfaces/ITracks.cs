@@ -7,8 +7,9 @@ namespace AudioAnalysisTools
     using System.Collections.Generic;
     using AudioAnalysisTools.Events.Interfaces;
 
-    public interface ITracks
+    public interface ITracks<T>
+        where T : ITrack
     {
-        public List<ITrack> Tracks { get; }
+        public List<T> Tracks { get; }
     }
 }

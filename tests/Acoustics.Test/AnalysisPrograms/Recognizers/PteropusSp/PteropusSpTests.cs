@@ -85,6 +85,8 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.PteropusSp
 
             Assert.AreEqual(4, acousticEvents.Count);
 
+            Assert.Fail("Michael fix me");
+            /*
             Assert.AreEqual(5, acousticEvents[0].Oblong.ColumnLeft);
             Assert.AreEqual(46, acousticEvents[0].Oblong.ColumnRight);
             Assert.AreEqual(1280, acousticEvents[0].Oblong.RowTop);
@@ -104,7 +106,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.PteropusSp
             Assert.AreEqual(46, acousticEvents[3].Oblong.ColumnRight);
             Assert.AreEqual(2334, acousticEvents[3].Oblong.RowTop);
             Assert.AreEqual(2383, acousticEvents[3].Oblong.RowBottom);
-
+            */
             //Assert.AreEqual(0.6062, stats.SpectralEnergyDistribution, 1E-4);
         }
 
