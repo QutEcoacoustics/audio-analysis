@@ -8,6 +8,8 @@ namespace AnalysisPrograms.Recognizers.Base
     using System.Collections.Generic;
     using Acoustics.Shared;
     using AudioAnalysisTools;
+    using AudioAnalysisTools.Events;
+    using AudioAnalysisTools.Events.Types;
     using AudioAnalysisTools.StandardSpectrograms;
     using TowseyLibrary;
 
@@ -33,7 +35,7 @@ namespace AnalysisPrograms.Recognizers.Base
         /// </summary>
         public int? MaxFormantGap { get; set; }
 
-        public static (List<AcousticEvent>, double[], double[]) GetComponentsWithHarmonics(
+        public static (List<SpectralEvent> SpectralEvents, double[] AmplitudeArray, double[] HarmonicIntensityScores) GetComponentsWithHarmonics(
             SpectrogramStandard spectrogram,
             int minHz,
             int maxHz,
@@ -46,7 +48,6 @@ namespace AnalysisPrograms.Recognizers.Base
             int maxFormantGap,
             TimeSpan segmentStartOffset)
         {
-
             // Event threshold - Determines FP / FN trade-off for events.
             //double eventThreshold = 0.2;
 
@@ -93,7 +94,7 @@ namespace AnalysisPrograms.Recognizers.Base
 
             //extract the events based on length and threshhold.
             // Note: This method does NOT do prior smoothing of the score array.
-            var acousticEvents = AcousticEvent.ConvertScoreArray2Events(
+            var harmonicEvents = AcousticEvent.ConvertScoreArray2Events(
                     harmonicIntensityScores,
                     minHz,
                     maxHz,
@@ -104,15 +105,19 @@ namespace AnalysisPrograms.Recognizers.Base
                     maxDuration,
                     segmentStartOffset);
 
+            var spectralEvents = new List<SpectralEvent>();
+
             // add in temporary names to the events
             // These can be altered later.
-            foreach (var ev in acousticEvents)
+            foreach (var he in harmonicEvents)
             {
-                 ev.SpeciesName = "NoName";
-                 ev.Name = "Harmonics";
+                var se = EventConverters.ConvertAcousticEventToSpectralEvent(he);
+                spectralEvents.Add(se);
+                se.Name = "Harmonics";
+                //se.ComponentName = "Harmonics";
             }
 
-            return (acousticEvents, dBArray, harmonicIntensityScores);
+            return (spectralEvents, dBArray, harmonicIntensityScores);
         }
     }
 }

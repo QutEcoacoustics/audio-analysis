@@ -18,6 +18,7 @@ namespace AudioAnalysisTools
     using Acoustics.Shared.ImageSharp;
     using AnalysisBase.ResultBases;
     using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Drawing;
     using AudioAnalysisTools.Events.Interfaces;
     using AudioAnalysisTools.Events.Tracks;
@@ -261,7 +262,7 @@ namespace AudioAnalysisTools
             : this()
         {
             var eventStartSegmentRelative = track.StartTimeSeconds - segmentStartOffset.TotalSeconds;
-            var eventEndSegmentRelative = eventStartSegmentRelative + track.TrackDurationSeconds;
+            var eventEndSegmentRelative = eventStartSegmentRelative + track.DurationSeconds;
             this.SetEventPositionRelative(segmentStartOffset, eventStartSegmentRelative, eventEndSegmentRelative);
             this.LowFrequencyHertz = track.LowFreqHertz;
             this.HighFrequencyHertz = track.HighFreqHertz;
@@ -581,6 +582,37 @@ namespace AudioAnalysisTools
                 g.NoAA().DrawLine(scorePen, t1, y2 - scoreHt, t1, y2 + 1);
                 g.DrawTextSafe(this.Name, Drawing.Tahoma6, Color.Black, new PointF(t1, y1 - 4));
             });
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AcousticEvent"/> class.
+        /// This method works ONLY for linear Hertz scale events.
+        /// It requires the event bounds to provided (using Oblong) in terms of time frame and frequency bin counts.
+        /// Scale information must also be provided to convert bounds into real values (seconds, Hertz).
+        /// </summary>
+        /// <param name="o">An oblong initialized with bin and frame numbers marking location of the event.</param>
+        /// <param name="nyquistFrequency">to set the freq scale.</param>
+        /// <param name="binCount">Number of freq bins.</param>
+        /// <param name="frameDuration">tseconds duration of a frame - to set the time scale.</param>
+        /// <param name="frameStep">seconds between frame starts i.e. frame step; i.e. inverse of frames per second. Sets the time scale for an event.</param>
+        /// <param name="frameCount">to set the time scale.</param>
+        public static AcousticEvent InitializeAcousticEvent(TimeSpan segmentStartOffset, Oblong o, int nyquistFrequency, int binCount, double frameDuration, double frameStep, int frameCount)
+        {
+            var freqBinWidth = nyquistFrequency / (double)binCount;
+            double eventStartSegmentRelative = o.RowTop * frameStep;
+            double endTime = (o.RowBottom + 1) * frameStep;
+
+            double eventDuration = endTime - eventStartSegmentRelative;
+            double minFreq = (int)Math.Round(o.ColumnLeft * freqBinWidth);
+            double maxFreq = (int)Math.Round(o.ColumnRight * freqBinWidth);
+            var ae = new AcousticEvent(segmentStartOffset, eventStartSegmentRelative, eventDuration, minFreq, maxFreq)
+            {
+                FrameDuration = frameDuration,
+                FreqBinCount = binCount,
+                FrameCount = frameCount,
+            };
+
+            return ae;
         }
 
         //#################################################################################################################
@@ -1420,7 +1452,7 @@ namespace AudioAnalysisTools
                     av /= i - startFrame + 1;
 
                     // Initialize the event.
-                    AcousticEvent ev = new AcousticEvent(segmentStart, startTimeInSegment, duration, minHz, maxHz);
+                    var ev = new AcousticEvent(segmentStart, startTimeInSegment, duration, minHz, maxHz);
                     ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
                     ev.Score = av;
 

@@ -42,7 +42,7 @@ namespace AudioAnalysisTools.Events.Tracks
                     var track = GetOnebinTrack(peaks, row, col, threshold, converter);
 
                     //If track has length within duration bounds, then add the track to list.
-                    if (track.TrackDurationSeconds >= minDuration && track.TrackDurationSeconds <= maxDuration)
+                    if (track.DurationSeconds >= minDuration && track.DurationSeconds <= maxDuration)
                     {
                         tracks.Add(track);
                     }
@@ -115,7 +115,7 @@ namespace AudioAnalysisTools.Events.Tracks
                     var track = GetForwardTrack(peaks, row, col, threshold, converter);
 
                     //If track has length within duration bounds, then add the track to list.
-                    if (track.TrackDurationSeconds >= minDuration && track.TrackDurationSeconds <= maxDuration)
+                    if (track.DurationSeconds >= minDuration && track.DurationSeconds <= maxDuration)
                     {
                         tracks.Add(track);
                     }

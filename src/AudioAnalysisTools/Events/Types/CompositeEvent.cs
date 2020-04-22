@@ -15,6 +15,12 @@ namespace AudioAnalysisTools.Events.Types
 
     public class CompositeEvent : SpectralEvent
     {
+        public CompositeEvent(List<SpectralEvent> se)
+            : base(TimeSpan.FromSeconds(se[0].SegmentStartSeconds), se[0].EventStartSeconds, se[0].EventDurationSeconds, se[0].LowFrequencyHertz, se[0].HighFrequencyHertz)
+        {
+            // ######################################################### TODO TODO
+        }
+
         public List<EventCommon> ComponentEvents { get; set; } = new List<EventCommon>();
 
         public override double EventStartSeconds =>

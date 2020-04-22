@@ -4,22 +4,27 @@
 
 namespace AudioAnalysisTools
 {
+    using System;
     using System.Collections.Generic;
     using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Drawing;
     using AudioAnalysisTools.Events.Interfaces;
+    using AudioAnalysisTools.Events.Tracks;
     using SixLabors.ImageSharp.Processing;
 
     public class WhistleEvent : SpectralEvent, ITrack
     {
-        public WhistleEvent(ITrack spectralTrack)
+        public WhistleEvent(Track wt)
+            : base(wt.SegmentStartOffset, wt.StartTimeSeconds, wt.DurationSeconds, wt.LowFreqHertz, wt.HighFreqHertz)
         {
-            this.Track = spectralTrack;
+            this.Track = wt;
         }
+
+        public TimeSpan SegmentStartOffset => this.Track.SegmentStartOffset;
 
         public ISet<ISpectralPoint> Points => this.Track.Points;
 
-        public ITrack Track { get; private set; }
+        public Track Track { get; private set; }
 
         public override void Draw(IImageProcessingContext graphics, EventRenderingOptions options)
         {

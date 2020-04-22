@@ -1,22 +1,30 @@
-// <copyright file="OscillationEvent.cs" company="QutEcoacoustics">
+// <copyright file="ChirpEvent.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
 namespace AudioAnalysisTools
 {
     using System;
+    using System.Collections.Generic;
     using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Drawing;
+    using AudioAnalysisTools.Events.Interfaces;
+    using AudioAnalysisTools.Events.Tracks;
     using SixLabors.ImageSharp.Processing;
 
-    public class OscillationEvent : SpectralEvent
+    public class ChirpEvent : SpectralEvent, ITrack
     {
-        public OscillationEvent(TimeSpan segmentStartOffset, double startTime, double duration, int minHz, int maxHz)
-            : base(segmentStartOffset, startTime, duration, minHz, maxHz)
+        public ChirpEvent(Track ct)
+            : base(ct.SegmentStartOffset, ct.StartTimeSeconds, ct.DurationSeconds, ct.LowFreqHertz, ct.HighFreqHertz)
         {
+            this.Track = ct;
         }
 
-        //public TimeSpan SegmentStartOffset => this.Track.SegmentStartOffset;
+        public TimeSpan SegmentStartOffset => this.Track.SegmentStartOffset;
+
+        public ISet<ISpectralPoint> Points => this.Track.Points;
+
+        public Track Track { get; private set; }
 
         public override void Draw(IImageProcessingContext graphics, EventRenderingOptions options)
         {
@@ -24,7 +32,7 @@ namespace AudioAnalysisTools
             // track.Draw(...)
             // }
 
-            //this.Track.Draw(graphics, options);
+            this.Track.Draw(graphics, options);
 
             //  base drawing (border)
             // TODO: unless border is disabled

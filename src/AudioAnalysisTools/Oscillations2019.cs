@@ -7,6 +7,7 @@ namespace AudioAnalysisTools
     using System;
     using System.Collections.Generic;
     using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.Events;
     using AudioAnalysisTools.StandardSpectrograms;
     using TowseyLibrary;
 
@@ -32,7 +33,7 @@ namespace AudioAnalysisTools
             double maxDuration,
             int smoothingWindow,
             out double[] dctScores,
-            out List<AcousticEvent> events,
+            out List<SpectralEvent> events,
             TimeSpan segmentStartOffset)
         {
             // smooth the frames to make oscillations more regular.

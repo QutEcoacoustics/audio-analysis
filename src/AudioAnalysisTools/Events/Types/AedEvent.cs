@@ -4,12 +4,18 @@
 
 namespace AudioAnalysisTools.Events
 {
+    using System;
     using System.Collections.Generic;
     using AudioAnalysisTools.Events.Drawing;
     using SixLabors.ImageSharp.Processing;
 
     public class AedEvent : SpectralEvent, IPointData
     {
+        public AedEvent(TimeSpan segmentStartOffset, double startTime, double duration, double minHz, double maxHz)
+             : base(segmentStartOffset, startTime, duration, minHz, maxHz)
+        {
+            //######################################################### TODO
+        }
 
         public ISet<ISpectralPoint> Points { get; } = new HashSet<ISpectralPoint>();
 

@@ -11,6 +11,15 @@ namespace AudioAnalysisTools.Events
 
     public abstract class EventCommon : EventBase, IDrawableEvent
     {
+        // PUT OTHER EVENT DATA HERE
+        public string Name { get; set; }
+
+        public string Profile { get; set; }
+
+        public string ComponentName => this.GetType().Name;
+
+        //ae.Name = parameters.ComponentName;
+
         /// <summary>
         /// Draw this event on an image.
         /// </summary>

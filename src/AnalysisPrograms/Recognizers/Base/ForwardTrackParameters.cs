@@ -8,7 +8,7 @@ namespace AnalysisPrograms.Recognizers.Base
     using System.Collections.Generic;
     using Acoustics.Shared;
     using AudioAnalysisTools;
-    using AudioAnalysisTools.Events.Interfaces;
+    using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Tracks;
     using AudioAnalysisTools.StandardSpectrograms;
     using TowseyLibrary;
@@ -44,7 +44,7 @@ namespace AnalysisPrograms.Recognizers.Base
         /// <param name="combinePossibleHarmonics">Combine tracks that are likely to be harmonics/formants.</param>
         /// <param name="segmentStartOffset">The start time of the current recording segment under analysis.</param>
         /// <returns>A list of acoustic events containing foward tracks.</returns>
-        public static (List<AcousticEvent> Events, double[] CombinedIntensity) GetForwardTracks(
+        public static (List<SpectralEvent> Events, double[] CombinedIntensity) GetForwardTracks(
             SpectrogramStandard sonogram,
             int minHz,
             int maxHz,
@@ -92,11 +92,11 @@ namespace AnalysisPrograms.Recognizers.Base
 
             // initialise tracks as events and get the combined intensity array.
             // list of accumulated acoustic events
-            var events = new List<AcousticEvent>();
+            var events = new List<SpectralEvent>();
             var combinedIntensityArray = new double[frameCount];
             foreach (var track in tracks)
             {
-                var ae = new AcousticEvent(segmentStartOffset, track)
+                var ae = new ChirpEvent(track)
                 {
                     SegmentDurationSeconds = frameCount * converter.StepSize,
                 };
@@ -119,7 +119,8 @@ namespace AnalysisPrograms.Recognizers.Base
             var hertzGap = 200;
             if (combinePossibleHarmonics)
             {
-                events = AcousticEvent.CombinePotentialStackedTracks(events, startDifference, hertzGap);
+                //######################################################################################### TODO TODO
+                //events = CompositeEvent.CombinePotentialStackedTracks(events, startDifference, hertzGap);
             }
 
             return (events, combinedIntensityArray);

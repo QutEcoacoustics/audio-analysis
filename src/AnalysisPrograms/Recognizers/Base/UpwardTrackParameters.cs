@@ -8,6 +8,7 @@ namespace AnalysisPrograms.Recognizers.Base
     using System.Collections.Generic;
     using Acoustics.Shared;
     using AudioAnalysisTools;
+    using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Interfaces;
     using AudioAnalysisTools.Events.Tracks;
     using AudioAnalysisTools.StandardSpectrograms;
@@ -55,7 +56,7 @@ namespace AnalysisPrograms.Recognizers.Base
         /// <param name="combineProximalSimilarEvents">Combine tracks that are likely to be repeated chatter.</param>
         /// <param name="segmentStartOffset">The start time of the current recording segment under analysis.</param>
         /// <returns>A list of acoustic events containing foward tracks.</returns>
-        public static (List<AcousticEvent> Events, double[] CombinedIntensity) GetUpwardTracks(
+        public static (List<SpectralEvent> Events, double[] CombinedIntensity) GetUpwardTracks(
             SpectrogramStandard sonogram,
             int minHz,
             int maxHz,
@@ -105,11 +106,11 @@ namespace AnalysisPrograms.Recognizers.Base
             var tracks = TrackExtractor.GetUpwardTracks(peaks, minBin, maxBin, minBandwidthHertz, maxBandwidthHertz, decibelThreshold, converter);
 
             // initialise tracks as events and get the combined intensity array.
-            var events = new List<AcousticEvent>();
+            var events = new List<SpectralEvent>();
             var temporalIntensityArray = new double[frameCount];
             foreach (var track in tracks)
             {
-                var ae = new AcousticEvent(segmentStartOffset, track)
+                var ae = new WhipEvent(track)
                 {
                     SegmentDurationSeconds = frameCount * frameStep,
                 };
@@ -131,7 +132,8 @@ namespace AnalysisPrograms.Recognizers.Base
             {
                 TimeSpan startDifference = TimeSpan.FromSeconds(0.5);
                 int hertzDifference = 500;
-                events = AcousticEvent.CombineSimilarProximalEvents(events, startDifference, hertzDifference);
+                // ########################################################################################## TODO TODO TODO
+                //events = AcousticEvent.CombineSimilarProximalEvents(events, startDifference, hertzDifference);
             }
 
             return (events, temporalIntensityArray);

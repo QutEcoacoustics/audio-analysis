@@ -4,6 +4,7 @@
 
 namespace AudioAnalysisTools
 {
+    using System;
     using System.Collections.Generic;
     using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Drawing;
@@ -16,7 +17,7 @@ namespace AudioAnalysisTools
     {
         public BlobEvent()
         {
-
+            // ################################################################ TODO TODO TODO
         }
 
         public ISet<ISpectralPoint> Points { get; } = new HashSet<ISpectralPoint>();

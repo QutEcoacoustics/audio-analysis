@@ -7,6 +7,7 @@ namespace AudioAnalysisTools
     using System;
     using System.Collections.Generic;
     using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.Events;
     using AudioAnalysisTools.StandardSpectrograms;
     using TowseyLibrary;
 
@@ -32,7 +33,7 @@ namespace AudioAnalysisTools
             double minDuration,
             double maxDuration,
             out double[] scores,
-            out List<AcousticEvent> events,
+            out List<SpectralEvent> events,
             out double[,] hits,
             TimeSpan segmentStartOffset)
         {
@@ -57,7 +58,7 @@ namespace AudioAnalysisTools
             double maxDuration,
             int smoothingWindow,
             out double[] scores,
-            out List<AcousticEvent> events,
+            out List<SpectralEvent> events,
             out double[,] hits,
             TimeSpan segmentStartOffset)
         {
@@ -328,7 +329,7 @@ namespace AudioAnalysisTools
         /// <param name="maxDurationThreshold">max threshold.</param>
         /// <param name="fileName">name of source file to be added to AcousticEvent class.</param>
         /// <param name="segmentStartOffset">time offset.</param>
-        public static List<AcousticEvent> ConvertOscillationScores2Events(
+        public static List<SpectralEvent> ConvertOscillationScores2Events(
             double[] scores,
             double[] oscFreq,
             int minHz,
@@ -349,7 +350,7 @@ namespace AudioAnalysisTools
             //int minBin = (int)(minHz / freqBinWidth);
             //int maxBin = (int)(maxHz / freqBinWidth);
             //int binCount = maxBin - minBin + 1;
-            var events = new List<AcousticEvent>();
+            var events = new List<SpectralEvent>();
             bool isHit = false;
             double frameOffset = 1 / framesPerSec;
             double startTime = 0.0;
@@ -384,13 +385,15 @@ namespace AudioAnalysisTools
                     }
 
                     //this is end of an event, so initialise it
-                    var ev = new AcousticEvent(segmentStartOffset, startTime, duration, minHz, maxHz)
+                    var ev = new OscillationEvent(segmentStartOffset, startTime, duration, minHz, maxHz)
                     {
-                        Name = "Oscillation", //default name
+                        //##########################################################################################
+                        //Name = "Oscillation", //default name
                         FileName = fileName,
                     };
 
-                    ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
+                    //##########################################################################################
+                    //ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
 
                     //obtain average score.
                     double av = 0.0;
@@ -408,14 +411,15 @@ namespace AudioAnalysisTools
                         av += oscFreq[n];
                     }
 
-                    ev.Score2 = av / (i - startFrame + 1);
-                    ev.Intensity = (int)ev.Score2; // store this info for later inclusion in csv file as Event Intensity
+                    //##########################################################################################
+                    //ev.Score2 = av / (i - startFrame + 1);
+                    //ev.Intensity = (int)ev.Score2; // store this info for later inclusion in csv file as Event Intensity
                     events.Add(ev);
                 }
-            } //end of pass over all frames
+            } //end frames
 
             return events;
-        }//end method ConvertODScores2Events()
+        }
 
         /// <summary>
         /// Calculates the optimal frame overlap for the given sample rate, frame width and max oscillation or pulse rate.

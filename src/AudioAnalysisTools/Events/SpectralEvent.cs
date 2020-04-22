@@ -4,6 +4,7 @@
 
 namespace AudioAnalysisTools.Events
 {
+    using System;
     using AnalysisBase.ResultBases;
     using AudioAnalysisTools.Events.Drawing;
     using AudioAnalysisTools.Events.Interfaces;
@@ -12,6 +13,16 @@ namespace AudioAnalysisTools.Events
 
     public class SpectralEvent : EventCommon, ISpectralEvent, ITemporalEvent
     {
+        public SpectralEvent()
+        {
+
+        }
+
+        public SpectralEvent(TimeSpan segmentStartOffset, double startTime, double duration, double minHz, double maxHz)
+        {
+            //############################################################################################# TODO
+        }
+
         public virtual double EventEndSeconds { get; set; }
 
         public virtual double HighFrequencyHertz { get; set; }

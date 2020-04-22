@@ -9,13 +9,15 @@ namespace AudioAnalysisTools.Events.Types
     using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Drawing;
     using AudioAnalysisTools.Events.Interfaces;
+    using AudioAnalysisTools.Events.Tracks;
     using SixLabors.ImageSharp.Processing;
 
     public class ChatterEvent : SpectralEvent, ITracks
     {
-        public ChatterEvent(List<ITrack> chitters)
+        public ChatterEvent(List<Track> ce)
+            : base(ce[0].SegmentStartOffset, ce[0].StartTimeSeconds, ce[0].DurationSeconds, ce[0].LowFreqHertz, ce[0].HighFreqHertz)
         {
-            this.Tracks = chitters;
+            //this.Tracks = ce;
         }
 
         public List<ITrack> Tracks { get; }

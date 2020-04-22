@@ -24,6 +24,8 @@ namespace AnalysisPrograms
     using AnalysisPrograms.Production.Arguments;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.Events;
+    using AudioAnalysisTools.Events.Types;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using log4net;
@@ -117,7 +119,7 @@ namespace AnalysisPrograms
         /// </summary>
         public override string Identifier => EcosoundsAedIdentifier;
 
-        public static Tuple<AcousticEvent[], AudioRecording, BaseSonogram> Detect(
+        public static Tuple<SpectralEvent[], AudioRecording, BaseSonogram> Detect(
             FileInfo audioFile,
             AedConfiguration aedConfiguration,
             TimeSpan segmentStartOffset)
@@ -144,12 +146,12 @@ namespace AnalysisPrograms
             };
             var sonogram = (BaseSonogram)new SpectrogramStandard(config, recording.WavReader);
 
-            AcousticEvent[] events = CallAed(sonogram, aedConfiguration, segmentStartOffset, segmentDuration);
+            SpectralEvent[] events = CallAed(sonogram, aedConfiguration, segmentStartOffset, segmentDuration);
             Log.Debug("AED # events: " + events.Length);
             return Tuple.Create(events, recording, sonogram);
         }
 
-        public static AcousticEvent[] CallAed(BaseSonogram sonogram, AedConfiguration aedConfiguration, TimeSpan segmentStartOffset, TimeSpan segmentDuration)
+        public static SpectralEvent[] CallAed(BaseSonogram sonogram, AedConfiguration aedConfiguration, TimeSpan segmentStartOffset, TimeSpan segmentDuration)
         {
             Log.Info("AED start");
 
@@ -180,24 +182,25 @@ namespace AnalysisPrograms
                         o.HitElements = null;
                     }
 
-                    return new AcousticEvent(
+                    var ae = AcousticEvent.InitializeAcousticEvent(
                         segmentStartOffset,
                         o,
                         sonogram.NyquistFrequency,
                         sonogram.Configuration.FreqBinCount,
                         sonogram.FrameDuration,
                         sonogram.FrameStep,
-                        sonogram.FrameCount)
-                    {
-                        BorderColour = aedConfiguration.AedEventColor,
-                        HitColour = aedConfiguration.AedHitColor,
-                        SegmentDurationSeconds = segmentDuration.TotalSeconds,
-                    };
+                        sonogram.FrameCount);
+
+                    ae.BorderColour = aedConfiguration.AedEventColor;
+                    ae.HitColour = aedConfiguration.AedHitColor;
+                    ae.SegmentDurationSeconds = segmentDuration.TotalSeconds;
+
+                    return EventConverters.ConvertAcousticEventToSpectralEvent(ae);
                 }).ToArray();
             return events;
         }
 
-        public static Image DrawSonogram(BaseSonogram sonogram, IEnumerable<AcousticEvent> events)
+        public static Image DrawSonogram(BaseSonogram sonogram, IEnumerable<SpectralEvent> events)
         {
             var image = new Image_MultiTrack(sonogram.GetImage(false, true, doMelScale: false));
 
@@ -205,8 +208,17 @@ namespace AnalysisPrograms
 
             ////image.AddTrack(ImageTrack.GetWavEnvelopeTrack(sonogram, image.sonogramImage.Width));
             image.AddTrack(ImageTrack.GetSegmentationTrack(sonogram));
+
+            //############################################################################################ TODO TODO
+            //convert blob events to acoustic events for drawing purposes
+            var aeEvents = new List<AcousticEvent>();
+            foreach (var be in events)
+            {
+                aeEvents.Add(EventConverters.ConvertSpectralEventToAcousticEvent(be));
+            }
+
             image.AddEvents(
-                events,
+                aeEvents,
                 sonogram.NyquistFrequency,
                 sonogram.Configuration.FreqBinCount,
                 sonogram.FramesPerSecond);

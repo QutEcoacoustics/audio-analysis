@@ -1,4 +1,4 @@
-// <copyright file="OscillationEvent.cs" company="QutEcoacoustics">
+// <copyright file="HarmonicEvent.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -9,9 +9,9 @@ namespace AudioAnalysisTools
     using AudioAnalysisTools.Events.Drawing;
     using SixLabors.ImageSharp.Processing;
 
-    public class OscillationEvent : SpectralEvent
+    public class HarmonicEvent : SpectralEvent
     {
-        public OscillationEvent(TimeSpan segmentStartOffset, double startTime, double duration, int minHz, int maxHz)
+        public HarmonicEvent(TimeSpan segmentStartOffset, double startTime, double duration, int minHz, int maxHz)
             : base(segmentStartOffset, startTime, duration, minHz, maxHz)
         {
         }

@@ -1,4 +1,4 @@
-﻿// <copyright file="OneframeTrackParameters.cs" company="QutEcoacoustics">
+// <copyright file="OneframeTrackParameters.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -9,6 +9,7 @@ namespace AnalysisPrograms.Recognizers.Base
     using System.Linq;
     using Acoustics.Shared;
     using AudioAnalysisTools;
+    using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Tracks;
     using AudioAnalysisTools.StandardSpectrograms;
 
@@ -40,7 +41,7 @@ namespace AnalysisPrograms.Recognizers.Base
         /// THis method averages dB log values incorrectly but it is faster than doing many log conversions.
         /// This method is used to find acoustic events and is accurate enough for the purpose.
         /// </summary>
-        public static (List<AcousticEvent> Events, double[] Intensity) GetOneFrameTracks(
+        public static (List<SpectralEvent> Events, double[] Intensity) GetOneFrameTracks(
             SpectrogramStandard sonogram,
             int minHz,
             int maxHz,
@@ -95,20 +96,15 @@ namespace AnalysisPrograms.Recognizers.Base
             var tracks = TrackExtractor.GetOneFrameTracks(peaks, minBin, maxBin, minBandwidthHertz, maxBandwidthHertz, decibelThreshold, converter);
 
             // initialise tracks as events and get the combined intensity array.
-            var events = new List<AcousticEvent>();
+            var events = new List<SpectralEvent>();
             var temporalIntensityArray = new double[frameCount];
             foreach (var track in tracks)
             {
-                var ae = new AcousticEvent(segmentStartOffset, track.StartTimeSeconds, track.TrackDurationSeconds, track.LowFreqHertz, track.HighFreqHertz)
+                var ae = new ClickEvent(track)
                 {
                     SegmentDurationSeconds = frameCount * frameStep,
                 };
 
-                var tr = new List<Track>
-                {
-                    track,
-                };
-                ae.AddTracks(tr);
                 events.Add(ae);
 
                 // fill the intensity array
@@ -125,7 +121,8 @@ namespace AnalysisPrograms.Recognizers.Base
             {
                 TimeSpan startDifference = TimeSpan.FromSeconds(0.5);
                 int hertzDifference = 500;
-                events = AcousticEvent.CombineSimilarProximalEvents(events, startDifference, hertzDifference);
+                //######################################################################## TODO TODO TODOD
+                //events = AcousticEvent.CombineSimilarProximalEvents(events, startDifference, hertzDifference);
             }
 
             return (events, temporalIntensityArray);

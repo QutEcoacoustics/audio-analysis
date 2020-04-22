@@ -1,5 +1,5 @@
 // --------------------------------------------------------------------------------------------------------------------
-// <copyright file="RecognizerResults.cs" company="QutEcoacoustics">
+// <copyright file="RecognizerResults2.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
@@ -11,27 +11,22 @@ namespace AnalysisPrograms.Recognizers.Base
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
-    using AnalysisBase.ResultBases;
-    using AudioAnalysisTools;
     using AudioAnalysisTools.Events;
     using AudioAnalysisTools.StandardSpectrograms;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using TowseyLibrary;
 
-    public class RecognizerResults
+    public class RecognizerResults2
     {
         private List<Plot> plots;
 
-        public RecognizerResults()
+        public RecognizerResults2()
         {
             this.Plots = new List<Plot>();
         }
 
-        public List<AcousticEvent> Events { get; set; }
-
-        public List<EventCommon> NewEvents { get; set; }
+        public List<EventCommon> Events { get; set; }
 
         public double[,] Hits { get; set; }
 
@@ -41,11 +36,6 @@ namespace AnalysisPrograms.Recognizers.Base
         /// Gets or sets currently used to return a score track image that can be appended to a **high resolution indices image**.
         /// </summary>
         public Image<Rgb24> ScoreTrack { get; set; }
-
-        public IEnumerable<EventBase> GetAllEvents()
-        {
-            return this.Events.Cast<EventBase>().Concat(this.NewEvents.Cast<EventBase>());
-        }
 
         /// <summary>
         /// Gets or sets a list of plots.
@@ -60,12 +50,7 @@ namespace AnalysisPrograms.Recognizers.Base
 
             set
             {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value), "Cannot be set to null");
-                }
-
-                this.plots = value;
+                this.plots = value ?? throw new ArgumentNullException(nameof(value), "Cannot be set to null");
             }
         }
     }

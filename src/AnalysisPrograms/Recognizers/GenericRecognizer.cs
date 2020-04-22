@@ -15,6 +15,8 @@ namespace AnalysisPrograms.Recognizers
     using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.Events;
+    using AudioAnalysisTools.Events.Types;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
@@ -128,6 +130,7 @@ namespace AnalysisPrograms.Recognizers
             var allResults = new RecognizerResults()
             {
                 Events = new List<AcousticEvent>(),
+                NewEvents = new List<EventCommon>(),
                 Hits = null,
                 ScoreTrack = null,
                 Plots = new List<Plot>(),
@@ -139,7 +142,8 @@ namespace AnalysisPrograms.Recognizers
             {
                 Log.Info("Processing profile: " + profileName);
 
-                List<AcousticEvent> acousticEvents;
+                //List<AcousticEvent> acousticEvents;
+                List<SpectralEvent> spectralEvents;
                 var plots = new List<Plot>();
                 SpectrogramStandard sonogram;
 
@@ -174,7 +178,7 @@ namespace AnalysisPrograms.Recognizers
 
                             // iii: CONVERT blob decibel SCORES TO ACOUSTIC EVENTS.
                             // Note: This method does NOT do prior smoothing of the dB array.
-                            acousticEvents = AcousticEvent.GetEventsAroundMaxima(
+                            var acEvents = AcousticEvent.GetEventsAroundMaxima(
                                 decibelArray,
                                 segmentStartOffset,
                                 bp.MinHertz.Value,
@@ -184,12 +188,13 @@ namespace AnalysisPrograms.Recognizers
                                 TimeSpan.FromSeconds(bp.MaxDuration.Value),
                                 sonogram.FramesPerSecond,
                                 sonogram.FBinWidth);
+                            spectralEvents = EventConverters.ConvertAcousticEventsToSpectralEvents(acEvents);
                         }
                         else if (profileConfig is OnebinTrackParameters wp)
                         {
                             //get the array of intensity values minus intensity in side/buffer bands.
                             double[] decibelArray;
-                            (acousticEvents, decibelArray) = OnebinTrackParameters.GetOnebinTracks(
+                            (spectralEvents, decibelArray) = OnebinTrackParameters.GetOnebinTracks(
                                 sonogram,
                                 wp.MinHertz.Value,
                                 wp.MaxHertz.Value,
@@ -205,7 +210,7 @@ namespace AnalysisPrograms.Recognizers
                         else if (profileConfig is ForwardTrackParameters tp)
                         {
                             double[] decibelArray;
-                            (acousticEvents, decibelArray) = ForwardTrackParameters.GetForwardTracks(
+                            (spectralEvents, decibelArray) = ForwardTrackParameters.GetForwardTracks(
                                 sonogram,
                                 tp.MinHertz.Value,
                                 tp.MaxHertz.Value,
@@ -221,7 +226,7 @@ namespace AnalysisPrograms.Recognizers
                         else if (profileConfig is OneframeTrackParameters cp)
                         {
                             double[] decibelArray;
-                            (acousticEvents, decibelArray) = OneframeTrackParameters.GetOneFrameTracks(
+                            (spectralEvents, decibelArray) = OneframeTrackParameters.GetOneFrameTracks(
                                 sonogram,
                                 cp.MinHertz.Value,
                                 cp.MaxHertz.Value,
@@ -237,7 +242,7 @@ namespace AnalysisPrograms.Recognizers
                         else if (profileConfig is UpwardTrackParameters vtp)
                         {
                             double[] decibelArray;
-                            (acousticEvents, decibelArray) = UpwardTrackParameters.GetUpwardTracks(
+                            (spectralEvents, decibelArray) = UpwardTrackParameters.GetUpwardTracks(
                                 sonogram,
                                 vtp.MinHertz.Value,
                                 vtp.MaxHertz.Value,
@@ -254,7 +259,7 @@ namespace AnalysisPrograms.Recognizers
                         {
                             double[] decibelMaxArray;
                             double[] harmonicIntensityScores;
-                            (acousticEvents, decibelMaxArray, harmonicIntensityScores) = HarmonicParameters.GetComponentsWithHarmonics(
+                            (spectralEvents, decibelMaxArray, harmonicIntensityScores) = HarmonicParameters.GetComponentsWithHarmonics(
                                 sonogram,
                                 hp.MinHertz.Value,
                                 hp.MaxHertz.Value,
@@ -284,7 +289,7 @@ namespace AnalysisPrograms.Recognizers
                                 op.MinDuration.Value,
                                 op.MaxDuration.Value,
                                 out var scores,
-                                out acousticEvents,
+                                out spectralEvents,
                                 out var hits,
                                 segmentStartOffset);
 
@@ -303,15 +308,14 @@ namespace AnalysisPrograms.Recognizers
                     }
 
                     //iV add additional info to the acoustic events
-                    acousticEvents.ForEach(ae =>
+                    spectralEvents.ForEach(ae =>
                     {
                         ae.FileName = audioRecording.BaseName;
-                        ae.SpeciesName = parameters.SpeciesName;
-                        ae.Name = parameters.ComponentName;
+                        ae.Name = parameters.SpeciesName;
                         ae.Profile = profileName;
-                        ae.SegmentDurationSeconds = audioRecording.Duration.TotalSeconds;
-                        ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
-                        ae.SetTimeAndFreqScales(sonogram.FrameStep, sonogram.FrameDuration, sonogram.FBinWidth);
+                        //ae.SegmentDurationSeconds = audioRecording.Duration.TotalSeconds;
+                        //ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
+                        //ae.SetTimeAndFreqScales(sonogram.FrameStep, sonogram.FrameDuration, sonogram.FBinWidth);
                     });
                 }
                 else if (profileConfig is Aed.AedConfiguration ac)
@@ -323,7 +327,8 @@ namespace AnalysisPrograms.Recognizers
                     };
                     sonogram = new SpectrogramStandard(config, audioRecording.WavReader);
 
-                    acousticEvents = Aed.CallAed(sonogram, ac, segmentStartOffset, audioRecording.Duration).ToList();
+                    // GET THIS TO RETURN BLOB EVENTS.
+                    spectralEvents = Aed.CallAed(sonogram, ac, segmentStartOffset, audioRecording.Duration).ToList();
                 }
                 else
                 {
@@ -331,12 +336,12 @@ namespace AnalysisPrograms.Recognizers
                 }
 
                 // combine the results i.e. add the events list of call events.
-                allResults.Events.AddRange(acousticEvents);
+                allResults.NewEvents.AddRange(spectralEvents);
                 allResults.Plots.AddRange(plots);
 
                 // effectively keeps only the *last* sonogram produced
                 allResults.Sonogram = sonogram;
-                Log.Debug($"{profileName} event count = {acousticEvents.Count}");
+                Log.Debug($"{profileName} event count = {spectralEvents.Count}");
 
                 // DEBUG PURPOSES COMMENT NEXT LINE
                 //SaveDebugSpectrogram(allResults, genericConfig, outputDirectory, "name");
@@ -345,7 +350,8 @@ namespace AnalysisPrograms.Recognizers
             // combine adjacent acoustic events
             if (this.combineOverlappedEvents)
             {
-                allResults.Events = AcousticEvent.CombineOverlappingEvents(allResults.Events, segmentStartOffset);
+                // ############################################################################################################ TODO TODO TODO
+                //allResults.Events = AcousticEvent.CombineOverlappingEvents(allResults.Events, segmentStartOffset);
             }
 
             return allResults;

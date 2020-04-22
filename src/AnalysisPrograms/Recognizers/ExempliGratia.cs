@@ -12,6 +12,7 @@ namespace AnalysisPrograms.Recognizers
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Reflection;
     using Acoustics.Shared.ConfigFile;
     using AnalysisBase;

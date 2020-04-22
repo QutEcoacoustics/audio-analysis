@@ -71,7 +71,9 @@ namespace AudioAnalysisTools.Events.Tracks
 
         public ISet<ISpectralPoint> Points { get; }
 
-        public double TrackDurationSeconds => this.EndTimeSeconds - this.StartTimeSeconds;
+        public double DurationSeconds => this.EndTimeSeconds - this.StartTimeSeconds;
+
+        public TimeSpan SegmentStartOffset => TimeSpan.FromSeconds(this.converter.SegmentStartOffset);
 
         public double LowFreqHertz => this.Points.Min(x => x.Hertz.Minimum);
 

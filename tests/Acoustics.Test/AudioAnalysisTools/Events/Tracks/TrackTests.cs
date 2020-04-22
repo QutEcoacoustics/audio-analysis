@@ -58,7 +58,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Events.Tracks
             // Bin width = 10 Hz.
             Assert.AreEqual(100, track.HighFreqHertz);
 
-            Assert.AreEqual(0.3, track.TrackDurationSeconds, 0.01);
+            Assert.AreEqual(0.3, track.DurationSeconds, 0.01);
             Assert.AreEqual(50, track.TrackBandWidthHertz);
         }
 

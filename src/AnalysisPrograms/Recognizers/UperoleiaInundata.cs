@@ -157,7 +157,7 @@ namespace AnalysisPrograms.Recognizers
 
             acousticEvents.ForEach(ae =>
             {
-                ae.SpeciesName = speciesName;
+                ae.Name = speciesName;
                 ae.SegmentDurationSeconds = recordingDuration.TotalSeconds;
                 ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
                 ae.Name = abbreviatedSpeciesName;
