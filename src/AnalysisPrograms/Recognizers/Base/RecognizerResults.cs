@@ -42,11 +42,6 @@ namespace AnalysisPrograms.Recognizers.Base
         /// </summary>
         public Image<Rgb24> ScoreTrack { get; set; }
 
-        public IEnumerable<EventBase> GetAllEvents()
-        {
-            return this.Events.Cast<EventBase>().Concat(this.NewEvents.Cast<EventBase>());
-        }
-
         /// <summary>
         /// Gets or sets a list of plots.
         /// Used by the multi recognizer.
@@ -62,6 +57,11 @@ namespace AnalysisPrograms.Recognizers.Base
             {
                 this.plots = value ?? throw new ArgumentNullException(nameof(value), "Cannot be set to null");
             }
+        }
+
+        public IEnumerable<EventBase> GetAllEvents()
+        {
+            return this.Events.Cast<EventBase>().Concat(this.NewEvents.Cast<EventBase>());
         }
     }
 }

@@ -276,38 +276,6 @@ namespace AudioAnalysisTools
             this.Oblong = null;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AcousticEvent"/> class.
-        /// This constructor currently works ONLY for linear Hertz scale events.
-        /// It requires the event bounds to provided (using Oblong) in terms of time frame and frequency bin counts.
-        /// Scale information must also be provided to convert bounds into real values (seconds, Hertz).
-        /// </summary>
-        /// <param name="o">An oblong initialized with bin and frame numbers marking location of the event.</param>
-        /// <param name="nyquistFrequency">to set the freq scale.</param>
-        /// <param name="binCount">Number of freq bins.</param>
-        /// <param name="frameDuration">tseconds duration of a frame - to set the time scale.</param>
-        /// <param name="frameStep">seconds between frame starts i.e. frame step; i.e. inverse of frames per second. Sets the time scale for an event.</param>
-        /// <param name="frameCount">to set the time scale.</param>
-        public AcousticEvent(TimeSpan segmentStartOffset, Oblong o, int nyquistFrequency, int binCount, double frameDuration, double frameStep, int frameCount)
-            : this()
-        {
-            this.Oblong = o;
-            this.FreqBinWidth = nyquistFrequency / (double)binCount;
-            this.FrameDuration = frameDuration;
-            this.FrameOffset = frameStep;
-            this.FreqBinCount = binCount;
-            this.FrameCount = frameCount;
-
-            double startTime = o.RowTop * this.FrameOffset;
-            double end = (o.RowBottom + 1) * this.FrameOffset;
-
-            this.SetEventPositionRelative(segmentStartOffset, startTime, end);
-
-            this.LowFrequencyHertz = (int)Math.Round(o.ColumnLeft * this.FreqBinWidth);
-            this.HighFrequencyHertz = (int)Math.Round(o.ColumnRight * this.FreqBinWidth);
-            this.HitElements = o.HitElements;
-        }
-
         public int FrameCount { get; set; }
 
         public ISet<Point> HitElements { get; set; }
@@ -610,6 +578,8 @@ namespace AudioAnalysisTools
                 FrameDuration = frameDuration,
                 FreqBinCount = binCount,
                 FrameCount = frameCount,
+                Oblong = o,
+                HitElements = o.HitElements,
             };
 
             return ae;

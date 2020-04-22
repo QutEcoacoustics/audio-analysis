@@ -39,6 +39,8 @@ namespace AnalysisPrograms
     public class GroundParrotRecogniser : AbstractStrongAnalyser
     {
         public const string CommandName = "GroundParrot";
+        private const string EcosoundsGroundParrotIdentifier = "Ecosounds.GroundParrot";
+        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         public override string Description => "[UNMAINTAINED] Uses event pattern recognition for ground-parrots";
 
@@ -195,17 +197,12 @@ namespace AnalysisPrograms
             }
 
             LoggedConsole.WriteLine();
-
             string outputFolder = arguments.Config.ToFileInfo().DirectoryName;
             string wavFilePath = input.FullName;
             BaseSonogram sonogram = result.Item1;
             string imagePath = Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(wavFilePath) + ".png");
             var image = Aed.DrawSonogram(sonogram, eprEvents.ConvertAcousticEventsToSpectralEvents());
             image.Save(imagePath);
-
-            //ProcessingTypes.SaveAeCsv(eprEvents, outputFolder, wavFilePath);
-
-            Log.Info("Finished");
         }
 
         /// <summary>
@@ -244,7 +241,6 @@ namespace AnalysisPrograms
             var timeScale = sonogram.FrameStep;
             var hzScale = (int)sonogram.FBinWidth;
             int rows = GroundParrotTemplate1.GetLength(0);
-            int cols = GroundParrotTemplate1.GetLength(1);
             double timeOffset = GroundParrotTemplate1[0, 0];
             var gpTemplate = new List<AcousticEvent>();
             for (int r = 0; r < rows; r++)
@@ -254,22 +250,20 @@ namespace AnalysisPrograms
                 int f2 = (int)Math.Round(GroundParrotTemplate1[r, 2] / hzScale);
                 int f1 = (int)Math.Round(GroundParrotTemplate1[r, 3] / hzScale);
                 Oblong o = new Oblong(t1, f1, t2, f2);
-                gpTemplate.Add(
-                    new AcousticEvent(
-                        TimeSpan.Zero,
-                        o,
-                        sonogram.NyquistFrequency,
-                        sonogram.Configuration.FreqBinCount,
-                        sonogram.FrameDuration,
-                        sonogram.FrameStep,
-                        sonogram.FrameCount));
+                var ae = AcousticEvent.InitializeAcousticEvent(
+                    TimeSpan.Zero,
+                    o,
+                    sonogram.NyquistFrequency,
+                    sonogram.Configuration.FreqBinCount,
+                    sonogram.FrameDuration,
+                    sonogram.FrameStep,
+                    sonogram.FrameCount);
+
+                gpTemplate.Add(ae);
             }
 
             return gpTemplate;
         }
-
-        private const string EcosoundsGroundParrotIdentifier = "Ecosounds.GroundParrot";
-        private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         public override string DisplayName => "Ground Parrot Recognizer";
 

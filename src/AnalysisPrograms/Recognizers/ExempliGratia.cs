@@ -20,6 +20,7 @@ namespace AnalysisPrograms.Recognizers
     using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
@@ -185,30 +186,25 @@ namespace AnalysisPrograms.Recognizers
                 // then indices have been calculated before
             }
 
-            var foundEvents = new List<AcousticEvent>();
+            var foundEvents = new List<EventCommon>();
 
             // some kind of loop where you scan through the audio
 
             // 'find' an event - if you find an event, store the data in the AcousticEvent class
-            var anEvent = new AcousticEvent(
-                segmentStartOffset,
-                new Oblong(50, 50, 100, 100),
-                sonogram.NyquistFrequency,
-                sonogram.Configuration.FreqBinCount,
-                sonogram.FrameDuration,
-                sonogram.FrameStep,
-                sonogram.FrameCount);
-            anEvent.Name = "FAKE!";
+
+            var anEvent = new SpectralEvent
+            {
+                Name = "FAKE!",
+            };
 
             foundEvents.Add(anEvent);
 
             return new RecognizerResults()
             {
-                Events = foundEvents,
+                //Plots = null,
+                NewEvents = foundEvents,
                 Hits = null,
                 ScoreTrack = null,
-
-                //Plots = null,
                 Sonogram = sonogram,
             };
         }
