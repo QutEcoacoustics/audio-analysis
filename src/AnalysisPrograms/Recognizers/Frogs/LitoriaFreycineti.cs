@@ -1,22 +1,16 @@
 // --------------------------------------------------------------------------------------------------------------------
-// <copyright file="UperoleiaMimula.cs" company="QutEcoacoustics">
+// <copyright file="LitoriaFreycineti.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
-//   This is a frog recognizer based on the "ribit" or "washboard" template
-//   It detects ribit type calls by extracting three features: dominant frequency, pulse rate and pulse train duration.
-//   This type recognizer was first developed for the Canetoad and has been duplicated with modification for other frogs
-//   To call this recognizer, the first command line argument must be "EventRecognizer".
-//   Alternatively, this recognizer can be called via the MultiRecognizer.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace AnalysisPrograms.Recognizers
+namespace AnalysisPrograms.Recognizers.Frogs
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
     using System.Reflection;
     using Acoustics.Shared;
     using Acoustics.Shared.ConfigFile;
@@ -25,7 +19,6 @@ namespace AnalysisPrograms.Recognizers
     using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
-    using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Types;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
@@ -36,21 +29,15 @@ namespace AnalysisPrograms.Recognizers
     using Path = System.IO.Path;
 
     /// <summary>
-    /// This is a frog recognizer based on the "ribit" or "washboard" template
-    /// It detects ribit type calls by extracting three features: dominant frequency, pulse rate and pulse train duration.
-    ///
-    /// This type recognizer was first developed for the Canetoad and has been duplicated with modification for other frogs
-    /// To call this recognizer, the first command line argument must be "EventRecognizer".
-    /// Alternatively, this recognizer can be called via the MultiRecognizer.
-    ///
+    /// This recogniser is unfinished. No guarantees.
     /// </summary>
-    internal class UperoleiaMimula : RecognizerBase
+    internal class LitoriaFreycineti : RecognizerBase
     {
-        public override string Description => "[ALPHA/EMBRYONIC] Detects acoustic events of Uperoleia mimula.";
+        public override string Description => "[ALPHA/EMBRYONIC] Detects acoustic events of Litoria freycineti";
 
-        public override string Author => "Towsey";
+        public override string Author => "Stark";
 
-        public override string SpeciesName => "UperoleiaMimula";
+        public override string SpeciesName => "LitoriaFreycineti";
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -110,7 +97,7 @@ namespace AnalysisPrograms.Recognizers
             }
 
             // The default was 512 for Canetoad.
-            // Set longer Framesize for calls having longer pulse periodicity.
+            // Framesize = 128 seems to work for Littoria fallax.
             const int FrameSize = 128;
             double windowOverlap = Oscillations2012.CalculateRequiredFrameOverlap(
                 recording.SampleRate,
@@ -127,7 +114,7 @@ namespace AnalysisPrograms.Recognizers
                 WindowOverlap = windowOverlap,
 
                 //NoiseReductionType = NoiseReductionType.NONE,
-                NoiseReductionType = NoiseReductionType.Standard,
+                NoiseReductionType = NoiseReductionType.None,
                 NoiseReductionParameter = 0.1,
             };
 
@@ -200,23 +187,35 @@ namespace AnalysisPrograms.Recognizers
             if (displayDebugImage)
             {
                 Image debugImage1 = SpectrogramTools.GetSonogramPlusCharts(sonogram, acousticEvents, plots, hits);
-                var debugPath1 = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(recording.BaseName), this.Identifier, "png", "DebugSpectrogram1"));
+                var debugPath1 =
+                    outputDirectory.Combine(
+                        FilenameHelpers.AnalysisResultName(
+                            Path.GetFileNameWithoutExtension(recording.BaseName),
+                            this.Identifier,
+                            "png",
+                            "DebugSpectrogram1"));
                 debugImage1.Save(debugPath1.FullName);
 
                 // save new image with longer frame
                 var sonoConfig2 = new SonogramConfig
                 {
                     SourceFName = recording.BaseName,
-                    WindowSize = 1024,
+                    WindowSize = 128,
                     WindowOverlap = 0,
+                    NoiseReductionType = NoiseReductionType.None,
 
-                    //NoiseReductionType = NoiseReductionType.NONE,
-                    NoiseReductionType = NoiseReductionType.Standard,
-                    NoiseReductionParameter = 0.1,
+                    //NoiseReductionType = NoiseReductionType.STANDARD,
+                    //NoiseReductionParameter = 0.1
                 };
                 BaseSonogram sonogram2 = new SpectrogramStandard(sonoConfig2, recording.WavReader);
 
-                var debugPath2 = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(recording.BaseName), this.Identifier, "png", "DebugSpectrogram2"));
+                var debugPath2 =
+                    outputDirectory.Combine(
+                        FilenameHelpers.AnalysisResultName(
+                            Path.GetFileNameWithoutExtension(recording.BaseName),
+                            this.Identifier,
+                            "png",
+                            "DebugSpectrogram2"));
                 Image debugImage2 = SpectrogramTools.GetSonogramPlusCharts(sonogram2, acousticEvents, plots, null);
                 debugImage2.Save(debugPath2.FullName);
             }

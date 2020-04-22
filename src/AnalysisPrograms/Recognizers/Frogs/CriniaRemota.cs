@@ -7,7 +7,7 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace AnalysisPrograms.Recognizers
+namespace AnalysisPrograms.Recognizers.Frogs
 {
     using System;
     using System.Collections.Generic;

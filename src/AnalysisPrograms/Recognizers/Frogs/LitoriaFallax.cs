@@ -1,17 +1,12 @@
 // --------------------------------------------------------------------------------------------------------------------
-// <copyright file="LitoriaPallida.cs" company="QutEcoacoustics">
+// <copyright file="LitoriaFallax.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
-//   This is a frog recognizer based on the "ribit" or "washboard" template
-//   It detects ribit type calls by extracting three features: dominant frequency, pulse rate and pulse train duration.
-//   This type recognizer was first developed for the Canetoad and has been duplicated with modification for other frogs
-//   To call this recognizer, the first command line argument must be "EventRecognizer".
-//   Alternatively, this recognizer can be called via the MultiRecognizer.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace AnalysisPrograms.Recognizers
+namespace AnalysisPrograms.Recognizers.Frogs
 {
     using System;
     using System.Collections.Generic;
@@ -42,13 +37,13 @@ namespace AnalysisPrograms.Recognizers
     /// Alternatively, this recognizer can be called via the MultiRecognizer.
     ///
     /// </summary>
-    internal class LitoriaPallida : RecognizerBase
+    internal class LitoriaFallax : RecognizerBase
     {
-        public override string Description => "[ALPHA/EMBRYONIC] Detects acoustic events of Litoria pallida.";
+        public override string Description => "[ALPHA/EMBRYONIC] Detects acoustic events of Litoria fallax";
 
         public override string Author => "Towsey";
 
-        public override string SpeciesName => "LitoriaPallida";
+        public override string SpeciesName => "LitoriaFallax";
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -102,19 +97,17 @@ namespace AnalysisPrograms.Recognizers
             // min score for an acceptable event
             double eventThreshold = configuration.GetDouble(AnalysisKeys.EventThreshold);
 
-            // The default was 512 for Canetoad.
-            // Framesize = 128 seems to work for Littoria fallax.
-            // frame size
-            int frameSize = configuration.GetInt(AnalysisKeys.KeyFrameSize);
-
             if (recording.WavReader.SampleRate != 22050)
             {
                 throw new InvalidOperationException("Requires a 22050Hz file");
             }
 
+            // The default was 512 for Canetoad.
+            // Framesize = 128 seems to work for Littoria fallax.
+            const int FrameSize = 128;
             double windowOverlap = Oscillations2012.CalculateRequiredFrameOverlap(
                 recording.SampleRate,
-                frameSize,
+                FrameSize,
                 maxOscilFreq);
 
             //windowOverlap = 0.75; // previous default
@@ -123,18 +116,18 @@ namespace AnalysisPrograms.Recognizers
             var sonoConfig = new SonogramConfig
             {
                 SourceFName = recording.BaseName,
-                WindowSize = frameSize,
+                WindowSize = FrameSize,
                 WindowOverlap = windowOverlap,
 
                 //NoiseReductionType = NoiseReductionType.NONE,
                 NoiseReductionType = NoiseReductionType.Standard,
-                NoiseReductionParameter = 0.2,
+                NoiseReductionParameter = 0.1,
             };
 
+            // sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("STANDARD");
             TimeSpan recordingDuration = recording.Duration;
             int sr = recording.SampleRate;
             double freqBinWidth = sr / (double)sonoConfig.WindowSize;
-
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
             int rowCount = sonogram.Data.GetLength(0);
             int colCount = sonogram.Data.GetLength(1);
@@ -144,8 +137,8 @@ namespace AnalysisPrograms.Recognizers
             // ######################################################################
             // ii: DO THE ANALYSIS AND RECOVER SCORES OR WHATEVER
             // This window is used to smooth the score array before extracting events.
-            // A short window preserves sharper score edges to define events but also keeps noise.
-            int scoreSmoothingWindow = 5;
+            // A short window (e.g. 3) preserves sharper score edges to define events but also keeps noise.
+            int scoreSmoothingWindow = 13;
             Oscillations2012.Execute(
                 (SpectrogramStandard)sonogram,
                 minHz,
@@ -168,22 +161,15 @@ namespace AnalysisPrograms.Recognizers
             acousticEvents.ForEach(ae =>
             {
                 ae.SpeciesName = speciesName;
-                ae.SegmentDurationSeconds = recordingDuration.TotalSeconds;
                 ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
+                ae.SegmentDurationSeconds = recordingDuration.TotalSeconds;
                 ae.Name = abbreviatedSpeciesName;
             });
 
             var plot = new Plot(this.DisplayName, scores, eventThreshold);
             var plots = new List<Plot> { plot };
 
-            // DEBUG IMAGE this recognizer only. MUST set false for deployment.
-            bool displayDebugImage = MainEntry.InDEBUG;
-            if (displayDebugImage)
-            {
-                Image debugImage = DisplayDebugImage(sonogram, acousticEvents, plots, hits);
-                var debugPath = outputDirectory.Combine(FilenameHelpers.AnalysisResultName(Path.GetFileNameWithoutExtension(recording.BaseName), this.Identifier, "png", "DebugSpectrogram"));
-                debugImage.Save(debugPath.FullName);
-            }
+            this.WriteDebugImage(recording, outputDirectory, sonogram, acousticEvents, plots, hits);
 
             return new RecognizerResults()
             {
@@ -194,38 +180,51 @@ namespace AnalysisPrograms.Recognizers
             };
         }
 
-        public static Image DisplayDebugImage(BaseSonogram sonogram, List<AcousticEvent> events, List<Plot> scores, double[,] hits)
+        private void WriteDebugImage(
+            AudioRecording recording,
+            DirectoryInfo outputDirectory,
+            BaseSonogram sonogram,
+            List<AcousticEvent> acousticEvents,
+            List<Plot> plots,
+            double[,] hits)
         {
-            bool doHighlightSubband = false;
-            bool add1kHzLines = true;
-            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines, doMelScale: false));
-
-            image.AddTrack(ImageTrack.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-            if (scores != null)
+            //DEBUG IMAGE this recogniser only. MUST set false for deployment.
+            bool displayDebugImage = MainEntry.InDEBUG;
+            if (displayDebugImage)
             {
-                foreach (Plot plot in scores)
+                Image debugImage1 = SpectrogramTools.GetSonogramPlusCharts(sonogram, acousticEvents, plots, hits);
+                var debugPath1 =
+                    outputDirectory.Combine(
+                        FilenameHelpers.AnalysisResultName(
+                            Path.GetFileNameWithoutExtension(recording.BaseName),
+                            this.Identifier,
+                            "png",
+                            "DebugSpectrogram1"));
+                debugImage1.Save(debugPath1.FullName);
+
+                // save new image with longer frame
+                var sonoConfig2 = new SonogramConfig
                 {
-                    image.AddTrack(ImageTrack.GetNamedScoreTrack(plot.data, 0.0, 1.0, plot.threshold, plot.title)); //assumes data normalised in 0,1
-                }
+                    SourceFName = recording.BaseName,
+                    WindowSize = 1024,
+                    WindowOverlap = 0,
+                    NoiseReductionType = NoiseReductionType.None,
+
+                    //NoiseReductionType = NoiseReductionType.STANDARD,
+                    //NoiseReductionParameter = 0.1
+                };
+                BaseSonogram sonogram2 = new SpectrogramStandard(sonoConfig2, recording.WavReader);
+
+                var debugPath2 =
+                    outputDirectory.Combine(
+                        FilenameHelpers.AnalysisResultName(
+                            Path.GetFileNameWithoutExtension(recording.BaseName),
+                            this.Identifier,
+                            "png",
+                            "DebugSpectrogram2"));
+                Image debugImage2 = SpectrogramTools.GetSonogramPlusCharts(sonogram2, acousticEvents, plots, null);
+                debugImage2.Save(debugPath2.FullName);
             }
-
-            if (hits != null)
-            {
-                image.OverlayRainbowTransparency(hits);
-            }
-
-            if (events.Count > 0)
-            {
-                foreach (AcousticEvent ev in events) // set colour for the events
-                {
-                    ev.BorderColour = AcousticEvent.DefaultBorderColor;
-                    ev.ScoreColour = AcousticEvent.DefaultScoreColor;
-                }
-
-                image.AddEvents(events, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount, sonogram.FramesPerSecond);
-            }
-
-            return image.GetImage();
         }
     }
 }

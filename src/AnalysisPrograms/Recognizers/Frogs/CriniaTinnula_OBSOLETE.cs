@@ -1,51 +1,31 @@
 // --------------------------------------------------------------------------------------------------------------------
-// <copyright file="LitoriaFallax.cs" company="QutEcoacoustics">
+// <copyright file="CriniaTinnula_OBSOLETE.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace AnalysisPrograms.Recognizers
+namespace AnalysisPrograms.Recognizers.Frogs
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Reflection;
-    using Acoustics.Shared;
-    using Acoustics.Shared.ConfigFile;
-    using AnalysisBase;
-    using AnalysisBase.ResultBases;
-    using AnalysisPrograms.Recognizers.Base;
-    using AudioAnalysisTools;
-    using AudioAnalysisTools.DSP;
-    using AudioAnalysisTools.Events.Types;
-    using AudioAnalysisTools.Indices;
-    using AudioAnalysisTools.StandardSpectrograms;
-    using AudioAnalysisTools.WavTools;
-    using log4net;
-    using SixLabors.ImageSharp;
-    using TowseyLibrary;
-    using Path = System.IO.Path;
-
     /// <summary>
-    /// This is a frog recognizer based on the "ribit" or "washboard" template
-    /// It detects ribit type calls by extracting three features: dominant frequency, pulse rate and pulse train duration.
+    /// This is a frog recognizer is designed to detect a short honk (30ms long) that has the structure of stacked harmonics, similar to crow, female koala etc.
     ///
-    /// This type recognizer was first developed for the Canetoad and has been duplicated with modification for other frogs
+    /// Step 1: It detects energy in relevant frequency band.
+    ///
+    /// This type recognizer was first developed for Crinia tinnula and could be duplicated for other frogs with similar call structure
     /// To call this recognizer, the first command line argument must be "EventRecognizer".
     /// Alternatively, this recognizer can be called via the MultiRecognizer.
     ///
     /// </summary>
-    internal class LitoriaFallax : RecognizerBase
+ /*   class CriniaTinnula2 : RecognizerBase
     {
-        public override string Description => "[ALPHA/EMBRYONIC] Detects acoustic events of Litoria fallax";
-
         public override string Author => "Towsey";
 
-        public override string SpeciesName => "LitoriaFallax";
+        public override string SpeciesName => "CriniaTinnula";
 
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
 
         /// <summary>
         /// Summarize your results. This method is invoked exactly once per original file.
@@ -67,71 +47,54 @@ namespace AnalysisPrograms.Recognizers
         /// </summary>
         public override RecognizerResults Recognize(AudioRecording recording, Config configuration, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
         {
-            string speciesName = configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
-            string abbreviatedSpeciesName = configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
+            // common properties
+            string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
+            string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
 
-            int minHz = configuration.GetInt(AnalysisKeys.MinHz);
-            int maxHz = configuration.GetInt(AnalysisKeys.MaxHz);
+            // min and max frequency of event in Hz
+            int minHz = (int)configuration[AnalysisKeys.MinHz];
+            int maxHz = (int)configuration[AnalysisKeys.MaxHz];
 
-            // BETTER TO CALCULATE THIS. IGNORE USER!
-            // double frameOverlap = Double.Parse(configDict[Keys.FRAME_OVERLAP]);
-
-            // duration of DCT in seconds
-            double dctDuration = configuration.GetDouble(AnalysisKeys.DctDuration);
-
-            // minimum acceptable value of a DCT coefficient
-            double dctThreshold = configuration.GetDouble(AnalysisKeys.DctThreshold);
-
-            // ignore oscillations below this threshold freq
-            int minOscilFreq = configuration.GetInt(AnalysisKeys.MinOscilFreq);
-
-            // ignore oscillations above this threshold freq
-            int maxOscilFreq = configuration.GetInt(AnalysisKeys.MaxOscilFreq);
-
-            // min duration of event in seconds
-            double minDuration = configuration.GetDouble(AnalysisKeys.MinDuration);
-
-            // max duration of event in seconds
-            double maxDuration = configuration.GetDouble(AnalysisKeys.MaxDuration);
+            // min & max duration of event in seconds
+            double minDuration = (double)configuration[AnalysisKeys.MinDuration];
+            double maxDuration = (double)configuration[AnalysisKeys.MaxDuration];
 
             // min score for an acceptable event
-            double eventThreshold = configuration.GetDouble(AnalysisKeys.EventThreshold);
+            double eventThreshold = (double)configuration[AnalysisKeys.EventThreshold];
 
+            // check sample rate is 22050
             if (recording.WavReader.SampleRate != 22050)
             {
                 throw new InvalidOperationException("Requires a 22050Hz file");
             }
 
-            // The default was 512 for Canetoad.
-            // Framesize = 128 seems to work for Littoria fallax.
-            const int FrameSize = 128;
-            double windowOverlap = Oscillations2012.CalculateRequiredFrameOverlap(
-                recording.SampleRate,
-                FrameSize,
-                maxOscilFreq);
+            // Set the Frame Size
+            // Currently set at 256; if not good enough, try 512
+            const int FrameSize = 256;
 
-            //windowOverlap = 0.75; // previous default
-
-            // i: MAKE SONOGRAM
+            // Make a spectrogram
             var sonoConfig = new SonogramConfig
             {
                 SourceFName = recording.BaseName,
                 WindowSize = FrameSize,
-                WindowOverlap = windowOverlap,
-
                 //NoiseReductionType = NoiseReductionType.NONE,
                 NoiseReductionType = NoiseReductionType.Standard,
-                NoiseReductionParameter = 0.1,
+                NoiseReductionParameter = 0.1
             };
+            sonoConfig.WindowOverlap = 0.0;
 
             // sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("STANDARD");
-            TimeSpan recordingDuration = recording.Duration;
+            TimeSpan recordingDuration = recording.Duration();
             int sr = recording.SampleRate;
             double freqBinWidth = sr / (double)sonoConfig.WindowSize;
             BaseSonogram sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
             int rowCount = sonogram.Data.GetLength(0);
             int colCount = sonogram.Data.GetLength(1);
 
+            double eventThresholdDb = 10.0;
+
+            // minimum number of bins covering frequency bandwidth of L.convex call
+            int callBinWidth = 632;
             // double[,] subMatrix = MatrixTools.Submatrix(sonogram.Data, 0, minBin, (rowCount - 1), maxbin);
 
             // ######################################################################
@@ -139,35 +102,20 @@ namespace AnalysisPrograms.Recognizers
             // This window is used to smooth the score array before extracting events.
             // A short window (e.g. 3) preserves sharper score edges to define events but also keeps noise.
             int scoreSmoothingWindow = 13;
-            Oscillations2012.Execute(
-                (SpectrogramStandard)sonogram,
-                minHz,
-                maxHz,
-                dctDuration,
-                minOscilFreq,
-                maxOscilFreq,
-                dctThreshold,
-                eventThreshold,
-                minDuration,
-                maxDuration,
-                scoreSmoothingWindow,
-                out var scores,
-                out var oscillationEvents,
-                out var hits,
-                segmentStartOffset);
-
-            var acousticEvents = oscillationEvents.ConvertSpectralEventsToAcousticEvents();
+            double[] scores; // predefinition of score array
+            List<AcousticEvent> acousticEvents;
+            double[,] hits;
 
             acousticEvents.ForEach(ae =>
             {
                 ae.SpeciesName = speciesName;
-                ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
-                ae.SegmentDurationSeconds = recordingDuration.TotalSeconds;
+                ae.AnalysisIdealSegmentDuration = recordingDuration;
                 ae.Name = abbreviatedSpeciesName;
             });
 
             var plot = new Plot(this.DisplayName, scores, eventThreshold);
             var plots = new List<Plot> { plot };
+
 
             this.WriteDebugImage(recording, outputDirectory, sonogram, acousticEvents, plots, hits);
 
@@ -176,7 +124,7 @@ namespace AnalysisPrograms.Recognizers
                 Sonogram = sonogram,
                 Hits = hits,
                 Plots = plots,
-                Events = acousticEvents,
+                Events = acousticEvents
             };
         }
 
@@ -192,7 +140,7 @@ namespace AnalysisPrograms.Recognizers
             bool displayDebugImage = MainEntry.InDEBUG;
             if (displayDebugImage)
             {
-                Image debugImage1 = SpectrogramTools.GetSonogramPlusCharts(sonogram, acousticEvents, plots, hits);
+                Image debugImage1 = LitoriaRothii.DisplayDebugImage(sonogram, acousticEvents, plots, hits);
                 var debugPath1 =
                     outputDirectory.Combine(
                         FilenameHelpers.AnalysisResultName(
@@ -204,15 +152,14 @@ namespace AnalysisPrograms.Recognizers
 
                 // save new image with longer frame
                 var sonoConfig2 = new SonogramConfig
-                {
-                    SourceFName = recording.BaseName,
-                    WindowSize = 1024,
-                    WindowOverlap = 0,
-                    NoiseReductionType = NoiseReductionType.None,
-
-                    //NoiseReductionType = NoiseReductionType.STANDARD,
-                    //NoiseReductionParameter = 0.1
-                };
+                    {
+                        SourceFName = recording.BaseName,
+                        WindowSize = 1024,
+                        WindowOverlap = 0,
+                        NoiseReductionType = NoiseReductionType.None,
+                        //NoiseReductionType = NoiseReductionType.STANDARD,
+                        //NoiseReductionParameter = 0.1
+                    };
                 BaseSonogram sonogram2 = new SpectrogramStandard(sonoConfig2, recording.WavReader);
 
                 var debugPath2 =
@@ -222,9 +169,9 @@ namespace AnalysisPrograms.Recognizers
                             this.Identifier,
                             "png",
                             "DebugSpectrogram2"));
-                Image debugImage2 = SpectrogramTools.GetSonogramPlusCharts(sonogram2, acousticEvents, plots, null);
+                Image debugImage2 = LitoriaRothii.DisplayDebugImage(sonogram2, acousticEvents, plots, null);
                 debugImage2.Save(debugPath2.FullName);
             }
         }
-    }
+    }*/
 }

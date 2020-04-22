@@ -1,12 +1,12 @@
 // --------------------------------------------------------------------------------------------------------------------
-// <copyright file="PlatyplectrumOrnatum.cs" company="QutEcoacoustics">
+// <copyright file="UperoleiaLithomoda.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 // <summary>
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace AnalysisPrograms.Recognizers
+namespace AnalysisPrograms.Recognizers.Frogs
 {
     using System;
     using System.Collections.Generic;
@@ -22,6 +22,8 @@ namespace AnalysisPrograms.Recognizers
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using SixLabors.ImageSharp;
+
+    //using log4net;
     using TowseyLibrary;
     using Path = System.IO.Path;
 
@@ -30,7 +32,7 @@ namespace AnalysisPrograms.Recognizers
     /// It detects honk type calls by extracting three features: dominant frequency, honk duration and match to honk spectrum profile.
     ///
     /// This type recognizer was first developed for LimnodynastesConvex and can be duplicated with modification for other frogs
-    /// To call this recognizer, the first command line argument must be "EventRecognizer".
+    /// To call this "Uperoleia lithomoda" recognizer, the first command line argument must be "EventRecognizer".
     /// Alternatively, this recognizer can be called via the MultiRecognizer.
     ///
     /// There are two different recognizer algorithms in this class, in methods Algorithm1() and Algorithm2().
@@ -47,13 +49,13 @@ namespace AnalysisPrograms.Recognizers
     /// 3: If similarity score exceeds threshold, then assign event score based on the amplitude.
     ///
     /// </summary>
-    internal class PlatyplectrumOrnatum : RecognizerBase
+    internal class UperoleiaLithomoda : RecognizerBase
     {
-        public override string Description => "[ALPHA/EMBRYONIC] Detects acoustic events of Platyplectrum ornatum.";
+        public override string Description => "[ALPHA/EMBRYONIC] Detects acoustic events of Uperoleia lithomoda.";
 
         public override string Author => "Towsey";
 
-        public override string SpeciesName => "PlatyplectrumOrnatum";
+        public override string SpeciesName => "UperoleiaLithomoda";
 
         //private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -136,7 +138,7 @@ namespace AnalysisPrograms.Recognizers
             // double frameDurationInSeconds = frameSize / (double)sampleRate;
             double frameStepInSeconds = frameStep / (double)sampleRate;
             double framesPerSec = 1 / frameStepInSeconds;
-            double herzPerBin = sampleRate / 2 / (double)colCount;
+            double herzPerBin = sampleRate / 2.0 / colCount;
 
             // string speciesName = (string)configuration[AnalysisKeys.SpeciesName] ?? "<no species>";
             // string abbreviatedSpeciesName = (string)configuration[AnalysisKeys.AbbreviatedSpeciesName] ?? "<no.sp>";
@@ -145,6 +147,7 @@ namespace AnalysisPrograms.Recognizers
             // minimum dB to register a dominant freq peak. After noise removal
             double peakThresholdDb = 3.0;
 
+            // The threshold dB amplitude in the dominant freq bin required to yield an event
             // The threshold dB amplitude in the dominant freq bin required to yield an event
             double eventDecibelThreshold = configuration.GetDoubleOrNull("EventDecibelThreshold") ?? 6.0;
 
@@ -384,12 +387,12 @@ namespace AnalysisPrograms.Recognizers
 
             int dominantFrequency = configuration.GetInt("DominantFrequency");
 
-            const int hzBuffer = 100;
+            const int hzBuffer = 200;
             int dominantBin = (int)Math.Round(dominantFrequency / herzPerBin);
             int binBuffer = (int)Math.Round(hzBuffer / herzPerBin);
             int dominantBinMin = dominantBin - binBuffer;
             int dominantBinMax = dominantBin + binBuffer;
-            int bottomBin = 1;
+            int bottomBin = 20;
             int topBin = bottomBin + callBinWidth - 1;
 
             int[] dominantBins = new int[rowCount]; // predefinition of events max frequency
