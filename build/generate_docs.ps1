@@ -11,9 +11,18 @@ if ($null -eq (Get-Command docfx -ErrorAction SilentlyContinue)) {
 #     Write-Error "We require docfx version 3"
 # }
 
-Push-Location
+Write-Output "Extracting git version metadata"
+. $PSScriptRoot/../src/git_version.ps1  | Split-String "`n", "`r"  -RemoveEmptyStrings | ForEach-Object { $result = @{} } { 
+    $key, $value = $_ -split "="
+    $result.Add("AP_$key", $value )
+} { $result } | ConvertTo-JSON | Out-File "$PSScriptRoot/../docs/apMetadata.json"
+
+
+
 
 try {
+    Write-Output "Startign docs build"
+    Push-Location
     Set-Location docs
     docfx build --log verbose
 

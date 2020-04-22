@@ -3,6 +3,10 @@ npm install netlify-cli -g
 
 $l = $env:NETLIFY_AUTH_TOKEN.Length
 Write-Output "Environment variable NETLIFY_AUTH_TOKEN is length $l"
+if ($l -eq 0) {
+    Write-Error "Netlify auth token not available, stopping"
+    exit 1
+}
 
 $commit_hash = git show -s --format="%H"
 

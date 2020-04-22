@@ -1,7 +1,5 @@
 - name: Introduction
   href: introduction.md
-- name: Supported Platforms
-  href: supported_platforms.md
 - name: Installing
   href: installing.md
 

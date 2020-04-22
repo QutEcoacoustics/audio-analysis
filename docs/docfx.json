@@ -42,7 +42,8 @@
           "**/toc.yml"
         ],
         "exclude": [
-          "images/README.md"
+          "images/README.md",
+          "README.md"
         ]
       }
     ],
@@ -80,7 +81,9 @@
         "repo": "https://github.com/QutEcoacoustics/audio-analysis"
       }
     },
-    "globalMetadataFiles": [],
+    "globalMetadataFiles": [
+      "apMetadata.json"
+    ],
     "fileMetadataFiles": [],
     "template": [
       "default",

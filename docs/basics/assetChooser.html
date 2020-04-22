@@ -4,50 +4,54 @@
         <form id="assetChooser" class="form">
             <fieldset id="osSet" class="form-group">
                 <legend>What operating system do you use?</legend>
-                <p>Common choices:</p>
-                <ul>
-                    <div class="radio">
-                        <label>
-                            <input type="radio" name="os" value="win" checked>
-                            Windows
-                        </label>
+                <div
+                    style="display: flex; align-items: flex-start; justify-items: flex-start; justify-content: space-between;">
+                    <div>
+                        <p>Common choices:</p>
+                        <div class="radio ">
+                            <label>
+                                <input type="radio" name="os" value="win" checked>
+                                Windows
+                            </label>
+                        </div>
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="os" value="linux">
+                                Linux
+                            </label>
+                        </div>
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="os" value="osx">
+                                Mac OSX
+                            </label>
+                        </div>
                     </div>
-                    <div class="radio">
-                        <label>
-                            <input type="radio" name="os" value="linux">
-                            Linux
-                        </label>
+                    <div>
+                        <p>Expert choices:</p>
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="os" value="linux-musl">
+                                Linux (Alpine)
+                                <br />
+                                <small>(choose for a container)</small>
+                            </label>
+                        </div>
+                        <div class="radio">
+                            <label>
+                                <input type="radio" name="os" value="any">
+                                Any
+                                <br />
+                                <small>(choose for a run anywhere version, requires a dotnet core runtime
+                                    install)</small>
+                            </label>
+                        </div>
                     </div>
-                    <div class="radio">
-                        <label>
-                            <input type="radio" name="os" value="osx">
-                            Mac OSX
-                        </label>
-                    </div>
-                </ul>
-                <p>Expert choices:</p>
-                <ul>
-                    <div class="radio">
-                        <label>
-                            <input type="radio" name="os" value="linux-musl">
-                            Linux (Alpine)
-                            <br />
-                            <small>(choose for a container)</small>
-                        </label>
-                    </div>
-                    <div class="radio">
-                        <label>
-                            <input type="radio" name="os" value="any">
-                            Any
-                            <br />
-                            <small>(choose for a run anywhere version, requires a dotnet core runtime install)</small>
-                        </label>
-                    </div>
-                </ul>
+                </div>
             </fieldset>
             <fieldset id="archSet">
                 <legend>What is your CPU architecture?</legend>
-                <ul>
+                <div>
                     <div class="radio">
                         <label>
                             <input type="radio" name="arch" value="x64" checked>
@@ -75,7 +79,7 @@
                             </small>
                         </label>
                     </div>
-                </ul>
+                </div>
                 <div class="NOTE alert alert-info">
                     <h5>Note</h5>
                     <p>
@@ -85,7 +89,7 @@
             </fieldset>
             <fieldset id="debugSet">
                 <legend>Do you need to debug this?</legend>
-                <ul>
+                <div>
                     <div class="radio">
                         <label>
                             <input type="radio" name="debug" value="yes">
@@ -98,7 +102,7 @@
                             No
                         </label>
                     </div>
-                </ul>
+                </div>
                 <div class="NOTE alert alert-info">
                     <h5>Note</h5>
                     <p>

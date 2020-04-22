@@ -25,44 +25,39 @@ to setup and install _AP.exe_
 
 The automatic install will download AP.exe and may install required perquisites.
 
-1. Perquisite: install Powershell 6+
-    - Go to <https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-7>
+1. Prerequisite: install Powershell 6+
+    - Go [here](https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell?view=powershell-7) to install PowerShell
 2. Run the following command in a PowerShell prompt:
 
-Automatic install command:
 
 # [Windows](#tab/windows-automatic)
-
 Run the following command in an elevated (_Run as Administrator_) prompt:
 
 ```
 PowerShell -NoProfile -ExecutionPolicy Bypass -Command "$t = \"$env:Temp\download_ap.ps1\"; (New-Object System.Net.WebClient).DownloadFile('https://raw.githubusercontent.com/QutEcoacoustics/audio-analysis/master/build/download_ap.ps1', $t); & $t; rm $t"
 ```
-
 # [Linux](#tab/linux-automatic)
-
 Run the following command:
 
 ```
 sudo pwsh -NoProfile -ExecutionPolicy Bypass -Command "\$t = \"\$env:Temp/download_ap.ps1\"; (New-Object System.Net.WebClient).DownloadFile('https://raw.githubusercontent.com/QutEcoacoustics/audio-analysis/master/build/download_ap.ps1', \$t); & \$t; rm \$t"
 ```
-
 # [MacOSX](#tab/osx-automatic)
-
 Run the following command in _Terminal_:
 
 ```
 sudo pwsh -NoProfile -ExecutionPolicy Bypass -Command "\$t = \"\$env:Temp/download_ap.ps1\"; (New-Object System.Net.WebClient).DownloadFile('https://raw.githubusercontent.com/QutEcoacoustics/audio-analysis/master/build/download_ap.ps1', \$t); & \$t; rm \$t"
 ```
-
 ***
+
+<br />
 
 > [!NOTE]
 > Please inspect
 > https://github.com/QutEcoacoustics/audio-analysis/blob/master/build/download_ap.ps1
-> prior to running ensure safety. We already know it's safe, but you should verify
+> prior to running to ensure safety. We already know it's safe, but you should verify
 > the security and contents of any script from the internet you are not familiar
-> with. All of these scripts download a remote PowerShell script and execute it on
+> with. The above command downloads a remote PowerShell script and executes it on
 > your machine.
 
 ## Manual Install
@@ -78,6 +73,8 @@ sudo pwsh -NoProfile -ExecutionPolicy Bypass -Command "\$t = \"\$env:Temp/downlo
     - We typically extract to a directory named `C:\AP` or `/AP` on Linux
 7. Make sure any [Prerequisites](#prerequisites) are installed
 6. Finally, check the install by running:
+
+Run the following command:
 
 # [Windows](#tab/windows-automatic)
 ```bash
