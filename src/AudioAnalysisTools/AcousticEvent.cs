@@ -126,18 +126,7 @@ namespace AudioAnalysisTools
         /// </summary>
         public double Bandwidth => this.HighFrequencyHertz - this.LowFrequencyHertz + 1;
 
-        /// <summary>
-        /// Gets or sets a list of tracks.
-        /// This will be used when two or more events containing single tracks are merged into one combined event.
-        /// </summary>
-        //public List<Track> Tracks { get; set; }
-
         public bool IsMelscale { get; set; }
-
-        /// <summary>
-        /// Gets or sets a spectral track.
-        /// </summary>
-        private List<Track> tracks;
 
         /// <summary>
         /// Gets or sets the bounds of an event with respect to the segment start
@@ -187,13 +176,6 @@ namespace AudioAnalysisTools
         /// </summary>
         [Obsolete("We should use another type of Event class to represent this concept")]
         public double Score2 { get; set; }
-
-        ///// <summary>
-        ///// Gets or sets a list of points that can be used to identifies features in spectrogram relative to the Event.
-        ///// i.e. Points can be outside of events and can have negative values.
-        ///// Point location is relative to the top left corner of the event.
-        ///// </summary>
-        //public List<Point> Points { get; set; }
 
         /// <summary>
         /// Gets or sets the periodicity of acoustic energy in an event.
@@ -248,29 +230,6 @@ namespace AudioAnalysisTools
             this.SetEventPositionRelative(segmentStartOffset, eventStartSegmentRelative, eventEndSegmentRelative);
             this.LowFrequencyHertz = minFreq;
             this.HighFrequencyHertz = maxFreq;
-
-            // have no info to convert time/Hz values to coordinates
-            this.Oblong = null;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AcousticEvent"/> class.
-        /// This constructor is passed a track.
-        /// NOTE: The track is already in time relative to recording start.
-        /// </summary>
-        public AcousticEvent(TimeSpan segmentStartOffset, Track track)
-            : this()
-        {
-            var eventStartSegmentRelative = track.StartTimeSeconds - segmentStartOffset.TotalSeconds;
-            var eventEndSegmentRelative = eventStartSegmentRelative + track.DurationSeconds;
-            this.SetEventPositionRelative(segmentStartOffset, eventStartSegmentRelative, eventEndSegmentRelative);
-            this.LowFrequencyHertz = track.LowFreqHertz;
-            this.HighFrequencyHertz = track.HighFreqHertz;
-            //this.SegmentDurationSeconds = frameCount * frameStep;
-            this.tracks = new List<Track>
-            {
-                track,
-            };
 
             // have no info to convert time/Hz values to coordinates
             this.Oblong = null;
@@ -426,29 +385,6 @@ namespace AudioAnalysisTools
         /// </summary>
         public Rectangle GetEventAsRectangle() => new Rectangle(this.Oblong.ColumnLeft, this.Oblong.RowTop, this.Oblong.ColWidth, this.Oblong.RowWidth);
 
-        public void AddTracks(List<Track> newTracks)
-        {
-            // check there are tracks to add.
-            if (newTracks == null || newTracks.Count == 0)
-            {
-                return;
-            }
-
-            //check if there are existing tracks.
-            if (this.tracks == null)
-            {
-                this.tracks = new List<Track>();
-            }
-
-            // now add the new tracks
-            this.tracks.AddRange(newTracks);
-        }
-
-        public List<Track> GetTracks()
-        {
-            return this.tracks;
-        }
-
         /// <summary>
         /// Sets the passed score and also a value normalised between a min and a max.
         /// </summary>
@@ -478,34 +414,6 @@ namespace AudioAnalysisTools
             Contract.Requires(this.HitElements == null || (this.HitElements != null && this.HitColour != null));
             var borderPen = new Pen(this.BorderColour, 1);
             var scorePen = new Pen(this.ScoreColour, 1);
-
-            // draw component tracks first but only if more than one track.
-            if (this.tracks != null && this.tracks.Count > 1)
-            {
-                // currently this call assumes that the Track[frame, bin[ elements correspond to the pixels of the passed spectrogram.
-                // That is, there is no rescaling of the time and frequency axes
-                var converter = new UnitConverters(
-                    segmentStartOffset: this.SegmentStartSeconds,
-                    segmentDuration: this.SegmentDurationSeconds,
-                    nyquistFrequency: freqBinWidth * sonogramHeight,
-                    imageWidth: imageToReturn.Width,
-                    imageHeight: imageToReturn.Height);
-                var renderingOptions = new EventRenderingOptions(converter)
-                {
-                    Fill = new SolidBrush(Color.LimeGreen.WithAlpha(0.5f)),
-                };
-
-                foreach (var track in this.tracks)
-                {
-                    imageToReturn.Mutate(
-                        context =>
-                        {
-                            track.Draw(context, renderingOptions);
-                        });
-                }
-
-                //return;
-            }
 
             // calculate top and bottom freq bins
             int minFreqBin = (int)Math.Floor(this.LowFrequencyHertz / freqBinWidth);
@@ -584,236 +492,6 @@ namespace AudioAnalysisTools
 
             return ae;
         }
-
-        //#################################################################################################################
-        //FOLLOWING METHODS DEAL WITH THE OVERLAP OF EVENTS
-
-        /// <summary>
-        /// Determines if two events overlap in frequency.
-        /// </summary>
-        /// <param name="event1">event one.</param>
-        /// <param name="event2">event two.</param>
-        /// <returns>true if events overlap.</returns>
-        public static bool EventsOverlapInFrequency(AcousticEvent event1, AcousticEvent event2)
-        {
-            //check if event 1 freq band overlaps event 2 freq band
-            if (event1.HighFrequencyHertz >= event2.LowFrequencyHertz && event1.HighFrequencyHertz <= event2.HighFrequencyHertz)
-            {
-                return true;
-            }
-
-            // check if event 1 freq band overlaps event 2 freq band
-            if (event1.LowFrequencyHertz >= event2.LowFrequencyHertz && event1.LowFrequencyHertz <= event2.HighFrequencyHertz)
-            {
-                return true;
-            }
-
-            //check if event 2 freq band overlaps event 1 freq band
-            if (event2.HighFrequencyHertz >= event1.LowFrequencyHertz && event2.HighFrequencyHertz <= event1.HighFrequencyHertz)
-            {
-                return true;
-            }
-
-            // check if event 2 freq band overlaps event 1 freq band
-            if (event2.LowFrequencyHertz >= event1.LowFrequencyHertz && event2.LowFrequencyHertz <= event1.HighFrequencyHertz)
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Determines if two events overlap in time.
-        /// </summary>
-        /// <param name="event1">event one.</param>
-        /// <param name="event2">event two.</param>
-        /// <returns>true if events overlap.</returns>
-        public static bool EventsOverlapInTime(AcousticEvent event1, AcousticEvent event2)
-        {
-            //check if event 1 starts within event 2
-            if (event1.EventStartSeconds >= event2.EventStartSeconds && event1.EventStartSeconds <= event2.EventEndSeconds)
-            {
-                return true;
-            }
-
-            // check if event 1 ends within event 2
-            if (event1.EventEndSeconds >= event2.EventStartSeconds && event1.EventEndSeconds <= event2.EventEndSeconds)
-            {
-                return true;
-            }
-
-            // now check possibility that event2 is inside event1.
-            //check if event 2 starts within event 1
-            if (event2.EventStartSeconds >= event1.EventStartSeconds && event2.EventStartSeconds <= event1.EventEndSeconds)
-            {
-                return true;
-            }
-
-            // check if event 2 ends within event 1
-            if (event2.EventEndSeconds >= event1.EventStartSeconds && event2.EventEndSeconds <= event1.EventEndSeconds)
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Combines overlapping events in the passed List of events and returns a reduced list.
-        /// </summary>
-        public static List<AcousticEvent> CombineOverlappingEvents(List<AcousticEvent> events, TimeSpan segmentStartOffset)
-        {
-            if (events.Count < 2)
-            {
-                return events;
-            }
-
-            for (int i = events.Count - 1; i >= 0; i--)
-            {
-                for (int j = i - 1; j >= 0; j--)
-                {
-                    if (EventsOverlapInTime(events[i], events[j]) && EventsOverlapInFrequency(events[i], events[j]))
-                    {
-                        events[j] = AcousticEvent.MergeTwoEvents(events[i], events[j], segmentStartOffset);
-                        events.RemoveAt(i);
-                        break;
-                    }
-                }
-            }
-
-            return events;
-        }
-
-        /// <summary>
-        /// Combines events that have similar bottom and top frequency bounds and whose start times are within the passed time range.
-        /// </summary>
-        public static List<AcousticEvent> CombineSimilarProximalEvents(List<AcousticEvent> events, TimeSpan startDifference, int hertzDifference)
-        {
-            if (events.Count < 2)
-            {
-                return events;
-            }
-
-            for (int i = events.Count - 1; i >= 0; i--)
-            {
-                for (int j = i - 1; j >= 0; j--)
-                {
-                    bool eventStartsAreProximal = Math.Abs(events[i].EventStartSeconds - events[j].EventStartSeconds) < startDifference.TotalSeconds;
-                    bool eventAreInSimilarFreqBand = Math.Abs(events[i].LowFrequencyHertz - events[j].LowFrequencyHertz) < hertzDifference && Math.Abs(events[i].HighFrequencyHertz - events[j].HighFrequencyHertz) < hertzDifference;
-                    if (eventStartsAreProximal && eventAreInSimilarFreqBand)
-                    {
-                        var segmentStartOffset = TimeSpan.FromSeconds(events[i].SegmentStartSeconds);
-                        events[j] = AcousticEvent.MergeTwoEvents(events[i], events[j], segmentStartOffset);
-                        events.RemoveAt(i);
-                        break;
-                    }
-                }
-            }
-
-            return events;
-        }
-
-        /// <summary>
-        /// Combines events that are possible stacked harmonics, that is, they are coincident (have similar start and end times)
-        /// AND stacked (their maxima are within the passed frequency gap).
-        /// </summary>
-        public static List<AcousticEvent> CombinePotentialStackedTracks(List<AcousticEvent> events, TimeSpan timeDifference, int hertzDifference)
-        {
-            if (events.Count < 2)
-            {
-                return events;
-            }
-
-            for (int i = events.Count - 1; i >= 0; i--)
-            {
-                for (int j = i - 1; j >= 0; j--)
-                {
-                    bool eventsStartTogether = Math.Abs(events[i].EventStartSeconds - events[j].EventStartSeconds) < timeDifference.TotalSeconds;
-                    bool eventsEndTogether = Math.Abs(events[i].EventEndSeconds - events[j].EventEndSeconds) < timeDifference.TotalSeconds;
-                    bool eventsAreCoincident = eventsStartTogether && eventsEndTogether;
-                    bool eventsAreStacked = Math.Abs(events[i].HighFrequencyHertz - events[j].LowFrequencyHertz) < hertzDifference || Math.Abs(events[j].HighFrequencyHertz - events[i].LowFrequencyHertz) < hertzDifference;
-                    if (eventsAreCoincident && eventsAreStacked)
-                    {
-                        var segmentStartOffset = TimeSpan.FromSeconds(events[i].SegmentStartSeconds);
-                        events[j] = AcousticEvent.MergeTwoEvents(events[i], events[j], segmentStartOffset);
-                        events.RemoveAt(i);
-                        break;
-                    }
-                }
-            }
-
-            return events;
-        }
-
-        public static AcousticEvent MergeTwoEvents(AcousticEvent e1, AcousticEvent e2, TimeSpan segmentStartOffset)
-        {
-            //segmentStartOffset = TimeSpan.Zero;
-            var minTime = Math.Min(e1.TimeStart, e2.TimeStart);
-            var maxTime = Math.Max(e1.TimeEnd, e2.TimeEnd);
-            e1.SetEventPositionRelative(segmentStartOffset, minTime, maxTime);
-            e1.LowFrequencyHertz = Math.Min(e1.LowFrequencyHertz, e2.LowFrequencyHertz);
-            e1.HighFrequencyHertz = Math.Max(e1.HighFrequencyHertz, e2.HighFrequencyHertz);
-            e1.AddTracks(e2.GetTracks());
-            e1.Score = Math.Max(e1.Score, e2.Score);
-            e1.ScoreNormalised = Math.Max(e1.ScoreNormalised, e2.ScoreNormalised);
-            e1.ResultStartSeconds = e1.EventStartSeconds;
-            return e1;
-        }
-
-        /// <summary>
-        /// Returns the first event in the passed list which overlaps with this one IN THE SAME RECORDING.
-        /// If no event overlaps return null.
-        /// </summary>
-        public AcousticEvent OverlapsEventInList(List<AcousticEvent> events)
-        {
-            foreach (AcousticEvent ae in events)
-            {
-                if (this.FileName.Equals(ae.FileName) && EventsOverlapInTime(this, ae))
-                {
-                    return ae;
-                }
-            }
-
-            return null;
-        }
-
-        /*
-        /// <summary>
-        /// This method not currently called but is POTENTIALLY USEFUL.
-        /// Returns the fractional overlap of two events.
-        /// Translate time/freq dimensions to coordinates in a matrix.
-        /// Freq dimension = bins   = matrix columns. Origin is top left - as per matrix in the sonogram class.
-        /// Time dimension = frames = matrix rows.
-        /// </summary>
-        public static double EventFractionalOverlap(AcousticEvent event1, AcousticEvent event2)
-        {
-            int timeOverlap = Oblong.RowOverlap(event1.Oblong, event2.Oblong);
-            if (timeOverlap == 0)
-            {
-                return 0.0;
-            }
-
-            int hzOverlap = Oblong.ColumnOverlap(event1.Oblong, event2.Oblong);
-            if (hzOverlap == 0)
-            {
-                return 0.0;
-            }
-
-            int overlapArea = timeOverlap * hzOverlap;
-            double fractionalOverlap1 = overlapArea / (double)event1.Oblong.Area();
-            double fractionalOverlap2 = overlapArea / (double)event2.Oblong.Area();
-
-            if (fractionalOverlap1 > fractionalOverlap2)
-            {
-                return fractionalOverlap1;
-            }
-            else
-            {
-                return fractionalOverlap2;
-            }
-        }
-        */
 
         //#################################################################################################################
         //METHODS FOR SEGMENTATION OF A FREQ BAND BASED ON ACOUSTIC ENERGY
@@ -1175,6 +853,64 @@ namespace AudioAnalysisTools
 
             resultsText = sb.ToString();
         }
+
+        /// <summary>
+        /// Returns the first event in the passed list which overlaps with this one IN THE SAME RECORDING.
+        /// If no event overlaps return null.
+        /// </summary>
+        public AcousticEvent OverlapsEventInList(List<AcousticEvent> events)
+        {
+            foreach (AcousticEvent ae in events)
+            {
+                if (this.FileName.Equals(ae.FileName) && EventsOverlapInTime(this, ae))
+                {
+                    return ae;
+                }
+            }
+
+            return null;
+        }
+
+        //#################################################################################################################
+        //FOLLOWING TWO METHODS DEAL WITH THE OVERLAP OF EVENTS
+
+        /// <summary>
+        /// Determines if two events overlap in time.
+        /// </summary>
+        /// <param name="event1">event one.</param>
+        /// <param name="event2">event two.</param>
+        /// <returns>true if events overlap.</returns>
+        public static bool EventsOverlapInTime(AcousticEvent event1, AcousticEvent event2)
+        {
+            //check if event 1 starts within event 2
+            if (event1.EventStartSeconds >= event2.EventStartSeconds && event1.EventStartSeconds <= event2.EventEndSeconds)
+            {
+                return true;
+            }
+
+            // check if event 1 ends within event 2
+            if (event1.EventEndSeconds >= event2.EventStartSeconds && event1.EventEndSeconds <= event2.EventEndSeconds)
+            {
+                return true;
+            }
+
+            // now check possibility that event2 is inside event1.
+            //check if event 2 starts within event 1
+            if (event2.EventStartSeconds >= event1.EventStartSeconds && event2.EventStartSeconds <= event1.EventEndSeconds)
+            {
+                return true;
+            }
+
+            // check if event 2 ends within event 1
+            if (event2.EventEndSeconds >= event1.EventStartSeconds && event2.EventEndSeconds <= event1.EventEndSeconds)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+
 
         //##############################################################################################################################################
         //  THE NEXT THREE METHODS CONVERT AN ARRAY OF SCORE VALUES (USUALLY INTENSITY VALUES IN A SUB-BAND) TO ACOUSTIC EVENTS.

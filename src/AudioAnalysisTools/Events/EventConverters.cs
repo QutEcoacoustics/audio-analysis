@@ -13,12 +13,12 @@ namespace AudioAnalysisTools.Events.Types
     {
         public static SpectralEvent ConvertAcousticEventToSpectralEvent(this AcousticEvent ae)
         {
-            return new SpectralEvent()
+            var segmentOffset = TimeSpan.FromSeconds(ae.SegmentStartSeconds);
+            var eventStart = ae.EventStartSeconds;
+            var eventEnd = ae.EventEndSeconds;
+            return new SpectralEvent(segmentStartOffset: segmentOffset, eventStartRecordingRelative: eventStart, eventEndRecordingRelative: eventEnd, ae.LowFrequencyHertz, ae.HighFrequencyHertz)
             {
-                EventStartSeconds = ae.EventStartSeconds,
                 EventEndSeconds = ae.EventEndSeconds,
-                LowFrequencyHertz = ae.LowFrequencyHertz,
-                HighFrequencyHertz = ae.HighFrequencyHertz,
                 Name = ae.Name,
             };
         }

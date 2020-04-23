@@ -27,7 +27,7 @@ namespace AnalysisBase.ResultBases
         public virtual double SegmentStartSeconds { get;  set; }
 
         //AudioAnalysisTools.Keys.EVENT_SCORE,
-        public double Score { get; set; }
+        public virtual double Score { get; set; }
 
         /// <summary>
         /// Gets or sets the Event's Start Seconds.

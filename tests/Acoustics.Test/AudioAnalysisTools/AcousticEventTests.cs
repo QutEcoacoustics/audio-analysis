@@ -9,6 +9,8 @@ namespace Acoustics.Test.AudioAnalysisTools
     using Acoustics.Shared.ImageSharp;
     using Acoustics.Test.TestHelpers;
     using global::AudioAnalysisTools;
+    using global::AudioAnalysisTools.Events;
+    using global::AudioAnalysisTools.Events.Types;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
@@ -19,53 +21,47 @@ namespace Acoustics.Test.AudioAnalysisTools
         [TestMethod]
         public void TestEventMerging()
         {
-            // make a list of events
-            var events = new List<AcousticEvent>();
-
-            double maxPossibleScore = 10.0;
-            var event1 = new AcousticEvent(segmentStartOffset: TimeSpan.Zero, eventStartSegmentRelative: 1.0, eventDuration: 5.0, minFreq: 1000, maxFreq: 8000)
+            // make a list of three events
+            var events = new List<SpectralEvent>();
+            var segmentStartTime = TimeSpan.FromSeconds(10);
+            var event1 = new SpectralEvent(segmentStartOffset: segmentStartTime, eventStartRecordingRelative: 11.0, eventEndRecordingRelative: 16.0, minFreq: 1000, maxFreq: 6000)
             {
                 Name = "Event1",
                 Score = 1.0,
-                ScoreNormalised = 1.0 / maxPossibleScore,
             };
 
             events.Add(event1);
 
-            var event2 = new AcousticEvent(segmentStartOffset: TimeSpan.Zero, eventStartSegmentRelative: 4.5, eventDuration: 2.0, minFreq: 1500, maxFreq: 6000)
+            var event2 = new SpectralEvent(segmentStartOffset: segmentStartTime, eventStartRecordingRelative: 12.0, eventEndRecordingRelative: 15.0, minFreq: 1500, maxFreq: 8000)
             {
                 Name = "Event2",
                 Score = 5.0,
-                ScoreNormalised = 5.0 / maxPossibleScore,
             };
             events.Add(event2);
 
-            var event3 = new AcousticEvent(segmentStartOffset: TimeSpan.Zero, eventStartSegmentRelative: 7.0, eventDuration: 2.0, minFreq: 1000, maxFreq: 8000)
+            var event3 = new SpectralEvent(segmentStartOffset: segmentStartTime, eventStartRecordingRelative: 17.0, eventEndRecordingRelative: 19.0, minFreq: 1000, maxFreq: 8000)
             {
                 Name = "Event3",
                 Score = 9.0,
-                ScoreNormalised = 9.0 / maxPossibleScore,
             };
             events.Add(event3);
 
-            // combine adjacent acoustic events
-            events = AcousticEvent.CombineOverlappingEvents(events: events, segmentStartOffset: TimeSpan.Zero);
+            // combine Overlapping acoustic events
+            events = CompositeEvent.CombineOverlappingEvents(events: events);
 
             Assert.AreEqual(2, events.Count);
-            Assert.AreEqual(1.0, events[0].EventStartSeconds, 1E-4);
-            Assert.AreEqual(6.5, events[0].EventEndSeconds, 1E-4);
-            Assert.AreEqual(7.0, events[1].EventStartSeconds, 1E-4);
-            Assert.AreEqual(9.0, events[1].EventEndSeconds, 1E-4);
 
+            Assert.AreEqual(11.0, events[0].EventStartSeconds, 1E-4);
+            Assert.AreEqual(16.0, events[0].EventEndSeconds, 1E-4);
             Assert.AreEqual(1000, events[0].LowFrequencyHertz);
             Assert.AreEqual(8000, events[0].HighFrequencyHertz);
+            Assert.AreEqual(5.0, events[0].Score, 1E-4);
+
+            Assert.AreEqual(17.0, events[1].EventStartSeconds, 1E-4);
+            Assert.AreEqual(19.0, events[1].EventEndSeconds, 1E-4);
             Assert.AreEqual(1000, events[1].LowFrequencyHertz);
             Assert.AreEqual(8000, events[1].HighFrequencyHertz);
-
-            Assert.AreEqual(5.0, events[0].Score, 1E-4);
             Assert.AreEqual(9.0, events[1].Score, 1E-4);
-            Assert.AreEqual(0.5, events[0].ScoreNormalised, 1E-4);
-            Assert.AreEqual(0.9, events[1].ScoreNormalised, 1E-4);
         }
 
         [TestMethod]

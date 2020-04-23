@@ -15,6 +15,16 @@ namespace AudioAnalysisTools.Events
     {
         public SpectralEvent()
         {
+            // empty constructor to prevent obligatory requiredment for arguments.
+        }
+
+        public SpectralEvent(TimeSpan segmentStartOffset, double eventStartRecordingRelative, double eventEndRecordingRelative, double minFreq, double maxFreq)
+        {
+            this.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
+            this.EventStartSeconds = eventStartRecordingRelative;
+            this.EventEndSeconds = eventEndRecordingRelative;
+            this.LowFrequencyHertz = minFreq;
+            this.HighFrequencyHertz = maxFreq;
         }
 
         public virtual double EventEndSeconds { get; set; }
@@ -23,11 +33,13 @@ namespace AudioAnalysisTools.Events
 
         public virtual double LowFrequencyHertz { get; set; }
 
+        //public double Duration => base.Duration;
+
+        /// DIMENSIONS OF THE EVENT
+        /// <summary>Gets the event duration in seconds.</summary>
         public double EventDurationSeconds => this.EventEndSeconds - this.EventStartSeconds;
 
         public double BandWidthHertz => this.HighFrequencyHertz - this.LowFrequencyHertz;
-
-        //public double Duration => base.Duration;
 
         public override void Draw(IImageProcessingContext graphics, EventRenderingOptions options)
         {
