@@ -16,6 +16,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Drawing;
+    using AudioAnalysisTools.Events.Types;
     using AudioAnalysisTools.LongDurationSpectrograms;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.ColorSpaces;
@@ -41,8 +42,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
         }
 
         /// <summary>
-        /// NOTE: TODO TODO THIS METHOD HAS BEEN DUPLICATED BELOW WITH ALTERED SIGNATURE.
-        ///       NEED TO FIX THIS. 
         /// This method draws a spectrogram with other useful information attached.
         /// </summary>
         /// <param name="sonogram">of BaseSonogram class.</param>
@@ -63,8 +62,11 @@ namespace AudioAnalysisTools.StandardSpectrograms
             var frameSize = sonogram.Configuration.WindowSize;
             var segmentDuration = sonogram.Duration;
 
-            // ####################################################### THIS NEXT LINE NEEDS TO BE FIXED TO TAKE ANY START TIME.
+            // ############################################################### THIS NEXT LINE NEEDS TO BE FIXED TO ENABLE ANY START TIME.
             var segmentStartTime = TimeSpan.Zero;
+
+            // ############################################################### FIX THIS SCORE MAX.
+            double maxScore = 10;
 
             // init with linear frequency scale and draw freq grid lines on image
             int hertzInterval = 1000;
@@ -80,8 +82,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
             // draw event outlines onto spectrogram.
             if (events != null && events.Count > 0)
             {
-                // ############################################################### FIX THIS SCORE MAX.
-                double maxScore = 10;
                 foreach (SpectralEvent ev in events)
                 {
                     var options = new EventRenderingOptions(new UnitConverters(segmentStartTime.TotalSeconds, segmentDuration.TotalSeconds, nyquist, width, height));
@@ -138,73 +138,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
             List<Plot> plots,
             double[,] hits)
         {
-            var spectrogram = sonogram.GetImage(doHighlightSubband: false, add1KHzLines: true, doMelScale: false);
-            Contract.RequiresNotNull(spectrogram, nameof(spectrogram));
-
-            var height = spectrogram.Height;
-            var width = spectrogram.Width;
-            var frameSize = sonogram.Configuration.WindowSize;
-            var segmentDuration = sonogram.Duration;
-
-            // init with linear frequency scale and draw freq grid lines on image
-            int hertzInterval = 1000;
-            if (height < 200)
-            {
-                hertzInterval = 2000;
-            }
-
-            var nyquist = sonogram.NyquistFrequency;
-            var freqScale = new FrequencyScale(nyquist, frameSize, hertzInterval);
-            FrequencyScale.DrawFrequencyLinesOnImage(spectrogram, freqScale.GridLineLocations, includeLabels: true);
-
-            // draw event outlines onto spectrogram.
-            if (events != null && events.Count > 0)
-            {
-                foreach (AcousticEvent ev in events)
-                {
-                    // next three lines are for drawing the old AcousticEvent class.
-                    ev.BorderColour = AcousticEvent.DefaultBorderColor;
-                    ev.ScoreColour = AcousticEvent.DefaultScoreColor;
-                    ev.DrawEvent(spectrogram, sonogram.FramesPerSecond, sonogram.FBinWidth, height);
-                }
-            }
-
-            // now add in hits to the spectrogram image.
-            if (hits != null)
-            {
-                spectrogram = Image_MultiTrack.OverlayScoresAsRedTransparency(spectrogram, hits);
-
-                // following line needs to be reworked if want to call OverlayRainbowTransparency(hits);
-                //image.OverlayRainbowTransparency(hits);
-            }
-
-            int pixelWidth = spectrogram.Width;
-            var titleBar = LDSpectrogramRGB.DrawTitleBarOfGrayScaleSpectrogram("TITLE", pixelWidth);
-            var timeTrack = ImageTrack.DrawTimeTrack(sonogram.Duration, pixelWidth);
-
-            var imageList = new List<Image<Rgb24>>
-            {
-                titleBar,
-                timeTrack,
-                spectrogram,
-                timeTrack,
-            };
-
-            if (plots != null)
-            {
-                foreach (var plot in plots)
-                {
-                    // Next line assumes plot data normalised in 0,1
-                    var plotImage = plot.DrawAnnotatedPlot(ImageTrack.DefaultHeight);
-
-                    // the following draws same plot without the title.
-                    //var plotImage = ImageTrack.DrawScoreArrayTrack(plot.data, plot.threshold, pixelWidth);
-                    imageList.Add(plotImage);
-                }
-            }
-
-            var compositeImage = ImageTools.CombineImagesVertically(imageList);
-
+            // convert AcousticEvents to EventsCommon
+            List<EventCommon> newEvents = EventConverters.ConvertAcousticEventsToSpectralEvents(events);
+            var compositeImage = GetSonogramPlusCharts(sonogram, newEvents, plots, hits);
             return compositeImage;
         }
 

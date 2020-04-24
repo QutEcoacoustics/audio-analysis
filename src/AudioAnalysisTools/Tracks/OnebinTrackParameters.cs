@@ -31,7 +31,7 @@ namespace AnalysisPrograms.Recognizers.Base
         /// This method averages dB log values incorrectly but it is faster than doing many log conversions.
         /// This method is used to find acoustic events and is accurate enough for the purpose.
         /// </summary>
-        public static (List<SpectralEvent> ListOfevents, double[] CombinedIntensityArray) GetOnebinTracks(
+        public static (List<EventCommon> ListOfevents, double[] CombinedIntensityArray) GetOnebinTracks(
             SpectrogramStandard sonogram,
             int minHz,
             int maxHz,
@@ -90,7 +90,7 @@ namespace AnalysisPrograms.Recognizers.Base
             var tracks = TrackExtractor.GetOnebinTracks(peaks, minDuration, maxDuration, decibelThreshold, converter);
 
             // initialise tracks as events and get the combined intensity array.
-            var events = new List<SpectralEvent>();
+            var events = new List<EventCommon>();
             var combinedIntensityArray = new double[frameCount];
             foreach (var track in tracks)
             {

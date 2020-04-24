@@ -143,7 +143,7 @@ namespace AnalysisPrograms.Recognizers
                 Log.Info("Processing profile: " + profileName);
 
                 //List<AcousticEvent> acousticEvents;
-                List<SpectralEvent> spectralEvents;
+                List<EventCommon> spectralEvents;
                 var plots = new List<Plot>();
                 SpectrogramStandard sonogram;
 
@@ -288,7 +288,7 @@ namespace AnalysisPrograms.Recognizers
                                 out var hits,
                                 segmentStartOffset);
 
-                            spectralEvents = new List<SpectralEvent>(oscillationEvents);
+                            spectralEvents = new List<EventCommon>(oscillationEvents);
 
                             //plots.Add(new Plot($"{profileName} (:OscillationScore)", scores, op.EventThreshold));
                             var plot = PreparePlot(scores, $"{profileName} (:OscillationScore)", op.EventThreshold);

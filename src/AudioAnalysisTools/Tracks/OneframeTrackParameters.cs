@@ -41,7 +41,7 @@ namespace AnalysisPrograms.Recognizers.Base
         /// THis method averages dB log values incorrectly but it is faster than doing many log conversions.
         /// This method is used to find acoustic events and is accurate enough for the purpose.
         /// </summary>
-        public static (List<SpectralEvent> Events, double[] Intensity) GetOneFrameTracks(
+        public static (List<EventCommon> Events, double[] Intensity) GetOneFrameTracks(
             SpectrogramStandard sonogram,
             int minHz,
             int maxHz,
@@ -96,7 +96,7 @@ namespace AnalysisPrograms.Recognizers.Base
             var tracks = TrackExtractor.GetOneFrameTracks(peaks, minBin, maxBin, minBandwidthHertz, maxBandwidthHertz, decibelThreshold, converter);
 
             // initialise tracks as events and get the combined intensity array.
-            var events = new List<SpectralEvent>();
+            var events = new List<EventCommon>();
             var temporalIntensityArray = new double[frameCount];
             foreach (var track in tracks)
             {

@@ -56,7 +56,7 @@ namespace AnalysisPrograms.Recognizers.Base
         /// <param name="combineProximalSimilarEvents">Combine tracks that are likely to be repeated chatter.</param>
         /// <param name="segmentStartOffset">The start time of the current recording segment under analysis.</param>
         /// <returns>A list of acoustic events containing foward tracks.</returns>
-        public static (List<SpectralEvent> Events, double[] CombinedIntensity) GetUpwardTracks(
+        public static (List<EventCommon> Events, double[] CombinedIntensity) GetUpwardTracks(
             SpectrogramStandard sonogram,
             int minHz,
             int maxHz,
@@ -106,7 +106,7 @@ namespace AnalysisPrograms.Recognizers.Base
             var tracks = TrackExtractor.GetUpwardTracks(peaks, minBin, maxBin, minBandwidthHertz, maxBandwidthHertz, decibelThreshold, converter);
 
             // initialise tracks as events and get the combined intensity array.
-            var events = new List<SpectralEvent>();
+            var events = new List<EventCommon>();
             var temporalIntensityArray = new double[frameCount];
             foreach (var track in tracks)
             {

@@ -119,7 +119,7 @@ namespace AnalysisPrograms
         /// </summary>
         public override string Identifier => EcosoundsAedIdentifier;
 
-        public static Tuple<SpectralEvent[], AudioRecording, BaseSonogram> Detect(
+        public static Tuple<EventCommon[], AudioRecording, BaseSonogram> Detect(
             FileInfo audioFile,
             AedConfiguration aedConfiguration,
             TimeSpan segmentStartOffset)
@@ -146,12 +146,12 @@ namespace AnalysisPrograms
             };
             var sonogram = (BaseSonogram)new SpectrogramStandard(config, recording.WavReader);
 
-            SpectralEvent[] events = CallAed(sonogram, aedConfiguration, segmentStartOffset, segmentDuration);
+            var events = CallAed(sonogram, aedConfiguration, segmentStartOffset, segmentDuration);
             Log.Debug("AED # events: " + events.Length);
             return Tuple.Create(events, recording, sonogram);
         }
 
-        public static SpectralEvent[] CallAed(BaseSonogram sonogram, AedConfiguration aedConfiguration, TimeSpan segmentStartOffset, TimeSpan segmentDuration)
+        public static EventCommon[] CallAed(BaseSonogram sonogram, AedConfiguration aedConfiguration, TimeSpan segmentStartOffset, TimeSpan segmentDuration)
         {
             Log.Info("AED start");
 
@@ -204,7 +204,7 @@ namespace AnalysisPrograms
             return events.ToArray();
         }
 
-        public static Image DrawSonogram(BaseSonogram sonogram, IEnumerable<SpectralEvent> events)
+        public static Image DrawSonogram(BaseSonogram sonogram, IEnumerable<EventCommon> events)
         {
             var image = new Image_MultiTrack(sonogram.GetImage(false, true, doMelScale: false));
 
@@ -218,7 +218,7 @@ namespace AnalysisPrograms
             var aeEvents = new List<AcousticEvent>();
             foreach (var be in events)
             {
-                aeEvents.Add(EventConverters.ConvertSpectralEventToAcousticEvent(be));
+                aeEvents.Add(EventConverters.ConvertSpectralEventToAcousticEvent((SpectralEvent)be));
             }
 
             image.AddEvents(

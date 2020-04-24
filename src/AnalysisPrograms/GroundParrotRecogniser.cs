@@ -133,14 +133,20 @@ namespace AnalysisPrograms
         /// </returns>
         public static Tuple<BaseSonogram, List<AcousticEvent>> Detect(FileInfo wavFilePath, Aed.AedConfiguration aedConfiguration, double eprNormalisedMinScore, TimeSpan segmentStartOffset)
         {
-            Tuple<SpectralEvent[], AudioRecording, BaseSonogram> aed = Aed.Detect(wavFilePath, aedConfiguration, segmentStartOffset);
+            Tuple<EventCommon[], AudioRecording, BaseSonogram> aed = Aed.Detect(wavFilePath, aedConfiguration, segmentStartOffset);
 
-            var events = aed.Item1.Select(se => se.ConvertSpectralEventToAcousticEvent()).Select(ae => Util.fcornersToRect(ae.TimeStart, ae.TimeEnd, ae.HighFrequencyHertz, ae.LowFrequencyHertz)).ToList();
+            var events = aed.Item1;
+            var newEvents = new List<AcousticEvent>();
+            foreach (var be in events)
+            {
+                newEvents.Add(EventConverters.ConvertSpectralEventToAcousticEvent((SpectralEvent)be));
+            }
+
+            var aeEvents = newEvents.Select(ae => Util.fcornersToRect(ae.TimeStart, ae.TimeEnd, ae.HighFrequencyHertz, ae.LowFrequencyHertz)).ToList();
 
             Log.Debug("EPR start");
 
-            var eprRects =
-                EventPatternRecog.DetectGroundParrots(events, eprNormalisedMinScore);
+            var eprRects = EventPatternRecog.DetectGroundParrots(aeEvents, eprNormalisedMinScore);
             Log.Debug("EPR finished");
 
             var sonogram = aed.Item3;

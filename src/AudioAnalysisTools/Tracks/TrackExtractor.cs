@@ -417,7 +417,7 @@ namespace AudioAnalysisTools.Events.Tracks
         /// </summary>
         /// <param name="sonogram">The spectrogram to be searched.</param>
         /// <returns>A list of acoustic events containing foward tracks.</returns>
-        public static (List<SpectralEvent> Events, double[] CombinedIntensity) GetForwardTracks(
+        public static (List<EventCommon> Events, double[] CombinedIntensity) GetForwardTracks(
             SpectrogramStandard sonogram,
             ForwardTrackParameters parameters,
             TimeSpan segmentStartOffset)
@@ -460,7 +460,7 @@ namespace AudioAnalysisTools.Events.Tracks
 
             // initialise tracks as events and get the combined intensity array.
             // list of accumulated acoustic events
-            var events = new List<SpectralEvent>();
+            var events = new List<EventCommon>();
             var combinedIntensityArray = new double[frameCount];
             foreach (var track in tracks)
             {

@@ -8,8 +8,8 @@
     <Exec Command="git lfs ls-files" ConsoleToMSBuild="True" EchoOff="false" StandardOutputImportance="low" WorkingDirectory="$(MSBuildThisFileDirectory)..">
       <Output TaskParameter="ConsoleOutput" ItemName="FileStatus" />
     </Exec>
-    <Error File="$([System.String]::new(%(FileStatus.Identity)).Substring(13).Trim())" Code="AP001" Text="Git LFS BLOB has not been restored and only contains a LFS pointer to the file." Condition="$([System.String]::new(%(FileStatus.Identity)).Contains(' - ')) And Exists('$(MSBuildThisFileDirectory)../$([System.String]::new(%(FileStatus.Identity)).Substring(13).Trim())')" ContinueOnError="ErrorAndContinue"/>
+    <!--<Error File="$([System.String]::new(%(FileStatus.Identity)).Substring(13).Trim())" Code="AP001" Text="Git LFS BLOB has not been restored and only contains a LFS pointer to the file." Condition="$([System.String]::new(%(FileStatus.Identity)).Contains(' - ')) And Exists('$(MSBuildThisFileDirectory)../$([System.String]::new(%(FileStatus.Identity)).Substring(13).Trim())')" ContinueOnError="ErrorAndContinue"/> -->
 
-    <Error Condition="'$(MSBuildLastTaskResult)'=='false'" Text="AP build cannot continue there are Git LFS assets that have not been restored. Please follow the instructions at https://github.com/QutEcoacoustics/audio-analysis/blob/master/CONTRIBUTING.md#AP001" />
+    <!-- <Error Condition="'$(MSBuildLastTaskResult)'=='false'" Text="AP build cannot continue there are Git LFS assets that have not been restored. Please follow the instructions at https://github.com/QutEcoacoustics/audio-analysis/blob/master/CONTRIBUTING.md#AP001" /> -->
   </Target>
 </Project>

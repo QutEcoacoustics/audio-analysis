@@ -46,10 +46,10 @@ namespace AudioAnalysisTools.Events.Types
             return result;
         }
 
-        public static List<SpectralEvent> ConvertAcousticEventsToSpectralEvents<T>(this List<T> acousticEvents)
+        public static List<EventCommon> ConvertAcousticEventsToSpectralEvents<T>(this List<T> acousticEvents)
             where T : AcousticEvent
         {
-            var result = new List<SpectralEvent>(acousticEvents.Count);
+            var result = new List<EventCommon>(acousticEvents.Count);
             foreach (var acousticEvent in acousticEvents)
             {
                 result.Add(acousticEvent.ConvertAcousticEventToSpectralEvent());

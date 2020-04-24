@@ -35,7 +35,7 @@ namespace AnalysisPrograms.Recognizers.Base
         /// </summary>
         public int? MaxFormantGap { get; set; }
 
-        public static (List<SpectralEvent> SpectralEvents, double[] AmplitudeArray, double[] HarmonicIntensityScores) GetComponentsWithHarmonics(
+        public static (List<EventCommon> SpectralEvents, double[] AmplitudeArray, double[] HarmonicIntensityScores) GetComponentsWithHarmonics(
             SpectrogramStandard spectrogram,
             int minHz,
             int maxHz,
@@ -105,7 +105,7 @@ namespace AnalysisPrograms.Recognizers.Base
                     maxDuration,
                     segmentStartOffset);
 
-            var spectralEvents = new List<SpectralEvent>();
+            var spectralEvents = new List<EventCommon>();
 
             // add in temporary names to the events
             // These can be altered later.
