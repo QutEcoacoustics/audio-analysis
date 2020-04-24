@@ -46,9 +46,24 @@ namespace AudioAnalysisTools.Events
             // draw a border around this event
             var border = options.Converters.GetPixelRectangle(this);
             graphics.NoAA().DrawBorderInset(options.Border, border);
+        }
 
-            // draw event title
-            // TODO
+        public void Draw(IImageProcessingContext graphics, EventRenderingOptions options, double scoreMax)
+        {
+            this.Draw(graphics, options);
+
+            //draw the score bar to indicate relative score
+            var topBin = options.Converters.HertzToPixels(this.HighFrequencyHertz);
+            var bottomBin = (int)Math.Round(options.Converters.HertzToPixels(this.LowFrequencyHertz));
+            var eventPixelHeight = bottomBin - topBin + 1;
+            var eventPixelStart = (int)Math.Round(options.Converters.SecondsToPixels(this.EventStartSeconds));
+            int scoreHt = (int)Math.Round(eventPixelHeight * this.Score / scoreMax);
+
+            var scorePen = new Pen(Color.LimeGreen, 1);
+
+            graphics.NoAA().DrawLine(scorePen, eventPixelStart, bottomBin - scoreHt, eventPixelStart, bottomBin);
+
+            graphics.DrawTextSafe(this.Name, Acoustics.Shared.ImageSharp.Drawing.Tahoma6, Color.Gray, new PointF(eventPixelStart, topBin - 4));
         }
     }
 }
