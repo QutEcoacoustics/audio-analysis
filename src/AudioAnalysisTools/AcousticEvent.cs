@@ -21,7 +21,6 @@ namespace AudioAnalysisTools
     using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Drawing;
     using AudioAnalysisTools.Events.Interfaces;
-    using AudioAnalysisTools.Events.Tracks;
     using AudioAnalysisTools.StandardSpectrograms;
     using CsvHelper.Configuration;
     using SixLabors.ImageSharp;
@@ -854,6 +853,9 @@ namespace AudioAnalysisTools
             resultsText = sb.ToString();
         }
 
+        //#################################################################################################################
+        //FOLLOWING TWO METHODS DEAL WITH THE OVERLAP OF EVENTS
+
         /// <summary>
         /// Returns the first event in the passed list which overlaps with this one IN THE SAME RECORDING.
         /// If no event overlaps return null.
@@ -870,9 +872,6 @@ namespace AudioAnalysisTools
 
             return null;
         }
-
-        //#################################################################################################################
-        //FOLLOWING TWO METHODS DEAL WITH THE OVERLAP OF EVENTS
 
         /// <summary>
         /// Determines if two events overlap in time.
@@ -909,8 +908,6 @@ namespace AudioAnalysisTools
 
             return false;
         }
-
-
 
         //##############################################################################################################################################
         //  THE NEXT THREE METHODS CONVERT AN ARRAY OF SCORE VALUES (USUALLY INTENSITY VALUES IN A SUB-BAND) TO ACOUSTIC EVENTS.

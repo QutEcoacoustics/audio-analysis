@@ -289,6 +289,7 @@ namespace AnalysisPrograms.Recognizers
                                 segmentStartOffset);
 
                             spectralEvents = new List<SpectralEvent>(oscillationEvents);
+
                             //plots.Add(new Plot($"{profileName} (:OscillationScore)", scores, op.EventThreshold));
                             var plot = PreparePlot(scores, $"{profileName} (:OscillationScore)", op.EventThreshold);
                             plots.Add(plot);
@@ -309,6 +310,7 @@ namespace AnalysisPrograms.Recognizers
                         ae.FileName = audioRecording.BaseName;
                         ae.Name = parameters.SpeciesName;
                         ae.Profile = profileName;
+
                         //ae.SegmentDurationSeconds = audioRecording.Duration.TotalSeconds;
                         //ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
                         //ae.SetTimeAndFreqScales(sonogram.FrameStep, sonogram.FrameDuration, sonogram.FBinWidth);
@@ -407,7 +409,7 @@ namespace AnalysisPrograms.Recognizers
         /// </summary>
         public static void SaveDebugSpectrogram(RecognizerResults results, Config genericConfig, DirectoryInfo outputDirectory, string baseName)
         {
-            var image3 = SpectrogramTools.GetSonogramPlusCharts(results.Sonogram, results.Events, results.Plots, null);
+            var image3 = SpectrogramTools.GetSonogramPlusCharts(results.Sonogram, results.NewEvents, results.Plots, null);
 
             image3.Save(Path.Combine(outputDirectory.FullName, baseName + ".profile.png"));
         }

@@ -23,6 +23,8 @@ namespace AudioAnalysisTools.Events.Types
 
         public List<EventCommon> ComponentEvents { get; set; } = new List<EventCommon>();
 
+        public int ComponentCount => this.ComponentEvents.Count;
+
         public override double EventStartSeconds =>
             this.ComponentEvents.Min(x => x.EventStartSeconds);
 

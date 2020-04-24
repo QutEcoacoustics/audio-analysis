@@ -429,7 +429,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
 
             var segmentStartOffset = TimeSpan.Zero;
             var plots = new List<Plot>();
-            var (acousticEvents, dBArray) = TrackExtractor.GetForwardTracks(
+            var (spectralEvents, dBArray) = TrackExtractor.GetForwardTracks(
                 spectrogram,
                 parameters,
                 segmentStartOffset);
@@ -451,7 +451,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             };
 
             // combine the results i.e. add the events list of call events.
-            allResults.NewEvents.AddRange(acousticEvents);
+            allResults.NewEvents.AddRange(spectralEvents);
             allResults.Plots.AddRange(plots);
 
             // effectively keeps only the *last* sonogram produced
