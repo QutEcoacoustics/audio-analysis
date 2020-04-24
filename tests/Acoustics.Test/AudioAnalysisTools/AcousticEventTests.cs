@@ -10,10 +10,12 @@ namespace Acoustics.Test.AudioAnalysisTools
     using Acoustics.Test.TestHelpers;
     using global::AudioAnalysisTools;
     using global::AudioAnalysisTools.Events;
+    using global::AudioAnalysisTools.Events.Drawing;
     using global::AudioAnalysisTools.Events.Types;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
+    using SixLabors.ImageSharp.Processing;
 
     [TestClass]
     public class AcousticEventTests : GeneratedImageTest<Rgb24>
@@ -49,7 +51,11 @@ namespace Acoustics.Test.AudioAnalysisTools
             // combine Overlapping acoustic events
             events = CompositeEvent.CombineOverlappingEvents(events: events);
 
+            //require two events, the first being a composite of two events.
             Assert.AreEqual(2, events.Count);
+            Assert.AreEqual(typeof(CompositeEvent), events[0].GetType());
+            //################################################# WHY DOES FOLLOWING LINE NOT WORK????
+            //Assert.AreEqual(2, events[0].ComponentCount);
 
             Assert.AreEqual(11.0, events[0].EventStartSeconds, 1E-4);
             Assert.AreEqual(16.0, events[0].EventEndSeconds, 1E-4);
@@ -57,6 +63,7 @@ namespace Acoustics.Test.AudioAnalysisTools
             Assert.AreEqual(8000, events[0].HighFrequencyHertz);
             Assert.AreEqual(5.0, events[0].Score, 1E-4);
 
+            Assert.AreEqual(typeof(SpectralEvent), events[1].GetType());
             Assert.AreEqual(17.0, events[1].EventStartSeconds, 1E-4);
             Assert.AreEqual(19.0, events[1].EventEndSeconds, 1E-4);
             Assert.AreEqual(1000, events[1].LowFrequencyHertz);
@@ -67,46 +74,48 @@ namespace Acoustics.Test.AudioAnalysisTools
         [TestMethod]
         public void TestSonogramWithEventsOverlay()
         {
+            //####################################################################### THIS TEST FAILS BECAUSE NOT DRAWING EVENTS SAME AS PREVIOUSLY.
             // make a substitute sonogram image
-            var substituteSonogram = Drawing.NewImage(100, 256, Color.Black);
+            var imageWidth = 100;
+            var imageHeight = 256;
+            var substituteSonogram = Drawing.NewImage(imageWidth, imageHeight, Color.Black);
 
-            // make a list of events
-            var framesPerSecond = 10.0;
-            var freqBinWidth = 43.0664;
-            double maxPossibleScore = 10.0;
+            // set the time/freq scales
+            var segmentDuration = 10.0; //seconds
+            var nyquist = 11025; //Hertz
 
-            var events = new List<AcousticEvent>();
-            var event1 = new AcousticEvent(segmentStartOffset: TimeSpan.Zero, eventStartSegmentRelative: 1.0, eventDuration: 5.0, minFreq: 1000, maxFreq: 8000)
+            // make a list of two events
+            var events = new List<SpectralEvent>();
+            var segmentStartTime = TimeSpan.FromSeconds(10);
+            var event1 = new SpectralEvent(segmentStartOffset: segmentStartTime, eventStartRecordingRelative: 11.0, eventEndRecordingRelative: 16.0, minFreq: 1000, maxFreq: 8000)
             {
                 Score = 10.0,
                 Name = "Event1",
-                ScoreNormalised = 10.0 / maxPossibleScore,
             };
 
             events.Add(event1);
-            var event2 = new AcousticEvent(segmentStartOffset: TimeSpan.Zero, eventStartSegmentRelative: 7.0, eventDuration: 2.0, minFreq: 1000, maxFreq: 8000)
+            var event2 = new SpectralEvent(segmentStartOffset: segmentStartTime, eventStartRecordingRelative: 17.0, eventEndRecordingRelative: 19.0, minFreq: 1000, maxFreq: 8000)
             {
                 Score = 1.0,
                 Name = "Event2",
-                ScoreNormalised = 1.0 / maxPossibleScore,
             };
             events.Add(event2);
 
-            // now add events into the spectrogram image.
-            // set color for the events
-            foreach (AcousticEvent ev in events)
+            // now add events into the spectrogram image with score.
+            double maxScore = 10.0;
+            var options = new EventRenderingOptions(new UnitConverters(segmentStartTime.TotalSeconds, segmentDuration, nyquist, imageWidth, imageHeight));
+            foreach (var ev in events)
             {
                 // because we are testing placement of box not text.
                 ev.Name = string.Empty;
-                ev.BorderColour = AcousticEvent.DefaultBorderColor;
-                ev.ScoreColour = AcousticEvent.DefaultScoreColor;
-                ev.DrawEvent(substituteSonogram, framesPerSecond, freqBinWidth, 256);
+                substituteSonogram.Mutate(x => ev.Draw(x, options, maxScore));
             }
 
             this.ActualImage = substituteSonogram;
 
             // BUG: this asset is faulty. See https://github.com/QutEcoacoustics/audio-analysis/issues/300#issuecomment-601537263
-            this.ExpectedImage = Image.Load<Rgb24>(PathHelper.ResolveAssetPath("EventTests_SuperimposeEventsOnImage.png"));
+            var path = PathHelper.ResolveAssetPath("EventTests_SuperimposeEventsOnImage.png");
+            this.ExpectedImage = Image.Load<Rgb24>(path);
             this.AssertImagesEqual();
         }
     }
