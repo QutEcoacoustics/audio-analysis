@@ -15,12 +15,20 @@ namespace AudioAnalysisTools
 
     public class ChirpEvent : SpectralEvent, ITracks<Track>
     {
-        public ChirpEvent(Track chirp)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ChirpEvent"/> class.
+        /// MaxScore establishes a scale for the chirp score. Typically the amplitude of track points is decibels.
+        /// A satisfactory maxScore is 12.0 decibels, since this is a high SNR in enviornmental recordings.
+        /// The normalised score is a linear conversion from 0 - maxScore to [0, 1].
+        /// </summary>
+        /// <param name="chirp">A chirp track consisting of a sequence of spectral points.</param>
+        /// <param name="maxScore">A maximum score used to normalise the track score.</param>
+        public ChirpEvent(Track chirp, double maxScore)
         {
             this.Tracks.Add(chirp);
 
-            // set score = to aaverage normalised amplitude score.
-            //this.Score = 
+            // set score = to average normalised amplitude score.
+            this.SetTrackScore(maxScore);
         }
 
         public List<Track> Tracks { get; private set; } = new List<Track>(1);
@@ -37,12 +45,18 @@ namespace AudioAnalysisTools
         public override double HighFrequencyHertz =>
             this.Tracks.Max(x => x.HighFreqHertz);
 
+        /// <summary>
+        /// Sets a normalised value for the chirp's track score.
+        /// NOTE: It is assumed that the minimum value of the score range = zero.
+        /// </summary>
+        /// <param name="maxScore">The max score value which sets the scale.</param>
+        public void SetTrackScore(double maxScore)
+        {
+            this.Score = this.Tracks[0].GetAverageTrackAmplitude() / maxScore;
+        }
+
         public override void Draw(IImageProcessingContext graphics, EventRenderingOptions options)
         {
-            // foreach (var track in tracks) {
-            // track.Draw(...)
-            // }
-
             this.Tracks.First().Draw(graphics, options);
 
             //  base drawing (border)

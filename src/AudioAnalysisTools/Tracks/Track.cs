@@ -192,7 +192,6 @@ namespace AudioAnalysisTools.Events.Tracks
 
         /// <summary>
         /// Returns the maximum amplitude in each time frame.
-        /// TODO ############################################
         /// </summary>
         public double[] GetAmplitudeOverTimeFrames()
         {
@@ -208,6 +207,21 @@ namespace AudioAnalysisTools.Events.Tracks
                 })
                 .ToArray();
             return sorted;
+        }
+
+        /// <summary>
+        /// Returns the maximum amplitude in each time frame.
+        /// </summary>
+        public double GetAverageTrackAmplitude()
+        {
+            var sum = 0.0;
+            foreach (var point in this.Points)
+            {
+                sum += point.Value;
+            }
+
+            var av = sum / this.Points.Count;
+            return av;
         }
 
         /// <summary>

@@ -82,7 +82,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 foreach (SpectralEvent ev in events)
                 {
                     var options = new EventRenderingOptions(new UnitConverters(segmentStartTime.TotalSeconds, segmentDuration.TotalSeconds, nyquist, width, height));
-                    spectrogram.Mutate(x => ev.Draw(x, options));
+
+                    //spectrogram.Mutate(x => ev.Draw(x, options));
+                    spectrogram.Mutate(x => ev.DrawWithAnnotation(x, options));
                 }
             }
 

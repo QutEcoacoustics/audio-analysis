@@ -412,7 +412,7 @@ namespace AudioAnalysisTools.Events.Tracks
         }
 
         /// <summary>
-        /// This method returns foward (spectral peak) tracks enclosed in acoustic events.
+        /// This method returns foward (spectral peak) tracks enclosed in spectral events.
         /// It averages dB log values incorrectly but it is faster than doing many log conversions.
         /// </summary>
         /// <param name="sonogram">The spectrogram to be searched.</param>
@@ -429,6 +429,7 @@ namespace AudioAnalysisTools.Events.Tracks
             double binWidth = nyquist / (double)binCount;
             int minBin = (int)Math.Round(parameters.MinHertz.Value / binWidth);
             int maxBin = (int)Math.Round(parameters.MaxHertz.Value / binWidth);
+            double maxScore = parameters.MaxScore.Value;
 
             var converter = new UnitConverters(
                 segmentStartOffset: segmentStartOffset.TotalSeconds,
@@ -464,7 +465,7 @@ namespace AudioAnalysisTools.Events.Tracks
             var combinedIntensityArray = new double[frameCount];
             foreach (var track in tracks)
             {
-                var ae = new ChirpEvent(track)
+                var ae = new ChirpEvent(track, maxScore)
                 {
                     SegmentDurationSeconds = frameCount * converter.StepSize,
                 };

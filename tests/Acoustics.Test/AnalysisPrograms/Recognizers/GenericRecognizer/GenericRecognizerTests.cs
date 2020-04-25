@@ -402,6 +402,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
                 MinDuration = 0.2,
                 MaxDuration = 1.1,
                 DecibelThreshold = 2.0,
+                MaxScore = 12.0,
                 CombinePossibleHarmonics = false,
             };
 

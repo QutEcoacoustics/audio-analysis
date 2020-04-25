@@ -27,8 +27,19 @@ namespace AnalysisPrograms.Recognizers.Base
         /// </summary>
         public bool CombinePossibleHarmonics { get; set; }
 
-        public TimeSpan StartDifference { get; set; }
+        public TimeSpan HarmonicsStartDifference { get; set; }
 
-        public int HertzGap { get; set; }
-}
+        public int HarmonicsHertzGap { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether a short sequence of chirp tracks are to be considered a combined event.
+        /// To qualify for combining, the event start times should not be greater than the specified seconds interval....
+        /// AND the difference in minimum frequency values (the Hertz gap) between consecutive tracks should not exceed the specified Hertz interval.
+        /// </summary>
+        public bool CombinePossibleChirpSequence { get; set; }
+
+        public TimeSpan ChirpStartDifference { get; set; }
+
+        public int ChirpHertzGap { get; set; }
+    }
 }
