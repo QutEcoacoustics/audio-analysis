@@ -20,7 +20,7 @@ namespace AudioAnalysisTools
             // ################################################################ TODO TODO TODO
         }
 
-        public ISet<ISpectralPoint> Points { get; } = new HashSet<ISpectralPoint>();
+        public ICollection<ISpectralPoint> Points { get; } = new HashSet<ISpectralPoint>();
 
         public override void Draw(IImageProcessingContext graphics, EventRenderingOptions options)
         {

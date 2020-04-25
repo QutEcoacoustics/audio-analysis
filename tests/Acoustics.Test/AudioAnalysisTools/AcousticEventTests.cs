@@ -109,7 +109,7 @@ namespace Acoustics.Test.AudioAnalysisTools
             {
                 // because we are testing placement of box not text.
                 ev.Name = string.Empty;
-                substituteSonogram.Mutate(x => ev.DrawWithAnnotation(x, options));
+                substituteSonogram.Mutate(x => ev.Draw(x, options));
             }
 
             this.ActualImage = substituteSonogram;

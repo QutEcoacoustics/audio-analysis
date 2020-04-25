@@ -44,29 +44,14 @@ namespace AudioAnalysisTools.Events
         public override void Draw(IImageProcessingContext graphics, EventRenderingOptions options)
         {
             // draw a border around this event
-            var border = options.Converters.GetPixelRectangle(this);
-            graphics.NoAA().DrawBorderInset(options.Border, border);
-        }
-
-        public void DrawWithAnnotation(IImageProcessingContext graphics, EventRenderingOptions options)
-        {
-            this.Draw(graphics, options);
-
-            var topBin = options.Converters.HertzToPixels(this.HighFrequencyHertz);
-            var eventPixelStart = (int)Math.Round(options.Converters.SecondsToPixels(this.EventStartSeconds));
-
-            if (this.Score > 0.0)
-            {
-                //draw the score bar to indicate relative score
-                var bottomBin = (int)Math.Round(options.Converters.HertzToPixels(this.LowFrequencyHertz));
-                var eventPixelHeight = bottomBin - topBin + 1;
-                int scoreHt = (int)Math.Floor(eventPixelHeight * this.Score);
-                var scorePen = new Pen(Color.LimeGreen, 1);
-                graphics.NoAA().DrawLine(scorePen, eventPixelStart, bottomBin - scoreHt, eventPixelStart, bottomBin);
+            if (options.DrawBorder) {
+                var border = options.Converters.GetPixelRectangle(this);
+                graphics.NoAA().DrawBorderInset(options.Border, border);
             }
 
-            //TODO This text is not being drawn????????????????????????????????????????????????????????????????????????????????????????????????????????
-            graphics.DrawTextSafe(this.Name, Acoustics.Shared.ImageSharp.Drawing.Tahoma6, Color.DarkBlue, new PointF(eventPixelStart, topBin - 4));
+            this.DrawScoreIndicator(graphics, options);
+
+            this.DrawEventLabel(graphics, options);
         }
     }
 }

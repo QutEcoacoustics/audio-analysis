@@ -4,7 +4,6 @@
 
 namespace AudioAnalysisTools.Events.Drawing
 {
-    using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
 
     public interface IDrawableEvent

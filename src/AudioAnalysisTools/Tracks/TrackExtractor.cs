@@ -429,7 +429,7 @@ namespace AudioAnalysisTools.Events.Tracks
             double binWidth = nyquist / (double)binCount;
             int minBin = (int)Math.Round(parameters.MinHertz.Value / binWidth);
             int maxBin = (int)Math.Round(parameters.MaxHertz.Value / binWidth);
-            double maxScore = parameters.MaxScore.Value;
+            const double maxScore = 12;
 
             var converter = new UnitConverters(
                 segmentStartOffset: segmentStartOffset.TotalSeconds,
