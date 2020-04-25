@@ -15,7 +15,7 @@ namespace AudioAnalysisTools.Events
     {
         public SpectralEvent()
         {
-            // empty constructor to prevent obligatory requiredment for arguments.
+            // empty constructor to prevent obligatory requirement for arguments.
         }
 
         public SpectralEvent(TimeSpan segmentStartOffset, double eventStartRecordingRelative, double eventEndRecordingRelative, double minFreq, double maxFreq)
@@ -48,22 +48,25 @@ namespace AudioAnalysisTools.Events
             graphics.NoAA().DrawBorderInset(options.Border, border);
         }
 
-        public void Draw(IImageProcessingContext graphics, EventRenderingOptions options, double scoreMax)
+        public void DrawWithAnnotation(IImageProcessingContext graphics, EventRenderingOptions options)
         {
             this.Draw(graphics, options);
 
-            //draw the score bar to indicate relative score
             var topBin = options.Converters.HertzToPixels(this.HighFrequencyHertz);
-            var bottomBin = (int)Math.Round(options.Converters.HertzToPixels(this.LowFrequencyHertz));
-            var eventPixelHeight = bottomBin - topBin + 1;
             var eventPixelStart = (int)Math.Round(options.Converters.SecondsToPixels(this.EventStartSeconds));
-            int scoreHt = (int)Math.Round(eventPixelHeight * this.Score / scoreMax);
 
-            var scorePen = new Pen(Color.LimeGreen, 1);
+            if (this.Score > 0.0)
+            {
+                //draw the score bar to indicate relative score
+                var bottomBin = (int)Math.Round(options.Converters.HertzToPixels(this.LowFrequencyHertz));
+                var eventPixelHeight = bottomBin - topBin + 1;
+                int scoreHt = (int)Math.Floor(eventPixelHeight * this.Score);
+                var scorePen = new Pen(Color.LimeGreen, 1);
+                graphics.NoAA().DrawLine(scorePen, eventPixelStart, bottomBin - scoreHt, eventPixelStart, bottomBin);
+            }
 
-            graphics.NoAA().DrawLine(scorePen, eventPixelStart, bottomBin - scoreHt, eventPixelStart, bottomBin);
-
-            graphics.DrawTextSafe(this.Name, Acoustics.Shared.ImageSharp.Drawing.Tahoma6, Color.Gray, new PointF(eventPixelStart, topBin - 4));
+            //TODO This text is not being drawn????????????????????????????????????????????????????????????????????????????????????????????????????????
+            graphics.DrawTextSafe(this.Name, Acoustics.Shared.ImageSharp.Drawing.Tahoma6, Color.DarkBlue, new PointF(eventPixelStart, topBin - 4));
         }
     }
 }

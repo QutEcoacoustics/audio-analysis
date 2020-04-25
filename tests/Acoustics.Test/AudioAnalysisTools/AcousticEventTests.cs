@@ -74,7 +74,6 @@ namespace Acoustics.Test.AudioAnalysisTools
         [TestMethod]
         public void TestSonogramWithEventsOverlay()
         {
-            //####################################################################### THIS TEST FAILS BECAUSE NOT DRAWING EVENTS SAME AS PREVIOUSLY.
             // make a substitute sonogram image
             var imageWidth = 100;
             var imageHeight = 256;
@@ -84,31 +83,33 @@ namespace Acoustics.Test.AudioAnalysisTools
             var segmentDuration = 10.0; //seconds
             var nyquist = 11025; //Hertz
 
+            // set a max score to normalise.
+            double maxScore = 10.0;
+
             // make a list of two events
             var events = new List<SpectralEvent>();
             var segmentStartTime = TimeSpan.FromSeconds(10);
             var event1 = new SpectralEvent(segmentStartOffset: segmentStartTime, eventStartRecordingRelative: 11.0, eventEndRecordingRelative: 16.0, minFreq: 1000, maxFreq: 8000)
             {
-                Score = 10.0,
+                Score = 10.0 / maxScore,
                 Name = "Event1",
             };
 
             events.Add(event1);
             var event2 = new SpectralEvent(segmentStartOffset: segmentStartTime, eventStartRecordingRelative: 17.0, eventEndRecordingRelative: 19.0, minFreq: 1000, maxFreq: 8000)
             {
-                Score = 1.0,
+                Score = 1.0 / maxScore,
                 Name = "Event2",
             };
             events.Add(event2);
 
             // now add events into the spectrogram image with score.
-            double maxScore = 10.0;
             var options = new EventRenderingOptions(new UnitConverters(segmentStartTime.TotalSeconds, segmentDuration, nyquist, imageWidth, imageHeight));
             foreach (var ev in events)
             {
                 // because we are testing placement of box not text.
                 ev.Name = string.Empty;
-                substituteSonogram.Mutate(x => ev.Draw(x, options, maxScore));
+                substituteSonogram.Mutate(x => ev.DrawWithAnnotation(x, options));
             }
 
             this.ActualImage = substituteSonogram;

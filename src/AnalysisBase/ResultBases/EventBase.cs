@@ -18,6 +18,10 @@ namespace AnalysisBase.ResultBases
     {
         private double eventStartSeconds;
 
+        // For events, we store only the normalised event score.
+        // The setter ensures that the score lies in [0,1]
+        private double normalisedScore;
+
         /// <summary>
         /// Gets or sets the time (in seconds) from start of the file/recording to start of the current audio segment.
         /// </summary>
@@ -27,7 +31,20 @@ namespace AnalysisBase.ResultBases
         public virtual double SegmentStartSeconds { get;  set; }
 
         //AudioAnalysisTools.Keys.EVENT_SCORE,
-        public virtual double Score { get; set; }
+        public virtual double Score
+        {
+            get
+            {
+                return this.normalisedScore;
+            }
+
+            set
+            {
+                // ensure the score lies in [0,1]
+                this.normalisedScore = Math.Max(0.0, value);
+                this.normalisedScore = Math.Min(1.0, value);
+            }
+        }
 
         /// <summary>
         /// Gets or sets the Event's Start Seconds.

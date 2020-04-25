@@ -65,9 +65,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
             // ############################################################### THIS NEXT LINE NEEDS TO BE FIXED TO ENABLE ANY START TIME.
             var segmentStartTime = TimeSpan.Zero;
 
-            // ############################################################### FIX THIS SCORE MAX.
-            double maxScore = 10;
-
             // init with linear frequency scale and draw freq grid lines on image
             int hertzInterval = 1000;
             if (height < 200)
@@ -85,7 +82,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 foreach (SpectralEvent ev in events)
                 {
                     var options = new EventRenderingOptions(new UnitConverters(segmentStartTime.TotalSeconds, segmentDuration.TotalSeconds, nyquist, width, height));
-                    spectrogram.Mutate(x => ev.Draw(x, options, maxScore));
+                    spectrogram.Mutate(x => ev.Draw(x, options));
                 }
             }
 

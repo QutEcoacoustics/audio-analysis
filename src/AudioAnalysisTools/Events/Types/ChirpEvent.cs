@@ -18,6 +18,9 @@ namespace AudioAnalysisTools
         public ChirpEvent(Track chirp)
         {
             this.Tracks.Add(chirp);
+
+            // set score = to aaverage normalised amplitude score.
+            //this.Score = 
         }
 
         public List<Track> Tracks { get; private set; } = new List<Track>(1);

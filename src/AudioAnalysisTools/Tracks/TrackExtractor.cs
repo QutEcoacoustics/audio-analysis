@@ -476,7 +476,6 @@ namespace AudioAnalysisTools.Events.Tracks
                 var amplitudeTrack = track.GetAmplitudeOverTimeFrames();
                 for (int i = 0; i < amplitudeTrack.Length; i++)
                 {
-                    //combinedIntensityArray[startRow + i] += amplitudeTrack[i];
                     combinedIntensityArray[startRow + i] = Math.Max(combinedIntensityArray[startRow + i], amplitudeTrack[i]);
                 }
             }
