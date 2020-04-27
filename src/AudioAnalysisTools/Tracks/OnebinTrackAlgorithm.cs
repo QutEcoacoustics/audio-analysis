@@ -81,9 +81,10 @@ namespace AudioAnalysisTools.Tracks
             // initialise tracks as events and get the combined intensity array.
             var events = new List<EventCommon>();
             var combinedIntensityArray = new double[frameCount];
+            var maxScore = decibelThreshold * 5;
             foreach (var track in tracks)
             {
-                var ae = new WhistleEvent(track)
+                var ae = new WhistleEvent(track, maxScore)
                 {
                     SegmentDurationSeconds = frameCount * converter.StepSize,
                 };

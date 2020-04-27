@@ -20,6 +20,7 @@ namespace AnalysisPrograms.Recognizers
     using AudioAnalysisTools.Events.Types;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
+    using AudioAnalysisTools.Tracks;
     using AudioAnalysisTools.WavTools;
     using log4net;
     using SixLabors.ImageSharp;
@@ -194,14 +195,9 @@ namespace AnalysisPrograms.Recognizers
                         {
                             //get the array of intensity values minus intensity in side/buffer bands.
                             double[] decibelArray;
-                            (spectralEvents, decibelArray) = OnebinTrackParameters.GetOnebinTracks(
+                            (spectralEvents, decibelArray) = OnebinTrackAlgorithm.GetOnebinTracks(
                                 sonogram,
-                                wp.MinHertz.Value,
-                                wp.MaxHertz.Value,
-                                wp.DecibelThreshold.Value,
-                                wp.MinDuration.Value,
-                                wp.MaxDuration.Value,
-                                wp.CombinePossibleSequence,
+                                wp,
                                 segmentStartOffset);
 
                             var plot = PreparePlot(decibelArray, $"{profileName} (Whistle:dB Intensity)", wp.DecibelThreshold.Value);
@@ -210,7 +206,7 @@ namespace AnalysisPrograms.Recognizers
                         else if (profileConfig is ForwardTrackParameters tp)
                         {
                             double[] decibelArray;
-                            (spectralEvents, decibelArray) = TrackExtractor.GetForwardTracks(
+                            (spectralEvents, decibelArray) = ForwardTrackAlgorithm.GetForwardTracks(
                                 sonogram,
                                 tp,
                                 segmentStartOffset);
@@ -221,14 +217,9 @@ namespace AnalysisPrograms.Recognizers
                         else if (profileConfig is OneframeTrackParameters cp)
                         {
                             double[] decibelArray;
-                            (spectralEvents, decibelArray) = OneframeTrackParameters.GetOneFrameTracks(
+                            (spectralEvents, decibelArray) = OneframeTrackAlgorithm.GetOneFrameTracks(
                                 sonogram,
-                                cp.MinHertz.Value,
-                                cp.MaxHertz.Value,
-                                cp.DecibelThreshold.Value,
-                                cp.MinBandwidthHertz.Value,
-                                cp.MaxBandwidthHertz.Value,
-                                cp.CombineProximalSimilarEvents,
+                                cp,
                                 segmentStartOffset);
 
                             var plot = PreparePlot(decibelArray, $"{profileName} (Clicks:dB Intensity)", cp.DecibelThreshold.Value);
@@ -237,14 +228,9 @@ namespace AnalysisPrograms.Recognizers
                         else if (profileConfig is UpwardTrackParameters vtp)
                         {
                             double[] decibelArray;
-                            (spectralEvents, decibelArray) = UpwardTrackParameters.GetUpwardTracks(
+                            (spectralEvents, decibelArray) = UpwardTrackAlgorithm.GetUpwardTracks(
                                 sonogram,
-                                vtp.MinHertz.Value,
-                                vtp.MaxHertz.Value,
-                                vtp.DecibelThreshold.Value,
-                                vtp.MinBandwidthHertz.Value,
-                                vtp.MaxBandwidthHertz.Value,
-                                vtp.CombineProximalSimilarEvents,
+                                vtp,
                                 segmentStartOffset);
 
                             var plot = PreparePlot(decibelArray, $"{profileName} (VerticalTrack:dB Intensity)", vtp.DecibelThreshold.Value);

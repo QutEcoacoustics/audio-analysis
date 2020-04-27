@@ -39,8 +39,6 @@ namespace AudioAnalysisTools.Tracks
             double maxDuration = parameters.MaxDuration.Value;
             double decibelThreshold = parameters.DecibelThreshold.Value;
 
-            double maxScore = parameters.MaxScore.Value;
-
             var converter = new UnitConverters(
                 segmentStartOffset: segmentStartOffset.TotalSeconds,
                 sampleRate: sonogram.SampleRate,
@@ -75,6 +73,7 @@ namespace AudioAnalysisTools.Tracks
             var combinedIntensityArray = new double[frameCount];
             foreach (var track in tracks)
             {
+                var maxScore = decibelThreshold * 5;
                 var ae = new ChirpEvent(track, maxScore)
                 {
                     SegmentDurationSeconds = frameCount * converter.StepSize,

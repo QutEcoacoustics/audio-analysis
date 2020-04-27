@@ -15,9 +15,12 @@ namespace AudioAnalysisTools
 
     public class ClickEvent : SpectralEvent, ITracks<Track>
     {
-        public ClickEvent(Track click)
+        private readonly double maxScore;
+
+        public ClickEvent(Track click, double maxScore)
         {
             this.Tracks.Add(click);
+            this.maxScore = maxScore;
         }
 
         public List<Track> Tracks { get; private set; } = new List<Track>(1);
@@ -33,6 +36,32 @@ namespace AudioAnalysisTools
 
         public override double HighFrequencyHertz =>
             this.Tracks.Max(x => x.HighFreqHertz);
+
+        /// <summary>
+        /// Gets the average track amplitude.
+        /// </summary>
+        /// <remarks>
+        /// Thevent score is an average value of the track score.
+        /// </remarks>
+        public override double Score
+        {
+            get
+            {
+                return this.Tracks.Single().GetAverageTrackAmplitude();
+            }
+        }
+
+        /// <summary>
+        /// Gets the normalised value for the event's track score.
+        /// NOTE: It is assumed that the minimum value of the score range = zero.
+        /// </summary>
+        public double ScoreNormalised
+        {
+            get
+            {
+                return this.Score / this.maxScore;
+            }
+        }
 
         public override void Draw(IImageProcessingContext graphics, EventRenderingOptions options)
         {

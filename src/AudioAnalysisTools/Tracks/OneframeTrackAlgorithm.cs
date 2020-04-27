@@ -6,7 +6,6 @@ namespace AudioAnalysisTools.Tracks
 {
     using System;
     using System.Collections.Generic;
-    using System.Text;
     using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Tracks;
@@ -76,9 +75,10 @@ namespace AudioAnalysisTools.Tracks
             // initialise tracks as events and get the combined intensity array.
             var events = new List<EventCommon>();
             var temporalIntensityArray = new double[frameCount];
+            var maxScore = decibelThreshold * 5;
             foreach (var track in tracks)
             {
-                var ae = new ClickEvent(track)
+                var ae = new ClickEvent(track, maxScore)
                 {
                     SegmentDurationSeconds = frameCount * frameStep,
                 };

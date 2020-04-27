@@ -37,7 +37,7 @@ namespace AudioAnalysisTools.Events.Drawing
         /// <summary>
         /// Gets or sets the default fille color for an event.
         /// </summary>
-        public IBrush Fill { get; set; } = new SolidBrush(Color.Red.WithAlpha(0.5f));
+        public IBrush Fill { get; set; } = new SolidBrush(Color.FromRgb(0, 255, 0));
 
         /// <summary>
         /// Gets or sets the graphics options that should be used with the
@@ -45,6 +45,10 @@ namespace AudioAnalysisTools.Events.Drawing
         /// </summary>
         public GraphicsOptions FillOptions { get; set; } = new GraphicsOptions()
         {
+            ColorBlendingMode = SixLabors.ImageSharp.PixelFormats.PixelColorBlendingMode.Lighten,
+
+            // TODO: ENABLE THIS IS NECESSARY
+            // BlendPercentage = 0.5,
         };
 
         /// <summary>
