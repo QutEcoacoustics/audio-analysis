@@ -173,11 +173,11 @@ namespace AudioAnalysisTools.Events.Types
         /// <summary>
         /// Combines events that have similar bottom and top frequency bounds and whose start times are within the passed time range.
         /// </summary>
-        public static List<SpectralEvent> CombineSimilarProximalEvents(List<SpectralEvent> events, TimeSpan startDifference, int hertzDifference)
+        public static List<EventCommon> CombineSimilarProximalEvents(List<SpectralEvent> events, TimeSpan startDifference, int hertzDifference)
         {
             if (events.Count < 2)
             {
-                return events;
+                return events.Cast<EventCommon>().ToList();
             }
 
             for (int i = events.Count - 1; i >= 0; i--)
@@ -195,18 +195,18 @@ namespace AudioAnalysisTools.Events.Types
                 }
             }
 
-            return events;
+            return events.Cast<EventCommon>().ToList();
         }
 
         /// <summary>
         /// Combines events that are possible stacked harmonics, that is, they are coincident (have similar start and end times)
         /// AND stacked (their maxima are within the passed frequency gap).
         /// </summary>
-        public static List<SpectralEvent> CombinePotentialStackedTracks(List<SpectralEvent> events, TimeSpan timeDifference, int hertzDifference)
+        public static List<EventCommon> CombinePotentialStackedTracks(List<SpectralEvent> events, TimeSpan timeDifference, int hertzDifference)
         {
             if (events.Count < 2)
             {
-                return events;
+                return events.Cast<EventCommon>().ToList();
             }
 
             for (int i = events.Count - 1; i >= 0; i--)
@@ -226,7 +226,7 @@ namespace AudioAnalysisTools.Events.Types
                 }
             }
 
-            return events;
+            return events.Cast<EventCommon>().ToList();
         }
 
         /// <summary>
