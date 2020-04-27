@@ -4,10 +4,12 @@
 
 namespace AudioAnalysisTools
 {
+    using System.Collections.Generic;
     using System.Linq;
     using Acoustics.Shared.ImageSharp;
     using AudioAnalysisTools.Events.Drawing;
     using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
 
     public interface IPointData
@@ -15,13 +17,15 @@ namespace AudioAnalysisTools
         /// <summary>
         /// Gets a collection of spectral points.
         /// </summary>
-        /// <remarks>
-        /// Use a HashSet for unsorted data and use a sorted set for sorted data.
-        /// </remarks>
-        public System.Collections.Generic.ISet<ISpectralPoint> Points { get; }
+        public ICollection<ISpectralPoint> Points { get; }
 
         public void DrawPointsAsFill(IImageProcessingContext graphics, EventRenderingOptions options)
         {
+            if (!options.DrawFill)
+            {
+                return;
+            }
+
             // overlay point data on image with 50% opacity
             // TODO: a much more efficient implementation exists if we derive from Region and convert
             // our set<points> to a region.
@@ -62,6 +66,11 @@ namespace AudioAnalysisTools
 
         public void DrawPointsAsFillExperiment(IImageProcessingContext graphics, EventRenderingOptions options)
         {
+            if (!options.DrawFill)
+            {
+                return;
+            }
+
             var rects = this
                 .Points
                 .Select(p => new RectangularPolygon(options.Converters.GetPixelRectangle(p)))
@@ -71,20 +80,25 @@ namespace AudioAnalysisTools
             foreach (var rect in rects)
             {
                 graphics.Fill(
-                    new GraphicsOptions()
-                    {
-                        BlendPercentage = 0.8f,
-                        //ColorBlendingMode = SixLabors.ImageSharp.PixelFormats.PixelColorBlendingMode.Multiply,
-                        ColorBlendingMode = SixLabors.ImageSharp.PixelFormats.PixelColorBlendingMode.Overlay,
-                    },
-                    //Color.FromRgb(0, 255, 0),
-                    Color.LimeGreen,
+                    //new GraphicsOptions()
+                    //{
+                    //    BlendPercentage = 0.8f,
+
+                    //    //ColorBlendingMode = PixelColorBlendingMode.Multiply,
+                    //    ColorBlendingMode = PixelColorBlendingMode.Overlay,
+                    //},
+                    options.FillOptions,
+                    options.Fill,
                     rect);
             }
         }
 
         public void DrawPointsAsPath(IImageProcessingContext graphics, EventRenderingOptions options)
         {
+            if (!options.DrawFill)
+            {
+                return;
+            }
             // visits each point once
             // assumes each point pair describes a line
             // assumes a SortedSet is used (and that iteration order is signficant, unlike with HashSet)

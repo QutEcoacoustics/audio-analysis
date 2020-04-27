@@ -13,11 +13,38 @@ namespace AudioAnalysisTools.Events.Tracks
 
     public enum TrackType
     {
-        OneBinTrack,     // Sounds like single tone whistle.    Each track point advances one time step.    All points remain in the same frequency bin.
-        FowardTrack,     // Sounds like fluctuating tone/chirp. Each track point advances one time step.    Points may move up or down two frequency bins.
-        UpwardTrack,     // Sounds like whip.                   Each track point ascends one frequency bin. Points may move forwards or back one frame step.
-        OneFrameTrack,   // Sounds like click.                  Each track point ascends one frequency bin. All points remain in the same time frame.
-        MixedTrack,      // A track containing segments of two or more of the above. At present time, only created to accomodate test at TrackTests at Line 116.
+        /// <summary>
+        /// Sounds like single tone whistle.
+        /// Each track point advances one time step.
+        /// All points remain in the same frequency bin.
+        /// </summary>
+        OneBinTrack,
+
+        /// <summary>
+        /// Sounds like fluctuating tone/chirp.
+        /// Each track point advances one time step.
+        /// Points may move up or down two frequency bins.
+        /// </summary>
+        FowardTrack,
+
+        /// <summary>
+        /// Sounds like whip.
+        /// Each track point ascends one frequency bin.
+        /// Points may move forwards or back one frame step.
+        /// </summary>
+        UpwardTrack,
+
+        /// <summary>
+        /// Sounds like click.
+        /// Each track point ascends one frequency bin.
+        /// All points remain in the same time frame.
+        /// </summary>
+        OneFrameTrack,
+
+        /// <summary>
+        /// A track containing segments of two or more of the above.
+        /// </summary>
+        MixedTrack,
     }
 
     public class Track : ITrack
@@ -25,8 +52,6 @@ namespace AudioAnalysisTools.Events.Tracks
         private readonly UnitConverters converter;
 
         private readonly TrackType trackType;
-
-        private readonly List<ISpectralPoint> _pointCopy;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Track"/> class.
@@ -36,13 +61,13 @@ namespace AudioAnalysisTools.Events.Tracks
         /// A reference to unit conversions this track class should use to
         /// convert spectrogram data to real units.
         /// </param>
-        /// <param name="aTrackType"> The type of track - see enum above. </param>
-        public Track(UnitConverters converter, TrackType aTrackType)
+        /// <param name="trackType"> The type of track.</param>
+        public Track(UnitConverters converter, TrackType trackType)
         {
             this.converter = converter;
-            this.trackType = aTrackType;
-            this.Points = new SortedSet<ISpectralPoint>();
-            this._pointCopy = new List<ISpectralPoint>();
+            this.trackType = trackType;
+
+            this.Points = new List<ISpectralPoint>();
         }
 
         /// <inheritdoc cref="Track.Track(UnitConverters, TrackType)"/>
@@ -69,7 +94,9 @@ namespace AudioAnalysisTools.Events.Tracks
         //public double EndTimeSeconds => this.converter.SegmentStartOffset + this.Points.Max(x => x.Seconds.Maximum);
         public double EndTimeSeconds => this.Points.Max(x => x.Seconds.Maximum);
 
-        public ISet<ISpectralPoint> Points { get; }
+        // TODO: use a more efficient collection like a quadtree
+        // note must maintain insertion order
+        public ICollection<ISpectralPoint> Points { get; }
 
         public double DurationSeconds => this.EndTimeSeconds - this.StartTimeSeconds;
 
@@ -112,7 +139,6 @@ namespace AudioAnalysisTools.Events.Tracks
                 amplitude);
 
             this.Points.Add(point);
-            this._pointCopy.Add(point);
         }
 
         /// <summary>

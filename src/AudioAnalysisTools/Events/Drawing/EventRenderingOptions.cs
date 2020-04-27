@@ -40,8 +40,35 @@ namespace AudioAnalysisTools.Events.Drawing
         public IBrush Fill { get; set; } = new SolidBrush(Color.Red.WithAlpha(0.5f));
 
         /// <summary>
+        /// Gets or sets the graphics options that should be used with the
+        /// <see cref="Fill"/> brush for rendering the contents of an event.
+        /// </summary>
+        public GraphicsOptions FillOptions { get; set; } = new GraphicsOptions()
+        {
+        };
+
+        /// <summary>
+        /// Gets or sets the Pen used to draw a "score" indicator
+        /// on the left edge of the event.
+        /// </summary>
+        public Pen Score { get; set; } = new Pen(Color.LimeGreen, 1f);
+
+        /// <summary>
+        /// Gets or sets the color to use when rendering labels.
+        /// </summary>
+        public Color Label { get; set; } = Color.DarkBlue;
+
+        /// <summary>
         /// Gets a value indicating whether the image to draw onto represents a spectrogram.
         /// </summary>
         public bool TargetImageIsSpectral { get; } = true;
+
+        public bool DrawBorder { get;  } = true;
+
+        public bool DrawFill { get; } = true;
+
+        public bool DrawScore { get; } = true;
+
+        public bool DrawLabel { get; } = true;
     }
 }

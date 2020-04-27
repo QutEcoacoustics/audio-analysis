@@ -15,20 +15,23 @@ namespace AudioAnalysisTools
 
     public class ChirpEvent : SpectralEvent, ITracks<Track>
     {
+        private readonly double maxScore;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ChirpEvent"/> class.
+        /// </summary>
+        /// <remarks>
         /// MaxScore establishes a scale for the chirp score. Typically the amplitude of track points is decibels.
         /// A satisfactory maxScore is 12.0 decibels, since this is a high SNR in enviornmental recordings.
         /// The normalised score is a linear conversion from 0 - maxScore to [0, 1].
-        /// </summary>
+        /// </remarks>
         /// <param name="chirp">A chirp track consisting of a sequence of spectral points.</param>
         /// <param name="maxScore">A maximum score used to normalise the track score.</param>
         public ChirpEvent(Track chirp, double maxScore)
         {
             this.Tracks.Add(chirp);
 
-            // set score = to average normalised amplitude score.
-            this.SetTrackScore(maxScore);
+            this.maxScore = maxScore;
         }
 
         public List<Track> Tracks { get; private set; } = new List<Track>(1);
@@ -46,13 +49,18 @@ namespace AudioAnalysisTools
             this.Tracks.Max(x => x.HighFreqHertz);
 
         /// <summary>
-        /// Sets a normalised value for the chirp's track score.
-        /// NOTE: It is assumed that the minimum value of the score range = zero.
+        /// Gets the average normalised amplitude.
         /// </summary>
-        /// <param name="maxScore">The max score value which sets the scale.</param>
-        public void SetTrackScore(double maxScore)
+        /// <remarks>
+        /// This score is a normalised value for the chirp's track score.
+        /// NOTE: It is assumed that the minimum value of the score range = zero.
+        /// </remarks>
+        public override double Score
         {
-            this.Score = this.Tracks[0].GetAverageTrackAmplitude() / maxScore;
+            get
+            {
+                return this.Tracks.Single().GetAverageTrackAmplitude() / this.maxScore;
+            }
         }
 
         public override void Draw(IImageProcessingContext graphics, EventRenderingOptions options)

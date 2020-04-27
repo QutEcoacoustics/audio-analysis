@@ -36,6 +36,29 @@ namespace Acoustics.Test.AudioAnalysisTools.Events.Tracks
                 (8, 8, 4),
                 (9, 9, 5));
 
+        public static readonly Track TestTrack_Whistle =
+            new Track(
+                NiceTestConverter,
+                TrackType.OneBinTrack,
+                (5, 5, 1),
+                (6, 5, 2),
+                (7, 5, 3),
+                (8, 5, 4),
+                (9, 5, 5));
+
+        public static readonly Track TestTrack_ChevronRight =
+            new Track(
+                NiceTestConverter,
+                TrackType.FowardTrack,
+                (5, 5, 1),
+                (6, 6, 2),
+                (7, 7, 3),
+                (8, 8, 4),
+                (9, 9, 5),
+                (8, 10, 6),
+                (7, 11, 7),
+                (6, 12, 8),
+                (5, 13, 9));
 #pragma warning restore SA1310 // Field names should not contain underscore
 
         [TestMethod]

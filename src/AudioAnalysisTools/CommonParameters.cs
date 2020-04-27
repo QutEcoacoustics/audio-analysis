@@ -77,12 +77,5 @@ namespace AnalysisPrograms.Recognizers.Base
         /// Gets or sets the threshold of "loudness" of a component. Units are decibels.
         /// </summary>
         public double? DecibelThreshold { get; set; } = 6;
-
-        /// <summary>
-        /// Gets or sets the maximum score for an event.
-        /// Setting this value sets a normalised score value for the event.
-        /// The normalised score is a linear conversion from 0 - maxScore to [0, 1].
-        /// </summary>
-        public double? MaxScore { get; set; }
     }
 }

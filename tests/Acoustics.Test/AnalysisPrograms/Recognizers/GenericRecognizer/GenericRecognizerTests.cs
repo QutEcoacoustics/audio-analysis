@@ -144,9 +144,8 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             Assert.AreEqual(113.15, @event.EventEndSeconds, 0.5);
             Assert.AreEqual(700, @event.LowFrequencyHertz, 0.1);
             Assert.AreEqual(1050, @event.HighFrequencyHertz, 0.1);
-            Assert.AreEqual("TestOscillation", @event.Profile);
-            Assert.AreEqual("DTMF", @event.Name);
             Assert.AreEqual("LowerBandDTMF_z", @event.Profile);
+            Assert.AreEqual("DTMF", @event.Name);
         }
 
         [TestMethod]
@@ -397,7 +396,6 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
                 MinDuration = 0.2,
                 MaxDuration = 1.1,
                 DecibelThreshold = 2.0,
-                MaxScore = 12.0,
                 CombinePossibleHarmonics = false,
                 HarmonicsStartDifference = TimeSpan.FromSeconds(0.2),
                 HarmonicsHertzGap = 200,

@@ -18,10 +18,6 @@ namespace AnalysisBase.ResultBases
     {
         private double eventStartSeconds;
 
-        // For events, we store only the normalised event score.
-        // The setter ensures that the score lies in [0,1]
-        private double normalisedScore;
-
         /// <summary>
         /// Gets or sets the time (in seconds) from start of the file/recording to start of the current audio segment.
         /// </summary>
@@ -30,21 +26,23 @@ namespace AnalysisBase.ResultBases
         /// </remarks>
         public virtual double SegmentStartSeconds { get;  set; }
 
-        //AudioAnalysisTools.Keys.EVENT_SCORE,
-        public virtual double Score
-        {
-            get
-            {
-                return this.normalisedScore;
-            }
-
-            set
-            {
-                // ensure the score lies in [0,1]
-                this.normalisedScore = Math.Max(0.0, value);
-                this.normalisedScore = Math.Min(1.0, value);
-            }
-        }
+        /// <summary>
+        /// Gets or sets a score for the event.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The meaning, range, and behaviour of the value is purposely undefined.
+        /// It varies with each algorithm used and we recommend that you <b>only</b> compare values as relative
+        /// measures between events produced by the same algorithm.
+        /// </para>
+        /// <para>
+        /// If a particular recogniser wishes to define semantics for this value, it should:
+        /// - Override this property and add relevant documentation.
+        /// - Or add a new property (that possibly aliases this value) that defines and documents its semantics.
+        /// </para>
+        /// </remarks>
+        // AT: the above definition cannot be changed!
+        public virtual double Score { get; set; }
 
         /// <summary>
         /// Gets or sets the Event's Start Seconds.
