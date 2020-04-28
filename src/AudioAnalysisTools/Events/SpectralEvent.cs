@@ -44,7 +44,8 @@ namespace AudioAnalysisTools.Events
         public override void Draw(IImageProcessingContext graphics, EventRenderingOptions options)
         {
             // draw a border around this event
-            if (options.DrawBorder) {
+            if (options.DrawBorder)
+            {
                 var border = options.Converters.GetPixelRectangle(this);
                 graphics.NoAA().DrawBorderInset(options.Border, border);
             }

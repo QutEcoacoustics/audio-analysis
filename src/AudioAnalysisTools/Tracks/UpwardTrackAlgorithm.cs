@@ -6,9 +6,11 @@ namespace AudioAnalysisTools.Tracks
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Text;
     using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Tracks;
+    using AudioAnalysisTools.Events.Types;
     using AudioAnalysisTools.StandardSpectrograms;
     using TowseyLibrary;
     using TrackType = AudioAnalysisTools.Events.Tracks.TrackType;
@@ -72,14 +74,16 @@ namespace AudioAnalysisTools.Tracks
             var tracks = GetUpwardTracks(peaks, minBin, maxBin, minBandwidthHertz, maxBandwidthHertz, decibelThreshold, converter);
 
             // initialise tracks as events and get the combined intensity array.
-            var events = new List<EventCommon>();
+            var events = new List<SpectralEvent>();
             var temporalIntensityArray = new double[frameCount];
             var maxScore = decibelThreshold * 5;
             foreach (var track in tracks)
             {
                 var ae = new WhipEvent(track, maxScore)
                 {
-                    SegmentDurationSeconds = frameCount * frameStep,
+                    SegmentStartSeconds = segmentStartOffset.TotalSeconds,
+                    SegmentDurationSeconds = frameCount * converter.SecondsPerFrameStep,
+                    Name = "noName",
                 };
 
                 events.Add(ae);
@@ -94,16 +98,15 @@ namespace AudioAnalysisTools.Tracks
                 }
             }
 
+            List<EventCommon> returnEvents = events.Cast<EventCommon>().ToList();
+
             // combine proximal events that occupy similar frequency band
             if (parameters.CombineProximalSimilarEvents)
             {
-                TimeSpan startDifference = TimeSpan.FromSeconds(0.5);
-                int hertzDifference = 500;
-                // ########################################################################################## TODO TODO TODO
-                //events = AcousticEvent.CombineSimilarProximalEvents(events, startDifference, hertzDifference);
+                returnEvents = CompositeEvent.CombineSimilarProximalEvents(events, parameters.SyllableStartDifference, parameters.SyllableHertzDifference);
             }
 
-            return (events, temporalIntensityArray);
+            return (returnEvents, temporalIntensityArray);
         }
 
         public static List<Track> GetUpwardTracks(double[,] peaks, int minBin, int maxBin, double minBandwidthHertz, double maxBandwidthHertz, double threshold, UnitConverters converter)

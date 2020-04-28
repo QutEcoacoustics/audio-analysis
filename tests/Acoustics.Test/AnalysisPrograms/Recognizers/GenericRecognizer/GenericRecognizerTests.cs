@@ -277,8 +277,8 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             Assert.AreEqual(4, allResults.NewEvents.Count);
 
             var @event = (SpectralEvent)allResults.NewEvents[0];
-            Assert.AreEqual("NoName", @event.Name);
-            Assert.AreEqual("Harmonics", @event.ComponentName);
+            Assert.AreEqual("Harmonics", @event.Name);
+            Assert.AreEqual("SpectralEvent", @event.ComponentName);
             Assert.AreEqual(3.0, @event.EventStartSeconds, 0.1);
             Assert.AreEqual(4.0, @event.EventEndSeconds, 0.1);
             Assert.AreEqual(500, @event.LowFrequencyHertz);
@@ -337,7 +337,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             //results.Sonogram.GetImage().Save(this.outputDirectory + "\\debug.png");
 
             var plots = new List<Plot>();
-            var (acousticEvents, dBArray) = OnebinTrackAlgorithm.GetOnebinTracks(
+            var (spectralEvents, dBArray) = OnebinTrackAlgorithm.GetOnebinTracks(
                 spectrogram,
                 parameters,
                 segmentStartOffset);
@@ -351,7 +351,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
 
             var allResults = new RecognizerResults()
             {
-                Events = new List<AcousticEvent>(),
+                NewEvents = new List<EventCommon>(),
                 Hits = null,
                 ScoreTrack = null,
                 Plots = new List<Plot>(),
@@ -359,7 +359,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             };
 
             // combine the results i.e. add the events list of call events.
-            allResults.NewEvents.AddRange(acousticEvents);
+            allResults.NewEvents.AddRange(spectralEvents);
             allResults.Plots.AddRange(plots);
             allResults.Sonogram = spectrogram;
 
@@ -371,7 +371,13 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             // but three of them are too weak to be detected at this threshold.
             Assert.AreEqual(13, allResults.NewEvents.Count);
 
-            var @event = (SpectralEvent)allResults.NewEvents[4];
+            var @event = (SpectralEvent)allResults.NewEvents[0];
+            Assert.AreEqual(60 + 0.0, @event.EventStartSeconds, 0.1);
+            Assert.AreEqual(60 + 0.35, @event.EventEndSeconds, 0.1);
+            Assert.AreEqual(2150, @event.LowFrequencyHertz);
+            Assert.AreEqual(2193, @event.HighFrequencyHertz);
+
+            @event = (SpectralEvent)allResults.NewEvents[4];
             Assert.AreEqual(60 + 5.0, @event.EventStartSeconds, 0.1);
             Assert.AreEqual(60 + 6.0, @event.EventEndSeconds, 0.1);
             Assert.AreEqual(989, @event.LowFrequencyHertz);
@@ -441,7 +447,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
 
             var allResults = new RecognizerResults()
             {
-                Events = new List<AcousticEvent>(),
+                NewEvents = new List<EventCommon>(),
                 Hits = null,
                 ScoreTrack = null,
                 Plots = new List<Plot>(),
@@ -485,9 +491,6 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
                 MinBandwidthHertz = 100,
                 MaxBandwidthHertz = 5000,
                 DecibelThreshold = 2.0,
-                //CombineProximalSimilarEvents = false,
-                //SyllableStartDifference = TimeSpan.FromSeconds(0.2),
-                //SyllableHertzDifference = 300,
             };
 
             //Set up the virtual recording.
@@ -514,7 +517,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
 
             var segmentStartOffset = TimeSpan.Zero;
             var plots = new List<Plot>();
-            var (acousticEvents, dBArray) = OneframeTrackAlgorithm.GetOneFrameTracks(
+            var (spectralEvents, dBArray) = OneframeTrackAlgorithm.GetOneFrameTracks(
                 spectrogram,
                 parameters,
                 segmentStartOffset);
@@ -526,10 +529,17 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             var plot1 = new Plot("decibel max", normalisedDecibelArray, dBThreshold);
             plots.Add(plot1);
 
-            var allResults = new RecognizerResults();
+            var allResults = new RecognizerResults()
+            {
+                NewEvents = new List<EventCommon>(),
+                Hits = null,
+                ScoreTrack = null,
+                Plots = new List<Plot>(),
+                Sonogram = null,
+            };
 
             // combine the results i.e. add the events list of call events.
-            allResults.NewEvents.AddRange(acousticEvents);
+            allResults.NewEvents.AddRange(spectralEvents);
             allResults.Plots.AddRange(plots);
 
             // effectively keeps only the *last* sonogram produced
@@ -539,7 +549,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             var outputDirectory = new DirectoryInfo("C:\\temp");
             GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "ClickTrack");
 
-            Assert.AreEqual(2, allResults.NewEvents.Count);
+            Assert.AreEqual(6, allResults.NewEvents.Count);
 
             var @event = (SpectralEvent)allResults.NewEvents[0];
             Assert.AreEqual(10.0, @event.EventStartSeconds, 0.1);
@@ -547,9 +557,9 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             Assert.AreEqual(6450, @event.LowFrequencyHertz);
             Assert.AreEqual(10750, @event.HighFrequencyHertz);
 
-            @event = (SpectralEvent)allResults.NewEvents[1];
-            Assert.AreEqual(11.0, @event.EventStartSeconds, 0.1);
-            Assert.AreEqual(11.2, @event.EventEndSeconds, 0.1);
+            @event = (SpectralEvent)allResults.NewEvents[2];
+            Assert.AreEqual(11.05, @event.EventStartSeconds, 0.05);
+            Assert.AreEqual(11.07, @event.EventEndSeconds, 0.05);
             Assert.AreEqual(6450, @event.LowFrequencyHertz);
             Assert.AreEqual(7310, @event.HighFrequencyHertz);
         }
@@ -568,7 +578,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
                 MinBandwidthHertz = 100,
                 MaxBandwidthHertz = 5000,
                 DecibelThreshold = 2.0,
-                CombineProximalSimilarEvents = false,
+                CombineProximalSimilarEvents = true,
                 SyllableStartDifference = TimeSpan.FromSeconds(0.2),
                 SyllableHertzDifference = 300,
             };
@@ -597,7 +607,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
 
             var segmentStartOffset = TimeSpan.Zero;
             var plots = new List<Plot>();
-            var (acousticEvents, dBArray) = UpwardTrackAlgorithm.GetUpwardTracks(
+            var (spectralEvents, dBArray) = UpwardTrackAlgorithm.GetUpwardTracks(
                 spectrogram,
                 parameters,
                 segmentStartOffset);
@@ -609,10 +619,17 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             var plot1 = new Plot("decibel max", normalisedDecibelArray, dBThreshold);
             plots.Add(plot1);
 
-            var allResults = new RecognizerResults();
+            var allResults = new RecognizerResults()
+            {
+                NewEvents = new List<EventCommon>(),
+                Hits = null,
+                ScoreTrack = null,
+                Plots = new List<Plot>(),
+                Sonogram = null,
+            };
 
             // combine the results i.e. add the events list of call events.
-            allResults.NewEvents.AddRange(acousticEvents);
+            allResults.NewEvents.AddRange(spectralEvents);
             allResults.Plots.AddRange(plots);
 
             // effectively keeps only the *last* sonogram produced
@@ -650,8 +667,6 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
                 MaxHertz = 6000,
                 MinBandwidthHertz = 200,
                 MaxBandwidthHertz = 5000,
-                //MinDuration = 0.2,
-                //MaxDuration = 1.1,
                 DecibelThreshold = 2.0,
                 CombineProximalSimilarEvents = false,
                 SyllableStartDifference = TimeSpan.FromSeconds(0.2),
@@ -680,7 +695,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             var plots = new List<Plot>();
 
             // do a SECOND TEST of the vertical tracks
-            var (acousticEvents, dBArray) = UpwardTrackAlgorithm.GetUpwardTracks(
+            var (spectralEvents, dBArray) = UpwardTrackAlgorithm.GetUpwardTracks(
                 spectrogram,
                 parameters,
                 segmentStartOffset);
@@ -692,10 +707,17 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             var plot2 = new Plot("decibel max", normalisedDecibelArray, dBThreshold);
             plots.Add(plot2);
 
-            var allResults2 = new RecognizerResults();
+            var allResults2 = new RecognizerResults()
+            {
+                NewEvents = new List<EventCommon>(),
+                Hits = null,
+                ScoreTrack = null,
+                Plots = new List<Plot>(),
+                Sonogram = null,
+            };
 
             // combine the results i.e. add the events list of call events.
-            allResults2.NewEvents.AddRange(acousticEvents);
+            allResults2.NewEvents.AddRange(spectralEvents);
             allResults2.Plots.AddRange(plots);
             allResults2.Sonogram = spectrogram;
 

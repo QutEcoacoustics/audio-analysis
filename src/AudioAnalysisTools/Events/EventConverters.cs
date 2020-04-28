@@ -16,10 +16,12 @@ namespace AudioAnalysisTools.Events.Types
             var segmentOffset = TimeSpan.FromSeconds(ae.SegmentStartSeconds);
             var eventStart = ae.EventStartSeconds;
             var eventEnd = ae.EventEndSeconds;
+
             return new SpectralEvent(segmentStartOffset: segmentOffset, eventStartRecordingRelative: eventStart, eventEndRecordingRelative: eventEnd, ae.LowFrequencyHertz, ae.HighFrequencyHertz)
             {
-                EventEndSeconds = ae.EventEndSeconds,
                 Name = ae.Name,
+                //SegmentStartSeconds = ae.SegmentStartSeconds,
+                SegmentDurationSeconds = ae.SegmentDurationSeconds,
             };
         }
 
@@ -30,7 +32,12 @@ namespace AudioAnalysisTools.Events.Types
             double duration = se.EventDurationSeconds;
             double minHz = se.HighFrequencyHertz;
             double maxHz = se.HighFrequencyHertz;
-            var ae = new AcousticEvent(segmentStartOffset, startTime, duration, minHz, maxHz);
+            var ae = new AcousticEvent(segmentStartOffset, startTime, duration, minHz, maxHz)
+            {
+                Name = se.Name,
+                SegmentDurationSeconds = se.SegmentDurationSeconds,
+            };
+
             return ae;
         }
 

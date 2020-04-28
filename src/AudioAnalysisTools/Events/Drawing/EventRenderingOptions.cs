@@ -67,7 +67,7 @@ namespace AudioAnalysisTools.Events.Drawing
         /// </summary>
         public bool TargetImageIsSpectral { get; } = true;
 
-        public bool DrawBorder { get;  } = true;
+        public bool DrawBorder { get; set; } = true;
 
         public bool DrawFill { get; } = true;
 

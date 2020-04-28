@@ -76,7 +76,9 @@ namespace AudioAnalysisTools.Tracks
                 var maxScore = decibelThreshold * 5;
                 var ae = new ChirpEvent(track, maxScore)
                 {
-                    SegmentDurationSeconds = frameCount * converter.StepSize,
+                    SegmentStartSeconds = segmentStartOffset.TotalSeconds,
+                    SegmentDurationSeconds = frameCount * converter.SecondsPerFrameStep,
+                    Name = "noName",
                 };
 
                 events.Add(ae);

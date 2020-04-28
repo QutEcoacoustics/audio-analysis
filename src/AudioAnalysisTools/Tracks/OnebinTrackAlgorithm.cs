@@ -86,7 +86,9 @@ namespace AudioAnalysisTools.Tracks
             {
                 var ae = new WhistleEvent(track, maxScore)
                 {
-                    SegmentDurationSeconds = frameCount * converter.StepSize,
+                    SegmentStartSeconds = segmentStartOffset.TotalSeconds,
+                    SegmentDurationSeconds = frameCount * converter.SecondsPerFrameStep,
+                    Name = "noName",
                 };
 
                 events.Add(ae);

@@ -80,7 +80,9 @@ namespace AudioAnalysisTools.Tracks
             {
                 var ae = new ClickEvent(track, maxScore)
                 {
-                    SegmentDurationSeconds = frameCount * frameStep,
+                    SegmentStartSeconds = segmentStartOffset.TotalSeconds,
+                    SegmentDurationSeconds = frameCount * converter.SecondsPerFrameStep,
+                    Name = "noName",
                 };
 
                 events.Add(ae);

@@ -60,10 +60,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
             var height = spectrogram.Height;
             var width = spectrogram.Width;
             var frameSize = sonogram.Configuration.WindowSize;
-            var segmentDuration = sonogram.Duration;
-
-            // ############################################################### THIS NEXT LINE NEEDS TO BE FIXED TO ENABLE ANY START TIME.
-            var segmentStartTime = TimeSpan.Zero;
+            //var segmentDuration = sonogram.Duration;
+            var spectrogramDuration = width * sonogram.FrameStep;
 
             // init with linear frequency scale and draw freq grid lines on image
             int hertzInterval = 1000;
@@ -81,7 +79,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             {
                 foreach (SpectralEvent ev in events)
                 {
-                    var options = new EventRenderingOptions(new UnitConverters(segmentStartTime.TotalSeconds, segmentDuration.TotalSeconds, nyquist, width, height));
+                    var options = new EventRenderingOptions(new UnitConverters(ev.SegmentStartSeconds, spectrogramDuration, nyquist, width, height));
                     spectrogram.Mutate(x => ev.Draw(x, options));
                 }
             }

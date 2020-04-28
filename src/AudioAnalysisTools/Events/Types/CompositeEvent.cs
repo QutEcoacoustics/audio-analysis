@@ -62,8 +62,12 @@ namespace AudioAnalysisTools.Events.Types
             foreach (var @event in this.ComponentEvents)
             {
                 // disable border
-                // options.DisableBorder = true
-                @event.Draw(graphics, options);
+                var newOptions = new EventRenderingOptions(options.Converters)
+                {
+                    DrawBorder = false,
+                };
+
+                @event.Draw(graphics, newOptions);
             }
 
             // draw a border around all of it
