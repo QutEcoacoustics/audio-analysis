@@ -15,10 +15,8 @@ these examples only for consistency.
 
 Special mentions:
 
-- Powershell
-    - All executables must be prefixed with a `./`
-- Unix
-    - All executions must be prefixed with `mono ` <-- note the space there
+- Powershell & Bash
+    - All executables must be prefixed with a `./` if you're in the same folder as the executable
 
 ## Your first execution
 
