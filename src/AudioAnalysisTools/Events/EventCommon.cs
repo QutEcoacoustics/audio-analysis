@@ -4,6 +4,7 @@
 
 namespace AudioAnalysisTools.Events
 {
+    using Acoustics.Shared;
     using AnalysisBase.ResultBases;
     using AudioAnalysisTools.Events.Drawing;
     using SixLabors.ImageSharp.PixelFormats;
@@ -32,7 +33,21 @@ namespace AudioAnalysisTools.Events
         /// </summary>
         public string ComponentName => this.GetType().Name;
 
-        //ae.Name = parameters.ComponentName;
+        /// <summary>
+        /// Gets or sets the event score.
+        /// This is a score in absolute units as determined by context.
+        /// ScoreMax determines the scale.
+        /// </summary>
+        public override double Score { get; set; }
+
+        /// <summary>
+        /// Gets or sets a min-max range of values for the score for this event.
+        /// This is used to establish a score scale and thereby normalise the score.
+        /// By default the minimum value of range = zero.
+        /// </summary>
+        public Interval<double> ScoreRange { get; set; }
+
+        public double ScoreNormalised => this.Score / this.ScoreRange.Maximum;
 
         /// <summary>
         /// Draw this event on an image.
