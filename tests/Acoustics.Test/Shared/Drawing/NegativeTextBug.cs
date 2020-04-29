@@ -53,5 +53,21 @@ namespace Acoustics.Test.Shared.Drawing
             var tolerance = SystemFonts.TryFind(Drawing.Arial, out _) ? 0.0 : 1.5E-06;
             this.AssertImagesEqual(tolerance);
         }
+
+        [TestMethod]
+        public void MakeSureWeAccountForKerning()
+        {
+            var text = "i1i1i1i1i1i1i1i1i1";
+
+            var textArea = TextMeasurer.MeasureBounds(text, new RendererOptions(Drawing.Roboto10, new Point(-70, 3)));
+
+            this.ActualImage.Mutate(x => { x.DrawTextSafe(text, Drawing.Roboto10, Color.White, new PointF(-70, 3)); });
+
+            this.ExpectedImage = Drawing.NewImage(100, 100, Color.Black);
+            this.ExpectedImage.Mutate(
+                x => x.DrawText("i1", Drawing.Roboto10, Color.White, new PointF(-4.975585f, 3)));
+
+            this.AssertImagesEqual();
+        }
     }
 }

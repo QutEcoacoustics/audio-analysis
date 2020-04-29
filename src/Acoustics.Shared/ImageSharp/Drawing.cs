@@ -72,6 +72,8 @@ namespace Acoustics.Shared.ImageSharp
 
         public static Font Roboto6 => GetFont(Roboto, 6f);
 
+        public static Font Roboto10 => GetFont(Roboto, 10f);
+
         public static Font Tahoma6 => GetFont(Tahoma, 6f);
 
         public static Font Tahoma9 => GetFont(Tahoma, 9f);

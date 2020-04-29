@@ -382,7 +382,7 @@ namespace SixLabors.ImageSharp
                     // start of the text, move the location right by the width of the trimmed character
                     // and continue until we're in a spot that does not trigger the bug;
                     int trim = 0;
-                    float trimOffset = 0;
+                    float firstSafeCharLeft = 0;
                     if (TextMeasurer.TryMeasureCharacterBounds(text, rendererOptions, out var characterBounds))
                     {
                         foreach (var characterBound in characterBounds)
@@ -390,11 +390,13 @@ namespace SixLabors.ImageSharp
                             // magic value found empirically, does not seem to trigger bug when first char less than offset equal to char size
                             if (characterBound.Bounds.X > -(font.Size - 2))
                             {
+                                // width of chars don't take into account kerning (spacing between chars).
+                                // so we use the Left of the first value that is within our sfety margin instead
+                                firstSafeCharLeft = characterBound.Bounds.Left;
                                 break;
                             }
 
                             trim++;
-                            trimOffset += characterBound.Bounds.Width;
                         }
                     }
                     else
@@ -402,8 +404,8 @@ namespace SixLabors.ImageSharp
                         throw new NotSupportedException("Due to a bug with ImageSharp this text cannot be rendered");
                     }
 
-                    location.Offset(trimOffset, 0);
-                    context.DrawText(Drawing.TextOptions, text[trim..], font, color, location);
+                    var safeLocation = new PointF(firstSafeCharLeft, location.Y);
+                    context.DrawText(Drawing.TextOptions, text[trim..], font, color, safeLocation);
                 }
                 else
                 {
