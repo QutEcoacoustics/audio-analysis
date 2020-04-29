@@ -7,6 +7,7 @@ namespace AudioAnalysisTools
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using Acoustics.Shared;
     using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Drawing;
     using AudioAnalysisTools.Events.Interfaces;
@@ -18,7 +19,7 @@ namespace AudioAnalysisTools
         public WhipEvent(Track whip, double maxScore)
         {
             this.Tracks.Add(whip);
-            this.ScoreMax = maxScore;
+            this.ScoreRange = new Interval<double>(0, maxScore);
         }
 
         public List<Track> Tracks { get; private set; } = new List<Track>(1);
