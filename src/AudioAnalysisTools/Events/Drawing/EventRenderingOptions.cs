@@ -55,7 +55,7 @@ namespace AudioAnalysisTools.Events.Drawing
         /// Gets or sets the Pen used to draw a "score" indicator
         /// on the left edge of the event.
         /// </summary>
-        public Pen Score { get; set; } = new Pen(Color.LimeGreen, 1f);
+        public Pen Score { get; set; } = new Pen(Color.Blue, 1f);
 
         /// <summary>
         /// Gets or sets the color to use when rendering labels.
@@ -71,8 +71,8 @@ namespace AudioAnalysisTools.Events.Drawing
 
         public bool DrawFill { get; } = true;
 
-        public bool DrawScore { get; } = true;
+        public bool DrawScore { get; set; } = true;
 
-        public bool DrawLabel { get; } = true;
+        public bool DrawLabel { get; set; } = true;
     }
 }

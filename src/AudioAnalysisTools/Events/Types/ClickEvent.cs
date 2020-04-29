@@ -15,12 +15,10 @@ namespace AudioAnalysisTools
 
     public class ClickEvent : SpectralEvent, ITracks<Track>
     {
-        private readonly double maxScore;
-
         public ClickEvent(Track click, double maxScore)
         {
             this.Tracks.Add(click);
-            this.maxScore = maxScore;
+            this.ScoreMax = maxScore;
         }
 
         public List<Track> Tracks { get; private set; } = new List<Track>(1);
@@ -48,18 +46,6 @@ namespace AudioAnalysisTools
             get
             {
                 return this.Tracks.Single().GetAverageTrackAmplitude();
-            }
-        }
-
-        /// <summary>
-        /// Gets the normalised value for the event's track score.
-        /// NOTE: It is assumed that the minimum value of the score range = zero.
-        /// </summary>
-        public double ScoreNormalised
-        {
-            get
-            {
-                return this.Score / this.maxScore;
             }
         }
 
