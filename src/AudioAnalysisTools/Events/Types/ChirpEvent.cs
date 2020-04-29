@@ -30,7 +30,6 @@ namespace AudioAnalysisTools
         public ChirpEvent(Track chirp, double maxScore)
         {
             this.Tracks.Add(chirp);
-
             this.maxScore = maxScore;
         }
 
@@ -49,17 +48,28 @@ namespace AudioAnalysisTools
             this.Tracks.Max(x => x.HighFreqHertz);
 
         /// <summary>
-        /// Gets the average normalised amplitude.
+        /// Gets the average track amplitude.
         /// </summary>
         /// <remarks>
-        /// This score is a normalised value for the chirp's track score.
-        /// NOTE: It is assumed that the minimum value of the score range = zero.
+        /// Thevent score is an average value of the track score.
         /// </remarks>
         public override double Score
         {
             get
             {
-                return this.Tracks.Single().GetAverageTrackAmplitude() / this.maxScore;
+                return this.Tracks.Single().GetAverageTrackAmplitude();
+            }
+        }
+
+        /// <summary>
+        /// Gets the normalised value for the event's track score.
+        /// NOTE: It is assumed that the minimum value of the score range = zero.
+        /// </summary>
+        public double ScoreNormalised
+        {
+            get
+            {
+                return this.Score / this.maxScore;
             }
         }
 

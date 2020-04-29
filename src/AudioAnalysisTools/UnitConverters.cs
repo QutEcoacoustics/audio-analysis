@@ -15,6 +15,16 @@ namespace AudioAnalysisTools
 
     public class UnitConverters
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UnitConverters"/> class.
+        /// IMPORTANT NOTE: segmentDuration should be the duration spanned by the spectrogram image, not the actual duration recording.
+        ///                 Given one frame per pixel column, the spectrogram duration = frameCount * seconds/frame.
+        /// </summary>
+        /// <param name="segmentStartOffset">Segment start relative to start of the recording.</param>
+        /// <param name="segmentDuration">Set the time-scale. The spectrogram time-span. Typically 60 seconds.</param>
+        /// <param name="nyquistFrequency">Sets the frequency scale.</param>
+        /// <param name="imageWidth">Pixel width = number of time frames.</param>
+        /// <param name="imageHeight">Pixel height = the number of frequency bins.</param>
         public UnitConverters(double segmentStartOffset, double segmentDuration, double nyquistFrequency, int imageWidth, int imageHeight)
         {
             this.SegmentStartOffset = segmentStartOffset;
@@ -135,7 +145,7 @@ namespace AudioAnalysisTools
         /// Width and height are rounded up.
         /// **No border pixels are substracted from width or height!**.
         /// </remarks>
-        /// <param name="@event">The event to get the border for.</param>
+        /// <param name="event">The event to get the border for.</param>
         /// <returns>The rectangle representing the border.</returns>
         public RectangleF GetPixelRectangle(ISpectralEvent @event)
         {

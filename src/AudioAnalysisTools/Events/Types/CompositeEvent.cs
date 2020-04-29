@@ -62,8 +62,14 @@ namespace AudioAnalysisTools.Events.Types
             foreach (var @event in this.ComponentEvents)
             {
                 // disable border
-                // options.DisableBorder = true
-                @event.Draw(graphics, options);
+                var newOptions = new EventRenderingOptions(options.Converters)
+                {
+                    DrawLabel = false,
+                    DrawBorder = false,
+                    DrawScore = false,
+                };
+
+                @event.Draw(graphics, newOptions);
             }
 
             // draw a border around all of it
@@ -160,7 +166,8 @@ namespace AudioAnalysisTools.Events.Types
                 {
                     if (EventsOverlapInTime(events[i], events[j]) && EventsOverlapInFrequency(events[i], events[j]))
                     {
-                        events[j] = MergeTwoEvents(events[i], events[j]);
+                        var compositeEvent = CombineTwoEvents(events[i], events[j]);
+                        events[j] = compositeEvent;
                         events.RemoveAt(i);
                         break;
                     }
@@ -173,11 +180,11 @@ namespace AudioAnalysisTools.Events.Types
         /// <summary>
         /// Combines events that have similar bottom and top frequency bounds and whose start times are within the passed time range.
         /// </summary>
-        public static List<SpectralEvent> CombineSimilarProximalEvents(List<SpectralEvent> events, TimeSpan startDifference, int hertzDifference)
+        public static List<EventCommon> CombineSimilarProximalEvents(List<SpectralEvent> events, TimeSpan startDifference, int hertzDifference)
         {
             if (events.Count < 2)
             {
-                return events;
+                return events.Cast<EventCommon>().ToList();
             }
 
             for (int i = events.Count - 1; i >= 0; i--)
@@ -188,25 +195,26 @@ namespace AudioAnalysisTools.Events.Types
                     bool eventAreInSimilarFreqBand = Math.Abs(events[i].LowFrequencyHertz - events[j].LowFrequencyHertz) < hertzDifference && Math.Abs(events[i].HighFrequencyHertz - events[j].HighFrequencyHertz) < hertzDifference;
                     if (eventStartsAreProximal && eventAreInSimilarFreqBand)
                     {
-                        events[j] = MergeTwoEvents(events[i], events[j]);
+                        var compositeEvent = CombineTwoEvents(events[i], events[j]);
+                        events[j] = compositeEvent;
                         events.RemoveAt(i);
                         break;
                     }
                 }
             }
 
-            return events;
+            return events.Cast<EventCommon>().ToList();
         }
 
         /// <summary>
         /// Combines events that are possible stacked harmonics, that is, they are coincident (have similar start and end times)
         /// AND stacked (their maxima are within the passed frequency gap).
         /// </summary>
-        public static List<SpectralEvent> CombinePotentialStackedTracks(List<SpectralEvent> events, TimeSpan timeDifference, int hertzDifference)
+        public static List<EventCommon> CombinePotentialStackedTracks(List<SpectralEvent> events, TimeSpan timeDifference, int hertzDifference)
         {
             if (events.Count < 2)
             {
-                return events;
+                return events.Cast<EventCommon>().ToList();
             }
 
             for (int i = events.Count - 1; i >= 0; i--)
@@ -219,14 +227,15 @@ namespace AudioAnalysisTools.Events.Types
                     bool eventsAreStacked = Math.Abs(events[i].HighFrequencyHertz - events[j].LowFrequencyHertz) < hertzDifference || Math.Abs(events[j].HighFrequencyHertz - events[i].LowFrequencyHertz) < hertzDifference;
                     if (eventsAreCoincident && eventsAreStacked)
                     {
-                        events[j] = MergeTwoEvents(events[i], events[j]);
+                        var compositeEvent = CombineTwoEvents(events[i], events[j]);
+                        events[j] = compositeEvent;
                         events.RemoveAt(i);
                         break;
                     }
                 }
             }
 
-            return events;
+            return events.Cast<EventCommon>().ToList();
         }
 
         /// <summary>
@@ -235,40 +244,46 @@ namespace AudioAnalysisTools.Events.Types
         /// <param name="e1">first event.</param>
         /// <param name="e2">second event.</param>
         /// <returns>a composite event.</returns>
-        public static CompositeEvent MergeTwoEvents(SpectralEvent e1, SpectralEvent e2)
+        public static CompositeEvent CombineTwoEvents(SpectralEvent e1, SpectralEvent e2)
         {
             // Assume that we only merge events that are in the same recording segment.
             // Therefore the value of segmentStartOffset has already been set and is the same for both events.
-            //segmentStartOffset = TimeSpan.Zero;
+            var e1Type = e1.GetType();
+            var e2Type = e2.GetType();
+
+            // There are three possibilities
+            if (e1Type == typeof(CompositeEvent) && e2Type == typeof(CompositeEvent))
+            {
+                var e2Events = ((CompositeEvent)e2).ComponentEvents;
+                ((CompositeEvent)e1).ComponentEvents.AddRange(e2Events);
+                return (CompositeEvent)e1;
+            }
+            else
+            if (e1Type == typeof(CompositeEvent))
+            {
+                ((CompositeEvent)e1).ComponentEvents.Add(e2);
+                return (CompositeEvent)e1;
+            }
+            else
+            if (e2Type == typeof(CompositeEvent))
+            {
+                ((CompositeEvent)e2).ComponentEvents.Add(e1);
+                return (CompositeEvent)e2;
+            }
 
             var twoEvents = new List<SpectralEvent>
             {
                 e1,
                 e2,
             };
-            var compositeEvent = new CompositeEvent(twoEvents);
+
+            var compositeEvent = new CompositeEvent(twoEvents)
+            {
+                Name = e1.Name,
+            };
+
             return compositeEvent;
         }
-
-        /*
-        public void AddTracks(List<Track> newTracks)
-        {
-            // check there are tracks to add.
-            if (newTracks == null || newTracks.Count == 0)
-            {
-                return;
-            }
-
-            //check if there are existing tracks.
-            if (this.tracks == null)
-            {
-                this.tracks = new List<Track>();
-            }
-
-            // now add the new tracks
-            this.tracks.AddRange(newTracks);
-        }
-        */
 
         public static SpectralEvent OverlapsEventInList(SpectralEvent anEvent, List<SpectralEvent> events)
         {

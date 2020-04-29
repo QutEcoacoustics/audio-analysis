@@ -37,7 +37,7 @@ namespace AudioAnalysisTools.Events.Drawing
         /// <summary>
         /// Gets or sets the default fille color for an event.
         /// </summary>
-        public IBrush Fill { get; set; } = new SolidBrush(Color.Red.WithAlpha(0.5f));
+        public IBrush Fill { get; set; } = new SolidBrush(Color.FromRgb(0, 255, 0));
 
         /// <summary>
         /// Gets or sets the graphics options that should be used with the
@@ -45,13 +45,17 @@ namespace AudioAnalysisTools.Events.Drawing
         /// </summary>
         public GraphicsOptions FillOptions { get; set; } = new GraphicsOptions()
         {
+            ColorBlendingMode = SixLabors.ImageSharp.PixelFormats.PixelColorBlendingMode.Lighten,
+
+            // TODO: ENABLE THIS IS NECESSARY
+            // BlendPercentage = 0.5,
         };
 
         /// <summary>
         /// Gets or sets the Pen used to draw a "score" indicator
         /// on the left edge of the event.
         /// </summary>
-        public Pen Score { get; set; } = new Pen(Color.LimeGreen, 1f);
+        public Pen Score { get; set; } = new Pen(Color.Blue, 1f);
 
         /// <summary>
         /// Gets or sets the color to use when rendering labels.
@@ -63,12 +67,12 @@ namespace AudioAnalysisTools.Events.Drawing
         /// </summary>
         public bool TargetImageIsSpectral { get; } = true;
 
-        public bool DrawBorder { get;  } = true;
+        public bool DrawBorder { get; set; } = true;
 
         public bool DrawFill { get; } = true;
 
-        public bool DrawScore { get; } = true;
+        public bool DrawScore { get; set; } = true;
 
-        public bool DrawLabel { get; } = true;
+        public bool DrawLabel { get; set; } = true;
     }
 }

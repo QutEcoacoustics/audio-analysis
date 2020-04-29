@@ -15,9 +15,10 @@ namespace AudioAnalysisTools
 
     public class WhistleEvent : SpectralEvent, ITracks<Track>
     {
-        public WhistleEvent(Track whistle)
+        public WhistleEvent(Track whistle, double maxScore)
         {
             this.Tracks.Add(whistle);
+            this.ScoreMax = maxScore;
         }
 
         public List<Track> Tracks { get; private set; } = new List<Track>(1);
@@ -33,6 +34,20 @@ namespace AudioAnalysisTools
 
         public override double HighFrequencyHertz =>
             this.Tracks.Max(x => x.HighFreqHertz);
+
+        /// <summary>
+        /// Gets the average track amplitude.
+        /// </summary>
+        /// <remarks>
+        /// Thevent score is an average value of the track score.
+        /// </remarks>
+        public override double Score
+        {
+            get
+            {
+                return this.Tracks.Single().GetAverageTrackAmplitude();
+            }
+        }
 
         public override void Draw(IImageProcessingContext graphics, EventRenderingOptions options)
         {

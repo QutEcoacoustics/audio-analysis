@@ -45,6 +45,15 @@ namespace AnalysisBase.ResultBases
         public virtual double Score { get; set; }
 
         /// <summary>
+        /// Gets or sets a maximum possible score for this event.
+        /// This is used to establish a score scale and thereby normalise the score.
+        /// It is assumed that the score range is 0.0 to scoreMax.
+        /// </summary>
+        public virtual double ScoreMax { get; set; }
+
+        public double ScoreNormalised => this.Score / this.ScoreMax;
+
+        /// <summary>
         /// Gets or sets the Event's Start Seconds.
         /// IMPORTANT: This field is time offset relative to the recording.
         /// It automatically updates <see cref="ResultBase.ResultStartSeconds"/> when set.

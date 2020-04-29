@@ -7,11 +7,6 @@ namespace AnalysisPrograms.Recognizers.Base
     using System;
     using System.Collections.Generic;
     using Acoustics.Shared;
-    using AudioAnalysisTools;
-    using AudioAnalysisTools.Events;
-    using AudioAnalysisTools.Events.Tracks;
-    using AudioAnalysisTools.StandardSpectrograms;
-    using TowseyLibrary;
 
     /// <summary>
     /// Parameters needed from a config file to detect fowards spectral peak tracks.
@@ -36,10 +31,10 @@ namespace AnalysisPrograms.Recognizers.Base
         /// To qualify for combining, the event start times should not be greater than the specified seconds interval....
         /// AND the difference in minimum frequency values (the Hertz gap) between consecutive tracks should not exceed the specified Hertz interval.
         /// </summary>
-        public bool CombinePossibleChirpSequence { get; set; }
+        public bool CombinePossibleSyllableSequence { get; set; }
 
-        public TimeSpan ChirpStartDifference { get; set; }
+        public TimeSpan SyllableStartDifference { get; set; }
 
-        public int ChirpHertzGap { get; set; }
+        public int SyllableHertzGap { get; set; }
     }
 }

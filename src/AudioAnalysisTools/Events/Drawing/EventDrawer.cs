@@ -31,21 +31,22 @@ namespace AudioAnalysisTools.Events.Drawing
             // TODO: add a Interval<double> ScoreRange property to EventCommon
             // so we can properly normalize this value to the unit value.
             // For now, we just assume it is normalized to [0,1].
-            var clampedScore = @event.Score.Clamp(0, 1);
+            //var clampedScore = @event.Score.Clamp(0, 1);
+            var normalisedScore = @event.ScoreNormalised;
 
-            if (clampedScore == 0)
+            if (normalisedScore == 0)
             {
                 return;
             }
 
             var rect = options.Converters.GetPixelRectangle(@event);
 
-            var scaledHeight = (float)clampedScore * rect.Height;
+            var scaledHeight = (float)normalisedScore * rect.Height;
 
             graphics.NoAA().DrawLines(
                 options.Score,
-                new PointF(rect.Left, rect.Bottom),
-                new PointF(rect.Left, rect.Bottom + scaledHeight));
+                new PointF(rect.Left, rect.Bottom - 1), // TODO minus one is a hack! just to make it work!
+                new PointF(rect.Left, rect.Bottom - scaledHeight));
         }
 
         public static void DrawEventLabel(this SpectralEvent @event, IImageProcessingContext graphics, EventRenderingOptions options)

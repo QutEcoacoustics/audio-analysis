@@ -10,15 +10,14 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
     using Acoustics.Shared;
     using Acoustics.Test.TestHelpers;
     using Acoustics.Tools;
-    using AudioAnalysisTools.Events.Tracks;
     using global::AnalysisPrograms;
     using global::AnalysisPrograms.Recognizers;
     using global::AnalysisPrograms.Recognizers.Base;
     using global::AudioAnalysisTools;
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.Events;
-    using global::AudioAnalysisTools.Events.Tracks;
     using global::AudioAnalysisTools.StandardSpectrograms;
+    using global::AudioAnalysisTools.Tracks;
     using global::AudioAnalysisTools.WavTools;
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -278,8 +277,8 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             Assert.AreEqual(4, allResults.NewEvents.Count);
 
             var @event = (SpectralEvent)allResults.NewEvents[0];
-            Assert.AreEqual("NoName", @event.Name);
-            Assert.AreEqual("Harmonics", @event.ComponentName);
+            Assert.AreEqual("Harmonics", @event.Name);
+            Assert.AreEqual("SpectralEvent", @event.ComponentName);
             Assert.AreEqual(3.0, @event.EventStartSeconds, 0.1);
             Assert.AreEqual(4.0, @event.EventEndSeconds, 0.1);
             Assert.AreEqual(500, @event.LowFrequencyHertz);
@@ -302,14 +301,17 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
         public void TestOnebinTrackAlgorithm()
         {
             // Set up the recognizer parameters.
-            var windowSize = 512;
-            var windowStep = 512;
-            var minHertz = 500;
-            var maxHertz = 6000;
-            var minDuration = 0.2;
-            var maxDuration = 1.1;
-            var decibelThreshold = 2.0;
-            var combinePossibleHarmonics = true;
+            var parameters = new OnebinTrackParameters()
+            {
+                MinHertz = 500,
+                MaxHertz = 6000,
+                MinDuration = 0.2,
+                MaxDuration = 1.1,
+                DecibelThreshold = 2.0,
+                CombinePossibleSyllableSequence = false,
+                //SyllableStartDifference = TimeSpan.FromSeconds(0.2),
+                //SyllableHertzGap = 300,
+            };
 
             //Set up the virtual recording.
             int samplerate = 22050;
@@ -319,8 +321,8 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             // set up the config for a virtual spectrogram.
             var sonoConfig = new SonogramConfig()
             {
-                WindowSize = windowSize,
-                WindowStep = windowStep,
+                WindowSize = 512,
+                WindowStep = 512,
                 WindowOverlap = 0.0, // this must be set
                 WindowFunction = WindowFunctions.HANNING.ToString(),
                 NoiseReductionType = NoiseReductionType.Standard,
@@ -335,26 +337,21 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             //results.Sonogram.GetImage().Save(this.outputDirectory + "\\debug.png");
 
             var plots = new List<Plot>();
-            var (acousticEvents, dBArray) = OnebinTrackParameters.GetOnebinTracks(
+            var (spectralEvents, dBArray) = OnebinTrackAlgorithm.GetOnebinTracks(
                 spectrogram,
-                minHertz,
-                maxHertz,
-                decibelThreshold,
-                minDuration,
-                maxDuration,
-                combinePossibleHarmonics,
+                parameters,
                 segmentStartOffset);
 
             // draw a plot of max decibels in each frame
-            double decibelNormalizationMax = 5 * decibelThreshold;
-            var dBThreshold = decibelThreshold / decibelNormalizationMax;
+            double decibelNormalizationMax = 5 * parameters.DecibelThreshold.Value;
+            var dBThreshold = parameters.DecibelThreshold.Value / decibelNormalizationMax;
             var normalisedDecibelArray = DataTools.NormaliseInZeroOne(dBArray, 0, decibelNormalizationMax);
             var plot1 = new Plot("decibel max", normalisedDecibelArray, dBThreshold);
             plots.Add(plot1);
 
             var allResults = new RecognizerResults()
             {
-                Events = new List<AcousticEvent>(),
+                NewEvents = new List<EventCommon>(),
                 Hits = null,
                 ScoreTrack = null,
                 Plots = new List<Plot>(),
@@ -362,7 +359,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             };
 
             // combine the results i.e. add the events list of call events.
-            allResults.NewEvents.AddRange(acousticEvents);
+            allResults.NewEvents.AddRange(spectralEvents);
             allResults.Plots.AddRange(plots);
             allResults.Sonogram = spectrogram;
 
@@ -374,7 +371,13 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             // but three of them are too weak to be detected at this threshold.
             Assert.AreEqual(13, allResults.NewEvents.Count);
 
-            var @event = (SpectralEvent)allResults.NewEvents[4];
+            var @event = (SpectralEvent)allResults.NewEvents[0];
+            Assert.AreEqual(60 + 0.0, @event.EventStartSeconds, 0.1);
+            Assert.AreEqual(60 + 0.35, @event.EventEndSeconds, 0.1);
+            Assert.AreEqual(2150, @event.LowFrequencyHertz);
+            Assert.AreEqual(2193, @event.HighFrequencyHertz);
+
+            @event = (SpectralEvent)allResults.NewEvents[4];
             Assert.AreEqual(60 + 5.0, @event.EventStartSeconds, 0.1);
             Assert.AreEqual(60 + 6.0, @event.EventEndSeconds, 0.1);
             Assert.AreEqual(989, @event.LowFrequencyHertz);
@@ -391,9 +394,6 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
         public void TestForwardTrackAlgorithm()
         {
             // Set up the recognizer parameters.
-            var windowSize = 512;
-            var windowStep = 512;
-
             var parameters = new ForwardTrackParameters()
             {
                 MinHertz = 500,
@@ -402,6 +402,11 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
                 MaxDuration = 1.1,
                 DecibelThreshold = 2.0,
                 CombinePossibleHarmonics = false,
+                HarmonicsStartDifference = TimeSpan.FromSeconds(0.2),
+                HarmonicsHertzGap = 200,
+                CombinePossibleSyllableSequence = false,
+                SyllableStartDifference = TimeSpan.FromSeconds(0.2),
+                SyllableHertzGap = 300,
             };
 
             //Set up the virtual recording.
@@ -411,8 +416,8 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             // set up the config for a virtual spectrogram.
             var sonoConfig = new SonogramConfig()
             {
-                WindowSize = windowSize,
-                WindowStep = windowStep,
+                WindowSize = 512,
+                WindowStep = 512,
                 WindowOverlap = 0.0, // this must be set
                 WindowFunction = WindowFunctions.HANNING.ToString(),
                 NoiseReductionType = NoiseReductionType.Standard,
@@ -428,7 +433,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
 
             var segmentStartOffset = TimeSpan.Zero;
             var plots = new List<Plot>();
-            var (spectralEvents, dBArray) = TrackExtractor.GetForwardTracks(
+            var (spectralEvents, dBArray) = ForwardTrackAlgorithm.GetForwardTracks(
                 spectrogram,
                 parameters,
                 segmentStartOffset);
@@ -442,7 +447,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
 
             var allResults = new RecognizerResults()
             {
-                Events = new List<AcousticEvent>(),
+                NewEvents = new List<EventCommon>(),
                 Hits = null,
                 ScoreTrack = null,
                 Plots = new List<Plot>(),
@@ -479,14 +484,14 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
         public void TestOneframeTrackAlgorithm()
         {
             // Set up the recognizer parameters.
-            var windowSize = 512;
-            var windowStep = 512;
-            var minHertz = 6000;
-            var maxHertz = 11000;
-            var minBandwidthHertz = 100;
-            var maxBandwidthHertz = 5000;
-            var decibelThreshold = 2.0;
-            var combineProximalSimilarEvents = true;
+            var parameters = new OneframeTrackParameters()
+            {
+                MinHertz = 6000,
+                MaxHertz = 11000,
+                MinBandwidthHertz = 100,
+                MaxBandwidthHertz = 5000,
+                DecibelThreshold = 2.0,
+            };
 
             //Set up the virtual recording.
             int samplerate = 22050;
@@ -495,8 +500,8 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             // set up the config for a virtual spectrogram.
             var sonoConfig = new SonogramConfig()
             {
-                WindowSize = windowSize,
-                WindowStep = windowStep,
+                WindowSize = 512,
+                WindowStep = 512,
                 WindowOverlap = 0.0, // this must be set
                 WindowFunction = WindowFunctions.HANNING.ToString(),
                 NoiseReductionType = NoiseReductionType.Standard,
@@ -512,27 +517,29 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
 
             var segmentStartOffset = TimeSpan.Zero;
             var plots = new List<Plot>();
-            var (acousticEvents, dBArray) = OneframeTrackParameters.GetOneFrameTracks(
+            var (spectralEvents, dBArray) = OneframeTrackAlgorithm.GetOneFrameTracks(
                 spectrogram,
-                minHertz,
-                maxHertz,
-                decibelThreshold,
-                minBandwidthHertz,
-                maxBandwidthHertz,
-                combineProximalSimilarEvents,
+                parameters,
                 segmentStartOffset);
 
             // draw a plot of max decibels in each frame
-            double decibelNormalizationMax = 5 * decibelThreshold;
-            var dBThreshold = decibelThreshold / decibelNormalizationMax;
+            double decibelNormalizationMax = 5 * parameters.DecibelThreshold.Value;
+            var dBThreshold = parameters.DecibelThreshold.Value / decibelNormalizationMax;
             var normalisedDecibelArray = DataTools.NormaliseInZeroOne(dBArray, 0, decibelNormalizationMax);
             var plot1 = new Plot("decibel max", normalisedDecibelArray, dBThreshold);
             plots.Add(plot1);
 
-            var allResults = new RecognizerResults();
+            var allResults = new RecognizerResults()
+            {
+                NewEvents = new List<EventCommon>(),
+                Hits = null,
+                ScoreTrack = null,
+                Plots = new List<Plot>(),
+                Sonogram = null,
+            };
 
             // combine the results i.e. add the events list of call events.
-            allResults.NewEvents.AddRange(acousticEvents);
+            allResults.NewEvents.AddRange(spectralEvents);
             allResults.Plots.AddRange(plots);
 
             // effectively keeps only the *last* sonogram produced
@@ -542,7 +549,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             var outputDirectory = new DirectoryInfo("C:\\temp");
             GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "ClickTrack");
 
-            Assert.AreEqual(2, allResults.NewEvents.Count);
+            Assert.AreEqual(6, allResults.NewEvents.Count);
 
             var @event = (SpectralEvent)allResults.NewEvents[0];
             Assert.AreEqual(10.0, @event.EventStartSeconds, 0.1);
@@ -550,9 +557,9 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             Assert.AreEqual(6450, @event.LowFrequencyHertz);
             Assert.AreEqual(10750, @event.HighFrequencyHertz);
 
-            @event = (SpectralEvent)allResults.NewEvents[1];
-            Assert.AreEqual(11.0, @event.EventStartSeconds, 0.1);
-            Assert.AreEqual(11.2, @event.EventEndSeconds, 0.1);
+            @event = (SpectralEvent)allResults.NewEvents[2];
+            Assert.AreEqual(11.05, @event.EventStartSeconds, 0.05);
+            Assert.AreEqual(11.07, @event.EventEndSeconds, 0.05);
             Assert.AreEqual(6450, @event.LowFrequencyHertz);
             Assert.AreEqual(7310, @event.HighFrequencyHertz);
         }
@@ -564,14 +571,17 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
         public void Test1UpwardsTrackAlgorithm()
         {
             // Set up the recognizer parameters.
-            var windowSize = 512;
-            var windowStep = 512;
-            var minHertz = 6000;
-            var maxHertz = 11000;
-            var minBandwidthHertz = 100;
-            var maxBandwidthHertz = 5000;
-            var decibelThreshold = 2.0;
-            var combineProximalSimilarEvents = true;
+            var parameters = new UpwardTrackParameters()
+            {
+                MinHertz = 6000,
+                MaxHertz = 11000,
+                MinBandwidthHertz = 100,
+                MaxBandwidthHertz = 5000,
+                DecibelThreshold = 2.0,
+                CombineProximalSimilarEvents = true,
+                SyllableStartDifference = TimeSpan.FromSeconds(0.2),
+                SyllableHertzDifference = 300,
+            };
 
             //Set up the virtual recording.
             int samplerate = 22050;
@@ -580,8 +590,8 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             // set up the config for a virtual spectrogram.
             var sonoConfig = new SonogramConfig()
             {
-                WindowSize = windowSize,
-                WindowStep = windowStep,
+                WindowSize = 512,
+                WindowStep = 512,
                 WindowOverlap = 0.0, // this must be set
                 WindowFunction = WindowFunctions.HANNING.ToString(),
                 NoiseReductionType = NoiseReductionType.Standard,
@@ -597,27 +607,29 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
 
             var segmentStartOffset = TimeSpan.Zero;
             var plots = new List<Plot>();
-            var (acousticEvents, dBArray) = UpwardTrackParameters.GetUpwardTracks(
+            var (spectralEvents, dBArray) = UpwardTrackAlgorithm.GetUpwardTracks(
                 spectrogram,
-                minHertz,
-                maxHertz,
-                decibelThreshold,
-                minBandwidthHertz,
-                maxBandwidthHertz,
-                combineProximalSimilarEvents,
+                parameters,
                 segmentStartOffset);
 
             // draw a plot of max decibels in each frame
-            double decibelNormalizationMax = 5 * decibelThreshold;
-            var dBThreshold = decibelThreshold / decibelNormalizationMax;
+            double decibelNormalizationMax = 5 * parameters.DecibelThreshold.Value;
+            var dBThreshold = parameters.DecibelThreshold.Value / decibelNormalizationMax;
             var normalisedDecibelArray = DataTools.NormaliseInZeroOne(dBArray, 0, decibelNormalizationMax);
             var plot1 = new Plot("decibel max", normalisedDecibelArray, dBThreshold);
             plots.Add(plot1);
 
-            var allResults = new RecognizerResults();
+            var allResults = new RecognizerResults()
+            {
+                NewEvents = new List<EventCommon>(),
+                Hits = null,
+                ScoreTrack = null,
+                Plots = new List<Plot>(),
+                Sonogram = null,
+            };
 
             // combine the results i.e. add the events list of call events.
-            allResults.NewEvents.AddRange(acousticEvents);
+            allResults.NewEvents.AddRange(spectralEvents);
             allResults.Plots.AddRange(plots);
 
             // effectively keeps only the *last* sonogram produced
@@ -649,14 +661,17 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
         public void Test2UpwardsTrackAlgorithm()
         {
             // Set up the recognizer parameters.
-            var windowSize = 512;
-            var windowStep = 512;
-            var minHertz = 500;
-            var maxHertz = 6000;
-            var minBandwidthHertz = 200;
-            var maxBandwidthHertz = 5000;
-            var decibelThreshold = 2.0;
-            var combineProximalSimilarEvents = false;
+            var parameters = new UpwardTrackParameters()
+            {
+                MinHertz = 500,
+                MaxHertz = 6000,
+                MinBandwidthHertz = 200,
+                MaxBandwidthHertz = 5000,
+                DecibelThreshold = 2.0,
+                CombineProximalSimilarEvents = false,
+                SyllableStartDifference = TimeSpan.FromSeconds(0.2),
+                SyllableHertzDifference = 300,
+            };
 
             //Set up the virtual recording.
             var segmentStartOffset = TimeSpan.Zero;
@@ -666,8 +681,8 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             // set up the config for a virtual spectrogram.
             var sonoConfig = new SonogramConfig()
             {
-                WindowSize = windowSize,
-                WindowStep = windowStep,
+                WindowSize = 512,
+                WindowStep = 512,
                 WindowOverlap = 0.0, // this must be set
                 WindowFunction = WindowFunctions.HANNING.ToString(),
                 NoiseReductionType = NoiseReductionType.Standard,
@@ -680,27 +695,29 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             var plots = new List<Plot>();
 
             // do a SECOND TEST of the vertical tracks
-            var (acousticEvents, dBArray) = UpwardTrackParameters.GetUpwardTracks(
+            var (spectralEvents, dBArray) = UpwardTrackAlgorithm.GetUpwardTracks(
                 spectrogram,
-                minHertz,
-                maxHertz,
-                decibelThreshold,
-                minBandwidthHertz,
-                maxBandwidthHertz,
-                combineProximalSimilarEvents,
+                parameters,
                 segmentStartOffset);
 
             // draw a plot of max decibels in each frame
-            double decibelNormalizationMax = 5 * decibelThreshold;
-            var dBThreshold = decibelThreshold / decibelNormalizationMax;
+            double decibelNormalizationMax = 5 * parameters.DecibelThreshold.Value;
+            var dBThreshold = parameters.DecibelThreshold.Value / decibelNormalizationMax;
             var normalisedDecibelArray = DataTools.NormaliseInZeroOne(dBArray, 0, decibelNormalizationMax);
             var plot2 = new Plot("decibel max", normalisedDecibelArray, dBThreshold);
             plots.Add(plot2);
 
-            var allResults2 = new RecognizerResults();
+            var allResults2 = new RecognizerResults()
+            {
+                NewEvents = new List<EventCommon>(),
+                Hits = null,
+                ScoreTrack = null,
+                Plots = new List<Plot>(),
+                Sonogram = null,
+            };
 
             // combine the results i.e. add the events list of call events.
-            allResults2.NewEvents.AddRange(acousticEvents);
+            allResults2.NewEvents.AddRange(spectralEvents);
             allResults2.Plots.AddRange(plots);
             allResults2.Sonogram = spectrogram;
 
