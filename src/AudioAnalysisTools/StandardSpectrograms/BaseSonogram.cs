@@ -764,7 +764,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 var stringFont = Drawing.Arial9;
 
                 int xBuffer = 4;
-                g.DrawText(title, stringFont, Color.Wheat, new PointF(xBuffer, 3));
+                g.DrawTextSafe(title, stringFont, Color.Wheat, new PointF(xBuffer, 3));
 
                 var stringSize = g.MeasureString(title, stringFont);
                 xBuffer += stringSize.ToSize().Width + 70;
@@ -773,7 +773,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 int x2 = width - stringSize.ToSize().Width - 2;
                 if (x2 > xBuffer)
                 {
-                    g.DrawText(text, stringFont, Color.Wheat, new PointF(x2, 3));
+                    g.DrawTextSafe(text, stringFont, Color.Wheat, new PointF(x2, 3));
                 }
 
                 // g.DrawLine(pen, duration + 1, 0, trackWidth, 0);
@@ -822,7 +822,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                             int minutes = totalSeconds / 60;
                             int seconds = totalSeconds % 60;
                             string time = $"{minutes}m{seconds}s";
-                            g.DrawText(time, stringFont, Color.White, new PointF(x + 1, 2)); //draw time
+                            g.DrawTextSafe(time, stringFont, Color.White, new PointF(x + 1, 2)); //draw time
                         }
                     }
                 }
@@ -830,7 +830,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 g.DrawLine(whitePen, 0, 0, trackWidth, 0); //draw upper boundary
                 g.DrawLine(whitePen, 0, trackHeight - 1, trackWidth, trackHeight - 1); //draw lower boundary
                 g.DrawLine(whitePen, trackWidth, 0, trackWidth, trackHeight - 1); //draw right end boundary
-                g.DrawText(title, stringFont, Color.White, new PointF(4, 3));
+                g.DrawTextSafe(title, stringFont, Color.White, new PointF(4, 3));
             });
 
             return bmp;

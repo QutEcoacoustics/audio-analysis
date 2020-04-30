@@ -567,7 +567,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 var header = Drawing.NewImage(bmp.Width, 20, Color.LightGray);
                 header.Mutate(g =>
                 {
-                    g.DrawText(key, Drawing.Tahoma9, Color.Black, new PointF(4, 4));
+                    g.DrawTextSafe(key, Drawing.Tahoma9, Color.Black, new PointF(4, 4));
                 });
 
                 var indexImage = ImageTools.CombineImagesVertically(header, bmp);
@@ -830,7 +830,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
                 //string text = title;
                 int x = 4;
-                g.DrawText(title, stringFont, Color.Wheat, new PointF(x, 3));
+                g.DrawTextSafe(title, stringFont, Color.Wheat, new PointF(x, 3));
 
                 var stringSize = g.MeasureString(title, stringFont);
                 x += stringSize.ToSize().Width + 70;
@@ -839,7 +839,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 int x2 = width - stringSize.ToSize().Width - 2;
                 if (x2 > x)
                 {
-                    g.DrawText(text, stringFont, Color.Wheat, new PointF(x2, 3));
+                    g.DrawTextSafe(text, stringFont, Color.Wheat, new PointF(x2, 3));
                 }
 
                 g.DrawLine(new Pen(Color.Gray, 1), 0, 0, width, 0); //draw upper boundary
@@ -882,7 +882,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 var stringFont = Drawing.Arial9Bold;
 
                 int x = 2;
-                g.DrawText(title, stringFont, Color.White, new PointF(x, 3));
+                g.DrawTextSafe(title, stringFont, Color.White, new PointF(x, 3));
 
                 var stringSize = TextMeasurer.Measure(title, new RendererOptions(stringFont));
                 x += (int)stringSize.Width + 300;
@@ -892,7 +892,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 int x2 = width - stringSize2.ToSize().Width - 2;
                 if (x2 > x)
                 {
-                    g.DrawText(text, stringFont, Color.Wheat, new PointF(x2, 3));
+                    g.DrawTextSafe(text, stringFont, Color.Wheat, new PointF(x2, 3));
                 }
             });
 

@@ -256,8 +256,8 @@ namespace AudioAnalysisTools.Indices
             bmp.Mutate(g =>
             {
                 var font = Drawing.Arial9;
-                g.DrawText("Clipping", font, Color.DarkRed, new PointF(5, 1));
-                g.DrawText(" & High Amplitude", font, Color.DarkBlue, new PointF(50, 1));
+                g.DrawTextSafe("Clipping", font, Color.DarkRed, new PointF(5, 1));
+                g.DrawTextSafe(" & High Amplitude", font, Color.DarkBlue, new PointF(50, 1));
             });
 
             return bmp;

@@ -3337,7 +3337,7 @@ namespace TowseyLibrary
 
                     g.DrawLine(pen, 0, y1, image.Width - 1, y1);
                     string value = Math.Round(yInterval * i).ToString();
-                    g.DrawText(value, font, Color.White, new PointF(2, y1 + 1));
+                    g.DrawTextSafe(value, font, Color.White, new PointF(2, y1 + 1));
                 }
             });
 
@@ -3394,7 +3394,7 @@ namespace TowseyLibrary
                     //g.DrawLine(pen, x1 + 1, 0, x1 + 1, scaleHeight - 1);
 
                     string value = Math.Round(xInterval * i).ToString();
-                    g.DrawText(value, font, Color.Black, new PointF(x1, 0));
+                    g.DrawTextSafe(value, font, Color.Black, new PointF(x1, 0));
                 }
 
                 g.DrawRectangle(pen, 0, 0, image.Width - 1, scaleHeight - 1);

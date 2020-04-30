@@ -434,12 +434,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             {
                 string text = string.Format("EUCLIDEAN DISTANCE SPECTROGRAM (scale:hours x kHz)");
                 int X = 4;
-                g.DrawText(text, stringFont, Color.Wheat, new PointF(X, 3));
+                g.DrawTextSafe(text, stringFont, Color.Wheat, new PointF(X, 3));
 
                 stringSize = g.MeasureString(text, stringFont);
                 X += stringSize.ToSize().Width + 70;
                 text = name1 + "  +99.9%conf";
-                g.DrawText(text, stringFont, Color.Wheat, new PointF(X, 3));
+                g.DrawTextSafe(text, stringFont, Color.Wheat, new PointF(X, 3));
 
                 stringSize = g.MeasureString(text, stringFont);
                 X += stringSize.ToSize().Width + 1;
@@ -447,7 +447,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
                 X += colorChart.Width;
                 text = "-99.9%conf   " + name2;
-                g.DrawText(text, stringFont, Color.Wheat, new PointF(X, 3));
+                g.DrawTextSafe(text, stringFont, Color.Wheat, new PointF(X, 3));
                 stringSize = g.MeasureString(text, stringFont);
                 X += stringSize.ToSize().Width + 1; // distance to end of string
 
@@ -456,7 +456,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 int x2 = width - stringSize.ToSize().Width - 2;
                 if (x2 > X)
                 {
-                    g.DrawText(text, stringFont, Color.Wheat, new PointF(x2, 3));
+                    g.DrawTextSafe(text, stringFont, Color.Wheat, new PointF(x2, 3));
                 }
 
                 g.DrawLine(new Pen(Color.Gray, 1), 0, 0, width, 0); // draw upper boundary

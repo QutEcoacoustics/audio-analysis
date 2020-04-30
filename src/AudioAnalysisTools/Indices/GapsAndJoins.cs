@@ -537,7 +537,7 @@ namespace AudioAnalysisTools.Indices
                     }
                     else
                     {
-                        g.DrawText(" " + this.GapDescription, font, Color.Black, new PointF(2, fontVerticalPosition));
+                        g.DrawTextSafe(" " + this.GapDescription, font, Color.Black, new PointF(2, fontVerticalPosition));
                     }
                 });
             }

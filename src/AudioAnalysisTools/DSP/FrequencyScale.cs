@@ -404,7 +404,7 @@ namespace AudioAnalysisTools.DSP
 
                     if (y > 1)
                     {
-                        g.DrawText($"{hertzValue}", Drawing.Tahoma8, txtColour, new PointF(1, y));
+                        g.DrawTextSafe($"{hertzValue}", Drawing.Tahoma8, txtColour, new PointF(1, y));
                     }
                 }
             });

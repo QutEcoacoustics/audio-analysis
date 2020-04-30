@@ -46,7 +46,7 @@ namespace Acoustics.Test.Shared.Drawing
 
             this.ExpectedImage = Drawing.NewImage(100, 100, Color.Black);
             this.ExpectedImage.Mutate(
-                x => x.DrawText("016-12-10", Drawing.Arial10, Color.White, new PointF((float)(-10f + 4.741211f), 3)));
+                x => x.DrawText("016-12-10", Drawing.Arial10, Color.White, new PointF(-4.023438f, 3)));
 
             // if we're on a system where Arial isn't installed, we fall back to roboto font,
             // thus we allow a slight tolerance on the image
@@ -66,6 +66,27 @@ namespace Acoustics.Test.Shared.Drawing
             this.ExpectedImage = Drawing.NewImage(100, 100, Color.Black);
             this.ExpectedImage.Mutate(
                 x => x.DrawText("i1", Drawing.Roboto10, Color.White, new PointF(-4.975585f, 3)));
+
+            this.AssertImagesEqual();
+        }
+
+        [TestMethod]
+        public void AnotherCaseThatCausedAFailure()
+        {
+            if (!SystemFonts.TryFind(Drawing.Arial, out _))
+            {
+                Assert.Inconclusive("Skipping test because the Font Arial is not available");
+            }
+
+            var text = "2/08/2018";
+
+            var textArea = TextMeasurer.MeasureBounds(text, new RendererOptions(Drawing.Arial10, new Point(-13, 3)));
+
+            this.ActualImage.Mutate(x => { x.DrawTextSafe(text, Drawing.Arial10, Color.White, new PointF(-13, 3)); });
+
+            this.ExpectedImage = Drawing.NewImage(100, 100, Color.Black);
+            this.ExpectedImage.Mutate(
+                x => x.DrawText("08/2018", Drawing.Arial10, Color.White, new PointF(-4.24511671f, 3)));
 
             this.AssertImagesEqual();
         }

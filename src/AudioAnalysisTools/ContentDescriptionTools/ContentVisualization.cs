@@ -66,7 +66,7 @@ namespace AudioAnalysisTools.ContentDescriptionTools
                 var header = Drawing.NewImage(image.Width, 20, Color.LightGray);
                 header.Mutate(g =>
                 {
-                    g.DrawText(key, Drawing.Tahoma9, Color.Black, new PointF(4, 4));
+                    g.DrawTextSafe(key, Drawing.Tahoma9, Color.Black, new PointF(4, 4));
                     list.Add(ImageTools.CombineImagesVertically(header, image));
                 });
             }

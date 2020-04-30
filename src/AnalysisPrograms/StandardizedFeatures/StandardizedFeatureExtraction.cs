@@ -183,7 +183,7 @@ namespace AnalysisPrograms.StandardizedFeatures
                     label.Mutate(g1 =>
                     {
                         g1.Clear(Color.Gray);
-                        g1.DrawText(labelText, stringFont, Color.Black, new PointF(4, 30));
+                        g1.DrawTextSafe(labelText, stringFont, Color.Black, new PointF(4, 30));
                         g1.DrawLine(new Pen(Color.Black, 1), 0, 0, width, 0); //draw upper boundary
                         g1.DrawLine(new Pen(Color.Black, 1), 0, 1, width, 1); //draw upper boundary
                     });

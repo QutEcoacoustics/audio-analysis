@@ -213,7 +213,7 @@ namespace AnalysisPrograms.Recognizers.Base
                     }
                 }
 
-                g2.DrawText(name, stringFont, brush, new PointF(1, 1));
+                g2.DrawTextSafe(name, stringFont, brush, new PointF(1, 1));
                 g2.DrawRectangle(new Pen(Color.Gray, 1), 0, 0, imageWidth - 1, trackHeight - 1);
             });
             return trackImage;

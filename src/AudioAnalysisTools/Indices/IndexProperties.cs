@@ -275,7 +275,7 @@ namespace AudioAnalysisTools.Indices
             bmp.Mutate(g =>
             {
                 var font = Drawing.Arial9;
-                g.DrawText(annotation, font, Color.Black, new PointF(dataLength, 5));
+                g.DrawTextSafe(annotation, font, Color.Black, new PointF(dataLength, 5));
             });
 
             // now add in image patches for possible erroneous segments

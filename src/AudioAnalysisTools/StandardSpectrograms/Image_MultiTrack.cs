@@ -277,7 +277,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 //g.DrawRectangle(p1, x, y, x + 1, y + 1);
                 g.DrawLine(p1, x, y, x, y + 1);
 
-                // g.DrawText(e.Name, Drawing.Tahoma6, Color.Black, new PointF(x, y - 1));
+                // g.DrawTextSafe(e.Name, Drawing.Tahoma6, Color.Black, new PointF(x, y - 1));
             }
         }
 

@@ -244,8 +244,8 @@ namespace AnalysisPrograms.SpectrogramGenerator
                 canvas.DrawLine(pen2, imageWidth / 2, 0, imageWidth / 2, imageHeight);
                 var stringFont = Drawing.Arial9;
                 var brush = Color.LightGray;
-                canvas.DrawText("+1.0", stringFont, brush, new PointF((imageWidth / 2) + 2, 10.0f));
-                canvas.DrawText("-1.0", stringFont, brush, new PointF((imageWidth / 2) + 2, imageHeight - 20.0f));
+                canvas.DrawTextSafe("+1.0", stringFont, brush, new PointF((imageWidth / 2) + 2, 10.0f));
+                canvas.DrawTextSafe("-1.0", stringFont, brush, new PointF((imageWidth / 2) + 2, imageHeight - 20.0f));
             });
 
             return image;

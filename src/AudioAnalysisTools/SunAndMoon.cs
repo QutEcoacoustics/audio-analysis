@@ -225,7 +225,7 @@ namespace AudioAnalysisTools
                     if (moonPhase != null)
                     {
                         var font = Drawing.Arial9;
-                        g.DrawText(moonPhase, font, Color.White, new PointF(5, 1));
+                        g.DrawTextSafe(moonPhase, font, Color.White, new PointF(5, 1));
                     }
                 });
             }

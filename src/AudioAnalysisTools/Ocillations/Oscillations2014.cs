@@ -975,7 +975,7 @@ namespace AudioAnalysisTools
             {
                 g.Clear(Color.Black);
                 var stringFont = Drawing.Arial9;
-                g.DrawText(longTitle, stringFont, Color.Wheat, new PointF(3, 3));
+                g.DrawTextSafe(longTitle, stringFont, Color.Wheat, new PointF(3, 3));
             });
             return bmp;
         }
