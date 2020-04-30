@@ -57,6 +57,12 @@ namespace AnalysisBase
         public EventBase[] Events { get; set; }
 
         /// <summary>
+        /// Gets or sets event results.
+        /// Should typically contain many results.
+        /// </summary>
+        public EventBase[] NewEvents { get; set; }
+
+        /// <summary>
         /// Gets or sets summary indices results.
         /// Should typically contain just 1 result.
         /// </summary>

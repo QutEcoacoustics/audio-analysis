@@ -28,6 +28,8 @@ namespace AudioAnalysisTools.Events.Types
         public override double EventStartSeconds =>
             this.ComponentEvents.Min(x => x.EventStartSeconds);
 
+        public override double ResultStartSeconds => this.EventStartSeconds;
+
         public override double EventEndSeconds =>
             this.ComponentEvents.Max(x => (x as ITemporalEvent)?.EventEndSeconds) ?? double.PositiveInfinity;
 

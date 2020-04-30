@@ -404,7 +404,15 @@ namespace AnalysisPrograms.AnalyseLongRecordings
         {
             if (args.WhenExitCopyConfig && args.Config.NotNull())
             {
-                configFile.CopyTo(Path.Combine(args.Output.FullName, Path.GetFileName(args.Config)), true);
+                var destination = Path.Combine(args.Output.FullName, Path.GetFileName(args.Config));
+                if (configFile.FullName == destination)
+                {
+                    Log.Warn("Cannot copy config file to output directory because source = destination.");
+                }
+                else
+                {
+                    configFile.CopyTo(Path.Combine(args.Output.FullName, Path.GetFileName(args.Config)), true);
+                }
             }
 
             if (args.WhenExitCopyLog && MainEntry.Logging.LogFileName.NotNull())

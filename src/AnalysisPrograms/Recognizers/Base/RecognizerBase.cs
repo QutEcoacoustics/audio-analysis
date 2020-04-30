@@ -20,6 +20,8 @@ namespace AnalysisPrograms.Recognizers.Base
     using AnalysisBase;
     using AnalysisBase.ResultBases;
     using AudioAnalysisTools;
+    using AudioAnalysisTools.Events;
+    using AudioAnalysisTools.Events.Types;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
@@ -100,12 +102,13 @@ namespace AnalysisPrograms.Recognizers.Base
 
             BaseSonogram sonogram = results.Sonogram;
             double[,] hits = results.Hits;
-            var predictedEvents = results.Events;
+            var predictedEvents = results.GetAllEvents();
 
             // double check all the events have the right offset in case it was missed
             foreach (var predictedEvent in predictedEvents)
             {
                 predictedEvent.SegmentStartSeconds = segmentSettings.SegmentStartOffset.TotalSeconds;
+                predictedEvent.SegmentDurationSeconds = recording.Duration.TotalSeconds;
             }
 
             analysisResults.Events = predictedEvents.ToArray();
@@ -147,7 +150,10 @@ namespace AnalysisPrograms.Recognizers.Base
                 const double EventThreshold = 0.1;
                 var plots = results.Plots ?? new List<Plot>();
 
-                Image image = this.DrawSonogram(sonogram, hits, plots, predictedEvents, EventThreshold);
+                //TODO Remove this when we remove AcousticEvent.
+                var convertedEvents = predictedEvents.Select(ec => ec is AcousticEvent ae ? EventConverters.ConvertAcousticEventToSpectralEvent(ae) : (EventCommon)ec).ToList();
+
+                Image image = this.DrawSonogram(sonogram, hits, plots, convertedEvents, EventThreshold);
                 image.Save(imagePath);
                 analysisResults.ImageFile = segmentSettings.SegmentImageFile;
 
@@ -292,7 +298,9 @@ namespace AnalysisPrograms.Recognizers.Base
 
         public override void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results)
         {
-            Csv.WriteToCsv(destination, results.Select(x => (AcousticEvent)x));
+            // TODO check this
+            //Csv.WriteToCsv(destination, results.Select(x => (AcousticEvent)x));
+            Csv.WriteToCsv(destination, results.Select(x => (EventCommon)x));
         }
 
         public override void WriteSummaryIndicesFile(FileInfo destination, IEnumerable<SummaryIndexBase> results)
@@ -329,7 +337,7 @@ namespace AnalysisPrograms.Recognizers.Base
             BaseSonogram sonogram,
             double[,] hits,
             List<Plot> scores,
-            List<AcousticEvent> predictedEvents,
+            List<EventCommon> predictedEvents,
             double eventThreshold)
         {
             var image = SpectrogramTools.GetSonogramPlusCharts(sonogram, predictedEvents, scores, hits);

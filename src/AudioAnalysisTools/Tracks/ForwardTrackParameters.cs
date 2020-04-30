@@ -33,7 +33,7 @@ namespace AnalysisPrograms.Recognizers.Base
         /// </summary>
         public bool CombinePossibleSyllableSequence { get; set; }
 
-        public TimeSpan SyllableStartDifference { get; set; }
+        public double SyllableStartDifference { get; set; }
 
         public int SyllableHertzGap { get; set; }
     }

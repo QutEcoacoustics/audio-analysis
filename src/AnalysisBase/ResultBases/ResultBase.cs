@@ -18,8 +18,6 @@ namespace AnalysisBase.ResultBases
     /// </summary>
     public abstract class ResultBase : IComparable<ResultBase>, IComparable
     {
-        private double resultStartSeconds;
-
         /// <summary>
         /// Gets or sets the filename of the audio file this result produced.
         /// </summary>
@@ -35,19 +33,7 @@ namespace AnalysisBase.ResultBases
         /// E.g. Given segment 78 of a 120min audio file, with a segment size of 60 seconds, this property would hold 78 minutes.
         /// And again: StartOffset is the time offset between the start of the recording and the start of the current result.
         /// </remarks>
-        public double ResultStartSeconds
-        {
-            get
-            {
-                return this.resultStartSeconds;
-            }
-
-            set
-            {
-                this.ResultMinute = (int)(value / 60.0);
-                this.resultStartSeconds = value;
-            }
-        }
+        public virtual double ResultStartSeconds { get; set; }
 
         /// <summary>
         /// Gets or sets the duration of audio segment that produced this result.
@@ -58,9 +44,9 @@ namespace AnalysisBase.ResultBases
 
         /// <summary>
         /// Gets the ResultMinute.
-        /// This is an integer representation of <see cref="ResultStartSeconds"/>.
+        /// This is the floored integer minute of <see cref="ResultStartSeconds"/>.
         /// </summary>
-        public int ResultMinute { get; private set; }
+        public int ResultMinute => (int)(this.ResultStartSeconds / 60.0);
 
         /// <summary>
         /// Defines an innate order of Analysis results based on the <c>SegmentStartOffset</c>.

@@ -405,7 +405,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
                 HarmonicsStartDifference = TimeSpan.FromSeconds(0.2),
                 HarmonicsHertzGap = 200,
                 CombinePossibleSyllableSequence = false,
-                SyllableStartDifference = TimeSpan.FromSeconds(0.2),
+                SyllableStartDifference = 0.2,
                 SyllableHertzGap = 300,
             };
 

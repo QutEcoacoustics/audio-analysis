@@ -105,7 +105,8 @@ namespace AudioAnalysisTools.Tracks
             // This will help in some cases to combine related events.
             if (parameters.CombinePossibleSyllableSequence)
             {
-                returnEvents = CompositeEvent.CombineSimilarProximalEvents(events, parameters.SyllableStartDifference, parameters.SyllableHertzGap);
+                var timeDiff = TimeSpan.FromSeconds(parameters.SyllableStartDifference);
+                returnEvents = CompositeEvent.CombineSimilarProximalEvents(events, timeDiff, parameters.SyllableHertzGap);
             }
 
             return (returnEvents, combinedIntensityArray);
@@ -229,7 +230,7 @@ namespace AudioAnalysisTools.Tracks
                 track.SetPoint(row, bin, maxValue);
 
                 // next line is for debug purposes
-                var info = track.CheckPoint(row, bin);
+                //var info = track.CheckPoint(row, bin);
             }
 
             return track;
