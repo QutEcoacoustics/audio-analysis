@@ -28,8 +28,6 @@ namespace AudioAnalysisTools.Events.Types
         public override double EventStartSeconds =>
             this.ComponentEvents.Min(x => x.EventStartSeconds);
 
-        public override double ResultStartSeconds => this.EventStartSeconds;
-
         public override double EventEndSeconds =>
             this.ComponentEvents.Max(x => (x as ITemporalEvent)?.EventEndSeconds) ?? double.PositiveInfinity;
 
@@ -155,11 +153,11 @@ namespace AudioAnalysisTools.Events.Types
         /// <summary>
         /// Combines overlapping events in the passed List of events and returns a reduced list.
         /// </summary>
-        public static List<SpectralEvent> CombineOverlappingEvents(List<SpectralEvent> events)
+        public static List<EventCommon> CombineOverlappingEvents(List<SpectralEvent> events)
         {
             if (events.Count < 2)
             {
-                return events;
+                return events.Cast<EventCommon>().ToList();
             }
 
             for (int i = events.Count - 1; i >= 0; i--)
@@ -176,7 +174,7 @@ namespace AudioAnalysisTools.Events.Types
                 }
             }
 
-            return events;
+            return events.Cast<EventCommon>().ToList();
         }
 
         /// <summary>

@@ -10,6 +10,7 @@ namespace AudioAnalysisTools.Tracks
     using System.Text;
     using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools.Events;
+    using AudioAnalysisTools.Events.Drawing;
     using AudioAnalysisTools.Events.Tracks;
     using AudioAnalysisTools.Events.Types;
     using AudioAnalysisTools.StandardSpectrograms;
@@ -71,8 +72,11 @@ namespace AudioAnalysisTools.Tracks
             // list of accumulated acoustic events
             var events = new List<SpectralEvent>();
             var combinedIntensityArray = new double[frameCount];
+            //IImageProcessingContext graphics,
+            //EventRenderingOptions options
             foreach (var track in tracks)
-            {
+            {                
+                //track.Draw(imageProcessingContest, EventRenderingOptions options);
                 var maxScore = decibelThreshold * 5;
                 var ae = new ChirpEvent(track, maxScore)
                 {

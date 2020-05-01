@@ -6,6 +6,7 @@ namespace Acoustics.Test.AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using Acoustics.Shared.ImageSharp;
     using Acoustics.Test.TestHelpers;
     using global::AudioAnalysisTools;
@@ -49,7 +50,8 @@ namespace Acoustics.Test.AudioAnalysisTools
             events.Add(event3);
 
             // combine Overlapping acoustic events
-            events = CompositeEvent.CombineOverlappingEvents(events: events);
+            var newEvents = CompositeEvent.CombineOverlappingEvents(events: events);
+            events = newEvents.Cast<SpectralEvent>().ToList();
 
             //require two events, the first being a composite of two events.
             Assert.AreEqual(2, events.Count);

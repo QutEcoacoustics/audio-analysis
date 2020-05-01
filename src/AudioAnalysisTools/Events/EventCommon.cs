@@ -33,6 +33,8 @@ namespace AudioAnalysisTools.Events
         /// </summary>
         public string ComponentName => this.GetType().Name;
 
+        public override double ResultStartSeconds => this.EventStartSeconds;
+
         /// <summary>
         /// Gets or sets the event score.
         /// This is a score in absolute units as determined by context.

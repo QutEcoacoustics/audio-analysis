@@ -2,14 +2,6 @@
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
-/// <summary>
-/// A recognizer for the Australian Boobook Owl, /// https://en.wikipedia.org/wiki/Australian_boobook .
-/// Eight subspecies of the Australian boobook are recognized,
-/// with three further subspecies being reclassified as separate species in 2019 due to their distinctive calls and genetics.
-/// THis recognizer has been trained on good quality calls from the Gympie recordings obtained by Yvonne Phillips.
-/// The recognizer has also been run across several recordings of Boobook from NZ (recordings obtained from Stuart Parsons.
-/// The NZ Boobook calls were of poor quality (distant and echo) and were 200 Hertz higher and performance was not good.
-/// </summary>
 namespace AnalysisPrograms.Recognizers
 {
     using System;
@@ -17,10 +9,13 @@ namespace AnalysisPrograms.Recognizers
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using System.Runtime.CompilerServices;
     using Acoustics.Shared.ConfigFile;
+    using AnalysisBase;
     using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
+    using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Types;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
@@ -28,8 +23,17 @@ namespace AnalysisPrograms.Recognizers
     using log4net;
     using SixLabors.ImageSharp;
     using TowseyLibrary;
+    using static AnalysisPrograms.Recognizers.GenericRecognizer;
     using Path = System.IO.Path;
 
+    /// <summary>
+    /// A recognizer for the Australian Boobook Owl, /// https://en.wikipedia.org/wiki/Australian_boobook .
+    /// Eight subspecies of the Australian boobook are recognized,
+    /// with three further subspecies being reclassified as separate species in 2019 due to their distinctive calls and genetics.
+    /// THis recognizer has been trained on good quality calls from the Gympie recordings obtained by Yvonne Phillips.
+    /// The recognizer has also been run across several recordings of Boobook from NZ (recordings obtained from Stuart Parsons.
+    /// The NZ Boobook calls were of poor quality (distant and echo) and were 200 Hertz higher and performance was not good.
+    /// </summary>
     internal class NinoxBoobook : RecognizerBase
     {
         private static readonly ILog BoobookLog = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
@@ -39,6 +43,82 @@ namespace AnalysisPrograms.Recognizers
         public override string SpeciesName => "NinoxBoobook";
 
         public override string Description => "[ALPHA] Detects acoustic events for the Australian Boobook owl.";
+
+        public override AnalyzerConfig ParseConfig(FileInfo file)
+        {
+            RuntimeHelpers.RunClassConstructor(typeof(NinoxBoobookConfig).TypeHandle);
+            var config = ConfigFile.Deserialize<NinoxBoobookConfig>(file);
+
+            // validation of configs can be done here
+            GenericRecognizer.ValidateProfileTagsMatchAlgorithms(config.Profiles, file);
+
+            // This call sets a restriction so that only one generic algorithm is used.
+            // CHANGE this to accept multiple generic algorithms as required.
+            //if (result.Profiles.SingleOrDefault() is ForwardTrackParameters)
+            if (config.Profiles?.Count == 1 && config.Profiles.First().Value is ForwardTrackParameters)
+            {
+                return config;
+            }
+
+            throw new ConfigFileException("NinoxBoobook expects one and only one ForwardTrack algorithm.", file);
+        }
+
+        /// <summary>
+        /// This method is called once per segment (typically one-minute segments).
+        /// </summary>
+        /// <param name="audioRecording">one minute of audio recording.</param>
+        /// <param name="config">config file that contains parameters used by all profiles.</param>
+        /// <param name="segmentStartOffset">when recording starts.</param>
+        /// <param name="getSpectralIndexes">not sure what this is.</param>
+        /// <param name="outputDirectory">where the recognizer results can be found.</param>
+        /// <param name="imageWidth"> assuming ????.</param>
+        /// <returns>recognizer results.</returns>
+        public override RecognizerResults Recognize(
+            AudioRecording audioRecording,
+            Config config,
+            TimeSpan segmentStartOffset,
+            Lazy<IndexCalculateResult[]> getSpectralIndexes,
+            DirectoryInfo outputDirectory,
+            int? imageWidth)
+        {
+            //class NinoxBoobookConfig is define at bottom of this file.
+            var genericConfig = (NinoxBoobookConfig)config;
+            var recognizer = new GenericRecognizer();
+
+            RecognizerResults combinedResults = recognizer.Recognize(
+                audioRecording,
+                genericConfig,
+                segmentStartOffset,
+                getSpectralIndexes,
+                outputDirectory,
+                imageWidth);
+
+            // DO POST-PROCESSING of EVENTS
+
+            // Convert events to spectral events for possible combining.
+            // Combine overlapping events. If the dB threshold is set low, may get lots of little events.
+            //   
+            var events = combinedResults.NewEvents;
+            var spectralEvents = events.Select(x => (SpectralEvent)x).ToList();
+            var newEvents = CompositeEvent.CombineOverlappingEvents(spectralEvents);
+
+            if (genericConfig.CombinePossibleSyllableSequence)
+            {
+                // convert events to spectral events for possible combining.
+                //var spectralEvents = events.Select(x => (SpectralEvent)x).ToList();
+                spectralEvents = newEvents.Cast<SpectralEvent>().ToList();
+                var startDiff = genericConfig.SyllableStartDifference;
+                var hertzDiff = genericConfig.SyllableHertzGap;
+                newEvents = CompositeEvent.CombineSimilarProximalEvents(spectralEvents, TimeSpan.FromSeconds(startDiff), (int)hertzDiff);
+            }
+
+            combinedResults.NewEvents = newEvents;
+
+            //UNCOMMENT following line if you want special debug spectrogram, i.e. with special plots.
+            //  NOTE: Standard spectrograms are produced by setting SaveSonogramImages: "True" or "WhenEventsDetected" in <Towsey.PteropusSpecies.yml> config file.
+            //GenericRecognizer.SaveDebugSpectrogram(territorialResults, genericConfig, outputDirectory, audioRecording.BaseName);
+            return combinedResults;
+        }
 
         /*
         /// <summary>
@@ -57,96 +137,15 @@ namespace AnalysisPrograms.Recognizers
         }
         */
 
-        /// <summary>
-        /// This method is called once per segment (typically one-minute segments).
-        /// </summary>
-        /// <param name="audioRecording">one minute of audio recording.</param>
-        /// <param name="genericConfig">config file that contains parameters used by all profiles.</param>
-        /// <param name="segmentStartOffset">when recording starts.</param>
-        /// <param name="getSpectralIndexes">not sure what this is.</param>
-        /// <param name="outputDirectory">where the recognizer results can be found.</param>
-        /// <param name="imageWidth"> assuming ????.</param>
-        /// <returns>recognizer results.</returns>
-        public override RecognizerResults Recognize(AudioRecording audioRecording, Config genericConfig, TimeSpan segmentStartOffset, Lazy<IndexCalculateResult[]> getSpectralIndexes, DirectoryInfo outputDirectory, int? imageWidth)
+        /// <inheritdoc cref="NinoxBoobookConfig"/> />
+        public class NinoxBoobookConfig : GenericRecognizerConfig, INamedProfiles<object>
         {
-            var recognizer = new GenericRecognizer();
-            var config = recognizer.ParseConfig(FileInfo file);
+            //public bool CombineOverlappedEvents { get; set; }
+            public bool CombinePossibleSyllableSequence { get; set; } = false;
 
-            /*
-            string[] profileNames = null;
-            if (ConfigFile.HasProfiles(genericConfig))
-            {
-                profileNames = ConfigFile.GetProfileNames(genericConfig);
-                int count = profileNames.Length;
-                var message = $"Found {count} config profile(s): ";
-                foreach (string s in profileNames)
-                {
-                    message = message + (s + ", ");
-                }
+            public double SyllableStartDifference { get; set; } = 0.5;
 
-                BoobookLog.Debug(message);
-            }
-            else
-            {
-                BoobookLog.Warn("No configuration profiles found.");
-            }
-
-            var combinedResults = new RecognizerResults();
-
-            foreach (var profileName in profileNames)
-            {
-                var results = new RecognizerResults();
-
-                if (ConfigFile.TryGetProfile(genericConfig, profileName, out var profile))
-                {
-                    results = recognizer.(audioRecording, genericConfig, "Territorial", segmentStartOffset);
-                    BoobookLog.Debug("Boobook event count = " + results.Events.Count);
-                }
-                else
-                {
-                    BoobookLog.Warn($"Could not access {profileName} configuration parameters");
-                }
-
-                // combine the results i.e. add wing-beat events to the list of territorial call events.
-                //NOTE: The returned territorialResults and wingbeatResults will never be null.
-                combinedResults.Events.AddRange(results.Events);
-                combinedResults.Plots.AddRange(results.Plots);
-            }
-
-            //UNCOMMENT following line if you want special debug spectrogram, i.e. with special plots.
-            //  NOTE: Standard spectrograms are produced by setting SaveSonogramImages: "True" or "WhenEventsDetected" in <Towsey.PteropusSpecies.yml> config file.
-            //SaveDebugSpectrogram(territorialResults, genericConfig, outputDirectory, audioRecording.BaseName);
-            */
-            return combinedResults;
-        }
-
-        /// <summary>
-        /// returns a base sonogram type from which spectrogram images are prepared.
-        /// </summary>
-        internal static BaseSonogram GetSonogram(Config configuration, AudioRecording audioRecording)
-        {
-            var sonoConfig = new SonogramConfig
-            {
-                WindowSize = 512,
-                NoiseReductionType = NoiseReductionType.Standard,
-                NoiseReductionParameter = configuration.GetDoubleOrNull(AnalysisKeys.NoiseBgThreshold) ?? 0.0,
-                WindowOverlap = 0.0,
-            };
-
-            // now construct the standard decibel spectrogram WITH noise removal
-            // get frame parameters for the analysis
-            var sonogram = (BaseSonogram)new SpectrogramStandard(sonoConfig, audioRecording.WavReader);
-            return sonogram;
-        }
-
-        /// <summary>
-        /// THis method can be modified if want to do something non-standard with the output spectrogram.
-        /// </summary>
-        internal static void SaveDebugSpectrogram(RecognizerResults results, Config genericConfig, DirectoryInfo outputDirectory, string baseName)
-        {
-            //var image = sonogram.GetImageFullyAnnotated("Test");
-            var image = SpectrogramTools.GetSonogramPlusCharts(results.Sonogram, results.Events, results.Plots, null);
-            image.Save(Path.Combine(outputDirectory.FullName, baseName + ".profile.png"));
+            public double SyllableHertzGap { get; set; } = 200;
         }
     }
 }

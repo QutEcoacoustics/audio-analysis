@@ -51,11 +51,17 @@ namespace AnalysisPrograms.Recognizers
             RuntimeHelpers.RunClassConstructor(typeof(GenericRecognizerConfig).TypeHandle);
             var result = ConfigFile.Deserialize<GenericRecognizerConfig>(file);
 
-            this.combineOverlappedEvents = result.CombineOverlappedEvents;
+            // validation of configs can be done here
+            ValidateProfileTagsMatchAlgorithms(result.Profiles, file);
 
+            return result;
+        }
+
+        public static void ValidateProfileTagsMatchAlgorithms(Dictionary<string, object> profiles, FileInfo file)
+        {
             // validation of configs can be done here
             // sanity check the algorithm
-            foreach (var (profileName, profile) in result.Profiles)
+            foreach (var (profileName, profile) in profiles)
             {
                 if (profile is CommonParameters c)
                 {
@@ -103,8 +109,6 @@ namespace AnalysisPrograms.Recognizers
                         throw new ConfigFileException($"The algorithm type in profile {profileName} is not recognized. It must be one of {allowedAlgorithms}");
                 }
             }
-
-            return result;
         }
 
         /// <inheritdoc/>
@@ -118,7 +122,7 @@ namespace AnalysisPrograms.Recognizers
         {
             var configuration = (GenericRecognizerConfig)genericConfig;
 
-            if (configuration.Profiles.NotNull() && configuration.Profiles.Count == 0)
+            if (configuration.Profiles?.Count < 1)
             {
                 throw new ConfigFileException(
                     "The generic recognizer needs at least one profile set. 0 were found.");
@@ -358,19 +362,14 @@ namespace AnalysisPrograms.Recognizers
         }
         */
 
-        private static SonogramConfig ParametersToSonogramConfig(CommonParameters common)
+        /// <summary>
+        /// THis method can be modified if want to do something non-standard with the output spectrogram.
+        /// </summary>
+        public static void SaveDebugSpectrogram(RecognizerResults results, Config genericConfig, DirectoryInfo outputDirectory, string baseName)
         {
-            int windowSize = (int)common.FrameSize;
-            int windowStep = (int)common.FrameStep;
-            return new SonogramConfig()
-            {
-                WindowSize = windowSize,
-                WindowStep = windowStep,
-                WindowOverlap = (windowSize - windowStep) / (double)windowSize,
-                WindowFunction = (string)common.WindowFunction,
-                NoiseReductionType = NoiseReductionType.Standard,
-                NoiseReductionParameter = common.BgNoiseThreshold ?? 0.0,
-            };
+            var image3 = SpectrogramTools.GetSonogramPlusCharts(results.Sonogram, results.NewEvents, results.Plots, null);
+
+            image3.Save(Path.Combine(outputDirectory.FullName, baseName + ".profile.png"));
         }
 
         /// <summary>
@@ -390,21 +389,24 @@ namespace AnalysisPrograms.Recognizers
             return plot;
         }
 
-        /// <summary>
-        /// THis method can be modified if want to do something non-standard with the output spectrogram.
-        /// </summary>
-        public static void SaveDebugSpectrogram(RecognizerResults results, Config genericConfig, DirectoryInfo outputDirectory, string baseName)
+        private static SonogramConfig ParametersToSonogramConfig(CommonParameters common)
         {
-            var image3 = SpectrogramTools.GetSonogramPlusCharts(results.Sonogram, results.NewEvents, results.Plots, null);
-
-            image3.Save(Path.Combine(outputDirectory.FullName, baseName + ".profile.png"));
+            int windowSize = (int)common.FrameSize;
+            int windowStep = (int)common.FrameStep;
+            return new SonogramConfig()
+            {
+                WindowSize = windowSize,
+                WindowStep = windowStep,
+                WindowOverlap = (windowSize - windowStep) / (double)windowSize,
+                WindowFunction = (string)common.WindowFunction,
+                NoiseReductionType = NoiseReductionType.Standard,
+                NoiseReductionParameter = common.BgNoiseThreshold ?? 0.0,
+            };
         }
 
-        /// <inheritdoc cref="RecognizerConfig"/> />
+        /// <inheritdoc cref="GenericRecognizerConfig"/> />
         public class GenericRecognizerConfig : RecognizerConfig, INamedProfiles<object>
         {
-            public bool CombineOverlappedEvents { get; set; }
-
             /// <inheritdoc />
             public Dictionary<string, object> Profiles { get; set; }
         }
