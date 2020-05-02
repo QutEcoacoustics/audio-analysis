@@ -1,0 +1,50 @@
+---
+
+# Resample rate must be 2 X the desired Nyquist
+ResampleRate: 8000
+# SegmentDuration: units=seconds;    
+SegmentDuration: 60
+# SegmentOverlap: units=seconds;
+SegmentOverlap: 0
+
+# Each of these profiles will be analyzed
+Profiles:
+    WhistleSyllable: !WhistleParameters
+        FrameSize: 1024
+        FrameStep: 512
+        BgNoiseThreshold: 0.0
+        WindowFunction: HANNING
+        # min and max of the freq band to search
+        MinHertz: 100          
+        MaxHertz: 200
+        MinDuration: 0.2
+        MaxDuration: 1.0
+        DecibelThreshold: 6.0
+        ComponentName: Whistle 
+        SpeciesName: BotaurusPoiciloptilus
+
+# Common settings
+#Standard: &STANDARD
+#EventThreshold: 0.2
+#BgNoiseThreshold: 3.0
+
+# This notation means the a profile has all of the settings that the Standard profile has,
+# however, the DctDuration parameter has been overridden.
+#  <<: *STANDARD
+#  DctDuration: 0.3
+
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveIntermediateWavFiles: Never
+SaveIntermediateCsvFiles: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+# "True" is useful when debugging but "WhenEventsDetected" is required for operational use.
+SaveSonogramImages: True
+#SaveSonogramImages: WhenEventsDetected
+# DisplayCsvImage is obsolete - ensure it remains set to: false
+DisplayCsvImage: false
+## End section for AnalyzeLongRecording
+
+# Other config files to reference
+
+HighResolutionIndicesConfig: "../Towsey.Acoustic.HiResIndicesForRecognisers.yml"
+...
