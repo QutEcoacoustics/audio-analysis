@@ -11,6 +11,9 @@ namespace AnalysisPrograms.Recognizers
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.WavTools;
 
+    /// <summary>
+    /// Recognizer for the Night Parrot.
+    /// </summary>
     public class PezoporusOccidentalis : RecognizerBase
     {
         public override string Author { get; }
