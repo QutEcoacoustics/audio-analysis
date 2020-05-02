@@ -10,7 +10,7 @@ SegmentOverlap: 0
 
 # Each of these profiles will be analyzed
 Profiles:
-    PeakTrackSyllable: !ForwardTrackParameters
+    BoobookSyllable: !ForwardTrackParameters
         ComponentName: RidgeTrack 
         SpeciesName: NinoxBoobook
         FrameSize: 1024
@@ -21,12 +21,12 @@ Profiles:
         MinHertz: 300          
         MaxHertz: 1000
         MinDuration: 0.15
-        MaxDuration: 0.5
+        MaxDuration: 1.0
         DecibelThreshold: 6.0
         
 #Combine each pair of Boobook syllables as one event
 #CombineProximalSimilarEvents: false
-CombinePossibleSyllableSequence: true
+CombinePossibleSyllableSequence: false
 SyllableStartDifference: 0.6
 SyllableHertzGap: 200
 

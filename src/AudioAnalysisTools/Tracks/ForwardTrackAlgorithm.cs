@@ -14,6 +14,8 @@ namespace AudioAnalysisTools.Tracks
     using AudioAnalysisTools.Events.Tracks;
     using AudioAnalysisTools.Events.Types;
     using AudioAnalysisTools.StandardSpectrograms;
+    using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.Processing;
     using TowseyLibrary;
 
     public static class ForwardTrackAlgorithm
@@ -72,11 +74,16 @@ namespace AudioAnalysisTools.Tracks
             // list of accumulated acoustic events
             var events = new List<SpectralEvent>();
             var combinedIntensityArray = new double[frameCount];
-            //IImageProcessingContext graphics,
-            //EventRenderingOptions options
+
+            // The following lines are used only for debug purposes.
+            //var options = new EventRenderingOptions(new UnitConverters(segmentStartOffset.TotalSeconds, sonogram.Duration.TotalSeconds, nyquist, frameCount, binCount));
+            //var spectrogram = sonogram.GetImage(doHighlightSubband: false, add1KHzLines: true, doMelScale: false);
+
+            // Initialise events with tracks.
             foreach (var track in tracks)
-            {                
-                //track.Draw(imageProcessingContest, EventRenderingOptions options);
+            {
+                //Following line used only for debug purposes.
+                //spectrogram.Mutate(x => track.Draw(x, options));
                 var maxScore = decibelThreshold * 5;
                 var ae = new ChirpEvent(track, maxScore)
                 {
@@ -95,6 +102,9 @@ namespace AudioAnalysisTools.Tracks
                     combinedIntensityArray[startRow + i] = Math.Max(combinedIntensityArray[startRow + i], amplitudeTrack[i]);
                 }
             }
+
+            //Following line used only for debug purposes.
+            //spectrogram.Save("C:\\temp\\SpectrogramWithTracks.png");
 
             List<EventCommon> returnEvents = events.Cast<EventCommon>().ToList();
 
