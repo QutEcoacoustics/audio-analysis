@@ -9,6 +9,9 @@ namespace AudioAnalysisTools.Events.Tracks
     using System.Linq;
     using AudioAnalysisTools.Events.Drawing;
     using AudioAnalysisTools.Events.Interfaces;
+    using AudioAnalysisTools.StandardSpectrograms;
+    using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
 
     public enum TrackType
@@ -119,6 +122,23 @@ namespace AudioAnalysisTools.Events.Tracks
                 var startTime = this.StartTimeSeconds;
                 return this.Points.Where(x => x.Seconds.Contains(startTime)).Min(y => y.Hertz.Minimum);
             }
+        }
+
+        public static Image<Rgb24> DrawTracksOnSpectrogram(SpectrogramStandard sonogram, List<Track> tracks, TimeSpan segmentStartOffset)
+        {
+            var sonogramData = sonogram.Data;
+            int frameCount = sonogramData.GetLength(0);
+            int binCount = sonogramData.GetLength(1);
+            int nyquist = sonogram.NyquistFrequency;
+            var options = new EventRenderingOptions(new UnitConverters(segmentStartOffset.TotalSeconds, sonogram.Duration.TotalSeconds, nyquist, frameCount, binCount));
+            var spectrogram = sonogram.GetImage(doHighlightSubband: false, add1KHzLines: true, doMelScale: false);
+
+            foreach (var track in tracks)
+            {
+                spectrogram.Mutate(x => track.Draw(x, options));
+            }
+
+            return spectrogram;
         }
 
         /// <summary>
