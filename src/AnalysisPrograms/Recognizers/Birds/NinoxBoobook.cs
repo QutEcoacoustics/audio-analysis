@@ -97,7 +97,6 @@ namespace AnalysisPrograms.Recognizers
 
             // Convert events to spectral events for possible combining.
             // Combine overlapping events. If the dB threshold is set low, may get lots of little events.
-            //   
             var events = combinedResults.NewEvents;
             var spectralEvents = events.Select(x => (SpectralEvent)x).ToList();
             var newEvents = CompositeEvent.CombineOverlappingEvents(spectralEvents);
@@ -140,7 +139,6 @@ namespace AnalysisPrograms.Recognizers
         /// <inheritdoc cref="NinoxBoobookConfig"/> />
         public class NinoxBoobookConfig : GenericRecognizerConfig, INamedProfiles<object>
         {
-            //public bool CombineOverlappedEvents { get; set; }
             public bool CombinePossibleSyllableSequence { get; set; } = false;
 
             public double SyllableStartDifference { get; set; } = 0.5;
