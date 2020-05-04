@@ -52,8 +52,8 @@ namespace AnalysisPrograms.Recognizers
 
             // This call sets a restriction so that only one generic algorithm is used.
             // CHANGE this to accept multiple generic algorithms as required.
-            //if (result.Profiles.SingleOrDefault() is ForwardTrackParameters)
-            if (config.Profiles?.Count == 1 && config.Profiles.First().Value is ForwardTrackParameters)
+            //if (result.Profiles.SingleOrDefault() is OnebinTrackParameters)
+            if (config.Profiles?.Count == 1 && config.Profiles.First().Value is OnebinTrackParameters)
             {
                 return config;
             }

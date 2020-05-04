@@ -1,5 +1,6 @@
 ---
 
+# Australasian Bittern
 # Resample rate must be 2 X the desired Nyquist
 ResampleRate: 8000
 # SegmentDuration: units=seconds;    
@@ -9,19 +10,25 @@ SegmentOverlap: 0
 
 # Each of these profiles will be analyzed
 Profiles:
-    WhistleSyllable: !WhistleParameters
-        FrameSize: 1024
-        FrameStep: 512
-        BgNoiseThreshold: 0.0
+    AustBittern: !OnebinTrackParameters
+        ComponentName: Whistle 
+        SpeciesName: BotaurusPoiciloptilus
+        FrameSize: 512
+        FrameStep: 256
         WindowFunction: HANNING
+        BgNoiseThreshold: 0.0
         # min and max of the freq band to search
         MinHertz: 100          
         MaxHertz: 200
         MinDuration: 0.2
         MaxDuration: 1.0
-        DecibelThreshold: 6.0
-        ComponentName: Whistle 
-        SpeciesName: BotaurusPoiciloptilus
+        DecibelThreshold: 3.0
+
+#Combine each pair of Boobook syllables as one event
+#CombineProximalSimilarEvents: false
+CombinePossibleSyllableSequence: false
+SyllableStartDifference: 0.6
+SyllableHertzGap: 200
 
 # Common settings
 #Standard: &STANDARD
