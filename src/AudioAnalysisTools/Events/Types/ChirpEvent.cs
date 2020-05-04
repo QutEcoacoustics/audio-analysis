@@ -49,6 +49,12 @@ namespace AudioAnalysisTools
             this.Tracks.Max(x => x.HighFreqHertz);
 
         /// <summary>
+        /// Gets or sets the score for the frequency profile of the contained track.
+        /// This score is used as a measure of how close the shape of a track matches a desired shape.
+        /// </summary>
+        public double FrequencyProfileScore { get; set; }
+
+        /// <summary>
         /// Gets the average track amplitude.
         /// </summary>
         /// <remarks>

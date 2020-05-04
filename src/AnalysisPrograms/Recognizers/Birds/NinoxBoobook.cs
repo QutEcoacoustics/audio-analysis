@@ -96,9 +96,17 @@ namespace AnalysisPrograms.Recognizers
             // DO POST-PROCESSING of EVENTS
 
             // Convert events to spectral events for possible combining.
-            // Combine overlapping events. If the dB threshold is set low, may get lots of little events.
             var events = combinedResults.NewEvents;
             var spectralEvents = events.Select(x => (SpectralEvent)x).ToList();
+
+            //WriteFrequencyProfiles(spectralEvents);
+            // calculate frequency profile score for each event
+            foreach (var ev in spectralEvents)
+            {
+                SetFrequencyProfileScore(ev);
+            }
+
+            // Combine overlapping events. If the dB threshold is set low, may get lots of little events.
             var newEvents = CompositeEvent.CombineOverlappingEvents(spectralEvents);
 
             if (genericConfig.CombinePossibleSyllableSequence)
@@ -119,22 +127,85 @@ namespace AnalysisPrograms.Recognizers
             return combinedResults;
         }
 
-        /*
-        /// <summary>
-        /// Summarize your results. This method is invoked exactly once per original file.
-        /// </summary>
-        public override void SummariseResults(
-            AnalysisSettings settings,
-            FileSegment inputFileSegment,
-            EventBase[] events,
-            SummaryIndexBase[] indices,
-            SpectralIndexBase[] spectralIndices,
-            AnalysisResult2[] results)
+        public static void SetFrequencyProfileScore(SpectralEvent ev)
         {
-            // No operation - do nothing. Feel free to add your own logic.
-            base.SummariseResults(settings, inputFileSegment, events, indices, spectralIndices, results);
+            var track = ((ChirpEvent)ev).Tracks[0];
+            var profile = track.GetTrackFrequencyProfile().ToArray();
+            var startSum = 0.0;
+            if (profile.Length >= 5)
+            {
+                startSum = profile[0] + profile[1] + profile[2] + profile[3] + profile[4];
+            }
+
+            var endSum = 0.0;
+            if (profile.Length >= 11)
+            {
+                endSum = profile[6] + profile[7] + profile[8] + profile[9] + profile[10];
+            }
+
+            // set score to 1.0 if the profile has inverted U shape.
+            double score = 0.0;
+            if (startSum > 0.0 && endSum < 0.0)
+            {
+                score = 1.0;
+            }
+
+            ((ChirpEvent)ev).FrequencyProfileScore = score;
         }
-        */
+
+        public static void WriteFrequencyProfiles(List<SpectralEvent> events)
+        {
+            /* Here are the frequqency prfiles of some events.
+42,21,21,42,21, 00, 21,-21,-21,-21, 00,-21,-42
+42,42,21,21,42,-21, 21, 00,-21,-21,-21,-21, 00,-21,21,-21
+42,42,21,21,42, 00, 00, 00,-21,-21,-21,-21,-21
+21,21,00,00,21, 21,-21, 00, 00,-21, 00,-21,-21,21,-21,42
+42,42,21,00,42, 00, 00,-21,-21,-21,-21, 00,-21,
+21,42,21,21,21, 00,-21,-21,-21, 00,-21,-21
+42,21,21,42,21, 21, 00,-21,-21,-21,-21
+42,42,21,42,00, 00,-21, 00,-21,-21, 00,-21,-21
+*/
+
+            var spectralEvents = events.Select(x => (ChirpEvent)x).ToList();
+            foreach (var ev in spectralEvents)
+            {
+                foreach (var track in ev.Tracks)
+                {
+                    var profile = track.GetTrackFrequencyProfile().ToArray();
+                    var startSum = 0.0;
+                    if (profile.Length >= 5)
+                    {
+                        startSum = profile[0] + profile[1] + profile[2] + profile[3] + profile[4];
+                    }
+
+                    var endSum = 0.0;
+                    if (profile.Length >= 11)
+                    {
+                        endSum = profile[6] + profile[7] + profile[8] + profile[9] + profile[10];
+                    }
+
+                    LoggedConsole.WriteLine($"{startSum}    {endSum}");
+                    LoggedConsole.WriteLine(DataTools.WriteArrayAsCsvLine(profile, "F0"));
+                }
+            }
+        }
+
+/*
+/// <summary>
+/// Summarize your results. This method is invoked exactly once per original file.
+/// </summary>
+public override void SummariseResults(
+    AnalysisSettings settings,
+    FileSegment inputFileSegment,
+    EventBase[] events,
+    SummaryIndexBase[] indices,
+    SpectralIndexBase[] spectralIndices,
+    AnalysisResult2[] results)
+{
+    // No operation - do nothing. Feel free to add your own logic.
+    base.SummariseResults(settings, inputFileSegment, events, indices, spectralIndices, results);
+}
+*/
 
         /// <inheritdoc cref="NinoxBoobookConfig"/> />
         public class NinoxBoobookConfig : GenericRecognizerConfig, INamedProfiles<object>
