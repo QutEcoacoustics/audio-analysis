@@ -153,7 +153,7 @@ namespace AudioAnalysisTools.Events.Types
         /// <summary>
         /// Combines overlapping events in the passed List of events and returns a reduced list.
         /// </summary>
-        public static List<EventCommon> CombineOverlappingEvents(List<SpectralEvent> events)
+        public static List<EventCommon> CombineOverlappingEvents(List<EventCommon> events)
         {
             if (events.Count < 2)
             {
@@ -164,9 +164,12 @@ namespace AudioAnalysisTools.Events.Types
             {
                 for (int j = i - 1; j >= 0; j--)
                 {
-                    if (EventsOverlapInTime(events[i], events[j]) && EventsOverlapInFrequency(events[i], events[j]))
+                    var a = events[i] as SpectralEvent;
+                    var b = events[j] as SpectralEvent;
+
+                    if (EventsOverlapInTime(a, b) && EventsOverlapInFrequency(a, b))
                     {
-                        var compositeEvent = CombineTwoEvents(events[i], events[j]);
+                        var compositeEvent = CombineTwoEvents(a, b);
                         events[j] = compositeEvent;
                         events.RemoveAt(i);
                         break;

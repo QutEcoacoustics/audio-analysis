@@ -50,7 +50,7 @@ namespace Acoustics.Test.AudioAnalysisTools
             events.Add(event3);
 
             // combine Overlapping acoustic events
-            var newEvents = CompositeEvent.CombineOverlappingEvents(events: events);
+            var newEvents = CompositeEvent.CombineOverlappingEvents(events: events.Cast<EventCommon>().ToList());
             events = newEvents.Cast<SpectralEvent>().ToList();
 
             //require two events, the first being a composite of two events.

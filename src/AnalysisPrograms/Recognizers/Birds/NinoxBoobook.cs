@@ -16,6 +16,7 @@ namespace AnalysisPrograms.Recognizers
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Events;
+    using AudioAnalysisTools.Events.Tracks;
     using AudioAnalysisTools.Events.Types;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
@@ -81,7 +82,7 @@ namespace AnalysisPrograms.Recognizers
             DirectoryInfo outputDirectory,
             int? imageWidth)
         {
-            //class NinoxBoobookConfig is define at bottom of this file.
+            //class NinoxBoobookConfig is defined at bottom of this file.
             var genericConfig = (NinoxBoobookConfig)config;
             var recognizer = new GenericRecognizer();
 
@@ -95,25 +96,26 @@ namespace AnalysisPrograms.Recognizers
 
             // DO POST-PROCESSING of EVENTS
 
-            // Convert events to spectral events for possible combining.
-            var events = combinedResults.NewEvents;
-            var spectralEvents = events.Select(x => (SpectralEvent)x).ToList();
+            // Filter out the chirp events for possible combining.
+            var (chirpEvents, others) = combinedResults.NewEvents.FilterForEventType<ChirpEvent, EventCommon>();
 
-            //WriteFrequencyProfiles(spectralEvents);
-            // calculate frequency profile score for each event
-            foreach (var ev in spectralEvents)
+            // Uncomment the next line when want to obtain the event frequency profiles.
+            // WriteFrequencyProfiles(chirpEvents);
+
+            // Calculate frequency profile score for each event
+            foreach (var ev in chirpEvents)
             {
-                SetFrequencyProfileScore(ev);
+                SetFrequencyProfileScore((ChirpEvent)ev);
             }
 
             // Combine overlapping events. If the dB threshold is set low, may get lots of little events.
-            var newEvents = CompositeEvent.CombineOverlappingEvents(spectralEvents);
+            var newEvents = CompositeEvent.CombineOverlappingEvents(chirpEvents.Cast<EventCommon>().ToList());
 
             if (genericConfig.CombinePossibleSyllableSequence)
             {
                 // convert events to spectral events for possible combining.
-                //var spectralEvents = events.Select(x => (SpectralEvent)x).ToList();
-                spectralEvents = newEvents.Cast<SpectralEvent>().ToList();
+                var (spectralEvents, _) = combinedResults.NewEvents.FilterForEventType<SpectralEvent, EventCommon>();
+
                 var startDiff = genericConfig.SyllableStartDifference;
                 var hertzDiff = genericConfig.SyllableHertzGap;
                 newEvents = CompositeEvent.CombineSimilarProximalEvents(spectralEvents, TimeSpan.FromSeconds(startDiff), (int)hertzDiff);
@@ -127,20 +129,46 @@ namespace AnalysisPrograms.Recognizers
             return combinedResults;
         }
 
-        public static void SetFrequencyProfileScore(SpectralEvent ev)
+        /// <summary>
+        /// The Boobook call syllable is shaped like an inverted "U". Its total duration is close to 0.15 seconds.
+        /// The rising portion lasts for 0.06s, followed by a turning portion, 0.03s, followed by the decending portion of 0.06s.
+        /// The constants for this method were obtained from the calls in a Gympie recording obtained by Yvonne Phillips.
+        /// </summary>
+        /// <param name="ev">An event containing at least one forward track i.e. a chirp.</param>
+        public static void SetFrequencyProfileScore(ChirpEvent ev)
         {
-            var track = ((ChirpEvent)ev).Tracks[0];
+            const double risingDuration = 0.06;
+            const double gapDuration = 0.03;
+            const double fallingDuration = 0.06;
+
+            var track = ev.Tracks.First();
             var profile = track.GetTrackFrequencyProfile().ToArray();
+
+            // get the first point
+            var firstPoint = track.Points.First();
+            var frameDuration = firstPoint.Seconds.Maximum - firstPoint.Seconds.Minimum;
+            var risingFrameCount = (int)Math.Floor(risingDuration / frameDuration);
+            var gapFrameCount = (int)Math.Floor(gapDuration / frameDuration);
+            var fallingFrameCount = (int)Math.Floor(fallingDuration / frameDuration);
+
             var startSum = 0.0;
-            if (profile.Length >= 5)
+            if (profile.Length >= risingFrameCount)
             {
-                startSum = profile[0] + profile[1] + profile[2] + profile[3] + profile[4];
+                for (var i = 0; i <= risingFrameCount; i++)
+                {
+                    startSum += profile[i];
+                }
             }
 
+            int startFrame = risingFrameCount + gapFrameCount;
+            int endFrame = startFrame + fallingFrameCount;
             var endSum = 0.0;
-            if (profile.Length >= 11)
+            if (profile.Length >= endFrame)
             {
-                endSum = profile[6] + profile[7] + profile[8] + profile[9] + profile[10];
+                for (var i = startFrame; i <= endFrame; i++)
+                {
+                    endSum += profile[i];
+                }
             }
 
             // set score to 1.0 if the profile has inverted U shape.
@@ -150,12 +178,19 @@ namespace AnalysisPrograms.Recognizers
                 score = 1.0;
             }
 
-            ((ChirpEvent)ev).FrequencyProfileScore = score;
+            ev.FrequencyProfileScore = score;
         }
 
-        public static void WriteFrequencyProfiles(List<SpectralEvent> events)
+        /// <summary>
+        /// WARNING - this method assumes that the rising and falling parts of a Boobook call syllable last for 5 frames.
+        /// </summary>
+        /// <param name="events">List of spectral events.</param>
+        public static void WriteFrequencyProfiles(List<ChirpEvent> events)
         {
-            /* Here are the frequqency prfiles of some events.
+            /* Here are the frequency profiles of some events.
+             * Note that the first five frames (0.057 seconds) have positive slope and subsequent frames have negative slope.
+             * The final frames are likely to be echo and to be avoided.
+             * Therefore take the first 0.6s to calculate the positive slope, leave a gap of 0.025 seconds and then get negative slope from the next 0.6 seconds.
 42,21,21,42,21, 00, 21,-21,-21,-21, 00,-21,-42
 42,42,21,21,42,-21, 21, 00,-21,-21,-21,-21, 00,-21,21,-21
 42,42,21,21,42, 00, 00, 00,-21,-21,-21,-21,-21

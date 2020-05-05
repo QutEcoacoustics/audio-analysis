@@ -26,7 +26,7 @@ Profiles:
         
 #Combine each pair of Boobook syllables as one event
 #CombineProximalSimilarEvents: false
-CombinePossibleSyllableSequence: false
+CombinePossibleSyllableSequence: true
 SyllableStartDifference: 0.6
 SyllableHertzGap: 200
 
