@@ -22,7 +22,7 @@ Profiles:
         MaxHertz: 200
         MinDuration: 0.3
         MaxDuration: 1.0
-        DecibelThreshold: 3.0
+        DecibelThreshold: 6.0
 
 #Combine each pair of Boobook syllables as one event
 #CombineProximalSimilarEvents: false
