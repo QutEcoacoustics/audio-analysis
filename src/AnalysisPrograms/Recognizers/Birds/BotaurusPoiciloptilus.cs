@@ -97,7 +97,8 @@ namespace AnalysisPrograms.Recognizers
             // Combine overlapping events. If the dB threshold is set low, may get lots of little events.
             var events = combinedResults.NewEvents;
             var spectralEvents = events.Select(x => (SpectralEvent)x).ToList();
-            var newEvents = CompositeEvent.CombineOverlappingEvents(spectralEvents);
+            var newEvents = CompositeEvent.CombineOverlappingEvents(spectralEvents.Cast<EventCommon>().ToList());
+            //var newEvents = CompositeEvent.CombineOverlappingEvents(chirpEvents.Cast<EventCommon>().ToList());
 
             if (genericConfig.CombinePossibleSyllableSequence)
             {

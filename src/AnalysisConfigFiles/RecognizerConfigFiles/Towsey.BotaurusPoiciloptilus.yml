@@ -20,15 +20,15 @@ Profiles:
         # min and max of the freq band to search
         MinHertz: 100          
         MaxHertz: 200
-        MinDuration: 0.2
+        MinDuration: 0.3
         MaxDuration: 1.0
         DecibelThreshold: 3.0
 
 #Combine each pair of Boobook syllables as one event
 #CombineProximalSimilarEvents: false
-CombinePossibleSyllableSequence: false
-SyllableStartDifference: 0.6
-SyllableHertzGap: 200
+CombinePossibleSyllableSequence: true
+SyllableStartDifference: 3.0
+SyllableHertzGap: 100
 
 # Common settings
 #Standard: &STANDARD
