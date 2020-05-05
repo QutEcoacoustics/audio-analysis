@@ -110,7 +110,19 @@ namespace AnalysisPrograms.Recognizers
                 newEvents = CompositeEvent.CombineSimilarProximalEvents(spectralEvents, TimeSpan.FromSeconds(startDiff), (int)hertzDiff);
             }
 
-            combinedResults.NewEvents = newEvents;
+            //filter the events for duration and bandwidth
+            var filteredEvents = new List<EventCommon>();
+            foreach (var ev in newEvents)
+            {
+                var eventDuration = ((SpectralEvent)ev).EventEndSeconds - ev.EventStartSeconds;
+                var eventBandWidth = ((SpectralEvent)ev).BandWidthHertz;
+                if (eventDuration > 2.0 && eventDuration < 11.0 && eventBandWidth > 50)
+                {
+                    filteredEvents.Add(ev);
+                }
+            }
+
+            combinedResults.NewEvents = filteredEvents;
 
             //UNCOMMENT following line if you want special debug spectrogram, i.e. with special plots.
             //  NOTE: Standard spectrograms are produced by setting SaveSonogramImages: "True" or "WhenEventsDetected" in <Towsey.PteropusSpecies.yml> config file.
