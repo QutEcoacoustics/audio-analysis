@@ -6,11 +6,13 @@ namespace AudioAnalysisTools.Tracks
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Text;
     using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Tracks;
     using AudioAnalysisTools.StandardSpectrograms;
+    using TowseyLibrary;
     using TrackType = AudioAnalysisTools.Events.Tracks.TrackType;
 
     public static class OnebinTrackAlgorithm
@@ -34,9 +36,6 @@ namespace AudioAnalysisTools.Tracks
             double decibelThreshold = parameters.DecibelThreshold.Value;
             double minDuration = parameters.MinDuration.Value;
             double maxDuration = parameters.MaxDuration.Value;
-
-            // May not want to do this for whistles.
-            // bool combinePossibleSequence,
 
             var converter = new UnitConverters(
                 segmentStartOffset: segmentStartOffset.TotalSeconds,
@@ -78,17 +77,38 @@ namespace AudioAnalysisTools.Tracks
 
             var tracks = GetOnebinTracks(peaks, minDuration, maxDuration, decibelThreshold, converter);
 
-            // initialise tracks as events and get the combined intensity array.
-            var events = new List<EventCommon>();
+            // Initialise tracks as events and get the combined intensity array.
+            var events = new List<WhistleEvent>();
             var combinedIntensityArray = new double[frameCount];
             var maxScore = decibelThreshold * 5;
             foreach (var track in tracks)
             {
+                // Now check the buffer zone above the whistle.
+                // It should not contain high acoustic content.
+                var bufferHertz = 300;
+                var bufferBins = (int)Math.Round(bufferHertz / binWidth);
+
+                var bottomBufferBin = converter.GetFreqBinFromHertz(track.HighFreqHertz) + 5;
+                var topBufferBin = bottomBufferBin + bufferBins;
+                var frameStart = converter.FrameFromStartTime(track.StartTimeSeconds);
+                var frameEnd = converter.FrameFromStartTime(track.EndTimeSeconds);
+                var subMatrix = MatrixTools.Submatrix<double>(sonogramData, frameStart, bottomBufferBin, frameEnd, topBufferBin);
+                var averageRowDecibels = MatrixTools.GetRowAverages(subMatrix);
+                var av = averageRowDecibels.Average();
+
+                Console.WriteLine($"###################################Buffer Average decibels = {av}");
+                if (av > decibelThreshold)
+                {
+                    // There is too much acoustic activity in the buffer zone.
+                    // This is unlikely to be a whistle.
+                    continue;
+                }
+
                 var ae = new WhistleEvent(track, maxScore)
                 {
                     SegmentStartSeconds = segmentStartOffset.TotalSeconds,
                     SegmentDurationSeconds = frameCount * converter.SecondsPerFrameStep,
-                    Name = "noName",
+                    Name = "Whistle",
                 };
 
                 events.Add(ae);
@@ -102,17 +122,12 @@ namespace AudioAnalysisTools.Tracks
                 }
             }
 
-            // MAY NOT WANT TO DO THIS FOR WHISTLES.
-            // Combine possible related events. This will help in some cases.
-            //var startDifference = TimeSpan.FromSeconds(0.5);
-            //var hertzGap = 100;
-            //if (combinePossibleSequence)
-           // {
-                //################################################################################TODO TODO
-                //events = AcousticEvent.CombineSimilarProximalEvents(events, startDifference, hertzGap);
-            //}
+            // This algorithm tends to produce temporally overlapped whistle events in adjacent channels.
+            // Combine overlapping whistle events
+            var hertzDifference = 2 * binWidth;
+            var whistleEvents = WhistleEvent.CombineAdjacentWhistleEvents(events, hertzDifference);
 
-            return (events, combinedIntensityArray);
+            return (whistleEvents, combinedIntensityArray);
         }
 
         /// <summary>

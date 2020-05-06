@@ -97,8 +97,9 @@ namespace AnalysisPrograms.Recognizers
             // Combine overlapping events. If the dB threshold is set low, may get lots of little events.
             var events = combinedResults.NewEvents;
             var spectralEvents = events.Select(x => (SpectralEvent)x).ToList();
-            var newEvents = CompositeEvent.CombineOverlappingEvents(spectralEvents.Cast<EventCommon>().ToList());
-            //var newEvents = CompositeEvent.CombineOverlappingEvents(chirpEvents.Cast<EventCommon>().ToList());
+
+            var newEvents = spectralEvents.Cast<EventCommon>().ToList();
+            //var newEvents = CompositeEvent.CombineOverlappingEvents(spectralEvents.Cast<EventCommon>().ToList());
 
             if (genericConfig.CombinePossibleSyllableSequence)
             {
@@ -116,7 +117,7 @@ namespace AnalysisPrograms.Recognizers
             {
                 var eventDuration = ((SpectralEvent)ev).EventEndSeconds - ev.EventStartSeconds;
                 var eventBandWidth = ((SpectralEvent)ev).BandWidthHertz;
-                if (eventDuration > 2.0 && eventDuration < 11.0 && eventBandWidth > 50)
+                if (eventDuration > 0.0 && eventDuration < 11.0 && eventBandWidth > 50)
                 {
                     filteredEvents.Add(ev);
                 }
