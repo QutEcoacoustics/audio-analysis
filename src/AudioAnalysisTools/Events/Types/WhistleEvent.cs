@@ -71,13 +71,12 @@ namespace AudioAnalysisTools
                 return events.Cast<EventCommon>().ToList();
             }
 
-            //var whistleEvents = new List<EventCommon>();
             for (int i = events.Count - 1; i >= 0; i--)
             {
                 for (int j = i - 1; j >= 0; j--)
                 {
-                    var a = events[i] as WhistleEvent;
-                    var b = events[j] as WhistleEvent;
+                    var a = events[i];
+                    var b = events[j];
 
                     bool eventsOverlapInTime = CompositeEvent.EventsOverlapInTime(a, b);
                     bool eventsAreInSimilarFreqBand = Math.Abs(a.LowFrequencyHertz - b.HighFrequencyHertz) < hertzDifference || Math.Abs(a.HighFrequencyHertz - b.LowFrequencyHertz) < hertzDifference;
@@ -95,11 +94,14 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        /// Merges two whistle events into one event.
+        /// Merges two whistle events into one whistle event.
+        /// This is useful because a typical bird whistle contains side bands and therefore covers more than one frequency bin.
+        /// The Whistle detection algorithm detects whistle content in the side bins but puts each bin content in a different event.
+        /// THis method merges events that belong to the same whistle call.
         /// </summary>
         /// <param name="e1">first event.</param>
         /// <param name="e2">second event.</param>
-        /// <returns>a composite event.</returns>
+        /// <returns>a new whistle event .</returns>
         public static WhistleEvent MergeTwoWhistleEvents(WhistleEvent e1, WhistleEvent e2)
         {
             // Assume that we only merge events that are in the same recording segment.
@@ -117,17 +119,16 @@ namespace AudioAnalysisTools
                 Name = e1.Name,
                 EventEndSeconds = Math.Max(e1.EventEndSeconds, e2.EventEndSeconds),
                 EventStartSeconds = Math.Min(e1.EventStartSeconds, e2.EventStartSeconds),
-                HighFrequencyHertz = Math.Max(e1.EventEndSeconds, e2.EventEndSeconds),
-                LowFrequencyHertz = Math.Max(e1.EventEndSeconds, e2.EventEndSeconds),
-                Score = e1.Score,
+                HighFrequencyHertz = Math.Max(e1.HighFrequencyHertz, e2.HighFrequencyHertz),
+                LowFrequencyHertz = Math.Min(e1.LowFrequencyHertz, e2.LowFrequencyHertz),
+                Score = Math.Max(e1.Score, e2.Score),
                 ScoreRange = e1.ScoreRange,
                 SegmentDurationSeconds = e1.SegmentDurationSeconds,
                 SegmentStartSeconds = e1.SegmentStartSeconds,
                 FileName = e1.FileName,
             };
 
-            newEvent.ResultStartSeconds = e1.EventStartSeconds;
-
+            newEvent.ResultStartSeconds = newEvent.EventStartSeconds;
             return newEvent;
         }
     }

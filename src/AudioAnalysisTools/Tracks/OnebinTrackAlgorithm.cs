@@ -83,27 +83,6 @@ namespace AudioAnalysisTools.Tracks
             var maxScore = decibelThreshold * 5;
             foreach (var track in tracks)
             {
-                // Now check the buffer zone above the whistle.
-                // It should not contain high acoustic content.
-                var bufferHertz = 300;
-                var bufferBins = (int)Math.Round(bufferHertz / binWidth);
-
-                var bottomBufferBin = converter.GetFreqBinFromHertz(track.HighFreqHertz) + 5;
-                var topBufferBin = bottomBufferBin + bufferBins;
-                var frameStart = converter.FrameFromStartTime(track.StartTimeSeconds);
-                var frameEnd = converter.FrameFromStartTime(track.EndTimeSeconds);
-                var subMatrix = MatrixTools.Submatrix<double>(sonogramData, frameStart, bottomBufferBin, frameEnd, topBufferBin);
-                var averageRowDecibels = MatrixTools.GetRowAverages(subMatrix);
-                var av = averageRowDecibels.Average();
-
-                Console.WriteLine($"###################################Buffer Average decibels = {av}");
-                if (av > decibelThreshold)
-                {
-                    // There is too much acoustic activity in the buffer zone.
-                    // This is unlikely to be a whistle.
-                    continue;
-                }
-
                 var ae = new WhistleEvent(track, maxScore)
                 {
                     SegmentStartSeconds = segmentStartOffset.TotalSeconds,
@@ -124,10 +103,27 @@ namespace AudioAnalysisTools.Tracks
 
             // This algorithm tends to produce temporally overlapped whistle events in adjacent channels.
             // Combine overlapping whistle events
-            var hertzDifference = 2 * binWidth;
+            var hertzDifference = 4 * binWidth;
             var whistleEvents = WhistleEvent.CombineAdjacentWhistleEvents(events, hertzDifference);
 
-            return (whistleEvents, combinedIntensityArray);
+            // Finally filter the whistles for presense of excess noise in buffer band just above the whistle.
+            // Excess noise would suggest this is not a whistle event.
+            var bufferHertz = 300;
+            var bufferBins = (int)Math.Round(bufferHertz / binWidth);
+            var filteredEvents = new List<EventCommon>();
+            foreach (var ev in whistleEvents)
+            {
+                var avNhAmplitude = GetAverageAmplitudeInNeighbourhood((SpectralEvent)ev, sonogramData, bufferBins, converter);
+                Console.WriteLine($"###################################Buffer Average decibels = {avNhAmplitude}");
+
+                if (avNhAmplitude < decibelThreshold)
+                {
+                    // There is little acoustic activity in the buffer zone above the whistle. It is likely to be a whistle.
+                    filteredEvents.Add(ev);
+                }
+            }
+
+            return (filteredEvents, combinedIntensityArray);
         }
 
         /// <summary>
@@ -210,6 +206,27 @@ namespace AudioAnalysisTools.Tracks
             }
 
             return track;
+        }
+
+        /// <summary>
+        /// Calculates the average amplitude in the frequency just above the whistle.
+        /// If it contains above threshold acoustic content, this is unlikely to be a whistle.
+        /// </summary>
+        /// <param name="ev">The event.</param>
+        /// <param name="sonogramData">The spectrogram data as matrix with origin top/left.</param>
+        /// <param name="bufferBins">THe badnwidth of the buffer zone in bins.</param>
+        /// <param name="converter">A converter to convert seconds/Hertz to frames/bins.</param>
+        /// <returns>Average of the spectrogram amplitude in buffer band above whistler.</returns>
+        public static double GetAverageAmplitudeInNeighbourhood(SpectralEvent ev, double[,] sonogramData, int bufferBins, UnitConverters converter)
+        {
+            var bottomBufferBin = converter.GetFreqBinFromHertz(ev.HighFrequencyHertz) + 5;
+            var topBufferBin = bottomBufferBin + bufferBins;
+            var frameStart = converter.FrameFromStartTime(ev.EventStartSeconds);
+            var frameEnd = converter.FrameFromStartTime(ev.EventEndSeconds);
+            var subMatrix = MatrixTools.Submatrix<double>(sonogramData, frameStart, bottomBufferBin, frameEnd, topBufferBin);
+            var averageRowDecibels = MatrixTools.GetRowAverages(subMatrix);
+            var av = averageRowDecibels.Average();
+            return av;
         }
     }
 }
