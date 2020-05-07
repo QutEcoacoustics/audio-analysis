@@ -4,6 +4,7 @@
 
 namespace AudioAnalysisTools.Events
 {
+    using System;
     using Acoustics.Shared;
     using AnalysisBase.ResultBases;
     using AudioAnalysisTools.Events.Drawing;
@@ -49,7 +50,12 @@ namespace AudioAnalysisTools.Events
         /// </summary>
         public Interval<double> ScoreRange { get; set; }
 
-        public double ScoreNormalised => this.Score / this.ScoreRange.Maximum;
+        /// <summary>
+        /// Gets a score in the range 0,1.
+        /// Up to user to determine a suitable range maximum.
+        /// Minimum of range assumed to be zero.
+        /// </summary>
+        public double ScoreNormalised => Math.Min(1.0, this.Score / this.ScoreRange.Maximum);
 
         /// <summary>
         /// Draw this event on an image.
