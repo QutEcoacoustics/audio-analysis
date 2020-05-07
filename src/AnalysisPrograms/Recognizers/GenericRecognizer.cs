@@ -335,13 +335,6 @@ namespace AnalysisPrograms.Recognizers
                 //SaveDebugSpectrogram(allResults, genericConfig, outputDirectory, "name");
             }
 
-            // combine adjacent acoustic events
-            if (this.combineOverlappedEvents)
-            {
-                // ############################################################################################################ TODO TODO TODO
-                //allResults.Events = AcousticEvent.CombineOverlappingEvents(allResults.Events, segmentStartOffset);
-            }
-
             return allResults;
         }
 
