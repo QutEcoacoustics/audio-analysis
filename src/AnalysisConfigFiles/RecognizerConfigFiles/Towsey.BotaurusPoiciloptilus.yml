@@ -40,10 +40,12 @@ SyllableHertzGap: 100
 #  <<: *STANDARD
 #  DctDuration: 0.3
 
-# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+################################################################################
+# Save intermediate file options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
 SaveIntermediateCsvFiles: false
-# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+
+# Save spectrogram images: available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 # "True" is useful when debugging but "WhenEventsDetected" is required for operational use.
 #SaveSonogramImages: True
 SaveSonogramImages: WhenEventsDetected
@@ -53,6 +55,5 @@ DisplayCsvImage: false
 ## End section for AnalyzeLongRecording
 
 # Other config files to reference
-
 HighResolutionIndicesConfig: "../Towsey.Acoustic.HiResIndicesForRecognisers.yml"
 ...

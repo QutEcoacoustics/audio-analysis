@@ -1,35 +1,54 @@
 ---
-AnalysisName: Towsey.KoalaMale
-SpeciesName: PhascolarctosCinereus
-# min and max of the freq band to search
-MinHz: 250
-MaxHz: 800
-# duration of DCT in seconds
-# this cannot be too long because the oscillations are not constant.
-DctDuration: 0.30
-# minimum acceptable amplitude of a DCT coefficient
-DctThreshold: 0.5
-# ignore oscillation rates below the min & above the max threshold
-# OSCILLATIONS PER SECOND
-MinOcilFreq: 20
-MaxOcilFreq: 55
-# Minimum duration for the length of a true event (seconds).
-MinDuration: 0.5
-# Maximum duration for the length of a true event.
-MaxDuration: 2.5
-# Event threshold - Determines FP / FN trade-off for events.
-EventThreshold: 0.2
+
+# Male Koala: Phascolarctos cinereus version 3.
+# Resample rate must be 2 X the desired Nyquist
+ResampleRate: 22050
+# SegmentDuration: units=seconds;    
+SegmentDuration: 60
+# SegmentOverlap: units=seconds;
+SegmentOverlap: 0
+
+# Each of these profiles will be analyzed
+Profiles:
+    KoalaOsc: !OscillationParameters
+        ComponentName: Oscillation 
+        SpeciesName: PhascolarctosCinereus
+        FrameSize: 512
+        FrameStep: 256
+        WindowFunction: HANNING
+        BgNoiseThreshold: 0.0
+        # min and max of the freq band to search
+        MinHertz: 250          
+        MaxHertz: 800
+        # Min and max durations for the length of a true event (seconds).
+        MinDuration: 0.5
+        MaxDuration: 2.5
+        # duration of DCT in seconds
+        # this cannot be too long because the oscillations are not constant.
+        DctDuration: 0.30
+        # minimum acceptable amplitude of a DCT coefficient
+        DctThreshold: 0.5
+        # OSCILLATIONS PER SECOND: ignore oscillation rates below the min & above the max threshold
+        MinOcilFreq: 20
+        MaxOcilFreq: 55
+        # Event threshold - Determines FP / FN trade-off for events.
+        EventThreshold: 0.2
+
+
 ################################################################################
-# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+# Save intermediate file options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
-# If `true` saves a data into a seperate file every `SegmentDuration` seconds. Accepts a boolean value: [false|true]
 SaveIntermediateCsvFiles: false
-# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
-SaveSonogramImages: Never
+
+# Save spectrogram images: available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+# "True" is useful when debugging but "WhenEventsDetected" is required for operational use.
+SaveSonogramImages: True
+#SaveSonogramImages: WhenEventsDetected
+
 # DisplayCsvImage is obsolete - ensure it remains set to: false
 DisplayCsvImage: false
-#DoNoiseReduction: true
-#BgNoiseThreshold: 3.0
+## End section for AnalyzeLongRecording
 
+# Other config files to reference
 IndexPropertiesConfig: ".\\IndexPropertiesConfig.yml"
 ...
