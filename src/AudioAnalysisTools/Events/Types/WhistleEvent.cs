@@ -12,6 +12,7 @@ namespace AudioAnalysisTools
     using AudioAnalysisTools.Events.Drawing;
     using AudioAnalysisTools.Events.Interfaces;
     using AudioAnalysisTools.Events.Tracks;
+    using AudioAnalysisTools.Events.Types;
     using SixLabors.ImageSharp.Processing;
 
     public class WhistleEvent : SpectralEvent, ITracks<Track>
@@ -61,6 +62,74 @@ namespace AudioAnalysisTools
             //  base drawing (border)
             // TODO: unless border is disabled
             base.Draw(graphics, options);
+        }
+
+        public static List<EventCommon> CombineAdjacentWhistleEvents(List<WhistleEvent> events, double hertzDifference)
+        {
+            if (events.Count < 2)
+            {
+                return events.Cast<EventCommon>().ToList();
+            }
+
+            for (int i = events.Count - 1; i >= 0; i--)
+            {
+                for (int j = i - 1; j >= 0; j--)
+                {
+                    var a = events[i];
+                    var b = events[j];
+
+                    bool eventsOverlapInTime = CompositeEvent.EventsOverlapInTime(a, b);
+                    bool eventsAreInSimilarFreqBand = Math.Abs(a.LowFrequencyHertz - b.HighFrequencyHertz) < hertzDifference || Math.Abs(a.HighFrequencyHertz - b.LowFrequencyHertz) < hertzDifference;
+                    if (eventsOverlapInTime && eventsAreInSimilarFreqBand)
+                    {
+                        var newEvent = MergeTwoWhistleEvents(a, b);
+                        events[j] = newEvent;
+                        events.RemoveAt(i);
+                        break;
+                    }
+                }
+            }
+
+            return events.Cast<EventCommon>().ToList();
+        }
+
+        /// <summary>
+        /// Merges two whistle events into one whistle event.
+        /// This is useful because a typical bird whistle contains side bands and therefore covers more than one frequency bin.
+        /// The Whistle detection algorithm detects whistle content in the side bins but puts each bin content in a different event.
+        /// THis method merges events that belong to the same whistle call.
+        /// </summary>
+        /// <param name="e1">first event.</param>
+        /// <param name="e2">second event.</param>
+        /// <returns>a new whistle event .</returns>
+        public static WhistleEvent MergeTwoWhistleEvents(WhistleEvent e1, WhistleEvent e2)
+        {
+            // Assume that we only merge events that are in the same recording segment.
+            // Therefore the value of segmentStartOffset and SegmentDurationSeconds are same for both events.
+            var track1 = e1.Tracks.First();
+            var track2 = e2.Tracks.First();
+
+            foreach (var point in track2.Points)
+            {
+                track1.Points.Add(point);
+            }
+
+            var newEvent = new WhistleEvent(track1, 1.0)
+            {
+                Name = e1.Name,
+                EventEndSeconds = Math.Max(e1.EventEndSeconds, e2.EventEndSeconds),
+                EventStartSeconds = Math.Min(e1.EventStartSeconds, e2.EventStartSeconds),
+                HighFrequencyHertz = Math.Max(e1.HighFrequencyHertz, e2.HighFrequencyHertz),
+                LowFrequencyHertz = Math.Min(e1.LowFrequencyHertz, e2.LowFrequencyHertz),
+                Score = Math.Max(e1.Score, e2.Score),
+                ScoreRange = e1.ScoreRange,
+                SegmentDurationSeconds = e1.SegmentDurationSeconds,
+                SegmentStartSeconds = e1.SegmentStartSeconds,
+                FileName = e1.FileName,
+            };
+
+            newEvent.ResultStartSeconds = newEvent.EventStartSeconds;
+            return newEvent;
         }
     }
 }

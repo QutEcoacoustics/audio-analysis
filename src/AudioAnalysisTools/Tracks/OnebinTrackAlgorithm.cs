@@ -6,11 +6,13 @@ namespace AudioAnalysisTools.Tracks
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Text;
     using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Tracks;
     using AudioAnalysisTools.StandardSpectrograms;
+    using TowseyLibrary;
     using TrackType = AudioAnalysisTools.Events.Tracks.TrackType;
 
     public static class OnebinTrackAlgorithm
@@ -34,9 +36,6 @@ namespace AudioAnalysisTools.Tracks
             double decibelThreshold = parameters.DecibelThreshold.Value;
             double minDuration = parameters.MinDuration.Value;
             double maxDuration = parameters.MaxDuration.Value;
-
-            // May not want to do this for whistles.
-            // bool combinePossibleSequence,
 
             var converter = new UnitConverters(
                 segmentStartOffset: segmentStartOffset.TotalSeconds,
@@ -78,8 +77,8 @@ namespace AudioAnalysisTools.Tracks
 
             var tracks = GetOnebinTracks(peaks, minDuration, maxDuration, decibelThreshold, converter);
 
-            // initialise tracks as events and get the combined intensity array.
-            var events = new List<EventCommon>();
+            // Initialise tracks as events and get the combined intensity array.
+            var events = new List<WhistleEvent>();
             var combinedIntensityArray = new double[frameCount];
             var maxScore = decibelThreshold * 5;
             foreach (var track in tracks)
@@ -88,7 +87,7 @@ namespace AudioAnalysisTools.Tracks
                 {
                     SegmentStartSeconds = segmentStartOffset.TotalSeconds,
                     SegmentDurationSeconds = frameCount * converter.SecondsPerFrameStep,
-                    Name = "noName",
+                    Name = "Whistle",
                 };
 
                 events.Add(ae);
@@ -102,17 +101,29 @@ namespace AudioAnalysisTools.Tracks
                 }
             }
 
-            // MAY NOT WANT TO DO THIS FOR WHISTLES.
-            // Combine possible related events. This will help in some cases.
-            //var startDifference = TimeSpan.FromSeconds(0.5);
-            //var hertzGap = 100;
-            //if (combinePossibleSequence)
-           // {
-                //################################################################################TODO TODO
-                //events = AcousticEvent.CombineSimilarProximalEvents(events, startDifference, hertzGap);
-            //}
+            // This algorithm tends to produce temporally overlapped whistle events in adjacent channels.
+            // Combine overlapping whistle events
+            var hertzDifference = 4 * binWidth;
+            var whistleEvents = WhistleEvent.CombineAdjacentWhistleEvents(events, hertzDifference);
 
-            return (events, combinedIntensityArray);
+            // Finally filter the whistles for presense of excess noise in buffer band just above the whistle.
+            // Excess noise would suggest this is not a whistle event.
+            var bufferHertz = 300;
+            var bufferBins = (int)Math.Round(bufferHertz / binWidth);
+            var filteredEvents = new List<EventCommon>();
+            foreach (var ev in whistleEvents)
+            {
+                var avNhAmplitude = GetAverageAmplitudeInNeighbourhood((SpectralEvent)ev, sonogramData, bufferBins, converter);
+                Console.WriteLine($"###################################Buffer Average decibels = {avNhAmplitude}");
+
+                if (avNhAmplitude < decibelThreshold)
+                {
+                    // There is little acoustic activity in the buffer zone above the whistle. It is likely to be a whistle.
+                    filteredEvents.Add(ev);
+                }
+            }
+
+            return (filteredEvents, combinedIntensityArray);
         }
 
         /// <summary>
@@ -195,6 +206,27 @@ namespace AudioAnalysisTools.Tracks
             }
 
             return track;
+        }
+
+        /// <summary>
+        /// Calculates the average amplitude in the frequency just above the whistle.
+        /// If it contains above threshold acoustic content, this is unlikely to be a whistle.
+        /// </summary>
+        /// <param name="ev">The event.</param>
+        /// <param name="sonogramData">The spectrogram data as matrix with origin top/left.</param>
+        /// <param name="bufferBins">THe badnwidth of the buffer zone in bins.</param>
+        /// <param name="converter">A converter to convert seconds/Hertz to frames/bins.</param>
+        /// <returns>Average of the spectrogram amplitude in buffer band above whistler.</returns>
+        public static double GetAverageAmplitudeInNeighbourhood(SpectralEvent ev, double[,] sonogramData, int bufferBins, UnitConverters converter)
+        {
+            var bottomBufferBin = converter.GetFreqBinFromHertz(ev.HighFrequencyHertz) + 5;
+            var topBufferBin = bottomBufferBin + bufferBins;
+            var frameStart = converter.FrameFromStartTime(ev.EventStartSeconds);
+            var frameEnd = converter.FrameFromStartTime(ev.EventEndSeconds);
+            var subMatrix = MatrixTools.Submatrix<double>(sonogramData, frameStart, bottomBufferBin, frameEnd, topBufferBin);
+            var averageRowDecibels = MatrixTools.GetRowAverages(subMatrix);
+            var av = averageRowDecibels.Average();
+            return av;
         }
     }
 }

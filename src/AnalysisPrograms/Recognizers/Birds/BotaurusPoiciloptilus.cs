@@ -92,31 +92,33 @@ namespace AnalysisPrograms.Recognizers
                 imageWidth);
 
             // DO POST-PROCESSING of EVENTS
-
-            // Convert events to spectral events for possible combining.
-            // Combine overlapping events. If the dB threshold is set low, may get lots of little events.
             var events = combinedResults.NewEvents;
-            var spectralEvents = events.Select(x => (SpectralEvent)x).ToList();
-            var newEvents = CompositeEvent.CombineOverlappingEvents(spectralEvents.Cast<EventCommon>().ToList());
-            //var newEvents = CompositeEvent.CombineOverlappingEvents(chirpEvents.Cast<EventCommon>().ToList());
 
+            // Following two commented lines are different ways of casting lists.
+            //var newEvents = spectralEvents.Cast<EventCommon>().ToList();
+            //var spectralEvents = events.Select(x => (SpectralEvent)x).ToList();
+            List<EventCommon> newEvents;
+
+            // NOTE: If the dB threshold is set low, may get lots of little events.
             if (genericConfig.CombinePossibleSyllableSequence)
             {
-                // convert events to spectral events for possible combining.
-                //var spectralEvents = events.Select(x => (SpectralEvent)x).ToList();
-                spectralEvents = newEvents.Cast<SpectralEvent>().ToList();
+                // Convert events to spectral events for combining of possible sequences.
+                var spectralEvents = events.Cast<SpectralEvent>().ToList();
                 var startDiff = genericConfig.SyllableStartDifference;
                 var hertzDiff = genericConfig.SyllableHertzGap;
                 newEvents = CompositeEvent.CombineSimilarProximalEvents(spectralEvents, TimeSpan.FromSeconds(startDiff), (int)hertzDiff);
             }
+            else
+            {
+                newEvents = events;
+            }
 
-            //filter the events for duration and bandwidth
+            //filter the events for duration
             var filteredEvents = new List<EventCommon>();
             foreach (var ev in newEvents)
             {
-                var eventDuration = ((SpectralEvent)ev).EventEndSeconds - ev.EventStartSeconds;
-                var eventBandWidth = ((SpectralEvent)ev).BandWidthHertz;
-                if (eventDuration > 2.0 && eventDuration < 11.0 && eventBandWidth > 50)
+                var eventDuration = ((SpectralEvent)ev).EventDurationSeconds;
+                if (eventDuration < 11.0)
                 {
                     filteredEvents.Add(ev);
                 }
@@ -125,7 +127,7 @@ namespace AnalysisPrograms.Recognizers
             combinedResults.NewEvents = filteredEvents;
 
             //UNCOMMENT following line if you want special debug spectrogram, i.e. with special plots.
-            //  NOTE: Standard spectrograms are produced by setting SaveSonogramImages: "True" or "WhenEventsDetected" in <Towsey.PteropusSpecies.yml> config file.
+            //  NOTE: Standard spectrograms are produced by setting SaveSonogramImages: "True" or "WhenEventsDetected" in UserName.SpeciesName.yml config file.
             //GenericRecognizer.SaveDebugSpectrogram(territorialResults, genericConfig, outputDirectory, audioRecording.BaseName);
             return combinedResults;
         }
