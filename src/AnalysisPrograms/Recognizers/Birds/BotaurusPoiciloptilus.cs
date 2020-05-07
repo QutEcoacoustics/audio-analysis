@@ -113,12 +113,18 @@ namespace AnalysisPrograms.Recognizers
                 newEvents = events;
             }
 
-            //filter the events for duration
+            //filter the events for duration in seconds
+            var minimumEventDuration = 0.5;
+            if (genericConfig.CombinePossibleSyllableSequence)
+            {
+                minimumEventDuration = 2.0;
+            }
+
             var filteredEvents = new List<EventCommon>();
             foreach (var ev in newEvents)
             {
                 var eventDuration = ((SpectralEvent)ev).EventDurationSeconds;
-                if (eventDuration < 11.0)
+                if (eventDuration > minimumEventDuration && eventDuration < 11.0)
                 {
                     filteredEvents.Add(ev);
                 }

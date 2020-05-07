@@ -22,11 +22,11 @@ Profiles:
         MaxHertz: 200
         MinDuration: 0.2
         MaxDuration: 1.0
-        DecibelThreshold: 6.0
+        DecibelThreshold: 3.0
 
 #Combine each pair of Boobook syllables as one event
 #CombineProximalSimilarEvents: false
-CombinePossibleSyllableSequence: false
+CombinePossibleSyllableSequence: true
 SyllableStartDifference: 3.0
 SyllableHertzGap: 100
 
@@ -45,8 +45,9 @@ SaveIntermediateWavFiles: Never
 SaveIntermediateCsvFiles: false
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 # "True" is useful when debugging but "WhenEventsDetected" is required for operational use.
-SaveSonogramImages: True
-#SaveSonogramImages: WhenEventsDetected
+#SaveSonogramImages: True
+SaveSonogramImages: WhenEventsDetected
+
 # DisplayCsvImage is obsolete - ensure it remains set to: false
 DisplayCsvImage: false
 ## End section for AnalyzeLongRecording
