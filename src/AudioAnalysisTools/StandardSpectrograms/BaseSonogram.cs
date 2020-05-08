@@ -565,11 +565,11 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
                         var col = doHighlightSubband && IsInBand(y, minHighlightBin, maxHighlightBin) ? Color.FromRgb((byte)c, (byte)g, (byte)c) : grayScale[c];
                         bmp[x, yOffset - 1] = col;
-                    }//for all pixels in line
+                    }
 
                     yOffset--;
                 } //end repeats over one track
-            }//end over all freq bins
+            }
 
             return bmp;
         }
@@ -618,7 +618,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                         }
 
                         bmp[x, yOffset - 1] = grayScale[c];
-                    }//for all pixels in line
+                    }
 
                     yOffset--;
                 } //end repeats over one track

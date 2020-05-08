@@ -28,7 +28,7 @@ namespace TowseyLibrary
                 {
                     LoggedConsole.WriteLine(line);
                 }
-            }//end test ReadTextFile(string fName)
+            }
 
             bool doit2 = false;
             if (doit2) //test WriteTextFile(string fName)
@@ -41,7 +41,7 @@ namespace TowseyLibrary
                 array.Add("string4");
                 array.Add("string5");
                 WriteTextFile(fName, array);
-            }//end test WriteTextFile(string fName)
+            }
 
             bool doit3 = false;
             if (doit3) //test ReadDoubles2Matrix(string fName)
@@ -53,7 +53,7 @@ namespace TowseyLibrary
 
                 //LoggedConsole.WriteLine("rowCount=" + rowCount + "  colCount=" + colCount);
                 DataTools.writeMatrix(matrix);
-            }//end test ReadDoubles2Matrix(string fName)
+            }
 
             bool doit4 = true;
             if (doit4) //test Method(parameters)
@@ -74,13 +74,13 @@ namespace TowseyLibrary
                 WriteMatrix2File(matrix, fName);
                 LoggedConsole.WriteLine("Wrote following matrix to file " + fName);
                 DataTools.writeMatrix(matrix);
-            }//end test Method(string fName)
+            }
 
             //COPY THIS TEST TEMPLATE
             bool doit5 = false;
             if (doit5) //test Method(parameters)
             {
-            }//end test Method(string fName)
+            }
 
             Log.WriteLine("\nFINISHED"); //end
             Log.WriteLine("CLOSE CONSOLE"); //end
@@ -182,11 +182,11 @@ namespace TowseyLibrary
                 {
                     //read one line at a time in string array
                     lines.Add(line);
-                }//end while
-            }//end using
+                }
+            }
 
             return lines;
-        }// end ReadtextFile()
+        }
 
         public static List<string> ReadSelectedLinesOfCsvFile(string fName, string key, int value)
         {
@@ -223,11 +223,11 @@ namespace TowseyLibrary
                     {
                         lines.Add(line);
                     }
-                }//end while
-            }//end using
+                }
+            }
 
             return lines;
-        }// end ReadtextFile()
+        }
 
         public static byte[] ReadSerialisedObject(string path)
         {
@@ -235,7 +235,7 @@ namespace TowseyLibrary
             BinaryReader br = new BinaryReader(fs);
             long numBytes = new FileInfo(path).Length;
             return br.ReadBytes((int)numBytes);
-        }// end ReadSerialisedObject()
+        }
 
         public static void WriteSerialisedObject(string path, byte[] array)
         {
@@ -284,8 +284,8 @@ namespace TowseyLibrary
         //    using (TextWriter writer = new StreamWriter(path))
         //    {
         //            writer.WriteLine(line);
-        //    }//end using
-        //}// end WriteTextFile()
+        //    }
+        //}
 
         public static void WriteTextFile(string path, string text)
         {
@@ -312,7 +312,7 @@ namespace TowseyLibrary
                     wltWriter.Flush();
                     wltWriter.Close();
                 }
-            }// end finally
+            }
         }
 
         public static void WriteDictionaryToFile(Dictionary<string, double[]> dictionary, string fPath)
@@ -369,21 +369,21 @@ namespace TowseyLibrary
         {
             bool saveExistingFile = false;
             Append2TextFile(fPath, line, saveExistingFile);
-        }// end Append2TextFile()
+        }
 
         public static void Append2TextFile(string fPath, string line, bool saveExistingFile)
         {
             var list = File.Exists(fPath) ? ReadTextFile(fPath) : new List<string>();
             list.Add(line);
             WriteTextFile(fPath, list, saveExistingFile);
-        }// end Append2TextFile()
+        }
 
         public static void Append2TextFile(string fPath, List<string> list)
         {
             var oldList = File.Exists(fPath) ? ReadTextFile(fPath) : new List<string>();
             oldList.AddRange(list);
             WriteTextFile(fPath, oldList);
-        }// end Append2TextFile()
+        }
 
         /// <summary>
         /// THis method adds another column to an existing .csv file containing columns of data.
@@ -414,7 +414,7 @@ namespace TowseyLibrary
             }
 
             WriteTextFile(fPath, newList);
-        }// end AddArrayAdjacentToExistingArrays()
+        }
 
         /// <summary>
         /// reads a file of doubles assuming one value per line with no punctuation.
@@ -514,7 +514,7 @@ namespace TowseyLibrary
                 }
 
                 lines.Add(sb.ToString());
-            }//end of all rows
+            }
 
             WriteTextFile(fName, lines); //write matrix to file
         } //end of WriteMatrix2File\
@@ -539,7 +539,7 @@ namespace TowseyLibrary
                 }
 
                 lines.Add(sb.ToString());
-            }//end of all rows
+            }
 
             WriteTextFile(fName, lines); //write matrix to file
         } //end of WriteMatrix2File\
@@ -560,7 +560,7 @@ namespace TowseyLibrary
                 }
 
                 lines.Add(sb.ToString());
-            }//end of all rows
+            }
 
             WriteTextFile(fName, lines); //write matrix to file
         } //end of WriteMatrix2File\
@@ -585,7 +585,7 @@ namespace TowseyLibrary
                 }
 
                 lines.Add(sb.ToString());
-            }//end of all rows
+            }
 
             WriteTextFile(fName, lines); //write matrix to file
         } //end of WriteMatrix2File
@@ -599,7 +599,7 @@ namespace TowseyLibrary
             {
                 string line = array[i].ToString(formatString);
                 lines.Add(line);
-            }//end of all rows
+            }
 
             WriteTextFile(path, lines); //write matrix to file
         } //end of WriteArray2File_Formatted
@@ -613,7 +613,7 @@ namespace TowseyLibrary
             {
                 string line = array[i].ToString(formatString);
                 lines.Add(line);
-            }//end of all rows
+            }
 
             WriteTextFile(path, lines); //write matrix to file
         } //end of WriteArray2File_Formatted
@@ -647,5 +647,5 @@ namespace TowseyLibrary
                 }
             });
         } // end of UrlCombine(params string[] segments)
-    }// end class
+    }
 }

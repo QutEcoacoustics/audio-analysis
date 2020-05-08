@@ -36,5 +36,5 @@ namespace AudioAnalysisTools.StandardSpectrograms
             this.SnrData.ModalNoiseProfile = output.Item2;
             return ImageTools.SobelEdgeDetection(output.Item1);
         }
-    }// end SobelEdgeSonogram : BaseSonogram
+    }
 }

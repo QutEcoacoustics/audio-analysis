@@ -145,5 +145,5 @@ namespace AudioAnalysisTools.WavTools
             File.WriteAllBytes(opPath, bytes);
             recording = new AudioRecording(opPath);
         }
-    }//end class
+    }
 }

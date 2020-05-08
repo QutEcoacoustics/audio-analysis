@@ -1,0 +1,17 @@
+- name: Basics
+  href: basics/
+  topicHref: basics/introduction.md
+
+- name: Theory
+  href: theory/
+- name: Guides
+  href: guides/
+- name: Tutorials
+  href: tutorials/
+- name: FAQ
+  href: basics/faq.md
+- name: Articles
+  href: articles/
+- name: Documentation
+  href: technical/
+  topicHref: technical/index.md

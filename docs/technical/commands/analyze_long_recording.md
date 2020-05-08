@@ -1,3 +1,7 @@
+---
+title: Analyze Long Recordings
+uid: command-analyze-long-recording
+---
 # Analyze Long Recordings (audio2csv)
 
 - **Command**: audio2csv

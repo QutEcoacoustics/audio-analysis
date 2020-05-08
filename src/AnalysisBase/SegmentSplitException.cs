@@ -6,13 +6,11 @@ namespace AnalysisBase
 {
     using System;
 
-    /// <inheritdoc />
     /// <summary>
     /// Represents an error thrown when some aspect of a segment split is not allowed.
     /// </summary>
     public class SegmentSplitException : Exception
     {
-        /// <inheritdoc cref="Exception(string?)" />
         public SegmentSplitException(string message)
             : base(message)
         {

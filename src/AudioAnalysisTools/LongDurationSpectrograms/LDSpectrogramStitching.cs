@@ -28,7 +28,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     /// It was written to deal with a set of recordings with protocol of Gianna Pavan (10 minutes every 30 minutes).
     ///
     /// The following Powershell command was constructed by Anthony to do the analysis and join the sequence of images so derived:
-    /// Y:\Italy_GianniPavan\Sassofratino1day | % {"C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisPrograms\bin\Release\AnalysisPrograms.exe" audio2csv -so ($_.FullName) -o "Y:\Italy_GianniPavan\output" -c "C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.Parallel.yml" }
+    /// <code><![CDATA[
+    /// Y:\Italy_GianniPavan\Sassofratino1day | % {& "C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisPrograms\bin\Release\AnalysisPrograms.exe" audio2csv -so ($_.FullName) -o "Y:\Italy_GianniPavan\output" -c "C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.Parallel.yml" }
     /// where:
     ///         Y:\Italy_GianniPavan\Sassofratino1day   is the directory containing recordings
     ///         | = a pipe
@@ -42,7 +43,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     /// The following PowerShell command was used by Anthony to stitch together a sequence of spectrogam images without any gap between them.
     /// It requires ImageMagick software to be installed: i.e. C:\Program Files\ImageMagick-6.8.9-Q16\montage.exe
     /// Y:\Italy_GianniPavan\output\Towsey.Acoustic> & "C:\Program Files\ImageMagick-6.8.9-Q16\montage.exe" -mode concatenate -tile x1 *2MAP* "..\..\merge.png"
-    ///
+    /// ]]></code>
     ///
     /// (2) ConcatenateSpectralIndexFiles()
     /// This method was written to deal with a new recording protocol in which 24 hours of recording are made in 4 blocks of 6 hours each.

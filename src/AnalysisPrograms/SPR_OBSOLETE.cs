@@ -18,21 +18,21 @@
     public class SPR_OBSOLETE  //Syntactic Pattern Recognition
     {
         //Keys to recognise identifiers in PARAMETERS - INI file.
-        public static string key_CALL_NAME       = "CALL_NAME";
+        public static string key_CALL_NAME = "CALL_NAME";
         public static string key_DO_SEGMENTATION = "DO_SEGMENTATION";
-        public static string key_FRAME_OVERLAP   = "FRAME_OVERLAP";
-        public static string key_SPT_INTENSITY_THRESHOLD    = "SPT_INTENSITY_THRESHOLD";
+        public static string key_FRAME_OVERLAP = "FRAME_OVERLAP";
+        public static string key_SPT_INTENSITY_THRESHOLD = "SPT_INTENSITY_THRESHOLD";
         public static string key_SPT_SMALL_LENGTH_THRESHOLD = "SPT_SMALL_LENGTH_THRESHOLD";
-        public static string key_WHISTLE_MIN_HZ  = "WHISTLE_MIN_HZ";
-        public static string key_WHISTLE_MAX_HZ  = "WHISTLE_MAX_HZ";
-        public static string key_WHISTLE_DURATION= "WHISTLE_DURATION";
-        public static string key_WHIP_MIN_HZ     = "WHIP_MIN_HZ";
-        public static string key_WHIP_MAX_HZ     = "WHIP_MAX_HZ";
-        public static string key_WHIP_DURATION   = "WHIP_DURATION";
-        public static string key_MIN_DURATION    = "MIN_DURATION";
-        public static string key_MAX_DURATION    = "MAX_DURATION";
+        public static string key_WHISTLE_MIN_HZ = "WHISTLE_MIN_HZ";
+        public static string key_WHISTLE_MAX_HZ = "WHISTLE_MAX_HZ";
+        public static string key_WHISTLE_DURATION = "WHISTLE_DURATION";
+        public static string key_WHIP_MIN_HZ = "WHIP_MIN_HZ";
+        public static string key_WHIP_MAX_HZ = "WHIP_MAX_HZ";
+        public static string key_WHIP_DURATION = "WHIP_DURATION";
+        public static string key_MIN_DURATION = "MIN_DURATION";
+        public static string key_MAX_DURATION = "MAX_DURATION";
         public static string key_EVENT_THRESHOLD = "EVENT_THRESHOLD";
-        public static string key_DRAW_SONOGRAMS  = "DRAW_SONOGRAMS";
+        public static string key_DRAW_SONOGRAMS = "DRAW_SONOGRAMS";
 
         public class Arguments : SourceConfigOutputDirArguments
         {
@@ -68,10 +68,10 @@
             Log.Verbosity = 1;
 
             FileInfo recordingPath = arguments.Source;
-            FileInfo iniPath       = arguments.Config;
+            FileInfo iniPath = arguments.Config;
             DirectoryInfo outputDir = arguments.Output;
-            string opFName       = "SPR-output.txt";
-            string opPath        = outputDir + opFName;
+            string opFName = "SPR-output.txt";
+            string opPath = outputDir + opFName;
             Log.WriteIfVerbose("# Output folder =" + outputDir);
 
             // A: READ PARAMETER VALUES FROM INI FILE
@@ -79,17 +79,17 @@
             Dictionary<string, string> dict = config.GetTable();
             Dictionary<string, string>.KeyCollection keys = dict.Keys;
 
-            string callName   = dict[key_CALL_NAME];
+            string callName = dict[key_CALL_NAME];
             double frameOverlap = Convert.ToDouble(dict[key_FRAME_OVERLAP]);
             //SPT PARAMETERS
             double intensityThreshold = Convert.ToDouble(dict[key_SPT_INTENSITY_THRESHOLD]);
-            int smallLengthThreshold  = Convert.ToInt32(dict[key_SPT_SMALL_LENGTH_THRESHOLD]);
+            int smallLengthThreshold = Convert.ToInt32(dict[key_SPT_SMALL_LENGTH_THRESHOLD]);
             //WHIPBIRD PARAMETERS
             int whistle_MinHz = int.Parse(dict[key_WHISTLE_MIN_HZ]);
             int whistle_MaxHz = int.Parse(dict[key_WHISTLE_MAX_HZ]);
             double optimumWhistleDuration = double.Parse(dict[key_WHISTLE_DURATION]);   //optimum duration of whistle in seconds
-            int whip_MinHz      = (dict.ContainsKey(key_WHIP_MIN_HZ)) ? int.Parse(dict[key_WHIP_MIN_HZ]) : 0;
-            int whip_MaxHz      = (dict.ContainsKey(key_WHIP_MAX_HZ))   ? int.Parse(dict[key_WHIP_MAX_HZ])    : 0;
+            int whip_MinHz = (dict.ContainsKey(key_WHIP_MIN_HZ)) ? int.Parse(dict[key_WHIP_MIN_HZ]) : 0;
+            int whip_MaxHz = (dict.ContainsKey(key_WHIP_MAX_HZ)) ? int.Parse(dict[key_WHIP_MAX_HZ]) : 0;
             double whipDuration = (dict.ContainsKey(key_WHIP_DURATION)) ? double.Parse(dict[key_WHIP_DURATION]) : 0.0; //duration of whip in seconds
             //CURLEW PARAMETERS
             double minDuration = (dict.ContainsKey(key_MIN_DURATION)) ? double.Parse(dict[key_MIN_DURATION]) : 0.0; //min duration of call in seconds
@@ -133,7 +133,7 @@
                 var mHori = MarkLine(result1.Item1, slope, smallLengthThreshold, intensityThreshold, sensitivity);
                 slope = 87; //84
                 sensitivity = 0.8;        //lower value = more sensitive
-                var mVert = MarkLine(result1.Item1, slope, smallLengthThreshold - 4, intensityThreshold+1, sensitivity);
+                var mVert = MarkLine(result1.Item1, slope, smallLengthThreshold - 4, intensityThreshold + 1, sensitivity);
                 Log.WriteLine("SPR finished");
                 Log.WriteLine("Extract Whipbird calls - start");
 
@@ -287,9 +287,9 @@
             }
             else
                 if ((DRAW_SONOGRAMS == 1) && (predictedEvents.Count > 0))
-                {
-                    DrawSonogram(sonogram, imagePath, hits, scores, predictedEvents, eventThreshold);
-                }
+            {
+                DrawSonogram(sonogram, imagePath, hits, scores, predictedEvents, eventThreshold);
+            }
 
             Log.WriteIfVerbose("Image saved to: " + imagePath);
             //string savePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath);
@@ -317,7 +317,7 @@
                     {
                         for (int c = 0; c < cols - lineLength; c++)
                         {
-                            if(m[r, c] < 0.00001) continue;
+                            if (m[r, c] < 0.00001) continue;
                             double sum = 0.0;
                             for (int l = 0; l < lineLength; l++) if (m[r + l, c] > intensityThreshold) sum++;
                             if (sum > sumThreshold) for (int l = 0; l < lineLength; l++) mOut[r + l, c] = 1.0;
@@ -357,7 +357,7 @@
 
             } //switch
             return mOut;
-        }// MarkLine()
+        }
 
         //public static Tuple<double[,]> doNoiseRemoval(BaseSonogram sonogram, double intensityThreshold, int smallLengthThreshold)
         //{
@@ -374,7 +374,7 @@
 
         public static Tuple<double[]> DetectWhipBird(double[,] mHori, double[,] mVert,
                                                  int minBound_Whistle, int maxBound_Whistle, int optimumWhistleDuration,
-                                                 int minBound_Whip,    int maxBound_Whip,    int whipDuration, int lineLength)
+                                                 int minBound_Whip, int maxBound_Whip, int whipDuration, int lineLength)
         {
             int rows = mHori.GetLength(0);
             int cols = mHori.GetLength(1);
@@ -416,7 +416,7 @@
                 //extend the whip score
                 for (int i = 0; i < whipDuration; i++)
                 {
-                    if (whipScores[r+i] < score) whipScores[r + i] = score;
+                    if (whipScores[r + i] < score) whipScores[r + i] = score;
                 }
 
             } //for all rows
@@ -434,7 +434,7 @@
             //scores = whipScores;
             var tuple = Tuple.Create(scores);
             return tuple;
-        }//end detect Whipbird
+        }
 
         public static Tuple<double[]> DetectCurlew(double[,] rising, double[,] falling,
                                          int minBound_Whistle, int maxBound_Whistle, int whistleDuration, int lineLength)
@@ -442,13 +442,13 @@
             int rows = rising.GetLength(0);
             int cols = rising.GetLength(1);
 
-            double cosRisingAngle  = Math.Cos(Math.PI * 200 / 180); //rising 20 degrees
-            double sinRisingAngle  = Math.Sin(Math.PI * 200 / 180);
+            double cosRisingAngle = Math.Cos(Math.PI * 200 / 180); //rising 20 degrees
+            double sinRisingAngle = Math.Sin(Math.PI * 200 / 180);
             double cosFallingAngle = Math.Cos(Math.PI * 340 / 180); //falling 20 degrees
             double sinFallingAngle = Math.Sin(Math.PI * 340 / 180);
 
             int whistleBand = maxBound_Whistle - minBound_Whistle;
-            var risingScores  = new double[rows];
+            var risingScores = new double[rows];
             var fallingScores = new double[rows];
 
             for (int r = whistleDuration; r < rows - lineLength; r++)
@@ -462,7 +462,7 @@
                     {
                         int px = (int)(cosRisingAngle * i);
                         int py = (int)(sinRisingAngle * i);
-                        whistle[j] += rising[r+px, minBound_Whistle + j + py];
+                        whistle[j] += rising[r + px, minBound_Whistle + j + py];
                     }
                 }
                 double score = whistle[DataTools.GetMaxIndex(whistle)] / (double)whistleDuration;
@@ -490,11 +490,11 @@
             var scores = new double[rows];
             for (int i = 0; i < risingScores.Length; i++)
                 //if ((risingScores[i] > 0.2) && (fallingScores[i] > 0.2)) scores[i] = (risingScores[i] + fallingScores[i])/2;
-                scores[i] = (risingScores[i]*0.9) + (fallingScores[i]*0.1);  // weighted average
+                scores[i] = (risingScores[i] * 0.9) + (fallingScores[i] * 0.1);  // weighted average
 
             var tuple = Tuple.Create(scores);
             return tuple;
-        }//end detect Curlew
+        }
 
         public static void DrawSonogram(BaseSonogram sonogram, string path, double[,] hits, double[] scores,
                                 List<AcousticEvent> predictedEvents, double eventThreshold)

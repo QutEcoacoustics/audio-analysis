@@ -144,7 +144,7 @@ namespace AudioAnalysisTools
                 periodicity[r] = period;
 
                 prevRow = thisRow;
-            }// rows
+            }
 
             return Tuple.Create(intensity, periodicity);
         } //DetectBarsInTheRowsOfaMatrix()
@@ -197,7 +197,7 @@ namespace AudioAnalysisTools
                 }
 
                 periodicity[t] = period;
-            }// rows of matrix
+            }
 
             return Tuple.Create(dBArray, intensity, periodicity);
         }
@@ -259,7 +259,7 @@ namespace AudioAnalysisTools
                     // Would normally normalise the xcorr values for overlap count.
                     // But for harmonics, this introduces too much noise - need to give less weight to the less overlapped values.
                     //normXr[i] = xr[i] / (colCount - i);
-                   normXr[i] = xr[i];
+                    normXr[i] = xr[i];
                 }
 
                 // now do DCT across the auto cross xr

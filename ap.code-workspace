@@ -51,5 +51,7 @@
             "titleBar.border": "#50ba1a"
         },
         "peacock.remoteColor": "#50ba1a",
+        "peacock.color": "#50ba1a",
+        "editor.minimap.size": "fill",
     }
 }

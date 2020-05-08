@@ -1,3 +1,8 @@
+---
+uid: command-concatenate-index-files
+title: Concatenate Index Files
+---
+
 # Concatenate Index Files
 
 - **Command**: ConcatenateIndexFiles

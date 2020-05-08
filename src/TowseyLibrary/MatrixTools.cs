@@ -187,7 +187,7 @@ namespace TowseyLibrary
 
         /// <summary>
         /// Returns an array of row averages in the submatrix of passed matrix.
-        /// This method combines two methods, Submatrix() & GetRowAverages(), for efficiency
+        /// This method combines two methods, Submatrix() &amp; GetRowAverages(), for efficiency
         /// Assume that RowTop LT RowBottom, ColumnLeft LT ColumnRight.
         /// Row, column indices start at 0.
         /// </summary>
@@ -2178,7 +2178,7 @@ namespace TowseyLibrary
                     {
                         max = data[i, j];
                     }
-                }//end double loop
+                }
             }
         }
 
@@ -2203,7 +2203,7 @@ namespace TowseyLibrary
                     {
                         max = data[i, j];
                     }
-                }//end double loop
+                }
             }
         }
 

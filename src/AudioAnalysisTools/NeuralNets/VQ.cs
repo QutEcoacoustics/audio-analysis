@@ -168,5 +168,5 @@ namespace NeuralNets
         {
             return this.initialCluster.CalculateCentroid();
         }
-    }//end class VQ
+    }
 }

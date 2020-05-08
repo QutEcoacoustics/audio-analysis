@@ -9,9 +9,10 @@ namespace TowseyLibrary
 
     public enum WindowFunctions
     {
-        NONE, HAMMING, HANNING,
+        NONE,
+        HAMMING,
+        HANNING,
     }
-
 
     public sealed class FFT
     {
@@ -74,10 +75,9 @@ namespace TowseyLibrary
         /// <summary>
         /// Invokes an FFT on the given data array.
         /// cdata contains the real and imaginary terms of the coefficients representing cos and sin components respectively.
-        /// cdata is symmetrical about terms 512 & 513. Can ignore all coefficients 512 and above .
+        /// cdata is symmetrical about terms 512 &amp; 513. Can ignore all coefficients 512 and above .
         /// </summary>
         /// <param name="data">a single frame of signal values.</param>
-        /// <param name="coeffCount">number of coefficients to return.</param>
         public double[] Invoke(double[] data)
         {
             double[] cdata = new double[2 * this.WindowSize]; //to contain the complex coefficients
@@ -277,9 +277,9 @@ namespace TowseyLibrary
 
         /// <summary>
         /// The Hamming window reduces the immediate adjacent sidelobes (conmpared to the Hanning) but at the expense of increased
-        /// distal side-lobes. See. <https://en.wikipedia.org/wiki/Window_function>
+        /// distal side-lobes. <see href="https://en.wikipedia.org/wiki/Window_function" />.
         /// </summary>
-        public static readonly WindowFunc Hamming = delegate (int n, int N)
+        public static readonly WindowFunc Hamming = (n, N) =>
         {
             double x = 2.0 * Math.PI * n / (N - 1);
 
@@ -287,7 +287,7 @@ namespace TowseyLibrary
             return 0.54 - (0.46 * Math.Cos(x)); //MATLAB code uses these value and says it is better!
         };
 
-        public static readonly WindowFunc Hanning = delegate (int n, int N)
+        public static readonly WindowFunc Hanning = (n, N) =>
         {
             double x = 2.0 * Math.PI * n / (N - 1);
             return 0.50 - (0.50 * Math.Cos(x));
@@ -300,7 +300,7 @@ namespace TowseyLibrary
                 throw new ArgumentOutOfRangeException("sigma");
             }
 
-            return delegate (int n, int N)
+            return (n, N) =>
             {
                 double num = n - (0.5 * (N - 1));
                 double den = sigma * 0.5 * (N - 1);
@@ -309,17 +309,17 @@ namespace TowseyLibrary
             };
         }
 
-        public static readonly WindowFunc Lanczos = delegate (int n, int N)
+        public static readonly WindowFunc Lanczos = (n, N) =>
         {
             double x = (2.0 * n / (N - 1)) - 1.0;
             return x != 0.0 ? Math.Sin(x) / x : 1.0;
         };
 
-        public static readonly WindowFunc Nuttall = delegate (int n, int N) { return lrw(0.355768, 0.487396, 0.144232, 0.012604, n, N); };
+        public static readonly WindowFunc Nuttall = (n, N) => { return lrw(0.355768, 0.487396, 0.144232, 0.012604, n, N); };
 
-        public static readonly WindowFunc BlackmanHarris = delegate (int n, int N) { return lrw(0.35875, 0.48829, 0.14128, 0.01168, n, N); };
+        public static readonly WindowFunc BlackmanHarris = (n, N) => { return lrw(0.35875, 0.48829, 0.14128, 0.01168, n, N); };
 
-        public static readonly WindowFunc BlackmanNuttall = delegate (int n, int N) { return lrw(0.3635819, 0.4891775, 0.1365995, 0.0106411, n, N); };
+        public static readonly WindowFunc BlackmanNuttall = (n, N) => { return lrw(0.3635819, 0.4891775, 0.1365995, 0.0106411, n, N); };
 
         private static double lrw(double a0, double a1, double a2, double a3, int n, int N)
         {
@@ -329,7 +329,7 @@ namespace TowseyLibrary
             return a0 - (a1 * c1) + (a2 * c2) - (a3 * c3);
         }
 
-        public static readonly WindowFunc FlatTop = delegate (int n, int N)
+        public static readonly WindowFunc FlatTop = (n, N) =>
         {
             double c1 = Math.Cos(2.0 * Math.PI * n / (N - 1));
             double c2 = Math.Cos(4.0 * Math.PI * n / (N - 1));
@@ -360,5 +360,5 @@ namespace TowseyLibrary
                 return null;
             }
         }
-    }//end class FFT
+    }
 }

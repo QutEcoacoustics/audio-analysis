@@ -373,7 +373,7 @@ namespace NeuralNets
             }
 
             return vector;
-        }//end GetOneIPVector()
+        }
 
         //original declaration
         //PROCEDURE PropagateToF2ofART2A (F1size, F2size :word; const IP :array of TFloat; var maxUnit, prediction :word);
@@ -528,7 +528,7 @@ namespace NeuralNets
             {
                 this.Zj[index, uNo] = PHAY[uNo];
             }
-        }//end method
+        }
 
         //{normalises vector to unit length}
         public static double[] NormaliseVector(double[] data)
@@ -683,5 +683,5 @@ namespace NeuralNets
             int[] keepScore = art2a.inputCategory;
             return keepScore;
         } //END of ClusterShapes.
-    }//end Class
+    }
 } //end namespace

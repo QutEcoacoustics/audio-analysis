@@ -44,7 +44,6 @@ namespace AForge.Imaging.Filters
     ///
     public abstract class BaseUsingCopyPartialFilter
     {
-
         /// <summary>
         /// Apply filter to an image.
         /// </summary>
@@ -54,12 +53,11 @@ namespace AForge.Imaging.Filters
         /// <returns>Returns filter's result obtained by applying the filter to
         /// the source image.</returns>
         ///
-        /// <remarks>The filter accepts bitmap data as input and returns the result
+        /// <remarks>
+        /// The filter accepts bitmap data as input and returns the result
         /// of image processing filter as new image. The source image data are kept
-        /// unchanged.</remarks>
-        ///
-        /// <exception cref="UnsupportedImageFormatException">Unsupported pixel format of the source image.</exception>
-        ///
+        /// unchanged.
+        /// </remarks>
         public Image<L8> Apply(Image<Rgb24> imageData)
         {
             // get width and height
@@ -116,10 +114,9 @@ namespace AForge.Imaging.Filters
     /// filter.ApplyInPlace( image );
     /// </code>
     ///
-    /// <para><b>Initial image:</b></para>
-    /// <img src="img/imaging/sample2.jpg" width="320" height="240" />
-    /// <para><b>Result image:</b></para>
-    /// <img src="img/imaging/canny_edges.png" width="320" height="240" />
+    /// <para>
+    /// See the original AForge code for example images.
+    /// </para>
     /// </remarks>
     ///
     public class CannyEdgeDetector : BaseUsingCopyPartialFilter
@@ -155,17 +152,11 @@ namespace AForge.Imaging.Filters
         /// <summary>
         /// Gets gaussian sigma.
         /// </summary>
-        ///
-        /// <remarks>Sigma value for <see cref="GaussianBlur.Sigma">Gaussian bluring</see>.</remarks>
-        ///
         public float GaussianSigma => this.gaussianFilter.Sigma;
 
         /// <summary>
         /// Gets gaussian size.
         /// </summary>
-        ///
-        /// <remarks>Size of <see cref="GaussianBlur.Size">Gaussian kernel</see>.</remarks>
-        ///
         public int GaussianSize => this.gaussianFilter.Radius;
 
         /// <summary>
@@ -238,7 +229,6 @@ namespace AForge.Imaging.Filters
             // pixel's value and gradients
             int gx, gy;
 
-            //
             double orientation, toAngle = 180.0 / System.Math.PI;
             float leftPixel = 0, rightPixel = 0;
 
@@ -264,14 +254,14 @@ namespace AForge.Imaging.Filters
                 {
                     gx = src[y - 1, x + 1].PackedValue + src[y, x + 1].PackedValue
                        - src[y - 1, x - 1].PackedValue - src[y, x - 1].PackedValue
-                       + 2 * (src[y + 1, x].PackedValue - src[y - 1, x].PackedValue);
+                       + (2 * (src[y + 1, x].PackedValue - src[y - 1, x].PackedValue));
 
                     gy = src[y - 1, x - 1].PackedValue + src[y - 1, x + 1].PackedValue
                        - src[y, x - 1].PackedValue - src[y, x + 1].PackedValue
-                       + 2 * (src[y - 1, x].PackedValue - src[y + 1, x].PackedValue);
+                       + (2 * (src[y - 1, x].PackedValue - src[y + 1, x].PackedValue));
 
                     // get gradient value
-                    gradients[x, y] = (float)Math.Sqrt(gx * gx + gy * gy);
+                    gradients[x, y] = (float)Math.Sqrt((gx * gx) + (gy * gy));
                     if (gradients[x, y] > maxGradient)
                     {
                         maxGradient = gradients[x, y];
@@ -290,7 +280,7 @@ namespace AForge.Imaging.Filters
                         // handle angles of the 2nd and 4th quads
                         if (div < 0)
                         {
-                            orientation = 180 - System.Math.Atan(-div) * toAngle;
+                            orientation = 180 - (Math.Atan(-div) * toAngle);
                         }
 
                         // handle angles of the 1st and 3rd quads

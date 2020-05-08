@@ -384,11 +384,11 @@ namespace TowseyLibrary
                     // Step 6
                     d[i, j] = Minimum(d[i - 1, j] + 1, d[i, j - 1] + 1, d[i - 1, j - 1] + cost);
                 }
-            }//end step 3
+            }
 
             // Step 7
             return d[n, m];
-        }//end method LD()
+        }
 
         //=============================================================================
 
@@ -953,7 +953,7 @@ namespace TowseyLibrary
         /**
          * Returns index of word that contains the Nth char
          * NOTE: if N is between two words, the first word will be taken as the target or focal word
-         * NOTE: if N is <= 0, the first word is returned.
+         * NOTE: if N is &lt;= 0, the first word is returned.
          * NOTE: if N > document mapLength, then the last word is returned.
          * @param N the character index
          * @param wordLoc - array of word bounds
@@ -1084,6 +1084,6 @@ namespace TowseyLibrary
 
             //    LoggedConsole.WriteLine("FINISHED TEXT UTILITIES");
             //    System.exit(0);
-        }//end main method
+        }
     } //end class
 } //end namespace

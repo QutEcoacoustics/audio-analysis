@@ -124,7 +124,6 @@ namespace AnalysisBase
         /// </summary>
         public ISegment<TSegment> Segment { get; }
 
-        /// <inheritdoc />
         public override string ToString()
         {
             return $"{nameof(SegmentSettings<TSegment>)} with instance id {this.InstanceId} and " +

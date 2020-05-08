@@ -10,7 +10,7 @@ _AP.exe_ supports:
 - MP3 (`.mp3`)
     - any sample rate
     - VBR or Fixed
-    - **NOTE**: MP3 compression creates artefacts in the reconstituted audio file to which some indices (especially ACI) are highly sensitive. For this reason, we discourage the use of MP3 recordings.
+    - **NOTE**: MP3 compression in low bitrates creates artefacts in the reconstituted audio file to which some indices (especially ACI) are highly sensitive. For this reason, we discourage the use of MP3 recordings.
 - Ogg Vorbis (`.ogg`)    
 - FLAC (`.flac`)
 - Wave Pack (`.wv`)

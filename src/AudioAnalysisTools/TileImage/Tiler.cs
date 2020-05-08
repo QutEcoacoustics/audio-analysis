@@ -490,7 +490,7 @@ namespace AudioAnalysisTools.TileImage
 
         /// <summary>
         /// Split a region into top, middle, and bottom sections.
-        /// Split along points 1 & 2.
+        /// Split along points 1 &anp; 2.
         /// If resulting rect has zero height it is omitted from the results.
         /// </summary>
         private static List<ImageComponent> SplitAlongY(

@@ -79,7 +79,7 @@ namespace AudioAnalysisTools
             TimeSpan span2 = endTime2.Subtract(startTime2);
             Log.WriteLine(" TOTAL COMP TIME = " + span2.ToString() + "s");
             totalTime = endTime2.Subtract(startTime1);
-        }//end method
+        }
 
         /*
                 /// <summary>
@@ -122,7 +122,7 @@ namespace AudioAnalysisTools
                     oscFreq = GetOscillationFrequency(hits, minHz, maxHz, sonogram.FBinWidth);
                     events = ConvertODScores2Events(scores, oscFreq, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, sonogram.Configuration.FreqBinCount, scoreThreshold,
                                                     minDuration, maxDuration, sonogram.Configuration.SourceFName);
-                }//end method
+                }
 
         */
 
@@ -133,7 +133,7 @@ namespace AudioAnalysisTools
         ///     Do not want too short because too small a range of oscillations
         /// b) dctThreshold: minimum acceptable value of a DCT coefficient if hit is to be accepted.
         ///     The algorithm is sensitive to this value. A lower value results in more oscillation hits being returned.
-        /// c) Min and Max Oscillaitons: Sets lower & upper bound for oscillations of interest.
+        /// c) Min and Max Oscillaitons: Sets lower &amp; upper bound for oscillations of interest.
         ///     Array has same length as the length of the DCT. Low freq oscillations occur more often by chance. Want to exclude them.
         /// </summary>
         /// <param name="minHz">min freq bin of search band.</param>
@@ -539,7 +539,7 @@ namespace AudioAnalysisTools
             }
 
             return scores;
-        }//end method GetOscillationScores()
+        }
 
         /// <summary>
         /// for each frame, returns the average oscilation rate for those freq bins that register a hit.
@@ -579,7 +579,7 @@ namespace AudioAnalysisTools
             }
 
             return oscFreq;
-        }//end method GetOscillationFrequency()
+        }
 
         /// <summary>
         /// Converts the Oscillation Detector score array to a list of AcousticEvents.
@@ -760,5 +760,5 @@ namespace AudioAnalysisTools
             LoggedConsole.WriteLine("Max indices = {0:f0},  {1:f0},  {2:f0}.", maxIndex[0], maxIndex[1], maxIndex[2]);
             return period;
         }
-    }//end class
+    }
 }

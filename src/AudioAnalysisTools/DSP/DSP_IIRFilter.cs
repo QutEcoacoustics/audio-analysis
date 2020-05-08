@@ -370,11 +370,11 @@ namespace AudioAnalysisTools.DSP
                 DataTools.writeBarGraph(y);
 
                 LoggedConsole.WriteLine("\nEnd Test");
-            }//end test Method(string fName)
+            }
 
             LoggedConsole.WriteLine("FINISHED!!");
             Console.ReadLine();
-        }//end Main
+        }
 
         /// <summary>
         /// This method implements a crude form of high pass filtering.
@@ -384,5 +384,5 @@ namespace AudioAnalysisTools.DSP
             double[] smoothed = DataTools.filterMovingAverageOdd(inputSignal, windowLength);
             outputSignal = DataTools.SubtractVectors(inputSignal, smoothed);
         }
-    }//end class DSP
+    }
 }

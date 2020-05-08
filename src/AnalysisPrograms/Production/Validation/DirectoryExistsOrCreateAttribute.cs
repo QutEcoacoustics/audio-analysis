@@ -9,7 +9,6 @@ namespace AnalysisPrograms.Production.Validation
     using System.IO;
     using Acoustics.Shared.Contracts;
 
-    /// <inheritdoc />
     /// <summary>
     /// Validates that if the user specifies a value for a property that the value represents a directory that exists
     /// as determined by System.IO.Directory.Exists(directory).
@@ -29,7 +28,6 @@ namespace AnalysisPrograms.Production.Validation
             this.shouldExist = shouldExist;
         }
 
-        /// <inheritdoc />
         /// <summary>
         /// Validates that the given directory exists.
         /// </summary>

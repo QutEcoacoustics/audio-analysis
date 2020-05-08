@@ -39,5 +39,5 @@ namespace AudioAnalysisTools.WavTools
             recordingname = parts2[0];
             extension = parts2[1];
         }
-    }//end class
-}//end nmaespace
+    }
+}

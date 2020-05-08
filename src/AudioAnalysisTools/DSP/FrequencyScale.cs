@@ -15,7 +15,7 @@ namespace AudioAnalysisTools.DSP
     using TowseyLibrary;
     using Path = System.IO.Path;
 
-    // IMPORTANT NOTE: If you are converting Herz scale from LINEAR to MEL or OCTAVE, this conversion MUST be done BEFORE noise reduction
+    // IMPORTANT NOTE: If you are converting Hertz scale from LINEAR to MEL or OCTAVE, this conversion MUST be done BEFORE noise reduction
 
     /// <summary>
     /// All the below octave scale options are designed for a final freq scale having 256 bins.
@@ -306,10 +306,10 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// THIS METHOD NEEDS TO BE DEBUGGED.  HAS NOT BEEN USED IN YEARS!.
-        /// Use this method to generate grid lines for mel scale image.
-        /// Currently this method is only called from BaseSonogram.GetImage() when bool doMelScale = true;.
-        /// Frequencyscale.Draw1kHzLines(Image.Rgb24 bmp, bool doMelScale, int nyquist, double freqBinWidth)
+        /// THIS METHOD NEEDS TO BE DEBUGGED.  HAS NOT BEEN USED IN YEARS!
+        /// Use this method to generate grid lines for mel scale image
+        /// Currently this method is only called from BaseSonogram.GetImage() when bool doMelScale = true;
+        /// Frequencyscale.Draw1kHzLines(Image{Rgb24} bmp, bool doMelScale, int nyquist, double freqBinWidth).
         /// </summary>
         public static int[,] GetMelGridLineLocations(int gridIntervalInHertz, int nyquistFreq, int melBinCount)
         {

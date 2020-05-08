@@ -30,6 +30,9 @@ $self_contained = if ($self_contained -eq 'true') { 'true' } else { 'false' }
 $commit_hash = git show -s --format="%H"
 
 $branch = ((git show -s --pretty=%D HEAD) -split ',').Trim().TrimStart('origin/') | Where-Object { -not $_.Contains("HEAD") }
+if ([string]::IsNullOrWhiteSpace($branch)) {
+    $branch = git rev-parse --abbrev-ref HEAD
+}
 
 
 $describe = git describe --dirty --abbrev --long --always

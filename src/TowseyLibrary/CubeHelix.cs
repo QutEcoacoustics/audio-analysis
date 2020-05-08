@@ -279,14 +279,14 @@ namespace TowseyLibrary
                     }
 
                     image[c, r] = this.ColourPallette[colourID];
-                }//end all columns
-            }//end all rows
+                }
+            }
 
             return image;
         }
 
-        /**
-         * Obtained from following website.
+        /*
+Obtained from following website.
 https://www.mrao.cam.ac.uk/~dag/CUBEHELIX/
 
 cubehelix.js#
@@ -333,12 +333,11 @@ cubehelix.js#
   function hex(v) {
     var s = (v = v <= 0 ? 0 : v >= 1 ? 255 : v * 255 | 0).toString(16);
     return v. < 0x10 ? "0" + s : s;
-  }
+  } */
 
-         *
-         *
-         *
-         * **/
+        /// <summary>
+        /// Draws a Cube Helix test image.
+        /// </summary>
         public static void DrawTestImage()
         {
             //Hsl colorARgb = new Hsl(300, 0.5, 0.0);

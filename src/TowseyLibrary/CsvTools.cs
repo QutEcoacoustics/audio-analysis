@@ -373,8 +373,8 @@ namespace TowseyLibrary
                     }
 
                     list.Add(values);
-                }//end while
-            }//end using
+                }
+            }
 
             return list;
         }

@@ -198,7 +198,7 @@ namespace AnalysisPrograms
                                          out var scores, out var predictedEvents, out var hits, out var segments, out var analysisTime);
 
             return Tuple.Create(sonogram, hits, scores, predictedEvents, segments, analysisTime);
-        }//end CaneToadRecogniser
+        }
 
         public static void DrawSonogram(BaseSonogram sonogram, string path, double[,] hits, double[] scores,
                                         List<AcousticEvent> predictedEvents, double eventThreshold, double[] intensity)
