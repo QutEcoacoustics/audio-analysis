@@ -2,7 +2,15 @@
 
 [INCOMPLETE]
 
-![Common commands](./media/AnalysisFlow.svg)
+![Common commands](../images/AnalysisFlow.svg)
+
+```mermaid
+graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;
+```
 
 **IAnalyzer\[2\]**
 

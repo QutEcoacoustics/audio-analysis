@@ -1,4 +1,9 @@
-# Colour Spectrogram
+---
+uid: command-draw-long-duration-spectrogram
+title: Draw Long Duration Spectrograms
+---
+
+#  Draw Long Duration Spectrograms
 
 - **Command**: DrawLongDurationSpectrograms
 - **Config file**: SpectrogramFalseColourConfig.yml

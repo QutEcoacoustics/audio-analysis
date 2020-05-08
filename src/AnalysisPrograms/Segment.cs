@@ -161,7 +161,7 @@ namespace AnalysisPrograms
                                                                       thresholdSD, minDuration, maxDuration);
             var tuple2 = Tuple.Create(sonogram, tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5);
             return tuple2;
-        }//end Execute_Segmentation
+        }
 
         public static void DrawSonogram(BaseSonogram sonogram, string path, List<AcousticEvent> predictedEvents, double eventThreshold, double[] segmentation)
         {

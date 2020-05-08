@@ -12,7 +12,6 @@ namespace AnalysisPrograms.AcousticWorkbench.Orchestration
     using AnalysisBase.Segment;
     using global::AcousticWorkbench.Models;
 
-    /// <inheritdoc />
     /// <summary>
     /// Represents a segment of a remote target audio file.
     /// This is not a hierarchical structure.

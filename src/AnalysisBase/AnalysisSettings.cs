@@ -210,7 +210,9 @@ namespace AnalysisBase
         /// </summary>
         public object AnalysisAnalyzerSpecificConfiguration { get; set; }
 
-        /// <inheritdoc/>
+        /// <remarks>
+        /// Does a deep clone.
+        /// </remarks>
         public object Clone()
         {
             AnalysisSettings deepClone = this.DeepClone<AnalysisSettings>();
@@ -218,7 +220,6 @@ namespace AnalysisBase
             return deepClone;
         }
 
-        /// <inheritdoc/>
         public override string ToString()
         {
             return $"{nameof(AnalysisSettings)} " +

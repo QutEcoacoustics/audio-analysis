@@ -86,8 +86,8 @@ namespace AudioAnalysisTools
                     gapImage.Mutate(g5 =>
                     {
                         g5.Clear(Color.Gray);
-                        g5.DrawText("Day", stringFont, brush, new PointF(2, 5));
-                        g5.DrawText("missing", stringFont, brush, new PointF(2, 35));
+                        g5.DrawTextSafe("Day", stringFont, brush, new PointF(2, 5));
+                        g5.DrawTextSafe("missing", stringFont, brush, new PointF(2, 35));
                     });
 
                     list.Add(gapImage);
@@ -110,7 +110,7 @@ namespace AudioAnalysisTools
             labelImage1.Mutate(g1 =>
             {
                 g1.Clear(Color.Black);
-                g1.DrawText(fileSuffix, stringFont, brush, new PointF(2, 2));
+                g1.DrawTextSafe(fileSuffix, stringFont, brush, new PointF(2, 2));
             });
 
             //labelImage1.Save(Path.Combine(imageDirectory.FullName, suffix1));
@@ -163,7 +163,7 @@ namespace AudioAnalysisTools
                 concatImage.Mutate(g =>
                 {
                     string chn = $"ch{channel + 1}";
-                    g.DrawText(chn, stringFont, brush, new PointF(2, 40));
+                    g.DrawTextSafe(chn, stringFont, brush, new PointF(2, 40));
                 });
 
                 fourChannelList.Add(concatImage);

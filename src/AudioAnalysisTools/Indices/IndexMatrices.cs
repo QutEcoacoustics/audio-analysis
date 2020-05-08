@@ -201,7 +201,7 @@ namespace AudioAnalysisTools.Indices
         public static List<double[,]> ConcatenateSpectralIndexFilesWithTimeCheck(FileInfo[] files, TimeSpan indexCalcDuration, string key)
         {
             TimeSpan? offsetHint = new TimeSpan(10, 0, 0);
-            var datesAndFiles = new (DateTimeOffset date, FileInfo file)[files.Length];
+            var datesAndFiles = new (DateTimeOffset Date, FileInfo File)[files.Length];
             var matrices = new List<double[,]>();
 
             // accumulate the start times for each of the files
@@ -223,15 +223,15 @@ namespace AudioAnalysisTools.Indices
             }
 
             // list of file needs to be sorted (relying on system sorting is not reliable)
-            datesAndFiles = datesAndFiles.OrderBy(df => df.date).ToArray();
+            datesAndFiles = datesAndFiles.OrderBy(df => df.Date).ToArray();
 
-            string fileName = datesAndFiles[0].file.Name;
+            string fileName = datesAndFiles[0].File.Name;
             string fileExt = fileName.Substring(fileName.Length - 7);
 
             // now loop through the files again to extract the indices
             for (int i = 0; i < datesAndFiles.Length; i++)
             {
-                var file = datesAndFiles[i].file;
+                var file = datesAndFiles[i].File;
                 if (!file.Exists)
                 {
                     continue;
@@ -252,7 +252,7 @@ namespace AudioAnalysisTools.Indices
                 var length = datesAndFiles.Length;
                 if (i < length - 1)
                 {
-                    TimeSpan partialElapsedTime = datesAndFiles[i + 1].date - datesAndFiles[i].date;
+                    TimeSpan partialElapsedTime = datesAndFiles[i + 1].Date - datesAndFiles[i].Date;
                     elapsedMinutesInFileNames = (int)Math.Round(partialElapsedTime.TotalMinutes);
                 }
                 else
@@ -503,7 +503,9 @@ namespace AudioAnalysisTools.Indices
         /// </summary>
         /// <param name="spectra">The spectra to compress as a dictionary of spectrogram matrices.</param>
         /// <param name="imageScale">The scale (time resolution) of the compressed output spectrogram.</param>
-        /// <param name="dataScale">The scale (time resolution) of the input spectral indices<see cref="spectra"/>.</param>
+        /// <param name="dataScale">
+        /// The scale (time resolution) of the input spectral indices. See <paramref name="spectra"/>.
+        /// </param>
         /// <param name="roundingFunc">
         /// How fractional spectra should be dealt with.
         /// It should be one of or similar to <see cref="Math.Round(double)"/>,
@@ -515,7 +517,7 @@ namespace AudioAnalysisTools.Indices
             TimeSpan dataScale,
             Func<double, double> roundingFunc = null)
         {
-            roundingFunc = roundingFunc ?? Math.Floor;
+            roundingFunc ??= Math.Floor;
 
             // the scaling factor should usually be > 1.0.
             var rawScalingFactor = imageScale.Ticks / (double)dataScale.Ticks;

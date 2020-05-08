@@ -544,7 +544,7 @@ namespace TowseyLibrary
 
                 default:
                     throw new Exception("\nWARNING: INVALID MODE!");
-            }//end of switch statement
+            }
 
             int mRows = matrix.GetLength(0);
             int mCols = matrix.GetLength(1);
@@ -610,7 +610,7 @@ namespace TowseyLibrary
             }
 
             return newMatrix;
-        }//end method Convolve()
+        }
 
         public static double[,] GridFilter(double[,] m, Kernal name)
         {
@@ -648,7 +648,7 @@ namespace TowseyLibrary
 
                 default:
                     throw new Exception("\nWARNING: INVALID MODE!");
-            }//end of switch statement
+            }
 
             int mRows = m.GetLength(0);
             int mCols = m.GetLength(1);
@@ -716,11 +716,11 @@ namespace TowseyLibrary
                     }
 
                     //else newMatrix[r, c] = 0.0;
-                }//end of loops
+                }
             }
 
             return newMatrix;
-        }//end method GridFilter()
+        }
 
         /// <summary>
         /// Returns a small matrix of pixels chosen randomly from the passed matrix, m.
@@ -842,7 +842,7 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// this method assumes that all the values in the passed matrix are between zero & one.
+        /// this method assumes that all the values in the passed matrix are between zero &amp; one.
         /// Will truncate all values > 1 to 1.0.
         /// Spurious results will occur if have negative values or values > 1.
         /// Should NormaliseMatrixValues matrix first if these conditions do not apply.
@@ -1946,10 +1946,10 @@ namespace TowseyLibrary
                     //if (matrix[y, col] < upperThreshold) M[y, col] = 0.0;
                     //else M[y, col] = 1.0;
                 }
-            }//for all cols
+            }
 
             return outM;
-        }// end of TrimPercentiles()
+        }
 
         // ###################################################################################################################################
 
@@ -2033,10 +2033,10 @@ namespace TowseyLibrary
                 {
                     M[y, col] = (matrix[y, col] - av) / sd;
                 }
-            }//for all cols
+            }
 
             return M;
-        }// end of SubtractAverage()
+        }
 
         public static double[,] SubtractAverage_BandWise(double[,] matrix)
         {
@@ -2074,11 +2074,11 @@ namespace TowseyLibrary
                 for (int y = 0; y < height; y++)
                 {
                     M[y, col] = matrix[y, col] - av;
-                }//for all rows
-            }//for all cols
+                }
+            }
 
             return M;
-        }// end of SubtractAverage()
+        }
 
         /// <summary>
         /// Returns matrix after convolving with Gaussian blur.
@@ -2107,8 +2107,8 @@ namespace TowseyLibrary
                     }
 
                     M1[r, c] = sum;
-                }//for all cols
-            }//for all rows
+                }
+            }
 
             // then convolve in y-dimension, i.e. along a col
             double[,] M2 = (double[,])M1.Clone();
@@ -2126,11 +2126,11 @@ namespace TowseyLibrary
                     }
 
                     M2[r, c] = sum;
-                }//for all cols
-            }//for all rows
+                }
+            }
 
             return M2;
-        }// end of Shapes_lines()
+        }
 
         /// <summary>
         /// Detect high intensity / high energy regions in an image using blurring
@@ -2218,14 +2218,14 @@ namespace TowseyLibrary
 
                         M[y, x] = state;
                     }
-                }//for all x in a band
-            }//for all bands
+                }
+            }
 
             int minRowWidth = 2;
             int minColWidth = 5;
             M = Shapes_RemoveSmall(M, minRowWidth, minColWidth);
             return M;
-        }// end of DetectHighEnergyRegions1()
+        }
 
         /// <summary>
         /// Detect high intensity / high energy regions in an image using blurring
@@ -2281,10 +2281,10 @@ namespace TowseyLibrary
                         M[y, col] = 1.0;
                     }
                 }
-            }//for all cols
+            }
 
             return M;
-        }// end of Shapes2()
+        }
 
         public static double[,] Shapes3(double[,] m)
         {
@@ -2365,7 +2365,7 @@ namespace TowseyLibrary
                             overlapsHighEnergy = true;
                             break;
                         }
-                    }//end of ascertaining if line overlapsHighEnergy
+                    }
 
                     if (overlapsHighEnergy)
                     {
@@ -2469,7 +2469,7 @@ namespace TowseyLibrary
                             overlapsHighEnergy = true;
                             break;
                         }
-                    }//end of ascertaining if line overlapsHighEnergy
+                    }
 
                     if (overlapsHighEnergy)
                     {
@@ -2495,8 +2495,8 @@ namespace TowseyLibrary
                             tmpM[y + 1, j] = 0.0;
                         }
                     }
-                }//end cols
-            }//end rows
+                }
+            }
 
             //NOW DO SHAPE MERGING TO REDUCE NUMBERS
             LoggedConsole.WriteLine("Object Count 1 =" + objectCount);
@@ -2611,7 +2611,7 @@ namespace TowseyLibrary
                             overlapsHighEnergy = true;
                             break;
                         }
-                    }//end of ascertaining if line overlapsHighEnergy
+                    }
 
                     if (overlapsHighEnergy)
                     {
@@ -2637,8 +2637,8 @@ namespace TowseyLibrary
                             tmpM[y + 1, j] = 0.0;
                         }
                     }
-                }//end cols
-            }//end rows
+                }
+            }
 
             //NOW DO SHAPE MERGING TO REDUCE NUMBERS
             LoggedConsole.WriteLine("Object Count 1 =" + objectCount);
@@ -2676,7 +2676,7 @@ namespace TowseyLibrary
             //double[,] M = new double[height, width];
             double[,] M = DataTools.Threshold(tmpM, threshold);
             return M;
-        }// end of Shapes_lines()
+        }
 
         /// <summary>
         /// Returns a binary matrix containing high energy lines in the original spectrogram
@@ -2745,13 +2745,13 @@ namespace TowseyLibrary
                         }
                     }
                 }
-            }//for all cols
+            }
 
             int minRowWidth = 2;
             int minColWidth = 5;
             M = Shapes_RemoveSmall(M, minRowWidth, minColWidth);
             return M;
-        }// end of Shapes_lines()
+        }
 
         public static double[,] Shapes_RemoveSmall(double[,] m, int minRowWidth, int minColWidth)
         {
@@ -2789,8 +2789,8 @@ namespace TowseyLibrary
                     }
 
                     y += rowWidth - 1;
-                }//end y loop
-            }//end x loop
+                }
+            }
 
             //M = m;
 
@@ -2834,7 +2834,7 @@ namespace TowseyLibrary
                             attachedOK = true;
                             break;
                         }
-                    }//end of ascertaining if line overlapsHighEnergy
+                    }
 
                     //attachedOK = true;
                     if (sizeOK && attachedOK)
@@ -2848,8 +2848,8 @@ namespace TowseyLibrary
                             }
                         }
                     }
-                }//end y loop
-            }//end x loop
+                }
+            }
 
             //M = m;
 
@@ -2894,8 +2894,8 @@ namespace TowseyLibrary
                         //m[y - 2, x] = 1.0;
                         //m[y + 2, x] = 1.0;
                     }
-                }//end y loop
-            }//end x loop
+                }
+            }
 
             return m;
         }
@@ -3183,7 +3183,7 @@ namespace TowseyLibrary
                     }
 
                     bmp[c, r] = grayScale[greyId];
-                }//end all columns
+                }
             }
 
             return bmp;
@@ -3222,7 +3222,7 @@ namespace TowseyLibrary
                     }
 
                     bmp[c, r] = grayScale[greyId];
-                }//end all columns
+                }
             }
 
             return bmp;
@@ -3313,8 +3313,8 @@ namespace TowseyLibrary
                     }
 
                     bmp[c, r] = Color.FromRgb((byte)R, (byte)G, (byte)B);
-                }//end all columns
-            }//end all rows
+                }
+            }
 
             return bmp;
         }
@@ -3337,7 +3337,7 @@ namespace TowseyLibrary
 
                     g.DrawLine(pen, 0, y1, image.Width - 1, y1);
                     string value = Math.Round(yInterval * i).ToString();
-                    g.DrawText(value, font, Color.White, new PointF(2, y1 + 1));
+                    g.DrawTextSafe(value, font, Color.White, new PointF(2, y1 + 1));
                 }
             });
 
@@ -3394,7 +3394,7 @@ namespace TowseyLibrary
                     //g.DrawLine(pen, x1 + 1, 0, x1 + 1, scaleHeight - 1);
 
                     string value = Math.Round(xInterval * i).ToString();
-                    g.DrawText(value, font, Color.Black, new PointF(x1, 0));
+                    g.DrawTextSafe(value, font, Color.Black, new PointF(x1, 0));
                 }
 
                 g.DrawRectangle(pen, 0, 0, image.Width - 1, scaleHeight - 1);
@@ -3888,7 +3888,7 @@ namespace TowseyLibrary
             } // while loop
 
             return Tuple.Create(maxAngle, intensitySum);
-        }// DetectLine()
+        }
 
         /// <summary>
         /// Returns an image of the data matrix.

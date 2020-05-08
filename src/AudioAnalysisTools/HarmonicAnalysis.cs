@@ -36,7 +36,7 @@ namespace AudioAnalysisTools
             double[] scores = results.Item1;
             var hits = results.Item2;
             return Tuple.Create(scores, hits);
-        }//end method
+        }
 
         public static Tuple<double[], double[,]> CountHarmonicTracks(double[,] matrix, int minBin, int maxBin, int hzWidth, int expectedHarmonicCount, double amplitudeThreshold)
         {
@@ -98,7 +98,7 @@ namespace AudioAnalysisTools
                         c++;
                     } // for display purposes.
                 }
-            }// rows
+            }
 
             return Tuple.Create(harmonicScore, hits);
         }
@@ -244,7 +244,7 @@ namespace AudioAnalysisTools
                         c++;
                     }
                 }
-            }// rows
+            }
 
             return Tuple.Create(periodScore, hits);
         }
@@ -336,5 +336,5 @@ namespace AudioAnalysisTools
 
             return hits;
         }
-    }//end class HarmonicAnalysis
+    }
 }

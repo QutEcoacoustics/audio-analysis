@@ -135,7 +135,7 @@ namespace AudioAnalysisTools
         /// </summary>
         public Oblong Oblong { get; set; }
 
-        /// <summary> Gets or sets required for conversions to/from MEL scale AND for drawing event on spectrum.</summary>
+        /// <summary> Gets or sets required for conversions to &amp; from MEL scale AND for drawing event on spectrum.</summary>
         public int FreqBinCount { get; set; }
 
         /// <summary>
@@ -673,7 +673,7 @@ namespace AudioAnalysisTools
                     LoggedConsole.WriteLine(line + "\t  ||   ||   ||   ||   ||   ||");
                     sb.Append(line + "\t  ||   ||   ||   ||   ||   ||\n");
                 }
-            }//end of looking for true and false positives
+            }
 
             //Now calculate the FALSE NEGATIVES. These are the labelled events not tagged in previous search.
             LoggedConsole.WriteLine();
@@ -806,7 +806,7 @@ namespace AudioAnalysisTools
                 }
 
                 sb.Append(line + "\t" + ae.FileName + "\n");
-            }//end of looking for true and false positives
+            }
 
             //Now calculate the FALSE NEGATIVES. These are the labelled events not tagged in previous search.
             //LoggedConsole.WriteLine();

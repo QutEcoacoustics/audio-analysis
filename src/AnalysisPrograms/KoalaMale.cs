@@ -213,7 +213,7 @@ namespace AnalysisPrograms
         /// The events.
         /// </param>
         /// <returns>
-        /// The <see cref="List"/>.
+        /// The <see cref="List{T}"/>.
         /// </returns>
         public static List<AcousticEvent> FilterMaleKoalaEvents(List<AcousticEvent> events)
         {

@@ -387,8 +387,10 @@ namespace SixLabors.ImageSharp
                     {
                         foreach (var characterBound in characterBounds)
                         {
-                            // magic value found empirically, does not seem to trigger bug when first char less than offset equal to char size
-                            if (characterBound.Bounds.X > -(font.Size - 2))
+                            // magic value found empirically, does not seem to trigger bug when first char less
+                            // than offset equal to char size
+                            var magicLimit = 0 - ((int)font.Size / 2);
+                            if (characterBound.Bounds.X > magicLimit)
                             {
                                 // width of chars don't take into account kerning (spacing between chars).
                                 // so we use the Left of the first value that is within our sfety margin instead

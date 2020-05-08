@@ -52,7 +52,7 @@ AP.exe will however never attempt to make ecological or scientific inferences.
 The data produced will almost always need post-processing, whether that be by
 scripted analysis or manual review.
 
-![The information pyramid](./media/information_pyramid.svg)
+![The information pyramid](../images/information_pyramid.svg)
 
 
 ## Caveats

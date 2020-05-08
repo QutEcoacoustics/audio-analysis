@@ -1,38 +1,70 @@
-# QUT Ecoacoustics: AnalysisPrograms.exe manual
+# AP.exe docs
 
+We use a tool called [DocFX](https://dotnet.github.io/docfx/tutorial/docfx_getting_started.html) to generate these docs.
 
-*QUT Ecoacoustics Analysis Programs* is a software package that can perform a 
-suite of analyses on audio recordings of the environment. Although the analyses
-are intended for long-duration recordings (1 – 24 hours approx), in fact they
-can be performed on any audio file in a format supported by the software.
-Typically, you would not use the software to analyse recordings shorter than one
- minute. Currently the software performs:
+You can use this tool locally to see what your documentation looks like.
 
-- calculation of summary and spectral acoustic indices at variable resolutions
-- produces long-duration, false-colour, multi-index spectrograms
-- can calculate critical statistics of annotations downloaded from an Acoustic
-  Workbench
-- is capable of running various acoustic event recognizers
+To install:
 
-All the analyses are performed by a single executable file, `AnalysisPrograms.exe`
-(henceforth abbreviated to _AP.exe_), with command-line arguments determining
-what analyses are to be done and on which files.
+```powershell
+choco install docfx -y
+```
 
-## Table of contents
+To generate the docs:
 
-- [Introduction](./introduction.md)
-- [FAQ](./faq.md)
-- [Downloading and Installing](./installing.md) AnalysisPrograms.exe
-- [Introduction to running commands](./cli.md)
-- [Commands](./commands.md)
-- [Config Files](./config_files.md)
-- [Supported Audio Formats](./formats.md)
-- [List of Analyses](./analyses/)
-- [Workflows](./workflows.md)
-- [TODO: Citing the software]
+```powershell
+cd docs
+docfx build
+```
+Notes: 
+- If there are any errors or warnings they need to be fixed before your changes are committed.
+- You **must rebuild** after changes to see the updated preview
 
-Supplementary:
+To preview (from audio-analysis repo root), run the _serve_ command in a separate terminal:
 
-- [Version Numbers](./versioning.md)
-- [Log files](./logs.md)
-- [Code paths](./code_paths.md) that explain how code is executed
+```powershell
+cd _site
+docfx serve
+```
+
+Then visit the url in your browser, typically <http://localhost:8080>.
+
+## Layout
+
+The documentation is layed out into several areas:
+
+- **basics**: include introductory topics, like downloading, installing, and general bit of information
+- **theory**: is reserved for pages discussing theory like:
+    - how audio algorithms work
+    - how noise removal works
+    - what the indices are
+    - how indices are calculated
+    - which event detection algorithms we have
+- **guides**: short form workflows
+    - if I have audio and I want a spectrogram I do ...
+    - if I have audio and I want a FCS I do ...
+    - if I have indices and I want FCS I do...
+    - if I have segmented FCS/indices and I want them joined i do...
+- **tutorials**: Reserved for detailed lessons
+- **FAQ**: as you expect, duplicated in basics
+- **Articles**: news/blog posts etc
+- **Documentation**: is the _technical_ folder and hides anything that is too technical for general users
+
+## Contributing guidelines
+
+- the `docfx` build must produce no errors or warnings
+- do not duplicate content
+    - use cross references to refer to content in other parts of the site
+    - if something is common you can reactor it out into it's own fragment and
+      include the result in both places
+- cross reference things as much as possible
+    - the target document should have a `uid` entry at the top of the file (looks for other examples)
+    - you can use `<xref:some-uid>` to reference the target
+
+## Publish docs
+
+Use `../build/generate_docs.ps1` and then `../build/publish_docs.ps1.`
+
+Note the `NETLIFY_AUTH_TOKEN` environment variable must be defined.
+
+This file is not published with the docs.

@@ -25,7 +25,7 @@ namespace Acoustics.Test.TestHelpers
         /// </summary>
         /// <param name="platform">
         /// The platform to run the test on.
-        /// If the value is prefixed with an `!` (exclaimation mark)
+        /// If the value is prefixed with an `!` (exclamation mark)
         /// then the provided platform is NOT tested against and all others are
         /// tested.
         /// </param>
@@ -39,7 +39,7 @@ namespace Acoustics.Test.TestHelpers
         /// </summary>
         /// <param name="platform">
         /// The platform to run the test on.
-        /// If the value is prefixed with an `!` (exclaimation mark)
+        /// If the value is prefixed with an `!` (exclamation mark)
         /// then the provided platform is NOT tested against and all others are
         /// tested.
         /// </param>
@@ -79,7 +79,6 @@ namespace Acoustics.Test.TestHelpers
         /// </summary>
         public string Reason { get; set; }
 
-        /// <inheritdoc />
         public override TestResult[] Execute(ITestMethod testMethod)
         {
             var platformMatches = RuntimeInformation.IsOSPlatform(this.Platform);

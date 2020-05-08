@@ -141,17 +141,17 @@ namespace TowseyLibrary
             var font = Drawing.Tahoma9;
             image.Mutate(g =>
             {
-                g.DrawText(this.title, font, Color.Red, new PointF(8, 0));
+                g.DrawTextSafe(this.title, font, Color.Red, new PointF(8, 0));
 
                 if (this.data.Length > 500)
                 {
-                    g.DrawText(this.title, font, Color.Red, new PointF(length - 80, 0));
+                    g.DrawTextSafe(this.title, font, Color.Red, new PointF(length - 80, 0));
                 }
 
                 if (this.data.Length > 1200)
                 {
                     // ReSharper disable once PossibleLossOfFraction
-                    g.DrawText(this.title, font, Color.Red, new PointF(length / 2, 0));
+                    g.DrawTextSafe(this.title, font, Color.Red, new PointF(length / 2, 0));
                 }
             });
             return image;

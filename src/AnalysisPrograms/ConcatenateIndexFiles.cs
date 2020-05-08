@@ -665,7 +665,7 @@ namespace AnalysisPrograms
                 image.Mutate(canvas =>
                 {
                     var str = $"{i + 1}";
-                    canvas.DrawText(str, stringFont, Color.White, new PointF(3, 3));
+                    canvas.DrawTextSafe(str, stringFont, Color.White, new PointF(3, 3));
                 });
 
                 imageList.Add(image);
@@ -679,7 +679,7 @@ namespace AnalysisPrograms
 
             // add title bar
             var titleBmp = new Image<Rgb24>(finalComposite.Width, 30);
-            titleBmp.Mutate(canvas => { canvas.DrawText(title, stringFont, Color.White, new PointF(30, 3)); });
+            titleBmp.Mutate(canvas => { canvas.DrawTextSafe(title, stringFont, Color.White, new PointF(30, 3)); });
 
             // add title plus spacer
             spacer = new Image<Rgb24>(finalComposite.Width, 3);

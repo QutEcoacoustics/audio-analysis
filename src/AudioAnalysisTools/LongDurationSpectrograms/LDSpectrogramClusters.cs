@@ -332,7 +332,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     gr.DrawLine(blackPen, opColumn - 1, imageHt - trackheight, opColumn - 1, imageHt);
 
                     int location = opColumn - ((opColumn - clusterStartColumn) / 2);
-                    gr.DrawText(clusterLabel[sortID], stringFont, Color.Black, new PointF(location - 10, imageHt - 19));
+                    gr.DrawTextSafe(clusterLabel[sortID], stringFont, Color.Black, new PointF(location - 10, imageHt - 19));
                 });
             }
 
@@ -477,7 +477,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                         clusterIDImage.Mutate(g2 => { g2.Clear(Color.Black); });
                         gr.DrawImage(clusterIDImage, new Point(clusterStartColumn, imageHt - 19), 1);
                         int location = opColumnNumber - ((opColumnNumber - clusterStartColumn) / 2);
-                        gr.DrawText(clusterLabel[sortID], stringFont, Color.White, new PointF(location - 10, imageHt - 19));
+                        gr.DrawTextSafe(clusterLabel[sortID], stringFont, Color.White, new PointF(location - 10, imageHt - 19));
                     }
                 }
 
@@ -498,10 +498,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             bmp.Mutate(g =>
             {
                 SizeF stringSize = default;
-
                 int x1 = 4;
                 g.DrawText(title, stringFont, Color.Wheat, new PointF(x1, 3));
-
                 stringSize = g.MeasureString(title, stringFont);
                 x1 += stringSize.ToSize().Width + 70;
 

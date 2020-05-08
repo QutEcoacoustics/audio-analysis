@@ -974,7 +974,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 }
 
                 bmp[x, yOffset] = grayScale[0]; //draw upper boundary
-            }//end over all pixels
+            }
 
             bmp.Mutate(g =>
             {
@@ -1017,7 +1017,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 }
 
                 bmp[x, 0] = grayScale[0]; //draw upper boundary
-            }//end over all pixels
+            }
 
             bmp.Mutate(g =>
             {
@@ -1061,7 +1061,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 }
 
                 bmp[x, 0] = Color.Gray; //draw upper boundary
-            }//end over all pixels
+            }
 
             int endWidth = trackWidth - array.Length;
             var font = Drawing.Arial9;
@@ -1099,7 +1099,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 }
 
                 bmp[x, 0] = Color.Gray; //draw upper boundary
-            }//end over all pixels
+            }
 
             int endWidth = trackWidth - array.Length;
             var font = Drawing.Arial9;

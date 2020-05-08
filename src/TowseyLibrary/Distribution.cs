@@ -9,7 +9,7 @@ namespace TowseyLibrary
     /*
  * Created on 15/03/2005
  * This class represents a distribution of values.
- * Convert to a curve whch returns the probability for any value.
+ * Convert to a curve which returns the probability for any value.
  * The distribution is assumed to be discrete.
  *
  * THIS CLASS REWORKED 4/04/06
@@ -113,10 +113,14 @@ namespace TowseyLibrary
 
         /**
          * CONSTRUCTOR
-         * Passed an array of doubles, min & max possible values and binWidth.
+         * Passed an array of doubles, min &amp; max possible values and binWidth.
          */
-        public Distribution(double[] values, double min, double max,
-                          double binWidth, bool regularise)
+        public Distribution(
+            double[] values,
+            double min,
+            double max,
+            double binWidth,
+            bool regularise)
         {
             this.minD = min;
             this.maxD = max;
@@ -127,7 +131,7 @@ namespace TowseyLibrary
 
             for (int i = 0; i < size; i++)
             {
-                freq[i] = 0.0; //initialise
+                freq[i] = 0.0; //initialize
             }
 
             //  make histogram: value=1 goes in histo at index=1, etc etc.
@@ -478,5 +482,5 @@ namespace TowseyLibrary
             LoggedConsole.WriteLine("TotalIC=" + d.getTotalIC());
             LoggedConsole.WriteLine("ExpecIC=" + d.getExpectedIC());
         }
-    }// end of class
+    }
 }

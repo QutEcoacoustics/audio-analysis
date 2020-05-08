@@ -1,0 +1,99 @@
+{
+  "metadata": [
+    {
+      "src": [
+        {
+          "src": "..",
+          "files": [
+            "src/**.csproj",
+            "tests/Acoustics.Test/**.csproj"
+          ],
+          "exclude": [
+            "src/**.fsproj"
+          ]
+        }
+      ],
+      "dest": "technical/api",
+      "disableGitFeatures": false,
+      "disableDefaultFilter": false
+    }
+  ],
+  "build": {
+    "content": [
+      {
+        "files": [
+          "technical/api/**.yml",
+          "technical/api/index.md"
+        ]
+      },
+      {
+        "src": "..",
+        "files": [
+          "CHANGELOG.md",
+          "CODE_OF_CONDUCT.md",
+          "CONTRIBUTING.md"
+        ],
+        "dest": "technical"
+      },
+      {
+        "files": [
+          "*.md",
+          "**/*.md",
+          "**/toc.yml"
+        ],
+        "exclude": [
+          "images/README.md",
+          "README.md"
+        ]
+      }
+    ],
+    "resource": [
+      {
+        "files": [
+          "images/**",
+          "netlify.toml"
+        ],
+        "exclude": [
+          "images/README.md"
+        ]
+      }
+    ],
+    "overwrite": [
+      {
+        "files": [
+          "technical/apidoc/**.md"
+        ],
+        "exclude": [
+          "obj/**",
+          "_site/**"
+        ]
+      }
+    ],
+    "xrefService": [
+      "https://xref.docs.microsoft.com/query?uid={uid}"
+    ],
+    "dest": "../_site",
+    "globalMetadata": {
+      "_appTitle": "AnalysisPrograms.exe",
+      "_appLogoPath": "images/ap.svg",
+      "_appFaviconPath": "images/ap.svg",
+      "_gitContribute": {
+        "repo": "https://github.com/QutEcoacoustics/audio-analysis"
+      }
+    },
+    "globalMetadataFiles": [
+      "apMetadata.json"
+    ],
+    "fileMetadataFiles": [],
+    "template": [
+      "default",
+      "templates/AP"
+    ],
+    "postProcessors": [],
+    "markdownEngineName": "markdig",
+    "noLangKeyword": false,
+    "keepFileLink": false,
+    "cleanupCacheHistory": false,
+    "disableGitFeatures": false
+  }
+}

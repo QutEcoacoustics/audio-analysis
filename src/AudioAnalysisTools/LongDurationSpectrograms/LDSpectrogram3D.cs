@@ -317,7 +317,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
                 DateTime theDate = new DateTime(year, 1, 1).AddDays(dayOfYear - 1);
                 string dateString = $"{year} {DataTools.MonthNames[theDate.Month - 1]} {theDate.Day:d2}";
-                g.DrawText(dateString, stringFont, Color.Wheat, new PointF(10, 3));
+                g.DrawTextSafe(dateString, stringFont, Color.Wheat, new PointF(10, 3));
             });
 
             TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(60);
@@ -369,7 +369,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             var pen = new Pen(Color.White, 1);
             var stringFont = Drawing.Arial12;
             var str = $"Freq = {herzValue} Hz";
-            bmp1.Mutate(g => { g.DrawText(str, stringFont, Color.Wheat, new PointF(10, 7)); });
+            bmp1.Mutate(g => { g.DrawTextSafe(str, stringFont, Color.Wheat, new PointF(10, 7)); });
             var xAxisPixelDuration = TimeSpan.FromSeconds(60);
             var startOffset = TimeSpan.Zero;
             double secondsDuration = xAxisPixelDuration.TotalSeconds * bmp1.Width;
@@ -422,8 +422,8 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 Pen grayPen = new Pen(Color.DarkGray, 1);
                 Pen whitePen = new Pen(Color.White, 1);
                 Font stringFont = Drawing.Arial9;
-                g.DrawText("Herz", stringFont, Color.Yellow, new PointF(xoffset + 2, 6)); //draw label
-                g.DrawText("Scale", stringFont, Color.Yellow, new PointF(xoffset, 19)); //draw label
+                g.DrawTextSafe("Herz", stringFont, Color.Yellow, new PointF(xoffset + 2, 6)); //draw label
+                g.DrawTextSafe("Scale", stringFont, Color.Yellow, new PointF(xoffset, 19)); //draw label
                 g.DrawLine(whitePen, xoffset, yoffset, trackWidth, yoffset);
                 g.DrawLine(whitePen, xoffset, yoffset - 1, trackWidth, yoffset - 1);
 
@@ -438,14 +438,14 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 Pen yellowPen = new Pen(Color.Yellow, 1);
                 g.DrawLine(yellowPen, xoffset, ymark, trackWidth, ymark);
                 g.DrawLine(yellowPen, xoffset, ymark - 1, trackWidth, ymark - 1);
-                g.DrawText(herzValue.ToString(), stringFont, Color.White,
+                g.DrawTextSafe(herzValue.ToString(), stringFont, Color.White,
                     new PointF(xoffset + 1, ymark - 14)); //draw time
 
                 // g.DrawLine(whitePen, 0, daysInYear + offset, trackWidth, daysInYear + offset);
                 // g.DrawLine(whitePen, 0, offset, trackWidth, offset);          //draw lower boundary
                 // g.DrawLine(whitePen, duration, 0, duration, trackHeight - 1);//draw right end boundary
 
-                // g.DrawText(title, stringFont, Color.White, new PointF(duration + 4, 3));
+                // g.DrawTextSafe(title, stringFont, Color.White, new PointF(duration + 4, 3));
             });
 
             return bmp;
@@ -461,7 +461,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             TimeSpan time = TimeSpan.FromMinutes(minuteOfDay);
             string str = $"Time = {time.Hours}h:{time.Minutes}m";
-            bmp1.Mutate(g => { g.DrawText(str, stringFont, Color.Wheat, new PointF(10, 7)); });
+            bmp1.Mutate(g => { g.DrawTextSafe(str, stringFont, Color.Wheat, new PointF(10, 7)); });
 
             int binCount = 512;
             if (imageHeight <= 256)

@@ -117,13 +117,13 @@ namespace TowseyLibrary
                 g.DrawLine(new Pen(Color.White, 1), scale, scale, halfWidth, scale - height);
 
                 //label vertices
-                g.DrawText(keys[0], stringFont, Color.Wheat, new PointF(halfWidth - 15, scale - height - 15));
-                g.DrawText(keys[1], stringFont, Color.Wheat, new PointF(0, scale - 20));
-                g.DrawText(keys[2], stringFont, Color.Wheat, new PointF(scale - 40, scale - 20));
+                g.DrawTextSafe(keys[0], stringFont, Color.Wheat, new PointF(halfWidth - 15, scale - height - 15));
+                g.DrawTextSafe(keys[1], stringFont, Color.Wheat, new PointF(0, scale - 20));
+                g.DrawTextSafe(keys[2], stringFont, Color.Wheat, new PointF(scale - 40, scale - 20));
 
                 // draw label
                 string label = label1 + label2;
-                g.DrawText(label, stringFont, Color.Wheat, new PointF(30, scale - height - 40));
+                g.DrawTextSafe(label, stringFont, Color.Wheat, new PointF(30, scale - height - 40));
             });
             return bmp;
         }

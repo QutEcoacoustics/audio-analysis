@@ -117,7 +117,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
                     this.Data[i, j] = sg.Data[startFrame + i, j];
                 }
             }
-        }//end CONSTRUCTOR
+        }
 
         public override void Make(double[,] amplitudeM)
         {

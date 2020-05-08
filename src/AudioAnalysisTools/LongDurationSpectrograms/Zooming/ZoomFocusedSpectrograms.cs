@@ -548,12 +548,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             bmp.Mutate(g =>
             {
                 int x1 = 4;
-                g.DrawText(title, stringFont, Color.Wheat, new PointF(x1, 3));
+                g.DrawTextSafe(title, stringFont, Color.Wheat, new PointF(x1, 3));
 
                 SizeF stringSize = g.MeasureString(title, stringFont);
                 x1 += stringSize.ToSize().Width + 70;
 
-                //g.DrawText(text, stringFont, Color.Wheat, new PointF(X, 3));
+                //g.DrawTextSafe(text, stringFont, Color.Wheat, new PointF(X, 3));
                 //stringSize = g.MeasureString(text, stringFont);
                 //X += (stringSize.ToSize().Width + 1);
                 //g.DrawImage(colourChart, X, 1);
@@ -563,7 +563,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                 int x2 = width - stringSize.ToSize().Width - 2;
                 if (x2 > x1)
                 {
-                    g.DrawText(text, stringFont, Color.Wheat, new PointF(x2, 3));
+                    g.DrawTextSafe(text, stringFont, Color.Wheat, new PointF(x2, 3));
                 }
 
                 g.DrawLine(new Pen(Color.LightGray, 1), 0, 0, width, 0); //draw upper boundary

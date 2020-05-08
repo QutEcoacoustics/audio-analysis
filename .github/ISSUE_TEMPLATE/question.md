@@ -3,6 +3,11 @@ name: Ask a question
 about: I'd just like to ask a question
 ---
 
+<!-- Hi there! -->
+<!-- Please consider contacting us in gitter before making an issue -->
+<!-- https://gitter.im/QutEcoacoustics/audio-analysis -->
+
+
 ## My question
 
 <!-- Put your question here -->
@@ -13,7 +18,7 @@ about: I'd just like to ask a question
 <!-- Answer any questions you think are relevant -->
 
 - I have attached a log:
-<!-- Information about log files can be found here: https://github.com/QutEcoacoustics/audio-analysis/blob/master/docs/logs.md#log-files -->
+<!-- Information about log files can be found here: https://github.com/QutEcoacoustics/audio-analysis/blob/master/docs/basics/logs.md#log-files -->
 <!-- 👇 Drag and drop the log into the empty line below -->
 
 <!-- 👆 -->

@@ -91,7 +91,7 @@ namespace TowseyLibrary
                             str = $"{statKeys[s]}={statistics[statKeys[s]]:f3}";
                         }
 
-                        g.DrawText(str, stringFont, Color.Wheat, new PointF(grid2, y));
+                        g.DrawTextSafe(str, stringFont, Color.Wheat, new PointF(grid2, y));
                     }
                 } // if(statistics != null)
 
@@ -113,7 +113,7 @@ namespace TowseyLibrary
                 }
 
                 // draw label and modal bin
-                g.DrawText(label, stringFont, Color.Wheat, new PointF(4, 3));
+                g.DrawTextSafe(label, stringFont, Color.Wheat, new PointF(4, 3));
                 g.DrawLine(pen4, modeBin, height - 1, modeBin, height / 3);
             });
             return bmp;
@@ -200,7 +200,7 @@ namespace TowseyLibrary
             bmp2.Mutate(g2 =>
             {
                 g2.DrawLine(pen1, 0, bmp2.Height - 1, imageWidth, bmp2.Height - 1);
-                g2.DrawText(label, stringFont, Color.Wheat, new PointF(4, 3));
+                g2.DrawTextSafe(label, stringFont, Color.Wheat, new PointF(4, 3));
             });
 
             Image<Rgb24>[] images = { bmp2, bmp1 };
@@ -261,7 +261,7 @@ namespace TowseyLibrary
             {
                 g2.DrawLine(pen1, 0, 0, imageWidth, 0);
                 g2.DrawLine(pen1, 0, bmp2.Height - 1, imageWidth, bmp2.Height - 1);
-                g2.DrawText(label, stringFont, Color.Wheat, new PointF(4, 3));
+                g2.DrawTextSafe(label, stringFont, Color.Wheat, new PointF(4, 3));
             });
 
             Image<Rgb24>[] images = { bmp2, bmp1 };
@@ -319,7 +319,7 @@ namespace TowseyLibrary
             bmp2.Mutate(g2 =>
             {
                 g2.DrawLine(pen1, 0, bmp2.Height - 1, imageWidth, bmp2.Height - 1);
-                g2.DrawText(label, stringFont, Color.Wheat, new PointF(4, 3));
+                g2.DrawTextSafe(label, stringFont, Color.Wheat, new PointF(4, 3));
             });
 
             Image<Rgb24>[] images = { bmp2, bmp1 };
@@ -382,7 +382,7 @@ namespace TowseyLibrary
                     if (subBandSpectrum[i] > subBandSpectrum[i - 1] && subBandSpectrum[i] > subBandSpectrum[i + 1])
                     {
                         string label = $"{i + 1},";
-                        g2.DrawText(label, stringFont, Color.Wheat, new PointF((i * barWidth) - 3, 3));
+                        g2.DrawTextSafe(label, stringFont, Color.Wheat, new PointF((i * barWidth) - 3, 3));
                     }
                 }
             });

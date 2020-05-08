@@ -110,9 +110,9 @@ namespace TowseyLibrary
                     Console.WriteLine("score = {0:f2}", output[maxLocation]);
                     count++;
                 }
-            }//end iterations
+            }
             Console.WriteLine("% correct = {0:f1}", 100 * count / (double)maxIterations);
-        }//Test_ScanArrayForGridPattern1()
+        }
 
 
         public static double DetectPeriod2Grating(double[] v)
@@ -160,11 +160,11 @@ namespace TowseyLibrary
             double diffOfAverages = Math.Abs(avgs[1] - avgs[0]); //difference between average of evens and odds.
 
             //this normalisztion did not work
-            //double range = maxs[1] - avgs[0];    //assumes that average of evens is lower 
+            //double range = maxs[1] - avgs[0];    //assumes that average of evens is lower
             //if (avgs[0] > avgs[1]) range = maxs[0] - avgs[1];  //average of odds is lower
             //double score = diffOfAverages / range;
 
-            double excess = maxs[1] - avgs[1];    //assumes that average of evens is lower 
+            double excess = maxs[1] - avgs[1];    //assumes that average of evens is lower
             if (avgs[0] > avgs[1]) excess = maxs[0] - avgs[0];  //average of odds is lower
             //double score = diffOfAverages * (1 -(diffOfAverages / range));  //weight used to regulate the effect of range
             double vigilance = 4.0; //determines how strictly similar the peaks heights must be - regulates the effect of range
@@ -204,7 +204,7 @@ namespace TowseyLibrary
 
 
         /// <summary>
-        /// Steps through the passed array and and at each step cuts out a segment having length  = numberOfCycles * cyclePeriod. 
+        /// Steps through the passed array and and at each step cuts out a segment having length  = numberOfCycles * cyclePeriod.
         /// Each segment is then reduced to length = numberOfCycles * 2.
         /// Then the reduced segment is passed to check for a grating pattern having period = 2 signal samples.
         /// Use this method when the array to be scanned will be reduced on the fly.
@@ -260,7 +260,7 @@ namespace TowseyLibrary
                 //DataTools.writeBarGraph(reducedSegment);
                 double score = DetectPeriod2Grating(reducedSegment);
                 //write score to output array
-                for (int x = 0; x < segmentLength; x++) if (output[i+x] < score) output[i+x] = score;
+                for (int x = 0; x < segmentLength; x++) if (output[i + x] < score) output[i + x] = score;
 
                 i += (step - 1);
             }
@@ -298,12 +298,12 @@ namespace TowseyLibrary
         {
             //assume all score arrays are of the same length;
             int length = scores[0].Length;
-            var intensity   = new double[length];
+            var intensity = new double[length];
             var periodicity = new double[length];
             double differential = 8.0;  //used to adjust the score.
 
             //assume that the score arrays are arranged in order in the list and range from the passed min and max periods.
-            for (int p = 0; p< scores.Count; p++)
+            for (int p = 0; p < scores.Count; p++)
             {
                 int halfPeriod = p + 1;
                 int cyclePeriod = halfPeriod * 2;
@@ -336,8 +336,8 @@ namespace TowseyLibrary
             {
                 var ev = new Dictionary<string, double>();
                 ev[key_START_FRAME] = item[0];
-                ev[key_END_FRAME]   = item[1];
-                ev[key_SCORE]       = item[2];
+                ev[key_END_FRAME] = item[1];
+                ev[key_SCORE] = item[2];
                 double cyclePeriod = 0.0;
                 for (int n = (int)item[0]; n <= (int)item[1]; n++) cyclePeriod += periodicity[n];
                 ev[key_PERIODICITY] = cyclePeriod / (item[1] - item[0] + 1);
@@ -347,5 +347,5 @@ namespace TowseyLibrary
         } //ExtractPeriodicEvents()
 
 
-    }//class
+    }
 }

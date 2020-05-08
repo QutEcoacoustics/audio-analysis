@@ -259,12 +259,12 @@ namespace AnalysisPrograms
                         string month = monthNames[thisday.Month - 1];
                         if (thisday.Month == 1) // January
                         {
-                            g.DrawText(thisday.Year.ToString(), stringFont, Color.White, new PointF(0, nextRow + trackHeight + 1)); //draw time
-                            g.DrawText(month, stringFont, Color.White, new PointF(1, nextRow + trackHeight + 11)); //draw time
+                            g.DrawTextSafe(thisday.Year.ToString(), stringFont, Color.White, new PointF(0, nextRow + trackHeight + 1)); //draw time
+                            g.DrawTextSafe(month, stringFont, Color.White, new PointF(1, nextRow + trackHeight + 11)); //draw time
                         }
                         else
                         {
-                            g.DrawText(month, stringFont, Color.White, new PointF(1, nextRow + trackHeight + 1)); //draw time
+                            g.DrawTextSafe(month, stringFont, Color.White, new PointF(1, nextRow + trackHeight + 1)); //draw time
                         }
 
                         currentRow += 2;

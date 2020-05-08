@@ -41,7 +41,7 @@ namespace TowseyLibrary
                 LoggedConsole.WriteLine("Submatrix has " + smRows + " rows and " + smCols + " columns");
                 double[,] sub = Submatrix(matrix, r1, c1, r2, c2);
                 writeMatrix(sub);
-            }// end test ReadDoubles2Matrix(string fName)
+            }
 
             if (true) // test NormaliseMatrixValues(double[,] m, double normMin, double normMax)
             {
@@ -57,16 +57,16 @@ namespace TowseyLibrary
                 matrix = Normalise(matrix, 0, 1);
                 LoggedConsole.WriteLine("\n\n");
                 writeMatrix(matrix);
-            }// end test NormaliseMatrixValues(double[,] m, double normMin, double normMax)
+            }
 
             // COPY THIS TEST TEMPLATE
             if (false) // test Method(parameters)
             {
-            }// end test Method(string fName)
+            }
 
             LoggedConsole.WriteLine("FINISHED"); // end
             LoggedConsole.WriteLine("FINISHED"); // end
-        }// end of MAIN
+        }
 
         // ***************************************************************************
         // ***************************************************************************
@@ -162,8 +162,8 @@ namespace TowseyLibrary
 
         /// <summary>
         /// Returns the submatrix of passed matrix.
-        /// Assume that RowTop. < RowBottom, ColumnLeft < ColumnRight.
-        /// Row, column indices start at 0
+        /// Assume that <c>RowTop &lt; RowBottom, &amp;&amp; ColumnLeft &lt; ColumnRight </c>.
+        /// Row, column indices start at 0.
         /// </summary>
         public static double[,] Submatrix(double[,] M, int r1, int c1, int r2, int c2)
         {
@@ -223,7 +223,7 @@ namespace TowseyLibrary
             } // end of pass over all frames
 
             return events;
-        }// end method SegmentArrayOnThreshold()
+        }
 
         public static List<double[]> RemoveNullElementsFromList(List<double[]> list)
         {
@@ -2089,10 +2089,10 @@ namespace TowseyLibrary
                         M[y, col] = 1.0;
                     }
                 }
-            }// for all cols
+            }
 
             return M;
-        }// end of Threshold()
+        }
 
         public static double[] GetColumn(double[,] m, int colID)
         {
@@ -4034,7 +4034,7 @@ namespace TowseyLibrary
                 }
 
                 av += data[i];
-            }// end for loop
+            }
 
             av /= data.Length;
         }
@@ -4060,7 +4060,7 @@ namespace TowseyLibrary
                     {
                         max = data[i, j];
                     }
-                }// end double loop
+                }
             }
         }
 
@@ -4960,8 +4960,8 @@ namespace TowseyLibrary
                         // returnScore = periodScore;
                         returnScore = maxScore;
                     }
-                }// phase
-            }// period
+                }
+            }
 
             return Tuple.Create(returnScore, bestPeriod, bestPhase);
         }
@@ -5185,5 +5185,5 @@ namespace TowseyLibrary
 
             return returnSampleArray;
         }
-    }// class dataTools()
+    }
 }
