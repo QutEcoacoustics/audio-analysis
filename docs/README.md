@@ -13,8 +13,7 @@ choco install docfx -y
 To generate the docs:
 
 ```powershell
-cd docs
-docfx build
+../build/generate_docs.ps1
 ```
 Notes: 
 - If there are any errors or warnings they need to be fixed before your changes are committed.
@@ -31,7 +30,7 @@ Then visit the url in your browser, typically <http://localhost:8080>.
 
 ## Layout
 
-The documentation is layed out into several areas:
+The documentation is laid out into several areas:
 
 - **basics**: include introductory topics, like downloading, installing, and general bit of information
 - **theory**: is reserved for pages discussing theory like:
@@ -60,6 +59,7 @@ The documentation is layed out into several areas:
 - cross reference things as much as possible
     - the target document should have a `uid` entry at the top of the file (looks for other examples)
     - you can use `<xref:some-uid>` to reference the target
+- use `docfx template export --all -o _exported` to see which internal templates affect the docs layout
 
 ## Publish docs
 

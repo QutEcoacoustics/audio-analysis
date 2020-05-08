@@ -9,6 +9,10 @@
   href: commands.md
 - name: Config files
   href: config_files.md
+
+- name: Scripting with R
+  href: using_r.md
+
 - name: Dates
   href: dates.md
 - name: FAQ
