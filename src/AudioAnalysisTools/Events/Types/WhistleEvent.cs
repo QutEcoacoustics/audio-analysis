@@ -17,10 +17,10 @@ namespace AudioAnalysisTools
 
     public class WhistleEvent : SpectralEvent, ITracks<Track>
     {
-        public WhistleEvent(Track whistle, double maxScore)
+        public WhistleEvent(Track whistle, Interval<double> interval)
         {
             this.Tracks.Add(whistle);
-            this.ScoreRange = new Interval<double>(0, maxScore);
+            this.ScoreRange = interval;
         }
 
         public List<Track> Tracks { get; private set; } = new List<Track>(1);
@@ -114,7 +114,8 @@ namespace AudioAnalysisTools
                 track1.Points.Add(point);
             }
 
-            var newEvent = new WhistleEvent(track1, 1.0)
+            var scoreRange = new Interval<double>(0, 1.0);
+            var newEvent = new WhistleEvent(track1, scoreRange)
             {
                 Name = e1.Name,
                 EventEndSeconds = Math.Max(e1.EventEndSeconds, e2.EventEndSeconds),

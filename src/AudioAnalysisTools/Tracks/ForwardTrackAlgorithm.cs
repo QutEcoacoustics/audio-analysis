@@ -8,6 +8,7 @@ namespace AudioAnalysisTools.Tracks
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using Acoustics.Shared;
     using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Drawing;
@@ -82,10 +83,11 @@ namespace AudioAnalysisTools.Tracks
             // Initialise events with tracks.
             foreach (var track in tracks)
             {
-                //Following line used only for debug purposes.
+                //Following line used only for debug purposes. Can save as image.
                 //spectrogram.Mutate(x => track.Draw(x, options));
                 var maxScore = decibelThreshold * 5;
-                var ae = new ChirpEvent(track, maxScore)
+                var scoreRange = new Interval<double>(0, maxScore);
+                var ae = new ChirpEvent(track, scoreRange)
                 {
                     SegmentStartSeconds = segmentStartOffset.TotalSeconds,
                     SegmentDurationSeconds = frameCount * converter.SecondsPerFrameStep,
@@ -102,9 +104,6 @@ namespace AudioAnalysisTools.Tracks
                     combinedIntensityArray[startRow + i] = Math.Max(combinedIntensityArray[startRow + i], amplitudeTrack[i]);
                 }
             }
-
-            //Following line used only for debug purposes.
-            //spectrogram.Save("C:\\temp\\SpectrogramWithTracks.png");
 
             List<EventCommon> returnEvents = events.Cast<EventCommon>().ToList();
 

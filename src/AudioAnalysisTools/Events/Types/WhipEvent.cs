@@ -16,10 +16,10 @@ namespace AudioAnalysisTools
 
     public class WhipEvent : SpectralEvent, ITracks<Track>
     {
-        public WhipEvent(Track whip, double maxScore)
+        public WhipEvent(Track whip, Interval<double> interval)
         {
             this.Tracks.Add(whip);
-            this.ScoreRange = new Interval<double>(0, maxScore);
+            this.ScoreRange = interval;
         }
 
         public List<Track> Tracks { get; private set; } = new List<Track>(1);

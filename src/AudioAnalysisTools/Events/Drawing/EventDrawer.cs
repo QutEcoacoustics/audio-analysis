@@ -28,11 +28,9 @@ namespace AudioAnalysisTools.Events.Drawing
                 return;
             }
 
-            // TODO: add a Interval<double> ScoreRange property to EventCommon
-            // so we can properly normalize this value to the unit value.
-            // For now, we just assume it is normalized to [0,1].
-            //var clampedScore = @event.Score.Clamp(0, 1);
-            var normalisedScore = @event.ScoreNormalised;
+            // Although an Interval<double> ScoreRange property has been added to EventCommon,
+            // this does not clamp values. For now, we clamp before drawing.
+            var normalisedScore = @event.ScoreNormalised.Clamp(0, 1);
 
             if (normalisedScore == 0)
             {
@@ -45,7 +43,7 @@ namespace AudioAnalysisTools.Events.Drawing
 
             graphics.NoAA().DrawLines(
                 options.Score,
-                new PointF(rect.Left, rect.Bottom - 1), // TODO minus one is a hack! just to make it work!
+                new PointF(rect.Left, rect.Bottom - 1), // minus one is to bring bottom of score line within event frame.
                 new PointF(rect.Left, rect.Bottom - scaledHeight));
         }
 

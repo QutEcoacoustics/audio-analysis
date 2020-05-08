@@ -16,8 +16,6 @@ namespace AudioAnalysisTools
 
     public class ChirpEvent : SpectralEvent, ITracks<Track>
     {
-        private readonly double maxScore;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="ChirpEvent"/> class.
         /// </summary>
@@ -27,11 +25,11 @@ namespace AudioAnalysisTools
         /// The normalised score is a linear conversion from 0 - maxScore to [0, 1].
         /// </remarks>
         /// <param name="chirp">A chirp track consisting of a sequence of spectral points.</param>
-        /// <param name="maxScore">A maximum score used to normalise the track score.</param>
-        public ChirpEvent(Track chirp, double maxScore)
+        /// <param name="interval">A min and maximum score used to normalise the track score.</param>
+        public ChirpEvent(Track chirp, Interval<double> interval)
         {
             this.Tracks.Add(chirp);
-            this.ScoreRange = new Interval<double>(0, maxScore);
+            this.ScoreRange = interval;
         }
 
         public List<Track> Tracks { get; private set; } = new List<Track>(1);
@@ -65,18 +63,6 @@ namespace AudioAnalysisTools
             get
             {
                 return this.Tracks.Single().GetAverageTrackAmplitude();
-            }
-        }
-
-        /// <summary>
-        /// Gets the normalised value for the event's track score.
-        /// NOTE: It is assumed that the minimum value of the score range = zero.
-        /// </summary>
-        public double ScoreNormalised
-        {
-            get
-            {
-                return this.Score / this.maxScore;
             }
         }
 

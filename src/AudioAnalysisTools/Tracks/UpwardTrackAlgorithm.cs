@@ -8,6 +8,7 @@ namespace AudioAnalysisTools.Tracks
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using Acoustics.Shared;
     using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Tracks;
     using AudioAnalysisTools.Events.Types;
@@ -76,14 +77,15 @@ namespace AudioAnalysisTools.Tracks
             // initialise tracks as events and get the combined intensity array.
             var events = new List<SpectralEvent>();
             var temporalIntensityArray = new double[frameCount];
-            var maxScore = decibelThreshold * 5;
+            var scoreRange = new Interval<double>(0.0, decibelThreshold * 5);
+
             foreach (var track in tracks)
             {
-                var ae = new WhipEvent(track, maxScore)
+                var ae = new WhipEvent(track, scoreRange)
                 {
                     SegmentStartSeconds = segmentStartOffset.TotalSeconds,
                     SegmentDurationSeconds = frameCount * converter.SecondsPerFrameStep,
-                    Name = "noName",
+                    Name = "Whip",
                 };
 
                 events.Add(ae);

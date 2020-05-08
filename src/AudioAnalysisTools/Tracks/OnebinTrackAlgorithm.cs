@@ -8,6 +8,7 @@ namespace AudioAnalysisTools.Tracks
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using Acoustics.Shared;
     using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Tracks;
@@ -80,10 +81,11 @@ namespace AudioAnalysisTools.Tracks
             // Initialise tracks as events and get the combined intensity array.
             var events = new List<WhistleEvent>();
             var combinedIntensityArray = new double[frameCount];
-            var maxScore = decibelThreshold * 5;
+            var scoreRange = new Interval<double>(0, decibelThreshold * 5);
+
             foreach (var track in tracks)
             {
-                var ae = new WhistleEvent(track, maxScore)
+                var ae = new WhistleEvent(track, scoreRange)
                 {
                     SegmentStartSeconds = segmentStartOffset.TotalSeconds,
                     SegmentDurationSeconds = frameCount * converter.SecondsPerFrameStep,

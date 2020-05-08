@@ -127,7 +127,7 @@ namespace AudioAnalysisTools
         /// <remarks>
         /// Measured in seconds per spectrogram frame.
         /// </remarks>
-        public LinearSecondsScale SecondsScale { get; }
+        //public LinearSecondsScale SecondsScale { get; }
 
         /// <summary>
         /// Gets the spectral scale.

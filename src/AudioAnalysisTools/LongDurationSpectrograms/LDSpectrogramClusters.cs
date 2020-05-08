@@ -23,12 +23,12 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     /// It was written to deal with a set of recordings with protocol of Gianna Pavan (10 minutes every 30 minutes).
     ///
     /// The following Powershell command was constructed by Anthony to do the analysis and join the sequence of images so derived:
-    /// Y:\Italy_GianniPavan\Sassofratino1day | % {"&" "C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisPrograms\bin\Release\AnalysisPrograms.exe" audio2csv -so ($_.FullName) -o "Y:\Italy_GianniPavan\output" -c "C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.Parallel.yml" }
+    /// Y:\Italy_GianniPavan\Sassofratino1day | % { &amp; "C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisPrograms\bin\Release\AnalysisPrograms.exe" audio2csv -so ($_.FullName) -o "Y:\Italy_GianniPavan\output" -c "C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisConfigFiles\Towsey.Acoustic.Parallel.yml" }
     /// where:
     ///         Y:\Italy_GianniPavan\Sassofratino1day   is the directory containing recordings
     ///         | = a pipe
     ///         % = foreach{}  = perform the operation in curly brackets on each item piped from the directory.
-    ///         "&" "C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisPrograms\bin\Release\AnalysisPrograms.exe"  = runs an executable
+    ///          &amp; "C:\Work\GitHub\audio-analysis\AudioAnalysis\AnalysisPrograms\bin\Release\AnalysisPrograms.exe"  = runs an executable
     ///         audio2csv = first command line argument which determines the "activity" performed
     ///         -so ($_.FullName)  = the input file
     ///         -o "Y:\Italy_GianniPavan\output" = the output directory
@@ -36,7 +36,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
     ///
     /// The following PowerShell command was used by Anthony to stitch together a sequence of spectrogam images without any gap between them.
     /// It requires ImageMagick software to be installed: i.e. C:\Program Files\ImageMagick-6.8.9-Q16\montage.exe
-    /// Y:\Italy_GianniPavan\output\Towsey.Acoustic> "&" "C:\Program Files\ImageMagick-6.8.9-Q16\montage.exe" -mode concatenate -tile x1 *2MAP* "..\..\merge.png"
+    /// Y:\Italy_GianniPavan\output\Towsey.Acoustic>  &amp; "C:\Program Files\ImageMagick-6.8.9-Q16\montage.exe" -mode concatenate -tile x1 *2MAP* "..\..\merge.png"
     ///
     ///
     /// (2) ConcatenateSpectralIndexFiles()
@@ -203,12 +203,15 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             // ###############################################################
             // VERY IMPORTANT:  MUST MAKE SURE THE BELOW ARE CONSISTENT WITH THE DATA !!!!!!!!!!!!!!!!!!!!
             int sampleRate = 22050;
-            int frameWidth = 256;
+
+            //int frameWidth = 256;
             int nyquist = sampleRate / 2;
-            int herzInterval = 1000;
+
+            //int herzInterval = 1000;
             TimeSpan minuteOffset = TimeSpan.Zero; // assume recordings start at midnight
-            double backgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
-            string colorMap = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
+
+            //double backgroundFilterCoeff = SpectrogramConstants.BACKGROUND_FILTER_COEFF;
+            //string colorMap = SpectrogramConstants.RGBMap_ACI_ENT_EVN;
             string title = $"SOM CLUSTERS of ACOUSTIC INDICES: recording {fileStem}";
             TimeSpan indexCalculationDuration = TimeSpan.FromSeconds(60); // seconds
             TimeSpan xTicInterval = TimeSpan.FromMinutes(60); // 60 minutes or one hour.
@@ -494,20 +497,20 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
             bmp.Mutate(g =>
             {
-                SizeF stringSize = new SizeF();
+                SizeF stringSize = default;
 
-                int X = 4;
-                g.DrawText(title, stringFont, Color.Wheat, new PointF(X, 3));
+                int x1 = 4;
+                g.DrawText(title, stringFont, Color.Wheat, new PointF(x1, 3));
 
                 stringSize = g.MeasureString(title, stringFont);
-                X += stringSize.ToSize().Width + 70;
+                x1 += stringSize.ToSize().Width + 70;
 
                 string text = Meta.OrganizationTag;
                 stringSize = g.MeasureString(text, stringFont);
-                int X2 = width - stringSize.ToSize().Width - 2;
-                if (X2 > X)
+                int x2 = width - stringSize.ToSize().Width - 2;
+                if (x2 > x1)
                 {
-                    g.DrawText(text, stringFont, Color.Wheat, new PointF(X2, 3));
+                    g.DrawText(text, stringFont, Color.Wheat, new PointF(x2, 3));
                 }
 
                 g.DrawLine(new Pen(Color.Gray, 1), 0, 0, width, 0); //draw upper boundary

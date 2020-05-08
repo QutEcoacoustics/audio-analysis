@@ -36,4 +36,7 @@
     </PackageReference>
     <PackageReference Include="Towel" Version="1.0.11-alpha" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Events\Tracks\" />
+  </ItemGroup>
 </Project>

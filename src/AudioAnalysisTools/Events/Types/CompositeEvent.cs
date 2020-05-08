@@ -57,6 +57,19 @@ namespace AudioAnalysisTools.Events.Types
             }
         }
 
+        public new double ScoreNormalised()
+        {
+            double sum = 0.0;
+            foreach (var @event in this.ComponentEvents)
+            {
+                sum += @event.Score;
+            }
+
+            var score = sum / this.ComponentEvents.Count;
+
+            return score / this.ScoreRange.Maximum;
+        }
+
         public override void Draw(IImageProcessingContext graphics, EventRenderingOptions options)
         {
             foreach (var @event in this.ComponentEvents)
