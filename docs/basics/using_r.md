@@ -13,7 +13,7 @@ Using R is just a wrapper around this process.
 It might be helpful to think of _R interactive_ as a shell (like PowerShell or Bash)
 and RStudio as a terminal.
 
-Just using R to invoke AP.exe is adds a lot of complexity.
+Just using R to invoke AP.exe adds a lot of complexity.
 However, you may want to do this if you need to:
 
 1. to integrate an _AP.exe_ analysis in with the rest of your R analysis
