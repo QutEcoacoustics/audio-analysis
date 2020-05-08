@@ -85,28 +85,26 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.PteropusSp
 
             Assert.AreEqual(4, acousticEvents.Count);
 
-            Assert.Fail("Michael fix me");
-            /*
-            Assert.AreEqual(5, acousticEvents[0].Oblong.ColumnLeft);
-            Assert.AreEqual(46, acousticEvents[0].Oblong.ColumnRight);
-            Assert.AreEqual(1280, acousticEvents[0].Oblong.RowTop);
-            Assert.AreEqual(1381, acousticEvents[0].Oblong.RowBottom);
+            Assert.AreEqual(29.72, acousticEvents[0].EventStartSeconds, 0.1);
+            Assert.AreEqual(32.06, acousticEvents[0].EventEndSeconds, 0.1);
+            Assert.AreEqual(200, acousticEvents[0].LowFrequencyHertz);
+            Assert.AreEqual(2000, acousticEvents[0].HighFrequencyHertz);
 
-            Assert.AreEqual(5, acousticEvents[1].Oblong.ColumnLeft);
-            Assert.AreEqual(46, acousticEvents[1].Oblong.ColumnRight);
-            Assert.AreEqual(1762, acousticEvents[1].Oblong.RowTop);
-            Assert.AreEqual(1826, acousticEvents[1].Oblong.RowBottom);
+            Assert.AreEqual(40.91, acousticEvents[1].EventStartSeconds, 0.1);
+            Assert.AreEqual(42.40, acousticEvents[1].EventEndSeconds, 0.1);
+            Assert.AreEqual(200, acousticEvents[1].LowFrequencyHertz);
+            Assert.AreEqual(2000, acousticEvents[1].HighFrequencyHertz);
 
-            Assert.AreEqual(5, acousticEvents[2].Oblong.ColumnLeft);
-            Assert.AreEqual(46, acousticEvents[2].Oblong.ColumnRight);
-            Assert.AreEqual(2083, acousticEvents[2].Oblong.RowTop);
-            Assert.AreEqual(2208, acousticEvents[2].Oblong.RowBottom);
+            Assert.AreEqual(48.37, acousticEvents[2].EventStartSeconds, 0.1);
+            Assert.AreEqual(51.27, acousticEvents[2].EventEndSeconds, 0.1);
+            Assert.AreEqual(200, acousticEvents[2].LowFrequencyHertz);
+            Assert.AreEqual(2000, acousticEvents[2].HighFrequencyHertz);
 
-            Assert.AreEqual(5, acousticEvents[3].Oblong.ColumnLeft);
-            Assert.AreEqual(46, acousticEvents[3].Oblong.ColumnRight);
-            Assert.AreEqual(2334, acousticEvents[3].Oblong.RowTop);
-            Assert.AreEqual(2383, acousticEvents[3].Oblong.RowBottom);
-            */
+            Assert.AreEqual(54.19, acousticEvents[3].EventStartSeconds, 0.1);
+            Assert.AreEqual(55.33, acousticEvents[3].EventEndSeconds, 0.1);
+            Assert.AreEqual(200, acousticEvents[3].LowFrequencyHertz);
+            Assert.AreEqual(2000, acousticEvents[3].HighFrequencyHertz);
+
             //Assert.AreEqual(0.6062, stats.SpectralEnergyDistribution, 1E-4);
         }
 
