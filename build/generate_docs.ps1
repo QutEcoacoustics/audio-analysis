@@ -1,7 +1,7 @@
 
 
 if ($null -eq (Get-Command docfx -ErrorAction SilentlyContinue)) {
-    Wite-output "Installing docfx..."
+    Write-output "Installing docfx..."
     #dotnet tool install -g docfx --version "3.0.0-*" --add-source https://www.myget.org/F/docfx-v3/api/v2
     choco install docfx -y
 
