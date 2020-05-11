@@ -233,7 +233,7 @@ namespace AnalysisPrograms.Draw.RibbonPlots
                     var y = Padding + ((Padding + ribbonHeight) * b);
 
                     // draw label
-                    context.DrawTextSafe(textGraphics, dateLabel, scaledFont, textColor, new Point(HorizontalPadding, y + (ribbonHeight / 2)));
+                    context.DrawTextSafe(dateLabel, scaledFont, textColor, new Point(HorizontalPadding, y + (ribbonHeight / 2)));
 
                     // draw void
                     var @void = new RectangularPolygon(ribbonLeft, y, estimatedWidth, ribbonHeight);

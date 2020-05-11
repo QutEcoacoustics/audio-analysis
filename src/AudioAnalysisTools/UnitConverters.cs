@@ -122,14 +122,6 @@ namespace AudioAnalysisTools
         public LinearScale TemporalScale { get; }
 
         /// <summary>
-        /// Gets the temporal scale in second units.
-        /// </summary>
-        /// <remarks>
-        /// Measured in seconds per spectrogram frame.
-        /// </remarks>
-        //public LinearSecondsScale SecondsScale { get; }
-
-        /// <summary>
         /// Gets the spectral scale.
         /// </summary>
         /// <remarks>

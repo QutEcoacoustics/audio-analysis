@@ -58,7 +58,7 @@ namespace AnalysisPrograms.Recognizers
                 return config;
             }
 
-            throw new ConfigFileException($"Autralasian Bittern expects one and only one {nameof(OneBinTrackParameters)}} algorithm.", file);
+            throw new ConfigFileException($"Autralasian Bittern expects one and only one {nameof(OnebinTrackParameters)} algorithm.", file);
         }
 
         /// <summary>

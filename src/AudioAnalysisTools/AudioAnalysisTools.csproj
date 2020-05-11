@@ -10,6 +10,11 @@
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Events\Tracks\**" />
+    <EmbeddedResource Remove="Events\Tracks\**" />
+    <None Remove="Events\Tracks\**" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Acoustics.Shared\Acoustics.Shared.csproj" />
     <ProjectReference Include="..\Acoustics.Tools\Acoustics.Tools.csproj" />
     <ProjectReference Include="..\AcousticWorkbench\AcousticWorkbench.csproj" />
@@ -35,8 +40,5 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Towel" Version="1.0.11-alpha" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Events\Tracks\" />
   </ItemGroup>
 </Project>

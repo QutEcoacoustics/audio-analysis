@@ -14,13 +14,12 @@ namespace AudioAnalysisTools.Events.Drawing
 
     public static class EventDrawer
     {
-
         /// <summary>
         /// Draws a "score" indicator on the left edge of an event.
         /// </summary>
+        /// <param name="event">The event for which to draw the score indicator.</param>
         /// <param name="graphics">The image context to draw to.</param>
         /// <param name="options">The event rendering optons to use.</param>
-        /// <param name="@event">The event for which to draw the score indicator.</param>
         public static void DrawScoreIndicator(this SpectralEvent @event, IImageProcessingContext graphics, EventRenderingOptions options)
         {
             if (!options.DrawScore)
@@ -28,9 +27,7 @@ namespace AudioAnalysisTools.Events.Drawing
                 return;
             }
 
-            // Although an Interval<double> ScoreRange property has been added to EventCommon,
-            // this does not clamp values. For now, we clamp before drawing.
-            var normalisedScore = @event.ScoreNormalised.Clamp(0, 1);
+            var normalisedScore = @event.GetScoreNormalised();
 
             if (normalisedScore == 0)
             {

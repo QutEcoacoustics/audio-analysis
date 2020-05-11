@@ -55,7 +55,11 @@ namespace AudioAnalysisTools.Events
         /// Up to user to determine a suitable range maximum.
         /// Minimum of range assumed to be zero.
         /// </summary>
-        public double ScoreNormalised => this.Score / this.ScoreRange.Maximum;
+        public double GetScoreNormalised()
+        {
+            var range = this.ScoreRange.Maximum - this.ScoreRange.Minimum;
+            return (this.Score / range).Clamp(0, 1);
+        }
 
         /// <summary>
         /// Draw this event on an image.
