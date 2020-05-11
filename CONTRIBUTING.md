@@ -49,19 +49,7 @@ You can install it from here: https://github.com/powershell/powershell#get-power
 ### 2. A **.NET Core SDK**
 
 - We aim to use the latest stable version
-- You can verify the version our project is using by looking in the [global.json](https://github.com/QutEcoacoustics/audio-analysis/tree/master/build/global.json) file
-
-Recommended choice is to run the `dotnet-install` script in the [./build/](https://github.com/QutEcoacoustics/audio-analysis/tree/master/build) folder.
-
-PowerShell:
-```powershell
-> ./build/dotnet-install.ps1
-```
-
-Bash:
-```shell
-$ ./build/dotnet-install.sh
-```
+- You can verify the version our project is using by looking in the [global.json](https://github.com/QutEcoacoustics/audio-analysis/tree/master/global.json) file
 
 Alternately, you can download a SDK from here: <https://dotnet.microsoft.com/download/dotnet-core/>. Note: you want the _Build apps - SDK_ download.
 

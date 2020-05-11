@@ -10,7 +10,9 @@
 - name: Config files
   href: config_files.md
 
-- name: Scripting with R
+- name: Scripting AP.exe
+  href: scripting.md
+- name: Scripting AP.exe with R
   href: using_r.md
 
 - name: Dates

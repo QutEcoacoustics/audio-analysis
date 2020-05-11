@@ -13,11 +13,15 @@
 # - Users will customize the below variables before running the script
 
 $working_dir = "D:/Temp/zooming"
-$csv = "$working_dir\all_oxley_creek_recordings.csv"
+$csv = "$working_dir/all_oxley_creek_recordings.csv"
 $output = $working_dir
-# The config files we copied from the ConfigFiles directory and customised for our purposes.
-$indices_config_file = "$working_dir\Towsey.Acoustic.Zooming.yml"
-$zooming_config_file = "$working_dir\SpectrogramZoomingConfig.yml"
+
+# find the path to analysis programs
+$ap_path = (Get-Command AnalysisPrograms.exe).Path
+$default_configs = Resolve-Path "$ap_path/../ConfigFiles"
+
+$indices_config_file = "$default_configs/Towsey.Acoustic.Zooming.yml"
+$zooming_config_file = "$default_configs/SpectrogramZoomingConfig.yml"
 
 $remote_user = "ubuntnu"
 $remote_server = "server.example.com"
@@ -25,17 +29,16 @@ $remote_path = "/home/ubuntu/data/original_audio"
 
 # helper functions
 
-# find the path to analysis programs
-$ap_path = (gcm AnalysisPrograms.exe).Path
 
-# just checks whether a previous run was successful 
+
+# just checks whether a previous run was successful
 function HasAlreadyRun($results_dir) {
     $log = Join-Path $results_dir "log.txt"
     if (Test-Path $log) {
         $match = Get-Content -Tail 1 $log | Select-String "ERRORLEVEL: (\d+)"
         return $match.Matches.Groups[1].Value -eq 0
     }
-    
+
     return $false
 }
 
@@ -54,14 +57,14 @@ $recordings = Import-Csv $csv
 $results = @()
 foreach ($recording in $recordings) {
     Write-Output "Starting new recording $($recording.uuid)"
-    
+
     # create a results object to store results
-    $result =  New-Object "pscustomobject" | Select-Object Download,Indices,Images
+    $result = New-Object "pscustomobject" | Select-Object Download, Indices, Images
 
     # extract all needed meta data to create a path to the remote file
     # constructs a path that looks like: ".../data/b2/b24460cf-e25e-44c9-9034-af9b0a1ddcbe_20121019-140000Z.wav
     $uuid = $recording.uuid
-    $prefix = $uuid.Substring(0,2)
+    $prefix = $uuid.Substring(0, 2)
     $date = (Get-Date $recording.recorded_date).ToString("yyyyMMdd-HHmmssZ")
     $name = "$uuid`_$date.wav"
     $remote_path = "$remote_path/$prefix/$name"
@@ -82,7 +85,7 @@ foreach ($recording in $recordings) {
     $instance_output = $local_path + "_results"
     # generate indices
 
-    if (HasAlreadyRun $instance_output) {    
+    if (HasAlreadyRun $instance_output) {
         $result.Indices = "0*"
         Write-Output "Skipping indices generation for $uuid - already completed"
     }
@@ -97,7 +100,7 @@ foreach ($recording in $recordings) {
 
     # generate zooming tiles
     $indices_dir = Join-Path $instance_output "Towsey.Acoustic"
-    AnalysisPrograms.exe DrawZoomingSpectrograms $indices_dir $zooming_config_file $instance_output -o "sqlite3" -z "Tile" -n  | IndentOutput
+    AnalysisPrograms.exe DrawZoomingSpectrograms $indices_dir $zooming_config_file $instance_output -o "sqlite3" -z "Tile" -n | IndentOutput
     $result.Images = $LASTEXITCODE
     $results += $result
 
