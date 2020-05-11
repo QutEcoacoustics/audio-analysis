@@ -19,6 +19,7 @@ namespace AudioAnalysisTools.Events.Types
         public CompositeEvent(List<SpectralEvent> events)
         {
             this.ComponentEvents.AddRange(events);
+            this.ScoreRange = (0, 1);
         }
 
         public List<EventCommon> ComponentEvents { get; set; } = new List<EventCommon>();
@@ -57,7 +58,20 @@ namespace AudioAnalysisTools.Events.Types
             }
         }
 
-        public override double ScoreNormalised => this.ComponentEvents.Average()
+        public override double ScoreNormalized
+        {
+            get
+            {
+                // because we are averaging normalized scores,
+                // we can just multiply the values
+                return this
+                    .ComponentEvents
+                    .Aggregate(
+                        1.0,
+                        (previous, current) => previous * current.ScoreNormalized);
+            }
+        }
+
         public override void Draw(IImageProcessingContext graphics, EventRenderingOptions options)
         {
             foreach (var @event in this.ComponentEvents)

@@ -27,7 +27,7 @@ namespace AudioAnalysisTools.Events.Drawing
                 return;
             }
 
-            var normalisedScore = @event.GetScoreNormalised();
+            var normalisedScore = @event.ScoreNormalized.Clamp(0, 1);
 
             if (normalisedScore == 0)
             {

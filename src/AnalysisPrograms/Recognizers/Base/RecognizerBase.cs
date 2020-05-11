@@ -298,9 +298,30 @@ namespace AnalysisPrograms.Recognizers.Base
 
         public override void WriteEventsFile(FileInfo destination, IEnumerable<EventBase> results)
         {
-            // TODO check this
-            //Csv.WriteToCsv(destination, results.Select(x => (AcousticEvent)x));
-            Csv.WriteToCsv(destination, results.Select(x => (EventCommon)x));
+            // TODO improve API so more flexible file names can be created
+            Csv.WriteToCsv(
+                destination,
+                results
+                    .Where(x => x is AcousticEvent)
+                    .Select(x => (AcousticEvent)x));
+
+            // HACK: improve filename creation
+            var destinationBetaCsv = destination
+                .FullName
+                .Replace(".csv", ".beta.csv")
+                .ToFileInfo();
+            Csv.WriteToCsv(
+                destinationBetaCsv,
+                results
+                     .Where(x => x is EventCommon)
+                    .Select(x => (EventCommon)x));
+
+            // HACK: improve filename creation
+            var destinationJson = destination
+                .FullName
+                .Replace(".csv", ".beta.json")
+                .ToFileInfo();
+            Json.Serialise(destinationJson, results);
         }
 
         public override void WriteSummaryIndicesFile(FileInfo destination, IEnumerable<SummaryIndexBase> results)

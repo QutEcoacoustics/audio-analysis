@@ -153,6 +153,11 @@ namespace Acoustics.Shared
             return new Interval<double>(1 / range.Maximum, 1 / range.Minimum, range.Topology);
         }
 
+        public static double Normalize(this Interval<double> range, double value)
+        {
+            return (value - range.Minimum) / (range.Maximum - range.Minimum);
+        }
+
         public static Interval<T> AsInterval<T>(this (T Minimum, T Maximum) pair, Topology topology = Topology.Default)
             where T : struct, IComparable<T>
         {

@@ -39,27 +39,22 @@ namespace AudioAnalysisTools.Events
         /// <summary>
         /// Gets or sets the event score.
         /// This is a score in absolute units as determined by context.
-        /// ScoreMax determines the scale.
+        /// <see cref="ScoreRange"/> determines the scale.
         /// </summary>
         public override double Score { get; set; }
 
         /// <summary>
         /// Gets or sets a min-max range of values for the score for this event.
-        /// This is used to establish a score scale and thereby normalise the score.
+        /// This is used to establish a score scale and thereby normalize the score.
         /// By default the minimum value of range = zero.
         /// </summary>
         public Interval<double> ScoreRange { get; set; }
 
         /// <summary>
-        /// Gets a score in the range 0,1.
+        /// Gets a score in the range [0, 1].
         /// Up to user to determine a suitable range maximum.
-        /// Minimum of range assumed to be zero.
         /// </summary>
-        public double GetScoreNormalised()
-        {
-            var range = this.ScoreRange.Maximum - this.ScoreRange.Minimum;
-            return (this.Score / range).Clamp(0, 1);
-        }
+        public virtual double ScoreNormalized => this.ScoreRange.Normalize(this.Score);
 
         /// <summary>
         /// Draw this event on an image.

@@ -10,11 +10,6 @@
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="Events\Tracks\**" />
-    <EmbeddedResource Remove="Events\Tracks\**" />
-    <None Remove="Events\Tracks\**" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Acoustics.Shared\Acoustics.Shared.csproj" />
     <ProjectReference Include="..\Acoustics.Tools\Acoustics.Tools.csproj" />
     <ProjectReference Include="..\AcousticWorkbench\AcousticWorkbench.csproj" />
