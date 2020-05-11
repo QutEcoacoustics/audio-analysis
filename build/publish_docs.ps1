@@ -10,13 +10,17 @@ if ($l -eq 0) {
 
 $commit_hash = git show -s --format="%H"
 
-Push-Location
-Set-Location "$PSScriptRoot/../_site"
+try {
+    Push-Location
+    Set-Location "$PSScriptRoot/../_site"
 
-Write-Output "Deploying to netlify"
+    Write-Output "Deploying to netlify"
 
 
-netlify deploy --dir=. --message="Docs deploy for https://github.com/QutEcoacoustics/audio-analysis/commit/$commit_hash" --prod --site="078c0d59-a45a-4458-bd92-2d7c05f44bb6" --json
+    netlify deploy --dir=. --message="Docs deploy for https://github.com/QutEcoacoustics/audio-analysis/commit/$commit_hash" --prod --site="078c0d59-a45a-4458-bd92-2d7c05f44bb6" --json
 
-Write-Output "Deploying complete"
-Pop-Location
+    Write-Output "Deploying complete"
+}
+finally {
+    Pop-Location
+}

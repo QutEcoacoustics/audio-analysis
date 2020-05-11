@@ -1,38 +1,60 @@
-﻿# A simple loop to generate indices for a folder of files.
-# Karlina Indraswari 2017
-#
-# For each audio file found,
-# - It runs audio2csv to generate indices
-#
-# Assumptions:
-# - AnalysisPrograms.exe is in current directory
-# - You're working in Windows (though only trivial changes are required to work in Unix)
-# - Users will customize the below variables before running the script
+﻿<#
+.SYNOPSIS
+  # A simple loop to generate indices for a folder of files.
+.DESCRIPTION
+  Generates acoustic indices for multiple audio files.
+  Each recording will have it's indices save in a directory named after the input audio recording.
+.PARAMETER $source_directory
+    A directory of audio files to process.
+.PARAMETER $output_directory
+.INPUTS
+  Optionally: input directories
+.OUTPUTS
+  Files stored in $output_directory
+.NOTES
+  Version:        2.0
+  Author:         Karlina Indraswari & Anthony Truskinger
+  Creation Date:  2017
+  Purpose/Change: Updated docs links, add ap finder script
 
+.EXAMPLE
+  ./indices_loop.ps1 D:/Stud -time_zone_offset "10:00" -output_directory ./output
+#>
 
-# Select the directory containing the files
-$directory = "C:\temp\Emerald River Audio Snippets\20131227\"
-# The directory to store the results
-$base_output_directory = "C:\temp\indices_output"
+param(
+    [Parameter(
+        Position = 0,
+        Mandatory = $true)]
+    $source_directory,
+    [Parameter(
+        Position = 1,
+        Mandatory = $true)]
+    $output_directory
+)
+
+$ap = . "$PSScriptRoot/find_ap.ps1"
+$default_configs = Resolve-Path "$ap_path/../ConfigFiles"
 
 # Get a list of audio files inside the directory
 # (Get-ChildItem is just like ls, or dir)
-$files = Get-ChildItem "$directory\*" -Include "*.mp3", "*.wav"
+$files = Get-ChildItem "$source_directory\*" -Include "*.mp3", "*.wav"
 
 # iterate through each file
-foreach($file in $files) {
+foreach ($file in $files) {
     Write-Output ("Processing " + $file.FullName)
 
     # get just the name of the file
     $file_name = $file.Name
 
     # make a folder for results
-    $output_directory = "$base_output_directory\$file_name"
-    mkdir $output_directory
+    $instance_output_directory = Join-Path $output_directory $file_name
+    New-Item $instance_output_directory -ItemType Directory
 
     # prepare command
-    $command = ".\AnalysisPrograms.exe audio2csv `"$file`" `".\configFiles\Towsey.Acoustic.yml`" `"$output_directory`" -n"
-    
+    # for more information on how this command works, please see:
+    # https://ap.qut.ecoacoustics.info/technical/commands/analyze_long_recording.html
+    $command = "$ap audio2csv `"$file`" `"$default_configs\Towsey.Acoustic.yml`" `"$instance_output_directory`" -n --parallel"
+
     # finally, execute the command
     Invoke-Expression $command
 }
