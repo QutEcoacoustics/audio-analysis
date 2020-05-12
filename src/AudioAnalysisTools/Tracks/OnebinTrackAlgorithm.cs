@@ -172,7 +172,7 @@ namespace AudioAnalysisTools.Tracks
 
         public static Track GetOnebinTrack(double[,] peaks, int startRow, int bin, double threshold, UnitConverters converter)
         {
-            var track = new Track(converter, TrackType.FowardTrack);
+            var track = new Track(converter, TrackType.OneBinTrack);
             track.SetPoint(startRow, bin, peaks[startRow, bin]);
 
             // set the start point in peaks matrix to zero to prevent return to this point.

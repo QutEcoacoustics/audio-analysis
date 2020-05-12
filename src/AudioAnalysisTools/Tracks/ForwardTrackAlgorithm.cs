@@ -160,7 +160,7 @@ namespace AudioAnalysisTools.Tracks
 
         public static Track GetForwardTrack(double[,] peaks, int startRow, int startBin, double threshold, UnitConverters converter)
         {
-            var track = new Track(converter, Events.Tracks.TrackType.FowardTrack);
+            var track = new Track(converter, Events.Tracks.TrackType.ForwardTrack);
             track.SetPoint(startRow, startBin, peaks[startRow, startBin]);
 
             // set the start point in peaks matrix to zero to prevent return to this point.

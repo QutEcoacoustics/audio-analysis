@@ -80,13 +80,6 @@ namespace AudioAnalysisTools
             foreach (var rect in rects)
             {
                 graphics.Fill(
-                    //new GraphicsOptions()
-                    //{
-                    //    BlendPercentage = 0.8f,
-
-                    //    //ColorBlendingMode = PixelColorBlendingMode.Multiply,
-                    //    ColorBlendingMode = PixelColorBlendingMode.Overlay,
-                    //},
                     options.FillOptions,
                     options.Fill,
                     rect);
@@ -99,9 +92,11 @@ namespace AudioAnalysisTools
             {
                 return;
             }
+
             // visits each point once
             // assumes each point pair describes a line
-            // assumes a SortedSet is used (and that iteration order is signficant, unlike with HashSet)
+            // assumes a SortedSet is used (and that iteration order is significant,
+            // unlike with HashSet)
             // TODO: maybe add an orderby?
             var path = this
                 .Points

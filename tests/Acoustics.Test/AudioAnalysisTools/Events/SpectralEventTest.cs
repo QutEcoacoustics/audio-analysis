@@ -4,6 +4,8 @@
 
 namespace Acoustics.Test.AudioAnalysisTools.Events
 {
+    using System;
+    using System.Collections.Generic;
     using Acoustics.Shared.ImageSharp;
     using Acoustics.Test.Shared.Drawing;
     using Acoustics.Test.TestHelpers;
@@ -65,6 +67,55 @@ E10R80E10
             this.ActualImage.Mutate(x => @event.Draw(x, options));
 
             // assert
+            this.AssertImagesEqual();
+        }
+
+        [TestMethod]
+        public void TestSonogramWithEventsOverlay()
+        {
+            // make a substitute sonogram image
+            var imageWidth = 100;
+            var imageHeight = 256;
+            var substituteSonogram = Drawing.NewImage(imageWidth, imageHeight, Color.Black);
+
+            // set the time/freq scales
+            var segmentDuration = 10.0; //seconds
+            var nyquist = 11025; //Hertz
+
+            // set a max score to normalize.
+            double maxScore = 10.0;
+
+            // make a list of two events
+            var events = new List<SpectralEvent>();
+            var segmentStartTime = TimeSpan.FromSeconds(10);
+            var event1 = new SpectralEvent(segmentStartOffset: segmentStartTime, eventStartRecordingRelative: 11.0, eventEndRecordingRelative: 16.0, minFreq: 1000, maxFreq: 8000)
+            {
+                Score = 10.0,
+                ScoreRange = (0, maxScore),
+                Name = "Event1",
+            };
+
+            events.Add(event1);
+            var event2 = new SpectralEvent(segmentStartOffset: segmentStartTime, eventStartRecordingRelative: 17.0, eventEndRecordingRelative: 19.0, minFreq: 1000, maxFreq: 8000)
+            {
+                Score = 1.0,
+                ScoreRange = (0, maxScore),
+                Name = "Event2",
+            };
+            events.Add(event2);
+
+            // now add events into the spectrogram image with score.
+            var options = new EventRenderingOptions(new UnitConverters(segmentStartTime.TotalSeconds, segmentDuration, nyquist, imageWidth, imageHeight));
+            foreach (var ev in events)
+            {
+                // because we are testing placement of box not text.
+                ev.Name = string.Empty;
+                substituteSonogram.Mutate(x => ev.Draw(x, options));
+            }
+
+            this.ActualImage = substituteSonogram;
+            var path = PathHelper.ResolveAssetPath("EventTests_SuperimposeEventsOnImage.png");
+            this.ExpectedImage = Image.Load<Rgb24>(path);
             this.AssertImagesEqual();
         }
     }

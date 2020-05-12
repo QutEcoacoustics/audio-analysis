@@ -73,9 +73,7 @@ namespace AudioAnalysisTools.Events.Drawing
 
         public bool DrawScore { get; set; } = true;
 
-        /// <summary>
-        /// TODO Set this false for present time because text not drawing well.
-        /// </summary>
+        // TODO: Renable. Currently set to false because text not drawing well.
         public bool DrawLabel { get; set; } = false;
     }
 }

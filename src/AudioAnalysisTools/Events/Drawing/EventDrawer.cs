@@ -19,7 +19,7 @@ namespace AudioAnalysisTools.Events.Drawing
         /// </summary>
         /// <param name="event">The event for which to draw the score indicator.</param>
         /// <param name="graphics">The image context to draw to.</param>
-        /// <param name="options">The event rendering optons to use.</param>
+        /// <param name="options">The event rendering options to use.</param>
         public static void DrawScoreIndicator(this SpectralEvent @event, IImageProcessingContext graphics, EventRenderingOptions options)
         {
             if (!options.DrawScore)
@@ -27,21 +27,24 @@ namespace AudioAnalysisTools.Events.Drawing
                 return;
             }
 
-            var normalisedScore = @event.ScoreNormalized.Clamp(0, 1);
+            var normalizedScore = @event.ScoreNormalized.Clamp(0, 1);
 
-            if (normalisedScore == 0)
+            if (normalizedScore == 0 || double.IsNaN(normalizedScore))
             {
                 return;
             }
 
             var rect = options.Converters.GetPixelRectangle(@event);
 
-            var scaledHeight = (float)normalisedScore * rect.Height;
+            // truncate score bar to neatest whole pixel after scaling by height
+            var scaledHeight = (int)((float)normalizedScore * rect.Height);
 
-            graphics.NoAA().DrawLines(
-                options.Score,
-                new PointF(rect.Left, rect.Bottom - 1), // minus one is to bring bottom of score line within event frame.
-                new PointF(rect.Left, rect.Bottom - scaledHeight));
+            var top = new PointF(rect.Left, rect.Bottom - scaledHeight);
+            var bottom = new PointF(rect.Left, rect.Bottom);
+
+            // the order of the supplied points is important!
+            // DO NOT CHANGE
+            graphics.NoAA().DrawLines(options.Score, top, bottom);
         }
 
         public static void DrawEventLabel(this SpectralEvent @event, IImageProcessingContext graphics, EventRenderingOptions options)

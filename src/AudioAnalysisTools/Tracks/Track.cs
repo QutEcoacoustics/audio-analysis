@@ -28,7 +28,7 @@ namespace AudioAnalysisTools.Events.Tracks
         /// Each track point advances one time step.
         /// Points may move up or down two frequency bins.
         /// </summary>
-        FowardTrack,
+        ForwardTrack,
 
         /// <summary>
         /// Sounds like whip.
@@ -291,7 +291,7 @@ namespace AudioAnalysisTools.Events.Tracks
                 case TrackType.OneFrameTrack:
                     ((IPointData)this).DrawPointsAsFillExperiment(graphics, options);
                     break;
-                case TrackType.FowardTrack:
+                case TrackType.ForwardTrack:
                     ((IPointData)this).DrawPointsAsFillExperiment(graphics, options);
                     break;
                 default:

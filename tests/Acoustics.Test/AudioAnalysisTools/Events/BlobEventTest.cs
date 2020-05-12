@@ -55,16 +55,17 @@ E10R80E10
 ";
             var p = PixelOperations<Rgb24>.Instance.GetPixelBlender(new GraphicsOptions());
 
+            var green = Color.FromRgba(0, 255, 0, 128);
             this.ExpectedImage = new TestImage(100, 100, Color.Black)
                 .FillPattern(specification)
 
                 // the point 5.1 seconds and 520 Hz should match 51, 48
                 .GoTo(51, 48)
-                .Fill(1, 1, p.Blend(Color.Black, Color.Red, 0.5f))
+                .Fill(1, 1, p.Blend(Color.Black, green, 0.5f))
                 .GoTo(52, 49)
-                .Fill(2, 1, p.Blend(Color.Black, Color.Red, 0.5f))
+                .Fill(2, 1, p.Blend(Color.Black, green, 0.5f))
                 .GoTo(12, 87)
-                .Fill(1, 1, p.Blend(Color.Black, Color.Red, 0.5f))
+                .Fill(1, 1, p.Blend(Color.Black, green, 0.5f))
                 .Finish();
 
             // BUG: with DrawPointsAsFill: overlaps are painted twice
@@ -87,7 +88,12 @@ E10R80E10
 
             @event.Points.Add(new SpectralPoint((1.2, 1.3), (120, 130), 0.9));
 
-            var options = new EventRenderingOptions(new UnitConverters(0, 10, 1000, 100, 100));
+            var options = new EventRenderingOptions(new UnitConverters(0, 10, 1000, 100, 100))
+            {
+                // disable the default blend to make testing easier
+                FillOptions = new GraphicsOptions(),
+                Fill = Brushes.Solid(green),
+            };
 
             // act
 

@@ -52,7 +52,19 @@ namespace Acoustics.Test.TestHelpers
             return new TestImage(width, height, specification, color).Finish();
         }
 
-        public Point Cursor { get; private set; }
+        public static bool AddKnownColor(char symbol, Color color)
+        {
+            if (KnownColors.ContainsKey(symbol))
+            {
+                return false;
+            }
+
+            KnownColors.Add(symbol, color);
+            return true;
+        }
+
+        public Point Cursor
+        { get; private set; }
 
         public TestImage FillPattern(string specification, Color? defaultBackground = null)
         {

@@ -22,10 +22,10 @@ namespace AudioAnalysisTools.Scales
         /// <summary>
         /// Initializes a new instance of the <see cref="LinearScale"/> class.
         /// </summary>
-        /// <remakrs>
+        /// <remarks>
         /// Should be able to handle mapping a domain where x1 ≤ x &lt; x2
         /// to a range where y1 > y ≥ y2 (an inverted mapping).
-        /// </remakrs>
+        /// </remarks>
         /// <param name="domain">The range to consider the domain (the input).</param>
         /// <param name="range">The range to consider the range (the output).</param>
         public LinearScale((double Low, double High) domain, (double Low, double High) range)
@@ -82,7 +82,7 @@ namespace AudioAnalysisTools.Scales
         /// <returns>The equivalent domain value.</returns>
         public double From(double y)
         {
-            // TODO: optimised implementation is possible
+            // TODO: optimized implementation is possible
             var normal = (y - this.r1) / this.rd;
             var d = (normal * this.dd) + this.d1;
             return this.clamp ? d.Clamp(this.d1, this.d2) : d;
