@@ -9,7 +9,8 @@
             "tests/Acoustics.Test/**.csproj"
           ],
           "exclude": [
-            "src/**.fsproj"
+            "src/**.fsproj",
+            "test/**"
           ]
         }
       ],
