@@ -136,7 +136,7 @@ namespace System
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static double Clamp(this double value, double min, double max)
         {
-            if (min < max)
+            if (min > max)
             {
                 (min, max) = (max, min);
             }

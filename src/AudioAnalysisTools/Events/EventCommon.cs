@@ -54,7 +54,7 @@ namespace AudioAnalysisTools.Events
         /// Gets a score in the range [0, 1].
         /// Up to user to determine a suitable range maximum.
         /// </summary>
-        public virtual double ScoreNormalized => this.ScoreRange.Normalize(this.Score);
+        public virtual double ScoreNormalized => this.ScoreRange.NormalizeValue(this.Score);
 
         /// <summary>
         /// Draw this event on an image.

@@ -6,6 +6,7 @@
 namespace Acoustics.Shared
 {
     using System;
+    using System.Runtime.CompilerServices;
 
     public static class IntervalExtensions
     {
@@ -153,9 +154,76 @@ namespace Acoustics.Shared
             return new Interval<double>(1 / range.Maximum, 1 / range.Minimum, range.Topology);
         }
 
-        public static double Normalize(this Interval<double> range, double value)
+        /// <summary>
+        /// Normalizes a value as a unit value given the bounds of an interval.
+        /// </summary>
+        /// <param name="range">The interval to use as the bounds.</param>
+        /// <param name="value">The value to normalize.</param>
+        /// <returns>A value scaled to [0,1]. The value may exceed the bounds [0,1]; i.e. the value is not clamped.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double NormalizeValue(this Interval<double> range, double value)
         {
             return (value - range.Minimum) / (range.Maximum - range.Minimum);
+        }
+
+        /// <summary>
+        /// Normalizes a value as a unit value given the bounds of an interval.
+        /// </summary>
+        /// <param name="value">The value to normalize.</param>
+        /// <param name="range">The interval to use as the bounds.</param>
+        /// <returns>A value scaled to [0,1]. The value may exceed the bounds [0,1]; i.e. the value is not clamped.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double Normalize(this double value, Interval<double> range)
+        {
+            return (value - range.Minimum) / (range.Maximum - range.Minimum);
+        }
+
+        /// <summary>
+        /// Restricts a <see cref="double"/> to be within a specified range.
+        /// </summary>
+        /// <param name="value">The The value to clamp.</param>
+        /// <param name="range">The interval to clamp the value to.</param>
+        /// <returns>
+        /// The <see cref="double"/> representing the clamped value.
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double Clamp(this double value, Interval<double> range)
+        {
+            if (value >= range.Maximum)
+            {
+                return range.Maximum;
+            }
+
+            if (value <= range.Minimum)
+            {
+                return range.Minimum;
+            }
+
+            return value;
+        }
+
+        /// <summary>
+        /// Restricts a <see cref="double"/> to be within a specified range.
+        /// </summary>
+        /// <param name="range">The interval to clamp the value to.</param>
+        /// <param name="value">The The value to clamp.</param>
+        /// <returns>
+        /// The <see cref="double"/> representing the clamped value.
+        /// </returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static double ClampvValue(this Interval<double> range, double value)
+        {
+            if (value >= range.Maximum)
+            {
+                return range.Maximum;
+            }
+
+            if (value <= range.Minimum)
+            {
+                return range.Minimum;
+            }
+
+            return value;
         }
 
         public static Interval<T> AsInterval<T>(this (T Minimum, T Maximum) pair, Topology topology = Topology.Default)
