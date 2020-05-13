@@ -69,7 +69,7 @@ E10R80E10
                 .Finish();
 
             // BUG: with DrawPointsAsFill: overlaps are painted twice
-            this.ExpectedImage[52, 49] = new Rgb24(192, 0, 0);
+            this.ExpectedImage[52, 49] = new Rgb24(0, 192, 0);
 
             var @event = new BlobEvent()
             {

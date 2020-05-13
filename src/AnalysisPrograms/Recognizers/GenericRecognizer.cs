@@ -358,11 +358,14 @@ namespace AnalysisPrograms.Recognizers
         /// <summary>
         /// THis method can be modified if want to do something non-standard with the output spectrogram.
         /// </summary>
-        public static void SaveDebugSpectrogram(RecognizerResults results, Config genericConfig, DirectoryInfo outputDirectory, string baseName)
+        public static string SaveDebugSpectrogram(RecognizerResults results, Config genericConfig, DirectoryInfo outputDirectory, string baseName)
         {
             var image3 = SpectrogramTools.GetSonogramPlusCharts(results.Sonogram, results.NewEvents, results.Plots, null);
 
-            image3.Save(Path.Combine(outputDirectory.FullName, baseName + ".profile.png"));
+            var path = Path.Combine(outputDirectory.FullName, baseName + ".profile.png");
+            image3.Save(path);
+
+            return path;
         }
 
         /// <summary>

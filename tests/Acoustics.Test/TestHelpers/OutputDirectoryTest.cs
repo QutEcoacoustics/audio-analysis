@@ -4,6 +4,7 @@
 
 namespace Acoustics.Test.TestHelpers
 {
+    using System;
     using System.IO;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -30,5 +31,13 @@ namespace Acoustics.Test.TestHelpers
         /// </summary>
         protected DirectoryInfo TestOutputDirectory =>
             this.testOutputDirectory ??= PathHelper.TestOutputDirectory(this.TestContext);
+
+        protected string SaveTestOutput(Func<DirectoryInfo, string> callback)
+        {
+            var savedFile = callback.Invoke(this.TestOutputDirectory);
+            this.TestContext.AddResultFile(savedFile);
+
+            return savedFile;
+        }
     }
 }

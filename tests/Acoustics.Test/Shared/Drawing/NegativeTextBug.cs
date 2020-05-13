@@ -32,21 +32,21 @@ namespace Acoustics.Test.Shared.Drawing
 
             // first make sure the text rectangle actually overlaps
             var destArea = new RectangleF(PointF.Empty, this.ActualImage.Size());
-            var textArea = TextMeasurer.MeasureBounds(text, new RendererOptions(Drawing.Arial10, new Point(-10, 3)));
+            var textArea = TextMeasurer.MeasureBounds(text, new RendererOptions(Drawing.Roboto10, new Point(-10, 3)));
             Assert.IsTrue(destArea.IntersectsWith(textArea.AsRect()));
 
             // THIS SHOULD IDEALLY NOT THROW
             Assert.ThrowsException<ImageProcessingException>(
                 () =>
                     this.ActualImage.Mutate(
-                        x => { x.DrawText(text, Drawing.Arial10, Color.White, new PointF(-10, 3)); }));
+                        x => { x.DrawText(text, Drawing.Roboto10, Color.White, new PointF(-10, 3)); }));
 
             // but our custom safe method side steps the problem
-            this.ActualImage.Mutate(x => { x.DrawTextSafe(text, Drawing.Arial10, Color.White, new PointF(-10, 3)); });
+            this.ActualImage.Mutate(x => { x.DrawTextSafe(text, Drawing.Roboto10, Color.White, new PointF(-10, 3)); });
 
             this.ExpectedImage = Drawing.NewImage(100, 100, Color.Black);
             this.ExpectedImage.Mutate(
-                x => x.DrawText("016-12-10", Drawing.Arial10, Color.White, new PointF(-4.023438f, 3)));
+                x => x.DrawText("016-12-10", Drawing.Roboto10, Color.White, new PointF(-3.8232422f, 3)));
 
             // if we're on a system where Arial isn't installed, we fall back to roboto font,
             // thus we allow a slight tolerance on the image

@@ -271,7 +271,6 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             allResults.Sonogram = spectrogram;
 
             // DEBUG PURPOSES COMMENT NEXT LINE
-            //var outputDirectory = new DirectoryInfo("C:\\temp");
             //GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "name");
 
             Assert.AreEqual(4, allResults.NewEvents.Count);
@@ -363,9 +362,9 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             allResults.Plots.AddRange(plots);
             allResults.Sonogram = spectrogram;
 
-            // DEBUG PURPOSES COMMENT NEXT LINE
-            var outputDirectory = new DirectoryInfo("C:\\temp");
-            GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "WhistleTrack");
+            // DEBUG PURPOSES
+            this.SaveTestOutput(
+                outputDirectory => GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "WhistleTrack"));
 
             //NOTE: There are 16 whistles in the test spectrogram ...
             // but three of them are too weak to be detected at this threshold.
@@ -462,8 +461,8 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             allResults.Sonogram = spectrogram;
 
             // DEBUG PURPOSES COMMENT NEXT LINE
-            var outputDirectory = new DirectoryInfo("C:\\temp");
-            GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "FowardTrack");
+            this.SaveTestOutput(
+                outputDirectory => GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "ForwardTrack"));
 
             Assert.AreEqual(23, allResults.NewEvents.Count);
 
@@ -546,8 +545,8 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             allResults.Sonogram = spectrogram;
 
             // DEBUG PURPOSES COMMENT NEXT LINE
-            var outputDirectory = new DirectoryInfo("C:\\temp");
-            GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "ClickTrack");
+            this.SaveTestOutput(
+                outputDirectory => GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "ClickTrack"));
 
             Assert.AreEqual(6, allResults.NewEvents.Count);
 
@@ -636,8 +635,8 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             allResults.Sonogram = spectrogram;
 
             // DEBUG PURPOSES ONLY - COMMENT NEXT LINE
-            var outputDirectory = new DirectoryInfo("C:\\temp");
-            GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "UpwardTracks1");
+            this.SaveTestOutput(
+                outputDirectory => GenericRecognizer.SaveDebugSpectrogram(allResults, null, outputDirectory, "UpwardsTrack1"));
 
             Assert.AreEqual(2, allResults.NewEvents.Count);
 
@@ -722,8 +721,8 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.GenericRecognizer
             allResults2.Sonogram = spectrogram;
 
             // DEBUG PURPOSES ONLY - COMMENT NEXT LINE
-            var outputDirectory = new DirectoryInfo("C:\\temp");
-            GenericRecognizer.SaveDebugSpectrogram(allResults2, null, outputDirectory, "UpwardTracks2");
+            this.SaveTestOutput(
+                outputDirectory => GenericRecognizer.SaveDebugSpectrogram(allResults2, null, outputDirectory, "UpwardTracks2"));
 
             Assert.AreEqual(10, allResults2.NewEvents.Count);
         }
