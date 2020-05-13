@@ -91,6 +91,29 @@ namespace Acoustics.Test.TestHelpers
             return ClassOutputDirectory(context).CreateSubdirectory(context.TestName);
         }
 
+        /// <summary>
+        /// DO NOT USE THIS DIRECTLY.
+        /// <see cref="OutputDirectoryTest.SaveTestOutput(Func{DirectoryInfo, FileInfo})"/>.
+        /// </summary>
+        public static DirectoryInfo DailyOutputDirectory(TestContext context = null)
+        {
+            context ??= testContext;
+            var rootResults = Path.Combine(context.TestResultsDirectory, "..", "..");
+
+            return rootResults
+                .ToDirectoryInfo()
+                .CreateSubdirectory(TestSetup.TestDate.ToString("yyyyMMdd"));
+        }
+
+        public static string DailyOutputFileNamePrefix(TestContext context = null)
+        {
+            context ??= testContext;
+            var lastDot = context.FullyQualifiedTestClassName.LastIndexOf('.') + 1;
+            var shortClassName = context.FullyQualifiedTestClassName[lastDot..];
+
+            return TestSetup.TestDate.ToString("HHmmss") + "_" + shortClassName + "_" + context.TestName + "_";
+        }
+
         public static void DeleteTempDir(DirectoryInfo dir)
         {
             try

@@ -104,15 +104,20 @@ namespace Acoustics.Test.TestHelpers
         private void SaveImage(string typeToken, Image<T> image)
         {
             var extra = this.ExtraName.IsNullOrEmpty() ? string.Empty : "_" + this.ExtraName;
-            var path = this.ClassOutputDirectory.CombinePath($"{this.TestContext.TestName}{extra}_{typeToken}.png");
+
+            var outName = $"{this.TestContext.TestName}{extra}_{typeToken}.png";
             if (image == null)
             {
-                this.TestContext.WriteLine($"Skipping writing expected image `{path}` because it is null");
+                this.TestContext.WriteLine($"Skipping writing expected image `{outName}` because it is null");
                 return;
             }
 
-            image.Save(path);
-            this.TestContext.AddResultFile(path);
+            this.SaveTestOutput(output =>
+            {
+                var path = output.CombinePath(outName);
+                image.Save(path);
+                return path;
+            });
         }
 
         private bool ShouldWrite(WriteTestOutput should) =>

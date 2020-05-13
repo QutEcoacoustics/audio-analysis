@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <RunSettings>
   <RunConfiguration>
-    <ResultsDirectory>../../tests/Results</ResultsDirectory>
+      <ResultsDirectory>../../tests/Results</ResultsDirectory>
+      <MaxCpuCount>0</MaxCpuCount>
   </RunConfiguration>
   <LoggerRunSettings>
     <Loggers>
@@ -24,10 +25,11 @@
   </DataCollectionRunSettings>
   <!-- MSTest adapter -->
   <MSTest>
-    <CaptureTraceOutput>true</CaptureTraceOutput>
-    <Parallelize>
-      <Workers>0</Workers>
-      <Scope>ClassLevel</Scope>
-    </Parallelize>
+      <CaptureTraceOutput>true</CaptureTraceOutput>
+      <!--<DeleteDeploymentDirectoryAfterTestRunIsComplete>false</DeleteDeploymentDirectoryAfterTestRunIsComplete>-->
+      <Parallelize>
+        <Workers>0</Workers>
+        <Scope>ClassLevel</Scope>
+        </Parallelize>
   </MSTest>
 </RunSettings>

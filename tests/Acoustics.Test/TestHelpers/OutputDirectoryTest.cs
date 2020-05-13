@@ -13,6 +13,7 @@ namespace Acoustics.Test.TestHelpers
     {
         private DirectoryInfo classOutputDirectory = null;
         private DirectoryInfo testOutputDirectory = null;
+        private DirectoryInfo dailyOutputDirectory = null;
 
         public static DirectoryInfo ResultsDirectory { get; private set; } = PathHelper.ClassOutputDirectory();
 
@@ -32,12 +33,49 @@ namespace Acoustics.Test.TestHelpers
         protected DirectoryInfo TestOutputDirectory =>
             this.testOutputDirectory ??= PathHelper.TestOutputDirectory(this.TestContext);
 
-        protected string SaveTestOutput(Func<DirectoryInfo, string> callback)
+        /// <summary>
+        /// Gets a directory that has results grouped by day.
+        /// </summary>
+        protected DirectoryInfo DailyOutputDirectory =>
+            this.dailyOutputDirectory ??= PathHelper.DailyOutputDirectory(this.TestContext);
+
+        /// <summary>
+        /// Save a test result.
+        /// Also saves copies of test results to daily output directories.
+        /// The callback provides the output directory to save your file to.
+        /// You need to return the full path of the file saved.
+        /// </summary>
+        protected FileInfo SaveTestOutput(Func<DirectoryInfo, FileInfo> callback)
         {
             var savedFile = callback.Invoke(this.TestOutputDirectory);
-            this.TestContext.AddResultFile(savedFile);
+
+            if (!savedFile.Exists)
+            {
+                throw new InvalidOperationException("You must return the full path of the file that was saved.");
+            }
+
+            this.TestContext.AddResultFile(savedFile.FullName);
+
+            // if we're  on the CI the DO NOT save the file to a daily work folder
+            if (!TestHelper.OnContinuousIntegrationServer)
+            {
+                var newName = PathHelper.DailyOutputFileNamePrefix(this.TestContext) + savedFile.Name;
+                var newPath = this
+                    .DailyOutputDirectory
+                    .CombinePath(newName);
+                savedFile.CopyTo(newPath);
+            }
 
             return savedFile;
+        }
+
+        /// <summary>
+        /// Save a test result.
+        /// Also saves copies of test results to daily output directories.
+        /// </summary>
+        protected FileInfo SaveTestOutput(Func<DirectoryInfo, string> callback)
+        {
+            return this.SaveTestOutput(directory => callback.Invoke(directory)?.ToFileInfo());
         }
     }
 }

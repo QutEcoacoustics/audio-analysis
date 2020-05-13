@@ -4,6 +4,7 @@
 
 namespace Acoustics.Test.TestHelpers
 {
+    using System;
     using Acoustics.Shared.Logging;
     using log4net.Core;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -11,11 +12,14 @@ namespace Acoustics.Test.TestHelpers
     [TestClass]
     public class TestSetup
     {
+        public static DateTime TestDate { get; private set; }
+
         public static Logging TestLogging { get; set; }
 
         [AssemblyInitialize]
         public static void AssemblyInitialize(TestContext context)
         {
+            TestDate = DateTime.Now;
             PathHelper.Initialize(context);
             TestLogging = new Logging(
                 enableMemoryLogger: true,
