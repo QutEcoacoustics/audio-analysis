@@ -24,64 +24,49 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.PteropusSp
     [TestClass]
     public class BoobookOwlTest : OutputDirectoryTest
     {
-        private static readonly FileInfo TestAsset = PathHelper.ResolveAsset("Recordings", "gympie_np_1192_331618_20150818_054959_31_0.wav");
-        private static readonly FileInfo ConfigFile = PathHelper.ResolveConfigFile("RecognizerConfigFiles\\Towsey.NinoxBoobook.yml");
-        private static AudioRecording recording;
-        private static Config config;
-        private static RecognizerBase recognizer;
-        private DirectoryInfo outputDirectory;
-
-        [ClassInitialize]
         /// <summary>
-        /// This method is called once.
         /// The canonical recording used for this Boobook Owl recognizer is a 31 second recording made by Yvonne Phillips at Gympie National Park, 2015-08-18.
         /// </summary>
-        public static void ClassInitialize(TestContext context)
-        {
-            recording = new AudioRecording(TestAsset);
-            recognizer = new NinoxBoobook();
-            config = recognizer.ParseConfig(ConfigFile);
-        }
-
-        /// <summary>
-        /// This method is called once before running each test in the class.
-        /// </summary>
-        [TestInitialize]
-        public void Setup()
-        {
-            this.outputDirectory = PathHelper.GetTempDir();
-        }
+        private static readonly FileInfo TestAsset = PathHelper.ResolveAsset("Recordings", "gympie_np_1192_331618_20150818_054959_31_0.wav");
+        private static readonly FileInfo ConfigFile = PathHelper.ResolveConfigFile("RecognizerConfigFiles", "Towsey.NinoxBoobook.yml");
+        private static readonly AudioRecording Recording = new AudioRecording(TestAsset);
+        private static readonly NinoxBoobook Recognizer = new NinoxBoobook();
 
         [TestMethod]
         public void TestRecognizer()
         {
-            TimeSpan segmentStartOffset = TimeSpan.Zero;
-            Lazy<IndexCalculateResult[]> getSpectralIndexes = null;
-            int? imageWidth = null;
-            var results = recognizer.Recognize(recording, config, segmentStartOffset, getSpectralIndexes, this.outputDirectory, imageWidth);
+            var config = Recognizer.ParseConfig(ConfigFile);
+
+            var results = Recognizer.Recognize(
+                audioRecording: Recording,
+                config: config,
+                segmentStartOffset: TimeSpan.Zero,
+                getSpectralIndexes: null,
+                outputDirectory: this.TestOutputDirectory,
+                imageWidth: null);
+
             var events = results.NewEvents;
             var scoreTrack = results.ScoreTrack;
             var plots = results.Plots;
             var sonogram = results.Sonogram;
+
+            //this.SaveTestOutput(outputDirectory => /* save debug image here */);
 
             Assert.AreEqual(8, events.Count);
             Assert.IsNull(scoreTrack);
             Assert.AreEqual(1, plots.Count);
             Assert.AreEqual(2667, sonogram.FrameCount);
 
-            Assert.AreEqual(typeof(CompositeEvent), events[1].GetType());
-            Assert.AreEqual(5.38, events[1].EventStartSeconds, 0.05);
-            Assert.AreEqual(6.07, ((CompositeEvent)events[1]).EventEndSeconds, 0.05);
-            Assert.AreEqual(483, ((CompositeEvent)events[1]).LowFrequencyHertz);
-            Assert.AreEqual(735, ((CompositeEvent)events[1]).HighFrequencyHertz);
-            Assert.AreEqual(20.90, ((CompositeEvent)events[1]).Score, 0.05);
-            Assert.AreEqual(0.208, ((CompositeEvent)events[1]).ScoreNormalized, 0.05);
-        }
+            Assert.IsInstanceOfType(events[1], typeof(CompositeEvent));
 
-        [TestCleanup]
-        public void Cleanup()
-        {
-            PathHelper.DeleteTempDir(this.outputDirectory);
+            var secondEvent = (CompositeEvent)events[1];
+
+            Assert.AreEqual(5.38, secondEvent.EventStartSeconds, 0.05);
+            Assert.AreEqual(6.07, secondEvent.EventEndSeconds, 0.05);
+            Assert.AreEqual(483, secondEvent.LowFrequencyHertz);
+            Assert.AreEqual(735, secondEvent.HighFrequencyHertz);
+            Assert.AreEqual(20.90, secondEvent.Score, 0.05);
+            Assert.AreEqual(0.208, secondEvent.ScoreNormalized, 0.05);
         }
     }
 }
