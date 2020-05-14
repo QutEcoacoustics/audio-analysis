@@ -34,9 +34,10 @@ namespace Acoustics.Test.TestHelpers
         /// </example>
         public static string CodeBase { get; private set; }
 
-        public static FileInfo ResolveConfigFile(string fileName)
+        public static FileInfo ResolveConfigFile(params string[] pathComponents)
         {
-            return new FileInfo(Path.Combine(SolutionRoot, "src", "AnalysisConfigFiles", fileName));
+            pathComponents = new[] { SolutionRoot, "src", "AnalysisConfigFiles" }.Concat(pathComponents).ToArray();
+            return new FileInfo(Path.Combine(pathComponents));
         }
 
         public static FileInfo ResolveAsset(params string[] args)
