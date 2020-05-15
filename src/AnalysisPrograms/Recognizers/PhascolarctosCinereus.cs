@@ -1,4 +1,4 @@
-// <copyright file="KoalaV3.cs" company="QutEcoacoustics">
+// <copyright file="PhascolarctosCinereus.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -27,9 +27,9 @@ namespace AnalysisPrograms.Recognizers
     using Path = System.IO.Path;
 
     /// <summary>
-    /// A recognizer for the Australian Boobook Owl, /// https://en.wikipedia.org/wiki/Australian_boobook .
+    /// A recognizer for bellows of the male Koala.
     /// </summary>
-    internal class KoalaV3 : RecognizerBase
+    internal class PhascolarctosCinereus : RecognizerBase
     {
         private static readonly ILog BoobookLog = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
