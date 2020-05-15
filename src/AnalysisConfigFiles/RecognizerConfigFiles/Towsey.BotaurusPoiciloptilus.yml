@@ -20,7 +20,7 @@ Profiles:
         # min and max of the freq band to search
         MinHertz: 100          
         MaxHertz: 200
-        MinDuration: 0.2
+        MinDuration: 0.3
         MaxDuration: 1.0
         DecibelThreshold: 3.0
 
