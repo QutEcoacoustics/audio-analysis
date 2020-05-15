@@ -1,31 +1,25 @@
-// <copyright file="BoobookOwlTest.cs" company="QutEcoacoustics">
+// <copyright file="BoobookOwlTests.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
-namespace Acoustics.Test.AnalysisPrograms.Recognizers.PteropusSp
+namespace Acoustics.Test.AnalysisPrograms.Recognizers
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
-    using Acoustics.Shared.ConfigFile;
     using Acoustics.Test.TestHelpers;
     using global::AnalysisPrograms.Recognizers;
-    using global::AnalysisPrograms.Recognizers.Base;
-    using global::AudioAnalysisTools;
     using global::AudioAnalysisTools.Events.Types;
-    using global::AudioAnalysisTools.Indices;
     using global::AudioAnalysisTools.WavTools;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using SixLabors.ImageSharp;
 
     /// <summary>
-    /// Species name = Ninnox boobook.
+    /// Species name = Boobook Owl = Ninnox boobook.
     /// </summary>
     [TestClass]
-    public class BoobookOwlTest : OutputDirectoryTest
+    public class BoobookOwlTests : OutputDirectoryTest
     {
         /// <summary>
-        /// The canonical recording used for this Boobook Owl recognizer is a 31 second recording made by Yvonne Phillips at Gympie National Park, 2015-08-18.
+        /// The canonical recording used for this recognizer is a 31 second recording made by Yvonne Phillips at Gympie National Park, 2015-08-18.
         /// </summary>
         private static readonly FileInfo TestAsset = PathHelper.ResolveAsset("Recordings", "gympie_np_1192_331618_20150818_054959_31_0.wav");
         private static readonly FileInfo ConfigFile = PathHelper.ResolveConfigFile("RecognizerConfigFiles", "Towsey.NinoxBoobook.yml");
@@ -50,7 +44,8 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers.PteropusSp
             var plots = results.Plots;
             var sonogram = results.Sonogram;
 
-            //this.SaveTestOutput(outputDirectory => /* save debug image here */);
+            this.SaveTestOutput(
+                outputDirectory => GenericRecognizer.SaveDebugSpectrogram(results, null, outputDirectory, Recognizer.SpeciesName));
 
             Assert.AreEqual(8, events.Count);
             Assert.IsNull(scoreTrack);
