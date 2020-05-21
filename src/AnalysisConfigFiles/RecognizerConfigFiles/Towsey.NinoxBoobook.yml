@@ -20,15 +20,15 @@ Profiles:
         # min and max of the freq band to search
         MinHertz: 300          
         MaxHertz: 1000
-        MinDuration: 0.15
-        MaxDuration: 2.0
+        MinDuration: 0.17
+        MaxDuration: 1.2
         DecibelThreshold: 9.0
         
 #Combine each pair of Boobook syllables as one event
 #CombineProximalSimilarEvents: false
 CombinePossibleSyllableSequence: true
 SyllableStartDifference: 0.6
-SyllableHertzGap: 200
+SyllableHertzGap: 350
 
 #CombineOverlappedEvents: false
 # Common settings
@@ -46,8 +46,8 @@ SaveIntermediateWavFiles: Never
 SaveIntermediateCsvFiles: false
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 # "True" is useful when debugging but "WhenEventsDetected" is required for operational use.
-SaveSonogramImages: True
-#SaveSonogramImages: WhenEventsDetected
+#SaveSonogramImages: True
+SaveSonogramImages: WhenEventsDetected
 # DisplayCsvImage is obsolete - ensure it remains set to: false
 DisplayCsvImage: false
 ## End section for AnalyzeLongRecording

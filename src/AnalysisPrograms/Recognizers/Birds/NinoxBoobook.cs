@@ -96,6 +96,9 @@ namespace AnalysisPrograms.Recognizers
 
             // DO POST-PROCESSING of EVENTS
 
+            var configuration = (GenericRecognizerConfig)genericConfig;
+            var chirpConfig = (ForwardTrackParameters)configuration.Profiles["BoobookSyllable"];
+
             // Filter out the chirp events for possible combining.
             var (chirpEvents, others) = combinedResults.NewEvents.FilterForEventType<ChirpEvent, EventCommon>();
 
@@ -108,23 +111,49 @@ namespace AnalysisPrograms.Recognizers
                 SetFrequencyProfileScore((ChirpEvent)ev);
             }
 
-            // Combine overlapping events. If the dB threshold is set low, may get lots of little events.
-            var newEvents = CompositeEvent.CombineOverlappingEvents(chirpEvents.Cast<EventCommon>().ToList());
+            // Following two commented lines are different ways of casting lists.
+            //var newEvents = spectralEvents.Cast<EventCommon>().ToList();
+            //var spectralEvents = events.Select(x => (SpectralEvent)x).ToList();
 
+            // Combine overlapping events. If the dB threshold is set low, may get lots of little events.
+            var combinedEvents = CompositeEvent.CombineOverlappingEvents(chirpEvents.Cast<EventCommon>().ToList());
+
+            // DO POST-PROCESSING of EVENTS
+            //var events = combinedResults.NewEvents;
+            List<EventCommon> newEvents;
+
+            // NOTE: If the dB threshold is set low, may get lots of little events.
             if (genericConfig.CombinePossibleSyllableSequence)
             {
-                // convert events to spectral events for possible combining.
-                var (spectralEvents, _) = combinedResults.NewEvents.FilterForEventType<SpectralEvent, EventCommon>();
-
+                // Convert events to spectral events for combining of possible sequences.
+                var spectralEvents = combinedEvents.Cast<SpectralEvent>().ToList();
                 var startDiff = genericConfig.SyllableStartDifference;
                 var hertzDiff = genericConfig.SyllableHertzGap;
                 newEvents = CompositeEvent.CombineSimilarProximalEvents(spectralEvents, TimeSpan.FromSeconds(startDiff), (int)hertzDiff);
             }
+            else
+            {
+                newEvents = combinedEvents;
+            }
 
-            combinedResults.NewEvents = newEvents;
+            //filter the events for duration in seconds
+            var minimumEventDuration = chirpConfig.MinDuration;
+            var maximumEventDuration = chirpConfig.MaxDuration;
+            if (genericConfig.CombinePossibleSyllableSequence)
+            {
+                minimumEventDuration *= 2.0;
+                maximumEventDuration *= 1.5;
+            }
+
+            combinedResults.NewEvents = SpectralEvent.FilterOnDuration(newEvents, minimumEventDuration.Value, maximumEventDuration.Value);
+
+            double average = 245;
+            double sd = 15;
+            double sigmaThreshold = 3.0;
+            combinedResults.NewEvents = SpectralEvent.FilterOnBandwidth(combinedResults.NewEvents, average, sd, sigmaThreshold);
 
             //UNCOMMENT following line if you want special debug spectrogram, i.e. with special plots.
-            //  NOTE: Standard spectrograms are produced by setting SaveSonogramImages: "True" or "WhenEventsDetected" in <Towsey.PteropusSpecies.yml> config file.
+            //  NOTE: Standard spectrograms are produced by setting SaveSonogramImages: "True" or "WhenEventsDetected" in UserName.SpeciesName.yml config file.
             //GenericRecognizer.SaveDebugSpectrogram(territorialResults, genericConfig, outputDirectory, audioRecording.BaseName);
             return combinedResults;
         }
