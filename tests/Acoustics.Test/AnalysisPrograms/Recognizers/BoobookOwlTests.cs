@@ -5,11 +5,16 @@
 namespace Acoustics.Test.AnalysisPrograms.Recognizers
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using Acoustics.Test.TestHelpers;
+    using Acoustics.Tools.Wav;
     using global::AnalysisPrograms.Recognizers;
+    using global::AnalysisPrograms.SourcePreparers;
+    using global::AudioAnalysisTools.Events;
     using global::AudioAnalysisTools.Events.Types;
     using global::AudioAnalysisTools.WavTools;
+    using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     /// <summary>
@@ -22,6 +27,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
         /// The canonical recording used for this recognizer is a 31 second recording made by Yvonne Phillips at Gympie National Park, 2015-08-18.
         /// </summary>
         private static readonly FileInfo TestAsset = PathHelper.ResolveAsset("Recordings", "gympie_np_1192_331618_20150818_054959_31_0.wav");
+        //private static readonly FileInfo TestAsset = new FileInfo(@"C:\Ecoacoustics\WavFiles\CottonProject\Boobook\BAC2_20071018-145040_Speech.wav");
         private static readonly FileInfo ConfigFile = PathHelper.ResolveConfigFile("RecognizerConfigFiles", "Towsey.NinoxBoobook.yml");
         private static readonly AudioRecording Recording = new AudioRecording(TestAsset);
         private static readonly NinoxBoobook Recognizer = new NinoxBoobook();
