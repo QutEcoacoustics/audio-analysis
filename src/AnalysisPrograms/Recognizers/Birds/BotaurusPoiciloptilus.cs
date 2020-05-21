@@ -115,22 +115,18 @@ namespace AnalysisPrograms.Recognizers
 
             //filter the events for duration in seconds
             var minimumEventDuration = 0.5;
+            var maximumEventDuration = 2.0;
             if (genericConfig.CombinePossibleSyllableSequence)
             {
                 minimumEventDuration = 2.0;
             }
 
-            var filteredEvents = new List<EventCommon>();
-            foreach (var ev in newEvents)
-            {
-                var eventDuration = ((SpectralEvent)ev).EventDurationSeconds;
-                if (eventDuration > minimumEventDuration && eventDuration < 11.0)
-                {
-                    filteredEvents.Add(ev);
-                }
-            }
+            combinedResults.NewEvents = SpectralEvent.FilterOnDuration(newEvents, minimumEventDuration, maximumEventDuration);
 
-            combinedResults.NewEvents = filteredEvents;
+            double average = 365;
+            double sd = 22;
+            double sigmaThreshold = 3.0;
+            combinedResults.NewEvents = SpectralEvent.FilterOnBandwidth(combinedResults.NewEvents, average, sd, sigmaThreshold);
 
             //UNCOMMENT following line if you want special debug spectrogram, i.e. with special plots.
             //  NOTE: Standard spectrograms are produced by setting SaveSonogramImages: "True" or "WhenEventsDetected" in UserName.SpeciesName.yml config file.
