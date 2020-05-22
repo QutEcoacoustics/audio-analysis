@@ -2,11 +2,13 @@
 
 # Resample rate must be 2 X the desired Nyquist
 #ResampleRate: 22050
-#ResampleRate: 16000
 # SegmentDuration: units=seconds;    
 SegmentDuration: 60
 # SegmentOverlap: units=seconds;
 SegmentOverlap: 0
+
+# Preprocessing of the recording segment
+IgnoreHighAmplitudeClippedRecordingSegments: true
 
 # Each of these profiles will be analyzed
 Profiles:
@@ -18,34 +20,41 @@ Profiles:
         WindowFunction: HANNING
         BgNoiseThreshold: 0.0
         # min and max of the freq band to search
-        MinHertz: 300          
+        MinHertz: 400          
         MaxHertz: 1000
         MinDuration: 0.17
         MaxDuration: 1.2
         DecibelThreshold: 9.0
-        
-#Combine each pair of Boobook syllables as one event
-#CombineProximalSimilarEvents: false
+   
+#################### POST-PROCESSING of EVENTS ###################
+
+# A: First post-processing steps are to combine overlapping/proximal/sequential events 
+#  1: Combine overlapping events
+#CombineOverlappingEvents: false
+
+#  2: Combine each pair of Boobook syllables as one event
 CombinePossibleSyllableSequence: true
 SyllableStartDifference: 0.6
 SyllableHertzGap: 350
 
-#CombineOverlappedEvents: false
-# Common settings
-#Standard: &STANDARD
-#EventThreshold: 0.2
-#BgNoiseThreshold: 3.0
+#  3: Combine events that are likely to be repetitions of the same syllable.
+CombineProximalSimilarEvents: false
 
-# This notation means the a profile has all of the settings that the Standard profile has,
-# however, the DctDuration parameter has been overridden.
-#  <<: *STANDARD
-#  DctDuration: 0.3
+# B: Remaining post-processing steps are to filter out over/undersize events
+#  4: Filter the events for duration in seconds
+RemoveEventsHavingWrongDuration: true
 
-# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+#  5: Filter the events for bandwidth in Hertz
+RemoveEventsHavingWrongBandwidth: true
+
+# C: Options to save results files
+#  6: Available options for saving data files (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
 SaveIntermediateCsvFiles: false
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 # "True" is useful when debugging but "WhenEventsDetected" is required for operational use.
+
+#  7: Available options for saving 
 #SaveSonogramImages: True
 SaveSonogramImages: WhenEventsDetected
 # DisplayCsvImage is obsolete - ensure it remains set to: false

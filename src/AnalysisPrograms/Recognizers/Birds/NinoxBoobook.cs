@@ -94,18 +94,18 @@ namespace AnalysisPrograms.Recognizers
                 outputDirectory,
                 imageWidth);
 
-            // DO POST-PROCESSING of EVENTS
+            // ################### DO POST-PROCESSING of EVENTS ###################
 
             var configuration = (GenericRecognizerConfig)genericConfig;
             var chirpConfig = (ForwardTrackParameters)configuration.Profiles["BoobookSyllable"];
 
-            // Filter out the chirp events for possible combining.
+            // 1: Pull out the chirp events for possible combining.
             var (chirpEvents, others) = combinedResults.NewEvents.FilterForEventType<ChirpEvent, EventCommon>();
 
             // Uncomment the next line when want to obtain the event frequency profiles.
             // WriteFrequencyProfiles(chirpEvents);
 
-            // Calculate frequency profile score for each event
+            // 2: Calculate frequency profile score for each event
             foreach (var ev in chirpEvents)
             {
                 SetFrequencyProfileScore((ChirpEvent)ev);
@@ -115,28 +115,20 @@ namespace AnalysisPrograms.Recognizers
             //var newEvents = spectralEvents.Cast<EventCommon>().ToList();
             //var spectralEvents = events.Select(x => (SpectralEvent)x).ToList();
 
-            // Combine overlapping events. If the dB threshold is set low, may get lots of little events.
+            // 3: Combine overlapping events. If the dB threshold is set low, may get lots of little events.
             var combinedEvents = CompositeEvent.CombineOverlappingEvents(chirpEvents.Cast<EventCommon>().ToList());
 
-            // DO POST-PROCESSING of EVENTS
-            //var events = combinedResults.NewEvents;
-            List<EventCommon> newEvents;
-
-            // NOTE: If the dB threshold is set low, may get lots of little events.
+            // 4: Combine proximal events. If the dB threshold is set low, may get lots of little events.
             if (genericConfig.CombinePossibleSyllableSequence)
             {
                 // Convert events to spectral events for combining of possible sequences.
                 var spectralEvents = combinedEvents.Cast<SpectralEvent>().ToList();
                 var startDiff = genericConfig.SyllableStartDifference;
                 var hertzDiff = genericConfig.SyllableHertzGap;
-                newEvents = CompositeEvent.CombineSimilarProximalEvents(spectralEvents, TimeSpan.FromSeconds(startDiff), (int)hertzDiff);
-            }
-            else
-            {
-                newEvents = combinedEvents;
+                combinedEvents = CompositeEvent.CombineSimilarProximalEvents(spectralEvents, TimeSpan.FromSeconds(startDiff), (int)hertzDiff);
             }
 
-            //filter the events for duration in seconds
+            // 5: Filter the events for duration in seconds
             var minimumEventDuration = chirpConfig.MinDuration;
             var maximumEventDuration = chirpConfig.MaxDuration;
             if (genericConfig.CombinePossibleSyllableSequence)
@@ -145,10 +137,11 @@ namespace AnalysisPrograms.Recognizers
                 maximumEventDuration *= 1.5;
             }
 
-            combinedResults.NewEvents = SpectralEvent.FilterOnDuration(newEvents, minimumEventDuration.Value, maximumEventDuration.Value);
+            combinedResults.NewEvents = SpectralEvent.FilterOnDuration(combinedEvents, minimumEventDuration.Value, maximumEventDuration.Value);
 
-            double average = 245;
-            double sd = 15;
+            // 6: Filter the events for bandwidth in Hertz
+            double average = 270;
+            double sd = 20;
             double sigmaThreshold = 3.0;
             combinedResults.NewEvents = SpectralEvent.FilterOnBandwidth(combinedResults.NewEvents, average, sd, sigmaThreshold);
 

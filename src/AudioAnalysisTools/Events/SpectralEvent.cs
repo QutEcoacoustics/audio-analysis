@@ -6,11 +6,13 @@ namespace AudioAnalysisTools.Events
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using AnalysisBase.ResultBases;
     using AudioAnalysisTools.Events.Drawing;
     using AudioAnalysisTools.Events.Interfaces;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.Processing;
+    using TowseyLibrary;
 
     public class SpectralEvent : EventCommon, ISpectralEvent, ITemporalEvent
     {
@@ -132,6 +134,80 @@ namespace AudioAnalysisTools.Events
             }
 
             return outputEvents;
+        }
+
+        /// <summary>
+        /// Calculates the average amplitude in the frequency bins just above the event.
+        /// If it contains above threshold acoustic content, this is unlikely to be a discrete event.
+        /// </summary>
+        /// <param name="ev">The event.</param>
+        /// <param name="sonogramData">The spectrogram data as matrix with origin top/left.</param>
+        /// <param name="bufferBins">THe badnwidth of the buffer zone in bins.</param>
+        /// <param name="converter">A converter to convert seconds/Hertz to frames/bins.</param>
+        /// <returns>Average of the spectrogram amplitude in buffer band above the event.</returns>
+        public static double GetAverageAmplitudeInUpperNeighbourhood(SpectralEvent ev, double[,] sonogramData, int bufferBins, UnitConverters converter)
+        {
+            // allow a gap of three bins above the event.
+            int gap = 3;
+            var bottomBufferBin = converter.GetFreqBinFromHertz(ev.HighFrequencyHertz) + gap;
+            var topBufferBin = bottomBufferBin + bufferBins;
+            var frameStart = converter.FrameFromStartTime(ev.EventStartSeconds);
+            var frameEnd = converter.FrameFromStartTime(ev.EventEndSeconds);
+            var subMatrix = MatrixTools.Submatrix<double>(sonogramData, frameStart, bottomBufferBin, frameEnd, topBufferBin);
+            var averageRowDecibels = MatrixTools.GetRowAverages(subMatrix);
+            var av = averageRowDecibels.Average();
+            return av;
+        }
+
+        /// <summary>
+        /// Calculates the average amplitude in the frequency bins just below the event.
+        /// If it contains above threshold acoustic content, this is unlikely to be a discrete event.
+        /// </summary>
+        /// <param name="ev">The event.</param>
+        /// <param name="sonogramData">The spectrogram data as matrix with origin top/left.</param>
+        /// <param name="bufferBins">The bandwidth of the buffer zone in bins.</param>
+        /// <param name="converter">A converter to convert seconds/Hertz to frames/bins.</param>
+        /// <returns>Average of the spectrogram amplitude in buffer band below the event.</returns>
+        public static double GetAverageAmplitudeInLowerNeighbourhood(SpectralEvent ev, double[,] sonogramData, int bufferBins, UnitConverters converter)
+        {
+            int gap = 1;
+            var topBufferBin = converter.GetFreqBinFromHertz(ev.LowFrequencyHertz) - gap;
+            var bottomBufferBin = topBufferBin - bufferBins;
+            bottomBufferBin = Math.Max(0, bottomBufferBin);
+            var frameStart = converter.FrameFromStartTime(ev.EventStartSeconds);
+            var frameEnd = converter.FrameFromStartTime(ev.EventEndSeconds);
+            var subMatrix = MatrixTools.Submatrix<double>(sonogramData, frameStart, bottomBufferBin, frameEnd, topBufferBin);
+            var averageRowDecibels = MatrixTools.GetRowAverages(subMatrix);
+            var av = averageRowDecibels.Average();
+            return av;
+        }
+
+        /// <summary>
+        /// Removes events from a list of events that contain excessive noise in the upper neighbourhood.
+        /// Excess noise can indicate that this is not a legitimate event.
+        /// </summary>
+        /// <param name="events">A list of spectral events.</param>
+        /// <param name="sonogramData">A matrix of the spectrogram in which event occurs.</param>
+        /// <param name="bufferHertz">The band width of the required buffer. 300-500Hz is often appropriate.</param>
+        /// <param name="converter">Converts sec/Hz to frame/bin.</param>
+        /// <returns>A list of filtered events.</returns>
+        public static List<EventCommon> FilterEventsOnUpperNeighbourhood(List<SpectralEvent> events, double[,] sonogramData, int bufferHertz, UnitConverters converter, double decibelThreshold)
+        {
+            var bufferBins = (int)Math.Round(bufferHertz / converter.HertzPerFreqBin);
+            var filteredEvents = new List<EventCommon>();
+            foreach (var ev in events)
+            {
+                var avUpperNhAmplitude = SpectralEvent.GetAverageAmplitudeInUpperNeighbourhood((SpectralEvent)ev, sonogramData, bufferBins, converter);
+                Console.WriteLine($"################################### Buffer Average decibels = {avUpperNhAmplitude}");
+
+                if (avUpperNhAmplitude < decibelThreshold)
+                {
+                    // There is little acoustic activity in the buffer zone above the chirp. It is likely to be a chirp.
+                    filteredEvents.Add(ev);
+                }
+            }
+
+            return filteredEvents;
         }
     }
 }
