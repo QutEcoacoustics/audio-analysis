@@ -43,9 +43,6 @@ namespace AudioAnalysisTools.Tracks
             double maxDuration = parameters.MaxDuration.Value;
             double decibelThreshold = parameters.DecibelThreshold.Value;
 
-            // ################# the following should be a user parameter.
-            var bufferHertz = 300;
-
             var converter = new UnitConverters(
                 segmentStartOffset: segmentStartOffset.TotalSeconds,
                 sampleRate: sonogram.SampleRate,
@@ -114,7 +111,7 @@ namespace AudioAnalysisTools.Tracks
             // This will help in some cases to combine related events.
             if (parameters.CombinePossibleHarmonics)
             {
-                returnEvents = CompositeEvent.CombinePotentialStackedTracks(events, parameters.HarmonicsStartDifference, parameters.HarmonicsHertzGap);
+                returnEvents = CompositeEvent.CombineStackedEvents(events, parameters.HarmonicsStartDifference, parameters.HarmonicsHertzGap);
             }
 
             // Combine events that are temporally close and in the same frequency band.
@@ -123,7 +120,7 @@ namespace AudioAnalysisTools.Tracks
             {
                 List<SpectralEvent> se = events.Cast<SpectralEvent>().ToList();
                 var timeDiff = TimeSpan.FromSeconds(parameters.SyllableStartDifference);
-                returnEvents = CompositeEvent.CombineSimilarProximalEvents(se, timeDiff, parameters.SyllableHertzGap);
+                returnEvents = CompositeEvent.CombineProximalEvents(se, timeDiff, parameters.SyllableHertzGap);
             }
 
             return (returnEvents, combinedIntensityArray);

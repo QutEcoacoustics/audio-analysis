@@ -106,7 +106,7 @@ namespace AnalysisPrograms.Recognizers
                 var spectralEvents = events.Cast<SpectralEvent>().ToList();
                 var startDiff = genericConfig.SyllableStartDifference;
                 var hertzDiff = genericConfig.SyllableHertzGap;
-                newEvents = CompositeEvent.CombineSimilarProximalEvents(spectralEvents, TimeSpan.FromSeconds(startDiff), (int)hertzDiff);
+                newEvents = CompositeEvent.CombineProximalEvents(spectralEvents, TimeSpan.FromSeconds(startDiff), (int)hertzDiff);
             }
             else
             {

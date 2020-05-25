@@ -197,8 +197,10 @@ namespace AudioAnalysisTools.Events.Types
 
         /// <summary>
         /// Combines events that have similar bottom and top frequency bounds and whose start times are within the passed time range.
+        /// NOTE: Proximal means (1) that the event starts are close to one another and (2) the events occupy a SIMILAR frequency band.
+        /// NOTE: This method is used to combine events that are likely to be a syllable sequence within the same call.
         /// </summary>
-        public static List<EventCommon> CombineSimilarProximalEvents(List<SpectralEvent> events, TimeSpan startDifference, int hertzDifference)
+        public static List<EventCommon> CombineProximalEvents(List<SpectralEvent> events, TimeSpan startDifference, int hertzDifference)
         {
             if (events.Count < 2)
             {
@@ -210,8 +212,9 @@ namespace AudioAnalysisTools.Events.Types
                 for (int j = i - 1; j >= 0; j--)
                 {
                     bool eventStartsAreProximal = Math.Abs(events[i].EventStartSeconds - events[j].EventStartSeconds) < startDifference.TotalSeconds;
-                    bool eventAreInSimilarFreqBand = Math.Abs(events[i].LowFrequencyHertz - events[j].LowFrequencyHertz) < hertzDifference && Math.Abs(events[i].HighFrequencyHertz - events[j].HighFrequencyHertz) < hertzDifference;
-                    if (eventStartsAreProximal && eventAreInSimilarFreqBand)
+                    bool eventMinimaAreSimilar = Math.Abs(events[i].LowFrequencyHertz - events[j].LowFrequencyHertz) < hertzDifference;
+                    bool eventMaximaAreSimilar = Math.Abs(events[i].HighFrequencyHertz - events[j].HighFrequencyHertz) < hertzDifference;
+                    if (eventStartsAreProximal && eventMinimaAreSimilar && eventMaximaAreSimilar)
                     {
                         var compositeEvent = CombineTwoEvents(events[i], events[j]);
                         events[j] = compositeEvent;
@@ -225,10 +228,15 @@ namespace AudioAnalysisTools.Events.Types
         }
 
         /// <summary>
-        /// Combines events that are possible stacked harmonics, that is, they are coincident (have similar start and end times)
-        /// AND stacked (their maxima are within the passed frequency gap).
+        /// Combines events that are possible stacked harmonics or formants.
+        /// Two conditions apply:
+        /// (1) the events are coincident (have similar start and end times)
+        /// (2) the events are stacked (their minima and maxima are within the passed frequency gap).
+        /// NOTE: The difference between this method and CombineProximalEvents() is that stacked events should have both similar start and similar end times.
+        ///       Having similar start and end times means the events are superimposed in the spectrogram.
+        ///       How closely stacked is determined by the hertzDifference argument. Typicaly, the formant spacing is not large, ~100-200Hz.
         /// </summary>
-        public static List<EventCommon> CombinePotentialStackedTracks(List<SpectralEvent> events, TimeSpan timeDifference, int hertzDifference)
+        public static List<EventCommon> CombineStackedEvents(List<SpectralEvent> events, TimeSpan timeDifference, int hertzDifference)
         {
             if (events.Count < 2)
             {
@@ -242,8 +250,9 @@ namespace AudioAnalysisTools.Events.Types
                     bool eventsStartTogether = Math.Abs(events[i].EventStartSeconds - events[j].EventStartSeconds) < timeDifference.TotalSeconds;
                     bool eventsEndTogether = Math.Abs(events[i].EventEndSeconds - events[j].EventEndSeconds) < timeDifference.TotalSeconds;
                     bool eventsAreCoincident = eventsStartTogether && eventsEndTogether;
-                    bool eventsAreStacked = Math.Abs(events[i].HighFrequencyHertz - events[j].LowFrequencyHertz) < hertzDifference || Math.Abs(events[j].HighFrequencyHertz - events[i].LowFrequencyHertz) < hertzDifference;
-                    if (eventsAreCoincident && eventsAreStacked)
+                    bool eventMinimaAreSimilar = Math.Abs(events[i].LowFrequencyHertz - events[j].LowFrequencyHertz) < hertzDifference;
+                    bool eventMaximaAreSimilar = Math.Abs(events[i].HighFrequencyHertz - events[j].HighFrequencyHertz) < hertzDifference;
+                    if (eventsAreCoincident && eventMinimaAreSimilar && eventMaximaAreSimilar)
                     {
                         var compositeEvent = CombineTwoEvents(events[i], events[j]);
                         events[j] = compositeEvent;

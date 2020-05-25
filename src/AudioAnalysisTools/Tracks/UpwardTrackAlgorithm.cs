@@ -105,7 +105,7 @@ namespace AudioAnalysisTools.Tracks
             // combine proximal events that occupy similar frequency band
             if (parameters.CombineProximalSimilarEvents)
             {
-                returnEvents = CompositeEvent.CombineSimilarProximalEvents(events, parameters.SyllableStartDifference, parameters.SyllableHertzDifference);
+                returnEvents = CompositeEvent.CombineProximalEvents(events, parameters.SyllableStartDifference, parameters.SyllableHertzDifference);
             }
 
             return (returnEvents, temporalIntensityArray);
