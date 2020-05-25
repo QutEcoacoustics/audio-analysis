@@ -73,6 +73,11 @@ namespace AudioAnalysisTools.Events
         {
             var minHertzWidth = average - (sd * sigmaThreshold);
             var maxHertzWidth = average + (sd * sigmaThreshold);
+            return FilterOnBandwidth(events, minHertzWidth, maxHertzWidth);
+        }
+
+        public static List<EventCommon> FilterOnBandwidth(List<EventCommon> events, double minHertzWidth, double maxHertzWidth)
+        {
             var outputEvents = new List<EventCommon>();
             foreach (var ev in events)
             {
@@ -142,13 +147,14 @@ namespace AudioAnalysisTools.Events
         /// </summary>
         /// <param name="ev">The event.</param>
         /// <param name="sonogramData">The spectrogram data as matrix with origin top/left.</param>
-        /// <param name="bufferBins">THe badnwidth of the buffer zone in bins.</param>
+        /// <param name="bufferHertz">THe bandwidth of the buffer zone in Hertz.</param>
         /// <param name="converter">A converter to convert seconds/Hertz to frames/bins.</param>
         /// <returns>Average of the spectrogram amplitude in buffer band above the event.</returns>
-        public static double GetAverageAmplitudeInUpperNeighbourhood(SpectralEvent ev, double[,] sonogramData, int bufferBins, UnitConverters converter)
+        public static double GetAverageAmplitudeInUpperNeighbourhood(SpectralEvent ev, double[,] sonogramData, double bufferHertz, UnitConverters converter)
         {
             // allow a gap of three bins above the event.
-            int gap = 3;
+            int gap = 2;
+            var bufferBins = (int)Math.Round(bufferHertz / converter.HertzPerFreqBin);
             var bottomBufferBin = converter.GetFreqBinFromHertz(ev.HighFrequencyHertz) + gap;
             var topBufferBin = bottomBufferBin + bufferBins;
             var frameStart = converter.FrameFromStartTime(ev.EventStartSeconds);
@@ -165,14 +171,15 @@ namespace AudioAnalysisTools.Events
         /// </summary>
         /// <param name="ev">The event.</param>
         /// <param name="sonogramData">The spectrogram data as matrix with origin top/left.</param>
-        /// <param name="bufferBins">The bandwidth of the buffer zone in bins.</param>
+        /// <param name="bufferHertz">The bandwidth of the buffer zone in bins.</param>
         /// <param name="converter">A converter to convert seconds/Hertz to frames/bins.</param>
         /// <returns>Average of the spectrogram amplitude in buffer band below the event.</returns>
-        public static double GetAverageAmplitudeInLowerNeighbourhood(SpectralEvent ev, double[,] sonogramData, int bufferBins, UnitConverters converter)
+        public static double GetAverageAmplitudeInLowerNeighbourhood(SpectralEvent ev, double[,] sonogramData, double bufferHertz, UnitConverters converter)
         {
             int gap = 1;
+            var bufferBins = (int)Math.Round(bufferHertz / converter.HertzPerFreqBin);
             var topBufferBin = converter.GetFreqBinFromHertz(ev.LowFrequencyHertz) - gap;
-            var bottomBufferBin = topBufferBin - bufferBins;
+            var bottomBufferBin = topBufferBin - bufferBins + 1;
             bottomBufferBin = Math.Max(0, bottomBufferBin);
             var frameStart = converter.FrameFromStartTime(ev.EventStartSeconds);
             var frameEnd = converter.FrameFromStartTime(ev.EventEndSeconds);
@@ -191,18 +198,44 @@ namespace AudioAnalysisTools.Events
         /// <param name="bufferHertz">The band width of the required buffer. 300-500Hz is often appropriate.</param>
         /// <param name="converter">Converts sec/Hz to frame/bin.</param>
         /// <returns>A list of filtered events.</returns>
-        public static List<EventCommon> FilterEventsOnUpperNeighbourhood(List<SpectralEvent> events, double[,] sonogramData, int bufferHertz, UnitConverters converter, double decibelThreshold)
+        public static List<EventCommon> FilterEventsOnUpperNeighbourhood(List<SpectralEvent> events, double[,] sonogramData, double bufferHertz, UnitConverters converter, double decibelThreshold)
         {
-            var bufferBins = (int)Math.Round(bufferHertz / converter.HertzPerFreqBin);
             var filteredEvents = new List<EventCommon>();
             foreach (var ev in events)
             {
-                var avUpperNhAmplitude = SpectralEvent.GetAverageAmplitudeInUpperNeighbourhood((SpectralEvent)ev, sonogramData, bufferBins, converter);
+                var avUpperNhAmplitude = SpectralEvent.GetAverageAmplitudeInUpperNeighbourhood((SpectralEvent)ev, sonogramData, bufferHertz, converter);
                 Console.WriteLine($"################################### Buffer Average decibels = {avUpperNhAmplitude}");
 
                 if (avUpperNhAmplitude < decibelThreshold)
                 {
-                    // There is little acoustic activity in the buffer zone above the chirp. It is likely to be a chirp.
+                    // There is little acoustic activity in the designated frequency band above the event. It is likely to be a discrete event.
+                    filteredEvents.Add(ev);
+                }
+            }
+
+            return filteredEvents;
+        }
+
+        /// <summary>
+        /// Removes events from a list of events that contain excessive noise in the upper neighbourhood.
+        /// Excess noise can indicate that this is not a legitimate event.
+        /// </summary>
+        /// <param name="events">A list of spectral events.</param>
+        /// <param name="sonogramData">A matrix of the spectrogram in which event occurs.</param>
+        /// <param name="bufferHertz">The band width of the required buffer. 300-500Hz is often appropriate.</param>
+        /// <param name="converter">Converts sec/Hz to frame/bin.</param>
+        /// <returns>A list of filtered events.</returns>
+        public static List<EventCommon> FilterEventsOnLowerNeighbourhood(List<SpectralEvent> events, double[,] sonogramData, double bufferHertz, UnitConverters converter, double decibelThreshold)
+        {
+            var filteredEvents = new List<EventCommon>();
+            foreach (var ev in events)
+            {
+                var avLowerNhAmplitude = SpectralEvent.GetAverageAmplitudeInLowerNeighbourhood((SpectralEvent)ev, sonogramData, bufferHertz, converter);
+                Console.WriteLine($"################################### Buffer Average decibels = {avLowerNhAmplitude}");
+
+                if (avLowerNhAmplitude < decibelThreshold)
+                {
+                    // There is little acoustic activity in the designated frequency band below the event. It is likely to be a discrete event.
                     filteredEvents.Add(ev);
                 }
             }

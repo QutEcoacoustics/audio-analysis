@@ -33,28 +33,39 @@ Profiles:
 #CombineOverlappingEvents: false
 
 #  2: Combine each pair of Boobook syllables as one event
+#     Can also use this to "mop up" events in neighbourhood - these can be removed later. 
 CombinePossibleSyllableSequence: true
 SyllableStartDifference: 0.6
 SyllableHertzGap: 350
 
-#  3: Combine events that are likely to be repetitions of the same syllable.
-CombineProximalSimilarEvents: false
+# B: Select or remove event types.
+#  3: Select wanted event types.
+#SelectEventsOfType: !ChirpEvent
 
-# B: Remaining post-processing steps are to filter out over/undersize events
-#  4: Filter the events for duration in seconds
+#  4: Remove unwanted event types.
+#RemoveEventsOfType: !ChirpEvent 
+
+# C: Remaining post-processing steps are to filter out over and/or undersized events
+#  5: Filter the events for duration in seconds
 RemoveEventsHavingWrongDuration: true
 
-#  5: Filter the events for bandwidth in Hertz
+#  6: Filter the events for bandwidth in Hertz
 RemoveEventsHavingWrongBandwidth: true
 
+#  7: Filter the events for excess activity in upper buffer zone
+RemoveEventsHavingExcessActivityInUpperBufferZone: true
+
+#  8: Filter the events for excess activity in lower buffer zone
+RemoveEventsHavingExcessActivityInLowerBufferZone: true
+
 # C: Options to save results files
-#  6: Available options for saving data files (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+#  9: Available options for saving data files (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
 SaveIntermediateCsvFiles: false
 # Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 # "True" is useful when debugging but "WhenEventsDetected" is required for operational use.
 
-#  7: Available options for saving 
+#  10: Available options for saving 
 #SaveSonogramImages: True
 SaveSonogramImages: WhenEventsDetected
 # DisplayCsvImage is obsolete - ensure it remains set to: false

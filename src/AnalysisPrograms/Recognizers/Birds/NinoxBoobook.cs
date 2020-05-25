@@ -96,9 +96,6 @@ namespace AnalysisPrograms.Recognizers
 
             // ################### DO POST-PROCESSING of EVENTS ###################
 
-            var configuration = (GenericRecognizerConfig)genericConfig;
-            var chirpConfig = (ForwardTrackParameters)configuration.Profiles["BoobookSyllable"];
-
             // 1: Pull out the chirp events for possible combining.
             var (chirpEvents, others) = combinedResults.NewEvents.FilterForEventType<ChirpEvent, EventCommon>();
 
@@ -122,13 +119,17 @@ namespace AnalysisPrograms.Recognizers
             if (genericConfig.CombinePossibleSyllableSequence)
             {
                 // Convert events to spectral events for combining of possible sequences.
+                // Can also use this parameter to combine events that are in the upper or lower neighbourhood.
+                // Such combinations will increase bandwidth of the event and this property can be used later to weed out unlikely events.
                 var spectralEvents = combinedEvents.Cast<SpectralEvent>().ToList();
                 var startDiff = genericConfig.SyllableStartDifference;
                 var hertzDiff = genericConfig.SyllableHertzGap;
-                combinedEvents = CompositeEvent.CombineSimilarProximalEvents(spectralEvents, TimeSpan.FromSeconds(startDiff), (int)hertzDiff);
+                combinedEvents = CompositeEvent.CombineProximalEvents(spectralEvents, TimeSpan.FromSeconds(startDiff), (int)hertzDiff);
             }
 
             // 5: Filter the events for duration in seconds
+            var configuration = (GenericRecognizerConfig)genericConfig;
+            var chirpConfig = (ForwardTrackParameters)configuration.Profiles["BoobookSyllable"];
             var minimumEventDuration = chirpConfig.MinDuration;
             var maximumEventDuration = chirpConfig.MaxDuration;
             if (genericConfig.CombinePossibleSyllableSequence)
@@ -144,6 +145,29 @@ namespace AnalysisPrograms.Recognizers
             double sd = 20;
             double sigmaThreshold = 3.0;
             combinedResults.NewEvents = SpectralEvent.FilterOnBandwidth(combinedResults.NewEvents, average, sd, sigmaThreshold);
+
+            // 7 and 8: Finally, filter events on the amount of acoustic activity in their upper and lower neighbourhoods - their buffer zone.
+            //    The idea is that an unambiguous event should have some acoustic space above and below.
+            //    Here it is assumed that the average acoustic activity in the upper and lower buffer zones should not exceed the user specified decibel threshold.
+            //    The size of the neighbourhood is determined by the following two parameters.
+            //    ################# These parameters should be specified by user in config.yml file.
+            var upperHertzBuffer = 300;
+            var lowerHertzBuffer = 100;
+            var sonogramData = combinedResults.Sonogram.Data;
+
+            var converter = new UnitConverters(
+                segmentStartOffset: segmentStartOffset.TotalSeconds,
+                sampleRate: combinedResults.Sonogram.SampleRate,
+                frameSize: combinedResults.Sonogram.Configuration.WindowSize,
+                frameOverlap: combinedResults.Sonogram.Configuration.WindowOverlap);
+
+            // 7: Filter
+            var spectralEvents2 = combinedResults.NewEvents.Cast<SpectralEvent>().ToList();
+            combinedResults.NewEvents = SpectralEvent.FilterEventsOnUpperNeighbourhood(spectralEvents2, sonogramData, upperHertzBuffer, converter, chirpConfig.DecibelThreshold.Value);
+
+            // 8: Filter
+            spectralEvents2 = combinedResults.NewEvents.Cast<SpectralEvent>().ToList();
+            combinedResults.NewEvents = SpectralEvent.FilterEventsOnLowerNeighbourhood(spectralEvents2, sonogramData, lowerHertzBuffer, converter, chirpConfig.DecibelThreshold.Value);
 
             //UNCOMMENT following line if you want special debug spectrogram, i.e. with special plots.
             //  NOTE: Standard spectrograms are produced by setting SaveSonogramImages: "True" or "WhenEventsDetected" in UserName.SpeciesName.yml config file.
