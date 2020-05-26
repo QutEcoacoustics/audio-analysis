@@ -21,7 +21,7 @@ Profiles:
         BgNoiseThreshold: 0.0
         # min and max of the freq band to search
         MinHertz: 400          
-        MaxHertz: 1000
+        MaxHertz: 1100
         MinDuration: 0.17
         MaxDuration: 1.2
         DecibelThreshold: 9.0

@@ -14,9 +14,7 @@ namespace AnalysisPrograms.Recognizers
     using AnalysisBase;
     using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools;
-    using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Events;
-    using AudioAnalysisTools.Events.Tracks;
     using AudioAnalysisTools.Events.Types;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
@@ -127,6 +125,8 @@ namespace AnalysisPrograms.Recognizers
                 combinedEvents = CompositeEvent.CombineProximalEvents(spectralEvents, TimeSpan.FromSeconds(startDiff), (int)hertzDiff);
             }
 
+            Console.WriteLine($"Event count after combining events = {combinedResults.NewEvents.Count}");
+
             // 5: Filter the events for duration in seconds
             var configuration = (GenericRecognizerConfig)genericConfig;
             var chirpConfig = (ForwardTrackParameters)configuration.Profiles["BoobookSyllable"];
@@ -139,35 +139,34 @@ namespace AnalysisPrograms.Recognizers
             }
 
             combinedResults.NewEvents = SpectralEvent.FilterOnDuration(combinedEvents, minimumEventDuration.Value, maximumEventDuration.Value);
+            Console.WriteLine($"Event count after filtering on duration = {combinedResults.NewEvents.Count}");
 
             // 6: Filter the events for bandwidth in Hertz
-            double average = 270;
-            double sd = 20;
+            double average = 280;
+            double sd = 40;
             double sigmaThreshold = 3.0;
             combinedResults.NewEvents = SpectralEvent.FilterOnBandwidth(combinedResults.NewEvents, average, sd, sigmaThreshold);
+            Console.WriteLine($"Event count after filtering on bandwidth = {combinedResults.NewEvents.Count}");
 
-            // 7 and 8: Finally, filter events on the amount of acoustic activity in their upper and lower neighbourhoods - their buffer zone.
+            // 7: Finally, filter events on the amount of acoustic activity in their upper and lower neighbourhoods - their buffer zone.
             //    The idea is that an unambiguous event should have some acoustic space above and below.
             //    Here it is assumed that the average acoustic activity in the upper and lower buffer zones should not exceed the user specified decibel threshold.
             //    The size of the neighbourhood is determined by the following two parameters.
             //    ################# These parameters should be specified by user in config.yml file.
-            var upperHertzBuffer = 300;
-            var lowerHertzBuffer = 100;
-            var sonogramData = combinedResults.Sonogram.Data;
+            var upperHertzBuffer = 400;
+            var lowerHertzBuffer = 150;
 
-            var converter = new UnitConverters(
-                segmentStartOffset: segmentStartOffset.TotalSeconds,
-                sampleRate: combinedResults.Sonogram.SampleRate,
-                frameSize: combinedResults.Sonogram.Configuration.WindowSize,
-                frameOverlap: combinedResults.Sonogram.Configuration.WindowOverlap);
-
-            // 7: Filter
-            var spectralEvents2 = combinedResults.NewEvents.Cast<SpectralEvent>().ToList();
-            combinedResults.NewEvents = SpectralEvent.FilterEventsOnUpperNeighbourhood(spectralEvents2, sonogramData, upperHertzBuffer, converter, chirpConfig.DecibelThreshold.Value);
-
-            // 8: Filter
-            spectralEvents2 = combinedResults.NewEvents.Cast<SpectralEvent>().ToList();
-            combinedResults.NewEvents = SpectralEvent.FilterEventsOnLowerNeighbourhood(spectralEvents2, sonogramData, lowerHertzBuffer, converter, chirpConfig.DecibelThreshold.Value);
+            if (upperHertzBuffer > 0 || lowerHertzBuffer > 0)
+            {
+                var spectralEvents2 = combinedResults.NewEvents.Cast<SpectralEvent>().ToList();
+                combinedResults.NewEvents = SpectralEvent.FilterEventsOnNeighbourhood(
+                    spectralEvents2,
+                    combinedResults.Sonogram,
+                    lowerHertzBuffer,
+                    upperHertzBuffer,
+                    segmentStartOffset,
+                    chirpConfig.DecibelThreshold.Value);
+            }
 
             //UNCOMMENT following line if you want special debug spectrogram, i.e. with special plots.
             //  NOTE: Standard spectrograms are produced by setting SaveSonogramImages: "True" or "WhenEventsDetected" in UserName.SpeciesName.yml config file.

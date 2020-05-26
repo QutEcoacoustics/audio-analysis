@@ -286,6 +286,41 @@ namespace TowseyLibrary
         }
 
         /// <summary>
+        /// Concatenate two matrices.
+        /// WARNING: This method assumes that the two matrices have the same number of rows.
+        ///          They will be joined by adding the columns of M2 to the columns of M1.
+        /// </summary>
+        public static double[,] ConcatenateTwoMatrices(double[,] matrix1, double[,] matrix2)
+        {
+            int rowCount1 = matrix1.GetLength(0);
+            int colCount1 = matrix1.GetLength(1);
+            int rowCount2 = matrix2.GetLength(0);
+            int colCount2 = matrix2.GetLength(1);
+
+            if(rowCount1 != rowCount2)
+            {
+                throw new Exception($"Cannot join these matrices. They do not have the same row count. {rowCount1} != {rowCount2}.");
+            }
+
+            double[,] opMatrix = new double[rowCount1, colCount1 + colCount2];
+
+            for (int row = 0; row < rowCount1; row++)
+            {
+                for (int col = 0; col < colCount1; col++)
+                {
+                    opMatrix[row, col] = matrix1[row, col];
+                }
+
+                for (int col = 0; col < colCount2; col++)
+                {
+                    opMatrix[row, colCount1 + col] = matrix1[row, col];
+                }
+            }
+
+            return opMatrix;
+        }
+
+        /// <summary>
         /// converts a vector to a matrix in the direction of column.
         /// For example, the "Matrix2Array" method in MatrixTools.cs builds the vector by concatenating the columns.
         /// </summary>
