@@ -8,6 +8,7 @@ namespace Acoustics.Test.Shared
     using System.IO;
     using Acoustics.Shared;
     using Acoustics.Test.TestHelpers;
+    using global::AnalysisPrograms;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using static Acoustics.Shared.AppConfigHelper;
 
@@ -28,7 +29,7 @@ namespace Acoustics.Test.Shared
             var actual = ExecutingAssemblyDirectory;
 
             Assert.That.DirectoryExists(actual);
-            Assert.That.FileExists(Path.Join(actual, Meta.BinaryName));
+            Assert.That.FileExists(Path.Join(actual, Meta.BinaryName(BuildMetadata.CompiledAsSelfContained)));
         }
 
         [TestMethod]

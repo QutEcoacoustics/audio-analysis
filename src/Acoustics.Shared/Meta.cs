@@ -25,7 +25,11 @@ namespace Acoustics.Shared
 
         private static Assembly[] ourAssemblies;
 
-        public static string BinaryName => AppConfigHelper.IsWindows ? Name : "AnalysisPrograms";
+        public static string BinaryName(bool isSelfContained)
+        {
+            var extension = isSelfContained ? string.Empty : ".dll";
+            return AppConfigHelper.IsWindows ? Name : "AnalysisPrograms" + extension;
+        }
 
         public static string Organization { get; } = "QUT";
 
