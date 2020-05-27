@@ -10,6 +10,7 @@ namespace AudioAnalysisTools.Events
     using AnalysisBase.ResultBases;
     using AudioAnalysisTools.Events.Drawing;
     using AudioAnalysisTools.Events.Interfaces;
+    using AudioAnalysisTools.Events.Types;
     using AudioAnalysisTools.StandardSpectrograms;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.Processing;
@@ -198,8 +199,33 @@ namespace AudioAnalysisTools.Events
             int upperBinGap,
             UnitConverters converter)
         {
-            var subMatrix1 = GetUpperNeighbourhood(ev, sonogramData, upperHertzBuffer, upperBinGap, converter);
-            var subMatrix2 = GetLowerNeighbourhood(ev, sonogramData, lowerHertzBuffer, lowerBinGap, converter);
+            double[,] subMatrix1 = null;
+            if (upperHertzBuffer > 0)
+            {
+                subMatrix1 = GetUpperNeighbourhood(ev, sonogramData, upperHertzBuffer, upperBinGap, converter);
+            }
+
+            double[,] subMatrix2 = null;
+            if (upperHertzBuffer > 0)
+            {
+                subMatrix2 = GetLowerNeighbourhood(ev, sonogramData, lowerHertzBuffer, lowerBinGap, converter);
+            }
+
+            if (subMatrix1 == null && subMatrix2 == null)
+            {
+                return null;
+            }
+
+            if (subMatrix1 == null)
+            {
+                return subMatrix2;
+            }
+
+            if (subMatrix2 == null)
+            {
+                return subMatrix1;
+            }
+
             var matrix = MatrixTools.ConcatenateTwoMatrices(subMatrix1, subMatrix2);
             return matrix;
         }
@@ -311,6 +337,29 @@ namespace AudioAnalysisTools.Events
                     //There is little acoustic activity in the designated frequency band above the event. It is likely to be a discrete event.
                     filteredEvents.Add(ev);
                 }
+            }
+
+            return filteredEvents;
+        }
+
+        /// <summary>
+        /// Removes composite events from a list of EventCommon that contain more than the specfied number of SpectralEvent components.
+        /// </summary>
+        public static List<EventCommon> FilterEventsOnCompositeContent(
+            List<EventCommon> events,
+            int maxComponentCount)
+        {
+            var filteredEvents = new List<EventCommon>();
+
+            foreach (var ev in events)
+            {
+                if (ev is CompositeEvent && ((CompositeEvent)ev).ComponentCount > maxComponentCount)
+                {
+                    // ignore composite events which contain more than the specified component events.
+                    continue;
+                }
+
+                filteredEvents.Add(ev);
             }
 
             return filteredEvents;
