@@ -93,66 +93,48 @@ namespace AnalysisPrograms.Recognizers
                 imageWidth);
 
             // ################### DO POST-PROCESSING of EVENTS ###################
+            // Following two commented lines are different ways of casting lists.
+            //var newEvents = spectralEvents.Cast<EventCommon>().ToList();
+            //var spectralEvents = events.Select(x => (SpectralEvent)x).ToList();
 
-            // 1: Pull out the chirp events for possible combining.
+            // 1: Pull out the chirp events and calculate their frequency profiles.
             var (chirpEvents, others) = combinedResults.NewEvents.FilterForEventType<ChirpEvent, EventCommon>();
 
             // Uncomment the next line when want to obtain the event frequency profiles.
             // WriteFrequencyProfiles(chirpEvents);
 
-            // 2: Calculate frequency profile score for each event
             foreach (var ev in chirpEvents)
             {
+                // Calculate frequency profile score for event
                 SetFrequencyProfileScore((ChirpEvent)ev);
             }
 
-            // Following two commented lines are different ways of casting lists.
-            //var newEvents = spectralEvents.Cast<EventCommon>().ToList();
-            //var spectralEvents = events.Select(x => (SpectralEvent)x).ToList();
+            // 2: Combine overlapping events. If the dB threshold is set low, may get lots of little events.
+            combinedResults.NewEvents = CompositeEvent.CombineOverlappingEvents(chirpEvents.Cast<EventCommon>().ToList());
+            Console.WriteLine($"Event count after combining overlaps = {combinedResults.NewEvents.Count}");
 
-            // 3: Combine overlapping events. If the dB threshold is set low, may get lots of little events.
-            var combinedEvents = CompositeEvent.CombineOverlappingEvents(chirpEvents.Cast<EventCommon>().ToList());
-
-            // 4: Combine proximal events. If the dB threshold is set low, may get lots of little events.
+            // 3: Combine proximal events. If the dB threshold is set low, may get lots of little events.
             if (genericConfig.CombinePossibleSyllableSequence)
             {
                 // Convert events to spectral events for combining of possible sequences.
                 // Can also use this parameter to combine events that are in the upper or lower neighbourhood.
                 // Such combinations will increase bandwidth of the event and this property can be used later to weed out unlikely events.
-                var spectralEvents = combinedEvents.Cast<SpectralEvent>().ToList();
+                var spectralEvents1 = combinedResults.NewEvents.Cast<SpectralEvent>().ToList();
                 var startDiff = genericConfig.SyllableStartDifference;
                 var hertzDiff = genericConfig.SyllableHertzGap;
-                combinedEvents = CompositeEvent.CombineProximalEvents(spectralEvents, TimeSpan.FromSeconds(startDiff), (int)hertzDiff);
+                combinedResults.NewEvents = CompositeEvent.CombineProximalEvents(spectralEvents1, TimeSpan.FromSeconds(startDiff), (int)hertzDiff);
+                LoggedConsole.WriteLine($"Event count after combining proximals = {combinedResults.NewEvents.Count}");
             }
 
-            Console.WriteLine($"Event count after combining events = {combinedResults.NewEvents.Count}");
-
-            // 5: Filter the events for duration in seconds
+            // Get the BoobookSyllable config.
             var configuration = (GenericRecognizerConfig)genericConfig;
             var chirpConfig = (ForwardTrackParameters)configuration.Profiles["BoobookSyllable"];
-            var minimumEventDuration = chirpConfig.MinDuration;
-            var maximumEventDuration = chirpConfig.MaxDuration;
-            if (genericConfig.CombinePossibleSyllableSequence)
-            {
-                minimumEventDuration *= 2.0;
-                maximumEventDuration *= 1.5;
-            }
 
-            combinedResults.NewEvents = SpectralEvent.FilterOnDuration(combinedEvents, minimumEventDuration.Value, maximumEventDuration.Value);
-            Console.WriteLine($"Event count after filtering on duration = {combinedResults.NewEvents.Count}");
-
-            // 6: Filter the events for bandwidth in Hertz
-            double average = 280;
-            double sd = 40;
-            double sigmaThreshold = 3.0;
-            combinedResults.NewEvents = SpectralEvent.FilterOnBandwidth(combinedResults.NewEvents, average, sd, sigmaThreshold);
-            Console.WriteLine($"Event count after filtering on bandwidth = {combinedResults.NewEvents.Count}");
-
-            // 7: Finally, filter events on the amount of acoustic activity in their upper and lower neighbourhoods - their buffer zone.
+            // 4: Filter events on the amount of acoustic activity in their upper and lower neighbourhoods - their buffer zone.
             //    The idea is that an unambiguous event should have some acoustic space above and below.
-            //    Here it is assumed that the average acoustic activity in the upper and lower buffer zones should not exceed the user specified decibel threshold.
-            //    The size of the neighbourhood is determined by the following two parameters.
-            //    ################# These parameters should be specified by user in config.yml file.
+            //    The filter requires that the average acoustic activity in each frame and bin of the upper and lower buffer zones should not exceed the user specified decibel threshold.
+            //    The bandwidth of these two neighbourhoods is determined by the following parameters.
+            //    ########## These parameters could be specified by user in config.yml file.
             var upperHertzBuffer = 400;
             var lowerHertzBuffer = 150;
 
@@ -166,7 +148,33 @@ namespace AnalysisPrograms.Recognizers
                     upperHertzBuffer,
                     segmentStartOffset,
                     chirpConfig.DecibelThreshold.Value);
+
+                LoggedConsole.WriteLine($"Event count after filtering on neighbourhood = {combinedResults.NewEvents.Count}");
             }
+
+            // 5: Filter on COMPONENT COUNT in Composite events.
+            int maxComponentCount = 2;
+            combinedResults.NewEvents = SpectralEvent.FilterEventsOnCompositeContent(combinedResults.NewEvents, maxComponentCount);
+            LoggedConsole.WriteLine($"Event count after filtering on component count = {combinedResults.NewEvents.Count}");
+
+            // 6: Filter the events for duration in seconds
+            var minimumEventDuration = chirpConfig.MinDuration;
+            var maximumEventDuration = chirpConfig.MaxDuration;
+            if (genericConfig.CombinePossibleSyllableSequence)
+            {
+                minimumEventDuration *= 2.0;
+                maximumEventDuration *= 1.5;
+            }
+
+            combinedResults.NewEvents = SpectralEvent.FilterOnDuration(combinedResults.NewEvents, minimumEventDuration.Value, maximumEventDuration.Value);
+            LoggedConsole.WriteLine($"Event count after filtering on duration = {combinedResults.NewEvents.Count}");
+
+            // 7: Filter the events for bandwidth in Hertz
+            double average = 280;
+            double sd = 40;
+            double sigmaThreshold = 3.0;
+            combinedResults.NewEvents = SpectralEvent.FilterOnBandwidth(combinedResults.NewEvents, average, sd, sigmaThreshold);
+            LoggedConsole.WriteLine($"Event count after filtering on bandwidth = {combinedResults.NewEvents.Count}");
 
             //UNCOMMENT following line if you want special debug spectrogram, i.e. with special plots.
             //  NOTE: Standard spectrograms are produced by setting SaveSonogramImages: "True" or "WhenEventsDetected" in UserName.SpeciesName.yml config file.
