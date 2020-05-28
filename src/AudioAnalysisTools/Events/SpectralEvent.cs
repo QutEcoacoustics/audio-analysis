@@ -285,8 +285,8 @@ namespace AudioAnalysisTools.Events
             double decibelThreshold)
         {
             // allow a bin gaps above and below the event.
-            int upperBinGap = 3;
-            int lowerBinGap = 1;
+            int upperBinGap = 4;
+            int lowerBinGap = 2;
 
             var filteredEvents = new List<EventCommon>();
             foreach (var ev in events)

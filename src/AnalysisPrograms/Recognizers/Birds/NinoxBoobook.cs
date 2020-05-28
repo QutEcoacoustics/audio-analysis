@@ -109,9 +109,15 @@ namespace AnalysisPrograms.Recognizers
                 SetFrequencyProfileScore((ChirpEvent)ev);
             }
 
+            if (combinedResults.NewEvents.Count == 0)
+            {
+                //Console.WriteLine($"Return zero events.");
+                return combinedResults;
+            }
+
             // 2: Combine overlapping events. If the dB threshold is set low, may get lots of little events.
             combinedResults.NewEvents = CompositeEvent.CombineOverlappingEvents(chirpEvents.Cast<EventCommon>().ToList());
-            Console.WriteLine($"Event count after combining overlaps = {combinedResults.NewEvents.Count}");
+            //Console.WriteLine($"Event count after combining overlaps = {combinedResults.NewEvents.Count}");
 
             // 3: Combine proximal events. If the dB threshold is set low, may get lots of little events.
             if (genericConfig.CombinePossibleSyllableSequence)
@@ -123,7 +129,7 @@ namespace AnalysisPrograms.Recognizers
                 var startDiff = genericConfig.SyllableStartDifference;
                 var hertzDiff = genericConfig.SyllableHertzGap;
                 combinedResults.NewEvents = CompositeEvent.CombineProximalEvents(spectralEvents1, TimeSpan.FromSeconds(startDiff), (int)hertzDiff);
-                LoggedConsole.WriteLine($"Event count after combining proximals = {combinedResults.NewEvents.Count}");
+                //Console.WriteLine($"Event count after combining proximals = {combinedResults.NewEvents.Count}");
             }
 
             // Get the BoobookSyllable config.
@@ -134,9 +140,12 @@ namespace AnalysisPrograms.Recognizers
             //    The idea is that an unambiguous event should have some acoustic space above and below.
             //    The filter requires that the average acoustic activity in each frame and bin of the upper and lower buffer zones should not exceed the user specified decibel threshold.
             //    The bandwidth of these two neighbourhoods is determined by the following parameters.
+            //    The decibel threshold is currently set 5/6ths of the user specified threshold.
+            //    ................... THIS IS TO BE WATCHED. IT MAY PROVE TO BE INAPPROPRIATE TO HARD-CODE.
             //    ########## These parameters could be specified by user in config.yml file.
             var upperHertzBuffer = 400;
             var lowerHertzBuffer = 150;
+            var neighbourhoodDbThreshold = chirpConfig.DecibelThreshold.Value * 0.8333;
 
             if (upperHertzBuffer > 0 || lowerHertzBuffer > 0)
             {
@@ -147,15 +156,21 @@ namespace AnalysisPrograms.Recognizers
                     lowerHertzBuffer,
                     upperHertzBuffer,
                     segmentStartOffset,
-                    chirpConfig.DecibelThreshold.Value);
+                    neighbourhoodDbThreshold);
 
-                LoggedConsole.WriteLine($"Event count after filtering on neighbourhood = {combinedResults.NewEvents.Count}");
+                //Console.WriteLine($"Event count after filtering on neighbourhood = {combinedResults.NewEvents.Count}");
+            }
+
+            if (combinedResults.NewEvents.Count == 0)
+            {
+                //Console.WriteLine($"Return zero events.");
+                return combinedResults;
             }
 
             // 5: Filter on COMPONENT COUNT in Composite events.
             int maxComponentCount = 2;
             combinedResults.NewEvents = SpectralEvent.FilterEventsOnCompositeContent(combinedResults.NewEvents, maxComponentCount);
-            LoggedConsole.WriteLine($"Event count after filtering on component count = {combinedResults.NewEvents.Count}");
+            //Console.WriteLine($"Event count after filtering on component count = {combinedResults.NewEvents.Count}");
 
             // 6: Filter the events for duration in seconds
             var minimumEventDuration = chirpConfig.MinDuration;
@@ -167,14 +182,14 @@ namespace AnalysisPrograms.Recognizers
             }
 
             combinedResults.NewEvents = SpectralEvent.FilterOnDuration(combinedResults.NewEvents, minimumEventDuration.Value, maximumEventDuration.Value);
-            LoggedConsole.WriteLine($"Event count after filtering on duration = {combinedResults.NewEvents.Count}");
+            //Console.WriteLine($"Event count after filtering on duration = {combinedResults.NewEvents.Count}");
 
             // 7: Filter the events for bandwidth in Hertz
             double average = 280;
             double sd = 40;
             double sigmaThreshold = 3.0;
             combinedResults.NewEvents = SpectralEvent.FilterOnBandwidth(combinedResults.NewEvents, average, sd, sigmaThreshold);
-            LoggedConsole.WriteLine($"Event count after filtering on bandwidth = {combinedResults.NewEvents.Count}");
+            //Console.WriteLine($"Event count after filtering on bandwidth = {combinedResults.NewEvents.Count}");
 
             //UNCOMMENT following line if you want special debug spectrogram, i.e. with special plots.
             //  NOTE: Standard spectrograms are produced by setting SaveSonogramImages: "True" or "WhenEventsDetected" in UserName.SpeciesName.yml config file.
