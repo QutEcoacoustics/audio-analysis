@@ -269,12 +269,14 @@ namespace AudioAnalysisTools.Events
         /// <summary>
         /// Removes events from a list of events that contain excessive noise in the upper neighbourhood.
         /// Excess noise can indicate that this is not a legitimate event.
+        /// This method measures noise as the average decibel value in the buffer zones above and below the events.
         /// </summary>
         /// <param name="events">A list of spectral events.</param>
         /// <param name="sonogramData">A matrix of the spectrogram in which event occurs.</param>
         /// <param name="lowerHertzBuffer">The band width of the required lower buffer. 100-200Hz is often appropriate.</param>
         /// <param name="upperHertzBuffer">The band width of the required upper buffer. 300-500Hz is often appropriate.</param>
         /// <param name="converter">Converts sec/Hz to frame/bin.</param>
+        /// <param name="decibelThreshold">Threshold noise level - assumed to be in decibels.</param>
         /// <returns>A list of filtered events.</returns>
         public static List<EventCommon> FilterEventsOnNeighbourhoodAverage(
             List<SpectralEvent> events,
@@ -284,7 +286,7 @@ namespace AudioAnalysisTools.Events
             UnitConverters converter,
             double decibelThreshold)
         {
-            // allow a bin gaps above and below the event.
+            // allow bin gaps above and below the event.
             int upperBinGap = 4;
             int lowerBinGap = 2;
 
@@ -295,9 +297,10 @@ namespace AudioAnalysisTools.Events
                 var avUpperNhAmplitude = SpectralEvent.GetAverageAmplitudeInUpperNeighbourhood((SpectralEvent)ev, sonogramData, upperHertzBuffer, upperBinGap, converter);
 
                 //Console.WriteLine($"################################### Buffer Average decibels = {avUpperNhAmplitude}");
+                // Require that both the lower and upper buffer zones contain less acoustic activity than the threshold.
                 if (avLowerNhAmplitude < decibelThreshold && avUpperNhAmplitude < decibelThreshold)
                 {
-                    // There is little acoustic activity in the designated frequency band above the event. It is likely to be a discrete event.
+                    // There is little acoustic activity in the designated buffer zones. It is likely to be a discrete event.
                     filteredEvents.Add(ev);
                 }
             }
@@ -305,36 +308,49 @@ namespace AudioAnalysisTools.Events
             return filteredEvents;
         }
 
+        /// <summary>
+        /// Removes events from a list of events that contain excessive noise in the upper neighbourhood.
+        /// Excess noise can indicate that this is not a legitimate event.
+        /// This method counts the bins and frames containing above threshold activity (decibel value) in the buffer zones above and below the events.
+        /// 
+        /// </summary>
+        /// <param name="events">A list of spectral events.</param>
+        /// <param name="spectrogram">The spectrogram in which the event occurs.</param>
+        /// <param name="lowerHertzBuffer">The band width of the required lower buffer. 100-200Hz is often appropriate.</param>
+        /// <param name="upperHertzBuffer">The band width of the required upper buffer. 300-500Hz is often appropriate.</param>
+        /// <param name="decibelThreshold">Threshold noise level - assumed to be in decibels.</param>
+        /// <returns>A list of filtered events.</returns>
         public static List<EventCommon> FilterEventsOnNeighbourhood(
             List<SpectralEvent> events,
-            BaseSonogram sonogram,
+            BaseSonogram spectrogram,
             int lowerHertzBuffer,
             int upperHertzBuffer,
             TimeSpan segmentStartOffset,
             double decibelThreshold)
         {
-            // allow a bin gaps above and below the event.
-            int upperBinGap = 3;
-            int lowerBinGap = 1;
+            // allow bin gaps above and below the event.
+            int upperBinGap = 4;
+            int lowerBinGap = 2;
 
             var converter = new UnitConverters(
                 segmentStartOffset: segmentStartOffset.TotalSeconds,
-                sampleRate: sonogram.SampleRate,
-                frameSize: sonogram.Configuration.WindowSize,
-                frameOverlap: sonogram.Configuration.WindowOverlap);
+                sampleRate: spectrogram.SampleRate,
+                frameSize: spectrogram.Configuration.WindowSize,
+                frameOverlap: spectrogram.Configuration.WindowOverlap);
 
             var filteredEvents = new List<EventCommon>();
             foreach (var ev in events)
             {
-                var matrix = GetNeighbourhoodAsOneMatrix(ev, sonogram.Data, lowerHertzBuffer, lowerBinGap, upperHertzBuffer, upperBinGap, converter);
+                var matrix = GetNeighbourhoodAsOneMatrix(ev, spectrogram.Data, lowerHertzBuffer, lowerBinGap, upperHertzBuffer, upperBinGap, converter);
                 var averageRowDecibels = MatrixTools.GetRowAverages(matrix);
                 var averageColDecibels = MatrixTools.GetColumnAverages(matrix);
                 int noisyRowCount = averageRowDecibels.Count(x => x > decibelThreshold);
                 int noisyColCount = averageColDecibels.Count(x => x > decibelThreshold);
 
+                // Require that there be at most one buffer bin and one buffer frame containing acoustic activity.
                 if (noisyRowCount <= 1 && noisyColCount <= 1)
                 {
-                    //There is little acoustic activity in the designated frequency band above the event. It is likely to be a discrete event.
+                    //There is little acoustic activity in the upper and lower buffer zones. It is likely to be a discrete event.
                     filteredEvents.Add(ev);
                 }
             }
