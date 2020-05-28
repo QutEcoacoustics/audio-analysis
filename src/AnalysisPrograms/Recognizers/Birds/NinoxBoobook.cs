@@ -140,11 +140,13 @@ namespace AnalysisPrograms.Recognizers
             //    The idea is that an unambiguous event should have some acoustic space above and below.
             //    The filter requires that the average acoustic activity in each frame and bin of the upper and lower buffer zones should not exceed the user specified decibel threshold.
             //    The bandwidth of these two neighbourhoods is determined by the following parameters.
-            //    The decibel threshold is currently set 5/6ths of the user specified threshold.
-            //    ................... THIS IS TO BE WATCHED. IT MAY PROVE TO BE INAPPROPRIATE TO HARD-CODE.
             //    ########## These parameters could be specified by user in config.yml file.
             var upperHertzBuffer = 400;
             var lowerHertzBuffer = 150;
+
+            // The decibel threshold is currently set 5/6ths of the user specified threshold.
+            // THIS IS TO BE WATCHED. IT MAY PROVE TO BE INAPPROPRIATE TO HARD-CODE.
+            // Want the activity in buffer zones to be "somewhat" less than the user-defined threshold.
             var neighbourhoodDbThreshold = chirpConfig.DecibelThreshold.Value * 0.8333;
 
             if (upperHertzBuffer > 0 || lowerHertzBuffer > 0)
