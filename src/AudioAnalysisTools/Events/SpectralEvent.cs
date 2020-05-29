@@ -240,7 +240,7 @@ namespace AudioAnalysisTools.Events
         /// <param name="binGap">Number of freq bins as gap between event and buffer zone.</param>
         /// <param name="converter">A converter to convert seconds/Hertz to frames/bins.</param>
         /// <returns>Average of the spectrogram amplitude in buffer band above the event.</returns>
-        public static double GetAverageAmplitudeInUpperNeighbourhood(SpectralEvent ev, double[,] sonogramData, double bufferHertz, int binGap, UnitConverters converter)
+        public static double GetAverageAmplitudeInUpperNeighbourhood(SpectralEvent ev, double[,] spectrogramData, double bufferHertz, int binGap, UnitConverters converter)
         {
             var subMatrix = GetUpperNeighbourhood(ev, sonogramData, bufferHertz, binGap, converter);
             var averageRowDecibels = MatrixTools.GetRowAverages(subMatrix);
