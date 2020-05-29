@@ -350,7 +350,7 @@ namespace AudioAnalysisTools.Events
                 // Require that there be at most one buffer bin and one buffer frame containing acoustic activity.
                 if (noisyRowCount <= 1 && noisyColCount <= 1)
                 {
-                    //There is little acoustic activity in the upper and lower buffer zones. It is likely to be a discrete event.
+                    // There is little acoustic activity in the upper and lower buffer zones. It is likely to be a discrete event.
                     filteredEvents.Add(ev);
                 }
             }
