@@ -129,7 +129,7 @@ namespace AnalysisPrograms.Recognizers
                 var startDiff = genericConfig.SyllableStartDifference;
                 var hertzDiff = genericConfig.SyllableHertzGap;
                 combinedResults.NewEvents = CompositeEvent.CombineProximalEvents(spectralEvents1, TimeSpan.FromSeconds(startDiff), (int)hertzDiff);
-                //Console.WriteLine($"Event count after combining proximals = {combinedResults.NewEvents.Count}");
+                BoobookLog.Debug($"Event count after combining proximals = {combinedResults.NewEvents.Count}");
             }
 
             // Get the BoobookSyllable config.
