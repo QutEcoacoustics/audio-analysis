@@ -296,7 +296,6 @@ namespace AudioAnalysisTools.Events
                 var avLowerNhAmplitude = SpectralEvent.GetAverageAmplitudeInLowerNeighbourhood((SpectralEvent)ev, sonogramData, lowerHertzBuffer, lowerBinGap, converter);
                 var avUpperNhAmplitude = SpectralEvent.GetAverageAmplitudeInUpperNeighbourhood((SpectralEvent)ev, sonogramData, upperHertzBuffer, upperBinGap, converter);
 
-                //Console.WriteLine($"################################### Buffer Average decibels = {avUpperNhAmplitude}");
                 // Require that both the lower and upper buffer zones contain less acoustic activity than the threshold.
                 if (avLowerNhAmplitude < decibelThreshold && avUpperNhAmplitude < decibelThreshold)
                 {
