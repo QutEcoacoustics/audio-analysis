@@ -901,7 +901,7 @@ namespace Acoustics.Test.AnalysisBase
             foreach (var file in state.ShouldExist)
             {
                 var f = file.FormatToken(paths);
-                Trace.WriteLine(f);
+                //Trace.WriteLine(f);
 
                 Assert.That.PathExists(f, $"(stage: {stage}, pre-templated string: \"{file}\")");
             }
@@ -909,7 +909,7 @@ namespace Acoustics.Test.AnalysisBase
             foreach (var file in state.ShouldNotExist)
             {
                 var f = file.FormatToken(paths);
-                Trace.WriteLine(f);
+                //Trace.WriteLine(f);
                 Assert.That.PathNotExists(file, $"(stage: {stage}, pre-templated string: \"{file}\")");
             }
         }

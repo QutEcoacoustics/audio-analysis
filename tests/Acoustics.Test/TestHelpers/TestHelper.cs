@@ -25,6 +25,13 @@ namespace Acoustics.Test.TestHelpers
     /// </summary>
     public static class TestHelper
     {
+        /// <summary>
+        /// A generally tolerable delta for unit tests that experience
+        /// computational errors. Use this only if needed and only for
+        /// errors derived from floating-point calculations.
+        /// <summary>
+        public const double AllowedDelta = 1.0E-9;
+
         public static readonly IReadOnlyDictionary<string, AudioUtilityInfo> AudioDetails = new Dictionary<string, AudioUtilityInfo>
         {
                 {

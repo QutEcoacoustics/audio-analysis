@@ -11,6 +11,11 @@
           <!-- <verbosity>detailed</verbosity> -->
         </Configuration>
       </Logger>
+      <Logger friendlyName="trx">
+        <Configuration>
+          <!-- <verbosity>detailed</verbosity> -->
+        </Configuration>
+      </Logger>
     </Loggers>
   </LoggerRunSettings>
   <DataCollectionRunSettings>
