@@ -151,7 +151,7 @@ namespace AudioAnalysisTools.Events
         /// <param name="bufferHertz">THe bandwidth of the buffer zone in Hertz.</param>
         /// <param name="converter">A converter to convert seconds/Hertz to frames/bins.</param>
         /// <returns>The neighbourhood as a matrix.</returns>
-        public static double[,] GetLowerNeighbourhood(SpectralEvent ev, double[,] sonogramData, double bufferHertz, int gap, UnitConverters converter)
+        public static double[,] GetLowerNeighbourhood(SpectralEvent ev, double[,] spectrogramData, double bufferHertz, int gap, UnitConverters converter)
         {
             var bufferBins = (int)Math.Round(bufferHertz / converter.HertzPerFreqBin);
             var topBufferBin = converter.GetFreqBinFromHertz(ev.LowFrequencyHertz) - gap;
