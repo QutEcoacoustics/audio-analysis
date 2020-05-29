@@ -299,7 +299,7 @@ namespace TowseyLibrary
 
             if(rowCount1 != rowCount2)
             {
-                throw new Exception($"Cannot join these matrices. They do not have the same row count. {rowCount1} != {rowCount2}.");
+                throw new ArgumentException($"Cannot join these matrices. They do not have the same row count. {rowCount1} != {rowCount2}.");
             }
 
             double[,] opMatrix = new double[rowCount1, colCount1 + colCount2];
