@@ -133,7 +133,7 @@ namespace AnalysisPrograms.Recognizers
             }
 
             // Get the BoobookSyllable config.
-            var configuration = (GenericRecognizerConfig)genericConfig;
+            var configuration = (NinoxBoobookConfig)genericConfig;
             var chirpConfig = (ForwardTrackParameters)configuration.Profiles["BoobookSyllable"];
 
             // 4: Filter events on the amount of acoustic activity in their upper and lower neighbourhoods - their buffer zone.
