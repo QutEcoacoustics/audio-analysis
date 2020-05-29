@@ -280,7 +280,7 @@ namespace AudioAnalysisTools.Events
         /// <returns>A list of filtered events.</returns>
         public static List<EventCommon> FilterEventsOnNeighbourhoodAverage(
             List<SpectralEvent> events,
-            double[,] sonogramData,
+            double[,] spectroramData,
             double lowerHertzBuffer,
             double upperHertzBuffer,
             UnitConverters converter,
