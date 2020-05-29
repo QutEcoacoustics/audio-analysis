@@ -11,6 +11,7 @@ SegmentOverlap: 0
 IgnoreHighAmplitudeClippedRecordingSegments: true
 
 # Each of these profiles will be analyzed
+# This profile is required for the species-specific recogniser and must have the current name.
 Profiles:
     BoobookSyllable: !ForwardTrackParameters
         ComponentName: RidgeTrack 
