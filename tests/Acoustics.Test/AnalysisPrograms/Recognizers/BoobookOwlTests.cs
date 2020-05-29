@@ -61,12 +61,12 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
 
             var secondEvent = (CompositeEvent)events[1];
 
-            Assert.AreEqual(5.38, secondEvent.EventStartSeconds, 0.05);
-            Assert.AreEqual(6.07, secondEvent.EventEndSeconds, 0.05);
+            Assert.AreEqual(5.375419501133787, secondEvent.EventStartSeconds);
+            Assert.AreEqual(6.0720181405895692, secondEvent.EventEndSeconds);
             Assert.AreEqual(483, secondEvent.LowFrequencyHertz);
             Assert.AreEqual(735, secondEvent.HighFrequencyHertz);
-            Assert.AreEqual(20.90, secondEvent.Score, 0.05);
-            Assert.AreEqual(0.208, secondEvent.ScoreNormalized, 0.05);
+            Assert.AreEqual(20.901882476071698, secondEvent.Score);
+            Assert.AreEqual(0.20786700431266195, secondEvent.ScoreNormalized);
         }
     }
 }

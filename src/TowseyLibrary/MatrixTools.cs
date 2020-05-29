@@ -287,7 +287,7 @@ namespace TowseyLibrary
 
         /// <summary>
         /// Concatenate two matrices.
-        /// WARNING: This method assumes that the two matrices have the same number of rows.
+        /// WARNING: This method requires that the two matrices have the same number of rows.
         ///          They will be joined by adding the columns of M2 to the columns of M1.
         /// </summary>
         public static double[,] ConcatenateTwoMatrices(double[,] matrix1, double[,] matrix2)
@@ -299,7 +299,7 @@ namespace TowseyLibrary
 
             if(rowCount1 != rowCount2)
             {
-                throw new Exception($"Cannot join these matrices. They do not have the same row count. {rowCount1} != {rowCount2}.");
+                throw new ArgumentException($"Cannot join these matrices. They do not have the same row count. {rowCount1} != {rowCount2}.");
             }
 
             double[,] opMatrix = new double[rowCount1, colCount1 + colCount2];
