@@ -9,27 +9,56 @@ SegmentDuration: 60
 SegmentOverlap: 0
 
 # Each of these profiles will be analyzed
+# This profile is required for the species-specific recogniser and must have the current name.
 Profiles:
-    AustBittern: !OnebinTrackParameters
+    BitternSyllable: !OnebinTrackParameters
         ComponentName: Whistle 
         SpeciesName: BotaurusPoiciloptilus
         FrameSize: 512
         FrameStep: 256
         WindowFunction: HANNING
-        BgNoiseThreshold: 0.0
+        #BgNoiseThreshold: 0.0
         # min and max of the freq band to search
         MinHertz: 100          
         MaxHertz: 200
         MinDuration: 0.3
         MaxDuration: 1.0
-        DecibelThreshold: 3.0
+        DecibelThreshold: 6.0
 
-#Combine each pair of Boobook syllables as one event
-#CombineProximalSimilarEvents: false
+#################### POST-PROCESSING of EVENTS ###################
+
+# A: First post-processing steps are to combine overlapping/proximal/sequential events 
+#  1: Combine overlapping events
+#CombineOverlappingEvents: false
+
+#  2: Combine each pair of Boobook syllables as one event
+#     Can also use this to "mop up" events in neighbourhood - these can be removed later. 
 CombinePossibleSyllableSequence: true
 SyllableStartDifference: 3.0
-SyllableHertzGap: 100
+SyllableHertzGap: 35
 
+#  B: Filter the events for excess activity in their upper and lower buffer zones
+LowerHertzBuffer: 150
+UpperHertzBuffer: 400
+
+# C: Options to save results files
+#  4: Available options for saving data files (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveIntermediateWavFiles: Never
+SaveIntermediateCsvFiles: false
+# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+# "True" is useful when debugging but "WhenEventsDetected" is required for operational use.
+
+#  5: Available options for saving 
+#SaveSonogramImages: True
+SaveSonogramImages: WhenEventsDetected
+# DisplayCsvImage is obsolete - ensure it remains set to: false
+DisplayCsvImage: false
+## End section for AnalyzeLongRecording
+
+# Other config files to reference
+HighResolutionIndicesConfig: "../Towsey.Acoustic.HiResIndicesForRecognisers.yml"
+
+################################################################################
 # Common settings
 #Standard: &STANDARD
 #EventThreshold: 0.2
@@ -39,21 +68,4 @@ SyllableHertzGap: 100
 # however, the DctDuration parameter has been overridden.
 #  <<: *STANDARD
 #  DctDuration: 0.3
-
-################################################################################
-# Save intermediate file options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
-SaveIntermediateWavFiles: Never
-SaveIntermediateCsvFiles: false
-
-# Save spectrogram images: available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
-# "True" is useful when debugging but "WhenEventsDetected" is required for operational use.
-#SaveSonogramImages: True
-SaveSonogramImages: WhenEventsDetected
-
-# DisplayCsvImage is obsolete - ensure it remains set to: false
-DisplayCsvImage: false
-## End section for AnalyzeLongRecording
-
-# Other config files to reference
-HighResolutionIndicesConfig: "../Towsey.Acoustic.HiResIndicesForRecognisers.yml"
 ...
