@@ -17,7 +17,6 @@ namespace AnalysisPrograms.Recognizers
     using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Types;
     using AudioAnalysisTools.Indices;
-    using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
     using log4net;
     using SixLabors.ImageSharp;
@@ -92,7 +91,7 @@ namespace AnalysisPrograms.Recognizers
                 outputDirectory,
                 imageWidth);
 
-            // ################### DO POST-PROCESSING of EVENTS ###################
+            // ################### POST-PROCESSING of EVENTS ###################
             // Following two commented lines are different ways of casting lists.
             //var newEvents = spectralEvents.Cast<EventCommon>().ToList();
             //var spectralEvents = events.Select(x => (SpectralEvent)x).ToList();
