@@ -155,7 +155,7 @@ namespace AudioAnalysisTools.Tracks
             for (int bin = startBin + 1; bin < maxBin - 1; bin++)
             {
                 // Avoid row edge effects.
-                if (row < 1 || row > peaks.GetLength(0) - 1)
+                if (row < 2 || row > peaks.GetLength(0) - 3)
                 {
                     // arrived back at start of recording or end of recording.
                     // The track has come to end
