@@ -184,7 +184,7 @@ namespace AudioAnalysisTools.Events
             }
 
             double[,] subMatrix2 = null;
-            if (upperHertzBuffer > 0)
+            if (lowerHertzBuffer > 0)
             {
                 subMatrix2 = GetLowerNeighbourhood(ev, spectrogramData, lowerHertzBuffer, lowerBinGap, converter);
             }

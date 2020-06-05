@@ -335,6 +335,48 @@ namespace AnalysisPrograms.Recognizers
                 //SaveDebugSpectrogram(allResults, genericConfig, outputDirectory, "name");
             }
 
+            // ######################################################## POST-PROCESSING OF GENERIC EVENTS
+
+            Log.Debug($"Total event count = {allResults.NewEvents.Count}");
+
+            // 1: Combine overlapping events.
+            // This will be necessary where many small events have been found - possibly because the dB threshold is set low.
+            if (configuration.CombineOverlappingEvents)
+            {
+                allResults.NewEvents = CompositeEvent.CombineOverlappingEvents(allResults.NewEvents.Cast<EventCommon>().ToList());
+                Log.Debug($"Event count after combining overlapped events = {allResults.NewEvents.Count}");
+            }
+
+            // 2: Combine proximal events, that is, events that may be a sequence of syllables in the same strophe.
+            //    Can also use this parameter to combine events that are in the upper or lower neighbourhood.
+            //    Such combinations will increase bandwidth of the event and this property can be used later to weed out unlikely events.
+            if (configuration.CombinePossibleSyllableSequence)
+            {
+                // Must first convert events to spectral events.
+                var spectralEvents1 = allResults.NewEvents.Cast<SpectralEvent>().ToList();
+                var startDiff = configuration.SyllableStartDifference;
+                var hertzDiff = configuration.SyllableHertzGap;
+                allResults.NewEvents = CompositeEvent.CombineProximalEvents(spectralEvents1, TimeSpan.FromSeconds(startDiff), (int)hertzDiff);
+                Log.Debug($"Event count after combining proximals = {allResults.NewEvents.Count}");
+            }
+
+            // 3: Filter events on the amount of acoustic activity in their upper and lower neighbourhoods - their buffer zone.
+            //    The idea is that an unambiguous event should have some acoustic space above and below.
+            //    The filter requires that the average acoustic activity in each frame and bin of the upper and lower buffer zones should not exceed the user specified decibel threshold.
+            if (configuration.NeighbourhoodUpperHertzBuffer > 0 || configuration.NeighbourhoodLowerHertzBuffer > 0)
+            {
+                var spectralEvents2 = allResults.NewEvents.Cast<SpectralEvent>().ToList();
+                allResults.NewEvents = EventExtentions.FilterEventsOnNeighbourhood(
+                    spectralEvents2,
+                    allResults.Sonogram,
+                    configuration.NeighbourhoodLowerHertzBuffer,
+                    configuration.NeighbourhoodUpperHertzBuffer,
+                    segmentStartOffset,
+                    configuration.NeighbourhoodDbThreshold);
+
+                Log.Debug($"Event count after filtering on neighbourhood = {allResults.NewEvents.Count}");
+            }
+
             return allResults;
         }
 
@@ -405,6 +447,51 @@ namespace AnalysisPrograms.Recognizers
         {
             /// <inheritdoc />
             public Dictionary<string, object> Profiles { get; set; }
+
+            // ########### THE FOLLOWING PROPERTIES ARE FOR POST-PROCESSING OF EVeNTS.
+
+            /// <summary>
+            /// Gets or sets a value indicating Whether or not to combine overlapping events.
+            /// </summary>
+            public bool CombineOverlappingEvents { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating Whether or not to combine events that constitute a sequence of the same strophe.
+            /// </summary>
+            public bool CombinePossibleSyllableSequence { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating the maximum allowable start time gap (seconds) between events within the same strophe.
+            /// This value is used only where CombinePossibleSyllableSequence = true.
+            /// </summary>
+            public double SyllableStartDifference { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating the maximum allowable difference (in Hertz) between the frequency bands of two events. I.e. events should be in similar frequency band.
+            /// NOTE: SIMILAR frequency band means the differences between two top Hertz values and the two low Hertz values are less than hertzDifference.
+            /// This value is used only where CombinePossibleSyllableSequence = true.
+            /// </summary>
+            public double SyllableHertzGap { get; set; }
+
+            // #### The next three properties determine filtering of events based on acoustic conctent of upper and lower buffer zones.
+
+            /// <summary>
+            /// Gets or sets a value indicating Whether or not to filter events based on acoustic conctent of upper buffer zone.
+            /// If value = 0, the upper neighbourhood is ignored.
+            /// </summary>
+            public int NeighbourhoodUpperHertzBuffer { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating Whether or not to filter events based on the acoustic content of their lower buffer zone.
+            /// If value = 0, the lower neighbourhood is ignored.
+            /// </summary>
+            public int NeighbourhoodLowerHertzBuffer { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating the decibel threshold for acoustic activity in the upper and lower buffer zones.
+            /// This value is used only if NeighbourhoodLowerHertzBuffer > 0 OR NeighbourhoodUpperHertzBuffer > 0.
+            /// </summary>
+            public double NeighbourhoodDbThreshold { get; set; }
         }
     }
 }

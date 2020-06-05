@@ -198,6 +198,7 @@ namespace AudioAnalysisTools.Events.Types
         /// <summary>
         /// Combines events that have similar bottom and top frequency bounds and whose start times are within the passed time range.
         /// NOTE: Proximal means (1) that the event starts are close to one another and (2) the events occupy a SIMILAR frequency band.
+        /// NOTE: SIMILAR frequency band means the difference between two top Hertz values and the two low Hertz values are less than hertzDifference.
         /// NOTE: This method is used to combine events that are likely to be a syllable sequence within the same call.
         /// </summary>
         public static List<EventCommon> CombineProximalEvents(List<SpectralEvent> events, TimeSpan startDifference, int hertzDifference)
