@@ -97,203 +97,42 @@ namespace AnalysisPrograms.Recognizers
             //var newEvents = spectralEvents.Cast<EventCommon>().ToList();
             //var spectralEvents = events.Select(x => (SpectralEvent)x).ToList();
 
-            // 1: Pull out the chirp events and calculate their frequency profiles.
-            var (whipEvents, others) = combinedResults.NewEvents.FilterForEventType<WhipEvent, EventCommon>();
-
-            // Uncomment the next line when want to obtain the event frequency profiles.
-            // WriteFrequencyProfiles(chirpEvents);
-
-            //foreach (var ev in whipEvents)
-            //{
-            //    // Calculate frequency profile score for event
-            //    SetFrequencyProfileScore((ChirpEvent)ev);
-            //}
-
             if (combinedResults.NewEvents.Count == 0)
             {
                 PipitLog.Debug($"Return zero events.");
                 return combinedResults;
             }
 
-            // 2: Combine overlapping events. If the dB threshold is set low, may get lots of little events.
-            combinedResults.NewEvents = CompositeEvent.CombineOverlappingEvents(whipEvents.Cast<EventCommon>().ToList());
-            PipitLog.Debug($"Event count after combining overlaps = {combinedResults.NewEvents.Count}");
+            // 1: Pull out the whip events and calculate their frequency profiles.
+            //var (whipEvents, others) = combinedResults.NewEvents.FilterForEventType<WhipEvent, EventCommon>();
+            // calculate profile here.
 
-            // 3: Combine proximal events. If the dB threshold is set low, may get lots of little events.
-            if (genericConfig.CombinePossibleSyllableSequence)
-            {
-                // Convert events to spectral events for combining of possible sequences.
-                // Can also use this parameter to combine events that are in the upper or lower neighbourhood.
-                // Such combinations will increase bandwidth of the event and this property can be used later to weed out unlikely events.
-                var spectralEvents1 = combinedResults.NewEvents.Cast<SpectralEvent>().ToList();
-                var startDiff = genericConfig.SyllableStartDifference;
-                var hertzDiff = genericConfig.SyllableHertzGap;
-                combinedResults.NewEvents = CompositeEvent.CombineProximalEvents(spectralEvents1, TimeSpan.FromSeconds(startDiff), (int)hertzDiff);
-                PipitLog.Debug($"Event count after combining proximals = {combinedResults.NewEvents.Count}");
-            }
+            // Get the Pipit syllable config.
+            //const string profileName = "PipitSyllable";
+            //var whipConfig = (UpwardTrackParameters)genericConfig.Profiles[profileName];
 
-            // Get the PipitSyllable config.
-            const string profileName = "PipitSyllable";
-            var configuration = (PipitConfig)genericConfig;
-            var chirpConfig = (UpwardTrackParameters)configuration.Profiles[profileName];
-
-            // 4: Filter events on the amount of acoustic activity in their upper and lower neighbourhoods - their buffer zone.
-            //    The idea is that an unambiguous event should have some acoustic space above and below.
-            //    The filter requires that the average acoustic activity in each frame and bin of the upper and lower buffer zones should not exceed the user specified decibel threshold.
-            //    The bandwidth of these two neighbourhoods is determined by the following parameters.
-            //    ########## These parameters could be specified by user in config.yml file.
-            var upperHertzBuffer = 0;
-            var lowerHertzBuffer = 0;
-
-            // The decibel threshold is currently set 5/6ths of the user specified threshold.
-            // THIS IS TO BE WATCHED. IT MAY PROVE TO BE INAPPROPRIATE TO HARD-CODE.
-            // Want the activity in buffer zones to be "somewhat" less than the user-defined threshold.
-            var neighbourhoodDbThreshold = chirpConfig.DecibelThreshold.Value;
-
-            if (upperHertzBuffer > 0 || lowerHertzBuffer > 0)
-            {
-                var spectralEvents2 = combinedResults.NewEvents.Cast<SpectralEvent>().ToList();
-                combinedResults.NewEvents = EventExtentions.FilterEventsOnNeighbourhood(
-                    spectralEvents2,
-                    combinedResults.Sonogram,
-                    lowerHertzBuffer,
-                    upperHertzBuffer,
-                    segmentStartOffset,
-                    neighbourhoodDbThreshold);
-
-                PipitLog.Debug($"Event count after filtering on neighbourhood = {combinedResults.NewEvents.Count}");
-            }
-
-            if (combinedResults.NewEvents.Count == 0)
-            {
-                PipitLog.Debug($"Return zero events.");
-                return combinedResults;
-            }
-
-            // 5: Filter on COMPONENT COUNT in Composite events.
-            int maxComponentCount = 2;
+            // 2: Filter on COMPONENT COUNT in Composite events.
+            //int maxComponentCount = 2;
             //combinedResults.NewEvents = EventExtentions.FilterEventsOnCompositeContent(combinedResults.NewEvents, maxComponentCount);
-            PipitLog.Debug($"Event count after filtering on component count = {combinedResults.NewEvents.Count}");
+            //PipitLog.Debug($"Event count after filtering on component count = {combinedResults.NewEvents.Count}");
 
-            // 6: Filter the events for duration in seconds
-            var minimumEventDuration = chirpConfig.MinDuration;
-            var maximumEventDuration = chirpConfig.MaxDuration;
-            if (genericConfig.CombinePossibleSyllableSequence)
-            {
-                minimumEventDuration *= 2.0;
-                maximumEventDuration *= 1.5;
-            }
-
-            //combinedResults.NewEvents = EventExtentions.FilterOnDuration(combinedResults.NewEvents, minimumEventDuration.Value, maximumEventDuration.Value);
+            // 3: Filter the events for duration in seconds
+            var minimumEventDuration = 0.1;
+            var maximumEventDuration = 0.8;
+            //combinedResults.NewEvents = EventExtentions.FilterOnDuration(combinedResults.NewEvents, minimumEventDuration, maximumEventDuration);
             PipitLog.Debug($"Event count after filtering on duration = {combinedResults.NewEvents.Count}");
 
-            // 7: Filter the events for bandwidth in Hertz
+            // 4: Filter the events for bandwidth in Hertz
             double average = 4000;
-            double sd =330;
+            double sd = 400;
             double sigmaThreshold = 3.0;
-            combinedResults.NewEvents = EventExtentions.FilterOnBandwidth(combinedResults.NewEvents, average, sd, sigmaThreshold);
+            //combinedResults.NewEvents = EventExtentions.FilterOnBandwidth(combinedResults.NewEvents, average, sd, sigmaThreshold);
             PipitLog.Debug($"Event count after filtering on bandwidth = {combinedResults.NewEvents.Count}");
 
             //UNCOMMENT following line if you want special debug spectrogram, i.e. with special plots.
             //  NOTE: Standard spectrograms are produced by setting SaveSonogramImages: "True" or "WhenEventsDetected" in UserName.SpeciesName.yml config file.
             //GenericRecognizer.SaveDebugSpectrogram(territorialResults, genericConfig, outputDirectory, audioRecording.BaseName);
             return combinedResults;
-        }
-
-        /// <summary>
-        /// The Boobook call syllable is shaped like an inverted "U". Its total duration is close to 0.15 seconds.
-        /// The rising portion lasts for 0.06s, followed by a turning portion, 0.03s, followed by the decending portion of 0.06s.
-        /// The constants for this method were obtained from the calls in a Gympie recording obtained by Yvonne Phillips.
-        /// </summary>
-        /// <param name="ev">An event containing at least one forward track i.e. a chirp.</param>
-        public static void SetFrequencyProfileScore(ChirpEvent ev)
-        {
-            const double risingDuration = 0.06;
-            const double gapDuration = 0.03;
-            const double fallingDuration = 0.06;
-
-            var track = ev.Tracks.First();
-            var profile = track.GetTrackFrequencyProfile().ToArray();
-
-            // get the first point
-            var firstPoint = track.Points.First();
-            var frameDuration = firstPoint.Seconds.Maximum - firstPoint.Seconds.Minimum;
-            var risingFrameCount = (int)Math.Floor(risingDuration / frameDuration);
-            var gapFrameCount = (int)Math.Floor(gapDuration / frameDuration);
-            var fallingFrameCount = (int)Math.Floor(fallingDuration / frameDuration);
-
-            var startSum = 0.0;
-            if (profile.Length >= risingFrameCount)
-            {
-                for (var i = 0; i <= risingFrameCount; i++)
-                {
-                    startSum += profile[i];
-                }
-            }
-
-            int startFrame = risingFrameCount + gapFrameCount;
-            int endFrame = startFrame + fallingFrameCount;
-            var endSum = 0.0;
-            if (profile.Length >= endFrame)
-            {
-                for (var i = startFrame; i <= endFrame; i++)
-                {
-                    endSum += profile[i];
-                }
-            }
-
-            // set score to 1.0 if the profile has inverted U shape.
-            double score = 0.0;
-            if (startSum > 0.0 && endSum < 0.0)
-            {
-                score = 1.0;
-            }
-
-            ev.FrequencyProfileScore = score;
-        }
-
-        /// <summary>
-        /// WARNING - this method assumes that the rising and falling parts of a Boobook call syllable last for 5 frames.
-        /// </summary>
-        /// <param name="events">List of spectral events.</param>
-        public static void WriteFrequencyProfiles(List<ChirpEvent> events)
-        {
-            /* Here are the frequency profiles of some events.
-             * Note that the first five frames (0.057 seconds) have positive slope and subsequent frames have negative slope.
-             * The final frames are likely to be echo and to be avoided.
-             * Therefore take the first 0.6s to calculate the positive slope, leave a gap of 0.025 seconds and then get negative slope from the next 0.6 seconds.
-42,21,21,42,21, 00, 21,-21,-21,-21, 00,-21,-42
-42,42,21,21,42,-21, 21, 00,-21,-21,-21,-21, 00,-21,21,-21
-42,42,21,21,42, 00, 00, 00,-21,-21,-21,-21,-21
-21,21,00,00,21, 21,-21, 00, 00,-21, 00,-21,-21,21,-21,42
-42,42,21,00,42, 00, 00,-21,-21,-21,-21, 00,-21,
-21,42,21,21,21, 00,-21,-21,-21, 00,-21,-21
-42,21,21,42,21, 21, 00,-21,-21,-21,-21
-42,42,21,42,00, 00,-21, 00,-21,-21, 00,-21,-21
-*/
-
-            var spectralEvents = events.Select(x => (ChirpEvent)x).ToList();
-            foreach (var ev in spectralEvents)
-            {
-                foreach (var track in ev.Tracks)
-                {
-                    var profile = track.GetTrackFrequencyProfile().ToArray();
-                    var startSum = 0.0;
-                    if (profile.Length >= 5)
-                    {
-                        startSum = profile[0] + profile[1] + profile[2] + profile[3] + profile[4];
-                    }
-
-                    var endSum = 0.0;
-                    if (profile.Length >= 11)
-                    {
-                        endSum = profile[6] + profile[7] + profile[8] + profile[9] + profile[10];
-                    }
-
-                    LoggedConsole.WriteLine($"{startSum}    {endSum}");
-                    LoggedConsole.WriteLine(DataTools.WriteArrayAsCsvLine(profile, "F0"));
-                }
-            }
         }
 
         /*
@@ -316,11 +155,6 @@ namespace AnalysisPrograms.Recognizers
         /// <inheritdoc cref="PipitConfig"/> />
         public class PipitConfig : GenericRecognizerConfig, INamedProfiles<object>
         {
-            public bool CombinePossibleSyllableSequence { get; set; } = false;
-
-            public double SyllableStartDifference { get; set; } = 0.5;
-
-            public double SyllableHertzGap { get; set; } = 200;
         }
     }
 }

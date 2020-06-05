@@ -23,25 +23,26 @@ Profiles:
         MaxHertz: 7000
         MinBandwidthHertz: 500
         MaxBandwidthHertz: 5000
-        MinDuration: 0.1
-        MaxDuration: 0.5
-        DecibelThreshold: 6.0
+        #MinDuration: 0.1
+        #MaxDuration: 0.5
+        DecibelThreshold: 9.0
 
 #################### POST-PROCESSING of EVENTS ###################
 
 # A: First post-processing steps are to combine overlapping/proximal/sequential events 
 #  1: Combine overlapping events
-#CombineOverlappingEvents: false
+CombineOverlappingEvents: true
 
-#  2: Combine each pair of Boobook syllables as one event
-#     Can also use this to "mop up" events in neighbourhood - these can be removed later. 
-CombinePossibleSyllableSequence: false
-SyllableStartDifference: 3.0
-SyllableHertzGap: 35
+#  2: Combine syllables that possibly belong to the saem strophe.
+#     Can also use this to "mop up" events in neighbourhood - for later removal. 
+CombinePossibleSyllableSequence: true
+SyllableStartDifference: 0.25
+SyllableHertzGap: 3000
 
 #  B: Filter the events for excess activity in their upper and lower buffer zones
-LowerHertzBuffer: 150
-UpperHertzBuffer: 400
+NeighbourhoodLowerHertzBuffer: 200
+NeighbourhoodUpperHertzBuffer: 0
+NeighbourhoodDbThreshold: 9.0
 
 # C: Options to save results files
 #  4: Available options for saving data files (case-sensitive): [False/Never | True/Always | WhenEventsDetected]

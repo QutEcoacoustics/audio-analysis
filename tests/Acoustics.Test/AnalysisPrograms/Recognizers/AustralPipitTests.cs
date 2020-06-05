@@ -37,7 +37,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             var config = Recognizer.ParseConfig(ConfigFile);
             int resampleRate = config.ResampleRate.Value;
             string opDir = this.TestOutputDirectory.FullName;
-            string opFileName = "tempFile";
+            string opFileName = "tempFile.wav";
             var recording = AudioRecording.GetAudioRecording(TestAsset, resampleRate, opDir, opFileName);
 
             var results = Recognizer.Recognize(
