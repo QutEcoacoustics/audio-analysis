@@ -118,15 +118,15 @@ namespace AnalysisPrograms.Recognizers
 
             // 3: Filter the events for duration in seconds
             var minimumEventDuration = 0.1;
-            var maximumEventDuration = 0.8;
-            //combinedResults.NewEvents = EventExtentions.FilterOnDuration(combinedResults.NewEvents, minimumEventDuration, maximumEventDuration);
+            var maximumEventDuration = 0.4;
+            combinedResults.NewEvents = EventExtentions.FilterOnDuration(combinedResults.NewEvents, minimumEventDuration, maximumEventDuration);
             PipitLog.Debug($"Event count after filtering on duration = {combinedResults.NewEvents.Count}");
 
             // 4: Filter the events for bandwidth in Hertz
-            double average = 4000;
-            double sd = 400;
+            double average = 3500;
+            double sd = 600;
             double sigmaThreshold = 3.0;
-            //combinedResults.NewEvents = EventExtentions.FilterOnBandwidth(combinedResults.NewEvents, average, sd, sigmaThreshold);
+            combinedResults.NewEvents = EventExtentions.FilterOnBandwidth(combinedResults.NewEvents, average, sd, sigmaThreshold);
             PipitLog.Debug($"Event count after filtering on bandwidth = {combinedResults.NewEvents.Count}");
 
             //UNCOMMENT following line if you want special debug spectrogram, i.e. with special plots.
