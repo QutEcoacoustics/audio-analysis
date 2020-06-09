@@ -129,10 +129,133 @@ namespace AnalysisPrograms.Recognizers
             combinedResults.NewEvents = EventExtentions.FilterOnBandwidth(combinedResults.NewEvents, average, sd, sigmaThreshold);
             PipitLog.Debug($"Event count after filtering on bandwidth = {combinedResults.NewEvents.Count}");
 
+            combinedResults.NewEvents = FilterEventsOnFrequencyProfile(combinedResults.NewEvents);
+
+            //foreach (var ev in whistleEvents)
+            //{
+            //    // Calculate frequency profile score for event
+            //    SetFrequencyProfileScore((WhistleEvent)ev);
+            //}
+
             //UNCOMMENT following line if you want special debug spectrogram, i.e. with special plots.
             //  NOTE: Standard spectrograms are produced by setting SaveSonogramImages: "True" or "WhenEventsDetected" in UserName.SpeciesName.yml config file.
             //GenericRecognizer.SaveDebugSpectrogram(territorialResults, genericConfig, outputDirectory, audioRecording.BaseName);
             return combinedResults;
+        }
+
+        /// <summary>
+        /// This method assumes that the only events of interest are composite events.
+        /// </summary>
+        /// <param name="events">THe current list of events.</param>
+        /// <returns>A list of composite events.</returns>
+        public static List<EventCommon> FilterEventsOnFrequencyProfile(List<EventCommon> events)
+        {
+            // select only the composite events.
+            //var compositeEvents = events.Select(x => (CompositeEvent)x).ToList();
+            var (compositeEvents, others) = events.FilterForEventType<CompositeEvent, EventCommon>();
+
+            if (compositeEvents == null)
+            {
+                return null;
+            }
+
+            // get the composite track for each composite event.
+            var returnEvents = new List<EventCommon>();
+            foreach (var ev in compositeEvents)
+            {
+                var componentEvents = ev.ComponentEvents;
+                var points = EventExtentions.GetCompositeTrack(componentEvents).ToArray();
+                var length = points.Length - 1;
+
+                //WriteFrequencyProfile(points);
+
+                // Only select events having strong downward slope in spectrogram.
+                var avFirstTwoEvents = (points[0].Hertz.Minimum + points[0].Hertz.Minimum) / 2;
+                var avLastTwoEvents = (points[length - 1].Hertz.Minimum + points[length - 2].Hertz.Minimum) / 2;
+                if (avFirstTwoEvents - avLastTwoEvents > 500)
+                {
+                    returnEvents.Add(ev);
+                }
+            }
+
+            return returnEvents;
+        }
+
+        /// <summary>
+        /// The Boobook call syllable is shaped like an inverted "U". Its total duration is close to 0.15 seconds.
+        /// The rising portion lasts for 0.06s, followed by a turning portion, 0.03s, followed by the decending portion of 0.06s.
+        /// The constants for this method were obtained from the calls in a Gympie recording obtained by Yvonne Phillips.
+        /// </summary>
+        /// <param name="ev">An event containing at least one forward track i.e. a chirp.</param>
+        public static void SetFrequencyProfileScore(ChirpEvent ev)
+        {
+            const double risingDuration = 0.06;
+            const double gapDuration = 0.03;
+            const double fallingDuration = 0.06;
+
+            var track = ev.Tracks.First();
+            var profile = track.GetTrackFrequencyProfile().ToArray();
+
+            // get the first point
+            var firstPoint = track.Points.First();
+            var frameDuration = firstPoint.Seconds.Maximum - firstPoint.Seconds.Minimum;
+            var risingFrameCount = (int)Math.Floor(risingDuration / frameDuration);
+            var gapFrameCount = (int)Math.Floor(gapDuration / frameDuration);
+            var fallingFrameCount = (int)Math.Floor(fallingDuration / frameDuration);
+
+            var startSum = 0.0;
+            if (profile.Length >= risingFrameCount)
+            {
+                for (var i = 0; i <= risingFrameCount; i++)
+                {
+                    startSum += profile[i];
+                }
+            }
+
+            int startFrame = risingFrameCount + gapFrameCount;
+            int endFrame = startFrame + fallingFrameCount;
+            var endSum = 0.0;
+            if (profile.Length >= endFrame)
+            {
+                for (var i = startFrame; i <= endFrame; i++)
+                {
+                    endSum += profile[i];
+                }
+            }
+
+            // set score to 1.0 if the profile has inverted U shape.
+            double score = 0.0;
+            if (startSum > 0.0 && endSum < 0.0)
+            {
+                score = 1.0;
+            }
+
+            ev.FrequencyProfileScore = score;
+        }
+
+        /// <summary>
+        /// .
+        /// </summary>
+        /// <param name="points">List of spectral points.</param>
+        public static void WriteFrequencyProfile(ISpectralPoint[] points)
+        {
+            /* Here are the frequency profiles of some events.
+             * Note that the first five frames (0.057 seconds) have positive slope and subsequent frames have negative slope.
+             * The final frames are likely to be echo and to be avoided.
+             * Therefore take the first 0.6s to calculate the positive slope, leave a gap of 0.025 seconds and then get negative slope from the next 0.6 seconds.
+            */
+
+            if (points != null)
+            {
+                var str = $"Track({points[0].Seconds.Minimum:F2}):";
+
+                foreach (var point in points)
+                {
+                    str += $" {point.Hertz.Minimum},";
+                }
+
+                Console.WriteLine(str);
+            }
         }
 
         /*
