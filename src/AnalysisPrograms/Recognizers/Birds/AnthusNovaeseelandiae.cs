@@ -150,13 +150,18 @@ namespace AnalysisPrograms.Recognizers
         /// <returns>A list of composite events.</returns>
         public static List<EventCommon> FilterEventsOnFrequencyProfile(List<EventCommon> events)
         {
+            if (events.Count == 0)
+            {
+                return events;
+            }
+
             // select only the composite events.
             //var compositeEvents = events.Select(x => (CompositeEvent)x).ToList();
             var (compositeEvents, others) = events.FilterForEventType<CompositeEvent, EventCommon>();
 
-            if (compositeEvents == null)
+            if (compositeEvents == null || compositeEvents.Count == 0)
             {
-                return null;
+                return events;
             }
 
             // get the composite track for each composite event.
@@ -165,7 +170,13 @@ namespace AnalysisPrograms.Recognizers
             {
                 var componentEvents = ev.ComponentEvents;
                 var points = EventExtentions.GetCompositeTrack(componentEvents).ToArray();
-                var length = points.Length - 1;
+
+                // For Pipit require minimum of four frames duration.
+                var length = points.Length;
+                if (length < 4)
+                {
+                    continue;
+                }
 
                 //WriteFrequencyProfile(points);
 
