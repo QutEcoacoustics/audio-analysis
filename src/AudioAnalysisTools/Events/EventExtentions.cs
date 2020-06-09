@@ -9,6 +9,7 @@ namespace AudioAnalysisTools.Events
     using System.Linq;
     using AudioAnalysisTools.Events.Types;
     using AudioAnalysisTools.StandardSpectrograms;
+    using MoreLinq;
     using TowseyLibrary;
 
     public static class EventExtentions
@@ -359,6 +360,27 @@ namespace AudioAnalysisTools.Events
             }
 
             return filteredEvents;
+        }
+
+        /// <summary>
+        /// Combines all the tracks in all the events in the passed list into a single track.
+        /// Each frame in the composite event is assigned the spectral point having maximum amplitude.
+        /// The points in the returned array are in temporal order.
+        /// </summary>
+        /// <param name="events">List of spectral events.</param>
+        public static IEnumerable<ISpectralPoint> GetCompositeTrack(List<EventCommon> events)
+        {
+            var spectralEvents = events.Select(x => (WhipEvent)x);
+            var points = spectralEvents.SelectMany(x => x.Tracks.SelectMany(t => t.Points));
+
+            // group all the points by their start time.
+            var groupStarts = points.GroupBy(p => p.Seconds);
+
+            // for each group, for each point in group, choose the point having maximum (amplitude) value.
+            // Since there maybe multiple points having maximum amplitude, we pick the first one.
+            var maxAmplitudePoints = groupStarts.Select(g => g.MaxBy(p => p.Value).First());
+
+            return maxAmplitudePoints.OrderBy(p => p);
         }
     }
 }

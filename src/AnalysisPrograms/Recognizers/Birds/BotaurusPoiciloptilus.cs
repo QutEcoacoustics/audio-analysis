@@ -93,15 +93,6 @@ namespace AnalysisPrograms.Recognizers
             //var newEvents = spectralEvents.Cast<EventCommon>().ToList();
             //var spectralEvents = events.Select(x => (SpectralEvent)x).ToList();
 
-            // Uncomment the next line when want to obtain the event frequency profiles.
-            // WriteFrequencyProfiles(chirpEvents);
-
-            //foreach (var ev in whistleEvents)
-            //{
-            //    // Calculate frequency profile score for event
-            //    SetFrequencyProfileScore((WhistleEvent)ev);
-            //}
-
             if (combinedResults.NewEvents.Count == 0)
             {
                 BitternLog.Debug($"Return zero events.");
@@ -184,6 +175,15 @@ namespace AnalysisPrograms.Recognizers
             double sigmaThreshold = 3.0;
             combinedResults.NewEvents = EventExtentions.FilterOnBandwidth(combinedResults.NewEvents, average, sd, sigmaThreshold);
             BitternLog.Debug($"Event count after filtering on bandwidth = {combinedResults.NewEvents.Count}");
+
+            // Uncomment the next line when want to obtain the event frequency profiles.
+            // WriteFrequencyProfiles(chirpEvents);
+
+            //foreach (var ev in whistleEvents)
+            //{
+            //    // Calculate frequency profile score for event
+            //    SetFrequencyProfileScore((WhistleEvent)ev);
+            //}
 
             //UNCOMMENT following line if you want special debug spectrogram, i.e. with special plots.
             //  NOTE: Standard spectrograms are produced by setting SaveSonogramImages: "True" or "WhenEventsDetected" in UserName.SpeciesName.yml config file.
