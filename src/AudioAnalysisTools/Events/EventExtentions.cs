@@ -64,16 +64,6 @@ namespace AudioAnalysisTools.Events
         public static List<EventCommon> FilterOnBandwidth(List<EventCommon> events, double minBandwidth, double maxBandwidth)
         {
             var outputEvents = events.Where(ev => ((SpectralEvent)ev).BandWidthHertz > minBandwidth && ((SpectralEvent)ev).BandWidthHertz < maxBandwidth).ToList();
-
-            //var outputEvents = new List<EventCommon>();
-            //foreach (var ev in events)
-            //{
-            //    if (((SpectralEvent)ev).BandWidthHertz > minBandwidth && ((SpectralEvent)ev).BandWidthHertz < maxBandwidth)
-            //    {
-            //        outputEvents.Add(ev);
-            //    }
-            //}
-
             return outputEvents;
         }
 
@@ -101,15 +91,6 @@ namespace AudioAnalysisTools.Events
         public static List<EventCommon> FilterOnDuration(List<EventCommon> events, double minimumDurationSeconds, double maximumDurationSeconds)
         {
             var outputEvents = events.Where(ev => ((SpectralEvent)ev).EventDurationSeconds > minimumDurationSeconds && ((SpectralEvent)ev).EventDurationSeconds < maximumDurationSeconds).ToList();
-
-            //foreach (var ev in events)
-            //{
-            //    if (((SpectralEvent)ev).EventDurationSeconds > minimumDurationSeconds && ((SpectralEvent)ev).EventDurationSeconds < maximumDurationSeconds)
-            //    {
-            //        outputEvents.Add(ev);
-            //    }
-            //}
-
             return outputEvents;
         }
 
@@ -366,6 +347,7 @@ namespace AudioAnalysisTools.Events
         /// Combines all the tracks in all the events in the passed list into a single track.
         /// Each frame in the composite event is assigned the spectral point having maximum amplitude.
         /// The points in the returned array are in temporal order.
+        /// TODO TODO WARNING!  This method needs to be generalised from WhipEvent - see first line.
         /// </summary>
         /// <param name="events">List of spectral events.</param>
         public static IEnumerable<ISpectralPoint> GetCompositeTrack(List<EventCommon> events)
