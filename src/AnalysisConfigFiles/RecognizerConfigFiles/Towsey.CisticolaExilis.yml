@@ -2,7 +2,7 @@
 
 # Golden-headed cisticola = Cisticola exilis
 # Resample rate must be 2 X the desired Nyquist
-ResampleRate: 8000
+ResampleRate: 16000
 # SegmentDuration: units=seconds;    
 SegmentDuration: 60
 # SegmentOverlap: units=seconds;
@@ -15,43 +15,47 @@ Profiles:
         ComponentName: Whip 
         SpeciesName: CisticolaExilis
         FrameSize: 512
-        FrameStep: 256
+        FrameStep: 128
         WindowFunction: HANNING
         #BgNoiseThreshold: 0.0
         # min and max of the freq band to search
-        MinHertz: 100          
-        MaxHertz: 200
-        MinDuration: 0.3
-        MaxDuration: 1.0
+        MinHertz: 2100          
+        MaxHertz: 3300
+        MinBandwidthHertz: 200
+        MaxBandwidthHertz: 900
+        #MinDuration: 0.03
+        #MaxDuration: 0.06
         DecibelThreshold: 6.0
 
 #################### POST-PROCESSING of EVENTS ###################
 
 # A: First post-processing steps are to combine overlapping/proximal/sequential events 
 #  1: Combine overlapping events
-#CombineOverlappingEvents: false
+CombineOverlappingEvents: true
 
 #  2: Combine each pair of Boobook syllables as one event
 #     Can also use this to "mop up" events in neighbourhood - these can be removed later. 
 CombinePossibleSyllableSequence: true
-SyllableStartDifference: 3.0
-SyllableHertzGap: 35
+SyllableStartDifference: 0.15
+SyllableHertzGap: 500
 
 #  B: Filter the events for excess activity in their upper and lower buffer zones
-LowerHertzBuffer: 150
-UpperHertzBuffer: 400
+NeighbourhoodLowerHertzBuffer: 100
+NeighbourhoodUpperHertzBuffer: 200
+NeighbourhoodDbThreshold: 4.0
+
 
 # C: Options to save results files
-#  4: Available options for saving data files (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
-SaveIntermediateWavFiles: Never
-SaveIntermediateCsvFiles: false
-# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+#  4: Available options for saving spectrograms (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 # "True" is useful when debugging but "WhenEventsDetected" is required for operational use.
-
-#  5: Available options for saving 
 #SaveSonogramImages: True
 SaveSonogramImages: WhenEventsDetected
-# DisplayCsvImage is obsolete - ensure it remains set to: false
+
+#  5: Available options for saving data files (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveIntermediateWavFiles: Never
+SaveIntermediateCsvFiles: false
+
+# 6: DisplayCsvImage is obsolete - ensure it remains set to: false
 DisplayCsvImage: false
 ## End section for AnalyzeLongRecording
 

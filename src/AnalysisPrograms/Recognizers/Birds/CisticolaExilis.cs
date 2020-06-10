@@ -52,12 +52,12 @@ namespace AnalysisPrograms.Recognizers
             // This call sets a restriction so that only one generic algorithm is used.
             // CHANGE this to accept multiple generic algorithms as required.
             //if (result.Profiles.SingleOrDefault() is ForwardTrackParameters)
-            if (config.Profiles?.Count == 1 && config.Profiles.First().Value is ForwardTrackParameters)
+            if (config.Profiles?.Count == 1 && config.Profiles.First().Value is UpwardTrackParameters)
             {
                 return config;
             }
 
-            throw new ConfigFileException("CisticolaExilis expects one and only one ForwardTrack algorithm.", file);
+            throw new ConfigFileException("CisticolaExilis expects one and only one UpwardTrack algorithm.", file);
         }
 
         /// <summary>
@@ -95,93 +95,31 @@ namespace AnalysisPrograms.Recognizers
             //var newEvents = spectralEvents.Cast<EventCommon>().ToList();
             //var spectralEvents = events.Select(x => (SpectralEvent)x).ToList();
 
-            // 1: Pull out the chirp events and calculate their frequency profiles.
-            var (chirpEvents, others) = combinedResults.NewEvents.FilterForEventType<ChirpEvent, EventCommon>();
-
             if (combinedResults.NewEvents.Count == 0)
             {
                 CisticolaLog.Debug($"Return zero events.");
                 return combinedResults;
             }
 
-            // 2: Combine overlapping events. If the dB threshold is set low, may get lots of little events.
-            combinedResults.NewEvents = CompositeEvent.CombineOverlappingEvents(chirpEvents.Cast<EventCommon>().ToList());
-            CisticolaLog.Debug($"Event count after combining overlaps = {combinedResults.NewEvents.Count}");
-
-            // 3: Combine proximal events. If the dB threshold is set low, may get lots of little events.
-            if (genericConfig.CombinePossibleSyllableSequence)
-            {
-                // Convert events to spectral events for combining of possible sequences.
-                // Can also use this parameter to combine events that are in the upper or lower neighbourhood.
-                // Such combinations will increase bandwidth of the event and this property can be used later to weed out unlikely events.
-                var spectralEvents1 = combinedResults.NewEvents.Cast<SpectralEvent>().ToList();
-                var startDiff = genericConfig.SyllableStartDifference;
-                var hertzDiff = genericConfig.SyllableHertzGap;
-                combinedResults.NewEvents = CompositeEvent.CombineProximalEvents(spectralEvents1, TimeSpan.FromSeconds(startDiff), (int)hertzDiff);
-                CisticolaLog.Debug($"Event count after combining proximals = {combinedResults.NewEvents.Count}");
-            }
-
-            // Get the CisticolaSyllable config.
-            const string profileName = "CisticolaSyllable";
-            var configuration = (CisticolaExilisConfig)genericConfig;
-            var chirpConfig = (ForwardTrackParameters)configuration.Profiles[profileName];
-
-            // 4: Filter events on the amount of acoustic activity in their upper and lower neighbourhoods - their buffer zone.
-            //    The idea is that an unambiguous event should have some acoustic space above and below.
-            //    The filter requires that the average acoustic activity in each frame and bin of the upper and lower buffer zones should not exceed the user specified decibel threshold.
-            //    The bandwidth of these two neighbourhoods is determined by the following parameters.
-            //    ########## These parameters could be specified by user in config.yml file.
-            var upperHertzBuffer = 400;
-            var lowerHertzBuffer = 150;
-
-            // The decibel threshold is currently set 5/6ths of the user specified threshold.
-            // THIS IS TO BE WATCHED. IT MAY PROVE TO BE INAPPROPRIATE TO HARD-CODE.
-            // Want the activity in buffer zones to be "somewhat" less than the user-defined threshold.
-            var neighbourhoodDbThreshold = chirpConfig.DecibelThreshold.Value * 0.8333;
-
-            if (upperHertzBuffer > 0 || lowerHertzBuffer > 0)
-            {
-                var spectralEvents2 = combinedResults.NewEvents.Cast<SpectralEvent>().ToList();
-                combinedResults.NewEvents = EventExtentions.FilterEventsOnNeighbourhood(
-                    spectralEvents2,
-                    combinedResults.Sonogram,
-                    lowerHertzBuffer,
-                    upperHertzBuffer,
-                    segmentStartOffset,
-                    neighbourhoodDbThreshold);
-
-                CisticolaLog.Debug($"Event count after filtering on neighbourhood = {combinedResults.NewEvents.Count}");
-            }
-
-            if (combinedResults.NewEvents.Count == 0)
-            {
-                CisticolaLog.Debug($"Return zero events.");
-                return combinedResults;
-            }
-
-            // 5: Filter on COMPONENT COUNT in Composite events.
-            int maxComponentCount = 2;
-            combinedResults.NewEvents = EventExtentions.FilterEventsOnCompositeContent(combinedResults.NewEvents, maxComponentCount);
-            CisticolaLog.Debug($"Event count after filtering on component count = {combinedResults.NewEvents.Count}");
-
-            // 6: Filter the events for duration in seconds
-            var minimumEventDuration = chirpConfig.MinDuration;
-            var maximumEventDuration = chirpConfig.MaxDuration;
-            if (genericConfig.CombinePossibleSyllableSequence)
-            {
-                minimumEventDuration *= 2.0;
-                maximumEventDuration *= 1.5;
-            }
-
-            combinedResults.NewEvents = EventExtentions.FilterOnDuration(combinedResults.NewEvents, minimumEventDuration.Value, maximumEventDuration.Value);
+            // 1: Filter the events for duration in seconds
+            var minimumEventDuration = 0.1;
+            var maximumEventDuration = 0.25;
+            combinedResults.NewEvents = EventExtentions.FilterOnDuration(combinedResults.NewEvents, minimumEventDuration, maximumEventDuration);
             CisticolaLog.Debug($"Event count after filtering on duration = {combinedResults.NewEvents.Count}");
 
-            // 7: Filter the events for bandwidth in Hertz
-            double average = 280;
-            double sd = 40;
+            // 2: Filter the events for bandwidth in Hertz
+            double average = 600;
+            double sd = 150;
             double sigmaThreshold = 3.0;
             combinedResults.NewEvents = EventExtentions.FilterOnBandwidth(combinedResults.NewEvents, average, sd, sigmaThreshold);
             CisticolaLog.Debug($"Event count after filtering on bandwidth = {combinedResults.NewEvents.Count}");
+
+            // 3: Filter on COMPONENT COUNT in Composite events.
+            //int maxComponentCount = 2;
+            //combinedResults.NewEvents = EventExtentions.FilterEventsOnCompositeContent(combinedResults.NewEvents, maxComponentCount);
+            //CisticolaLog.Debug($"Event count after filtering on component count = {combinedResults.NewEvents.Count}");
+
+            //combinedResults.NewEvents = FilterEventsOnFrequencyProfile(combinedResults.NewEvents);
 
             //UNCOMMENT following line if you want special debug spectrogram, i.e. with special plots.
             //  NOTE: Standard spectrograms are produced by setting SaveSonogramImages: "True" or "WhenEventsDetected" in UserName.SpeciesName.yml config file.
@@ -209,11 +147,6 @@ namespace AnalysisPrograms.Recognizers
         /// <inheritdoc cref="CisticolaExilisConfig"/> />
         public class CisticolaExilisConfig : GenericRecognizerConfig, INamedProfiles<object>
         {
-            public bool CombinePossibleSyllableSequence { get; set; } = false;
-
-            public double SyllableStartDifference { get; set; } = 0.5;
-
-            public double SyllableHertzGap { get; set; } = 200;
         }
     }
 }

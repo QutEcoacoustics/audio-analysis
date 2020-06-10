@@ -18,7 +18,8 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     /// <summary>
-    /// Species name = Golden-headed cisticola = Cisticola exilis.
+    /// The canonical recording used for this recognizer is a 30 second recording containing five Pipit calls and a number of Cisticola and other bird calls.
+    /// It was recorded in Narrabri region and forms part of the Cotton Project data set.
     /// </summary>
     [TestClass]
     public class CisticolaTests : OutputDirectoryTest
@@ -26,18 +27,23 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
         /// <summary>
         /// The canonical recording used for this recognizer is a 31 second recording .
         /// </summary>
-        private static readonly FileInfo TestAsset = PathHelper.ResolveAsset("Recordings", "gympie_np_1192_331618_20150818_054959_31_0.wav");
+        //private static readonly FileInfo TestAsset = PathHelper.ResolveAsset("Recordings", "ms1_2559_630118_20170402_075841_30_0.wav");
+        private static readonly FileInfo TestAsset = new FileInfo(@"C:\Ecoacoustics\WavFiles\TestNoiseRecordings\Cisticola\ms1_2559_628362_20170408_074841_30_0.wav");
+
         private static readonly FileInfo ConfigFile = PathHelper.ResolveConfigFile("RecognizerConfigFiles", "Towsey.CisticolaExilis.yml");
-        private static readonly AudioRecording Recording = new AudioRecording(TestAsset);
         private static readonly CisticolaExilis Recognizer = new CisticolaExilis();
 
         [TestMethod]
         public void TestRecognizer()
         {
             var config = Recognizer.ParseConfig(ConfigFile);
+            int resampleRate = config.ResampleRate.Value;
+            string opDir = this.TestOutputDirectory.FullName;
+            string opFileName = "tempFile.wav";
+            var recording = AudioRecording.GetAudioRecording(TestAsset, resampleRate, opDir, opFileName);
 
             var results = Recognizer.Recognize(
-                audioRecording: Recording,
+                audioRecording: recording,
                 config: config,
                 segmentStartOffset: TimeSpan.Zero,
                 getSpectralIndexes: null,
