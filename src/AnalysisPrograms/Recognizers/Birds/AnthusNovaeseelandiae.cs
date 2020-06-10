@@ -59,7 +59,7 @@ namespace AnalysisPrograms.Recognizers
                 return config;
             }
 
-            throw new ConfigFileException("AnthusNovaeseelandiae expects one and only one ForwardTrack algorithm.", file);
+            throw new ConfigFileException("AnthusNovaeseelandiae expects one and only one UpwardTrack algorithm.", file);
         }
 
         /// <summary>
@@ -103,26 +103,13 @@ namespace AnalysisPrograms.Recognizers
                 return combinedResults;
             }
 
-            // 1: Pull out the whip events and calculate their frequency profiles.
-            //var (whipEvents, others) = combinedResults.NewEvents.FilterForEventType<WhipEvent, EventCommon>();
-            // calculate profile here.
-
-            // Get the Pipit syllable config.
-            //const string profileName = "PipitSyllable";
-            //var whipConfig = (UpwardTrackParameters)genericConfig.Profiles[profileName];
-
-            // 2: Filter on COMPONENT COUNT in Composite events.
-            //int maxComponentCount = 2;
-            //combinedResults.NewEvents = EventExtentions.FilterEventsOnCompositeContent(combinedResults.NewEvents, maxComponentCount);
-            //PipitLog.Debug($"Event count after filtering on component count = {combinedResults.NewEvents.Count}");
-
-            // 3: Filter the events for duration in seconds
+            // 1: Filter the events for duration in seconds
             var minimumEventDuration = 0.1;
             var maximumEventDuration = 0.4;
             combinedResults.NewEvents = EventExtentions.FilterOnDuration(combinedResults.NewEvents, minimumEventDuration, maximumEventDuration);
             PipitLog.Debug($"Event count after filtering on duration = {combinedResults.NewEvents.Count}");
 
-            // 4: Filter the events for bandwidth in Hertz
+            // 2: Filter the events for bandwidth in Hertz
             double average = 3500;
             double sd = 600;
             double sigmaThreshold = 3.0;
