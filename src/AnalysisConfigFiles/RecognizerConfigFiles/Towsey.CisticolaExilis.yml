@@ -40,7 +40,7 @@ SyllableStartDifference: 0.15
 SyllableHertzGap: 500
 
 #  B: Filter the events for excess activity in their upper and lower buffer zones
-NeighbourhoodLowerHertzBuffer: 100
+NeighbourhoodLowerHertzBuffer: 0
 NeighbourhoodUpperHertzBuffer: 200
 NeighbourhoodDbThreshold: 4.0
 
