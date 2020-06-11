@@ -27,8 +27,8 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
         /// <summary>
         /// The canonical recording used for this recognizer is a 31 second recording .
         /// </summary>
-        //private static readonly FileInfo TestAsset = PathHelper.ResolveAsset("Recordings", "ms1_2559_630118_20170402_075841_30_0.wav");
-        private static readonly FileInfo TestAsset = new FileInfo(@"C:\Ecoacoustics\WavFiles\TestNoiseRecordings\Cisticola\ms1_2559_628362_20170408_074841_30_0.wav");
+        private static readonly FileInfo TestAsset = PathHelper.ResolveAsset("Recordings", "ms1_2559_630118_20170402_075841_30_0.wav");
+        //private static readonly FileInfo TestAsset = new FileInfo(@"C:\Ecoacoustics\WavFiles\TestNoiseRecordings\Cisticola\ms1_2559_628362_20170408_074841_30_0.wav");
 
         private static readonly FileInfo ConfigFile = PathHelper.ResolveConfigFile("RecognizerConfigFiles", "Towsey.CisticolaExilis.yml");
         private static readonly CisticolaExilis Recognizer = new CisticolaExilis();
@@ -58,21 +58,23 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             this.SaveTestOutput(
                 outputDirectory => GenericRecognizer.SaveDebugSpectrogram(results, null, outputDirectory, Recognizer.SpeciesName));
 
-            Assert.AreEqual(8, events.Count);
+            // this test returns with two false-negatives.
+            // It is possible to get all positive events but creates excess FPs on test data.
+            Assert.AreEqual(17, events.Count);
             Assert.IsNull(scoreTrack);
             Assert.AreEqual(1, plots.Count);
-            Assert.AreEqual(2667, sonogram.FrameCount);
+            Assert.AreEqual(3747, sonogram.FrameCount);
 
-            Assert.IsInstanceOfType(events[1], typeof(CompositeEvent));
+            Assert.IsInstanceOfType(events[3], typeof(CompositeEvent));
 
-            var secondEvent = (CompositeEvent)events[1];
+            var secondEvent = (CompositeEvent)events[3];
 
-            Assert.AreEqual(5.375419501133787, secondEvent.EventStartSeconds);
-            Assert.AreEqual(6.0720181405895692, secondEvent.EventEndSeconds);
-            Assert.AreEqual(483, secondEvent.LowFrequencyHertz);
-            Assert.AreEqual(735, secondEvent.HighFrequencyHertz);
-            Assert.AreEqual(20.901882476071698, secondEvent.Score, TestHelper.AllowedDelta);
-            Assert.AreEqual(0.20786700431266195, secondEvent.ScoreNormalized, TestHelper.AllowedDelta);
+            Assert.AreEqual(7.28, secondEvent.EventStartSeconds);
+            Assert.AreEqual(7.432, secondEvent.EventEndSeconds);
+            Assert.AreEqual(2542, secondEvent.LowFrequencyHertz);
+            Assert.AreEqual(3100, secondEvent.HighFrequencyHertz);
+            Assert.AreEqual(17.91649081319, secondEvent.Score, TestHelper.AllowedDelta);
+            Assert.AreEqual(0.07765486486, secondEvent.ScoreNormalized, TestHelper.AllowedDelta);
         }
     }
 }

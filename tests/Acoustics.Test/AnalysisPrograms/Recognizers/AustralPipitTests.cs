@@ -7,6 +7,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using Acoustics.Test.TestHelpers;
     using Acoustics.Tools.Wav;
     using global::AnalysisPrograms.Recognizers;
@@ -56,17 +57,30 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             this.SaveTestOutput(
                 outputDirectory => GenericRecognizer.SaveDebugSpectrogram(results, null, outputDirectory, Recognizer.SpeciesName));
 
-            Assert.AreEqual(5, events.Count);
+            //this test returns two false-positives with the current component parameters.
+            Assert.AreEqual(7, events.Count);
             Assert.IsNull(scoreTrack);
             Assert.AreEqual(1, plots.Count);
             Assert.AreEqual(1874, sonogram.FrameCount);
 
-            Assert.IsInstanceOfType(events[1], typeof(CompositeEvent));
-            var ev = (CompositeEvent)events[1];
+            Assert.IsInstanceOfType(events[2], typeof(CompositeEvent));
+            var ev = (CompositeEvent)events[2];
 
+            // event 2 should be a composite event.
             Assert.AreEqual(16.656, ev.EventStartSeconds);
-            Assert.AreEqual(17.024, ev.EventEndSeconds);
-            Assert.AreEqual(3689, ev.BandWidthHertz);
+            Assert.AreEqual(17.008, ev.EventEndSeconds);
+            Assert.AreEqual(3596, ev.BandWidthHertz);
+
+            // event 2 should contain 5 component events
+            var componentEvents = ev.ComponentEvents;
+            Assert.AreEqual(5, componentEvents.Count);
+
+            // This tests that the component tracks are correctly combined.
+            //THis can also be tested somewhere else, starting with just the comosite event in json file.
+            var points = EventExtentions.GetCompositeTrack(componentEvents).ToArray();
+            Assert.AreEqual(16.672, points[1].Seconds.Minimum);
+            Assert.AreEqual(5425, points[1].Hertz.Minimum);
+            Assert.AreEqual(23.71245325, points[1].Value, 0.001);
         }
     }
 }
