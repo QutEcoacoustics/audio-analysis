@@ -55,18 +55,25 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// Method assumes that the column count for two matrices is the same.
+        /// Concatenates two matrices that have the same column count.
+        /// That is, each row of the output matrix is the join of the equivalent two rows of the input matrices.
         /// </summary>
         public static double[,] ConcatenateMatrixRows(double[,] m1, double[,] m2)
         {
-            int colCount = m1.GetLength(1);
+            int m1ColCount = m1.GetLength(1);
+            int m2ColCount = m2.GetLength(1);
             int m1RowCount = m1.GetLength(0);
             int m2RowCount = m2.GetLength(0);
 
-            var opMatrix = new double[m1RowCount + m2RowCount, colCount];
+            if (m1ColCount != m2ColCount)
+            {
+                throw new ArgumentException($"Cannot join these matrices. They do not have the same column count. {m1ColCount} != {m2ColCount}.");
+            }
+
+            var opMatrix = new double[m1RowCount + m2RowCount, m1ColCount];
             for (int r = 0; r < m1RowCount; r++)
             {
-                for (int c = 0; c < colCount; c++)
+                for (int c = 0; c < m1ColCount; c++)
                 {
                     opMatrix[r, c] = m1[r, c];
                 }
@@ -75,9 +82,44 @@ namespace TowseyLibrary
             for (int r = 0; r < m2RowCount; r++)
             {
                 int row = m1RowCount + r;
-                for (int c = 0; c < colCount; c++)
+                for (int c = 0; c < m1ColCount; c++)
                 {
                     opMatrix[row, c] = m2[r, c];
+                }
+            }
+
+            return opMatrix;
+        }
+
+        /// <summary>
+        /// Concatenates two matrices that have the same row count.
+        /// That is, each row of the output matrix is the join of the equivalent two rows of the input matrices.
+        /// WARNING: If the two matrices do not have the same number of rows, an exception is thrown.
+        /// </summary>
+        public static double[,] ConcatenateTwoMatrices(double[,] matrix1, double[,] matrix2)
+        {
+            int rowCount1 = matrix1.GetLength(0);
+            int colCount1 = matrix1.GetLength(1);
+            int rowCount2 = matrix2.GetLength(0);
+            int colCount2 = matrix2.GetLength(1);
+
+            if (rowCount1 != rowCount2)
+            {
+                throw new ArgumentException($"Cannot join these matrices. They do not have the same row count. {rowCount1} != {rowCount2}.");
+            }
+
+            double[,] opMatrix = new double[rowCount1, colCount1 + colCount2];
+
+            for (int row = 0; row < rowCount1; row++)
+            {
+                for (int col = 0; col < colCount1; col++)
+                {
+                    opMatrix[row, col] = matrix1[row, col];
+                }
+
+                for (int col = 0; col < colCount2; col++)
+                {
+                    opMatrix[row, colCount1 + col] = matrix2[row, col];
                 }
             }
 
@@ -283,41 +325,6 @@ namespace TowseyLibrary
             }
 
             return v;
-        }
-
-        /// <summary>
-        /// Concatenate two matrices.
-        /// WARNING: This method requires that the two matrices have the same number of rows.
-        ///          They will be joined by adding the columns of M2 to the columns of M1.
-        /// </summary>
-        public static double[,] ConcatenateTwoMatrices(double[,] matrix1, double[,] matrix2)
-        {
-            int rowCount1 = matrix1.GetLength(0);
-            int colCount1 = matrix1.GetLength(1);
-            int rowCount2 = matrix2.GetLength(0);
-            int colCount2 = matrix2.GetLength(1);
-
-            if(rowCount1 != rowCount2)
-            {
-                throw new ArgumentException($"Cannot join these matrices. They do not have the same row count. {rowCount1} != {rowCount2}.");
-            }
-
-            double[,] opMatrix = new double[rowCount1, colCount1 + colCount2];
-
-            for (int row = 0; row < rowCount1; row++)
-            {
-                for (int col = 0; col < colCount1; col++)
-                {
-                    opMatrix[row, col] = matrix1[row, col];
-                }
-
-                for (int col = 0; col < colCount2; col++)
-                {
-                    opMatrix[row, colCount1 + col] = matrix1[row, col];
-                }
-            }
-
-            return opMatrix;
         }
 
         /// <summary>
