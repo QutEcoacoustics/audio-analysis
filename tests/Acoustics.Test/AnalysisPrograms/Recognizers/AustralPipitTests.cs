@@ -12,6 +12,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
     using Acoustics.Tools.Wav;
     using global::AnalysisPrograms.Recognizers;
     using global::AnalysisPrograms.SourcePreparers;
+    using global::AudioAnalysisTools;
     using global::AudioAnalysisTools.Events;
     using global::AudioAnalysisTools.Events.Types;
     using global::AudioAnalysisTools.WavTools;
@@ -77,10 +78,10 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
 
             // This tests that the component tracks are correctly combined.
             //This can also be tested somewhere else, starting with just the comosite event in json file.
-            var points = EventExtentions.GetCompositeTrack(componentEvents).ToArray();
+            var points = EventExtentions.GetCompositeTrack(componentEvents.Cast<WhipEvent>()).ToArray();
             Assert.AreEqual(16.672, points[1].Seconds.Minimum);
             Assert.AreEqual(5425, points[1].Hertz.Minimum);
-            Assert.AreEqual(23.71245325, points[1].Value, TestHelper.AllowedDelta);
+            Assert.AreEqual(23.712453258003087, points[1].Value, TestHelper.AllowedDelta);
         }
     }
 }

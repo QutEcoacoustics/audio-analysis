@@ -143,7 +143,7 @@ namespace AnalysisPrograms.Recognizers
             var returnEvents = new List<EventCommon>();
             foreach (var ev in compositeEvents)
             {
-                var componentEvents = ev.ComponentEvents;
+                var componentEvents = ev.ComponentEvents.Cast<WhipEvent>();
                 var points = EventExtentions.GetCompositeTrack(componentEvents).ToArray();
 
                 // Uncomment this line when want to see the composite track profile.
