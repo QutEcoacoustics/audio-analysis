@@ -17,7 +17,6 @@ Profiles:
         FrameSize: 512
         FrameStep: 256
         WindowFunction: HANNING
-        #BgNoiseThreshold: 0.0
         # min and max of the freq band to search
         MinHertz: 100          
         MaxHertz: 200
@@ -29,7 +28,7 @@ Profiles:
 
 # A: First post-processing steps are to combine overlapping/proximal/sequential events 
 #  1: Combine overlapping events
-#CombineOverlappingEvents: false
+CombineOverlappingEvents: false
 
 #  2: Combine each pair of Boobook syllables as one event
 #     Can also use this to "mop up" events in neighbourhood - these can be removed later. 
@@ -38,25 +37,27 @@ SyllableStartDifference: 3.0
 SyllableHertzGap: 35
 
 #  B: Filter the events for excess activity in their upper and lower buffer zones
-LowerHertzBuffer: 150
-UpperHertzBuffer: 400
+NeighbourhoodLowerHertzBuffer: 150
+NeighbourhoodUpperHertzBuffer: 400
+NeighbourhoodDbThreshold: 6.0
 
 # C: Options to save results files
-#  4: Available options for saving data files (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
-SaveIntermediateWavFiles: Never
-SaveIntermediateCsvFiles: false
-# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+#  4: Available options for saving spectrograms (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 # "True" is useful when debugging but "WhenEventsDetected" is required for operational use.
-
-#  5: Available options for saving 
 #SaveSonogramImages: True
 SaveSonogramImages: WhenEventsDetected
-# DisplayCsvImage is obsolete - ensure it remains set to: false
+
+#  5: Available options for saving data files (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveIntermediateWavFiles: Never
+SaveIntermediateCsvFiles: false
+
+# 6: DisplayCsvImage is obsolete - ensure it remains set to: false
 DisplayCsvImage: false
 ## End section for AnalyzeLongRecording
 
 # Other config files to reference
 HighResolutionIndicesConfig: "../Towsey.Acoustic.HiResIndicesForRecognisers.yml"
+...
 
 ################################################################################
 # Common settings
@@ -68,4 +69,3 @@ HighResolutionIndicesConfig: "../Towsey.Acoustic.HiResIndicesForRecognisers.yml"
 # however, the DctDuration parameter has been overridden.
 #  <<: *STANDARD
 #  DctDuration: 0.3
-...
