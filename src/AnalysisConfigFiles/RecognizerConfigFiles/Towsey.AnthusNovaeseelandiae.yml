@@ -58,14 +58,4 @@ DisplayCsvImage: false
 # Other config files to reference
 HighResolutionIndicesConfig: "../Towsey.Acoustic.HiResIndicesForRecognisers.yml"
 
-################################################################################
-# Common settings
-#Standard: &STANDARD
-#EventThreshold: 0.2
-#BgNoiseThreshold: 3.0
-
-# This notation means the a profile has all of the settings that the Standard profile has,
-# however, the DctDuration parameter has been overridden.
-#  <<: *STANDARD
-#  DctDuration: 0.3
 ...

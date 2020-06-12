@@ -60,16 +60,6 @@ namespace AnalysisPrograms.Recognizers
             throw new ConfigFileException("CisticolaExilis expects one and only one UpwardTrack algorithm.", file);
         }
 
-        /// <summary>
-        /// This method is called once per segment (typically one-minute segments).
-        /// </summary>
-        /// <param name="audioRecording">one minute of audio recording.</param>
-        /// <param name="config">config file that contains parameters used by all profiles.</param>
-        /// <param name="segmentStartOffset">when recording starts.</param>
-        /// <param name="getSpectralIndexes">not sure what this is.</param>
-        /// <param name="outputDirectory">where the recognizer results can be found.</param>
-        /// <param name="imageWidth"> assuming ????.</param>
-        /// <returns>recognizer results.</returns>
         public override RecognizerResults Recognize(
             AudioRecording audioRecording,
             Config config,
@@ -91,10 +81,6 @@ namespace AnalysisPrograms.Recognizers
                 imageWidth);
 
             // ################### POST-PROCESSING of EVENTS ###################
-            // Following two commented lines are different ways of casting lists.
-            //var newEvents = spectralEvents.Cast<EventCommon>().ToList();
-            //var spectralEvents = events.Select(x => (SpectralEvent)x).ToList();
-
             if (combinedResults.NewEvents.Count == 0)
             {
                 CisticolaLog.Debug($"Return zero events.");
@@ -144,7 +130,6 @@ namespace AnalysisPrograms.Recognizers
         }
         */
 
-        /// <inheritdoc cref="CisticolaExilisConfig"/> />
         public class CisticolaExilisConfig : GenericRecognizerConfig, INamedProfiles<object>
         {
         }

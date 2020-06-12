@@ -80,7 +80,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             var points = EventExtentions.GetCompositeTrack(componentEvents).ToArray();
             Assert.AreEqual(16.672, points[1].Seconds.Minimum);
             Assert.AreEqual(5425, points[1].Hertz.Minimum);
-            Assert.AreEqual(23.71245325, points[1].Value, 0.001);
+            Assert.AreEqual(23.71245325, points[1].Value, TestHelper.AllowedDelta);
         }
     }
 }

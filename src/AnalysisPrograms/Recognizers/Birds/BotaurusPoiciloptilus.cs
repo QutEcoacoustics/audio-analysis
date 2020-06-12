@@ -155,7 +155,6 @@ namespace AnalysisPrograms.Recognizers
         }
         */
 
-        /// <inheritdoc cref="BotaurusPoiciloptilusConfig"/> />
         public class BotaurusPoiciloptilusConfig : GenericRecognizerConfig, INamedProfiles<object>
         {
         }
