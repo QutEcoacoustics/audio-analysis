@@ -93,9 +93,6 @@ namespace AnalysisPrograms.Recognizers
                 imageWidth);
 
             // ################### POST-PROCESSING of EVENTS ###################
-            // Following two commented lines are different ways of casting lists.
-            //var newEvents = spectralEvents.Cast<EventCommon>().ToList();
-            //var spectralEvents = events.Select(x => (SpectralEvent)x).ToList();
 
             if (combinedResults.NewEvents.Count == 0)
             {
