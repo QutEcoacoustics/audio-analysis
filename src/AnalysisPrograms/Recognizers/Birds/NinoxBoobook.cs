@@ -266,7 +266,6 @@ public override void SummariseResults(
 }
 */
 
-        /// <inheritdoc cref="NinoxBoobookConfig"/> />
         public class NinoxBoobookConfig : GenericRecognizerConfig, INamedProfiles<object>
         {
         }
