@@ -17,14 +17,11 @@ Profiles:
         FrameSize: 512
         FrameStep: 128
         WindowFunction: HANNING
-        #BgNoiseThreshold: 0.0
         # min and max of the freq band to search
         MinHertz: 2100          
         MaxHertz: 3300
         MinBandwidthHertz: 200
         MaxBandwidthHertz: 900
-        #MinDuration: 0.03
-        #MaxDuration: 0.06
         DecibelThreshold: 6.0
 
 #################### POST-PROCESSING of EVENTS ###################
@@ -33,7 +30,7 @@ Profiles:
 #  1: Combine overlapping events
 CombineOverlappingEvents: true
 
-#  2: Combine each pair of Boobook syllables as one event
+#  2: Combine syllables that possibly belong to the same strophe.
 #     Can also use this to "mop up" events in neighbourhood - these can be removed later. 
 CombinePossibleSyllableSequence: true
 SyllableStartDifference: 0.15
@@ -43,7 +40,6 @@ SyllableHertzGap: 500
 NeighbourhoodLowerHertzBuffer: 0
 NeighbourhoodUpperHertzBuffer: 200
 NeighbourhoodDbThreshold: 4.0
-
 
 # C: Options to save results files
 #  4: Available options for saving spectrograms (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
