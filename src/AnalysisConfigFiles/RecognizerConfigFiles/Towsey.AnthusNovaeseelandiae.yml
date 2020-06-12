@@ -17,14 +17,11 @@ Profiles:
         FrameSize: 512
         FrameStep: 256
         WindowFunction: HANNING
-        #BgNoiseThreshold: 0.0
         # min and max of the freq band to search
         MinHertz: 2000          
         MaxHertz: 7000
         MinBandwidthHertz: 500
         MaxBandwidthHertz: 5000
-        #MinDuration: 0.1
-        #MaxDuration: 0.5
         DecibelThreshold: 9.0
 
 #################### POST-PROCESSING of EVENTS ###################
@@ -33,8 +30,8 @@ Profiles:
 #  1: Combine overlapping events
 CombineOverlappingEvents: true
 
-#  2: Combine syllables that possibly belong to the saem strophe.
-#     Can also use this to "mop up" events in neighbourhood - for later removal. 
+#  2: Combine syllables that possibly belong to the same strophe.
+#     Can also use this to "mop up" events in neighbourhood - these can be removed later. 
 CombinePossibleSyllableSequence: true
 SyllableStartDifference: 0.25
 SyllableHertzGap: 3000
@@ -45,16 +42,16 @@ NeighbourhoodUpperHertzBuffer: 0
 NeighbourhoodDbThreshold: 9.0
 
 # C: Options to save results files
-#  4: Available options for saving data files (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+#  4: Available options for saving spectrograms (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+# "True" is useful when debugging but "WhenEventsDetected" is required for operational use.
+#SaveSonogramImages: True
+SaveSonogramImages: WhenEventsDetected
+
+#  5: Available options for saving data files (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
 SaveIntermediateCsvFiles: false
-# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
-# "True" is useful when debugging but "WhenEventsDetected" is required for operational use.
 
-#  5: Available options for saving 
-SaveSonogramImages: True
-#SaveSonogramImages: WhenEventsDetected
-# DisplayCsvImage is obsolete - ensure it remains set to: false
+# 6: DisplayCsvImage is obsolete - ensure it remains set to: false
 DisplayCsvImage: false
 ## End section for AnalyzeLongRecording
 
