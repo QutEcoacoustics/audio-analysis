@@ -130,7 +130,6 @@ namespace AnalysisPrograms.Recognizers
         }
         */
 
-        /// <inheritdoc cref="CisticolaExilisConfig"/> />
         public class CisticolaExilisConfig : GenericRecognizerConfig, INamedProfiles<object>
         {
         }
