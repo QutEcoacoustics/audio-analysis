@@ -261,7 +261,6 @@ namespace AnalysisPrograms.Recognizers
         }
         */
 
-        /// <inheritdoc cref="PipitConfig"/> />
         public class PipitConfig : GenericRecognizerConfig, INamedProfiles<object>
         {
         }
