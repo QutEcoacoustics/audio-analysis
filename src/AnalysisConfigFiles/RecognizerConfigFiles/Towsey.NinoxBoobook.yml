@@ -1,14 +1,12 @@
 ---
 
+# Boobook Owl = Towsey.NinoxBoobook
 # Resample rate must be 2 X the desired Nyquist
 #ResampleRate: 22050
 # SegmentDuration: units=seconds;    
 SegmentDuration: 60
 # SegmentOverlap: units=seconds;
 SegmentOverlap: 0
-
-# Preprocessing of the recording segment
-IgnoreHighAmplitudeClippedRecordingSegments: true
 
 # Each of these profiles will be analyzed
 # This profile is required for the species-specific recogniser and must have the current name.
@@ -19,7 +17,6 @@ Profiles:
         FrameSize: 1024
         FrameStep: 256
         WindowFunction: HANNING
-        BgNoiseThreshold: 0.0
         # min and max of the freq band to search
         MinHertz: 400          
         MaxHertz: 1100
@@ -31,7 +28,7 @@ Profiles:
 
 # A: First post-processing steps are to combine overlapping/proximal/sequential events 
 #  1: Combine overlapping events
-#CombineOverlappingEvents: false
+CombineOverlappingEvents: true
 
 #  2: Combine each pair of Boobook syllables as one event
 #     Can also use this to "mop up" events in neighbourhood - these can be removed later. 
@@ -39,41 +36,25 @@ CombinePossibleSyllableSequence: true
 SyllableStartDifference: 0.6
 SyllableHertzGap: 350
 
-# B: Select or remove event types.
-#  3: Select wanted event types.
-#SelectEventsOfType: !ChirpEvent
-
-#  4: Remove unwanted event types.
-#RemoveEventsOfType: !ChirpEvent 
-
-# C: Remaining post-processing steps are to filter out over and/or undersized events
-#  5: Filter the events for duration in seconds
-RemoveEventsHavingWrongDuration: true
-
-#  6: Filter the events for bandwidth in Hertz
-RemoveEventsHavingWrongBandwidth: true
-
-#  7: Filter the events for excess activity in upper buffer zone
-RemoveEventsHavingExcessActivityInUpperBufferZone: true
-
-#  8: Filter the events for excess activity in lower buffer zone
-RemoveEventsHavingExcessActivityInLowerBufferZone: true
+#  B: Filter the events for excess activity in their upper and lower buffer zones
+NeighbourhoodLowerHertzBuffer: 150
+NeighbourhoodUpperHertzBuffer: 400
+NeighbourhoodDbThreshold: 9.0
 
 # C: Options to save results files
-#  9: Available options for saving data files (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
-SaveIntermediateWavFiles: Never
-SaveIntermediateCsvFiles: false
-# Available options (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+#  4: Available options for saving spectrograms (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 # "True" is useful when debugging but "WhenEventsDetected" is required for operational use.
-
-#  10: Available options for saving 
 #SaveSonogramImages: True
 SaveSonogramImages: WhenEventsDetected
-# DisplayCsvImage is obsolete - ensure it remains set to: false
+
+#  5: Available options for saving data files (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+SaveIntermediateWavFiles: Never
+SaveIntermediateCsvFiles: false
+
+# 6: DisplayCsvImage is obsolete - ensure it remains set to: false
 DisplayCsvImage: false
 ## End section for AnalyzeLongRecording
 
 # Other config files to reference
-
 HighResolutionIndicesConfig: "../Towsey.Acoustic.HiResIndicesForRecognisers.yml"
 ...

@@ -96,85 +96,17 @@ namespace AnalysisPrograms.Recognizers
             //var newEvents = spectralEvents.Cast<EventCommon>().ToList();
             //var spectralEvents = events.Select(x => (SpectralEvent)x).ToList();
 
-            // 1: Pull out the chirp events and calculate their frequency profiles.
-            var (chirpEvents, others) = combinedResults.NewEvents.FilterForEventType<ChirpEvent, EventCommon>();
-
-            // Uncomment the next line when want to obtain the event frequency profiles.
-            // WriteFrequencyProfiles(chirpEvents);
-
-            foreach (var ev in chirpEvents)
-            {
-                // Calculate frequency profile score for event
-                SetFrequencyProfileScore((ChirpEvent)ev);
-            }
-
             if (combinedResults.NewEvents.Count == 0)
             {
                 BoobookLog.Debug($"Return zero events.");
                 return combinedResults;
             }
 
-            // 2: Combine overlapping events. If the dB threshold is set low, may get lots of little events.
-            combinedResults.NewEvents = CompositeEvent.CombineOverlappingEvents(chirpEvents.Cast<EventCommon>().ToList());
-            BoobookLog.Debug($"Event count after combining overlaps = {combinedResults.NewEvents.Count}");
-
-            // 3: Combine proximal events. If the dB threshold is set low, may get lots of little events.
-            if (genericConfig.CombinePossibleSyllableSequence)
-            {
-                // Convert events to spectral events for combining of possible sequences.
-                // Can also use this parameter to combine events that are in the upper or lower neighbourhood.
-                // Such combinations will increase bandwidth of the event and this property can be used later to weed out unlikely events.
-                var spectralEvents1 = combinedResults.NewEvents.Cast<SpectralEvent>().ToList();
-                var startDiff = genericConfig.SyllableStartDifference;
-                var hertzDiff = genericConfig.SyllableHertzGap;
-                combinedResults.NewEvents = CompositeEvent.CombineProximalEvents(spectralEvents1, TimeSpan.FromSeconds(startDiff), (int)hertzDiff);
-                BoobookLog.Debug($"Event count after combining proximals = {combinedResults.NewEvents.Count}");
-            }
-
+            // 1: Filter the events for duration in seconds
             // Get the BoobookSyllable config.
             const string profileName = "BoobookSyllable";
             var configuration = (NinoxBoobookConfig)genericConfig;
             var chirpConfig = (ForwardTrackParameters)configuration.Profiles[profileName];
-
-            // 4: Filter events on the amount of acoustic activity in their upper and lower neighbourhoods - their buffer zone.
-            //    The idea is that an unambiguous event should have some acoustic space above and below.
-            //    The filter requires that the average acoustic activity in each frame and bin of the upper and lower buffer zones should not exceed the user specified decibel threshold.
-            //    The bandwidth of these two neighbourhoods is determined by the following parameters.
-            //    ########## These parameters could be specified by user in config.yml file.
-            var upperHertzBuffer = 400;
-            var lowerHertzBuffer = 150;
-
-            // The decibel threshold is currently set 5/6ths of the user specified threshold.
-            // THIS IS TO BE WATCHED. IT MAY PROVE TO BE INAPPROPRIATE TO HARD-CODE.
-            // Want the activity in buffer zones to be "somewhat" less than the user-defined threshold.
-            var neighbourhoodDbThreshold = chirpConfig.DecibelThreshold.Value * 0.8333;
-
-            if (upperHertzBuffer > 0 || lowerHertzBuffer > 0)
-            {
-                var spectralEvents2 = combinedResults.NewEvents.Cast<SpectralEvent>().ToList();
-                combinedResults.NewEvents = EventExtentions.FilterEventsOnNeighbourhood(
-                    spectralEvents2,
-                    combinedResults.Sonogram,
-                    lowerHertzBuffer,
-                    upperHertzBuffer,
-                    segmentStartOffset,
-                    neighbourhoodDbThreshold);
-
-                BoobookLog.Debug($"Event count after filtering on neighbourhood = {combinedResults.NewEvents.Count}");
-            }
-
-            if (combinedResults.NewEvents.Count == 0)
-            {
-                BoobookLog.Debug($"Return zero events.");
-                return combinedResults;
-            }
-
-            // 5: Filter on COMPONENT COUNT in Composite events.
-            int maxComponentCount = 2;
-            combinedResults.NewEvents = EventExtentions.FilterEventsOnCompositeContent(combinedResults.NewEvents, maxComponentCount);
-            BoobookLog.Debug($"Event count after filtering on component count = {combinedResults.NewEvents.Count}");
-
-            // 6: Filter the events for duration in seconds
             var minimumEventDuration = chirpConfig.MinDuration;
             var maximumEventDuration = chirpConfig.MaxDuration;
             if (genericConfig.CombinePossibleSyllableSequence)
@@ -186,12 +118,34 @@ namespace AnalysisPrograms.Recognizers
             combinedResults.NewEvents = EventExtentions.FilterOnDuration(combinedResults.NewEvents, minimumEventDuration.Value, maximumEventDuration.Value);
             BoobookLog.Debug($"Event count after filtering on duration = {combinedResults.NewEvents.Count}");
 
-            // 7: Filter the events for bandwidth in Hertz
+            // 2: Filter the events for bandwidth in Hertz
             double average = 280;
             double sd = 40;
             double sigmaThreshold = 3.0;
             combinedResults.NewEvents = EventExtentions.FilterOnBandwidth(combinedResults.NewEvents, average, sd, sigmaThreshold);
             BoobookLog.Debug($"Event count after filtering on bandwidth = {combinedResults.NewEvents.Count}");
+
+            // 3: Filter on COMPONENT COUNT in Composite events.
+            int maxComponentCount = 2;
+            combinedResults.NewEvents = EventExtentions.FilterEventsOnCompositeContent(combinedResults.NewEvents, maxComponentCount);
+            BoobookLog.Debug($"Event count after filtering on component count = {combinedResults.NewEvents.Count}");
+
+            // 4: Pull out the chirp events and calculate their frequency profiles.
+            var (chirpEvents, others) = combinedResults.NewEvents.FilterForEventType<ChirpEvent, EventCommon>();
+
+            // Uncomment the next line when want to obtain the event frequency profiles.
+            // WriteFrequencyProfiles(chirpEvents);
+            foreach (var ev in chirpEvents)
+            {
+                // Calculate frequency profile score for event
+                SetFrequencyProfileScore((ChirpEvent)ev);
+            }
+
+            if (combinedResults.NewEvents.Count == 0)
+            {
+                BoobookLog.Debug($"Return zero events.");
+                return combinedResults;
+            }
 
             //UNCOMMENT following line if you want special debug spectrogram, i.e. with special plots.
             //  NOTE: Standard spectrograms are produced by setting SaveSonogramImages: "True" or "WhenEventsDetected" in UserName.SpeciesName.yml config file.
@@ -315,11 +269,6 @@ public override void SummariseResults(
         /// <inheritdoc cref="NinoxBoobookConfig"/> />
         public class NinoxBoobookConfig : GenericRecognizerConfig, INamedProfiles<object>
         {
-            public bool CombinePossibleSyllableSequence { get; set; } = false;
-
-            public double SyllableStartDifference { get; set; } = 0.5;
-
-            public double SyllableHertzGap { get; set; } = 200;
         }
     }
 }
