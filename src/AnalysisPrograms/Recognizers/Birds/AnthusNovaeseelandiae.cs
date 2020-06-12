@@ -115,15 +115,6 @@ namespace AnalysisPrograms.Recognizers
 
             combinedResults.NewEvents = FilterEventsOnFrequencyProfile(combinedResults.NewEvents);
 
-            //foreach (var ev in whistleEvents)
-            //{
-            //    // Calculate frequency profile score for event
-            //    SetFrequencyProfileScore((WhistleEvent)ev);
-            //}
-
-            //UNCOMMENT following line if you want special debug spectrogram, i.e. with special plots.
-            //  NOTE: Standard spectrograms are produced by setting SaveSonogramImages: "True" or "WhenEventsDetected" in UserName.SpeciesName.yml config file.
-            //GenericRecognizer.SaveDebugSpectrogram(territorialResults, genericConfig, outputDirectory, audioRecording.BaseName);
             return combinedResults;
         }
 
