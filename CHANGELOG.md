@@ -8,6 +8,209 @@
 
 <!--generated-content-insert-here-->
 
+## Ecoacoustics Audio Analysis Software v20.6.0.208 2020-06-14
+
+Version v20.6.0.208
+
+
+
+### Details
+
+[Compare v20.4.0.142...v20.6.0.208](https://github.com/QutBioacoustics/audio-analysis/compare/v20.4.0.142...v20.6.0.208)
+
+- a9d94d22 Anthony Truskinger - Make GetCompositeTrack generic
+- 093551ed Michael Towsey - ([#321](https://github.com/QutEcoacoustics/audio-analysis/issues/321)) Remove unneeded code
+- 36f47b86 towsey - ([#321](https://github.com/QutEcoacoustics/audio-analysis/issues/321)) Finished debugging Cisticola and tests
+- d14d06c4 towsey - ([#321](https://github.com/QutEcoacoustics/audio-analysis/issues/321)) Finished debugging Australasian Pipit and tests
+- b7f74c4c towsey - ([#321](https://github.com/QutEcoacoustics/audio-analysis/issues/321)) Finished Boobook Owl debug and test
+- ea6b3364 towsey - ([#321](https://github.com/QutEcoacoustics/audio-analysis/issues/321)) Finished debugging Australasian Bittern and tests
+- daabd7e8 towsey - ([#321](https://github.com/QutEcoacoustics/audio-analysis/issues/321)) Write tests for MatrixTools
+- 4433ec44 towsey - ([#321](https://github.com/QutEcoacoustics/audio-analysis/issues/321)) Fix unit tests after recognizer experimentation
+- 6feb37c2 towsey - ([#321](https://github.com/QutEcoacoustics/audio-analysis/issues/321)) Update Towsey.CisticolaExilis.yml
+- f38bda43 towsey - ([#321](https://github.com/QutEcoacoustics/audio-analysis/issues/321)) Set up the Cisticola recognizer
+- 5fdd229d towsey - ([#321](https://github.com/QutEcoacoustics/audio-analysis/issues/321)) Update AnthusNovaeseelandiae.cs
+- a29c3c28 towsey - ([#321](https://github.com/QutEcoacoustics/audio-analysis/issues/321)) Finish work on Australasian Pipit recognizer
+- 0cefa329 towsey - ([#321](https://github.com/QutEcoacoustics/audio-analysis/issues/321)) Work on Austral Pipit
+- 8e9f84c1 towsey - ([#321](https://github.com/QutEcoacoustics/audio-analysis/issues/321)) Update AnthusNovaeseelandiae.cs
+- e76f2217 towsey - ([#321](https://github.com/QutEcoacoustics/audio-analysis/issues/321)) Work on Australiasian Pipit recognizer
+- 86e471b6 towsey - ([#321](https://github.com/QutEcoacoustics/audio-analysis/issues/321)) Started set up of the Cisticola recognizer
+- 0e718d65 towsey - ([#321](https://github.com/QutEcoacoustics/audio-analysis/issues/321)) Set up the Australiasian Pipit recognizer
+- a9d903ec towsey - ([#321](https://github.com/QutEcoacoustics/audio-analysis/issues/321)) Fix AustBittern recognizer test
+- ed5579f3 Anthony Truskinger - Disable koala v3 test
+- 80cc5a4e Anthony Truskinger - Fix bad escape in debug message
+- 55c288bd Anthony Truskinger - Fixes unit tests
+- f9c33885 Michael Towsey - ([#319](https://github.com/QutEcoacoustics/audio-analysis/issues/319)) Changes requested by Anthony as part of Pull Request.
+- 3d352631 towsey - ([#319](https://github.com/QutEcoacoustics/audio-analysis/issues/319)) Add documentation
+- b6098eb9 towsey - ([#319](https://github.com/QutEcoacoustics/audio-analysis/issues/319)) Changed parameters values to ease neighbourhood test.
+- 52bba1fb towsey - ([#319](https://github.com/QutEcoacoustics/audio-analysis/issues/319)) Add new events filter
+- 08427d14 towsey - ([#319](https://github.com/QutEcoacoustics/audio-analysis/issues/319)) Update BoobookOwlTests.cs
+- a0a57cd0 towsey - ([#319](https://github.com/QutEcoacoustics/audio-analysis/issues/319)) Finalise boobook recognizer
+- c6e1b8b7 towsey - ([#319](https://github.com/QutEcoacoustics/audio-analysis/issues/319)) Work on accuracy of Boobook Owl recognizer
+- 8c941431 towsey - ([#319](https://github.com/QutEcoacoustics/audio-analysis/issues/319)) Set up post-processing options for Boobook Owl
+- c680408a towsey - ([#319](https://github.com/QutEcoacoustics/audio-analysis/issues/319)) Work on AUst bittern recognizer
+- 68182665 towsey - ([#319](https://github.com/QutEcoacoustics/audio-analysis/issues/319)) Work on Boobook Owl recognizer
+- b4cf5b88 towsey - ([#319](https://github.com/QutEcoacoustics/audio-analysis/issues/319)) Started work on test and recognizer classes for Koala V3
+- 500010ea towsey - ([#319](https://github.com/QutEcoacoustics/audio-analysis/issues/319)) Changed namespaces for test classes
+- a3cd4795 towsey - ([#319](https://github.com/QutEcoacoustics/audio-analysis/issues/319)) Finished work on the Aust Bittern tests
+- 0219d269 towsey - ([#319](https://github.com/QutEcoacoustics/audio-analysis/issues/319)) Finished work on the Boobook Owl recognizer test
+- 5e3743ec Anthony Truskinger - Simplified boobook owl test
+- 866b9337 towsey - ([#319](https://github.com/QutEcoacoustics/audio-analysis/issues/319)) Set up Boobook Owl test
+- 0bd49d34 Phil Eichinski - updated test to detect whether dev build or not on mac, and check the relevant file extension
+- 796057e7 Anthony Truskinger - Makes working with test result artefacts easier
+- f1f705de Anthony Truskinger - Fixes more unit tests
+- 59b256e4 Anthony Truskinger - Fixes unit tests
+- 10df97ae Anthony Truskinger - Adds more extension methods to interval
+- 587d6457 Anthony Truskinger - Switches pdb types to portable
+- c63aa6ce Anthony Truskinger - Add json output for new events
+- d291705e Anthony Truskinger - Fix error in docs generation script
+- 9ab9c455 Anthony Truskinger - Add example scripts and documentation
+- 6f4eda61 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Final edits after Anthony review.
+- 16bc6695 Michael Towsey - Update src/AudioAnalysisTools/Events/Types/CompositeEvent.cs
+- 79e8f359 Michael Towsey - Update src/AnalysisPrograms/Recognizers/Birds/BotaurusPoiciloptilus.cs
+- b28d093d Anthony Truskinger - Fix spelling mistake
+- 89904f96 Anthony Truskinger - Update scripting with R document
+- 5cbf0174 towsey - Update PteropusSpTests.cs
+- deee0172 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Changes as part of code review.
+- 35c74472 Marina D. A. Scarpelli - Update ScriptingwithR.md
+- 3a47495b Marina D. A. Scarpelli - Create ScriptingwithR.md
+- 78527438 Anthony Truskinger - Update indices.md
+- 8ec397c1 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Prepare config file for Koala recognizer v3
+- e52411a9 Michael Towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) tweak bittern recognizer
+- bf2bd6f5 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Update EventCommon.cs
+- b8880db7 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Fix methods for post-processing of whistle events
+- 04c95d54 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Write methods that detect acoustic activity in band above whistle
+- 5fa7cfba towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Work on reducing false positives in whistle recognizers.
+- 4fecb8cf Anthony Truskinger - Update README.md
+- 2ddf3fbb Michael Towsey - Update Towsey.BotaurusPoiciloptilus.yml
+- 09ee1756 Michael Towsey - Update BotaurusPoiciloptilus.cs
+- d929e75b towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Final tweaks to Aust Bittern recognizer
+- 5d2e8cc8 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Change type casting between event types
+- e1ea09d0 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Wirte new class EventExtensions.cs
+- a11b60c9 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Set up the Australasian Bittern recognizer
+- b44b7dd3 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Finish work on Boobook owl recognizer
+- 279c487b towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Koala yml file
+- aec25840 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Create KoalaV3.cs
+- e79f6e2b towsey - Create Australasian  Bittern recognizer
+- c90f8fc1 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Shift more frog yml files
+- 4f487469 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Put frog yml files in frog folder
+- 24e560ce towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Update NinoxBoobook.cs
+- d5567105 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Update PezoporusOccidentalis.cs
+- b5e7169d towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Set up the boobook owl recognizer.
+- 925e2ca5 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Update Track.cs
+- 66d41d0b towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Start work on Boobook recognizer
+- acbc0d1d Anthony Truskinger - Add another test case for DrawTextSafe
+- 034d3966 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Create NinoxBoobook.cs
+- 65a980c5 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Fix various bugs in the drawing of events on spectrograms.
+- c2d3dc3e Anthony Truskinger - DrawTextSafe now accounts for kerning
+- c193a383 Anthony Truskinger - Fix old mono reference
+- 5afbf114 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Reworked calculation of normalised score
+- 5547a625 Anthony Truskinger - Switch all text rendering to draw text safe
+- d69099c2 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Update CompositeEvent.cs
+- 78572a87 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Fixed the drawing of labels and score bars for spectral events.
+- 76573b7d towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Get unit tests working for spectral events
+- 269edd17 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Get code to build after major rework re scores and track drawing etc
+- 331b713f towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Create four Algorithm classes for track events
+- 5b351a64 Anthony Truskinger - Reverted changes to score, improved drawing methods
+- e464f635 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) More work on calculation and normalisation of event scores.
+- bca9917c towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Fix the normalisastion of event scores
+- ffe546c9 Anthony Truskinger - Fixes faulty LFS file check error
+- 7e4a8e95 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Remove a duplicated draw method in SpectrogramTools
+- fa3afbde towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Get tests working for drawing of Forward events.
+- 20b29f00 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Add methods to draw events on spectrograms
+- 1b83c469 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Fix unit test for darwing of SpectralEvent on spectrogram
+- 6a35ba0c towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Get one test working for SpectralEvent class
+- 45ed89d0 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Remove old AcousticEvent constructor
+- 2274b91b towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Create new name spaces for frog and bird recognizers.
+- 9ce3db6a Anthony Truskinger - ([#310](https://github.com/QutEcoacoustics/audio-analysis/issues/310)) Fix build
+- 30f5d30a Anthony Truskinger - Removed default docs metadata file
+- 1e8e33ce Anthony Truskinger - Updates docs
+- 08a8645f towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Start work on the new Event hierarchy
+- 9a976371 Anthony Truskinger - Create apMetadata.json
+- 254172d4 Anthony Truskinger - ([#313](https://github.com/QutEcoacoustics/audio-analysis/issues/313)) Add docs website link 😁
+- 59219a12 Anthony Truskinger - ([#313](https://github.com/QutEcoacoustics/audio-analysis/issues/313)) Publishes our documentation https://ap.qut.ecoacoustics.info
+- 7d529e69 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Miinor changes
+- a76b2487 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Update Track.cs
+- 07ac99f0 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Update AcousticEvent.cs
+- 99d3394d towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Fix test classes
+- aaa3fa78 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Iron bugs out of track extraction
+- faf39a57 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Correct spelling of class name
+- 96a797e4 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) More work on setting up event types
+- bff0696d towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Changes to event/track rendering
+- 15cebf95 towsey - FUrther changes of method and class names
+- 3f0e9c64 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Create two new event typ0es
+- 04a0808a towsey - Rename some of the track/event recognizers
+- d0dbcf7f towsey - Update AcousticEvent.cs
+- 7ea4b8ce towsey - Get  upwards tracks drawing correctly.
+- 83eb3271 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Debug UnitConverters
+- 1cd84120 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Renamed class and methods to reflect new nomenclature
+- f537c365 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Getting track drawing to work after merge.
+- b5d04000 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Update VerticalTrackParameters.cs
+- c5111ef6 Anthony Truskinger - ([#310](https://github.com/QutEcoacoustics/audio-analysis/issues/310)) [WIP] Tracks drawing tests begun
+- 3663cbb9 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Adjust unit tests to accomodate new Track hierarchy
+- 1954a7da towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Adapt two classes to new Track hierarchy
+- 728d5406 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Collateral changes required while working on Track classes
+- 7446c49d towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) New work on tracks
+- b4d2ecdc towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) New work on Unit conversion.
+- b3741577 Anthony Truskinger - Update README.md
+- 3aaef32e Anthony Truskinger - ([#310](https://github.com/QutEcoacoustics/audio-analysis/issues/310)) Fixes drawing for new events
+- 6666293b towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Complete tests for Track.cs
+- de6a8225 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Create new tests for tracks
+- 0d8ba634 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Set up test for Track class and UnitConverters class
+- 689921fe Anthony Truskinger - [WIP] Add draw border inset method
+- 8a1539a3 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) More work on Track class
+- f9292e32 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Create new Track class
+- 43eeae19 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Prepare for removal of the old SpectralTrack class
+- 117994eb towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Augment unit converters class
+- bfba2b2a Anthony Truskinger - ([#310](https://github.com/QutEcoacoustics/audio-analysis/issues/310)) Add tests for spectral event
+- 1caf8f1d Anthony Truskinger - ([#310](https://github.com/QutEcoacoustics/audio-analysis/issues/310)) Continue working on new event architecture
+- 0d19f9ce Anthony Truskinger - Improved instructions for setting up dev software
+- e2436167 Anthony Truskinger - ([#310](https://github.com/QutEcoacoustics/audio-analysis/issues/310)) [WIP] Started new event archtiecture
+- 420e0337 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Set up methods to draw tracks and acoustic events on spectrograms.
+- f2bb1e5c Anthony Truskinger - Bulk style changes
+- f072e0fd Anthony Truskinger - ([#311](https://github.com/QutEcoacoustics/audio-analysis/issues/311)) Avoid duplicate copy of audio files
+- 297729ea towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Set up new methods for drawing spectral tracks
+- 6ce4b9af Anthony Truskinger - Fix merge error
+- 3f1ff1b0 Anthony Truskinger - ([#196](https://github.com/QutEcoacoustics/audio-analysis/issues/196)) Undo debugging switches for CI build
+- 5db59e7c towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Enable user to specify whether to combine events
+- 50a49140 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Change SpectralTrack method to return complete track data
+- 82f78cdc towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Fix bugs in SpectralTrack class
+- f6b90d9d towsey - Set up another unit test for Vertical tracks
+- 8fde859b Anthony Truskinger - Add gitter chat bade
+- 3c55a34a towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Update VerticalTrackParameters.cs
+- 6f2c6160 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Fix out of range bugs
+- 1fa84b16 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Get new VerticalTrack component recognizer working
+- 4a167586 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Update SpectralPeakTrackParameters.cs
+- 0dcdb43b towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Rework the old SpectralTrack class.
+- d5bf5d76 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Write new recognizer for VerticalTrack components
+- 2658be2b towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Write method to combine proximal similar events
+- a43134a9 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Finish unit test for click events
+- f941679f towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Write and Test Click recognizer
+- a81b9065 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Update GenericRecognizer.cs
+- cc44224d towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Set up new event type - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) the Click
+- 17bf9f4e towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Define a set of event types
+- 5ae9cc50 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Retain track info to store in acoustic event
+- b6037033 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297), [#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Issue#297 Tweak the spectral peak track recognizer
+- 7ea052d5 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Work on spectral peak track recognizer
+- 827a5ba9 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Update HarmonicParameters.cs
+- 4a3916ec towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297), [#307](https://github.com/QutEcoacoustics/audio-analysis/issues/307)) Find bug re window overlap
+- 2b9fa60c towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Work on the harmonic recognizer
+- fca8484c Anthony Truskinger - Update PULL_REQUEST_TEMPLATE.md
+- 12398bb6 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Set up generic recognizer for stone curlew call
+- ad7b7dc1 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Establish unit test for generic recognition of harmonics
+- 767dd013 towsey - ([#297](https://github.com/QutEcoacoustics/audio-analysis/issues/297)) Set up artificial spectrogram
+- e2df1984 Charles Alleman - ([#305](https://github.com/QutEcoacoustics/audio-analysis/issues/305)) Created PR Template (#305)
+- 2bbb60bc Anthony Truskinger - ([#301](https://github.com/QutEcoacoustics/audio-analysis/issues/301)) Cleaned up unconventional code
+- 4d6e3c7e Anthony Truskinger - Cleaned up event test
+- 6d970e39 towsey - ([#300](https://github.com/QutEcoacoustics/audio-analysis/issues/300)) Fixed test of drawing events
+- af4813e6 towsey - ([#300](https://github.com/QutEcoacoustics/audio-analysis/issues/300)) Fix anti-aliasing when drawing event
+- 8a5a6f0e towsey - ([#300](https://github.com/QutEcoacoustics/audio-analysis/issues/300)) Changes as requested by Anthony
+- 6de76cc7 towsey - ([#300](https://github.com/QutEcoacoustics/audio-analysis/issues/300)) Update AcousticEvent.cs
+- 1df70c59 towsey - ([#300](https://github.com/QutEcoacoustics/audio-analysis/issues/300)) Update AcousticEvent.cs
+- 4cd48e80 towsey - ([#300](https://github.com/QutEcoacoustics/audio-analysis/issues/300)) Remove a call to one of my do-it-yourself test methods.
+- 71a53b8d towsey - ([#300](https://github.com/QutEcoacoustics/audio-analysis/issues/300)) Fixing bugs in merging of acoustic events
+- 79620e68 towsey - ([#300](https://github.com/QutEcoacoustics/audio-analysis/issues/300)) Unit tests for drawing events on sonograms
+- 5a3f9afe towsey - ([#300](https://github.com/QutEcoacoustics/audio-analysis/issues/300)) Write one unit test for overlay of hit scores
+- b05bbb0c towsey - Update SpectrogramSettings.cs
 ## Ecoacoustics Audio Analysis Software v20.4.0.142 2020-04-07
 
 Version v20.4.0.142
@@ -714,3 +917,4 @@ Version v19.2.0.90
 - 512f8b4 Mahnoosh Kholghi - generating features for a set of recordings
 - 9b7a178 Mahnoosh Kholghi - fixing the error in directory
 - 3fdb19c Mahnoosh Kholghi - Adding a method for arbitrary freq bins
+
