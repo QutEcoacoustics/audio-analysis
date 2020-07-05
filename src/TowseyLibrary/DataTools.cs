@@ -2736,12 +2736,19 @@ namespace TowseyLibrary
             return returnV;
         }
 
+        /// <summary>
+        /// This method requires that v1 and v2 have same dimensions.
+        /// </summary>
+        /// <returns>The dot product.</returns>
         public static double DotProduct(double[] v1, double[] v2)
         {
-            // assume v1 and v2 have same dimensions
-            int L = v1.Length;
+            if (v1.Length != v2.Length)
+            {
+                throw new DataMisalignedException($"Vectors must be of same length. {v1.Length} != {v2.Length}");
+            }
+
             double sum = 0.0;
-            for (int i = 0; i < L; i++)
+            for (int i = 0; i < v1.Length; i++)
             {
                 sum += v1[i] * v2[i];
             }
