@@ -32,10 +32,12 @@ namespace AudioAnalysisTools.StandardSpectrograms
             //set attributes for the current recording and spectrogram type
             this.Attributes.SampleRate = wav.SampleRate;
             this.Attributes.Duration = wav.Time;
-            this.Attributes.NyquistFrequency = wav.SampleRate / 2;
-            this.Attributes.Duration = wav.Time;
             this.Attributes.MaxAmplitude = wav.CalculateMaximumAmplitude();
+            this.Attributes.NyquistFrequency = wav.SampleRate / 2;
+            this.Attributes.FBinWidth = wav.SampleRate / (double)config.WindowSize;
+
             this.Attributes.FrameDuration = TimeSpan.FromSeconds(this.Configuration.WindowSize / (double)wav.SampleRate);
+            this.Attributes.FramesPerSecond = wav.SampleRate / (double)config.WindowStep;
 
             var recording = new AudioRecording(wav);
             var fftdata = DSP_Frames.ExtractEnvelopeAndFfts(
