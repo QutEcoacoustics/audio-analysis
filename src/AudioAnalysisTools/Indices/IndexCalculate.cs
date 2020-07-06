@@ -383,6 +383,10 @@ namespace AudioAnalysisTools.Indices
             double entropyOfPeaksSpectrum = AcousticEntropy.CalculateEntropyOfSpectralPeaks(amplitudeSpectrogram, lowerBinBound, middleBinBound);
             summaryIndices.EntropyOfPeaksSpectrum = 1 - entropyOfPeaksSpectrum;
 
+            // vii Calculate SPECTRAL CENTROID for the recording segment. This is obtained by averaging over all frame spectral centroids in segment.
+            var centroidArray = SpectralCentroid.CalculateSpectralCentroids(amplitudeSpectrogram, nyquist);
+            summaryIndices.SpectralCentroid = centroidArray.Average();
+
             // ######################################################################################################################################################
             // (C) ################################## EXTRACT SPECTRAL INDICES FROM THE DECIBEL SPECTROGRAM ##################################
 

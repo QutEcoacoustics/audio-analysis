@@ -135,6 +135,7 @@ namespace AudioAnalysisTools.Indices
                 { "AvgSnrOfActiveFrames", summaryIndices.Select(x => x.AvgSnrOfActiveFrames).ToArray() },
                 { "Activity", summaryIndices.Select(x => x.Activity).ToArray() },
                 { "EventsPerSecond", summaryIndices.Select(x => x.EventsPerSecond).ToArray() },
+                { "SpectralCentroid", summaryIndices.Select(x => x.SpectralCentroid).ToArray() },
                 { "HighFreqCover", summaryIndices.Select(x => x.HighFreqCover).ToArray() },
                 { "MidFreqCover", summaryIndices.Select(x => x.MidFreqCover).ToArray() },
                 { "LowFreqCover", summaryIndices.Select(x => x.LowFreqCover).ToArray() },
@@ -173,6 +174,8 @@ namespace AudioAnalysisTools.Indices
         public double Activity { get; set; }
 
         public double EventsPerSecond { get; set; }
+
+        public double SpectralCentroid { get; set; }
 
         public double HighFreqCover { get; set; }
 

@@ -20,11 +20,11 @@ namespace AudioAnalysisTools.Indices
     /// TO CREATE AND IMPLEMENT A NEW ACOUSTIC INDEX (BOTH SUMMARY AND SPECTRAL INDICES), DO THE FOLLOWING:
     /// 1) Create a KEY or IDENTIFIER for the index in the list below. Always use this key when referencing the index.
     /// 2) Declare the properties of the new index in the YAML file: C:\Work\GitHub\audio-analysis\src\AnalysisConfigFiles\IndexPropertiesConfig.yml
-    /// 3) Modify the method SpectralIndexValues.CreateImageOfSpectralIndices(SpectralIndexValues spectralIndices) to incorporate the new index
+    /// 3) if necessary, modify the method SpectralIndexValues.CreateImageOfSpectralIndices(SpectralIndexValues spectralIndices) to incorporate the new index
     /// 4) Calculate the INDEX some where. In the case of Acoustic Indices, they are calculated in the class IndicesCalculate.cs.
-    /// 5) Store the value of the index in the class IndexValues
-    /// 5a) e.g. for spectral index:   indexValues.AddSpectrum(InitialiseIndexProperties.KEYspectralENT, spectrumOfENTvalues);
-    /// 5b) e.g. for summary index:    indexValues.StoreIndex(InitialiseIndexProperties.KEYindexName, indexValue);
+    /// 5) Store the value of the index in the class SummaryIndexValues or class SpectralIndexValues, as appropriate.
+    /// 5a) e.g. for spectral index: indexValues.AddSpectrum(InitialiseIndexProperties.KEYspectralENT, spectrumOfENTvalues);
+    /// 5b) e.g. for summary index:  indexValues.StoreIndex(InitialiseIndexProperties.KEYindexName, indexValue);
     /// 6) Add lines into IndexCalculateTest.TestOfSpectralIndices() to set up testing for the new index
     /// ==============
     */
@@ -54,6 +54,7 @@ namespace AudioAnalysisTools.Indices
         public const string KeyActivity = "Activity";
         public const string KeyEventsPerSec = "EventsPerSec";
         public const string KeyAvEventDuration = "AvEventDuration";
+        public const string SpectralCentroid = "SpectralCentroid";
         public const string KeyHfCvr = "HF_CVR";
         public const string KeyMfCvr = "MF_CVR";
         public const string KeyLfCvr = "LF_CVR";
@@ -67,22 +68,6 @@ namespace AudioAnalysisTools.Indices
         public const string Key3GramCount = "3GramCount";
         public const string KeySptPerSec = "SPTPerSec";
         public const string KeySptDur = "AvSPTDuration";
-
-        //KEYS FOR SPECTRAL INDICES
-        // Initially thought that these would be useful but as of February 2019 none used, so commented.
-
-        //public const string KeYspectralAci = "ACI";
-        //public const string KeySpectralBgn = "BGN";
-        //public const string KeYspectralCvr = "CVR";
-        //public const string KeYspectralEnt = "ENT";
-        //public const string KeYspectralEvn = "EVN";
-        //public const string KeySpectralOsc = "OSC";
-        //public const string KeySpectralPmn = "PMN";
-        //public const string KeySpectralRhz = "RHZ";
-        //public const string KeySpectralRng = "RNG";
-        //public const string KeySpectralRps = "RPS";
-        //public const string KeySpectralRvt = "RVT";
-        //public const string KeySpectralSpt = "SPT";
 
         public static double ClippingThreshold
         {
