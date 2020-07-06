@@ -156,6 +156,16 @@ AvgEventDuration:
   NormMax: 1000
   ProjectID: Acoustic Indices
   Units: "ms"
+SpectralCentroid:
+  Name: SpectralCentroid
+  Comment: "Av of all frame spectral-centroid values in audio segment."
+  DataType: double
+  DefaultValue: 0.0
+  DoDisplay: true
+  NormMin: 0.0
+  NormMax: 1.0
+  ProjectID: Acoustic Indices
+  Units: ""
 #EventsTotal:
 #  Name: Event Count
 #  Comment: "The total count of acoustic events per minute of recording."

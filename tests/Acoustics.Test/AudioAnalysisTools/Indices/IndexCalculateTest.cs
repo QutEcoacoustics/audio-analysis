@@ -90,6 +90,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             Assert.AreEqual(0.260999, summaryIndices.EntropyOfPeaksSpectrum, AllowedDelta);
             Assert.AreEqual(0.522080, summaryIndices.EntropyOfVarianceSpectrum, AllowedDelta);
             Assert.AreEqual(2.0, summaryIndices.EventsPerSecond, AllowedDelta);
+            Assert.AreEqual(0.467151, summaryIndices.SpectralCentroid, AllowedDelta);
             Assert.AreEqual(0.140306, summaryIndices.HighFreqCover, AllowedDelta);
             Assert.AreEqual(0.137873, summaryIndices.MidFreqCover, AllowedDelta);
             Assert.AreEqual(0.055341, summaryIndices.LowFreqCover, AllowedDelta);
