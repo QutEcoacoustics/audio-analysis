@@ -1,15 +1,29 @@
-using AudioAnalysisTools.StandardSpectrograms;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using TowseyLibrary;
+// <copyright file="SpectralCentroid.cs" company="QutEcoacoustics">
+// All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
+// </copyright>
 
 namespace AudioAnalysisTools
 {
+    using AudioAnalysisTools.StandardSpectrograms;
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
+    using TowseyLibrary;
+
     /// <summary>
     /// Calculates the spectral centroid of a spectrum, or a recording segment.
     /// The spectral centroid is a considred to be a reliable estimate of the brightness of a recording.
-    /// Bright recordings contain mre high frequency content. See following for good intro:
+    /// Bright recordings contain more high frequency content.
+    /// It is included here as a summary index because it was found to be correlated with degree of "naturalness" of a bush soundscape.
+    /// See recent papers from Sussex University (Alice Eldridge and colleagues)
+    /// (1) Eldridge, Alice and Guyot, Patrice and Moscoso, Paola and Johnston, Alison and Eyre-Walker, Ying and Peck, Mika
+    /// "Sounding out ecoacoustic metrics: Avian species richness is predicted by acoustic indices in temperate but not tropical habitats."
+    /// (2018) Ecological Indicators, 95 (1). 939-952. ISSN 1470-160X
+    /// (2) Carruthers-Jones, Jonathan, Eldridge, Alice, Guyot, Patrice, Hassal, Christopher and Holmes, George
+    /// "The call of the wild: investigating the potential for ecoacoustic methods in mapping wilderness areas."
+    /// (2019) Science of The Total Environment, 695. p. 133797. ISSN 0048-9697
+    ///
+    /// See following for good intro to calculating the Spectral Centroid:
     /// https://www.cs.cmu.edu/~music/icm/slides/05-algorithmic-composition.pdf
     /// Also Wikipedia entry: https://en.wikipedia.org/wiki/Spectral_centroid
     /// The spectral centroid is derived from the values in the AMPLITUDE spectrogram.
