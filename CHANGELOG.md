@@ -8,6 +8,20 @@
 
 <!--generated-content-insert-here-->
 
+## Ecoacoustics Audio Analysis Software v20.7.0.4 2020-07-12
+
+Version v20.7.0.4
+
+
+
+### Details
+
+[Compare v20.6.0.208...v20.7.0.4](https://github.com/QutBioacoustics/audio-analysis/compare/v20.6.0.208...v20.7.0.4)
+
+- f3a2b112 towsey - ([#292](https://github.com/QutEcoacoustics/audio-analysis/issues/292)) Final changes to spectral centroid classes
+- 40c843b7 towsey - ([#292](https://github.com/QutEcoacoustics/audio-analysis/issues/292)) Incorporate calculation of the Spectral Centroid into calculation of the Summary Indices
+- a74690c9 towsey - ([#292](https://github.com/QutEcoacoustics/audio-analysis/issues/292)) Calculation of the Spectral Centroid
+- 178af3ed towsey - ([#292](https://github.com/QutEcoacoustics/audio-analysis/issues/292)) Start work on calculating the spectral centroid
 ## Ecoacoustics Audio Analysis Software v20.6.0.208 2020-06-14
 
 Version v20.6.0.208
@@ -917,4 +931,5 @@ Version v19.2.0.90
 - 512f8b4 Mahnoosh Kholghi - generating features for a set of recordings
 - 9b7a178 Mahnoosh Kholghi - fixing the error in directory
 - 3fdb19c Mahnoosh Kholghi - Adding a method for arbitrary freq bins
+
 
