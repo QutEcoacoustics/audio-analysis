@@ -34,7 +34,7 @@
     <PackageReference Include="SixLabors.Fonts" Version="1.0.0-unstable0024" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-unstable0702" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-unstable0421" />
-    <PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.0.2" />
+    <PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.0.3" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.164">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
