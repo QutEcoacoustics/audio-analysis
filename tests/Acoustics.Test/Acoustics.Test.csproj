@@ -31,7 +31,7 @@
     <PackageReference Include="StringTokenFormatter" Version="4.0.0" />
     <PackageReference Include="SixLabors.Fonts" Version="1.0.0-unstable0024" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-unstable0702" />
-    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-unstable0421" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-unstable0456" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\AnalysisBase\AnalysisBase.csproj" />
