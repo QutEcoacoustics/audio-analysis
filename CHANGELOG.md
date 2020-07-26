@@ -8,6 +8,26 @@
 
 <!--generated-content-insert-here-->
 
+## Ecoacoustics Audio Analysis Software v20.7.1.10 2020-07-26
+
+Version v20.7.1.10
+
+
+
+### Details
+
+[Compare v20.7.0.4...v20.7.1.10](https://github.com/QutBioacoustics/audio-analysis/compare/v20.7.0.4...v20.7.1.10)
+
+- 5eec1807 dependabot-preview[bot] - Bump Microsoft.Extensions.Configuration.Json from 3.1.2 to 3.1.6
+- 116cbaeb dependabot-preview[bot] - Bump System.IO.Abstractions from 9.0.5 to 12.0.8
+- 054747c1 dependabot-preview[bot] - Bump Moq from 4.13.1 to 4.14.5
+- 2a047967 dependabot-preview[bot] - Bump SQLitePCLRaw.bundle_green from 2.0.2 to 2.0.3
+- c180ebee dependabot-preview[bot] - Bump FsUnit.xUnit from 3.8.0 to 3.9.0
+- eee79590 dependabot-preview[bot] - Bump Microsoft.DotNet.PlatformAbstractions from 3.1.3 to 3.1.6
+- 74ae08f3 dependabot-preview[bot] - Bump Microsoft.NET.Test.Sdk from 16.6.0-preview-20200309-01 to 16.6.1
+- 543b1a33 dependabot-preview[bot] - Bump xunit.runner.visualstudio from 2.4.1 to 2.4.2
+- f8c25939 dependabot-preview[bot] - Bump MathNet.Numerics.FSharp from 4.9.0 to 4.11.0
+- 31657330 dependabot-preview[bot] - Bump Microsoft.Extensions.Configuration from 3.1.2 to 3.1.6
 ## Ecoacoustics Audio Analysis Software v20.7.0.4 2020-07-12
 
 Version v20.7.0.4
@@ -931,5 +951,6 @@ Version v19.2.0.90
 - 512f8b4 Mahnoosh Kholghi - generating features for a set of recordings
 - 9b7a178 Mahnoosh Kholghi - fixing the error in directory
 - 3fdb19c Mahnoosh Kholghi - Adding a method for arbitrary freq bins
+
 
 
