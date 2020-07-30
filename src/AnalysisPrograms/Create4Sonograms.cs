@@ -112,7 +112,7 @@ namespace AnalysisPrograms
 
             var recording = new AudioRecording(fiOutputSegment.FullName);
 
-            // EXTRACT ENVELOPE and SPECTROGRAM
+            // EXTRACT ENVELOPE and SPECTROGRAM// This call uses the default FFT window.
             var dspOutput = DSP_Frames.ExtractEnvelopeAndFfts(recording, frameSize, windowOverlap);
 
             // average absolute value over the minute recording
