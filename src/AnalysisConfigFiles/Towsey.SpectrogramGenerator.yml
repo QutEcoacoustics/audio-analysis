@@ -26,7 +26,9 @@ Images:
   - DecibelSpectrogramNoiseReduced
   - Experimental
   - DifferenceSpectrogram
+  - MelScaleSpectrogram
   - CepstralSpectrogram
+  - OctaveScaleSpectrogram
   - AmplitudeSpectrogramLocalContrastNormalization
   
 

@@ -190,7 +190,15 @@ namespace AnalysisPrograms.SpectrogramGenerator
                 }
             }
 
-            // IMAGE 6) Cepstral Spectrogram
+            // IMAGE 6) Mel-frequency Spectrogram
+            if (@do.Contains(MelScaleSpectrogram))
+            {
+                images.Add(
+                    MelScaleSpectrogram,
+                    GetMelScaleSpectrogram(sonoConfig, recordingSegment, sourceRecordingName));
+            }
+
+            // IMAGE 7) Cepstral Spectrogram
             if (@do.Contains(CepstralSpectrogram))
             {
                 images.Add(
@@ -198,7 +206,15 @@ namespace AnalysisPrograms.SpectrogramGenerator
                     GetCepstralSpectrogram(sonoConfig, recordingSegment, sourceRecordingName));
             }
 
-            // IMAGE 7) AmplitudeSpectrogram_LocalContrastNormalization
+            // IMAGE 8) Octave-frequency scale Spectrogram
+            if (@do.Contains(OctaveScaleSpectrogram))
+            {
+                images.Add(
+                    OctaveScaleSpectrogram,
+                    GetOctaveScaleSpectrogram(sonoConfig, recordingSegment, sourceRecordingName));
+            }
+
+            // IMAGE 9) AmplitudeSpectrogram_LocalContrastNormalization
             if (@do.Contains(AmplitudeSpectrogramLocalContrastNormalization))
             {
                 var neighborhoodSeconds = config.NeighborhoodSeconds;
@@ -340,6 +356,28 @@ namespace AnalysisPrograms.SpectrogramGenerator
             return image;
         }
 
+        public static Image<Rgb24> GetMelScaleSpectrogram(
+            SonogramConfig sonoConfig,
+            AudioRecording recording,
+            string sourceRecordingName)
+        {
+            // TODO at present noise reduction type must be set = Standard.
+            sonoConfig.NoiseReductionType = NoiseReductionType.Standard;
+            sonoConfig.NoiseReductionParameter = 3.0;
+            var melFreqGram = new SpectrogramMelScale(sonoConfig, recording.WavReader);
+            var image = melFreqGram.GetImage();
+            var titleBar = BaseSonogram.DrawTitleBarOfGrayScaleSpectrogram(
+                    "MEL-FREQUENCY SPECTROGRAM " + sourceRecordingName,
+                    image.Width,
+                    ImageTags[CepstralSpectrogram]);
+            var startTime = TimeSpan.Zero;
+            var xAxisTicInterval = TimeSpan.FromSeconds(1);
+            TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(sonoConfig.WindowStep / (double)sonoConfig.SampleRate);
+            var labelInterval = TimeSpan.FromSeconds(5);
+            image = BaseSonogram.FrameSonogram(image, titleBar, startTime, xAxisTicInterval, xAxisPixelDuration, labelInterval);
+            return image;
+        }
+
         public static Image<Rgb24> GetCepstralSpectrogram(
             SonogramConfig sonoConfig,
             AudioRecording recording,
@@ -352,6 +390,28 @@ namespace AnalysisPrograms.SpectrogramGenerator
             var image = cepgram.GetImage();
             var titleBar = BaseSonogram.DrawTitleBarOfGrayScaleSpectrogram(
                     "CEPSTRO-GRAM " + sourceRecordingName,
+                    image.Width,
+                    ImageTags[CepstralSpectrogram]);
+            var startTime = TimeSpan.Zero;
+            var xAxisTicInterval = TimeSpan.FromSeconds(1);
+            TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(sonoConfig.WindowStep / (double)sonoConfig.SampleRate);
+            var labelInterval = TimeSpan.FromSeconds(5);
+            image = BaseSonogram.FrameSonogram(image, titleBar, startTime, xAxisTicInterval, xAxisPixelDuration, labelInterval);
+            return image;
+        }
+
+        public static Image<Rgb24> GetOctaveScaleSpectrogram(
+        SonogramConfig sonoConfig,
+        AudioRecording recording,
+        string sourceRecordingName)
+        {
+            // TODO at present noise reduction type must be set = Standard.
+            sonoConfig.NoiseReductionType = NoiseReductionType.Standard;
+            sonoConfig.NoiseReductionParameter = 3.0;
+            var octaveScaleGram = new SpectrogramOctaveScale(sonoConfig, recording.WavReader);
+            var image = octaveScaleGram.GetImage();
+            var titleBar = BaseSonogram.DrawTitleBarOfGrayScaleSpectrogram(
+                    "OCTAVE-SCALE SPECTROGRAM " + sourceRecordingName,
                     image.Width,
                     ImageTags[CepstralSpectrogram]);
             var startTime = TimeSpan.Zero;
