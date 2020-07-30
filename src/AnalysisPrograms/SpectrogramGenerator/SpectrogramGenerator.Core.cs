@@ -29,7 +29,7 @@ namespace AnalysisPrograms.SpectrogramGenerator
         {
             var values = (SpectrogramImageType[])Enum.GetValues(typeof(SpectrogramImageType));
             ImageTags = values
-                .Zip(ColorBrewer.Qualitative.Dark.ForClassCount(values.Length))
+                .Zip(ColorBrewer.Qualitative.Set1.ForClassCount(values.Length))
                 .ToImmutableDictionary(x => x.First, x => x.Second);
         }
 
@@ -75,6 +75,7 @@ namespace AnalysisPrograms.SpectrogramGenerator
             // EXTRACT ENVELOPE and SPECTROGRAM FROM RECORDING SEGMENT
             var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFfts(recordingSegment, frameSize, frameStep);
 
+            // This constructor initalises default values for Melscale and Mfcc spectrograms and other parameters.
             var sonoConfig = new SonogramConfig()
             {
                 epsilon = recordingSegment.Epsilon,
@@ -191,6 +192,7 @@ namespace AnalysisPrograms.SpectrogramGenerator
             }
 
             // IMAGE 6) Mel-frequency Spectrogram
+            // The default spectrogram has 64 frequency bands.
             if (@do.Contains(MelScaleSpectrogram))
             {
                 images.Add(

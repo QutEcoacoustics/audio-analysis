@@ -16,6 +16,6 @@ namespace Acoustics.Shared.ColorScales
 
         public List<Color[]> Colors { get; internal set; }
 
-        public Color[] ForClassCount(int classCount) => this.Colors.FirstOrDefault(x => x.Length == classCount);
+        public Color[] ForClassCount(int classCount) => this.Colors.FirstOrDefault(x => x.Length >= classCount);
     }
 }
