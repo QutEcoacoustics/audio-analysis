@@ -133,6 +133,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// <summary>
         /// Initializes a new instance of the <see cref="SonogramConfig"/> class.
         /// Default Constructor - initialises a configuration with the default values.
+        /// This sets the default values for most spectrogram types, including Mel-scale and MFCC spectrograms.
         /// </summary>
         public SonogramConfig()
         {
