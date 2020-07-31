@@ -2026,8 +2026,10 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// Normalises a matrix so that all values below the passed MIN are truncated to 0 and all values greater than the
-        /// passed MAX are truncated to 1.
+        /// Normalises a matrix so that ---
+        /// all values LT passed MIN are truncated to 0
+        /// and
+        /// all values GT passed MAX are truncated to 1.
         /// </summary>
         public static double[,] NormaliseInZeroOne(double[,] m, double truncateMin, double truncateMax)
         {
@@ -2056,36 +2058,9 @@ namespace TowseyLibrary
 
         /// <summary>
         /// Normalises a matrix so that all values lie between 0 and 1.
-        /// </summary>
-        public static double[,] NormaliseInZeroOne(double[,] m)
-        {
-            int rows = m.GetLength(0);
-            int cols = m.GetLength(1);
-            DataTools.MinMax(m, out var min, out var max);
-            double range = max - min;
-            double[,] m2Return = new double[rows, cols];
-            for (int r = 0; r < rows; r++)
-            {
-                for (int c = 0; c < cols; c++)
-                {
-                    m2Return[r, c] = (m[r, c] - min) / range;
-                    if (m2Return[r, c] > 1.0)
-                    {
-                        m2Return[r, c] = 1.0;
-                    }
-                    else if (m2Return[r, c] < 0.0)
-                    {
-                        m2Return[r, c] = 0.0;
-                    }
-                }
-            }
-
-            // DataTools.MinMax(m2Return, out min, out max);
-            return m2Return;
-        }
-
-        /// <summary>
-        /// Normalises a matrix so that all values lie between 0 and 1.
+        /// Min value in matrix set to 0.0.
+        /// Max value in matrix is set to 1.0.
+        /// Rerturns the min and the max.
         /// </summary>
         public static double[,] NormaliseInZeroOne(double[,] m, out double min, out double max)
         {
@@ -2110,7 +2085,6 @@ namespace TowseyLibrary
                 }
             }
 
-            // DataTools.MinMax(m2Return, out min, out max);
             return m2Return;
         }
 

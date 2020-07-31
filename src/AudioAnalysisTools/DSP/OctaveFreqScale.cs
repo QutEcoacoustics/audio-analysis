@@ -6,8 +6,6 @@ namespace AudioAnalysisTools.DSP
 {
     using System;
     using System.Collections.Generic;
-    using AudioAnalysisTools.StandardSpectrograms;
-    using AudioAnalysisTools.WavTools;
     using MathNet.Numerics;
     using TowseyLibrary;
 
@@ -31,6 +29,21 @@ namespace AudioAnalysisTools.DSP
 
             switch (fst)
             {
+                case FreqScaleType.LinearOctaveStandard:
+                    // The number of octaveDivsions/tones (T) is set equal to number of linear bins.
+                    // The remainder of the spectrum will be reduced over four T-tone octaves
+                    scale.LinearBound = 500;
+                    sr = 22050;
+                    scale.Nyquist = sr / 2;
+                    frameSize = 512;
+                    var binWidth = sr / (double)frameSize;
+                    var linearBinCount = (int)Math.Floor(scale.LinearBound / binWidth);
+                    octaveDivisions = linearBinCount;
+                    scale.OctaveCount = 1; //#################### CHECK THIS - APPEARS NOT TO BE USED
+                    //finalBinCount = linearBinCount + 79;
+                    finalBinCount = linearBinCount + 51;
+                    break;
+
                 case FreqScaleType.Linear62Octaves7Tones31Nyquist11025:
                     // constants required for split linear-octave scale when sr = 22050
                     sr = 22050;
@@ -48,6 +61,18 @@ namespace AudioAnalysisTools.DSP
                     scale.OctaveCount = 6;
                     octaveDivisions = 32; // tone steps within one octave. Note: piano = 12 steps per octave.
                     scale.LinearBound = 125;
+                    scale.Nyquist = 11025;
+                    break;
+
+                case FreqScaleType.OctaveDataReduction:
+                    // This data conversion is for data reduction purposes.
+                    // The remainder of the spectrum will be reduced over four 6-tone octaves
+                    sr = 22050;
+                    frameSize = 512;
+                    finalBinCount = 45;
+                    scale.OctaveCount = 4;
+                    octaveDivisions = 6; // tone steps within one octave.
+                    scale.LinearBound = 1000;
                     scale.Nyquist = 11025;
                     break;
 
@@ -83,50 +108,15 @@ namespace AudioAnalysisTools.DSP
             scale.GridLineLocations = GetGridLineLocations(fst, scale.BinBounds);
         }
 
-        /// <summary>
-        /// This method takes an audio recording and returns an octave scale spectrogram.
-        /// At the present time it only works for recordings with 64000 sample rate and returns a 256 bin sonogram.
-        /// TODO: generalise this method for other recordings and octave scales.
-        /// </summary>
-        public static BaseSonogram ConvertRecordingToOctaveScaleSonogram(AudioRecording recording, FreqScaleType fst)
-        {
-            var freqScale = new FrequencyScale(fst);
-            double windowOverlap = 0.75;
-            var sonoConfig = new SonogramConfig
-            {
-                WindowSize = freqScale.WindowSize,
-                WindowOverlap = windowOverlap,
-                SourceFName = recording.BaseName,
-                NoiseReductionType = NoiseReductionType.None,
-                NoiseReductionParameter = 0.0,
-            };
-
-            // Generate amplitude sonogram and then conver to octave scale
-            var sonogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
-
-            // THIS IS THE CRITICAL LINE.
-            // TODO: SHOULD DEVELOP A SEPARATE UNIT TEST for this method
-            sonogram.Data = ConvertAmplitudeSpectrogramToDecibelOctaveScale(sonogram.Data, freqScale);
-
-            // DO NOISE REDUCTION
-            var dataMatrix = SNR.NoiseReduce_Standard(sonogram.Data);
-            sonogram.Data = dataMatrix;
-            int windowSize = freqScale.FinalBinCount * 2;
-            sonogram.Configuration.WindowSize = windowSize;
-            sonogram.Configuration.WindowStep = (int)Math.Round(windowSize * (1 - windowOverlap));
-            return sonogram;
-        }
-
         public static double[,] ConvertAmplitudeSpectrogramToDecibelOctaveScale(double[,] inputSpgram, FrequencyScale freqScale)
         {
-            //var dataMatrix = MatrixTools.Submatrix(inputSpgram, 0, 1, inputSpgram.GetLength(0) - 1, inputSpgram.GetLength(1) - 1);
             //square the values to produce power spectrogram
             var dataMatrix = MatrixTools.SquareValues(inputSpgram);
 
             //convert spectrogram to octave scale
-            dataMatrix = ConvertLinearSpectrogramToOctaveFreqScale(dataMatrix, freqScale);
-            dataMatrix = MatrixTools.Power2DeciBels(dataMatrix, out var min, out var max);
-            return dataMatrix;
+            var newMatrix = ConvertLinearSpectrogramToOctaveFreqScale(dataMatrix, freqScale);
+            newMatrix = MatrixTools.Power2DeciBels(newMatrix, out var min, out var max);
+            return newMatrix;
         }
 
         /// <summary>
@@ -149,9 +139,6 @@ namespace AudioAnalysisTools.DSP
 
             // get the octave bin bounds for this octave scale type
             var octaveBinBounds = freqScale.BinBounds;
-
-            //var octaveBinBounds = GetOctaveScale(freqScale.ScaleType);
-
             int newBinCount = octaveBinBounds.GetLength(0);
 
             // set up the new octave spectrogram
@@ -195,7 +182,6 @@ namespace AudioAnalysisTools.DSP
 
         /// <summary>
         /// Converts an amplitude spectrogram to a power spectrogram having an octave frequency scale.
-        /// This method has been copied from a method of same name in the class MFCCStuff.cs and adapted to produce an octave freq scale.
         /// It transforms the amplitude spectrogram in the following steps:
         /// (1) It removes the DC row or bin 0 iff there is odd number of spectrogram bins. ASSUMPTION: Bin count should be power of 2 from FFT.
         /// (1) It converts spectral amplitudes to power, normalising for window power and sample rate.
@@ -292,6 +278,17 @@ namespace AudioAnalysisTools.DSP
                     gridLineLocations[5, 1] = 4000; // 4000
                     gridLineLocations[6, 1] = 8000; // 8000
                     break;
+
+                case FreqScaleType.OctaveDataReduction:
+                    //This Octave Scale does not require grid lines. It is for data reduction purposes only
+                    gridLineLocations = new int[6, 2];
+                    break;
+
+                case FreqScaleType.LinearOctaveStandard:
+                    gridLineLocations = new int[8, 2];
+                    LoggedConsole.WriteErrorLine("This Octave Scale does not currently have grid data provided.");
+                    break;
+
                 case FreqScaleType.Octaves24Nyquist32000:
                     gridLineLocations = new int[8, 2];
                     LoggedConsole.WriteErrorLine("This Octave Scale does not currently have grid data provided.");
@@ -414,6 +411,12 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// Returns the index bounds for a full octave scale - from lowest freq set by user to top freq.
         /// </summary>
+        /// <param name="sr">Sample rate of the source recording.</param>
+        /// <param name="frameSize">Frame size of the source recording.</param>
+        /// <param name="finalBinCount">Final Bin Count.</param>
+        /// <param name="lowerFreqBound">Lower bound of the octave part of the final scale.</param>
+        /// <param name="upperFreqBound">Upper bound of the octave scale, most likely the Nyquist.</param>
+        /// <param name="octaveDivisions">Number of tones/divisions per octave.</param>
         public static int[,] LinearToFullOctaveScale(int sr, int frameSize, int finalBinCount, int lowerFreqBound, int upperFreqBound, int octaveDivisions)
         {
             var bandBounds = GetFractionalOctaveBands(lowerFreqBound, upperFreqBound, octaveDivisions);
@@ -441,46 +444,58 @@ namespace AudioAnalysisTools.DSP
 
         public static double[] GetFractionalOctaveBands(double minFreq, double maxFreq, int octaveDivisions)
         {
-            double[] freqBandCentres = { 15.625, 31.25, 62.5, 125, 250, 500, 1000, 2000, 4000, 8000, 16000, 32000, 64000 };
+            double[] octaveLowerBounds = { 15.625, 31.25, 62.5, 125, 250, 500, 1000, 2000, 4000, 8000, 16000, 32000, 64000 };
 
             var list = new List<double>();
 
-            for (int i = 0; i < freqBandCentres.Length; i++)
+            for (int i = 0; i < octaveLowerBounds.Length; i++)
             {
-                if (freqBandCentres[i] < minFreq)
+                // ignore this octave floor if below that required.
+                if (octaveLowerBounds[i] < minFreq)
                 {
                     continue;
                 }
 
-                if (freqBandCentres[i] > maxFreq)
+                // stop when octave floor is above that required.
+                if (octaveLowerBounds[i] > maxFreq)
                 {
                     break;
                 }
 
-                double[] fractionalOctaveBands = GetFractionalOctaveBands(freqBandCentres[i], octaveDivisions);
+                // get the frequency tones in the given octave.
+                double[] tonesInOctave = GetFractionalOctaveBands(octaveLowerBounds[i], octaveDivisions);
 
                 for (int j = 0; j < octaveDivisions; j++)
                 {
-                    double floor = fractionalOctaveBands[j]; // sqrt2;
-                    if (floor < minFreq)
+                    double toneFloor = tonesInOctave[j];
+                    if (toneFloor < minFreq)
                     {
                         continue;
                     }
 
-                    list.Add(floor);
+                    list.Add(toneFloor);
                 }
             }
 
             return list.ToArray();
         }
 
+        /// <summary>
+        /// Returns an array of tones in one octave.
+        /// The units are frequency in Hertz.
+        /// NOTE: The octave is divided geometrically.
+        /// </summary>
+        /// <param name="lowerBound">The lower frquency bound of the octave.</param>
+        /// <param name="subbandCount">The number of tones or frequency bins in the octave.</param>
+        /// <returns>The frequency of each tone in the octave.</returns>
         public static double[] GetFractionalOctaveBands(double lowerBound, int subbandCount)
         {
             double[] fractionalOctaveBands = new double[subbandCount];
             fractionalOctaveBands[0] = lowerBound;
             double exponent = 1 / (double)subbandCount;
-            double factor = Math.Pow(2, exponent);
 
+            // calculate the frequency increment factor between each tone and the next.
+            double factor = Math.Pow(2, exponent);
             for (int i = 1; i < subbandCount; i++)
             {
                 fractionalOctaveBands[i] = fractionalOctaveBands[i - 1] * factor;

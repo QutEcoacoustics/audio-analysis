@@ -25,10 +25,12 @@ namespace AudioAnalysisTools.DSP
     {
         Linear = 0,
         Mel = 1,
-        Linear62Octaves7Tones31Nyquist11025 = 2,
-        Linear125Octaves6Tones30Nyquist11025 = 3,
-        Octaves24Nyquist32000 = 4,
-        Linear125Octaves7Tones28Nyquist32000 = 5,
+        LinearOctaveStandard = 2,
+        Linear62Octaves7Tones31Nyquist11025 = 3,
+        Linear125Octaves6Tones30Nyquist11025 = 4,
+        OctaveDataReduction = 5,
+        Octaves24Nyquist32000 = 6,
+        Linear125Octaves7Tones28Nyquist32000 = 7,
 
         // alias Octave to predefined choice
         Octave = Linear125Octaves7Tones28Nyquist32000,

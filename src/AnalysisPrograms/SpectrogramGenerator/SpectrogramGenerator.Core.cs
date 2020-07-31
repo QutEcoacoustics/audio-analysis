@@ -431,23 +431,23 @@ namespace AnalysisPrograms.SpectrogramGenerator
             double neighbourhoodSeconds,
             double lcnContrastLevel)
         {
-            BaseSonogram sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
-            int neighbourhoodFrames = (int)(sonogram.FramesPerSecond * neighbourhoodSeconds);
-            LoggedConsole.WriteLine("LCN: FramesPerSecond (Prior to LCN) = {0}", sonogram.FramesPerSecond);
+            BaseSonogram spectrogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
+            int neighbourhoodFrames = (int)(spectrogram.FramesPerSecond * neighbourhoodSeconds);
+            LoggedConsole.WriteLine("LCN: FramesPerSecond (Prior to LCN) = {0}", spectrogram.FramesPerSecond);
             LoggedConsole.WriteLine("LCN: Neighbourhood of {0} seconds = {1} frames", neighbourhoodSeconds, neighbourhoodFrames);
 
             // subtract the lowest 20% of frames. This is first step in LCN noise removal. Sets the baseline.
             const int lowPercentile = 20;
-            sonogram.Data =
-                NoiseRemoval_Briggs.NoiseReduction_byLowestPercentileSubtraction(sonogram.Data, lowPercentile);
-            sonogram.Data =
-                NoiseRemoval_Briggs.NoiseReduction_byLCNDivision(sonogram.Data, neighbourhoodFrames, lcnContrastLevel);
+            spectrogram.Data =
+                NoiseRemoval_Briggs.NoiseReduction_byLowestPercentileSubtraction(spectrogram.Data, lowPercentile);
+            spectrogram.Data =
+                NoiseRemoval_Briggs.NoiseReduction_byLCNDivision(spectrogram.Data, neighbourhoodFrames, lcnContrastLevel);
 
-            //Matrix normalisation
-            //MatrixTools.PercentileCutoffs(sonogram.Data, 10.0, 90, out double minCut, out double maxCut);
-            //NoiseRemoval_Briggs.NoiseReduction_byLowestPercentileSubtraction(sonogram.Data, lowPercentile);
+            // Finally background noise removal. This step is optional.
+            double[] spectralDecibelBgn = NoiseProfile.CalculateBackgroundNoise(spectrogram.Data);
+            spectrogram.Data = SNR.TruncateBgNoiseFromSpectrogram(spectrogram.Data, spectralDecibelBgn);
 
-            var image = sonogram.GetImageFullyAnnotated(
+            var image = spectrogram.GetImageFullyAnnotated(
                 "AMPLITUDE SPECTROGRAM with freq bin Local Contrast Normalization - " + sourceRecordingName,
                 ImageTags[AmplitudeSpectrogramLocalContrastNormalization]);
             return image;

@@ -825,7 +825,6 @@ namespace AudioAnalysisTools.DSP
             }
 
             int[] histo = Histogram.Histo(array, binCount, out var binWidth, out var min, out var max);
-            ////Log.WriteLine("BindWidth = "+ binWidth);
 
             int smoothingwindow = 3;
             if (binCount > 250)
@@ -834,8 +833,6 @@ namespace AudioAnalysisTools.DSP
             }
 
             double[] smoothHisto = DataTools.filterMovingAverage(histo, smoothingwindow);
-            ////DataTools.writeBarGraph(histo);
-
             GetModeAndOneStandardDeviation(smoothHisto, out var indexOfMode, out var indexOfOneStdDev);
 
             // modal noise level gets symbol Q in Lamel et al.

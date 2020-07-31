@@ -176,7 +176,7 @@ namespace AudioAnalysisTools.DSP
         /// (1) MODAL METHOD
         /// Calculates the modal background noise for each freqeuncy bin.
         /// Return the smoothed modal profile.
-        /// By default set the number of SDs = 0.
+        /// Set the default zero value for number of SDs.
         /// </summary>
         /// <param name="spectrogram">Assumes the passed spectrogram is oriented as: rows=frames, cols=freq bins.</param>
         public static double[] CalculateBackgroundNoise(double[,] spectrogram)

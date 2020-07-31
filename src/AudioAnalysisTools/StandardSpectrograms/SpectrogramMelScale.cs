@@ -1,4 +1,4 @@
-// <copyright file="SpectrogramCepstral.cs" company="QutEcoacoustics">
+// <copyright file="SpectrogramMelScale.cs" company="QutEcoacoustics">
 // All code in this file and all associated files are the copyright and property of the QUT Ecoacoustics Research Group (formerly MQUTeR, and formerly QUT Bioacoustics Research Group).
 // </copyright>
 
@@ -7,7 +7,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
     using System;
     using Acoustics.Tools.Wav;
     using AudioAnalysisTools.DSP;
-    using AudioAnalysisTools.WavTools;
     using TowseyLibrary;
 
     public class SpectrogramMelScale : BaseSonogram
@@ -37,7 +36,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             this.SnrData = sg.SnrData;
             this.Data = sg.Data;
 
-            //converts amplitude matrix to cepstral sonogram
+            //converts amplitude matrix to Mel-frequency scale spectrogram
             this.Make(this.Data);
         }
 
@@ -54,9 +53,8 @@ namespace AudioAnalysisTools.StandardSpectrograms
             this.SigState = sg.SigState;
             this.SnrData = sg.SnrData;
 
-            this.Data = SpectrogramTools.ExtractFreqSubband(sg.Data, minHz, maxHz, this.Configuration.DoMelScale, sg.Configuration.FreqBinCount, sg.FBinWidth);
-
             //converts amplitude matrix to mel-frequency scale spectrogram
+            this.Data = SpectrogramTools.ExtractFreqSubband(sg.Data, minHz, maxHz, this.Configuration.DoMelScale, sg.Configuration.FreqBinCount, sg.FBinWidth);
             this.Make(this.Data);
         }
 
