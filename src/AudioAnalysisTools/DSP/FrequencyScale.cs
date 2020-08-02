@@ -155,8 +155,9 @@ namespace AudioAnalysisTools.DSP
 
         /// <summary>
         /// Gets or sets number of octave to appear above the linear part of scale.
+        /// Can have a fraction of an octave.
         /// </summary>
-        public int OctaveCount { get; set; }
+        public double OctaveCount { get; set; }
 
         /// <summary>
         /// Gets or sets number of bands or tones per octave.
