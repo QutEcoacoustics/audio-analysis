@@ -181,6 +181,39 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
         }
 
         /// <summary>
+        /// Test of the default standard split LINEAR-Octave FREQ SCALE
+        /// Check it on pure tone spectrum
+        /// </summary>
+        [TestMethod]
+        public void TestSplitLinearOctaveFrequencyScale()
+        {
+            // Test default octave scale where default linear portion is 0-1000Hz.
+            //var fst = FreqScaleType.Linear125Octaves6Tones30Nyquist11025;
+            var fst = FreqScaleType.LinearOctaveStandard;
+            var freqScale = new FrequencyScale(fst);
+
+            int[,] octaveBinBounds = freqScale.BinBounds;
+
+            // generate pure tone spectrum.
+            double[] linearSpectrum = new double[256];
+            linearSpectrum[128] = 1.0;
+
+            double[] octaveSpectrum = OctaveFreqScale.OctaveSpectrum(octaveBinBounds, linearSpectrum);
+
+            Assert.AreEqual(103, octaveSpectrum.Length);
+            Assert.AreEqual(0.0, octaveSpectrum[78]);
+            Assert.AreEqual(0.125, octaveSpectrum[79]);
+            Assert.AreEqual(0.125, octaveSpectrum[80]);
+            Assert.AreEqual(0.0, octaveSpectrum[81]);
+
+            //var expectedBinBounds = new[,]
+            //{
+            //}
+
+            //Assert.That.MatricesAreEqual(expectedBinBounds, freqScale.BinBounds);
+        }
+
+        /// <summary>
         /// METHOD TO CHECK IF Octave FREQ SCALE IS WORKING
         /// Check it on standard one minute recording, SR=22050.
         /// </summary>

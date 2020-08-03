@@ -60,52 +60,17 @@ namespace AudioAnalysisTools.StandardSpectrograms
         //##################################################################################################################################
 
         /// <summary>
-        /// NOTE!!!! The decibel array has been normalised in 0 - 1.
+        /// Converts amplitude spectrogram to octave scale using one of the possible octave scale types.
         /// </summary>
         public static double[,] MakeOctaveScaleSpectrogram(SonogramConfig config, double[,] matrix, int sampleRate, int linearLimit)
         {
-            var freqScale = new FrequencyScale(FreqScaleType.LinearOctaveStandard);
+            //var freqScale = new FrequencyScale(FreqScaleType.LinearOctaveStandard);
             //var freqScale = new FrequencyScale(FreqScaleType.OctaveDataReduction);
-            //var freqScale = new FrequencyScale(FreqScaleType.Linear1000Octaves4Tones6Nyquist11025);
+            //var freqScale = new FrequencyScale(FreqScaleType.Linear125Octaves6Tones30Nyquist11025);
+            var freqScale = new FrequencyScale(FreqScaleType.Linear62Octaves7Tones31Nyquist11025);
 
-            // THIS IS THE CRITICAL LINE.
-            // TODO: SHOULD DEVELOP A SEPARATE UNIT TEST for this method
             double[,] m = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(matrix, freqScale);
             return m;
         }
-
-        /// <summary>
-        /// This method takes an audio recording and returns an octave scale spectrogram.
-        /// At the present time it only works for recordings with 64000 sample rate and returns a 256 bin sonogram.
-        /// TODO: generalise this method for other recordings and octave scales.
-        /// </summary>
-        public static BaseSonogram ConvertRecordingToOctaveScaleSonogram(AudioRecording recording, FreqScaleType fst)
-        {
-            var freqScale = new FrequencyScale(fst);
-            double windowOverlap = 0.75;
-            var sonoConfig = new SonogramConfig
-            {
-                WindowSize = freqScale.WindowSize,
-                WindowOverlap = windowOverlap,
-                SourceFName = recording.BaseName,
-                NoiseReductionType = NoiseReductionType.None,
-                NoiseReductionParameter = 0.0,
-            };
-
-            // Generate amplitude sonogram and then conver to octave scale
-            var sonogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
-
-            // THIS IS THE CRITICAL LINE.
-            // TODO: SHOULD DEVELOP A SEPARATE UNIT TEST for this method
-            sonogram.Data = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(sonogram.Data, freqScale);
-
-            // DO NOISE REDUCTION
-            var dataMatrix = SNR.NoiseReduce_Standard(sonogram.Data);
-            sonogram.Data = dataMatrix;
-            int windowSize = freqScale.FinalBinCount * 2;
-            sonogram.Configuration.WindowSize = windowSize;
-            sonogram.Configuration.WindowStep = (int)Math.Round(windowSize * (1 - windowOverlap));
-            return sonogram;
-        }
-    } // end class SpectrogramOctaveScale
+    }
 }
