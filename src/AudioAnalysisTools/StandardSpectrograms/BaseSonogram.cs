@@ -338,7 +338,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
                 if (doMelScale)
                 {
-                    gridLineLocations = FrequencyScale.GetMelGridLineLocations(kHzInterval, this.NyquistFrequency, image.Height);
+                    gridLineLocations = SpectrogramMelScale.GetMelGridLineLocations(kHzInterval, this.NyquistFrequency, image.Height);
                 }
                 else
                 {
