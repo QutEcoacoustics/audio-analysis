@@ -114,5 +114,63 @@ namespace AudioAnalysisTools.StandardSpectrograms
             // return matrix and full bandwidth modal noise profile
             return tuple2;
         }
-    } // end class SpectrogramMelScale
+
+        /// <summary>
+        /// TODO: This frequency scale is yet to be completed - it calculates nothing!
+        /// Currently, MEL scale is implemented directly in MakeMelScaleSpectrogram() method.
+        /// Calculates the parameters for Mel frequency scale.
+        /// Works only for "standard" recordings, i.e. sr = 22050 and frame = 512.
+        /// The default MelScale has 64 frequency bins and Linear500-octave has 66 frequency bands.
+        /// </summary>
+        public static FrequencyScale GetStandardMelScale(FrequencyScale scale)
+        {
+            LoggedConsole.WriteErrorLine("WARNING: Assigning DEFAULT parameters for MEL FREQUENCY SCALE.");
+            scale.ScaleType = FreqScaleType.Mel;
+            int sr = 22050;
+            scale.Nyquist = sr / 2;
+            int frameSize = 512;
+            scale.WindowSize = frameSize;
+            scale.LinearBound = 1000;
+            var binWidth = sr / (double)frameSize;
+
+            // init tone steps within one octave. Note: piano = 12 steps per octave.
+            scale.ToneCount = 0;
+            scale.BinBounds = null;
+            scale.FinalBinCount = 0;
+
+            //this.GridLineLocations = SpectrogramMelScale.GetMelGridLineLocations(this.HertzGridInterval, this.Nyquist, this.FinalBinCount);
+            scale.HertzGridInterval = 1000;
+            scale.GridLineLocations = null;
+            return scale;
+        }
+
+        /// <summary>
+        /// THIS METHOD NEEDS TO BE DEBUGGED.  HAS NOT BEEN USED IN YEARS!
+        /// Use this method to generate grid lines for mel scale image
+        /// Currently this method is only called from BaseSonogram.GetImage() when bool doMelScale = true;
+        /// Frequencyscale.Draw1kHzLines(Image{Rgb24} bmp, bool doMelScale, int nyquist, double freqBinWidth).
+        /// </summary>
+        public static int[,] GetMelGridLineLocations(int gridIntervalInHertz, int nyquistFreq, int melBinCount)
+        {
+            double maxMel = (int)MFCCStuff.Mel(nyquistFreq);
+            double melPerBin = maxMel / melBinCount;
+            int gridCount = nyquistFreq / gridIntervalInHertz;
+
+            var gridLines = new int[gridCount, 2];
+
+            for (int f = 1; f <= gridCount; f++)
+            {
+                int herz = f * 1000;
+                int melValue = (int)MFCCStuff.Mel(herz);
+                int melBinId = (int)(melValue / melPerBin);
+                if (melBinId < melBinCount)
+                {
+                    gridLines[f - 1, 0] = melBinId;
+                    gridLines[f - 1, 1] = herz;
+                }
+            }
+
+            return gridLines;
+        }
+    }
 }
