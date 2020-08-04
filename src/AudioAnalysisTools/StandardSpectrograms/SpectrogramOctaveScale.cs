@@ -44,10 +44,12 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// <param name="amplitudeM">Matrix of amplitude values.</param>
         public override void Make(double[,] amplitudeM)
         {
-            // Make the octave scale spectrogram.
-            // Linear portion extends from 0 to H hertz where H can = 1000, 500, 250, 125.
-            int linearLimit = 1000;
-            var m = MakeOctaveScaleSpectrogram(this.Configuration, amplitudeM, this.SampleRate, linearLimit);
+            //var freqScale = new FrequencyScale(FreqScaleType.LinearOctaveStandard);
+            //var freqScale = new FrequencyScale(FreqScaleType.OctaveDataReduction);
+            //var freqScale = new FrequencyScale(FreqScaleType.Linear125Octaves6Tones30Nyquist11025);
+            var freqScale = new FrequencyScale(FreqScaleType.Linear62OctaveTones31Nyquist11025);
+
+            double[,] m = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(amplitudeM, freqScale);
 
             // Do noise reduction
             var tuple = SNR.NoiseReduce(m, this.Configuration.NoiseReductionType, this.Configuration.NoiseReductionParameter);
@@ -55,22 +57,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             //store the full bandwidth modal noise profile
             this.ModalNoiseProfile = tuple.Item2;
-        }
-
-        //##################################################################################################################################
-
-        /// <summary>
-        /// Converts amplitude spectrogram to octave scale using one of the possible octave scale types.
-        /// </summary>
-        public static double[,] MakeOctaveScaleSpectrogram(SonogramConfig config, double[,] matrix, int sampleRate, int linearLimit)
-        {
-            //var freqScale = new FrequencyScale(FreqScaleType.LinearOctaveStandard);
-            //var freqScale = new FrequencyScale(FreqScaleType.OctaveDataReduction);
-            //var freqScale = new FrequencyScale(FreqScaleType.Linear125Octaves6Tones30Nyquist11025);
-            var freqScale = new FrequencyScale(FreqScaleType.Linear62Octaves7Tones31Nyquist11025);
-
-            double[,] m = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(matrix, freqScale);
-            return m;
         }
     }
 }
