@@ -150,7 +150,7 @@ namespace AudioAnalysisTools.Indices
                 switch (value)
                 {
                     case FreqScaleType.Linear:
-                    case FreqScaleType.Octave:
+                    case FreqScaleType.LinearOctaveStandard:
                         this.frequencyScale = value;
                         break;
                     default:

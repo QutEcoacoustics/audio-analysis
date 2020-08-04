@@ -195,13 +195,13 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
                 //break;
                 case "Linear62Octaves7Tones31Nyquist11025":
-                    fst = FreqScaleType.Linear62Octaves7Tones31Nyquist11025;
+                    fst = FreqScaleType.Linear62OctaveTones31Nyquist11025;
                     this.FreqScale = new FrequencyScale(fst);
                     throw new ArgumentException("Linear62Octaves7Tones31Nyquist11025 Scale is not yet implemented");
 
                 //break;
                 case "Linear125Octaves6Tones30Nyquist11025":
-                    fst = FreqScaleType.Linear125Octaves6Tones30Nyquist11025;
+                    fst = FreqScaleType.Linear125OctaveTones30Nyquist11025;
                     this.FreqScale = new FrequencyScale(fst);
                     break;
                 case "Octaves24Nyquist32000":
@@ -211,7 +211,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
                 //break;
                 case "Linear125Octaves7Tones28Nyquist32000":
-                    fst = FreqScaleType.Linear125Octaves7Tones28Nyquist32000;
+                    fst = FreqScaleType.Linear125OctaveTones28Nyquist32000;
                     this.FreqScale = new FrequencyScale(fst);
                     break;
                 default:

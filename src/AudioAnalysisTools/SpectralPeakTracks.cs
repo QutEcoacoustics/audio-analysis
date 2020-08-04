@@ -388,7 +388,7 @@ namespace AudioAnalysisTools
             double[,] decibelSpectrogram;
             if (octaveScale)
             {
-                var freqScale = new FrequencyScale(FreqScaleType.Linear125Octaves7Tones28Nyquist32000);
+                var freqScale = new FrequencyScale(FreqScaleType.Linear125OctaveTones28Nyquist32000);
                 decibelSpectrogram = OctaveFreqScale.DecibelSpectra(dspOutput.AmplitudeSpectrogram, dspOutput.WindowPower, sampleRate, epsilon, freqScale);
             }
             else

@@ -154,7 +154,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             var recordingPath = this.outputDirectory.CombineFile(recordingName + ".wav");
             WavWriter.WriteWavFileViaFfmpeg(recordingPath, recording.WavReader);
 
-            var fst = FreqScaleType.Linear125Octaves7Tones28Nyquist32000;
+            var fst = FreqScaleType.Linear125OctaveTones28Nyquist32000;
             var freqScale = new FrequencyScale(fst);
 
             /*
