@@ -439,6 +439,50 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
         }
 
         /// <summary>
+        /// Test of frequency scale used for spectral data reduction.
+        /// Reduces a 256 spectrum to 20 value vector.
+        /// Check it on artificial spectrum with three tones.
+        /// By default, the split between linear and octave is at 1000 Hz.
+        /// </summary>
+        [TestMethod]
+        public void TestSpectralReductionScale()
+        {
+            var fst = FreqScaleType.OctaveDataReduction;
+            var freqScale = new FrequencyScale(fst);
+            Assert.AreEqual(freqScale.ScaleType, FreqScaleType.OctaveDataReduction);
+
+            // test contents of the octave bin bounds matrix.
+            Assert.AreEqual(20, freqScale.BinBounds.GetLength(0));
+
+            var expectedBinBounds = new[,]
+            {
+                { 0, 0 }, { 1, 258 }, { 2, 517 }, { 3, 775 }, { 4, 1034 }, { 5, 1292 }, { 6, 1550 }, { 47, 2024 },
+                { 54, 2326 }, { 62, 2670 }, { 71, 3058 }, { 81, 3488 }, { 93, 4005 }, { 107, 4608 }, { 123, 5297 }, { 141, 6072 },
+                { 162, 6977 }, { 186, 8010 }, { 214, 9216 }, { 255, 10982 },
+            };
+
+            Assert.That.MatricesAreEqual(expectedBinBounds, freqScale.BinBounds);
+
+            // generate pure tone spectrum.
+            double[] linearSpectrum = new double[256];
+            linearSpectrum[0] = 1.0;
+            linearSpectrum[128] = 1.0;
+            linearSpectrum[255] = 1.0;
+
+            double[] octaveSpectrum = OctaveFreqScale.OctaveSpectrum(freqScale.BinBounds, linearSpectrum);
+
+            Assert.AreEqual(20, octaveSpectrum.Length);
+            Assert.AreEqual(1.0, octaveSpectrum[0]);
+            Assert.AreEqual(0.0, octaveSpectrum[1]);
+            Assert.AreEqual(0.0, octaveSpectrum[13]);
+            Assert.AreEqual(0.042483660130718942, octaveSpectrum[14]);
+            Assert.AreEqual(0.014245014245014251, octaveSpectrum[15]);
+            Assert.AreEqual(0.0, octaveSpectrum[16]);
+            Assert.AreEqual(0.0, octaveSpectrum[18]);
+            Assert.AreEqual(0.047619047619047616, octaveSpectrum[19], 0.000001);
+        }
+
+        /// <summary>
         /// Tests linear freq scale using an artificial recording containing five sine waves.
         /// </summary>
         [TestMethod]

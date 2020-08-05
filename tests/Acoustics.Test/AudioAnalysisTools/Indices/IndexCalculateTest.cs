@@ -309,7 +309,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
 
             // CHANGE CONFIG PARAMETERS HERE IF REQUIRED
             var indexCalculateConfig = ConfigFile.Deserialize<AcousticIndices.AcousticIndicesConfig>(configFile);
-            indexCalculateConfig.FrequencyScale = FreqScaleType.Octave;
+            indexCalculateConfig.FrequencyScale = FreqScaleType.LinearOctaveStandard;
 
             var freqScale = new FrequencyScale(indexCalculateConfig.FrequencyScale);
             indexCalculateConfig.FrameLength = freqScale.WindowSize;
