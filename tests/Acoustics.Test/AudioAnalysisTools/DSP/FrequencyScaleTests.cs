@@ -15,6 +15,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using SixLabors.ImageSharp;
+    using static global::TowseyLibrary.FFT;
     using Path = System.IO.Path;
 
     /// <summary>
@@ -184,17 +185,88 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
         /// Test of the default Mel FREQ SCALE
         /// Check it on pure tone spectrum.
         /// By default, the split between linear and log is at 1000 Hz.
+        /// NOTE: This mel frequency scale class is not actually used to produce Mel scale spectrograms.
+        ///         Currently, the creation of mel scale spectrograms bypasses use of this FrequencyScale class.
         /// </summary>
         [TestMethod]
         public void TestMelFrequencyScale()
         {
-            // The Mel scale is not currently completed.
-            //It produces a shell only.
             var fst = FreqScaleType.Mel;
             var freqScale = new FrequencyScale(fst);
 
-            // test contents of the octave bin bounds matrix.
+            // test contents of the bin bounds matrix.
             Assert.AreEqual(1000, freqScale.LinearBound);
+
+            // test contents of the octave bin bounds matrix.
+            int[,] melBinBounds = freqScale.BinBounds;
+            Assert.AreEqual(64, melBinBounds.GetLength(0));
+            Assert.AreEqual(1922, melBinBounds[30, 1]);
+            Assert.AreEqual(2164, melBinBounds[32, 1]);
+            Assert.AreEqual(10033, melBinBounds[62, 1]);
+            Assert.AreEqual(10516, melBinBounds[63, 1]);
+
+            // Check that freqScale.GridLineLocations are correct
+            var expected = new[,]
+            {
+                { 20, 1000 },
+                { 30, 2000 },
+                { 37, 3000 },
+                { 43, 4000 },
+            };
+
+            Assert.That.MatricesAreEqual(expected, freqScale.GridLineLocations);
+        }
+
+        /// <summary>
+        /// Test making a me-frequency spectrogram using an artificial amplitude spectrogram as input.
+        /// NOTE: This method bypasses the use of the FrequencyScale class.
+        /// By default, the Mel scale used here is linear to 1000 Hz.
+        /// </summary>
+        [TestMethod]
+        public void TestMakeMelScaleSpectrogram()
+        {
+            int sampleRate = 22050;
+            int windowSize = 512;
+            int defaultMelBinCount = 64;
+            var recordingBitsPerSample = 16;
+            var epsilon = Math.Pow(0.5, recordingBitsPerSample - 1);
+
+            // make fft class using rectangular window - just to get a value for Window power.
+            var fft = new FFT(windowSize);
+
+            var config = new SonogramConfig
+            {
+                WindowSize = windowSize,
+                WindowOverlap = 0.0,
+                SourceFName = "Dummy",
+                NoiseReductionType = NoiseReductionType.None,
+                NoiseReductionParameter = 0.0,
+                epsilon = epsilon,
+                WindowPower = fft.WindowPower,
+            };
+
+            // make a dummy spectrogram
+            int frameCount = 100;
+            int binCount = windowSize / 2;
+            double[,] matrix = new double[frameCount, binCount];
+            for (int i = 0; i < 100; i++)
+            {
+                matrix[i, 0] = 1.0;
+                matrix[i, 128] = 1.0;
+                matrix[i, 255] = 1.0;
+            }
+
+            var spectrogramMatrix = SpectrogramMelScale.MakeMelScaleSpectrogram(config, matrix, sampleRate);
+
+            //Assert.That.MatricesAreEqual(expected, actual);
+            Assert.AreEqual(frameCount, spectrogramMatrix.GetLength(0));
+            Assert.AreEqual(defaultMelBinCount, spectrogramMatrix.GetLength(1));
+
+            Assert.AreEqual(-73.784157442630288, spectrogramMatrix[0, 0], 0.0001);
+            Assert.AreEqual(-157.82548429035143, spectrogramMatrix[0, 1], 0.0001);
+            Assert.AreEqual(-157.82548429035143, spectrogramMatrix[0, 32], 0.0001);
+            Assert.AreEqual(-157.82548429035143, spectrogramMatrix[0, 62], 0.0001);
+            Assert.AreEqual(-98.078506874942121, spectrogramMatrix[0, 63], 0.0001);
         }
 
         /// <summary>
@@ -236,7 +308,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             linearSpectrum[128] = 1.0;
             linearSpectrum[255] = 1.0;
 
-            double[] octaveSpectrum = OctaveFreqScale.OctaveSpectrum(octaveBinBounds, linearSpectrum);
+            double[] octaveSpectrum = OctaveFreqScale.ConvertLinearSpectrumToOctaveScale(octaveBinBounds, linearSpectrum);
 
             Assert.AreEqual(103, octaveSpectrum.Length);
             Assert.AreEqual(1.0, octaveSpectrum[0]);
@@ -264,7 +336,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             var recording = new AudioRecording(recordingPath);
 
             // default octave scale
-            var fst = FreqScaleType.Linear125OctaveTones30Nyquist11025;
+            var fst = FreqScaleType.Linear125OctaveTones32Nyquist11025;
             var freqScale = new FrequencyScale(fst);
 
             var sonoConfig = new SonogramConfig
@@ -276,18 +348,18 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                 NoiseReductionParameter = 0.0,
             };
 
-            // Generate amplitude sonogram and then conver to octave scale
-            var sonogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
+            // Generate amplitude sonogram and then convert to octave scale
+            var amplitudeSpectrogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
 
-            // THIS IS THE CRITICAL LINE. COULD DO WITH SEPARATE UNIT TEST
-            sonogram.Data = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(sonogram.Data, freqScale);
+            // TODO THIS IS THE CRITICAL LINE. COULD DO WITH SEPARATE UNIT TEST
+            amplitudeSpectrogram.Data = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(amplitudeSpectrogram.Data, freqScale);
 
             // DO NOISE REDUCTION
-            var dataMatrix = SNR.NoiseReduce_Standard(sonogram.Data);
-            sonogram.Data = dataMatrix;
-            sonogram.Configuration.WindowSize = freqScale.WindowSize;
+            var dataMatrix = SNR.NoiseReduce_Standard(amplitudeSpectrogram.Data);
+            amplitudeSpectrogram.Data = dataMatrix;
+            amplitudeSpectrogram.Configuration.WindowSize = freqScale.WindowSize;
 
-            var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
+            var image = amplitudeSpectrogram.GetImageFullyAnnotated(amplitudeSpectrogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
             image.Save(outputImagePath);
 
             // NOTE: After fixing bugs in Octave Scale code, the following expected BinBounds is no longer correct.
@@ -411,11 +483,23 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             // DO FILE EQUALITY TESTS
             // Check that freqScale.OctaveBinBounds are correct
+            // WARNING: TODO FIX UP THIS TEST.
+            //var expectedBinBoundsFile = PathHelper.ResolveAsset("FrequencyScale", opFileStem + "_Octave2ScaleBinBounds.EXPECTED.json");
+            //var expectedBinBounds = Json.Deserialize<int[,]>(expectedBinBoundsFile);
+            //Assert.That.MatricesAreEqual(expectedBinBounds, freqScale.BinBounds);
 
-            var expectedBinBoundsFile = PathHelper.ResolveAsset("FrequencyScale", opFileStem + "_Octave2ScaleBinBounds.EXPECTED.json");
-            var expectedBinBounds = Json.Deserialize<int[,]>(expectedBinBoundsFile);
-
-            Assert.That.MatricesAreEqual(expectedBinBounds, freqScale.BinBounds);
+            // INSTEAD DO THIS TEST
+            Assert.AreEqual(257, freqScale.BinBounds.GetLength(0));
+            Assert.AreEqual(23, freqScale.BinBounds[23, 0]);
+            Assert.AreEqual(90, freqScale.BinBounds[23, 1]);
+            Assert.AreEqual(53, freqScale.BinBounds[52, 0]);
+            Assert.AreEqual(207, freqScale.BinBounds[52, 1]);
+            Assert.AreEqual(173, freqScale.BinBounds[100, 0]);
+            Assert.AreEqual(676, freqScale.BinBounds[100, 1]);
+            Assert.AreEqual(345, freqScale.BinBounds[128, 0]);
+            Assert.AreEqual(1348, freqScale.BinBounds[128, 1]);
+            Assert.AreEqual(8191, freqScale.BinBounds[256, 0]);
+            Assert.AreEqual(31996, freqScale.BinBounds[256, 1]);
 
             // Check that freqScale.GridLineLocations are correct
             var expected = new[,]
@@ -435,7 +519,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             // Check that image dimensions are correct
             Assert.AreEqual(201, image.Width);
-            Assert.AreEqual(310, image.Height);
+            Assert.AreEqual(311, image.Height);
         }
 
         /// <summary>
@@ -469,7 +553,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             linearSpectrum[128] = 1.0;
             linearSpectrum[255] = 1.0;
 
-            double[] octaveSpectrum = OctaveFreqScale.OctaveSpectrum(freqScale.BinBounds, linearSpectrum);
+            double[] octaveSpectrum = OctaveFreqScale.ConvertLinearSpectrumToOctaveScale(freqScale.BinBounds, linearSpectrum);
 
             Assert.AreEqual(20, octaveSpectrum.Length);
             Assert.AreEqual(1.0, octaveSpectrum[0]);
@@ -601,7 +685,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             // Check that image dimensions are correct
             Assert.AreEqual(146, image.Width);
-            Assert.AreEqual(310, image.Height);
+            Assert.AreEqual(311, image.Height);
         }
     }
 }

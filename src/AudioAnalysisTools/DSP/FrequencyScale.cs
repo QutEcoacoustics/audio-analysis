@@ -27,7 +27,7 @@ namespace AudioAnalysisTools.DSP
         Mel = 1,
         LinearOctaveStandard = 2,
         Linear62OctaveTones31Nyquist11025 = 3,
-        Linear125OctaveTones30Nyquist11025 = 4,
+        Linear125OctaveTones32Nyquist11025 = 4,
         Linear125OctaveTones28Nyquist32000 = 5,
         Octaves24Nyquist32000 = 6,
         OctaveDataReduction = 7,
@@ -66,7 +66,7 @@ namespace AudioAnalysisTools.DSP
             this.HertzGridInterval = hertzGridInterval;
             if (type == FreqScaleType.Mel)
             {
-                this.BinBounds = this.GetMelBinBounds();
+                this.BinBounds = MFCCStuff.GetMelBinBounds(this.Nyquist, this.FinalBinCount);
                 this.GridLineLocations = SpectrogramMelScale.GetMelGridLineLocations(this.HertzGridInterval, nyquist, this.FinalBinCount);
                 this.LinearBound = 1000;
             }
@@ -100,7 +100,7 @@ namespace AudioAnalysisTools.DSP
             }
             else if (fst == FreqScaleType.Mel)
             {
-                // TODO - This scale type is YET TO BE IMPLEMENTED.
+                // WARNING: Making this call will return a standard Mel scale where sr = 22050 and frameSize = 512
                 // MEL SCALE spectrograms are available by direct call to SpectrogramGenerator.Core.GetMelScaleSpectrogram()
                 SpectrogramMelScale.GetStandardMelScale(this);
             }
@@ -216,27 +216,6 @@ namespace AudioAnalysisTools.DSP
             {
                 binBounds[i, 0] = i;
                 binBounds[i, 1] = (int)Math.Round(i * herzInterval);
-            }
-
-            return binBounds;
-        }
-
-        /// <summary>
-        /// Returns an [N, 2] matrix with bin ID in column 1 and lower Herz bound in column 2 but on Mel scale.
-        /// </summary>
-        public int[,] GetMelBinBounds()
-        {
-            double maxMel = (int)MFCCStuff.Mel(this.Nyquist);
-            int melBinCount = this.FinalBinCount;
-            double melPerBin = maxMel / melBinCount;
-
-            var binBounds = new int[this.FinalBinCount, 2];
-
-            for (int i = 0; i < melBinCount; i++)
-            {
-                binBounds[i, 0] = i;
-                double mel = i * melPerBin;
-                binBounds[i, 1] = (int)MFCCStuff.InverseMel(mel);
             }
 
             return binBounds;
