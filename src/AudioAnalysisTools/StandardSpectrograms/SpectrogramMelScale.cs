@@ -64,9 +64,16 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// <param name="amplitudeM">Matrix of amplitude values.</param>
         public override void Make(double[,] amplitudeM)
         {
-            var tuple = MakeMelScaleSpectrogram(this.Configuration, amplitudeM, this.SampleRate);
-            this.Data = tuple.Item1;
-            this.ModalNoiseProfile = tuple.Item2; //store the full bandwidth modal noise profile
+            var m = MakeMelScaleSpectrogram(this.Configuration, amplitudeM, this.SampleRate);
+
+            //(iii) NOISE REDUCTION
+            var nrt = this.Configuration.NoiseReductionType;
+            var nrp = this.Configuration.NoiseReductionParameter;
+            var tuple1 = SNR.NoiseReduce(m, nrt, nrp);
+
+            //store the full bandwidth modal noise profile
+            this.ModalNoiseProfile = tuple1.Item2;
+            this.Data = DataTools.normalise(tuple1.Item1);
         }
 
         //##################################################################################################################################
@@ -74,16 +81,18 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// <summary>
         /// NOTE!!!! The decibel array has been normalised in 0 - 1.
         /// </summary>
-        protected static Tuple<double[,], double[]> MakeMelScaleSpectrogram(SonogramConfig config, double[,] matrix, int sampleRate)
+        public static double[,] MakeMelScaleSpectrogram(SonogramConfig config, double[,] matrix, int sampleRate)
         {
             double[,] m = matrix;
             int nyquist = sampleRate / 2;
             double epsilon = config.epsilon;
 
             //(i) APPLY FILTER BANK
-            int bandCount = config.mfccConfig.FilterbankCount;
-            int fftBinCount = config.FreqBinCount;  //number of Hz bands = 2^N +1. Subtract DC bin
+            //number of Hz bands = 2^N +1. Subtract DC bin
+            int fftBinCount = config.FreqBinCount;
 
+            // Mel band count is set to 64 by default in BaseSonogramConfig class at line 158.
+            int bandCount = config.mfccConfig.FilterbankCount;
             Log.WriteIfVerbose("ApplyFilterBank(): Dim prior to filter bank  =" + matrix.GetLength(1));
 
             //error check that filterBankCount < Number of FFT bins
@@ -101,46 +110,29 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             //(ii) CONVERT AMPLITUDES TO DECIBELS
             m = MFCCStuff.DecibelSpectra(m, config.WindowPower, sampleRate, epsilon); //from spectrogram
-
-            //(iii) NOISE REDUCTION
-            var tuple1 = SNR.NoiseReduce(m, config.NoiseReductionType, config.NoiseReductionParameter);
-            m = tuple1.Item1;
-
-            //(iv) Normalize Matrix Values
-            m = DataTools.normalise(m);
-
-            var tuple2 = Tuple.Create(m, tuple1.Item2);
-
-            // return matrix and full bandwidth modal noise profile
-            return tuple2;
+            return m;
         }
 
         /// <summary>
-        /// TODO: This frequency scale is yet to be completed - it calculates nothing!
-        /// Currently, MEL scale is implemented directly in MakeMelScaleSpectrogram() method.
-        /// Calculates the parameters for Mel frequency scale.
-        /// Works only for "standard" recordings, i.e. sr = 22050 and frame = 512.
-        /// The default MelScale has 64 frequency bins and Linear500-octave has 66 frequency bands.
+        /// WARNING: This method assigns DEFAULT parameters for MEL FREQUENCY SCALE.
+        ///           It works only for "standard" recordings, i.e. sr = 22050 and frame = 512.
+        /// The default MelScale has 64 frequency bins.
+        /// The Linear500-octave scale is almost similar and has 66 frequency bands.
+        /// Currently, the MEL scale is implemented directly in MakeMelScaleSpectrogram() method.
         /// </summary>
         public static FrequencyScale GetStandardMelScale(FrequencyScale scale)
         {
-            LoggedConsole.WriteErrorLine("WARNING: Assigning DEFAULT parameters for MEL FREQUENCY SCALE.");
             scale.ScaleType = FreqScaleType.Mel;
             int sr = 22050;
-            scale.Nyquist = sr / 2;
             int frameSize = 512;
+
+            scale.Nyquist = sr / 2;
+            scale.FinalBinCount = 64;
             scale.WindowSize = frameSize;
             scale.LinearBound = 1000;
-            var binWidth = sr / (double)frameSize;
-
-            // init tone steps within one octave. Note: piano = 12 steps per octave.
-            scale.ToneCount = 0;
-            scale.BinBounds = null;
-            scale.FinalBinCount = 0;
-
-            //this.GridLineLocations = SpectrogramMelScale.GetMelGridLineLocations(this.HertzGridInterval, this.Nyquist, this.FinalBinCount);
+            scale.BinBounds = MFCCStuff.GetMelBinBounds(scale.Nyquist, scale.FinalBinCount);
             scale.HertzGridInterval = 1000;
-            scale.GridLineLocations = null;
+            scale.GridLineLocations = SpectrogramMelScale.GetMelGridLineLocations(scale.HertzGridInterval, scale.Nyquist, scale.FinalBinCount);
             return scale;
         }
 
@@ -154,7 +146,10 @@ namespace AudioAnalysisTools.StandardSpectrograms
         {
             double maxMel = (int)MFCCStuff.Mel(nyquistFreq);
             double melPerBin = maxMel / melBinCount;
-            int gridCount = nyquistFreq / gridIntervalInHertz;
+
+            // There is no point drawing gridlines above 8 kHz because they are too close together.
+            int maxGridValue = 4000;
+            int gridCount = maxGridValue / gridIntervalInHertz;
 
             var gridLines = new int[gridCount, 2];
 
