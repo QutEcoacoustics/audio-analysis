@@ -410,6 +410,8 @@ namespace AnalysisPrograms.SpectrogramGenerator
             // TODO at present noise reduction type must be set = Standard.
             sonoConfig.NoiseReductionType = NoiseReductionType.Standard;
             sonoConfig.NoiseReductionParameter = 3.0;
+
+            /// ########################################################################TODO TODO need to init as AmplitudeSpectrogram and then use constructor at Line 25 of SpectrogramOctaveScale..
             var octaveScaleGram = new SpectrogramOctaveScale(sonoConfig, recording.WavReader);
             var image = octaveScaleGram.GetImage();
             var titleBar = BaseSonogram.DrawTitleBarOfGrayScaleSpectrogram(

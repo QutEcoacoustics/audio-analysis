@@ -40,14 +40,15 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         /// <summary>
         /// Converts amplitude matrix to octave frequency scale spectrogram.
+        /// ########################################################################TODO TODO need to init as AmplitudeSpectrogram and then use constructor at Line 25.
         /// </summary>
         /// <param name="amplitudeM">Matrix of amplitude values.</param>
         public override void Make(double[,] amplitudeM)
         {
             //var freqScale = new FrequencyScale(FreqScaleType.LinearOctaveStandard);
             //var freqScale = new FrequencyScale(FreqScaleType.OctaveDataReduction);
-            //var freqScale = new FrequencyScale(FreqScaleType.Linear125Octaves6Tones30Nyquist11025);
-            var freqScale = new FrequencyScale(FreqScaleType.Linear62OctaveTones31Nyquist11025);
+            var freqScale = new FrequencyScale(FreqScaleType.Linear125OctaveTones32Nyquist11025);
+            //var freqScale = new FrequencyScale(FreqScaleType.Linear62OctaveTones31Nyquist11025);
 
             double[,] m = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(amplitudeM, freqScale);
 

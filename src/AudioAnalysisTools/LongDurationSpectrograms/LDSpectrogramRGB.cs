@@ -201,7 +201,7 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
 
                 //break;
                 case "Linear125Octaves6Tones30Nyquist11025":
-                    fst = FreqScaleType.Linear125OctaveTones30Nyquist11025;
+                    fst = FreqScaleType.Linear125OctaveTones32Nyquist11025;
                     this.FreqScale = new FrequencyScale(fst);
                     break;
                 case "Octaves24Nyquist32000":
