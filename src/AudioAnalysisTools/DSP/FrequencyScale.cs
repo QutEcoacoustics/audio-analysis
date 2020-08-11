@@ -124,7 +124,7 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// Gets or sets step size for the FFT window.
         /// </summary>
-        public int FrameStep { get; set; }
+        public int WindowStep { get; set; }
 
         /// <summary>
         /// Gets or sets number of frequency bins in the final spectrogram.
@@ -240,38 +240,6 @@ namespace AudioAnalysisTools.DSP
             }
 
             return gridLineLocations;
-        }
-
-        /// <summary>
-        /// This method is only called from Basesonogram.GetImage_ReducedSonogram(int factor, bool drawGridLines)
-        ///   when drawing a reduced sonogram.
-        /// </summary>
-        public static int[] CreateLinearYaxis(int herzInterval, int nyquistFreq, int imageHt)
-        {
-            int minFreq = 0;
-            int maxFreq = nyquistFreq;
-            int freqRange = maxFreq - minFreq + 1;
-            double pixelPerHz = imageHt / (double)freqRange;
-            int[] vScale = new int[imageHt];
-
-            for (int f = minFreq + 1; f < maxFreq; f++)
-            {
-                // convert freq value to pixel id
-                if (f % 1000 == 0)
-                {
-                    int hzOffset = f - minFreq;
-                    int pixelId = (int)(hzOffset * pixelPerHz) + 1;
-                    if (pixelId >= imageHt)
-                    {
-                        pixelId = imageHt - 1;
-                    }
-
-                    // LoggedConsole.WriteLine("f=" + f + " hzOffset=" + hzOffset + " pixelID=" + pixelID);
-                    vScale[pixelId] = 1;
-                }
-            }
-
-            return vScale;
         }
 
         public static void DrawFrequencyLinesOnImage(Image<Rgb24> bmp, FrequencyScale freqScale, bool includeLabels)

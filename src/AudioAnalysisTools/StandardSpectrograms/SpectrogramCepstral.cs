@@ -7,7 +7,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
     using System;
     using Acoustics.Tools.Wav;
     using AudioAnalysisTools.DSP;
-    using AudioAnalysisTools.WavTools;
     using TowseyLibrary;
 
     public class SpectrogramCepstral : BaseSonogram
@@ -53,13 +52,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
             this.SampleRate = sg.SampleRate;
             this.SigState = sg.SigState;
             this.SnrData = sg.SnrData;
-
-            // sub-band highlighting no longer available
-            //this.subBandMinHz = minHz;
-            //this.subBandMaxHz = maxHz;
-            //double[] noise_subband = BaseSonogram.ExtractModalNoiseSubband(this.SnrData.ModalNoiseProfile, minHz, maxHz, sg.doMelScale,
-            //                                                   sonogram.Configuration.FreqBinCount, sonogram.FBinWidth);
-
             this.Data = SpectrogramTools.ExtractFreqSubband(sg.Data, minHz, maxHz, this.Configuration.DoMelScale, sg.Configuration.FreqBinCount, sg.FBinWidth);
 
             //converts amplitude matrix to cepstral sonogram
@@ -133,49 +125,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             // return matrix and full bandwidth modal noise profile
             return tuple2;
         }
-
-        /// <summary>
-        /// Returns a Spectrogram and Cepstrogram from the passed recording. These are NOT noise reduced.
-        /// however, tuple also returns the modal noise and sub-band modal noise.
-        /// </summary>
-        public static Tuple<SpectrogramStandard, SpectrogramCepstral, double[], double[]> GetAllSonograms(AudioRecording recording, SonogramConfig sonoConfig, int minHz, int maxHz)
-        {
-            int sr = recording.SampleRate;
-            bool doMelScale = sonoConfig.DoMelScale;
-            int ccCount = sonoConfig.mfccConfig.CcCount;
-            bool includeDelta = sonoConfig.mfccConfig.IncludeDelta;
-            bool includeDoubleDelta = sonoConfig.mfccConfig.IncludeDoubleDelta;
-            sonoConfig.SourceFName = recording.BaseName;
-
-            var basegram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
-            var sonogram = new SpectrogramStandard(basegram);  //spectrogram has dim[N,257]
-
-            Log.WriteLine("Signal: Duration={0}, Sample Rate={1}", sonogram.Duration, sr);
-            Log.WriteLine(
-                $"Frames: Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f0}%, Offset={3:f1}ms, Frames/s={4:f1}",
-                sonogram.Configuration.WindowSize,
-                sonogram.FrameCount,
-                sonogram.FrameDuration * 1000,
-                sonogram.FrameStep * 1000,
-                sonogram.FramesPerSecond,
-                sonoConfig.WindowOverlap * 100);
-
-            int binCount = (int)(maxHz / sonogram.FBinWidth) - (int)(minHz / sonogram.FBinWidth) + 1;
-            Log.WriteLine("Freqs : {0} Hz - {1} Hz. (Freq bin count = {2})", minHz, maxHz, binCount);
-            Log.WriteLine("MFCCs : doMelScale=" + doMelScale + ";  ccCount=" + ccCount + ";  includeDelta=" + includeDelta + ";  includeDoubleDelta=" + includeDoubleDelta);
-
-            //CALCULATE MODAL NOISE PROFILE - USER MAY REQUIRE IT FOR NOISE REDUCTION
-            double[] modalNoise = sonogram.SnrData.ModalNoiseProfile;
-
-            //extract sub-band modal noise profile
-            double[] noiseSubband = SpectrogramTools.ExtractModalNoiseSubband(modalNoise, minHz, maxHz, doMelScale, sonogram.NyquistFrequency, sonogram.FBinWidth);
-
-            // CALCULATE CEPSTRO-GRAM.  //cepstrogram has dim[N,13]
-            var cepstrogram = new SpectrogramCepstral(basegram, minHz, maxHz);
-            var tuple = Tuple.Create(sonogram, cepstrogram, modalNoise, noiseSubband);
-            return tuple;
-        }
-    } // end class CepstralSonogram
+    } // class CepstralSonogram
 
     //##################################################################################################################################
     //##################################################################################################################################
