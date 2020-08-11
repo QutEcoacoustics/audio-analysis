@@ -196,7 +196,7 @@ namespace AudioAnalysisTools.DSP
             // set up the FFT parameters
             if (windowName == null)
             {
-                windowName = FFT.KeyHammingWindow;
+                windowName = FFT.KeyHanningWindow;
             }
 
             FFT.WindowFunc w = FFT.GetWindowFunction(windowName);
@@ -263,7 +263,7 @@ namespace AudioAnalysisTools.DSP
                     {
                         maxAbsValue = absValue;
                     }
-                } // end of frame
+                } // end frame
 
                 double frameDc = frameSum / frameSize;
                 minValues[i] = frameMin;
@@ -283,14 +283,7 @@ namespace AudioAnalysisTools.DSP
                 // generate the spectra of FFT AMPLITUDES - NOTE: f[0]=DC;  f[64]=Nyquist
                 var f1 = fft.InvokeDotNetFFT(signalMinusAv);
 
-                // Previous alternative call to do the FFT and return amplitude spectrum
-                //f1 = fft.Invoke(window);
-
                 // Smooth spectrum to reduce variance
-                // In the early days (pre-2010), we used to smooth the spectra to reduce sonogram variance. This is statistically correct thing to do.
-                // Later, we stopped this for standard sonograms but kept it for calculating acoustic indices.
-                // As of 28 March 2017, we are merging the two codes and keeping spectrum smoothing.
-                // Will need to check the effect on spectrograms.
                 int smoothingWindow = 3;
                 f1 = DataTools.filterMovingAverage(f1, smoothingWindow);
 
@@ -301,7 +294,7 @@ namespace AudioAnalysisTools.DSP
                 }
             } // end frames
 
-            // Remove the DC column ie column zero from amplitude spectrogram.
+            // Remove the DC column (ie column zero) from amplitude spectrogram.
             double[,] amplitudeSpectrogram = MatrixTools.Submatrix(spectrogram, 0, 1, spectrogram.GetLength(0) - 1, spectrogram.GetLength(1) - 1);
 
             // check the envelope for clipping. Accept a clip if two consecutive frames have max value = 1,0
