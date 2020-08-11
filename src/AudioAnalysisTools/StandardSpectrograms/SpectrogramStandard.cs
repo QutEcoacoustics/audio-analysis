@@ -82,15 +82,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 this.DecibelsPerFrame[i] = sg.DecibelsPerFrame[startFrame + i];
             }
 
-            /*
-            // Subband functionality no longer available. Discontinued March 2017 because not being used
-            // this.subBandMinHz = sg.subBandMinHz; //min freq (Hz) of the required subband
-            // this.subBandMaxHz = sg.subBandMaxHz; //max freq (Hz) of the required subband
-            //sg.SnrSubband { get; private set; }
-            //this.DecibelsInSubband = new double[frameCount];  // Normalised decibels in extracted freq band
-            //for (int i = 0; i < frameCount; i++) this.DecibelsInSubband[i] = sg.DecibelsInSubband[startFrame + i];
-            */
-
             this.DecibelReference = sg.DecibelReference; // Used to NormaliseMatrixValues the dB values for MFCCs
             this.DecibelsNormalised = new double[frameCount];
             for (int i = 0; i < frameCount; i++)
@@ -142,52 +133,5 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 this.SnrData.ModalNoiseProfile = tuple.Item2; // store the full bandwidth modal noise profile
             }
         }
-
-        /// <summary>
-        /// Normalise the dynamic range of spectrogram between 0dB and value of DynamicRange.
-        /// Also must adjust the SNR.DecibelsInSubband and this.DecibelsNormalised.
-        /// </summary>
-        public void NormaliseDynamicRange(double dynamicRange)
-        {
-            int frameCount = this.Data.GetLength(0);
-            int featureCount = this.Data.GetLength(1);
-            DataTools.MinMax(this.Data, out var minIntensity, out var maxIntensity);
-            double[,] newMatrix = new double[frameCount, featureCount];
-
-            //each row of matrix is a frame
-            for (int i = 0; i < frameCount; i++)
-            {
-                //each col of matrix is a feature
-                for (int j = 0; j < featureCount; j++)
-                {
-                    newMatrix[i, j] = this.Data[i, j];
-                }
-            }
-
-            this.Data = newMatrix;
-        }
-
-        //##################################################################################################################################
-        //####### STATIC METHODS ###########################################################################################################
-        //##################################################################################################################################
-
-        public static SpectrogramStandard GetSpectralSonogram(string recordingFileName, int frameSize, double windowOverlap, int bitsPerSample, double windowPower, int sr,
-                                                   TimeSpan duration, NoiseReductionType nrt, double[,] amplitudeSpectrogram)
-        {
-            SonogramConfig sonoConfig = new SonogramConfig
-            {
-                SourceFName = recordingFileName,
-                WindowSize = frameSize,
-                WindowOverlap = windowOverlap,
-                NoiseReductionType = nrt,
-                epsilon = Math.Pow(0.5, bitsPerSample - 1),
-                WindowPower = windowPower,
-                SampleRate = sr,
-                Duration = duration,
-            }; //default values config
-            var sonogram = new SpectrogramStandard(sonoConfig, amplitudeSpectrogram);
-            sonogram.SetTimeScale(duration);
-            return sonogram;
-        }
-    } //end of class SpectralSonogram : BaseSonogram
+    }
 }
