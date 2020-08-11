@@ -11,19 +11,17 @@ namespace AudioAnalysisTools.DSP
 
     public static class OctaveFreqScale
     {
-        /// IMPORTANT NOTE: If you are converting Herz scale from LINEAR to OCTAVE, this conversion MUST be done BEFORE noise reduction
         /// <summary>
         /// CONSTRUCTION OF Frequency Scales
+        /// IMPORTANT NOTE: If you are converting Herz scale from LINEAR to OCTAVE, this conversion MUST be done BEFORE noise reduction
         /// WARNING!: Changing the constants for the octave scales will have undefined effects.
         ///           The options below have been debugged to give what is required.
         ///           However other values have not been debugged - so user should check the output to ensure it is what is required.
+        /// NOTE: octaveDivisions = the number of fractional Hz steps within one octave. Piano octave contains 12 steps per octave.
         /// </summary>
         public static void GetOctaveScale(FrequencyScale scale)
         {
             int sr, frameSize;
-
-            // NOTE: octaveDivisions = the number of fractional Hz steps within one octave. Piano octave contains 12 steps per octave.
-
             var fst = scale.ScaleType;
 
             switch (fst)
@@ -43,7 +41,7 @@ namespace AudioAnalysisTools.DSP
 
                 case FreqScaleType.Linear62OctaveTones31Nyquist11025:
                     sr = 22050;
-                    frameSize = 8192;
+                    frameSize = 2048;
                     scale.LinearBound = 62;
 
                     // tone steps within one octave. Note: piano = 12 steps per octave.
@@ -53,13 +51,13 @@ namespace AudioAnalysisTools.DSP
                 case FreqScaleType.Linear125OctaveTones32Nyquist11025:
                     // constants required for split linear-octave scale when sr = 22050
                     sr = 22050;
-                    frameSize = 8192;
+                    frameSize = 2048;
                     scale.LinearBound = 125;
                     scale.ToneCount = 32; // tone steps within one octave. Note: piano = 12 steps per octave.
                     break;
 
                 case FreqScaleType.Octaves24Nyquist32000:
-                    //// constants required for full octave scale when sr = 64000
+                    // constants required for full octave scale when sr = 64000
                     sr = 64000;
                     frameSize = 16384;
                     scale.LinearBound = 15;
