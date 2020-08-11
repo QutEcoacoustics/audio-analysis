@@ -357,5 +357,10 @@ namespace AudioAnalysisTools.StandardSpectrograms
             int step = DSP_Frames.FrameStep(this.WindowSize, this.WindowOverlap);
             return step / (double)sampleRate;
         }
+
+        public static double CalculateFrameOverlap(int frameWidth, int frameStep)
+        {
+            return 1 - (frameStep / (double)frameWidth);
+        }
     }
 }
