@@ -275,13 +275,73 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
         /// By default, the split between linear and octave is at 1000 Hz.
         /// </summary>
         [TestMethod]
+        public void TestAssignmentOfGridLinesForOctaveFrequencyScale()
+        {
+            int nyquist = 11025;
+            int linearBound = 500;
+
+            // a contrived set of bin bounds.
+            int[,] octaveBinBounds = new[,]
+            {
+                { 2, 100 },
+                { 4, 200 },
+                { 6, 300 },
+                { 8, 400 },
+                { 12, 500 },
+                { 14, 600 },
+                { 16, 700 },
+                { 18, 800 },
+                { 20, 900 },
+                { 23, 1000 },
+                { 25, 1200 },
+                { 30, 1400 },
+                { 40, 1700 },
+                { 46, 2001 },
+                { 50, 2500 },
+                { 55, 3000 },
+                { 60, 3500 },
+                { 69, 4002 },
+                { 80, 5000 },
+                { 84, 6000 },
+                { 88, 7000 },
+                { 92, 8004 },
+                { 98, 10000 },
+                { 105, 11000 },
+            };
+
+            var gridLineLocations = OctaveFreqScale.GetGridLineLocations(nyquist, linearBound, octaveBinBounds);
+
+            var expected = new[,]
+            {
+                { 4, 500 },
+                { 9, 1000 },
+                { 13, 2000 },
+                { 17, 4000 },
+                { 21, 8000 },
+            };
+
+            Assert.That.MatricesAreEqual(expected, gridLineLocations);
+        }
+
+        /// <summary>
+        /// Test of the default standard split LINEAR-Octave FREQ SCALE
+        /// Check it on pure tone spectrum.
+        /// By default, the split between linear and octave is at 1000 Hz.
+        /// </summary>
+        [TestMethod]
         public void TestSplitLinearOctaveFrequencyScale()
         {
             // Test default octave scale where default linear portion is 0-1000Hz.
             //var fst = FreqScaleType.Linear125Octaves6Tones30Nyquist11025;
-            var fst = FreqScaleType.LinearOctaveStandard;
-            var freqScale = new FrequencyScale(fst);
-            Assert.AreEqual(freqScale.ScaleType, FreqScaleType.LinearOctaveStandard);
+            var fst = FreqScaleType.OctaveStandard;
+            int nyquist = 11025;
+            int frameSize = 512;
+            int linearBound = 1000;
+            int octaveToneCount = 32;
+            int gridInterval = 1000;
+            var freqScale = new FrequencyScale(fst, nyquist, frameSize, linearBound, octaveToneCount, gridInterval);
+
+            Assert.AreEqual(freqScale.ScaleType, FreqScaleType.OctaveStandard);
 
             // test contents of the octave bin bounds matrix.
             int[,] octaveBinBounds = freqScale.BinBounds;
@@ -329,15 +389,19 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
         public void OctaveFrequencyScale1()
         {
             var recordingPath = PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav");
-            var opFileStem = "BAC2_20071008";
+            //var opFileStem = "BAC2_20071008";
             var outputDir = this.outputDirectory;
             var outputImagePath = Path.Combine(outputDir.FullName, "Octave1ScaleSonogram.png");
 
             var recording = new AudioRecording(recordingPath);
 
-            // default octave scale
-            var fst = FreqScaleType.Linear125OctaveTones32Nyquist11025;
-            var freqScale = new FrequencyScale(fst);
+            var fst = FreqScaleType.OctaveCustom;
+            int nyquist = recording.SampleRate / 2;
+            int frameSize = 16384;
+            int linearBound = 125;
+            int octaveToneCount = 25;
+            int gridInterval = 1000;
+            var freqScale = new FrequencyScale(fst, nyquist, frameSize, linearBound, octaveToneCount, gridInterval);
 
             var sonoConfig = new SonogramConfig
             {
@@ -411,35 +475,35 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             //Assert.That.MatricesAreEqual(expectedBinBounds, freqScale.BinBounds);
 
-            Assert.AreEqual(253, freqScale.BinBounds.GetLength(0));
+            Assert.AreEqual(255, freqScale.BinBounds.GetLength(0));
             Assert.AreEqual(23, freqScale.BinBounds[23, 0]);
-            Assert.AreEqual(62, freqScale.BinBounds[23, 1]);
+            Assert.AreEqual(31, freqScale.BinBounds[23, 1]);
             Assert.AreEqual(46, freqScale.BinBounds[46, 0]);
-            Assert.AreEqual(124, freqScale.BinBounds[46, 1]);
-            Assert.AreEqual(150, freqScale.BinBounds[100, 0]);
-            Assert.AreEqual(404, freqScale.BinBounds[100, 1]);
-            Assert.AreEqual(275, freqScale.BinBounds[128, 0]);
-            Assert.AreEqual(740, freqScale.BinBounds[128, 1]);
-            Assert.AreEqual(4095, freqScale.BinBounds[252, 0]);
-            Assert.AreEqual(11022, freqScale.BinBounds[252, 1]);
+            Assert.AreEqual(62, freqScale.BinBounds[46, 1]);
+            Assert.AreEqual(113, freqScale.BinBounds[100, 0]);
+            Assert.AreEqual(152, freqScale.BinBounds[100, 1]);
+            Assert.AreEqual(246, freqScale.BinBounds[128, 0]);
+            Assert.AreEqual(331, freqScale.BinBounds[128, 1]);
+            Assert.AreEqual(8191, freqScale.BinBounds[254, 0]);
+            Assert.AreEqual(11024, freqScale.BinBounds[254, 1]);
 
             // Check that freqScale.GridLineLocations are correct
             var expected = new[,]
             {
-                { 46, 125 },
-                { 79, 250 },
-                { 111, 500 },
-                { 143, 1000 },
-                { 175, 2000 },
-                { 207, 4000 },
-                { 239, 8000 },
+                { 93, 125 },
+                { 118, 250 },
+                { 143, 500 },
+                { 168, 1000 },
+                { 193, 2000 },
+                { 218, 4000 },
+                { 243, 8000 },
             };
 
             Assert.That.MatricesAreEqual(expected, freqScale.GridLineLocations);
 
             // Check that image dimensions are correct
-            Assert.AreEqual(645, image.Width);
-            Assert.AreEqual(307, image.Height);
+            Assert.AreEqual(321, image.Width);
+            Assert.AreEqual(309, image.Height);
         }
 
         /// <summary>
@@ -453,13 +517,19 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
         public void OctaveFrequencyScale2()
         {
             var recordingPath = PathHelper.ResolveAsset("Recordings", "MarineJasco_AMAR119-00000139.00000139.Chan_1-24bps.1375012796.2013-07-28-11-59-56-16bit-60sec.wav");
-            var opFileStem = "JascoMarineGBR1";
+            //var opFileStem = "JascoMarineGBR1";
             var outputDir = this.outputDirectory;
             var outputImagePath = Path.Combine(this.outputDirectory.FullName, "Octave2ScaleSonogram.png");
 
             var recording = new AudioRecording(recordingPath);
-            var fst = FreqScaleType.Linear125OctaveTones28Nyquist32000;
-            var freqScale = new FrequencyScale(fst);
+            //var fst = FreqScaleType.Linear125OctaveTones28Nyquist32000;
+            var fst = FreqScaleType.OctaveCustom;
+            int nyquist = recording.SampleRate / 2;
+            int frameSize = 16384;
+            int linearBound = 125;
+            int octaveToneCount = 28;
+            int gridInterval = 1000;
+            var freqScale = new FrequencyScale(fst, nyquist, frameSize, linearBound, octaveToneCount, gridInterval);
 
             var sonoConfig = new SonogramConfig
             {
@@ -489,37 +559,36 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             //Assert.That.MatricesAreEqual(expectedBinBounds, freqScale.BinBounds);
 
             // INSTEAD DO THIS TEST
-            Assert.AreEqual(257, freqScale.BinBounds.GetLength(0));
+            Assert.AreEqual(255, freqScale.BinBounds.GetLength(0));
             Assert.AreEqual(23, freqScale.BinBounds[23, 0]);
-            Assert.AreEqual(90, freqScale.BinBounds[23, 1]);
-            Assert.AreEqual(53, freqScale.BinBounds[52, 0]);
-            Assert.AreEqual(207, freqScale.BinBounds[52, 1]);
-            Assert.AreEqual(173, freqScale.BinBounds[100, 0]);
-            Assert.AreEqual(676, freqScale.BinBounds[100, 1]);
-            Assert.AreEqual(345, freqScale.BinBounds[128, 0]);
-            Assert.AreEqual(1348, freqScale.BinBounds[128, 1]);
-            Assert.AreEqual(8191, freqScale.BinBounds[256, 0]);
-            Assert.AreEqual(31996, freqScale.BinBounds[256, 1]);
+            Assert.AreEqual(62, freqScale.BinBounds[23, 1]);
+            Assert.AreEqual(54, freqScale.BinBounds[52, 0]);
+            Assert.AreEqual(145, freqScale.BinBounds[52, 1]);
+            Assert.AreEqual(177, freqScale.BinBounds[100, 0]);
+            Assert.AreEqual(476, freqScale.BinBounds[100, 1]);
+            Assert.AreEqual(354, freqScale.BinBounds[128, 0]);
+            Assert.AreEqual(953, freqScale.BinBounds[128, 1]);
+            Assert.AreEqual(8191, freqScale.BinBounds[254, 0]);
+            Assert.AreEqual(22047, freqScale.BinBounds[254, 1]);
 
             // Check that freqScale.GridLineLocations are correct
             var expected = new[,]
             {
-                { 34, 125 },
-                { 62, 250 },
-                { 89, 500 },
-                { 117, 1000 },
-                { 145, 2000 },
-                { 173, 4000 },
-                { 201, 8000 },
-                { 229, 16000 },
-                { 256, 32000 },
+                { 47, 125 },
+                { 74, 250 },
+                { 102, 500 },
+                { 130, 1000 },
+                { 158, 2000 },
+                { 186, 4000 },
+                { 214, 8000 },
+                { 242, 16000 },
             };
 
             Assert.That.MatricesAreEqual(expected, freqScale.GridLineLocations);
 
             // Check that image dimensions are correct
             Assert.AreEqual(201, image.Width);
-            Assert.AreEqual(311, image.Height);
+            Assert.AreEqual(309, image.Height);
         }
 
         /// <summary>
@@ -634,7 +703,15 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             int sampleRate = 64000;
             double duration = 30; // signal duration in seconds
             int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
-            var freqScale = new FrequencyScale(FreqScaleType.Linear125OctaveTones28Nyquist32000);
+
+            //var fst = FreqScaleType.Linear125OctaveTones28Nyquist32000;
+            var fst = FreqScaleType.OctaveCustom;
+            int nyquist = sampleRate / 2;
+            int frameSize = 16384;
+            int linearBound = 125;
+            int octaveToneCount = 28;
+            int gridInterval = 1000;
+            var freqScale = new FrequencyScale(fst, nyquist, frameSize, linearBound, octaveToneCount, gridInterval);
             var outputImagePath = Path.Combine(this.outputDirectory.FullName, "Signal2_OctaveFreqScale.png");
             var recording = DspFilters.GenerateTestRecording(sampleRate, duration, harmonics, WaveType.Cosine);
 

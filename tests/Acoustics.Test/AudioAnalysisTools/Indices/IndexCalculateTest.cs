@@ -309,9 +309,14 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
 
             // CHANGE CONFIG PARAMETERS HERE IF REQUIRED
             var indexCalculateConfig = ConfigFile.Deserialize<AcousticIndices.AcousticIndicesConfig>(configFile);
-            indexCalculateConfig.FrequencyScale = FreqScaleType.LinearOctaveStandard;
+            indexCalculateConfig.FrequencyScale = FreqScaleType.OctaveStandard;
+            int nyquist = sampleRate / 2;
+            int frameSize = 512;
+            int linearBound = 1000;
+            int octaveToneCount = 1; // this set automatically
+            int gridInterval = 1000;
+            var freqScale = new FrequencyScale(FreqScaleType.OctaveStandard, nyquist, frameSize, linearBound, octaveToneCount, gridInterval);
 
-            var freqScale = new FrequencyScale(indexCalculateConfig.FrequencyScale);
             indexCalculateConfig.FrameLength = freqScale.WindowSize;
 
             var results = IndexCalculate.Analysis(

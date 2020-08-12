@@ -12,112 +12,32 @@ namespace AudioAnalysisTools.DSP
     public static class OctaveFreqScale
     {
         /// <summary>
-        /// CONSTRUCTION OF Frequency Scales
-        /// IMPORTANT NOTE: If you are converting Herz scale from LINEAR to OCTAVE, this conversion MUST be done BEFORE noise reduction
-        /// WARNING!: Changing the constants for the octave scales will have undefined effects.
-        ///           The options below have been debugged to give what is required.
-        ///           However other values have not been debugged - so user should check the output to ensure it is what is required.
-        /// NOTE: octaveDivisions = the number of fractional Hz steps within one octave. Piano octave contains 12 steps per octave.
-        /// </summary>
-        public static void GetOctaveScale(FrequencyScale scale)
-        {
-            int sr, frameSize;
-            var fst = scale.ScaleType;
-
-            switch (fst)
-            {
-                case FreqScaleType.LinearOctaveStandard:
-                    //This is a split linear-octave frequency scale.
-                    // Valid values for linearUpperBound are 125, 250, 500, 1000.
-                    int linearUpperBound = 1000;
-                    GetStandardOctaveScale(scale, linearUpperBound);
-                    return;
-
-                case FreqScaleType.OctaveDataReduction:
-                    // This spectral conversion is for data reduction purposes.
-                    // It is a split linear-octave frequency scale.
-                    GetDataReductionScale(scale);
-                    return;
-
-                case FreqScaleType.Linear62OctaveTones31Nyquist11025:
-                    sr = 22050;
-                    frameSize = 2048;
-                    scale.LinearBound = 62;
-
-                    // tone steps within one octave. Note: piano = 12 steps per octave.
-                    scale.ToneCount = 31;
-                    break;
-
-                case FreqScaleType.Linear125OctaveTones32Nyquist11025:
-                    // constants required for split linear-octave scale when sr = 22050
-                    sr = 22050;
-                    frameSize = 2048;
-                    scale.LinearBound = 125;
-                    scale.ToneCount = 32; // tone steps within one octave. Note: piano = 12 steps per octave.
-                    break;
-
-                case FreqScaleType.Octaves24Nyquist32000:
-                    // constants required for full octave scale when sr = 64000
-                    sr = 64000;
-                    frameSize = 16384;
-                    scale.LinearBound = 15;
-                    scale.ToneCount = 24; // tone steps within one octave. Note: piano = 12 steps per octave.
-                    break;
-
-                case FreqScaleType.Linear125OctaveTones28Nyquist32000:
-                    // constants required for split linear-octave scale when sr = 64000
-                    sr = 64000;
-                    frameSize = 16384; // = 2*8192 or 4*4096;
-                    scale.LinearBound = 125;
-
-                    // tone steps within one octave. Note: piano = 12 steps per octave.
-                    scale.ToneCount = 28;
-                    break;
-
-                default:
-                    LoggedConsole.WriteErrorLine("WARNING: GetOctaveScale() was passed UNKNOWN OCTAVE SCALE.");
-                    return;
-            }
-
-            scale.Nyquist = sr / 2;
-            scale.WindowSize = frameSize; // = 2*8192   or 4*4096
-            scale.BinBounds = LinearToSplitLinearOctaveScale(sr, frameSize, scale.LinearBound, scale.Nyquist, scale.ToneCount);
-            scale.FinalBinCount = scale.BinBounds.GetLength(0);
-            scale.GridLineLocations = GetGridLineLocations(fst, scale.BinBounds);
-        }
-
-        /// <summary>
-        /// Calculates the parameters for a mixed linear-octave frequency scale.
-        /// Works only for "standard" recordings, i.e. sr = 22050 and frame = 512.
-        /// The number of octaveDivsions/tones (T) is set equal to number of linear bins.
+        /// Calculates the parameters for a standard mixed linear-octave frequency scale.
+        /// IMPORTANT: It assumes that the nyquist, frame size and linear bound have already been set to valid values.
+        /// What makes this scale "standard" is that the number of octaveDivsions/tones (T) is set equal to number of linear bins.
         /// The remainder of the spectrum will be reduced over T-tone octaves.
-        /// Valid values for linearUpperBound are 125, 250, 500, 1000.
+        /// Sensible values for linearUpperBound are 125, 250, 500, 1000.
         /// Note that when linearUpperBound = 500, the resulting spectrogram is very similar to the default MelScale.
-        /// The default MelScale has 64 frequency bins and Linear500-octave has 66 frequency bands.
+        /// When nyquist=11025 and frameSize = 512, the default MelScale has 64 frequency bins and Linear500-octave has 66 frequency bands.
         /// </summary>
-        /// <param name="linearUpperBound">The upper limit of the linear frqeuency band in Hertz.</param>
-        public static FrequencyScale GetStandardOctaveScale(FrequencyScale scale, int linearUpperBound)
+        public static FrequencyScale GetStandardOctaveScale(FrequencyScale scale)
         {
-            int sr = 22050;
-            int frameSize = 512;
-            scale.WindowSize = frameSize;
-            scale.Nyquist = sr / 2;
-            scale.LinearBound = linearUpperBound;
-            var binWidth = sr / (double)frameSize;
+            int sr = scale.Nyquist * 2;
+            var binWidth = sr / (double)scale.WindowSize;
+            int linearUpperBound = scale.LinearBound;
 
-            if (linearUpperBound < 64 || linearUpperBound > scale.Nyquist - 64)
+            if (linearUpperBound < 32 || linearUpperBound > scale.Nyquist - 64)
             {
-                    throw new ArgumentException("WARNING: Illegal parameter passed to method GetStandardOctaveScale(int linearUpperBound).");
+                    throw new ArgumentException("WARNING: Invalid LinearBound value for method GetStandardOctaveScale().");
             }
 
-            // init tone steps within one octave. Note: piano = 12 steps per octave.
+            // init tone steps within one octave. Note: piano octave = 12 steps per octave.
             scale.ToneCount = (int)Math.Round(scale.LinearBound / binWidth);
-            scale.BinBounds = LinearToSplitLinearOctaveScale(sr, frameSize, scale.LinearBound, scale.Nyquist, scale.ToneCount);
+            scale.BinBounds = LinearToSplitLinearOctaveScale(scale.Nyquist, scale.WindowSize, scale.LinearBound, scale.Nyquist, scale.ToneCount);
             scale.FinalBinCount = scale.BinBounds.GetLength(0);
 
             // These only work for case where linearUpperScale = 1000 Hz
-            double freqStep = sr / frameSize;
-            int topLinearIndex = (int)Math.Round(linearUpperBound / freqStep);
+            int topLinearIndex = (int)Math.Round(linearUpperBound / binWidth);
 
             var gridLineLocations = new int[4, 2];
             gridLineLocations[0, 0] = topLinearIndex;
@@ -156,7 +76,6 @@ namespace AudioAnalysisTools.DSP
 
         /// <summary>
         /// Converts a spectrogram having linear freq scale to one having an Octave freq scale.
-        /// Note that the sample rate (sr) and the frame size both need to be apporpriate to the choice of FreqScaleType.
         /// TODO: SHOULD DEVELOP A SEPARATE UNIT TEST for this method.
         /// </summary>
         public static double[,] ConvertLinearSpectrogramToOctaveFreqScale(double[,] inputSpgram, FrequencyScale freqScale)
@@ -283,77 +202,57 @@ namespace AudioAnalysisTools.DSP
             return powerSpectra;
         }
 
-        public static int[,] GetGridLineLocations(FreqScaleType ost, int[,] octaveBinBounds)
+        public static int[,] GetGridLineLocations(int nyquist, int linearBound, int[,] octaveBinBounds)
         {
-            int[,] gridLineLocations = null;
+            int[] gridLocationsHertz = { 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000, 32000 };
+            int binCount = octaveBinBounds.GetLength(0);
+            var gridLineLocations = new List<int[]>();
+            var upperBound = nyquist * 0.75;
 
-            switch (ost)
+            // get location index of the first required gridline.
+            int glIndex = 0;
+            while (gridLocationsHertz[glIndex] < linearBound)
             {
-                case FreqScaleType.Linear62OctaveTones31Nyquist11025:
-                    gridLineLocations = new int[8, 2];
-                    LoggedConsole.WriteErrorLine("This Octave Scale does not currently have grid data provided.");
-                    break;
-
-                case FreqScaleType.Linear125OctaveTones32Nyquist11025:
-                    gridLineLocations = new int[7, 2];
-                    gridLineLocations[0, 0] = 46; //  125 Hz
-                    gridLineLocations[1, 0] = 79; //  250
-                    gridLineLocations[2, 0] = 111; //  500
-                    gridLineLocations[3, 0] = 143; // 1000
-                    gridLineLocations[4, 0] = 175; // 2000
-                    gridLineLocations[5, 0] = 207; // 4000
-                    gridLineLocations[6, 0] = 239; // 8000
-
-                    // enter the Hz value
-                    gridLineLocations[0, 1] = 125; //  125 Hz
-                    gridLineLocations[1, 1] = 250; //  250
-                    gridLineLocations[2, 1] = 500; //  500
-                    gridLineLocations[3, 1] = 1000; // 1000
-                    gridLineLocations[4, 1] = 2000; // 2000
-                    gridLineLocations[5, 1] = 4000; // 4000
-                    gridLineLocations[6, 1] = 8000; // 8000
-                    break;
-
-                case FreqScaleType.OctaveDataReduction:
-                    //This Octave Scale does not require grid lines. It is for data reduction purposes only
-                    gridLineLocations = new int[6, 2];
-                    break;
-
-                case FreqScaleType.Octaves24Nyquist32000:
-                    gridLineLocations = new int[8, 2];
-                    LoggedConsole.WriteErrorLine("This Octave Scale does not currently have grid data provided.");
-                    break;
-
-                case FreqScaleType.Linear125OctaveTones28Nyquist32000:
-                    gridLineLocations = new int[9, 2];
-                    gridLineLocations[0, 0] = 34; //  125 Hz
-                    gridLineLocations[1, 0] = 62; //  250
-                    gridLineLocations[2, 0] = 89; //  500
-                    gridLineLocations[3, 0] = 117; // 1000
-                    gridLineLocations[4, 0] = 145; // 2000
-                    gridLineLocations[5, 0] = 173; // 4000
-                    gridLineLocations[6, 0] = 201; // 8000
-                    gridLineLocations[7, 0] = 229; //16000
-                    gridLineLocations[8, 0] = 256; //32000
-
-                    // enter the Hz values
-                    gridLineLocations[0, 1] = 125; //  125 Hz
-                    gridLineLocations[1, 1] = 250; //  250
-                    gridLineLocations[2, 1] = 500; //  500
-                    gridLineLocations[3, 1] = 1000; // 1000
-                    gridLineLocations[4, 1] = 2000; // 2000
-                    gridLineLocations[5, 1] = 4000; // 4000
-                    gridLineLocations[6, 1] = 8000; // 8000
-                    gridLineLocations[7, 1] = 16000; //16000
-                    gridLineLocations[8, 1] = 32000; //32000
-
-                    break;
-                default:
-                    LoggedConsole.WriteErrorLine("Not a valid Octave Scale.");
-                    break;
+                glIndex++;
             }
 
-            return gridLineLocations;
+            int glHertz = gridLocationsHertz[glIndex];
+
+            for (int i = 0; i < binCount; i++)
+            {
+                if (octaveBinBounds[i, 1] < linearBound)
+                {
+                    continue;
+                }
+
+                if (octaveBinBounds[i, 1] > upperBound)
+                {
+                    break;
+                }
+
+                // if get to a grid location
+                if (octaveBinBounds[i, 1] >= glHertz)
+                {
+                    var intArray = new int[2];
+                    intArray[0] = i;
+                    intArray[1] = glHertz; // octaveBinBounds[i, 1];
+                    gridLineLocations.Add(intArray);
+
+                    glIndex++;
+                    glHertz = gridLocationsHertz[glIndex];
+                }
+            }
+
+            // there is better way to do this.
+            var returnMatrix = new int[gridLineLocations.Count, 2];
+            for (int gl = 0; gl < gridLineLocations.Count; gl++)
+            {
+                var location = gridLineLocations[gl];
+                returnMatrix[gl, 0] = location[0];
+                returnMatrix[gl, 1] = location[1];
+            }
+
+            return returnMatrix;
         }
 
         /// <summary>
@@ -400,12 +299,10 @@ namespace AudioAnalysisTools.DSP
         /// Column 0 of the returned matrix contains the index into linear spectrum.
         /// Column 1 of the returned matrix contains the Hertz value of the corresponding index into the linear spectrum.
         /// </summary>
-        public static int[,] LinearToSplitLinearOctaveScale(int sr, int frameSize, int lowerFreqBound, int upperFreqBound, int octaveDivisions)
+        public static int[,] LinearToSplitLinearOctaveScale(int nyquist, int frameSize, int lowerFreqBound, int upperFreqBound, int octaveDivisions)
         {
-            int nyquist = sr / 2;
-            int inputSpectrumSize = frameSize / 2;
-
             // Get the linear freq scale.
+            int inputSpectrumSize = frameSize / 2;
             var linearFreqScale = GetLinearFreqScale(nyquist, inputSpectrumSize);
 
             // Get the octave freq scale.

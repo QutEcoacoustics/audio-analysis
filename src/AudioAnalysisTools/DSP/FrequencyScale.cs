@@ -25,12 +25,9 @@ namespace AudioAnalysisTools.DSP
     {
         Linear = 0,
         Mel = 1,
-        LinearOctaveStandard = 2,
-        Linear62OctaveTones31Nyquist11025 = 3,
-        Linear125OctaveTones32Nyquist11025 = 4,
-        Linear125OctaveTones28Nyquist32000 = 5,
-        Octaves24Nyquist32000 = 6,
-        OctaveDataReduction = 7,
+        OctaveCustom = 2,
+        OctaveStandard = 3,
+        OctaveDataReduction = 3,
     }
 
     public class FrequencyScale
@@ -59,7 +56,6 @@ namespace AudioAnalysisTools.DSP
         /// </summary>
         public FrequencyScale(FreqScaleType type, int nyquist, int frameSize, int finalBinCount, int hertzGridInterval)
         {
-            this.ScaleType = type;
             this.Nyquist = nyquist;
             this.WindowSize = frameSize;
             this.FinalBinCount = finalBinCount;
@@ -70,12 +66,61 @@ namespace AudioAnalysisTools.DSP
                 this.GridLineLocations = SpectrogramMelScale.GetMelGridLineLocations(this.HertzGridInterval, nyquist, this.FinalBinCount);
                 this.LinearBound = 1000;
             }
+            else if (type == FreqScaleType.OctaveStandard || type == FreqScaleType.OctaveCustom)
+            {
+                throw new Exception("Wrong Constructor. Use the Octave scale constructor.");
+            }
             else
             {
                 // linear is the default
                 this.BinBounds = this.GetLinearBinBounds();
                 this.GridLineLocations = GetLinearGridLineLocations(nyquist, this.HertzGridInterval, this.FinalBinCount);
                 this.LinearBound = nyquist;
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FrequencyScale"/> class.
+        /// CONSTRUCTION OF OCTAVE Frequency Scales
+        /// IMPORTANT NOTE: If you are converting Herz scale from LINEAR to OCTAVE, this conversion MUST be done BEFORE noise reduction
+        /// WARNING!: Changing the constants for the octave scales will have undefined effects.
+        ///           The options below have been debugged to give what is required.
+        ///           However other values have not been debugged - so user should check the output to ensure it is what is required.
+        /// NOTE: octaveToneCount = the number of fractional Hz steps within one octave. A piano octave contains 12 steps per octave.
+        /// NOTE: Not all combinations of parameter values are effective. nor have they all been tested.
+        ///       The following have been tested:
+        ///         nyquist=11025, linearBound=125 t0 1000, octaveToneCount=31, 32.
+        ///         nyquist=11025, linearBound=125, octaveToneCount=31.
+        ///         nyquist=32000, linearBound=125, octaveToneCount=28.
+        /// </summary>
+        /// <param name="type">Scale type must be an OCTAVE type.</param>
+        /// <param name="nyquist">sr / 2.</param>
+        /// <param name="frameSize">Assumes that frame size is power of 2.</param>
+        /// <param name="linearBound">The bound (Hz value) that divides lower linear and upper octave parts of the frequency scale.</param>
+        /// <param name="octaveToneCount">Number of fractional Hz steps within one octave. This is ignored in case of custom scale.</param>
+        /// <param name="hertzGridInterval">Only used where appropriate to draw frequency gridlines.</param>
+        public FrequencyScale(FreqScaleType type, int nyquist, int frameSize, int linearBound, int octaveToneCount, int hertzGridInterval)
+        {
+            this.ScaleType = type;
+            this.Nyquist = nyquist;
+            this.WindowSize = frameSize;
+            this.LinearBound = linearBound;
+
+            if (type == FreqScaleType.OctaveStandard)
+            {
+                // this scale automatically sets the octave tone count.
+                OctaveFreqScale.GetStandardOctaveScale(this);
+            }
+            else if (type == FreqScaleType.OctaveCustom)
+            {
+                this.ToneCount = octaveToneCount;
+                this.BinBounds = OctaveFreqScale.LinearToSplitLinearOctaveScale(nyquist, frameSize, linearBound, nyquist, octaveToneCount);
+                this.FinalBinCount = this.BinBounds.GetLength(0);
+                this.GridLineLocations = OctaveFreqScale.GetGridLineLocations(nyquist, linearBound, this.BinBounds);
+            }
+            else
+            {
+                throw new Exception("Unknown Octave scale.");
             }
         }
 
@@ -104,10 +149,22 @@ namespace AudioAnalysisTools.DSP
                 // MEL SCALE spectrograms are available by direct call to SpectrogramGenerator.Core.GetMelScaleSpectrogram()
                 SpectrogramMelScale.GetStandardMelScale(this);
             }
+            else if (fst == FreqScaleType.OctaveDataReduction)
+            {
+                // This spectral conversion is for data reduction purposes.
+                // It is a split linear-octave frequency scale.
+                OctaveFreqScale.GetDataReductionScale(this);
+
+                //The data reduction Octave Scale does not require grid lines.
+                this.GridLineLocations = new int[6, 2];
+            }
+            else if (fst == FreqScaleType.OctaveStandard || fst == FreqScaleType.OctaveCustom)
+            {
+                throw new Exception("Not enough info. Use an Octave scale constructor.");
+            }
             else
             {
-                // assume octave scale is only other option
-                OctaveFreqScale.GetOctaveScale(this);
+                throw new Exception("Unknown frequency scale type.");
             }
         }
 

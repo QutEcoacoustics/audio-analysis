@@ -159,14 +159,17 @@ namespace AudioAnalysisTools.Indices
             // Linear or Octave or Mel frequency scale? Set Linear as default.
             var freqScale = new FrequencyScale(nyquist: nyquist, frameSize: frameSize, hertzGridInterval: 1000);
             var freqScaleType = config.FrequencyScale;
-            bool octaveScale = freqScaleType == FreqScaleType.Linear125OctaveTones28Nyquist32000;
+            bool octaveScale = freqScaleType == FreqScaleType.OctaveStandard || freqScaleType == FreqScaleType.OctaveCustom;
             bool melScale = freqScaleType == FreqScaleType.Mel;
             if (octaveScale)
             {
+                throw new Exception("Octave scales not currently implemented.");
+
+                //TODO This is to be worked on.
                 // only allow one octave scale at the moment - for Jasco marine recordings.
                 // ASSUME fixed Occtave scale - USEFUL ONLY FOR JASCO 64000sr MARINE RECORDINGS
                 // If you wish to use other octave scale types then need to put in the config file and and set up recovery here.
-                freqScale = new FrequencyScale(FreqScaleType.Linear125OctaveTones28Nyquist32000);
+                freqScale = new FrequencyScale(freqScaleType);
 
                 // Recalculate the spectrogram according to octave scale. This option works only when have high SR recordings.
                 dspOutput1.AmplitudeSpectrogram = OctaveFreqScale.AmplitudeSpectra(

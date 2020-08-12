@@ -194,26 +194,17 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     throw new ArgumentException("Mel Scale is not yet implemented");
 
                 //break;
-                case "Linear62Octaves7Tones31Nyquist11025":
-                    fst = FreqScaleType.Linear62OctaveTones31Nyquist11025;
-                    this.FreqScale = new FrequencyScale(fst);
-                    throw new ArgumentException("Linear62Octaves7Tones31Nyquist11025 Scale is not yet implemented");
-
-                //break;
-                case "Linear125Octaves6Tones30Nyquist11025":
-                    fst = FreqScaleType.Linear125OctaveTones32Nyquist11025;
-                    this.FreqScale = new FrequencyScale(fst);
+                case "OctaveStandard":
+                    int linearBound = 1000;
+                    int octaveToneCount = 1; // this is set automatically
+                    int gridInterval = 1000;
+                    fst = FreqScaleType.OctaveStandard;
+                    this.FreqScale = new FrequencyScale(fst, nyquist, frameSize, linearBound, octaveToneCount, gridInterval);
                     break;
-                case "Octaves24Nyquist32000":
-                    fst = FreqScaleType.Octaves24Nyquist32000;
-                    this.FreqScale = new FrequencyScale(fst);
-                    throw new ArgumentException("Octaves24Nyquist32000 Scale is not yet implemented");
 
-                //break;
-                case "Linear125Octaves7Tones28Nyquist32000":
-                    fst = FreqScaleType.Linear125OctaveTones28Nyquist32000;
-                    this.FreqScale = new FrequencyScale(fst);
-                    break;
+                case "OctaveCustom":
+                    throw new ArgumentException("OctaveCustom Scale is not yet implemented");
+
                 default:
                     throw new ArgumentException($"{config.FreqScale} is an unknown option for drawing a frequency scale");
             }

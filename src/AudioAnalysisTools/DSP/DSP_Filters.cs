@@ -78,7 +78,14 @@ namespace AudioAnalysisTools.DSP
             int sampleRate = 64000;
             double duration = 30; // signal duration in seconds
             int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
-            var freqScale = new FrequencyScale(FreqScaleType.Linear125OctaveTones28Nyquist32000);
+
+            //var freqScale = new FrequencyScale(FreqScaleType.Linear125OctaveTones28Nyquist32000);
+            int nyquist = sampleRate / 2;
+            int frameSize = 16384;
+            int linearBound = 125;
+            int octaveToneCount = 28;
+            int gridInterval = 1000;
+            var freqScale = new FrequencyScale(FreqScaleType.OctaveCustom, nyquist, frameSize, linearBound, octaveToneCount, gridInterval);
             string path = @"C:\SensorNetworks\Output\Sonograms\UnitTestSonograms\SineSignal2.png";
             var recording = GenerateTestRecording(sampleRate, duration, harmonics, WaveType.Cosine);
 

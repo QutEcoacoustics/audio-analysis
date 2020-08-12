@@ -225,15 +225,17 @@ namespace AnalysisPrograms.SpectrogramGenerator
                     NoiseReductionParameter = bgNoiseThreshold,
                 };
 
-                // Here are some of the possible octave frequency scales.
-                //var freqScale = new FrequencyScale(FreqScaleType.LinearOctaveStandard);
-                //var freqScale = new FrequencyScale(FreqScaleType.OctaveDataReduction);
-                //var freqScale = new FrequencyScale(FreqScaleType.Linear62OctaveTones31Nyquist11025);
-                //var freqScale = new FrequencyScale(FreqScaleType.Linear125OctaveTones32Nyquist11025);
+                //var type = FreqScaleType.OctaveCustom;
+                var type = FreqScaleType.OctaveStandard;
+                int nyquist = sampleRate / 2;
+                int linearBound = 1000;
+                int octaveToneCount = 31; // This value is ignored for OctaveStandard type.
+                int hertzGridInterval = 1000;
+                var scale = new FrequencyScale(type, nyquist, frameSize, linearBound, octaveToneCount, hertzGridInterval);
 
                 images.Add(
                     OctaveScaleSpectrogram,
-                    GetOctaveScaleSpectrogram(octaveConfig, FreqScaleType.Linear62OctaveTones31Nyquist11025, recordingSegment, sourceRecordingName));
+                    GetOctaveScaleSpectrogram(octaveConfig, scale, recordingSegment, sourceRecordingName));
             }
 
             // IMAGE 9) AmplitudeSpectrogram_LocalContrastNormalization
@@ -391,7 +393,7 @@ namespace AnalysisPrograms.SpectrogramGenerator
             var titleBar = BaseSonogram.DrawTitleBarOfGrayScaleSpectrogram(
                     "MEL-FREQUENCY SPECTROGRAM " + sourceRecordingName,
                     image.Width,
-                    ImageTags[CepstralSpectrogram]);
+                    ImageTags[MelScaleSpectrogram]);
             var startTime = TimeSpan.Zero;
             var xAxisTicInterval = TimeSpan.FromSeconds(1);
             TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(sonoConfig.WindowStep / (double)sonoConfig.SampleRate);
@@ -424,15 +426,10 @@ namespace AnalysisPrograms.SpectrogramGenerator
 
         public static Image<Rgb24> GetOctaveScaleSpectrogram(
         SonogramConfig sgConfig,
-        FreqScaleType fst,
+        FrequencyScale freqScale,
         AudioRecording recording,
         string sourceRecordingName)
         {
-            var freqScale = new FrequencyScale(fst)
-            {
-                WindowStep = 512,
-            };
-
             // ensure that the freq scale and the config are consistent.
             sgConfig.WindowSize = freqScale.WindowSize;
             freqScale.WindowStep = sgConfig.WindowStep;
@@ -447,7 +444,7 @@ namespace AnalysisPrograms.SpectrogramGenerator
             var titleBar = BaseSonogram.DrawTitleBarOfGrayScaleSpectrogram(
                     "OCTAVE-SCALE SPECTROGRAM " + sourceRecordingName,
                     image.Width,
-                    ImageTags[CepstralSpectrogram]);
+                    ImageTags[OctaveScaleSpectrogram]);
             var startTime = TimeSpan.Zero;
             var xAxisTicInterval = TimeSpan.FromSeconds(1);
             TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(sgConfig.WindowStep / (double)sgConfig.SampleRate);

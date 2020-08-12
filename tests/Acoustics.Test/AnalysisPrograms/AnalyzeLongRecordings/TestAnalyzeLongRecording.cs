@@ -154,8 +154,14 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             var recordingPath = this.outputDirectory.CombineFile(recordingName + ".wav");
             WavWriter.WriteWavFileViaFfmpeg(recordingPath, recording.WavReader);
 
-            var fst = FreqScaleType.Linear125OctaveTones28Nyquist32000;
-            var freqScale = new FrequencyScale(fst);
+            //var fst = FreqScaleType.Linear125OctaveTones28Nyquist32000;
+            var fst = FreqScaleType.OctaveCustom;
+            int nyquist = sampleRate / 2;
+            int frameSize = 16384;
+            int linearBound = 125;
+            int octaveToneCount = 28;
+            int gridInterval = 1000;
+            var freqScale = new FrequencyScale(fst, nyquist, frameSize, linearBound, octaveToneCount, gridInterval);
 
             /*
             // draw the signal as spectrogram just for debugging purposes
