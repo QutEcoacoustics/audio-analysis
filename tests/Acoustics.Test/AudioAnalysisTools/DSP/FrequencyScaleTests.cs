@@ -270,9 +270,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// Test of the default standard split LINEAR-Octave FREQ SCALE
-        /// Check it on pure tone spectrum.
-        /// By default, the split between linear and octave is at 1000 Hz.
+        /// Test static method which returns bin index for a given frequency.
         /// </summary>
         [TestMethod]
         public void TestAssignmentOfGridLinesForOctaveFrequencyScale()
@@ -321,6 +319,40 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             };
 
             Assert.That.MatricesAreEqual(expected, gridLineLocations);
+        }
+
+        /// <summary>
+        /// Test static method which returns bin index for a given frequency.
+        /// </summary>
+        [TestMethod]
+        public void TestReturnOfBinIndex()
+        {
+            var freqScale = new FrequencyScale(FreqScaleType.OctaveDataReduction);
+
+            // test contents of the octave bin bounds matrix.
+            int[,] octaveBinBounds = freqScale.BinBounds;
+
+            Assert.AreEqual(20, octaveBinBounds.GetLength(0));
+
+            int hertzValue = 500;
+            var binId = freqScale.GetBinIdForHerzValue(hertzValue);
+            Assert.AreEqual(2, binId);
+
+            hertzValue = 1000;
+            binId = freqScale.GetBinIdForHerzValue(hertzValue);
+            Assert.AreEqual(4, binId);
+
+            hertzValue = 2000;
+            binId = freqScale.GetBinIdForHerzValue(hertzValue);
+            Assert.AreEqual(7, binId);
+
+            hertzValue = 4000;
+            binId = freqScale.GetBinIdForHerzValue(hertzValue);
+            Assert.AreEqual(12, binId);
+
+            hertzValue = 8000;
+            binId = freqScale.GetBinIdForHerzValue(hertzValue);
+            Assert.AreEqual(17, binId);
         }
 
         /// <summary>
@@ -395,7 +427,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             var recording = new AudioRecording(recordingPath);
 
-            var fst = FreqScaleType.OctaveCustom;
+            var fst = FreqScaleType.OctaveDataReduction;
             int nyquist = recording.SampleRate / 2;
             int frameSize = 16384;
             int linearBound = 125;

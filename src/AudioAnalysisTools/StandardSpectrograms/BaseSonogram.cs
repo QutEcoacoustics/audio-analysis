@@ -239,6 +239,17 @@ namespace AudioAnalysisTools.StandardSpectrograms
             return image;
         }
 
+        /// <summary>
+        /// This method fully annotates a short-time scale spectrogram.
+        /// The grid-lines are drawn according to indices in gridLineLocations.
+        /// Therefore the method will accept spectrograms with octave or any frequency scale.
+        /// The time scale is calculated from recording duration and width of image.
+        /// </summary>
+        /// <param name="image">The raw spectrogram image.</param>
+        /// <param name="title">To go on the title bar.</param>
+        /// <param name="gridLineLocations">A matrix of values.</param>
+        /// <param name="tag">Used to identify images??.</param>
+        /// <returns>The annotated spectrogram.</returns>
         public Image<Rgb24> GetImageFullyAnnotated(Image<Rgb24> image, string title, int[,] gridLineLocations, Color? tag = null)
         {
             if (image == null)
@@ -248,6 +259,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             FrequencyScale.DrawFrequencyLinesOnImage(image, gridLineLocations, includeLabels: true);
 
+            // collect all the images and combine.
             var titleBar = DrawTitleBarOfGrayScaleSpectrogram(title, image.Width, tag);
             var timeBmp = ImageTrack.DrawTimeTrack(this.Duration, image.Width);
             var list = new List<Image<Rgb24>> { titleBar, timeBmp, image, timeBmp };
