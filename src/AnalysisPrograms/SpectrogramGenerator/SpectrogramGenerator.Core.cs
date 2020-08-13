@@ -430,7 +430,7 @@ namespace AnalysisPrograms.SpectrogramGenerator
         AudioRecording recording,
         string sourceRecordingName)
         {
-            // ensure that the freq scale and the config are consistent.
+            // ensure that the freq scale and the spectrogram config are consistent.
             sgConfig.WindowSize = freqScale.WindowSize;
             freqScale.WindowStep = sgConfig.WindowStep;
             sgConfig.WindowOverlap = SonogramConfig.CalculateFrameOverlap(freqScale.WindowSize, freqScale.WindowStep);
@@ -441,15 +441,15 @@ namespace AnalysisPrograms.SpectrogramGenerator
 
             var octaveScaleGram = new SpectrogramOctaveScale(sgConfig, freqScale, recording.WavReader);
             var image = octaveScaleGram.GetImage();
-            var titleBar = BaseSonogram.DrawTitleBarOfGrayScaleSpectrogram(
-                    "OCTAVE-SCALE SPECTROGRAM " + sourceRecordingName,
-                    image.Width,
-                    ImageTags[OctaveScaleSpectrogram]);
-            var startTime = TimeSpan.Zero;
-            var xAxisTicInterval = TimeSpan.FromSeconds(1);
-            TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(sgConfig.WindowStep / (double)sgConfig.SampleRate);
-            var labelInterval = TimeSpan.FromSeconds(5);
-            image = BaseSonogram.FrameSonogram(image, titleBar, startTime, xAxisTicInterval, xAxisPixelDuration, labelInterval);
+            var title = "OCTAVE-SCALE SPECTROGRAM " + sourceRecordingName;
+
+            //var titleBar = BaseSonogram.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width, ImageTags[OctaveScaleSpectrogram]);
+            //var startTime = TimeSpan.Zero;
+            //var xAxisTicInterval = TimeSpan.FromSeconds(1);
+            //TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(sgConfig.WindowStep / (double)sgConfig.SampleRate);
+            //var labelInterval = TimeSpan.FromSeconds(5);
+            //image = BaseSonogram.FrameSonogram(image, titleBar, startTime, xAxisTicInterval, xAxisPixelDuration, labelInterval);
+            image = octaveScaleGram.GetImageFullyAnnotated(image, title, freqScale.GridLineLocations);
             return image;
         }
 

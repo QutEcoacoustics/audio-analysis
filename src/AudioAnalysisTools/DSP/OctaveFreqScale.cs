@@ -204,7 +204,7 @@ namespace AudioAnalysisTools.DSP
 
         public static int[,] GetGridLineLocations(int nyquist, int linearBound, int[,] octaveBinBounds)
         {
-            int[] gridLocationsHertz = { 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000, 32000 };
+            int[] gridLocationsHertz = { 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000, 32000, 64000, 128000 };
             int binCount = octaveBinBounds.GetLength(0);
             var gridLineLocations = new List<int[]>();
             var upperBound = nyquist * 0.75;

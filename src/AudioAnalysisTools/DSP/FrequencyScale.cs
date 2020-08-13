@@ -8,7 +8,6 @@ namespace AudioAnalysisTools.DSP
     using System.IO;
     using Acoustics.Shared.ImageSharp;
     using AudioAnalysisTools.StandardSpectrograms;
-    using AudioAnalysisTools.WavTools;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
@@ -27,7 +26,7 @@ namespace AudioAnalysisTools.DSP
         Mel = 1,
         OctaveCustom = 2,
         OctaveStandard = 3,
-        OctaveDataReduction = 3,
+        OctaveDataReduction = 4,
     }
 
     public class FrequencyScale
@@ -220,24 +219,17 @@ namespace AudioAnalysisTools.DSP
         public int[,] GridLineLocations { get; set; }
 
         /// <summary>
-        /// returns the binId for the grid line closest to the passed frequency.
+        /// returns the binId for freq bin closest to the passed Hertz value.
         /// </summary>
-        public int GetBinIdForHerzValue(int herzValue)
+        public int GetBinIdForHerzValue(int hertzValue)
         {
             int binId = 0;
-            int binCount = this.BinBounds.GetLength(0);
-
-            for (int i = 1; i < binCount; i++)
+            while (this.BinBounds[binId, 1] < hertzValue)
             {
-                if (this.BinBounds[i, 1] > herzValue)
-                {
-                    binId = this.BinBounds[i, 0];
-                    break;
-                }
+                binId++;
             }
 
-            // subtract 1 because have actually extracted the upper bin bound
-            return binId - 1;
+            return binId;
         }
 
         /// <summary>
