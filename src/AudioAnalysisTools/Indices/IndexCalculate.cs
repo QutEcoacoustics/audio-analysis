@@ -156,20 +156,18 @@ namespace AudioAnalysisTools.Indices
             //dspOutput1.NyquistBin = dspOutput1.AmplitudeSpectrogram.GetLength(1) - 1;
             //dspOutput1.FreqBinWidth = sampleRate / (double)dspOutput1.AmplitudeSpectrogram.GetLength(1) / 2;
 
-            // Linear or Octave or Mel frequency scale? Set Linear as default.
+            // Linear or Octave or Mel frequency scale?
+            // Set Linear as default.
             var freqScale = new FrequencyScale(nyquist: nyquist, frameSize: frameSize, hertzGridInterval: 1000);
             var freqScaleType = config.FrequencyScale;
-            bool octaveScale = freqScaleType == FreqScaleType.OctaveStandard || freqScaleType == FreqScaleType.OctaveCustom;
+            bool octaveScale = freqScaleType == FreqScaleType.OctaveDataReduction;
             bool melScale = freqScaleType == FreqScaleType.Mel;
             if (octaveScale)
             {
-                throw new Exception("Octave scales not currently implemented.");
-
-                //TODO This is to be worked on.
-                // only allow one octave scale at the moment - for Jasco marine recordings.
-                // ASSUME fixed Occtave scale - USEFUL ONLY FOR JASCO 64000sr MARINE RECORDINGS
-                // If you wish to use other octave scale types then need to put in the config file and and set up recovery here.
-                freqScale = new FrequencyScale(freqScaleType);
+                // Only allow one octave scale at the moment, OctaveDataReduction.
+                // This is used to produced a reduced set of indices for content recognition.
+                // TODO: Much work required to generalise this for other Octave scales. Need to put scale type in the config file and and set up recovery here.
+                freqScale = new FrequencyScale(FreqScaleType.OctaveDataReduction);
 
                 // Recalculate the spectrogram according to octave scale. This option works only when have high SR recordings.
                 dspOutput1.AmplitudeSpectrogram = OctaveFreqScale.AmplitudeSpectra(
@@ -316,13 +314,8 @@ namespace AudioAnalysisTools.Indices
             if (octaveScale)
             {
                 // the above frequency bin bounds do not apply with octave scale. Need to recalculate them suitable for Octave scale recording.
-                lowFreqBound = freqScale.LinearBound;
                 lowerBinBound = freqScale.GetBinIdForHerzValue(lowFreqBound);
-
-                midFreqBound = 8000; // This value appears suitable for Jasco Marine recordings. Not much happens above 8kHz.
-
-                //middleBinBound = freqScale.GetBinIdForHerzValue(midFreqBound);
-                middleBinBound = freqScale.GetBinIdInReducedSpectrogramForHerzValue(midFreqBound);
+                middleBinBound = freqScale.GetBinIdForHerzValue(midFreqBound);
                 midBandBinCount = middleBinBound - lowerBinBound + 1;
             }
 

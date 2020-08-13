@@ -279,14 +279,14 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
         }
 
         /// <summary>
-        /// Test index calculation when the Hertz FreqScaleType = Octave.
-        /// Only test the BGN spectral index as reasonable to assume that the rest will work if ACI works.
+        /// Test index calculation when the Hertz FreqScaleType = OctaveDataReduction.
+        /// Only test the BGN and CVR spectral index as reasonable to assume that the rest will work if these work.
         /// </summary>
         [TestMethod]
-        public void TestOfSpectralIndices_Octave()
+        public void TestOfSpectralIndices_OctaveDataReduction()
         {
             // create a two-minute artificial recording containing five harmonics.
-            int sampleRate = 64000;
+            int sampleRate = 22050;
             double duration = 120; // signal duration in seconds
             int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
             var recording = DspFilters.GenerateTestRecording(sampleRate, duration, harmonics, WaveType.Sine);
@@ -309,15 +309,10 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
 
             // CHANGE CONFIG PARAMETERS HERE IF REQUIRED
             var indexCalculateConfig = ConfigFile.Deserialize<AcousticIndices.AcousticIndicesConfig>(configFile);
-            indexCalculateConfig.FrequencyScale = FreqScaleType.OctaveStandard;
-            int nyquist = sampleRate / 2;
-            int frameSize = 512;
-            int linearBound = 1000;
-            int octaveToneCount = 1; // this set automatically
-            int gridInterval = 1000;
-            var freqScale = new FrequencyScale(FreqScaleType.OctaveStandard, nyquist, frameSize, linearBound, octaveToneCount, gridInterval);
+            indexCalculateConfig.FrameLength = 512;
 
-            indexCalculateConfig.FrameLength = freqScale.WindowSize;
+            //WARNING: Currently only one octave scale is available.
+            indexCalculateConfig.FrequencyScale = FreqScaleType.OctaveDataReduction;
 
             var results = IndexCalculate.Analysis(
                 subsegmentRecording,
@@ -336,14 +331,16 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             image.Save(outputImagePath1);
 
             // TEST the BGN SPECTRAL INDEX
-            Assert.AreEqual(256, spectralIndices.BGN.Length);
+            Assert.AreEqual(20, spectralIndices.BGN.Length);
 
-            //Binary.Serialize(expectedSpectrumFile, spectralIndices.BGN);
-            var expectedVector = Binary.Deserialize<double[]>(PathHelper.ResolveAsset("Indices", "BGN_OctaveScale.bin"));
+            var expectedSpectrumFile1 = PathHelper.ResolveAsset("Indices", "BGN_OctaveScale.bin");
+            //Binary.Serialize(expectedSpectrumFile1, spectralIndices.BGN);
+            var expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile1);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.BGN, AllowedDelta);
 
-            //Binary.Serialize(expectedSpectrumFile, spectralIndices.CVR);
-            expectedVector = Binary.Deserialize<double[]>(PathHelper.ResolveAsset("Indices", "CVR_OctaveScale.bin"));
+            var expectedSpectrumFile2 = PathHelper.ResolveAsset("Indices", "CVR_OctaveScale.bin");
+            //Binary.Serialize(expectedSpectrumFile2, spectralIndices.CVR);
+            expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile2);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.CVR, AllowedDelta);
         }
     }
