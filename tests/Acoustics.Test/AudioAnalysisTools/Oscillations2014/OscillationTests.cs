@@ -85,18 +85,13 @@ namespace Acoustics.Test.AudioAnalysisTools.Oscillations2014
                 // construct name of expected matrix osc spectrogram to save file
                 var expectedMatrixFile = PathHelper.ResolveAsset("Oscillations2014", stem + ".Matrix.EXPECTED.csv");
 
-                // SAVE THE OUTPUT if true
+                // SAVE THE image of oscillation spectrogram if true.
                 // WARNING: this will overwrite fixtures
                 if (false)
                 {
-                    // 1: save image of oscillation spectrogram
                     string imageName = stem + ".EXPECTED.png";
                     string imagePath = Path.Combine(PathHelper.ResolveAssetPath("Oscillations2014"), imageName);
                     tuple.Item1.Save(imagePath);
-
-                    // 2: Save matrix of oscillation data stored in freqOscilMatrix1
-                    //Csv.WriteMatrixToCsv(expectedMatrixFile, tuple.Item2);
-                    Binary.Serialize(expectedMatrixFile, tuple.Item2);
                 }
 
                 // Run two tests. Have to deserialise the expected data files
@@ -105,6 +100,8 @@ namespace Acoustics.Test.AudioAnalysisTools.Oscillations2014
                 Assert.AreEqual(675, tuple.Item1.Height);
 
                 // 2. Compare matrix data
+                //    Save matrix in expectedMatrixFile
+                // Binary.Serialize(expectedMatrixFile, tuple.Item2);
                 var expectedMatrix = Binary.Deserialize<double[,]>(expectedMatrixFile);
 
                 //TODO  Following test fails when using CSV reader because the reader cuts out first line of the matrix
@@ -132,35 +129,31 @@ namespace Acoustics.Test.AudioAnalysisTools.Oscillations2014
                 var threshold = Oscillations2014.DefaultSensitivityThreshold;
                 var spectralIndex = Oscillations2014.GetSpectralIndex_Osc(recordingSegment, frameLength, sampleLength, threshold);
 
-                // 3. construct name of spectral index vector
-                // SAVE THE OUTPUT if true
+                // 3. construct name of spectral index vector and save as image file
+                // No need to do tests on this image but it is useful to visualise output
                 // WARNING: this will overwrite fixtures
                 var sourceName = Path.GetFileNameWithoutExtension(sourceRecording.Name);
-                var stem = sourceName + ".SpectralIndex.OSC";
-                var expectedIndexPath = PathHelper.ResolveAsset("Oscillations2014", stem + ".EXPECTED.csv");
                 if (false)
                 {
-                    // 4. Save spectral index vector to file
-                    //Csv.WriteToCsv(expectedIndexPath, spectralIndex);
-                    //Json.Serialise(expectedIndexPath, spectralIndex);
-                    Binary.Serialize(expectedIndexPath, spectralIndex);
-
-                    // 5. Get the vector as image and save as image file
-                    // no need to do tests on this image but it is useful to visualise output
                     var expectedVectorImage = ImageTools.DrawVectorInColour(DataTools.reverseArray(spectralIndex), cellWidth: 10);
-                    var expectedImagePath = PathHelper.ResolveAsset("Oscillations2014", stem + ".png");
+                    var expectedImagePath = PathHelper.ResolveAsset("Oscillations2014", sourceName + ".SpectralIndex.OSC.png");
                     expectedVectorImage.Save(expectedImagePath.FullName);
                 }
 
                 // 6. Get the vector as image and save as image file
                 // no need to do tests on this image but it is useful to compare with expected visual output
                 var currentVectorImage = ImageTools.DrawVectorInColour(DataTools.reverseArray(spectralIndex), cellWidth: 10);
-                var currentImagePath = Path.Combine(this.outputDirectory.FullName, stem + ".png");
+                var currentImagePath = Path.Combine(this.outputDirectory.FullName, sourceName + ".SpectralIndex.OSC.png");
                 currentVectorImage.Save(currentImagePath);
 
                 // 7. Run test. Compare vectors
                 // TODO  this test fails when using CSV reader because the reader cuts out first element/line of the vector
                 //var expectedVector = (double[])Csv.ReadFromCsv<double>(expectedIndexPath);
+                var expectedIndexPath = PathHelper.ResolveAsset("Oscillations2014", sourceName + ".SpectralIndex.OSC.EXPECTED.csv");
+
+                //comment the following line once fixture is saved.
+                // Binary.Serialize(expectedIndexPath, spectralIndex);
+
                 var expectedVector = Binary.Deserialize<double[]>(expectedIndexPath);
                 CollectionAssert.That.AreEqual(expectedVector, spectralIndex, 0.000001);
             }
