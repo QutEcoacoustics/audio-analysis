@@ -73,10 +73,10 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             var clusterSpectrum = SpectralClustering.RestoreFullLengthSpectrum(clusterInfo.ClusterSpectrum, freqBinCount, lowerBinBound);
 
             // test the cluster count - also called spectral diversity in some papers
-            Assert.AreEqual(clusterInfo.ClusterCount, 17);
+            Assert.AreEqual(clusterInfo.ClusterCount, 19);
 
             // test the trigram count - another way of thinking about spectral change
-            Assert.AreEqual(clusterInfo.TriGramUniqueCount, 342);
+            Assert.AreEqual(clusterInfo.TriGramUniqueCount, 436);
 
             // test what used to be the CLS spectral index. Sum of the rows of the weight vectors.
             var expectedSpectrumFile = PathHelper.ResolveAsset("BinaryClustering", "clusterSpectrum.bin");
