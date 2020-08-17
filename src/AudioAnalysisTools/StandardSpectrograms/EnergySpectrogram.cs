@@ -41,6 +41,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// </summary>
         public double[,] Data { get; set; }
 
+        /*
         public void GetPsd(string path)
         {
             var psd = MatrixTools.GetColumnAverages(this.Data);
@@ -55,7 +56,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         public void DrawLogPsd(string path)
         {
             var psd = MatrixTools.GetColumnAverages(this.Data);
-            var logPsd = DataTools.LogValues(psd);
+            var logPsd = DataTools.Log10Values(psd);
             FileTools.WriteArray2File(logPsd, path + ".csv");
             GraphsAndCharts.DrawGraph(logPsd, "log PSD", new FileInfo(path));
 
@@ -66,8 +67,9 @@ namespace AudioAnalysisTools.StandardSpectrograms
         public double[] GetLogPsd()
         {
             var psd = MatrixTools.GetColumnAverages(this.Data);
-            var logPsd = DataTools.LogValues(psd);
+            var logPsd = DataTools.Log10Values(psd);
             return logPsd;
         }
+        */
     }
 }

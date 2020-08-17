@@ -426,8 +426,9 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             var outputImagePath = Path.Combine(outputDir.FullName, "Octave1ScaleSonogram.png");
 
             var recording = new AudioRecording(recordingPath);
+            var epsilon = recording.Epsilon;
 
-            var fst = FreqScaleType.OctaveDataReduction;
+            var fst = FreqScaleType.OctaveCustom;
             int nyquist = recording.SampleRate / 2;
             int frameSize = 16384;
             int linearBound = 125;
@@ -448,7 +449,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             var amplitudeSpectrogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
 
             // TODO THIS IS THE CRITICAL LINE. COULD DO WITH SEPARATE UNIT TEST
-            amplitudeSpectrogram.Data = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(amplitudeSpectrogram.Data, freqScale);
+            amplitudeSpectrogram.Data = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(amplitudeSpectrogram.Data, freqScale, epsilon);
 
             // DO NOISE REDUCTION
             var dataMatrix = SNR.NoiseReduce_Standard(amplitudeSpectrogram.Data);
@@ -554,7 +555,8 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             var outputImagePath = Path.Combine(this.outputDirectory.FullName, "Octave2ScaleSonogram.png");
 
             var recording = new AudioRecording(recordingPath);
-            //var fst = FreqScaleType.Linear125OctaveTones28Nyquist32000;
+            var epsilon = recording.Epsilon;
+
             var fst = FreqScaleType.OctaveCustom;
             int nyquist = recording.SampleRate / 2;
             int frameSize = 16384;
@@ -573,7 +575,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             };
 
             var sonogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
-            sonogram.Data = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(sonogram.Data, freqScale);
+            sonogram.Data = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(sonogram.Data, freqScale, epsilon);
 
             // DO NOISE REDUCTION
             var dataMatrix = SNR.NoiseReduce_Standard(sonogram.Data);
@@ -746,6 +748,10 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             var freqScale = new FrequencyScale(fst, nyquist, frameSize, linearBound, octaveToneCount, gridInterval);
             var outputImagePath = Path.Combine(this.outputDirectory.FullName, "Signal2_OctaveFreqScale.png");
             var recording = DspFilters.GenerateTestRecording(sampleRate, duration, harmonics, WaveType.Cosine);
+            var epsilon = recording.Epsilon;
+
+            // In this test epsilon must be zero, otherwise the Moving Average filter (see below) flattens the peaks, so that none are found.
+            epsilon = 0.0;
 
             // init the default sonogram config
             var sonoConfig = new SonogramConfig
@@ -757,7 +763,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
                 NoiseReductionParameter = 0.0,
             };
             var sonogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
-            sonogram.Data = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(sonogram.Data, freqScale);
+            sonogram.Data = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(sonogram.Data, freqScale, epsilon);
 
             // pick a row, any row
             var oneSpectrum = MatrixTools.GetRow(sonogram.Data, 40);

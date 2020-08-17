@@ -63,14 +63,14 @@ namespace AudioAnalysisTools.DSP
         /// <param name="inputSpgram">An amplitude spectrogram with linear freqeuncy scale.</param>
         /// <param name="freqScale">The octave frequency scale to be used.</param>
         /// <returns>decibel spectrogram having octave scale.</returns>
-        public static double[,] ConvertAmplitudeSpectrogramToDecibelOctaveScale(double[,] inputSpgram, FrequencyScale freqScale)
+        public static double[,] ConvertAmplitudeSpectrogramToDecibelOctaveScale(double[,] inputSpgram, FrequencyScale freqScale, double epsilon)
         {
             //square the values to produce power spectrogram
             var dataMatrix = MatrixTools.SquareValues(inputSpgram);
 
             //convert spectrogram to octave scale
             var newMatrix = ConvertLinearSpectrogramToOctaveFreqScale(dataMatrix, freqScale);
-            newMatrix = MatrixTools.Power2DeciBels(newMatrix, out var min, out var max);
+            newMatrix = MatrixTools.Power2DeciBels(newMatrix, epsilon, out var min, out var max);
             return newMatrix;
         }
 
@@ -121,7 +121,7 @@ namespace AudioAnalysisTools.DSP
             double[,] powerSpectra = PowerSpectra(amplitudeM, windowPower, sampleRate, epsilon, freqScale);
 
             // Convert the power values to log using: dB = 10*log(power)
-            var decibelSpectra = MatrixTools.Power2DeciBels(powerSpectra, out var min, out var max);
+            var decibelSpectra = MatrixTools.Power2DeciBels(powerSpectra, epsilon, out var min, out var max);
             return decibelSpectra;
         }
 

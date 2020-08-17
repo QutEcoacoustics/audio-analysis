@@ -23,7 +23,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// <param name="amplitudeM">Matrix of amplitude values.</param>
         public override void Make(double[,] amplitudeM)
         {
-            double[,] m = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(amplitudeM, this.FreqScale);
+            double[,] m = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(amplitudeM, this.FreqScale, this.Configuration.epsilon);
 
             // Do noise reduction
             var tuple = SNR.NoiseReduce(m, this.Configuration.NoiseReductionType, this.Configuration.NoiseReductionParameter);
