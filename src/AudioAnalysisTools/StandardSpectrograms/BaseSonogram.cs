@@ -174,9 +174,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
             this.Configuration.SampleRate = wav.SampleRate; //also set the Nyquist
             this.MaxAmplitude = wav.CalculateMaximumAmplitude();
 
-            //init normalised signal energy array but do nothing with it. This has to be done from outside
-            this.DecibelsNormalised = new double[this.FrameCount];
-
             var recording = new AudioRecording(wav);
             var fftData = DSP_Frames.ExtractEnvelopeAndFfts(
                 recording,
@@ -190,6 +187,10 @@ namespace AudioAnalysisTools.StandardSpectrograms
             this.Configuration.WindowPower = fftData.WindowPower;
             this.FrameCount = fftData.FrameCount;
             this.DecibelsPerFrame = fftData.FrameDecibels;
+
+            //init normalised signal energy array but do nothing with it. This has to be done from outside
+            this.DecibelsNormalised = new double[this.FrameCount];
+
             this.Data = fftData.AmplitudeSpectrogram;
 
             // currently DoSnr = true by default

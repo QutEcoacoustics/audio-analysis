@@ -38,7 +38,9 @@ namespace AnalysisPrograms.SpectrogramGenerator
         /// Waveform.
         /// DecibelSpectrogram.
         /// DecibelSpectrogramNoiseReduced.
+        /// MelScaleSpectrogram
         /// CepstralSpectrogram.
+        /// OctaveScaleSpectrogram
         /// DifferenceSpectrogram.
         /// AmplitudeSpectrogramLocalContrastNormalization.
         /// Experimental.

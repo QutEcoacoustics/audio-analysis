@@ -20,13 +20,16 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
     [TestClass]
     public class SpectrogramGeneratorTests : GeneratedImageTest<Rgb24>
     {
+        // There are currently eight spectrogram types plus the waveform.
         private const int Width = 1096;
         private const int Waveform = 154;
         private const int Spectrogram = 310;
         private const int SpectrogramNoiseRemoved = 310;
         private const int SpectrogramExperimental = 310;
         private const int SpectrogramDifference = 310;
+        private const int SpectrogramMel = 118;
         private const int Cepstral = 67;
+        private const int SpectrogramOctave = 157;
         private const int SpectrogramAmplitude = 310;
 
         private static readonly Dictionary<SpectrogramImageType, int> All = new Dictionary<SpectrogramImageType, int>()
@@ -36,7 +39,9 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
             { SpectrogramImageType.DecibelSpectrogramNoiseReduced, SpectrogramNoiseRemoved },
             { SpectrogramImageType.Experimental, SpectrogramExperimental },
             { SpectrogramImageType.DifferenceSpectrogram, SpectrogramDifference },
+            { SpectrogramImageType.MelScaleSpectrogram, SpectrogramMel },
             { SpectrogramImageType.CepstralSpectrogram, Cepstral },
+            { SpectrogramImageType.OctaveScaleSpectrogram, SpectrogramOctave },
             { SpectrogramImageType.AmplitudeSpectrogramLocalContrastNormalization, SpectrogramAmplitude },
         };
 
@@ -111,7 +116,7 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
 
             // get expected height
             var expectedHeight = images.Select(imageType => All[imageType]).Sum();
-            Assert.That.ImageIsSize(OneSecondWidth, expectedHeight, result.CompositeImage);
+            Assert.That.ImageIsSize(OneSecondWidth, expectedHeight, this.ActualImage);
 
             // ensure images are in correct order
             int y = 0;
