@@ -19,6 +19,7 @@ namespace TowseyLibrary
         public const string KeyNoWindow = "NONE";
         public const string KeyHammingWindow = "HAMMING";
         public const string KeyHanningWindow = "HANNING";
+        public const string DefaultFftWindow = KeyHanningWindow;
 
         public delegate double WindowFunc(int n, int N);
 
@@ -342,9 +343,13 @@ namespace TowseyLibrary
             return 1.0 - (1.93 * c1) + (1.29 * c2) - (0.388 * c3) + (0.032 * c4);
         };
 
+        /// <summary>
+        /// Returns an FFT window function given the name of the window type.
+        /// </summary>
+        /// <param name="name">FFT window name.</param>
+        /// <returns>FFT.WindowFunc.</returns>
         public static WindowFunc GetWindowFunction(string name)
         {
-            //FFT.WindowFunc windowFnc;
             if (name.StartsWith(KeyHammingWindow))
             {
                 return Hamming;

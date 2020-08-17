@@ -66,7 +66,7 @@ namespace AudioAnalysisTools
 
     public static class ActivityAndCover
     {
-        public const double DefaultActivityThresholdDb = 6.0; // used to select frames that have 3dB > background
+        public const double DefaultActivityThresholdDb = 6.0; // used to select frames having dB value above background
 
         public static SummaryActivity CalculateActivity(double[] dBarray, TimeSpan frameStepDuration)
         {
@@ -80,12 +80,9 @@ namespace AudioAnalysisTools
         /// </summary>
         /// <param name="dBarray">array of DB values.</param>
         /// <param name="frameStepDuration">frame duration in seconds.</param>
-        /// <param name="dbThreshold">thrshold in decibels.</param>
+        /// <param name="dbThreshold">threshold in decibels.</param>
         public static SummaryActivity CalculateActivity(double[] dBarray, TimeSpan frameStepDuration, double dbThreshold)
         {
-            // minimum frame length for recognition of a valid event
-            //int minFrameCount = (int)Math.Round(ActivityAndCover.DEFAULT_MinimumEventDuration.TotalMilliseconds / frameStepDuration.TotalMilliseconds);
-
             bool[] activeFrames = new bool[dBarray.Length];
             double activeAvDecibels = 0.0;
             int activeFrameCount = 0;
@@ -93,7 +90,7 @@ namespace AudioAnalysisTools
             // get frames with activity >= threshold dB above background and count
             for (int i = 0; i < dBarray.Length; i++)
             {
-                if (dBarray[i] >= DefaultActivityThresholdDb)
+                if (dBarray[i] >= dbThreshold)
                 {
                     activeFrames[i] = true;
                     activeAvDecibels += dBarray[i];

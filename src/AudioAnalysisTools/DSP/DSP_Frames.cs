@@ -133,22 +133,31 @@ namespace AudioAnalysisTools.DSP
             return frames;
         }
 
+        /// <summary>
+        /// Calling this method will set default FFT window if windowName is null.
+        /// Otherwise sets the FFT window specified in the config file.
+        /// </summary>
         public static EnvelopeAndFft ExtractEnvelopeAndFfts(AudioRecording recording, int frameSize, double overlap, string windowName = null)
         {
             int frameStep = (int)(frameSize * (1 - overlap));
             return ExtractEnvelopeAndAmplSpectrogram(recording.WavReader.Samples, recording.SampleRate, recording.Epsilon, frameSize, frameStep, windowName);
         }
 
+        /// <summary>
+        /// Calling this method sets the default FFT window, currently HANNING - see FFT.cs line 22.
+        /// </summary>
         public static EnvelopeAndFft ExtractEnvelopeAndFfts(AudioRecording recording, int frameSize, int frameStep)
         {
-            string windowName = FFT.KeyHammingWindow;
-            return ExtractEnvelopeAndAmplSpectrogram(recording.WavReader.Samples, recording.SampleRate, recording.Epsilon, frameSize, frameStep, windowName);
+            return ExtractEnvelopeAndAmplSpectrogram(recording.WavReader.Samples, recording.SampleRate, recording.Epsilon, frameSize, frameStep, FFT.DefaultFftWindow);
         }
 
+        /// <summary>
+        /// Calling this method sets the default FFT window, currently HANNING - see FFT.cs line 22.
+        /// </summary>
         public static EnvelopeAndFft ExtractEnvelopeAndAmplSpectrogram(double[] signal, int sampleRate, double epsilon, int frameSize, double overlap)
         {
             int frameStep = (int)(frameSize * (1 - overlap));
-            return ExtractEnvelopeAndAmplSpectrogram(signal, sampleRate, epsilon, frameSize, frameStep, FFT.KeyHammingWindow);
+            return ExtractEnvelopeAndAmplSpectrogram(signal, sampleRate, epsilon, frameSize, frameStep, FFT.DefaultFftWindow);
         }
 
         /// <summary>
@@ -196,7 +205,7 @@ namespace AudioAnalysisTools.DSP
             // set up the FFT parameters
             if (windowName == null)
             {
-                windowName = FFT.KeyHanningWindow;
+                windowName = FFT.DefaultFftWindow;
             }
 
             FFT.WindowFunc w = FFT.GetWindowFunction(windowName);

@@ -31,6 +31,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
     /// (5) Wherever possible, don't use test assets.
     /// </summary>
     [TestClass]
+    [DoNotParallelize]
     public class TestAnalyzeLongRecording
     {
         private DirectoryInfo outputDirectory;
@@ -52,7 +53,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
         /// Acoustic indices as calculated from Linear frequency scale spectrogram.
         /// </summary>
         [TestMethod]
-        [Timeout(240_000)]
+        [Timeout(300_000)]
         public void TestAnalyzeSr22050Recording()
         {
             int sampleRate = 22050;

@@ -79,27 +79,27 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
 
             var summaryIndices = results.SummaryIndexValues;
 
-            Assert.AreEqual(0.6793287, summaryIndices.AcousticComplexity, AllowedDelta);
+            Assert.AreEqual(0.689085, summaryIndices.AcousticComplexity, AllowedDelta);
             Assert.AreEqual(0.484520, summaryIndices.Activity, AllowedDelta);
             Assert.AreEqual(-30.946519, summaryIndices.AvgSignalAmplitude, AllowedDelta);
             Assert.AreEqual(11.533420, summaryIndices.AvgSnrOfActiveFrames, AllowedDelta);
             Assert.AreEqual(-39.740775, summaryIndices.BackgroundNoise, AllowedDelta);
-            Assert.AreEqual(21, summaryIndices.ClusterCount);
-            Assert.AreEqual(0.153191, summaryIndices.EntropyOfAverageSpectrum, AllowedDelta);
-            Assert.AreEqual(0.301929, summaryIndices.EntropyOfCoVSpectrum, AllowedDelta);
-            Assert.AreEqual(0.260999, summaryIndices.EntropyOfPeaksSpectrum, AllowedDelta);
-            Assert.AreEqual(0.522080, summaryIndices.EntropyOfVarianceSpectrum, AllowedDelta);
+            Assert.AreEqual(23, summaryIndices.ClusterCount);
+            Assert.AreEqual(0.153642, summaryIndices.EntropyOfAverageSpectrum, AllowedDelta);
+            Assert.AreEqual(0.299602, summaryIndices.EntropyOfCoVSpectrum, AllowedDelta);
+            Assert.AreEqual(0.264981, summaryIndices.EntropyOfPeaksSpectrum, AllowedDelta);
+            Assert.AreEqual(0.522530, summaryIndices.EntropyOfVarianceSpectrum, AllowedDelta);
             Assert.AreEqual(2.0, summaryIndices.EventsPerSecond, AllowedDelta);
-            Assert.AreEqual(0.467151, summaryIndices.SpectralCentroid, AllowedDelta);
-            Assert.AreEqual(0.140306, summaryIndices.HighFreqCover, AllowedDelta);
-            Assert.AreEqual(0.137873, summaryIndices.MidFreqCover, AllowedDelta);
-            Assert.AreEqual(0.055341, summaryIndices.LowFreqCover, AllowedDelta);
-            Assert.AreEqual(0.957433, summaryIndices.Ndsi, AllowedDelta);
+            Assert.AreEqual(0.462917, summaryIndices.SpectralCentroid, AllowedDelta);
+            Assert.AreEqual(0.148697, summaryIndices.HighFreqCover, AllowedDelta);
+            Assert.AreEqual(0.139938, summaryIndices.MidFreqCover, AllowedDelta);
+            Assert.AreEqual(0.048843, summaryIndices.LowFreqCover, AllowedDelta);
+            Assert.AreEqual(0.957532, summaryIndices.Ndsi, AllowedDelta);
             Assert.AreEqual(27.877206, summaryIndices.Snr, AllowedDelta);
-            Assert.AreEqual(6.240310, summaryIndices.SptDensity, AllowedDelta);
+            Assert.AreEqual(6.257752, summaryIndices.SptDensity, AllowedDelta);
             Assert.AreEqual(0, summaryIndices.ResultStartSeconds);
             Assert.AreEqual(0.162216, summaryIndices.TemporalEntropy, AllowedDelta);
-            Assert.AreEqual(401, summaryIndices.ThreeGramCount, AllowedDelta);
+            Assert.AreEqual(487, summaryIndices.ThreeGramCount, AllowedDelta);
         }
 
         /// <summary>
@@ -139,7 +139,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             // 1:ACI
             var expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "ACI.bin");
 
-            //Binary.Serialize(expectedSpectrumFile, spectralIndices.ACI);
+            // Binary.Serialize(expectedSpectrumFile, spectralIndices.ACI);
             var expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.ACI, AllowedDelta);
 
@@ -174,7 +174,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             // 6:OSC
             expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "OSC.bin");
 
-            //Binary.Serialize(expectedSpectrumFile, spectralIndices.OSC);
+            // Binary.Serialize(expectedSpectrumFile, spectralIndices.OSC);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.OSC, AllowedDelta);
 
@@ -263,13 +263,13 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             var resourcesDir = PathHelper.ResolveAssetPath("Indices");
             var expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "BGN_ICD20.bin");
 
-            //Binary.Serialize(expectedSpectrumFile, spectralIndices.BGN);
+            // Binary.Serialize(expectedSpectrumFile, spectralIndices.BGN);
             var expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.BGN, AllowedDelta);
 
             expectedSpectrumFile = PathHelper.ResolveAsset("Indices", "CVR_ICD20.bin");
 
-            //Binary.Serialize(expectedSpectrumFile, spectralIndices.CVR);
+            // Binary.Serialize(expectedSpectrumFile, spectralIndices.CVR);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.CVR, AllowedDelta);
 
@@ -334,11 +334,13 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             Assert.AreEqual(20, spectralIndices.BGN.Length);
 
             var expectedSpectrumFile1 = PathHelper.ResolveAsset("Indices", "BGN_OctaveScale.bin");
-            //Binary.Serialize(expectedSpectrumFile1, spectralIndices.BGN);
+
+            // Binary.Serialize(expectedSpectrumFile1, spectralIndices.BGN);
             var expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile1);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.BGN, AllowedDelta);
 
             var expectedSpectrumFile2 = PathHelper.ResolveAsset("Indices", "CVR_OctaveScale.bin");
+
             //Binary.Serialize(expectedSpectrumFile2, spectralIndices.CVR);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile2);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.CVR, AllowedDelta);

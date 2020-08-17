@@ -12,14 +12,15 @@ namespace Acoustics.Test.Shared
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
+    [DoNotParallelize]
     public class ProcessRunnerTests : OutputDirectoryTest
     {
         public const string TestFile = "very_large_file_20170522-180007Z.flac";
 
-        [RetryTestMethod(2)]
+        [RetryTestMethod(3)]
         public void ProcessRunnerDoesNotDeadlock()
         {
-            var result = Enumerable.Range(0, 100).AsParallel().Select(this.RunFfprobe).ToArray();
+            var result = Enumerable.Range(0, 50).AsParallel().Select(this.RunFfprobe).ToArray();
 
             Assert.IsTrue(result.All());
         }
@@ -33,7 +34,7 @@ namespace Acoustics.Test.Shared
         [RetryTestMethod(2)]
         public void ProcessRunnerTimeOutDoesNotDeadlock()
         {
-            var result = Enumerable.Range(0, 100).AsParallel().Select(this.RunFfmpegIndefinite).ToArray();
+            var result = Enumerable.Range(0, 50).AsParallel().Select(this.RunFfmpegIndefinite).ToArray();
 
             Assert.IsTrue(result.All());
         }

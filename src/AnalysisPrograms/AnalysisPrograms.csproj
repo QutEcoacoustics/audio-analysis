@@ -61,7 +61,7 @@
     <Compile Remove="Recognizers\LitoriaBicolorOLD.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.5.0" />
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="3.0.0" />
     <PackageReference Include="SixLabors.Fonts" Version="1.0.0-unstable0024" />
     <PackageReference Include="SixLabors.Fonts" Version="1.0.0-unstable0024" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-unstable0702" />
