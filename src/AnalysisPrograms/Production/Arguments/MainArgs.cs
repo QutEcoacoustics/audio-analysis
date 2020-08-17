@@ -18,44 +18,45 @@ namespace AnalysisPrograms.Production.Arguments
         Meta.Name,
         AllowArgumentSeparator = true,
         Description = Meta.Description,
-        ThrowOnUnexpectedArgument = true)]
+        UnrecognizedArgumentHandling = UnrecognizedArgumentHandling.Throw)]
     [HelpOption(Inherited = true, ShowInHelpText = true)]
     [VersionOption(BuildMetadata.VersionString, Template = "--version")]
-    [Subcommand("help", typeof(HelpArgs))]
-    [Subcommand("list", typeof(ListArgs))]
-    [Subcommand("AnalysesAvailable", typeof(AnalysesAvailable))]
-    [Subcommand(CheckEnvironment.CommandName, typeof(CheckEnvironment.Arguments))]
-    [Subcommand(AnalyseLongRecording.CommandName, typeof(AnalyseLongRecording.Arguments))]
-    [Subcommand(Audio2Sonogram.CommandName, typeof(Audio2Sonogram.Arguments))]
-    [Subcommand(Create4Sonograms.CommandName, typeof(Create4Sonograms.Arguments))]
-    [Subcommand(DrawSummaryIndexTracks.CommandName, typeof(DrawSummaryIndexTracks.Arguments))]
-    [Subcommand(EventStatisticsEntry.CommandName, typeof(EventStatisticsEntry.Arguments))]
-    [Subcommand(RecognizerEntry.CommandName, typeof(RecognizerEntry.Arguments))]
-    [Subcommand(AudioCutter.CommandName, typeof(AudioCutter.Arguments))]
-    [Subcommand(AudioFileCheck.CommandName, typeof(AudioFileCheck.Arguments))]
-    [Subcommand(Aed.CommandName, typeof(Aed.Arguments))]
-    [Subcommand(ConcatenateIndexFiles.CommandName, typeof(ConcatenateIndexFiles.Arguments))]
-    [Subcommand(DrawLongDurationSpectrograms.CommandName, typeof(DrawLongDurationSpectrograms.Arguments))]
-    [Subcommand(DrawZoomingSpectrograms.CommandName, typeof(DrawZoomingSpectrograms.Arguments))]
-    [Subcommand(RibbonPlot.CommandName, typeof(RibbonPlot.Arguments))]
-    [Subcommand(DrawEasyImage.CommandName, typeof(DrawEasyImage.Arguments))]
-    [Subcommand(ContentDescription.BuildModel.CommandName, typeof(ContentDescription.BuildModel.Arguments))]
-    [Subcommand(Audio2InputForConvCnn.CommandName, typeof(Audio2InputForConvCnn.Arguments))]
-    [Subcommand(DifferenceSpectrogram.CommandName, typeof(DifferenceSpectrogram.Arguments))]
-    [Subcommand(EPR.CommandName, typeof(EPR.Arguments))]
-    [Subcommand(GroundParrotRecogniser.CommandName, typeof(GroundParrotRecogniser.Arguments))]
-    [Subcommand(LSKiwi3.CommandName, typeof(LSKiwi3.Arguments))]
-    [Subcommand(LSKiwiROC.CommandName, typeof(LSKiwiROC.Arguments))]
-    [Subcommand(SnrAnalysis.CommandName, typeof(SnrAnalysis.Arguments))]
-    [Subcommand(OscillationsGeneric.CommandName, typeof(OscillationsGeneric.Arguments))]
-    [Subcommand(Segment.CommandName, typeof(Segment.Arguments))]
-    [Subcommand(SurfAnalysis.CommandName, typeof(SurfAnalysis.Arguments))]
-    [Subcommand(SpeciesAccumulationCurve.CommandName, typeof(SpeciesAccumulationCurve.Arguments))]
-    [Subcommand(SPT.CommandName, typeof(SPT.Arguments))]
-    [Subcommand(DummyAnalysis.CommandName, typeof(DummyAnalysis.Arguments))]
-    [Subcommand(FileRenamer.CommandName, typeof(FileRenamer.Arguments))]
-    [Subcommand(Sandpit.CommandName, typeof(Sandpit.Arguments))]
-    [Subcommand(MahnooshSandpit.CommandName, typeof(MahnooshSandpit.Arguments))]
+    [Subcommand(
+        typeof(HelpArgs),
+        typeof(ListArgs),
+        typeof(AnalysesAvailable),
+        typeof(CheckEnvironment.Arguments),
+        typeof(AnalyseLongRecording.Arguments),
+        typeof(Audio2Sonogram.Arguments),
+        typeof(Create4Sonograms.Arguments),
+        typeof(DrawSummaryIndexTracks.Arguments),
+        typeof(EventStatisticsEntry.Arguments),
+        typeof(RecognizerEntry.Arguments),
+        typeof(AudioCutter.Arguments),
+        typeof(AudioFileCheck.Arguments),
+        typeof(Aed.Arguments),
+        typeof(ConcatenateIndexFiles.Arguments),
+        typeof(DrawLongDurationSpectrograms.Arguments),
+        typeof(DrawZoomingSpectrograms.Arguments),
+        typeof(RibbonPlot.Arguments),
+        typeof(DrawEasyImage.Arguments),
+        typeof(ContentDescription.BuildModel.Arguments),
+        typeof(Audio2InputForConvCnn.Arguments),
+        typeof(DifferenceSpectrogram.Arguments),
+        typeof(EPR.Arguments),
+        typeof(GroundParrotRecogniser.Arguments),
+        typeof(LSKiwi3.Arguments),
+        typeof(LSKiwiROC.Arguments),
+        typeof(SnrAnalysis.Arguments),
+        typeof(OscillationsGeneric.Arguments),
+        typeof(Segment.Arguments),
+        typeof(SurfAnalysis.Arguments),
+        typeof(SpeciesAccumulationCurve.Arguments),
+        typeof(SPT.Arguments),
+        typeof(DummyAnalysis.Arguments),
+        typeof(FileRenamer.Arguments),
+        typeof(Sandpit.Arguments),
+        typeof(MahnooshSandpit.Arguments))]
     public class MainArgs
     {
         private async Task<int> OnExecuteAsync(CommandLineApplication app)
