@@ -88,6 +88,7 @@ namespace AudioAnalysisTools.DSP
             var freqScale = new FrequencyScale(FreqScaleType.OctaveCustom, nyquist, frameSize, linearBound, octaveToneCount, gridInterval);
             string path = @"C:\SensorNetworks\Output\Sonograms\UnitTestSonograms\SineSignal2.png";
             var recording = GenerateTestRecording(sampleRate, duration, harmonics, WaveType.Cosine);
+            var epsilon = recording.Epsilon;
 
             // init the default sonogram config
             var sonoConfig = new SonogramConfig
@@ -98,8 +99,9 @@ namespace AudioAnalysisTools.DSP
                 NoiseReductionType = NoiseReductionType.None,
                 NoiseReductionParameter = 0.0,
             };
+
             var sonogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
-            sonogram.Data = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(sonogram.Data, freqScale);
+            sonogram.Data = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(sonogram.Data, freqScale, epsilon);
 
             // pick a row, any row
             var oneSpectrum = MatrixTools.GetRow(sonogram.Data, 40);

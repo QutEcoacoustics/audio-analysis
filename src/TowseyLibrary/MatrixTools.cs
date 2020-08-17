@@ -522,11 +522,13 @@ namespace TowseyLibrary
         /// Convert the power values in a matrix of spectrogram values to Decibels.
         /// Assume that all matrix values are positive i.e. due to prior noise removal.
         /// NOTE: This method also returns the min and max decibel values in the passed matrix.
+        /// NOTE: A decibel value should be a ratio.
+        ///       Here the ratio is implied ie it is relative to the value of maximum power in the original normalised signal.
         /// </summary>
         /// <param name="m">matrix of positive power values.</param>
         /// <param name="min">min value to be return by out.</param>
         /// <param name="max">max value to be return by out.</param>
-        public static double[,] Power2DeciBels(double[,] m, out double min, out double max)
+        public static double[,] Power2DeciBels(double[,] m, double epsilon, out double min, out double max)
         {
             min = double.MaxValue;
             max = -double.MaxValue;
@@ -539,16 +541,18 @@ namespace TowseyLibrary
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    double dBels = 10 * Math.Log10(m[i, j]); //convert power to decibels
+                    double dBels = 10 * Math.Log10(epsilon); //convert power to decibels
+                    if (m[i, j] > epsilon)
+                    {
+                        dBels = 10 * Math.Log10(m[i, j]); //convert power to decibels
+                    }
 
-                    //NOTE: the decibel calculation should be a ratio.
-                    // Here the ratio is implied ie relative to the power in the original normalised signal
-                    if (dBels <= min)
+                    if (dBels < min)
                     {
                         min = dBels;
                     }
                     else
-                    if (dBels >= max)
+                    if (dBels > max)
                     {
                         max = dBels;
                     }
