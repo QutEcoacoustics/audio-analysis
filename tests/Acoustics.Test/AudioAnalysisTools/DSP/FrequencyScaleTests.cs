@@ -420,8 +420,8 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
         [TestMethod]
         public void OctaveFrequencyScale1()
         {
-            var recordingPath = PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav");
             //var opFileStem = "BAC2_20071008";
+            var recordingPath = PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav");
             var outputDir = this.outputDirectory;
             var outputImagePath = Path.Combine(outputDir.FullName, "Octave1ScaleSonogram.png");
 
@@ -549,8 +549,8 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
         [TestMethod]
         public void OctaveFrequencyScale2()
         {
-            var recordingPath = PathHelper.ResolveAsset("Recordings", "MarineJasco_AMAR119-00000139.00000139.Chan_1-24bps.1375012796.2013-07-28-11-59-56-16bit-60sec.wav");
             //var opFileStem = "JascoMarineGBR1";
+            var recordingPath = PathHelper.ResolveAsset("Recordings", "MarineJasco_AMAR119-00000139.00000139.Chan_1-24bps.1375012796.2013-07-28-11-59-56-16bit-60sec.wav");
             var outputDir = this.outputDirectory;
             var outputImagePath = Path.Combine(this.outputDirectory.FullName, "Octave2ScaleSonogram.png");
 
