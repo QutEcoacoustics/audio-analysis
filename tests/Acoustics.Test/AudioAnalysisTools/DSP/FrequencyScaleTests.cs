@@ -410,7 +410,155 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             Assert.AreEqual(0.125, octaveSpectrum[80]);
             Assert.AreEqual(0.0, octaveSpectrum[81]);
             Assert.AreEqual(0.0, octaveSpectrum[101]);
-            Assert.AreEqual(0.166666666666666, octaveSpectrum[102], 0.000001);
+            Assert.AreEqual(0.1666666666, octaveSpectrum[102], 0.000001);
+        }
+
+        /// <summary>
+        /// METHOD TO CHECK IF Conversion of linear amplitude spectrum to Octave FREQ SCALE IS WORKING
+        /// Check it on spectrum derived from an assumed signal, SR=22050.
+        /// </summary>
+        [TestMethod]
+        public void TestConversionOfAmplitudeSpectrogramToOctaveScaled()
+        {
+            int sr = 22050;
+            int windowSize = 512;
+
+            // set up the frequency scale.
+            var fst = FreqScaleType.OctaveStandard;
+            int nyquist = sr / 2;
+            int linearBound = 1000;
+            int octaveToneCount = 25; //not used
+            int gridInterval = 1000;
+            var freqScale = new FrequencyScale(fst, nyquist, windowSize, linearBound, octaveToneCount, gridInterval);
+
+            // make a dummy spectrum
+            int binCount = windowSize / 2;
+            var linearSpectrum = new double[binCount];
+            linearSpectrum[0] = 1.0;
+            linearSpectrum[64] = 1.0;
+            linearSpectrum[128] = 1.0;
+            linearSpectrum[192] = 1.0;
+            linearSpectrum[255] = 1.0;
+
+            var octaveSpectrum = OctaveFreqScale.ConvertLinearSpectrumToOctaveScale(freqScale.BinBounds, linearSpectrum);
+            Assert.AreEqual(1.000, octaveSpectrum[0], 0.0001);
+            Assert.AreEqual(0.000, octaveSpectrum[1], 0.0001);
+            Assert.AreEqual(0.000, octaveSpectrum[55], 0.0001);
+            Assert.AreEqual(0.250, octaveSpectrum[56], 0.0001);
+            Assert.AreEqual(0.250, octaveSpectrum[57], 0.0001);
+            Assert.AreEqual(0.000, octaveSpectrum[78], 0.0001);
+            Assert.AreEqual(0.125, octaveSpectrum[79], 0.0001);
+            Assert.AreEqual(0.125, octaveSpectrum[80], 0.0001);
+            Assert.AreEqual(0.000, octaveSpectrum[81], 0.0001);
+            Assert.AreEqual(0.000, octaveSpectrum[92], 0.0001);
+            Assert.AreEqual(0.166, octaveSpectrum[93], 0.001);
+            Assert.AreEqual(0.000, octaveSpectrum[94], 0.0001);
+            Assert.AreEqual(0.000, octaveSpectrum[101], 0.0001);
+            Assert.AreEqual(0.166, octaveSpectrum[102], 0.001);
+
+            // Now test conversion of amplitude to power values.
+            // make fft class using rectangular window - just to get a value for Window power.
+            var fft = new FFT(windowSize);
+            double windowPower = fft.WindowPower;
+            var recordingBitsPerSample = 16;
+            var epsilon = Math.Pow(0.5, recordingBitsPerSample - 1);
+
+            // set up matrix derived from previous spectrum to test conversion to power.
+            var octaveScaleM = new double[2, octaveSpectrum.Length];
+            MatrixTools.SetRow(octaveScaleM, 0, octaveSpectrum);
+            MatrixTools.SetRow(octaveScaleM, 1, octaveSpectrum);
+            var powerSpectrogram = OctaveFreqScale.ConvertAmplitudeToPowerSpectrogram(octaveScaleM, windowPower, sr);
+
+            Assert.AreEqual(1.771541E-07, powerSpectrogram[0, 0], 0.000001);
+            Assert.AreEqual(0.000, powerSpectrogram[1, 1], 0.0001);
+            Assert.AreEqual(0.000, powerSpectrogram[0, 55], 0.0001);
+            Assert.AreEqual(1.107213E-08, powerSpectrogram[1, 56], 0.000001);
+            Assert.AreEqual(1.107213E-08, powerSpectrogram[0, 57], 0.000001);
+            Assert.AreEqual(0.000, powerSpectrogram[1, 78], 0.0001);
+            Assert.AreEqual(2.768034E-09, powerSpectrogram[0, 79], 0.0001);
+            Assert.AreEqual(2.768034E-09, powerSpectrogram[1, 80], 0.0001);
+            Assert.AreEqual(0.000, powerSpectrogram[0, 81], 0.0001);
+            Assert.AreEqual(0.000, powerSpectrogram[1, 92], 0.0001);
+            Assert.AreEqual(4.920949E-09, powerSpectrogram[0, 93], 0.0001);
+            Assert.AreEqual(0.000, powerSpectrogram[1, 94], 0.0001);
+            Assert.AreEqual(0.000, powerSpectrogram[0, 101], 0.0001);
+            Assert.AreEqual(0.166, powerSpectrogram[1, 102], 0.001); // got to here###############################
+
+            // now test conversion from power to decibels.
+
+        }
+
+        /// <summary>
+        /// Tests octave freq scale using an artificial recording containing five sine waves.
+        /// </summary>
+        [TestMethod]
+        public void TestFreqScaleOnArtificialSignal2()
+        {
+            int sr = 64000;
+            double duration = 30; // signal duration in seconds
+            int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
+
+            //var fst = FreqScaleType.Linear125OctaveTones28Nyquist32000;
+            var fst = FreqScaleType.OctaveCustom;
+            int nyquist = sr / 2;
+            int frameSize = 16384;
+            int linearBound = 125;
+            int octaveToneCount = 28;
+            int gridInterval = 1000;
+            var freqScale = new FrequencyScale(fst, nyquist, frameSize, linearBound, octaveToneCount, gridInterval);
+            var outputImagePath = Path.Combine(this.outputDirectory.FullName, "Signal2_OctaveFreqScale.png");
+            var recording = DspFilters.GenerateTestRecording(sr, duration, harmonics, WaveType.Cosine);
+
+            // init the default sonogram config
+            var sonoConfig = new SonogramConfig
+            {
+                WindowSize = freqScale.WindowSize,
+                WindowOverlap = 0.2,
+                SourceFName = "Signal2",
+                NoiseReductionType = NoiseReductionType.None,
+                NoiseReductionParameter = 0.0,
+            };
+            var sonogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
+            var windowPower = sonogram.Configuration.WindowPower;
+            var epsilon = sonogram.Configuration.epsilon;
+            sonogram.Data = OctaveFreqScale.ConvertAmplitudeSpectrogramToFreqScaledDecibels(sonogram.Data, windowPower, sr, epsilon, freqScale);
+
+            // pick a row, any row
+            var oneSpectrum = MatrixTools.GetRow(sonogram.Data, 40);
+            oneSpectrum = DataTools.filterMovingAverage(oneSpectrum, 5);
+            var peaks = DataTools.GetPeaks(oneSpectrum);
+
+            var peakIds = new List<int>();
+            for (int i = 5; i < peaks.Length - 5; i++)
+            {
+                if (peaks[i])
+                {
+                    int peakId = freqScale.BinBounds[i, 0];
+                    peakIds.Add(peakId);
+                    LoggedConsole.WriteLine($"Spectral peak located in bin {peakId},  Herz={freqScale.BinBounds[i, 1]}");
+                }
+            }
+
+            foreach (int h in harmonics)
+            {
+                LoggedConsole.WriteLine($"Harmonic {h}Herz should be in bin {freqScale.GetBinIdForHerzValue(h)}");
+            }
+
+            Assert.AreEqual(5, peakIds.Count);
+            Assert.AreEqual(129, peakIds[0]);
+            Assert.AreEqual(257, peakIds[1]);
+            Assert.AreEqual(513, peakIds[2]);
+            Assert.AreEqual(1025, peakIds[3]);
+            Assert.AreEqual(2049, peakIds[4]);
+
+            var image = sonogram.GetImage();
+            string title = $"Spectrogram of Harmonics: {DataTools.Array2String(harmonics)}   SR={sr}  Window={freqScale.WindowSize}";
+            image = sonogram.GetImageFullyAnnotated(image, title, freqScale.GridLineLocations);
+            image.Save(outputImagePath);
+
+            // Check that image dimensions are correct
+            Assert.AreEqual(146, image.Width);
+            Assert.AreEqual(311, image.Height);
         }
 
         /// <summary>
@@ -424,9 +572,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             var recordingPath = PathHelper.ResolveAsset("Recordings", "BAC2_20071008-085040.wav");
             var outputDir = this.outputDirectory;
             var outputImagePath = Path.Combine(outputDir.FullName, "Octave1ScaleSonogram.png");
-
             var recording = new AudioRecording(recordingPath);
-            var epsilon = recording.Epsilon;
 
             var fst = FreqScaleType.OctaveCustom;
             int nyquist = recording.SampleRate / 2;
@@ -448,8 +594,11 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             // Generate amplitude sonogram and then convert to octave scale
             var amplitudeSpectrogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
 
-            // TODO THIS IS THE CRITICAL LINE. COULD DO WITH SEPARATE UNIT TEST
-            amplitudeSpectrogram.Data = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(amplitudeSpectrogram.Data, freqScale, epsilon);
+            // THIS IS THE CRITICAL LINE. It has separate UNIT TEST above.
+            double windowPower = amplitudeSpectrogram.Configuration.WindowPower;
+            int sampleRate = amplitudeSpectrogram.SampleRate;
+            double epsilon = amplitudeSpectrogram.Configuration.epsilon;
+            amplitudeSpectrogram.Data = OctaveFreqScale.ConvertAmplitudeSpectrogramToFreqScaledDecibels(amplitudeSpectrogram.Data, windowPower, sampleRate, epsilon, freqScale);
 
             // DO NOISE REDUCTION
             var dataMatrix = SNR.NoiseReduce_Standard(amplitudeSpectrogram.Data);
@@ -555,10 +704,10 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             var outputImagePath = Path.Combine(this.outputDirectory.FullName, "Octave2ScaleSonogram.png");
 
             var recording = new AudioRecording(recordingPath);
-            var epsilon = recording.Epsilon;
+            int sr = recording.SampleRate;
 
             var fst = FreqScaleType.OctaveCustom;
-            int nyquist = recording.SampleRate / 2;
+            int nyquist = sr / 2;
             int frameSize = 16384;
             int linearBound = 125;
             int octaveToneCount = 28;
@@ -575,7 +724,9 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             };
 
             var sonogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
-            sonogram.Data = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(sonogram.Data, freqScale, epsilon);
+            var windowPower = sonogram.Configuration.WindowPower;
+            var epsilon = sonogram.Configuration.epsilon;
+            sonogram.Data = OctaveFreqScale.ConvertAmplitudeSpectrogramToFreqScaledDecibels(sonogram.Data, windowPower, sr, epsilon, freqScale);
 
             // DO NOISE REDUCTION
             var dataMatrix = SNR.NoiseReduce_Standard(sonogram.Data);
@@ -726,81 +877,6 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             Assert.IsTrue(peaks[45]);
             Assert.IsTrue(peaks[92]);
             Assert.IsTrue(peaks[185]);
-        }
-
-        /// <summary>
-        /// Tests octave freq scale using an artificial recording containing five sine waves.
-        /// </summary>
-        [TestMethod]
-        public void TestFreqScaleOnArtificialSignal2()
-        {
-            int sampleRate = 64000;
-            double duration = 30; // signal duration in seconds
-            int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
-
-            //var fst = FreqScaleType.Linear125OctaveTones28Nyquist32000;
-            var fst = FreqScaleType.OctaveCustom;
-            int nyquist = sampleRate / 2;
-            int frameSize = 16384;
-            int linearBound = 125;
-            int octaveToneCount = 28;
-            int gridInterval = 1000;
-            var freqScale = new FrequencyScale(fst, nyquist, frameSize, linearBound, octaveToneCount, gridInterval);
-            var outputImagePath = Path.Combine(this.outputDirectory.FullName, "Signal2_OctaveFreqScale.png");
-            var recording = DspFilters.GenerateTestRecording(sampleRate, duration, harmonics, WaveType.Cosine);
-            var epsilon = recording.Epsilon;
-
-            // In this test epsilon must be zero, otherwise the Moving Average filter (see below) flattens the peaks, so that none are found.
-            epsilon = 0.0;
-
-            // init the default sonogram config
-            var sonoConfig = new SonogramConfig
-            {
-                WindowSize = freqScale.WindowSize,
-                WindowOverlap = 0.2,
-                SourceFName = "Signal2",
-                NoiseReductionType = NoiseReductionType.None,
-                NoiseReductionParameter = 0.0,
-            };
-            var sonogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
-            sonogram.Data = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(sonogram.Data, freqScale, epsilon);
-
-            // pick a row, any row
-            var oneSpectrum = MatrixTools.GetRow(sonogram.Data, 40);
-            oneSpectrum = DataTools.filterMovingAverage(oneSpectrum, 5);
-            var peaks = DataTools.GetPeaks(oneSpectrum);
-
-            var peakIds = new List<int>();
-            for (int i = 5; i < peaks.Length - 5; i++)
-            {
-                if (peaks[i])
-                {
-                    int peakId = freqScale.BinBounds[i, 0];
-                    peakIds.Add(peakId);
-                    LoggedConsole.WriteLine($"Spectral peak located in bin {peakId},  Herz={freqScale.BinBounds[i, 1]}");
-                }
-            }
-
-            foreach (int h in harmonics)
-            {
-                LoggedConsole.WriteLine($"Harmonic {h}Herz should be in bin {freqScale.GetBinIdForHerzValue(h)}");
-            }
-
-            Assert.AreEqual(5, peakIds.Count);
-            Assert.AreEqual(129, peakIds[0]);
-            Assert.AreEqual(257, peakIds[1]);
-            Assert.AreEqual(513, peakIds[2]);
-            Assert.AreEqual(1025, peakIds[3]);
-            Assert.AreEqual(2049, peakIds[4]);
-
-            var image = sonogram.GetImage();
-            string title = $"Spectrogram of Harmonics: {DataTools.Array2String(harmonics)}   SR={sampleRate}  Window={freqScale.WindowSize}";
-            image = sonogram.GetImageFullyAnnotated(image, title, freqScale.GridLineLocations);
-            image.Save(outputImagePath);
-
-            // Check that image dimensions are correct
-            Assert.AreEqual(146, image.Width);
-            Assert.AreEqual(311, image.Height);
         }
     }
 }

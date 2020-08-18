@@ -166,17 +166,13 @@ namespace AudioAnalysisTools.Indices
             {
                 // Only allow one octave scale at the moment, OctaveDataReduction.
                 // This is used to produced a reduced set of indices for content recognition.
-                // TODO: Much work required to generalise this for other Octave scales. Need to put scale type in the config file and and set up recovery here.
+                // TODO: Much work required to generalise this for other Octave scales.
+                //       Need to put scale type in the config file and and set up recovery here.
                 freqScale = new FrequencyScale(FreqScaleType.OctaveDataReduction);
 
-                // Recalculate the spectrogram according to octave scale. This option works only when have high SR recordings.
-                dspOutput1.AmplitudeSpectrogram = OctaveFreqScale.AmplitudeSpectra(
-                    dspOutput1.AmplitudeSpectrogram,
-                    dspOutput1.WindowPower,
-                    sampleRate,
-                    epsilon,
-                    freqScale);
-                dspOutput1.NyquistBin = dspOutput1.AmplitudeSpectrogram.GetLength(1) - 1; // ASSUMPTION!!! Nyquist is in top Octave bin - not necessarily true!!
+                // Calculate the octave scaled spectrogram.
+                dspOutput1.AmplitudeSpectrogram = OctaveFreqScale.ConvertLinearSpectrogramToOctaveFreqScale(dspOutput1.AmplitudeSpectrogram, freqScale);
+                dspOutput1.NyquistBin = dspOutput1.AmplitudeSpectrogram.GetLength(1) - 1; // ASSUME Nyquist is in top Octave bin.
             }
             else if (melScale)
             {
@@ -190,10 +186,6 @@ namespace AudioAnalysisTools.Indices
                     maxFreq);
 
                 dspOutput1.NyquistBin = dspOutput1.AmplitudeSpectrogram.GetLength(1) - 1;
-
-                // TODO: This doesn't make any sense, since the frequency width changes for each bin. Probably need to set this to NaN.
-                // TODO: Whatever uses this value below, should probably be changed to not be depending on it.
-                dspOutput1.FreqBinWidth = sampleRate / (double)dspOutput1.AmplitudeSpectrogram.GetLength(1) / 2;
             }
 
             // NOW EXTRACT SIGNAL FOR BACKGROUND NOISE CALCULATION
@@ -215,15 +207,9 @@ namespace AudioAnalysisTools.Indices
                 // If necessary, recalculate the spectrogram according to octave scale. This option works only when have high SR recordings.
                 if (octaveScale)
                 {
-                    // ASSUME fixed Occtave scale - USEFUL ONLY FOR JASCO 64000sr MARINE RECORDINGS
-                    // If you wish to use other octave scale types then need to put in the config file and and set up recovery here.
-                    dspOutput2.AmplitudeSpectrogram = OctaveFreqScale.AmplitudeSpectra(
-                        dspOutput2.AmplitudeSpectrogram,
-                        dspOutput2.WindowPower,
-                        sampleRate,
-                        epsilon,
-                        freqScale);
-                    dspOutput2.NyquistBin = dspOutput2.AmplitudeSpectrogram.GetLength(1) - 1; // ASSUMPTION!!! Nyquist is in top Octave bin - not necessarily true!!
+                    // Calculate the octave scaled spectrogram.
+                    dspOutput2.AmplitudeSpectrogram = OctaveFreqScale.ConvertLinearSpectrogramToOctaveFreqScale(dspOutput2.AmplitudeSpectrogram, freqScale);
+                    dspOutput2.NyquistBin = dspOutput2.AmplitudeSpectrogram.GetLength(1) - 1; // ASSUME Nyquist is in top Octave bin.
                 }
             }
 
