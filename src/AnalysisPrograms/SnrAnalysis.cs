@@ -114,6 +114,7 @@ namespace AnalysisPrograms
             int frameCount = signalLength / stepSize;
 
             // (B) ################################## EXTRACT ENVELOPE and SPECTROGRAM ##################################
+            // Calling this method will set the default FFT window.
             var dspOutput = DSP_Frames.ExtractEnvelopeAndFfts(
                 recording,
                 sonoConfig.WindowSize,

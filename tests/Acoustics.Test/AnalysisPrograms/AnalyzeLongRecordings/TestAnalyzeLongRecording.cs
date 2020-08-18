@@ -31,6 +31,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
     /// (5) Wherever possible, don't use test assets.
     /// </summary>
     [TestClass]
+    [DoNotParallelize]
     public class TestAnalyzeLongRecording
     {
         private DirectoryInfo outputDirectory;
