@@ -9,7 +9,7 @@ namespace Acoustics.Shared.ImageSharp
     using SixLabors.ImageSharp.Processing.Processors;
 
     public class DeltaImageProcessor<TPixelFg> : IImageProcessor
-        where TPixelFg : struct, IPixel<TPixelFg>
+        where TPixelFg : unmanaged, IPixel<TPixelFg>
     {
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace Acoustics.Shared.ImageSharp
         public Image<TPixelFg> Image { get; }
 
         public IImageProcessor<TPixelBg> CreatePixelSpecificProcessor<TPixelBg>(Configuration configuration, Image<TPixelBg> source, Rectangle sourceRectangle)
-            where TPixelBg : struct, IPixel<TPixelBg>
+            where TPixelBg : unmanaged, IPixel<TPixelBg>
         {
             return new DeltaImageProcessor<TPixelBg, TPixelFg>(Configuration.Default, this.Image, source, sourceRectangle);
         }

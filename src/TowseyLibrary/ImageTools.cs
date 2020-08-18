@@ -15,6 +15,7 @@ namespace TowseyLibrary
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.ColorSpaces;
     using SixLabors.ImageSharp.ColorSpaces.Conversion;
+    using SixLabors.ImageSharp.Drawing.Processing;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
 
@@ -428,6 +429,78 @@ namespace TowseyLibrary
         {
                                                 -1.0, -2.0, -1.0,
         },
+        };
+
+        private static readonly double[,] ridgeDir0Mask1 = new[,] {
+            {
+                -0.1, -0.1, -0.1, -0.1, -0.1,
+            },
+            {
+                -0.1, -0.1, -0.1, -0.1, -0.1,
+            },
+            {
+                0.4, 0.4, 0.4, 0.4, 0.4,
+            },
+            {
+                -0.1, -0.1, -0.1, -0.1, -0.1,
+            },
+            {
+                -0.1, -0.1, -0.1, -0.1, -0.1,
+            },
+        };
+
+        private static readonly double[,] ridgeDir1Mask1 = new[,] {
+            {
+                -0.1, -0.1, -0.1, -0.1, 0.4,
+            },
+            {
+                -0.1, -0.1, -0.1, 0.4, -0.1,
+            },
+            {
+                -0.1, -0.1, 0.4, -0.1, -0.1,
+            },
+            {
+                -0.1, 0.4, -0.1, -0.1, -0.1,
+            },
+            {
+                0.4, -0.1, -0.1, -0.1, -0.1,
+            },
+        };
+
+        private static readonly double[,] ridgeDir2Mask1 = new[,] {
+            {
+                -0.1, -0.1, 0.4, -0.1, -0.1,
+            },
+            {
+                -0.1, -0.1, 0.4, -0.1, -0.1,
+            },
+            {
+                -0.1, -0.1, 0.4, -0.1, -0.1,
+            },
+            {
+                -0.1, -0.1, 0.4, -0.1, -0.1,
+            },
+            {
+                -0.1, -0.1, 0.4, -0.1, -0.1,
+            },
+        };
+
+        private static readonly double[,] ridgeDir3Mask1 = new[,] {
+            {
+                0.4, -0.1, -0.1, -0.1, -0.1,
+            },
+            {
+                -0.1, 0.4, -0.1, -0.1, -0.1,
+            },
+            {
+                -0.1, -0.1, 0.4, -0.1, -0.1,
+            },
+            {
+                -0.1, -0.1, -0.1, 0.4, -0.1,
+            },
+            {
+                -0.1, -0.1, -0.1, -0.1, 0.4,
+            },
         };
 
         public static Image<Rgb24> ReadImage2Image(string fileName)
@@ -1327,84 +1400,11 @@ namespace TowseyLibrary
                 return null;
             }
 
-            double[,] ridgeDir0Mask =
-            {
-                {
-                    -0.1, -0.1, -0.1, -0.1, -0.1,
-                },
-                {
-                    -0.1, -0.1, -0.1, -0.1, -0.1,
-                },
-                {
-                    0.4, 0.4, 0.4, 0.4, 0.4,
-                },
-                {
-                    -0.1, -0.1, -0.1, -0.1, -0.1,
-                },
-                {
-                    -0.1, -0.1, -0.1, -0.1, -0.1,
-                },
-            };
-            double[,] ridgeDir1Mask =
-            {
-                {
-                    -0.1, -0.1, -0.1, -0.1, 0.4,
-                },
-                {
-                    -0.1, -0.1, -0.1, 0.4, -0.1,
-                },
-                {
-                    -0.1, -0.1, 0.4, -0.1, -0.1,
-                },
-                {
-                    -0.1, 0.4, -0.1, -0.1, -0.1,
-                },
-                {
-                    0.4, -0.1, -0.1, -0.1, -0.1,
-                },
-            };
-            double[,] ridgeDir2Mask =
-            {
-                {
-                    -0.1, -0.1, 0.4, -0.1, -0.1,
-                },
-                {
-                    -0.1, -0.1, 0.4, -0.1, -0.1,
-                },
-                {
-                    -0.1, -0.1, 0.4, -0.1, -0.1,
-                },
-                {
-                    -0.1, -0.1, 0.4, -0.1, -0.1,
-                },
-                {
-                    -0.1, -0.1, 0.4, -0.1, -0.1,
-                },
-            };
-            double[,] ridgeDir3Mask =
-            {
-                {
-                    0.4, -0.1, -0.1, -0.1, -0.1,
-                },
-                {
-                    -0.1, 0.4, -0.1, -0.1, -0.1,
-                },
-                {
-                    -0.1, -0.1, 0.4, -0.1, -0.1,
-                },
-                {
-                    -0.1, -0.1, -0.1, 0.4, -0.1,
-                },
-                {
-                    -0.1, -0.1, -0.1, -0.1, 0.4,
-                },
-            };
-
             double[] ridgeMagnitudes = new double[4];
-            ridgeMagnitudes[0] = MatrixTools.DotProduct(ridgeDir0Mask, m);
-            ridgeMagnitudes[1] = MatrixTools.DotProduct(ridgeDir1Mask, m);
-            ridgeMagnitudes[2] = MatrixTools.DotProduct(ridgeDir2Mask, m);
-            ridgeMagnitudes[3] = MatrixTools.DotProduct(ridgeDir3Mask, m);
+            ridgeMagnitudes[0] = MatrixTools.DotProduct(ridgeDir0Mask1, m);
+            ridgeMagnitudes[1] = MatrixTools.DotProduct(ridgeDir1Mask1, m);
+            ridgeMagnitudes[2] = MatrixTools.DotProduct(ridgeDir2Mask1, m);
+            ridgeMagnitudes[3] = MatrixTools.DotProduct(ridgeDir3Mask1, m);
             return ridgeMagnitudes;
         }
 
@@ -3702,19 +3702,19 @@ namespace TowseyLibrary
         /// Assumes that all images have the same width.
         /// </summary>
         public static Image<T> CombineImagesVertically<T>(List<Image<T>> list)
-            where T : struct, IPixel<T>
+            where T : unmanaged, IPixel<T>
         {
             return CombineImagesVertically(null, list.ToArray());
         }
 
         public static Image<T> CombineImagesVertically<T>(List<Image<T>> list, int maxWidth)
-            where T : struct, IPixel<T>
+            where T : unmanaged, IPixel<T>
         {
             return CombineImagesVertically(maxWidth, list.ToArray());
         }
 
         public static Image<T> CombineImagesVertically<T>(params Image<T>[] images)
-            where T : struct, IPixel<T>
+            where T : unmanaged, IPixel<T>
         {
             return CombineImagesVertically<T>(maximumWidth: null, images);
         }
@@ -3726,7 +3726,7 @@ namespace TowseyLibrary
         /// <param name="array">An array of Image.</param>
         /// <returns>A single image.</returns>
         public static Image<T> CombineImagesVertically<T>(int? maximumWidth, Image<T>[] array)
-            where T : struct, IPixel<T>
+            where T : unmanaged, IPixel<T>
         {
             int width = 0;
             int compositeHeight = 0;
@@ -3779,7 +3779,7 @@ namespace TowseyLibrary
         /// <param name="list">A list of images.</param>
         /// <returns>A single image.</returns>
         public static Image<T> CombineImagesInLine<T>(List<Image<T>> list)
-            where T : struct, IPixel<T>
+            where T : unmanaged, IPixel<T>
         {
             return CombineImagesInLine(list.ToArray());
         }
@@ -3791,7 +3791,7 @@ namespace TowseyLibrary
         /// <param name="array">An array of images.</param>
         /// <returns>A single image.</returns>
         public static Image<T> CombineImagesInLine<T>(params Image<T>[] array)
-            where T : struct, IPixel<T>
+            where T : unmanaged, IPixel<T>
         {
             int height = 0;
             int compositeWidth = 0;

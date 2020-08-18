@@ -17,6 +17,8 @@ namespace AnalysisPrograms.Draw.RibbonPlots
     using log4net;
     using SixLabors.Fonts;
     using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.Drawing;
+    using SixLabors.ImageSharp.Drawing.Processing;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
 
@@ -204,7 +206,7 @@ namespace AnalysisPrograms.Draw.RibbonPlots
                 var top = Padding;
                 var bottom = Padding + ((Padding + ribbonHeight) * stats.Buckets);
                 context.DrawLines(
-                    new ShapeGraphicsOptions() { Antialias = false },
+                    Acoustics.Shared.ImageSharp.Drawing.NoAntiAlias,
                     Brushes.Solid(Color.Red),
                     1,
                     new Point(left, top),
@@ -213,7 +215,13 @@ namespace AnalysisPrograms.Draw.RibbonPlots
 
             var bucketDate = stats.Start;
             var textGraphics = new TextGraphicsOptions()
-            { HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center };
+            {
+                TextOptions = new TextOptions()
+                {
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    VerticalAlignment = VerticalAlignment.Center,
+                },
+            };
             var textColor = Color.Black;
             var voidColor = Color.Gray;
             for (var b = 0; b < stats.Buckets; b++)
@@ -233,7 +241,7 @@ namespace AnalysisPrograms.Draw.RibbonPlots
                     var y = Padding + ((Padding + ribbonHeight) * b);
 
                     // draw label
-                    context.DrawTextSafe(dateLabel, scaledFont, textColor, new Point(HorizontalPadding, y + (ribbonHeight / 2)));
+                    context.DrawTextSafe(dateLabel, scaledFont, textColor, new Point(HorizontalPadding, y + (ribbonHeight / 2)), textGraphics);
 
                     // draw void
                     var @void = new RectangularPolygon(ribbonLeft, y, estimatedWidth, ribbonHeight);

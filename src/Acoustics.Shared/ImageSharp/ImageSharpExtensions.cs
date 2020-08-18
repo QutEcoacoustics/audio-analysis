@@ -13,9 +13,13 @@ namespace SixLabors.ImageSharp
     using Acoustics.Shared.ImageSharp;
     using SixLabors.Fonts;
     using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.Drawing;
+    using SixLabors.ImageSharp.Drawing.Processing;
     using SixLabors.ImageSharp.Formats;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
+
+    using ApDrawing = Acoustics.Shared.ImageSharp.Drawing;
 
     /// <summary>
     /// Image extension methods.
@@ -200,9 +204,9 @@ namespace SixLabors.ImageSharp
                     1.0f));
         }
 
-        public static Drawing.NoAA NoAA(this IImageProcessingContext context)
+        public static ApDrawing.NoAA NoAA(this IImageProcessingContext context)
         {
-            return new Drawing.NoAA(context);
+            return new ApDrawing.NoAA(context);
         }
 
         public static void DrawLine(this IImageProcessingContext context, Pen pen, int x1, int y1, int x2, int y2)
@@ -216,15 +220,22 @@ namespace SixLabors.ImageSharp
             context.Draw(pen, r);
         }
 
+        /// <summary>
+        /// Fill a rectangle with a brush.
+        /// </summary>
+        /// <remarks>
+        /// Will short-circuit return if height or width less than or equal to zero.
+        /// This is a "safer" operation.
+        /// </remarks>
         public static void FillRectangle(this IImageProcessingContext context, IBrush brush, int x, int y, int width, int height)
         {
+            if (height <= 0 || width <= 0)
+            {
+                return;
+            }
+
             var r = new RectangleF(x, y, width, height);
             context.Fill(brush, r);
-        }
-
-        public static void Clear(this IImageProcessingContext context, Color color)
-        {
-            context.Fill(color);
         }
 
         /// <summary>
@@ -243,7 +254,7 @@ namespace SixLabors.ImageSharp
         public static void FillWithBlend(this IImageProcessingContext context, IBrush brush, params IPath[] paths)
         {
             const float Opaque = 1f;
-            var options = new GraphicsOptions();
+            var options = new ShapeGraphicsOptions();
 
             if (brush is SolidBrush s)
             {
@@ -251,7 +262,7 @@ namespace SixLabors.ImageSharp
                 if (alpha != Opaque)
                 {
                     // move opacity from color to graphics layer
-                    options.BlendPercentage = alpha;
+                    options.GraphicsOptions.BlendPercentage = alpha;
                     brush = new SolidBrush(s.Color.WithAlpha(1));
                 }
             }
@@ -266,7 +277,7 @@ namespace SixLabors.ImageSharp
             }
             else
             {
-                context.Fill(options, brush);
+                context.Fill(options.GraphicsOptions, brush);
             }
         }
 
@@ -322,7 +333,7 @@ namespace SixLabors.ImageSharp
         }
 
         public static void Save<T>(this Image<T> image, FileInfo path)
-            where T : struct, IPixel<T>
+            where T : unmanaged, IPixel<T>
         {
             image.Save(path.ToString());
         }
@@ -362,12 +373,27 @@ namespace SixLabors.ImageSharp
             return new RectangleF(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height);
         }
 
-        public static void DrawTextSafe(this IImageProcessingContext context, string text, Font font, Color color, PointF location)
+        /// <summary>
+        /// Draws text onto an image.
+        /// </summary>
+        /// <remarks>
+        /// Historically this method drew a subset of glyphs if the text was located to the left
+        /// of the image (i.e. with a negative x coordinate). 
+        /// </remarks>
+        /// <param name="context"></param>
+        /// <param name="text"></param>
+        /// <param name="font"></param>
+        /// <param name="color"></param>
+        /// <param name="location"></param>
+        /// <param name="textOptions"></param>
+        public static void DrawTextSafe(this IImageProcessingContext context, string text, Font font, Color color, PointF location, TextGraphicsOptions textOptions = null)
         {
             if (text.IsNullOrEmpty())
             {
                 return;
             }
+
+            textOptions ??= ApDrawing.TextOptions;
 
             // check to see if text overlaps with image
             var destArea = new RectangleF(PointF.Empty, context.GetCurrentSize());
@@ -375,44 +401,7 @@ namespace SixLabors.ImageSharp
             var textArea = TextMeasurer.MeasureBounds(text, rendererOptions);
             if (destArea.IntersectsWith(textArea.AsRect()))
             {
-                if (textArea.X < 0)
-                {
-                    // TODO BUG: see https://github.com/SixLabors/ImageSharp.Drawing/issues/30
-                    // to get around the bug, we measure each character, and then trim them from the
-                    // start of the text, move the location right by the width of the trimmed character
-                    // and continue until we're in a spot that does not trigger the bug;
-                    int trim = 0;
-                    float firstSafeCharLeft = 0;
-                    if (TextMeasurer.TryMeasureCharacterBounds(text, rendererOptions, out var characterBounds))
-                    {
-                        foreach (var characterBound in characterBounds)
-                        {
-                            // magic value found empirically, does not seem to trigger bug when first char less
-                            // than offset equal to char size
-                            var magicLimit = 0 - ((int)font.Size / 2);
-                            if (characterBound.Bounds.X > magicLimit)
-                            {
-                                // width of chars don't take into account kerning (spacing between chars).
-                                // so we use the Left of the first value that is within our sfety margin instead
-                                firstSafeCharLeft = characterBound.Bounds.Left;
-                                break;
-                            }
-
-                            trim++;
-                        }
-                    }
-                    else
-                    {
-                        throw new NotSupportedException("Due to a bug with ImageSharp this text cannot be rendered");
-                    }
-
-                    var safeLocation = new PointF(firstSafeCharLeft, location.Y);
-                    context.DrawText(Drawing.TextOptions, text[trim..], font, color, safeLocation);
-                }
-                else
-                {
-                    context.DrawText(Drawing.TextOptions, text, font, color, location);
-                }
+                context.DrawText(textOptions, text, font, color, location);
             }
         }
 
@@ -422,7 +411,7 @@ namespace SixLabors.ImageSharp
             var image = new Image<Rgba32>(Configuration.Default, (int)(width + 1), (int)(height + 1), Color.Transparent);
 
             image.Mutate(x => x
-                .DrawText(Drawing.TextOptions, text, font, color, new PointF(0, 0))
+                .DrawText(ApDrawing.TextOptions, text, font, color, new PointF(0, 0))
                 .Rotate(-90));
 
             context.DrawImage(image, location, PixelColorBlendingMode.Normal, PixelAlphaCompositionMode.SrcAtop, 1);
@@ -441,7 +430,7 @@ namespace SixLabors.ImageSharp
         /// Cropped image.
         /// </returns>
         public static Image<T> Crop<T>(this Image<T> source, Rectangle crop)
-            where T : struct, IPixel<T> => source.Clone(x => x.Crop(crop));
+            where T : unmanaged, IPixel<T> => source.Clone(x => x.Crop(crop));
 
         /// <summary>
         /// Crop an image using a <paramref name="crop"/> Rectangle.
@@ -457,7 +446,7 @@ namespace SixLabors.ImageSharp
         /// Cropped image.
         /// </returns>
         public static Image<T> CropIntersection<T>(this Image<T> source, Rectangle crop)
-            where T : struct, IPixel<T>
+            where T : unmanaged, IPixel<T>
         {
             var intersection = Rectangle.Intersect(crop, source.Bounds());
 
@@ -478,7 +467,7 @@ namespace SixLabors.ImageSharp
         /// Cropped image.
         /// </returns>
         public static Image<T> CropInverse<T>(this Image<T> source, Rectangle crop)
-            where T : struct, IPixel<T>
+            where T : unmanaged, IPixel<T>
         {
             var result = new Image<T>(crop.Width, crop.Height);
 
@@ -494,7 +483,7 @@ namespace SixLabors.ImageSharp
         }
 
         public static void RotateFlip<T>(this Image<T> image, RotateFlipType operation)
-            where T : struct, IPixel<T>
+            where T : unmanaged, IPixel<T>
         {
             RotateMode r;
             FlipMode f;

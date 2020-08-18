@@ -13,8 +13,8 @@ namespace Acoustics.Shared.ImageSharp
     using SixLabors.ImageSharp.Processing.Processors;
 
     public class DeltaImageProcessor<TPixelBg, TPixelFg> : ImageProcessor<TPixelBg>
-        where TPixelBg : struct, IPixel<TPixelBg>
-        where TPixelFg : struct, IPixel<TPixelFg>
+        where TPixelBg : unmanaged, IPixel<TPixelBg>
+        where TPixelFg : unmanaged, IPixel<TPixelFg>
     {
         public DeltaImageProcessor(
             Configuration configuration,
@@ -44,7 +44,7 @@ namespace Acoustics.Shared.ImageSharp
                 this.Configuration,
                 maxWidth);
 
-            ParallelRowIterator.IterateRows(this.Configuration, this.SourceRectangle, operation);
+            ParallelRowIterator.IterateRowIntervals(this.Configuration, this.SourceRectangle, in operation);
         }
 
         /// <summary>

@@ -8,12 +8,14 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using Acoustics.Shared.ImageSharp;
     using Acoustics.Test.TestHelpers;
     using global::AudioAnalysisTools.LongDurationSpectrograms;
     using global::AudioAnalysisTools.LongDurationSpectrograms.Zooming;
     using global::AudioAnalysisTools.TileImage;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.Drawing.Processing;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
 
@@ -101,7 +103,7 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
                     new PointF(900, 256), new Point(1080, 0), new Point(1260, 256),
                 };
                 graphics.DrawLines(
-                    new GraphicsOptions(),
+                    new ShapeGraphicsOptions(),
                     Brushes.Solid(Color.Red),
                     1,
                     points);

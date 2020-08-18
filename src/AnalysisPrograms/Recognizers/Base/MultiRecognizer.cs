@@ -32,6 +32,7 @@ namespace AnalysisPrograms.Recognizers.Base
     using AudioAnalysisTools.WavTools;
     using log4net;
     using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.Drawing.Processing;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
     using TowseyLibrary;

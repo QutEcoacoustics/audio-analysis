@@ -53,7 +53,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
         /// Acoustic indices as calculated from Linear frequency scale spectrogram.
         /// </summary>
         [TestMethod]
-        [Timeout(300_000)]
+        [Timeout(360_000)]
         public void TestAnalyzeSr22050Recording()
         {
             int sampleRate = 22050;
@@ -89,7 +89,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
                 Config = configPath.FullName,
                 Output = this.outputDirectory,
                 MixDownToMono = true,
-                Parallel = !Debugger.IsAttached,
+                Parallel = false,
             };
 
             AnalyseLongRecording.Execute(arguments);

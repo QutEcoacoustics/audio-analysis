@@ -12,6 +12,7 @@ namespace Acoustics.Test.Shared.Drawing
     using global::AudioAnalysisTools.Events.Drawing;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.Drawing.Processing;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
 
@@ -32,10 +33,13 @@ namespace Acoustics.Test.Shared.Drawing
 
             var options = new ShapeGraphicsOptions()
             {
-                BlendPercentage = 1,
-                Antialias = false,
-                ColorBlendingMode = PixelColorBlendingMode.Normal,
-                AntialiasSubpixelDepth = 0,
+                GraphicsOptions = new GraphicsOptions()
+                {
+                    BlendPercentage = 1,
+                    Antialias = false,
+                    ColorBlendingMode = PixelColorBlendingMode.Normal,
+                    AntialiasSubpixelDepth = 0,
+                },
             };
 
             testImage.Mutate(x => x.Draw(pen, rectangle));

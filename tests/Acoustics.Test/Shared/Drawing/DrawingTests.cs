@@ -4,16 +4,17 @@
 
 namespace Acoustics.Test.Shared.Drawing
 {
+    using System;
+    using System.Linq;
+    using System.Text;
     using Acoustics.Shared.ImageSharp;
     using Acoustics.Test.TestHelpers;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using SixLabors.Fonts;
     using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.Drawing.Processing;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using System;
-    using System.Linq;
-    using System.Text;
 
     [TestClass]
     public class DrawingTests : GeneratedImageTest<Rgb24>
@@ -41,6 +42,8 @@ namespace Acoustics.Test.Shared.Drawing
             this.ExpectedImage = Image.Load<Rgb24>(PathHelper.ResolveAssetPath("roboto_font_test.png"));
 
             this.ActualImage.Mutate(x => x.DrawTextSafe("Hello World", Drawing.GetFont(Drawing.Roboto, 18f), Color.White, new PointF(1f, 50f)));
+
+            //this.ActualImage.Save(PathHelper.ResolveAssetPath("roboto_font_test.png"));
 
             this.AssertImagesEqual();
         }
