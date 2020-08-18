@@ -19,11 +19,15 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         /// <summary>
         /// Converts amplitude matrix to octave frequency scale spectrogram.
+        /// IMPORTANT: DOES NOISE REDUCTION after conversion.
         /// </summary>
         /// <param name="amplitudeM">Matrix of amplitude values.</param>
         public override void Make(double[,] amplitudeM)
         {
-            double[,] m = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(amplitudeM, this.FreqScale, this.Configuration.epsilon);
+            double windowPower = this.Configuration.WindowPower;
+            int sampleRate = this.SampleRate;
+            double epsilon = this.Configuration.epsilon;
+            double[,] m = OctaveFreqScale.ConvertAmplitudeSpectrogramToFreqScaledDecibels(amplitudeM, windowPower, sampleRate, epsilon, this.FreqScale);
 
             // Do noise reduction
             var tuple = SNR.NoiseReduce(m, this.Configuration.NoiseReductionType, this.Configuration.NoiseReductionParameter);

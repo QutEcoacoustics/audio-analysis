@@ -389,10 +389,8 @@ namespace AudioAnalysisTools
             double[,] decibelSpectrogram;
             if (octaveScale)
             {
-                //TODO: Implement octave scale in this situation.
-                throw new System.Exception("Octave scale not currently implemented in this context.");
                 var freqScale = new FrequencyScale(FreqScaleType.OctaveStandard);
-                decibelSpectrogram = OctaveFreqScale.DecibelSpectra(dspOutput.AmplitudeSpectrogram, dspOutput.WindowPower, sampleRate, epsilon, freqScale);
+                decibelSpectrogram = OctaveFreqScale.ConvertAmplitudeSpectrogramToFreqScaledDecibels(dspOutput.AmplitudeSpectrogram, dspOutput.WindowPower, sampleRate, epsilon, freqScale);
             }
             else
             {
