@@ -5,19 +5,20 @@
 // --------------------------------------------------------------------------------------------------------------------
 namespace Acoustics.Test.AudioAnalysisTools.TileImage
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics.CodeAnalysis;
-    using System.IO;
-    using System.Linq;
     using Acoustics.Test.TestHelpers;
     using global::AudioAnalysisTools.LongDurationSpectrograms;
     using global::AudioAnalysisTools.TileImage;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;
     using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.Drawing.Processing;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
+    using System.IO;
+    using System.Linq;
 
     [TestClass]
     public class TilerTests
@@ -375,11 +376,13 @@ namespace Acoustics.Test.AudioAnalysisTools.TileImage
             var expectedImages =
                 new[]
                     {
-                        "panojstile_00000_00000_00000.png", "panojstile_00000_00001_00000.png", "panojstile_00000_00002_00000.png",
+                        "panojstile_00000_00000_00000.png",
+                        "panojstile_00000_00001_00000.png",
+                        "panojstile_00000_00002_00000.png",
                     }
-                .OrderBy(x => x)
-                .Select(x => PathHelper.ResolveAssetPath(x))
-                .ToArray();
+                    .OrderBy(x => x)
+                    .Select(x => PathHelper.ResolveAssetPath(x))
+                    .ToArray();
 
             var loadedImages = expectedImages.Select(Image.Load<Rgba32>).ToArray();
 

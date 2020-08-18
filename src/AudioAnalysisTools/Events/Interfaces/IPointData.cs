@@ -9,6 +9,8 @@ namespace AudioAnalysisTools
     using Acoustics.Shared.ImageSharp;
     using AudioAnalysisTools.Events.Drawing;
     using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.Drawing;
+    using SixLabors.ImageSharp.Drawing.Processing;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
 
@@ -77,10 +79,11 @@ namespace AudioAnalysisTools
                 .Cast<IPath>()
                 .ToArray();
 
+            var shapeOptions = new ShapeGraphicsOptions(options.FillOptions, new ShapeOptions());
             foreach (var rect in rects)
             {
                 graphics.Fill(
-                    options.FillOptions,
+                    shapeOptions,
                     options.Fill,
                     rect);
             }

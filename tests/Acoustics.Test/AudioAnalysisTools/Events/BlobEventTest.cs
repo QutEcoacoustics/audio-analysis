@@ -4,6 +4,7 @@
 
 namespace Acoustics.Test.AudioAnalysisTools.Events
 {
+    using System.Collections.Generic;
     using Acoustics.Shared.ImageSharp;
     using Acoustics.Test.Shared.Drawing;
     using Acoustics.Test.TestHelpers;
@@ -12,9 +13,9 @@ namespace Acoustics.Test.AudioAnalysisTools.Events
     using global::AudioAnalysisTools.Events.Drawing;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.Drawing.Processing;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using System.Collections.Generic;
 
     [TestClass]
     public class BlobEventTest : GeneratedImageTest<Rgb24>

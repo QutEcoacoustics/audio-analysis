@@ -11,6 +11,7 @@ namespace AudioAnalysisTools.Events.Drawing
 {
     using AudioAnalysisTools;
     using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.Drawing.Processing;
     using SixLabors.ImageSharp.Processing;
 
     public class EventRenderingOptions

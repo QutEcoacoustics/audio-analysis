@@ -4,11 +4,11 @@
 
 namespace Acoustics.Test.AudioAnalysisTools
 {
+    using System.Collections.Generic;
+    using System.Linq;
     using global::AudioAnalysisTools;
     using global::AudioAnalysisTools.Events;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using System.Collections.Generic;
-    using System.Linq;
 
     [TestClass]
     public class UnitConverterTests

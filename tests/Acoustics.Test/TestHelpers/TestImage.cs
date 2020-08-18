@@ -10,6 +10,7 @@ namespace Acoustics.Test.TestHelpers
     using System.Linq;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.Advanced;
+    using SixLabors.ImageSharp.Drawing.Processing;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
 

@@ -17,7 +17,7 @@ namespace Acoustics.Shared.ImageSharp
     /// </summary>
     /// <typeparam name="TPixel">The type of pixel to operate on.</typeparam>
     public class DeltaPixelBlender<TPixel> : PixelBlender<TPixel>
-        where TPixel : struct, IPixel<TPixel>
+        where TPixel : unmanaged, IPixel<TPixel>
     {
         private static readonly Vector4 Middle = new Vector4(0.5f);
         private static readonly Vector4 Bottom = new Vector4(0.0f);

@@ -9,6 +9,7 @@ namespace TowseyLibrary
     using System.Linq;
     using Acoustics.Shared.ImageSharp;
     using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.Drawing.Processing;
     using SixLabors.ImageSharp.Processing;
 
     public static class TernaryPlots

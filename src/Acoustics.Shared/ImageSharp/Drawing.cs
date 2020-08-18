@@ -9,6 +9,7 @@ namespace Acoustics.Shared.ImageSharp
     using System.Linq;
     using SixLabors.Fonts;
     using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.Drawing.Processing;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
 
@@ -23,32 +24,48 @@ namespace Acoustics.Shared.ImageSharp
         /// <summary>
         /// An open source sans-serif font produced by Google that is hopefully a good fallback for missing fonts.
         /// </summary>
-        public const string Roboto = "Roboto";
+        public const string Roboto = nameof(Roboto);
+
+        /// <summary>
+        /// A predefined set of graphical options. Currently is equivalent to the default.
+        /// </summary>
         public static readonly Configuration DefaultConfiguration = Configuration.Default;
 
+        /// <summary>
+        /// A predefined set of graphics options with parallelization disabled.
+        /// </summary>
         public static readonly Configuration NoParallelConfiguration = new Configuration()
         {
             MaxDegreeOfParallelism = 1,
         };
 
+        /// <summary>
+        /// A predefined set of graphics options that have anti-aliasing disabled.
+        /// </summary>
         public static readonly ShapeGraphicsOptions NoAntiAlias = new ShapeGraphicsOptions()
         {
-            BlendPercentage = 1,
-            Antialias = false,
-            ColorBlendingMode = PixelColorBlendingMode.Normal,
-            AntialiasSubpixelDepth = 0,
+            GraphicsOptions = new GraphicsOptions()
+            {
+                Antialias = false,
+                BlendPercentage = 1,
+                ColorBlendingMode = PixelColorBlendingMode.Normal,
+                AntialiasSubpixelDepth = 0,
+            },
 
             //IntersectionRule = IntersectionRule.OddEven,
         };
 
+        /// <summary>
+        /// A predefined set of options for rendering text. Currently is equivalent to the default.
+        /// </summary>
         public static readonly TextGraphicsOptions TextOptions = new TextGraphicsOptions()
         {
             // noop currently
         };
 
-        internal const string Tahoma = "Tahoma";
+        internal const string Tahoma = nameof(Tahoma);
 
-        internal const string Arial = "Arial";
+        internal const string Arial = nameof(Arial);
 
         /// <summary>
         /// Fonts bundled with AP.exe.
@@ -138,9 +155,21 @@ namespace Acoustics.Shared.ImageSharp
         }
 
         public static Image<T> NewImage<T>(int width, int height, Color fill)
-            where T : struct, IPixel<T>
+            where T : unmanaged, IPixel<T>
         {
             return new Image<T>(DefaultConfiguration, width, height, fill.ToPixel<T>());
+        }
+
+        /// <summary>
+        /// Measures the placement of each character in a rendered string of text.
+        /// </summary>
+        public static GlyphMetric[] MeasureCharacters(string text, Font font, PointF location)
+        {
+            var rendererOptions = new RendererOptions(font, location);
+
+            TextMeasurer.TryMeasureCharacterBounds(text, rendererOptions, out var characterBounds);
+            //font.Instance.
+            return characterBounds;
         }
 
         /// <summary>

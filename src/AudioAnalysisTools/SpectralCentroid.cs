@@ -4,10 +4,10 @@
 
 namespace AudioAnalysisTools
 {
-    using AudioAnalysisTools.StandardSpectrograms;
     using System;
     using System.Collections.Generic;
     using System.Text;
+    using AudioAnalysisTools.StandardSpectrograms;
     using TowseyLibrary;
 
     /// <summary>

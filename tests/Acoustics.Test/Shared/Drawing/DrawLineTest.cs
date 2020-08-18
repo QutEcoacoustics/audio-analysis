@@ -9,12 +9,15 @@ namespace Acoustics.Test.Shared.Drawing
     using Acoustics.Test.TestHelpers;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using SixLabors.ImageSharp;
+    using SixLabors.ImageSharp.Drawing.Processing;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
 
     [TestClass]
     public class DrawLineTest : GeneratedImageTest<Rgb24>
     {
+        private static readonly ShapeGraphicsOptions ShapeGraphicsOptions = new ShapeGraphicsOptions(new GraphicsOptions() { Antialias = false, AntialiasSubpixelDepth = 0 }, new ShapeOptions());
+
         [TestMethod]
         [TestCategory("smoketest")]
         public void DiagonalLineNotDrawnProperly()
@@ -36,7 +39,7 @@ namespace Acoustics.Test.Shared.Drawing
             var actual = new Image<Rgb24>(5, 5);
             actual.Mutate(
                 context => context.DrawLines(
-                    new GraphicsOptions() { Antialias = false, AntialiasSubpixelDepth = 0 },
+                    ShapeGraphicsOptions,
                     pen,
                     new PointF(1, 3),
                     new PointF(3, 1)));
@@ -94,7 +97,7 @@ namespace Acoustics.Test.Shared.Drawing
             var actual = new Image<Rgb24>(5, 5);
             actual.Mutate(
                 context => context.DrawLines(
-                    new GraphicsOptions() { Antialias = false, AntialiasSubpixelDepth = 0 },
+                    ShapeGraphicsOptions,
                     pen,
                     new PointF(1, 3) + new PointF(0.0f, 0.5f),
                     new PointF(3, 1) + new PointF(0.0f, 0.5f)));
@@ -152,7 +155,7 @@ namespace Acoustics.Test.Shared.Drawing
             var actual = new Image<Rgb24>(5, 5);
             actual.Mutate(
                 context => context.DrawLines(
-                    new GraphicsOptions() { Antialias = false, AntialiasSubpixelDepth = 0 },
+                    ShapeGraphicsOptions,
                     pen,
                     new PointF(1, 3) + new PointF(0.5f, 0.5f),
                     new PointF(3, 1) + new PointF(0.5f, 0.5f)));

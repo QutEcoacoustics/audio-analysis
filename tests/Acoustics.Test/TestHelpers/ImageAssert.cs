@@ -111,7 +111,7 @@ namespace Acoustics.Test.TestHelpers
         }
 
         public static void ImageIsSize<T>(this Assert assert, int expectedWidth, int expectedHeight, Image<T> actualImage)
-            where T : struct, IPixel<T>
+            where T : unmanaged, IPixel<T>
         {
             Assert.AreEqual(expectedWidth, actualImage.Width, "Expected image width did not match actual image width");
             Assert.AreEqual(expectedHeight, actualImage.Height, "Expected image height did not match actual image height");
@@ -159,7 +159,7 @@ namespace Acoustics.Test.TestHelpers
         }
 
         public static void ImageMatches<T>(this Assert assert, Image<T> expectedImage, Image<T> actualImage, double tolerance = 0.0, string message = "")
-            where T : struct, IPixel<T>
+            where T : unmanaged, IPixel<T>
         {
             Assert.AreEqual(expectedImage.Size(), actualImage.Size());
 
@@ -180,7 +180,7 @@ Difference are:
         }
 
         public static void ImageContainsExpected<T>(this Assert assert, Image<T> expectedImage, Point expectedLocation, Image<T> actualImage, double tolerance = 0.0, string message = "")
-            where T : struct, IPixel<T>
+            where T : unmanaged, IPixel<T>
         {
             var regionToCheck = new Rectangle(expectedLocation, expectedImage.Size());
             Assert.IsTrue(actualImage.Bounds().Contains(regionToCheck));
@@ -203,7 +203,7 @@ Difference are:
 
         private static (float normalizedDifference, List<PixelDifference> differences) CompareImage<TPixel>(
             Image<TPixel> expected, Image<TPixel> actual, Rectangle? regionToCheck = null)
-            where TPixel : struct, IPixel<TPixel>
+            where TPixel : unmanaged, IPixel<TPixel>
         {
             // implementation based off of https://github.com/SixLabors/ImageSharp/blob/9ab02b6ee67b25fd3653146c069dab3687fc0ac8/tests/ImageSharp.Tests/TestUtilities/ImageComparison/TolerantImageComparer.cs
             var bounds = regionToCheck ?? actual.Bounds();

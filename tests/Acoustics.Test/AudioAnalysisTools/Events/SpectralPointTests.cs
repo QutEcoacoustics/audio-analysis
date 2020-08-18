@@ -4,10 +4,10 @@
 
 namespace Acoustics.Test.AudioAnalysisTools.Events
 {
+    using System;
     using Acoustics.Shared;
     using global::AudioAnalysisTools.Events;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using System;
 
     [TestClass]
     public class SpectralPointTests

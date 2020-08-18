@@ -12,7 +12,7 @@ namespace Acoustics.Test.TestHelpers
     using SixLabors.ImageSharp.Processing;
 
     public abstract class GeneratedImageTest<T> : OutputDirectoryTest
-        where T : struct, IPixel<T>
+        where T : unmanaged, IPixel<T>
     {
         protected GeneratedImageTest()
             : this(WriteTestOutput.OnFailure)
