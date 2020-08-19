@@ -90,7 +90,7 @@ namespace AudioAnalysisTools.DSP
             var powerSpectrogram = ConvertAmplitudeToPowerSpectrogram(octaveScaleM, windowPower, sampleRate);
 
             // Convert the power values to log using: dB = 10*log(power)
-            var powerEpsilon = epsilon* epsilon / windowPower / sampleRate;
+            var powerEpsilon = epsilon * epsilon / windowPower / sampleRate;
             var decibelSpectrogram = MatrixTools.SpectrogramPower2DeciBels(powerSpectrogram, powerEpsilon, out var min, out var max);
             return decibelSpectrogram;
         }
@@ -137,6 +137,20 @@ namespace AudioAnalysisTools.DSP
             return octaveSpectrogram;
         }
 
+        /// <summary>
+        /// Converts Amplitude Spectrogram to Power Spectrogram.
+        /// Square the amplitude values to get power.
+        /// Power values must be adjusted for the power in the FFT window and also for the sample rate.
+        /// Must divide by the window power to remove its contribution to amplitude values.
+        /// Must divide by sample rate to get average power per signal sample.
+        /// NOTE: Multiply by 2 to accomodate two spectral components, ie positive and neg freq.
+        ///       BUT the last nyquist bin does not require a factor of two.
+        ///       However this method is called only by octave reduced frequency scales where the nyquist bin is just one of several.
+        /// </summary>
+        /// <param name="amplitudeM">The frequency scaled amplitude spectrogram.</param>
+        /// <param name="windowPower">Power of the FFT window.</param>
+        /// <param name="sampleRate">The sample rate of the original recording.</param>
+        /// <returns>The Power Spectrogram as matrix. Each spectrum is a matrix row.</returns>
         public static double[,] ConvertAmplitudeToPowerSpectrogram(double[,] amplitudeM, double windowPower, int sampleRate)
         {
             int frameCount = amplitudeM.GetLength(0);
@@ -147,7 +161,7 @@ namespace AudioAnalysisTools.DSP
 
             // Square the values to calculate power.
             // Must multiply by 2 to accomodate two spectral components, ie positive and neg freq.
-            for (int j = 0; j < binCount - 1; j++)
+            for (int j = 0; j < binCount; j++)
             {
                 //foreach time step or frame
                 for (int i = 0; i < frameCount; i++)
@@ -161,15 +175,7 @@ namespace AudioAnalysisTools.DSP
             //foreach time step or frame
             for (int i = 0; i < frameCount; i++)
             {
-                //calculate power of the DC value
-                if (amplitudeM[i, binCount - 1] < epsilon)
-                {
-                    powerSpectra[i, binCount - 1] = minPow;
-                }
-                else
-                {
-                    powerSpectra[i, binCount - 1] = amplitudeM[i, binCount - 1] * amplitudeM[i, binCount - 1] / windowPower / sampleRate;
-                }
+                powerSpectra[i, binCount - 1] = amplitudeM[i, binCount - 1] * amplitudeM[i, binCount - 1] / windowPower / sampleRate;
             }
             */
 
@@ -328,6 +334,7 @@ namespace AudioAnalysisTools.DSP
             int sr = 22050;
             int frameSize = 512;
             scale.Nyquist = sr / 2;
+            scale.WindowSize = frameSize;
 
             // linear reduction of the lower spectrum from 0 - 2 kHz.
             scale.LinearBound = 2000;

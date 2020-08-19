@@ -519,7 +519,7 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// Convert the power values in a matrix of spectrogram values to Decibels.
+        /// Convert the power values in a matrix of spectrogram values to Decibels using: dB = 10*log10(power).
         /// Assume that all matrix values are positive i.e. due to prior noise removal.
         /// NOTE: This method also returns the min and max decibel values in the passed matrix.
         /// NOTE: A decibel value should be a ratio.
@@ -528,48 +528,52 @@ namespace TowseyLibrary
         /// <param name="m">matrix of positive power values.</param>
         /// <param name="min">min value to be return by out.</param>
         /// <param name="max">max value to be return by out.</param>
-        public static double[,] Power2DeciBels(double[,] m, double epsilon, out double min, out double max)
+        public static double[,] SpectrogramPower2DeciBels(double[,] m, double powerEpsilon, out double min, out double max)
         {
+            //convert epsilon power to decibels
+            double minDecibels = 10 * Math.Log10(powerEpsilon);
+
             min = double.MaxValue;
             max = -double.MaxValue;
 
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
-            double[,] ret = new double[rows, cols];
+            double[,] returnM = new double[rows, cols];
 
             for (int i = 0; i < rows; i++)
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    double dBels = 10 * Math.Log10(epsilon); //convert power to decibels
-                    if (m[i, j] > epsilon)
+                    if (m[i, j] <= powerEpsilon)
                     {
-                        dBels = 10 * Math.Log10(m[i, j]); //convert power to decibels
-                    }
-
-                    if (dBels < min)
-                    {
-                        min = dBels;
+                        returnM[i, j] = minDecibels;
                     }
                     else
-                    if (dBels > max)
                     {
-                        max = dBels;
+                        returnM[i, j] = 10 * Math.Log10(m[i, j]);
                     }
 
-                    ret[i, j] = dBels;
+                    if (returnM[i, j] < min)
+                    {
+                        min = returnM[i, j];
+                    }
+                    else
+                    if (returnM[i, j] > max)
+                    {
+                        max = returnM[i, j];
+                    }
                 }
             }
 
-            return ret;
+            return returnM;
         }
 
         /// <summary>
-        /// Convert the power values in a matrix of spectrogram values to Decibels.
+        /// Convert the Decibels values in a matrix of spectrogram values to power values.
         /// Assume that all matrix values are positive due to prior noise removal.
         /// </summary>
         /// <param name="m">matrix of positive Decibel values.</param>
-        public static double[,] Decibels2Power(double[,] m)
+        public static double[,] SpectrogramDecibels2Power(double[,] m)
         {
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
