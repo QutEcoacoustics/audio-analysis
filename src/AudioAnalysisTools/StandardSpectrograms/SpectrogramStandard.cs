@@ -11,7 +11,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
     public class SpectrogramStandard : BaseSonogram
     {
-        //There are five CONSTRUCTORS
+        //There are six CONSTRUCTORS
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SpectrogramStandard"/> class.
@@ -25,6 +25,18 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         public SpectrogramStandard(SonogramConfig config, WavReader wav)
             : base(config, wav)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SpectrogramStandard"/> class.
+        /// Use this constructor when want to increase or decrease the linear frquency scale.
+        /// </summary>
+        /// <param name="config">Other info to construct the spectrogram.</param>
+        /// <param name="scale">The required new frequency scale.</param>
+        /// <param name="wav">The recording.</param>
+        public SpectrogramStandard(SonogramConfig config, FrequencyScale scale, WavReader wav)
+            : base(config, scale, wav)
         {
         }
 
@@ -132,6 +144,89 @@ namespace AudioAnalysisTools.StandardSpectrograms
             {
                 this.SnrData.ModalNoiseProfile = tuple.Item2; // store the full bandwidth modal noise profile
             }
+        }
+
+        /// <summary>
+        /// Converts a single linear spectrum to octave scale spectrum.
+        /// </summary>
+        public static double[] RescaleSpectrumUsingFilterbank(int[,] transformMatrix, double[] linearSpectrum)
+        {
+            int length = transformMatrix.GetLength(0);
+            var rescaledSpectrum = new double[length];
+
+            // Fill in the first value of the rescaled spectrum
+            int lowIndex1 = transformMatrix[0, 0];
+            int centreIndex1 = transformMatrix[0, 0];
+            int highIndex1 = transformMatrix[1, 0];
+            rescaledSpectrum[0] = FilterbankIntegral(linearSpectrum, lowIndex1, centreIndex1, highIndex1);
+
+            // fill in remainder except last
+            for (int i = 1; i < length - 1; i++)
+            {
+                int lowIndex = transformMatrix[i - 1, 0];
+                int centreIndex = transformMatrix[i, 0];
+                int highIndex = transformMatrix[i + 1, 0];
+                if (highIndex >= linearSpectrum.Length)
+                {
+                    highIndex = linearSpectrum.Length - 1;
+                }
+
+                rescaledSpectrum[i] = FilterbankIntegral(linearSpectrum, lowIndex, centreIndex, highIndex);
+            }
+
+            // now fill in the last value of the rescaled spectrum
+            int lowIndex2 = transformMatrix[length - 2, 0];
+            int centreIndex2 = transformMatrix[length - 1, 0];
+            int highIndex2 = transformMatrix[length - 1, 0];
+            rescaledSpectrum[length - 1] = FilterbankIntegral(linearSpectrum, lowIndex2, centreIndex2, highIndex2);
+
+            return rescaledSpectrum;
+        }
+
+        public static double FilterbankIntegral(double[] spectrum, int lowIndex, int centreIndex, int highIndex)
+        {
+            // let k = index into spectral vector.
+            // for all k < lowIndex,  filterBank[k] = 0;
+            // for all k > highIndex, filterBank[k] = 0;
+
+            // for all k in range (lowIndex    <= k < centreIndex), filterBank[k] = (k-lowIndex) /(centreIndex - lowIndex)
+            // for all k in range (centreIndex <= k <= highIndex),  filterBank[k] = (highIndex-k)/(highIndex - centreIndex)
+
+            double area = 0.0;
+            double integral = 0.0;
+            int delta = centreIndex - lowIndex;
+            if (delta > 0)
+            {
+                for (int k = lowIndex; k < centreIndex; k++)
+                {
+                    double weight = (k - lowIndex) / (double)delta;
+                    integral += weight * spectrum[k];
+                    area += weight;
+                }
+            }
+
+            integral += spectrum[centreIndex];
+            area += 1.0;
+
+            delta = highIndex - centreIndex;
+            if (delta > 0)
+            {
+                for (int k = centreIndex + 1; k <= highIndex; k++)
+                {
+                    if (delta == 0)
+                    {
+                        continue;
+                    }
+
+                    double weight = (highIndex - k) / (double)delta;
+                    integral += weight * spectrum[k];
+                    area += weight;
+                }
+            }
+
+            // NormaliseMatrixValues to area of the triangular filter
+            integral /= area;
+            return integral;
         }
     }
 }

@@ -51,6 +51,23 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// Initializes a new instance of the <see cref="FrequencyScale"/> class.
         /// CONSTRUCTOR
+        /// Call this constructor when want to change freq scale but keep linear.
+        /// </summary>
+        public FrequencyScale(int nyquist, int frameSize, int finalBinCount, int hertzGridInterval)
+        {
+            this.ScaleType = FreqScaleType.Linear;
+            this.Nyquist = nyquist;
+            this.WindowSize = frameSize;
+            this.FinalBinCount = finalBinCount;
+            this.HertzGridInterval = hertzGridInterval;
+            this.LinearBound = nyquist;
+            this.BinBounds = this.GetLinearBinBounds();
+            this.GridLineLocations = GetLinearGridLineLocations(nyquist, this.HertzGridInterval, this.FinalBinCount);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FrequencyScale"/> class.
+        /// CONSTRUCTOR
         /// Calling this constructor assumes either Linear or Mel is required but not Octave.
         /// </summary>
         public FrequencyScale(FreqScaleType type, int nyquist, int frameSize, int finalBinCount, int hertzGridInterval)
@@ -259,11 +276,13 @@ namespace AudioAnalysisTools.DSP
         public int[,] GetLinearBinBounds()
         {
             double herzInterval = this.Nyquist / (double)this.FinalBinCount;
+            double scaleFactor = this.WindowSize / 2 / (double)this.FinalBinCount;
+
             var binBounds = new int[this.FinalBinCount, 2];
 
             for (int i = 0; i < this.FinalBinCount; i++)
             {
-                binBounds[i, 0] = i;
+                binBounds[i, 0] = (int)Math.Round(i * scaleFactor);
                 binBounds[i, 1] = (int)Math.Round(i * herzInterval);
             }
 
@@ -330,6 +349,12 @@ namespace AudioAnalysisTools.DSP
             int width = bmp.Width;
             int height = bmp.Height;
             int bandCount = gridLineLocations.GetLength(0);
+
+            if (gridLineLocations == null || bmp.Height < 50)
+            {
+                // there is no point placing gridlines on a narrow image. It obscures too much spectrogram.
+                return;
+            }
 
             // draw the grid line for each frequency band
             for (int b = 0; b < bandCount; b++)

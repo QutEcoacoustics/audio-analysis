@@ -132,6 +132,13 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             this.FreqScale = freqScale;
             this.InitialiseSpectrogram(wav);
+
+            if (this.FreqScale.ScaleType == FreqScaleType.Linear && this.FreqScale.WindowSize != this.FreqScale.FinalBinCount)
+            {
+                // convert the spectrogram frequency scale
+                this.Data = RescaleLinearFrequencyScale(this.Data, this.FreqScale);
+            }
+
             this.Make(this.Data);
         }
 
@@ -200,6 +207,41 @@ namespace AudioAnalysisTools.StandardSpectrograms
             }
         }
 
+        public static double[,] RescaleLinearFrequencyScale(double[,] inputSpgram, FrequencyScale freqScale)
+        {
+            if (freqScale == null)
+            {
+                throw new ArgumentNullException(nameof(freqScale));
+            }
+
+            if (freqScale.ScaleType != FreqScaleType.Linear)
+            {
+                LoggedConsole.WriteLine("Require a Linear frequency scale for this method.");
+                throw new ArgumentNullException(nameof(freqScale));
+            }
+
+            // get the bin bounds for this scale type
+            var binBounds = freqScale.BinBounds;
+            int newBinCount = binBounds.GetLength(0);
+
+            // set up the new spectrogram
+            int frameCount = inputSpgram.GetLength(0);
+
+            double[,] opM = new double[frameCount, newBinCount];
+
+            for (int row = 0; row < frameCount; row++)
+            {
+                //get each frame or spectrum in turn and rescale.
+                var linearSpectrum = MatrixTools.GetRow(inputSpgram, row);
+                var rescaledSpectrum = SpectrogramStandard.RescaleSpectrumUsingFilterbank(binBounds, linearSpectrum);
+
+                //return the spectrum to output spectrogram.
+                MatrixTools.SetRow(opM, row, rescaledSpectrum);
+            }
+
+            return opM;
+        }
+
         /// <summary>
         /// Calculates SNR, ENERGY PER FRAME and NORMALISED dB PER FRAME.
         /// </summary>
@@ -258,7 +300,10 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 throw new ArgumentNullException(nameof(image));
             }
 
-            FrequencyScale.DrawFrequencyLinesOnImage(image, gridLineLocations, includeLabels: true);
+            if (gridLineLocations != null)
+            {
+                FrequencyScale.DrawFrequencyLinesOnImage(image, gridLineLocations, includeLabels: true);
+            }
 
             // collect all the images and combine.
             var titleBar = DrawTitleBarOfGrayScaleSpectrogram(title, image.Width, tag);
@@ -665,51 +710,5 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
             return bmp;
         }
-
-        /*
-        // mark of time scale according to scale.
-        public static Image<Rgb24> DrawTimeTrack(TimeSpan offsetMinute, TimeSpan xAxisPixelDuration, TimeSpan xAxisTicInterval, TimeSpan labelInterval, int trackWidth, int trackHeight, string title)
-        {
-            var bmp = new Image<Rgb24>(trackWidth, trackHeight);
-            bmp.Mutate(g =>
-            {
-                g.Clear(Color.Black);
-
-                double elapsedTime = offsetMinute.TotalSeconds;
-                double pixelDuration = xAxisPixelDuration.TotalSeconds;
-                int labelSecondsInterval = (int)labelInterval.TotalSeconds;
-                var whitePen = new Pen(Color.White, 1);
-                var stringFont = Drawing.Arial8;
-
-                // for columns, draw in second lines
-                double xInterval = (int)(xAxisTicInterval.TotalMilliseconds / xAxisPixelDuration.TotalMilliseconds);
-
-                // for pixels in the line
-                for (int x = 1; x < trackWidth; x++)
-                {
-                    elapsedTime += pixelDuration;
-                    if (x % xInterval <= pixelDuration)
-                    {
-                        g.DrawLine(whitePen, x, 0, x, trackHeight);
-                        int totalSeconds = (int)Math.Round(elapsedTime);
-                        if (totalSeconds % labelSecondsInterval == 0)
-                        {
-                            int minutes = totalSeconds / 60;
-                            int seconds = totalSeconds % 60;
-                            string time = $"{minutes}m{seconds}s";
-                            g.DrawTextSafe(time, stringFont, Color.White, new PointF(x + 1, 2)); //draw time
-                        }
-                    }
-                }
-
-                g.DrawLine(whitePen, 0, 0, trackWidth, 0); //draw upper boundary
-                g.DrawLine(whitePen, 0, trackHeight - 1, trackWidth, trackHeight - 1); //draw lower boundary
-                g.DrawLine(whitePen, trackWidth, 0, trackWidth, trackHeight - 1); //draw right end boundary
-                g.DrawTextSafe(title, stringFont, Color.White, new PointF(4, 3));
-            });
-
-            return bmp;
-        }
-        */
     }
 }
