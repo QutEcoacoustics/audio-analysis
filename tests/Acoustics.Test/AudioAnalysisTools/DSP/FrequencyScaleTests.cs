@@ -482,10 +482,26 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             Assert.AreEqual(4.920949E-09, powerSpectrogram[0, 93], 0.0001);
             Assert.AreEqual(0.000, powerSpectrogram[1, 94], 0.0001);
             Assert.AreEqual(0.000, powerSpectrogram[0, 101], 0.0001);
-            Assert.AreEqual(0.166, powerSpectrogram[1, 102], 0.001); // got to here###############################
+            Assert.AreEqual(1.771541E-07, powerSpectrogram[1, 102], 0.001);
 
             // now test conversion from power to decibels.
-
+            // Convert the power values to log using: dB = 10*log(power)
+            var powerEpsilon = epsilon * epsilon / windowPower / sr;
+            var dbSpectrogram = MatrixTools.SpectrogramPower2DeciBels(powerSpectrogram, powerEpsilon, out var min, out var max);
+            Assert.AreEqual(-67.516485, dbSpectrogram[0, 0], 0.000001);
+            Assert.AreEqual(-160.83578, dbSpectrogram[1, 1], 0.0001);
+            Assert.AreEqual(-160.83578, dbSpectrogram[0, 55], 0.0001);
+            Assert.AreEqual(-79.557685, dbSpectrogram[1, 56], 0.000001);
+            Assert.AreEqual(-79.557685, dbSpectrogram[0, 57], 0.000001);
+            Assert.AreEqual(-160.83578, dbSpectrogram[1, 78], 0.0001);
+            Assert.AreEqual(-85.578285, dbSpectrogram[0, 79], 0.0001);
+            Assert.AreEqual(-85.578285, dbSpectrogram[1, 80], 0.0001);
+            Assert.AreEqual(-160.83578, dbSpectrogram[0, 81], 0.0001);
+            Assert.AreEqual(-160.83578, dbSpectrogram[1, 92], 0.0001);
+            Assert.AreEqual(-83.079510, dbSpectrogram[0, 93], 0.0001);
+            Assert.AreEqual(-160.83578, dbSpectrogram[1, 94], 0.0001);
+            Assert.AreEqual(-160.83578, dbSpectrogram[0, 101], 0.0001);
+            Assert.AreEqual(-83.079510, dbSpectrogram[1, 102], 0.0001);
         }
 
         /// <summary>
@@ -523,9 +539,8 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             var epsilon = sonogram.Configuration.epsilon;
             sonogram.Data = OctaveFreqScale.ConvertAmplitudeSpectrogramToFreqScaledDecibels(sonogram.Data, windowPower, sr, epsilon, freqScale);
 
-            // pick a row, any row
+            // pick a row, any row - they should all be the same.
             var oneSpectrum = MatrixTools.GetRow(sonogram.Data, 40);
-            oneSpectrum = DataTools.filterMovingAverage(oneSpectrum, 5);
             var peaks = DataTools.GetPeaks(oneSpectrum);
 
             var peakIds = new List<int>();
