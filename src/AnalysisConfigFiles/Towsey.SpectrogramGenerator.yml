@@ -29,6 +29,7 @@ Images:
   - MelScaleSpectrogram
   - CepstralSpectrogram
   - OctaveScaleSpectrogram
+  - RibbonSpectrogram
   - AmplitudeSpectrogramLocalContrastNormalization
   
 

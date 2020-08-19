@@ -14,6 +14,7 @@ namespace AnalysisPrograms.SpectrogramGenerator
         MelScaleSpectrogram = 5,
         CepstralSpectrogram = 6,
         OctaveScaleSpectrogram = 7,
-        AmplitudeSpectrogramLocalContrastNormalization = 8,
+        RibbonSpectrogram = 8,
+        AmplitudeSpectrogramLocalContrastNormalization = 9,
     }
 }
