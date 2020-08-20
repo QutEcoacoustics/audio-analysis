@@ -7,7 +7,6 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using Acoustics.Shared;
     using Acoustics.Test.TestHelpers;
     using global::AudioAnalysisTools.DSP;
     using global::AudioAnalysisTools.StandardSpectrograms;
@@ -15,7 +14,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using SixLabors.ImageSharp;
-    using static global::TowseyLibrary.FFT;
+    //using static global::TowseyLibrary.FFT;
     using Path = System.IO.Path;
 
     /// <summary>
@@ -332,7 +331,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             // test contents of the octave bin bounds matrix.
             int[,] octaveBinBounds = freqScale.BinBounds;
 
-            Assert.AreEqual(20, octaveBinBounds.GetLength(0));
+            Assert.AreEqual(19, octaveBinBounds.GetLength(0));
 
             int hertzValue = 500;
             var binId = freqScale.GetBinIdForHerzValue(hertzValue);
@@ -340,19 +339,19 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
 
             hertzValue = 1000;
             binId = freqScale.GetBinIdForHerzValue(hertzValue);
-            Assert.AreEqual(4, binId);
+            Assert.AreEqual(3, binId);
 
             hertzValue = 2000;
             binId = freqScale.GetBinIdForHerzValue(hertzValue);
-            Assert.AreEqual(7, binId);
+            Assert.AreEqual(6, binId);
 
             hertzValue = 4000;
             binId = freqScale.GetBinIdForHerzValue(hertzValue);
-            Assert.AreEqual(12, binId);
+            Assert.AreEqual(11, binId);
 
             hertzValue = 8000;
             binId = freqScale.GetBinIdForHerzValue(hertzValue);
-            Assert.AreEqual(17, binId);
+            Assert.AreEqual(16, binId);
         }
 
         /// <summary>
@@ -400,7 +399,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             linearSpectrum[128] = 1.0;
             linearSpectrum[255] = 1.0;
 
-            double[] octaveSpectrum = OctaveFreqScale.ConvertLinearSpectrumToOctaveScale(octaveBinBounds, linearSpectrum);
+            double[] octaveSpectrum = SpectrogramTools.RescaleSpectrumUsingFilterbank(octaveBinBounds, linearSpectrum);
 
             Assert.AreEqual(103, octaveSpectrum.Length);
             Assert.AreEqual(1.0, octaveSpectrum[0]);
@@ -440,7 +439,7 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             linearSpectrum[192] = 1.0;
             linearSpectrum[255] = 1.0;
 
-            var octaveSpectrum = OctaveFreqScale.ConvertLinearSpectrumToOctaveScale(freqScale.BinBounds, linearSpectrum);
+            var octaveSpectrum = SpectrogramTools.RescaleSpectrumUsingFilterbank(freqScale.BinBounds, linearSpectrum);
             Assert.AreEqual(1.000, octaveSpectrum[0], 0.0001);
             Assert.AreEqual(0.000, octaveSpectrum[1], 0.0001);
             Assert.AreEqual(0.000, octaveSpectrum[55], 0.0001);
@@ -805,13 +804,15 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             Assert.AreEqual(freqScale.ScaleType, FreqScaleType.OctaveDataReduction);
 
             // test contents of the octave bin bounds matrix.
-            Assert.AreEqual(20, freqScale.BinBounds.GetLength(0));
+            Assert.AreEqual(19, freqScale.BinBounds.GetLength(0));
 
             var expectedBinBounds = new[,]
             {
-                { 0, 0 }, { 1, 258 }, { 2, 517 }, { 3, 775 }, { 4, 1034 }, { 5, 1292 }, { 6, 1550 }, { 47, 2024 },
-                { 54, 2326 }, { 62, 2670 }, { 71, 3058 }, { 81, 3488 }, { 93, 4005 }, { 107, 4608 }, { 123, 5297 }, { 141, 6072 },
-                { 162, 6977 }, { 186, 8010 }, { 214, 9216 }, { 255, 10982 },
+                { 0, 0 }, { 8, 345 }, { 16, 689 },                                        // linear up to 1000 Hz
+                { 24, 1034 }, { 32, 1378 }, { 40, 1723 },                                 // linear 1000-2000 Hz
+                { 48, 2067 }, { 54, 2326 }, { 62, 2670 }, { 71, 3058 }, { 81, 3488 },     // first octave 2-4 kHz
+                { 93, 4005 }, { 107, 4608 }, { 123, 5297 }, { 141, 6072 }, { 162, 6977 }, // second octave 4-8 kHz
+                { 186, 8010 }, { 214, 9216 }, { 255, 10982 },                             // residual octave 8-11 kHz
             };
 
             Assert.That.MatricesAreEqual(expectedBinBounds, freqScale.BinBounds);
@@ -822,17 +823,17 @@ namespace Acoustics.Test.AudioAnalysisTools.DSP
             linearSpectrum[128] = 1.0;
             linearSpectrum[255] = 1.0;
 
-            double[] octaveSpectrum = OctaveFreqScale.ConvertLinearSpectrumToOctaveScale(freqScale.BinBounds, linearSpectrum);
+            double[] octaveSpectrum = SpectrogramTools.RescaleSpectrumUsingFilterbank(freqScale.BinBounds, linearSpectrum);
 
-            Assert.AreEqual(20, octaveSpectrum.Length);
-            Assert.AreEqual(1.0, octaveSpectrum[0]);
-            Assert.AreEqual(0.0, octaveSpectrum[1]);
-            Assert.AreEqual(0.0, octaveSpectrum[13]);
-            Assert.AreEqual(0.042483660130718942, octaveSpectrum[14]);
-            Assert.AreEqual(0.014245014245014251, octaveSpectrum[15]);
-            Assert.AreEqual(0.0, octaveSpectrum[16]);
-            Assert.AreEqual(0.0, octaveSpectrum[18]);
-            Assert.AreEqual(0.047619047619047616, octaveSpectrum[19], 0.000001);
+            Assert.AreEqual(19, octaveSpectrum.Length);
+            Assert.AreEqual(0.222222, octaveSpectrum[0], 0.00001);
+            Assert.AreEqual(0.0, octaveSpectrum[1], 0.00001);
+            Assert.AreEqual(0.0, octaveSpectrum[12], 0.00001);
+            Assert.AreEqual(0.042483, octaveSpectrum[13], 0.00001);
+            Assert.AreEqual(0.014245, octaveSpectrum[14], 0.00001);
+            Assert.AreEqual(0.0, octaveSpectrum[15]);
+            Assert.AreEqual(0.0, octaveSpectrum[17]);
+            Assert.AreEqual(0.047619, octaveSpectrum[18], 0.00001);
         }
 
         /// <summary>
