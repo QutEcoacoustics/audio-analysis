@@ -30,6 +30,7 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
         private const int SpectrogramMel = 118;
         private const int Cepstral = 67;
         private const int SpectrogramOctave = 157;
+        private const int RibbonSpectrogram = 110;
         private const int SpectrogramAmplitude = 310;
 
         private static readonly Dictionary<SpectrogramImageType, int> All = new Dictionary<SpectrogramImageType, int>()
@@ -42,6 +43,7 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
             { SpectrogramImageType.MelScaleSpectrogram, SpectrogramMel },
             { SpectrogramImageType.CepstralSpectrogram, Cepstral },
             { SpectrogramImageType.OctaveScaleSpectrogram, SpectrogramOctave },
+            { SpectrogramImageType.RibbonSpectrogram, RibbonSpectrogram },
             { SpectrogramImageType.AmplitudeSpectrogramLocalContrastNormalization, SpectrogramAmplitude },
         };
 

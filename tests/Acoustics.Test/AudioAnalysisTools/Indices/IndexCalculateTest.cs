@@ -331,7 +331,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             image.Save(outputImagePath1);
 
             // TEST the BGN SPECTRAL INDEX
-            Assert.AreEqual(20, spectralIndices.BGN.Length);
+            Assert.AreEqual(19, spectralIndices.BGN.Length);
 
             var expectedSpectrumFile1 = PathHelper.ResolveAsset("Indices", "BGN_OctaveScale.bin");
 
@@ -341,7 +341,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
 
             var expectedSpectrumFile2 = PathHelper.ResolveAsset("Indices", "CVR_OctaveScale.bin");
 
-            //Binary.Serialize(expectedSpectrumFile2, spectralIndices.CVR);
+            // Binary.Serialize(expectedSpectrumFile2, spectralIndices.CVR);
             expectedVector = Binary.Deserialize<double[]>(expectedSpectrumFile2);
             CollectionAssert.That.AreEqual(expectedVector, spectralIndices.CVR, AllowedDelta);
         }

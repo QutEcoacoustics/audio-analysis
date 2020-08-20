@@ -142,12 +142,13 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
 
         /// <summary>
         /// Tests the analysis of an artificial seven minute long recording consisting of five harmonics.
-        /// NOTE: The Acoustic indices are calculated from an Octave frequency scale spectrogram.
+        /// NOTE: The Acoustic indices are calculated from an Octave frequency scale used for data reduction.
+        ///       Each vector of indices has only 19 elements.
         /// </summary>
         [TestMethod]
-        public void TestAnalyzeSr64000Recording()
+        public void TestAnalyzeSr22050RecordingDataReduction()
         {
-            int sampleRate = 64000;
+            int sampleRate = 22050;
             double duration = 420; // signal duration in seconds = 7 minutes
             int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
             var recording = DspFilters.GenerateTestRecording(sampleRate, duration, harmonics, WaveType.Cosine);
@@ -156,30 +157,13 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             WavWriter.WriteWavFileViaFfmpeg(recordingPath, recording.WavReader);
 
             //var fst = FreqScaleType.Linear125OctaveTones28Nyquist32000;
-            var fst = FreqScaleType.OctaveCustom;
-            int nyquist = sampleRate / 2;
-            int frameSize = 16384;
-            int linearBound = 125;
-            int octaveToneCount = 28;
-            int gridInterval = 1000;
-            var freqScale = new FrequencyScale(fst, nyquist, frameSize, linearBound, octaveToneCount, gridInterval);
-
-            /*
-            // draw the signal as spectrogram just for debugging purposes
-            // but can only draw a two minute spectrogram when sr=64000 - change duration above.
-            duration = 120; // if drawing sonogram, then set signal duration = 2 minutes
-            var sonogram = OctaveFreqScale.ConvertRecordingToOctaveScaleSonogram(recording, fst);
-            var sonogramImage = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM", freqScale.GridLineLocations);
-            var outputImagePath = this.outputDirectory.CombineFile("SignalSpectrogram_OctaveFreqScale.png");
-            sonogramImage.Save(outputImagePath.FullName);
-            */
+            //NOTE: As of 2020 August, the only debugged octave scale is for data reduction
+            var fst = FreqScaleType.OctaveDataReduction;
+            //int nyquist = sampleRate / 2;
+            var freqScale = new FrequencyScale(fst);
 
             // Now need to rewrite the config file with new parameter settings
             var configPath = PathHelper.ResolveConfigFile("Towsey.Acoustic.yml");
-
-            // Convert the Config config to IndexCalculateConfig class and merge in the unnecesary parameters.
-            //Config configuration = Yaml.Deserialise(configPath);
-            //IndexCalculateConfig config = IndexCalculateConfig.GetConfig(configuration, false);
 
             // because of difficulties in dealing with Config config files, just edit the text file!!!!!
             var configLines = File.ReadAllLines(configPath.FullName);
@@ -190,7 +174,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
 
             // the is the only octave scale currently functioning for IndexCalculate class
             configLines[configLines.IndexOf(x => x.StartsWith("FrameLength"))] = $"FrameLength: {freqScale.WindowSize}";
-            configLines[configLines.IndexOf(x => x.StartsWith("ResampleRate: "))] = "ResampleRate: 64000";
+            configLines[configLines.IndexOf(x => x.StartsWith("ResampleRate: "))] = "ResampleRate: 22050";
 
             // write the edited Config file to temporary output directory
             var newConfigPath = this.outputDirectory.CombineFile("Towsey.Acoustic.yml");
@@ -238,7 +222,7 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
             var array = MatrixTools.GetRow(actualBgn, 0);
 
             Assert.AreEqual(28, actualBgn.RowLength());
-            Assert.AreEqual(256, array.Length);
+            Assert.AreEqual(19, array.Length);
 
             // draw array just to check peaks are in correct places - just for debugging purposes
             var ldsBgnSpectrumFile = this.outputDirectory.CombineFile("Spectrum2.png");
@@ -271,17 +255,17 @@ namespace Acoustics.Test.AnalysisPrograms.AnalyzeLongRecordings
                     analysisType: analysisType,
                     indexSpectrograms: dictionaryOfSpectra);
 
-            // test number of images - should now be 23
+            // test number of images - should now be 20 because not producing ribbons.
             listOfFiles = resultsDirectory.EnumerateFiles().ToArray();
             pngCount = listOfFiles.Count(f => f.Name.EndsWith(".png"));
-            Assert.AreEqual(22, pngCount);
+            Assert.AreEqual(20, pngCount);
 
             var twoMapsImagePath = resultsDirectory.CombineFile(recordingName + "__2Maps.png");
             var twoMapsImage = Image.Load<Rgb24>(twoMapsImagePath.FullName);
 
             // image is (7*4) * 652
             Assert.AreEqual(28, twoMapsImage.Width);
-            Assert.AreEqual(652, twoMapsImage.Height);
+            Assert.AreEqual(178, twoMapsImage.Height);
         }
 
         [TestMethod]

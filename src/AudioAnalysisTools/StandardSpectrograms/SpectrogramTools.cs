@@ -745,6 +745,12 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// <param name="freqScale">freq Scale.</param>
         public static void DrawGridLinesOnImage(Image<Rgb24> bmp, TimeSpan startOffset, TimeSpan fullDuration, TimeSpan xAxisTicInterval, FrequencyScale freqScale)
         {
+            if (freqScale.ScaleType == FreqScaleType.OctaveDataReduction)
+            {
+                //do not want grid lines in this case.
+                return;
+            }
+
             FrequencyScale.DrawFrequencyLinesOnImage(bmp, freqScale, includeLabels: true);
 
             // We have stopped drawing temporal gridlines on these spectrograms. Create unnecessary clutter.
