@@ -487,19 +487,6 @@ namespace AnalysisPrograms.SpectrogramGenerator
         AudioRecording recording,
         string sourceRecordingName)
         {
-            //var type = FreqScaleType.OctaveDataReduction;
-            //var freqScale = new FrequencyScale(type);
-
-            //// ensure that the freq scale and the spectrogram config are consistent.
-            //sgConfig.WindowSize = freqScale.WindowSize;
-            //freqScale.WindowStep = sgConfig.WindowStep;
-            //sgConfig.WindowOverlap = SonogramConfig.CalculateFrameOverlap(freqScale.WindowSize, freqScale.WindowStep);
-
-            //// TODO at present noise reduction type must be set = Standard.
-            //sgConfig.NoiseReductionType = NoiseReductionType.Standard;
-            //sgConfig.NoiseReductionParameter = 3.0;
-
-            //var octaveScaleGram = new SpectrogramOctaveScale(sgConfig, freqScale, recording.WavReader);
             var octaveScaleGram = GetOctaveReducedSpectrogram(sgConfig, recording);
             var image1 = octaveScaleGram.GetImage();
 
@@ -511,13 +498,6 @@ namespace AnalysisPrograms.SpectrogramGenerator
 
             var combinedImage = ImageTools.CombineImagesVertically(imageList);
             var title = "RIBBON SPECTROGRAMS-Linear32 & Octave20: " + sourceRecordingName;
-
-            //var titleBar = BaseSonogram.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width, ImageTags[OctaveScaleSpectrogram]);
-            //var startTime = TimeSpan.Zero;
-            //var xAxisTicInterval = TimeSpan.FromSeconds(1);
-            //TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(sgConfig.WindowStep / (double)sgConfig.SampleRate);
-            //var labelInterval = TimeSpan.FromSeconds(5);
-            //image = BaseSonogram.FrameSonogram(image, titleBar, startTime, xAxisTicInterval, xAxisPixelDuration, labelInterval);
             var image = octaveScaleGram.GetImageFullyAnnotated(combinedImage, title, null);
             return image;
         }

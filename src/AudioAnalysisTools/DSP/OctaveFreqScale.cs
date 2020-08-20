@@ -6,6 +6,7 @@ namespace AudioAnalysisTools.DSP
 {
     using System;
     using System.Collections.Generic;
+    using AudioAnalysisTools.StandardSpectrograms;
     using MathNet.Numerics;
     using TowseyLibrary;
 
@@ -128,7 +129,8 @@ namespace AudioAnalysisTools.DSP
                 var linearSpectrum = MatrixTools.GetRow(inputSpgram, row);
 
                 // convert the spectrum to its octave form
-                var octaveSpectrum = ConvertLinearSpectrumToOctaveScale(octaveBinBounds, linearSpectrum);
+                //var octaveSpectrum = ConvertLinearSpectrumToOctaveScale(octaveBinBounds, linearSpectrum);
+                var octaveSpectrum = SpectrogramTools.RescaleSpectrumUsingFilterbank(octaveBinBounds, linearSpectrum);
 
                 //return the spectrum to output spectrogram.
                 MatrixTools.SetRow(octaveSpectrogram, row, octaveSpectrum);
@@ -236,43 +238,6 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// Converts a single linear spectrum to octave scale spectrum.
-        /// </summary>
-        public static double[] ConvertLinearSpectrumToOctaveScale(int[,] transformMatrix, double[] linearSpectrum)
-        {
-            int length = transformMatrix.GetLength(0);
-            var opOctaveSpectrum = new double[length];
-
-            // Fill in the first value of the octave spectrum
-            int lowIndex1 = transformMatrix[0, 0];
-            int centreIndex1 = transformMatrix[0, 0];
-            int highIndex1 = transformMatrix[1, 0];
-            opOctaveSpectrum[0] = FilterbankIntegral(linearSpectrum, lowIndex1, centreIndex1, highIndex1);
-
-            // fill in remainder except last
-            for (int i = 1; i < length - 1; i++)
-            {
-                int lowIndex = transformMatrix[i - 1, 0];
-                int centreIndex = transformMatrix[i, 0];
-                int highIndex = transformMatrix[i + 1, 0];
-                if (highIndex >= linearSpectrum.Length)
-                {
-                    highIndex = linearSpectrum.Length - 1;
-                }
-
-                opOctaveSpectrum[i] = FilterbankIntegral(linearSpectrum, lowIndex, centreIndex, highIndex);
-            }
-
-            // now fill in the last value of the octave spectrum
-            int lowIndex2 = transformMatrix[length - 2, 0];
-            int centreIndex2 = transformMatrix[length - 1, 0];
-            int highIndex2 = transformMatrix[length - 1, 0];
-            opOctaveSpectrum[length - 1] = FilterbankIntegral(linearSpectrum, lowIndex2, centreIndex2, highIndex2);
-
-            return opOctaveSpectrum;
-        }
-
-        /// <summary>
         /// Returns a matrix that is used to transform a spectrum having linear Hz scale into a spectrum having an octave freq scale.
         /// The returned matrix is size N x 2, where N = the length of the output spectrum.
         /// In fact the op spectrum has a split Herz scale - bottom part linear, top part octave scaled.
@@ -283,7 +248,7 @@ namespace AudioAnalysisTools.DSP
         {
             // Get the linear freq scale.
             int inputSpectrumSize = frameSize / 2;
-            var linearFreqScale = GetLinearFreqScale(nyquist, inputSpectrumSize);
+            var linearFreqScale = FrequencyScale.GetLinearFreqScale(nyquist, inputSpectrumSize);
 
             // Get the octave freq scale.
             var octaveBandsLowerBounds = GetFractionalOctaveBands(lowerFreqBound, upperFreqBound, octaveDivisions);
@@ -325,7 +290,7 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// This method assumes that the linear spectrum is derived from a 512 frame with sr = 22050.
         /// It is a split linear-octave scale.
-        /// The linear part is from 0-2 kHz with reduction by averaging every 6 frequency bins.
+        /// The linear part is from 0-2 kHz with reduction by factor of 8.
         /// The octave part is obtained by setting octave divisions or tone count = 5.
         /// </summary>
         /// <returns>a frequency scale for spectral-data reduction purposes.</returns>
@@ -338,31 +303,34 @@ namespace AudioAnalysisTools.DSP
 
             // linear reduction of the lower spectrum from 0 - 2 kHz.
             scale.LinearBound = 2000;
-            int linearReductionFactor = 6;
+            int linearReductionFactor = 8;
 
             // Reduction of upper spectrum 2-11 kHz: Octave count and tone steps within one octave.
-            double octaveCount = 2.7;
             scale.ToneCount = 5;
 
             var octaveBandsLowerBounds = GetFractionalOctaveBands(scale.LinearBound, scale.Nyquist, scale.ToneCount);
             int spectrumBinCount = frameSize / 2;
-            var linearFreqScale = GetLinearFreqScale(scale.Nyquist, spectrumBinCount);
+            var linearFreqScale = FrequencyScale.GetLinearFreqScale(scale.Nyquist, spectrumBinCount);
 
             double linearBinWidth = scale.Nyquist / (double)spectrumBinCount;
             int topLinearIndex = (int)Math.Round(scale.LinearBound / linearBinWidth);
-            int linearReducedBinCount = topLinearIndex / linearReductionFactor;
-            int finalBinCount = linearReducedBinCount + (int)Math.Floor(octaveCount * scale.ToneCount);
+
+            // calculate number of bins in linear portion. +1 because going to finish up at end of linear portion.
+            int linearReducedBinCount = (topLinearIndex / linearReductionFactor) + 1;
+            int finalBinCount = linearReducedBinCount + octaveBandsLowerBounds.Length;
             var splitLinearOctaveIndexBounds = new int[finalBinCount, 2];
 
             // fill in the linear part of the freq scale
-            for (int i = 0; i < linearReducedBinCount; i++)
+            int z = 1;
+            while (splitLinearOctaveIndexBounds[z - 1, 1] < scale.LinearBound)
             {
-                splitLinearOctaveIndexBounds[i, 0] = i;
-                splitLinearOctaveIndexBounds[i, 1] = (int)Math.Round(linearFreqScale[i * linearReductionFactor]);
+                splitLinearOctaveIndexBounds[z, 0] = z * linearReductionFactor;
+                splitLinearOctaveIndexBounds[z, 1] = (int)Math.Round(linearFreqScale[z * linearReductionFactor]);
+                z++;
             }
 
             // fill in the octave part of the freq scale
-            for (int i = linearReducedBinCount; i < finalBinCount; i++)
+            for (int i = linearReducedBinCount + 1; i < finalBinCount; i++)
             {
                 for (int j = 0; j < linearFreqScale.Length; j++)
                 {
@@ -397,7 +365,7 @@ namespace AudioAnalysisTools.DSP
             var bandBounds = GetFractionalOctaveBands(lowerFreqBound, upperFreqBound, octaveDivisions);
             int nyquist = sr / 2;
             int binCount = frameSize / 2;
-            var linearFreqScale = GetLinearFreqScale(nyquist, binCount);
+            var linearFreqScale = FrequencyScale.GetLinearFreqScale(nyquist, binCount);
 
             var octaveIndexBounds = new int[finalBinCount, 2];
 
@@ -482,77 +450,6 @@ namespace AudioAnalysisTools.DSP
             }
 
             return fractionalOctaveBands;
-        }
-
-        /// <summary>
-        /// THis method assumes that the frameSize will be power of 2
-        /// FOR DEBUG PURPOSES, when sr = 22050 and frame size = 8192, the following Hz are located at index:
-        /// Hz      Index
-        /// 15        6
-        /// 31       12
-        /// 62       23
-        /// 125      46
-        /// 250      93
-        /// 500     186
-        /// 1000    372.
-        /// </summary>
-        public static double[] GetLinearFreqScale(int nyquist, int binCount)
-        {
-            double freqStep = nyquist / (double)binCount;
-            double[] linearFreqScale = new double[binCount];
-
-            for (int i = 0; i < binCount; i++)
-            {
-                linearFreqScale[i] = freqStep * i;
-            }
-
-            return linearFreqScale;
-        }
-
-        public static double FilterbankIntegral(double[] spectrum, int lowIndex, int centreIndex, int highIndex)
-        {
-            // let k = index into spectral vector.
-            // for all k < lowIndex,  filterBank[k] = 0;
-            // for all k > highIndex, filterBank[k] = 0;
-
-            // for all k in range (lowIndex    <= k < centreIndex), filterBank[k] = (k-lowIndex) /(centreIndex - lowIndex)
-            // for all k in range (centreIndex <= k <= highIndex),  filterBank[k] = (highIndex-k)/(highIndex - centreIndex)
-
-            double area = 0.0;
-            double integral = 0.0;
-            int delta = centreIndex - lowIndex;
-            if (delta > 0)
-            {
-                for (int k = lowIndex; k < centreIndex; k++)
-                {
-                    double weight = (k - lowIndex) / (double)delta;
-                    integral += weight * spectrum[k];
-                    area += weight;
-                }
-            }
-
-            integral += spectrum[centreIndex];
-            area += 1.0;
-
-            delta = highIndex - centreIndex;
-            if (delta > 0)
-            {
-                for (int k = centreIndex + 1; k <= highIndex; k++)
-                {
-                    if (delta == 0)
-                    {
-                        continue;
-                    }
-
-                    double weight = (highIndex - k) / (double)delta;
-                    integral += weight * spectrum[k];
-                    area += weight;
-                }
-            }
-
-            // NormaliseMatrixValues to area of the triangular filter
-            integral /= area;
-            return integral;
         }
     }
 }

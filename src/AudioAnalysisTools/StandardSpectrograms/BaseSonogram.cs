@@ -233,7 +233,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
             {
                 //get each frame or spectrum in turn and rescale.
                 var linearSpectrum = MatrixTools.GetRow(inputSpgram, row);
-                var rescaledSpectrum = SpectrogramStandard.RescaleSpectrumUsingFilterbank(binBounds, linearSpectrum);
+                var rescaledSpectrum = SpectrogramTools.RescaleSpectrumUsingFilterbank(binBounds, linearSpectrum);
 
                 //return the spectrum to output spectrogram.
                 MatrixTools.SetRow(opM, row, rescaledSpectrum);

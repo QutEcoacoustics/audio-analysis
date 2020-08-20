@@ -5,14 +5,11 @@
 namespace AudioAnalysisTools.DSP
 {
     using System;
-    using System.IO;
     using Acoustics.Shared.ImageSharp;
     using AudioAnalysisTools.StandardSpectrograms;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using TowseyLibrary;
-    using Path = System.IO.Path;
 
     // IMPORTANT NOTE: If you are converting Hertz scale from LINEAR to MEL or OCTAVE, this conversion MUST be done BEFORE noise reduction
 
@@ -34,7 +31,7 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// Initializes a new instance of the <see cref="FrequencyScale"/> class.
         /// CONSTRUCTOR
-        /// Calling this constructor assumes a full-scale linear freq scale is required.
+        /// Calling this constructor assumes the standard linear 0-nyquist freq scale is required.
         /// </summary>
         public FrequencyScale(int nyquist, int frameSize, int hertzGridInterval)
         {
@@ -51,7 +48,7 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// Initializes a new instance of the <see cref="FrequencyScale"/> class.
         /// CONSTRUCTOR
-        /// Call this constructor when want to change freq scale but keep linear.
+        /// Call this constructor when want to change freq scale but keep it linear.
         /// </summary>
         public FrequencyScale(int nyquist, int frameSize, int finalBinCount, int hertzGridInterval)
         {
@@ -290,6 +287,31 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
+        /// THis method assumes that the frameSize will be power of 2
+        /// FOR DEBUG PURPOSES, when sr = 22050 and frame size = 8192, the following Hz are located at index:
+        /// Hz      Index
+        /// 15        6
+        /// 31       12
+        /// 62       23
+        /// 125      46
+        /// 250      93
+        /// 500     186
+        /// 1000    372.
+        /// </summary>
+        public static double[] GetLinearFreqScale(int nyquist, int binCount)
+        {
+            double freqStep = nyquist / (double)binCount;
+            double[] linearFreqScale = new double[binCount];
+
+            for (int i = 0; i < binCount; i++)
+            {
+                linearFreqScale[i] = freqStep * i;
+            }
+
+            return linearFreqScale;
+        }
+
+        /// <summary>
         /// T.
         /// </summary>
         public static int[,] GetLinearGridLineLocations(int nyquist, int herzInterval, int binCount)
@@ -395,6 +417,6 @@ namespace AudioAnalysisTools.DSP
                     }
                 }
             });
-        } //end AddHzGridLines()
+        }
     }
 }
