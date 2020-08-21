@@ -478,7 +478,7 @@ namespace AnalysisPrograms.SpectrogramGenerator
             //TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(sgConfig.WindowStep / (double)sgConfig.SampleRate);
             //var labelInterval = TimeSpan.FromSeconds(5);
             //image = BaseSonogram.FrameSonogram(image, titleBar, startTime, xAxisTicInterval, xAxisPixelDuration, labelInterval);
-            image = octaveScaleGram.GetImageFullyAnnotated(image, title, freqScale.GridLineLocations);
+            image = octaveScaleGram.GetImageFullyAnnotated(image, title, freqScale.GridLineLocations, ImageTags[OctaveScaleSpectrogram]);
             return image;
         }
 
@@ -497,8 +497,8 @@ namespace AnalysisPrograms.SpectrogramGenerator
             var imageList = new List<Image<Rgb24>> { image2, spacer, image1 };
 
             var combinedImage = ImageTools.CombineImagesVertically(imageList);
-            var title = "RIBBON SPECTROGRAMS-Linear32 & Octave20: " + sourceRecordingName;
-            var image = octaveScaleGram.GetImageFullyAnnotated(combinedImage, title, null);
+            var title = "RIBBON SPECTROGRAMS-Linear32 & Octave19: " + sourceRecordingName;
+            var image = octaveScaleGram.GetImageFullyAnnotated(combinedImage, title, null, ImageTags[RibbonSpectrogram]);
             return image;
         }
 

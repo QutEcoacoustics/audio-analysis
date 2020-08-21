@@ -10,7 +10,12 @@
 // ReSharper disable once CheckNamespace
 namespace System
 {
+    //using MoreLinq;
+    using static MoreLinq.Extensions.RepeatExtension;
+    using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Linq;
+    using Acoustics.Shared.Extensions;
 
     public static class ArrayExtensions
     {
@@ -103,6 +108,43 @@ namespace System
 #endif
 
             return array;
+        }
+
+        /// <summary>
+        /// Prints a multi-dimensional matrix as a C# literal.
+        /// </summary>
+        /// <remarks>Assumes all ranks have a lower bound of zero.</remarks>
+        /// <typeparam name="T">Cast element items to T before toString is called.</typeparam>
+        /// <param name="array">The source array to print.</param>
+        public static string PrintAsLiteral<T>(this Array array)
+        {
+            var dimensions = Enumerable.Range(0, array.Rank);
+            var sizes = dimensions.Select(array.GetLength).ToArray();
+            //var dimensionsWithSize = dimensions.Zip(sizes);
+
+            var last = Enumerable.Range(0, sizes[^1]).ToArray();
+
+            // the last dimension we iterate across to generate the literal values
+            var result = sizes[..^1]
+                .Select(s => Enumerable.Range(0, s))
+                .MultiCartesian(FormatValue)
+                .Join(", ")
+                .WordWrap(leftPadding: 4, splitOn: "},", keepSplit: true);
+
+            return @$"{{
+                {result}
+            }}";
+
+            string FormatValue(IEnumerable<int> indices)
+            {
+                var depth = sizes.Length;
+                var lineDepth = depth - 1;
+                var start = "{ ".Repeat(lineDepth).Join();
+                var end = " }".Repeat(lineDepth).Join();
+                var value = last.Select(x => (T)array.GetValue(indices.Append(x).ToArray())).Join(", ");
+
+                return start + value + end;
+            }
         }
 
         /// <summary>

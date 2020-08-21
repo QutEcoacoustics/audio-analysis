@@ -47,7 +47,7 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
             { SpectrogramImageType.AmplitudeSpectrogramLocalContrastNormalization, SpectrogramAmplitude },
         };
 
-        private static readonly Func<SpectrogramImageType[], string> Name = x => x.Select(x => (int)x).Join("_");
+        private static readonly Func<SpectrogramImageType[], string> Name = x => x.Select(imageType => (int)imageType).Join("_");
 
         public SpectrogramGeneratorTests()
 
@@ -98,7 +98,7 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
         [DynamicData(nameof(AllCombinations), DynamicDataDisplayName = nameof(AllCombinationsTestName))]
         public void TestAudio2SonogramCombinations(SpectrogramImageType[] images)
         {
-            const int OneSecondWidth = 24;
+            const int oneSecondWidth = 24;
             var testFile = PathHelper.ResolveAsset("1s_silence.wav");
 
             var config = new SpectrogramGeneratorConfig()
@@ -108,17 +108,12 @@ namespace Acoustics.Test.AnalysisPrograms.SpectrogramGenerator
 
             var result = GenerateSpectrogramImages(testFile, config, null);
 
-            // save image for debugging purposes
-            //var flag = images.Aggregate("", (seed, x) => $"{seed}_{(int)x}");
-            //var path = this.TestOutputDirectory.CombineFile($"audio2sonogram_{flag}.png");
-            //result.CompositeImage.Save(path);
-
             this.ActualImage = result.CompositeImage;
             this.ExtraName = Name(images);
 
             // get expected height
             var expectedHeight = images.Select(imageType => All[imageType]).Sum();
-            Assert.That.ImageIsSize(OneSecondWidth, expectedHeight, this.ActualImage);
+            Assert.That.ImageIsSize(oneSecondWidth, expectedHeight, this.ActualImage);
 
             // ensure images are in correct order
             int y = 0;
