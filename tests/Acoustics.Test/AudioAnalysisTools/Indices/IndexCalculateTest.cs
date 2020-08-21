@@ -279,14 +279,14 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
         }
 
         /// <summary>
-        /// Test index calculation when the Hertz FreqScaleType = Octave.
-        /// Only test the BGN spectral index as reasonable to assume that the rest will work if ACI works.
+        /// Test index calculation when the Hertz FreqScaleType = OctaveDataReduction.
+        /// Only test the BGN and CVR spectral index as reasonable to assume that the rest will work if these work.
         /// </summary>
         [TestMethod]
-        public void TestOfSpectralIndices_Octave()
+        public void TestOfSpectralIndices_OctaveDataReduction()
         {
             // create a two-minute artificial recording containing five harmonics.
-            int sampleRate = 64000;
+            int sampleRate = 22050;
             double duration = 120; // signal duration in seconds
             int[] harmonics = { 500, 1000, 2000, 4000, 8000 };
             var recording = DspFilters.GenerateTestRecording(sampleRate, duration, harmonics, WaveType.Sine);
@@ -309,10 +309,10 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
 
             // CHANGE CONFIG PARAMETERS HERE IF REQUIRED
             var indexCalculateConfig = ConfigFile.Deserialize<AcousticIndices.AcousticIndicesConfig>(configFile);
-            indexCalculateConfig.FrequencyScale = FreqScaleType.Octave;
+            indexCalculateConfig.FrameLength = 512;
 
-            var freqScale = new FrequencyScale(indexCalculateConfig.FrequencyScale);
-            indexCalculateConfig.FrameLength = freqScale.WindowSize;
+            //WARNING: Currently only one octave scale is available.
+            indexCalculateConfig.FrequencyScale = FreqScaleType.OctaveDataReduction;
 
             var results = IndexCalculate.Analysis(
                 subsegmentRecording,
@@ -331,7 +331,7 @@ namespace Acoustics.Test.AudioAnalysisTools.Indices
             image.Save(outputImagePath1);
 
             // TEST the BGN SPECTRAL INDEX
-            Assert.AreEqual(256, spectralIndices.BGN.Length);
+            Assert.AreEqual(19, spectralIndices.BGN.Length);
 
             var expectedSpectrumFile1 = PathHelper.ResolveAsset("Indices", "BGN_OctaveScale.bin");
 

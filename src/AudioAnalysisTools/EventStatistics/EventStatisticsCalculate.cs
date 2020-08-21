@@ -127,7 +127,7 @@ namespace AudioAnalysisTools.EventStatistics
             stats.SnrDecibels = max;
 
             // Now need to convert event matrix back to energy values before calculating other statistics
-            eventMatrix = MatrixTools.Decibels2Power(eventMatrix);
+            eventMatrix = MatrixTools.SpectrogramDecibels2Power(eventMatrix);
 
             var columnAverages = MatrixTools.GetColumnAverages(eventMatrix);
             var rowAverages = MatrixTools.GetRowAverages(eventMatrix);

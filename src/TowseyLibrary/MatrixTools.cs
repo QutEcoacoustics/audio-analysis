@@ -519,53 +519,61 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// Convert the power values in a matrix of spectrogram values to Decibels.
+        /// Convert the power values in a matrix of spectrogram values to Decibels using: dB = 10*log10(power).
         /// Assume that all matrix values are positive i.e. due to prior noise removal.
         /// NOTE: This method also returns the min and max decibel values in the passed matrix.
+        /// NOTE: A decibel value should be a ratio.
+        ///       Here the ratio is implied ie it is relative to the value of maximum power in the original normalised signal.
         /// </summary>
         /// <param name="m">matrix of positive power values.</param>
         /// <param name="min">min value to be return by out.</param>
         /// <param name="max">max value to be return by out.</param>
-        public static double[,] Power2DeciBels(double[,] m, out double min, out double max)
+        public static double[,] SpectrogramPower2DeciBels(double[,] m, double powerEpsilon, out double min, out double max)
         {
+            //convert epsilon power to decibels
+            double minDecibels = 10 * Math.Log10(powerEpsilon);
+
             min = double.MaxValue;
             max = -double.MaxValue;
 
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
-            double[,] ret = new double[rows, cols];
+            double[,] returnM = new double[rows, cols];
 
             for (int i = 0; i < rows; i++)
             {
                 for (int j = 0; j < cols; j++)
                 {
-                    double dBels = 10 * Math.Log10(m[i, j]); //convert power to decibels
-
-                    //NOTE: the decibel calculation should be a ratio.
-                    // Here the ratio is implied ie relative to the power in the original normalised signal
-                    if (dBels <= min)
+                    if (m[i, j] <= powerEpsilon)
                     {
-                        min = dBels;
+                        returnM[i, j] = minDecibels;
                     }
                     else
-                    if (dBels >= max)
                     {
-                        max = dBels;
+                        returnM[i, j] = 10 * Math.Log10(m[i, j]);
                     }
 
-                    ret[i, j] = dBels;
+                    if (returnM[i, j] < min)
+                    {
+                        min = returnM[i, j];
+                    }
+                    else
+                    if (returnM[i, j] > max)
+                    {
+                        max = returnM[i, j];
+                    }
                 }
             }
 
-            return ret;
+            return returnM;
         }
 
         /// <summary>
-        /// Convert the power values in a matrix of spectrogram values to Decibels.
+        /// Convert the Decibels values in a matrix of spectrogram values to power values.
         /// Assume that all matrix values are positive due to prior noise removal.
         /// </summary>
         /// <param name="m">matrix of positive Decibel values.</param>
-        public static double[,] Decibels2Power(double[,] m)
+        public static double[,] SpectrogramDecibels2Power(double[,] m)
         {
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
@@ -2026,8 +2034,10 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// Normalises a matrix so that all values below the passed MIN are truncated to 0 and all values greater than the
-        /// passed MAX are truncated to 1.
+        /// Normalises a matrix so that ---
+        /// all values LT passed MIN are truncated to 0
+        /// and
+        /// all values GT passed MAX are truncated to 1.
         /// </summary>
         public static double[,] NormaliseInZeroOne(double[,] m, double truncateMin, double truncateMax)
         {
@@ -2056,36 +2066,9 @@ namespace TowseyLibrary
 
         /// <summary>
         /// Normalises a matrix so that all values lie between 0 and 1.
-        /// </summary>
-        public static double[,] NormaliseInZeroOne(double[,] m)
-        {
-            int rows = m.GetLength(0);
-            int cols = m.GetLength(1);
-            DataTools.MinMax(m, out var min, out var max);
-            double range = max - min;
-            double[,] m2Return = new double[rows, cols];
-            for (int r = 0; r < rows; r++)
-            {
-                for (int c = 0; c < cols; c++)
-                {
-                    m2Return[r, c] = (m[r, c] - min) / range;
-                    if (m2Return[r, c] > 1.0)
-                    {
-                        m2Return[r, c] = 1.0;
-                    }
-                    else if (m2Return[r, c] < 0.0)
-                    {
-                        m2Return[r, c] = 0.0;
-                    }
-                }
-            }
-
-            // DataTools.MinMax(m2Return, out min, out max);
-            return m2Return;
-        }
-
-        /// <summary>
-        /// Normalises a matrix so that all values lie between 0 and 1.
+        /// Min value in matrix set to 0.0.
+        /// Max value in matrix is set to 1.0.
+        /// Rerturns the min and the max.
         /// </summary>
         public static double[,] NormaliseInZeroOne(double[,] m, out double min, out double max)
         {
@@ -2110,7 +2093,6 @@ namespace TowseyLibrary
                 }
             }
 
-            // DataTools.MinMax(m2Return, out min, out max);
             return m2Return;
         }
 

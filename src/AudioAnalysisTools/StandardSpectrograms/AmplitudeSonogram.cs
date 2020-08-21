@@ -13,7 +13,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
     public class AmplitudeSonogram : BaseSonogram
     {
         public AmplitudeSonogram(SonogramConfig config, WavReader wav)
-            : base(config, wav, false)
+            : base(config, wav)
         {
         }
 

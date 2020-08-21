@@ -28,8 +28,12 @@ namespace AnalysisPrograms.SpectrogramGenerator
         static SpectrogramGenerator()
         {
             var values = (SpectrogramImageType[])Enum.GetValues(typeof(SpectrogramImageType));
+
+            // This next line is to do with adding a colour tag to images so that they can be more easily identified in unit tests.
+            // Need a pallette that is large enough to include all the number of images produced.
+            // Check the ColorBrewer class and change the pallette set if need to.
             ImageTags = values
-                .Zip(ColorBrewer.Qualitative.Dark.ForClassCount(values.Length))
+                .Zip(ColorBrewer.Qualitative.Set3.ForClassCount(values.Length))
                 .ToImmutableDictionary(x => x.First, x => x.Second);
         }
 
@@ -38,7 +42,10 @@ namespace AnalysisPrograms.SpectrogramGenerator
         /// Waveform.
         /// DecibelSpectrogram.
         /// DecibelSpectrogramNoiseReduced.
+        /// MelScaleSpectrogram
         /// CepstralSpectrogram.
+        /// OctaveScaleSpectrogram
+        /// RibbonSpectrogram.
         /// DifferenceSpectrogram.
         /// AmplitudeSpectrogramLocalContrastNormalization.
         /// Experimental.
@@ -75,6 +82,7 @@ namespace AnalysisPrograms.SpectrogramGenerator
             // EXTRACT ENVELOPE and SPECTROGRAM FROM RECORDING SEGMENT
             var dspOutput1 = DSP_Frames.ExtractEnvelopeAndFfts(recordingSegment, frameSize, frameStep);
 
+            // This constructor initializes default values for Melscale and Mfcc spectrograms and other parameters.
             var sonoConfig = new SonogramConfig()
             {
                 epsilon = recordingSegment.Epsilon,
@@ -190,7 +198,16 @@ namespace AnalysisPrograms.SpectrogramGenerator
                 }
             }
 
-            // IMAGE 6) Cepstral Spectrogram
+            // IMAGE 6) Mel-frequency Spectrogram
+            // The default spectrogram has 64 frequency bands.
+            if (@do.Contains(MelScaleSpectrogram))
+            {
+                images.Add(
+                    MelScaleSpectrogram,
+                    GetMelScaleSpectrogram(sonoConfig, recordingSegment, sourceRecordingName));
+            }
+
+            // IMAGE 7) Cepstral Spectrogram
             if (@do.Contains(CepstralSpectrogram))
             {
                 images.Add(
@@ -198,7 +215,59 @@ namespace AnalysisPrograms.SpectrogramGenerator
                     GetCepstralSpectrogram(sonoConfig, recordingSegment, sourceRecordingName));
             }
 
-            // IMAGE 7) AmplitudeSpectrogram_LocalContrastNormalization
+            // IMAGE 8) Octave-frequency scale Spectrogram
+            if (@do.Contains(OctaveScaleSpectrogram))
+            {
+                //Create new config because calling the octave spectrogram changes it.
+                var octaveConfig = new SonogramConfig()
+                {
+                    epsilon = recordingSegment.Epsilon,
+                    SampleRate = sampleRate,
+                    WindowSize = frameSize,
+                    WindowStep = frameStep,
+                    WindowOverlap = frameOverlap,
+                    WindowPower = dspOutput1.WindowPower,
+                    Duration = recordingSegment.Duration,
+                    NoiseReductionType = NoiseReductionType.Standard,
+                    NoiseReductionParameter = bgNoiseThreshold,
+                };
+
+                //var type = FreqScaleType.OctaveCustom;
+                var type = FreqScaleType.OctaveStandard;
+                int nyquist = sampleRate / 2;
+                int linearBound = 1000;
+                int octaveToneCount = 31; // This value is ignored for OctaveStandard type.
+                int hertzGridInterval = 1000;
+                var scale = new FrequencyScale(type, nyquist, frameSize, linearBound, octaveToneCount, hertzGridInterval);
+
+                images.Add(
+                    OctaveScaleSpectrogram,
+                    GetOctaveScaleSpectrogram(octaveConfig, scale, recordingSegment, sourceRecordingName));
+            }
+
+            // IMAGE 9) RibbonSpectrogram
+            if (@do.Contains(RibbonSpectrogram))
+            {
+                //Create new config because calling the octave spectrogram changes it.
+                var octaveConfig = new SonogramConfig()
+                {
+                    epsilon = recordingSegment.Epsilon,
+                    SampleRate = sampleRate,
+                    WindowSize = frameSize,
+                    WindowStep = frameStep,
+                    WindowOverlap = frameOverlap,
+                    WindowPower = dspOutput1.WindowPower,
+                    Duration = recordingSegment.Duration,
+                    NoiseReductionType = NoiseReductionType.Standard,
+                    NoiseReductionParameter = bgNoiseThreshold,
+                };
+
+                images.Add(
+                    RibbonSpectrogram,
+                    GetRibbonSpectrograms(octaveConfig, recordingSegment, sourceRecordingName));
+            }
+
+            // IMAGE 10) AmplitudeSpectrogram_LocalContrastNormalization
             if (@do.Contains(AmplitudeSpectrogramLocalContrastNormalization))
             {
                 var neighborhoodSeconds = config.NeighborhoodSeconds;
@@ -340,6 +409,28 @@ namespace AnalysisPrograms.SpectrogramGenerator
             return image;
         }
 
+        public static Image<Rgb24> GetMelScaleSpectrogram(
+            SonogramConfig sonoConfig,
+            AudioRecording recording,
+            string sourceRecordingName)
+        {
+            // TODO at present noise reduction type must be set = Standard.
+            sonoConfig.NoiseReductionType = NoiseReductionType.Standard;
+            sonoConfig.NoiseReductionParameter = 3.0;
+            var melFreqGram = new SpectrogramMelScale(sonoConfig, recording.WavReader);
+            var image = melFreqGram.GetImage();
+            var titleBar = BaseSonogram.DrawTitleBarOfGrayScaleSpectrogram(
+                    "MEL-FREQUENCY SPECTROGRAM " + sourceRecordingName,
+                    image.Width,
+                    ImageTags[MelScaleSpectrogram]);
+            var startTime = TimeSpan.Zero;
+            var xAxisTicInterval = TimeSpan.FromSeconds(1);
+            TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(sonoConfig.WindowStep / (double)sonoConfig.SampleRate);
+            var labelInterval = TimeSpan.FromSeconds(5);
+            image = BaseSonogram.FrameSonogram(image, titleBar, startTime, xAxisTicInterval, xAxisPixelDuration, labelInterval);
+            return image;
+        }
+
         public static Image<Rgb24> GetCepstralSpectrogram(
             SonogramConfig sonoConfig,
             AudioRecording recording,
@@ -362,6 +453,95 @@ namespace AnalysisPrograms.SpectrogramGenerator
             return image;
         }
 
+        public static Image<Rgb24> GetOctaveScaleSpectrogram(
+        SonogramConfig sgConfig,
+        FrequencyScale freqScale,
+        AudioRecording recording,
+        string sourceRecordingName)
+        {
+            // ensure that the freq scale and the spectrogram config are consistent.
+            sgConfig.WindowSize = freqScale.WindowSize;
+            freqScale.WindowStep = sgConfig.WindowStep;
+            sgConfig.WindowOverlap = SonogramConfig.CalculateFrameOverlap(freqScale.WindowSize, freqScale.WindowStep);
+
+            // TODO at present noise reduction type must be set = Standard.
+            sgConfig.NoiseReductionType = NoiseReductionType.Standard;
+            sgConfig.NoiseReductionParameter = 3.0;
+
+            var octaveScaleGram = new SpectrogramOctaveScale(sgConfig, freqScale, recording.WavReader);
+            var image = octaveScaleGram.GetImage();
+            var title = "OCTAVE-SCALE SPECTROGRAM " + sourceRecordingName;
+
+            //var titleBar = BaseSonogram.DrawTitleBarOfGrayScaleSpectrogram(title, image.Width, ImageTags[OctaveScaleSpectrogram]);
+            //var startTime = TimeSpan.Zero;
+            //var xAxisTicInterval = TimeSpan.FromSeconds(1);
+            //TimeSpan xAxisPixelDuration = TimeSpan.FromSeconds(sgConfig.WindowStep / (double)sgConfig.SampleRate);
+            //var labelInterval = TimeSpan.FromSeconds(5);
+            //image = BaseSonogram.FrameSonogram(image, titleBar, startTime, xAxisTicInterval, xAxisPixelDuration, labelInterval);
+            image = octaveScaleGram.GetImageFullyAnnotated(image, title, freqScale.GridLineLocations, ImageTags[OctaveScaleSpectrogram]);
+            return image;
+        }
+
+        public static Image<Rgb24> GetRibbonSpectrograms(
+        SonogramConfig sgConfig,
+        AudioRecording recording,
+        string sourceRecordingName)
+        {
+            var octaveScaleGram = GetOctaveReducedSpectrogram(sgConfig, recording);
+            var image1 = octaveScaleGram.GetImage();
+
+            var linearScaleGram = GetLinearReducedSpectrogram(sgConfig, recording);
+            var image2 = linearScaleGram.GetImage();
+            var spacer = new Image<Rgb24>(image1.Width, 5);
+
+            var imageList = new List<Image<Rgb24>> { image2, spacer, image1 };
+
+            var combinedImage = ImageTools.CombineImagesVertically(imageList);
+            var title = "RIBBON SPECTROGRAMS-Linear32 & Octave19: " + sourceRecordingName;
+            var image = octaveScaleGram.GetImageFullyAnnotated(combinedImage, title, null, ImageTags[RibbonSpectrogram]);
+            return image;
+        }
+
+        public static SpectrogramOctaveScale GetOctaveReducedSpectrogram(SonogramConfig sgConfig, AudioRecording recording)
+        {
+            var type = FreqScaleType.OctaveDataReduction;
+            var freqScale = new FrequencyScale(type);
+
+            // ensure that the freq scale and the spectrogram config are consistent.
+            sgConfig.WindowSize = freqScale.WindowSize;
+            freqScale.WindowStep = sgConfig.WindowStep;
+            sgConfig.WindowOverlap = SonogramConfig.CalculateFrameOverlap(freqScale.WindowSize, freqScale.WindowStep);
+
+            // TODO at present noise reduction type must be set = Standard.
+            sgConfig.NoiseReductionType = NoiseReductionType.Standard;
+            sgConfig.NoiseReductionParameter = 3.0;
+
+            var octaveScaleGram = new SpectrogramOctaveScale(sgConfig, freqScale, recording.WavReader);
+            return octaveScaleGram;
+        }
+
+        public static SpectrogramStandard GetLinearReducedSpectrogram(SonogramConfig sgConfig, AudioRecording recording)
+        {
+            int sampleRate = recording.SampleRate;
+            var type = FreqScaleType.Linear;
+            int nyquist = sampleRate / 2;
+            int finalBinCount = 32;
+            int frameSize = 512;
+            int hertzGridInterval = 11000;
+            var freqScale = new FrequencyScale(type, nyquist, frameSize, finalBinCount, hertzGridInterval);
+
+            // ensure that the freq scale and the spectrogram config are consistent.
+            sgConfig.WindowSize = freqScale.WindowSize;
+            freqScale.WindowStep = sgConfig.WindowStep;
+            sgConfig.WindowOverlap = SonogramConfig.CalculateFrameOverlap(freqScale.WindowSize, freqScale.WindowStep);
+
+            sgConfig.NoiseReductionType = NoiseReductionType.Standard;
+            sgConfig.NoiseReductionParameter = 3.0;
+
+            var spectrogram = new SpectrogramStandard(sgConfig, freqScale, recording.WavReader);
+            return spectrogram;
+        }
+
         public static Image<Rgb24> GetLcnSpectrogram(
             SonogramConfig sonoConfig,
             AudioRecording recordingSegment,
@@ -369,23 +549,23 @@ namespace AnalysisPrograms.SpectrogramGenerator
             double neighbourhoodSeconds,
             double lcnContrastLevel)
         {
-            BaseSonogram sonogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
-            int neighbourhoodFrames = (int)(sonogram.FramesPerSecond * neighbourhoodSeconds);
-            LoggedConsole.WriteLine("LCN: FramesPerSecond (Prior to LCN) = {0}", sonogram.FramesPerSecond);
+            BaseSonogram spectrogram = new AmplitudeSonogram(sonoConfig, recordingSegment.WavReader);
+            int neighbourhoodFrames = (int)(spectrogram.FramesPerSecond * neighbourhoodSeconds);
+            LoggedConsole.WriteLine("LCN: FramesPerSecond (Prior to LCN) = {0}", spectrogram.FramesPerSecond);
             LoggedConsole.WriteLine("LCN: Neighbourhood of {0} seconds = {1} frames", neighbourhoodSeconds, neighbourhoodFrames);
 
             // subtract the lowest 20% of frames. This is first step in LCN noise removal. Sets the baseline.
             const int lowPercentile = 20;
-            sonogram.Data =
-                NoiseRemoval_Briggs.NoiseReduction_byLowestPercentileSubtraction(sonogram.Data, lowPercentile);
-            sonogram.Data =
-                NoiseRemoval_Briggs.NoiseReduction_byLCNDivision(sonogram.Data, neighbourhoodFrames, lcnContrastLevel);
+            spectrogram.Data =
+                NoiseRemoval_Briggs.NoiseReduction_byLowestPercentileSubtraction(spectrogram.Data, lowPercentile);
+            spectrogram.Data =
+                NoiseRemoval_Briggs.NoiseReduction_byLCNDivision(spectrogram.Data, neighbourhoodFrames, lcnContrastLevel);
 
-            //Matrix normalisation
-            //MatrixTools.PercentileCutoffs(sonogram.Data, 10.0, 90, out double minCut, out double maxCut);
-            //NoiseRemoval_Briggs.NoiseReduction_byLowestPercentileSubtraction(sonogram.Data, lowPercentile);
+            // Finally background noise removal. This step is optional.
+            double[] spectralDecibelBgn = NoiseProfile.CalculateBackgroundNoise(spectrogram.Data);
+            spectrogram.Data = SNR.TruncateBgNoiseFromSpectrogram(spectrogram.Data, spectralDecibelBgn);
 
-            var image = sonogram.GetImageFullyAnnotated(
+            var image = spectrogram.GetImageFullyAnnotated(
                 "AMPLITUDE SPECTROGRAM with freq bin Local Contrast Normalization - " + sourceRecordingName,
                 ImageTags[AmplitudeSpectrogramLocalContrastNormalization]);
             return image;

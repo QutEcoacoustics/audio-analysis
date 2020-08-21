@@ -194,27 +194,22 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
                     this.FreqScale = new FrequencyScale(fst);
                     throw new ArgumentException("Mel Scale is not yet implemented");
 
-                //break;
-                case "Linear62Octaves7Tones31Nyquist11025":
-                    fst = FreqScaleType.Linear62Octaves7Tones31Nyquist11025;
-                    this.FreqScale = new FrequencyScale(fst);
-                    throw new ArgumentException("Linear62Octaves7Tones31Nyquist11025 Scale is not yet implemented");
+                case "OctaveStandard":
+                    int linearBound = 1000;
+                    int octaveToneCount = 1; // this is set automatically
+                    int gridInterval = 1000;
+                    fst = FreqScaleType.OctaveStandard;
+                    this.FreqScale = new FrequencyScale(fst, nyquist, frameSize, linearBound, octaveToneCount, gridInterval);
+                    break;
 
-                //break;
-                case "Linear125Octaves6Tones30Nyquist11025":
-                    fst = FreqScaleType.Linear125Octaves6Tones30Nyquist11025;
+                case "OctaveDataReduction":
+                    fst = FreqScaleType.OctaveDataReduction;
                     this.FreqScale = new FrequencyScale(fst);
                     break;
-                case "Octaves24Nyquist32000":
-                    fst = FreqScaleType.Octaves24Nyquist32000;
-                    this.FreqScale = new FrequencyScale(fst);
-                    throw new ArgumentException("Octaves24Nyquist32000 Scale is not yet implemented");
 
-                //break;
-                case "Linear125Octaves7Tones28Nyquist32000":
-                    fst = FreqScaleType.Linear125Octaves7Tones28Nyquist32000;
-                    this.FreqScale = new FrequencyScale(fst);
-                    break;
+                case "OctaveCustom":
+                    throw new ArgumentException("OctaveCustom Scale is not yet implemented");
+
                 default:
                     throw new ArgumentException($"{config.FreqScale} is an unknown option for drawing a frequency scale");
             }
@@ -1278,20 +1273,24 @@ namespace AudioAnalysisTools.LongDurationSpectrograms
             //NEXT produce SPECTROGRAM RIBBONS
             // These are useful for viewing multiple consecutive days of recording.
             // Get matrix for each of the three indices.
-            string[] keys1 = colorMap1.Split('-');
-            double[,] indices1 = cs1.GetNormalisedSpectrogramMatrix(keys1[0]);
-            double[,] indices2 = cs1.GetNormalisedSpectrogramMatrix(keys1[1]);
-            double[,] indices3 = cs1.GetNormalisedSpectrogramMatrix(keys1[2]);
+            // DO NOT draw ribbons if spectrograms are already reduced for data reduction.
+            if (image1.Height > 128)
+            {
+                string[] keys1 = colorMap1.Split('-');
+                double[,] indices1 = cs1.GetNormalisedSpectrogramMatrix(keys1[0]);
+                double[,] indices2 = cs1.GetNormalisedSpectrogramMatrix(keys1[1]);
+                double[,] indices3 = cs1.GetNormalisedSpectrogramMatrix(keys1[2]);
 
-            var ribbon = LdSpectrogramRibbons.GetSpectrogramRibbon(indices1, indices2, indices3);
-            ribbon.Save(FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, colorMap1 + LdSpectrogramRibbons.SpectralRibbonTag, "png"));
+                var ribbon = LdSpectrogramRibbons.GetSpectrogramRibbon(indices1, indices2, indices3);
+                ribbon.Save(FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, colorMap1 + LdSpectrogramRibbons.SpectralRibbonTag, "png"));
 
-            string[] keys2 = colorMap2.Split('-');
-            indices1 = cs1.GetNormalisedSpectrogramMatrix(keys2[0]);
-            indices2 = cs1.GetNormalisedSpectrogramMatrix(keys2[1]);
-            indices3 = cs1.GetNormalisedSpectrogramMatrix(keys2[2]);
-            ribbon = LdSpectrogramRibbons.GetSpectrogramRibbon(indices1, indices2, indices3);
-            ribbon.Save(FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, colorMap2 + LdSpectrogramRibbons.SpectralRibbonTag, "png"));
+                string[] keys2 = colorMap2.Split('-');
+                indices1 = cs1.GetNormalisedSpectrogramMatrix(keys2[0]);
+                indices2 = cs1.GetNormalisedSpectrogramMatrix(keys2[1]);
+                indices3 = cs1.GetNormalisedSpectrogramMatrix(keys2[2]);
+                ribbon = LdSpectrogramRibbons.GetSpectrogramRibbon(indices1, indices2, indices3);
+                ribbon.Save(FilenameHelpers.AnalysisResultPath(outputDirectory, fileStem, colorMap2 + LdSpectrogramRibbons.SpectralRibbonTag, "png"));
+            }
 
             // only return images if chromeless
             return imageChrome == ImageChrome.Without

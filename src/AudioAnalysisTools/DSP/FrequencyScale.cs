@@ -5,15 +5,11 @@
 namespace AudioAnalysisTools.DSP
 {
     using System;
-    using System.IO;
     using Acoustics.Shared.ImageSharp;
     using AudioAnalysisTools.StandardSpectrograms;
-    using AudioAnalysisTools.WavTools;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.PixelFormats;
     using SixLabors.ImageSharp.Processing;
-    using TowseyLibrary;
-    using Path = System.IO.Path;
 
     // IMPORTANT NOTE: If you are converting Hertz scale from LINEAR to MEL or OCTAVE, this conversion MUST be done BEFORE noise reduction
 
@@ -25,13 +21,9 @@ namespace AudioAnalysisTools.DSP
     {
         Linear = 0,
         Mel = 1,
-        Linear62Octaves7Tones31Nyquist11025 = 2,
-        Linear125Octaves6Tones30Nyquist11025 = 3,
-        Octaves24Nyquist32000 = 4,
-        Linear125Octaves7Tones28Nyquist32000 = 5,
-
-        // alias Octave to predefined choice
-        Octave = Linear125Octaves7Tones28Nyquist32000,
+        OctaveCustom = 2,
+        OctaveStandard = 3,
+        OctaveDataReduction = 4,
     }
 
     public class FrequencyScale
@@ -39,7 +31,7 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// Initializes a new instance of the <see cref="FrequencyScale"/> class.
         /// CONSTRUCTOR
-        /// Calling this constructor assumes a full-scale linear freq scale is required.
+        /// Calling this constructor assumes the standard linear 0-nyquist freq scale is required.
         /// </summary>
         public FrequencyScale(int nyquist, int frameSize, int hertzGridInterval)
         {
@@ -56,20 +48,40 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// Initializes a new instance of the <see cref="FrequencyScale"/> class.
         /// CONSTRUCTOR
+        /// Call this constructor when want to change freq scale but keep it linear.
+        /// </summary>
+        public FrequencyScale(int nyquist, int frameSize, int finalBinCount, int hertzGridInterval)
+        {
+            this.ScaleType = FreqScaleType.Linear;
+            this.Nyquist = nyquist;
+            this.WindowSize = frameSize;
+            this.FinalBinCount = finalBinCount;
+            this.HertzGridInterval = hertzGridInterval;
+            this.LinearBound = nyquist;
+            this.BinBounds = this.GetLinearBinBounds();
+            this.GridLineLocations = GetLinearGridLineLocations(nyquist, this.HertzGridInterval, this.FinalBinCount);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FrequencyScale"/> class.
+        /// CONSTRUCTOR
         /// Calling this constructor assumes either Linear or Mel is required but not Octave.
         /// </summary>
         public FrequencyScale(FreqScaleType type, int nyquist, int frameSize, int finalBinCount, int hertzGridInterval)
         {
-            this.ScaleType = type;
             this.Nyquist = nyquist;
             this.WindowSize = frameSize;
             this.FinalBinCount = finalBinCount;
             this.HertzGridInterval = hertzGridInterval;
             if (type == FreqScaleType.Mel)
             {
-                this.BinBounds = this.GetMelBinBounds();
-                this.GridLineLocations = GetMelGridLineLocations(this.HertzGridInterval, nyquist, this.FinalBinCount);
+                this.BinBounds = MFCCStuff.GetMelBinBounds(this.Nyquist, this.FinalBinCount);
+                this.GridLineLocations = SpectrogramMelScale.GetMelGridLineLocations(this.HertzGridInterval, nyquist, this.FinalBinCount);
                 this.LinearBound = 1000;
+            }
+            else if (type == FreqScaleType.OctaveStandard || type == FreqScaleType.OctaveCustom)
+            {
+                throw new Exception("Wrong Constructor. Use the Octave scale constructor.");
             }
             else
             {
@@ -77,6 +89,51 @@ namespace AudioAnalysisTools.DSP
                 this.BinBounds = this.GetLinearBinBounds();
                 this.GridLineLocations = GetLinearGridLineLocations(nyquist, this.HertzGridInterval, this.FinalBinCount);
                 this.LinearBound = nyquist;
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FrequencyScale"/> class.
+        /// CONSTRUCTION OF OCTAVE Frequency Scales
+        /// IMPORTANT NOTE: If you are converting Herz scale from LINEAR to OCTAVE, this conversion MUST be done BEFORE noise reduction
+        /// WARNING!: Changing the constants for the octave scales will have undefined effects.
+        ///           The options below have been debugged to give what is required.
+        ///           However other values have not been debugged - so user should check the output to ensure it is what is required.
+        /// NOTE: octaveToneCount = the number of fractional Hz steps within one octave. A piano octave contains 12 steps per octave.
+        /// NOTE: Not all combinations of parameter values are effective. nor have they all been tested.
+        ///       The following have been tested:
+        ///         nyquist=11025, linearBound=125 t0 1000, octaveToneCount=31, 32.
+        ///         nyquist=11025, linearBound=125, octaveToneCount=31.
+        ///         nyquist=32000, linearBound=125, octaveToneCount=28.
+        /// </summary>
+        /// <param name="type">Scale type must be an OCTAVE type.</param>
+        /// <param name="nyquist">sr / 2.</param>
+        /// <param name="frameSize">Assumes that frame size is power of 2.</param>
+        /// <param name="linearBound">The bound (Hz value) that divides lower linear and upper octave parts of the frequency scale.</param>
+        /// <param name="octaveToneCount">Number of fractional Hz steps within one octave. This is ignored in case of custom scale.</param>
+        /// <param name="hertzGridInterval">Only used where appropriate to draw frequency gridlines.</param>
+        public FrequencyScale(FreqScaleType type, int nyquist, int frameSize, int linearBound, int octaveToneCount, int hertzGridInterval)
+        {
+            this.ScaleType = type;
+            this.Nyquist = nyquist;
+            this.WindowSize = frameSize;
+            this.LinearBound = linearBound;
+
+            if (type == FreqScaleType.OctaveStandard)
+            {
+                // this scale automatically sets the octave tone count.
+                OctaveFreqScale.GetStandardOctaveScale(this);
+            }
+            else if (type == FreqScaleType.OctaveCustom)
+            {
+                this.ToneCount = octaveToneCount;
+                this.BinBounds = OctaveFreqScale.LinearToSplitLinearOctaveScale(nyquist, frameSize, linearBound, nyquist, octaveToneCount);
+                this.FinalBinCount = this.BinBounds.GetLength(0);
+                this.GridLineLocations = OctaveFreqScale.GetGridLineLocations(nyquist, linearBound, this.BinBounds);
+            }
+            else
+            {
+                throw new Exception("Unknown Octave scale.");
             }
         }
 
@@ -101,18 +158,26 @@ namespace AudioAnalysisTools.DSP
             }
             else if (fst == FreqScaleType.Mel)
             {
-                LoggedConsole.WriteErrorLine("WARNING: Assigning DEFAULT parameters for MEL FREQUENCY SCALE.");
-                this.Nyquist = 11025;
-                this.WindowSize = 512;
-                this.FinalBinCount = 128;
-                this.HertzGridInterval = 1000;
-                this.LinearBound = this.Nyquist;
-                this.GridLineLocations = GetMelGridLineLocations(this.HertzGridInterval, this.Nyquist, this.FinalBinCount);
+                // WARNING: Making this call will return a standard Mel scale where sr = 22050 and frameSize = 512
+                // MEL SCALE spectrograms are available by direct call to SpectrogramGenerator.Core.GetMelScaleSpectrogram()
+                SpectrogramMelScale.GetStandardMelScale(this);
+            }
+            else if (fst == FreqScaleType.OctaveDataReduction)
+            {
+                // This spectral conversion is for data reduction purposes.
+                // It is a split linear-octave frequency scale.
+                OctaveFreqScale.GetDataReductionScale(this);
+
+                //The data reduction Octave Scale does not require grid lines.
+                this.GridLineLocations = new int[6, 2];
+            }
+            else if (fst == FreqScaleType.OctaveStandard || fst == FreqScaleType.OctaveCustom)
+            {
+                throw new Exception("Not enough info. Use an Octave scale constructor.");
             }
             else
             {
-                // assume octave scale is only other option
-                OctaveFreqScale.GetOctaveScale(this);
+                throw new Exception("Unknown frequency scale type.");
             }
         }
 
@@ -129,7 +194,7 @@ namespace AudioAnalysisTools.DSP
         /// <summary>
         /// Gets or sets step size for the FFT window.
         /// </summary>
-        public int FrameStep { get; set; }
+        public int WindowStep { get; set; }
 
         /// <summary>
         /// Gets or sets number of frequency bins in the final spectrogram.
@@ -152,11 +217,6 @@ namespace AudioAnalysisTools.DSP
         public int LinearBound { get; set; }
 
         /// <summary>
-        /// Gets or sets number of octave to appear above the linear part of scale.
-        /// </summary>
-        public int OctaveCount { get; set; }
-
-        /// <summary>
         /// Gets or sets number of bands or tones per octave.
         /// </summary>
         public int ToneCount { get; set; }
@@ -173,24 +233,17 @@ namespace AudioAnalysisTools.DSP
         public int[,] GridLineLocations { get; set; }
 
         /// <summary>
-        /// returns the binId for the grid line closest to the passed frequency.
+        /// returns the binId for freq bin closest to the passed Hertz value.
         /// </summary>
-        public int GetBinIdForHerzValue(int herzValue)
+        public int GetBinIdForHerzValue(int hertzValue)
         {
             int binId = 0;
-            int binCount = this.BinBounds.GetLength(0);
-
-            for (int i = 1; i < binCount; i++)
+            while (this.BinBounds[binId, 1] < hertzValue)
             {
-                if (this.BinBounds[i, 1] > herzValue)
-                {
-                    binId = this.BinBounds[i, 0];
-                    break;
-                }
+                binId++;
             }
 
-            // subtract 1 because have actually extracted the upper bin bound
-            return binId - 1;
+            return binId;
         }
 
         /// <summary>
@@ -220,11 +273,13 @@ namespace AudioAnalysisTools.DSP
         public int[,] GetLinearBinBounds()
         {
             double herzInterval = this.Nyquist / (double)this.FinalBinCount;
+            double scaleFactor = this.WindowSize / 2 / (double)this.FinalBinCount;
+
             var binBounds = new int[this.FinalBinCount, 2];
 
             for (int i = 0; i < this.FinalBinCount; i++)
             {
-                binBounds[i, 0] = i;
+                binBounds[i, 0] = (int)Math.Round(i * scaleFactor);
                 binBounds[i, 1] = (int)Math.Round(i * herzInterval);
             }
 
@@ -232,24 +287,28 @@ namespace AudioAnalysisTools.DSP
         }
 
         /// <summary>
-        /// Returns an [N, 2] matrix with bin ID in column 1 and lower Herz bound in column 2 but on Mel scale.
+        /// THis method assumes that the frameSize will be power of 2
+        /// FOR DEBUG PURPOSES, when sr = 22050 and frame size = 8192, the following Hz are located at index:
+        /// Hz      Index
+        /// 15        6
+        /// 31       12
+        /// 62       23
+        /// 125      46
+        /// 250      93
+        /// 500     186
+        /// 1000    372.
         /// </summary>
-        public int[,] GetMelBinBounds()
+        public static double[] GetLinearFreqScale(int nyquist, int binCount)
         {
-            double maxMel = (int)MFCCStuff.Mel(this.Nyquist);
-            int melBinCount = this.FinalBinCount;
-            double melPerBin = maxMel / melBinCount;
+            double freqStep = nyquist / (double)binCount;
+            double[] linearFreqScale = new double[binCount];
 
-            var binBounds = new int[this.FinalBinCount, 2];
-
-            for (int i = 0; i < melBinCount; i++)
+            for (int i = 0; i < binCount; i++)
             {
-                binBounds[i, 0] = i;
-                double mel = i * melPerBin;
-                binBounds[i, 1] = (int)MFCCStuff.InverseMel(mel);
+                linearFreqScale[i] = freqStep * i;
             }
 
-            return binBounds;
+            return linearFreqScale;
         }
 
         /// <summary>
@@ -273,65 +332,9 @@ namespace AudioAnalysisTools.DSP
             return gridLineLocations;
         }
 
-        /// <summary>
-        /// This method is only called from Basesonogram.GetImage_ReducedSonogram(int factor, bool drawGridLines)
-        ///   when drawing a reduced sonogram.
-        /// </summary>
-        public static int[] CreateLinearYaxis(int herzInterval, int nyquistFreq, int imageHt)
+        public static void DrawFrequencyLinesOnImage(Image<Rgb24> bmp, FrequencyScale freqScale, bool includeLabels)
         {
-            int minFreq = 0;
-            int maxFreq = nyquistFreq;
-            int freqRange = maxFreq - minFreq + 1;
-            double pixelPerHz = imageHt / (double)freqRange;
-            int[] vScale = new int[imageHt];
-
-            for (int f = minFreq + 1; f < maxFreq; f++)
-            {
-                // convert freq value to pixel id
-                if (f % 1000 == 0)
-                {
-                    int hzOffset = f - minFreq;
-                    int pixelId = (int)(hzOffset * pixelPerHz) + 1;
-                    if (pixelId >= imageHt)
-                    {
-                        pixelId = imageHt - 1;
-                    }
-
-                    // LoggedConsole.WriteLine("f=" + f + " hzOffset=" + hzOffset + " pixelID=" + pixelID);
-                    vScale[pixelId] = 1;
-                }
-            }
-
-            return vScale;
-        }
-
-        /// <summary>
-        /// THIS METHOD NEEDS TO BE DEBUGGED.  HAS NOT BEEN USED IN YEARS!
-        /// Use this method to generate grid lines for mel scale image
-        /// Currently this method is only called from BaseSonogram.GetImage() when bool doMelScale = true;
-        /// Frequencyscale.Draw1kHzLines(Image{Rgb24} bmp, bool doMelScale, int nyquist, double freqBinWidth).
-        /// </summary>
-        public static int[,] GetMelGridLineLocations(int gridIntervalInHertz, int nyquistFreq, int melBinCount)
-        {
-            double maxMel = (int)MFCCStuff.Mel(nyquistFreq);
-            double melPerBin = maxMel / melBinCount;
-            int gridCount = nyquistFreq / gridIntervalInHertz;
-
-            var gridLines = new int[gridCount, 2];
-
-            for (int f = 1; f <= gridCount; f++)
-            {
-                int herz = f * 1000;
-                int melValue = (int)MFCCStuff.Mel(herz);
-                int melBinId = (int)(melValue / melPerBin);
-                if (melBinId < melBinCount)
-                {
-                    gridLines[f - 1, 0] = melBinId;
-                    gridLines[f - 1, 1] = herz;
-                }
-            }
-
-            return gridLines;
+            DrawFrequencyLinesOnImage(bmp, freqScale.GridLineLocations, includeLabels);
         }
 
         public static void DrawFrequencyLinesOnImage(Image<Rgb24> bmp, int[,] gridLineLocations, bool includeLabels)
@@ -368,6 +371,12 @@ namespace AudioAnalysisTools.DSP
             int width = bmp.Width;
             int height = bmp.Height;
             int bandCount = gridLineLocations.GetLength(0);
+
+            if (gridLineLocations == null || bmp.Height < 50)
+            {
+                // there is no point placing gridlines on a narrow image. It obscures too much spectrogram.
+                return;
+            }
 
             // draw the grid line for each frequency band
             for (int b = 0; b < bandCount; b++)
@@ -408,290 +417,6 @@ namespace AudioAnalysisTools.DSP
                     }
                 }
             });
-        } //end AddHzGridLines()
-
-        public static void DrawFrequencyLinesOnImage(Image<Rgb24> bmp, FrequencyScale freqScale, bool includeLabels)
-        {
-            DrawFrequencyLinesOnImage(bmp, freqScale.GridLineLocations, includeLabels);
-        }
-
-        // ****************************************************************************************************************************
-        // ********  BELOW ARE SET OF TEST METHODS FOR THE VARIOUS FREQUENCY SCALES
-        // ********  They should probably be deleted as they have been replaced by proper VS Unit Testing methods in DSP.FrequencyScaletests.cs.
-
-        /// <summary>
-        /// METHOD TO CHECK IF Default linear FREQ SCALE IS WORKING
-        /// Check it on standard one minute recording.
-        /// </summary>
-        public static void TESTMETHOD_LinearFrequencyScaleDefault()
-        {
-            var recordingPath = @"C:\SensorNetworks\SoftwareTests\TestRecordings\BAC2_20071008-085040.wav";
-            var outputDir = @"C:\SensorNetworks\SoftwareTests\TestFrequencyScale".ToDirectoryInfo();
-            var expectedResultsDir = Path.Combine(outputDir.FullName, TestTools.ExpectedResultsDir).ToDirectoryInfo();
-            var outputImagePath = Path.Combine(outputDir.FullName, "linearScaleSonogram_default.png");
-            var opFileStem = "BAC2_20071008";
-
-            var recording = new AudioRecording(recordingPath);
-
-            // default linear scale
-            var fst = FreqScaleType.Linear;
-            var freqScale = new FrequencyScale(fst);
-
-            var sonoConfig = new SonogramConfig
-            {
-                WindowSize = freqScale.FinalBinCount * 2,
-                WindowOverlap = 0.2,
-                SourceFName = recording.BaseName,
-
-                //NoiseReductionType = NoiseReductionType.Standard,
-                NoiseReductionType = NoiseReductionType.None,
-                NoiseReductionParameter = 0.0,
-            };
-
-            var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
-            sonogram.Configuration.WindowSize = freqScale.WindowSize;
-
-            // DO NOISE REDUCTION
-            var dataMatrix = SNR.NoiseReduce_Standard(sonogram.Data);
-            sonogram.Data = dataMatrix;
-
-            var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-            image.Save(outputImagePath);
-
-            // DO FILE EQUALITY TEST
-            string testName = "testName";
-            var expectedTestFile = new FileInfo(Path.Combine(expectedResultsDir.FullName, "FrequencyDefaultScaleTest.EXPECTED.json"));
-            var resultFile = new FileInfo(Path.Combine(outputDir.FullName, opFileStem + "FrequencyDefaultScaleTestResults.json"));
-            Acoustics.Shared.Csv.Csv.WriteMatrixToCsv(resultFile, freqScale.GridLineLocations);
-            TestTools.FileEqualityTest(testName, resultFile, expectedTestFile);
-
-            LoggedConsole.WriteLine("Completed Default Linear Frequency Scale test");
-            Console.WriteLine("\n\n");
-        }
-
-        /// <summary>
-        /// METHOD TO CHECK IF SPECIFIED linear FREQ SCALE IS WORKING
-        /// Check it on standard one minute recording.
-        /// </summary>
-        public static void TESTMETHOD_LinearFrequencyScale()
-        {
-            var recordingPath = @"C:\SensorNetworks\SoftwareTests\TestRecordings\BAC2_20071008-085040.wav";
-            var outputDir = @"C:\SensorNetworks\SoftwareTests\TestFrequencyScale".ToDirectoryInfo();
-            var expectedResultsDir = Path.Combine(outputDir.FullName, TestTools.ExpectedResultsDir).ToDirectoryInfo();
-            var outputImagePath = Path.Combine(outputDir.FullName, "linearScaleSonogram.png");
-            var opFileStem = "BAC2_20071008";
-
-            var recording = new AudioRecording(recordingPath);
-
-            // specfied linear scale
-            int nyquist = 11025;
-            int frameSize = 1024;
-            int hertzInterval = 1000;
-            var freqScale = new FrequencyScale(nyquist, frameSize, hertzInterval);
-            var fst = freqScale.ScaleType;
-
-            var sonoConfig = new SonogramConfig
-            {
-                WindowSize = freqScale.FinalBinCount * 2,
-                WindowOverlap = 0.2,
-                SourceFName = recording.BaseName,
-
-                //NoiseReductionType = NoiseReductionType.Standard,
-                NoiseReductionType = NoiseReductionType.None,
-                NoiseReductionParameter = 0.0,
-            };
-
-            var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
-
-            // DO NOISE REDUCTION
-            var dataMatrix = SNR.NoiseReduce_Standard(sonogram.Data);
-            sonogram.Data = dataMatrix;
-            sonogram.Configuration.WindowSize = freqScale.WindowSize;
-
-            var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-            image.Save(outputImagePath);
-
-            // DO FILE EQUALITY TEST
-            string testName = "testName";
-            var expectedTestFile = new FileInfo(Path.Combine(expectedResultsDir.FullName, "FrequencyLinearScaleTest.EXPECTED.json"));
-            var resultFile = new FileInfo(Path.Combine(outputDir.FullName, opFileStem + "FrequencyLinearScaleTestResults.json"));
-            Acoustics.Shared.Csv.Csv.WriteMatrixToCsv(resultFile, freqScale.GridLineLocations);
-            TestTools.FileEqualityTest(testName, resultFile, expectedTestFile);
-
-            LoggedConsole.WriteLine("Completed Linear Frequency Scale test");
-            Console.WriteLine("\n\n");
-        }
-
-        /// <summary>
-        /// METHOD TO CHECK IF SPECIFIED MEL FREQ SCALE IS WORKING
-        /// Check it on standard one minute recording.
-        /// </summary>
-        public static void TESTMETHOD_MelFrequencyScale()
-        {
-            var recordingPath = @"C:\SensorNetworks\SoftwareTests\TestRecordings\BAC2_20071008-085040.wav";
-            var outputDir = @"C:\SensorNetworks\SoftwareTests\TestFrequencyScale".ToDirectoryInfo();
-            var expectedResultsDir = Path.Combine(outputDir.FullName, TestTools.ExpectedResultsDir).ToDirectoryInfo();
-            var outputImagePath = Path.Combine(outputDir.FullName, "melScaleSonogram.png");
-            var opFileStem = "BAC2_20071008";
-
-            var recording = new AudioRecording(recordingPath);
-
-            int nyquist = recording.Nyquist;
-            int frameSize = 1024;
-            int finalBinCount = 256;
-            int hertzInterval = 1000;
-            FreqScaleType scaleType = FreqScaleType.Mel;
-            var freqScale = new FrequencyScale(scaleType, nyquist, frameSize, finalBinCount, hertzInterval);
-            var fst = freqScale.ScaleType;
-
-            var sonoConfig = new SonogramConfig
-            {
-                WindowSize = frameSize,
-                WindowOverlap = 0.2,
-                SourceFName = recording.BaseName,
-                DoMelScale = (scaleType == FreqScaleType.Mel) ? true : false,
-                MelBinCount = (scaleType == FreqScaleType.Mel) ? finalBinCount : frameSize / 2,
-
-                //NoiseReductionType = NoiseReductionType.Standard,
-                NoiseReductionType = NoiseReductionType.None,
-                NoiseReductionParameter = 0.0,
-            };
-
-            var sonogram = new SpectrogramStandard(sonoConfig, recording.WavReader);
-
-            // DRAW SPECTROGRAM
-            var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-            image.Save(outputImagePath);
-
-            // DO FILE EQUALITY TEST
-            string testName = "MelTest";
-            var expectedTestFile = new FileInfo(Path.Combine(expectedResultsDir.FullName, "MelFrequencyScaleTest.EXPECTED.json"));
-            var resultFile = new FileInfo(Path.Combine(outputDir.FullName, opFileStem + "MelFrequencyLinearScaleTestResults.json"));
-            Acoustics.Shared.Csv.Csv.WriteMatrixToCsv(resultFile, freqScale.GridLineLocations);
-            TestTools.FileEqualityTest(testName, resultFile, expectedTestFile);
-
-            LoggedConsole.WriteLine("Completed Mel Frequency Scale test");
-            Console.WriteLine("\n\n");
-        }
-
-        /// <summary>
-        /// METHOD TO CHECK IF Octave FREQ SCALE IS WORKING
-        /// Check it on standard one minute recording, SR=22050.
-        /// </summary>
-        public static void TESTMETHOD_OctaveFrequencyScale1()
-        {
-            var recordingPath = @"G:\SensorNetworks\WavFiles\LewinsRail\FromLizZnidersic\Lewinsrail_TasmanIs_Tractor_SM304253_0151119_0640_1minMono.wav";
-            var outputDir = @"C:\SensorNetworks\Output\LewinsRail\LewinsRail_ThreeCallTypes".ToDirectoryInfo();
-
-            //var recordingPath = @"C:\SensorNetworks\SoftwareTests\TestRecordings\BAC\BAC2_20071008-085040.wav";
-            //var outputDir = @"C:\SensorNetworks\SoftwareTests\TestFrequencyScale".ToDirectoryInfo();
-            //var expectedResultsDir = Path.Combine(outputDir.FullName, TestTools.ExpectedResultsDir).ToDirectoryInfo();
-            var outputImagePath = Path.Combine(outputDir.FullName, "octaveFrequencyScale1NoNoiseReduciton.png");
-
-            //var opFileStem = "Lewinsrail_TasmanIs_Tractor";
-
-            var recording = new AudioRecording(recordingPath);
-
-            // default octave scale
-            var fst = FreqScaleType.Linear125Octaves6Tones30Nyquist11025;
-            var freqScale = new FrequencyScale(fst);
-
-            var sonoConfig = new SonogramConfig
-            {
-                WindowSize = freqScale.WindowSize,
-                WindowOverlap = 0.75,
-                SourceFName = recording.BaseName,
-                NoiseReductionType = NoiseReductionType.None,
-                NoiseReductionParameter = 0.0,
-            };
-
-            // Generate amplitude sonogram and then conver to octave scale
-            var sonogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
-            sonogram.Data = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(sonogram.Data, freqScale);
-
-            // DO NOISE REDUCTION
-            //var dataMatrix = SNR.NoiseReduce_Standard(sonogram.Data);
-            //sonogram.Data = dataMatrix;
-            sonogram.Configuration.WindowSize = freqScale.WindowSize;
-
-            var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-            image.Save(outputImagePath);
-
-            // DO FILE EQUALITY TEST
-            //string testName = "test1";
-            //var expectedTestFile = new FileInfo(Path.Combine(expectedResultsDir.FullName, "FrequencyOctaveScaleTest1.EXPECTED.json"));
-            //var resultFile = new FileInfo(Path.Combine(outputDir.FullName, opFileStem + "FrequencyOctaveScaleTest1Results.json"));
-            //Acoustics.Shared.Csv.Csv.WriteMatrixToCsv(resultFile, freqScale.GridLineLocations);
-            //TestTools.FileEqualityTest(testName, resultFile, expectedTestFile);
-
-            LoggedConsole.WriteLine("Completed Octave Frequency Scale test 1");
-            Console.WriteLine("\n\n");
-        }
-
-        /// <summary>
-        /// METHOD TO CHECK IF Octave FREQ SCALE IS WORKING
-        /// Check it on MARINE RECORDING from JASCO, SR=64000.
-        /// 24 BIT JASCO RECORDINGS from GBR must be converted to 16 bit.
-        /// ffmpeg -i source_file.wav -sample_fmt s16 out_file.wav
-        /// e.g. ". C:\Work\Github\audio-analysis\Extra Assemblies\ffmpeg\ffmpeg.exe" -i "C:\SensorNetworks\WavFiles\MarineRecordings\JascoGBR\AMAR119-00000139.00000139.Chan_1-24bps.1375012796.2013-07-28-11-59-56.wav" -sample_fmt s16 "C:\SensorNetworks\Output\OctaveFreqScale\JascoeMarineGBR116bit.wav"
-        /// ffmpeg binaries are in C:\Work\Github\audio-analysis\Extra Assemblies\ffmpeg.
-        /// </summary>
-        public static void TESTMETHOD_OctaveFrequencyScale2()
-        {
-            var recordingPath = @"C:\SensorNetworks\SoftwareTests\TestRecordings\MarineJasco_AMAR119-00000139.00000139.Chan_1-24bps.1375012796.2013-07-28-11-59-56-16bit.wav";
-            var outputDir = @"C:\SensorNetworks\SoftwareTests\TestFrequencyScale".ToDirectoryInfo();
-            var expectedResultsDir = Path.Combine(outputDir.FullName, TestTools.ExpectedResultsDir).ToDirectoryInfo();
-            var outputImagePath = Path.Combine(outputDir.FullName, "JascoMarineGBR1.png");
-            var opFileStem = "JascoMarineGBR1";
-
-            var recording = new AudioRecording(recordingPath);
-            var fst = FreqScaleType.Linear125Octaves7Tones28Nyquist32000;
-            var freqScale = new FrequencyScale(fst);
-
-            var sonoConfig = new SonogramConfig
-            {
-                WindowSize = freqScale.WindowSize,
-                WindowOverlap = 0.2,
-                SourceFName = recording.BaseName,
-                NoiseReductionType = NoiseReductionType.None,
-                NoiseReductionParameter = 0.0,
-            };
-
-            var sonogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
-            sonogram.Data = OctaveFreqScale.ConvertAmplitudeSpectrogramToDecibelOctaveScale(sonogram.Data, freqScale);
-
-            // DO NOISE REDUCTION
-            var dataMatrix = SNR.NoiseReduce_Standard(sonogram.Data);
-            sonogram.Data = dataMatrix;
-            sonogram.Configuration.WindowSize = freqScale.WindowSize;
-
-            var image = sonogram.GetImageFullyAnnotated(sonogram.GetImage(), "SPECTROGRAM: " + fst.ToString(), freqScale.GridLineLocations);
-            image.Save(outputImagePath);
-
-            // DO FILE EQUALITY TEST
-            string testName = "test2";
-            var expectedTestFile = new FileInfo(Path.Combine(expectedResultsDir.FullName, "FrequencyOctaveScaleTest2.EXPECTED.json"));
-            var resultFile = new FileInfo(Path.Combine(outputDir.FullName, opFileStem + "FrequencyOctaveScaleTest2Results.json"));
-            Acoustics.Shared.Csv.Csv.WriteMatrixToCsv(resultFile, freqScale.GridLineLocations);
-            TestTools.FileEqualityTest(testName, resultFile, expectedTestFile);
-
-            LoggedConsole.WriteLine("Completed Octave Frequency Scale " + testName);
-            Console.WriteLine("\n\n");
-        }
-
-        public static void TESTMETHOD_DrawFrequencyLinesOnImage()
-        {
-            string filename = @"C:\SensorNetworks\SoftwareTests\TestFrequencyScale\Clusters50.bmp";
-            string outputFile = @"C:\SensorNetworks\SoftwareTests\TestFrequencyScale\Clusters50WithGrid.bmp";
-            var bmp = Image.Load(filename);
-
-            int nyquist = 11025;
-            int frameSize = 1024;
-            int finalBinCount = 128;
-            int gridInterval = 1000;
-            var freqScale = new FrequencyScale(FreqScaleType.Mel, nyquist, frameSize, finalBinCount, gridInterval);
-            DrawFrequencyLinesOnImage((Image<Rgb24>)bmp, freqScale, includeLabels: false);
-            bmp.Save(outputFile);
         }
     }
 }

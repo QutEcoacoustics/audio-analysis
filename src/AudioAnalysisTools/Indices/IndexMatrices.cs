@@ -395,7 +395,8 @@ namespace AudioAnalysisTools.Indices
             summaryIndices.Add("SqrtTempEntropy", DataTools.SquareRootOfValues(summaryIndices["TemporalEntropy"]));
 
             // insert some transformed data columns
-            summaryIndices.Add("LogTempEntropy", DataTools.LogTransform(summaryIndices["TemporalEntropy"]));
+            var epsilon = Acoustics.Tools.Wav.WavReader.CalculateEpsilonForRescaledInteger(16);
+            summaryIndices.Add("LogTempEntropy", DataTools.Log10Values(summaryIndices["TemporalEntropy"], epsilon));
 
             // Calculate Normalised Difference Soundscape Index if not already done
             // caluclate two ratios for three bands.  DO NOT CHANGE THESE KEYS

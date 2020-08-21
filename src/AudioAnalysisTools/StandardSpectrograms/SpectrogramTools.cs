@@ -42,6 +42,101 @@ namespace AudioAnalysisTools.StandardSpectrograms
         }
 
         /// <summary>
+        /// Converts a single linear frequency scale spectrum to a reduced linear or non-linear frequency scale spectrum.
+        /// The scale conversion is defined in the transformMatrix variable.
+        /// The transformMatrix defines a filter bank.
+        /// Strictly speaking the input spectrum can be any vector of values but typically it should be linear spectrum.
+        /// </summary>
+        public static double[] RescaleSpectrumUsingFilterbank(int[,] transformMatrix, double[] linearSpectrum)
+        {
+            int length = transformMatrix.GetLength(0);
+            var rescaledSpectrum = new double[length];
+
+            // Fill in the first value of the rescaled spectrum
+            int lowIndex1 = transformMatrix[0, 0];
+            int centreIndex1 = transformMatrix[0, 0];
+            int highIndex1 = transformMatrix[1, 0];
+            rescaledSpectrum[0] = FilterbankIntegral(linearSpectrum, lowIndex1, centreIndex1, highIndex1);
+
+            // fill in remainder except last
+            for (int i = 1; i < length - 1; i++)
+            {
+                int lowIndex = transformMatrix[i - 1, 0];
+                int centreIndex = transformMatrix[i, 0];
+                int highIndex = transformMatrix[i + 1, 0];
+                if (highIndex >= linearSpectrum.Length)
+                {
+                    highIndex = linearSpectrum.Length - 1;
+                }
+
+                rescaledSpectrum[i] = FilterbankIntegral(linearSpectrum, lowIndex, centreIndex, highIndex);
+            }
+
+            // now fill in the last value of the rescaled spectrum
+            int lowIndex2 = transformMatrix[length - 2, 0];
+            int centreIndex2 = transformMatrix[length - 1, 0];
+            int highIndex2 = transformMatrix[length - 1, 0];
+            rescaledSpectrum[length - 1] = FilterbankIntegral(linearSpectrum, lowIndex2, centreIndex2, highIndex2);
+
+            return rescaledSpectrum;
+        }
+
+        /// <summary>
+        /// Implements the integral for a single filter in a filterbank.
+        /// </summary>
+        /// <param name="spectrum">THe input (linear) spectrum.</param>
+        /// <param name="lowIndex">The lower bound of the filter.</param>
+        /// <param name="centreIndex">Centre index of the filter.</param>
+        /// <param name="highIndex">Upper bound of the filter.</param>
+        /// <returns>The integral of the filter.</returns>
+        public static double FilterbankIntegral(double[] spectrum, int lowIndex, int centreIndex, int highIndex)
+        {
+            // Below is the implicit calculation of the integral.
+            // let k = index into spectral vector.
+            // for all k < lowIndex,  filterBank[k] = 0;
+            // for all k > highIndex, filterBank[k] = 0;
+
+            // for all k in range (lowIndex    <= k < centreIndex), filterBank[k] = (k-lowIndex) /(centreIndex - lowIndex)
+            // for all k in range (centreIndex <= k <= highIndex),  filterBank[k] = (highIndex-k)/(highIndex - centreIndex)
+
+            double area = 0.0;
+            double integral = 0.0;
+            int delta = centreIndex - lowIndex;
+            if (delta > 0)
+            {
+                for (int k = lowIndex; k < centreIndex; k++)
+                {
+                    double weight = (k - lowIndex) / (double)delta;
+                    integral += weight * spectrum[k];
+                    area += weight;
+                }
+            }
+
+            integral += spectrum[centreIndex];
+            area += 1.0;
+
+            delta = highIndex - centreIndex;
+            if (delta > 0)
+            {
+                for (int k = centreIndex + 1; k <= highIndex; k++)
+                {
+                    if (delta == 0)
+                    {
+                        continue;
+                    }
+
+                    double weight = (highIndex - k) / (double)delta;
+                    integral += weight * spectrum[k];
+                    area += weight;
+                }
+            }
+
+            // Normalise to area of the triangular filter
+            integral /= area;
+            return integral;
+        }
+
+        /// <summary>
         /// This method draws a spectrogram with other useful information attached.
         /// </summary>
         /// <param name="sonogram">of BaseSonogram class.</param>
@@ -650,6 +745,12 @@ namespace AudioAnalysisTools.StandardSpectrograms
         /// <param name="freqScale">freq Scale.</param>
         public static void DrawGridLinesOnImage(Image<Rgb24> bmp, TimeSpan startOffset, TimeSpan fullDuration, TimeSpan xAxisTicInterval, FrequencyScale freqScale)
         {
+            if (freqScale.ScaleType == FreqScaleType.OctaveDataReduction)
+            {
+                //do not want grid lines in this case.
+                return;
+            }
+
             FrequencyScale.DrawFrequencyLinesOnImage(bmp, freqScale, includeLabels: true);
 
             // We have stopped drawing temporal gridlines on these spectrograms. Create unnecessary clutter.

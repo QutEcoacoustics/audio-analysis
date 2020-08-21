@@ -13,7 +13,7 @@ namespace Acoustics.Test.TestHelpers
     {
         public static System.Random GetRandom(int? seed = null)
         {
-            seed = seed ?? Environment.TickCount;
+            seed ??= Environment.TickCount;
 
             Trace.WriteLine("\n\nRandom seed used: " + seed.Value);
             LoggedConsole.WriteWarnLine($"Random seed: {seed}");

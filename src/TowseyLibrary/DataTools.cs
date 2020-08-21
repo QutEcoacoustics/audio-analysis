@@ -1278,7 +1278,7 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// Finds the local peaks in a vector.
+        /// Finds the local maxima in a vector.
         /// </summary>
         public static bool[] GetPeaks(double[] data)
         {
@@ -2961,38 +2961,6 @@ namespace TowseyLibrary
             return sum;
         }
 
-        /// <summary>
-        /// convert values to Decibels.
-        /// Assume that all values are positive.
-        /// </summary>
-        /// <param name="m">matrix of positive power values.</param>
-        public static double[,] DeciBels(double[,] m, out double min, out double max)
-        {
-            min = double.MaxValue;
-            max = -double.MaxValue;
-
-            int rows = m.GetLength(0);
-            int cols = m.GetLength(1);
-            double[,] ret = new double[rows, cols];
-
-            for (int i = 0; i < rows; i++)
-            {
-                for (int j = 0; j < cols; j++)
-                {
-                    double dBels = 10 * Math.Log10(m[i, j]);    // convert power to decibels
-
-                    // NOTE: the decibels calculation should be a ratio.
-                    // Here the ratio is implied ie relative to the power in the original normalised signal
-                    //        if (dBels <= min) min = dBels;
-                    //      else
-                    //    if (dBels >= max) max = dBels;
-                    ret[i, j] = dBels;
-                }
-            }
-
-            return ret;
-        }
-
         public static double[] Order(double[] array, double[] order)
         {
             int length = array.Length;
@@ -3254,8 +3222,10 @@ namespace TowseyLibrary
         }
 
         /// <summary>
-        /// normalizes the passed array between 0,1.
+        /// Normalizes the passed array between 0,1.
         /// Ensures all values are positive.
+        /// Minimum array value set = 0.0.
+        /// Maximum array value set = 1.0.
         /// </summary>
         public static double[] normalise(double[] v)
         {
@@ -3676,7 +3646,13 @@ namespace TowseyLibrary
             return sqrtArray;
         }
 
-        public static double[] LogTransform(double[] data)
+        /// <summary>
+        /// Gets the log10 of an array of values.
+        /// Assume that all values are non-zero and positive.
+        /// </summary>
+        /// <param name="data">The input data array.</param>
+        /// <param name="epsilon">The smallest accepted non-zero value.</param>
+        public static double[] Log10Values(double[] data, double epsilon)
         {
             if (data == null)
             {
@@ -3686,32 +3662,9 @@ namespace TowseyLibrary
             var logArray = new double[data.Length];
             for (int i = 0; i < data.Length; i++)
             {
-                if (data[i] <= 0.0)
+                if (data[i] <= epsilon)
                 {
-                    logArray[i] = 0.0;
-                }
-                else
-                {
-                    logArray[i] = Math.Log10(1 + data[i]);
-                }
-            }
-
-            return logArray;
-        }
-
-        public static double[] LogValues(double[] data)
-        {
-            if (data == null)
-            {
-                return null;
-            }
-
-            var logArray = new double[data.Length];
-            for (int i = 0; i < data.Length; i++)
-            {
-                if (data[i] <= 0.0)
-                {
-                    logArray[i] = -1000000.0;
+                    logArray[i] = Math.Log10(epsilon);
                 }
                 else
                 {

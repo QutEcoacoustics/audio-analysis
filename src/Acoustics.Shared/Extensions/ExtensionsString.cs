@@ -203,12 +203,14 @@ namespace System
             return text + ellipsis;
         }
 
-        public static string WordWrap(this string text, int wrapThreshold = 120, int leftPadding = 0)
+        public static string WordWrap(this string text, int wrapThreshold = 120, int leftPadding = 0, string splitOn = " ", bool keepSplit = false)
         {
             if (string.IsNullOrEmpty(text))
             {
                 return text;
             }
+
+            int splitLength = splitOn.Length;
 
             string leftPad = string.Empty.PadRight(leftPadding);
 
@@ -229,16 +231,16 @@ namespace System
 
                 while (currentLine.Length > wrapThreshold)
                 {
-                    int splitPoint = currentLine.Substring(0, wrapThreshold).LastIndexOf(' ');
+                    int splitPoint = currentLine.Substring(0, wrapThreshold).LastIndexOf(splitOn);
 
                     if (splitPoint < 0)
                     {
                         splitPoint = wrapThreshold; // cuts through a word
                     }
 
-                    result.AppendLine(leftPad + currentLine.Substring(0, splitPoint));
+                    result.AppendLine(leftPad + currentLine.Substring(0, splitPoint + (keepSplit ? splitLength : 0)));
 
-                    currentLine = currentLine.Substring(splitPoint + 1);
+                    currentLine = currentLine.Substring(splitPoint + splitLength);
                 }
 
                 if (currentLine.IsNotWhitespace())

@@ -212,6 +212,7 @@ namespace AudioAnalysisTools.DSP
 
         /// <summary>
         /// Converts a Mel value to Herz.
+        /// NOTE: By default this Mel scale is linear to 1000 Hz.
         /// </summary>
         /// <returns>the Herz value.</returns>
         public static double InverseMel(double mel)
@@ -320,6 +321,26 @@ namespace AudioAnalysisTools.DSP
 
             //implicit end of for all spectra or time steps
             return outData;
+        }
+
+        /// <summary>
+        /// Returns an [N, 2] matrix with bin ID in column 1 and lower Herz bound in column 2 but on Mel scale.
+        /// </summary>
+        public static int[,] GetMelBinBounds(int nyquist, int melBinCount)
+        {
+            double maxMel = (int)MFCCStuff.Mel(nyquist);
+            double melPerBin = maxMel / melBinCount;
+
+            var binBounds = new int[melBinCount, 2];
+
+            for (int i = 0; i < melBinCount; i++)
+            {
+                binBounds[i, 0] = i;
+                double mel = i * melPerBin;
+                binBounds[i, 1] = (int)MFCCStuff.InverseMel(mel);
+            }
+
+            return binBounds;
         }
 
         /// <summary>

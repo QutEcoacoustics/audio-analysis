@@ -7,131 +7,97 @@ namespace AudioAnalysisTools.DSP
     using System;
     using System.Collections.Generic;
     using AudioAnalysisTools.StandardSpectrograms;
-    using AudioAnalysisTools.WavTools;
     using MathNet.Numerics;
     using TowseyLibrary;
 
     public static class OctaveFreqScale
     {
-        /// IMPORTANT NOTE: If you are converting Herz scale from LINEAR to OCTAVE, this conversion MUST be done BEFORE noise reduction
         /// <summary>
-        /// CONSTRUCTION OF Frequency Scales
-        /// WARNING!: Changing the constants for the octave scales will have undefined effects.
-        ///           The options below have been debugged to give what is required.
-        ///           However other values have not been debugged - so user should check the output to ensure it is what is required.
+        /// Calculates the parameters for a standard mixed linear-octave frequency scale.
+        /// IMPORTANT: It assumes that the nyquist, frame size and linear bound have already been set to valid values.
+        /// What makes this scale "standard" is that the number of octaveDivsions/tones (T) is set equal to number of linear bins.
+        /// The remainder of the spectrum will be reduced over T-tone octaves.
+        /// Sensible values for linearUpperBound are 125, 250, 500, 1000.
+        /// Note that when linearUpperBound = 500, the resulting spectrogram is very similar to the default MelScale.
+        /// When nyquist=11025 and frameSize = 512, the default MelScale has 64 frequency bins and Linear500-octave has 66 frequency bands.
         /// </summary>
-        public static void GetOctaveScale(FrequencyScale scale)
+        public static FrequencyScale GetStandardOctaveScale(FrequencyScale scale)
         {
-            int finalBinCount = 256;
-            int sr, frameSize, octaveDivisions;
+            int sr = scale.Nyquist * 2;
+            var binWidth = sr / (double)scale.WindowSize;
+            int linearUpperBound = scale.LinearBound;
 
-            // NOTE: octaveDivisions = the number of fractional Hz steps within one octave. Piano octave contains 12 steps per octave.
-
-            FreqScaleType fst = scale.ScaleType;
-
-            switch (fst)
+            if (linearUpperBound < 32 || linearUpperBound > scale.Nyquist - 64)
             {
-                case FreqScaleType.Linear62Octaves7Tones31Nyquist11025:
-                    // constants required for split linear-octave scale when sr = 22050
-                    sr = 22050;
-                    frameSize = 8192;
-                    scale.OctaveCount = 7;
-                    octaveDivisions = 31; // tone steps within one octave. Note: piano = 12 steps per octave.
-                    scale.LinearBound = 62;
-                    scale.Nyquist = 11025;
-                    break;
-
-                case FreqScaleType.Linear125Octaves6Tones30Nyquist11025:
-                    // constants required for split linear-octave scale when sr = 22050
-                    sr = 22050;
-                    frameSize = 8192;
-                    scale.OctaveCount = 6;
-                    octaveDivisions = 32; // tone steps within one octave. Note: piano = 12 steps per octave.
-                    scale.LinearBound = 125;
-                    scale.Nyquist = 11025;
-                    break;
-
-                case FreqScaleType.Octaves24Nyquist32000:
-                    //// constants required for full octave scale when sr = 64000
-                    sr = 64000;
-                    frameSize = 16384;
-                    scale.OctaveCount = 8;
-                    octaveDivisions = 24; // tone steps within one octave. Note: piano = 12 steps per octave.
-                    scale.LinearBound = 15;
-                    scale.Nyquist = 32000;
-                    break;
-
-                case FreqScaleType.Linear125Octaves7Tones28Nyquist32000:
-                    // constants required for split linear-octave scale when sr = 64000
-                    sr = 64000;
-                    frameSize = 16384; // = 2*8192   or 4*4096;
-                    scale.OctaveCount = 7;
-                    octaveDivisions = 28; // tone steps within one octave. Note: piano = 12 steps per octave.
-                    scale.LinearBound = 125;
-                    scale.Nyquist = 32000;
-                    break;
-
-                default:
-                    LoggedConsole.WriteErrorLine("WARNING: UNKNOWN OCTAVE SCALE.");
-                    return;
+                    throw new ArgumentException("WARNING: Invalid LinearBound value for method GetStandardOctaveScale().");
             }
 
-            scale.WindowSize = frameSize; // = 2*8192   or 4*4096
-            scale.FinalBinCount = finalBinCount;
-            scale.ToneCount = octaveDivisions;
-            scale.BinBounds = LinearToSplitLinearOctaveScale(sr, frameSize, finalBinCount, scale.LinearBound, scale.Nyquist, scale.ToneCount);
-            scale.GridLineLocations = GetGridLineLocations(fst, scale.BinBounds);
+            // init tone steps within one octave. Note: piano octave = 12 steps per octave.
+            scale.ToneCount = (int)Math.Round(scale.LinearBound / binWidth);
+            scale.BinBounds = LinearToSplitLinearOctaveScale(scale.Nyquist, scale.WindowSize, scale.LinearBound, scale.Nyquist, scale.ToneCount);
+            scale.FinalBinCount = scale.BinBounds.GetLength(0);
+
+            // These only work for case where linearUpperScale = 1000 Hz
+            int topLinearIndex = (int)Math.Round(linearUpperBound / binWidth);
+
+            var gridLineLocations = new int[4, 2];
+            gridLineLocations[0, 0] = topLinearIndex;
+            gridLineLocations[0, 1] = 1000;
+            gridLineLocations[1, 0] = topLinearIndex * 2;
+            gridLineLocations[1, 1] = 2000;
+
+            if (linearUpperBound > 256)
+            {
+                gridLineLocations[2, 0] = topLinearIndex * 3;
+                gridLineLocations[2, 1] = 4000;
+                gridLineLocations[3, 0] = topLinearIndex * 4;
+                gridLineLocations[3, 1] = 8000;
+            }
+
+            scale.GridLineLocations = gridLineLocations;
+            return scale;
         }
 
         /// <summary>
-        /// This method takes an audio recording and returns an octave scale spectrogram.
-        /// At the present time it only works for recordings with 64000 sample rate and returns a 256 bin sonogram.
-        /// TODO: generalise this method for other recordings and octave scales.
+        /// This method is octave frequency scale equivalent of MFCCStuff.DecibelSpectra(dspOutput.AmplitudeSpectrogram, dspOutput.WindowPower, sampleRate, epsilon)
+        /// The MFCCStuff method is the proper way to convert amplitude spectrogram to decibels.
+        /// It converts an amplitude spectrogram to a power spectrogram having specified frequency scale.
+        /// It transforms the amplitude spectrogram in the following steps:
+        /// (1) It removes the DC row or bin 0 iff there is odd number of spectrogram bins. ASSUMPTION: Bin count should be power of 2 from FFT.
+        /// (2) Then reduce the linear scale to an octave scale depending on the sr and required number of bins or filters.
+        /// (3) It converts spectral amplitudes to power, normalising for window power and sample rate.
+        ///     The window contributes power to the signal which must subsequently be removed from the spectral power. Calculate power per sample.
+        ///     See notes in the MFCCStuff.DecibelSpectra for further exp[lanaitons. These normalisations were adapted from MatLab MFCC code.
+        /// (4) It converts the power spectrogram to decibels.
         /// </summary>
-        public static BaseSonogram ConvertRecordingToOctaveScaleSonogram(AudioRecording recording, FreqScaleType fst)
+        /// <param name="amplitudeM">The amplitude spectrogram.</param>
+        /// <param name="windowPower">FFT window power comes from DSP_Frames.WindowPower.</param>
+        /// <param name="sampleRate">of the original signal.</param>
+        /// <param name="epsilon">dependson bit-rate of the original signal.</param>
+        /// <param name="freqScale">In this case an octave frquency scale.</param>
+        /// <returns>The decibel spectrogram.</returns>
+        public static double[,] ConvertAmplitudeSpectrogramToFreqScaledDecibels(double[,] amplitudeM, double windowPower, int sampleRate, double epsilon, FrequencyScale freqScale)
         {
-            var freqScale = new FrequencyScale(fst);
-            double windowOverlap = 0.75;
-            var sonoConfig = new SonogramConfig
+            int frameCount = amplitudeM.GetLength(0);
+            int binCount = amplitudeM.GetLength(1);
+
+            if (binCount.IsOdd())
             {
-                WindowSize = freqScale.WindowSize,
-                WindowOverlap = windowOverlap,
-                SourceFName = recording.BaseName,
-                NoiseReductionType = NoiseReductionType.None,
-                NoiseReductionParameter = 0.0,
-            };
+                // remove the DC freq bin 0.
+                amplitudeM = MatrixTools.Submatrix(amplitudeM, 0, 1, frameCount - 1, binCount - 1);
+            }
 
-            // Generate amplitude sonogram and then conver to octave scale
-            var sonogram = new AmplitudeSonogram(sonoConfig, recording.WavReader);
+            var octaveScaleM = ConvertLinearSpectrogramToOctaveFreqScale(amplitudeM, freqScale);
+            var powerSpectrogram = ConvertAmplitudeToPowerSpectrogram(octaveScaleM, windowPower, sampleRate);
 
-            // THIS IS THE CRITICAL LINE.
-            // TODO: SHOULD DEVELOP A SEPARATE UNIT TEST for this method
-            sonogram.Data = ConvertAmplitudeSpectrogramToDecibelOctaveScale(sonogram.Data, freqScale);
-
-            // DO NOISE REDUCTION
-            var dataMatrix = SNR.NoiseReduce_Standard(sonogram.Data);
-            sonogram.Data = dataMatrix;
-            int windowSize = freqScale.FinalBinCount * 2;
-            sonogram.Configuration.WindowSize = windowSize;
-            sonogram.Configuration.WindowStep = (int)Math.Round(windowSize * (1 - windowOverlap));
-            return sonogram;
-        }
-
-        public static double[,] ConvertAmplitudeSpectrogramToDecibelOctaveScale(double[,] inputSpgram, FrequencyScale freqScale)
-        {
-            //var dataMatrix = MatrixTools.Submatrix(inputSpgram, 0, 1, inputSpgram.GetLength(0) - 1, inputSpgram.GetLength(1) - 1);
-            //square the values to produce power spectrogram
-            var dataMatrix = MatrixTools.SquareValues(inputSpgram);
-
-            //convert spectrogram to octave scale
-            dataMatrix = ConvertLinearSpectrogramToOctaveFreqScale(dataMatrix, freqScale);
-            dataMatrix = MatrixTools.Power2DeciBels(dataMatrix, out var min, out var max);
-            return dataMatrix;
+            // Convert the power values to log using: dB = 10*log(power)
+            var powerEpsilon = epsilon * epsilon / windowPower / sampleRate;
+            var decibelSpectrogram = MatrixTools.SpectrogramPower2DeciBels(powerSpectrogram, powerEpsilon, out var min, out var max);
+            return decibelSpectrogram;
         }
 
         /// <summary>
         /// Converts a spectrogram having linear freq scale to one having an Octave freq scale.
-        /// Note that the sample rate (sr) and the frame size both need to be apporpriate to the choice of FreqScaleType.
         /// TODO: SHOULD DEVELOP A SEPARATE UNIT TEST for this method.
         /// </summary>
         public static double[,] ConvertLinearSpectrogramToOctaveFreqScale(double[,] inputSpgram, FrequencyScale freqScale)
@@ -149,9 +115,6 @@ namespace AudioAnalysisTools.DSP
 
             // get the octave bin bounds for this octave scale type
             var octaveBinBounds = freqScale.BinBounds;
-
-            //var octaveBinBounds = GetOctaveScale(freqScale.ScaleType);
-
             int newBinCount = octaveBinBounds.GetLength(0);
 
             // set up the new octave spectrogram
@@ -166,7 +129,8 @@ namespace AudioAnalysisTools.DSP
                 var linearSpectrum = MatrixTools.GetRow(inputSpgram, row);
 
                 // convert the spectrum to its octave form
-                var octaveSpectrum = OctaveSpectrum(octaveBinBounds, linearSpectrum);
+                //var octaveSpectrum = ConvertLinearSpectrumToOctaveScale(octaveBinBounds, linearSpectrum);
+                var octaveSpectrum = SpectrogramTools.RescaleSpectrumUsingFilterbank(octaveBinBounds, linearSpectrum);
 
                 //return the spectrum to output spectrogram.
                 MatrixTools.SetRow(octaveSpectrogram, row, octaveSpectrum);
@@ -175,220 +139,139 @@ namespace AudioAnalysisTools.DSP
             return octaveSpectrogram;
         }
 
-        public static double[,] DecibelSpectra(double[,] amplitudeM, double windowPower, int sampleRate, double epsilon, FrequencyScale freqScale)
-        {
-            double[,] powerSpectra = PowerSpectra(amplitudeM, windowPower, sampleRate, epsilon, freqScale);
-
-            // Convert the power values to log using: dB = 10*log(power)
-            var decibelSpectra = MatrixTools.Power2DeciBels(powerSpectra, out var min, out var max);
-            return decibelSpectra;
-        }
-
-        public static double[,] AmplitudeSpectra(double[,] amplitudeM, double windowPower, int sampleRate, double epsilon, FrequencyScale freqScale)
-        {
-            double[,] powerSpectra = PowerSpectra(amplitudeM, windowPower, sampleRate, epsilon, freqScale);
-
-            // Convert the power values back to amplitude by taking the square root.
-            var amplitudeSpectra = MatrixTools.SquareRootOfValues(powerSpectra);
-            return amplitudeSpectra;
-        }
-
         /// <summary>
-        /// Converts an amplitude spectrogram to a power spectrogram having an octave frequency scale.
-        /// This method has been copied from a method of same name in the class MFCCStuff.cs and adapted to produce an octave freq scale.
-        /// It transforms the amplitude spectrogram in the following steps:
-        /// (1) It removes the DC row or bin 0 iff there is odd number of spectrogram bins. ASSUMPTION: Bin count should be power of 2 from FFT.
-        /// (1) It converts spectral amplitudes to power, normalising for window power and sample rate.
-        ///     The window contributes power to the signal which must subsequently be removed from the spectral power. Calculate power per sample.
-        ///     See notes in the MFCCStuff.DecibelSpectra for further exp[lanaitons. These normalisations were adapted from MatLab MFCC code.
-        /// (2) Then reduce the linear scale toan octave scale depending on the sr and required number of bins or filters.
+        /// Converts Amplitude Spectrogram to Power Spectrogram.
+        /// Square the amplitude values to get power.
+        /// Power values must be adjusted for the power in the FFT window and also for the sample rate.
+        /// Must divide by the window power to remove its contribution to amplitude values.
+        /// Must divide by sample rate to get average power per signal sample.
+        /// NOTE: Multiply by 2 to accomodate two spectral components, ie positive and neg freq.
+        ///       BUT the last nyquist bin does not require a factor of two.
+        ///       However this method is called only by octave reduced frequency scales where the nyquist bin is just one of several.
         /// </summary>
-        /// <param name="amplitudeM"> the amplitude spectra. </param>
-        /// <param name="windowPower">value for window power normalisation.</param>
-        /// <param name="sampleRate">to NormaliseMatrixValues for the sampling rate.</param>
-        /// <param name="epsilon">small value to avoid log of zero.</param>
-        /// <param name="freqScale">the kind of frequency scale.</param>
-        public static double[,] PowerSpectra(double[,] amplitudeM, double windowPower, int sampleRate, double epsilon, FrequencyScale freqScale)
+        /// <param name="amplitudeM">The frequency scaled amplitude spectrogram.</param>
+        /// <param name="windowPower">Power of the FFT window.</param>
+        /// <param name="sampleRate">The sample rate of the original recording.</param>
+        /// <returns>The Power Spectrogram as matrix. Each spectrum is a matrix row.</returns>
+        public static double[,] ConvertAmplitudeToPowerSpectrogram(double[,] amplitudeM, double windowPower, int sampleRate)
         {
             int frameCount = amplitudeM.GetLength(0);
             int binCount = amplitudeM.GetLength(1);
 
-            double minPow = epsilon * epsilon / windowPower / sampleRate;
-            double minPow2 = epsilon * epsilon * 2 / windowPower / sampleRate;
+            // init the octave scaled spectrogram as a matrix of spectra
+            double[,] powerSpectrogram = new double[frameCount, binCount];
 
-            if (binCount.IsOdd())
-            {
-                // remove the DC freq bin 0.
-                amplitudeM = MatrixTools.Submatrix(amplitudeM, 0, 1, frameCount - 1, binCount - 1);
-            }
-
-            // init the spectrogram as a matrix of spectra
-            double[,] powerSpectra = new double[frameCount, binCount];
-
-            // first square the values to calculate power.
+            // Square the values to calculate power.
             // Must multiply by 2 to accomodate two spectral components, ie positive and neg freq.
-            for (int j = 0; j < binCount - 1; j++)
+            for (int j = 0; j < binCount; j++)
             {
                 //foreach time step or frame
                 for (int i = 0; i < frameCount; i++)
                 {
-                    if (amplitudeM[i, j] < epsilon)
-                    {
-                        powerSpectra[i, j] = minPow2;
-                    }
-                    else
-                    {
-                        powerSpectra[i, j] = amplitudeM[i, j] * amplitudeM[i, j] * 2 / windowPower / sampleRate;
-                    }
-                } //end of all frames
-            } //end of all freq bins
+                    powerSpectrogram[i, j] = amplitudeM[i, j] * amplitudeM[i, j] * 2 / windowPower / sampleRate;
+                }
+            }
 
+            /*
             //calculate power of the Nyquist freq bin - last column of matrix
             //foreach time step or frame
             for (int i = 0; i < frameCount; i++)
             {
-                //calculate power of the DC value
-                if (amplitudeM[i, binCount - 1] < epsilon)
-                {
-                    powerSpectra[i, binCount - 1] = minPow;
-                }
-                else
-                {
-                    powerSpectra[i, binCount - 1] = amplitudeM[i, binCount - 1] * amplitudeM[i, binCount - 1] / windowPower / sampleRate;
-                }
+                powerSpectra[i, binCount - 1] = amplitudeM[i, binCount - 1] * amplitudeM[i, binCount - 1] / windowPower / sampleRate;
             }
+            */
 
-            powerSpectra = ConvertLinearSpectrogramToOctaveFreqScale(powerSpectra, freqScale);
-            return powerSpectra;
+            return powerSpectrogram;
         }
 
-        public static int[,] GetGridLineLocations(FreqScaleType ost, int[,] octaveBinBounds)
+        public static int[,] GetGridLineLocations(int nyquist, int linearBound, int[,] octaveBinBounds)
         {
-            int[,] gridLineLocations = null;
+            int[] gridLocationsHertz = { 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000, 32000, 64000, 128000 };
+            int binCount = octaveBinBounds.GetLength(0);
+            var gridLineLocations = new List<int[]>();
+            var upperBound = nyquist * 0.75;
 
-            switch (ost)
+            // get location index of the first required gridline.
+            int glIndex = 0;
+            while (gridLocationsHertz[glIndex] < linearBound)
             {
-                case FreqScaleType.Linear62Octaves7Tones31Nyquist11025:
-                    gridLineLocations = new int[8, 2];
-                    LoggedConsole.WriteErrorLine("This Octave Scale does not currently have grid data provided.");
-                    break;
-
-                case FreqScaleType.Linear125Octaves6Tones30Nyquist11025:
-                    gridLineLocations = new int[7, 2];
-                    gridLineLocations[0, 0] = 46; //  125 Hz
-                    gridLineLocations[1, 0] = 79; //  250
-                    gridLineLocations[2, 0] = 111; //  500
-                    gridLineLocations[3, 0] = 143; // 1000
-                    gridLineLocations[4, 0] = 175; // 2000
-                    gridLineLocations[5, 0] = 207; // 4000
-                    gridLineLocations[6, 0] = 239; // 8000
-
-                    // enter the Hz value
-                    gridLineLocations[0, 1] = 125; //  125 Hz
-                    gridLineLocations[1, 1] = 250; //  250
-                    gridLineLocations[2, 1] = 500; //  500
-                    gridLineLocations[3, 1] = 1000; // 1000
-                    gridLineLocations[4, 1] = 2000; // 2000
-                    gridLineLocations[5, 1] = 4000; // 4000
-                    gridLineLocations[6, 1] = 8000; // 8000
-                    break;
-                case FreqScaleType.Octaves24Nyquist32000:
-                    gridLineLocations = new int[8, 2];
-                    LoggedConsole.WriteErrorLine("This Octave Scale does not currently have grid data provided.");
-                    break;
-
-                case FreqScaleType.Linear125Octaves7Tones28Nyquist32000:
-                    gridLineLocations = new int[9, 2];
-                    gridLineLocations[0, 0] = 34; //  125 Hz
-                    gridLineLocations[1, 0] = 62; //  250
-                    gridLineLocations[2, 0] = 89; //  500
-                    gridLineLocations[3, 0] = 117; // 1000
-                    gridLineLocations[4, 0] = 145; // 2000
-                    gridLineLocations[5, 0] = 173; // 4000
-                    gridLineLocations[6, 0] = 201; // 8000
-                    gridLineLocations[7, 0] = 229; //16000
-                    gridLineLocations[8, 0] = 256; //32000
-
-                    // enter the Hz values
-                    gridLineLocations[0, 1] = 125; //  125 Hz
-                    gridLineLocations[1, 1] = 250; //  250
-                    gridLineLocations[2, 1] = 500; //  500
-                    gridLineLocations[3, 1] = 1000; // 1000
-                    gridLineLocations[4, 1] = 2000; // 2000
-                    gridLineLocations[5, 1] = 4000; // 4000
-                    gridLineLocations[6, 1] = 8000; // 8000
-                    gridLineLocations[7, 1] = 16000; //16000
-                    gridLineLocations[8, 1] = 32000; //32000
-
-                    break;
-                default:
-                    LoggedConsole.WriteErrorLine("Not a valid Octave Scale.");
-                    break;
+                glIndex++;
             }
 
-            return gridLineLocations;
+            int glHertz = gridLocationsHertz[glIndex];
+
+            for (int i = 0; i < binCount; i++)
+            {
+                if (octaveBinBounds[i, 1] < linearBound)
+                {
+                    continue;
+                }
+
+                if (octaveBinBounds[i, 1] > upperBound)
+                {
+                    break;
+                }
+
+                // if get to a grid location
+                if (octaveBinBounds[i, 1] >= glHertz)
+                {
+                    var intArray = new int[2];
+                    intArray[0] = i;
+                    intArray[1] = glHertz; // octaveBinBounds[i, 1];
+                    gridLineLocations.Add(intArray);
+
+                    glIndex++;
+                    glHertz = gridLocationsHertz[glIndex];
+                }
+            }
+
+            // there is better way to do this.
+            var returnMatrix = new int[gridLineLocations.Count, 2];
+            for (int gl = 0; gl < gridLineLocations.Count; gl++)
+            {
+                var location = gridLineLocations[gl];
+                returnMatrix[gl, 0] = location[0];
+                returnMatrix[gl, 1] = location[1];
+            }
+
+            return returnMatrix;
         }
 
         /// <summary>
-        /// Converts a single linear spectrum to octave scale spectrum.
+        /// Returns a matrix that is used to transform a spectrum having linear Hz scale into a spectrum having an octave freq scale.
+        /// The returned matrix is size N x 2, where N = the length of the output spectrum.
+        /// In fact the op spectrum has a split Herz scale - bottom part linear, top part octave scaled.
+        /// Column 0 of the returned matrix contains the index into linear spectrum.
+        /// Column 1 of the returned matrix contains the Hertz value of the corresponding index into the linear spectrum.
         /// </summary>
-        public static double[] OctaveSpectrum(int[,] octaveBinBounds, double[] linearSpectrum)
+        public static int[,] LinearToSplitLinearOctaveScale(int nyquist, int frameSize, int lowerFreqBound, int upperFreqBound, int octaveDivisions)
         {
-            int length = octaveBinBounds.GetLength(0);
-            var octaveSpectrum = new double[length];
-            for (int i = 1; i < length - 1; i++)
-            {
-                int lowIndex = octaveBinBounds[i - 1, 0];
-                int centreIndex = octaveBinBounds[i, 0];
-                int highIndex = octaveBinBounds[i + 1, 0];
-                if (highIndex >= linearSpectrum.Length)
-                {
-                    highIndex = linearSpectrum.Length - 1;
-                }
+            // Get the linear freq scale.
+            int inputSpectrumSize = frameSize / 2;
+            var linearFreqScale = FrequencyScale.GetLinearFreqScale(nyquist, inputSpectrumSize);
 
-                octaveSpectrum[i] = FilterbankIntegral(linearSpectrum, lowIndex, centreIndex, highIndex);
-            }
+            // Get the octave freq scale.
+            var octaveBandsLowerBounds = GetFractionalOctaveBands(lowerFreqBound, upperFreqBound, octaveDivisions);
 
-            // now fill in the first value of the octave spectrum
-            int lowIndex1 = octaveBinBounds[0, 0];
-            int centreIndex1 = octaveBinBounds[0, 0];
-            int highIndex1 = octaveBinBounds[1, 0];
-            octaveSpectrum[0] = FilterbankIntegral(linearSpectrum, lowIndex1, centreIndex1, highIndex1);
+            double freqStep = nyquist / (double)inputSpectrumSize;
+            int topLinearIndex = (int)Math.Round(lowerFreqBound / freqStep);
+            int opSpectrumSize = topLinearIndex + octaveBandsLowerBounds.GetLength(0);
 
-            // now fill in the last value of the octave spectrum
-            int lowIndex2 = octaveBinBounds[length - 2, 0];
-            int centreIndex2 = octaveBinBounds[length - 1, 0];
-            int highIndex2 = octaveBinBounds[length - 1, 0];
-            octaveSpectrum[length - 1] = FilterbankIntegral(linearSpectrum, lowIndex2, centreIndex2, highIndex2);
-            return octaveSpectrum;
-        }
-
-        /// <summary>
-        /// Returns the index bounds for a split herz scale - bottom part linear, top part octave scaled.
-        /// </summary>
-        public static int[,] LinearToSplitLinearOctaveScale(int sr, int frameSize, int finalBinCount, int lowerFreqBound, int upperFreqBound, int octaveDivisions)
-        {
-            var bandBounds = GetFractionalOctaveBands(lowerFreqBound, upperFreqBound, octaveDivisions);
-            int nyquist = sr / 2;
-            int binCount = frameSize / 2;
-            var linearFreqScale = GetLinearFreqScale(nyquist, binCount);
-
-            var splitLinearOctaveIndexBounds = new int[finalBinCount, 2];
-            double freqStep = nyquist / (double)binCount;
-            int topLinearIndex = (int)Math.Round(lowerFreqBound / freqStep) + 1;
+            // set up the transform matrix.
+            var splitLinearOctaveIndexBounds = new int[opSpectrumSize, 2];
 
             // fill in the linear part of the freq scale
-            for (int i = 0; i < topLinearIndex; i++)
+            for (int i = 0; i <= topLinearIndex; i++)
             {
                 splitLinearOctaveIndexBounds[i, 0] = i;
                 splitLinearOctaveIndexBounds[i, 1] = (int)Math.Round(linearFreqScale[i]);
             }
 
-            for (int i = topLinearIndex; i < finalBinCount; i++)
+            for (int i = topLinearIndex + 1; i < opSpectrumSize; i++)
             {
                 for (int j = 0; j < linearFreqScale.Length; j++)
                 {
-                    if (linearFreqScale[j] > bandBounds[i - topLinearIndex])
+                    if (linearFreqScale[j] > octaveBandsLowerBounds[i - topLinearIndex])
                     {
                         splitLinearOctaveIndexBounds[i, 0] = j;
                         splitLinearOctaveIndexBounds[i, 1] = (int)Math.Round(linearFreqScale[j]);
@@ -397,29 +280,92 @@ namespace AudioAnalysisTools.DSP
                 }
             }
 
-            // make sure last index has values
-            splitLinearOctaveIndexBounds[finalBinCount - 1, 0] = linearFreqScale.Length - 1;
-            splitLinearOctaveIndexBounds[finalBinCount - 1, 1] = (int)Math.Round(linearFreqScale[linearFreqScale.Length - 1]);
-
-            // A HACK!!! Make sure second last index has values if they are zero
-            if (splitLinearOctaveIndexBounds[finalBinCount - 2, 0] == 0)
-            {
-                splitLinearOctaveIndexBounds[finalBinCount - 2, 0] = linearFreqScale.Length - 1;
-                splitLinearOctaveIndexBounds[finalBinCount - 2, 1] = (int)Math.Round(linearFreqScale[linearFreqScale.Length - 1]);
-            }
+            // make sure last index extends to last bin of the linear spectrum.
+            splitLinearOctaveIndexBounds[opSpectrumSize - 1, 0] = linearFreqScale.Length - 1;
+            splitLinearOctaveIndexBounds[opSpectrumSize - 1, 1] = (int)Math.Round(linearFreqScale[linearFreqScale.Length - 1]);
 
             return splitLinearOctaveIndexBounds;
         }
 
         /// <summary>
+        /// This method assumes that the linear spectrum is derived from a 512 frame with sr = 22050.
+        /// It is a split linear-octave scale.
+        /// The linear part is from 0-2 kHz with reduction by factor of 8.
+        /// The octave part is obtained by setting octave divisions or tone count = 5.
+        /// </summary>
+        /// <returns>a frequency scale for spectral-data reduction purposes.</returns>
+        public static FrequencyScale GetDataReductionScale(FrequencyScale scale)
+        {
+            int sr = 22050;
+            int frameSize = 512;
+            scale.Nyquist = sr / 2;
+            scale.WindowSize = frameSize;
+
+            // linear reduction of the lower spectrum from 0 - 2 kHz.
+            scale.LinearBound = 2000;
+            int linearReductionFactor = 8;
+
+            // Reduction of upper spectrum 2-11 kHz: Octave count and tone steps within one octave.
+            scale.ToneCount = 5;
+
+            var octaveBandsLowerBounds = GetFractionalOctaveBands(scale.LinearBound, scale.Nyquist, scale.ToneCount);
+            int spectrumBinCount = frameSize / 2;
+            var linearFreqScale = FrequencyScale.GetLinearFreqScale(scale.Nyquist, spectrumBinCount);
+
+            double linearBinWidth = scale.Nyquist / (double)spectrumBinCount;
+            int topLinearIndex = (int)Math.Round(scale.LinearBound / linearBinWidth);
+
+            // calculate number of bins in linear portion. +1 because going to finish up at end of linear portion.
+            int linearReducedBinCount = (topLinearIndex / linearReductionFactor) + 1;
+            int finalBinCount = linearReducedBinCount + octaveBandsLowerBounds.Length;
+            var splitLinearOctaveIndexBounds = new int[finalBinCount, 2];
+
+            // fill in the linear part of the freq scale
+            int z = 1;
+            while (splitLinearOctaveIndexBounds[z - 1, 1] < scale.LinearBound)
+            {
+                splitLinearOctaveIndexBounds[z, 0] = z * linearReductionFactor;
+                splitLinearOctaveIndexBounds[z, 1] = (int)Math.Round(linearFreqScale[z * linearReductionFactor]);
+                z++;
+            }
+
+            // fill in the octave part of the freq scale
+            for (int i = linearReducedBinCount + 1; i < finalBinCount; i++)
+            {
+                for (int j = 0; j < linearFreqScale.Length; j++)
+                {
+                    if (linearFreqScale[j] > octaveBandsLowerBounds[i - linearReducedBinCount])
+                    {
+                        splitLinearOctaveIndexBounds[i, 0] = j;
+                        splitLinearOctaveIndexBounds[i, 1] = (int)Math.Round(linearFreqScale[j]);
+                        break;
+                    }
+                }
+            }
+
+            // make sure last index extends to last bin of the linear spectrum.
+            splitLinearOctaveIndexBounds[finalBinCount - 1, 0] = linearFreqScale.Length - 1;
+            splitLinearOctaveIndexBounds[finalBinCount - 1, 1] = (int)Math.Round(linearFreqScale[linearFreqScale.Length - 1]);
+
+            scale.BinBounds = splitLinearOctaveIndexBounds;
+            return scale;
+        }
+
+        /// <summary>
         /// Returns the index bounds for a full octave scale - from lowest freq set by user to top freq.
         /// </summary>
+        /// <param name="sr">Sample rate of the source recording.</param>
+        /// <param name="frameSize">Frame size of the source recording.</param>
+        /// <param name="finalBinCount">Final Bin Count.</param>
+        /// <param name="lowerFreqBound">Lower bound of the octave part of the final scale.</param>
+        /// <param name="upperFreqBound">Upper bound of the octave scale, most likely the Nyquist.</param>
+        /// <param name="octaveDivisions">Number of tones/divisions per octave.</param>
         public static int[,] LinearToFullOctaveScale(int sr, int frameSize, int finalBinCount, int lowerFreqBound, int upperFreqBound, int octaveDivisions)
         {
             var bandBounds = GetFractionalOctaveBands(lowerFreqBound, upperFreqBound, octaveDivisions);
             int nyquist = sr / 2;
             int binCount = frameSize / 2;
-            var linearFreqScale = GetLinearFreqScale(nyquist, binCount);
+            var linearFreqScale = FrequencyScale.GetLinearFreqScale(nyquist, binCount);
 
             var octaveIndexBounds = new int[finalBinCount, 2];
 
@@ -441,182 +387,69 @@ namespace AudioAnalysisTools.DSP
 
         public static double[] GetFractionalOctaveBands(double minFreq, double maxFreq, int octaveDivisions)
         {
-            double[] freqBandCentres = { 15.625, 31.25, 62.5, 125, 250, 500, 1000, 2000, 4000, 8000, 16000, 32000, 64000 };
+            double[] octaveLowerBounds = { 15.625, 31.25, 62.5, 125, 250, 500, 1000, 2000, 4000, 8000, 16000, 32000, 64000 };
 
             var list = new List<double>();
 
-            for (int i = 0; i < freqBandCentres.Length; i++)
+            for (int i = 0; i < octaveLowerBounds.Length; i++)
             {
-                if (freqBandCentres[i] < minFreq)
+                // ignore this octave floor if below that required.
+                if (octaveLowerBounds[i] < minFreq)
                 {
                     continue;
                 }
 
-                if (freqBandCentres[i] > maxFreq)
+                // stop when octave floor is above that required.
+                if (octaveLowerBounds[i] > maxFreq)
                 {
                     break;
                 }
 
-                double[] fractionalOctaveBands = GetFractionalOctaveBands(freqBandCentres[i], octaveDivisions);
+                // get the frequency tones in the given octave.
+                double[] tonesInOctave = GetFractionalOctaveBands(octaveLowerBounds[i], octaveDivisions);
 
                 for (int j = 0; j < octaveDivisions; j++)
                 {
-                    double floor = fractionalOctaveBands[j]; // sqrt2;
-                    if (floor < minFreq)
+                    double toneFloor = tonesInOctave[j];
+                    if (toneFloor < minFreq)
                     {
                         continue;
                     }
 
-                    list.Add(floor);
+                    if (toneFloor > maxFreq)
+                    {
+                        break;
+                    }
+
+                    list.Add(toneFloor);
                 }
             }
 
             return list.ToArray();
         }
 
+        /// <summary>
+        /// Returns an array of tones in one octave.
+        /// The units are frequency in Hertz.
+        /// NOTE: The octave is divided geometrically.
+        /// </summary>
+        /// <param name="lowerBound">The lower frquency bound of the octave.</param>
+        /// <param name="subbandCount">The number of tones or frequency bins in the octave.</param>
+        /// <returns>The frequency of each tone in the octave.</returns>
         public static double[] GetFractionalOctaveBands(double lowerBound, int subbandCount)
         {
             double[] fractionalOctaveBands = new double[subbandCount];
             fractionalOctaveBands[0] = lowerBound;
             double exponent = 1 / (double)subbandCount;
-            double factor = Math.Pow(2, exponent);
 
+            // calculate the frequency increment factor between each tone and the next.
+            double factor = Math.Pow(2, exponent);
             for (int i = 1; i < subbandCount; i++)
             {
                 fractionalOctaveBands[i] = fractionalOctaveBands[i - 1] * factor;
             }
 
             return fractionalOctaveBands;
-        }
-
-        /// <summary>
-        /// THis method assumes that the frameSize will be power of 2
-        /// FOR DEBUG PURPOSES, when sr = 22050 and frame size = 8192, the following Hz are located at index:
-        /// Hz      Index
-        /// 15        6
-        /// 31       12
-        /// 62       23
-        /// 125      46
-        /// 250      93
-        /// 500     186
-        /// 1000    372.
-        /// </summary>
-        public static double[] GetLinearFreqScale(int nyquist, int binCount)
-        {
-            double freqStep = nyquist / (double)binCount;
-            double[] linearFreqScale = new double[binCount];
-
-            for (int i = 0; i < binCount; i++)
-            {
-                linearFreqScale[i] = freqStep * i;
-            }
-
-            return linearFreqScale;
-        }
-
-        public static double FilterbankIntegral(double[] spectrum, int lowIndex, int centreIndex, int highIndex)
-        {
-            // let k = index into spectral vector.
-            // for all k < lowIndex,  filterBank[k] = 0;
-            // for all k > highIndex, filterBank[k] = 0;
-
-            // for all k in range (lowIndex    <= k < centreIndex), filterBank[k] = (k-lowIndex) /(centreIndex - lowIndex)
-            // for all k in range (centreIndex <= k <= highIndex),  filterBank[k] = (highIndex-k)/(highIndex - centreIndex)
-
-            double area = 0.0;
-            double integral = 0.0;
-            int delta = centreIndex - lowIndex;
-            if (delta > 0)
-            {
-                for (int k = lowIndex; k < centreIndex; k++)
-                {
-                    double weight = (k - lowIndex) / (double)delta;
-                    integral += weight * spectrum[k];
-                    area += weight;
-                }
-            }
-
-            integral += spectrum[centreIndex];
-            area += 1.0;
-
-            delta = highIndex - centreIndex;
-            if (delta > 0)
-            {
-                for (int k = centreIndex + 1; k <= highIndex; k++)
-                {
-                    if (delta == 0)
-                    {
-                        continue;
-                    }
-
-                    double weight = (highIndex - k) / (double)delta;
-                    integral += weight * spectrum[k];
-                    area += weight;
-                }
-            }
-
-            // NormaliseMatrixValues to area of the triangular filter
-            integral /= area;
-            return integral;
-        }
-
-        /// <summary>
-        /// Returns a simple spectrogram for test purposes.
-        /// Write code for simple test. Different spectra tried so far:
-        /// (1) Uniform spectrum = 1.0
-        /// (2) Ramp spectrum
-        /// (3) SPike spectrum.
-        /// </summary>
-        public static double[] GetSimpleTestSpectrum(int sr, int frameSize)
-        {
-            // int nyquist = sr / 2;
-            int binCount = frameSize / 2;
-            double[] spectrum = new double[binCount];
-
-            // return a linear frequency scale
-            // double freqStep = nyquist / (double)binCount;
-            for (int i = 0; i < binCount; i++)
-            {
-                // ramp spectrum
-                //spectrum[i] = freqStep * i;
-
-                //Uniform spectrum
-                spectrum[i] = 1.0;
-            }
-
-            // Spike spectrum
-            //spectrum[500] = 1.0;
-
-            return spectrum;
-        }
-
-        public static void TestOctaveScale(FreqScaleType fst)
-        {
-            var freqScale = new FrequencyScale(fst);
-            var octaveBinBounds = freqScale.BinBounds;
-
-            // now test the octave scale using a test spectrum
-            int sr = 22050;
-            int frameSize = 8192; // default for sr = 22050
-
-            if (fst == FreqScaleType.Octaves24Nyquist32000 || fst == FreqScaleType.Linear125Octaves7Tones28Nyquist32000)
-            {
-                sr = 64000;
-                frameSize = 16384; // default for sr = 64000
-            }
-
-            // Get a simple test spectrum
-            var linearSpectrum = GetSimpleTestSpectrum(sr, frameSize);
-
-            //do the test
-            var octaveSpectrum = OctaveSpectrum(octaveBinBounds, linearSpectrum);
-
-            // write output
-            int rowCount = octaveBinBounds.GetLength(0);
-            for (int i = 0; i < rowCount; i++)
-            {
-                Console.WriteLine(i + "   bin-" + octaveBinBounds[i, 0] + "  " + octaveBinBounds[i, 1] + "Hz      " + octaveSpectrum[i]);
-            }
         }
     }
 }

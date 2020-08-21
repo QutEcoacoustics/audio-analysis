@@ -19,45 +19,23 @@ namespace AudioAnalysisTools.StandardSpectrograms
     using SixLabors.ImageSharp.Processing;
     using TowseyLibrary;
 
-    /*
-    /// <summary>
-    /// Sonogram type.
-    /// </summary>
-    public enum SonogramType
-    {
-        /// <summary>
-        /// Ampltude Sonogram.
-        /// </summary>
-        Amplitude,
-
-        /// <summary>
-        /// Spectral Sonogram.
-        /// </summary>
-        Spectral,
-
-        /// <summary>
-        /// Cepstral Sonogram.
-        /// </summary>
-        Cepstral,
-
-        /// <summary>
-        /// Acoustic Vectors Sonogram.
-        /// </summary>
-        AcousticVectors,
-
-        /// <summary>
-        /// Sobel Edge Sonogram.
-        /// </summary>
-        SobelEdge,
-    }
-    */
-
     /// <summary>
     /// Base Sonogram.
     /// </summary>
     public abstract partial class BaseSonogram
     {
+        /// <summary>
+        /// Gets or sets the config information.
+        /// The Configuration object should contain all the parameters required to construct an amplitude spectrogram given a recording.
+        /// </summary>
         public SonogramConfig Configuration { get; set; }
+
+        /// <summary>
+        /// Gets or sets the frequency scale information.
+        /// The FreqScale object should contain all the parameters required to convert the linear frquency scale of the amplitude spectrogram
+        /// into any reduced or non-linear frequency scale required.
+        /// </summary>
+        public FrequencyScale FreqScale { get; set; }
 
         public double MaxAmplitude { get; set; }
 
@@ -125,102 +103,43 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseSonogram"/> class.
-        /// BASE CONSTRUCTOR
-        /// This constructor contains all steps required to prepare the amplitude spectrogram.
-        /// The third boolean parameter is simply a place-filler to ensure a different Constructor signature.
-        /// from the principle Constructor which follows.
+        /// BASE CONSTRUCTOR.
         /// </summary>
         /// <param name="config">config file to use.</param>
         /// <param name="wav">wav.</param>
-        /// <param name="dummy">filler boolean. Calculate in method.</param>
-        public BaseSonogram(SonogramConfig config, WavReader wav, bool dummy)
+        public BaseSonogram(SonogramConfig config, WavReader wav)
             : this(config)
         {
-            // As of 28 March 2017 drop capability to get sub-band of spectrogram because was not being used.
-            // can be recovered later if desired.
-            //bool doExtractSubband = this.SubBandMinHz > 0 || this.SubBandMaxHz < this.NyquistFrequency;
+            this.InitialiseSpectrogram(wav);
 
-            this.Duration = wav.Time;
-            double minDuration = 0.2;
-            if (this.Duration.TotalSeconds < minDuration)
-            {
-                LoggedConsole.WriteLine("Signal must at least {0} seconds long to produce a sonogram!", minDuration);
-                return;
-            }
-
-            //set config params to the current recording
-            this.SampleRate = wav.SampleRate;
-            this.Configuration.Duration = wav.Time;
-            this.Configuration.SampleRate = wav.SampleRate; //also set the Nyquist
-            this.MaxAmplitude = wav.CalculateMaximumAmplitude();
-
-            var recording = new AudioRecording(wav);
-            var fftData = DSP_Frames.ExtractEnvelopeAndFfts(
-                recording,
-                config.WindowSize,
-                config.WindowOverlap,
-                this.Configuration.WindowFunction);
-
-            // now recover required data
-            //epsilon is a signal dependent minimum amplitude value to prevent possible subsequent log of zero value.
-            this.Configuration.epsilon = fftData.Epsilon;
-            this.Configuration.WindowPower = fftData.WindowPower;
-            this.FrameCount = fftData.FrameCount;
-            this.DecibelsPerFrame = fftData.FrameDecibels;
-
-            //init normalised signal energy array but do nothing with it. This has to be done from outside
-            this.DecibelsNormalised = new double[this.FrameCount];
-            this.Data = fftData.AmplitudeSpectrogram;
-
-            // ENERGY PER FRAME and NORMALISED dB PER FRAME AND SNR
-            // currently DoSnr = true by default
-            if (config.DoSnr)
-            {
-                // If the FractionOfHighEnergyFrames PRIOR to noise removal exceeds SNR.FractionalBoundForMode,
-                // then Lamel's noise removal algorithm may not work well.
-                if (fftData.FractionOfHighEnergyFrames > SNR.FractionalBoundForMode)
-                {
-                    Log.WriteIfVerbose("\nWARNING ##############");
-                    Log.WriteIfVerbose(
-                        "\t############### BaseSonogram(): This is a high energy recording. Percent of high energy frames = {0:f0} > {1:f0}%",
-                        fftData.FractionOfHighEnergyFrames * 100,
-                        SNR.FractionalBoundForMode * 100);
-                    Log.WriteIfVerbose("\t############### Noise reduction algorithm may not work well in this instance!\n");
-                }
-
-                //AUDIO SEGMENTATION/END POINT DETECTION - based on Lamel et al
-                // Setting segmentation/endpoint detection parameters is broken as of September 2014.
-                // The next line is a hack replacement
-                EndpointDetectionConfiguration.SetDefaultSegmentationConfig();
-                this.SigState = EndpointDetectionConfiguration.DetermineVocalisationEndpoints(this.DecibelsPerFrame, this.FrameStep);
-            }
-
-            /* AS OF 30 MARCH 2017, NO LONGER IMPLEMENT SUB-BAND THINGS, because not being used for years.
-            // EXTRACT REQUIRED FREQUENCY BAND
-            if (doExtractSubband)
-            {
-                this.Data = SpectrogramTools.ExtractFreqSubband(
-                    this.Data,
-                    this.subBandMinHz,
-                    this.subBandMaxHz,
-                    this.Configuration.DoMelScale,
-                    this.Configuration.FreqBinCount,
-                    this.FBinWidth);
-                this.CalculateSubbandSNR(this.Data);
-            }
-            */
+            // this Make() call makes the desired spectrogram.
+            this.Make(this.Data);
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseSonogram"/> class.
-        /// This BASE CONSTRUCTOR is the one most used - it automatically makes the Amplitude spectrum and
-        /// then, using a call to Make(), it converts the Amplitude matrix to a Spectrogram whose values are decibels.
+        /// BASE CONSTRUCTOR.
         /// </summary>
-        /// <param name="config">All parameters required to make spectrogram.</param>
-        /// <param name="wav">The recording whose spectrogram is to be made.</param>
-        public BaseSonogram(SonogramConfig config, WavReader wav)
-            : this(config, wav, false)
+        /// <param name="config">config file to use.</param>
+        /// <param name="wav">wav.</param>
+        public BaseSonogram(SonogramConfig config, FrequencyScale freqScale, WavReader wav)
+            : this(config)
         {
+            // check that the frameWidths are consistent.
+            if (config.WindowSize != freqScale.WindowSize)
+            {
+                throw new Exception("BaseSonogram: CONSTRUCTOR ERROR: Inconsistency in Frequency Scale conversion data.");
+            }
+
+            this.FreqScale = freqScale;
+            this.InitialiseSpectrogram(wav);
+
+            if (this.FreqScale.ScaleType == FreqScaleType.Linear && this.FreqScale.WindowSize != this.FreqScale.FinalBinCount)
+            {
+                // convert the spectrogram frequency scale
+                this.Data = RescaleLinearFrequencyScale(this.Data, this.FreqScale);
+            }
+
             this.Make(this.Data);
         }
 
@@ -244,24 +163,108 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         public abstract void Make(double[,] amplitudeM);
 
-        /* AS OF 30 MARCH 2017, NO LONGER IMPLEMENT SUB-BAND THINGS, because not being used for years.
-        public void CalculateSubbandSNR(double[,] subband)
+        /// <summary>
+        /// This method creates the amplitude spectrogram.
+        /// </summary>
+        private void InitialiseSpectrogram(WavReader wav)
         {
-            this.SnrSubband = new SNR(subband); //subband is the amplitude values
+            this.Duration = wav.Time;
+            double minDuration = 0.2;
+            if (this.Duration.TotalSeconds < minDuration)
+            {
+                LoggedConsole.WriteLine("Signal must at least {0} seconds long to produce a sonogram!", minDuration);
+                return;
+            }
 
-            //RECALCULATE DecibelsNormalised and dB REFERENCE LEVEL - need for MFCCs
-            this.DecibelsInSubband = SnrSubband.Decibels;
-            this.DecibelReference = SnrSubband.MaxReferenceDecibelsWrtNoise;
-            this.DecibelsNormalised = SnrSubband.NormaliseDecibelArray_ZeroOne(this.DecibelReference);
+            //set config params to the current recording
+            this.SampleRate = wav.SampleRate;
+            this.Configuration.Duration = wav.Time;
+            this.Configuration.SampleRate = wav.SampleRate; //also set the Nyquist
+            this.MaxAmplitude = wav.CalculateMaximumAmplitude();
 
-            //RECALCULATE ENDPOINTS OF VOCALISATIONS
-            SigState = EndpointDetectionConfiguration.DetermineVocalisationEndpoints(this.DecibelsInSubband, this.FrameStep);
+            var recording = new AudioRecording(wav);
+            var fftData = DSP_Frames.ExtractEnvelopeAndFfts(
+                recording,
+                this.Configuration.WindowSize,
+                this.Configuration.WindowOverlap,
+                this.Configuration.WindowFunction);
+
+            // now recover required data
+            //epsilon is a signal dependent minimum amplitude value to prevent possible subsequent log of zero value.
+            this.Configuration.epsilon = fftData.Epsilon;
+            this.Configuration.WindowPower = fftData.WindowPower;
+            this.FrameCount = fftData.FrameCount;
+            this.DecibelsPerFrame = fftData.FrameDecibels;
+
+            //init normalised signal energy array but do nothing with it. This has to be done from outside
+            this.DecibelsNormalised = new double[this.FrameCount];
+
+            this.Data = fftData.AmplitudeSpectrogram;
+
+            // currently DoSnr = true by default
+            if (this.Configuration.DoSnr)
+            {
+                this.CalculateSnrData(fftData.FractionOfHighEnergyFrames);
+            }
         }
-        */
 
-        public void SetTimeScale(TimeSpan duration)
+        public static double[,] RescaleLinearFrequencyScale(double[,] inputSpgram, FrequencyScale freqScale)
         {
-            this.Duration = duration;
+            if (freqScale == null)
+            {
+                throw new ArgumentNullException(nameof(freqScale));
+            }
+
+            if (freqScale.ScaleType != FreqScaleType.Linear)
+            {
+                LoggedConsole.WriteLine("Require a Linear frequency scale for this method.");
+                throw new ArgumentNullException(nameof(freqScale));
+            }
+
+            // get the bin bounds for this scale type
+            var binBounds = freqScale.BinBounds;
+            int newBinCount = binBounds.GetLength(0);
+
+            // set up the new spectrogram
+            int frameCount = inputSpgram.GetLength(0);
+
+            double[,] opM = new double[frameCount, newBinCount];
+
+            for (int row = 0; row < frameCount; row++)
+            {
+                //get each frame or spectrum in turn and rescale.
+                var linearSpectrum = MatrixTools.GetRow(inputSpgram, row);
+                var rescaledSpectrum = SpectrogramTools.RescaleSpectrumUsingFilterbank(binBounds, linearSpectrum);
+
+                //return the spectrum to output spectrogram.
+                MatrixTools.SetRow(opM, row, rescaledSpectrum);
+            }
+
+            return opM;
+        }
+
+        /// <summary>
+        /// Calculates SNR, ENERGY PER FRAME and NORMALISED dB PER FRAME.
+        /// </summary>
+        private void CalculateSnrData(double highEnergyFraction)
+        {
+            // If the FractionOfHighEnergyFrames PRIOR to noise removal exceeds SNR.FractionalBoundForMode,
+            // then Lamel's noise removal algorithm may not work well.
+            if (highEnergyFraction > SNR.FractionalBoundForMode)
+            {
+                Log.WriteIfVerbose("\nWARNING ##############");
+                Log.WriteIfVerbose(
+                    "\t############### BaseSonogram(): This is a high energy recording. Percent of high energy frames = {0:f0} > {1:f0}%",
+                    highEnergyFraction * 100,
+                    SNR.FractionalBoundForMode * 100);
+                Log.WriteIfVerbose("\t############### Noise reduction algorithm may not work well in this instance!\n");
+            }
+
+            //AUDIO SEGMENTATION/END POINT DETECTION - based on Lamel et al
+            // Setting segmentation/endpoint detection parameters is broken as of September 2014.
+            // The next line sets default parameters.
+            EndpointDetectionConfiguration.SetDefaultSegmentationConfig();
+            this.SigState = EndpointDetectionConfiguration.DetermineVocalisationEndpoints(this.DecibelsPerFrame, this.FrameStep);
         }
 
         /// <summary>
@@ -280,6 +283,17 @@ namespace AudioAnalysisTools.StandardSpectrograms
             return image;
         }
 
+        /// <summary>
+        /// This method fully annotates a short-time scale spectrogram.
+        /// The grid-lines are drawn according to indices in gridLineLocations.
+        /// Therefore the method will accept spectrograms with octave or any frequency scale.
+        /// The time scale is calculated from recording duration and width of image.
+        /// </summary>
+        /// <param name="image">The raw spectrogram image.</param>
+        /// <param name="title">To go on the title bar.</param>
+        /// <param name="gridLineLocations">A matrix of values.</param>
+        /// <param name="tag">Used to identify images??.</param>
+        /// <returns>The annotated spectrogram.</returns>
         public Image<Rgb24> GetImageFullyAnnotated(Image<Rgb24> image, string title, int[,] gridLineLocations, Color? tag = null)
         {
             if (image == null)
@@ -287,8 +301,12 @@ namespace AudioAnalysisTools.StandardSpectrograms
                 throw new ArgumentNullException(nameof(image));
             }
 
-            FrequencyScale.DrawFrequencyLinesOnImage(image, gridLineLocations, includeLabels: true);
+            if (gridLineLocations != null)
+            {
+                FrequencyScale.DrawFrequencyLinesOnImage(image, gridLineLocations, includeLabels: true);
+            }
 
+            // collect all the images and combine.
             var titleBar = DrawTitleBarOfGrayScaleSpectrogram(title, image.Width, tag);
             var timeBmp = ImageTrack.DrawTimeTrack(this.Duration, image.Width);
             var list = new List<Image<Rgb24>> { titleBar, timeBmp, image, timeBmp };
@@ -322,8 +340,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
         public Image<Rgb24> GetImage(bool doHighlightSubband, bool add1KHzLines, bool doMelScale)
         {
-            // doHighlightSubband function still working but have removed min/max bounds from user control.
-            // doHighlightSubband = true;
             int subBandMinHz = 1000;
             int subBandMaxHz = 9000;
 
@@ -339,7 +355,7 @@ namespace AudioAnalysisTools.StandardSpectrograms
 
                 if (doMelScale)
                 {
-                    gridLineLocations = FrequencyScale.GetMelGridLineLocations(kHzInterval, this.NyquistFrequency, image.Height);
+                    gridLineLocations = SpectrogramMelScale.GetMelGridLineLocations(kHzInterval, this.NyquistFrequency, image.Height);
                 }
                 else
                 {
@@ -350,103 +366,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
             }
 
             return image;
-        }
-
-        public Image<Rgb24> GetImage_ReducedSonogramWithWidth(int width, bool drawGridLines)
-        {
-            var data = this.Data; //sonogram intensity values
-            int frameCount = data.GetLength(0); // Number of spectra in sonogram
-
-            int factor = frameCount / width;
-
-            if (factor <= 1)
-            {
-                return this.GetImage();
-            }
-
-            return this.GetImage_ReducedSonogram(factor, drawGridLines);
-        }
-
-        public Image<Rgb24> GetImage_ReducedSonogram(int factor, bool drawGridLines)
-        {
-            //  double[] logEnergy = this.LogEnPerFrame;
-            var data = this.Data; //sonogram intensity values
-            int frameCount = data.GetLength(0); // Number of spectra in sonogram
-            int imageHeight = data.GetLength(1); // image ht = sonogram ht. Later include grid and score scales
-            int imageWidth = frameCount / factor;
-            int subSample = frameCount / imageWidth;
-
-            //set up min, max, range for normalising of dB values
-            DataTools.MinMax(data, out double min, out double max);
-            double range = max - min;
-
-            var grayScale = ImageTools.GrayScale();
-
-            //set up the 1000kHz scale
-            int herzInterval = 1000;
-            int[] vScale = FrequencyScale.CreateLinearYaxis(herzInterval, this.NyquistFrequency, imageHeight); //calculate location of 1000Hz grid lines
-            var bmp = new Image<Rgb24>(imageWidth, imageHeight);
-            for (int w = 0; w < imageWidth; w++)
-            {
-                int start = w * subSample;
-                int end = ((w + 1) * subSample) - 1;
-                double maxE = -double.MaxValue;
-                int maxId = 0;
-                for (int x = start; x < end; x++)
-                {
-                    // NOTE!@#$%^ This was changed from LogEnergy on 30th March 2009.
-                    if (maxE < this.DecibelsPerFrame[x])
-                    {
-                        maxE = this.DecibelsPerFrame[x];
-                        maxId = x;
-                    }
-                }
-
-                // have found the frame with max energy. Now draw its spectrum
-                // over all freq bins
-                for (int y = 0; y < data.GetLength(1); y++)
-                {
-                    // NormaliseMatrixValues and bound the value - use min bound, max and 255 image intensity range
-                    double value = (data[maxId, y] - min) / range;
-                    int c = 255 - (int)Math.Floor(255.0 * value); //original version
-                    if (c < 0)
-                    {
-                        c = 0;
-                    }
-                    else if (c >= 256)
-                    {
-                        c = 255;
-                    }
-
-                    var col = grayScale[c];
-                    bmp[w, imageHeight - y - 1] = col;
-                } //end over all freq bins
-
-                //set up grid color
-
-                if (drawGridLines)
-                {
-                    var gridCol = Color.Black;
-                    if (w % 2 == 0)
-                    {
-                        gridCol = Color.Black;
-                    }
-
-                    //over all Y-axis pixels
-                    for (int p = 0; p < vScale.Length; p++)
-                    {
-                        if (vScale[p] == 0)
-                        {
-                            continue;
-                        }
-
-                        int y = imageHeight - p;
-                        bmp[w, y] = gridCol;
-                    }
-                }
-            }
-
-            return bmp;
         }
 
         private static bool IsInBand(int y, int? minFreq, int? maxFreq)
@@ -788,50 +707,6 @@ namespace AudioAnalysisTools.StandardSpectrograms
                         new PointF(0, 0),
                         new PointF(0, SpectrogramConstants.HEIGHT_OF_TITLE_BAR));
                 }
-            });
-
-            return bmp;
-        }
-
-        // mark of time scale according to scale.
-        public static Image<Rgb24> DrawTimeTrack(TimeSpan offsetMinute, TimeSpan xAxisPixelDuration, TimeSpan xAxisTicInterval, TimeSpan labelInterval, int trackWidth, int trackHeight, string title)
-        {
-            var bmp = new Image<Rgb24>(trackWidth, trackHeight);
-            bmp.Mutate(g =>
-            {
-                g.Clear(Color.Black);
-
-                double elapsedTime = offsetMinute.TotalSeconds;
-                double pixelDuration = xAxisPixelDuration.TotalSeconds;
-                int labelSecondsInterval = (int)labelInterval.TotalSeconds;
-                var whitePen = new Pen(Color.White, 1);
-                var stringFont = Drawing.Arial8;
-
-                // for columns, draw in second lines
-                double xInterval = (int)(xAxisTicInterval.TotalMilliseconds / xAxisPixelDuration.TotalMilliseconds);
-
-                // for pixels in the line
-                for (int x = 1; x < trackWidth; x++)
-                {
-                    elapsedTime += pixelDuration;
-                    if (x % xInterval <= pixelDuration)
-                    {
-                        g.DrawLine(whitePen, x, 0, x, trackHeight);
-                        int totalSeconds = (int)Math.Round(elapsedTime);
-                        if (totalSeconds % labelSecondsInterval == 0)
-                        {
-                            int minutes = totalSeconds / 60;
-                            int seconds = totalSeconds % 60;
-                            string time = $"{minutes}m{seconds}s";
-                            g.DrawTextSafe(time, stringFont, Color.White, new PointF(x + 1, 2)); //draw time
-                        }
-                    }
-                }
-
-                g.DrawLine(whitePen, 0, 0, trackWidth, 0); //draw upper boundary
-                g.DrawLine(whitePen, 0, trackHeight - 1, trackWidth, trackHeight - 1); //draw lower boundary
-                g.DrawLine(whitePen, trackWidth, 0, trackWidth, trackHeight - 1); //draw right end boundary
-                g.DrawTextSafe(title, stringFont, Color.White, new PointF(4, 3));
             });
 
             return bmp;

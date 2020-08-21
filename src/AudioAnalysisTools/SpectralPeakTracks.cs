@@ -6,6 +6,7 @@ namespace AudioAnalysisTools
 {
     using System.Collections.Generic;
     using System.Linq;
+    using System.Runtime;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.StandardSpectrograms;
     using AudioAnalysisTools.WavTools;
@@ -388,8 +389,8 @@ namespace AudioAnalysisTools
             double[,] decibelSpectrogram;
             if (octaveScale)
             {
-                var freqScale = new FrequencyScale(FreqScaleType.Linear125Octaves7Tones28Nyquist32000);
-                decibelSpectrogram = OctaveFreqScale.DecibelSpectra(dspOutput.AmplitudeSpectrogram, dspOutput.WindowPower, sampleRate, epsilon, freqScale);
+                var freqScale = new FrequencyScale(FreqScaleType.OctaveStandard);
+                decibelSpectrogram = OctaveFreqScale.ConvertAmplitudeSpectrogramToFreqScaledDecibels(dspOutput.AmplitudeSpectrogram, dspOutput.WindowPower, sampleRate, epsilon, freqScale);
             }
             else
             {

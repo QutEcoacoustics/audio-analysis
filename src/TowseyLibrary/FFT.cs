@@ -38,8 +38,8 @@ namespace TowseyLibrary
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FFT"/> class.
-        /// wrapper for FFT.
-        /// Window Power equals sum of squared window values. Default window is Hamming.
+        /// It is a wrapper for calling method that does the FFT.
+        /// Window Power equals sum of squared window values.
         /// </summary>
         public FFT(int windowSize, WindowFunc w)
         {
@@ -76,7 +76,7 @@ namespace TowseyLibrary
         /// <summary>
         /// Invokes an FFT on the given data array.
         /// cdata contains the real and imaginary terms of the coefficients representing cos and sin components respectively.
-        /// cdata is symmetrical about terms 512 &amp; 513. Can ignore all coefficients 512 and above .
+        /// cdata is symmetrical about terms 512 &amp; 513. Can ignore all coefficients 512 and above.
         /// </summary>
         /// <param name="data">a single frame of signal values.</param>
         public double[] Invoke(double[] data)
@@ -100,7 +100,8 @@ namespace TowseyLibrary
             }
 
             //do the FFT
-            four1(cdata); //array contains real and imaginary values
+            //The cdata array contains real and imaginary values
+            Four1(cdata);
 
             double[] f = new double[this.CoeffCount]; //array to contain amplitude data
 
@@ -136,26 +137,26 @@ namespace TowseyLibrary
             }
 
             //do the FFT
-            four1(cdata);
+            Four1(cdata);
 
             double[] f = new double[this.CoeffCount]; //array to contain amplitude data
 
             // calculate amplitude
             for (int i = 0; i < this.CoeffCount; i++)
             {
-                f[i] = hypot(cdata[2 * i], cdata[(2 * i) + 1]);
+                f[i] = Hypotenuse(cdata[2 * i], cdata[(2 * i) + 1]);
             }
 
             return f;
         }
 
-        private static double hypot(double x, double y)
+        private static double Hypotenuse(double x, double y)
         {
             return Math.Sqrt((x * x) + (y * y));
         }
 
         // from http://www.nrbook.com/a/bookcpdf/c12-2.pdf
-        private static void four1(double[] data)
+        private static void Four1(double[] data)
         {
             int nn = data.Length / 2;
             int n = nn << 1;
@@ -274,10 +275,8 @@ namespace TowseyLibrary
             return amplitude;
         }
 
-        // from http://en.wikipedia.org/wiki/Window_function
-
         /// <summary>
-        /// The Hamming window reduces the immediate adjacent sidelobes (conmpared to the Hanning) but at the expense of increased
+        /// The Hamming window reduces the immediate adjacent sidelobes (compared to the Hanning) but at the expense of increased
         /// distal side-lobes. <see href="https://en.wikipedia.org/wiki/Window_function" />.
         /// </summary>
         public static readonly WindowFunc Hamming = (n, N) =>
@@ -288,6 +287,11 @@ namespace TowseyLibrary
             return 0.54 - (0.46 * Math.Cos(x)); //MATLAB code uses these value and says it is better!
         };
 
+        /// <summary>
+        /// See comment for Hanning that compares Hamming with Hanning.
+        /// Our experience with analysis of environmental recordings, where we often up or down sample in order to calculate indices,
+        /// is that the HANNING window is to be preferred and it was made the default in July 2020.
+        /// </summary>
         public static readonly WindowFunc Hanning = (n, N) =>
         {
             double x = 2.0 * Math.PI * n / (N - 1);

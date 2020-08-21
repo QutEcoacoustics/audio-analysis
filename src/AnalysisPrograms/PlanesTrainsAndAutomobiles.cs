@@ -185,18 +185,23 @@ namespace AnalysisPrograms
             TimeSpan duration = recording.Duration;
             NoiseReductionType nrt = SNR.KeyToNoiseReductionType("STANDARD");
 
-            var sonogram = (BaseSonogram)SpectrogramStandard.GetSpectralSonogram(
-                recording.BaseName,
-                windowSize,
-                windowOverlap,
-                bitsPerSample,
-                windowPower,
-                sr,
-                duration,
-                nrt,
-                matrix);
+            //Set the default values config
+            SonogramConfig sonoConfig = new SonogramConfig
+            {
+                SourceFName = recording.BaseName,
+                WindowSize = windowSize,
+                WindowOverlap = windowOverlap,
+                NoiseReductionType = nrt,
+                epsilon = Math.Pow(0.5, bitsPerSample - 1),
+                WindowPower = windowPower,
+                SampleRate = sr,
+                Duration = duration,
+            };
 
-            sonogram.DecibelsNormalised = new double[rowCount];
+            var sonogram = new SpectrogramStandard(sonoConfig, matrix)
+            {
+                DecibelsNormalised = new double[rowCount],
+            };
 
             //foreach frame or time step
             for (int i = 0; i < rowCount; i++)
@@ -205,7 +210,7 @@ namespace AnalysisPrograms
             }
 
             sonogram.DecibelsNormalised = DataTools.normalise(sonogram.DecibelsNormalised);
-            return Tuple.Create(sonogram, hits, scoreArray, predictedEvents);
-        } //end Execute_HDDetect
+            return Tuple.Create((BaseSonogram)sonogram, hits, scoreArray, predictedEvents);
+        }
     }
-} //end class PlanesTrainsAndAutomobiles
+}

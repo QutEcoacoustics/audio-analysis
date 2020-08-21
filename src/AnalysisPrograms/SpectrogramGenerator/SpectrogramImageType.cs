@@ -11,7 +11,10 @@ namespace AnalysisPrograms.SpectrogramGenerator
         DecibelSpectrogramNoiseReduced = 2,
         Experimental = 3,
         DifferenceSpectrogram = 4,
-        CepstralSpectrogram = 5,
-        AmplitudeSpectrogramLocalContrastNormalization = 6,
+        MelScaleSpectrogram = 5,
+        CepstralSpectrogram = 6,
+        OctaveScaleSpectrogram = 7,
+        RibbonSpectrogram = 8,
+        AmplitudeSpectrogramLocalContrastNormalization = 9,
     }
 }
