@@ -8,6 +8,77 @@
 
 <!--generated-content-insert-here-->
 
+## Ecoacoustics Audio Analysis Software v20.8.0.63 2020-08-23
+
+Version v20.8.0.63
+
+
+
+### Details
+
+[Compare v20.7.1.10...v20.8.0.63](https://github.com/QutBioacoustics/audio-analysis/compare/v20.7.1.10...v20.8.0.63)
+
+- 66f7b757 dependabot-preview[bot] - Bump Microsoft.Extensions.Configuration from 3.1.6 to 3.1.7
+- c5d5518d dependabot-preview[bot] - Bump MSTest.TestFramework from 2.1.0 to 2.1.2
+- c7f3ebd8 dependabot-preview[bot] - Bump System.IO.Abstractions from 12.0.8 to 12.1.1
+- 23240324 dependabot-preview[bot] - Bump MSTest.TestAdapter from 2.1.0 to 2.1.2
+- 4f5a71a7 dependabot-preview[bot] - ([#362](https://github.com/QutEcoacoustics/audio-analysis/issues/362)) Bump YamlDotNet from 8.1.0 to 8.1.2 (#362)
+- 4fd5f387 Anthony Truskinger - Fixes unit tests
+- 2b6821f2 towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) Fixing Unit tests
+- 13968a3d towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) Fix up octave data reduction
+- 6acfa88e towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) Shift methods to better locations
+- 621ad0c9 dependabot-preview[bot] - ([#358](https://github.com/QutEcoacoustics/audio-analysis/issues/358)) Bump MathNet.Numerics from 4.9.0 to 4.12.0 (#358)
+- 50847680 dependabot-preview[bot] - ([#359](https://github.com/QutEcoacoustics/audio-analysis/issues/359)) Bump FsUnit.xUnit from 3.9.0 to 4.0.1 (#359)
+- 005466e7 dependabot-preview[bot] - ([#348](https://github.com/QutEcoacoustics/audio-analysis/issues/348)) Bump CsvHelper from 14.0.0 to 15.0.5 (#348)
+- 60a76093 dependabot-preview[bot] - ([#360](https://github.com/QutEcoacoustics/audio-analysis/issues/360)) Bump JetBrains.Annotations from 2019.1.3 to 2020.1.0 (#360)
+- 93c2703f towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) Update FrequencyScaleTests.cs
+- 01aa9be1 towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) Fix errors in octave frequency scale
+- f10ea682 towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) New methods for rescaling linear spectrograms
+- 5fa1979b towsey - Add in new spectrogram image.
+- 5f26e3ff towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) Work on Octave frequency scale
+- 5031e9a1 towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) Remove unnecssary code, change method names
+- 071143c6 dependabot-preview[bot] - ([#355](https://github.com/QutEcoacoustics/audio-analysis/issues/355)) Bump coverlet.collector from 1.2.0 to 1.3.0 (#355)
+- e843ef55 dependabot-preview[bot] - ([#356](https://github.com/QutEcoacoustics/audio-analysis/issues/356)) Bump Microsoft.Extensions.Configuration.Json from 3.1.6 to 3.1.7 (#356)
+- bec695d2 dependabot-preview[bot] - ([#347](https://github.com/QutEcoacoustics/audio-analysis/issues/347)) Bump SixLabors.ImageSharp.Drawing from 1.0.0-unstable0421 to 1.0.0-unstable0456 (#347)
+- 3fd6bba1 dependabot-preview[bot] - Bump ConsoleTools from 0.5.3 to 0.5.4
+- 0e429f7c towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) Update FrequencyScaleTests.cs
+- adcab044 towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) Fix generation of additional spectrogram types.
+- 2a8c3e2a towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) More epsilon/log of zero fixes.
+- 6dbe9bae towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) Incorporate epsilon in to log transform
+- 7905d4f5 Anthony Truskinger - Fix CLI deprecated API errors
+- e7ef6998 dependabot-preview[bot] - Bump McMaster.Extensions.CommandLineUtils from 2.5.0 to 3.0.0
+- 5143bdc9 Anthony Truskinger - Attempt to make fragile tests less demanding for CI
+- 7fb64df9 dependabot-preview[bot] - Bump FSharp.Core from 4.7.0 to 4.7.2
+- 0a83479d towsey - ([#291](https://github.com/QutEcoacoustics/audio-analysis/issues/291)) Fix cluster tests
+- a577f49d towsey - ([#291](https://github.com/QutEcoacoustics/audio-analysis/issues/291)) Fis oscillation tests
+- 4dafd0cc towsey - ([#291](https://github.com/QutEcoacoustics/audio-analysis/issues/291)) Fixing tests for IndexCalculateTests.cs
+- 2638e75f towsey - ([#291](https://github.com/QutEcoacoustics/audio-analysis/issues/291)) Fix tests of Long duration recordings
+- 8a891005 towsey - ([#291](https://github.com/QutEcoacoustics/audio-analysis/issues/291)) Setting default FFT window to Hanning
+- b4230447 towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) Rework Ocatve scale when calculating acoustic indices
+- 28832b52 towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) New tests and revise tests for Octave scale
+- 5908e272 towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) More work on Octave Frequency scales
+- 0a643f18 towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) Automate calculation of Octave scale bounds and its gridlines.
+- f3eb3ed8 towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) Fix production of Octave scale spectrogram
+- 7ed5281c towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) Remove unused code
+- 834fa952 towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) Fix production of Octave spectrogram
+- a3778e3d towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) Update BaseSonogram.cs
+- 9f2904f0 towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) Change Hamming to Hanning Window
+- 277a0def towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) Mostly remove unused code and tidy comments.
+- 3efb6332 towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) Work on Unit tests for mel and octave scale spectrograms.
+- 743fda81 towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) Work on Octave scale spectrograms
+- b62e20e4 towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) Work on Mel scale spectrograms
+- 0347e3f3 towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) Create new unit test for spectral data reduction
+- c16ab0d2 towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) Add tests and rework existing tests for frequency scales
+- 1598a40b towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) Make Octave Scale methods more efficient
+- 52556ac1 towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) Shift methods to do with Mel scale
+- e847cb70 towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) Change Scale Type names
+- ea1e55f2 towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) Start setting up more detailed tests for octave frequency scales
+- c20e4ca4 towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) More work on Octave scales
+- a7ca52f9 towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) Work on Octave Spectrograms
+- 055571e9 towsey - ([#331](https://github.com/QutEcoacoustics/audio-analysis/issues/331)) Update ActivityAndCover.cs
+- 57cdec69 towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) Produce Mel frequency scale spectorgrams
+- 68a0ba2b towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) Fix bug concerning assigning colour codes to spectrogram types
+- d9688f90 towsey - ([#332](https://github.com/QutEcoacoustics/audio-analysis/issues/332)) Set up structure for two new spectrograms
 ## Ecoacoustics Audio Analysis Software v20.7.1.10 2020-07-26
 
 Version v20.7.1.10
@@ -951,6 +1022,7 @@ Version v19.2.0.90
 - 512f8b4 Mahnoosh Kholghi - generating features for a set of recordings
 - 9b7a178 Mahnoosh Kholghi - fixing the error in directory
 - 3fdb19c Mahnoosh Kholghi - Adding a method for arbitrary freq bins
+
 
 
 
