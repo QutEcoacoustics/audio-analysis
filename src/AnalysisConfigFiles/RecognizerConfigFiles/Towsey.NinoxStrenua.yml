@@ -22,36 +22,41 @@ Profiles:
         MaxHertz: 600
         MinDuration: 0.3
         MaxDuration: 1.5
-        DecibelThreshold: 12.0
+        DecibelThreshold: 18.0
    
 #################### POST-PROCESSING of EVENTS ###################
 
-# A: First post-processing steps are to combine overlapping/proximal/sequential events 
-#  1: Combine overlapping events
+# The first two post-processing steps are to combine overlapping/proximal/sequential events 
+# 1: Combine overlapping events
 CombineOverlappingEvents: true
 
-#  2: Combine each pair of Boobook syllables as one event
-#     Can also use this to "mop up" events in neighbourhood - these can be removed later. 
-CombinePossibleSyllableSequence: false
+# 2: Combine syllable sequences as one event
+CombinePossibleSyllableSequence: true
 SyllableStartDifference: 1.5
 SyllableHertzGap: 300
+SyllableMaxCount: 6
 
-#  B: Filter the events for excess activity in their upper and lower buffer zones
+# 3: Remove events whose bandwidth lies outside 3 SDs of an expected value.
+ExpectedBandwidth: 150
+BandwidthStandardDeviation: 15
+
+# 4: Filter the events for excess activity in their sidebands, i.e. upper and lower buffer zones
 NeighbourhoodLowerHertzBuffer: 100
-NeighbourhoodUpperHertzBuffer: 300
-NeighbourhoodDbThreshold: 12.0
+NeighbourhoodUpperHertzBuffer: 600
+#NeighbourhoodDecibelBuffer: 18.0  # use this value if not combining sequences
+NeighbourhoodDecibelBuffer: 9.0   # use this value when combining sequences
 
-# C: Options to save results files
-#  4: Available options for saving spectrograms (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+# Options to save results files
+# 5: Available options for saving spectrograms (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 # "True" is useful when debugging but "WhenEventsDetected" is required for operational use.
 #SaveSonogramImages: True
 SaveSonogramImages: WhenEventsDetected
 
-#  5: Available options for saving data files (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+# 6: Available options for saving data files (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
 SaveIntermediateCsvFiles: false
 
-# 6: DisplayCsvImage is obsolete - ensure it remains set to: false
+# 7: DisplayCsvImage is obsolete - ensure it remains set to: false
 DisplayCsvImage: false
 ## End section for AnalyzeLongRecording
 

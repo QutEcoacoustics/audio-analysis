@@ -93,6 +93,18 @@ namespace AnalysisPrograms.Recognizers
             //var newEvents = spectralEvents.Cast<EventCommon>().ToList();
             //var spectralEvents = events.Select(x => (SpectralEvent)x).ToList();
 
+            //NOTE:
+            // The generic recognizer does some post-processing of events prior to returning the list of combined events.
+            // Its post-processing steps are determined by config settings.
+            // Generic post processing step 1: Combine overlapping events.
+            // Generic post processing step 2: Combine possible syllable sequences and filter on excess syllable count.
+            // Generic post processing step 3: Remove events whose bandwidth is too small or large.
+            // Generic post processing step 4: Remove events that have excessive noise in their side-bands.
+
+            // The following post processing steps are specific for this species recognizer:
+            // 1: remove events that have wrong length. This is necssary if events have been combined in post-processing steps 1 and 2 above.
+            // 2: filter chirp events based on their frequency profiles.
+
             if (combinedResults.NewEvents.Count == 0)
             {
                 PowerfulOwlLog.Debug($"Return zero events.");
@@ -102,32 +114,20 @@ namespace AnalysisPrograms.Recognizers
             // 1: Filter the events for duration in seconds
             // Get the PowerfulOwl Syllable config.
             const string profileName = "StrenuaSyllable";
-            var configuration = (NinoxStrenuaConfig)genericConfig;
-            var chirpConfig = (ForwardTrackParameters)configuration.Profiles[profileName];
+            var chirpConfig = (ForwardTrackParameters)genericConfig.Profiles[profileName];
             var minimumEventDuration = chirpConfig.MinDuration;
             var maximumEventDuration = chirpConfig.MaxDuration;
             if (genericConfig.CombinePossibleSyllableSequence)
             {
+                int maxComponentCount = genericConfig.SyllableMaxCount;
                 minimumEventDuration *= 2.0;
-                maximumEventDuration *= 1.5;
+                maximumEventDuration *= maxComponentCount;
             }
 
             combinedResults.NewEvents = EventExtentions.FilterOnDuration(combinedResults.NewEvents, minimumEventDuration.Value, maximumEventDuration.Value);
             PowerfulOwlLog.Debug($"Event count after filtering on duration = {combinedResults.NewEvents.Count}");
 
-            // 2: Filter the events for bandwidth in Hertz
-            double average = 400;
-            double sd = 50;
-            double sigmaThreshold = 3.0;
-            //combinedResults.NewEvents = EventExtentions.FilterOnBandwidth(combinedResults.NewEvents, average, sd, sigmaThreshold);
-            PowerfulOwlLog.Debug($"Event count after filtering on bandwidth = {combinedResults.NewEvents.Count}");
-
-            // 3: Filter on COMPONENT COUNT in Composite events.
-            int maxComponentCount = 5;
-            combinedResults.NewEvents = EventExtentions.FilterEventsOnCompositeContent(combinedResults.NewEvents, maxComponentCount);
-            PowerfulOwlLog.Debug($"Event count after filtering on component count = {combinedResults.NewEvents.Count}");
-
-            // 4: Pull out the chirp events and calculate their frequency profiles.
+            // 2: Pull out the chirp events and calculate their frequency profiles.
             var (chirpEvents, others) = combinedResults.NewEvents.FilterForEventType<ChirpEvent, EventCommon>();
 
             // Uncomment the next line when want to obtain the event frequency profiles.
