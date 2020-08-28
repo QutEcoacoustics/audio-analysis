@@ -357,8 +357,19 @@ namespace AnalysisPrograms.Recognizers
                 var startDiff = configuration.SyllableStartDifference;
                 var hertzDiff = configuration.SyllableHertzGap;
                 allResults.NewEvents = CompositeEvent.CombineProximalEvents(spectralEvents1, TimeSpan.FromSeconds(startDiff), (int)hertzDiff);
-                Log.Debug($"Event count after combining proximals = {allResults.NewEvents.Count}");
+                Log.Debug($"Event count after combining proximal events = {allResults.NewEvents.Count}");
+
+                // Now filter on COMPONENT COUNT in Composite events.
+                int maxComponentCount = configuration.SyllableMaxCount;
+                allResults.NewEvents = EventExtentions.FilterEventsOnCompositeContent(allResults.NewEvents, maxComponentCount);
+                Log.Debug($"Event count after filtering on component count = {allResults.NewEvents.Count}");
             }
+
+            // 1: Filter the events for bandwidth in Hertz
+            var expectedEventBandwidth = configuration.ExpectedBandwidth;
+            var sd = configuration.BandwidthStandardDeviation;
+            allResults.NewEvents = EventExtentions.FilterOnBandwidth(allResults.NewEvents, expectedEventBandwidth, sd, sigmaThreshold: 3.0);
+            Log.Debug($"Event count after filtering on bandwidth = {allResults.NewEvents.Count}");
 
             // 3: Filter events on the amount of acoustic activity in their upper and lower neighbourhoods - their buffer zone.
             //    The idea is that an unambiguous event should have some acoustic space above and below.
@@ -372,9 +383,9 @@ namespace AnalysisPrograms.Recognizers
                     configuration.NeighbourhoodLowerHertzBuffer,
                     configuration.NeighbourhoodUpperHertzBuffer,
                     segmentStartOffset,
-                    configuration.NeighbourhoodDbThreshold);
+                    configuration.NeighbourhoodDecibelBuffer);
 
-                Log.Debug($"Event count after filtering on neighbourhood = {allResults.NewEvents.Count}");
+                Log.Debug($"Event count after filtering on acoustic activity in upper/lower neighbourhood = {allResults.NewEvents.Count}");
             }
 
             return allResults;
@@ -473,6 +484,23 @@ namespace AnalysisPrograms.Recognizers
             /// </summary>
             public double SyllableHertzGap { get; set; }
 
+            /// <summary>
+            /// Gets or sets a value indicating the maximum allowable number of syllables in a syllable sequence.
+            /// </summary>
+            public int SyllableMaxCount { get; set; }
+
+            // #### The next two properties determine filtering of events based on their bandwidth
+
+            /// <summary>
+            /// Gets or sets a value indicating the Expected bandwidth of an event.
+            /// </summary>
+            public int ExpectedBandwidth { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating the standard deviation of the expected bandwidth.
+            /// </summary>
+            public int BandwidthStandardDeviation { get; set; }
+
             // #### The next three properties determine filtering of events based on acoustic conctent of upper and lower buffer zones.
 
             /// <summary>
@@ -488,10 +516,11 @@ namespace AnalysisPrograms.Recognizers
             public int NeighbourhoodLowerHertzBuffer { get; set; }
 
             /// <summary>
-            /// Gets or sets a value indicating the decibel threshold for acoustic activity in the upper and lower buffer zones.
+            /// Gets or sets a value indicating the decibel gap/difference between acoustic activity in the event and in the upper/lower buffer zones.
+            /// BufferAcousticActivity must be LessThan (EventAcousticActivity - NeighbourhoodDecibelBuffer)
             /// This value is used only if NeighbourhoodLowerHertzBuffer > 0 OR NeighbourhoodUpperHertzBuffer > 0.
             /// </summary>
-            public double NeighbourhoodDbThreshold { get; set; }
+            public double NeighbourhoodDecibelBuffer { get; set; }
         }
     }
 }
