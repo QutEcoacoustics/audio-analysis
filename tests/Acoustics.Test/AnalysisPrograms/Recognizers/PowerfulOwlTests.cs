@@ -5,16 +5,12 @@
 namespace Acoustics.Test.AnalysisPrograms.Recognizers
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
     using Acoustics.Test.TestHelpers;
     using Acoustics.Tools.Wav;
     using global::AnalysisPrograms.Recognizers;
-    using global::AnalysisPrograms.SourcePreparers;
-    using global::AudioAnalysisTools.Events;
     using global::AudioAnalysisTools.Events.Types;
     using global::AudioAnalysisTools.WavTools;
-    using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     /// <summary>
@@ -54,7 +50,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             this.SaveTestOutput(
                 outputDirectory => GenericRecognizer.SaveDebugSpectrogram(results, null, outputDirectory, Recognizer.SpeciesName));
 
-            Assert.AreEqual(14, events.Count);
+            Assert.AreEqual(3, events.Count);
             Assert.IsNull(scoreTrack);
             Assert.AreEqual(1, plots.Count);
             Assert.AreEqual(4380, sonogram.FrameCount);
@@ -63,12 +59,12 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
 
             var secondEvent = (CompositeEvent)events[1];
 
-            Assert.AreEqual(5.375419501133787, secondEvent.EventStartSeconds);
-            Assert.AreEqual(6.0720181405895692, secondEvent.EventEndSeconds);
-            Assert.AreEqual(483, secondEvent.LowFrequencyHertz);
-            Assert.AreEqual(735, secondEvent.HighFrequencyHertz);
-            Assert.AreEqual(20.901882476071698, secondEvent.Score, TestHelper.AllowedDelta);
-            Assert.AreEqual(0.20786700431266195, secondEvent.ScoreNormalized, TestHelper.AllowedDelta);
+            Assert.AreEqual(23.858503401360544, secondEvent.EventStartSeconds, TestHelper.AllowedDelta);
+            Assert.AreEqual(27.7362358276644, secondEvent.EventEndSeconds, TestHelper.AllowedDelta);
+            Assert.AreEqual(399, secondEvent.LowFrequencyHertz);
+            Assert.AreEqual(525, secondEvent.HighFrequencyHertz);
+            Assert.AreEqual(38.291398284647158, secondEvent.Score, TestHelper.AllowedDelta);
+            Assert.AreEqual(0.0109879605278185, secondEvent.ScoreNormalized, TestHelper.AllowedDelta);
         }
     }
 }
