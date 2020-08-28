@@ -119,9 +119,8 @@ namespace AnalysisPrograms.Recognizers
             var maximumEventDuration = chirpConfig.MaxDuration;
             if (genericConfig.CombinePossibleSyllableSequence)
             {
-                int maxComponentCount = genericConfig.SyllableMaxCount;
                 minimumEventDuration *= 2.0;
-                maximumEventDuration *= maxComponentCount;
+                maximumEventDuration = genericConfig.SyllableMaxCount * genericConfig.SyllableStartDifference;
             }
 
             combinedResults.NewEvents = EventExtentions.FilterOnDuration(combinedResults.NewEvents, minimumEventDuration.Value, maximumEventDuration.Value);
