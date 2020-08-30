@@ -8,6 +8,21 @@
 
 <!--generated-content-insert-here-->
 
+## Ecoacoustics Audio Analysis Software v20.8.1.5 2020-08-30
+
+Version v20.8.1.5
+
+
+
+### Details
+
+[Compare v20.8.0.63...v20.8.1.5](https://github.com/QutBioacoustics/audio-analysis/compare/v20.8.0.63...v20.8.1.5)
+
+- 7501ad59 dependabot-preview[bot] - Bump log4net from 2.0.8 to 2.0.9
+- e20911b3 dependabot-preview[bot] - Bump Microsoft.NET.Test.Sdk from 16.6.1 to 16.7.1
+- 5d8c010f dependabot-preview[bot] - Bump MathNet.Numerics.FSharp from 4.11.0 to 4.12.0
+- a645dc57 dependabot-preview[bot] - Bump xunit.runner.visualstudio from 2.4.2 to 2.4.3
+- 5f5a990f dependabot-preview[bot] - Bump SixLabors.ImageSharp from 1.0.0 to 1.0.1
 ## Ecoacoustics Audio Analysis Software v20.8.0.63 2020-08-23
 
 Version v20.8.0.63
@@ -1022,6 +1037,7 @@ Version v19.2.0.90
 - 512f8b4 Mahnoosh Kholghi - generating features for a set of recordings
 - 9b7a178 Mahnoosh Kholghi - fixing the error in directory
 - 3fdb19c Mahnoosh Kholghi - Adding a method for arbitrary freq bins
+
 
 
 
