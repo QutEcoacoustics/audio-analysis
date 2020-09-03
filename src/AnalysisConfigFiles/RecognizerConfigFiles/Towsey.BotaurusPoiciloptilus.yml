@@ -26,17 +26,25 @@ Profiles:
 
 #################### POST-PROCESSING of EVENTS ###################
 
-# A: First post-processing steps are to combine overlapping/proximal/sequential events 
-#  1: Combine overlapping events
-CombineOverlappingEvents: false
+# The first two post-processing steps are to combine overlapping/proximal/sequential events 
+# 1: Combine overlapping events
+CombineOverlappingEvents: true
 
-#  2: Combine each pair of Boobook syllables as one event
-#     Can also use this to "mop up" events in neighbourhood - these can be removed later. 
-CombinePossibleSyllableSequence: true
-SyllableStartDifference: 3.0
-SyllableHertzGap: 35
+# 2: Combine possible syllable sequences
+#    Can also use this to "mop up" events in neighbourhood - these can be removed later. 
+SyllableSequence:
+    CombinePossibleSyllableSequence: true
+    SyllableStartDifference: 3.0
+    SyllableHertzGap: 35
+    FilterSyllableSequence: true
+    SyllableMaxCount: 6
+    ExpectedPeriod: 1.0
 
-#  B: Filter the events for excess activity in their upper and lower buffer zones
+# 3: Remove events whose bandwidth lies outside 3 SDs of an expected value.
+ExpectedBandwidth: 100
+BandwidthStandardDeviation: 15
+
+# 4: Filter the events for excess activity in their upper and lower buffer zones
 NeighbourhoodLowerHertzBuffer: 150
 NeighbourhoodUpperHertzBuffer: 400
 NeighbourhoodDbThreshold: 6.0
