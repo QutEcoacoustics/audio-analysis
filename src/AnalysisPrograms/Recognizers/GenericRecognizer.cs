@@ -350,28 +350,40 @@ namespace AnalysisPrograms.Recognizers
             // 2: Combine proximal events, that is, events that may be a sequence of syllables in the same strophe.
             //    Can also use this parameter to combine events that are in the upper or lower neighbourhood.
             //    Such combinations will increase bandwidth of the event and this property can be used later to weed out unlikely events.
-            if (configuration.CombinePossibleSyllableSequence)
+            var sequenceConfig = configuration.SyllableSequence;
+
+            if (sequenceConfig.CombinePossibleSyllableSequence)
             {
                 // Must first convert events to spectral events.
                 var spectralEvents1 = allResults.NewEvents.Cast<SpectralEvent>().ToList();
-                var startDiff = configuration.SyllableStartDifference;
-                var hertzDiff = configuration.SyllableHertzGap;
+                var startDiff = sequenceConfig.SyllableStartDifference;
+                var hertzDiff = sequenceConfig.SyllableHertzGap;
                 allResults.NewEvents = CompositeEvent.CombineProximalEvents(spectralEvents1, TimeSpan.FromSeconds(startDiff), (int)hertzDiff);
                 Log.Debug($"Event count after combining proximal events = {allResults.NewEvents.Count}");
 
-                // Now filter on COMPONENT COUNT in Composite events.
-                int maxComponentCount = configuration.SyllableMaxCount;
-                allResults.NewEvents = EventExtentions.FilterEventsOnCompositeContent(allResults.NewEvents, maxComponentCount);
-                Log.Debug($"Event count after filtering on component count = {allResults.NewEvents.Count}");
+                // Now filter on properties of the sequences which are treated as Composite events.
+                if (sequenceConfig.FilterSyllableSequence)
+                {
+                    // filter on number of components
+                    var maxComponentCount = sequenceConfig.SyllableMaxCount;
+                    allResults.NewEvents = EventExtentions.FilterEventsOnCompositeContent(allResults.NewEvents, maxComponentCount);
+                    Log.Debug($"Event count after filtering on component count = {allResults.NewEvents.Count}");
+
+                    // filter on syllable periodicity
+                    var period = sequenceConfig.ExpectedPeriod;
+                    var periodSd = sequenceConfig.PeriodStdDev;
+                    allResults.NewEvents = EventExtentions.FilterEventsOnSyllablePeriodicity(allResults.NewEvents, period, periodSd);
+                    Log.Debug($"Event count after filtering on component count = {allResults.NewEvents.Count}");
+                }
             }
 
-            // 1: Filter the events for bandwidth in Hertz
+            // 3: Filter the events for bandwidth in Hertz
             var expectedEventBandwidth = configuration.ExpectedBandwidth;
             var sd = configuration.BandwidthStandardDeviation;
             allResults.NewEvents = EventExtentions.FilterOnBandwidth(allResults.NewEvents, expectedEventBandwidth, sd, sigmaThreshold: 3.0);
             Log.Debug($"Event count after filtering on bandwidth = {allResults.NewEvents.Count}");
 
-            // 3: Filter events on the amount of acoustic activity in their upper and lower neighbourhoods - their buffer zone.
+            // 4: Filter events on the amount of acoustic activity in their upper and lower neighbourhoods - their buffer zone.
             //    The idea is that an unambiguous event should have some acoustic space above and below.
             //    The filter requires that the average acoustic activity in each frame and bin of the upper and lower buffer zones should not exceed the user specified decibel threshold.
             if (configuration.NeighbourhoodUpperHertzBuffer > 0 || configuration.NeighbourhoodLowerHertzBuffer > 0)
@@ -467,27 +479,9 @@ namespace AnalysisPrograms.Recognizers
             public bool CombineOverlappingEvents { get; set; }
 
             /// <summary>
-            /// Gets or sets a value indicating Whether or not to combine events that constitute a sequence of the same strophe.
+            /// Gets or sets the parameters required to combine and filter syllable sequences.
             /// </summary>
-            public bool CombinePossibleSyllableSequence { get; set; }
-
-            /// <summary>
-            /// Gets or sets a value indicating the maximum allowable start time gap (seconds) between events within the same strophe.
-            /// This value is used only where CombinePossibleSyllableSequence = true.
-            /// </summary>
-            public double SyllableStartDifference { get; set; }
-
-            /// <summary>
-            /// Gets or sets a value indicating the maximum allowable difference (in Hertz) between the frequency bands of two events. I.e. events should be in similar frequency band.
-            /// NOTE: SIMILAR frequency band means the differences between two top Hertz values and the two low Hertz values are less than hertzDifference.
-            /// This value is used only where CombinePossibleSyllableSequence = true.
-            /// </summary>
-            public double SyllableHertzGap { get; set; }
-
-            /// <summary>
-            /// Gets or sets a value indicating the maximum allowable number of syllables in a syllable sequence.
-            /// </summary>
-            public int SyllableMaxCount { get; set; }
+            public SyllableSequenceConfig SyllableSequence { get; set; }
 
             // #### The next two properties determine filtering of events based on their bandwidth
 
@@ -521,6 +515,63 @@ namespace AnalysisPrograms.Recognizers
             /// This value is used only if NeighbourhoodLowerHertzBuffer > 0 OR NeighbourhoodUpperHertzBuffer > 0.
             /// </summary>
             public double NeighbourhoodDecibelBuffer { get; set; }
+        }
+
+        public class SyllableSequenceConfig
+        {
+            // ################ The first three properties concern the combining of syllables into a sequence or stroph.
+
+            /// <summary>
+            /// Gets or sets a value indicating Whether or not to combine events that constitute a sequence of the same strophe.
+            /// </summary>
+            public bool CombinePossibleSyllableSequence { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating the maximum allowable start time gap (seconds) between events within the same strophe.
+            /// The gap between successive syllables is the "period" of the sequence.
+            /// This value is used only where CombinePossibleSyllableSequence = true.
+            /// </summary>
+            public double SyllableStartDifference { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating the maximum allowable difference (in Hertz) between the frequency bands of two events. I.e. events should be in similar frequency band.
+            /// NOTE: SIMILAR frequency band means the differences between two top Hertz values and the two low Hertz values are less than hertzDifference.
+            /// This value is used only where CombinePossibleSyllableSequence = true.
+            /// </summary>
+            public double SyllableHertzGap { get; set; }
+
+            // ################ The next four properties concern the filtering/removal of sequences that do not satisfy expected properties.
+
+            /// <summary>
+            /// Gets or sets a value indicating Whether or not to remove/filter sequences having incorrect properties.
+            /// </summary>
+            public bool FilterSyllableSequence { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating the maximum allowable number of syllables in a sequence.
+            /// This value is used only where FilterSyllableSequence = true.
+            /// </summary>
+            public int SyllableMaxCount { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating the expected periodicity in seconds.
+            /// This value is used only where FilterSyllableSequence = true.
+            /// Important Note: This property interacts with SyllableStartDifference.
+            ///                 SyllableStartDifference - ExpectedPeriod = 3 x SD of the period.
+            /// </summary>
+            public double ExpectedPeriod { get; set; }
+
+            /// <summary>
+            /// Gets a value indicating the stadndard deviation of the expected period in seconds.
+            /// This value is used only where FilterSyllableSequence = true.
+            /// Important Note: This property is derived from two of the above properties.
+            ///                 SD of the period = (SyllableStartDifference - ExpectedPeriod) / 3.
+            ///                 The intent is that the maximum allowable syllable period is the expected value plus three times its standard deviation.
+            /// </summary>
+            public double PeriodStdDev
+            {
+                get => (this.SyllableStartDifference - this.ExpectedPeriod) / 3;
+            }
         }
     }
 }
