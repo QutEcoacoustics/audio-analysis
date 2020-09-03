@@ -41,6 +41,22 @@ namespace AudioAnalysisTools.Events.Types
         public override double Score =>
             this.ComponentEvents.Max(x => (x as SpectralEvent)?.Score) ?? double.PositiveInfinity;
 
+        public double CalculatePeriodicity()
+        {
+            var eventStarts = new List<double>();
+            foreach (var ev in this.ComponentEvents)
+            {
+                eventStarts.Add(ev.EventStartSeconds);
+            }
+
+            // Sort array in ascending order.
+            var array = eventStarts.ToArray();
+            Array.Sort(array);
+            var periodicity = Math.Abs(array[0] - array[array.Length - 1]) / array.Length;
+
+            return periodicity;
+        }
+
         public IEnumerable<ITrack> Tracks
         {
             get

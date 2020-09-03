@@ -382,6 +382,36 @@ namespace AudioAnalysisTools.Events
         }
 
         /// <summary>
+        /// Removes composite events from a list of EventCommon where the component syllables do not have the correct periodicity.
+        /// </summary>
+        public static List<EventCommon> FilterEventsOnSyllablePeriodicity(
+            List<EventCommon> events,
+            double expectedPeriod,
+            double periodSd)
+        {
+            var filteredEvents = new List<EventCommon>();
+
+            foreach (var ev in events)
+            {
+                if (ev is CompositeEvent)
+                {
+                    var actualPeriodicity = ((CompositeEvent)ev).CalculatePeriodicity();
+                    var minAllowedPeriodicity = expectedPeriod - (3 * periodSd);
+                    var maxAllowedPeriodicity = expectedPeriod + (3 * periodSd);
+                    if (actualPeriodicity < minAllowedPeriodicity || actualPeriodicity > maxAllowedPeriodicity)
+                    {
+                        // ignore composite events which do not have the correct periodicity
+                        continue;
+                    }
+                }
+
+                filteredEvents.Add(ev);
+            }
+
+            return filteredEvents;
+        }
+
+        /// <summary>
         /// Combines all the tracks in all the events in the passed list into a single track.
         /// Each frame in the composite event is assigned the spectral point having maximum amplitude.
         /// The points in the returned array are in temporal order.
