@@ -88,49 +88,32 @@ namespace AnalysisPrograms.Recognizers
                 outputDirectory,
                 imageWidth);
 
+            var count = combinedResults.NewEvents.Count;
+            BitternLog.Debug($"Event count before post-processing = {count}.");
+            if (combinedResults.NewEvents.Count == 0)
+            {
+                return combinedResults;
+            }
+
             // ################### POST-PROCESSING of EVENTS ###################
             // Following two commented lines are different ways of casting lists.
             //var newEvents = spectralEvents.Cast<EventCommon>().ToList();
             //var spectralEvents = events.Select(x => (SpectralEvent)x).ToList();
 
+            //NOTE:
+            // The generic recognizer does some post-processing of events prior to returning the list of combined events.
+            // Its post-processing steps are determined by config settings.
+            // Generic post processing step 1: Combine overlapping events.
+            // Generic post processing step 2: Combine possible syllable sequences and filter on excess syllable count.
+            // Generic post processing step 3: Remove events whose bandwidth is too small or large.
+            // Generic post processing step 4: Remove events that have excessive noise in their side-bands.
+
+            // Post-processing steps are put here:
+
             if (combinedResults.NewEvents.Count == 0)
             {
-                BitternLog.Debug($"Return zero events.");
-                return combinedResults;
+                BitternLog.Debug($"Zero events after post-processing.");
             }
-
-            // 1: Filter the events for duration in seconds
-            var minimumEventDuration = 0.5;
-            var maximumEventDuration = 2.0;
-            if (genericConfig.CombinePossibleSyllableSequence)
-            {
-                minimumEventDuration = 2.0;
-                maximumEventDuration = 10.0;
-            }
-
-            combinedResults.NewEvents = EventExtentions.FilterOnDuration(combinedResults.NewEvents, minimumEventDuration, maximumEventDuration);
-            BitternLog.Debug($"Event count after filtering on duration = {combinedResults.NewEvents.Count}");
-
-            // 2: Filter the events for bandwidth in Hertz
-            double average = 100;
-            double sd = 15;
-            double sigmaThreshold = 3.0;
-            combinedResults.NewEvents = EventExtentions.FilterOnBandwidth(combinedResults.NewEvents, average, sd, sigmaThreshold);
-            BitternLog.Debug($"Event count after filtering on bandwidth = {combinedResults.NewEvents.Count}");
-
-            // 3: Filter on COMPONENT COUNT in Composite events.
-            int maxComponentCount = 6;
-            combinedResults.NewEvents = EventExtentions.FilterEventsOnCompositeContent(combinedResults.NewEvents, maxComponentCount);
-            BitternLog.Debug($"Event count after filtering on component count = {combinedResults.NewEvents.Count}");
-
-            // Uncomment the next line when want to obtain the event frequency profiles.
-            // WriteFrequencyProfiles(chirpEvents);
-
-            //foreach (var ev in whistleEvents)
-            //{
-            //    // Calculate frequency profile score for event
-            //    SetFrequencyProfileScore((WhistleEvent)ev);
-            //}
 
             //UNCOMMENT following line if you want special debug spectrogram, i.e. with special plots.
             //  NOTE: Standard spectrograms are produced by setting SaveSonogramImages: "True" or "WhenEventsDetected" in UserName.SpeciesName.yml config file.
