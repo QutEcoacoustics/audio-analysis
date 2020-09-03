@@ -5,7 +5,6 @@
 namespace AnalysisPrograms.Recognizers
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -13,12 +12,9 @@ namespace AnalysisPrograms.Recognizers
     using Acoustics.Shared.ConfigFile;
     using AnalysisBase;
     using AnalysisPrograms.Recognizers.Base;
-    using AudioAnalysisTools;
-    using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.WavTools;
     using log4net;
-    using TowseyLibrary;
     using static AnalysisPrograms.Recognizers.GenericRecognizer;
     using Path = System.IO.Path;
 
@@ -88,6 +84,13 @@ namespace AnalysisPrograms.Recognizers
                 outputDirectory,
                 imageWidth);
 
+            var count = combinedResults.NewEvents.Count;
+            PowerfulOwlLog.Debug($"Event count before post-processing = {count}.");
+            if (combinedResults.NewEvents.Count == 0)
+            {
+                return combinedResults;
+            }
+
             // ################### POST-PROCESSING of EVENTS ###################
             // Following two commented lines are different ways of casting lists.
             //var newEvents = spectralEvents.Cast<EventCommon>().ToList();
@@ -101,148 +104,17 @@ namespace AnalysisPrograms.Recognizers
             // Generic post processing step 3: Remove events whose bandwidth is too small or large.
             // Generic post processing step 4: Remove events that have excessive noise in their side-bands.
 
-            // The following post processing steps are specific for this species recognizer:
-            // 1: remove events that have wrong length. This is necssary if events have been combined in post-processing steps 1 and 2 above.
-            // 2: filter chirp events based on their frequency profiles.
+            // Post-processing steps are put here:
 
             if (combinedResults.NewEvents.Count == 0)
             {
-                PowerfulOwlLog.Debug($"Return zero events.");
-                return combinedResults;
-            }
-
-            // 1: Filter the events for duration in seconds
-            // Get the PowerfulOwl Syllable config.
-            const string profileName = "StrenuaSyllable";
-            var chirpConfig = (ForwardTrackParameters)genericConfig.Profiles[profileName];
-            var minimumEventDuration = chirpConfig.MinDuration;
-            var maximumEventDuration = chirpConfig.MaxDuration;
-            if (genericConfig.CombinePossibleSyllableSequence)
-            {
-                minimumEventDuration *= 2.0;
-                maximumEventDuration = genericConfig.SyllableMaxCount * genericConfig.SyllableStartDifference;
-            }
-
-            combinedResults.NewEvents = EventExtentions.FilterOnDuration(combinedResults.NewEvents, minimumEventDuration.Value, maximumEventDuration.Value);
-            PowerfulOwlLog.Debug($"Event count after filtering on duration = {combinedResults.NewEvents.Count}");
-
-            // 2: Pull out the chirp events and calculate their frequency profiles.
-            var (chirpEvents, others) = combinedResults.NewEvents.FilterForEventType<ChirpEvent, EventCommon>();
-
-            // Uncomment the next line when want to obtain the event frequency profiles.
-            // WriteFrequencyProfiles(chirpEvents);
-            foreach (var ev in chirpEvents)
-            {
-                // Calculate frequency profile score for event
-                SetFrequencyProfileScore((ChirpEvent)ev);
-            }
-
-            if (combinedResults.NewEvents.Count == 0)
-            {
-                PowerfulOwlLog.Debug($"Return zero events.");
-                return combinedResults;
+                PowerfulOwlLog.Debug($"Zero events after post-processing.");
             }
 
             //UNCOMMENT following line if you want special debug spectrogram, i.e. with special plots.
             //  NOTE: Standard spectrograms are produced by setting SaveSonogramImages: "True" or "WhenEventsDetected" in UserName.SpeciesName.yml config file.
             //GenericRecognizer.SaveDebugSpectrogram(territorialResults, genericConfig, outputDirectory, audioRecording.BaseName);
             return combinedResults;
-        }
-
-        /// <summary>
-        /// The Powerful Owl call syllable is shaped like an inverted "U". Its total duration is close to 0.15 seconds.
-        /// The rising portion lasts for 0.06s, followed by a turning portion, 0.03s, followed by the decending portion of 0.06s.
-        /// The constants for this method were obtained from the calls in a Gympie recording obtained by Yvonne Phillips.
-        /// </summary>
-        /// <param name="ev">An event containing at least one forward track i.e. a chirp.</param>
-        public static void SetFrequencyProfileScore(ChirpEvent ev)
-        {
-            const double risingDuration = 0.06;
-            const double gapDuration = 0.03;
-            const double fallingDuration = 0.06;
-
-            var track = ev.Tracks.First();
-            var profile = track.GetTrackFrequencyProfile().ToArray();
-
-            // get the first point
-            var firstPoint = track.Points.First();
-            var frameDuration = firstPoint.Seconds.Maximum - firstPoint.Seconds.Minimum;
-            var risingFrameCount = (int)Math.Floor(risingDuration / frameDuration);
-            var gapFrameCount = (int)Math.Floor(gapDuration / frameDuration);
-            var fallingFrameCount = (int)Math.Floor(fallingDuration / frameDuration);
-
-            var startSum = 0.0;
-            if (profile.Length >= risingFrameCount)
-            {
-                for (var i = 0; i <= risingFrameCount; i++)
-                {
-                    startSum += profile[i];
-                }
-            }
-
-            int startFrame = risingFrameCount + gapFrameCount;
-            int endFrame = startFrame + fallingFrameCount;
-            var endSum = 0.0;
-            if (profile.Length >= endFrame)
-            {
-                for (var i = startFrame; i <= endFrame; i++)
-                {
-                    endSum += profile[i];
-                }
-            }
-
-            // set score to 1.0 if the profile has inverted U shape.
-            double score = 0.0;
-            if (startSum > 0.0 && endSum < 0.0)
-            {
-                score = 1.0;
-            }
-
-            ev.FrequencyProfileScore = score;
-        }
-
-        /// <summary>
-        /// WARNING - this method assumes that the rising and falling parts of a Powerful Owl call syllable last for 5 frames.
-        /// </summary>
-        /// <param name="events">List of spectral events.</param>
-        public static void WriteFrequencyProfiles(List<ChirpEvent> events)
-        {
-            /* Here are the frequency profiles of some events.
-             * Note that the first five frames (0.057 seconds) have positive slope and subsequent frames have negative slope.
-             * The final frames are likely to be echo and to be avoided.
-             * Therefore take the first 0.6s to calculate the positive slope, leave a gap of 0.025 seconds and then get negative slope from the next 0.6 seconds.
-42,21,21,42,21, 00, 21,-21,-21,-21, 00,-21,-42
-42,42,21,21,42,-21, 21, 00,-21,-21,-21,-21, 00,-21,21,-21
-42,42,21,21,42, 00, 00, 00,-21,-21,-21,-21,-21
-21,21,00,00,21, 21,-21, 00, 00,-21, 00,-21,-21,21,-21,42
-42,42,21,00,42, 00, 00,-21,-21,-21,-21, 00,-21,
-21,42,21,21,21, 00,-21,-21,-21, 00,-21,-21
-42,21,21,42,21, 21, 00,-21,-21,-21,-21
-42,42,21,42,00, 00,-21, 00,-21,-21, 00,-21,-21
-*/
-
-            var spectralEvents = events.Select(x => (ChirpEvent)x).ToList();
-            foreach (var ev in spectralEvents)
-            {
-                foreach (var track in ev.Tracks)
-                {
-                    var profile = track.GetTrackFrequencyProfile().ToArray();
-                    var startSum = 0.0;
-                    if (profile.Length >= 5)
-                    {
-                        startSum = profile[0] + profile[1] + profile[2] + profile[3] + profile[4];
-                    }
-
-                    var endSum = 0.0;
-                    if (profile.Length >= 11)
-                    {
-                        endSum = profile[6] + profile[7] + profile[8] + profile[9] + profile[10];
-                    }
-
-                    LoggedConsole.WriteLine($"{startSum}    {endSum}");
-                    LoggedConsole.WriteLine(DataTools.WriteArrayAsCsvLine(profile, "F0"));
-                }
-            }
         }
 
 /*

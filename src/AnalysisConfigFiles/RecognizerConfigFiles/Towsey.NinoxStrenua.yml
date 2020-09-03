@@ -30,11 +30,14 @@ Profiles:
 # 1: Combine overlapping events
 CombineOverlappingEvents: true
 
-# 2: Combine syllable sequences as one event
-CombinePossibleSyllableSequence: true
-SyllableStartDifference: 1.5
-SyllableHertzGap: 300
-SyllableMaxCount: 6
+# 2: Combine possible syllable sequences
+SyllableSequence:
+    CombinePossibleSyllableSequence: true
+    SyllableStartDifference: 1.4
+    SyllableHertzGap: 300
+    FilterSyllableSequence: true
+    SyllableMaxCount: 6
+    ExpectedPeriod: 0.92 # this figure derived from measure of 12 syllable periods.
 
 # 3: Remove events whose bandwidth lies outside 3 SDs of an expected value.
 ExpectedBandwidth: 150
