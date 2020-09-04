@@ -510,7 +510,7 @@ namespace AnalysisPrograms.Recognizers
             public int NeighbourhoodLowerHertzBuffer { get; set; }
 
             /// <summary>
-            /// Gets or sets a value indicating the decibel gap/difference between acoustic activity in the event and in the upper/lower buffer zones.
+            /// Gets or sets a value indicating the decibel gap/difference between acoustic activity in the event and in the upper and lower buffer zones.
             /// BufferAcousticActivity must be LessThan (EventAcousticActivity - NeighbourhoodDecibelBuffer)
             /// This value is used only if NeighbourhoodLowerHertzBuffer > 0 OR NeighbourhoodUpperHertzBuffer > 0.
             /// </summary>

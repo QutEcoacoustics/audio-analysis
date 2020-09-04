@@ -38,7 +38,7 @@ SyllableSequence:
     SyllableHertzGap: 35
     FilterSyllableSequence: true
     SyllableMaxCount: 6
-    ExpectedPeriod: 1.0
+    ExpectedPeriod: 2.0
 
 # 3: Remove events whose bandwidth lies outside 3 SDs of an expected value.
 ExpectedBandwidth: 100
@@ -47,7 +47,7 @@ BandwidthStandardDeviation: 15
 # 4: Filter the events for excess activity in their upper and lower buffer zones
 NeighbourhoodLowerHertzBuffer: 150
 NeighbourhoodUpperHertzBuffer: 400
-NeighbourhoodDbThreshold: 6.0
+NeighbourhoodDecibelBuffer: 0.0
 
 # C: Options to save results files
 #  4: Available options for saving spectrograms (case-sensitive): [False/Never | True/Always | WhenEventsDetected]

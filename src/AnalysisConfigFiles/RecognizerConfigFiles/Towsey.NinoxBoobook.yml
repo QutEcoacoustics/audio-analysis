@@ -47,7 +47,7 @@ BandwidthStandardDeviation: 40
 # 4: Filter the events for excess activity in their upper and lower buffer zones
 NeighbourhoodLowerHertzBuffer: 150
 NeighbourhoodUpperHertzBuffer: 400
-NeighbourhoodDbThreshold: 9.0
+NeighbourhoodDecibelBuffer: 3.0
 
 # C: Options to save results files
 #  4: Available options for saving spectrograms (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
