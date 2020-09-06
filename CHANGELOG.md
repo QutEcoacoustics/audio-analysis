@@ -8,6 +8,18 @@
 
 <!--generated-content-insert-here-->
 
+## Ecoacoustics Audio Analysis Software v20.9.0.2 2020-09-06
+
+Version v20.9.0.2
+
+
+
+### Details
+
+[Compare v20.8.1.5...v20.9.0.2](https://github.com/QutBioacoustics/audio-analysis/compare/v20.8.1.5...v20.9.0.2)
+
+- 2c4cba67 dependabot-preview[bot] - Bump SQLitePCLRaw.bundle_green from 2.0.3 to 2.0.4
+- 7582ae84 dependabot-preview[bot] - Bump ImmediateReflection from 1.5.0 to 1.6.0
 ## Ecoacoustics Audio Analysis Software v20.8.1.5 2020-08-30
 
 Version v20.8.1.5
@@ -1037,6 +1049,7 @@ Version v19.2.0.90
 - 512f8b4 Mahnoosh Kholghi - generating features for a set of recordings
 - 9b7a178 Mahnoosh Kholghi - fixing the error in directory
 - 3fdb19c Mahnoosh Kholghi - Adding a method for arbitrary freq bins
+
 
 
 
