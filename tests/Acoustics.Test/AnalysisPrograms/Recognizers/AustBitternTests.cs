@@ -66,13 +66,13 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
 
             var onlyEvent = (CompositeEvent)events[0];
 
-            Assert.AreEqual(3, onlyEvent.ComponentCount);
-            Assert.AreEqual(7.136, onlyEvent.EventStartSeconds);
-            Assert.AreEqual(12.224, onlyEvent.EventEndSeconds);
+            Assert.AreEqual(5, onlyEvent.ComponentCount);
+            Assert.AreEqual(5.12, onlyEvent.EventStartSeconds);
+            Assert.AreEqual(12.256, onlyEvent.EventEndSeconds);
             Assert.AreEqual(105, onlyEvent.LowFrequencyHertz);
             Assert.AreEqual(180, onlyEvent.HighFrequencyHertz);
-            Assert.AreEqual(24.076815193551525, onlyEvent.Score, TestHelper.AllowedDelta);
-            Assert.AreEqual(0.476507384367336, onlyEvent.ScoreNormalized, TestHelper.AllowedDelta);
+            Assert.AreEqual(21.716400254, onlyEvent.Score, TestHelper.AllowedDelta);
+            Assert.AreEqual(0.9470146022, onlyEvent.ScoreNormalized, TestHelper.AllowedDelta);
         }
     }
 }
