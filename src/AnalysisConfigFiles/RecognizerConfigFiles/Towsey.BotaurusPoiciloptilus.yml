@@ -1,6 +1,11 @@
 ---
 
 # Australasian Bittern = Botaurus poiciloptilus
+#NOTE: The parameter values in this config file were optimised on a data set supplied by Elizabeth Znidersic.
+#      It consisted of 14 consecutive hours of recording from Medeas Cove, St. Helens, Tasmania.
+#      The recordings contained 55 Bittern calls.
+#      Recall = 76%. Precision = 88%.
+
 # Resample rate must be 2 X the desired Nyquist
 ResampleRate: 8000
 # SegmentDuration: units=seconds;    
@@ -22,7 +27,7 @@ Profiles:
         MaxHertz: 200
         MinDuration: 0.3
         MaxDuration: 1.0
-        DecibelThreshold: 6.0
+        DecibelThreshold: 3.0
 
 #################### POST-PROCESSING of EVENTS ###################
 
@@ -47,7 +52,7 @@ BandwidthStandardDeviation: 15
 # 4: Filter the events for excess activity in their upper and lower buffer zones
 NeighbourhoodLowerHertzBuffer: 150
 NeighbourhoodUpperHertzBuffer: 400
-NeighbourhoodDecibelBuffer: 0.0
+NeighbourhoodDecibelBuffer: 2.0
 
 # C: Options to save results files
 #  4: Available options for saving spectrograms (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
