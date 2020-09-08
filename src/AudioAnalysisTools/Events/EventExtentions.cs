@@ -111,11 +111,25 @@ namespace AudioAnalysisTools.Events
         /// <returns>The average decibel value.</returns>
         public static double GetAverageDecibelsInEvent(SpectralEvent ev, double[,] spectrogramData, UnitConverters converter)
         {
+            // Get the length of the spectrogram
+            var frameCount = spectrogramData.GetLength(0);
+            var binCount = spectrogramData.GetLength(1);
+
             // extract the event from the spectrogram
             var lowerBin = converter.GetFreqBinFromHertz(ev.LowFrequencyHertz);
             var upperBin = converter.GetFreqBinFromHertz(ev.HighFrequencyHertz);
+            if (upperBin >= binCount)
+            {
+                upperBin = binCount - 1;
+            }
+
             var frameStart = converter.FrameFromStartTime(ev.EventStartSeconds);
             var frameEnd = converter.FrameFromStartTime(ev.EventEndSeconds);
+            if (frameEnd >= frameCount)
+            {
+                frameEnd = frameCount - 1;
+            }
+
             var subMatrix = MatrixTools.Submatrix<double>(spectrogramData, frameStart, lowerBin, frameEnd, upperBin);
 
             // extract the decibel array.
