@@ -1,8 +1,16 @@
 ---
 
 # Powerful Owl = Towsey.NinoxStrenua
+
+# The parameters in this recognizer config have been tuned based on recordings provided by Kristen Thompson, DPI, NSW.
+# She suggests that separate recognizers should be prepared for male and female calls due to their difference in frequency.
+# The female calls seem pretty consistent between 450-550Hz. Often the first pulse is lower with the second pulse higher.
+# The male calls vary in frequency. Some are low at around 350Hz and don’t have the higher second pulse ...
+#    ... but some do and the highest that will go is 430Hz.
+
+
 # Resample rate must be 2 X the desired Nyquist
-ResampleRate: 16000
+#ResampleRate: 22050
 # SegmentDuration: units=seconds;    
 SegmentDuration: 60
 # SegmentOverlap: units=seconds;
@@ -20,9 +28,9 @@ Profiles:
         # min and max of the freq band to search
         MinHertz: 300          
         MaxHertz: 600
-        MinDuration: 0.3
-        MaxDuration: 1.5
-        DecibelThreshold: 18.0
+        MinDuration: 0.2
+        MaxDuration: 2.5
+        DecibelThreshold: 6.0
    
 #################### POST-PROCESSING of EVENTS ###################
 
@@ -32,22 +40,22 @@ CombineOverlappingEvents: true
 
 # 2: Combine possible syllable sequences
 SyllableSequence:
-    CombinePossibleSyllableSequence: true
+    CombinePossibleSyllableSequence: false
     SyllableStartDifference: 1.4
     SyllableHertzGap: 300
-    FilterSyllableSequence: true
+    FilterSyllableSequence: false
     SyllableMaxCount: 6
     ExpectedPeriod: 0.92 # this figure derived from measure of 12 syllable periods.
 
 # 3: Remove events whose bandwidth lies outside 3 SDs of an expected value.
-ExpectedBandwidth: 150
-BandwidthStandardDeviation: 15
+ExpectedBandwidth: 200
+BandwidthStandardDeviation: 40
 
 # 4: Filter the events for excess activity in their sidebands, i.e. upper and lower buffer zones
-NeighbourhoodLowerHertzBuffer: 100
-NeighbourhoodUpperHertzBuffer: 600
+NeighbourhoodLowerHertzBuffer: 0
+NeighbourhoodUpperHertzBuffer: 0
 #NeighbourhoodDecibelBuffer: 18.0  # use this value if not combining sequences
-NeighbourhoodDecibelBuffer: 9.0   # use this value when combining sequences
+NeighbourhoodDecibelBuffer: 0.0   # use this value when combining sequences
 
 # Options to save results files
 # 5: Available options for saving spectrograms (case-sensitive): [False/Never | True/Always | WhenEventsDetected]

@@ -111,7 +111,7 @@ namespace AudioAnalysisTools.Events
         /// <returns>The average decibel value.</returns>
         public static double GetAverageDecibelsInEvent(SpectralEvent ev, double[,] spectrogramData, UnitConverters converter)
         {
-            // Get the length of the spectrogram
+            // Get the frame and bin counts of the spectrogram
             var frameCount = spectrogramData.GetLength(0);
             var binCount = spectrogramData.GetLength(1);
 
