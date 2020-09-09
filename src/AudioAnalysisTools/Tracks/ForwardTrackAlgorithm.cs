@@ -69,11 +69,13 @@ namespace AudioAnalysisTools.Tracks
                 }
             }
 
+            // Get a list of Tracks
             var tracks = GetForwardTracks(peaks, minDuration, maxDuration, decibelThreshold, converter);
 
-            // initialise tracks as events and get the combined intensity array.
-            // list of accumulated acoustic events
+            // Initialise each track as an event and store it in a list of acoustic events
             var events = new List<SpectralEvent>();
+
+            // Also get the combined decibel array.
             var combinedIntensityArray = new double[frameCount];
 
             // The following lines are used only for debug purposes.
@@ -96,7 +98,7 @@ namespace AudioAnalysisTools.Tracks
 
                 events.Add(ae);
 
-                // fill the intensity array
+                // fill the intensity array with decibel values
                 var startRow = converter.FrameFromStartTime(track.StartTimeSeconds);
                 var amplitudeTrack = track.GetAmplitudeOverTimeFrames();
                 for (int i = 0; i < amplitudeTrack.Length; i++)
