@@ -150,7 +150,7 @@ namespace AnalysisPrograms.Recognizers
                 //List<AcousticEvent> acousticEvents;
                 List<EventCommon> spectralEvents;
                 var plots = new List<Plot>();
-                SpectrogramStandard sonogram;
+                SpectrogramStandard spectrogram;
 
                 Log.Debug($"Using the {profileName} algorithm... ");
                 if (profileConfig is CommonParameters parameters)
@@ -163,19 +163,19 @@ namespace AnalysisPrograms.Recognizers
                         || profileConfig is UpwardTrackParameters
                         || profileConfig is OneframeTrackParameters)
                     {
-                        sonogram = new SpectrogramStandard(ParametersToSonogramConfig(parameters), audioRecording.WavReader);
+                        spectrogram = new SpectrogramStandard(ParametersToSonogramConfig(parameters), audioRecording.WavReader);
 
                         if (profileConfig is BlobParameters bp)
                         {
                             //get the array of intensity values minus intensity in side/buffer bands.
                             //i.e. require silence in side-bands. Otherwise might simply be getting part of a broader band acoustic event.
                             var decibelArray = SNR.CalculateFreqBandAvIntensityMinusBufferIntensity(
-                                sonogram.Data,
+                                spectrogram.Data,
                                 bp.MinHertz.Value,
                                 bp.MaxHertz.Value,
                                 bp.BottomHertzBuffer.Value,
                                 bp.TopHertzBuffer.Value,
-                                sonogram.NyquistFrequency);
+                                spectrogram.NyquistFrequency);
 
                             // prepare plot of resultant blob decibel array.
                             var plot = PreparePlot(decibelArray, $"{profileName} (Blob:db Intensity)", bp.DecibelThreshold.Value);
@@ -191,8 +191,8 @@ namespace AnalysisPrograms.Recognizers
                                 bp.DecibelThreshold.Value,
                                 TimeSpan.FromSeconds(bp.MinDuration.Value),
                                 TimeSpan.FromSeconds(bp.MaxDuration.Value),
-                                sonogram.FramesPerSecond,
-                                sonogram.FBinWidth);
+                                spectrogram.FramesPerSecond,
+                                spectrogram.FBinWidth);
                             spectralEvents = acEvents.ConvertAcousticEventsToSpectralEvents();
                         }
                         else if (profileConfig is OnebinTrackParameters wp)
@@ -200,7 +200,7 @@ namespace AnalysisPrograms.Recognizers
                             //get the array of intensity values minus intensity in side/buffer bands.
                             double[] decibelArray;
                             (spectralEvents, decibelArray) = OnebinTrackAlgorithm.GetOnebinTracks(
-                                sonogram,
+                                spectrogram,
                                 wp,
                                 segmentStartOffset);
 
@@ -211,7 +211,7 @@ namespace AnalysisPrograms.Recognizers
                         {
                             double[] decibelArray;
                             (spectralEvents, decibelArray) = ForwardTrackAlgorithm.GetForwardTracks(
-                                sonogram,
+                                spectrogram,
                                 tp,
                                 segmentStartOffset);
 
@@ -222,7 +222,7 @@ namespace AnalysisPrograms.Recognizers
                         {
                             double[] decibelArray;
                             (spectralEvents, decibelArray) = OneframeTrackAlgorithm.GetOneFrameTracks(
-                                sonogram,
+                                spectrogram,
                                 cp,
                                 segmentStartOffset);
 
@@ -233,7 +233,7 @@ namespace AnalysisPrograms.Recognizers
                         {
                             double[] decibelArray;
                             (spectralEvents, decibelArray) = UpwardTrackAlgorithm.GetUpwardTracks(
-                                sonogram,
+                                spectrogram,
                                 vtp,
                                 segmentStartOffset);
 
@@ -245,10 +245,10 @@ namespace AnalysisPrograms.Recognizers
                             double[] decibelMaxArray;
                             double[] harmonicIntensityScores;
                             (spectralEvents, decibelMaxArray, harmonicIntensityScores) = HarmonicParameters.GetComponentsWithHarmonics(
-                                sonogram,
+                                spectrogram,
                                 hp.MinHertz.Value,
                                 hp.MaxHertz.Value,
-                                sonogram.NyquistFrequency,
+                                spectrogram.NyquistFrequency,
                                 hp.DecibelThreshold.Value,
                                 hp.DctThreshold.Value,
                                 hp.MinDuration.Value,
@@ -263,7 +263,7 @@ namespace AnalysisPrograms.Recognizers
                         else if (profileConfig is OscillationParameters op)
                         {
                             Oscillations2012.Execute(
-                                sonogram,
+                                spectrogram,
                                 op.MinHertz.Value,
                                 op.MaxHertz.Value,
                                 op.DctDuration,
@@ -313,10 +313,10 @@ namespace AnalysisPrograms.Recognizers
                         NoiseReductionType = ac.NoiseReductionType,
                         NoiseReductionParameter = ac.NoiseReductionParameter,
                     };
-                    sonogram = new SpectrogramStandard(config, audioRecording.WavReader);
+                    spectrogram = new SpectrogramStandard(config, audioRecording.WavReader);
 
                     // GET THIS TO RETURN BLOB EVENTS.
-                    spectralEvents = Aed.CallAed(sonogram, ac, segmentStartOffset, audioRecording.Duration).ToList();
+                    spectralEvents = Aed.CallAed(spectrogram, ac, segmentStartOffset, audioRecording.Duration).ToList();
                 }
                 else
                 {
@@ -328,7 +328,7 @@ namespace AnalysisPrograms.Recognizers
                 allResults.Plots.AddRange(plots);
 
                 // effectively keeps only the *last* sonogram produced
-                allResults.Sonogram = sonogram;
+                allResults.Sonogram = spectrogram;
                 Log.Debug($"{profileName} event count = {spectralEvents.Count}");
 
                 // DEBUG PURPOSES COMMENT NEXT LINE
@@ -346,6 +346,13 @@ namespace AnalysisPrograms.Recognizers
                 allResults.NewEvents = CompositeEvent.CombineOverlappingEvents(allResults.NewEvents.Cast<EventCommon>().ToList());
                 Log.Debug($"Event count after combining overlapped events = {allResults.NewEvents.Count}");
             }
+
+            // ########################## NEW WORK - FILTER EVENTS USING DYNAMIC GAIN
+            //allResults.NewEvents = EventExtentions.FilterEventsUsingDynamicGain(
+            //    allResults.NewEvents.Cast<EventCommon>().ToList(),
+            //    allResults.Sonogram.Data,
+            //    decibelThreshold);
+            //Log.Debug($"Event count after adjusting gain = {allResults.NewEvents.Count}");
 
             // 2: Combine proximal events, that is, events that may be a sequence of syllables in the same strophe.
             //    Can also use this parameter to combine events that are in the upper or lower neighbourhood.
