@@ -347,13 +347,6 @@ namespace AnalysisPrograms.Recognizers
                 Log.Debug($"Event count after combining overlapped events = {allResults.NewEvents.Count}");
             }
 
-            // ########################## NEW WORK - FILTER EVENTS USING DYNAMIC GAIN
-            //allResults.NewEvents = EventExtentions.FilterEventsUsingDynamicGain(
-            //    allResults.NewEvents.Cast<EventCommon>().ToList(),
-            //    allResults.Sonogram.Data,
-            //    decibelThreshold);
-            //Log.Debug($"Event count after adjusting gain = {allResults.NewEvents.Count}");
-
             // 2: Combine proximal events, that is, events that may be a sequence of syllables in the same strophe.
             //    Can also use this parameter to combine events that are in the upper or lower neighbourhood.
             //    Such combinations will increase bandwidth of the event and this property can be used later to weed out unlikely events.
