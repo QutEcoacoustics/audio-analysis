@@ -94,7 +94,7 @@ namespace AudioAnalysisTools.Events
         }
 
         /// <summary>
-        /// Removes long events from a list of events.
+        /// Remove events from a list of events whose time duration is either too short or too long.
         /// </summary>
         public static List<EventCommon> FilterOnDuration(List<EventCommon> events, double minimumDurationSeconds, double maximumDurationSeconds)
         {
@@ -109,7 +109,7 @@ namespace AudioAnalysisTools.Events
         /// <param name="spectrogramData">The spectrogramin decibels.</param>
         /// <param name="converter">Converter between real values and spectrogram frames/bins.</param>
         /// <returns>The average decibel value.</returns>
-        public static double GetAverageDecibelsInEvent(SpectralEvent ev, double[,] spectrogramData, UnitConverters converter)
+        public static double[] GetDecibelArrayFromEvent(SpectralEvent ev, double[,] spectrogramData, UnitConverters converter)
         {
             // Get the frame and bin counts of the spectrogram
             var frameCount = spectrogramData.GetLength(0);
@@ -132,7 +132,7 @@ namespace AudioAnalysisTools.Events
 
             var subMatrix = MatrixTools.Submatrix<double>(spectrogramData, frameStart, lowerBin, frameEnd, upperBin);
 
-            // extract the decibel array.
+            // extract the decibel array. Get the maximum decibel value in each frame.
             int arrayLength = subMatrix.GetLength(0);
             var decibelArray = new double[arrayLength];
             for (int i = 0; i < arrayLength; i++)
@@ -141,6 +141,12 @@ namespace AudioAnalysisTools.Events
                 decibelArray[i] = spectralBins.Max();
             }
 
+            return decibelArray;
+        }
+
+        public static double GetAverageDecibelsInEvent(SpectralEvent ev, double[,] spectrogramData, UnitConverters converter)
+        {
+            var decibelArray = GetDecibelArrayFromEvent(ev, spectrogramData, converter);
             double avDecibels = decibelArray.Average();
             return avDecibels;
         }
@@ -444,6 +450,42 @@ namespace AudioAnalysisTools.Events
             var maxAmplitudePoints = groupStarts.Select(g => g.MaxBy(p => p.Value).First());
 
             return maxAmplitudePoints.OrderBy(p => p);
+        }
+
+        /// <summary>
+        /// Some events close to microphone. Reduces the signal amplitude.
+        /// </summary>
+        public static List<EventCommon> FilterEventsAfterAmplitudeNormalisation(
+            List<EventCommon> events,
+            double[,] spectrogramData,
+            UnitConverters converter,
+            double decibelThreshold)
+        {
+            // set maximum decibel value
+            var filteredEvents = new List<EventCommon>();
+
+            foreach (var ev in events)
+            {
+                /*
+                var decibelArray = GetDecibelArrayFromEvent(ev, spectrogramData, converter);
+
+                var tracks = GetCompositeTrack<IEnumerable<T>>(ev);
+
+                ev.Tracks;
+                var converter1 = ev.Converter;
+
+                // get the decibel profile
+                var decibelArray = GetDecibelArrayFromEvent(ev, spectrogramData, converter);
+                var maxDb = decibelArray.Max();
+
+                // adjust profile to new gain. First find the max decibel value in the event.
+                // if max decibels less than
+
+                filteredEvents.Add(ev);
+                */
+            }
+
+            return filteredEvents;
         }
     }
 }

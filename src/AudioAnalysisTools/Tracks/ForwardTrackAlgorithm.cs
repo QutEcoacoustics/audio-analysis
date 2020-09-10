@@ -109,6 +109,13 @@ namespace AudioAnalysisTools.Tracks
 
             List<EventCommon> returnEvents = events.Cast<EventCommon>().ToList();
 
+            // ########################## NEW WORK - NORMALISE AMPLITUDE AND THEN FILTER EVENTS Again.
+            //allResults.NewEvents = EventExtentions.FilterEventsUsingDynamicGain(
+            //    allResults.NewEvents.Cast<EventCommon>().ToList(),
+            //    allResults.Sonogram.Data,
+            //    decibelThreshold);
+            //Log.Debug($"Event count after adjusting gain = {allResults.NewEvents.Count}");
+
             // Combine coincident events that are stacked one above other.
             // This will help in some cases to combine related events.
             if (parameters.CombinePossibleHarmonics)
@@ -118,12 +125,12 @@ namespace AudioAnalysisTools.Tracks
 
             // Combine events that are temporally close and in the same frequency band.
             // This will help in some cases to combine related events.
-            if (parameters.CombinePossibleSyllableSequence)
-            {
-                List<SpectralEvent> se = events.Cast<SpectralEvent>().ToList();
-                var timeDiff = TimeSpan.FromSeconds(parameters.SyllableStartDifference);
-                returnEvents = CompositeEvent.CombineProximalEvents(se, timeDiff, parameters.SyllableHertzGap);
-            }
+            //if (parameters.CombinePossibleSyllableSequence)
+            //{
+            //    List<SpectralEvent> se = events.Cast<SpectralEvent>().ToList();
+            //    var timeDiff = TimeSpan.FromSeconds(parameters.SyllableStartDifference);
+            //    returnEvents = CompositeEvent.CombineProximalEvents(se, timeDiff, parameters.SyllableHertzGap);
+            //}
 
             return (returnEvents, combinedIntensityArray);
         }
