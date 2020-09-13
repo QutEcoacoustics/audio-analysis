@@ -8,6 +8,17 @@
 
 <!--generated-content-insert-here-->
 
+## Ecoacoustics Audio Analysis Software v20.9.1.1 2020-09-13
+
+Version v20.9.1.1
+
+
+
+### Details
+
+[Compare v20.9.0.2...v20.9.1.1](https://github.com/QutBioacoustics/audio-analysis/compare/v20.9.0.2...v20.9.1.1)
+
+- f1ae620c dependabot-preview[bot] - Bump Microsoft.Extensions.Configuration from 3.1.7 to 3.1.8
 ## Ecoacoustics Audio Analysis Software v20.9.0.2 2020-09-06
 
 Version v20.9.0.2
@@ -1049,6 +1060,7 @@ Version v19.2.0.90
 - 512f8b4 Mahnoosh Kholghi - generating features for a set of recordings
 - 9b7a178 Mahnoosh Kholghi - fixing the error in directory
 - 3fdb19c Mahnoosh Kholghi - Adding a method for arbitrary freq bins
+
 
 
 
