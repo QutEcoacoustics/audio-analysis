@@ -306,9 +306,9 @@ namespace TowseyLibrary
             return outM;
         }
 
-        /*
-         * converts a matrix to a vector by concatenating columns.
-         */
+        /// <summary>
+        /// Converts a matrix to a vector by concatenating its columns.
+        /// </summary>
         public static double[] Matrix2Array(double[,] matrix)
         {
             int ht = matrix.GetLength(0);

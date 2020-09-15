@@ -248,34 +248,6 @@ namespace TowseyLibrary
             AverageAndSD(values, out av, out sd);
         }
 
-        /// <summary>
-        /// This was written for the local contrast normalisation (LCN) of amplitude spectrograms.
-        /// However the contrast is calculated wrt the local part of frequency bin or column.
-        /// Plugging up of ends of the returned array is a hack but it does not really matter.
-        /// </summary>
-        public static double[] CalculateLocalVariance(double[] data, int window)
-        {
-            int L = data.Length;
-            int halfwindow = window / 2;
-            double[] variances = new double[L];
-
-            for (int i = 0; i <= L - window; i++)
-            {
-                double[] subV = DataTools.Subarray(data, i, window);
-                AverageAndVariance(subV, out var av, out var variance);
-                variances[i + halfwindow] = variance;
-            }
-
-            // plug up the ends
-            for (int i = 0; i < halfwindow; i++)
-            {
-                variances[i] = variances[halfwindow];
-                variances[L - i - 1] = variances[L - halfwindow - 1];
-            }
-
-            return variances;
-        }
-
         public static double[] Normalise(double[] data)
         {
             AverageAndSD(data, out var av, out var sd);

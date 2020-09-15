@@ -555,11 +555,14 @@ namespace AnalysisPrograms.SpectrogramGenerator
             LoggedConsole.WriteLine("LCN: Neighbourhood of {0} seconds = {1} frames", neighbourhoodSeconds, neighbourhoodFrames);
 
             // subtract the lowest 20% of frames. This is first step in LCN noise removal. Sets the baseline.
-            const int lowPercentile = 20;
+            //const int lowPercentile = 20;
+            //spectrogram.Data =
+            //    NoiseRemoval_Briggs.NoiseReduction_byLowestPercentileSubtraction(spectrogram.Data, lowPercentile);
             spectrogram.Data =
-                NoiseRemoval_Briggs.NoiseReduction_byLowestPercentileSubtraction(spectrogram.Data, lowPercentile);
-            spectrogram.Data =
-                NoiseRemoval_Briggs.NoiseReduction_byLCNDivision(spectrogram.Data, neighbourhoodFrames, lcnContrastLevel);
+                NoiseRemoval_Briggs.NoiseReduction_byLCN(spectrogram.Data, neighbourhoodFrames, lcnContrastLevel);
+
+            //spectrogram.Data =
+            //            NoiseRemoval_Briggs.NoiseReduction_byLCNDivision(spectrogram.Data, lowPercent: 20, neighbourhoodFrames, lcnContrastLevel);
 
             // Finally background noise removal. This step is optional.
             double[] spectralDecibelBgn = NoiseProfile.CalculateBackgroundNoise(spectrogram.Data);
