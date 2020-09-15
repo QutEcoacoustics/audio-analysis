@@ -335,7 +335,12 @@ namespace AnalysisPrograms.Recognizers
                 //SaveDebugSpectrogram(allResults, genericConfig, outputDirectory, "name");
             }
 
-            // ######################################################## POST-PROCESSING OF GENERIC EVENTS
+            // ############################### POST-PROCESSING OF GENERIC EVENTS
+            // The following generic post-processing steps are determined by config settings.
+            // Step 1: Combine overlapping events - events derived from all profiles.
+            // Step 2: Combine possible syllable sequences and filter on excess syllable count.
+            // Step 3: Remove events whose bandwidth is too small or large.
+            // Step 4: Remove events that have excessive noise in their side-bands.
 
             Log.Debug($"Total event count = {allResults.NewEvents.Count}");
 
@@ -517,6 +522,9 @@ namespace AnalysisPrograms.Recognizers
             public double NeighbourhoodDecibelBuffer { get; set; }
         }
 
+        /// <summary>
+        /// The properties in this config class are required to combine a sequence of similar syllables into a single event.
+        /// </summary>
         public class SyllableSequenceConfig
         {
             // ################ The first three properties concern the combining of syllables into a sequence or stroph.
