@@ -19,19 +19,58 @@ SegmentOverlap: 0
 # Each of these profiles will be analyzed
 # This profile is required for the species-specific recogniser and must have the current name.
 Profiles:
-    StrenuaSyllable: !ForwardTrackParameters
+    StrenuaSyllable6db: !ForwardTrackParameters
         ComponentName: RidgeTrack 
         SpeciesName: NinoxStrenua
         FrameSize: 1024
         FrameStep: 256
         WindowFunction: HANNING
+        DecibelThreshold: 6.0
         # min and max of the freq band to search
         MinHertz: 300          
         MaxHertz: 600
-        MinDuration: 0.2
-        MaxDuration: 2.5
-        DecibelThreshold: 6.0
+        MinDuration: 0.25
+        MaxDuration: 0.7
    
+    StrenuaSyllable12db: !ForwardTrackParameters
+        ComponentName: RidgeTrack 
+        SpeciesName: NinoxStrenua
+        FrameSize: 1024
+        FrameStep: 256
+        WindowFunction: HANNING
+        DecibelThreshold: 12.0
+        # min and max of the freq band to search
+        MinHertz: 300          
+        MaxHertz: 600
+        MinDuration: 0.25
+        MaxDuration: 0.7
+        
+    StrenuaSyllable24db: !ForwardTrackParameters
+        ComponentName: RidgeTrack 
+        SpeciesName: NinoxStrenua
+        FrameSize: 1024
+        FrameStep: 256
+        WindowFunction: HANNING
+        DecibelThreshold: 24.0
+        # min and max of the freq band to search
+        MinHertz: 300          
+        MaxHertz: 600
+        MinDuration: 0.25
+        MaxDuration: 0.7
+      
+    StrenuaSyllable24db: !ForwardTrackParameters
+        ComponentName: RidgeTrack 
+        SpeciesName: NinoxStrenua
+        FrameSize: 1024
+        FrameStep: 256
+        WindowFunction: HANNING
+        DecibelThreshold: 30.0
+        # min and max of the freq band to search
+        MinHertz: 300          
+        MaxHertz: 600
+        MinDuration: 0.25
+        MaxDuration: 0.7
+      
 #################### POST-PROCESSING of EVENTS ###################
 
 # The first two post-processing steps are to combine overlapping/proximal/sequential events 
@@ -48,8 +87,8 @@ SyllableSequence:
     ExpectedPeriod: 0.92 # this figure derived from measure of 12 syllable periods.
 
 # 3: Remove events whose bandwidth lies outside 3 SDs of an expected value.
-ExpectedBandwidth: 200
-BandwidthStandardDeviation: 40
+ExpectedBandwidth: 150
+BandwidthStandardDeviation: 20
 
 # 4: Filter the events for excess activity in their sidebands, i.e. upper and lower buffer zones
 NeighbourhoodLowerHertzBuffer: 0

@@ -42,16 +42,7 @@ namespace AnalysisPrograms.Recognizers
 
             // validation of configs can be done here
             GenericRecognizer.ValidateProfileTagsMatchAlgorithms(config.Profiles, file);
-
-            // This call sets a restriction so that only one generic algorithm is used.
-            // CHANGE this to accept multiple generic algorithms as required.
-            //if (result.Profiles.SingleOrDefault() is ForwardTrackParameters)
-            if (config.Profiles?.Count == 1 && config.Profiles.First().Value is ForwardTrackParameters)
-            {
-                return config;
-            }
-
-            throw new ConfigFileException("NinoxStrenua expects one and only one ForwardTrack algorithm.", file);
+            return config;
         }
 
         /// <summary>
@@ -76,6 +67,7 @@ namespace AnalysisPrograms.Recognizers
             var genericConfig = (NinoxStrenuaConfig)config;
             var recognizer = new GenericRecognizer();
 
+            // Use the generic recognizers to find all generic events.
             RecognizerResults combinedResults = recognizer.Recognize(
                 audioRecording,
                 genericConfig,
@@ -97,14 +89,15 @@ namespace AnalysisPrograms.Recognizers
             //var spectralEvents = events.Select(x => (SpectralEvent)x).ToList();
 
             //NOTE:
-            // The generic recognizer does some post-processing of events prior to returning the list of combined events.
-            // Its post-processing steps are determined by config settings.
+            // The generic recognizer has already done the following post-processing of events prior to returning a combined list of events.
             // Generic post processing step 1: Combine overlapping events.
             // Generic post processing step 2: Combine possible syllable sequences and filter on excess syllable count.
             // Generic post processing step 3: Remove events whose bandwidth is too small or large.
             // Generic post processing step 4: Remove events that have excessive noise in their side-bands.
 
-            // Post-processing steps are put here:
+            // Additional post-processing steps are put here.
+            // NOTE: THE POST-PROCESSING STEPS BETWEEN HERE AND OF METHOD ARE THE ONLY STEPS THAT MAKE THIS A DIFFERENT RECOGNIZER FROM THE GENERIC.
+            // TYPICALLY YOU WOULD PROCESS THE INDIVIDUAL TRACKS IN EACH METHOD LOOKING FOR A SPECIFIC SHAPE.
 
             if (combinedResults.NewEvents.Count == 0)
             {
@@ -117,22 +110,22 @@ namespace AnalysisPrograms.Recognizers
             return combinedResults;
         }
 
-/*
-/// <summary>
-/// Summarize your results. This method is invoked exactly once per original file.
-/// </summary>
-public override void SummariseResults(
-    AnalysisSettings settings,
-    FileSegment inputFileSegment,
-    EventBase[] events,
-    SummaryIndexBase[] indices,
-    SpectralIndexBase[] spectralIndices,
-    AnalysisResult2[] results)
-{
-    // No operation - do nothing. Feel free to add your own logic.
-    base.SummariseResults(settings, inputFileSegment, events, indices, spectralIndices, results);
-}
-*/
+        /*
+        /// <summary>
+        /// Summarize your results. This method is invoked exactly once per original file.
+        /// </summary>
+        public override void SummariseResults(
+            AnalysisSettings settings,
+            FileSegment inputFileSegment,
+            EventBase[] events,
+            SummaryIndexBase[] indices,
+            SpectralIndexBase[] spectralIndices,
+            AnalysisResult2[] results)
+        {
+            // No operation - do nothing. Feel free to add your own logic.
+            base.SummariseResults(settings, inputFileSegment, events, indices, spectralIndices, results);
+        }
+        */
 
         public class NinoxStrenuaConfig : GenericRecognizerConfig, INamedProfiles<object>
         {
