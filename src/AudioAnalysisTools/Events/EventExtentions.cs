@@ -451,41 +451,5 @@ namespace AudioAnalysisTools.Events
 
             return maxAmplitudePoints.OrderBy(p => p);
         }
-
-        /// <summary>
-        /// Some events close to microphone. Reduces the signal amplitude.
-        /// </summary>
-        public static List<EventCommon> FilterEventsAfterAmplitudeNormalisation(
-            List<EventCommon> events,
-            double[,] spectrogramData,
-            UnitConverters converter,
-            double decibelThreshold)
-        {
-            // set maximum decibel value
-            var filteredEvents = new List<EventCommon>();
-
-            foreach (var ev in events)
-            {
-                /*
-                var decibelArray = GetDecibelArrayFromEvent(ev, spectrogramData, converter);
-
-                var tracks = GetCompositeTrack<IEnumerable<T>>(ev);
-
-                ev.Tracks;
-                var converter1 = ev.Converter;
-
-                // get the decibel profile
-                var decibelArray = GetDecibelArrayFromEvent(ev, spectrogramData, converter);
-                var maxDb = decibelArray.Max();
-
-                // adjust profile to new gain. First find the max decibel value in the event.
-                // if max decibels less than
-
-                filteredEvents.Add(ev);
-                */
-            }
-
-            return filteredEvents;
-        }
     }
 }

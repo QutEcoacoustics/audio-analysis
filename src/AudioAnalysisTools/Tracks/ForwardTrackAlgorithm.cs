@@ -109,13 +109,6 @@ namespace AudioAnalysisTools.Tracks
 
             List<EventCommon> returnEvents = events.Cast<EventCommon>().ToList();
 
-            // ########################## NEW WORK - NORMALISE AMPLITUDE AND THEN FILTER EVENTS Again.
-            //allResults.NewEvents = EventExtentions.FilterEventsUsingDynamicGain(
-            //    allResults.NewEvents.Cast<EventCommon>().ToList(),
-            //    allResults.Sonogram.Data,
-            //    decibelThreshold);
-            //Log.Debug($"Event count after adjusting gain = {allResults.NewEvents.Count}");
-
             // Combine coincident events that are stacked one above other.
             // This will help in some cases to combine related events.
             if (parameters.CombinePossibleHarmonics)
@@ -123,6 +116,9 @@ namespace AudioAnalysisTools.Tracks
                 returnEvents = CompositeEvent.CombineStackedEvents(events, parameters.HarmonicsStartDifference, parameters.HarmonicsHertzGap);
             }
 
+            // ##### Combining possible sequences currently happens at post-processing time - i.e. after all the profiles have been executed.
+            // ##### Combining possible sequences might be useful at the profile stage.
+            // So the following may be required in future - leave here for now.
             // Combine events that are temporally close and in the same frequency band.
             // This will help in some cases to combine related events.
             //if (parameters.CombinePossibleSyllableSequence)
