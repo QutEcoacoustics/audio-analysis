@@ -29,8 +29,8 @@ Profiles:
         # min and max of the freq band to search
         MinHertz: 300          
         MaxHertz: 600
-        MinDuration: 0.25
-        MaxDuration: 0.7
+        MinDuration: 0.2
+        MaxDuration: 0.9
    
     StrenuaSyllable12db: !ForwardTrackParameters
         ComponentName: RidgeTrack 
@@ -42,8 +42,8 @@ Profiles:
         # min and max of the freq band to search
         MinHertz: 300          
         MaxHertz: 600
-        MinDuration: 0.25
-        MaxDuration: 0.7
+        MinDuration: 0.2
+        MaxDuration: 0.9
         
     StrenuaSyllable24db: !ForwardTrackParameters
         ComponentName: RidgeTrack 
@@ -55,10 +55,10 @@ Profiles:
         # min and max of the freq band to search
         MinHertz: 300          
         MaxHertz: 600
-        MinDuration: 0.25
-        MaxDuration: 0.7
+        MinDuration: 0.2
+        MaxDuration: 0.9
       
-    StrenuaSyllable24db: !ForwardTrackParameters
+    StrenuaSyllable30db: !ForwardTrackParameters
         ComponentName: RidgeTrack 
         SpeciesName: NinoxStrenua
         FrameSize: 1024
@@ -68,33 +68,33 @@ Profiles:
         # min and max of the freq band to search
         MinHertz: 300          
         MaxHertz: 600
-        MinDuration: 0.25
-        MaxDuration: 0.7
+        MinDuration: 0.2
+        MaxDuration: 0.9
       
 #################### POST-PROCESSING of EVENTS ###################
 
 # The first two post-processing steps are to combine overlapping/proximal/sequential events 
 # 1: Combine overlapping events
-CombineOverlappingEvents: false
+CombineOverlappingEvents: true
 
 # 2: Combine possible syllable sequences
 SyllableSequence:
-    CombinePossibleSyllableSequence: false
+    CombinePossibleSyllableSequence: true
     SyllableStartDifference: 1.4
-    SyllableHertzGap: 300
+    SyllableHertzGap: 100
     FilterSyllableSequence: false
     SyllableMaxCount: 6
-    ExpectedPeriod: 0.92 # this figure derived from measure of 12 syllable periods.
+    ExpectedPeriod: 0.92
 
 # 3: Remove events whose bandwidth lies outside 3 SDs of an expected value.
-ExpectedBandwidth: 150
-BandwidthStandardDeviation: 20
+ExpectedBandwidth: 120
+BandwidthStandardDeviation: 30
 
 # 4: Filter the events for excess activity in their sidebands, i.e. upper and lower buffer zones
 NeighbourhoodLowerHertzBuffer: 0
 NeighbourhoodUpperHertzBuffer: 0
 #NeighbourhoodDecibelBuffer: 18.0  # use this value if not combining sequences
-NeighbourhoodDecibelBuffer: 0.0   # use this value when combining sequences
+NeighbourhoodDecibelBuffer: 3.0   # use this value when combining sequences
 
 # Options to save results files
 # 5: Available options for saving spectrograms (case-sensitive): [False/Never | True/Always | WhenEventsDetected]

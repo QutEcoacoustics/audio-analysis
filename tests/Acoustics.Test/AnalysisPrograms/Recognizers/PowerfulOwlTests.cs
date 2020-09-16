@@ -24,8 +24,8 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
         /// "C:\Ecoacoustics\WavFiles\PowerfulOwl_NinoxStrenua\XC269666_PowerfulOwl_NinoxStrenua.mp3".
         /// </summary>
         //private static readonly FileInfo TestAsset = PathHelper.ResolveAsset("Recordings", "gympie_np_1192_331618_20150818_054959_31_0.wav");
-        //private static readonly FileInfo TestAsset = new FileInfo(@"C:\Ecoacoustics\WavFiles\PowerfulOwl_NinoxStrenua\XC269666_PowerfulOwl_NinoxStrenua.wav");
-        private static readonly FileInfo TestAsset = new FileInfo(@"C:\Ecoacoustics\WavFiles\PowerfulOwl_NinoxStrenua\Powerful3AndBoobook0_ksh3_1773_510819_20171109_174311_30_0.wav");
+        //private static readonly FileInfo TestAsset = new FileInfo(@"C:\Ecoacoustics\WavFiles\Owls\PowerfulOwl_NinoxStrenua.wav");
+        private static readonly FileInfo TestAsset = new FileInfo(@"C:\Ecoacoustics\WavFiles\Owls\PowerfulOwl_NinoxStrenua\Powerful3AndBoobook0_ksh3_1773_510819_20171109_174311_30_0.wav");
         private static readonly FileInfo ConfigFile = PathHelper.ResolveConfigFile("RecognizerConfigFiles", "Towsey.NinoxStrenua.yml");
         private static readonly AudioRecording Recording = new AudioRecording(TestAsset);
         private static readonly NinoxStrenua Recognizer = new NinoxStrenua();
