@@ -158,7 +158,12 @@ namespace AudioAnalysisTools.Tracks
 
                     // Visit each spectral peak in order. Each may be start of possible track
                     var track = GetForwardTrack(peaks, row, col, threshold, converter);
-                    tracks.Add(track);
+
+                    // a forward track should have length >2
+                    if (track.PointCount > 2)
+                    {
+                        tracks.Add(track);
+                    }
                 }
             }
 
