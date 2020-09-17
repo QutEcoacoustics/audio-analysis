@@ -329,7 +329,7 @@ namespace AnalysisPrograms.Recognizers
 
                 // effectively keeps only the *last* sonogram produced
                 allResults.Sonogram = spectrogram;
-                Log.Debug($"{profileName} event count = {spectralEvents.Count}");
+                Log.Info($"{profileName} event count = {spectralEvents.Count}");
 
                 // DEBUG PURPOSES COMMENT NEXT LINE
                 //SaveDebugSpectrogram(allResults, genericConfig, outputDirectory, "name");
@@ -342,14 +342,14 @@ namespace AnalysisPrograms.Recognizers
             // Step 3: Remove events whose bandwidth is too small or large.
             // Step 4: Remove events that have excessive noise in their side-bands.
 
-            Log.Debug($"Total event count = {allResults.NewEvents.Count}");
+            Log.Info($"Total event count = {allResults.NewEvents.Count}");
 
             // 1: Combine overlapping events.
             // This will be necessary where many small events have been found - possibly because the dB threshold is set low.
             if (configuration.CombineOverlappingEvents)
             {
                 allResults.NewEvents = CompositeEvent.CombineOverlappingEvents(allResults.NewEvents.Cast<EventCommon>().ToList());
-                Log.Debug($"Event count after combining overlapped events = {allResults.NewEvents.Count}");
+                Log.Info($"Event count after combining overlapped events = {allResults.NewEvents.Count}");
             }
 
             // 2: Combine proximal events, that is, events that may be a sequence of syllables in the same strophe.
@@ -364,7 +364,7 @@ namespace AnalysisPrograms.Recognizers
                 var startDiff = sequenceConfig.SyllableStartDifference;
                 var hertzDiff = sequenceConfig.SyllableHertzGap;
                 allResults.NewEvents = CompositeEvent.CombineProximalEvents(spectralEvents1, TimeSpan.FromSeconds(startDiff), (int)hertzDiff);
-                Log.Debug($"Event count after combining proximal events = {allResults.NewEvents.Count}");
+                Log.Info($"Event count after combining proximal events = {allResults.NewEvents.Count}");
 
                 // Now filter on properties of the sequences which are treated as Composite events.
                 if (sequenceConfig.FilterSyllableSequence)
@@ -372,13 +372,13 @@ namespace AnalysisPrograms.Recognizers
                     // filter on number of components
                     var maxComponentCount = sequenceConfig.SyllableMaxCount;
                     allResults.NewEvents = EventExtentions.FilterEventsOnCompositeContent(allResults.NewEvents, maxComponentCount);
-                    Log.Debug($"Event count after filtering on component count = {allResults.NewEvents.Count}");
+                    Log.Info($"Event count after filtering on component count = {allResults.NewEvents.Count}");
 
                     // filter on syllable periodicity
                     var period = sequenceConfig.ExpectedPeriod;
                     var periodSd = sequenceConfig.PeriodStdDev;
                     allResults.NewEvents = EventExtentions.FilterEventsOnSyllablePeriodicity(allResults.NewEvents, period, periodSd);
-                    Log.Debug($"Event count after filtering on component count = {allResults.NewEvents.Count}");
+                    Log.Info($"Event count after filtering on component count = {allResults.NewEvents.Count}");
                 }
             }
 
@@ -386,7 +386,7 @@ namespace AnalysisPrograms.Recognizers
             var expectedEventBandwidth = configuration.ExpectedBandwidth;
             var sd = configuration.BandwidthStandardDeviation;
             allResults.NewEvents = EventExtentions.FilterOnBandwidth(allResults.NewEvents, expectedEventBandwidth, sd, sigmaThreshold: 3.0);
-            Log.Debug($"Event count after filtering on bandwidth = {allResults.NewEvents.Count}");
+            Log.Info($"Event count after filtering on bandwidth = {allResults.NewEvents.Count}");
 
             // 4: Filter events on the amount of acoustic activity in their upper and lower neighbourhoods - their buffer zone.
             //    The idea is that an unambiguous event should have some acoustic space above and below.
@@ -402,7 +402,7 @@ namespace AnalysisPrograms.Recognizers
                     segmentStartOffset,
                     configuration.NeighbourhoodDecibelBuffer);
 
-                Log.Debug($"Event count after filtering on acoustic activity in upper/lower neighbourhood = {allResults.NewEvents.Count}");
+                Log.Info($"Event count after filtering on acoustic activity in upper/lower neighbourhood = {allResults.NewEvents.Count}");
             }
 
             return allResults;
