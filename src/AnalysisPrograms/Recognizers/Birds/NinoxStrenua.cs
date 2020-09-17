@@ -12,6 +12,7 @@ namespace AnalysisPrograms.Recognizers
     using Acoustics.Shared.ConfigFile;
     using AnalysisBase;
     using AnalysisPrograms.Recognizers.Base;
+    using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.WavTools;
     using log4net;
@@ -96,12 +97,21 @@ namespace AnalysisPrograms.Recognizers
             // Generic post processing step 4: Remove events that have excessive noise in their side-bands.
 
             // Additional post-processing steps are put here.
-            // NOTE: THE POST-PROCESSING STEPS BETWEEN HERE AND OF METHOD ARE THE ONLY STEPS THAT MAKE THIS A DIFFERENT RECOGNIZER FROM THE GENERIC.
-            // TYPICALLY YOU WOULD PROCESS THE INDIVIDUAL TRACKS IN EACH METHOD LOOKING FOR A SPECIFIC SHAPE.
+            // NOTE: THE POST-PROCESSING STEPS BETWEEN HERE AND OF THE END OF METHOD ARE THE ONLY STEPS THAT MAKE THIS A DIFFERENT RECOGNIZER FROM THE GENERIC.
+            // TYPICALLY YOU WOULD PROCESS THE INDIVIDUAL TRACKS IN EACH METHOD LOOKING FOR A SPECIFIC TRACK SHAPE.
 
-            if (combinedResults.NewEvents.Count == 0)
+            // POST PROCESSING METHODS HERE >>>>>>>>>>>>>>>>>>>>>>>>>>
+
+            PowerfulOwlLog.Info($"Final event count = {combinedResults.NewEvents.Count}.");
+            if (combinedResults.NewEvents.Count > 0)
             {
-                PowerfulOwlLog.Debug($"Zero events after post-processing.");
+                int counter = 0;
+                foreach (var ev in combinedResults.NewEvents)
+                {
+                    counter++;
+                    var spEvent = (SpectralEvent)ev;
+                    PowerfulOwlLog.Info($"  Event[{counter}]: Start={spEvent.EventStartSeconds:f1}; Duration={spEvent.EventDurationSeconds:f2}; Bandwidth={spEvent.BandWidthHertz} Hz");
+                }
             }
 
             //UNCOMMENT following line if you want special debug spectrogram, i.e. with special plots.
