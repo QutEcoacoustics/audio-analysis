@@ -20,12 +20,13 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
     public class PowerfulOwlTests : OutputDirectoryTest
     {
         /// <summary>
-        /// The canonical recording used for this recognizer is at:
-        /// "C:\Ecoacoustics\WavFiles\PowerfulOwl_NinoxStrenua\XC269666_PowerfulOwl_NinoxStrenua.mp3".
+        /// The canonical recording used for this recognizer contains three calls, each with two syllables.
+        /// However the calls are loud and each is followed by an echo which is picked up as another syllable.
+        /// In addition, there is a false-positive hit near start of recording.
+        /// The config file could easily be adjusted to remove the extra hits,
+        /// but the config has been optimised on ten recordings, provided by Kristen Thompson, that contain a variety of loud and soft calls.
         /// </summary>
-        //private static readonly FileInfo TestAsset = PathHelper.ResolveAsset("Recordings", "gympie_np_1192_331618_20150818_054959_31_0.wav");
-        //private static readonly FileInfo TestAsset = new FileInfo(@"C:\Ecoacoustics\WavFiles\Owls\PowerfulOwl_NinoxStrenua.wav");
-        private static readonly FileInfo TestAsset = new FileInfo(@"C:\Ecoacoustics\WavFiles\Owls\PowerfulOwl_NinoxStrenua\Powerful3AndBoobook0_ksh3_1773_510819_20171109_174311_30_0.wav");
+        private static readonly FileInfo TestAsset = PathHelper.ResolveAsset("Recordings", "Powerful3AndBoobook0_ksh3_1773_510819_20171109_174311_30_0.wav");
         private static readonly FileInfo ConfigFile = PathHelper.ResolveConfigFile("RecognizerConfigFiles", "Towsey.NinoxStrenua.yml");
         private static readonly AudioRecording Recording = new AudioRecording(TestAsset);
         private static readonly NinoxStrenua Recognizer = new NinoxStrenua();
@@ -51,21 +52,21 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             this.SaveTestOutput(
                 outputDirectory => GenericRecognizer.SaveDebugSpectrogram(results, null, outputDirectory, Recognizer.SpeciesName));
 
-            Assert.AreEqual(3, events.Count);
+            Assert.AreEqual(7, events.Count);
             Assert.IsNull(scoreTrack);
-            Assert.AreEqual(1, plots.Count);
-            Assert.AreEqual(4380, sonogram.FrameCount);
+            Assert.AreEqual(4, plots.Count);
+            Assert.AreEqual(2580, sonogram.FrameCount);
 
             Assert.IsInstanceOfType(events[1], typeof(CompositeEvent));
 
-            var secondEvent = (CompositeEvent)events[1];
+            var secondEvent = (CompositeEvent)events[3];
 
-            Assert.AreEqual(23.858503401360544, secondEvent.EventStartSeconds, TestHelper.AllowedDelta);
-            Assert.AreEqual(27.7362358276644, secondEvent.EventEndSeconds, TestHelper.AllowedDelta);
+            Assert.AreEqual(28.28190476, secondEvent.EventStartSeconds, 1E-06);
+            Assert.AreEqual(29.18748299, secondEvent.EventEndSeconds, 1E-06);
             Assert.AreEqual(399, secondEvent.LowFrequencyHertz);
-            Assert.AreEqual(525, secondEvent.HighFrequencyHertz);
-            Assert.AreEqual(38.291398284647158, secondEvent.Score, TestHelper.AllowedDelta);
-            Assert.AreEqual(0.0109879605278185, secondEvent.ScoreNormalized, TestHelper.AllowedDelta);
+            Assert.AreEqual(483, secondEvent.HighFrequencyHertz);
+            Assert.AreEqual(20.55114869, secondEvent.Score, 1E-06);
+            Assert.AreEqual(0.137214817, secondEvent.ScoreNormalized, 1E-06);
         }
     }
 }
