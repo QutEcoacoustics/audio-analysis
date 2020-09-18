@@ -135,6 +135,18 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                 },
             };
 
+            config.CombineOverlappingEvents = false;
+
+            // filter on bandwidth
+            config.ExpectedBandwidth = 350;
+            config.BandwidthStandardDeviation = 20;
+
+            // filter on acousstic activity in nside bands.
+            // zero indicates no filtering.
+            config.NeighbourhoodUpperHertzBuffer = 0;
+            config.NeighbourhoodLowerHertzBuffer = 0;
+            config.NeighbourhoodDecibelBuffer = 0;
+
             var results = recognizer.Recognize(recording, config, 100.Seconds(), null, this.TestOutputDirectory, null);
 
             Assert.AreEqual(1, results.NewEvents.Count);
@@ -144,6 +156,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             Assert.AreEqual(113.15, @event.EventEndSeconds, 0.5);
             Assert.AreEqual(700, @event.LowFrequencyHertz, 0.1);
             Assert.AreEqual(1050, @event.HighFrequencyHertz, 0.1);
+            Assert.AreEqual(350, @event.BandWidthHertz);
             Assert.AreEqual("LowerBandDTMF_z", @event.Profile);
             Assert.AreEqual("DTMF", @event.Name);
         }
@@ -175,6 +188,18 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                     },
                 },
             };
+
+            config.CombineOverlappingEvents = false;
+
+            // filter on bandwidth
+            config.ExpectedBandwidth = 90;
+            config.BandwidthStandardDeviation = 10;
+
+            // filter on acousstic activity in nside bands.
+            // zero indicates no filtering.
+            config.NeighbourhoodUpperHertzBuffer = 0;
+            config.NeighbourhoodLowerHertzBuffer = 0;
+            config.NeighbourhoodDecibelBuffer = 0;
 
             var results = recognizer.Recognize(recording, config, 100.Seconds(), null, this.TestOutputDirectory, null);
 

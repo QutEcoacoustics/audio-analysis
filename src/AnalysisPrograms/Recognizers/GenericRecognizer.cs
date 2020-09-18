@@ -357,7 +357,7 @@ namespace AnalysisPrograms.Recognizers
             //    Such combinations will increase bandwidth of the event and this property can be used later to weed out unlikely events.
             var sequenceConfig = configuration.SyllableSequence;
 
-            if (sequenceConfig.CombinePossibleSyllableSequence)
+            if (sequenceConfig.NotNull() && sequenceConfig.CombinePossibleSyllableSequence)
             {
                 // Must first convert events to spectral events.
                 var spectralEvents1 = allResults.NewEvents.Cast<SpectralEvent>().ToList();
