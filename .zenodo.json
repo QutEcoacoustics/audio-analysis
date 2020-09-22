@@ -2,25 +2,22 @@
     "upload_type": "software",
     "creators": [
         {
-          "@id": "https://orcid.org/0000-0002-8246-7151", 
-          "@type": "Person", 
+          "orcid": "0000-0002-8246-7151", 
           "affiliation": "Queensland University of Technology", 
           "name": "Michael Towsey"
         }, 
         {
-          "@id": "https://orcid.org/0000-0003-1110-1483", 
-          "@type": "Person", 
+          "orcid": "0000-0003-1110-1483", 
           "affiliation": "Queensland University of Technology", 
           "name": "Anthony Truskinger"
         }, 
         {
-          "@id": "https://orcid.org/0000-0001-5155-0342",  
-          "@type": "Person", 
+          "orcid": "0000-0001-5155-0342",  
           "affiliation": "@Australian-Translational-Genomics", 
           "name": "Mark Cottman-Fields"
         }, 
         {
-          "@type": "Person", 
+          "orcid": "0000-0002-4892-1509", 
           "affiliation": "Queensland University of Technology", 
           "name": "Paul Roe"
         }
