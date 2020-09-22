@@ -95,7 +95,7 @@ namespace AnalysisPrograms
 
             [Option(
                 ShortName = "fcs",
-                Description = "Config file specifying directory containing indices.csv files and other parameters.")]
+                Description = "Config file specifying that contains FCS settings. `Normally named SpectrogramFalseColourConfig.yml`")]
             [ExistingFile(Extension = ".yml")]
             [LegalFilePath]
             public string FalseColourSpectrogramConfig { get; set; }
