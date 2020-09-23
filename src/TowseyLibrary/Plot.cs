@@ -42,6 +42,96 @@ namespace TowseyLibrary
             return plot;
         }
 
+        public static double[] PruneScoreArray(double[] scores, double scoreThreshold, int minDuration, int maxDuration)
+        {
+            double[] returnData = new double[scores.Length];
+
+            int count = scores.Length;
+            bool isHit = false;
+            int startId = 0;
+
+            // pass over all frames
+            for (int i = 0; i < count; i++)
+            {
+                if (isHit == false && scores[i] >= scoreThreshold)
+                {
+                    // start of an event
+                    isHit = true;
+                    startId = i;
+                }
+                else // check for the end of an event
+                if (isHit && scores[i] < scoreThreshold)
+                {
+                    // this is end of an event, so initialise it
+                    isHit = false;
+                    int endId = i;
+
+                    int duration = endId - startId;
+                    if (duration < minDuration || duration > maxDuration)
+                    {
+                        continue; // skip events with duration shorter than threshold
+                    }
+
+                    // pass over all frames
+                    for (int j = startId; j < endId; j++)
+                    {
+                        returnData[j] = scores[j];
+                    }
+                }
+            } // end of pass over all frames
+
+            return returnData;
+        }
+
+        public static void FindStartsAndEndsOfScoreEvents(
+            double[] scores,
+            double scoreThreshold,
+            int minDuration,
+            int maxDuration,
+            out double[] prunedScores,
+            out List<Point> startEnds)
+        {
+            prunedScores = new double[scores.Length];
+            startEnds = new List<Point>();
+
+            int count = scores.Length;
+            bool isHit = false;
+            int startId = 0;
+
+            // pass over all frames
+            for (int i = 0; i < count; i++)
+            {
+                // Start of an event
+                if (isHit == false && scores[i] >= scoreThreshold)
+                {
+                    isHit = true;
+                    startId = i;
+                }
+                else // check for the end of an event
+                if (isHit && scores[i] < scoreThreshold)
+                {
+                    // this is end of an event, so initialise it
+                    isHit = false;
+                    int endId = i - 1;
+
+                    int duration = endId - startId + 1;
+                    if (duration < minDuration || duration > maxDuration)
+                    {
+                        // skip events with duration shorter than threshold
+                        continue;
+                    }
+
+                    // pass over all frames
+                    for (int j = startId; j <= endId; j++)
+                    {
+                        prunedScores[j] = scores[j];
+                    }
+
+                    startEnds.Add(new Point(startId, endId));
+                }
+            }
+        }
+
         public string title { get; set; }
 
         public double[] data { get; set; }
@@ -173,96 +263,6 @@ namespace TowseyLibrary
                 }
             });
             return image;
-        }
-
-        public static double[] PruneScoreArray(double[] scores, double scoreThreshold, int minDuration, int maxDuration)
-        {
-            double[] returnData = new double[scores.Length];
-
-            int count = scores.Length;
-            bool isHit = false;
-            int startId = 0;
-
-            // pass over all frames
-            for (int i = 0; i < count; i++)
-            {
-                if (isHit == false && scores[i] >= scoreThreshold)
-                {
-                    // start of an event
-                    isHit = true;
-                    startId = i;
-                }
-                else // check for the end of an event
-                if (isHit && scores[i] < scoreThreshold)
-                {
-                    // this is end of an event, so initialise it
-                    isHit = false;
-                    int endId = i;
-
-                    int duration = endId - startId;
-                    if (duration < minDuration || duration > maxDuration)
-                    {
-                        continue; // skip events with duration shorter than threshold
-                    }
-
-                    // pass over all frames
-                    for (int j = startId; j < endId; j++)
-                    {
-                        returnData[j] = scores[j];
-                    }
-                }
-            } // end of pass over all frames
-
-            return returnData;
-        }
-
-        public static void FindStartsAndEndsOfScoreEvents(
-            double[] scores,
-            double scoreThreshold,
-            int minDuration,
-            int maxDuration,
-            out double[] prunedScores,
-            out List<Point> startEnds)
-        {
-            prunedScores = new double[scores.Length];
-            startEnds = new List<Point>();
-
-            int count = scores.Length;
-            bool isHit = false;
-            int startId = 0;
-
-            // pass over all frames
-            for (int i = 0; i < count; i++)
-            {
-                // Start of an event
-                if (isHit == false && scores[i] >= scoreThreshold)
-                {
-                    isHit = true;
-                    startId = i;
-                }
-                else // check for the end of an event
-                if (isHit && scores[i] < scoreThreshold)
-                {
-                    // this is end of an event, so initialise it
-                    isHit = false;
-                    int endId = i - 1;
-
-                    int duration = endId - startId + 1;
-                    if (duration < minDuration || duration > maxDuration)
-                    {
-                        // skip events with duration shorter than threshold
-                        continue;
-                    }
-
-                    // pass over all frames
-                    for (int j = startId; j <= endId; j++)
-                    {
-                        prunedScores[j] = scores[j];
-                    }
-
-                    startEnds.Add(new Point(startId, endId));
-                }
-            }
         }
     }
 }
