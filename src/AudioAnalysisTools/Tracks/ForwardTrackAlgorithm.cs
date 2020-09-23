@@ -27,19 +27,27 @@ namespace AudioAnalysisTools.Tracks
             TimeSpan segmentStartOffset,
             string profileName)
         {
-            var thresholds = parameters.DecibelThreshold;
-
-            double[] decibelArray;
-            List<EventCommon> spectralEvents;
+            var decibelThresholds = parameters.DecibelThresholds;
+            var spectralEvents = new List<EventCommon>();
             var plots = new List<Plot>();
 
-            (spectralEvents, decibelArray) = ForwardTrackAlgorithm.GetForwardTracks(
-            spectrogram,
-            parameters,
-            segmentStartOffset);
+            foreach (var threshold in decibelThresholds)
+            {
+                double[] decibelArray;
+                List<EventCommon> events;
 
-            var plot = Plot.PreparePlot(decibelArray, $"{profileName} (Chirps:dB Intensity)", thresholds.Value);
-            plots.Add(plot);
+                (events, decibelArray) = GetForwardTracks(
+                spectrogram,
+                parameters,
+                segmentStartOffset,
+                threshold.Value);
+
+                spectralEvents.AddRange(events);
+
+                var plot = Plot.PreparePlot(decibelArray, $"{profileName} (Chirps:{threshold.Value:d0}dB)", threshold.Value);
+                plots.Add(plot);
+            }
+
             return (spectralEvents, plots);
         }
 
@@ -52,7 +60,8 @@ namespace AudioAnalysisTools.Tracks
         public static (List<EventCommon> Events, double[] CombinedIntensity) GetForwardTracks(
             SpectrogramStandard sonogram,
             ForwardTrackParameters parameters,
-            TimeSpan segmentStartOffset)
+            TimeSpan segmentStartOffset,
+            double decibelThreshold)
         {
             var sonogramData = sonogram.Data;
             int frameCount = sonogramData.GetLength(0);
@@ -63,7 +72,6 @@ namespace AudioAnalysisTools.Tracks
             int maxBin = (int)Math.Round(parameters.MaxHertz.Value / binWidth);
             double minDuration = parameters.MinDuration.Value;
             double maxDuration = parameters.MaxDuration.Value;
-            double decibelThreshold = parameters.DecibelThreshold.Value;
 
             var converter = new UnitConverters(
                 segmentStartOffset: segmentStartOffset.TotalSeconds,

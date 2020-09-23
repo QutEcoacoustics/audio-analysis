@@ -167,6 +167,9 @@ namespace AnalysisPrograms.Recognizers
 
                         if (profileConfig is BlobParameters bp)
                         {
+                            var thresholdArray = bp.DecibelThresholds;
+                            var threshold = thresholdArray[0].Value;
+
                             //get the array of intensity values minus intensity in side/buffer bands.
                             //i.e. require silence in side-bands. Otherwise might simply be getting part of a broader band acoustic event.
                             var decibelArray = SNR.CalculateFreqBandAvIntensityMinusBufferIntensity(
@@ -178,7 +181,7 @@ namespace AnalysisPrograms.Recognizers
                                 spectrogram.NyquistFrequency);
 
                             // prepare plot of resultant blob decibel array.
-                            var plot = Plot.PreparePlot(decibelArray, $"{profileName} (Blob:db Intensity)", bp.DecibelThreshold.Value);
+                            var plot = Plot.PreparePlot(decibelArray, $"{profileName} (Blob:db Intensity)", threshold);
                             plots.Add(plot);
 
                             // iii: CONVERT blob decibel SCORES TO ACOUSTIC EVENTS.
@@ -188,7 +191,7 @@ namespace AnalysisPrograms.Recognizers
                                 segmentStartOffset,
                                 bp.MinHertz.Value,
                                 bp.MaxHertz.Value,
-                                bp.DecibelThreshold.Value,
+                                threshold,
                                 TimeSpan.FromSeconds(bp.MinDuration.Value),
                                 TimeSpan.FromSeconds(bp.MaxDuration.Value),
                                 spectrogram.FramesPerSecond,
@@ -197,51 +200,53 @@ namespace AnalysisPrograms.Recognizers
                         }
                         else if (profileConfig is OnebinTrackParameters wp)
                         {
-                            //get the array of intensity values minus intensity in side/buffer bands.
-                            double[] decibelArray;
-                            (spectralEvents, decibelArray) = OnebinTrackAlgorithm.GetOnebinTracks(
+                            List<Plot> dbPlots;
+                            (spectralEvents, dbPlots) = OnebinTrackAlgorithm.GetOnebinTracks(
                                 spectrogram,
                                 wp,
-                                segmentStartOffset);
+                                segmentStartOffset,
+                                profileName);
 
-                            var plot = Plot.PreparePlot(decibelArray, $"{profileName} (Whistle:dB Intensity)", wp.DecibelThreshold.Value);
-                            plots.Add(plot);
+                            plots.AddRange(dbPlots);
                         }
                         else if (profileConfig is ForwardTrackParameters tp)
                         {
-                            double[] decibelArray;
-                            (spectralEvents, decibelArray) = ForwardTrackAlgorithm.GetForwardTracks(
+                            List<Plot> decibelPlots;
+                            (spectralEvents, decibelPlots) = ForwardTrackAlgorithm.GetForwardTracks(
                                 spectrogram,
                                 tp,
-                                segmentStartOffset);
+                                segmentStartOffset,
+                                profileName);
 
-                            var plot = Plot.PreparePlot(decibelArray, $"{profileName} (Chirps:dB Intensity)", tp.DecibelThreshold.Value);
-                            plots.Add(plot);
+                            plots.AddRange(decibelPlots);
                         }
                         else if (profileConfig is OneframeTrackParameters cp)
                         {
-                            double[] decibelArray;
-                            (spectralEvents, decibelArray) = OneframeTrackAlgorithm.GetOneFrameTracks(
+                            List<Plot> decibelPlots;
+                            (spectralEvents, decibelPlots) = OneframeTrackAlgorithm.GetOneFrameTracks(
                                 spectrogram,
                                 cp,
-                                segmentStartOffset);
+                                segmentStartOffset,
+                                profileName);
 
-                            var plot = Plot.PreparePlot(decibelArray, $"{profileName} (Clicks:dB Intensity)", cp.DecibelThreshold.Value);
-                            plots.Add(plot);
+                            plots.AddRange(decibelPlots);
                         }
                         else if (profileConfig is UpwardTrackParameters vtp)
                         {
-                            double[] decibelArray;
-                            (spectralEvents, decibelArray) = UpwardTrackAlgorithm.GetUpwardTracks(
+                            List<Plot> decibelPlots;
+                            (spectralEvents, decibelPlots) = UpwardTrackAlgorithm.GetUpwardTracks(
                                 spectrogram,
                                 vtp,
-                                segmentStartOffset);
+                                segmentStartOffset,
+                                profileName);
 
-                            var plot = Plot.PreparePlot(decibelArray, $"{profileName} (VerticalTrack:dB Intensity)", vtp.DecibelThreshold.Value);
-                            plots.Add(plot);
+                            plots.AddRange(decibelPlots);
                         }
                         else if (profileConfig is HarmonicParameters hp)
                         {
+                            var thresholdArray = hp.DecibelThresholds;
+                            var threshold = thresholdArray[0];
+
                             double[] decibelMaxArray;
                             double[] harmonicIntensityScores;
                             (spectralEvents, decibelMaxArray, harmonicIntensityScores) = HarmonicParameters.GetComponentsWithHarmonics(
@@ -249,7 +254,7 @@ namespace AnalysisPrograms.Recognizers
                                 hp.MinHertz.Value,
                                 hp.MaxHertz.Value,
                                 spectrogram.NyquistFrequency,
-                                hp.DecibelThreshold.Value,
+                                threshold.Value,
                                 hp.DctThreshold.Value,
                                 hp.MinDuration.Value,
                                 hp.MaxDuration.Value,
@@ -257,7 +262,8 @@ namespace AnalysisPrograms.Recognizers
                                 hp.MaxFormantGap.Value,
                                 segmentStartOffset);
 
-                            var plot = Plot.PreparePlot(harmonicIntensityScores, $"{profileName} (Harmonics:dct intensity)", hp.DctThreshold.Value);
+                            // prepare plot of resultant Harmonics decibel array.
+                            var plot = Plot.PreparePlot(decibelMaxArray, $"{profileName} (Harmonics:{threshold:d0}db)", threshold.Value);
                             plots.Add(plot);
                         }
                         else if (profileConfig is OscillationParameters op)
