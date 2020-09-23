@@ -21,6 +21,28 @@ namespace AudioAnalysisTools.Tracks
 
     public static class ForwardTrackAlgorithm
     {
+        public static (List<EventCommon> Events, List<Plot> DecibelPlots) GetForwardTracks(
+            SpectrogramStandard spectrogram,
+            ForwardTrackParameters parameters,
+            TimeSpan segmentStartOffset,
+            string profileName)
+        {
+            var thresholds = parameters.DecibelThreshold;
+
+            double[] decibelArray;
+            List<EventCommon> spectralEvents;
+            var plots = new List<Plot>();
+
+            (spectralEvents, decibelArray) = ForwardTrackAlgorithm.GetForwardTracks(
+            spectrogram,
+            parameters,
+            segmentStartOffset);
+
+            var plot = Plot.PreparePlot(decibelArray, $"{profileName} (Chirps:dB Intensity)", thresholds.Value);
+            plots.Add(plot);
+            return (spectralEvents, plots);
+        }
+
         /// <summary>
         /// This method returns foward (spectral peak) tracks enclosed in spectral events.
         /// It averages dB log values incorrectly but it is faster than doing many log conversions.
