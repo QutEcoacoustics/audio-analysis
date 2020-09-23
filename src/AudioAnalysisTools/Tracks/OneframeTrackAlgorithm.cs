@@ -10,10 +10,41 @@ namespace AudioAnalysisTools.Tracks
     using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Tracks;
     using AudioAnalysisTools.StandardSpectrograms;
+    using TowseyLibrary;
     using TrackType = AudioAnalysisTools.Events.Tracks.TrackType;
 
     public static class OneframeTrackAlgorithm
     {
+        public static (List<EventCommon> Events, List<Plot> DecibelPlots) GetOneFrameTracks(
+            SpectrogramStandard spectrogram,
+            OneframeTrackParameters parameters,
+            TimeSpan segmentStartOffset,
+            string profileName)
+        {
+            var decibelThresholds = parameters.DecibelThresholds;
+            var spectralEvents = new List<EventCommon>();
+            var plots = new List<Plot>();
+
+            foreach (var threshold in decibelThresholds)
+            {
+                double[] decibelArray;
+                List<EventCommon> events;
+
+                (events, decibelArray) = GetOneFrameTracks(
+                spectrogram,
+                parameters,
+                segmentStartOffset,
+                threshold.Value);
+
+                spectralEvents.AddRange(events);
+
+                var plot = Plot.PreparePlot(decibelArray, $"{profileName} (Clicks:{threshold.Value:d0}dB)", threshold.Value);
+                plots.Add(plot);
+            }
+
+            return (spectralEvents, plots);
+        }
+
         /// <summary>
         /// A one-frame track sounds like a click.
         /// A click is a sharp onset broadband sound of brief duration. Geometrically it is similar to a vertical whistle.
@@ -23,7 +54,8 @@ namespace AudioAnalysisTools.Tracks
         public static (List<EventCommon> Events, double[] Intensity) GetOneFrameTracks(
             SpectrogramStandard sonogram,
             OneframeTrackParameters parameters,
-            TimeSpan segmentStartOffset)
+            TimeSpan segmentStartOffset,
+            double decibelThreshold)
         {
             var sonogramData = sonogram.Data;
             int frameCount = sonogramData.GetLength(0);
@@ -33,7 +65,6 @@ namespace AudioAnalysisTools.Tracks
             double binWidth = nyquist / (double)binCount;
             int minBin = (int)Math.Round(parameters.MinHertz.Value / binWidth);
             int maxBin = (int)Math.Round(parameters.MaxHertz.Value / binWidth);
-            var decibelThreshold = parameters.DecibelThreshold.Value;
             var minBandwidthHertz = parameters.MinBandwidthHertz.Value;
             var maxBandwidthHertz = parameters.MaxBandwidthHertz.Value;
 

@@ -12,10 +12,41 @@ namespace AudioAnalysisTools.Tracks
     using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Tracks;
     using AudioAnalysisTools.StandardSpectrograms;
+    using TowseyLibrary;
     using TrackType = AudioAnalysisTools.Events.Tracks.TrackType;
 
     public static class OnebinTrackAlgorithm
     {
+        public static (List<EventCommon> Events, List<Plot> DecibelPlots) GetOnebinTracks(
+            SpectrogramStandard spectrogram,
+            OnebinTrackParameters parameters,
+            TimeSpan segmentStartOffset,
+            string profileName)
+        {
+            var decibelThresholds = parameters.DecibelThresholds;
+            var spectralEvents = new List<EventCommon>();
+            var plots = new List<Plot>();
+
+            foreach (var threshold in decibelThresholds)
+            {
+                double[] decibelArray;
+                List<EventCommon> events;
+
+                (events, decibelArray) = GetOnebinTracks(
+                spectrogram,
+                parameters,
+                segmentStartOffset,
+                threshold.Value);
+
+                spectralEvents.AddRange(events);
+
+                var plot = Plot.PreparePlot(decibelArray, $"{profileName} (Whistle:{threshold.Value:d0}dB)", threshold.Value);
+                plots.Add(plot);
+            }
+
+            return (spectralEvents, plots);
+        }
+
         /// <summary>
         /// This method averages dB log values incorrectly but it is faster than doing many log conversions.
         /// This method is used to find acoustic events and is accurate enough for the purpose.
@@ -23,7 +54,8 @@ namespace AudioAnalysisTools.Tracks
         public static (List<EventCommon> ListOfevents, double[] CombinedIntensityArray) GetOnebinTracks(
             SpectrogramStandard sonogram,
             OnebinTrackParameters parameters,
-            TimeSpan segmentStartOffset)
+            TimeSpan segmentStartOffset,
+            double decibelThreshold)
         {
             var sonogramData = sonogram.Data;
             int frameCount = sonogramData.GetLength(0);
@@ -32,7 +64,6 @@ namespace AudioAnalysisTools.Tracks
             double binWidth = nyquist / (double)binCount;
             int minBin = (int)Math.Round(parameters.MinHertz.Value / binWidth);
             int maxBin = (int)Math.Round(parameters.MaxHertz.Value / binWidth);
-            double decibelThreshold = parameters.DecibelThreshold.Value;
             double minDuration = parameters.MinDuration.Value;
             double maxDuration = parameters.MaxDuration.Value;
 

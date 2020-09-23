@@ -9,6 +9,7 @@ namespace AudioAnalysisTools.Tracks
     using System.Linq;
     using System.Text;
     using Acoustics.Shared;
+    using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Tracks;
     using AudioAnalysisTools.Events.Types;
@@ -16,11 +17,43 @@ namespace AudioAnalysisTools.Tracks
     using TowseyLibrary;
     using TrackType = AudioAnalysisTools.Events.Tracks.TrackType;
 
+    /// <summary>
+    /// EXPANATION: A vertical track is a near click or rapidly frequency-modulated tone. A good example is the whip component of the whip-bird call.
+    /// They would typically be only a few time-frames duration.
+    /// </summary>
     public static class UpwardTrackAlgorithm
     {
+        public static (List<EventCommon> Events, List<Plot> DecibelPlots) GetUpwardTracks(
+            SpectrogramStandard spectrogram,
+            UpwardTrackParameters parameters,
+            TimeSpan segmentStartOffset,
+            string profileName)
+        {
+            var decibelThresholds = parameters.DecibelThresholds;
+            var spectralEvents = new List<EventCommon>();
+            var plots = new List<Plot>();
+
+            foreach (var threshold in decibelThresholds)
+            {
+                double[] decibelArray;
+                List<EventCommon> events;
+
+                (events, decibelArray) = GetUpwardTracks(
+                spectrogram,
+                parameters,
+                segmentStartOffset,
+                threshold.Value);
+
+                spectralEvents.AddRange(events);
+
+                var plot = Plot.PreparePlot(decibelArray, $"{profileName} (Clicks:{threshold.Value:d0}dB)", threshold.Value);
+                plots.Add(plot);
+            }
+
+            return (spectralEvents, plots);
+        }
+
         /// <summary>
-        /// EXPANATION: A vertical track is a near click or rapidly frequency-modulated tone. A good example is the whip component of the whip-bird call.
-        /// They would typically be only a few time-frames duration.
         /// THis method averages dB log values incorrectly but it is faster than doing many log conversions and is accurate enough for the purpose.
         /// </summary>
         /// <param name="sonogram">The spectrogram to be searched.</param>
@@ -30,7 +63,8 @@ namespace AudioAnalysisTools.Tracks
         public static (List<EventCommon> Events, double[] CombinedIntensity) GetUpwardTracks(
             SpectrogramStandard sonogram,
             AnalysisPrograms.Recognizers.Base.UpwardTrackParameters parameters,
-            TimeSpan segmentStartOffset)
+            TimeSpan segmentStartOffset,
+            double decibelThreshold)
         {
             var sonogramData = sonogram.Data;
             int frameCount = sonogramData.GetLength(0);
@@ -42,7 +76,6 @@ namespace AudioAnalysisTools.Tracks
             int maxBin = (int)Math.Round(parameters.MaxHertz.Value / binWidth);
             var minBandwidthHertz = parameters.MinBandwidthHertz.Value;
             var maxBandwidthHertz = parameters.MaxBandwidthHertz.Value;
-            var decibelThreshold = parameters.DecibelThreshold.Value;
 
             var converter = new UnitConverters(
                 segmentStartOffset: segmentStartOffset.TotalSeconds,
