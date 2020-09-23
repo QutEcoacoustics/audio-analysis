@@ -178,7 +178,7 @@ namespace AnalysisPrograms.Recognizers
                                 spectrogram.NyquistFrequency);
 
                             // prepare plot of resultant blob decibel array.
-                            var plot = PreparePlot(decibelArray, $"{profileName} (Blob:db Intensity)", bp.DecibelThreshold.Value);
+                            var plot = Plot.PreparePlot(decibelArray, $"{profileName} (Blob:db Intensity)", bp.DecibelThreshold.Value);
                             plots.Add(plot);
 
                             // iii: CONVERT blob decibel SCORES TO ACOUSTIC EVENTS.
@@ -204,7 +204,7 @@ namespace AnalysisPrograms.Recognizers
                                 wp,
                                 segmentStartOffset);
 
-                            var plot = PreparePlot(decibelArray, $"{profileName} (Whistle:dB Intensity)", wp.DecibelThreshold.Value);
+                            var plot = Plot.PreparePlot(decibelArray, $"{profileName} (Whistle:dB Intensity)", wp.DecibelThreshold.Value);
                             plots.Add(plot);
                         }
                         else if (profileConfig is ForwardTrackParameters tp)
@@ -215,7 +215,7 @@ namespace AnalysisPrograms.Recognizers
                                 tp,
                                 segmentStartOffset);
 
-                            var plot = PreparePlot(decibelArray, $"{profileName} (Chirps:dB Intensity)", tp.DecibelThreshold.Value);
+                            var plot = Plot.PreparePlot(decibelArray, $"{profileName} (Chirps:dB Intensity)", tp.DecibelThreshold.Value);
                             plots.Add(plot);
                         }
                         else if (profileConfig is OneframeTrackParameters cp)
@@ -226,7 +226,7 @@ namespace AnalysisPrograms.Recognizers
                                 cp,
                                 segmentStartOffset);
 
-                            var plot = PreparePlot(decibelArray, $"{profileName} (Clicks:dB Intensity)", cp.DecibelThreshold.Value);
+                            var plot = Plot.PreparePlot(decibelArray, $"{profileName} (Clicks:dB Intensity)", cp.DecibelThreshold.Value);
                             plots.Add(plot);
                         }
                         else if (profileConfig is UpwardTrackParameters vtp)
@@ -237,7 +237,7 @@ namespace AnalysisPrograms.Recognizers
                                 vtp,
                                 segmentStartOffset);
 
-                            var plot = PreparePlot(decibelArray, $"{profileName} (VerticalTrack:dB Intensity)", vtp.DecibelThreshold.Value);
+                            var plot = Plot.PreparePlot(decibelArray, $"{profileName} (VerticalTrack:dB Intensity)", vtp.DecibelThreshold.Value);
                             plots.Add(plot);
                         }
                         else if (profileConfig is HarmonicParameters hp)
@@ -257,7 +257,7 @@ namespace AnalysisPrograms.Recognizers
                                 hp.MaxFormantGap.Value,
                                 segmentStartOffset);
 
-                            var plot = PreparePlot(harmonicIntensityScores, $"{profileName} (Harmonics:dct intensity)", hp.DctThreshold.Value);
+                            var plot = Plot.PreparePlot(harmonicIntensityScores, $"{profileName} (Harmonics:dct intensity)", hp.DctThreshold.Value);
                             plots.Add(plot);
                         }
                         else if (profileConfig is OscillationParameters op)
@@ -281,7 +281,7 @@ namespace AnalysisPrograms.Recognizers
                             spectralEvents = new List<EventCommon>(oscillationEvents);
 
                             //plots.Add(new Plot($"{profileName} (:OscillationScore)", scores, op.EventThreshold));
-                            var plot = PreparePlot(scores, $"{profileName} (:OscillationScore)", op.EventThreshold);
+                            var plot = Plot.PreparePlot(scores, $"{profileName} (:OscillationScore)", op.EventThreshold);
                             plots.Add(plot);
                         }
                         else
@@ -436,23 +436,6 @@ namespace AnalysisPrograms.Recognizers
             image3.Save(path);
 
             return path;
-        }
-
-        /// <summary>
-        /// Prepares a plot of an array of score values.
-        /// To obtain a more useful display, the maximum display value is set to 3 times the threshold value.
-        /// </summary>
-        /// <param name="array">an array of double.</param>
-        /// <param name="title">to accompany the plot.</param>
-        /// <param name="threshold">A threshold value to be drawn on the plot.</param>
-        /// <returns>the plot.</returns>
-        private static Plot PreparePlot(double[] array, string title, double threshold)
-        {
-            double intensityNormalizationMax = 3 * threshold;
-            var eventThreshold = threshold / intensityNormalizationMax;
-            var normalisedIntensityArray = DataTools.NormaliseInZeroOne(array, 0, intensityNormalizationMax);
-            var plot = new Plot(title, normalisedIntensityArray, eventThreshold);
-            return plot;
         }
 
         private static SonogramConfig ParametersToSonogramConfig(CommonParameters common)

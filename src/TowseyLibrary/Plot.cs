@@ -25,6 +25,23 @@ namespace TowseyLibrary
             this.threshold = _threshold;
         }
 
+        /// <summary>
+        /// Prepares a plot of an array of score values.
+        /// To obtain a more useful display, the maximum display value is set to 3 times the threshold value.
+        /// </summary>
+        /// <param name="array">an array of double.</param>
+        /// <param name="title">to accompany the plot.</param>
+        /// <param name="threshold">A threshold value to be drawn on the plot.</param>
+        /// <returns>the plot.</returns>
+        public static Plot PreparePlot(double[] array, string title, double threshold)
+        {
+            double intensityNormalizationMax = 3 * threshold;
+            var eventThreshold = threshold / intensityNormalizationMax;
+            var normalisedIntensityArray = DataTools.NormaliseInZeroOne(array, 0, intensityNormalizationMax);
+            var plot = new Plot(title, normalisedIntensityArray, eventThreshold);
+            return plot;
+        }
+
         public string title { get; set; }
 
         public double[] data { get; set; }
