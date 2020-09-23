@@ -44,7 +44,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                 Profiles = new Dictionary<string, object>()
                 {
                     { "TestAed", new Aed.AedConfiguration() { BandpassMinimum = 12345 } },
-                    { "TestOscillation", new OscillationParameters() { DecibelThreshold = 123 } },
+                    { "TestOscillation", new OscillationParameters() { DecibelThresholds = new double?[] { 123.0 } } },
                     { "TestBlob", new BlobParameters() { BottomHertzBuffer = 456 } },
                     { "TestWhistle", new OnebinTrackParameters() { TopHertzBuffer = 789 } },
                 },
@@ -76,7 +76,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             Assert.IsInstanceOfType(config2.Profiles["TestWhistle"], typeof(OnebinTrackParameters));
 
             Assert.AreEqual((config2.Profiles["TestAed"] as Aed.AedConfiguration)?.BandpassMinimum, 12345);
-            Assert.AreEqual((config2.Profiles["TestOscillation"] as OscillationParameters)?.DecibelThreshold, 123);
+            Assert.AreEqual((config2.Profiles["TestOscillation"] as OscillationParameters)?.DecibelThresholds, 123);
             Assert.AreEqual((config2.Profiles["TestBlob"] as BlobParameters)?.BottomHertzBuffer, 456);
             Assert.AreEqual((config2.Profiles["TestWhistle"] as OnebinTrackParameters)?.TopHertzBuffer, 789);
         }
@@ -182,7 +182,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                             TopHertzBuffer = 0,
                             MinDuration = 4,
                             MaxDuration = 6,
-                            DecibelThreshold = 1.0,
+                            DecibelThresholds = new double?[] { 1.0 },
                             SpeciesName = "NoName",
                         }
                     },
@@ -331,8 +331,9 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                 MaxHertz = 6000,
                 MinDuration = 0.2,
                 MaxDuration = 1.1,
-                DecibelThreshold = 2.0,
+                DecibelThresholds = new double?[] { 2.0 },
                 CombinePossibleSyllableSequence = false,
+
                 //SyllableStartDifference = TimeSpan.FromSeconds(0.2),
                 //SyllableHertzGap = 300,
             };
@@ -360,18 +361,15 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             //var image1 = SpectrogramTools.GetSonogramPlusCharts(spectrogram, null, null, null);
             //results.Sonogram.GetImage().Save(this.outputDirectory + "\\debug.png");
 
-            var plots = new List<Plot>();
-            var (spectralEvents, dBArray) = OnebinTrackAlgorithm.GetOnebinTracks(
+            var (spectralEvents, plotList) = OnebinTrackAlgorithm.GetOnebinTracks(
                 spectrogram,
                 parameters,
-                segmentStartOffset);
+                segmentStartOffset,
+                "TestProfile");
 
             // draw a plot of max decibels in each frame
-            double decibelNormalizationMax = 5 * parameters.DecibelThreshold.Value;
-            var dBThreshold = parameters.DecibelThreshold.Value / decibelNormalizationMax;
-            var normalisedDecibelArray = DataTools.NormaliseInZeroOne(dBArray, 0, decibelNormalizationMax);
-            var plot1 = new Plot("decibel max", normalisedDecibelArray, dBThreshold);
-            plots.Add(plot1);
+            var plots = new List<Plot>();
+            plots.AddRange(plotList);
 
             var allResults = new RecognizerResults()
             {
@@ -424,7 +422,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                 MaxHertz = 6000,
                 MinDuration = 0.2,
                 MaxDuration = 1.1,
-                DecibelThreshold = 2.0,
+                DecibelThresholds = new double?[] { 2.0 },
                 CombinePossibleHarmonics = false,
                 HarmonicsStartDifference = TimeSpan.FromSeconds(0.2),
                 HarmonicsHertzGap = 200,
@@ -456,18 +454,14 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             //results.Sonogram.GetImage().Save(this.outputDirectory + "\\debug.png");
 
             var segmentStartOffset = TimeSpan.Zero;
-            var plots = new List<Plot>();
-            var (spectralEvents, dBArray) = ForwardTrackAlgorithm.GetForwardTracks(
+            var (spectralEvents, plotList) = ForwardTrackAlgorithm.GetForwardTracks(
                 spectrogram,
                 parameters,
-                segmentStartOffset);
+                segmentStartOffset,
+                "TestProfile");
 
-            // draw a plot of max decibels in each frame
-            double decibelNormalizationMax = 5 * parameters.DecibelThreshold.Value;
-            var dBThreshold = parameters.DecibelThreshold.Value / decibelNormalizationMax;
-            var normalisedDecibelArray = DataTools.NormaliseInZeroOne(dBArray, 0, decibelNormalizationMax);
-            var plot1 = new Plot("decibel max", normalisedDecibelArray, dBThreshold);
-            plots.Add(plot1);
+            var plots = new List<Plot>();
+            plots.AddRange(plotList);
 
             var allResults = new RecognizerResults()
             {
@@ -514,7 +508,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                 MaxHertz = 11000,
                 MinBandwidthHertz = 100,
                 MaxBandwidthHertz = 5000,
-                DecibelThreshold = 2.0,
+                DecibelThresholds = new double?[] { 2.0 },
             };
 
             //Set up the virtual recording.
@@ -540,18 +534,14 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             //results.Sonogram.GetImage().Save(this.outputDirectory + "\\debug.png");
 
             var segmentStartOffset = TimeSpan.Zero;
-            var plots = new List<Plot>();
-            var (spectralEvents, dBArray) = OneframeTrackAlgorithm.GetOneFrameTracks(
+            var (spectralEvents, plotList) = OneframeTrackAlgorithm.GetOneFrameTracks(
                 spectrogram,
                 parameters,
-                segmentStartOffset);
+                segmentStartOffset,
+                "TestProfile");
 
-            // draw a plot of max decibels in each frame
-            double decibelNormalizationMax = 5 * parameters.DecibelThreshold.Value;
-            var dBThreshold = parameters.DecibelThreshold.Value / decibelNormalizationMax;
-            var normalisedDecibelArray = DataTools.NormaliseInZeroOne(dBArray, 0, decibelNormalizationMax);
-            var plot1 = new Plot("decibel max", normalisedDecibelArray, dBThreshold);
-            plots.Add(plot1);
+            var plots = new List<Plot>();
+            plots.AddRange(plotList);
 
             var allResults = new RecognizerResults()
             {
@@ -601,7 +591,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                 MaxHertz = 11000,
                 MinBandwidthHertz = 100,
                 MaxBandwidthHertz = 5000,
-                DecibelThreshold = 2.0,
+                DecibelThresholds = new double?[] { 2.0 },
                 CombineProximalSimilarEvents = true,
                 SyllableStartDifference = TimeSpan.FromSeconds(0.2),
                 SyllableHertzDifference = 300,
@@ -631,17 +621,13 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
 
             var segmentStartOffset = TimeSpan.Zero;
             var plots = new List<Plot>();
-            var (spectralEvents, dBArray) = UpwardTrackAlgorithm.GetUpwardTracks(
+            var (spectralEvents, plotList) = UpwardTrackAlgorithm.GetUpwardTracks(
                 spectrogram,
                 parameters,
-                segmentStartOffset);
+                segmentStartOffset,
+                "TestProfile");
 
-            // draw a plot of max decibels in each frame
-            double decibelNormalizationMax = 5 * parameters.DecibelThreshold.Value;
-            var dBThreshold = parameters.DecibelThreshold.Value / decibelNormalizationMax;
-            var normalisedDecibelArray = DataTools.NormaliseInZeroOne(dBArray, 0, decibelNormalizationMax);
-            var plot1 = new Plot("decibel max", normalisedDecibelArray, dBThreshold);
-            plots.Add(plot1);
+            plots.AddRange(plotList);
 
             var allResults = new RecognizerResults()
             {
@@ -691,7 +677,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                 MaxHertz = 6000,
                 MinBandwidthHertz = 200,
                 MaxBandwidthHertz = 5000,
-                DecibelThreshold = 2.0,
+                DecibelThresholds = new double?[] { 2.0 },
                 CombineProximalSimilarEvents = false,
                 SyllableStartDifference = TimeSpan.FromSeconds(0.2),
                 SyllableHertzDifference = 300,
@@ -719,17 +705,14 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             var plots = new List<Plot>();
 
             // do a SECOND TEST of the vertical tracks
-            var (spectralEvents, dBArray) = UpwardTrackAlgorithm.GetUpwardTracks(
+            var (spectralEvents, plotList) = UpwardTrackAlgorithm.GetUpwardTracks(
                 spectrogram,
                 parameters,
-                segmentStartOffset);
+                segmentStartOffset,
+                "TestProfile");
 
             // draw a plot of max decibels in each frame
-            double decibelNormalizationMax = 5 * parameters.DecibelThreshold.Value;
-            var dBThreshold = parameters.DecibelThreshold.Value / decibelNormalizationMax;
-            var normalisedDecibelArray = DataTools.NormaliseInZeroOne(dBArray, 0, decibelNormalizationMax);
-            var plot2 = new Plot("decibel max", normalisedDecibelArray, dBThreshold);
-            plots.Add(plot2);
+            plots.AddRange(plotList);
 
             var allResults2 = new RecognizerResults()
             {
