@@ -152,7 +152,7 @@ namespace AnalysisPrograms.Recognizers
                 var plots = new List<Plot>();
                 SpectrogramStandard spectrogram;
 
-                Log.Debug($"Using the {profileName} algorithm... ");
+                //Log.Debug($"Using the {profileName} algorithm... ");
                 if (profileConfig is CommonParameters parameters)
                 {
                     if (profileConfig is BlobParameters
@@ -287,33 +287,31 @@ namespace AnalysisPrograms.Recognizers
 
                 // effectively keeps only the *last* sonogram produced
                 allResults.Sonogram = spectrogram;
-                Log.Info($"{profileName} event count = {spectralEvents.Count}");
-
-                // DEBUG PURPOSES COMMENT NEXT LINE
-                //SaveDebugSpectrogram(allResults, genericConfig, outputDirectory, "name");
+                Log.Debug($"Profile {profileName}: event count = {spectralEvents.Count}");
             }
 
-            // ############################### POST-PROCESSING OF GENERIC EVENTS
+            // ############################### POST-PROCESSING OF GENERIC EVENTS ###############################
             // The following generic post-processing steps are determined by config settings.
             // Step 1: Combine overlapping events - events derived from all profiles.
             // Step 2: Combine possible syllable sequences and filter on excess syllable count.
             // Step 3: Remove events whose bandwidth is too small or large.
             // Step 4: Remove events that have excessive noise in their side-bands.
 
-            Log.Info($"Total event count = {allResults.NewEvents.Count}");
+            Log.Debug($"Total event count BEFORE post-processing = {allResults.NewEvents.Count}");
+            var postprocessingConfig = configuration.PostProcessing;
 
             // 1: Combine overlapping events.
             // This will be necessary where many small events have been found - possibly because the dB threshold is set low.
-            if (configuration.CombineOverlappingEvents)
+            if (postprocessingConfig.CombineOverlappingEvents)
             {
                 allResults.NewEvents = CompositeEvent.CombineOverlappingEvents(allResults.NewEvents.Cast<EventCommon>().ToList());
-                Log.Info($"Event count after combining overlapped events = {allResults.NewEvents.Count}");
+                Log.Debug($"Event count after combining overlapped events = {allResults.NewEvents.Count}");
             }
 
             // 2: Combine proximal events, that is, events that may be a sequence of syllables in the same strophe.
             //    Can also use this parameter to combine events that are in the upper or lower neighbourhood.
             //    Such combinations will increase bandwidth of the event and this property can be used later to weed out unlikely events.
-            var sequenceConfig = configuration.SyllableSequence;
+            var sequenceConfig = postprocessingConfig.SyllableSequence;
 
             if (sequenceConfig.NotNull() && sequenceConfig.CombinePossibleSyllableSequence)
             {
@@ -322,7 +320,7 @@ namespace AnalysisPrograms.Recognizers
                 var startDiff = sequenceConfig.SyllableStartDifference;
                 var hertzDiff = sequenceConfig.SyllableHertzGap;
                 allResults.NewEvents = CompositeEvent.CombineProximalEvents(spectralEvents1, TimeSpan.FromSeconds(startDiff), (int)hertzDiff);
-                Log.Info($"Event count after combining proximal events = {allResults.NewEvents.Count}");
+                Log.Debug($"Event count after combining proximal events = {allResults.NewEvents.Count}");
 
                 // Now filter on properties of the sequences which are treated as Composite events.
                 if (sequenceConfig.FilterSyllableSequence)
@@ -330,37 +328,51 @@ namespace AnalysisPrograms.Recognizers
                     // filter on number of components
                     var maxComponentCount = sequenceConfig.SyllableMaxCount;
                     allResults.NewEvents = EventFilters.FilterEventsOnCompositeContent(allResults.NewEvents, maxComponentCount);
-                    Log.Info($"Event count after filtering on component count = {allResults.NewEvents.Count}");
+                    Log.Debug($"Event count after filtering on component count = {allResults.NewEvents.Count}");
 
                     // filter on syllable periodicity
                     var period = sequenceConfig.ExpectedPeriod;
-                    var periodSd = sequenceConfig.PeriodStdDev;
+                    var periodSd = sequenceConfig.PeriodStandardDeviation;
                     allResults.NewEvents = EventFilters.FilterEventsOnSyllablePeriodicity(allResults.NewEvents, period, periodSd);
-                    Log.Info($"Event count after filtering on component count = {allResults.NewEvents.Count}");
+                    Log.Debug($"Event count after filtering on component count = {allResults.NewEvents.Count}");
                 }
             }
 
             // 3: Filter the events for bandwidth in Hertz
-            var expectedEventBandwidth = configuration.ExpectedBandwidth;
-            var sd = configuration.BandwidthStandardDeviation;
+            var expectedEventBandwidth = postprocessingConfig.Bandwidth.ExpectedBandwidth;
+            var sd = postprocessingConfig.Bandwidth.BandwidthStandardDeviation;
             allResults.NewEvents = EventFilters.FilterOnBandwidth(allResults.NewEvents, expectedEventBandwidth, sd, sigmaThreshold: 3.0);
-            Log.Info($"Event count after filtering on bandwidth = {allResults.NewEvents.Count}");
+            Log.Debug($"Event count after filtering on bandwidth = {allResults.NewEvents.Count}");
 
             // 4: Filter events on the amount of acoustic activity in their upper and lower neighbourhoods - their buffer zone.
             //    The idea is that an unambiguous event should have some acoustic space above and below.
             //    The filter requires that the average acoustic activity in each frame and bin of the upper and lower buffer zones should not exceed the user specified decibel threshold.
-            if (configuration.NeighbourhoodUpperHertzBuffer > 0 || configuration.NeighbourhoodLowerHertzBuffer > 0)
+            var sidebandActivity = postprocessingConfig.SidebandActivity;
+            if (sidebandActivity.UpperHertzBuffer > 0 || sidebandActivity.LowerHertzBuffer > 0)
             {
                 var spectralEvents2 = allResults.NewEvents.Cast<SpectralEvent>().ToList();
-                allResults.NewEvents = EventFilters.FilterEventsOnNeighbourhood(
+                allResults.NewEvents = EventFilters.FilterEventsOnSidebandActivity(
                     spectralEvents2,
                     allResults.Sonogram,
-                    configuration.NeighbourhoodLowerHertzBuffer,
-                    configuration.NeighbourhoodUpperHertzBuffer,
+                    sidebandActivity.LowerHertzBuffer,
+                    sidebandActivity.UpperHertzBuffer,
                     segmentStartOffset,
-                    configuration.NeighbourhoodDecibelBuffer);
+                    sidebandActivity.DecibelBuffer);
 
-                Log.Info($"Event count after filtering on acoustic activity in upper/lower neighbourhood = {allResults.NewEvents.Count}");
+                Log.Debug($"Event count after filtering on acoustic activity in upper/lower neighbourhood = {allResults.NewEvents.Count}");
+            }
+
+            // Write out the events to log.
+            Log.Debug($"Final event count = {allResults.NewEvents.Count}.");
+            if (allResults.NewEvents.Count > 0)
+            {
+                int counter = 0;
+                foreach (var ev in allResults.NewEvents)
+                {
+                    counter++;
+                    var spEvent = (SpectralEvent)ev;
+                    Log.Debug($"  Event[{counter}]: Start={spEvent.EventStartSeconds:f1}; Duration={spEvent.EventDurationSeconds:f2}; Bandwidth={spEvent.BandWidthHertz} Hz");
+                }
             }
 
             return allResults;
@@ -417,8 +429,18 @@ namespace AnalysisPrograms.Recognizers
             /// <inheritdoc />
             public Dictionary<string, object> Profiles { get; set; }
 
-            // ########### THE FOLLOWING PROPERTIES ARE FOR POST-PROCESSING OF EVeNTS.
+            /// <summary>
+            /// Gets or sets the post-processing config.
+            /// Used to obtain parameters for all post-processing steps.
+            /// </summary>
+            public PostProcessingConfig PostProcessing { get; set; }
+        }
 
+        /// <summary>
+        /// The properties in this config class are required to combine a sequence of similar syllables into a single event.
+        /// </summary>
+        public class PostProcessingConfig
+        {
             /// <summary>
             /// Gets or sets a value indicating Whether or not to combine overlapping events.
             /// </summary>
@@ -429,8 +451,22 @@ namespace AnalysisPrograms.Recognizers
             /// </summary>
             public SyllableSequenceConfig SyllableSequence { get; set; }
 
-            // #### The next two properties determine filtering of events based on their bandwidth
+            /// <summary>
+            /// Gets or sets the parameters required to filter events on the acoustic acticity in their sidebands.
+            /// </summary>
+            public SidebandConfig SidebandActivity { get; set; }
 
+            /// <summary>
+            /// Gets or sets the parameters required to filter events on their bandwidth.
+            /// </summary>
+            public BandwidthConfig Bandwidth { get; set; }
+        }
+
+        /// <summary>
+        /// The next two properties determine filtering of events based on their bandwidth.
+        /// </summary>
+        public class BandwidthConfig
+        {
             /// <summary>
             /// Gets or sets a value indicating the Expected bandwidth of an event.
             /// </summary>
@@ -440,31 +476,37 @@ namespace AnalysisPrograms.Recognizers
             /// Gets or sets a value indicating the standard deviation of the expected bandwidth.
             /// </summary>
             public int BandwidthStandardDeviation { get; set; }
+        }
 
-            // #### The next three properties determine filtering of events based on acoustic conctent of upper and lower buffer zones.
-
+        /// <summary>
+        /// The properties in this config class are required to filter events based on the amount of acoustic activity in their sidebands.
+        /// </summary>
+        public class SidebandConfig
+        {
             /// <summary>
             /// Gets or sets a value indicating Whether or not to filter events based on acoustic conctent of upper buffer zone.
-            /// If value = 0, the upper neighbourhood is ignored.
+            /// If value = 0, the upper sideband is ignored.
             /// </summary>
-            public int NeighbourhoodUpperHertzBuffer { get; set; }
+            public int UpperHertzBuffer { get; set; }
 
             /// <summary>
             /// Gets or sets a value indicating Whether or not to filter events based on the acoustic content of their lower buffer zone.
-            /// If value = 0, the lower neighbourhood is ignored.
+            /// If value = 0, the lower sideband is ignored.
             /// </summary>
-            public int NeighbourhoodLowerHertzBuffer { get; set; }
+            public int LowerHertzBuffer { get; set; }
 
             /// <summary>
             /// Gets or sets a value indicating the decibel gap/difference between acoustic activity in the event and in the upper and lower buffer zones.
-            /// BufferAcousticActivity must be LessThan (EventAcousticActivity - NeighbourhoodDecibelBuffer)
-            /// This value is used only if NeighbourhoodLowerHertzBuffer > 0 OR NeighbourhoodUpperHertzBuffer > 0.
+            /// BufferAcousticActivity must be LessThan (EventAcousticActivity - DecibelBuffer)
+            /// This value is used only if LowerHertzBuffer > 0 OR UpperHertzBuffer > 0.
             /// </summary>
-            public double NeighbourhoodDecibelBuffer { get; set; }
+            public double DecibelBuffer { get; set; }
         }
 
         /// <summary>
         /// The properties in this config class are required to combine a sequence of similar syllables into a single event.
+        /// The first three properties concern the combining of syllables into a sequence or stroph.
+        /// The next four properties concern the filtering/removal of sequences that do not satisfy expected properties.
         /// </summary>
         public class SyllableSequenceConfig
         {
@@ -517,7 +559,7 @@ namespace AnalysisPrograms.Recognizers
             ///                 SD of the period = (SyllableStartDifference - ExpectedPeriod) / 3.
             ///                 The intent is that the maximum allowable syllable period is the expected value plus three times its standard deviation.
             /// </summary>
-            public double PeriodStdDev
+            public double PeriodStandardDeviation
             {
                 get => (this.SyllableStartDifference - this.ExpectedPeriod) / 3;
             }

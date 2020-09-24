@@ -135,17 +135,18 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                 },
             };
 
-            config.CombineOverlappingEvents = false;
+            var postprocessingConfig = config.PostProcessing;
+            postprocessingConfig.CombineOverlappingEvents = false;
 
             // filter on bandwidth
-            config.ExpectedBandwidth = 350;
-            config.BandwidthStandardDeviation = 20;
+            postprocessingConfig.Bandwidth.ExpectedBandwidth = 350;
+            postprocessingConfig.Bandwidth.BandwidthStandardDeviation = 20;
 
             // filter on acousstic activity in nside bands.
             // zero indicates no filtering.
-            config.NeighbourhoodUpperHertzBuffer = 0;
-            config.NeighbourhoodLowerHertzBuffer = 0;
-            config.NeighbourhoodDecibelBuffer = 0;
+            postprocessingConfig.SidebandActivity.UpperHertzBuffer = 0;
+            postprocessingConfig.SidebandActivity.LowerHertzBuffer = 0;
+            postprocessingConfig.SidebandActivity.DecibelBuffer = 0;
 
             var results = recognizer.Recognize(recording, config, 100.Seconds(), null, this.TestOutputDirectory, null);
 
@@ -189,17 +190,18 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                 },
             };
 
-            config.CombineOverlappingEvents = false;
+            var postprocessingConfig = config.PostProcessing;
+            postprocessingConfig.CombineOverlappingEvents = false;
 
             // filter on bandwidth
-            config.ExpectedBandwidth = 90;
-            config.BandwidthStandardDeviation = 10;
+            postprocessingConfig.Bandwidth.ExpectedBandwidth = 90;
+            postprocessingConfig.Bandwidth.BandwidthStandardDeviation = 10;
 
             // filter on acousstic activity in nside bands.
             // zero indicates no filtering.
-            config.NeighbourhoodUpperHertzBuffer = 0;
-            config.NeighbourhoodLowerHertzBuffer = 0;
-            config.NeighbourhoodDecibelBuffer = 0;
+            postprocessingConfig.SidebandActivity.UpperHertzBuffer = 0;
+            postprocessingConfig.SidebandActivity.LowerHertzBuffer = 0;
+            postprocessingConfig.SidebandActivity.DecibelBuffer = 0;
 
             var results = recognizer.Recognize(recording, config, 100.Seconds(), null, this.TestOutputDirectory, null);
 
