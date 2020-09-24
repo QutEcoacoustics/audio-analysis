@@ -167,47 +167,25 @@ namespace AnalysisPrograms.Recognizers
 
                         if (profileConfig is BlobParameters bp)
                         {
-                            var thresholdArray = bp.DecibelThresholds;
-                            var threshold = thresholdArray[0].Value;
-
-                            //get the array of intensity values minus intensity in side/buffer bands.
-                            //i.e. require silence in side-bands. Otherwise might simply be getting part of a broader band acoustic event.
-                            var decibelArray = SNR.CalculateFreqBandAvIntensityMinusBufferIntensity(
-                                spectrogram.Data,
-                                bp.MinHertz.Value,
-                                bp.MaxHertz.Value,
-                                bp.BottomHertzBuffer.Value,
-                                bp.TopHertzBuffer.Value,
-                                spectrogram.NyquistFrequency);
-
-                            // prepare plot of resultant blob decibel array.
-                            var plot = Plot.PreparePlot(decibelArray, $"{profileName} (Blob:db Intensity)", threshold);
-                            plots.Add(plot);
-
-                            // iii: CONVERT blob decibel SCORES TO ACOUSTIC EVENTS.
-                            // Note: This method does NOT do prior smoothing of the dB array.
-                            var acEvents = AcousticEvent.GetEventsAroundMaxima(
-                                decibelArray,
+                            List<Plot> decibelPlots;
+                            (spectralEvents, decibelPlots) = BlobEvent.GetBlobEvents(
+                                spectrogram,
+                                bp,
                                 segmentStartOffset,
-                                bp.MinHertz.Value,
-                                bp.MaxHertz.Value,
-                                threshold,
-                                TimeSpan.FromSeconds(bp.MinDuration.Value),
-                                TimeSpan.FromSeconds(bp.MaxDuration.Value),
-                                spectrogram.FramesPerSecond,
-                                spectrogram.FBinWidth);
-                            spectralEvents = acEvents.ConvertAcousticEventsToSpectralEvents();
+                                profileName);
+
+                            plots.AddRange(decibelPlots);
                         }
                         else if (profileConfig is OnebinTrackParameters wp)
                         {
-                            List<Plot> dbPlots;
-                            (spectralEvents, dbPlots) = OnebinTrackAlgorithm.GetOnebinTracks(
+                            List<Plot> decibelPlots;
+                            (spectralEvents, decibelPlots) = OnebinTrackAlgorithm.GetOnebinTracks(
                                 spectrogram,
                                 wp,
                                 segmentStartOffset,
                                 profileName);
 
-                            plots.AddRange(dbPlots);
+                            plots.AddRange(decibelPlots);
                         }
                         else if (profileConfig is ForwardTrackParameters tp)
                         {
