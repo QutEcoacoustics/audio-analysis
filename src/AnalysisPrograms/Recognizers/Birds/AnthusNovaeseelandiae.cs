@@ -103,14 +103,14 @@ namespace AnalysisPrograms.Recognizers
             // 1: Filter the events for duration in seconds
             var minimumEventDuration = 0.1;
             var maximumEventDuration = 0.4;
-            combinedResults.NewEvents = EventExtentions.FilterOnDuration(combinedResults.NewEvents, minimumEventDuration, maximumEventDuration);
+            combinedResults.NewEvents = EventFilters.FilterOnDuration(combinedResults.NewEvents, minimumEventDuration, maximumEventDuration);
             PipitLog.Debug($"Event count after filtering on duration = {combinedResults.NewEvents.Count}");
 
             // 2: Filter the events for bandwidth in Hertz
             double average = 3500;
             double sd = 600;
             double sigmaThreshold = 3.0;
-            combinedResults.NewEvents = EventExtentions.FilterOnBandwidth(combinedResults.NewEvents, average, sd, sigmaThreshold);
+            combinedResults.NewEvents = EventFilters.FilterOnBandwidth(combinedResults.NewEvents, average, sd, sigmaThreshold);
             PipitLog.Debug($"Event count after filtering on bandwidth = {combinedResults.NewEvents.Count}");
 
             combinedResults.NewEvents = FilterEventsOnFrequencyProfile(combinedResults.NewEvents);

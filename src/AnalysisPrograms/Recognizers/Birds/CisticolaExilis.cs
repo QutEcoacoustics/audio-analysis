@@ -90,14 +90,14 @@ namespace AnalysisPrograms.Recognizers
             // 1: Filter the events for duration in seconds
             var minimumEventDuration = 0.1;
             var maximumEventDuration = 0.25;
-            combinedResults.NewEvents = EventExtentions.FilterOnDuration(combinedResults.NewEvents, minimumEventDuration, maximumEventDuration);
+            combinedResults.NewEvents = EventFilters.FilterOnDuration(combinedResults.NewEvents, minimumEventDuration, maximumEventDuration);
             CisticolaLog.Debug($"Event count after filtering on duration = {combinedResults.NewEvents.Count}");
 
             // 2: Filter the events for bandwidth in Hertz
             double average = 600;
             double sd = 150;
             double sigmaThreshold = 3.0;
-            combinedResults.NewEvents = EventExtentions.FilterOnBandwidth(combinedResults.NewEvents, average, sd, sigmaThreshold);
+            combinedResults.NewEvents = EventFilters.FilterOnBandwidth(combinedResults.NewEvents, average, sd, sigmaThreshold);
             CisticolaLog.Debug($"Event count after filtering on bandwidth = {combinedResults.NewEvents.Count}");
 
             // 3: Filter on COMPONENT COUNT in Composite events.
