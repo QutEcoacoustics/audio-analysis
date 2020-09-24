@@ -15,7 +15,7 @@ namespace AnalysisPrograms.Recognizers.Base
 
     /// <summary>
     /// Parameters needed from a config file to detect the stacked harmonic components of a soundscape.
-    /// This can also be used for recognizing the harmonics of non-biological sounds such as from turbines, motor-bikes, compressors and other hi-revving motors.
+    /// This can also be used for recognizing the harmonics of non-biological sounds such as from turbines, motor-bikes, compressors, hi-revving motors, etc.
     /// </summary>
     [YamlTypeTag(typeof(HarmonicParameters))]
     public class HarmonicParameters : CommonParameters
@@ -35,6 +35,44 @@ namespace AnalysisPrograms.Recognizers.Base
         /// </summary>
         public int? MaxFormantGap { get; set; }
 
+        public static (List<EventCommon> SpectralEvents, List<Plot> DecibelPlots) GetComponentsWithHarmonics(
+            SpectrogramStandard spectrogram,
+            HarmonicParameters hp,
+            TimeSpan segmentStartOffset,
+            string profileName)
+        {
+            // get the array of decibel thresholds
+            var thresholdArray = hp.DecibelThresholds;
+
+            var spectralEvents = new List<EventCommon>();
+            var plots = new List<Plot>();
+
+            // loop through the array of decibel thresholds
+            foreach (var threshold in thresholdArray)
+            {
+                double[] decibelMaxArray;
+                double[] harmonicIntensityScores;
+                (spectralEvents, decibelMaxArray, harmonicIntensityScores) = HarmonicParameters.GetComponentsWithHarmonics(
+                                    spectrogram,
+                                    hp.MinHertz.Value,
+                                    hp.MaxHertz.Value,
+                                    spectrogram.NyquistFrequency,
+                                    threshold.Value,
+                                    hp.DctThreshold.Value,
+                                    hp.MinDuration.Value,
+                                    hp.MaxDuration.Value,
+                                    hp.MinFormantGap.Value,
+                                    hp.MaxFormantGap.Value,
+                                    segmentStartOffset);
+
+                // prepare plot of resultant Harmonics decibel array.
+                var plot = Plot.PreparePlot(decibelMaxArray, $"{profileName} (Harmonics:{threshold:d0}db)", threshold.Value);
+                plots.Add(plot);
+            }
+
+            return (spectralEvents, plots);
+        }
+
         public static (List<EventCommon> SpectralEvents, double[] AmplitudeArray, double[] HarmonicIntensityScores) GetComponentsWithHarmonics(
             SpectrogramStandard spectrogram,
             int minHz,
@@ -48,9 +86,6 @@ namespace AnalysisPrograms.Recognizers.Base
             int maxFormantGap,
             TimeSpan segmentStartOffset)
         {
-            // Event threshold - Determines FP / FN trade-off for events.
-            //double eventThreshold = 0.2;
-
             var sonogramData = spectrogram.Data;
             int frameCount = sonogramData.GetLength(0);
             int binCount = sonogramData.GetLength(1);
@@ -107,14 +142,12 @@ namespace AnalysisPrograms.Recognizers.Base
 
             var spectralEvents = new List<EventCommon>();
 
-            // add in temporary names to the events
-            // These can be altered later.
+            // add in temporary names to the events. These can be altered later.
             foreach (var he in harmonicEvents)
             {
                 var se = EventConverters.ConvertAcousticEventToSpectralEvent(he);
                 spectralEvents.Add(se);
                 se.Name = "Harmonics";
-                //se.ComponentName = "Harmonics";
             }
 
             return (spectralEvents, dBArray, harmonicIntensityScores);

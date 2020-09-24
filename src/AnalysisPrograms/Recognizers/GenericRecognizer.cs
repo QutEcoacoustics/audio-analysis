@@ -244,27 +244,14 @@ namespace AnalysisPrograms.Recognizers
                         }
                         else if (profileConfig is HarmonicParameters hp)
                         {
-                            var thresholdArray = hp.DecibelThresholds;
-                            var threshold = thresholdArray[0];
-
-                            double[] decibelMaxArray;
-                            double[] harmonicIntensityScores;
-                            (spectralEvents, decibelMaxArray, harmonicIntensityScores) = HarmonicParameters.GetComponentsWithHarmonics(
+                            List<Plot> decibelPlots;
+                            (spectralEvents, decibelPlots) = HarmonicParameters.GetComponentsWithHarmonics(
                                 spectrogram,
-                                hp.MinHertz.Value,
-                                hp.MaxHertz.Value,
-                                spectrogram.NyquistFrequency,
-                                threshold.Value,
-                                hp.DctThreshold.Value,
-                                hp.MinDuration.Value,
-                                hp.MaxDuration.Value,
-                                hp.MinFormantGap.Value,
-                                hp.MaxFormantGap.Value,
-                                segmentStartOffset);
+                                hp,
+                                segmentStartOffset,
+                                profileName);
 
-                            // prepare plot of resultant Harmonics decibel array.
-                            var plot = Plot.PreparePlot(decibelMaxArray, $"{profileName} (Harmonics:{threshold:d0}db)", threshold.Value);
-                            plots.Add(plot);
+                            plots.AddRange(decibelPlots);
                         }
                         else if (profileConfig is OscillationParameters op)
                         {
@@ -377,13 +364,13 @@ namespace AnalysisPrograms.Recognizers
                 {
                     // filter on number of components
                     var maxComponentCount = sequenceConfig.SyllableMaxCount;
-                    allResults.NewEvents = EventExtentions.FilterEventsOnCompositeContent(allResults.NewEvents, maxComponentCount);
+                    allResults.NewEvents = EventFilters.FilterEventsOnCompositeContent(allResults.NewEvents, maxComponentCount);
                     Log.Info($"Event count after filtering on component count = {allResults.NewEvents.Count}");
 
                     // filter on syllable periodicity
                     var period = sequenceConfig.ExpectedPeriod;
                     var periodSd = sequenceConfig.PeriodStdDev;
-                    allResults.NewEvents = EventExtentions.FilterEventsOnSyllablePeriodicity(allResults.NewEvents, period, periodSd);
+                    allResults.NewEvents = EventFilters.FilterEventsOnSyllablePeriodicity(allResults.NewEvents, period, periodSd);
                     Log.Info($"Event count after filtering on component count = {allResults.NewEvents.Count}");
                 }
             }
@@ -391,7 +378,7 @@ namespace AnalysisPrograms.Recognizers
             // 3: Filter the events for bandwidth in Hertz
             var expectedEventBandwidth = configuration.ExpectedBandwidth;
             var sd = configuration.BandwidthStandardDeviation;
-            allResults.NewEvents = EventExtentions.FilterOnBandwidth(allResults.NewEvents, expectedEventBandwidth, sd, sigmaThreshold: 3.0);
+            allResults.NewEvents = EventFilters.FilterOnBandwidth(allResults.NewEvents, expectedEventBandwidth, sd, sigmaThreshold: 3.0);
             Log.Info($"Event count after filtering on bandwidth = {allResults.NewEvents.Count}");
 
             // 4: Filter events on the amount of acoustic activity in their upper and lower neighbourhoods - their buffer zone.
@@ -400,7 +387,7 @@ namespace AnalysisPrograms.Recognizers
             if (configuration.NeighbourhoodUpperHertzBuffer > 0 || configuration.NeighbourhoodLowerHertzBuffer > 0)
             {
                 var spectralEvents2 = allResults.NewEvents.Cast<SpectralEvent>().ToList();
-                allResults.NewEvents = EventExtentions.FilterEventsOnNeighbourhood(
+                allResults.NewEvents = EventFilters.FilterEventsOnNeighbourhood(
                     spectralEvents2,
                     allResults.Sonogram,
                     configuration.NeighbourhoodLowerHertzBuffer,
