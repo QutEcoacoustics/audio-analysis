@@ -7,6 +7,7 @@ namespace TowseyLibrary
     using System;
     using System.Collections.Generic;
     using Acoustics.Shared.ImageSharp;
+    using SixLabors.Fonts;
     using SixLabors.ImageSharp;
     using SixLabors.ImageSharp.Drawing.Processing;
     using SixLabors.ImageSharp.PixelFormats;
@@ -253,7 +254,8 @@ namespace TowseyLibrary
 
                 if (this.data.Length > 500)
                 {
-                    g.DrawTextSafe(this.title, font, Color.Red, new PointF(length - 80, 0));
+                    var size = TextMeasurer.Measure(this.title, new RendererOptions(font));
+                    g.DrawTextSafe(this.title, font, Color.Red, new PointF(length - size.Width - 2, 0));
                 }
 
                 if (this.data.Length > 1200)
