@@ -255,27 +255,14 @@ namespace AnalysisPrograms.Recognizers
                         }
                         else if (profileConfig is OscillationParameters op)
                         {
-                            Oscillations2012.Execute(
+                            List<Plot> decibelPlots;
+                            (spectralEvents, decibelPlots) = Oscillations2012.GetComponentsWithOscillations(
                                 spectrogram,
-                                op.MinHertz.Value,
-                                op.MaxHertz.Value,
-                                op.DctDuration,
-                                op.MinOscillationFrequency,
-                                op.MaxOscillationFrequency,
-                                op.DctThreshold,
-                                op.EventThreshold,
-                                op.MinDuration.Value,
-                                op.MaxDuration.Value,
-                                out var scores,
-                                out var oscillationEvents,
-                                out var hits,
-                                segmentStartOffset);
+                                op,
+                                segmentStartOffset,
+                                profileName);
 
-                            spectralEvents = new List<EventCommon>(oscillationEvents);
-
-                            //plots.Add(new Plot($"{profileName} (:OscillationScore)", scores, op.EventThreshold));
-                            var plot = Plot.PreparePlot(scores, $"{profileName} (:OscillationScore)", op.EventThreshold);
-                            plots.Add(plot);
+                            plots.AddRange(decibelPlots);
                         }
                         else
                         {

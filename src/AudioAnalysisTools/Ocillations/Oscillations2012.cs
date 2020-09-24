@@ -6,6 +6,8 @@ namespace AudioAnalysisTools
 {
     using System;
     using System.Collections.Generic;
+    using System.Reflection.Metadata.Ecma335;
+    using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Events;
     using AudioAnalysisTools.StandardSpectrograms;
@@ -21,6 +23,47 @@ namespace AudioAnalysisTools
     /// </summary>
     public static class Oscillations2012
     {
+        public static (List<EventCommon> SpectralEvents, List<Plot> DecibelPlots) GetComponentsWithOscillations(
+            SpectrogramStandard spectrogram,
+            OscillationParameters op,
+            TimeSpan segmentStartOffset,
+            string profileName)
+        {
+            // get the array of decibel thresholds
+            var thresholdArray = op.DecibelThresholds;
+
+            var spectralEvents = new List<EventCommon>();
+            var plots = new List<Plot>();
+
+            // loop through the array of decibel thresholds
+            foreach (var threshold in thresholdArray)
+            {
+                Oscillations2012.Execute(
+                    spectrogram,
+                    op.MinHertz.Value,
+                    op.MaxHertz.Value,
+                    op.DctDuration,
+                    op.MinOscillationFrequency,
+                    op.MaxOscillationFrequency,
+                    op.DctThreshold,
+                    op.EventThreshold,
+                    op.MinDuration.Value,
+                    op.MaxDuration.Value,
+                    out var scores,
+                    out var oscillationEvents,
+                    out var hits,
+                    segmentStartOffset);
+
+                spectralEvents.AddRange(oscillationEvents);
+
+                // prepare plot of resultant Harmonics decibel array.
+                var plot = Plot.PreparePlot(scores, $"{profileName} (Oscillations:{threshold:d0}db)", threshold.Value);
+                plots.Add(plot);
+            }
+
+            return (spectralEvents, plots);
+        }
+
         public static void Execute(
             SpectrogramStandard sonogram,
             int minHz,
