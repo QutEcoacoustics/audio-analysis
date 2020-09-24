@@ -184,7 +184,7 @@ namespace AnalysisPrograms
             // LocalContrastNormalisation over frequency bins is better and faster.
             int neighbourhood = 15;
             double contrastLevel = 0.5;
-            sonogram.Data = NoiseRemoval_Briggs.NoiseReduction_byLCN(sonogram.Data, neighbourhood, contrastLevel);
+            sonogram.Data = NoiseRemoval_Briggs.NoiseReductionByLcn(sonogram.Data, neighbourhood, contrastLevel);
 
             // ###############################################################
             // lowering the sensitivity threshold increases the number of hits.

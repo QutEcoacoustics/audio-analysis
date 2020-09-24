@@ -385,7 +385,7 @@ namespace AnalysisPrograms
 
             //LoggedConsole.WriteLine("LCN: FramesPerSecond (Prior to LCN) = {0}", sonogram.FramesPerSecond);
             //LoggedConsole.WriteLine("LCN: Neighbourhood of {0} seconds = {1} frames", neighbourhoodSeconds, neighbourhoodFrames);
-            sonogram.Data = NoiseRemoval_Briggs.NoiseReduction_byLCN(sonogram.Data, lowPercentile, neighbourhoodFrames, lcnContrastLevel);
+            sonogram.Data = NoiseRemoval_Briggs.NoiseReductionByLcn(sonogram.Data, lowPercentile, neighbourhoodFrames, lcnContrastLevel);
 
             // draw amplitude spectrogram unannotated
             FileInfo outputImage1 = new FileInfo(Path.Combine(opDir.FullName, sourceName + ".amplitd.png"));

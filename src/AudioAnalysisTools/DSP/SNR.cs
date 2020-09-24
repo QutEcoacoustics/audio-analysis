@@ -1004,8 +1004,8 @@ namespace AudioAnalysisTools.DSP
                     break;
                 case NoiseReductionType.BriggsPercentile:
                     // Briggs filters twice
-                    m = NoiseRemoval_Briggs.NoiseReduction_byDivisionAndSqrRoot(m, (int)parameter);
-                    m = NoiseRemoval_Briggs.NoiseReduction_byDivisionAndSqrRoot(m, (int)parameter);
+                    m = NoiseRemoval_Briggs.NoiseReductionByDivisionAndSqrRoot(m, (int)parameter);
+                    m = NoiseRemoval_Briggs.NoiseReductionByDivisionAndSqrRoot(m, (int)parameter);
                     break;
                 case NoiseReductionType.Binary:
                     {
