@@ -559,7 +559,7 @@ namespace AnalysisPrograms.SpectrogramGenerator
             //spectrogram.Data =
             //    NoiseRemoval_Briggs.NoiseReduction_byLowestPercentileSubtraction(spectrogram.Data, lowPercentile);
             spectrogram.Data =
-                NoiseRemoval_Briggs.NoiseReduction_byLCN(spectrogram.Data, neighbourhoodFrames, lcnContrastLevel);
+                NoiseRemoval_Briggs.NoiseReductionByLcn(spectrogram.Data, neighbourhoodFrames, lcnContrastLevel);
 
             //spectrogram.Data =
             //            NoiseRemoval_Briggs.NoiseReduction_byLCNDivision(spectrogram.Data, lowPercent: 20, neighbourhoodFrames, lcnContrastLevel);
