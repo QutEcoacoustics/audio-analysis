@@ -54,7 +54,7 @@ namespace AnalysisPrograms.Recognizers
         /// <param name="segmentStartOffset">when recording starts.</param>
         /// <param name="getSpectralIndexes">not sure what this is.</param>
         /// <param name="outputDirectory">where the recognizer results can be found.</param>
-        /// <param name="imageWidth"> assuming ????.</param>
+        /// <param name="imageWidth"> Should be same as number of frames in the expected spectrogram.</param>
         /// <returns>recognizer results.</returns>
         public override RecognizerResults Recognize(
             AudioRecording audioRecording,
