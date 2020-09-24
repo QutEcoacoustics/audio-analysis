@@ -54,7 +54,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
 
             Assert.AreEqual(7, events.Count);
             Assert.IsNull(scoreTrack);
-            Assert.AreEqual(4, plots.Count);
+            Assert.AreEqual(5, plots.Count);
             Assert.AreEqual(2580, sonogram.FrameCount);
 
             Assert.IsInstanceOfType(events[1], typeof(CompositeEvent));

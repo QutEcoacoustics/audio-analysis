@@ -19,58 +19,24 @@ SegmentOverlap: 0
 # Each of these profiles will be analyzed
 # This profile is required for the species-specific recogniser and must have the current name.
 Profiles:
-    StrenuaSyllable6db: !ForwardTrackParameters
+    StrenuaSyllable: !ForwardTrackParameters
         ComponentName: RidgeTrack 
         SpeciesName: NinoxStrenua
         FrameSize: 1024
         FrameStep: 256
         WindowFunction: HANNING
-        DecibelThreshold: 6.0
+        DecibelThresholds:
+            - 6.0
+            - 12.0
+            - 18.0
+            - 24.0
+            - 30.0
         # min and max of the freq band to search
         MinHertz: 300          
         MaxHertz: 600
         MinDuration: 0.2
         MaxDuration: 0.9
-   
-    StrenuaSyllable12db: !ForwardTrackParameters
-        ComponentName: RidgeTrack 
-        SpeciesName: NinoxStrenua
-        FrameSize: 1024
-        FrameStep: 256
-        WindowFunction: HANNING
-        DecibelThreshold: 12.0
-        # min and max of the freq band to search
-        MinHertz: 300          
-        MaxHertz: 600
-        MinDuration: 0.2
-        MaxDuration: 0.9
-        
-    StrenuaSyllable24db: !ForwardTrackParameters
-        ComponentName: RidgeTrack 
-        SpeciesName: NinoxStrenua
-        FrameSize: 1024
-        FrameStep: 256
-        WindowFunction: HANNING
-        DecibelThreshold: 24.0
-        # min and max of the freq band to search
-        MinHertz: 300          
-        MaxHertz: 600
-        MinDuration: 0.2
-        MaxDuration: 0.9
-      
-    StrenuaSyllable30db: !ForwardTrackParameters
-        ComponentName: RidgeTrack 
-        SpeciesName: NinoxStrenua
-        FrameSize: 1024
-        FrameStep: 256
-        WindowFunction: HANNING
-        DecibelThreshold: 30.0
-        # min and max of the freq band to search
-        MinHertz: 300          
-        MaxHertz: 600
-        MinDuration: 0.2
-        MaxDuration: 0.9
-      
+         
 #################### POST-PROCESSING of EVENTS ###################
 
 # The first two post-processing steps are to combine overlapping/proximal/sequential events 
