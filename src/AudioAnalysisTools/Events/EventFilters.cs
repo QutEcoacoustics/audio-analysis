@@ -204,7 +204,7 @@ namespace AudioAnalysisTools.Events
         /// <param name="upperHertzBuffer">The band width of the required upper buffer. 300-500Hz is often appropriate.</param>
         /// <param name="decibelBuffer">Minimum required decibel difference between event activity and neighbourhood activity.</param>
         /// <returns>A list of filtered events.</returns>
-        public static List<EventCommon> FilterEventsOnNeighbourhood(
+        public static List<EventCommon> FilterEventsOnSidebandActivity(
             List<SpectralEvent> events,
             BaseSonogram spectrogram,
             int lowerHertzBuffer,
