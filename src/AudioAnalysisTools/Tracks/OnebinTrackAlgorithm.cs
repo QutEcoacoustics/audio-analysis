@@ -40,7 +40,7 @@ namespace AudioAnalysisTools.Tracks
 
                 spectralEvents.AddRange(events);
 
-                var plot = Plot.PreparePlot(decibelArray, $"{profileName} (Whistle:{threshold.Value:d0}dB)", threshold.Value);
+                var plot = Plot.PreparePlot(decibelArray, $"{profileName} (Whistles:{threshold.Value:F0}dB)", threshold.Value);
                 plots.Add(plot);
             }
 
@@ -114,6 +114,22 @@ namespace AudioAnalysisTools.Tracks
 
             foreach (var track in tracks)
             {
+                // fill the intensity array with decibel values
+                var startRow = converter.FrameFromStartTime(track.StartTimeSeconds);
+                var amplitudeTrack = track.GetAmplitudeOverTimeFrames();
+                for (int i = 0; i < amplitudeTrack.Length; i++)
+                {
+                    combinedIntensityArray[startRow + i] = Math.Max(combinedIntensityArray[startRow + i], amplitudeTrack[i]);
+                }
+
+                // Skip tracks that do not have duration within required duration bounds.
+                if (track.DurationSeconds < minDuration || track.DurationSeconds > maxDuration)
+                {
+                    continue;
+                }
+
+                //Following line used only for debug purposes. Can save as image.
+                //spectrogram.Mutate(x => track.Draw(x, options));
                 var ae = new WhistleEvent(track, scoreRange)
                 {
                     SegmentStartSeconds = segmentStartOffset.TotalSeconds,
@@ -122,14 +138,6 @@ namespace AudioAnalysisTools.Tracks
                 };
 
                 events.Add(ae);
-
-                // fill the intensity array
-                var startRow = converter.FrameFromStartTime(track.StartTimeSeconds);
-                var amplitudeTrack = track.GetAmplitudeOverTimeFrames();
-                for (int i = 0; i < amplitudeTrack.Length; i++)
-                {
-                    combinedIntensityArray[startRow + i] = Math.Max(combinedIntensityArray[startRow + i], amplitudeTrack[i]);
-                }
             }
 
             // This algorithm tends to produce temporally overlapped whistle events in adjacent channels.
@@ -171,8 +179,8 @@ namespace AudioAnalysisTools.Tracks
                     // Visit each spectral peak in order. Each may be start of possible whistle track
                     var track = GetOnebinTrack(peaks, row, col, threshold, converter);
 
-                    //If track has length within duration bounds, then add the track to list.
-                    if (track.DurationSeconds >= minDuration && track.DurationSeconds <= maxDuration)
+                    // a track should have length > 2
+                    if (track.PointCount > 2)
                     {
                         tracks.Add(track);
                     }

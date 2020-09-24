@@ -57,7 +57,7 @@ namespace AudioAnalysisTools
                 spectralEvents.AddRange(oscillationEvents);
 
                 // prepare plot of resultant Harmonics decibel array.
-                var plot = Plot.PreparePlot(scores, $"{profileName} (Oscillations:{threshold:d0}db)", threshold.Value);
+                var plot = Plot.PreparePlot(scores, $"{profileName} (Oscillations:{threshold:F0}db)", threshold.Value);
                 plots.Add(plot);
             }
 

@@ -44,7 +44,7 @@ namespace AudioAnalysisTools.Tracks
 
                 spectralEvents.AddRange(events);
 
-                var plot = Plot.PreparePlot(decibelArray, $"{profileName} (Chirps:{threshold.Value:d0}dB)", threshold.Value);
+                var plot = Plot.PreparePlot(decibelArray, $"{profileName} (Chirps:{threshold.Value:F0}dB)", threshold.Value);
                 plots.Add(plot);
             }
 
@@ -72,6 +72,10 @@ namespace AudioAnalysisTools.Tracks
             int maxBin = (int)Math.Round(parameters.MaxHertz.Value / binWidth);
             double minDuration = parameters.MinDuration.Value;
             double maxDuration = parameters.MaxDuration.Value;
+
+            // Calculate the max score for normalisation purposes
+            var maxScore = decibelThreshold * 5;
+            var scoreRange = new Interval<double>(0, maxScore);
 
             var converter = new UnitConverters(
                 segmentStartOffset: segmentStartOffset.TotalSeconds,
@@ -105,7 +109,7 @@ namespace AudioAnalysisTools.Tracks
             // Initialise each track as an event and store it in a list of acoustic events
             var events = new List<SpectralEvent>();
 
-            // Also get the combined decibel array.
+            // Also get the combined decibel intensity array.
             var combinedIntensityArray = new double[frameCount];
 
             // The following lines are used only for debug purposes.
@@ -131,13 +135,11 @@ namespace AudioAnalysisTools.Tracks
 
                 //Following line used only for debug purposes. Can save as image.
                 //spectrogram.Mutate(x => track.Draw(x, options));
-                var maxScore = decibelThreshold * 5;
-                var scoreRange = new Interval<double>(0, maxScore);
                 var ae = new ChirpEvent(track, scoreRange)
                 {
                     SegmentStartSeconds = segmentStartOffset.TotalSeconds,
                     SegmentDurationSeconds = frameCount * converter.SecondsPerFrameStep,
-                    Name = "noName",
+                    Name = "Chirp",
                 };
 
                 events.Add(ae);
@@ -189,7 +191,7 @@ namespace AudioAnalysisTools.Tracks
                     // Visit each spectral peak in order. Each may be start of possible track
                     var track = GetForwardTrack(peaks, row, col, threshold, converter);
 
-                    // a forward track should have length >2
+                    // a track should have length > 2
                     if (track.PointCount > 2)
                     {
                         tracks.Add(track);

@@ -6,6 +6,7 @@ namespace AudioAnalysisTools.Tracks
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using AnalysisPrograms.Recognizers.Base;
     using AudioAnalysisTools.Events;
     using AudioAnalysisTools.Events.Tracks;
@@ -38,7 +39,7 @@ namespace AudioAnalysisTools.Tracks
 
                 spectralEvents.AddRange(events);
 
-                var plot = Plot.PreparePlot(decibelArray, $"{profileName} (Clicks:{threshold.Value:d0}dB)", threshold.Value);
+                var plot = Plot.PreparePlot(decibelArray, $"{profileName} (Clicks:{threshold.Value:F0}dB)", threshold.Value);
                 plots.Add(plot);
             }
 
@@ -67,6 +68,9 @@ namespace AudioAnalysisTools.Tracks
             int maxBin = (int)Math.Round(parameters.MaxHertz.Value / binWidth);
             var minBandwidthHertz = parameters.MinBandwidthHertz.Value;
             var maxBandwidthHertz = parameters.MaxBandwidthHertz.Value;
+
+            // Calculate the max score for normalisation purposes
+            var maxScore = decibelThreshold * 5;
 
             var converter = new UnitConverters(
                 segmentStartOffset: segmentStartOffset.TotalSeconds,
@@ -100,34 +104,46 @@ namespace AudioAnalysisTools.Tracks
                 }
             }
 
-            //NOTE: the Peaks matrix is same size as the sonogram.
+            // Get a list of tracks
+            // NOTE: the Peaks matrix is same size as the sonogram.
             var tracks = GetOneFrameTracks(peaks, minBin, maxBin, minBandwidthHertz, maxBandwidthHertz, decibelThreshold, converter);
 
-            // initialise tracks as events and get the combined intensity array.
-            var events = new List<EventCommon>();
+            // Initialise each track as an event and store it in a list of acoustic events
+            var events = new List<SpectralEvent>();
+
+            // Also get the combined decibel intensity array.
             var temporalIntensityArray = new double[frameCount];
-            var maxScore = decibelThreshold * 5;
+
+            // Initialise events with tracks.
             foreach (var track in tracks)
             {
-                var ae = new ClickEvent(track, maxScore)
-                {
-                    SegmentStartSeconds = segmentStartOffset.TotalSeconds,
-                    SegmentDurationSeconds = frameCount * converter.SecondsPerFrameStep,
-                    Name = "noName",
-                };
-
-                events.Add(ae);
-
-                // fill the intensity array
+                // fill the intensity array with decibel values
                 var startRow = converter.FrameFromStartTime(track.StartTimeSeconds);
                 var amplitudeTrack = track.GetAmplitudeOverTimeFrames();
                 for (int i = 0; i < amplitudeTrack.Length; i++)
                 {
                     temporalIntensityArray[startRow + i] += amplitudeTrack[i];
                 }
+
+                // Skip tracks that do not have duration within required duration bounds.
+                if (track.TrackBandWidthHertz < minBandwidthHertz || track.TrackBandWidthHertz > maxBandwidthHertz)
+                {
+                    continue;
+                }
+
+                //Following line used only for debug purposes. Can save as image.
+                //spectrogram.Mutate(x => track.Draw(x, options));
+                var ae = new ClickEvent(track, maxScore)
+                {
+                    SegmentStartSeconds = segmentStartOffset.TotalSeconds,
+                    SegmentDurationSeconds = frameCount * converter.SecondsPerFrameStep,
+                    Name = "Click",
+                };
+
+                events.Add(ae);
             }
 
-            // MAY NOT WANT TO Do THIS FOR ONE-FRAME tracks
+            // MAY NOT WANT TO Do THIS FOR ONE-FRAME tracks (clicks)
             // combine proximal events that occupy similar frequency band
             //if (combineProximalSimilarEvents)
             //{
@@ -137,7 +153,8 @@ namespace AudioAnalysisTools.Tracks
             //    //events = AcousticEvent.CombineSimilarProximalEvents(events, startDifference, hertzDifference);
             //}
 
-            return (events, temporalIntensityArray);
+            List<EventCommon> returnEvents = events.Cast<EventCommon>().ToList();
+            return (returnEvents, temporalIntensityArray);
         }
 
         /// <summary>
@@ -172,8 +189,8 @@ namespace AudioAnalysisTools.Tracks
                     // Visit each spectral peak in order. Each may be start of possible track
                     var track = GetOneFrameTrack(peaks, row, col, maxBin, threshold, converter);
 
-                    //If track lies within the correct bandWidth range, then return as track.
-                    if (track.TrackBandWidthHertz >= minBandwidthHertz && track.TrackBandWidthHertz <= maxBandwidthHertz)
+                    // a track should have length > 2
+                    if (track.PointCount > 2)
                     {
                         tracks.Add(track);
                     }

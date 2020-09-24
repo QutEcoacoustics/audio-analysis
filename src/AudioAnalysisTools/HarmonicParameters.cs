@@ -66,7 +66,7 @@ namespace AnalysisPrograms.Recognizers.Base
                                     segmentStartOffset);
 
                 // prepare plot of resultant Harmonics decibel array.
-                var plot = Plot.PreparePlot(decibelMaxArray, $"{profileName} (Harmonics:{threshold:d0}db)", threshold.Value);
+                var plot = Plot.PreparePlot(decibelMaxArray, $"{profileName} (Harmonics:{threshold:F0}db)", threshold.Value);
                 plots.Add(plot);
             }
 
