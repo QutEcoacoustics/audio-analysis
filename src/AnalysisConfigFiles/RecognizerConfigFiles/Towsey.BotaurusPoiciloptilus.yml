@@ -26,45 +26,54 @@ Profiles:
         MinHertz: 100          
         MaxHertz: 200
         MinDuration: 0.3
-        MaxDuration: 1.0
-        DecibelThreshold: 3.0
+        MaxDuration: 0.8
+        DecibelThresholds:
+            - 6.0
+            - 12.0
 
 #################### POST-PROCESSING of EVENTS ###################
 
-# The first two post-processing steps are to combine overlapping/proximal/sequential events 
-# 1: Combine overlapping events
-CombineOverlappingEvents: true
+PostProcessing:
+# The following generic post-processing steps are determined by config settings.
+# Step 1: Combine overlapping events - events derived from all profiles.
+# Step 2: Combine possible syllable sequences and filter on excess syllable count.
+# Step 3: Remove events whose bandwidth is too small or large.
+# Step 4: Remove events that have excessive noise in their side-bands.
 
-# 2: Combine possible syllable sequences
-#    Can also use this to "mop up" events in neighbourhood - these can be removed later. 
-SyllableSequence:
-    CombinePossibleSyllableSequence: true
-    SyllableStartDifference: 3.0
-    SyllableHertzGap: 35
-    FilterSyllableSequence: true
-    SyllableMaxCount: 6
-    ExpectedPeriod: 2.0
+    # 1: Combine overlapping events
+    CombineOverlappingEvents: true
 
-# 3: Remove events whose bandwidth lies outside 3 SDs of an expected value.
-ExpectedBandwidth: 100
-BandwidthStandardDeviation: 15
+    # 2: Combine possible syllable sequences
+    SyllableSequence:
+        CombinePossibleSyllableSequence: true
+        SyllableStartDifference: 3.0
+        SyllableHertzGap: 35
+        FilterSyllableSequence: true
+        SyllableMaxCount: 6
+        ExpectedPeriod: 2.5
 
-# 4: Filter the events for excess activity in their upper and lower buffer zones
-NeighbourhoodLowerHertzBuffer: 150
-NeighbourhoodUpperHertzBuffer: 400
-NeighbourhoodDecibelBuffer: 2.0
+    # 3: Remove events whose bandwidth lies outside 3 SDs of an expected value.
+    Bandwidth:
+        ExpectedBandwidth: 100
+        BandwidthStandardDeviation: 15
 
-# C: Options to save results files
-#  4: Available options for saving spectrograms (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+    # 4: Filter the events for excess activity in their sidebands, i.e. upper and lower buffer zones
+    SidebandActivity:
+        LowerHertzBuffer:  0 #150
+        UpperHertzBuffer: 0 #400
+        DecibelBuffer: 2.0
+
+# Options to save results files
+# 1: Available options for saving spectrograms (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 # "True" is useful when debugging but "WhenEventsDetected" is required for operational use.
 #SaveSonogramImages: True
 SaveSonogramImages: WhenEventsDetected
 
-#  5: Available options for saving data files (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
+# 2: Available options for saving data files (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never
 SaveIntermediateCsvFiles: false
 
-# 6: DisplayCsvImage is obsolete - ensure it remains set to: false
+# 3: DisplayCsvImage is obsolete - ensure it remains set to: false
 DisplayCsvImage: false
 ## End section for AnalyzeLongRecording
 
