@@ -199,13 +199,23 @@ namespace AudioAnalysisTools.DSP
         /// </summary>
         public static double[] CalculateLocalVariance2(double[,] matrix, int colId, int rowWindow)
         {
+            int rowCount = matrix.GetLength(0);
+            int colCount = matrix.GetLength(1);
+
+            if (rowWindow < 3)
+            {
+                throw new Exception("Invalid value for length of rowWindow. Must be >= 3");
+            }
+
+            if (rowWindow > rowCount)
+            {
+                rowWindow = rowCount - 1;
+            }
+
             // the column window must be an odd number.
             int colWindow = 5;
             int halfColWindow = colWindow / 2;
             int halfRowWindow = rowWindow / 2;
-
-            int rowCount = matrix.GetLength(0);
-            int colCount = matrix.GetLength(1);
 
             double[] variances = new double[rowCount];
 
