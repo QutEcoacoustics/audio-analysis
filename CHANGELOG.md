@@ -8,6 +8,18 @@
 
 <!--generated-content-insert-here-->
 
+## Ecoacoustics Audio Analysis Software v20.9.3.2 2020-09-27
+
+Version v20.9.3.2
+
+
+
+### Details
+
+[Compare v20.9.2.2...v20.9.3.2](https://github.com/QutBioacoustics/audio-analysis/compare/v20.9.2.2...v20.9.3.2)
+
+- f78c09a0 Anthony Truskinger - Update DrawLongDurationSpectrograms.cs
+- 18c21d0e Anthony Truskinger - Update .zenodo.json
 ## Ecoacoustics Audio Analysis Software v20.9.2.2 2020-09-20
 
 Version v20.9.2.2
@@ -1072,6 +1084,7 @@ Version v19.2.0.90
 - 512f8b4 Mahnoosh Kholghi - generating features for a set of recordings
 - 9b7a178 Mahnoosh Kholghi - fixing the error in directory
 - 3fdb19c Mahnoosh Kholghi - Adding a method for arbitrary freq bins
+
 
 
 
