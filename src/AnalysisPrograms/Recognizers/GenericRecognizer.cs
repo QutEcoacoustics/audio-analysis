@@ -325,15 +325,11 @@ namespace AnalysisPrograms.Recognizers
                 // Now filter on properties of the sequences which are treated as Composite events.
                 if (sequenceConfig.FilterSyllableSequence)
                 {
-                    // filter on number of components
+                    // filter on number of syllables and their periodicity.
                     var maxComponentCount = sequenceConfig.SyllableMaxCount;
-                    allResults.NewEvents = EventFilters.FilterEventsOnComponentCount(allResults.NewEvents, maxComponentCount);
-                    Log.Debug($"Event count after filtering on component count = {allResults.NewEvents.Count}");
-
-                    // filter on syllable periodicity
                     var period = sequenceConfig.ExpectedPeriod;
                     var periodSd = sequenceConfig.PeriodStandardDeviation;
-                    allResults.NewEvents = EventFilters.FilterEventsOnSyllablePeriodicity(allResults.NewEvents, period, periodSd);
+                    allResults.NewEvents = EventFilters.FilterEventsOnSyllableCountAndPeriodicity(allResults.NewEvents, maxComponentCount, period, periodSd);
                     Log.Debug($"Event count after filtering on periodicity = {allResults.NewEvents.Count}");
                 }
             }
