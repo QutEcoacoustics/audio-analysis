@@ -216,6 +216,7 @@ namespace AudioAnalysisTools.Events.Types
         /// NOTE: Proximal means (1) that the event starts are close to one another and (2) the events occupy a SIMILAR frequency band.
         /// NOTE: SIMILAR frequency band means the difference between two top Hertz values and the two low Hertz values are less than hertzDifference.
         /// NOTE: This method is used to combine events that are likely to be a syllable sequence within the same call.
+        /// NOTE: Allow twice the tolerance for the upper Hertz difference because upper bounds tend to be more flexible. This is may need to be reversed if it proves to be unhelpful.
         /// </summary>
         public static List<EventCommon> CombineProximalEvents(List<SpectralEvent> events, TimeSpan startDifference, int hertzDifference)
         {
@@ -228,9 +229,9 @@ namespace AudioAnalysisTools.Events.Types
             {
                 for (int j = i - 1; j >= 0; j--)
                 {
-                    bool eventStartsAreProximal = Math.Abs(events[i].EventStartSeconds - events[j].EventStartSeconds) < startDifference.TotalSeconds;
-                    bool eventMinimaAreSimilar = Math.Abs(events[i].LowFrequencyHertz - events[j].LowFrequencyHertz) < hertzDifference;
-                    bool eventMaximaAreSimilar = Math.Abs(events[i].HighFrequencyHertz - events[j].HighFrequencyHertz) < hertzDifference;
+                    bool eventStartsAreProximal = Math.Abs(events[i].EventStartSeconds - events[j].EventStartSeconds) <= startDifference.TotalSeconds;
+                    bool eventMinimaAreSimilar = Math.Abs(events[i].LowFrequencyHertz - events[j].LowFrequencyHertz) <= hertzDifference;
+                    bool eventMaximaAreSimilar = Math.Abs(events[i].HighFrequencyHertz - events[j].HighFrequencyHertz) <= (hertzDifference * 2);
                     if (eventStartsAreProximal && eventMinimaAreSimilar && eventMaximaAreSimilar)
                     {
                         var compositeEvent = CombineTwoEvents(events[i], events[j]);

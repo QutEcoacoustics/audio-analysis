@@ -9,6 +9,7 @@ namespace AudioAnalysisTools.Events
     using System.Linq;
     using AudioAnalysisTools.Events.Types;
     using AudioAnalysisTools.StandardSpectrograms;
+    using MoreLinq;
     using TowseyLibrary;
 
     public static class EventFilters
@@ -102,7 +103,7 @@ namespace AudioAnalysisTools.Events
         /// <summary>
         /// Removes composite events from a list of EventCommon that contain more than the specfied number of SpectralEvent components.
         /// </summary>
-        public static List<EventCommon> FilterEventsOnCompositeContent(
+        public static List<EventCommon> FilterEventsOnComponentCount(
             List<EventCommon> events,
             int maxComponentCount)
         {
@@ -125,31 +126,144 @@ namespace AudioAnalysisTools.Events
         /// <summary>
         /// Removes composite events from a list of EventCommon where the component syllables do not have the correct periodicity.
         /// </summary>
-        public static List<EventCommon> FilterEventsOnSyllablePeriodicity(
-            List<EventCommon> events,
-            double expectedPeriod,
-            double periodSd)
+        public static List<EventCommon> FilterEventsOnSyllableCountAndPeriodicity(List<EventCommon> events, int maxSyllableCount, double expectedPeriod, double expectedSd)
         {
+            var minExpectedPeriod = expectedPeriod - (3 * expectedSd);
+            var maxExpectedPeriod = expectedPeriod + (3 * expectedSd);
+
             var filteredEvents = new List<EventCommon>();
 
             foreach (var ev in events)
             {
-                if (ev is CompositeEvent)
+                // ignore non-composite events
+                if (ev is CompositeEvent == false)
                 {
-                    var actualPeriodicity = ((CompositeEvent)ev).CalculatePeriodicity();
-                    var minAllowedPeriodicity = expectedPeriod - (3 * periodSd);
-                    var maxAllowedPeriodicity = expectedPeriod + (3 * periodSd);
-                    if (actualPeriodicity < minAllowedPeriodicity || actualPeriodicity > maxAllowedPeriodicity)
+                    filteredEvents.Add(ev);
+                    continue;
+                }
+
+                // Get the temporal footprint of the component events.
+                (bool[] temporalFootprint, double timeScale) = GetTemporalFootprint(ev);
+
+                // calculate the periodicity in seconds
+                int syllableCount = 1;
+                var periodSeconds = new List<double>();
+                int previousEventStart = 0;
+                for (int f = 1; f < temporalFootprint.Length; f++)
+                {
+                    if (temporalFootprint[f] && !temporalFootprint[f - 1])
                     {
-                        // ignore composite events which do not have the correct periodicity
-                        continue;
+                        // calculate the event interval in seconds.
+                        syllableCount++;
+                        periodSeconds.Add((f - previousEventStart + 1) * timeScale);
+                        previousEventStart = f;
                     }
                 }
 
-                filteredEvents.Add(ev);
+                // reject composite events whose total syllable count exceeds the user defined max.
+                if (syllableCount > maxSyllableCount)
+                {
+                    continue;
+                }
+
+                // now filter on syllable periodicity.
+                if (syllableCount == 1)
+                {
+                    // there was only one event - the multiple events all overlapped as one event
+                    // accept this as valid outcome. There is no interval on which to filter.
+                    filteredEvents.Add(ev);
+                }
+                else
+                {
+                    if (syllableCount == 2)
+                    {
+                        // there were only two events, with one interval
+                        // accept this as valid outcome, iff the interval falls within the expected interval.
+                        var actualInterval = periodSeconds[0];
+
+                        if (actualInterval >= minExpectedPeriod && actualInterval <= maxExpectedPeriod)
+                        {
+                            filteredEvents.Add(ev);
+                        }
+                    }
+                    else
+                    {
+                        // there were more than two events. Require overlap between actual and expected ranges.
+                        NormalDist.AverageAndSD(periodSeconds.ToArray(), out double averagePeriod, out double sdPeriod);
+
+                        // get the difference between the expected and absolute periods.
+                        var periodDifference = Math.Abs(averagePeriod - expectedPeriod);
+
+                        //This difference should be less than the combined SDs.
+                        var combinedSds = (sdPeriod + expectedSd) * 2;
+                        if (periodDifference <= combinedSds)
+                        {
+                            filteredEvents.Add(ev);
+                        }
+                    }
+                }
             }
 
             return filteredEvents;
+        }
+
+        public static (bool[] TemporalFootprint, double TimeScale) GetTemporalFootprint(EventCommon compositeEvent)
+        {
+            if (compositeEvent is CompositeEvent == false)
+            {
+                throw new Exception("Invalid event type. Event passed to GetTemporalFotprint() must be of type CompositeEvent.");
+            }
+
+            // get the composite events.
+            var events = ((CompositeEvent)compositeEvent).ComponentEvents;
+
+            var startEnds = new List<double[]>();
+            double firstStart = double.MaxValue;
+            double lastEnd = 0.0;
+
+            foreach (var ev in events)
+            {
+                var startAndDuration = new double[2] { ev.EventStartSeconds, ((SpectralEvent)ev).EventDurationSeconds };
+                startEnds.Add(startAndDuration);
+
+                if (firstStart > ev.EventStartSeconds)
+                {
+                    firstStart = ev.EventStartSeconds;
+                }
+
+                if (lastEnd < ((SpectralEvent)ev).EventEndSeconds)
+                {
+                    lastEnd = ((SpectralEvent)ev).EventEndSeconds;
+                }
+            }
+
+            // set up a temporal array to contain event footprint info.
+            int arrayLength = 100;
+            bool[] temporalFootprint = new bool[arrayLength];
+            var compositeTimeDuration = lastEnd - firstStart;
+            var timeScale = compositeTimeDuration / (double)arrayLength;
+
+            foreach (var pair in startEnds)
+            {
+
+                int startFrame = (int)Math.Floor((pair[0] - firstStart) / timeScale);
+                int endFrame = startFrame - 1 + (int)Math.Floor(pair[1] / timeScale);
+
+                for (int f = startFrame; f <= endFrame; f++)
+                {
+                    temporalFootprint[f] = true;
+                }
+            }
+
+            return (temporalFootprint, timeScale);
+        }
+
+        public static (int Count, double AveragePeriod, double SdPeriod) GetPeriodicity(bool[] temporalFootprint, double timeScale)
+        {
+            int count = 0;
+            double averagePeriod = 0.0;
+            double sdPeriod = 0.0;
+            return (count, averagePeriod, sdPeriod);
         }
 
         /// <summary>
