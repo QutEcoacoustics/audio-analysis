@@ -28,6 +28,7 @@ Profiles:
         MinDuration: 0.3
         MaxDuration: 0.8
         DecibelThresholds:
+            - 3.0
             - 6.0
             - 12.0
 
@@ -47,7 +48,7 @@ PostProcessing:
     SyllableSequence:
         CombinePossibleSyllableSequence: true
         SyllableStartDifference: 3.0
-        SyllableHertzGap: 35
+        SyllableHertzGap: 40
         FilterSyllableSequence: true
         SyllableMaxCount: 6
         ExpectedPeriod: 2.5
