@@ -327,14 +327,14 @@ namespace AnalysisPrograms.Recognizers
                 {
                     // filter on number of components
                     var maxComponentCount = sequenceConfig.SyllableMaxCount;
-                    allResults.NewEvents = EventFilters.FilterEventsOnCompositeContent(allResults.NewEvents, maxComponentCount);
+                    allResults.NewEvents = EventFilters.FilterEventsOnComponentCount(allResults.NewEvents, maxComponentCount);
                     Log.Debug($"Event count after filtering on component count = {allResults.NewEvents.Count}");
 
                     // filter on syllable periodicity
                     var period = sequenceConfig.ExpectedPeriod;
                     var periodSd = sequenceConfig.PeriodStandardDeviation;
                     allResults.NewEvents = EventFilters.FilterEventsOnSyllablePeriodicity(allResults.NewEvents, period, periodSd);
-                    Log.Debug($"Event count after filtering on component count = {allResults.NewEvents.Count}");
+                    Log.Debug($"Event count after filtering on periodicity = {allResults.NewEvents.Count}");
                 }
             }
 
