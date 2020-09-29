@@ -213,7 +213,7 @@ namespace TowseyLibrary
                 variance /= N;
             }
             else
-                if (N > 2)
+                if (N > 1)
             {
                 variance /= N - 1;
             }
