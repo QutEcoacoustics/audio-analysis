@@ -8,6 +8,19 @@
 
 <!--generated-content-insert-here-->
 
+## Ecoacoustics Audio Analysis Software v20.10.0.3 2020-10-11
+
+Version v20.10.0.3
+
+
+
+### Details
+
+[Compare v20.9.3.2...v20.10.0.3](https://github.com/QutBioacoustics/audio-analysis/compare/v20.9.3.2...v20.10.0.3)
+
+- 2f983a42 dependabot-preview[bot] - Bump Moq from 4.14.5 to 4.14.6
+- 9e8f0847 dependabot-preview[bot] - Bump CsvHelper from 15.0.5 to 15.0.6
+- 025eafce dependabot-preview[bot] - Bump System.IO.Abstractions from 12.1.9 to 12.2.1
 ## Ecoacoustics Audio Analysis Software v20.9.3.2 2020-09-27
 
 Version v20.9.3.2
@@ -1084,6 +1097,7 @@ Version v19.2.0.90
 - 512f8b4 Mahnoosh Kholghi - generating features for a set of recordings
 - 9b7a178 Mahnoosh Kholghi - fixing the error in directory
 - 3fdb19c Mahnoosh Kholghi - Adding a method for arbitrary freq bins
+
 
 
 
