@@ -81,35 +81,8 @@ namespace AnalysisPrograms.Recognizers
                 imageWidth);
 
             // ################### POST-PROCESSING of EVENTS ###################
-            if (combinedResults.NewEvents.Count == 0)
-            {
-                CisticolaLog.Debug($"Return zero events.");
-                return combinedResults;
-            }
+            // Additional post-processing steps can be coded here.
 
-            // 1: Filter the events for duration in seconds
-            var minimumEventDuration = 0.1;
-            var maximumEventDuration = 0.25;
-            combinedResults.NewEvents = EventFilters.FilterOnDuration(combinedResults.NewEvents, minimumEventDuration, maximumEventDuration);
-            CisticolaLog.Debug($"Event count after filtering on duration = {combinedResults.NewEvents.Count}");
-
-            // 2: Filter the events for bandwidth in Hertz
-            double average = 600;
-            double sd = 150;
-            double sigmaThreshold = 3.0;
-            combinedResults.NewEvents = EventFilters.FilterOnBandwidth(combinedResults.NewEvents, average, sd, sigmaThreshold);
-            CisticolaLog.Debug($"Event count after filtering on bandwidth = {combinedResults.NewEvents.Count}");
-
-            // 3: Filter on COMPONENT COUNT in Composite events.
-            //int maxComponentCount = 2;
-            //combinedResults.NewEvents = EventExtentions.FilterEventsOnCompositeContent(combinedResults.NewEvents, maxComponentCount);
-            //CisticolaLog.Debug($"Event count after filtering on component count = {combinedResults.NewEvents.Count}");
-
-            //combinedResults.NewEvents = FilterEventsOnFrequencyProfile(combinedResults.NewEvents);
-
-            //UNCOMMENT following line if you want special debug spectrogram, i.e. with special plots.
-            //  NOTE: Standard spectrograms are produced by setting SaveSonogramImages: "True" or "WhenEventsDetected" in UserName.SpeciesName.yml config file.
-            //GenericRecognizer.SaveDebugSpectrogram(territorialResults, genericConfig, outputDirectory, audioRecording.BaseName);
             return combinedResults;
         }
 
