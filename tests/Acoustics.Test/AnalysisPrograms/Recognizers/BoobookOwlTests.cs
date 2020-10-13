@@ -54,7 +54,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
 
             Assert.AreEqual(8, events.Count);
             Assert.IsNull(scoreTrack);
-            Assert.AreEqual(1, plots.Count);
+            Assert.AreEqual(3, plots.Count);
             Assert.AreEqual(2667, sonogram.FrameCount);
 
             Assert.IsInstanceOfType(events[1], typeof(CompositeEvent));
@@ -62,11 +62,11 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             var secondEvent = (CompositeEvent)events[1];
 
             Assert.AreEqual(5.375419501133787, secondEvent.EventStartSeconds);
-            Assert.AreEqual(6.0720181405895692, secondEvent.EventEndSeconds);
-            Assert.AreEqual(483, secondEvent.LowFrequencyHertz);
+            Assert.AreEqual(6.1648979591836737, secondEvent.EventEndSeconds);
+            Assert.AreEqual(441, secondEvent.LowFrequencyHertz);
             Assert.AreEqual(735, secondEvent.HighFrequencyHertz);
-            Assert.AreEqual(20.901882476071698, secondEvent.Score, TestHelper.AllowedDelta);
-            Assert.AreEqual(0.20786700431266195, secondEvent.ScoreNormalized, TestHelper.AllowedDelta);
+            Assert.AreEqual(22.388932023970227, secondEvent.Score, TestHelper.AllowedDelta);
+            Assert.AreEqual(0.0092984503451215648, secondEvent.ScoreNormalized, TestHelper.AllowedDelta);
         }
     }
 }

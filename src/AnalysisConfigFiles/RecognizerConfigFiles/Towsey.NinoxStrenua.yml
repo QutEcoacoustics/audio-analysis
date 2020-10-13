@@ -58,12 +58,17 @@ PostProcessing:
         SyllableMaxCount: 6
         ExpectedPeriod: 0.92
 
-    # 3: Remove events whose bandwidth lies outside 3 SDs of an expected value.
+    # 3: Remove events whose duration lies outside 3 SDs of an expected value.
+    #Duration:
+        ExpectedDuration: 0.14
+        DurationStandardDeviation: 0.01        
+
+    # 4: Remove events whose bandwidth lies outside 3 SDs of an expected value.
     Bandwidth:
         ExpectedBandwidth: 120
         BandwidthStandardDeviation: 30
 
-    # 4: Filter the events for excess activity in their sidebands, i.e. upper and lower buffer zones
+    # 5: Filter the events for excess activity in their sidebands, i.e. upper and lower buffer zones
     SidebandActivity:
         LowerHertzBuffer: 0
         UpperHertzBuffer: 0
