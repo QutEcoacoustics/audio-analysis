@@ -101,6 +101,28 @@ namespace AudioAnalysisTools.Events
         }
 
         /// <summary>
+        /// Filters lists of spectral events based on their duration.
+        /// Note: The typical sigma threshold would be 2 to 3 sds.
+        /// </summary>
+        /// <param name="events">The list of events.</param>
+        /// <param name="average">The expected value of the duration.</param>
+        /// <param name="sd">The standard deviation of the duration.</param>
+        /// <param name="sigmaThreshold">THe sigma value which determines the max and min thresholds.</param>
+        /// <returns>The filtered list of events.</returns>
+        public static List<EventCommon> FilterOnDuration(List<EventCommon> events, double average, double sd, double sigmaThreshold)
+        {
+            var minDuration = average - (sd * sigmaThreshold);
+            if (minDuration < 0.0)
+            {
+                throw new Exception("Invalid seconds duration passed to method EventExtentions.FilterOnDuration().");
+            }
+
+            var maxDuration = average + (sd * sigmaThreshold);
+            var outputEvents = events.Where(ev => ((SpectralEvent)ev).EventDurationSeconds > minDuration && ((SpectralEvent)ev).EventDurationSeconds < maxDuration).ToList();
+            return outputEvents;
+        }
+
+        /// <summary>
         /// Removes composite events from a list of EventCommon that contain more than the specfied number of SpectralEvent components.
         /// </summary>
         public static List<EventCommon> FilterEventsOnComponentCount(

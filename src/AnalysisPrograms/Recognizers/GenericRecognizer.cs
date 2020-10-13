@@ -334,13 +334,25 @@ namespace AnalysisPrograms.Recognizers
                 }
             }
 
-            // 3: Filter the events for bandwidth in Hertz
-            var expectedEventBandwidth = postprocessingConfig.Bandwidth.ExpectedBandwidth;
-            var sd = postprocessingConfig.Bandwidth.BandwidthStandardDeviation;
-            allResults.NewEvents = EventFilters.FilterOnBandwidth(allResults.NewEvents, expectedEventBandwidth, sd, sigmaThreshold: 3.0);
-            Log.Debug($"Event count after filtering on bandwidth = {allResults.NewEvents.Count}");
+            // 3: Filter the events for time duration (seconds)
+            if (postprocessingConfig.Duration != null)
+            {
+                var expectedEventDuration = postprocessingConfig.Duration.ExpectedDuration;
+                var sdEventDuration = postprocessingConfig.Duration.DurationStandardDeviation;
+                allResults.NewEvents = EventFilters.FilterOnDuration(allResults.NewEvents, expectedEventDuration, sdEventDuration, sigmaThreshold: 3.0);
+                Log.Debug($"Event count after filtering on duration = {allResults.NewEvents.Count}");
+            }
 
-            // 4: Filter events on the amount of acoustic activity in their upper and lower neighbourhoods - their buffer zone.
+            // 4: Filter the events for bandwidth in Hertz
+            if (postprocessingConfig.Bandwidth != null)
+            {
+                var expectedEventBandwidth = postprocessingConfig.Bandwidth.ExpectedBandwidth;
+                var sdBandwidth = postprocessingConfig.Bandwidth.BandwidthStandardDeviation;
+                allResults.NewEvents = EventFilters.FilterOnBandwidth(allResults.NewEvents, expectedEventBandwidth, sdBandwidth, sigmaThreshold: 3.0);
+                Log.Debug($"Event count after filtering on bandwidth = {allResults.NewEvents.Count}");
+            }
+
+            // 5: Filter events on the amount of acoustic activity in their upper and lower neighbourhoods - their buffer zone.
             //    The idea is that an unambiguous event should have some acoustic space above and below.
             //    The filter requires that the average acoustic activity in each frame and bin of the upper and lower buffer zones should not exceed the user specified decibel threshold.
             var sidebandActivity = postprocessingConfig.SidebandActivity;
@@ -453,9 +465,30 @@ namespace AnalysisPrograms.Recognizers
             public SidebandConfig SidebandActivity { get; set; }
 
             /// <summary>
+            /// Gets or sets the parameters required to filter events on their duration.
+            /// </summary>
+            public DurationConfig Duration { get; set; }
+
+            /// <summary>
             /// Gets or sets the parameters required to filter events on their bandwidth.
             /// </summary>
             public BandwidthConfig Bandwidth { get; set; }
+        }
+
+        /// <summary>
+        /// The next two properties determine filtering of events based on their duration.
+        /// </summary>
+        public class DurationConfig
+        {
+            /// <summary>
+            /// Gets or sets a value indicating the Expected duration of an event.
+            /// </summary>
+            public double ExpectedDuration { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating the standard deviation of the expected duration.
+            /// </summary>
+            public double DurationStandardDeviation { get; set; }
         }
 
         /// <summary>
