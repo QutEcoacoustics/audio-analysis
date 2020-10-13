@@ -51,21 +51,21 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             this.SaveTestOutput(
                 outputDirectory => GenericRecognizer.SaveDebugSpectrogram(results, null, outputDirectory, Recognizer.SpeciesName));
 
-            // this test returns 17 events with one false-negative and possibly one false-positive.
-            Assert.AreEqual(17, events.Count);
+            // this test returns 20 events with one false-positive.
+            Assert.AreEqual(20, events.Count);
             Assert.IsNull(scoreTrack);
-            Assert.AreEqual(1, plots.Count);
+            Assert.AreEqual(3, plots.Count);
             Assert.AreEqual(3747, sonogram.FrameCount);
 
-            Assert.IsInstanceOfType(events[3], typeof(CompositeEvent));
-            var fourthEvent = (CompositeEvent)events[3];
+            Assert.IsInstanceOfType(events[6], typeof(CompositeEvent));
+            var ev = (CompositeEvent)events[6];
 
-            Assert.AreEqual(7.28, fourthEvent.EventStartSeconds);
-            Assert.AreEqual(7.432, fourthEvent.EventEndSeconds);
-            Assert.AreEqual(2542, fourthEvent.LowFrequencyHertz);
-            Assert.AreEqual(3100, fourthEvent.HighFrequencyHertz);
-            Assert.AreEqual(17.91649081319, fourthEvent.Score, TestHelper.AllowedDelta);
-            Assert.AreEqual(0.07765486486, fourthEvent.ScoreNormalized, TestHelper.AllowedDelta);
+            Assert.AreEqual(7.28, ev.EventStartSeconds);
+            Assert.AreEqual(7.432, ev.EventEndSeconds);
+            Assert.AreEqual(2542, ev.LowFrequencyHertz);
+            Assert.AreEqual(3100, ev.HighFrequencyHertz);
+            Assert.AreEqual(19.577394545704326, ev.Score, TestHelper.AllowedDelta);
+            Assert.AreEqual(0.00013717318483754581, ev.ScoreNormalized, TestHelper.AllowedDelta);
         }
     }
 }
