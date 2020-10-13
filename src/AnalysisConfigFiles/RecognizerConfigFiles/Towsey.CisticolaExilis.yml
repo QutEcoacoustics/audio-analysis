@@ -58,10 +58,10 @@ PostProcessing:
         ExpectedBandwidth: 600
         BandwidthStandardDeviation: 150
 
-    # 4: Filter the events for excess activity in their sidebands, i.e. upper and lower buffer zones
+    # 5: Filter the events for excess activity in their sidebands, i.e. upper and lower buffer zones
     SidebandActivity:
         LowerHertzBuffer: 0
-        UpperHertzBuffer: 0 #200
+        UpperHertzBuffer: 200
         DecibelBuffer: 2.0
 
 # Options to save results files
