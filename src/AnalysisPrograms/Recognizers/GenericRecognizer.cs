@@ -352,22 +352,25 @@ namespace AnalysisPrograms.Recognizers
                 Log.Debug($"Event count after filtering on bandwidth = {allResults.NewEvents.Count}");
             }
 
-            // 5: Filter events on the amount of acoustic activity in their upper and lower neighbourhoods - their buffer zone.
+            // 5: Filter events on the amount of acoustic activity in their upper and lower sidebands - their buffer zone.
             //    The idea is that an unambiguous event should have some acoustic space above and below.
             //    The filter requires that the average acoustic activity in each frame and bin of the upper and lower buffer zones should not exceed the user specified decibel threshold.
             var sidebandActivity = postprocessingConfig.SidebandActivity;
-            if (sidebandActivity.UpperHertzBuffer > 0 || sidebandActivity.LowerHertzBuffer > 0)
+            if (sidebandActivity != null)
             {
-                var spectralEvents2 = allResults.NewEvents.Cast<SpectralEvent>().ToList();
-                allResults.NewEvents = EventFilters.FilterEventsOnSidebandActivity(
-                    spectralEvents2,
-                    allResults.Sonogram,
-                    sidebandActivity.LowerHertzBuffer,
-                    sidebandActivity.UpperHertzBuffer,
-                    segmentStartOffset,
-                    sidebandActivity.DecibelBuffer);
+                if (sidebandActivity.UpperHertzBuffer > 0 || sidebandActivity.LowerHertzBuffer > 0)
+                {
+                    var spectralEvents2 = allResults.NewEvents.Cast<SpectralEvent>().ToList();
+                    allResults.NewEvents = EventFilters.FilterEventsOnSidebandActivity(
+                        spectralEvents2,
+                        allResults.Sonogram,
+                        sidebandActivity.LowerHertzBuffer,
+                        sidebandActivity.UpperHertzBuffer,
+                        segmentStartOffset,
+                        sidebandActivity.DecibelBuffer);
 
-                Log.Debug($"Event count after filtering on acoustic activity in upper/lower neighbourhood = {allResults.NewEvents.Count}");
+                    Log.Debug($"Event count after filtering on acoustic activity in upper/lower sidebands = {allResults.NewEvents.Count}");
+                }
             }
 
             // Write out the events to log.

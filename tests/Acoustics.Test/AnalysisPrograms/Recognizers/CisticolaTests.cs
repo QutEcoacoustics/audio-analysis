@@ -51,14 +51,14 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             this.SaveTestOutput(
                 outputDirectory => GenericRecognizer.SaveDebugSpectrogram(results, null, outputDirectory, Recognizer.SpeciesName));
 
-            // this test returns 20 events with one false-positive.
-            Assert.AreEqual(20, events.Count);
+            // this test returns 19 events, all of them TP
+            Assert.AreEqual(19, events.Count);
             Assert.IsNull(scoreTrack);
             Assert.AreEqual(3, plots.Count);
             Assert.AreEqual(3747, sonogram.FrameCount);
 
-            Assert.IsInstanceOfType(events[6], typeof(CompositeEvent));
-            var ev = (CompositeEvent)events[6];
+            Assert.IsInstanceOfType(events[5], typeof(CompositeEvent));
+            var ev = (CompositeEvent)events[5];
 
             Assert.AreEqual(7.28, ev.EventStartSeconds);
             Assert.AreEqual(7.432, ev.EventEndSeconds);
