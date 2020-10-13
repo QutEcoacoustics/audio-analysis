@@ -92,95 +92,9 @@ namespace AnalysisPrograms.Recognizers
                 outputDirectory,
                 imageWidth);
 
-            // ################### POST-PROCESSING of EVENTS ###################
-
-            if (combinedResults.NewEvents.Count == 0)
-            {
-                PipitLog.Debug($"Return zero events.");
-                return combinedResults;
-            }
-
-            // 1: Filter the events for duration in seconds
-            var minimumEventDuration = 0.1;
-            var maximumEventDuration = 0.4;
-            combinedResults.NewEvents = EventFilters.FilterOnDuration(combinedResults.NewEvents, minimumEventDuration, maximumEventDuration);
-            PipitLog.Debug($"Event count after filtering on duration = {combinedResults.NewEvents.Count}");
-
-            // 2: Filter the events for bandwidth in Hertz
-            double average = 3500;
-            double sd = 600;
-            double sigmaThreshold = 3.0;
-            combinedResults.NewEvents = EventFilters.FilterOnBandwidth(combinedResults.NewEvents, average, sd, sigmaThreshold);
-            PipitLog.Debug($"Event count after filtering on bandwidth = {combinedResults.NewEvents.Count}");
-
-            combinedResults.NewEvents = FilterEventsOnFrequencyProfile(combinedResults.NewEvents);
+            // ################### YOU CAN PUT ADDITIONAL POST-PROCESSING CODE HERE ###################
 
             return combinedResults;
-        }
-
-        /// <summary>
-        /// This method assumes that the only events of interest are composite events.
-        /// </summary>
-        /// <param name="events">THe current list of events.</param>
-        /// <returns>A list of composite events.</returns>
-        public static List<EventCommon> FilterEventsOnFrequencyProfile(List<EventCommon> events)
-        {
-            if (events.Count == 0)
-            {
-                return events;
-            }
-
-            // select only the composite events.
-            //var compositeEvents = events.Select(x => (CompositeEvent)x).ToList();
-            var (compositeEvents, others) = events.FilterForEventType<CompositeEvent, EventCommon>();
-
-            if (compositeEvents == null || compositeEvents.Count == 0)
-            {
-                return events;
-            }
-
-            // get the composite track for each composite event.
-            var returnEvents = new List<EventCommon>();
-            foreach (var ev in compositeEvents)
-            {
-                var componentEvents = ev.ComponentEvents.Cast<WhipEvent>();
-                var points = EventExtentions.GetCompositeTrack(componentEvents).ToArray();
-
-                // Uncomment this line when want to see the composite track profile.
-                //WriteFrequencyProfile(points);
-
-                // For Pipit require minimum of four frames duration.
-                var length = points.Length;
-                if (length < 4)
-                {
-                    continue;
-                }
-
-                // Only select events having strong downward slope in spectrogram.
-                var avFirstTwoEvents = (points[0].Hertz.Minimum + points[0].Hertz.Minimum) / 2;
-                var avLastTwoEvents = (points[length - 1].Hertz.Minimum + points[length - 2].Hertz.Minimum) / 2;
-                if (avFirstTwoEvents - avLastTwoEvents > 500)
-                {
-                    returnEvents.Add(ev);
-                }
-            }
-
-            return returnEvents;
-        }
-
-        public static void WriteFrequencyProfile(ISpectralPoint[] points)
-        {
-            if (points != null)
-            {
-                var str = $"Track({points[0].Seconds.Minimum:F2}):";
-
-                foreach (var point in points)
-                {
-                    str += $" {point.Hertz.Minimum},";
-                }
-
-                Console.WriteLine(str);
-            }
         }
 
         /*
