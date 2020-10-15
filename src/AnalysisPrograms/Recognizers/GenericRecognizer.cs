@@ -358,18 +358,30 @@ namespace AnalysisPrograms.Recognizers
             var sidebandActivity = postprocessingConfig.SidebandActivity;
             if (sidebandActivity != null)
             {
-                if (sidebandActivity.UpperHertzBuffer > 0 || sidebandActivity.LowerHertzBuffer > 0)
+                if (sidebandActivity.LowerHertzBuffer > 0)
                 {
                     var spectralEvents2 = allResults.NewEvents.Cast<SpectralEvent>().ToList();
-                    allResults.NewEvents = EventFilters.FilterEventsOnSidebandActivity(
+                    allResults.NewEvents = EventFilters.FilterEventsOnLowerSidebandActivity(
                         spectralEvents2,
                         allResults.Sonogram,
                         sidebandActivity.LowerHertzBuffer,
+                        segmentStartOffset,
+                        sidebandActivity.DecibelBuffer);
+
+                    Log.Debug($"Event count after filtering on acoustic activity in lower sideband = {allResults.NewEvents.Count}");
+                }
+
+                if (sidebandActivity.UpperHertzBuffer > 0)
+                {
+                    var spectralEvents3 = allResults.NewEvents.Cast<SpectralEvent>().ToList();
+                    allResults.NewEvents = EventFilters.FilterEventsOnUpperSidebandActivity(
+                        spectralEvents3,
+                        allResults.Sonogram,
                         sidebandActivity.UpperHertzBuffer,
                         segmentStartOffset,
                         sidebandActivity.DecibelBuffer);
 
-                    Log.Debug($"Event count after filtering on acoustic activity in upper/lower sidebands = {allResults.NewEvents.Count}");
+                    Log.Debug($"Event count after filtering on acoustic activity in upper sideband = {allResults.NewEvents.Count}");
                 }
             }
 
