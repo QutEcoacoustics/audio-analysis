@@ -330,26 +330,28 @@ namespace AudioAnalysisTools.Events
         }
 
         /// <summary>
-        /// Removes events from a list of events that contain excessive noise in the event side bands; i.e. thhe upper and/or lower neighbouring frequency bands.
+        /// Removes events from a list of events that contain excessive noise in the lower event side band.
         /// Excess noise can indicate that this is not a legitimate event.
-        /// This method counts the bins and frames containing above threshold activity (decibel value) in the buffer zones above and below the events.
+        /// This method counts the bins and frames containing above threshold activity (decibel value) in the buffer zone below the events.
         /// </summary>
         /// <param name="events">A list of spectral events.</param>
         /// <param name="spectrogram">The decibel spectrogram in which the events occurs.</param>
         /// <param name="lowerHertzBuffer">The band width of the required lower buffer. 100-200Hz is often appropriate.</param>
-        /// <param name="upperHertzBuffer">The band width of the required upper buffer. 300-500Hz is often appropriate.</param>
         /// <param name="decibelBuffer">Minimum required decibel difference between event activity and neighbourhood activity.</param>
         /// <returns>A list of filtered events.</returns>
-        public static List<EventCommon> FilterEventsOnSidebandActivity(
+        public static List<EventCommon> FilterEventsOnLowerSidebandActivity(
             List<SpectralEvent> events,
             BaseSonogram spectrogram,
             int lowerHertzBuffer,
-            int upperHertzBuffer,
             TimeSpan segmentStartOffset,
             double decibelBuffer)
         {
-            // allow bin gaps above and below the event.
-            int upperBinGap = 4;
+            if (lowerHertzBuffer == 0)
+            {
+                return null;
+            }
+
+            // allow bin gaps below the event.
             int lowerBinGap = 2;
 
             var converter = new UnitConverters(
@@ -362,11 +364,63 @@ namespace AudioAnalysisTools.Events
             foreach (var ev in events)
             {
                 var eventDecibels = EventExtentions.GetAverageDecibelsInEvent(ev, spectrogram.Data, converter);
-                var sidebandMatrix = GetNeighbourhoodAsOneMatrix(ev, spectrogram.Data, lowerHertzBuffer, lowerBinGap, upperHertzBuffer, upperBinGap, converter);
+                var sidebandThreshold = eventDecibels - decibelBuffer;
+
+                var sidebandMatrix = GetLowerNeighbourhood(ev, spectrogram.Data, lowerHertzBuffer, lowerBinGap, converter);
+
                 var averageRowDecibels = MatrixTools.GetRowAverages(sidebandMatrix);
                 var averageColDecibels = MatrixTools.GetColumnAverages(sidebandMatrix);
-                int noisyRowCount = averageRowDecibels.Count(x => x > (eventDecibels - decibelBuffer));
-                int noisyColCount = averageColDecibels.Count(x => x > (eventDecibels - decibelBuffer));
+                int noisyRowCount = averageRowDecibels.Count(x => x > sidebandThreshold);
+                int noisyColCount = averageColDecibels.Count(x => x > sidebandThreshold);
+
+                // Require that there be at most one buffer bin and one buffer frame containing excessive acoustic activity.
+                if (noisyRowCount <= 1 && noisyColCount <= 1)
+                {
+                    // There is reduced acoustic activity in the upper and lower buffer zones. It is likely to be a discrete event.
+                    filteredEvents.Add(ev);
+                }
+            }
+
+            return filteredEvents;
+        }
+
+        /// <summary>
+        /// Removes events from a list of events that contain excessive noise in the upper event side band.
+        /// Excess noise can indicate that this is not a legitimate event.
+        /// This method counts the bins and frames containing above threshold activity (decibel value) in the buffer zone above the events.
+        /// </summary>
+        /// <param name="events">A list of spectral events.</param>
+        /// <param name="spectrogram">The decibel spectrogram in which the events occurs.</param>
+        /// <param name="upperHertzBuffer">The band width of the required upper buffer. 300-500Hz is often appropriate.</param>
+        /// <param name="decibelBuffer">Minimum required decibel difference between event activity and neighbourhood activity.</param>
+        /// <returns>A list of filtered events.</returns>
+        public static List<EventCommon> FilterEventsOnUpperSidebandActivity(
+            List<SpectralEvent> events,
+            BaseSonogram spectrogram,
+            int upperHertzBuffer,
+            TimeSpan segmentStartOffset,
+            double decibelBuffer)
+        {
+            // allow bin gaps above the event.
+            int upperBinGap = 3;
+
+            var converter = new UnitConverters(
+                segmentStartOffset: segmentStartOffset.TotalSeconds,
+                sampleRate: spectrogram.SampleRate,
+                frameSize: spectrogram.Configuration.WindowSize,
+                frameOverlap: spectrogram.Configuration.WindowOverlap);
+
+            var filteredEvents = new List<EventCommon>();
+            foreach (var ev in events)
+            {
+                var eventDecibels = EventExtentions.GetAverageDecibelsInEvent(ev, spectrogram.Data, converter);
+                var sidebandThreshold = eventDecibels - decibelBuffer;
+
+                var sidebandMatrix = GetUpperNeighbourhood(ev, spectrogram.Data, upperHertzBuffer, upperBinGap, converter);
+                var averageRowDecibels = MatrixTools.GetRowAverages(sidebandMatrix);
+                var averageColDecibels = MatrixTools.GetColumnAverages(sidebandMatrix);
+                int noisyRowCount = averageRowDecibels.Count(x => x > sidebandThreshold);
+                int noisyColCount = averageColDecibels.Count(x => x > sidebandThreshold);
 
                 // Require that there be at most one buffer bin and one buffer frame containing excessive acoustic activity.
                 if (noisyRowCount <= 1 && noisyColCount <= 1)
