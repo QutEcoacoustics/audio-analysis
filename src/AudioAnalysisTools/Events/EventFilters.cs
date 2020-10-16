@@ -9,7 +9,6 @@ namespace AudioAnalysisTools.Events
     using System.Linq;
     using AudioAnalysisTools.Events.Types;
     using AudioAnalysisTools.StandardSpectrograms;
-    using MoreLinq;
     using TowseyLibrary;
 
     public static class EventFilters
@@ -267,7 +266,6 @@ namespace AudioAnalysisTools.Events
 
             foreach (var pair in startEnds)
             {
-
                 int startFrame = (int)Math.Floor((pair[0] - firstStart) / timeScale);
                 int endFrame = startFrame - 1 + (int)Math.Floor(pair[1] / timeScale);
 
@@ -289,70 +287,28 @@ namespace AudioAnalysisTools.Events
         }
 
         /// <summary>
-        /// Removes events from a list of events that contain excessive noise in the upper neighbourhood.
+        /// Removes events from a list of events that contain excessive noise in the lower and/or upper neighbourhood.
         /// Excess noise can indicate that this is not a legitimate event.
         /// This method measures noise as the average decibel value in the buffer zones above and below the events.
         /// </summary>
         /// <param name="events">A list of spectral events.</param>
-        /// <param name="spectrogramData">A matrix of the spectrogram in which event occurs.</param>
+        /// <param name="spectrogram">A matrix of the spectrogram in which event occurs.</param>
         /// <param name="lowerHertzBuffer">The band width of the required lower buffer. 100-200Hz is often appropriate.</param>
         /// <param name="upperHertzBuffer">The band width of the required upper buffer. 300-500Hz is often appropriate.</param>
-        /// <param name="converter">Converts sec/Hz to frame/bin.</param>
-        /// <param name="decibelThreshold">Threshold noise level - assumed to be in decibels.</param>
+        /// <param name="decibelThreshold">The decibel threshold for acoustic activity in a sideband.</param>
+        /// <param name="segmentStartOffset">Start time of the current recording segment.</param>
         /// <returns>A list of filtered events.</returns>
-        public static List<EventCommon> FilterEventsOnNeighbourhoodAverage(
-            List<SpectralEvent> events,
-            double[,] spectrogramData,
-            double lowerHertzBuffer,
-            double upperHertzBuffer,
-            UnitConverters converter,
-            double decibelThreshold)
-        {
-            // allow bin gaps above and below the event.
-            int upperBinGap = 4;
-            int lowerBinGap = 2;
-
-            var filteredEvents = new List<EventCommon>();
-            foreach (var ev in events)
-            {
-                var avLowerNhAmplitude = GetAverageAmplitudeInLowerNeighbourhood((SpectralEvent)ev, spectrogramData, lowerHertzBuffer, lowerBinGap, converter);
-                var avUpperNhAmplitude = GetAverageAmplitudeInUpperNeighbourhood((SpectralEvent)ev, spectrogramData, upperHertzBuffer, upperBinGap, converter);
-
-                // Require that both the lower and upper buffer zones contain less acoustic activity than the threshold.
-                if (avLowerNhAmplitude < decibelThreshold && avUpperNhAmplitude < decibelThreshold)
-                {
-                    // There is little acoustic activity in the designated buffer zones. It is likely to be a discrete event.
-                    filteredEvents.Add(ev);
-                }
-            }
-
-            return filteredEvents;
-        }
-
-        /// <summary>
-        /// Removes events from a list of events that contain excessive noise in the lower event side band.
-        /// Excess noise can indicate that this is not a legitimate event.
-        /// This method counts the bins and frames containing above threshold activity (decibel value) in the buffer zone below the events.
-        /// </summary>
-        /// <param name="events">A list of spectral events.</param>
-        /// <param name="spectrogram">The decibel spectrogram in which the events occurs.</param>
-        /// <param name="lowerHertzBuffer">The band width of the required lower buffer. 100-200Hz is often appropriate.</param>
-        /// <param name="decibelBuffer">Minimum required decibel difference between event activity and neighbourhood activity.</param>
-        /// <returns>A list of filtered events.</returns>
-        public static List<EventCommon> FilterEventsOnLowerSidebandActivity(
+        public static List<EventCommon> FilterEventsOnSidebandActivity(
             List<SpectralEvent> events,
             BaseSonogram spectrogram,
             int lowerHertzBuffer,
-            TimeSpan segmentStartOffset,
-            double decibelBuffer)
+            int upperHertzBuffer,
+            double decibelThreshold,
+            TimeSpan segmentStartOffset)
         {
-            if (lowerHertzBuffer == 0)
-            {
-                return null;
-            }
-
             // allow bin gaps below the event.
             int lowerBinGap = 2;
+            int upperBinGap = 2;
 
             var converter = new UnitConverters(
                 segmentStartOffset: segmentStartOffset.TotalSeconds,
@@ -360,77 +316,67 @@ namespace AudioAnalysisTools.Events
                 frameSize: spectrogram.Configuration.WindowSize,
                 frameOverlap: spectrogram.Configuration.WindowOverlap);
 
-            var filteredEvents = new List<EventCommon>();
+            var spectrogramData = spectrogram.Data;
+
+            var filteredEvents = new List<SpectralEvent>();
             foreach (var ev in events)
             {
-                var eventDecibels = EventExtentions.GetAverageDecibelsInEvent(ev, spectrogram.Data, converter);
-                var sidebandThreshold = eventDecibels - decibelBuffer;
+                var avEventDecibels = EventExtentions.GetAverageDecibelsInEvent(ev, spectrogramData, converter);
+                var retainEvent1 = true;
+                var retainEvent2 = true;
 
-                var sidebandMatrix = GetLowerNeighbourhood(ev, spectrogram.Data, lowerHertzBuffer, lowerBinGap, converter);
-
-                var averageRowDecibels = MatrixTools.GetRowAverages(sidebandMatrix);
-                var averageColDecibels = MatrixTools.GetColumnAverages(sidebandMatrix);
-                int noisyRowCount = averageRowDecibels.Count(x => x > sidebandThreshold);
-                int noisyColCount = averageColDecibels.Count(x => x > sidebandThreshold);
-
-                // Require that there be at most one buffer bin and one buffer frame containing excessive acoustic activity.
-                if (noisyRowCount <= 1 && noisyColCount <= 1)
+                if (lowerHertzBuffer > 0)
                 {
-                    // There is reduced acoustic activity in the upper and lower buffer zones. It is likely to be a discrete event.
+                    var lowerSidebandMatrix = GetLowerEventSideband(ev, spectrogramData, lowerHertzBuffer, lowerBinGap, converter);
+                    retainEvent1 = IsSidebandActivityBelowThreshold(
+                        avEventDecibels,
+                        lowerSidebandMatrix,
+                        decibelThreshold);
+                }
+
+                if (upperHertzBuffer > 0)
+                {
+                    var upperSidebandMatrix = GetUpperEventSideband(ev, spectrogramData, upperHertzBuffer, upperBinGap, converter);
+                    retainEvent2 = IsSidebandActivityBelowThreshold(
+                        avEventDecibels,
+                        upperSidebandMatrix,
+                        decibelThreshold);
+                }
+
+                if (retainEvent1 && retainEvent2)
+                {
+                    // The acoustic activity in event sidebands is below the threshold. It is likely to be a discrete event.
                     filteredEvents.Add(ev);
                 }
             }
 
-            return filteredEvents;
+            var eventsCommon = filteredEvents.Cast<EventCommon>().ToList();
+            return eventsCommon;
         }
 
-        /// <summary>
-        /// Removes events from a list of events that contain excessive noise in the upper event side band.
-        /// Excess noise can indicate that this is not a legitimate event.
-        /// This method counts the bins and frames containing above threshold activity (decibel value) in the buffer zone above the events.
-        /// </summary>
-        /// <param name="events">A list of spectral events.</param>
-        /// <param name="spectrogram">The decibel spectrogram in which the events occurs.</param>
-        /// <param name="upperHertzBuffer">The band width of the required upper buffer. 300-500Hz is often appropriate.</param>
-        /// <param name="decibelBuffer">Minimum required decibel difference between event activity and neighbourhood activity.</param>
-        /// <returns>A list of filtered events.</returns>
-        public static List<EventCommon> FilterEventsOnUpperSidebandActivity(
-            List<SpectralEvent> events,
-            BaseSonogram spectrogram,
-            int upperHertzBuffer,
-            TimeSpan segmentStartOffset,
-            double decibelBuffer)
+        public static bool IsSidebandActivityBelowThreshold(
+            double avEventDecibels,
+            double[,] sidebandMatrix,
+            double sidebandThreshold)
         {
-            // allow bin gaps above the event.
-            int upperBinGap = 3;
+            var averageRowDecibels = MatrixTools.GetRowAverages(sidebandMatrix);
+            var averageColDecibels = MatrixTools.GetColumnAverages(sidebandMatrix);
+            var averageMatrixDecibels = averageColDecibels.Average();
 
-            var converter = new UnitConverters(
-                segmentStartOffset: segmentStartOffset.TotalSeconds,
-                sampleRate: spectrogram.SampleRate,
-                frameSize: spectrogram.Configuration.WindowSize,
-                frameOverlap: spectrogram.Configuration.WindowOverlap);
-
-            var filteredEvents = new List<EventCommon>();
-            foreach (var ev in events)
+            // Is the average acoustic activity in the sideband below the user set threshold?
+            bool avBgBelowThreshold = averageMatrixDecibels < sidebandThreshold;
+            if (!avBgBelowThreshold)
             {
-                var eventDecibels = EventExtentions.GetAverageDecibelsInEvent(ev, spectrogram.Data, converter);
-                var sidebandThreshold = eventDecibels - decibelBuffer;
-
-                var sidebandMatrix = GetUpperNeighbourhood(ev, spectrogram.Data, upperHertzBuffer, upperBinGap, converter);
-                var averageRowDecibels = MatrixTools.GetRowAverages(sidebandMatrix);
-                var averageColDecibels = MatrixTools.GetColumnAverages(sidebandMatrix);
-                int noisyRowCount = averageRowDecibels.Count(x => x > sidebandThreshold);
-                int noisyColCount = averageColDecibels.Count(x => x > sidebandThreshold);
-
-                // Require that there be at most one buffer bin and one buffer frame containing excessive acoustic activity.
-                if (noisyRowCount <= 1 && noisyColCount <= 1)
-                {
-                    // There is reduced acoustic activity in the upper and lower buffer zones. It is likely to be a discrete event.
-                    filteredEvents.Add(ev);
-                }
+                return false;
             }
 
-            return filteredEvents;
+            // Also need to cover possibility that there is much acoustic activity concentrated in one freq bin or time frame.
+            // Therefore, also require that there be at most one sideband bin and one sideband frame containing acoustic activity
+            // that is greater than the average in the event.
+            int noisyRowCount = averageRowDecibels.Count(x => x > avEventDecibels);
+            int noisyColCount = averageColDecibels.Count(x => x > avEventDecibels);
+            bool doRetain = noisyRowCount <= 1 && noisyColCount <= 1;
+            return doRetain;
         }
 
         /// <summary>
@@ -440,8 +386,8 @@ namespace AudioAnalysisTools.Events
         /// <param name="spectrogramData">The spectrogram data as matrix with origin top/left.</param>
         /// <param name="bufferHertz">THe bandwidth of the buffer zone in Hertz.</param>
         /// <param name="converter">A converter to convert seconds/Hertz to frames/bins.</param>
-        /// <returns>The neighbourhood as a matrix.</returns>
-        public static double[,] GetLowerNeighbourhood(SpectralEvent ev, double[,] spectrogramData, double bufferHertz, int gap, UnitConverters converter)
+        /// <returns>The sideband as a matrix.</returns>
+        public static double[,] GetLowerEventSideband(SpectralEvent ev, double[,] spectrogramData, double bufferHertz, int gap, UnitConverters converter)
         {
             var bufferBins = (int)Math.Round(bufferHertz / converter.HertzPerFreqBin);
             var topBufferBin = converter.GetFreqBinFromHertz(ev.LowFrequencyHertz) - gap;
@@ -463,7 +409,7 @@ namespace AudioAnalysisTools.Events
         /// <param name="bufferHertz">The bandwidth of the buffer zone in Hertz.</param>
         /// <param name="converter">A converter to convert seconds/Hertz to frames/bins.</param>
         /// <returns>The neighbourhood as a matrix.</returns>
-        public static double[,] GetUpperNeighbourhood(SpectralEvent ev, double[,] spectrogramData, double bufferHertz, int gap, UnitConverters converter)
+        public static double[,] GetUpperEventSideband(SpectralEvent ev, double[,] spectrogramData, double bufferHertz, int gap, UnitConverters converter)
         {
             var bufferBins = (int)Math.Round(bufferHertz / converter.HertzPerFreqBin);
             var bottomBufferBin = converter.GetFreqBinFromHertz(ev.HighFrequencyHertz) + gap;
@@ -474,99 +420,6 @@ namespace AudioAnalysisTools.Events
             frameEnd = Math.Min(dataLength - 1, frameEnd);
             var subMatrix = MatrixTools.Submatrix<double>(spectrogramData, frameStart, bottomBufferBin, frameEnd, topBufferBin);
             return subMatrix;
-        }
-
-        /// <summary>
-        /// Gets the upper and lower buffer zones (above and below an event).
-        /// Returns them as one combined matrix.
-        /// This makes it easier to determine the presense of acoustic events (especially wind) in the buffer zones.
-        /// </summary>
-        /// <param name="ev">The event.</param>
-        /// <param name="spectrogramData">The spectrogram data as matrix with origin top/left.</param>
-        /// <param name="lowerHertzBuffer">The bandwidth of the lower buffer zone in Hertz.</param>
-        /// <param name="lowerBinGap">Number of freq bins left as gap below event.</param>
-        /// <param name="upperHertzBuffer">The bandwidth of the upper buffer zone in Hertz.</param>
-        /// <param name="upperBinGap">Number of freq bins left as gap above event.</param>
-        /// <param name="converter">A converter to convert seconds/Hertz to frames/bins.</param>
-        /// <returns>A single matrix.</returns>
-        public static double[,] GetNeighbourhoodAsOneMatrix(
-            SpectralEvent ev,
-            double[,] spectrogramData,
-            double lowerHertzBuffer,
-            int lowerBinGap,
-            double upperHertzBuffer,
-            int upperBinGap,
-            UnitConverters converter)
-        {
-            double[,] subMatrix1 = null;
-            if (upperHertzBuffer > 0)
-            {
-                subMatrix1 = GetUpperNeighbourhood(ev, spectrogramData, upperHertzBuffer, upperBinGap, converter);
-            }
-
-            double[,] subMatrix2 = null;
-            if (lowerHertzBuffer > 0)
-            {
-                subMatrix2 = GetLowerNeighbourhood(ev, spectrogramData, lowerHertzBuffer, lowerBinGap, converter);
-            }
-
-            if (subMatrix1 == null && subMatrix2 == null)
-            {
-                return null;
-            }
-
-            if (subMatrix1 == null)
-            {
-                return subMatrix2;
-            }
-
-            if (subMatrix2 == null)
-            {
-                return subMatrix1;
-            }
-
-            var matrix = MatrixTools.ConcatenateTwoMatrices(subMatrix1, subMatrix2);
-            return matrix;
-        }
-
-        /// <summary>
-        /// Calculates the average amplitude in the frequency bins just above the event.
-        /// If it contains above threshold acoustic content, this is unlikely to be a discrete event.
-        /// NOTE: This method takes a simple average of log values. This is good enough for the purpose, although not mathematically correct.
-        ///       Logs are computationally expensive.
-        /// </summary>
-        /// <param name="ev">The event.</param>
-        /// <param name="spectrogramData">The spectrogram data as matrix with origin top/left.</param>
-        /// <param name="bufferHertz">THe bandwidth of the buffer zone in Hertz.</param>
-        /// <param name="binGap">Number of freq bins as gap between event and buffer zone.</param>
-        /// <param name="converter">A converter to convert seconds/Hertz to frames/bins.</param>
-        /// <returns>Unweighted average of the spectrogram amplitude in buffer band above the event.</returns>
-        public static double GetAverageAmplitudeInUpperNeighbourhood(SpectralEvent ev, double[,] spectrogramData, double bufferHertz, int binGap, UnitConverters converter)
-        {
-            var subMatrix = GetUpperNeighbourhood(ev, spectrogramData, bufferHertz, binGap, converter);
-            var averageRowDecibels = MatrixTools.GetRowAverages(subMatrix);
-            var av = averageRowDecibels.Average();
-            return av;
-        }
-
-        /// <summary>
-        /// Calculates the average amplitude in the frequency bins just below the event.
-        /// If it contains above threshold acoustic content, this is unlikely to be a discrete event.
-        /// NOTE: This method takes a simple average of log values. This is good enough for the purpose, although not mathematically correct.
-        ///       Logs are computationally expensive.
-        /// </summary>
-        /// <param name="ev">The event.</param>
-        /// <param name="spectrogramData">The spectrogram data as matrix with origin top/left.</param>
-        /// <param name="bufferHertz">The bandwidth of the buffer zone in bins.</param>
-        /// <param name="binGap">Number of freq bins as gap between event and buffer zone.</param>
-        /// <param name="converter">A converter to convert seconds/Hertz to frames/bins.</param>
-        /// <returns>Unweighted average of the spectrogram amplitude in buffer band below the event.</returns>
-        public static double GetAverageAmplitudeInLowerNeighbourhood(SpectralEvent ev, double[,] spectrogramData, double bufferHertz, int binGap, UnitConverters converter)
-        {
-            var subMatrix = GetLowerNeighbourhood(ev, spectrogramData, bufferHertz, binGap, converter);
-            var averageRowDecibels = MatrixTools.GetRowAverages(subMatrix);
-            var av = averageRowDecibels.Average();
-            return av;
         }
     }
 }
