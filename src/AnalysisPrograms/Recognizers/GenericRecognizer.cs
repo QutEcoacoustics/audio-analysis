@@ -16,7 +16,6 @@ namespace AnalysisPrograms.Recognizers
     using AudioAnalysisTools;
     using AudioAnalysisTools.DSP;
     using AudioAnalysisTools.Events;
-    using AudioAnalysisTools.Events.Tracks;
     using AudioAnalysisTools.Events.Types;
     using AudioAnalysisTools.Indices;
     using AudioAnalysisTools.StandardSpectrograms;
@@ -34,7 +33,7 @@ namespace AnalysisPrograms.Recognizers
     {
         private static readonly ILog Log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
-        private bool combineOverlappedEvents = false;
+        private readonly bool combineOverlappedEvents = false;
 
         /// <inheritdoc />
         public override string Author => "Ecosounds";
@@ -358,31 +357,15 @@ namespace AnalysisPrograms.Recognizers
             var sidebandActivity = postprocessingConfig.SidebandActivity;
             if (sidebandActivity != null)
             {
-                if (sidebandActivity.LowerHertzBuffer > 0)
-                {
-                    var spectralEvents2 = allResults.NewEvents.Cast<SpectralEvent>().ToList();
-                    allResults.NewEvents = EventFilters.FilterEventsOnLowerSidebandActivity(
-                        spectralEvents2,
-                        allResults.Sonogram,
-                        sidebandActivity.LowerHertzBuffer,
-                        segmentStartOffset,
-                        sidebandActivity.DecibelBuffer);
-
-                    Log.Debug($"Event count after filtering on acoustic activity in lower sideband = {allResults.NewEvents.Count}");
-                }
-
-                if (sidebandActivity.UpperHertzBuffer > 0)
-                {
-                    var spectralEvents3 = allResults.NewEvents.Cast<SpectralEvent>().ToList();
-                    allResults.NewEvents = EventFilters.FilterEventsOnUpperSidebandActivity(
-                        spectralEvents3,
-                        allResults.Sonogram,
-                        sidebandActivity.UpperHertzBuffer,
-                        segmentStartOffset,
-                        sidebandActivity.DecibelBuffer);
-
-                    Log.Debug($"Event count after filtering on acoustic activity in upper sideband = {allResults.NewEvents.Count}");
-                }
+                var spectralEvents2 = allResults.NewEvents.Cast<SpectralEvent>().ToList();
+                allResults.NewEvents = EventFilters.FilterEventsOnSidebandActivity(
+                    spectralEvents2,
+                    allResults.Sonogram,
+                    sidebandActivity.LowerHertzBuffer,
+                    sidebandActivity.UpperHertzBuffer,
+                    sidebandActivity.DecibelBuffer,
+                    segmentStartOffset);
+                Log.Debug($"Event count after filtering on acoustic activity in sidebands = {allResults.NewEvents.Count}");
             }
 
             // Write out the events to log.
