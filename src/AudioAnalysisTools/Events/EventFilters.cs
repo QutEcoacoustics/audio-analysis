@@ -300,6 +300,7 @@ namespace AudioAnalysisTools.Events
         /// <returns>A list of filtered events.</returns>
         public static List<EventCommon> FilterEventsOnSidebandActivity(
             List<SpectralEvent> events,
+            double analysisThreshold,
             BaseSonogram spectrogram,
             int lowerHertzBuffer,
             int upperHertzBuffer,
@@ -330,6 +331,7 @@ namespace AudioAnalysisTools.Events
                     var lowerSidebandMatrix = GetLowerEventSideband(ev, spectrogramData, lowerHertzBuffer, lowerBinGap, converter);
                     retainEvent1 = IsSidebandActivityBelowThreshold(
                         avEventDecibels,
+                        analysisThreshold,
                         lowerSidebandMatrix,
                         decibelThreshold);
                 }
@@ -339,6 +341,7 @@ namespace AudioAnalysisTools.Events
                     var upperSidebandMatrix = GetUpperEventSideband(ev, spectrogramData, upperHertzBuffer, upperBinGap, converter);
                     retainEvent2 = IsSidebandActivityBelowThreshold(
                         avEventDecibels,
+                        analysisThreshold,
                         upperSidebandMatrix,
                         decibelThreshold);
                 }
@@ -356,6 +359,7 @@ namespace AudioAnalysisTools.Events
 
         public static bool IsSidebandActivityBelowThreshold(
             double avEventDecibels,
+            double analysisThreshold,
             double[,] sidebandMatrix,
             double sidebandThreshold)
         {
@@ -364,6 +368,7 @@ namespace AudioAnalysisTools.Events
             var averageMatrixDecibels = averageColDecibels.Average();
 
             // Is the average acoustic activity in the sideband below the user set threshold?
+            //bool avBgBelowThreshold = averageMatrixDecibels < analysisThreshold;
             bool avBgBelowThreshold = averageMatrixDecibels < sidebandThreshold;
             if (!avBgBelowThreshold)
             {
