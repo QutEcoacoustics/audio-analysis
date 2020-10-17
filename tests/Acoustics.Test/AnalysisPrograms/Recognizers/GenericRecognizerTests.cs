@@ -21,6 +21,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
     using global::AudioAnalysisTools.WavTools;
     using global::TowseyLibrary;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using static global::AudioAnalysisTools.Events.Types.EventPostProcessing;
 
     [TestClass]
     public class GenericRecognizerTests : OutputDirectoryTest
@@ -107,12 +108,12 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                         }
                     },
                 },
-                PostProcessing = new GenericRecognizer.PostProcessingConfig()
+                PostProcessing = new PostProcessingConfig()
                 {
                     CombineOverlappingEvents = false,
 
                     // filter on bandwidth
-                    Bandwidth = new GenericRecognizer.BandwidthConfig()
+                    Bandwidth = new BandwidthConfig()
                     {
                         ExpectedBandwidth = 2400,
                         BandwidthStandardDeviation = 10,
@@ -120,7 +121,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
 
                     // filter on acousstic activity in sidebands.
                     // zero indicates no filtering.
-                    SidebandActivity = new GenericRecognizer.SidebandConfig()
+                    SidebandActivity = new SidebandConfig()
                     {
                         UpperHertzBuffer = 0,
                         LowerHertzBuffer = 0,
@@ -171,12 +172,12 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                         }
                     },
                 },
-                PostProcessing = new GenericRecognizer.PostProcessingConfig()
+                PostProcessing = new PostProcessingConfig()
                 {
                     CombineOverlappingEvents = false,
 
                     // filter on bandwidth
-                    Bandwidth = new GenericRecognizer.BandwidthConfig()
+                    Bandwidth = new BandwidthConfig()
                     {
                         ExpectedBandwidth = 350,
                         BandwidthStandardDeviation = 20,
@@ -184,7 +185,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
 
                     // filter on acousstic activity in sidebands.
                     // zero indicates no filtering.
-                    SidebandActivity = new GenericRecognizer.SidebandConfig()
+                    SidebandActivity = new SidebandConfig()
                     {
                         UpperHertzBuffer = 0,
                         LowerHertzBuffer = 0,
@@ -233,12 +234,12 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                         }
                     },
                 },
-                PostProcessing = new GenericRecognizer.PostProcessingConfig()
+                PostProcessing = new PostProcessingConfig()
                 {
                     CombineOverlappingEvents = false,
 
                     // filter on bandwidth
-                    Bandwidth = new GenericRecognizer.BandwidthConfig()
+                    Bandwidth = new BandwidthConfig()
                     {
                         ExpectedBandwidth = 90,
                         BandwidthStandardDeviation = 10,
@@ -246,7 +247,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
 
                     // filter on acousstic activity in sidebands.
                     // zero indicates no filtering.
-                    SidebandActivity = new GenericRecognizer.SidebandConfig()
+                    SidebandActivity = new SidebandConfig()
                     {
                         UpperHertzBuffer = 0,
                         LowerHertzBuffer = 0,
@@ -379,6 +380,8 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
         public void TestOnebinTrackAlgorithm()
         {
             // Set up the recognizer parameters.
+            double? decibelThreshold = 2.0;
+
             var parameters = new OnebinTrackParameters()
             {
                 MinHertz = 500,
@@ -418,6 +421,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             var (spectralEvents, plotList) = OnebinTrackAlgorithm.GetOnebinTracks(
                 spectrogram,
                 parameters,
+                decibelThreshold,
                 segmentStartOffset,
                 "TestProfile");
 
@@ -980,12 +984,12 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                         }
                     },
                 },
-                PostProcessing = new GenericRecognizer.PostProcessingConfig()
+                PostProcessing = new PostProcessingConfig()
                 {
                     CombineOverlappingEvents = false,
 
                     // filter on bandwidth
-                    Bandwidth = new GenericRecognizer.BandwidthConfig()
+                    Bandwidth = new BandwidthConfig()
                     {
                         ExpectedBandwidth = 3000,
                         BandwidthStandardDeviation = 1000,
@@ -993,7 +997,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
 
                     // filter on acousstic activity in sidebands.
                     // zero indicates no filtering.
-                    SidebandActivity = new GenericRecognizer.SidebandConfig()
+                    SidebandActivity = new SidebandConfig()
                     {
                         UpperHertzBuffer = 0,
                         LowerHertzBuffer = 0,
@@ -1070,12 +1074,12 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                         }
                     },
                 },
-                PostProcessing = new GenericRecognizer.PostProcessingConfig()
+                PostProcessing = new PostProcessingConfig()
                 {
                     CombineOverlappingEvents = false,
 
                     // filter on bandwidth
-                    Bandwidth = new GenericRecognizer.BandwidthConfig()
+                    Bandwidth = new BandwidthConfig()
                     {
                         ExpectedBandwidth = 3000,
                         BandwidthStandardDeviation = 1000,
@@ -1083,7 +1087,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
 
                     // filter on acousstic activity in sidebands.
                     // zero indicates no filtering.
-                    SidebandActivity = new GenericRecognizer.SidebandConfig()
+                    SidebandActivity = new SidebandConfig()
                     {
                         UpperHertzBuffer = 0,
                         LowerHertzBuffer = 0,
