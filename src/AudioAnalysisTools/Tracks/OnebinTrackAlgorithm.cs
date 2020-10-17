@@ -20,29 +20,26 @@ namespace AudioAnalysisTools.Tracks
         public static (List<EventCommon> Events, List<Plot> DecibelPlots) GetOnebinTracks(
             SpectrogramStandard spectrogram,
             OnebinTrackParameters parameters,
+            double? decibelThreshold,
             TimeSpan segmentStartOffset,
             string profileName)
         {
-            var decibelThresholds = parameters.DecibelThresholds;
             var spectralEvents = new List<EventCommon>();
             var plots = new List<Plot>();
 
-            foreach (var threshold in decibelThresholds)
-            {
-                double[] decibelArray;
-                List<EventCommon> events;
+            double[] decibelArray;
+            List<EventCommon> events;
 
-                (events, decibelArray) = GetOnebinTracks(
-                spectrogram,
-                parameters,
-                segmentStartOffset,
-                threshold.Value);
+            (events, decibelArray) = GetOnebinTracks(
+            spectrogram,
+            parameters,
+            segmentStartOffset,
+            decibelThreshold.Value);
 
-                spectralEvents.AddRange(events);
+            spectralEvents.AddRange(events);
 
-                var plot = Plot.PreparePlot(decibelArray, $"{profileName} (Whistles:{threshold.Value:F0}dB)", threshold.Value);
-                plots.Add(plot);
-            }
+            var plot = Plot.PreparePlot(decibelArray, $"{profileName} (Whistles:{decibelThreshold.Value:F0}dB)", decibelThreshold.Value);
+            plots.Add(plot);
 
             return (spectralEvents, plots);
         }
