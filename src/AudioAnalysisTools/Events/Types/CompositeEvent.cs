@@ -343,6 +343,64 @@ namespace AudioAnalysisTools.Events.Types
             return null;
         }
 
+        /// <summary>
+        /// Removes from a list of events, those events that are enclosed by another event in the list.
+        /// Returns a reduced list.
+        /// </summary>
+        public static List<EventCommon> RemoveEnclosedEvents(List<EventCommon> events)
+        {
+            if (events.Count < 2)
+            {
+                return events.Cast<EventCommon>().ToList();
+            }
+
+            for (int i = events.Count - 1; i >= 0; i--)
+            {
+                for (int j = i - 1; j >= 0; j--)
+                {
+                    var a = events[i] as SpectralEvent;
+                    var b = events[j] as SpectralEvent;
+
+                    (SpectralEvent evAi, SpectralEvent evBj) = EnclosedEvents(a, b);
+
+                    if (evAi != null && evBj == null)
+                    {
+                        events[j] = evAi;
+                        events.RemoveAt(i);
+                        break;
+                    }
+                    else
+                    if (evAi == null && evBj != null)
+                    {
+                        events[j] = evBj;
+                        events.RemoveAt(i);
+                        break;
+                    }
+                }
+            }
+
+            return events.Cast<EventCommon>().ToList();
+        }
+
+        public static (SpectralEvent EvAi, SpectralEvent EvBj) EnclosedEvents(SpectralEvent a, SpectralEvent b)
+        {
+            bool eventAEnclosedInTime = a.EventStartSeconds >= b.EventStartSeconds && a.EventEndSeconds <= b.EventEndSeconds;
+            bool eventAEnclosedInFreq = a.LowFrequencyHertz >= b.LowFrequencyHertz && a.HighFrequencyHertz <= b.HighFrequencyHertz;
+            if (eventAEnclosedInTime && eventAEnclosedInTime)
+            {
+                return (null, b);
+            }
+
+            bool eventBEnclosedInTime = a.EventStartSeconds <= b.EventStartSeconds && a.EventEndSeconds >= b.EventEndSeconds;
+            bool eventBEnclosedInFreq = a.LowFrequencyHertz <= b.LowFrequencyHertz && a.HighFrequencyHertz >= b.HighFrequencyHertz;
+            if (eventAEnclosedInTime && eventAEnclosedInTime)
+            {
+                return (a, null);
+            }
+
+            return (a, b);
+        }
+
         /*
         /// <summary>
         /// This method not currently called but is POTENTIALLY USEFUL.
