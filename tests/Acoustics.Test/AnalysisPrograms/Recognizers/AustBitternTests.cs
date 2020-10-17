@@ -22,8 +22,8 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
         /// <summary>
         /// The canonical recording used for this recognizer is a 30 second recording made by Liz Znidersic at Medeas Cove, St Helens, 2016-12-17.
         /// </summary>
-        //private static readonly FileInfo TestAsset = PathHelper.ResolveAsset("Recordings", "medeas_cove_2-2_1831_471228_20161217_232352_30_0.wav");
-        private static readonly FileInfo TestAsset = new FileInfo(@"C:\Ecoacoustics\WavFiles\TestNoiseRecordings\Cotton_BBN1_20170406_202404_Truck.wav");
+        private static readonly FileInfo TestAsset = PathHelper.ResolveAsset("Recordings", "medeas_cove_2-2_1831_471228_20161217_232352_30_0.wav");
+        //private static readonly FileInfo TestAsset = new FileInfo(@"C:\Ecoacoustics\WavFiles\TestNoiseRecordings\West_Knoll_St_Bees_WindRain_20080917-133000.wav");
         //private static readonly FileInfo ConfigFile = PathHelper.ResolveConfigFile("RecognizerConfigFiles", "Towsey.BotaurusPoiciloptilus.yml");
         private static readonly FileInfo ConfigFile = PathHelper.ResolveConfigFile(@"C:\Ecoacoustics\ConfigFiles\Towsey.BotaurusPoiciloptilus.yml");
         private static readonly BotaurusPoiciloptilus Recognizer = new BotaurusPoiciloptilus();
@@ -68,14 +68,14 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
 
             var onlyEvent = (CompositeEvent)events[0];
 
-            //note this event contains only three syllables but 7 events because have used two decibel thresholds.
-            Assert.AreEqual(12, onlyEvent.ComponentCount);
+            //note this event contains four syllables and one echo, therefore five components.
+            Assert.AreEqual(5, onlyEvent.ComponentCount);
             Assert.AreEqual(5.12, onlyEvent.EventStartSeconds);
             Assert.AreEqual(12.256, onlyEvent.EventEndSeconds);
             Assert.AreEqual(105, onlyEvent.LowFrequencyHertz);
             Assert.AreEqual(180, onlyEvent.HighFrequencyHertz);
-            Assert.AreEqual(28.078038296020, onlyEvent.Score, TestHelper.AllowedDelta);
-            Assert.AreEqual(0.024466803702, onlyEvent.ScoreNormalized, TestHelper.AllowedDelta);
+            Assert.AreEqual(21.716400254142027, onlyEvent.Score, TestHelper.AllowedDelta);
+            Assert.AreEqual(0.947014602243972, onlyEvent.ScoreNormalized, TestHelper.AllowedDelta);
         }
     }
 }
