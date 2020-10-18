@@ -8,6 +8,74 @@
 
 <!--generated-content-insert-here-->
 
+## Ecoacoustics Audio Analysis Software v20.10.1.58 2020-10-18
+
+Version v20.10.1.58
+
+
+
+### Details
+
+[Compare v20.10.0.3...v20.10.1.58](https://github.com/QutBioacoustics/audio-analysis/compare/v20.10.0.3...v20.10.1.58)
+
+- cc619074 dependabot-preview[bot] - Bump CsvHelper from 15.0.6 to 15.0.8
+- 224f4e5f dependabot-preview[bot] - Bump System.IO.Abstractions from 12.2.5 to 12.2.7
+- 724aee85 dependabot-preview[bot] - Bump Microsoft.Extensions.Configuration from 3.1.8 to 3.1.9
+- 466757e6 dependabot-preview[bot] - Bump Microsoft.Extensions.Configuration.Json from 3.1.8 to 3.1.9
+- 53d4cf66 dependabot-preview[bot] - Bump System.IO.Abstractions from 12.2.1 to 12.2.5
+- 625ed67e towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Update two config files
+- ea1f1dbe towsey - Improve result on Cisticola recognizer test. Now get 19 TP detections
+- 282d5a33 towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Fix Boobook Owl test
+- 28c2eda0 towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Fix unit test for Cisticola
+- 2b417829 towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Add new filter method to generic filters
+- 53e9c4dc towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Fix unit test for Australasian Pipit.
+- dee47b7a towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Revise unit tests for the Bittern
+- 773181de towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Change the filter for syllable sequences
+- 55ddfad3 towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Update GenericRecognizer.cs
+- c4b01133 towsey - Update NormalDist.cs
+- ea810744 towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Update Towsey.BotaurusPoiciloptilus.yml
+- 5f0ddbe5 towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Update NoiseRemoval_Briggs.cs
+- bbdedfd8 towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Update GenericRecognizerTests.cs
+- ff97af89 towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Change yml file to be consistent with new post-processing hierarchy.
+- 751d9e92 towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Set up PostProcessing as a top level key in generic recognizers
+- 5acab67a towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Change method names to follow accepted convention
+- e45a575f towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Refactor methods for recognition of the main generic acoustic events.
+- ee3707f3 towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Refactor code for the recognition of blob events
+- cbab908c towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Fix tests for powerfull owl
+- 9df9bf5c towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Update Plot.cs
+- 5958a596 towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Enable Oscillation recognizer to utilize an array of decibel thresholds
+- 24cdc16b towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Enable Harmonic recognizer to utilize an array of decibel trhsholds.
+- cc951abb towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Create a new class to contain methods that filter lists of acoustic Events
+- 55fda898 towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Update GenericRecognizerTests.cs
+- 5fb425d7 towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Change Track Algorithm classes to accept an array of decibel thresholds
+- 676725d9 towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Update CommonParameters.cs
+- 4664320e towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Update Plot.cs
+- 9c0abc70 towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Shift method PreparePlot()
+- 009ce06f towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Fixing broken Unit tests
+- 2a75cc60 towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Fix unit test for Powerful owl
+- 0a05f78c towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Update NinoxStrenua.cs
+- da87a2a1 towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Update ForwardTrackAlgorithm.cs
+- abc0199d towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Update GenericRecognizer.cs
+- 9575f90f towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Update ForwardTrackAlgorithm.cs
+- c3bfb483 towsey - Adjust parameters for powerful Owl Test
+- c78e0186 towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Rework Powerful Owl recognizer
+- 851aebeb towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Revise and refactor methods to do with Local Contrast Normalisation
+- c09d8c4d towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Try new test file for Powerful Owl
+- 5db186e7 towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Small changes
+- efde855f towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Change config file to catch wider range of recordings.
+- 7d0f6bfb towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Update EventExtentions.cs
+- d8ec8a96 towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Optimise parameter values for Australasian Bittern.
+- b8c4d5ba towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Small changes to config files
+- c0e20822 towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Refactored code for the Powerful Owl
+- aef31d3f towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Refactored code for the Boobook owl
+- def462ac towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Refactored code for the Australasian Bittern
+- 87ae78c4 towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Create a new class SyllableSequenceConfig
+- 4c674bfb towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Write methods to calculate the periodicity of syllable sequence
+- 0070fb03 towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Update NinoxStrenua.cs
+- 0bcdedef towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Update PowerfulOwlTests.cs
+- 0560c616 towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Rearrange the post-processing steps.
+- 2ee86d86 towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Create two new generic post-processing steps
+- 6ec55c69 towsey - ([#370](https://github.com/QutEcoacoustics/audio-analysis/issues/370)) Set up recognizer for Powerful Owl
 ## Ecoacoustics Audio Analysis Software v20.10.0.3 2020-10-11
 
 Version v20.10.0.3
@@ -1097,6 +1165,7 @@ Version v19.2.0.90
 - 512f8b4 Mahnoosh Kholghi - generating features for a set of recordings
 - 9b7a178 Mahnoosh Kholghi - fixing the error in directory
 - 3fdb19c Mahnoosh Kholghi - Adding a method for arbitrary freq bins
+
 
 
 
