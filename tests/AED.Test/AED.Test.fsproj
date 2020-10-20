@@ -24,7 +24,7 @@
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="System.IO.FileSystem" Version="4.3.0" />
-        <PackageReference Include="FSharp.Core" Version="4.7.2" />
+        <PackageReference Include="FSharp.Core" Version="5.0.0" />
         <PackageReference Include="FsCheck" Version="3.0.0-alpha4" />
         <PackageReference Include="FsCheck.Xunit" Version="3.0.0-alpha4" />
         <PackageReference Include="FsUnit.xUnit" Version="4.0.1" />
