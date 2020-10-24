@@ -26,29 +26,26 @@ namespace AudioAnalysisTools.Tracks
         public static (List<EventCommon> Events, List<Plot> DecibelPlots) GetUpwardTracks(
             SpectrogramStandard spectrogram,
             UpwardTrackParameters parameters,
+            double? decibelThreshold,
             TimeSpan segmentStartOffset,
             string profileName)
         {
-            var decibelThresholds = parameters.DecibelThresholds;
             var spectralEvents = new List<EventCommon>();
             var plots = new List<Plot>();
 
-            foreach (var threshold in decibelThresholds)
-            {
-                double[] decibelArray;
-                List<EventCommon> events;
+            double[] decibelArray;
+            List<EventCommon> events;
 
-                (events, decibelArray) = GetUpwardTracks(
-                spectrogram,
-                parameters,
-                segmentStartOffset,
-                threshold.Value);
+            (events, decibelArray) = GetUpwardTracks(
+            spectrogram,
+            parameters,
+            segmentStartOffset,
+            decibelThreshold.Value);
 
-                spectralEvents.AddRange(events);
+            spectralEvents.AddRange(events);
 
-                var plot = Plot.PreparePlot(decibelArray, $"{profileName} (Whips:{threshold.Value:F0}dB)", threshold.Value);
-                plots.Add(plot);
-            }
+            var plot = Plot.PreparePlot(decibelArray, $"{profileName} (Whips:{decibelThreshold.Value:F0}dB)", decibelThreshold.Value);
+            plots.Add(plot);
 
             return (spectralEvents, plots);
         }

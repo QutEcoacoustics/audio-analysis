@@ -26,40 +26,34 @@ namespace AudioAnalysisTools
         public static (List<EventCommon> SpectralEvents, List<Plot> DecibelPlots) GetComponentsWithOscillations(
             SpectrogramStandard spectrogram,
             OscillationParameters op,
+            double? decibelThreshold,
             TimeSpan segmentStartOffset,
             string profileName)
         {
-            // get the array of decibel thresholds
-            var thresholdArray = op.DecibelThresholds;
-
             var spectralEvents = new List<EventCommon>();
             var plots = new List<Plot>();
 
-            // loop through the array of decibel thresholds
-            foreach (var threshold in thresholdArray)
-            {
-                Oscillations2012.Execute(
-                    spectrogram,
-                    op.MinHertz.Value,
-                    op.MaxHertz.Value,
-                    op.DctDuration,
-                    op.MinOscillationFrequency,
-                    op.MaxOscillationFrequency,
-                    op.DctThreshold,
-                    op.EventThreshold,
-                    op.MinDuration.Value,
-                    op.MaxDuration.Value,
-                    out var scores,
-                    out var oscillationEvents,
-                    out var hits,
-                    segmentStartOffset);
+            Oscillations2012.Execute(
+                spectrogram,
+                op.MinHertz.Value,
+                op.MaxHertz.Value,
+                op.DctDuration,
+                op.MinOscillationFrequency,
+                op.MaxOscillationFrequency,
+                op.DctThreshold,
+                op.EventThreshold,
+                op.MinDuration.Value,
+                op.MaxDuration.Value,
+                out var scores,
+                out var oscillationEvents,
+                out var hits,
+                segmentStartOffset);
 
-                spectralEvents.AddRange(oscillationEvents);
+            spectralEvents.AddRange(oscillationEvents);
 
-                // prepare plot of resultant Harmonics decibel array.
-                var plot = Plot.PreparePlot(scores, $"{profileName} (Oscillations:{threshold:F0}db)", threshold.Value);
-                plots.Add(plot);
-            }
+            // prepare plot of resultant Harmonics decibel array.
+            var plot = Plot.PreparePlot(scores, $"{profileName} (Oscillations:{decibelThreshold:F0}db)", decibelThreshold.Value);
+            plots.Add(plot);
 
             return (spectralEvents, plots);
         }
@@ -82,9 +76,21 @@ namespace AudioAnalysisTools
         {
             int scoreSmoothingWindow = 11; // sets a default that is good for Cane toad but not necessarily for other recognizers
 
-            Execute(sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq, dctThreshold, scoreThreshold,
-                minDuration, maxDuration, scoreSmoothingWindow,
-                out scores, out events, out hits,
+            Execute(
+                sonogram,
+                minHz,
+                maxHz,
+                dctDuration,
+                minOscilFreq,
+                maxOscilFreq,
+                dctThreshold,
+                scoreThreshold,
+                minDuration,
+                maxDuration,
+                scoreSmoothingWindow,
+                out scores,
+                out events,
+                out hits,
                 segmentStartOffset);
         }
 
