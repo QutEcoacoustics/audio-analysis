@@ -38,37 +38,31 @@ namespace AnalysisPrograms.Recognizers.Base
         public static (List<EventCommon> SpectralEvents, List<Plot> DecibelPlots) GetComponentsWithHarmonics(
             SpectrogramStandard spectrogram,
             HarmonicParameters hp,
+            double? decibelThreshold,
             TimeSpan segmentStartOffset,
             string profileName)
         {
-            // get the array of decibel thresholds
-            var thresholdArray = hp.DecibelThresholds;
-
             var spectralEvents = new List<EventCommon>();
             var plots = new List<Plot>();
 
-            // loop through the array of decibel thresholds
-            foreach (var threshold in thresholdArray)
-            {
-                double[] decibelMaxArray;
-                double[] harmonicIntensityScores;
-                (spectralEvents, decibelMaxArray, harmonicIntensityScores) = HarmonicParameters.GetComponentsWithHarmonics(
-                                    spectrogram,
-                                    hp.MinHertz.Value,
-                                    hp.MaxHertz.Value,
-                                    spectrogram.NyquistFrequency,
-                                    threshold.Value,
-                                    hp.DctThreshold.Value,
-                                    hp.MinDuration.Value,
-                                    hp.MaxDuration.Value,
-                                    hp.MinFormantGap.Value,
-                                    hp.MaxFormantGap.Value,
-                                    segmentStartOffset);
+            double[] decibelMaxArray;
+            double[] harmonicIntensityScores;
+            (spectralEvents, decibelMaxArray, harmonicIntensityScores) = HarmonicParameters.GetComponentsWithHarmonics(
+                                spectrogram,
+                                hp.MinHertz.Value,
+                                hp.MaxHertz.Value,
+                                spectrogram.NyquistFrequency,
+                                decibelThreshold.Value,
+                                hp.DctThreshold.Value,
+                                hp.MinDuration.Value,
+                                hp.MaxDuration.Value,
+                                hp.MinFormantGap.Value,
+                                hp.MaxFormantGap.Value,
+                                segmentStartOffset);
 
-                // prepare plot of resultant Harmonics decibel array.
-                var plot = Plot.PreparePlot(decibelMaxArray, $"{profileName} (Harmonics:{threshold:F0}db)", threshold.Value);
-                plots.Add(plot);
-            }
+            // prepare plot of resultant Harmonics decibel array.
+            var plot = Plot.PreparePlot(decibelMaxArray, $"{profileName} (Harmonics:{decibelThreshold:F0}db)", decibelThreshold.Value);
+            plots.Add(plot);
 
             return (spectralEvents, plots);
         }
