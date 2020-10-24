@@ -40,15 +40,14 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
         [TestMethod]
         public void TestConfigSerialization()
         {
-            // set up an array of decibel threhsolds.
-            var thresholdArray = new double?[] { 3, 6, 9 };
-
             var config = new GenericRecognizer.GenericRecognizerConfig()
             {
+                // set up an array of decibel threhsolds.
+                DecibelThresholds = new double?[] { 3, 6, 9 },
                 Profiles = new Dictionary<string, object>()
                 {
                     { "TestAed", new Aed.AedConfiguration() { BandpassMinimum = 12345 } },
-                    { "TestOscillation", new OscillationParameters() { DecibelThresholds = thresholdArray } },
+                    { "TestOscillation", new OscillationParameters() },
                     { "TestBlob", new BlobParameters() { BottomHertzBuffer = 456 } },
                     { "TestWhistle", new OnebinTrackParameters() { TopHertzBuffer = 789 } },
                 },
@@ -92,6 +91,8 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
         {
             var config = new GenericRecognizer.GenericRecognizerConfig()
             {
+                // set up an array of decibel threhsolds.
+                DecibelThresholds = new double?[] { 0.0 },
                 Profiles = new Dictionary<string, object>()
                 {
                     {
@@ -104,7 +105,6 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                             MaxHertz = 7200,
                             BottomHertzBuffer = 1000,
                             TopHertzBuffer = 500,
-                            DecibelThresholds = new double?[] { 0.0 },
                         }
                     },
                 },
@@ -148,6 +148,8 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
         {
             var config = new GenericRecognizer.GenericRecognizerConfig()
             {
+                // set up an array of decibel threhsolds.
+                DecibelThresholds = new double?[] { 0.0 },
                 Profiles = new Dictionary<string, object>()
                 {
                     {
@@ -168,7 +170,6 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                             MinDuration = 4,
                             MaxDuration = 8,
                             EventThreshold = 0.3,
-                            DecibelThresholds = new double?[] { 0.0 },
                         }
                     },
                 },
@@ -213,6 +214,8 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
         {
             var config = new GenericRecognizer.GenericRecognizerConfig()
             {
+                // set up an array of decibel threhsolds.
+                DecibelThresholds = new double?[] { 1.0 },
                 Profiles = new Dictionary<string, object>()
                 {
                     {
@@ -229,7 +232,6 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                             TopHertzBuffer = 0,
                             MinDuration = 4,
                             MaxDuration = 6,
-                            DecibelThresholds = new double?[] { 1.0 },
                             SpeciesName = "NoName",
                         }
                     },
@@ -388,11 +390,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                 MaxHertz = 6000,
                 MinDuration = 0.2,
                 MaxDuration = 1.1,
-                DecibelThresholds = new double?[] { 2.0 },
                 CombinePossibleSyllableSequence = false,
-
-                //SyllableStartDifference = TimeSpan.FromSeconds(0.2),
-                //SyllableHertzGap = 300,
             };
 
             //Set up the virtual recording.
@@ -414,9 +412,6 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             };
 
             var spectrogram = this.CreateArtificialSpectrogramToTestTracksAndHarmonics(sonoConfig);
-
-            //var image1 = SpectrogramTools.GetSonogramPlusCharts(spectrogram, null, null, null);
-            //results.Sonogram.GetImage().Save(this.outputDirectory + "\\debug.png");
 
             var (spectralEvents, plotList) = OnebinTrackAlgorithm.GetOnebinTracks(
                 spectrogram,
@@ -474,19 +469,16 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
         public void TestForwardTrackAlgorithm()
         {
             // Set up the recognizer parameters.
+            double? decibelThreshold = 2.0;
             var parameters = new ForwardTrackParameters()
             {
                 MinHertz = 500,
                 MaxHertz = 6000,
                 MinDuration = 0.2,
                 MaxDuration = 1.1,
-                DecibelThresholds = new double?[] { 2.0 },
                 CombinePossibleHarmonics = false,
                 HarmonicsStartDifference = TimeSpan.FromSeconds(0.2),
                 HarmonicsHertzGap = 200,
-                CombinePossibleSyllableSequence = false,
-                SyllableStartDifference = 0.2,
-                SyllableHertzGap = 300,
             };
 
             //Set up the virtual recording.
@@ -515,6 +507,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             var (spectralEvents, plotList) = ForwardTrackAlgorithm.GetForwardTracks(
                 spectrogram,
                 parameters,
+                decibelThreshold,
                 segmentStartOffset,
                 "TestProfile");
 
@@ -560,13 +553,13 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
         public void TestOneframeTrackAlgorithm()
         {
             // Set up the recognizer parameters.
+            double? decibelThreshold = 2.0;
             var parameters = new OneframeTrackParameters()
             {
                 MinHertz = 6000,
                 MaxHertz = 11000,
                 MinBandwidthHertz = 100,
                 MaxBandwidthHertz = 5000,
-                DecibelThresholds = new double?[] { 2.0 },
             };
 
             //Set up the virtual recording.
@@ -595,6 +588,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             var (spectralEvents, plotList) = OneframeTrackAlgorithm.GetOneFrameTracks(
                 spectrogram,
                 parameters,
+                decibelThreshold,
                 segmentStartOffset,
                 "TestProfile");
 
@@ -643,13 +637,15 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
         public void Test1UpwardsTrackAlgorithm()
         {
             // Set up the recognizer parameters.
+            var decibelThreshold = 2.0;
             var parameters = new UpwardTrackParameters()
             {
                 MinHertz = 6000,
                 MaxHertz = 11000,
                 MinBandwidthHertz = 100,
                 MaxBandwidthHertz = 5000,
-                DecibelThresholds = new double?[] { 2.0 },
+
+                // these params are to detect calls that consist of a rapid sequence of chirps/whips.
                 CombineProximalSimilarEvents = true,
                 SyllableStartDifference = TimeSpan.FromSeconds(0.2),
                 SyllableHertzDifference = 300,
@@ -674,14 +670,12 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
 
             var spectrogram = this.CreateArtificialSpectrogramToTestTracksAndHarmonics(sonoConfig);
 
-            //var image1 = SpectrogramTools.GetSonogramPlusCharts(spectrogram, null, null, null);
-            //results.Sonogram.GetImage().Save(this.outputDirectory + "\\debug.png");
-
             var segmentStartOffset = TimeSpan.Zero;
             var plots = new List<Plot>();
             var (spectralEvents, plotList) = UpwardTrackAlgorithm.GetUpwardTracks(
                 spectrogram,
                 parameters,
+                decibelThreshold,
                 segmentStartOffset,
                 "TestProfile");
 
@@ -729,13 +723,15 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
         public void Test2UpwardsTrackAlgorithm()
         {
             // Set up the recognizer parameters.
+            var decibelThreshold = 2.0;
             var parameters = new UpwardTrackParameters()
             {
                 MinHertz = 500,
                 MaxHertz = 6000,
                 MinBandwidthHertz = 200,
                 MaxBandwidthHertz = 5000,
-                DecibelThresholds = new double?[] { 2.0 },
+
+                // these params are to detect calls that consist of a rapid sequence of chirps/whips.
                 CombineProximalSimilarEvents = false,
                 SyllableStartDifference = TimeSpan.FromSeconds(0.2),
                 SyllableHertzDifference = 300,
@@ -766,6 +762,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             var (spectralEvents, plotList) = UpwardTrackAlgorithm.GetUpwardTracks(
                 spectrogram,
                 parameters,
+                decibelThreshold,
                 segmentStartOffset,
                 "TestProfile");
 
@@ -1016,6 +1013,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
         {
             var config = new GenericRecognizer.GenericRecognizerConfig()
             {
+                DecibelThresholds = new double?[] { 0.0 },
                 Profiles = new Dictionary<string, object>()
                 {
                     {
@@ -1028,7 +1026,6 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                             BgNoiseThreshold = 0.0,
                             BottomHertzBuffer = 1000,
                             TopHertzBuffer = 500,
-                            DecibelThresholds = new double?[] { 0.0 },
                         }
                     },
                     {
@@ -1049,7 +1046,6 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                             MaxDuration = 6,
                             EventThreshold = 0.3,
                             SpeciesName = "DTMF",
-                            DecibelThresholds = new double?[] { 0.0 },
                         }
                     },
                     {
@@ -1070,7 +1066,6 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                             MaxDuration = 6,
                             EventThreshold = 0.3,
                             SpeciesName = "DTMF",
-                            DecibelThresholds = new double?[] { 0.0 },
                         }
                     },
                 },
@@ -1109,8 +1104,8 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             Assert.AreEqual(null, @event.Name);
 
             @event = (SpectralEvent)results.NewEvents[1];
-            Assert.AreEqual(108.1, @event.EventStartSeconds, 0.4);
-            Assert.AreEqual(113.15, @event.EventEndSeconds, 0.5);
+            Assert.AreEqual(107.78, @event.EventStartSeconds, 0.4);
+            Assert.AreEqual(113.57, @event.EventEndSeconds, 0.5);
             Assert.AreEqual(700, @event.LowFrequencyHertz, 0.1);
             Assert.AreEqual(1050, @event.HighFrequencyHertz, 0.1);
             Assert.AreEqual("DTMF", @event.Name);
