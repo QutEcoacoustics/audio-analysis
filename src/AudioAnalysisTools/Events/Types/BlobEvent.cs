@@ -30,46 +30,43 @@ namespace AudioAnalysisTools
         public static (List<EventCommon> Events, List<Plot> DecibelPlots) GetBlobEvents(
             SpectrogramStandard spectrogram,
             BlobParameters bp,
+            double? decibelThreshold,
             TimeSpan segmentStartOffset,
             string profileName)
         {
-            var decibelThresholds = bp.DecibelThresholds;
             var spectralEvents = new List<EventCommon>();
             var plots = new List<Plot>();
 
-            foreach (var threshold in decibelThresholds)
-            {
-                //get the array of intensity values minus intensity in side/buffer bands.
-                //i.e. require silence in side-bands. Otherwise might simply be getting part of a broader band acoustic event.
-                var decibelArray = SNR.CalculateFreqBandAvIntensityMinusBufferIntensity(
-                    spectrogram.Data,
-                    bp.MinHertz.Value,
-                    bp.MaxHertz.Value,
-                    bp.BottomHertzBuffer.Value,
-                    bp.TopHertzBuffer.Value,
-                    spectrogram.NyquistFrequency);
+            //get the array of intensity values minus intensity in side/buffer bands.
+            //i.e. require silence in side-bands. Otherwise might simply be getting part of a broader band acoustic event.
+            var decibelArray = SNR.CalculateFreqBandAvIntensityMinusBufferIntensity(
+                spectrogram.Data,
+                bp.MinHertz.Value,
+                bp.MaxHertz.Value,
+                bp.BottomHertzBuffer.Value,
+                bp.TopHertzBuffer.Value,
+                spectrogram.NyquistFrequency);
 
-                // prepare plot of resultant blob decibel array.
-                var plot = Plot.PreparePlot(decibelArray, $"{profileName} (Blobs:{threshold.Value:F0}dB)", threshold.Value);
-                plots.Add(plot);
+            // prepare plot of resultant blob decibel array.
+            var plot = Plot.PreparePlot(decibelArray, $"{profileName} (Blobs:{decibelThreshold.Value:F0}dB)", decibelThreshold.Value);
+            plots.Add(plot);
 
-                // iii: CONVERT blob decibel SCORES TO ACOUSTIC EVENTS.
-                // Note: This method does NOT do prior smoothing of the dB array.
-                var acEvents = AcousticEvent.GetEventsAroundMaxima(
-                    decibelArray,
-                    segmentStartOffset,
-                    bp.MinHertz.Value,
-                    bp.MaxHertz.Value,
-                    threshold.Value,
-                    TimeSpan.FromSeconds(bp.MinDuration.Value),
-                    TimeSpan.FromSeconds(bp.MaxDuration.Value),
-                    spectrogram.FramesPerSecond,
-                    spectrogram.FBinWidth);
+            // iii: CONVERT blob decibel SCORES TO ACOUSTIC EVENTS.
+            // Note: This method does NOT do prior smoothing of the dB array.
+            var acEvents = AcousticEvent.GetEventsAroundMaxima(
+                decibelArray,
+                segmentStartOffset,
+                bp.MinHertz.Value,
+                bp.MaxHertz.Value,
+                decibelThreshold.Value,
+                TimeSpan.FromSeconds(bp.MinDuration.Value),
+                TimeSpan.FromSeconds(bp.MaxDuration.Value),
+                spectrogram.FramesPerSecond,
+                spectrogram.FBinWidth);
 
-                var events = acEvents.ConvertAcousticEventsToSpectralEvents();
-                spectralEvents.AddRange(events);
-                plots.Add(plot);
-            }
+            var events = acEvents.ConvertAcousticEventsToSpectralEvents();
+            spectralEvents.AddRange(events);
+            plots.Add(plot);
 
             return (spectralEvents, plots);
         }
