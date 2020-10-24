@@ -214,6 +214,7 @@ namespace AnalysisPrograms.Recognizers
                             (spectralEvents, decibelPlots) = BlobEvent.GetBlobEvents(
                                 spectrogram,
                                 bp,
+                                decibelThreshold,
                                 segmentStartOffset,
                                 profileName);
 
@@ -237,6 +238,7 @@ namespace AnalysisPrograms.Recognizers
                             (spectralEvents, decibelPlots) = ForwardTrackAlgorithm.GetForwardTracks(
                                 spectrogram,
                                 tp,
+                                decibelThreshold,
                                 segmentStartOffset,
                                 profileName);
 
@@ -248,6 +250,7 @@ namespace AnalysisPrograms.Recognizers
                             (spectralEvents, decibelPlots) = OneframeTrackAlgorithm.GetOneFrameTracks(
                                 spectrogram,
                                 cp,
+                                decibelThreshold,
                                 segmentStartOffset,
                                 profileName);
 
@@ -259,6 +262,7 @@ namespace AnalysisPrograms.Recognizers
                             (spectralEvents, decibelPlots) = UpwardTrackAlgorithm.GetUpwardTracks(
                                 spectrogram,
                                 vtp,
+                                decibelThreshold,
                                 segmentStartOffset,
                                 profileName);
 
@@ -270,6 +274,7 @@ namespace AnalysisPrograms.Recognizers
                             (spectralEvents, decibelPlots) = HarmonicParameters.GetComponentsWithHarmonics(
                                 spectrogram,
                                 hp,
+                                decibelThreshold,
                                 segmentStartOffset,
                                 profileName);
 
@@ -281,6 +286,7 @@ namespace AnalysisPrograms.Recognizers
                             (spectralEvents, decibelPlots) = Oscillations2012.GetComponentsWithOscillations(
                                 spectrogram,
                                 op,
+                                decibelThreshold,
                                 segmentStartOffset,
                                 profileName);
 
