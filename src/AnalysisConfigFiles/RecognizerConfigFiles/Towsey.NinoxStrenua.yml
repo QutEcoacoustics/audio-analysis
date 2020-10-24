@@ -16,6 +16,13 @@ SegmentDuration: 60
 # SegmentOverlap: units=seconds;
 SegmentOverlap: 0
 
+# Scan spectrogram at these thresholds
+DecibelThresholds:
+    - 12.0
+    - 18.0
+    - 24.0
+    - 30.0
+
 # Each of these profiles will be analyzed
 # This profile is required for the species-specific recogniser and must have the current name.
 Profiles:
@@ -25,12 +32,7 @@ Profiles:
         FrameSize: 1024
         FrameStep: 256
         WindowFunction: HANNING
-        DecibelThresholds:
-            - 6.0
-            - 12.0
-            - 18.0
-            - 24.0
-            - 30.0
+        
         # min and max of the freq band to search
         MinHertz: 300          
         MaxHertz: 600
