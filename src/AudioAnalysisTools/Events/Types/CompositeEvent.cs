@@ -386,14 +386,14 @@ namespace AudioAnalysisTools.Events.Types
         {
             bool eventAEnclosedInTime = a.EventStartSeconds >= b.EventStartSeconds && a.EventEndSeconds <= b.EventEndSeconds;
             bool eventAEnclosedInFreq = a.LowFrequencyHertz >= b.LowFrequencyHertz && a.HighFrequencyHertz <= b.HighFrequencyHertz;
-            if (eventAEnclosedInTime && eventAEnclosedInTime)
+            if (eventAEnclosedInTime && eventAEnclosedInFreq)
             {
                 return (null, b);
             }
 
             bool eventBEnclosedInTime = a.EventStartSeconds <= b.EventStartSeconds && a.EventEndSeconds >= b.EventEndSeconds;
             bool eventBEnclosedInFreq = a.LowFrequencyHertz <= b.LowFrequencyHertz && a.HighFrequencyHertz >= b.HighFrequencyHertz;
-            if (eventAEnclosedInTime && eventAEnclosedInTime)
+            if (eventBEnclosedInTime && eventBEnclosedInFreq)
             {
                 return (a, null);
             }
