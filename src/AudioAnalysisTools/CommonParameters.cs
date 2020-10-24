@@ -72,11 +72,5 @@ namespace AnalysisPrograms.Recognizers.Base
         /// Gets or sets the maximum allowed duration of the component. Units are seconds.
         /// </summary>
         public double? MaxDuration { get; set; } = 10.0;
-
-        /// <summary>
-        /// Gets or sets an array of decibel thresholds.
-        /// Each threshold determines the minimum "loudness" of an event that can be detected. Units are decibels.
-        /// </summary>
-        public double?[] DecibelThresholds { get; set; }
     }
 }

@@ -45,9 +45,11 @@ namespace AudioAnalysisTools.Tracks
         }
 
         /// <summary>
-        /// This method averages dB log values incorrectly but it is faster than doing many log conversions.
-        /// This method is used to find acoustic events and is accurate enough for the purpose.
+        /// This method returns whistle (spectral peak) tracks enclosed in spectral events.
+        /// It averages dB log values incorrectly but it is faster than doing many log conversions.
         /// </summary>
+        /// <param name="sonogram">The spectrogram to be searched.</param>
+        /// <returns>A list of acoustic events containing whistle tracks.</returns>
         public static (List<EventCommon> ListOfevents, double[] CombinedIntensityArray) GetOnebinTracks(
             SpectrogramStandard sonogram,
             OnebinTrackParameters parameters,
