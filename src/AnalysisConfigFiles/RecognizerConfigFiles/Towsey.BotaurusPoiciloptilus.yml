@@ -13,6 +13,12 @@ SegmentDuration: 60
 # SegmentOverlap: units=seconds;
 SegmentOverlap: 0
 
+# Scan spectrogram at these thresholds
+DecibelThresholds:
+    - 3.0
+    - 6.0
+    - 9.0
+
 # Each of these profiles will be analyzed
 # This profile is required for the species-specific recogniser and must have the current name.
 Profiles:
@@ -23,14 +29,14 @@ Profiles:
         FrameStep: 256
         WindowFunction: HANNING
         # min and max of the freq band to search
-        MinHertz: 100          
-        MaxHertz: 200
-        MinDuration: 0.3
+        MinHertz: 90          
+        MaxHertz: 210
+        MinDuration: 0.2
         MaxDuration: 0.8
         DecibelThresholds:
             - 3.0
             - 6.0
-            - 12.0
+            - 9.0
 
 #################### POST-PROCESSING of EVENTS ###################
 
@@ -50,7 +56,7 @@ PostProcessing:
         SyllableStartDifference: 3.0
         SyllableHertzGap: 40
         FilterSyllableSequence: true
-        SyllableMaxCount: 6
+        SyllableMaxCount: 7
         ExpectedPeriod: 2.5
 
     # 3: Remove events whose duration lies outside 3 SDs of an expected value.
@@ -58,22 +64,22 @@ PostProcessing:
         ExpectedDuration: 0.14
         DurationStandardDeviation: 0.01        
 
-    # 3: Remove events whose bandwidth lies outside 3 SDs of an expected value.
+    # 4: Remove events whose bandwidth lies outside 3 SDs of an expected value.
     Bandwidth:
         ExpectedBandwidth: 100
         BandwidthStandardDeviation: 15
 
-    # 4: Filter the events for excess activity in their sidebands, i.e. upper and lower buffer zones
+    # 5: Filter the events for excess activity in their sidebands, i.e. upper and lower buffer zones
     SidebandActivity:
-        LowerHertzBuffer:  0 #150
-        UpperHertzBuffer: 0 #400
-        DecibelBuffer: 2.0
+        LowerHertzBuffer: 150
+        UpperHertzBuffer: 200
+        DecibelBuffer: 6.0
 
 # Options to save results files
 # 1: Available options for saving spectrograms (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 # "True" is useful when debugging but "WhenEventsDetected" is required for operational use.
 #SaveSonogramImages: True
-SaveSonogramImages: WhenEventsDetected
+#SaveSonogramImages: WhenEventsDetected
 
 # 2: Available options for saving data files (case-sensitive): [False/Never | True/Always | WhenEventsDetected]
 SaveIntermediateWavFiles: Never

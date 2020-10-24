@@ -24,8 +24,7 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
         /// </summary>
         private static readonly FileInfo TestAsset = PathHelper.ResolveAsset("Recordings", "medeas_cove_2-2_1831_471228_20161217_232352_30_0.wav");
         //private static readonly FileInfo TestAsset = new FileInfo(@"C:\Ecoacoustics\WavFiles\TestNoiseRecordings\West_Knoll_St_Bees_WindRain_20080917-133000.wav");
-        //private static readonly FileInfo ConfigFile = PathHelper.ResolveConfigFile("RecognizerConfigFiles", "Towsey.BotaurusPoiciloptilus.yml");
-        private static readonly FileInfo ConfigFile = PathHelper.ResolveConfigFile(@"C:\Ecoacoustics\ConfigFiles\Towsey.BotaurusPoiciloptilus.yml");
+        private static readonly FileInfo ConfigFile = PathHelper.ResolveConfigFile("RecognizerConfigFiles", "Towsey.BotaurusPoiciloptilus.yml");
         private static readonly BotaurusPoiciloptilus Recognizer = new BotaurusPoiciloptilus();
 
         //NOTE: If testing recording at its original sample-rate, then use line below.
