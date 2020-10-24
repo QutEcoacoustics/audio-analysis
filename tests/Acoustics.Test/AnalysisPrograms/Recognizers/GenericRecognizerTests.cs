@@ -968,6 +968,8 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
                 });
             var config = new GenericRecognizer.GenericRecognizerConfig()
             {
+                DecibelThresholds = new double?[] { 0.0 },
+
                 Profiles = new Dictionary<string, object>()
                 {
                     {
