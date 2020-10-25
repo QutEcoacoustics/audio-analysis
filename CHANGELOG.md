@@ -8,6 +8,17 @@
 
 <!--generated-content-insert-here-->
 
+## Ecoacoustics Audio Analysis Software v20.10.2.1 2020-10-25
+
+Version v20.10.2.1
+
+
+
+### Details
+
+[Compare v20.10.1.58...v20.10.2.1](https://github.com/QutBioacoustics/audio-analysis/compare/v20.10.1.58...v20.10.2.1)
+
+- f7d6e8a2 dependabot-preview[bot] - Bump FSharp.Core from 4.7.2 to 5.0.0
 ## Ecoacoustics Audio Analysis Software v20.10.1.58 2020-10-18
 
 Version v20.10.1.58
@@ -1165,6 +1176,7 @@ Version v19.2.0.90
 - 512f8b4 Mahnoosh Kholghi - generating features for a set of recordings
 - 9b7a178 Mahnoosh Kholghi - fixing the error in directory
 - 3fdb19c Mahnoosh Kholghi - Adding a method for arbitrary freq bins
+
 
 
 
