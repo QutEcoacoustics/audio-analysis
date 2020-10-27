@@ -65,8 +65,8 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             Assert.AreEqual(6.1648979591836737, secondEvent.EventEndSeconds);
             Assert.AreEqual(441, secondEvent.LowFrequencyHertz);
             Assert.AreEqual(735, secondEvent.HighFrequencyHertz);
-            Assert.AreEqual(22.388932023970227, secondEvent.Score, TestHelper.AllowedDelta);
-            Assert.AreEqual(0.0092984503451215648, secondEvent.ScoreNormalized, TestHelper.AllowedDelta);
+            Assert.AreEqual(18.753868577301958, secondEvent.Score, TestHelper.AllowedDelta);
+            Assert.AreEqual(0.34061938340960607, secondEvent.ScoreNormalized, TestHelper.AllowedDelta);
         }
     }
 }

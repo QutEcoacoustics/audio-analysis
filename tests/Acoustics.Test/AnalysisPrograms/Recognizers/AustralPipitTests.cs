@@ -70,9 +70,8 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             Assert.AreEqual(22.3680000000000, ev.EventEndSeconds, TestHelper.AllowedDelta);
             Assert.AreEqual(4743, ev.BandWidthHertz);
 
-            // This event should contain 13 component events
             var componentEvents = ev.ComponentEvents;
-            Assert.AreEqual(13, componentEvents.Count);
+            Assert.AreEqual(3, componentEvents.Count);
 
             // This tests that the component tracks are correctly combined.
             //This can also be tested somewhere else, starting with just the comosite event in json file.
