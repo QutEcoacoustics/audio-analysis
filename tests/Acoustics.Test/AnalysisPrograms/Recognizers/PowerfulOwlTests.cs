@@ -7,8 +7,8 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
     using System;
     using System.IO;
     using Acoustics.Test.TestHelpers;
-    using Acoustics.Tools.Wav;
     using global::AnalysisPrograms.Recognizers;
+    using global::AudioAnalysisTools;
     using global::AudioAnalysisTools.Events.Types;
     using global::AudioAnalysisTools.WavTools;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -21,9 +21,8 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
     {
         /// <summary>
         /// The canonical recording used for this recognizer contains three calls, each with two syllables.
-        /// However the calls are loud and each is followed by an echo which is picked up as another syllable.
-        /// In addition, there is a false-positive hit near start of recording.
-        /// The config file could easily be adjusted to remove the extra hits,
+        /// However the calls are loud and two of them are followed by an echo which is picked up as another syllable.
+        /// The config file could be adjusted to remove the extra hits,
         /// but the config has been optimised on ten recordings, provided by Kristen Thompson, that contain a variety of loud and soft calls.
         /// </summary>
         private static readonly FileInfo TestAsset = PathHelper.ResolveAsset("Recordings", "Powerful3AndBoobook0_ksh3_1773_510819_20171109_174311_30_0.wav");
@@ -52,21 +51,22 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             this.SaveTestOutput(
                 outputDirectory => GenericRecognizer.SaveDebugSpectrogram(results, null, outputDirectory, Recognizer.SpeciesName));
 
-            Assert.AreEqual(7, events.Count);
+            Assert.AreEqual(5, events.Count);
             Assert.IsNull(scoreTrack);
             Assert.AreEqual(5, plots.Count);
             Assert.AreEqual(2580, sonogram.FrameCount);
 
-            Assert.IsInstanceOfType(events[1], typeof(CompositeEvent));
+            Assert.IsInstanceOfType(events[1], typeof(ChirpEvent));
 
-            var secondEvent = (CompositeEvent)events[3];
+            //Note: due to combining and filtering of events etc, they are not in temporal order
+            var secondEvent = (CompositeEvent)events[4];
 
-            Assert.AreEqual(28.28190476, secondEvent.EventStartSeconds, 1E-06);
-            Assert.AreEqual(29.18748299, secondEvent.EventEndSeconds, 1E-06);
-            Assert.AreEqual(399, secondEvent.LowFrequencyHertz);
+            Assert.AreEqual(26.842267573, secondEvent.EventStartSeconds, 1E-06);
+            Assert.AreEqual(27.945215419, secondEvent.EventEndSeconds, 1E-06);
+            Assert.AreEqual(357, secondEvent.LowFrequencyHertz);
             Assert.AreEqual(483, secondEvent.HighFrequencyHertz);
-            Assert.AreEqual(20.55114869, secondEvent.Score, 1E-06);
-            Assert.AreEqual(0.137214817, secondEvent.ScoreNormalized, 1E-06);
+            Assert.AreEqual(47.93789051, secondEvent.Score, 1E-06);
+            Assert.AreEqual(0.0797182258673, secondEvent.ScoreNormalized, 1E-06);
         }
     }
 }
