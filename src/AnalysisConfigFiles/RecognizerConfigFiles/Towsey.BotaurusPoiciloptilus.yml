@@ -13,12 +13,6 @@ SegmentDuration: 60
 # SegmentOverlap: units=seconds;
 SegmentOverlap: 0
 
-# Scan spectrogram at these thresholds
-DecibelThresholds:
-    - 3.0
-    - 6.0
-    - 9.0
-
 # Each of these profiles will be analyzed
 # This profile is required for the species-specific recogniser and must have the current name.
 Profiles:
