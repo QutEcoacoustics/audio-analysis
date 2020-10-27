@@ -132,50 +132,28 @@ namespace AnalysisPrograms.Recognizers
             var message = $"Found {count} analysis profile(s): " + configuration.Profiles.Keys.Join(", ");
             Log.Info(message);
 
-            var decibelThresholds = configuration.DecibelThresholds;
-            message = $"Number of decibel thresholds = {decibelThresholds.Length}: " + decibelThresholds.Join(", ");
-            Log.Info(message);
+            // ############################### PRE-PROCESSING ###############################
+            // may at some future date do pre-processing
 
-            var postprocessingConfig = configuration.PostProcessing;
-
-            // init object to store the combined results from all decibel thresholds.
-            var combinedResults = new RecognizerResults()
-            {
-                Events = new List<AcousticEvent>(),
-                NewEvents = new List<EventCommon>(),
-                Hits = null,
-                ScoreTrack = null,
-                Plots = new List<Plot>(),
-                Sonogram = null,
-            };
-
-            foreach (var threshold in decibelThresholds)
-            {
-                // ############################### PROCESSING: DETECTION OF GENERIC EVENTS ###############################
-                var profileResults = RunProfiles(audioRecording, configuration, threshold, segmentStartOffset);
-                Log.Debug($"Event count from all profiles at {threshold} dB threshold = {profileResults.NewEvents.Count}");
-
-                // add this profile results to combined results and remove enclosed events.
-                combinedResults.NewEvents.AddRange(profileResults.NewEvents);
-                combinedResults.NewEvents = CompositeEvent.RemoveEnclosedEvents(combinedResults.NewEvents);
-
-                // effectively keeps only the *last* sonogram produced
-                combinedResults.Sonogram = profileResults.Sonogram;
-                combinedResults.Plots.AddRange(profileResults.Plots);
-            }
+            // ############################### PROCESSING: DETECTION OF GENERIC EVENTS ###############################
+            var results = RunProfiles(audioRecording, configuration, segmentStartOffset);
 
             // ############################### POST-PROCESSING OF GENERIC EVENTS ###############################
-            combinedResults.NewEvents = EventPostProcessing.PostProcessingOfSpectralEvents(combinedResults.NewEvents, postprocessingConfig, combinedResults.Sonogram, segmentStartOffset);
-            return combinedResults;
+            var postprocessingConfig = configuration.PostProcessing;
+            results.NewEvents = EventPostProcessing.PostProcessingOfSpectralEvents(
+                results.NewEvents,
+                postprocessingConfig,
+                results.Sonogram,
+                segmentStartOffset);
+            return results;
         }
 
         public static RecognizerResults RunProfiles(
             AudioRecording audioRecording,
             GenericRecognizerConfig configuration,
-            double? decibelThreshold,
             TimeSpan segmentStartOffset)
         {
-            var allResults = new RecognizerResults()
+            var combinedResults = new RecognizerResults()
             {
                 Events = new List<AcousticEvent>(),
                 NewEvents = new List<EventCommon>(),
@@ -189,157 +167,193 @@ namespace AnalysisPrograms.Recognizers
             foreach (var (profileName, profileConfig) in configuration.Profiles)
             {
                 Log.Info("Processing profile: " + profileName);
+                string speciesName;
 
-                //List<AcousticEvent> acousticEvents;
-                List<EventCommon> spectralEvents;
-                var plots = new List<Plot>();
-                SpectrogramStandard spectrogram;
-
-                //Log.Debug($"Using the {profileName} algorithm... ");
+                //Mostly the config will be for generic events ...
                 if (profileConfig is CommonParameters parameters)
                 {
-                    if (profileConfig is BlobParameters
-                        || profileConfig is OscillationParameters
-                        || profileConfig is OnebinTrackParameters
-                        || profileConfig is HarmonicParameters
-                        || profileConfig is ForwardTrackParameters
-                        || profileConfig is UpwardTrackParameters
-                        || profileConfig is OneframeTrackParameters)
+                    speciesName = parameters.SpeciesName;
+                    var decibelThresholds = parameters.DecibelThresholds;
+                    var message = $"Number of decibel thresholds = {decibelThresholds.Length}: " + decibelThresholds.Join(", ");
+                    Log.Info(message);
+
+                    var spectrogram = new SpectrogramStandard(ParametersToSonogramConfig(parameters), audioRecording.WavReader);
+
+                    foreach (var threshold in decibelThresholds)
                     {
-                        spectrogram = new SpectrogramStandard(ParametersToSonogramConfig(parameters), audioRecording.WavReader);
+                        RecognizerResults results = RunOneProfile(spectrogram, profileName, parameters, threshold, segmentStartOffset);
 
-                        if (profileConfig is BlobParameters bp)
-                        {
-                            List<Plot> decibelPlots;
-                            (spectralEvents, decibelPlots) = BlobEvent.GetBlobEvents(
-                                spectrogram,
-                                bp,
-                                decibelThreshold,
-                                segmentStartOffset,
-                                profileName);
-
-                            plots.AddRange(decibelPlots);
-                        }
-                        else if (profileConfig is OnebinTrackParameters wp)
-                        {
-                            List<Plot> decibelPlots;
-                            (spectralEvents, decibelPlots) = OnebinTrackAlgorithm.GetOnebinTracks(
-                                spectrogram,
-                                wp,
-                                decibelThreshold,
-                                segmentStartOffset,
-                                profileName);
-
-                            plots.AddRange(decibelPlots);
-                        }
-                        else if (profileConfig is ForwardTrackParameters tp)
-                        {
-                            List<Plot> decibelPlots;
-                            (spectralEvents, decibelPlots) = ForwardTrackAlgorithm.GetForwardTracks(
-                                spectrogram,
-                                tp,
-                                decibelThreshold,
-                                segmentStartOffset,
-                                profileName);
-
-                            plots.AddRange(decibelPlots);
-                        }
-                        else if (profileConfig is OneframeTrackParameters cp)
-                        {
-                            List<Plot> decibelPlots;
-                            (spectralEvents, decibelPlots) = OneframeTrackAlgorithm.GetOneFrameTracks(
-                                spectrogram,
-                                cp,
-                                decibelThreshold,
-                                segmentStartOffset,
-                                profileName);
-
-                            plots.AddRange(decibelPlots);
-                        }
-                        else if (profileConfig is UpwardTrackParameters vtp)
-                        {
-                            List<Plot> decibelPlots;
-                            (spectralEvents, decibelPlots) = UpwardTrackAlgorithm.GetUpwardTracks(
-                                spectrogram,
-                                vtp,
-                                decibelThreshold,
-                                segmentStartOffset,
-                                profileName);
-
-                            plots.AddRange(decibelPlots);
-                        }
-                        else if (profileConfig is HarmonicParameters hp)
-                        {
-                            List<Plot> decibelPlots;
-                            (spectralEvents, decibelPlots) = HarmonicParameters.GetComponentsWithHarmonics(
-                                spectrogram,
-                                hp,
-                                decibelThreshold,
-                                segmentStartOffset,
-                                profileName);
-
-                            plots.AddRange(decibelPlots);
-                        }
-                        else if (profileConfig is OscillationParameters op)
-                        {
-                            List<Plot> decibelPlots;
-                            (spectralEvents, decibelPlots) = Oscillations2012.GetComponentsWithOscillations(
-                                spectrogram,
-                                op,
-                                decibelThreshold,
-                                segmentStartOffset,
-                                profileName);
-
-                            plots.AddRange(decibelPlots);
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException();
-                        }
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException();
+                        //Log.Debug($"Event count from all profiles at {threshold} dB threshold = {results.NewEvents.Count}");
+                        combinedResults.NewEvents.AddRange(results.NewEvents);
+                        combinedResults.Plots.AddRange(results.Plots);
+                        combinedResults.Sonogram = results.Sonogram;
                     }
 
-                    //iV add additional info to the acoustic events
-                    spectralEvents.ForEach(ae =>
-                    {
-                        ae.FileName = audioRecording.BaseName;
-                        ae.Name = parameters.SpeciesName;
-                        ae.Profile = profileName;
+                    // Running profiles with multiple dB thresholds produces nested (Russian doll) events.
+                    // Remove all but the outermost event.
+                    combinedResults.NewEvents = CompositeEvent.RemoveEnclosedEvents(combinedResults.NewEvents);
 
-                        //ae.SegmentDurationSeconds = audioRecording.Duration.TotalSeconds;
-                        //ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
-                        //ae.SetTimeAndFreqScales(sonogram.FrameStep, sonogram.FrameDuration, sonogram.FBinWidth);
-                    });
+                    Log.Debug($"Profile {profileName}: event count = {combinedResults.NewEvents.Count}");
                 }
                 else if (profileConfig is Aed.AedConfiguration ac)
                 {
+                    // ... but may be calling the old AED algorithm.
                     var config = new SonogramConfig
                     {
                         NoiseReductionType = ac.NoiseReductionType,
                         NoiseReductionParameter = ac.NoiseReductionParameter,
                     };
-                    spectrogram = new SpectrogramStandard(config, audioRecording.WavReader);
+
+                    speciesName = "aed";
+                    var spectrogram = new SpectrogramStandard(config, audioRecording.WavReader);
 
                     // GET THIS TO RETURN BLOB EVENTS.
-                    spectralEvents = Aed.CallAed(spectrogram, ac, segmentStartOffset, audioRecording.Duration).ToList();
+                    var spectralEvents = Aed.CallAed(spectrogram, ac, segmentStartOffset, audioRecording.Duration).ToList();
+                    combinedResults.NewEvents.AddRange(spectralEvents);
+                    combinedResults.Sonogram = spectrogram;
                 }
                 else
                 {
                     throw new InvalidOperationException();
                 }
 
-                // combine the results i.e. add the events list of call events.
-                allResults.NewEvents.AddRange(spectralEvents);
-                allResults.Plots.AddRange(plots);
+                // Add additional info to the acoustic events
+                combinedResults.NewEvents.ForEach(ae =>
+                {
+                    ae.FileName = audioRecording.BaseName;
+                    ae.Name = speciesName;
+                    ae.Profile = profileName;
 
-                // effectively keeps only the *last* sonogram produced
-                allResults.Sonogram = spectrogram;
-                Log.Debug($"Profile {profileName}: event count = {spectralEvents.Count}");
+                    //ae.SegmentDurationSeconds = audioRecording.Duration.TotalSeconds;
+                    //ae.SegmentStartSeconds = segmentStartOffset.TotalSeconds;
+                    //ae.SetTimeAndFreqScales(sonogram.FrameStep, sonogram.FrameDuration, sonogram.FBinWidth);
+                });
             }
 
+            return combinedResults;
+        }
+
+        /// <summary>
+        /// Gets the events for one profile at one decibel threshold.
+        /// </summary>
+        /// <param name="spectrogram">Spectrogram derived from audio segment.</param>
+        /// <param name="profileName">Profile name in the config file.</param>
+        /// <param name="decibelThreshold">Threshold for this pass.</param>
+        /// <param name="segmentStartOffset">The same for any given recording segment.</param>
+        /// <returns>A results object.</returns>
+        public static RecognizerResults RunOneProfile(
+            SpectrogramStandard spectrogram,
+            string profileName,
+            CommonParameters profileConfig,
+            double? decibelThreshold,
+            TimeSpan segmentStartOffset)
+        {
+            List<EventCommon> spectralEvents;
+            var plots = new List<Plot>();
+
+            if (profileConfig is BlobParameters bp)
+            {
+                List<Plot> decibelPlots;
+                (spectralEvents, decibelPlots) = BlobEvent.GetBlobEvents(
+                    spectrogram,
+                    bp,
+                    decibelThreshold,
+                    segmentStartOffset,
+                    profileName);
+
+                plots.AddRange(decibelPlots);
+            }
+            else if (profileConfig is OnebinTrackParameters wp)
+            {
+                List<Plot> decibelPlots;
+                (spectralEvents, decibelPlots) = OnebinTrackAlgorithm.GetOnebinTracks(
+                    spectrogram,
+                    wp,
+                    decibelThreshold,
+                    segmentStartOffset,
+                    profileName);
+
+                plots.AddRange(decibelPlots);
+            }
+            else if (profileConfig is ForwardTrackParameters tp)
+            {
+                List<Plot> decibelPlots;
+                (spectralEvents, decibelPlots) = ForwardTrackAlgorithm.GetForwardTracks(
+                    spectrogram,
+                    tp,
+                    decibelThreshold,
+                    segmentStartOffset,
+                    profileName);
+
+                plots.AddRange(decibelPlots);
+            }
+            else if (profileConfig is OneframeTrackParameters cp)
+            {
+                List<Plot> decibelPlots;
+                (spectralEvents, decibelPlots) = OneframeTrackAlgorithm.GetOneFrameTracks(
+                    spectrogram,
+                    cp,
+                    decibelThreshold,
+                    segmentStartOffset,
+                    profileName);
+
+                plots.AddRange(decibelPlots);
+            }
+            else if (profileConfig is UpwardTrackParameters vtp)
+            {
+                List<Plot> decibelPlots;
+                (spectralEvents, decibelPlots) = UpwardTrackAlgorithm.GetUpwardTracks(
+                    spectrogram,
+                    vtp,
+                    decibelThreshold,
+                    segmentStartOffset,
+                    profileName);
+
+                plots.AddRange(decibelPlots);
+            }
+            else if (profileConfig is HarmonicParameters hp)
+            {
+                List<Plot> decibelPlots;
+                (spectralEvents, decibelPlots) = HarmonicParameters.GetComponentsWithHarmonics(
+                    spectrogram,
+                    hp,
+                    decibelThreshold,
+                    segmentStartOffset,
+                    profileName);
+
+                plots.AddRange(decibelPlots);
+            }
+            else if (profileConfig is OscillationParameters op)
+            {
+                List<Plot> decibelPlots;
+                (spectralEvents, decibelPlots) = Oscillations2012.GetComponentsWithOscillations(
+                    spectrogram,
+                    op,
+                    decibelThreshold,
+                    segmentStartOffset,
+                    profileName);
+
+                plots.AddRange(decibelPlots);
+            }
+            else
+            {
+                throw new InvalidOperationException();
+            }
+
+            // put events, plots and spectrogram into a results object.
+            var allResults = new RecognizerResults()
+            {
+                Events = new List<AcousticEvent>(),
+                NewEvents = new List<EventCommon>(),
+                Hits = null,
+                ScoreTrack = null,
+                Plots = new List<Plot>(),
+                Sonogram = null,
+            };
+
+            allResults.NewEvents.AddRange(spectralEvents);
+            allResults.Plots.AddRange(plots);
+            allResults.Sonogram = spectrogram;
             return allResults;
         }
 
@@ -391,13 +405,6 @@ namespace AnalysisPrograms.Recognizers
         /// <inheritdoc cref="GenericRecognizerConfig"/> />
         public class GenericRecognizerConfig : RecognizerConfig, INamedProfiles<object>
         {
-            /// <summary>
-            /// Gets or sets an array of decibel thresholds.
-            /// Each threshold determines the minimum "loudness" of an event that can be detected.
-            /// Units are decibels.
-            /// </summary>
-            public double?[] DecibelThresholds { get; set; }
-
             /// <inheritdoc />
             public Dictionary<string, object> Profiles { get; set; }
 
