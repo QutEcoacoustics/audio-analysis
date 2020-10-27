@@ -61,12 +61,10 @@ namespace Acoustics.Test.AnalysisPrograms.Recognizers
             Assert.IsNull(scoreTrack);
             Assert.AreEqual(3, plots.Count);
             Assert.AreEqual(938, sonogram.FrameCount);
-
             Assert.IsInstanceOfType(events[0], typeof(CompositeEvent));
 
-            var onlyEvent = (CompositeEvent)events[0];
-
             //note this event contains four syllables and one echo, therefore five components.
+            var onlyEvent = (CompositeEvent)events[0];
             Assert.AreEqual(5, onlyEvent.ComponentCount);
             Assert.AreEqual(5.12, onlyEvent.EventStartSeconds);
             Assert.AreEqual(12.256, onlyEvent.EventEndSeconds);
